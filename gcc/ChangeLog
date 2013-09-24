@@ -1,3 +1,10 @@
+2013-09-24  Xinliang David Li <davidxl@google.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): 
+	Check max peel iterations parameter.
+	* param.def: New parameter.
+	* doc/invoke.texi: Document New parameter.
+
 2013-09-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gimple-pretty-print.c: Various whitespace tweaks.

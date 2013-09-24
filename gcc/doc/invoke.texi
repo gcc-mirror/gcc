@@ -9451,6 +9451,10 @@ The maximum number of run-time checks that can be performed when
 doing loop versioning for alias in the vectorizer.  See option
 @option{-ftree-vect-loop-version} for more information.
 
+@item vect-max-peeling-for-alignment
+The maximum number of loop peels to enhance access alignment
+for vectorizer. Value -1 means 'no limit'.
+
 @item max-iterations-to-track
 The maximum number of iterations of a loop the brute-force algorithm
 for analysis of the number of iterations of the loop tries to evaluate.

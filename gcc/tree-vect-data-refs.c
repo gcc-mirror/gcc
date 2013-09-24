@@ -1718,6 +1718,30 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       if (do_peeling)
         {
+          unsigned max_allowed_peel
+            = PARAM_VALUE (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT);
+          if (max_allowed_peel != (unsigned)-1)
+            {
+              unsigned max_peel = npeel;
+              if (max_peel == 0)
+                {
+                  gimple dr_stmt = DR_STMT (dr0);
+                  stmt_vec_info vinfo = vinfo_for_stmt (dr_stmt);
+                  tree vtype = STMT_VINFO_VECTYPE (vinfo);
+                  max_peel = TYPE_VECTOR_SUBPARTS (vtype) - 1;
+                }
+              if (max_peel > max_allowed_peel)
+                {
+                  do_peeling = false;
+                  if (dump_enabled_p ())
+                    dump_printf_loc (MSG_NOTE, vect_location,
+                        "Disable peeling, max peels reached: %d\n", max_peel);
+                }
+            }
+        }
+
+      if (do_peeling)
+        {
 	  stmt_info_for_cost *si;
 	  void *data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
