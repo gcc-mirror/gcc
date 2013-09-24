@@ -189,9 +189,6 @@ unsigned char rs6000_hard_regno_nregs[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 /* Map register number to register class.  */
 enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
-/* Reload functions based on the type and the vector unit.  */
-static enum insn_code rs6000_vector_reload[NUM_MACHINE_MODES][2];
-
 static int dbg_cost_ctrl;
 
 /* Built in types.  */
@@ -316,11 +313,16 @@ static enum rs6000_reg_type reg_class_to_reg_type[N_REG_CLASSES];
 
 #define IS_FP_VECT_REG_TYPE(RTYPE) IN_RANGE(RTYPE, VSX_REG_TYPE, FPR_REG_TYPE)
 
-/* Direct moves to/from vsx/gpr registers that need an additional register to
-   do the move.  */
-static enum insn_code reload_fpr_gpr[NUM_MACHINE_MODES];
-static enum insn_code reload_gpr_vsx[NUM_MACHINE_MODES];
-static enum insn_code reload_vsx_gpr[NUM_MACHINE_MODES];
+/* Register type masks based on the type, of valid addressing modes.  */
+struct rs6000_reg_addr {
+  enum insn_code reload_load;		/* INSN to reload for loading. */
+  enum insn_code reload_store;		/* INSN to reload for storing.  */
+  enum insn_code reload_fpr_gpr;	/* INSN to move from FPR to GPR.  */
+  enum insn_code reload_gpr_vsx;	/* INSN to move from GPR to VSX.  */
+  enum insn_code reload_vsx_gpr;	/* INSN to move from VSX to GPR.  */
+};
+
+static struct rs6000_reg_addr reg_addr[NUM_MACHINE_MODES];
 
 
 /* Target cpu costs.  */
@@ -1919,8 +1921,8 @@ rs6000_debug_reg_global (void)
 
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
     if (rs6000_vector_unit[m] || rs6000_vector_mem[m]
-	|| (rs6000_vector_reload[m][0] != CODE_FOR_nothing)
-	|| (rs6000_vector_reload[m][1] != CODE_FOR_nothing))
+	|| (reg_addr[m].reload_load != CODE_FOR_nothing)
+	|| (reg_addr[m].reload_store != CODE_FOR_nothing))
       {
 	nl = "\n";
 	fprintf (stderr,
@@ -1929,8 +1931,8 @@ rs6000_debug_reg_global (void)
 		 GET_MODE_NAME (m),
 		 rs6000_debug_vector_unit[ rs6000_vector_unit[m] ],
 		 rs6000_debug_vector_unit[ rs6000_vector_mem[m] ],
-		 (rs6000_vector_reload[m][0] != CODE_FOR_nothing) ? 'y' : 'n',
-		 (rs6000_vector_reload[m][1] != CODE_FOR_nothing) ? 'y' : 'n');
+		 (reg_addr[m].reload_store != CODE_FOR_nothing) ? 'y' : 'n',
+		 (reg_addr[m].reload_load != CODE_FOR_nothing) ? 'y' : 'n');
       }
 
   if (nl)
@@ -2239,13 +2241,17 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       reg_class_to_reg_type[(int)ALTIVEC_REGS] = ALTIVEC_REG_TYPE;
     }
 
-  /* Precalculate vector information, this must be set up before the
-     rs6000_hard_regno_nregs_internal below.  */
+  /* Precalculate the valid memory formats as well as the vector information,
+     this must be set up before the rs6000_hard_regno_nregs_internal calls
+     below.  */
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
     {
       rs6000_vector_unit[m] = rs6000_vector_mem[m] = VECTOR_NONE;
-      rs6000_vector_reload[m][0] = CODE_FOR_nothing;
-      rs6000_vector_reload[m][1] = CODE_FOR_nothing;
+      reg_addr[m].reload_load = CODE_FOR_nothing;
+      reg_addr[m].reload_store = CODE_FOR_nothing;
+      reg_addr[m].reload_fpr_gpr = CODE_FOR_nothing;
+      reg_addr[m].reload_gpr_vsx = CODE_FOR_nothing;
+      reg_addr[m].reload_vsx_gpr = CODE_FOR_nothing;
     }
 
   for (c = 0; c < (int)(int)RS6000_CONSTRAINT_MAX; c++)
@@ -2421,112 +2427,104 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (TARGET_LFIWZX)
     rs6000_constraints[RS6000_CONSTRAINT_wz] = FLOAT_REGS;
 
-  /* Setup the direct move combinations.  */
-  for (m = 0; m < NUM_MACHINE_MODES; ++m)
-    {
-      reload_fpr_gpr[m] = CODE_FOR_nothing;
-      reload_gpr_vsx[m] = CODE_FOR_nothing;
-      reload_vsx_gpr[m] = CODE_FOR_nothing;
-    }
-
   /* Set up the reload helper and direct move functions.  */
   if (TARGET_VSX || TARGET_ALTIVEC)
     {
       if (TARGET_64BIT)
 	{
-	  rs6000_vector_reload[V16QImode][0] = CODE_FOR_reload_v16qi_di_store;
-	  rs6000_vector_reload[V16QImode][1] = CODE_FOR_reload_v16qi_di_load;
-	  rs6000_vector_reload[V8HImode][0]  = CODE_FOR_reload_v8hi_di_store;
-	  rs6000_vector_reload[V8HImode][1]  = CODE_FOR_reload_v8hi_di_load;
-	  rs6000_vector_reload[V4SImode][0]  = CODE_FOR_reload_v4si_di_store;
-	  rs6000_vector_reload[V4SImode][1]  = CODE_FOR_reload_v4si_di_load;
-	  rs6000_vector_reload[V2DImode][0]  = CODE_FOR_reload_v2di_di_store;
-	  rs6000_vector_reload[V2DImode][1]  = CODE_FOR_reload_v2di_di_load;
-	  rs6000_vector_reload[V4SFmode][0]  = CODE_FOR_reload_v4sf_di_store;
-	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_di_load;
-	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_di_store;
-	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_di_load;
+	  reg_addr[V16QImode].reload_store = CODE_FOR_reload_v16qi_di_store;
+	  reg_addr[V16QImode].reload_load  = CODE_FOR_reload_v16qi_di_load;
+	  reg_addr[V8HImode].reload_store  = CODE_FOR_reload_v8hi_di_store;
+	  reg_addr[V8HImode].reload_load   = CODE_FOR_reload_v8hi_di_load;
+	  reg_addr[V4SImode].reload_store  = CODE_FOR_reload_v4si_di_store;
+	  reg_addr[V4SImode].reload_load   = CODE_FOR_reload_v4si_di_load;
+	  reg_addr[V2DImode].reload_store  = CODE_FOR_reload_v2di_di_store;
+	  reg_addr[V2DImode].reload_load   = CODE_FOR_reload_v2di_di_load;
+	  reg_addr[V4SFmode].reload_store  = CODE_FOR_reload_v4sf_di_store;
+	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_di_load;
+	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_di_store;
+	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_di_load;
 	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
-	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_di_store;
-	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_di_load;
-	      rs6000_vector_reload[DDmode][0]  = CODE_FOR_reload_dd_di_store;
-	      rs6000_vector_reload[DDmode][1]  = CODE_FOR_reload_dd_di_load;
+	      reg_addr[DFmode].reload_store  = CODE_FOR_reload_df_di_store;
+	      reg_addr[DFmode].reload_load   = CODE_FOR_reload_df_di_load;
+	      reg_addr[DDmode].reload_store  = CODE_FOR_reload_dd_di_store;
+	      reg_addr[DDmode].reload_load   = CODE_FOR_reload_dd_di_load;
 	    }
 	  if (TARGET_P8_VECTOR)
 	    {
-	      rs6000_vector_reload[SFmode][0]  = CODE_FOR_reload_sf_di_store;
-	      rs6000_vector_reload[SFmode][1]  = CODE_FOR_reload_sf_di_load;
-	      rs6000_vector_reload[SDmode][0]  = CODE_FOR_reload_sd_di_store;
-	      rs6000_vector_reload[SDmode][1]  = CODE_FOR_reload_sd_di_load;
+	      reg_addr[SFmode].reload_store  = CODE_FOR_reload_sf_di_store;
+	      reg_addr[SFmode].reload_load   = CODE_FOR_reload_sf_di_load;
+	      reg_addr[SDmode].reload_store  = CODE_FOR_reload_sd_di_store;
+	      reg_addr[SDmode].reload_load   = CODE_FOR_reload_sd_di_load;
 	    }
 	  if (TARGET_VSX_TIMODE)
 	    {
-	      rs6000_vector_reload[TImode][0]  = CODE_FOR_reload_ti_di_store;
-	      rs6000_vector_reload[TImode][1]  = CODE_FOR_reload_ti_di_load;
+	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_di_store;
+	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_di_load;
 	    }
 	  if (TARGET_DIRECT_MOVE)
 	    {
 	      if (TARGET_POWERPC64)
 		{
-		  reload_gpr_vsx[TImode]    = CODE_FOR_reload_gpr_from_vsxti;
-		  reload_gpr_vsx[V2DFmode]  = CODE_FOR_reload_gpr_from_vsxv2df;
-		  reload_gpr_vsx[V2DImode]  = CODE_FOR_reload_gpr_from_vsxv2di;
-		  reload_gpr_vsx[V4SFmode]  = CODE_FOR_reload_gpr_from_vsxv4sf;
-		  reload_gpr_vsx[V4SImode]  = CODE_FOR_reload_gpr_from_vsxv4si;
-		  reload_gpr_vsx[V8HImode]  = CODE_FOR_reload_gpr_from_vsxv8hi;
-		  reload_gpr_vsx[V16QImode] = CODE_FOR_reload_gpr_from_vsxv16qi;
-		  reload_gpr_vsx[SFmode]    = CODE_FOR_reload_gpr_from_vsxsf;
+		  reg_addr[TImode].reload_gpr_vsx    = CODE_FOR_reload_gpr_from_vsxti;
+		  reg_addr[V2DFmode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv2df;
+		  reg_addr[V2DImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv2di;
+		  reg_addr[V4SFmode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv4sf;
+		  reg_addr[V4SImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv4si;
+		  reg_addr[V8HImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv8hi;
+		  reg_addr[V16QImode].reload_gpr_vsx = CODE_FOR_reload_gpr_from_vsxv16qi;
+		  reg_addr[SFmode].reload_gpr_vsx    = CODE_FOR_reload_gpr_from_vsxsf;
 
-		  reload_vsx_gpr[TImode]    = CODE_FOR_reload_vsx_from_gprti;
-		  reload_vsx_gpr[V2DFmode]  = CODE_FOR_reload_vsx_from_gprv2df;
-		  reload_vsx_gpr[V2DImode]  = CODE_FOR_reload_vsx_from_gprv2di;
-		  reload_vsx_gpr[V4SFmode]  = CODE_FOR_reload_vsx_from_gprv4sf;
-		  reload_vsx_gpr[V4SImode]  = CODE_FOR_reload_vsx_from_gprv4si;
-		  reload_vsx_gpr[V8HImode]  = CODE_FOR_reload_vsx_from_gprv8hi;
-		  reload_vsx_gpr[V16QImode] = CODE_FOR_reload_vsx_from_gprv16qi;
-		  reload_vsx_gpr[SFmode]    = CODE_FOR_reload_vsx_from_gprsf;
+		  reg_addr[TImode].reload_vsx_gpr    = CODE_FOR_reload_vsx_from_gprti;
+		  reg_addr[V2DFmode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv2df;
+		  reg_addr[V2DImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv2di;
+		  reg_addr[V4SFmode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv4sf;
+		  reg_addr[V4SImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv4si;
+		  reg_addr[V8HImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv8hi;
+		  reg_addr[V16QImode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprv16qi;
+		  reg_addr[SFmode].reload_vsx_gpr    = CODE_FOR_reload_vsx_from_gprsf;
 		}
 	      else
 		{
-		  reload_fpr_gpr[DImode] = CODE_FOR_reload_fpr_from_gprdi;
-		  reload_fpr_gpr[DDmode] = CODE_FOR_reload_fpr_from_gprdd;
-		  reload_fpr_gpr[DFmode] = CODE_FOR_reload_fpr_from_gprdf;
+		  reg_addr[DImode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdi;
+		  reg_addr[DDmode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdd;
+		  reg_addr[DFmode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdf;
 		}
 	    }
 	}
       else
 	{
-	  rs6000_vector_reload[V16QImode][0] = CODE_FOR_reload_v16qi_si_store;
-	  rs6000_vector_reload[V16QImode][1] = CODE_FOR_reload_v16qi_si_load;
-	  rs6000_vector_reload[V8HImode][0]  = CODE_FOR_reload_v8hi_si_store;
-	  rs6000_vector_reload[V8HImode][1]  = CODE_FOR_reload_v8hi_si_load;
-	  rs6000_vector_reload[V4SImode][0]  = CODE_FOR_reload_v4si_si_store;
-	  rs6000_vector_reload[V4SImode][1]  = CODE_FOR_reload_v4si_si_load;
-	  rs6000_vector_reload[V2DImode][0]  = CODE_FOR_reload_v2di_si_store;
-	  rs6000_vector_reload[V2DImode][1]  = CODE_FOR_reload_v2di_si_load;
-	  rs6000_vector_reload[V4SFmode][0]  = CODE_FOR_reload_v4sf_si_store;
-	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_si_load;
-	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_si_store;
-	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_si_load;
+	  reg_addr[V16QImode].reload_store = CODE_FOR_reload_v16qi_si_store;
+	  reg_addr[V16QImode].reload_load  = CODE_FOR_reload_v16qi_si_load;
+	  reg_addr[V8HImode].reload_store  = CODE_FOR_reload_v8hi_si_store;
+	  reg_addr[V8HImode].reload_load   = CODE_FOR_reload_v8hi_si_load;
+	  reg_addr[V4SImode].reload_store  = CODE_FOR_reload_v4si_si_store;
+	  reg_addr[V4SImode].reload_load   = CODE_FOR_reload_v4si_si_load;
+	  reg_addr[V2DImode].reload_store  = CODE_FOR_reload_v2di_si_store;
+	  reg_addr[V2DImode].reload_load   = CODE_FOR_reload_v2di_si_load;
+	  reg_addr[V4SFmode].reload_store  = CODE_FOR_reload_v4sf_si_store;
+	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_si_load;
+	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_si_store;
+	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_si_load;
 	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
-	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_si_store;
-	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_si_load;
-	      rs6000_vector_reload[DDmode][0]  = CODE_FOR_reload_dd_si_store;
-	      rs6000_vector_reload[DDmode][1]  = CODE_FOR_reload_dd_si_load;
+	      reg_addr[DFmode].reload_store  = CODE_FOR_reload_df_si_store;
+	      reg_addr[DFmode].reload_load   = CODE_FOR_reload_df_si_load;
+	      reg_addr[DDmode].reload_store  = CODE_FOR_reload_dd_si_store;
+	      reg_addr[DDmode].reload_load   = CODE_FOR_reload_dd_si_load;
 	    }
 	  if (TARGET_P8_VECTOR)
 	    {
-	      rs6000_vector_reload[SFmode][0]  = CODE_FOR_reload_sf_si_store;
-	      rs6000_vector_reload[SFmode][1]  = CODE_FOR_reload_sf_si_load;
-	      rs6000_vector_reload[SDmode][0]  = CODE_FOR_reload_sd_si_store;
-	      rs6000_vector_reload[SDmode][1]  = CODE_FOR_reload_sd_si_load;
+	      reg_addr[SFmode].reload_store  = CODE_FOR_reload_sf_si_store;
+	      reg_addr[SFmode].reload_load   = CODE_FOR_reload_sf_si_load;
+	      reg_addr[SDmode].reload_store  = CODE_FOR_reload_sd_si_store;
+	      reg_addr[SDmode].reload_load   = CODE_FOR_reload_sd_si_load;
 	    }
 	  if (TARGET_VSX_TIMODE)
 	    {
-	      rs6000_vector_reload[TImode][0]  = CODE_FOR_reload_ti_si_store;
-	      rs6000_vector_reload[TImode][1]  = CODE_FOR_reload_ti_si_load;
+	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_si_store;
+	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_si_load;
 	    }
 	}
     }
@@ -14745,7 +14743,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	    {
 	      cost = 3;			/* 2 mtvsrd's, 1 xxpermdi.  */
-	      icode = reload_vsx_gpr[(int)mode];
+	      icode = reg_addr[mode].reload_vsx_gpr;
 	    }
 
 	  /* Handle moving 128-bit values from VSX point registers to GPRs on
@@ -14754,7 +14752,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  else if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	    {
 	      cost = 3;			/* 2 mfvsrd's, 1 xxpermdi.  */
-	      icode = reload_gpr_vsx[(int)mode];
+	      icode = reg_addr[mode].reload_gpr_vsx;
 	    }
 	}
 
@@ -14763,13 +14761,13 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	    {
 	      cost = 3;			/* xscvdpspn, mfvsrd, and.  */
-	      icode = reload_gpr_vsx[(int)mode];
+	      icode = reg_addr[mode].reload_gpr_vsx;
 	    }
 
 	  else if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	    {
 	      cost = 2;			/* mtvsrz, xscvspdpn.  */
-	      icode = reload_vsx_gpr[(int)mode];
+	      icode = reg_addr[mode].reload_vsx_gpr;
 	    }
 	}
     }
@@ -14782,7 +14780,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	{
 	  cost = 3;			/* 2 mtvsrd's, 1 xxpermdi.  */
-	  icode = reload_vsx_gpr[(int)mode];
+	  icode = reg_addr[mode].reload_vsx_gpr;
 	}
 
       /* Handle moving 128-bit values from VSX point registers to GPRs on
@@ -14791,7 +14789,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       else if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	{
 	  cost = 3;			/* 2 mfvsrd's, 1 xxpermdi.  */
-	  icode = reload_gpr_vsx[(int)mode];
+	  icode = reg_addr[mode].reload_gpr_vsx;
 	}
     }
 
@@ -14807,7 +14805,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE && !altivec_p)
 	{
 	  cost = 3;			/* 2 mtvsrwz's, 1 fmrgow.  */
-	  icode = reload_fpr_gpr[(int)mode];
+	  icode = reg_addr[mode].reload_fpr_gpr;
 	}
     }
 
@@ -14890,7 +14888,9 @@ rs6000_secondary_reload (bool in_p,
   bool default_p = false;
 
   sri->icode = CODE_FOR_nothing;
-  icode = rs6000_vector_reload[mode][in_p != false];
+  icode = ((in_p)
+	   ? reg_addr[mode].reload_load
+	   : reg_addr[mode].reload_store);
 
   if (REG_P (x) || register_operand (x, mode))
     {

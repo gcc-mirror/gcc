@@ -1,5 +1,18 @@
 2013-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_vector_reload): Delete, combine
+	reload helper function arrays into a single array reg_addr.
+	(reload_fpr_gpr): Likewise.
+	(reload_gpr_vsx): Likewise.
+	(reload_vsx_gpr): Likewise.
+	(struct rs6000_reg_addr): Likewise.
+	(reg_addr): Likewise.
+	(rs6000_debug_reg_global): Change rs6000_vector_reload,
+	reload_fpr_gpr, reload_gpr_vsx, reload_vsx_gpr uses to reg_addr.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_secondary_reload_direct_move): Likewise.
+	(rs6000_secondary_reload): Likewise.
+
 	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add new
 	constraints: wu, ww, and wy.  Repurpose wv constraint added during
 	power8 changes.  Put wg constraint in alphabetical order.
