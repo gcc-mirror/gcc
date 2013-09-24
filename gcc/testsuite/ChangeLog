@@ -1,3 +1,8 @@
+2013-09-24  Yvan Roux  <yvan.roux@linaro.org>
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Adjust expected
+	output.
+
 2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/58500
