@@ -1,3 +1,9 @@
+2013-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+    * lib/target-supports.exp (check_effective_target_arm_cond_exec):
+    New procedure.
+    * gcc.target/arm/minmax_minus.c: Check for cond_exec target.
+
 2013-09-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58513

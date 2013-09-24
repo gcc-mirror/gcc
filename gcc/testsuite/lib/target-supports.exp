@@ -2599,6 +2599,17 @@ proc check_effective_target_arm_thumb2 { } {
     } ""]
 }
 
+# Return 1 if this is an ARM target where conditional execution is available.
+
+proc check_effective_target_arm_cond_exec { } {
+    return [check_no_compiler_messages arm_cond_exec assembly {
+	#if defined(__arm__) && defined(__thumb__) && !defined(__thumb2__)
+	#error FOO
+	#endif
+	int i;
+    } ""]
+}
+
 # Return 1 if this is an ARM cortex-M profile cpu
 
 proc check_effective_target_arm_cortex_m { } {
