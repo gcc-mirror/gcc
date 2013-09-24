@@ -148,17 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && (this->_M_flags & regex_constants::match_not_null))
 	    __ret = false;
 	  if (__ret)
-	    {
-	      _ResultsVec& __res(this->_M_results);
-	      if (this->_M_re.flags() & regex_constants::nosubs)
-		{
-		  _M_cur_results.resize(3); // truncate
-		  __res.resize(3);
-		}
-	      for (unsigned int __i = 0; __i < _M_cur_results.size(); ++__i)
-		if (_M_cur_results[__i].matched)
-		  __res[__i] = _M_cur_results[__i];
-	    }
+	    this->_M_set_results(_M_cur_results);
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);
@@ -187,18 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (this->_M_match_mode)
 	__ret = _M_includes_some();
       if (__ret)
-	{
-	  _ResultsVec& __res(this->_M_results);
-	  if (this->_M_re.flags() & regex_constants::nosubs)
-	    {
-	      // truncate
-	      _M_cur_results->resize(3);
-	      __res.resize(3);
-	    }
-	  for (unsigned int __i = 0; __i < _M_cur_results->size(); ++__i)
-	    if ((*_M_cur_results)[__i].matched)
-	      __res[__i] = (*_M_cur_results)[__i];
-	}
+	this->_M_set_results(_M_cur_results->_M_get());
       return __ret;
     }
 
@@ -403,10 +382,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
+    void _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
+    _M_set_results(_ResultsVec& __cur_results)
+    {
+      if (_M_re.flags() & regex_constants::nosubs)
+	{
+	  // truncate
+	  __cur_results.resize(3);
+	  _M_results.resize(3);
+	}
+      for (unsigned int __i = 0; __i < __cur_results.size(); ++__i)
+	if (__cur_results[__i].matched)
+	  _M_results[__i] = __cur_results[__i];
+    }
+
+  template<typename _BiIter, typename _Alloc,
+    typename _CharT, typename _TraitsT>
     std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
     __get_executor(_BiIter __b,
 		   _BiIter __e,
-		   match_results<_BiIter, _Alloc>& __m,
+		   std::vector<sub_match<_BiIter>, _Alloc>& __m,
 		   const basic_regex<_CharT, _TraitsT>& __re,
 		   regex_constants::match_flag_type __flags)
     {
