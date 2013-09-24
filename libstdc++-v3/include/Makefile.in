@@ -393,6 +393,7 @@ bits_headers = \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
 	${bits_srcdir}/regex.h \
+	${bits_srcdir}/regex.tcc \
 	${bits_srcdir}/regex_constants.h \
 	${bits_srcdir}/regex_error.h \
 	${bits_srcdir}/regex_scanner.h \

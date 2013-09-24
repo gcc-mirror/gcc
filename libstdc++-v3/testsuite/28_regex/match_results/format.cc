@@ -1,8 +1,9 @@
-// { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 
 //
-// Copyright (C) 2010-2013 Free Software Foundation, Inc.
+// 2013-09-24  Tim Shen <timshen91@gmail.com>
+//
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,27 +20,32 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.3 Requirements [re.req]
-// 28.2 (4) Table 127 - Regular expression traits class requirements
-// 28.7 (8) Class template regex_traits [re.traits]
+// 28.10.5 formatting
+// Tests ECMAScript format()
 
 #include <regex>
 #include <testsuite_hooks.h>
+
+using namespace std;
 
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef wchar_t CharT;
-  typedef std::regex_traits<CharT> traits;
 
-  traits t;
-  CharT name[] = L"tilde";
-  VERIFY(t.lookup_collatename(name, name+sizeof(name)/sizeof(*name)-1) == L"~");
+  cmatch m;
+  VERIFY(regex_search("*** this is a string !!!", m,
+		      regex("(\\w+) (\\w+) (\\w+) (\\w+)")));
+  VERIFY(m.format("$&|$`|$3|$4|$2|$1|$'$$$")
+	 == "this is a string|*** |a|string|is|this| !!!$$");
+  VERIFY(m.format("&|\\3|\\4|\\2|\\1|\\",
+		  regex_constants::format_sed)
+	 == "this is a string|a|string|is|this|\\");
 }
 
-int main()
+int
+main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

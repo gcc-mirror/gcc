@@ -1,3 +1,29 @@
+2013-09-24  Tim Shen  <timshen91@gmail.com>
+
+	* include/Makefile.am: Add regex.tcc.
+	* include/Makefile.in: Regenerate.
+	* include/bits/regex.h: Remove definitions to regex.tcc.
+	* include/bits/regex.tcc: New.
+	(match_results::format, regex_replace): Implement;
+	* include/bits/regex_compiler.h: Move _M_flags to the top of class
+	member list, because other members' initialization depend on it.
+	* include/bits/regex_compiler.tcc
+	(_Compiler<>::_Compiler): Adjust member initializations.
+	(_Compiler<>::_M_quantifier): Fix ungreedy interval quantifier.
+	* include/bits/regex_executor.h: Remove _RegexT from _*Executor classes.
+	In the future, all regex classes may refactor to *Impl style.
+	* include/bits/regex_executor.tcc (_Executor::_M_set_results):
+	Merge identical code from _*Executor classes.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc (fake_match<>): Adjust the hacking-style testcase
+	caller for new __get_executors interface.
+	* testsuite/28_regex/algorithms/regex_replace/char/basic_replace.cc:
+	New.
+	* testsuite/28_regex/match_results/format.cc: New.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc: Remove digraph
+	testcase.
+	* testsuite/28_regex/traits/wchar_t/lookup_collatename.cc: Likewise.
+
 2013-09-23  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	* src/c++11/snprintf_lite.cc (__concat_size_t): Use

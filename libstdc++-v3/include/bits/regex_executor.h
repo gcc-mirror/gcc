@@ -62,7 +62,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef basic_regex<_CharT, _TraitsT>           _RegexT;
-      typedef match_results<_BiIter, _Alloc>          _ResultsT;
       typedef std::vector<sub_match<_BiIter>, _Alloc> _ResultsVec;
       typedef regex_constants::match_flag_type        _FlagT;
       typedef typename _TraitsT::char_class_type      _ClassT;
@@ -70,14 +69,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _Executor(_BiIter         __begin,
 		_BiIter         __end,
-		_ResultsT&      __results,
+		_ResultsVec&    __results,
 		const _RegexT&  __re,
 		_FlagT          __flags)
       : _M_begin(__begin),
       _M_end(__end),
       _M_results(__results),
       _M_re(__re),
-      _M_flags(__flags)
+      _M_flags((__flags & regex_constants::match_prev_avail)
+	       ? (__flags
+		  & ~regex_constants::match_not_bol
+		  & ~regex_constants::match_not_bow)
+	       : __flags)
       { }
 
       // Set matched when string exactly match the pattern.
@@ -145,6 +148,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_lookahead(_State<_CharT, _TraitsT> __state) const;
 
+      void
+      _M_set_results(_ResultsVec& __cur_results);
+
     public:
       virtual void
       _M_init(_BiIter __cur) = 0;
@@ -159,8 +165,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _BiIter   _M_begin;
       const _BiIter   _M_end;
       const _RegexT&  _M_re;
-      _ResultsT&      _M_results;
-      const _FlagT    _M_flags;
+      _ResultsVec&    _M_results;
+      _FlagT          _M_flags;
       bool            _M_match_mode;
     };
 
@@ -186,14 +192,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _NFAT;
       typedef typename _BaseT::_RegexT                     _RegexT;
-      typedef typename _BaseT::_ResultsT                   _ResultsT;
       typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef typename _BaseT::_FlagT                      _FlagT;
 
     public:
       _DFSExecutor(_BiIter         __begin,
 		   _BiIter         __end,
-		   _ResultsT&      __results,
+		   _ResultsVec&    __results,
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
@@ -249,7 +254,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _NFAT;
       typedef typename _BaseT::_RegexT                     _RegexT;
-      typedef typename _BaseT::_ResultsT                   _ResultsT;
       typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef typename _BaseT::_FlagT                      _FlagT;
       // Here's a solution for greedy/ungreedy mode in BFS approach. We need to
@@ -314,7 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_inc(unsigned int __idx, bool __neg)
 	{ _M_quant_keys[__idx] += __neg ? 1 : -1; }
 
-	_ResultsVec
+	_ResultsVec&
 	_M_get()
 	{ return *this; }
 
@@ -326,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _BFSExecutor(_BiIter         __begin,
 		   _BiIter         __end,
-		   _ResultsT&      __results,
+		   _ResultsVec&    __results,
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
@@ -377,7 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
     __get_executor(_BiIter __b,
 		   _BiIter __e,
-		   match_results<_BiIter, _Alloc>& __m,
+		   std::vector<sub_match<_BiIter>, _Alloc>& __m,
 		   const basic_regex<_CharT, _TraitsT>& __re,
 		   regex_constants::match_flag_type __flags);
 

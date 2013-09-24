@@ -120,13 +120,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return ret;
       }
 
+      _FlagT          _M_flags;
       const _TraitsT& _M_traits;
       const _CtypeT&  _M_ctype;
       _ScannerT       _M_scanner;
       _RegexT         _M_nfa;
       _StringT        _M_value;
       _StackT         _M_stack;
-      _FlagT          _M_flags;
     };
 
   template<typename _CharT, typename _TraitsT>
@@ -207,7 +207,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s.data() + __s.size());
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
-	// TODO: digraph
 	_M_char_set.insert(_M_translate(__st[0]));
       }
 
