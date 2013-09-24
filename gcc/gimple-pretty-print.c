@@ -1632,17 +1632,17 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
       value_range_type range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)
-        pp_printf (buffer, "# RANGE  VR_VARYING");
+	pp_printf (buffer, "# RANGE  VR_VARYING");
       else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
-        {
-          pp_printf (buffer, "# RANGE ");
-          pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
-          pp_double_int (buffer, min, TYPE_UNSIGNED (TREE_TYPE (node)));
-          pp_printf (buffer, ", ");
-          pp_double_int (buffer, max, TYPE_UNSIGNED (TREE_TYPE (node)));
-          pp_printf (buffer, "]");
-          newline_and_indent (buffer, spc);
-        }
+	{
+	  pp_printf (buffer, "# RANGE ");
+	  pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
+	  pp_double_int (buffer, min, TYPE_UNSIGNED (TREE_TYPE (node)));
+	  pp_printf (buffer, ", ");
+	  pp_double_int (buffer, max, TYPE_UNSIGNED (TREE_TYPE (node)));
+	  pp_printf (buffer, "]");
+	  newline_and_indent (buffer, spc);
+	}
     }
 }
 
@@ -1661,8 +1661,8 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
     dump_ssaname_info (buffer, lhs, spc);
 
   if (flags & TDF_RAW)
-      dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
-                       gimple_phi_result (phi));
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
+		     gimple_phi_result (phi));
   else
     {
       dump_generic_node (buffer, lhs, spc, flags, false);

@@ -1063,8 +1063,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
       else
-        pp_double_int (buffer, tree_to_double_int (node),
-                       TYPE_UNSIGNED (TREE_TYPE (node)));
+	pp_double_int (buffer, tree_to_double_int (node),
+		       TYPE_UNSIGNED (TREE_TYPE (node)));
       break;
 
     case REAL_CST:
@@ -3191,16 +3191,16 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
       unsigned HOST_WIDE_INT low = d.low;
       HOST_WIDE_INT high = d.high;
       if (!uns && d.is_negative ())
-        {
-          pp_minus (pp);
-          high = ~high + !low;
-          low = -low;
-        }
+	{
+	  pp_minus (pp);
+	  high = ~high + !low;
+	  low = -low;
+	}
       /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
-         systems?  */
+	 systems?  */
       sprintf (pp_buffer (pp)->digit_buffer,
-               HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-               (unsigned HOST_WIDE_INT) high, low);
+	       HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+	       (unsigned HOST_WIDE_INT) high, low);
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
 }

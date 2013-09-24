@@ -206,7 +206,7 @@ get_range_info (tree name, double_int *min, double_int *max)
   /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
      with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
   if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
-              > 2 * HOST_BITS_PER_WIDE_INT))
+	      > 2 * HOST_BITS_PER_WIDE_INT))
     return VR_VARYING;
 
   /* If min > max, it is VR_ANTI_RANGE.  */
@@ -455,14 +455,14 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
       struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
 
       if (old_ptr_info)
-        duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+	duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
     }
   else
     {
       struct range_info_def *old_range_info = SSA_NAME_RANGE_INFO (name);
 
       if (old_range_info)
-        duplicate_ssa_name_range_info (new_name, old_range_info);
+	duplicate_ssa_name_range_info (new_name, old_range_info);
     }
 
   return new_name;
