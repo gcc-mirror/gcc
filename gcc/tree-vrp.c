@@ -9455,7 +9455,8 @@ vrp_finalize (void)
     {
       tree name = ssa_name (i);
 
-      if (POINTER_TYPE_P (TREE_TYPE (name))
+      if (!name
+	  || POINTER_TYPE_P (TREE_TYPE (name))
           || (vr_value[i]->type == VR_VARYING)
           || (vr_value[i]->type == VR_UNDEFINED))
         continue;
