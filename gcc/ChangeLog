@@ -1,3 +1,7 @@
+2013-09-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_finalize): Check for SSA name presence.
+
 2013-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_vector_reload): Delete, combine
