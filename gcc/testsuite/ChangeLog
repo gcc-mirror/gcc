@@ -1,3 +1,8 @@
+2013-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58513
+	* g++.dg/vect/pr58513.cc: New testcase.
+
 2013-09-24  Yvan Roux  <yvan.roux@linaro.org>
 
 	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Adjust expected

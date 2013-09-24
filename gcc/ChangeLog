@@ -1,5 +1,24 @@
 2013-09-24  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/58513
+	* tree.c (reference_alias_ptr_type): Move ...
+	* alias.c (reference_alias_ptr_type): ... here and implement
+	in terms of the new reference_alias_ptr_type_1.
+	(ref_all_alias_ptr_type_p): New helper.
+	(get_deref_alias_set_1): Drop flag_strict_aliasing here,
+	use ref_all_alias_ptr_type_p.
+	(get_deref_alias_set): Add flag_strict_aliasing check here.
+	(reference_alias_ptr_type_1): New function, split out from ...
+	(get_alias_set): ... here.
+	(alias_ptr_types_compatible_p): New function.
+	* alias.h (reference_alias_ptr_type): Declare.
+	(alias_ptr_types_compatible_p): Likewise.
+	* tree.h (reference_alias_ptr_type): Remove.
+	* fold-const.c (operand_equal_p): Use alias_ptr_types_compatible_p
+	to compare MEM_REF alias types.
+
+2013-09-24  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (vrp_finalize): Check for SSA name presence.
 
 2013-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
