@@ -674,7 +674,7 @@ doloop_optimize (struct loop *loop)
       || !wi::fits_shwi_p (iter))
     iterations_max = const0_rtx;
   else
-    iterations_max = GEN_INT (iter.to_shwi ());
+    iterations_max = immed_wide_int_const (iter, mode);
   level = get_loop_level (loop) + 1;
 
   /* Generate looping insn.  If the pattern FAILs then give up trying

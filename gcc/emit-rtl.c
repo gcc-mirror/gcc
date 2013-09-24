@@ -579,8 +579,6 @@ immed_wide_int_const (const wide_int &v, enum machine_mode mode)
   if (len < 2 || prec <= HOST_BITS_PER_WIDE_INT)
     return gen_int_mode (v.elt (0), mode);
 
-  wide_int copy = v;
-  wi::clear_undef (copy, SIGNED);
 #if TARGET_SUPPORTS_WIDE_INT
   {
     unsigned int i;
@@ -599,12 +597,12 @@ immed_wide_int_const (const wide_int &v, enum machine_mode mode)
     CWI_PUT_NUM_ELEM (value, len);
 
     for (i = 0; i < len; i++)
-      CONST_WIDE_INT_ELT (value, i) = copy.elt (i);
+      CONST_WIDE_INT_ELT (value, i) = v.elt (i);
 
     return lookup_const_wide_int (value);
   }
 #else
-  return immed_double_const (copy.elt (0), copy.elt (1), mode);
+  return immed_double_const (v.elt (0), v.elt (1), mode);
 #endif
 }
 

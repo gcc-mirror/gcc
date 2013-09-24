@@ -1112,7 +1112,6 @@ force_fit_type (tree type, const wide_int_ref &cst,
 	  || (overflowable > 0 && sign == SIGNED))
 	{
 	  wide_int tmp = wide_int::from (cst, TYPE_PRECISION (type), sign);
-	  wi::clear_undef (tmp, sign);
 	  int l = tmp.get_len ();
 	  tree t = make_int_cst (l);
 	  if (l > 1)
@@ -1205,11 +1204,11 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
     }
 
   wide_int cst = wide_int::from (pcst, prec, sgn);
-  /* The following call makes sure that all tree-cst's are canonical.
-     i.e. it really does sign or zero extend the top block of the
-     value if the precision of the type is not an even multiple of the
-     size of an HWI.  */
-  wi::clear_undef (cst, sgn);
+  int len = int (cst.get_len ());
+  int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
+  bool recanonize = sgn == UNSIGNED
+    && (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT == len
+    && small_prec;
 
   switch (TREE_CODE (type))
     {
@@ -1291,18 +1290,31 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
       t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
       if (t)
 	{
-	  /* Make sure no one is clobbering the shared constant.  */
+	  /* Make sure no one is clobbering the shared constant.  We
+	     must be careful here because tree-csts and wide-ints are
+	     not canonicalized in the same way.  */
 	  gcc_assert (TREE_TYPE (t) == type);
-	  gcc_assert (TREE_INT_CST_NUNITS (t) == int (cst.get_len ()));
-	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	  gcc_assert (TREE_INT_CST_NUNITS (t) == len);
+	  if (recanonize)
+	    {
+	      len--;
+	      gcc_assert (sext_hwi (TREE_INT_CST_ELT (t, len), small_prec) 
+			  == cst.elt (len));
+	    }
+	  for (i = 0; i < len; i++)
 	    gcc_assert (TREE_INT_CST_ELT (t, i) == cst.elt (i));
 	}
       else
 	{
 	  /* Create a new shared int.  */
 	  t = make_int_cst (cst.get_len ());
-	  TREE_INT_CST_NUNITS (t) = cst.get_len ();
-	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	  TREE_INT_CST_NUNITS (t) = len;
+	  if (recanonize)
+	    {
+	      len--;
+	      TREE_INT_CST_ELT (t, len) = zext_hwi (cst.elt (len), small_prec);
+	    }
+	  for (i = 0; i < len; i++)
 	    TREE_INT_CST_ELT (t, i) = cst.elt (i);
 	  TREE_TYPE (t) = type;
 	  
@@ -1316,7 +1328,10 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	  /* Use the cache of larger shared ints.  */
       void **slot;
 
-      TREE_INT_CST_ELT (int_cst_node, 0) = cst.elt (0);
+      if (recanonize)
+	TREE_INT_CST_ELT (int_cst_node, 0) = zext_hwi (cst.elt (0), small_prec);
+      else
+	TREE_INT_CST_ELT (int_cst_node, 0) = cst.elt (0);
       TREE_TYPE (int_cst_node) = type;
 
       slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
@@ -1336,8 +1351,14 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	 for the gc to take care of.  There will not be enough of them
 	 to worry about.  */
       void **slot;
-      tree nt = make_int_cst (cst.get_len ());
-      for (unsigned int i = 0; i < cst.get_len (); i++)
+      tree nt = make_int_cst (len);
+      TREE_INT_CST_NUNITS (nt) = len;
+      if (recanonize)
+	{
+	  len--;
+	  TREE_INT_CST_ELT (nt, len) = zext_hwi (cst.elt (len), small_prec);
+	}
+      for (int i = 0; i < len; i++)
 	TREE_INT_CST_ELT (nt, i) = cst.elt (i);
       TREE_TYPE (nt) = type;
 
@@ -9560,13 +9581,11 @@ build_common_tree_nodes (bool signed_char, bool short_double)
 #endif
 
   /* Define a boolean type.  This type only represents boolean values but
-     may be larger than char depending on the value of BOOL_TYPE_SIZE.
-     Front ends which want to override this size (i.e. Java) can redefine
-     boolean_type_node before calling build_common_tree_nodes_2.  */
+     may be larger than char depending on the value of BOOL_TYPE_SIZE.  */
   boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
   TYPE_PRECISION (boolean_type_node) = 1;
+  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
 
   /* Define what type to use for size_t.  */
   if (strcmp (SIZE_TYPE, "unsigned int") == 0)

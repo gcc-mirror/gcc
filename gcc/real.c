@@ -2248,7 +2248,6 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
       /* Clear out top bits so elt will work with precisions that aren't
 	 a multiple of HOST_BITS_PER_WIDE_INT.  */
       val = wide_int::from (val, len, sgn);
-      wi::clear_undef (val, sgn);
       len = len / HOST_BITS_PER_WIDE_INT;
 
       SET_REAL_EXP (r, len * HOST_BITS_PER_WIDE_INT + e);

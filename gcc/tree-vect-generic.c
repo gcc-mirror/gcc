@@ -64,7 +64,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
     a[i] = low;
 
   return wide_int_to_tree 
-    (type, wide_int::from_array (a, n, TYPE_PRECISION (type), false));
+    (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
 }
 
 static GTY(()) tree vector_inner_type;

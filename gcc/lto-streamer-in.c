@@ -1272,7 +1272,7 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       for (i = 0; i < len; i++)
 	a[i] = streamer_read_hwi (ib);
       result = wide_int_to_tree (type, wide_int::from_array
-				 (a, len, TYPE_PRECISION (type), false));
+				 (a, len, TYPE_PRECISION (type)));
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
   else if (tag == LTO_tree_scc)

@@ -5172,6 +5172,7 @@ wi::int_traits <const_tree>::get_precision (const_tree tcst)
   return TYPE_PRECISION (TREE_TYPE (tcst));
 }
 
+/* Convert the tree_cst X into a wide_int.  */
 inline wi::storage_ref
 wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
 					unsigned int precision, const_tree x)
@@ -5185,9 +5186,20 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
   if (len > max_len)
     return wi::storage_ref (val, max_len, precision);
 
-  /* Otherwise we can use the constant as-is when not extending.  */
   if (precision <= xprecision)
-    return wi::storage_ref (val, len, precision);
+    {
+      if (precision < HOST_BITS_PER_WIDE_INT 
+	  && TYPE_SIGN (TREE_TYPE (x)) == UNSIGNED)
+	{
+	  /* The rep of wide-int is signed, so if the value comes from
+	     an unsigned int_cst, we have to sign extend it to make it
+	     correct.  */
+	  scratch[0] = sext_hwi (val[0], precision);
+	  return wi::storage_ref (scratch, 1, precision);
+	}
+      /* Otherwise we can use the constant as-is when not extending.  */
+      return wi::storage_ref (val, len, precision);
+    }
 
   /* Widen the constant according to its sign.  */
   len = wi::force_to_size (scratch, val, len, xprecision, precision,
