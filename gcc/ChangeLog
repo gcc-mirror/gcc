@@ -1,5 +1,15 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (CCDEPMODE, DEPDIR, depcomp, COMPILE.base)
+	(COMPILE, POSTCOMPILE): New variables.
+	(.cc.o .c.o): Use COMPILE, POSTCOMPILE.
+	(DEPFILES): New variable.
+	Include ".Po" files.
+	* configure.ac: Add checks for dependency checking.
+	* configure, aclocal.m4: Regenerate.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add lto-wrapper.o.
 	($(ALL_HOST_OBJS)): Move order-only dependency to end
 	of file.
