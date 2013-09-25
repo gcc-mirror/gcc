@@ -2037,15 +2037,9 @@ pass-instances.def: $(srcdir)/passes.def $(srcdir)/gen-pass-instances.awk
 	$(AWK) -f $(srcdir)/gen-pass-instances.awk \
 	  $(srcdir)/passes.def > pass-instances.def
 
-$(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h conditions.h \
-   output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
-   $(TARGET_H) $(LIBFUNCS_H) $(TARGET_DEF_H) $(FUNCTION_H) $(SCHED_INT_H) \
-   $(TM_P_H) $(EXPR_H) langhooks.h $(GGC_H) $(OPTABS_H) $(REAL_H) \
-   tm-constrs.h $(GIMPLE_H) $(DF_H) cselib.h $(COMMON_TARGET_H) hw-doloop.h \
-   regrename.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		$(out_file) $(OUTPUT_OPTION)
+$(out_object_file): $(out_file)
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 $(common_out_object_file): $(common_out_file)
 	$(COMPILE) $<

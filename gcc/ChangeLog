@@ -1,5 +1,9 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in ($(out_object_file)): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (graph.o, sbitmap.o, sparseset.o, gcc-ar.o)
 	(gcc-ranlib.o, gcc-nm.o, collect2.o, collect2-aix.o, tlink.o)
 	(lto-wrapper.o, default-c.o, attribs.o, incpath.o, prefix.o)
