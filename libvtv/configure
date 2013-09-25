@@ -684,6 +684,8 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+ENABLE_VTABLE_VERIFY_FALSE
+ENABLE_VTABLE_VERIFY_TRUE
 LIBSTDCXX_RAW_CXX_LDFLAGS
 LIBSTDCXX_RAW_CXX_CXXFLAGS
 target_noncanonical
@@ -741,6 +743,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_version_specific_runtime_libs
+enable_vtable_verify
 enable_multilib
 enable_maintainer_mode
 enable_dependency_tracking
@@ -1382,6 +1385,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
+  --enable-vtable-verify    Enable vtable verification feature
   --enable-multilib       build many library versions (default)
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
@@ -2506,6 +2510,23 @@ esac
 
 
 
+# Use same top-level configure hooks in libgcc/libstdc++/libvtv.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-vtable-verify" >&5
+$as_echo_n "checking for --enable-vtable-verify... " >&6; }
+# Check whether --enable-vtable-verify was given.
+if test "${enable_vtable_verify+set}" = set; then :
+  enableval=$enable_vtable_verify; case "$enableval" in
+ yes) enable_vtable_verify=yes ;;
+ no)  enable_vtable_verify=no ;;
+ *)   enable_vtable_verify=no;;
+ esac
+else
+  enable_vtable_verify=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_vtable_verify" >&5
+$as_echo "$enable_vtable_verify" >&6; }
+
 # See if supported.
 unset VTV_SUPPORTED
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for host support for vtable verification" >&5
@@ -2517,10 +2538,20 @@ $as_echo "$VTV_SUPPORTED" >&6; }
 # Decide if it's usable.
 use_vtable_verify=no
 if test "x$VTV_SUPPORTED" = "xyes"; then
-  use_vtable_verify=yes
-  { $as_echo "$as_me:${as_lineno-$LINENO}: using vtable verification" >&5
+  if test "x$enable_vtable_verify" = "xyes"; then
+    use_vtable_verify=yes
+    { $as_echo "$as_me:${as_lineno-$LINENO}: using vtable verification" >&5
 $as_echo "$as_me: using vtable verification" >&6;}
+  fi
 fi
+ if test $use_vtable_verify = yes; then
+  ENABLE_VTABLE_VERIFY_TRUE=
+  ENABLE_VTABLE_VERIFY_FALSE='#'
+else
+  ENABLE_VTABLE_VERIFY_TRUE='#'
+  ENABLE_VTABLE_VERIFY_FALSE=
+fi
+
 
 am__api_version='1.11'
 
@@ -15475,7 +15506,7 @@ ac_config_files="$ac_config_files Makefile"
 
 
 if test "x$VTV_SUPPORTED" = "xyes"; then
-  ac_config_files="$ac_config_files ./Makefile testsuite/Makefile"
+  ac_config_files="$ac_config_files testsuite/Makefile"
 
 fi
 
@@ -15612,6 +15643,10 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
+if test -z "${ENABLE_VTABLE_VERIFY_TRUE}" && test -z "${ENABLE_VTABLE_VERIFY_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_VTABLE_VERIFY\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
  if test -n "$EXEEXT"; then
   am__EXEEXT_TRUE=
   am__EXEEXT_FALSE='#'
@@ -16593,7 +16628,6 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "./Makefile") CONFIG_FILES="$CONFIG_FILES ./Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -17925,17 +17959,6 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 # ### END LIBTOOL TAG CONFIG: CXX
 _LT_EOF
 
- ;;
-    "./Makefile":F) cat > vpsed$$ << \_EOF
-s!`test -f '$<' || echo '$(srcdir)/'`!!
-_EOF
-    sed -f vpsed$$ $ac_file > tmp$$
-    mv tmp$$ $ac_file
-    rm vpsed$$
-    echo 'MULTISUBDIR =' >> $ac_file
-    ml_norecursion=yes
-    . ${multi_basedir}/config-ml.in
-    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "testsuite/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!

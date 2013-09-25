@@ -1,3 +1,14 @@
+2013-09-25 Caroline Tice  <cmtice@google.com>
+
+	* Makefile.am: Reinstate ENABLE_VTABLE_VERIFY checks, to make
+	sure testsuite is not run if libstdc++ and libgcc were not built
+	with vtable verification.
+	* Makefile.in: Regenerated.
+	* configure.ac: Reinstate checks for --enable-vtable-verify flag,
+	to make sure testsuite is not run if libstdc++ and libgcc were not
+	built with vtable verification.
+	* configure: Regenerated.
+
 2013-09-24  Caroline Tice  <cmtice@google.com>
 
 	* Makefile.am:  Change libvtv_includedir to the directory used by
