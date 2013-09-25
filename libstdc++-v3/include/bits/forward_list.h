@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     _Fwd_list_node_base*
     _M_transfer_after(_Fwd_list_node_base* __begin,
-		      _Fwd_list_node_base* __end)
+		      _Fwd_list_node_base* __end) noexcept
     {
       _Fwd_list_node_base* __keep = __begin->_M_next;
       if (__end)
@@ -128,30 +128,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef ptrdiff_t                          difference_type;
       typedef std::forward_iterator_tag          iterator_category;
 
-      _Fwd_list_iterator()
+      _Fwd_list_iterator() noexcept
       : _M_node() { }
 
       explicit
-      _Fwd_list_iterator(_Fwd_list_node_base* __n) 
+      _Fwd_list_iterator(_Fwd_list_node_base* __n) noexcept
       : _M_node(__n) { }
 
       reference
-      operator*() const
+      operator*() const noexcept
       { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       pointer
-      operator->() const
+      operator->() const noexcept
       { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       _Self&
-      operator++()
+      operator++() noexcept
       {
         _M_node = _M_node->_M_next;
         return *this;
       }
 
       _Self
-      operator++(int)
+      operator++(int) noexcept
       {
         _Self __tmp(*this);
         _M_node = _M_node->_M_next;
@@ -159,15 +159,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       bool
-      operator==(const _Self& __x) const
+      operator==(const _Self& __x) const noexcept
       { return _M_node == __x._M_node; }
 
       bool
-      operator!=(const _Self& __x) const
+      operator!=(const _Self& __x) const noexcept
       { return _M_node != __x._M_node; }
 
       _Self
-      _M_next() const
+      _M_next() const noexcept
       {
         if (_M_node)
           return _Fwd_list_iterator(_M_node->_M_next);
@@ -196,33 +196,33 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef ptrdiff_t                          difference_type;
       typedef std::forward_iterator_tag          iterator_category;
 
-      _Fwd_list_const_iterator()
+      _Fwd_list_const_iterator() noexcept
       : _M_node() { }
 
       explicit
-      _Fwd_list_const_iterator(const _Fwd_list_node_base* __n) 
+      _Fwd_list_const_iterator(const _Fwd_list_node_base* __n)  noexcept
       : _M_node(__n) { }
 
-      _Fwd_list_const_iterator(const iterator& __iter)
+      _Fwd_list_const_iterator(const iterator& __iter) noexcept
       : _M_node(__iter._M_node) { }
 
       reference
-      operator*() const
+      operator*() const noexcept
       { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       pointer
-      operator->() const
+      operator->() const noexcept
       { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       _Self&
-      operator++()
+      operator++() noexcept
       {
         _M_node = _M_node->_M_next;
         return *this;
       }
 
       _Self
-      operator++(int)
+      operator++(int) noexcept
       {
         _Self __tmp(*this);
         _M_node = _M_node->_M_next;
@@ -230,15 +230,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       bool
-      operator==(const _Self& __x) const
+      operator==(const _Self& __x) const noexcept
       { return _M_node == __x._M_node; }
 
       bool
-      operator!=(const _Self& __x) const
+      operator!=(const _Self& __x) const noexcept
       { return _M_node != __x._M_node; }
 
       _Self
-      _M_next() const
+      _M_next() const noexcept
       {
         if (this->_M_node)
           return _Fwd_list_const_iterator(_M_node->_M_next);
@@ -255,7 +255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     inline bool
     operator==(const _Fwd_list_iterator<_Tp>& __x,
-               const _Fwd_list_const_iterator<_Tp>& __y)
+               const _Fwd_list_const_iterator<_Tp>& __y) noexcept
     { return __x._M_node == __y._M_node; }
 
   /**
@@ -264,7 +264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     inline bool
     operator!=(const _Fwd_list_iterator<_Tp>& __x,
-               const _Fwd_list_const_iterator<_Tp>& __y)
+               const _Fwd_list_const_iterator<_Tp>& __y) noexcept
     { return __x._M_node != __y._M_node; }
 
   /**

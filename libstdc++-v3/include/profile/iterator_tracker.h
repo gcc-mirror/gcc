@@ -56,13 +56,14 @@ namespace __profile
       typedef typename _Traits::reference         reference;
       typedef typename _Traits::pointer           pointer;
 
-      __iterator_tracker()
+      __iterator_tracker() _GLIBCXX_NOEXCEPT
       : _M_current(), _M_ds(0) { }
 
-      __iterator_tracker(const _Iterator& __i, const _Sequence* __seq) 
+      __iterator_tracker(const _Iterator& __i, const _Sequence* __seq)
+      _GLIBCXX_NOEXCEPT
       : _M_current(__i), _M_ds(__seq) { }
 
-      __iterator_tracker(const __iterator_tracker& __x) 
+      __iterator_tracker(const __iterator_tracker& __x) _GLIBCXX_NOEXCEPT
       : _M_current(__x._M_current), _M_ds(__x._M_ds) { }
 
       template<typename _MutableIterator>
@@ -70,23 +71,23 @@ namespace __profile
 			   typename __gnu_cxx::__enable_if
 			   <(std::__are_same<_MutableIterator, typename
 			     _Sequence::iterator::_Base_iterator>::__value),
-			   _Sequence>::__type>& __x)
+			   _Sequence>::__type>& __x) _GLIBCXX_NOEXCEPT
 	:  _M_current(__x.base()), _M_ds(__x._M_get_sequence()) { }
 
       _Iterator
-      base() const { return _M_current; }
+      base() const _GLIBCXX_NOEXCEPT { return _M_current; }
   
       /**
        * @brief Conversion to underlying non-debug iterator to allow
        * better interaction with non-profile containers.
        */
-      operator _Iterator() const { return _M_current; }
+      operator _Iterator() const _GLIBCXX_NOEXCEPT { return _M_current; }
 
       pointer
-      operator->() const { return &*_M_current; }
+      operator->() const _GLIBCXX_NOEXCEPT { return &*_M_current; }
 
       __iterator_tracker&
-      operator++()
+      operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_ds->_M_profile_iterate();
 	++_M_current;
@@ -94,7 +95,7 @@ namespace __profile
       }
 
       __iterator_tracker
-      operator++(int)
+      operator++(int) _GLIBCXX_NOEXCEPT
       {
 	_M_ds->_M_profile_iterate();
 	__iterator_tracker __tmp(*this);
@@ -103,7 +104,7 @@ namespace __profile
       }
 
       __iterator_tracker&
-      operator--()
+      operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_ds->_M_profile_iterate(1);
 	--_M_current;
@@ -111,7 +112,7 @@ namespace __profile
       }
 
       __iterator_tracker
-      operator--(int)
+      operator--(int) _GLIBCXX_NOEXCEPT
       {
 	_M_ds->_M_profile_iterate(1);
 	__iterator_tracker __tmp(*this);
@@ -120,30 +121,30 @@ namespace __profile
       }
 
       __iterator_tracker&
-      operator=(const __iterator_tracker& __x)
+      operator=(const __iterator_tracker& __x) _GLIBCXX_NOEXCEPT
       {
 	_M_current = __x._M_current;
 	return *this;
       }
 
       reference
-      operator*() const
+      operator*() const _GLIBCXX_NOEXCEPT
       { return *_M_current; }
 
       // ------ Random access iterator requirements ------
       reference
-      operator[](const difference_type& __n) const 
+      operator[](const difference_type& __n) const  _GLIBCXX_NOEXCEPT
       { return _M_current[__n]; }
 
       __iterator_tracker&
-      operator+=(const difference_type& __n)
+      operator+=(const difference_type& __n) _GLIBCXX_NOEXCEPT
       {
 	_M_current += __n;
 	return *this;
       }
 
       __iterator_tracker
-      operator+(const difference_type& __n) const
+      operator+(const difference_type& __n) const _GLIBCXX_NOEXCEPT
       {
 	__iterator_tracker __tmp(*this);
 	__tmp += __n;
@@ -151,14 +152,14 @@ namespace __profile
       }
 
       __iterator_tracker&
-      operator-=(const difference_type& __n)
+      operator-=(const difference_type& __n) _GLIBCXX_NOEXCEPT
       {
 	_M_current += -__n;
 	return *this;
       }
 
       __iterator_tracker
-      operator-(const difference_type& __n) const
+      operator-(const difference_type& __n) const _GLIBCXX_NOEXCEPT
       {
 	__iterator_tracker __tmp(*this);
 	__tmp -= __n;
@@ -178,72 +179,84 @@ namespace __profile
     inline bool
     operator==(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	       const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator==(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	       const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator!=(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	       const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() != __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator!=(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
                const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() != __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator<(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	      const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator<(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	      const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator<=(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	       const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator<=(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	       const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator>(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	      const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator>(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	      const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator>=(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	       const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() >= __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator>=(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	       const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() >= __rhs.base(); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -254,12 +267,14 @@ namespace __profile
     inline typename __iterator_tracker<_IteratorL, _Sequence>::difference_type
     operator-(const __iterator_tracker<_IteratorL, _Sequence>& __lhs,
 	      const __iterator_tracker<_IteratorR, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
     inline typename __iterator_tracker<_Iterator, _Sequence>::difference_type
     operator-(const __iterator_tracker<_Iterator, _Sequence>& __lhs,
 	      const __iterator_tracker<_Iterator, _Sequence>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Sequence>
@@ -267,6 +282,7 @@ namespace __profile
     operator+(typename __iterator_tracker<_Iterator,_Sequence>::difference_type
 	      __n,
 	      const __iterator_tracker<_Iterator, _Sequence>& __i)
+    _GLIBCXX_NOEXCEPT
     { return __i + __n; }
 	
 }  // namespace __profile
