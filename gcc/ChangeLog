@@ -1,4 +1,8 @@
 2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
+
+	* lra.c (update_inc_notes): Remove all REG_DEAD and REG_UNUSED notes.
+
+2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtlanal.c (lsb_bitfield_op_p): New predicate for bitfield operations
