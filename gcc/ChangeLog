@@ -1,3 +1,9 @@
+2013-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58420
+	* ubsan.c (ubsan_type_descriptor): Handle IDENTIFIER_NODEs
+	when determining the type name.
+
 2013-09-24  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md: Fix formatting.
