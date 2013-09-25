@@ -446,16 +446,12 @@ STRIP_FOR_TARGET := $(shell \
 HASHTAB_H   = $(srcdir)/../include/hashtab.h
 OBSTACK_H   = $(srcdir)/../include/obstack.h
 SPLAY_TREE_H= $(srcdir)/../include/splay-tree.h
-FIBHEAP_H   = $(srcdir)/../include/fibheap.h
-PARTITION_H = $(srcdir)/../include/partition.h
 MD5_H	    = $(srcdir)/../include/md5.h
-DWARF2_H    = $(srcdir)/../include/dwarf2.h $(srcdir)/../include/dwarf2.def
 XREGEX_H    = $(srcdir)/../include/xregex.h
 FNMATCH_H   = $(srcdir)/../include/fnmatch.h
 
 # Linker plugin API headers
 LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
-LTO_SYMTAB_H = $(srcdir)/../include/lto-symtab.h
 
 # Default native SYSTEM_HEADER_DIR, to be overridden by targets.
 NATIVE_SYSTEM_HEADER_DIR = @NATIVE_SYSTEM_HEADER_DIR@
@@ -864,14 +860,11 @@ LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h target-hooks-def.h $(HOOKS_H) targhooks.h
 C_TARGET_DEF_H = c-family/c-target-def.h c-family/c-target-hooks-def.h \
   $(TREE_H) $(C_COMMON_H) $(HOOKS_H) common/common-targhooks.h
-COMMON_TARGET_DEF_H = common/common-target-def.h \
-  common/common-target-hooks-def.h $(HOOKS_H)
 RTL_BASE_H = coretypes.h rtl.h rtl.def $(MACHMODE_H) reg-notes.def \
   insn-notes.def $(INPUT_H) $(REAL_H) statistics.h $(VEC_H) \
   $(FIXED_VALUE_H) alias.h $(HASHTAB_H)
 FIXED_VALUE_H = fixed-value.h $(MACHMODE_H) double-int.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
-RTL_ERROR_H = rtl-error.h $(RTL_H) $(DIAGNOSTIC_CORE_H)
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
@@ -891,12 +884,8 @@ BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H)
-TRANS_MEM_H = trans-mem.h
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
-COVERAGE_H = coverage.h $(GCOV_IO_H)
-DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
-ALIAS_H = alias.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
 OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
@@ -905,11 +894,6 @@ FUNCTION_H = function.h $(HASHTAB_H) $(TM_H) hard-reg-set.h \
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h insn-opinit.h
 REGS_H = regs.h $(MACHMODE_H) hard-reg-set.h
-SCHED_INT_H = sched-int.h $(INSN_ATTR_H) $(BASIC_BLOCK_H) $(RTL_H) $(DF_H) \
-	$(REGSET_H)
-SEL_SCHED_IR_H = sel-sched-ir.h $(INSN_ATTR_H) $(BASIC_BLOCK_H) $(RTL_H) \
-	$(GGC_H) $(BITMAP_H) $(SCHED_INT_H) $(CFGLOOP_H) $(REGSET_H)
-SEL_SCHED_DUMP_H = sel-sched-dump.h $(SEL_SCHED_IR_H)
 CFGLOOP_H = cfgloop.h $(BASIC_BLOCK_H) double-int.h \
 	$(BITMAP_H) sbitmap.h
 IPA_UTILS_H = ipa-utils.h $(TREE_H) $(CGRAPH_H)
@@ -918,13 +902,9 @@ CGRAPH_H = cgraph.h $(VEC_H) $(TREE_H) $(BASIC_BLOCK_H) $(FUNCTION_H) \
 	cif-code.def ipa-ref.h ipa-ref-inline.h $(LINKER_PLUGIN_API_H) is-a.h
 DF_H = df.h $(BITMAP_H) $(REGSET_H) sbitmap.h $(BASIC_BLOCK_H) \
 	alloc-pool.h $(TIMEVAR_H)
-VALTRACK_H = valtrack.h $(BITMAP_H) $(DF_H) $(RTL_H) $(BASIC_BLOCK_H) \
-	$(HASH_TABLE_H)
 RESOURCE_H = resource.h hard-reg-set.h $(DF_H)
-DDG_H = ddg.h sbitmap.h $(DF_H)
 GCC_H = gcc.h version.h $(DIAGNOSTIC_CORE_H)
 GGC_H = ggc.h gtype-desc.h statistics.h
-GGC_INTERNAL_H = ggc-internal.h $(GGC_H)
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h insn-attr-common.h $(INSN_ADDR_H)
 INSN_ADDR_H = $(srcdir)/insn-addr.h
@@ -939,11 +919,6 @@ CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
 OPTS_H = $(INPUT_H) $(VEC_H) opts.h $(OBSTACK_H)
-DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
-	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
-	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h
-BACKTRACE_H = $(BACKTRACE)/backtrace.h
-MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h $(OBSTACK_H)
 CPP_ID_DATA_H = $(CPPLIB_H) $(srcdir)/../libcpp/include/cpp-id-data.h
 CPP_INTERNAL_H = $(srcdir)/../libcpp/internal.h $(CPP_ID_DATA_H)
@@ -954,49 +929,25 @@ TREE_FLOW_H = tree-flow.h tree-flow-inline.h tree-ssa-operands.h \
 		$(HASHTAB_H) $(CGRAPH_H) $(IPA_REFERENCE_H) \
 		tree-ssa-alias.h
 TREE_SSA_H = tree-ssa.h $(TREE_FLOW_H)
-TREE_HASHER_H = tree-hasher.h $(HASH_TABLE_H) $(TREE_FLOW_H)
-TREE_SSA_LIVE_H = tree-ssa-live.h $(PARTITION_H)
-SSAEXPAND_H = ssaexpand.h $(TREE_SSA_LIVE_H)
 PRETTY_PRINT_H = pretty-print.h $(INPUT_H) $(OBSTACK_H)
 TREE_PRETTY_PRINT_H = tree-pretty-print.h $(PRETTY_PRINT_H)
 GIMPLE_PRETTY_PRINT_H = gimple-pretty-print.h $(TREE_PRETTY_PRINT_H)
 DIAGNOSTIC_CORE_H = diagnostic-core.h $(INPUT_H) bversion.h diagnostic.def
 DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
-DWARF2OUT_H = dwarf2out.h $(DWARF2_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(TREE_H)
-SCEV_H = tree-scalar-evolution.h $(GGC_H) tree-chrec.h $(PARAMS_H)
-OMEGA_H = omega.h $(PARAMS_H)
-TREE_DATA_REF_H = tree-data-ref.h $(OMEGA_H) graphds.h $(SCEV_H)
 TREE_INLINE_H = tree-inline.h
 REAL_H = real.h $(MACHMODE_H)
-IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
-LRA_INT_H = lra.h $(BITMAP_H) $(RECOG_H) $(INSN_ATTR_H) insn-codes.h \
-   insn-config.h $(REGS_H) lra-int.h
-DBGCNT_H = dbgcnt.h dbgcnt.def
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) $(HASH_TABLE_H) $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h pointer-set.h
-DATA_STREAMER_H = data-streamer.h $(VEC_H) $(LTO_STREAMER_H)
-GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
-		    $(FUNCTION_H)
-TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H) \
-		  $(STREAMER_HOOKS_H)
-STREAMER_HOOKS_H = streamer-hooks.h $(TREE_H)
-TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H) $(TARGET_H) \
-	$(HASH_TABLE_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
-IPA_INLINE_H = ipa-inline.h $(IPA_PROP_H)
-GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
 		$(CONFIG_H) $(SYSTEM_H) $(HASHTAB_H)
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
-LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
-GRAPHITE_HTAB_H = graphite-htab.h graphite-clast-to-gimple.h $(HASH_TABLE_H)
 CONTEXT_H = context.h
-PASS_MANAGER_H = pass_manager.h pass-instances.def
 
 #
 # Now figure out from those variables how to compile and link.
