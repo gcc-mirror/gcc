@@ -55,16 +55,13 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 # Tell GNU make to ignore these if they exist.
 .PHONY: java
 
-jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h $(OPTS_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION)
+CFLAGS-java/jvspec.o += $(DRIVER_DEFINES)
 
 # Create the compiler driver for $(XGCJ).
-$(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o \
+$(XGCJ)$(exeext): $(GCC_OBJS) java/jvspec.o java/jcf-path.o \
 	   libcommon-target.a $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  jvspec.o java/jcf-path.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  java/jvspec.o java/jcf-path.o $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Create a version of the $(XGCJ) driver which calls the cross-compiler.
@@ -88,13 +85,13 @@ JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o
 
-java_OBJS = $(sort $(JAVA_OBJS) $(JCFDUMP_OBJS) $(JVGENMAIN_OBJS)) jvspec.o
+java_OBJS = $(sort $(JAVA_OBJS) $(JCFDUMP_OBJS) $(JVGENMAIN_OBJS)) java/jvspec.o
 
 # Use strict warnings for this front end.
 java-warn = $(STRICT_WARN)
 
 # String length warnings
-jvspec.o-warn = -Wno-error
+java/jvspec.o-warn = -Wno-error
 
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
 	rm -f $@
@@ -262,76 +259,14 @@ java.stagefeedback: stageprofile-start
 	-mv java/*$(objext) stagefeedback/java
 
 #
-# .o:.h dependencies.
-JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h
-
-java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(JAVA_TREE_H) \
-  java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
-  version.h $(GGC_H) intl.h java/zipfile.h $(DIAGNOSTIC_H)
-java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(TREE_H) $(JAVA_TREE_H) java/parse.h
-java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) $(OPTABS_H) $(EXPR_H) langhooks.h \
-  gt-java-builtins.h
-java/class.o: java/class.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(JAVA_TREE_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
-  $(FUNCTION_H) gt-java-class.h
-java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-constants.h
-java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  toplev.h $(FLAGS_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
-  $(TARGET_H) $(CGRAPH_H) langhooks.h
-java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
-  java/javaop.h java/java-opcodes.h java/java-except.h \
-  toplev.h $(SYSTEM_H) coretypes.h
-java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
-  java/javaop.h java/java-opcodes.h \
-  java/java-except.h java/java-except.h java/parse.h \
-  $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h $(TARGET_H) \
-  tree-iterator.h
-java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  java/jcf.h
-java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
-  input.h java/java-except.h $(SYSTEM_H) coretypes.h \
-  java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h \
-  java/jcf-reader.c java/zipfile.h java/jcf.h $(BITMAP_H)
-java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) intl.h $(DIAGNOSTIC_H)
-java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
-  $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_H) \
-  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h $(OPTS_H) $(OPTIONS_H) \
-  $(TARGET_H)
-java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
-java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
-  $(SYSTEM_H) coretypes.h $(GGC_H)
-java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(JAVA_TREE_H) java/jcf.h java/parse.h toplev.h $(GGC_H) \
-  $(TARGET_H) $(FUNCTION_H) gt-java-resource.h
-java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  $(SYSTEM_H) coretypes.h $(GGC_H) $(REAL_H)
-java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) coretypes.h java/jcf.h
-java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
-  coretypes.h java/verify.h
-java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
-  coretypes.h  java/jcf.h $(JAVA_TREE_H)
-java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  java/zipfile.h
-java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h dumpfile.h $(JAVA_TREE_H) $(GIMPLE_H)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 CFLAGS-java/jcf-io.o += $(ZLIBINC)
-java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(JAVA_TREE_H) java/zipfile.h $(HASH_TABLE_H)
 
 # jcf-path.o needs a -D.
 CFLAGS-java/jcf-path.o += \
 	-DLIBGCJ_ZIP_FILE='"$(datadir)/java/libgcj-$(version).jar"' \
 	-DDEFAULT_TARGET_VERSION=\"$(version)\"
-java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  java/jcf.h
 
 TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
 	 $(gcc_docdir)/include/gpl_v3.texi $(gcc_docdir)/include/gcc-common.texi   \

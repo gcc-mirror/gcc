@@ -1,5 +1,19 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (jvspec.o): Remove.
+	(CFLAGS-java/jvspec.o): New variable.
+	($(XGCJ)$(exeext), java_OBJS): Use java/jvspec.o
+	(java/jvspec.o-warn): Rename from jvspec.o-warn.
+	(JAVA_TREE_H, java/jcf-dump.o, java/boehm.o, java/builtins.o)
+	(java/class.o, java/constants.o, java/decl.o, java/except.o)
+	(java/expr.o, java/jcf-depend.o, java/jcf-parse.o)
+	(java/jvgenmain.o, java/lang.o, java/mangle.o, java/mangle_name.o)
+	(java/resource.o java/typeck.o, java/win32-host.o)
+	(java/verify-glue.o, java/verify-impl.o, java/zextract.o)
+	(java/java-gimplify.o, java/jcf-io.o, java/jcf-path.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (jvspec.o): Don't use subshell.
 
 2013-06-05  Jan Hubicka  <jh@suse.cz>
