@@ -46,10 +46,9 @@ c: cc1$(exeext)
 # is to cc1 as e.g. g++ is to cc1plus, or gfortran is to f951).
 c/gccspec.o: c/gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
     $(OPTS_H)
-	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
-  -c $(srcdir)/c/gccspec.c $(OUTPUT_OPTION))
+  -c $(srcdir)/c/gccspec.c $(OUTPUT_OPTION)
 
 # The C compiler itself.
 

@@ -2089,16 +2089,15 @@ DRIVER_DEFINES = \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
-  `test "X$${SHLIB}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
+  $(and $(SHLIB),$(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC) \
   -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
     configargs.h $(OBSTACK_H) $(OPTS_H) $(DIAGNOSTIC_H) $(VEC_H) $(PARAMS_H)
-	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
-  -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
+  -c $(srcdir)/gcc.c $(OUTPUT_OPTION)
 
 specs.h : s-specs ; @true
 s-specs : Makefile

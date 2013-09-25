@@ -1,3 +1,7 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (gospec.o): Don't use subshell.
+
 2013-08-28  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::immutable_struct): Set TREE_PUBLIC if

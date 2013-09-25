@@ -57,9 +57,8 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 
 jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h $(OPTS_H)
-	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
+		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION)
 
 # Create the compiler driver for $(XGCJ).
 $(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o \
