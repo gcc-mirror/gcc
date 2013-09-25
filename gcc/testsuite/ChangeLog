@@ -1,5 +1,10 @@
 2013-09-25  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/58436
+	* gfortran.dg/finalize_21.f90: New.
+
+2013-09-25  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57697
 	PR fortran/58469
 	* gfortran.dg/defined_assignment_8.f90: New.
