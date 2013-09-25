@@ -1,3 +1,10 @@
+2013-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	PR fortran/58469
+	* resolve.c (generate_component_assignments): Avoid double free
+	at runtime and freeing a still-being used expr.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (fortran_OBJS): Use fortran/gfortranspec.o.
