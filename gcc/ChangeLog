@@ -1,5 +1,16 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (c-family/cppspec.o, c-family/c-common.o)
+	(c-family/c-cppbuiltin.o, c-family/c-dump.o, c-family/c-format.o)
+	(c-family/c-gimplify.o, c-family/c-lex.o, c-family/c-omp.o)
+	(c-family/c-opts.o, c-family/c-pch.o, c-family/c-ppoutput.o)
+	(c-family/c-pragma.o, c-family/c-pretty-print.o)
+	(c-family/c-semantics.o, c-family/c-ada-spec.o)
+	(c-family/array-notation-common.o, c-family/stub-objc.o)
+	(c-family/c-ubsan.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (C_TREE_H): Reference c/c-tree.h.
 
 2013-09-25  Tom Tromey  <tromey@redhat.com>

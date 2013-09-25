@@ -1972,92 +1972,12 @@ lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h \
 	$(OBSTACK_H) $(DIAGNOSTIC_H) $(OPTS_H) $(OPTIONS_H)
 
 # Files used by all variants of C or by the stand-alone pre-processor.
-c-family/cppspec.o: c-family/cppspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-    $(TM_H) $(GCC_H) $(OPTS_H)
-
-c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) \
-	$(OBSTACK_H) $(C_COMMON_H) $(FLAGS_H) toplev.h output.h $(C_PRAGMA_H) \
-	$(GGC_H) builtin-types.def builtin-attrs.def \
-	$(DIAGNOSTIC_H) langhooks.h c-family/c-objc.h \
-	$(TARGET_H) tree-iterator.h langhooks.h tree-mudflap.h \
-	intl.h $(OPTS_H) $(CPPLIB_H) $(TREE_INLINE_H) $(HASHTAB_H) \
-	$(BUILTINS_DEF) $(CGRAPH_H) $(TARGET_DEF_H) \
-	gt-c-family-c-common.h $(COMMON_TARGET_H)
-
-c-family/c-cppbuiltin.o : c-family/c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TM_H) $(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) \
-	$(FLAGS_H) output.h $(TREE_H) $(TARGET_H) $(COMMON_TARGET_H) \
-	$(TM_P_H) debug.h $(CPP_ID_DATA_H) cppbuiltin.h
-
-c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) $(TREE_DUMP_H)
-
-c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
-	$(C_COMMON_H) $(FLAGS_H) intl.h $(C_TARGET_H) \
-	$(DIAGNOSTIC_CORE_H) alloc-pool.h c-family/c-objc.h
-
-c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
-	$(C_COMMON_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) \
-	$(FLAGS_H) langhooks.h $(LANGHOOKS_DEF_H) \
-	$(TM_H) coretypes.h $(C_PRETTY_PRINT_H) $(CGRAPH_H) \
-	$(DUMPFILE_H) $(TREE_INLINE_H)
-
-c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) $(FIXED_VALUE_H) debug.h $(C_COMMON_H) $(SPLAY_TREE_H) \
-	$(C_PRAGMA_H) $(INPUT_H) intl.h $(FLAGS_H) \
-	$(CPPLIB_H) $(TARGET_H) $(TIMEVAR_H)
-
-c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) $(C_COMMON_H) $(GIMPLE_H) langhooks.h
 
 CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
-c-family/c-opts.o : c-family/c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-        $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h \
-        $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H) $(C_TARGET_H) \
-        $(OPTS_H) $(OPTIONS_H) $(MKDEPS_H) incpath.h cppdefault.h
 
 CFLAGS-c-family/c-pch.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
-c-family/c-pch.o : c-family/c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(CPPLIB_H) $(TREE_H) $(C_COMMON_H) output.h $(C_PRAGMA_H) \
-	$(GGC_H) debug.h langhooks.h $(FLAGS_H) hosthooks.h version.h \
-	$(TARGET_H) $(OPTS_H) $(TIMEVAR_H)
 
-c-family/c-ppoutput.o : c-family/c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) $(CPP_INTERNAL_H) \
-	$(C_PRAGMA_H)
-
-c-family/c-pragma.o: c-family/c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) $(FUNCTION_H) $(C_PRAGMA_H) output.h \
-	$(TM_P_H) $(C_COMMON_H) $(TARGET_H) $(CPPLIB_H) $(FLAGS_H) \
-	$(DIAGNOSTIC_H) $(OPTS_H) $(PLUGINS_H) \
-	gt-c-family-c-pragma.h
-
-c-family/c-pretty-print.o : c-family/c-pretty-print.c $(C_PRETTY_PRINT_H) \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(DIAGNOSTIC_H) tree-iterator.h intl.h $(TREE_PRETTY_PRINT_H)
-
-c-family/c-semantics.o : c-family/c-semantics.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TM_H) $(TREE_H) $(FLAGS_H) \
-	$(C_COMMON_H) $(FUNCTION_H) langhooks.h $(SPLAY_TREE_H) $(TIMEVAR_H) \
-	tree-iterator.h
-
-c-family/c-ada-spec.o : c-family/c-ada-spec.c c-family/c-ada-spec.h \
-	$(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPP_ID_DATA_H) $(TM_H) \
-	coretypes.h tree-iterator.h $(DUMPFILE_H)
-
-c-family/array-notation-common.o : c-family/array-notation-common.c $(TREE_H) \
-	$(SYSTEM_H) $(TREE_H) coretypes.h tree-iterator.h $(DIAGNOSTIC_CORE_H)
-
-c-family/stub-objc.o : c-family/stub-objc.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-objc.h
-
-c-family/c-ubsan.o : c-family/c-ubsan.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-ubsan.h \
-	alloc-pool.h $(CGRAPH_H) $(GIMPLE_H) $(HASH_TABLE_H) output.h \
-	toplev.h ubsan.h
 default-c.o: config/default-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(C_TARGET_H) $(C_TARGET_DEF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
