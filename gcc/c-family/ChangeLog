@@ -1,3 +1,12 @@
+2013-09-25  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/58413
+	* c-ubsan.c (ubsan_instrument_shift): Don't instrument
+	an expression if we can prove it is correct.
+	(ubsan_instrument_division): Likewise.  Remove unnecessary
+	check.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58411
