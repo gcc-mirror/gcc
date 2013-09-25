@@ -1,5 +1,19 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (g++spec.o): Remove.
+	(CFLAGS-cp/g++spec.o): New variable.
+	(GXX_OBJS): Reference cp/g++spec.o.
+	(cc1plus-checksum.o, cp/lex.o, cp/cp-array-notation.o)
+	(cp/cp-lang.o, cp/decl.o, cp/decl2.o, cp/cp-objcp-common.o)
+	(cp/typeck2.o, cp/typeck.o, cp/class.o, cp/call.o)
+	(cp/friend.o, cp/init.o, cp/method.o, cp/cvt.o, cp/search.o)
+	(cp/tree.o, cp/ptree.o, cp/rtti.o, cp/except.o, cp/expr.o)
+	(cp/pt.o, cp/error.o, cp/repo.o, cp/semantics.o, cp/dump.o)
+	(cp/optimize.o, cp/mangle.o, cp/parser.o, cp/cp-gimplify.o)
+	(cp/name-lookup.o, cp/cxx-pretty-print.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (g++spec.o): Don't use subshell.
 
 2013-09-25  Marek Polacek  <polacek@redhat.com>
