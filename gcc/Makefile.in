@@ -313,9 +313,10 @@ CCDEPMODE = @CCDEPMODE@
 DEPDIR = @DEPDIR@
 depcomp = $(SHELL) $(srcdir)/../depcomp
 
-# Some compilers can't handle cc -c blah.c -o foo/blah.o.
-# In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
-OUTPUT_OPTION = @OUTPUT_OPTION@
+# In the past we used AC_PROG_CC_C_O and set this properly, but
+# it was discovered that this hadn't worked in a long time, so now
+# we just hard-code.
+OUTPUT_OPTION = -o $@
 
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
 # -I../zlib, unless we were configured with --with-system-zlib, in which
