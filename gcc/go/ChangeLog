@@ -1,5 +1,23 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (gospec.o): Remove.
+	(CFLAGS-go/gospec.o): New variable.
+	(GCCGO_OBJS): Update to use go/gospec.o.
+	(go_OBJS): Define.
+	(GO_SYSTEM_H, GO_C_H, GO_LINEMAP_H, GO_LEX_H, GO_PARSE_H)
+	(GO_GOGO_H, GO_TYPES_H, GO_STATEMENTS_H, GO_EXPRESSIONS_H)
+	(GO_EXPORT_H, GO_IMPORT_H, GO_RUNTIME_H, GO_AST_DUMP_H)
+	(go/go-backend.o, go/go-lang.o, go/go-gcc.o, go/go-linemap.o)
+	(go/ast-dump.o, go/dataflow.o, go/export.o, go/expressions.o)
+	(go/go.o, go/go-dump.o, go/go-optimize.o, go/gogo-tree.o)
+	(go/gogo.o, go/import.o, go/import-archive.o, go/lex.o)
+	(go/parse.o, go/runtime.o, go/statements.o, go/types.o)
+	(go/unsafe.o): Remove.
+	(CFLAGS-go/go-gcc.o, CFLAGS-go/go-linemap.o): New variables.
+	(go/%.o: go/gofrontend/%.cc): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (gospec.o): Don't use subshell.
 
 2013-08-28  Ian Lance Taylor  <iant@google.com>
