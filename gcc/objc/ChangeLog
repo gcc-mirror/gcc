@@ -1,3 +1,11 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (START_HDRS, cc1obj-checksum.o, objc/objc-lang.o)
+	(objc/objc-runtime-shared-support.o)
+	(objc/objc-gnu-runtime-abi-01.o, objc/objc-next-runtime-abi-01.o)
+	(objc/objc-next-runtime-abi-02.o, objc/objc-act.o)
+	(objc/objc-encoding.o, objc/objc-map.o): Remove.
+
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/48094

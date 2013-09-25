@@ -42,9 +42,6 @@ objc: cc1obj$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: objc
 
-START_HDRS = $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
-  c/c-lang.h langhooks.h c-family/c-objc.h objc/objc-act.h
-
 # Use maximal warnings for this front end.
 objc-warn = $(STRICT_WARN)
 
@@ -65,86 +62,10 @@ cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
         $(BACKEND) $(LIBDEPS) checksum-options > cc1obj-checksum.c.tmp && \
 	$(srcdir)/../move-if-change cc1obj-checksum.c.tmp cc1obj-checksum.c
 
-cc1obj-checksum.o : cc1obj-checksum.c $(CONFIG_H) $(SYSTEM_H)
-
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o \
 	      $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-# Objective C language specific files.
-
-# When editing, please keep the objc/ header dependencies in
-# alphabetical order, and try to use a similar logical order for the
-# other files between the different targets.
-
-objc/objc-lang.o : objc/objc-lang.c \
-   $(START_HDRS) \
-   $(GGC_H) \
-   $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-objc.h \
-   c/c-objc-common.h
-
-objc/objc-runtime-shared-support.o : objc/objc-runtime-shared-support.c \
-   gt-objc-objc-runtime-shared-support.h \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   objc/objc-encoding.h \
-   objc/objc-next-metadata-tags.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c \
-   gt-objc-objc-gnu-runtime-abi-01.h \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   toplev.h \
-   objc/objc-encoding.h \
-   objc/objc-runtime-hooks.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c \
-   gt-objc-objc-next-runtime-abi-01.h \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(TARGET_H) \
-   objc/objc-encoding.h \
-   objc/objc-next-metadata-tags.h \
-   objc/objc-runtime-hooks.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c \
-   gt-objc-objc-next-runtime-abi-02.h \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(TARGET_H) \
-   objc/objc-encoding.h \
-   objc/objc-next-metadata-tags.h \
-   objc/objc-runtime-hooks.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-act.o : objc/objc-act.c \
-   gt-objc-objc-act.h \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   toplev.h $(FUNCTION_H) debug.h $(LANGHOOKS_DEF_H) \
-   $(HASH_TABLE_H) $(GIMPLE_H) \
-   $(C_PRAGMA_H) $(C_TARGET_H) \
-   objc/objc-encoding.h \
-   objc/objc-map.h \
-   objc/objc-runtime-hooks.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-encoding.o : objc/objc-encoding.c \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
-   objc/objc-encoding.h \
-   objc/objc-runtime-shared-support.h
-
-objc/objc-map.o : objc/objc-map.c \
-   $(START_HDRS) \
-   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
-   objc/objc-map.h
 
 objc.srcextra:
 
