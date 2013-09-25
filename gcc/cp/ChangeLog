@@ -1,5 +1,10 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (CXX_TREE_H, CXX_PARSER_H, CXX_PRETTY_PRINT_H):
+	Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (g++spec.o): Remove.
 	(CFLAGS-cp/g++spec.o): New variable.
 	(GXX_OBJS): Reference cp/g++spec.o.
