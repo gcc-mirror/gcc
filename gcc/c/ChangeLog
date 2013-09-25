@@ -1,5 +1,13 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (c/gccspec.o): Remove.
+	(CFLAGS-c/gccspec.o): New variable.
+	(cc1-checksum.o, C_TREE_H, c/c-aux-info.o, c/c-convert.o)
+	(c/c-decl.o, c/c-errors.o, c/c-lang.o, c/c-objc-common.o)
+	(c/c-parser.o, c/c-typeck.o, c/c-array-notation.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (c/gccspec.o): Don't use subshell.
 
 2013-09-18  Marek Polacek  <polacek@redhat.com>
