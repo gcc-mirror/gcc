@@ -1,5 +1,12 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (OUTPUT_OPTION): Define as "-o $@".
+	* configure.ac: Don't invoke AM_PROG_CC_C_O.
+	(NO_MINUS_C_MINUS_O, OUTPUT_OPTION): Don't subst.
+	* configure, config.in: Rebuild.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (CCDEPMODE, DEPDIR, depcomp, COMPILE.base)
 	(COMPILE, POSTCOMPILE): New variables.
 	(.cc.o .c.o): Use COMPILE, POSTCOMPILE.

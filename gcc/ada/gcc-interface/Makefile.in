@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2012 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -122,7 +122,7 @@ THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
 MISCLIB =
-OUTPUT_OPTION = @OUTPUT_OPTION@
+OUTPUT_OPTION = -o $@
 
 objext = .o
 exeext =

@@ -1,3 +1,7 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* gcc-interface/Makefile.in (OUTPUT_OPTION): Define as "-o $@".
+
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/58264
