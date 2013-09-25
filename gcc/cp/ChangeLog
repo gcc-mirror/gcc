@@ -1,3 +1,9 @@
+2013-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58516
+	* semantics.c (finish_transaction_stmt): Check for EXPR_P before
+	setting the expr location.
+
 2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/58500
