@@ -1,3 +1,9 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (LTO_H, LINKER_PLUGIN_API_H, LTO_TREE_H)
+	(lto/lto-lang.o, lto/lto.o, lto/lto-partition.o)
+	(lto/lto-object.o): Remove.
+
 2013-09-06  Richard Biener  <rguenther@suse.de>
 
 	* lto-symtab.c: Move from gcc/
