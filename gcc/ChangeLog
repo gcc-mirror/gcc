@@ -1,3 +1,75 @@
+2013-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Use new names.
+	(ix86_expand_vector_move_misalign): Support new unaligned load and
+	stores and use new names.
+	(CODE_FOR_sse2_storedqu): Rename to ...
+	(CODE_FOR_sse2_storedquv16qi): ... this.
+	(CODE_FOR_sse2_loaddqu): Rename to ...
+	(CODE_FOR_sse2_loaddquv16qi): ... this.
+	(CODE_FOR_avx_loaddqu256): Rename to ...
+	(CODE_FOR_avx_loaddquv32qi): ... this.
+	(CODE_FOR_avx_storedqu256): Rename to ...
+	(CODE_FOR_avx_storedquv32qi): ... this.
+	* config/i386/i386.md (fpint_logic): New.
+	* config/i386/sse.md (VMOVE): Extend for AVX512.
+	(VF): Ditto.
+	(VF_128_256): New.
+	(VF_512): Ditto.
+	(VI_UNALIGNED_LOADSTORE): Ditto.
+	(sse2_avx_avx512f): Ditto.
+	(sse2_avx2): Extend for AVX512.
+	(sse4_1_avx2): Ditto.
+	(avx2_avx512f): New.
+	(sse): Extend for AVX512.
+	(sse2): Ditto.
+	(sse4_1): Ditto.
+	(avxsizesuffix): Ditto.
+	(sseintvecmode): Ditto.
+	(ssePSmode): Ditto.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse2>_loaddqu<avxsizesuffix>): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_loaddqu<mode>): ... this.
+	(<sse2>_storedqu<avxsizesuffix>): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_storedqu<mode): ... this.
+	(<sse>_movnt<mode>): Replace constraint "x" with "v".
+	(STORENT_MODE): Extend for AVX512.
+	(*absneg<mode>2): Replace constraint "x" with "v".
+	(*mul<mode>3): Ditto.
+	(*ieee_smin<mode>3): Ditto.
+	(*ieee_smax<mode>3): Ditto.
+	(avx_cmp<mode>3): Replace VF with VF_128_256.
+	(*<sse>_maskcmp<mode>3_comm): Ditto.
+	(<sse>_maskcmp<mode>3): Ditto.
+	(<sse>_andnot<mode>3): Extend for AVX512.
+	(<code><mode>3, anylogic): Replace VF with VF_128_256.
+	(<code><mode>3, fpint_logic): New.
+	(*<code><mode>3): Extend for AVX512.
+	(avx512flogicsuff): New.
+	(avx512f_<logic><mode>): Ditto.
+	(<sse>_movmsk<ssemodesuffix><avxsizesuffix>): Replace VF with
+	VF_128_256.
+	(<sse4_1>_blend<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_dp<ssemodesuffix><avxsizesuffix>): Ditto.
+	(avx_vtest<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_round<ssemodesuffix><avxsizesuffix>): Ditto.
+	(xop_vpermil2<mode>3): Ditto.
+	(*avx_vpermilp<mode>): Extend for AVX512 and rename to ...
+	(*<sse2_avx_avx512f>_vpermilp<mode>): ... this.
+	(avx_vpermilvar<mode>3): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_vpermilvar<mode>3): ... this.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (PARTITION_H, LTO_SYMTAB_H, COMMON_TARGET_DEF_H)
