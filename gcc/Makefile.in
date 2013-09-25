@@ -1500,7 +1500,8 @@ ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
-  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
+  lto-wrapper.o
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -3899,11 +3900,6 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        common/common-target-hooks-def.h pass-instances.def \
        c-family/c-target-hooks-def.h
 
-# In order for parallel make to really start compiling the expensive
-# objects from $(OBJS) as early as possible, build all their
-# prerequisites strictly before all objects.
-$(ALL_HOST_OBJS) : | $(generated_files)
-
 #
 # How to compile object files to run on the build machine.
 
@@ -5390,3 +5386,8 @@ po/gcc.pot: force
 	$(MAKE) srcextra
 	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
 		$(XGETTEXT) gcc $(srcdir)
+
+# In order for parallel make to really start compiling the expensive
+# objects from $(OBJS) as early as possible, build all their
+# prerequisites strictly before all objects.
+$(ALL_HOST_OBJS) : | $(generated_files)

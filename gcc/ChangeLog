@@ -1,5 +1,11 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add lto-wrapper.o.
+	($(ALL_HOST_OBJS)): Move order-only dependency to end
+	of file.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (generated_files): Add options.h,
 	target-hooks-def.h, insn-opinit.h,
 	common/common-target-hooks-def.h, pass-instances.def,
