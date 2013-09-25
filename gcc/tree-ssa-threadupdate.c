@@ -1401,7 +1401,7 @@ register_jump_thread (vec<edge> path, bool through_joiner)
   if (!through_joiner)
     e3 = NULL;
   else
-    e3 = path[path.length () - 1];
+    e3 = path.last ();
 
   /* This can occur if we're jumping to a constant address or
      or something similar.  Just get out now.  */

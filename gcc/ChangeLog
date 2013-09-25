@@ -1,3 +1,9 @@
+2013-09-25  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Use foo.last () rather
+	than foo[foo.length () - 1] to access last member in a vec.
+	* tree-ssa-threadupdate.c (register_jump_thread): Similarly.
+
 2013-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58521

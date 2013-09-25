@@ -947,8 +947,7 @@ thread_across_edge (gimple dummy_cond,
 	    }
 
 	  remove_temporary_equivalences (stack);
-	  propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
-					       e->dest);
+	  propagate_threaded_block_debug_into (path.last ()->dest, e->dest);
 	  register_jump_thread (path, false);
 	  path.release ();
 	  return;
@@ -987,7 +986,7 @@ thread_across_edge (gimple dummy_cond,
 	path.safe_push (taken_edge);
 	found = false;
 	if ((e->flags & EDGE_DFS_BACK) == 0
-	    || ! cond_arg_set_in_bb (path[path.length () - 1], e->dest))
+	    || ! cond_arg_set_in_bb (path.last (), e->dest))
 	  found = thread_around_empty_blocks (taken_edge,
 					      dummy_cond,
 					      handle_dominating_asserts,
@@ -999,7 +998,7 @@ thread_across_edge (gimple dummy_cond,
 	   record the jump threading opportunity.  */
 	if (found)
 	  {
-	    propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
+	    propagate_threaded_block_debug_into (path.last ()->dest,
 						 taken_edge->dest);
 	    register_jump_thread (path, true);
 	  }
