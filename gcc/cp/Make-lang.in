@@ -240,12 +240,3 @@ c++.stageprofile: stageprofile-start
 	-mv cp/*$(objext) stageprofile/cp
 c++.stagefeedback: stagefeedback-start
 	-mv cp/*$(objext) stagefeedback/cp
-
-#
-# .o: .h dependencies.
-CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h $(C_COMMON_H) \
-	$(FUNCTION_H) \
-	$(SYSTEM_H) coretypes.h $(CONFIG_H) $(TARGET_H) $(GGC_H) \
-	$(srcdir)/../include/hashtab.h
-CXX_PARSER_H = tree.h $(CXX_TREE_H) c-family/c-pragma.h cp/parser.h
-CXX_PRETTY_PRINT_H = cp/cxx-pretty-print.h $(C_PRETTY_PRINT_H)
