@@ -1,3 +1,13 @@
+2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtlanal.c (lsb_bitfield_op_p): New predicate for bitfield operations
+	from the least significant bit.
+	(strip_address_mutations): Add bitfield operations handling.
+	(must_be_index_p): Add shifting and rotate operations handling.
+	(set_address_base): Use must_be_base_p predicate.
+	(set_address_index):Use must_be_index_p predicate.
+
 2013-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
