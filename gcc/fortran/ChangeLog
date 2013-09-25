@@ -1,5 +1,10 @@
 2013-09-25  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/58436
+	* class.c (generate_finalization_wrapper): Handle CLASS(*).
+
+2013-09-25  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57697
 	PR fortran/58469
 	* resolve.c (generate_component_assignments): Avoid double free
