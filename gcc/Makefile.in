@@ -3894,7 +3894,10 @@ s-gtype: build/gengtype$(build_exeext) $(filter-out [%], $(GTFILES)) \
 generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(simple_generated_h) specs.h \
        tree-check.h genrtl.h insn-modes.h tm-preds.h tm-constrs.h \
-       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h
+       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
+       options.h target-hooks-def.h insn-opinit.h \
+       common/common-target-hooks-def.h pass-instances.def \
+       c-family/c-target-hooks-def.h
 
 # In order for parallel make to really start compiling the expensive
 # objects from $(OBJS) as early as possible, build all their
