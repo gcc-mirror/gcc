@@ -1,5 +1,21 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (fortran_OBJS): Use fortran/gfortranspec.o.
+	(gfortranspec.o): Remove.
+	(CFLAGS-fortran/gfortranspec.o): New variable.
+	(GFORTRAN_D_OBJS): Update.
+	($(F95_PARSER_OBJS), fortran/openmp.o, GFORTRAN_TRANS_DEPS)
+	(fortran/f95-lang.o, fortran/scanner.o, fortran/convert.o)
+	(fortran/frontend-passes.o, fortran/trans.o, fortran/trans-decl.o)
+	(fortran/trans-types, fortran/trans-const.o, fortran/trans-expr.o)
+	(fortran/trans-stmt.o, fortran/trans-openmp.o, fortran/trans-io.o)
+	(fortran/trans-array.o, fortran/trans-intrinsic.o)
+	(fortran/dependency.o, fortran/trans-common.o, fortran/resolve.o)
+	(fortran/data.o, fortran/options.o, fortran/cpp.o)
+	(fortran/scanner.o, fortran/module.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (gfortranspec.o): Don't use subshell.
 
 2013-09-23  Janus Weil  <janus@gcc.gnu.org>

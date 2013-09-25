@@ -67,7 +67,7 @@ F95_OBJS = $(F95_PARSER_OBJS) $(FORTRAN_TARGET_OBJS) \
     fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-openmp.o \
     fortran/trans-stmt.o fortran/trans-types.o fortran/frontend-passes.o
 
-fortran_OBJS = $(F95_OBJS) gfortranspec.o
+fortran_OBJS = $(F95_OBJS) fortran/gfortranspec.o
 
 #
 # Define the names for selecting gfortran in LANGUAGES.
@@ -76,13 +76,10 @@ fortran: f951$(exeext)
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: fortran
 
-gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
-	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c
+CFLAGS-fortran/gfortranspec.o += $(DRIVER_DEFINES)
 
 # Create the compiler driver gfortran.
-GFORTRAN_D_OBJS = $(GCC_OBJS) gfortranspec.o
+GFORTRAN_D_OBJS = $(GCC_OBJS) fortran/gfortranspec.o
 gfortran$(exeext): $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
 	$(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
@@ -311,59 +308,6 @@ fortran.stagefeedback: stageprofile-start
 	-mv fortran/*$(objext) stagefeedback/fortran
 
 #
-# .o: .h dependencies.
-
-# Everything depends on gfortran.h, but only a few files depend on
-# the other headers.  So at some point we'll have to split out
-# which objects depend on what.  FIXME
-# TODO: Add dependencies on the backend/tree header files
-
-$(F95_PARSER_OBJS): fortran/gfortran.h fortran/libgfortran.h \
-		fortran/intrinsic.h fortran/match.h fortran/constructor.h \
-		fortran/parse.h fortran/arith.h fortran/target-memory.h \
-		$(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TM_P_H) coretypes.h \
-		dumpfile.h $(TREE_H) dumpfile.h $(GGC_H) $(VEC_H) \
-		$(FLAGS_H) $(DIAGNOSTIC_H) errors.h $(FUNCTION_H) \
-		fortran/iso-c-binding.def fortran/iso-fortran-env.def
-fortran/openmp.o: pointer-set.h $(TARGET_H) toplev.h
-
-GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/libgfortran.h \
-    fortran/intrinsic.h fortran/trans-array.h \
-    fortran/trans-const.h fortran/trans-const.h fortran/trans.h \
-    fortran/trans-stmt.h fortran/trans-types.h \
-    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h $(GGC_H) \
-    fortran/iso-c-binding.def fortran/iso-fortran-env.def
 
 CFLAGS-fortran/cpp.o += $(TARGET_SYSTEM_ROOT_DEFINE)
-fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
-  gt-fortran-f95-lang.h gtype-fortran.h $(CGRAPH_H) $(TARGET_H) fortran/cpp.h \
-  $(BUILTINS_DEF) fortran/types.def \
-  $(TM_H) debug.h langhooks.h $(FLAGS_H) $(EXPR_H) $(LANGHOOKS_DEF_H) \
-  libfuncs.h expr.h $(DIAGNOSTIC_H)
-fortran/scanner.o: toplev.h fortran/cpp.h
-fortran/convert.o: $(GFORTRAN_TRANS_DEPS) convert.h
-fortran/frontend-passes.o: $(GFORTRAN_TRANS_DEPS)
-fortran/trans.o: $(GFORTRAN_TRANS_DEPS) tree-iterator.h
-fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
-  $(CGRAPH_H) $(TARGET_H) $(FUNCTION_H) $(FLAGS_H) $(RTL_H) $(GIMPLE_H) \
-  $(TREE_DUMP_H) debug.h pointer-set.h
-fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
-  $(REAL_H) toplev.h $(TARGET_H) $(FLAGS_H) dwarf2out.h
-fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS) realmpfr.h
-fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
-fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
-fortran/trans-openmp.o: $(GFORTRAN_TRANS_DEPS)
-fortran/trans-io.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-io.h \
-  fortran/ioparm.def
-fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS) $(GIMPLE_H)
-fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
-  gt-fortran-trans-intrinsic.h
-fortran/dependency.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
-fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) $(TARGET_H) $(RTL_H)
-fortran/resolve.o: fortran/dependency.h fortran/data.h fortran/target-memory.h
-fortran/data.o: fortran/data.h
-fortran/options.o: $(PARAMS_H) $(TARGET_H) fortran/cpp.h
-fortran/cpp.o: fortran/cpp.c incpath.h incpath.o cppbuiltin.h
-fortran/scanner.o: fortran/scanner.h
 CFLAGS-fortran/module.o += $(ZLIBINC)
-fortran/module.o: fortran/scanner.h
