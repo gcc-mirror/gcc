@@ -7280,21 +7280,6 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	  }
 	return val;
       }
-    case MEM_REF:
-      {
-	/* The type of the second operand is relevant, except for
-	   its top-level qualifiers.  */
-	tree type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (t, 1)));
-
-	val = iterative_hash_object (TYPE_HASH (type), val);
-
-	/* We could use the standard hash computation from this point
-	   on.  */
-	val = iterative_hash_object (code, val);
-	val = iterative_hash_expr (TREE_OPERAND (t, 1), val);
-	val = iterative_hash_expr (TREE_OPERAND (t, 0), val);
-	return val;
-      }
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
 	 Otherwise nodes that compare equal according to operand_equal_p might
