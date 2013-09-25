@@ -1,3 +1,49 @@
+2013-09-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/forward_list.h (_Fwd_list_node_base::_M_transfer_after):
+	Mark as noexcept.
+	(_Fwd_list_iterator) [_Fwd_list_iterator, operator*, operator->,
+	operator++, operator==, operator!=, _M_next]: Likewise.
+	(_Fwd_list_const_iterator) [_Fwd_list_const_iterator, operator*,
+	operator->, operator++, operator==, operator!=, _M_next]: Likewise.
+	(operator==(const _Fwd_list_iterator&, const _Fwd_list_const_iterator&),
+	operator!=(const _Fwd_list_iterator&, const _Fwd_list_const_iterator&)):
+	Likewise.
+	* include/bits/hashtable_policy.h (_Hash_node_base::_Hash_node_base,
+	_Hash_node::_M_next, _Node_iterator_base::_Node_iterator_base,
+	_Node_iterator_base::_M_incr, operator==(const _Node_iterator_base&,
+	const _Node_iterator_base&), operator!=(const _Node_iterator_base&,
+	const _Node_iterator_base&)): Likewise.
+	(_Node_iterator) [_Node_iterator, operator*, operator->, operator++]:
+	Likewise.
+	(_Node_const_iterator) [_Node_const_iterator, operator*, operator->,
+	operator++]: Likewise.
+	* include/debug/safe_iterator.h (_Safe_iterator) [_Safe_iterator,
+	operator=, operator*, operator->, operator++, operator--, operator[],
+	operator+=, operator+, operator-=, operator-, base, operator _Iterator]:
+	Likewise.
+	(operator==(const _Safe_iterator&, const _Safe_iterator&),
+	operator!=(const _Safe_iterator&, const _Safe_iterator&),
+	operator<(const _Safe_iterator&, const _Safe_iterator&),
+	operator<=(const _Safe_iterator&, const _Safe_iterator&),
+	operator>(const _Safe_iterator&, const _Safe_iterator&),
+	operator>=(const _Safe_iterator&, const _Safe_iterator&),
+	operator-(const _Safe_iterator&, const _Safe_iterator&),
+	operator+(difference_type, const _Safe_iterator&)): Likewise.
+	* include/profile/iterator_tracker.h (__iterator_tracker)
+	[__iterator_tracker, base, operator _Iterator, operator->, operator++,
+	operator--, operator=, operator*, operator[], operator+=, operator+,
+	operator-=, operator-]: Likewise.
+	(operator==(const __iterator_tracker&, const __iterator_tracker&),
+	operator!=(const __iterator_tracker&, const __iterator_tracker&),
+	operator<(const __iterator_tracker&, const __iterator_tracker&),
+	operator<=(const __iterator_tracker&, const __iterator_tracker&),
+	operator>(const __iterator_tracker&, const __iterator_tracker&),
+	operator>=(const __iterator_tracker&, const __iterator_tracker&),
+	operator-(const __iterator_tracker&, const __iterator_tracker&),
+	operator+(difference_type, const __iterator_tracker&)): Likewise.
+
 2013-09-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

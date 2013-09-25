@@ -230,9 +230,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     _Hash_node_base* _M_nxt;
 
-    _Hash_node_base() : _M_nxt() { }
+    _Hash_node_base() noexcept : _M_nxt() { }
 
-    _Hash_node_base(_Hash_node_base* __next) : _M_nxt(__next) { }
+    _Hash_node_base(_Hash_node_base* __next) noexcept : _M_nxt(__next) { }
   };
 
   /**
@@ -281,7 +281,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t  _M_hash_code;
 
       _Hash_node*
-      _M_next() const { return static_cast<_Hash_node*>(this->_M_nxt); }
+      _M_next() const noexcept
+      { return static_cast<_Hash_node*>(this->_M_nxt); }
     };
 
   /**
@@ -293,7 +294,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Hash_node<_Value, false> : _Hash_node_value_base<_Value>
     {
       _Hash_node*
-      _M_next() const { return static_cast<_Hash_node*>(this->_M_nxt); }
+      _M_next() const noexcept
+      { return static_cast<_Hash_node*>(this->_M_nxt); }
     };
 
   /// Base class for node iterators.
@@ -304,11 +306,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __node_type*  _M_cur;
 
-      _Node_iterator_base(__node_type* __p)
+      _Node_iterator_base(__node_type* __p) noexcept
       : _M_cur(__p) { }
 
       void
-      _M_incr()
+      _M_incr() noexcept
       { _M_cur = _M_cur->_M_next(); }
     };
 
@@ -316,12 +318,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const _Node_iterator_base<_Value, _Cache_hash_code>& __x,
 	       const _Node_iterator_base<_Value, _Cache_hash_code >& __y)
+    noexcept
     { return __x._M_cur == __y._M_cur; }
 
   template<typename _Value, bool _Cache_hash_code>
     inline bool
     operator!=(const _Node_iterator_base<_Value, _Cache_hash_code>& __x,
 	       const _Node_iterator_base<_Value, _Cache_hash_code>& __y)
+    noexcept
     { return __x._M_cur != __y._M_cur; }
 
   /// Node iterators, used to iterate through all the hashtable.
@@ -344,30 +348,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using reference = typename std::conditional<__constant_iterators,
 						  const _Value&, _Value&>::type;
 
-      _Node_iterator()
+      _Node_iterator() noexcept
       : __base_type(0) { }
 
       explicit
-      _Node_iterator(__node_type* __p)
+      _Node_iterator(__node_type* __p) noexcept
       : __base_type(__p) { }
 
       reference
-      operator*() const
+      operator*() const noexcept
       { return this->_M_cur->_M_v(); }
 
       pointer
-      operator->() const
+      operator->() const noexcept
       { return this->_M_cur->_M_valptr(); }
 
       _Node_iterator&
-      operator++()
+      operator++() noexcept
       {
 	this->_M_incr();
 	return *this;
       }
 
       _Node_iterator
-      operator++(int)
+      operator++(int) noexcept
       {
 	_Node_iterator __tmp(*this);
 	this->_M_incr();
@@ -392,34 +396,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const _Value*				pointer;
       typedef const _Value&				reference;
 
-      _Node_const_iterator()
+      _Node_const_iterator() noexcept
       : __base_type(0) { }
 
       explicit
-      _Node_const_iterator(__node_type* __p)
+      _Node_const_iterator(__node_type* __p) noexcept
       : __base_type(__p) { }
 
       _Node_const_iterator(const _Node_iterator<_Value, __constant_iterators,
-			   __cache>& __x)
+			   __cache>& __x) noexcept
       : __base_type(__x._M_cur) { }
 
       reference
-      operator*() const
+      operator*() const noexcept
       { return this->_M_cur->_M_v(); }
 
       pointer
-      operator->() const
+      operator->() const noexcept
       { return this->_M_cur->_M_valptr(); }
 
       _Node_const_iterator&
-      operator++()
+      operator++() noexcept
       {
 	this->_M_incr();
 	return *this;
       }
 
       _Node_const_iterator
-      operator++(int)
+      operator++(int) noexcept
       {
 	_Node_const_iterator __tmp(*this);
 	this->_M_incr();
