@@ -1,5 +1,13 @@
 2013-09-25  Marek Polacek  <polacek@redhat.com>
 
+	PR sanitizer/58413
+	* c-c++-common/ubsan/shift-5.c: New test.
+	* c-c++-common/ubsan/shift-6.c: New test.
+	* c-c++-common/ubsan/div-by-zero-5.c: New test.
+	* gcc.dg/ubsan/c-shift-1.c: New test.
+
+2013-09-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/58516
 	* g++.dg/tm/pr58516.C: New test.
 

@@ -51,14 +51,6 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   if (TREE_CODE (type) != INTEGER_TYPE)
     return NULL_TREE;
 
-  /* If we *know* that the divisor is not -1 or 0, we don't have to
-     instrument this expression.
-     ??? We could use decl_constant_value to cover up more cases.  */
-  if (TREE_CODE (op1) == INTEGER_CST
-      && integer_nonzerop (op1)
-      && !integer_minus_onep (op1))
-    return NULL_TREE;
-
   t = fold_build2 (EQ_EXPR, boolean_type_node,
 		    op1, build_int_cst (type, 0));
 
@@ -73,6 +65,11 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
       x = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, x, tt);
       t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, x);
     }
+
+  /* If the condition was folded to 0, no need to instrument
+     this expression.  */
+  if (integer_zerop (t))
+    return NULL_TREE;
 
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
@@ -137,6 +134,11 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 		       build_int_cst (type0, 0));
       tt = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, x, tt);
     }
+
+  /* If the condition was folded to 0, no need to instrument
+     this expression.  */
+  if (integer_zerop (t) && (tt == NULL_TREE || integer_zerop (tt)))
+    return NULL_TREE;
 
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
