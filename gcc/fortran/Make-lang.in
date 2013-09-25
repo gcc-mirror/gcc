@@ -78,9 +78,8 @@ fortran: f951$(exeext)
 
 gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
 	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
-	(SHLIB='$(SHLIB)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
+		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c
 
 # Create the compiler driver gfortran.
 GFORTRAN_D_OBJS = $(GCC_OBJS) gfortranspec.o

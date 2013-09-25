@@ -1,3 +1,7 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (jvspec.o): Don't use subshell.
+
 2013-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (emit_register_classes_in_jcr_section): Use DECL_PRESERVE_P

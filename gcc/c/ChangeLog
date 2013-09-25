@@ -1,3 +1,7 @@
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (c/gccspec.o): Don't use subshell.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitize/58443

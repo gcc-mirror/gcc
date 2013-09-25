@@ -1,5 +1,11 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (DRIVER_DEFINES): Use $(and), not shell code,
+	to add -DENABLE_SHARED_LIBGCC.
+	(gcc.o): Don't use subshell.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (OUTPUT_OPTION): Define as "-o $@".
 	* configure.ac: Don't invoke AM_PROG_CC_C_O.
 	(NO_MINUS_C_MINUS_O, OUTPUT_OPTION): Don't subst.
