@@ -1188,7 +1188,9 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
 
   gcc_assert (edge->speculative);
   cgraph_speculative_call_info (edge, e2, edge, ref);
-  if (ref->referred->symbol.decl != callee_decl)
+  if (!callee_decl
+      || !symtab_semantically_equivalent_p ((symtab_node) ref->referred,
+					    symtab_get_node (callee_decl)))
     {
       if (dump_file)
 	{
