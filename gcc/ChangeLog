@@ -1,5 +1,10 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* config/i386/t-i386 (i386.o): Remove.
+	(i386-c.o): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in ($(out_object_file)): Use COMPILE and POSTCOMPILE.
 
 2013-09-25  Tom Tromey  <tromey@redhat.com>
