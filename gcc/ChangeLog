@@ -1,3 +1,8 @@
+2013-09-25  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_resolve_speculation): Use semantical equivalency
+	test.
+
 2013-09-25  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58420
