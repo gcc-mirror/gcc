@@ -1,5 +1,9 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in (C_TREE_H): Reference c/c-tree.h.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in (DRIVER_DEFINES): Use $(and), not shell code,
 	to add -DENABLE_SHARED_LIBGCC.
 	(gcc.o): Don't use subshell.

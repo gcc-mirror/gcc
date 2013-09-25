@@ -44,11 +44,7 @@ c: cc1$(exeext)
 # The C front end driver.  This is different from the drivers for other
 # front ends, because there is no C language specific driver (i.e. nothing
 # is to cc1 as e.g. g++ is to cc1plus, or gfortran is to f951).
-c/gccspec.o: c/gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
-    $(OPTS_H)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-  $(DRIVER_DEFINES) \
-  -c $(srcdir)/c/gccspec.c $(OUTPUT_OPTION)
+CFLAGS-c/gccspec.o += $(DRIVER_DEFINES)
 
 # The C compiler itself.
 
@@ -70,8 +66,6 @@ cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
                      checksum-options > cc1-checksum.c.tmp && 		 \
 	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
-
-cc1-checksum.o : cc1-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
@@ -143,56 +137,4 @@ c.stageprofile: stageprofile-start
 	-mv c/*$(objext) stageprofile/c
 c.stagefeedback: stagefeedback-start
 	-mv c/*$(objext) stagefeedback/c
-
-#
-# .o: .h dependencies.
-# C language specific files.
-C_TREE_H = c/c-tree.h $(C_COMMON_H) $(DIAGNOSTIC_H)
-c/c-aux-info.o : c/c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(C_TREE_H) $(TREE_H) $(FLAGS_H)
-
-c/c-convert.o : c/c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(C_COMMON_H) convert.h \
-	langhooks.h $(TARGET_H)
-
-c/c-decl.o : c/c-decl.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(GGC_H) $(TARGET_H) $(FLAGS_H) $(FUNCTION_H) \
-	output.h debug.h toplev.h intl.h $(TM_P_H) $(TREE_INLINE_H) \
-	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-c-decl.h $(CGRAPH_H) \
-	$(HASH_TABLE_H) $(LANGHOOKS_DEF_H) \
-	dumpfile.h $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
-	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
-	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h
-
-c/c-errors.o: c/c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
-
-c/c-lang.o : c/c-lang.c c/c-objc-common.h \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(C_TREE_H) $(DIAGNOSTIC_CORE_H) \
-	langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-c.h \
-	$(C_PRAGMA_H) $(TREE_INLINE_H)
-
-c/c-objc-common.o : c/c-objc-common.c c/c-objc-common.h \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) \
-	langhooks.h $(GGC_H) $(C_PRETTY_PRINT_H) intl.h \
-	$(TREE_PRETTY_PRINT_H)
-
-c/c-parser.o : c/c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) $(C_TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(CPPLIB_H) \
-	$(GGC_H) $(TIMEVAR_H) $(INPUT_H) $(FLAGS_H) \
-	gt-c-c-parser.h langhooks.h \
-	$(VEC_H) $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H) \
-	c-family/c-objc.h
-
-c/c-typeck.o : c/c-typeck.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h \
-	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
-	c-family/c-objc.h c-family/c-common.h
-
-c/c-array-notation.o: c/c-array-notation.c c/c-lang.h $(CONFIG_H) \
-	$(SYSTEM_H) coretypes.h $(TREE_H) $(C_TREE_H) $(TARGET_H) \
-	intl.h output.h $(EXPR_H) langhooks.h tree-iterator.h $(BITMAP_H) \
-	$(GIMPLE_H) c-family/c-objc.h
 
