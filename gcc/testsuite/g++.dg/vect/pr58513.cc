@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target vect_int }
 
-int op (const int& x, const int& y) { return x + y; }
+static int op (const int& x, const int& y) { return x + y; }
 
 void foo(int* a)
 {
