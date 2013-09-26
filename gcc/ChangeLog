@@ -1,3 +1,8 @@
+2013-09-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/t-rs6000 (rs6000.o): Remove.
+	(rs6000-c.o): Use COMPILE and POSTCOMPILE.
+
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58539
