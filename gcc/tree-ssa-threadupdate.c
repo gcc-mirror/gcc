@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "function.h"
 #include "tree-ssa.h"
+#include "tree-ssa-threadupdate.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
 #include "hash-table.h"
@@ -1380,6 +1381,39 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   return retval;
 }
 
+/* Dump a jump threading path, including annotations about each
+   edge in the path.  */
+
+static void
+dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path)
+{
+  fprintf (dump_file,
+	   "  Registering jump thread: (%d, %d) incoming edge; ",
+	   path[0]->e->src->index, path[0]->e->dest->index);
+
+  for (unsigned int i = 1; i < path.length (); i++)
+    {
+      /* We can get paths with a NULL edge when the final destination
+	 of a jump thread turns out to be a constant address.  We dump
+	 those paths when debugging, so we have to be prepared for that
+	 possibility here.  */
+      if (path[i]->e == NULL)
+	continue;
+
+      if (path[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	fprintf (dump_file, " (%d, %d) joiner; ",
+		 path[i]->e->src->index, path[i]->e->dest->index);
+      if (path[i]->type == EDGE_COPY_SRC_BLOCK)
+       fprintf (dump_file, " (%d, %d) normal;",
+		 path[i]->e->src->index, path[i]->e->dest->index);
+      if (path[i]->type == EDGE_NO_COPY_SRC_BLOCK)
+       fprintf (dump_file, " (%d, %d) nocopy;",
+		 path[i]->e->src->index, path[i]->e->dest->index);
+    }
+  fputc ('\n', dump_file);
+}
+
+
 /* Register a jump threading opportunity.  We queue up all the jump
    threading opportunities discovered by a pass and update the CFG
    and SSA form all at once.
@@ -1389,43 +1423,47 @@ thread_through_all_blocks (bool may_peel_loop_headers)
    after fixing the SSA graph.  */
 
 void
-register_jump_thread (vec<edge> path, bool through_joiner)
+register_jump_thread (vec<jump_thread_edge *> path)
 {
-  /* Convert PATH into 3 edge representation we've been using.  This
-     is temporary until we convert this file to use a path representation
-     throughout.  */
-  edge e = path[0];
-  edge e2 = path[1];
-  edge e3;
+  /* First make sure there are no NULL outgoing edges on the jump threading
+     path.  That can happen for jumping to a constant address.  */
+  for (unsigned int i = 0; i < path.length (); i++)
+    if (path[i]->e == NULL)
+      {
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    fprintf (dump_file,
+		     "Found NULL edge in jump threading path.  Cancelling jump thread:\n");
+	    dump_jump_thread_path (dump_file, path);
+	  }
+	return;
+      }
 
-  if (!through_joiner)
-    e3 = NULL;
-  else
-    e3 = path.last ();
-
-  /* This can occur if we're jumping to a constant address or
-     or something similar.  Just get out now.  */
-  if (e2 == NULL)
-    return;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      unsigned int i;
-
-      fprintf (dump_file,
-	       "  Registering jump thread %s:",
-	       through_joiner ? "(through joiner block)" : "");
-
-      for (i = 0; i < path.length (); i++)
-	fprintf (dump_file, " (%d, %d); ",
-		 path[i]->src->index, path[i]->dest->index);
-      fputc ('\n', dump_file);
-    }
-    
   if (!threaded_edges.exists ())
     threaded_edges.create (15);
 
-  threaded_edges.safe_push (e);
-  threaded_edges.safe_push (e2);
-  threaded_edges.safe_push (e3);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_jump_thread_path (dump_file, path);
+
+  /* The first entry in the vector is always the start of the
+     jump threading path.  */
+  threaded_edges.safe_push (path[0]->e);
+
+  /* In our 3-edge representation, the joiner, if it exists is always the
+     2nd edge and the final block on the path is the 3rd edge.  If no
+     jointer exists, then the final block on the path is the 2nd edge
+     and the 3rd edge is NULL.
+
+     With upcoming improvements, we're going to be holding onto the entire
+     path, so we'll be able to clean this wart up shortly.  */
+  if (path[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+    {
+      threaded_edges.safe_push (path[1]->e);
+      threaded_edges.safe_push (path.last ()->e);
+    }
+  else
+    {
+      threaded_edges.safe_push (path.last ()->e);
+      threaded_edges.safe_push (NULL);
+    }
 }

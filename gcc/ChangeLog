@@ -1,3 +1,26 @@
+2013-09-25  Jeff Law  <law@redhat.com>
+
+	* tree-flow.h (thread_through_all_blocks): Prototype moved into
+	tree-ssa-threadupdate.h.
+	(register_jump_thread): Similarly.
+	* tree-ssa-threadupdate.h: New header file.
+	* tree-ssa-dom.c: Include tree-ssa-threadupdate.h.
+	* tree-vrp.c: Likewise.
+	* tree-ssa-threadedge.c: Include tree-ssa-threadupdate.h.
+	(thread_around_empty_blocks): Change type of path vector argument to
+	an edge,type pair from just an edge.  Initialize both elements when
+	appending to a jump threading path.  Tweak references to elements
+	appropriately.
+	(thread_across_edge): Similarly.  Release memory for the elements
+	as needed.
+	* tree-ssa-threadupdate.c: Include tree-ssa-threadupdate.h.
+	(dump_jump_thread_path): New function broken out from
+	register_jump_thread.
+	(register_jump_thread): Use dump_jump_thread_path.  Change type of
+	path vector entries.  Search the path for NULL edges and dump
+	the path if one is found.  Tweak the conversion of path to 3-edge
+	form to use the block copy type information embedded in the path.
+
 2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
 
 	* lra.c (update_inc_notes): Remove all REG_DEAD and REG_UNUSED notes.

@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-propagate.h"
 #include "tree-chrec.h"
+#include "tree-ssa-threadupdate.h"
 #include "gimple-fold.h"
 #include "expr.h"
 #include "optabs.h"
