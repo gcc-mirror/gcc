@@ -33,7 +33,7 @@ extern alias_set_type get_alias_set (tree);
 extern alias_set_type get_deref_alias_set (tree);
 extern alias_set_type get_varargs_alias_set (void);
 extern alias_set_type get_frame_alias_set (void);
-extern bool component_uses_parent_alias_set (const_tree);
+extern tree component_uses_parent_alias_set_from (const_tree);
 extern bool alias_set_subset_of (alias_set_type, alias_set_type);
 extern void record_alias_subset (alias_set_type, alias_set_type);
 extern void record_component_aliases (tree);
