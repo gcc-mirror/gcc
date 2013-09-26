@@ -1,3 +1,13 @@
+2013-09-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	Backport from mainline
+
+	2013-01-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55861
+	* include/std/future (_State_base::_S_check(const shared_ptr<T>&)):
+	Fix return type.
+
 2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58302

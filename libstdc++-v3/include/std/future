@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -456,7 +456,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __setter(promise<void>* __prom);
 
       template<typename _Tp>
-        static bool
+        static void
         _S_check(const shared_ptr<_Tp>& __p)
         {
           if (!static_cast<bool>(__p))
