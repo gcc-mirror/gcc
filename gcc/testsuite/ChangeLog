@@ -1,3 +1,8 @@
+2013-09-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/58113
+	* gfortran.dg/round_4.f90: Check for rounding support.
+
 2013-09-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* g++.dg/vect/pr58513.cc (op): Make static.

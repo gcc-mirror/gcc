@@ -6,12 +6,18 @@
 ! Test whether I/O rounding works. Uses internally (libgfortran) strtod
 ! for the conversion - and sets the CPU rounding mode accordingly.
 !
+! Only few strtod implementations currently support rounding. Therefore
+! we use a heuristic to determine if the rounding support is available.
+! The assumption is that if strtod gives *different* results for up/down
+! rounding, then it will give *correct* results for nearest/zero/up/down
+! rounding too. And that is what is effectively checked.
+!
 ! If it doesn't work on your system, please check whether strtod handles
-! rounding and whether your system is supported in libgfortran/config/fpu*.c
+! rounding correctly and whether your system is supported in
+! libgfortran/config/fpu*.c
 !
 ! Please only add ... run { target { ! { triplets } } } if it is unfixable
-! on your target - and a note why (strtod doesn't handle it, no rounding
-! support, etc.)
+! on your target - and a note why (strtod has broken rounding support, etc.)
 !
 program main
   use iso_fortran_env
@@ -27,6 +33,17 @@ program main
   real(xp) :: r10p, r10m, ref10u, ref10d
   real(qp) :: r16p, r16m, ref16u, ref16d
   character(len=20) :: str, round
+  logical :: rnd4, rnd8, rnd10, rnd16
+
+  ! Test for which types glibc's strtod function supports rounding
+  str = '0.01 0.01 0.01 0.01'
+  read (str, *, round='up') r4p, r8p, r10p, r16p
+  read (str, *, round='down') r4m, r8m, r10m, r16m
+  rnd4 = r4p /= r4m
+  rnd8 = r8p /= r8m
+  rnd10 = r10p /= r10m
+  rnd16 = r16p /= r16m
+!  write (*, *) rnd4, rnd8, rnd10, rnd16
 
   ref4u = 0.100000001_4
   ref8u = 0.10000000000000001_8
@@ -55,40 +72,40 @@ program main
 
   round = 'up'
   call t()
-  if (r4p  /= ref4u  .or. r4m  /= -ref4d)  call abort()
-  if (r8p  /= ref8u  .or. r8m  /= -ref8d)  call abort()
-  if (r10p /= ref10u .or. r10m /= -ref10d) call abort()
-  if (r16p /= ref16u .or. r16m /= -ref16d) call abort()
+  if (rnd4  .and. (r4p  /= ref4u  .or. r4m  /= -ref4d))  call abort()
+  if (rnd8  .and. (r8p  /= ref8u  .or. r8m  /= -ref8d))  call abort()
+  if (rnd10 .and. (r10p /= ref10u .or. r10m /= -ref10d)) call abort()
+  if (rnd16 .and. (r16p /= ref16u .or. r16m /= -ref16d)) call abort()
 
   round = 'down'
   call t()
-  if (r4p  /= ref4d  .or. r4m  /= -ref4u)  call abort()
-  if (r8p  /= ref8d  .or. r8m  /= -ref8u)  call abort()
-  if (r10p /= ref10d .or. r10m /= -ref10u) call abort()
-  if (r16p /= ref16d .or. r16m /= -ref16u) call abort()
+  if (rnd4  .and. (r4p  /= ref4d  .or. r4m  /= -ref4u))  call abort()
+  if (rnd8  .and. (r8p  /= ref8d  .or. r8m  /= -ref8u))  call abort()
+  if (rnd10 .and. (r10p /= ref10d .or. r10m /= -ref10u)) call abort()
+  if (rnd16 .and. (r16p /= ref16d .or. r16m /= -ref16u)) call abort()
 
   round = 'zero'
   call t()
-  if (r4p  /= ref4d  .or. r4m  /= -ref4d)  call abort()
-  if (r8p  /= ref8d  .or. r8m  /= -ref8d)  call abort()
-  if (r10p /= ref10d .or. r10m /= -ref10d) call abort()
-  if (r16p /= ref16d .or. r16m /= -ref16d) call abort()
+  if (rnd4  .and. (r4p  /= ref4d  .or. r4m  /= -ref4d))  call abort()
+  if (rnd8  .and. (r8p  /= ref8d  .or. r8m  /= -ref8d))  call abort()
+  if (rnd10 .and. (r10p /= ref10d .or. r10m /= -ref10d)) call abort()
+  if (rnd16 .and. (r16p /= ref16d .or. r16m /= -ref16d)) call abort()
 
   round = 'nearest'
   call t()
-  if (r4p  /= ref4u  .or. r4m  /= -ref4u)  call abort()
-  if (r8p  /= ref8u  .or. r8m  /= -ref8u)  call abort()
-  if (r10p /= ref10u .or. r10m /= -ref10u) call abort()
-  if (r16p /= ref16u .or. r16m /= -ref16u) call abort()
+  if (rnd4  .and. (r4p  /= ref4u  .or. r4m  /= -ref4u))  call abort()
+  if (rnd8  .and. (r8p  /= ref8u  .or. r8m  /= -ref8u))  call abort()
+  if (rnd10 .and. (r10p /= ref10u .or. r10m /= -ref10u)) call abort()
+  if (rnd16 .and. (r16p /= ref16u .or. r16m /= -ref16u)) call abort()
 
 ! Same as nearest (but rounding towards zero if there is a tie
 ! [does not apply here])
   round = 'compatible'
   call t()
-  if (r4p  /= ref4u  .or. r4m  /= -ref4u)  call abort()
-  if (r8p  /= ref8u  .or. r8m  /= -ref8u)  call abort()
-  if (r10p /= ref10u .or. r10m /= -ref10u) call abort()
-  if (r16p /= ref16u .or. r16m /= -ref16u) call abort()
+  if (rnd4  .and. (r4p  /= ref4u  .or. r4m  /= -ref4u))  call abort()
+  if (rnd8  .and. (r8p  /= ref8u  .or. r8m  /= -ref8u))  call abort()
+  if (rnd10 .and. (r10p /= ref10u .or. r10m /= -ref10u)) call abort()
+  if (rnd16 .and. (r16p /= ref16u .or. r16m /= -ref16u)) call abort()
 contains
   subroutine t()
 !    print *, round
