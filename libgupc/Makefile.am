@@ -127,9 +127,6 @@ endif
 UPC_BACKTRACE_SUP =
 if LIBGUPC_BACKTRACE
   UPC_BACKTRACE_SUP += smp/upc_backtrace.h smp/upc_backtrace.c
-if LIBGUPC_BACKTRACE_SUP
-    UPC_BACKTRACE_SUP += smp/upc_backtrace_sup.c
-endif
 endif
 
 if MAINTAINER_MODE

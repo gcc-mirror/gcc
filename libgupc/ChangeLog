@@ -1,3 +1,20 @@
+2013-09-26  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Makefile.am (UPC_BACKTRACE_SUP): Remove upc_backtrace_sup.c.
+	* Makefile.in: Re-generate.
+	* configure.ac: Remove detection of libbfd.  Add
+	HAVE_UPC_BACKTRACE_ADDR2LINE and GUPCR_BACKTRACE_ADDR2LINE
+	definitions.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+	* configure.tgt (LIBS): Remove libbfd and libdl.
+	* smp/upc_backtrace.c (__upc_backtrace): Use addr2line to generate
+	source code references.
+	(__upc_abs_execname): Use pointer instead of large array declaration.
+	(__upc_backtrace_init): Allocate space for __upc_abs_execname.
+	* smp/upc_backtrace.h: Remove libbfd support function prototype.
+	* smp/upc_backtrace_sup.c: Delete.
+
 2013-09-10  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Implement non-blocking transfer operations for Portals4 runtime.

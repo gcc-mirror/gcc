@@ -42,9 +42,4 @@ extern void __upc_fatal_backtrace (void);
 extern void __upc_backtrace_init (const char *execname);
 extern void __upc_backtrace_restore_handlers (void);
 
-#if HAVE_LIBBFD
-extern char **backtrace_src_symbols(void *const *buffer, int size,
-				    const char *filename);
-#endif
-
 #endif /* !_UPC_BACKTRACE_H_ */

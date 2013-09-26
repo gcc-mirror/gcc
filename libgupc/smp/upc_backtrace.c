@@ -47,8 +47,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
+
+/** Default backtrace file name prefix.  */
+#define UPC_BACKTRACE_PREFIX "backtrace"
+
 /** Full path of the executable program.  */
-static char __upc_abs_execname[PATH_MAX];
+static char *__upc_abs_execname;
 
 /** Backtrace on faults enabled flag.  */
 static int bt_enabled = 0;
@@ -58,7 +62,7 @@ static int bt_enabled = 0;
  *
  * Show backtrace by using the GLIBC backtrace functionality.
  * Backtrace is improved with the source file/line numbers if
- * libbfd is available.
+ * addr2line is available.
  *
  * By default backtrace lines are sent to the 'stderr' file
  * descriptor.  However, an environment variable
@@ -86,48 +90,118 @@ __upc_backtrace (void)
   file_env = getenv (GUPCR_BACKTRACE_FILE_ENV);
   if (file_env)
     {
-      int len = strlen (file_env); 
-      char *tracefile = malloc (len + 128);
+      #define MAX_INT_STRING ".2147483647"
+      char *tracefile;
+      int len, lenw;
+      /* Use default trace file name if one not specified by the user.  */
+      if (!strlen (file_env))
+	file_env = (char *) UPC_BACKTRACE_PREFIX;
+      len = strlen (file_env) + strlen (MAX_INT_STRING) + 1;
+      tracefile = malloc (len);
       if (!tracefile)
-        __upc_fatal ("UPC backtrace cannot allocate file name memory");
-      if (len)
-        strcpy (tracefile, file_env);
-      else
-        {
-	  strcpy (tracefile, "backtrace");
-          len = 9;
-	}
-      len = snprintf (&tracefile[len], 128, ".%d", MYTHREAD);
+        __upc_fatal ("cannot allocate (%d) memory for backtrace file %s",
+		     len, file_env);
+      lenw = snprintf (tracefile, len, "%s.%d", file_env, MYTHREAD);
+      if ((lenw >= len) || (lenw < 0))
+	__upc_fatal ("cannot create backtrace file name: %s", file_env);
       traceout = fopen (tracefile, "w");
       if (!traceout)
-	__upc_fatal ("Cannot open file for backtrace log");
+	__upc_fatal ("cannot open backtrace file: %s", tracefile);
       free (tracefile);
     }
   else
     fprintf (traceout, "Thread %d backtrace:\n", MYTHREAD);
 
-  /* Use "backtrace" functionality of glibc. */
+  /* Use "backtrace" functionality of glibc to receive
+     backtrace addresses.  */
   size = backtrace (strace, GUPCR_BT_DEPTH_CNT);
-# if HAVE_LIBBFD
-  strace_str = backtrace_src_symbols (strace, size, __upc_abs_execname);
-# else
-  strace_str = backtrace_symbols (strace, size);
-# endif
+  /* Add symbolic information to each address
+     and print the stack trace.  */
   for (i = GUPCR_BT_SKIP_FRAME_CNT; i < size; i++)
     {
       if (under_upc_main)
         {
+# if HAVE_UPC_BACKTRACE_ADDR2LINE
+	  /* Call addr2line to generate source files, line numbers,
+	     and functions.  In case of any error (malloc, snprintf)
+	     do not abort the program.  */
+	  FILE *a2l;
+	  #define CMD_TMPL "%s -f -e %s %p"
+	  /* Allow space for addr2line, filename, command line options,
+	     and address argument for addr2line.  */
+	  int cmd_size = strlen (GUPCR_BACKTRACE_ADDR2LINE) +
+			 strlen (__upc_abs_execname) +
+			 strlen (CMD_TMPL) +
+			 strlen ("0x1234567812345678");
+	  int sz;
+	  char *cmd = malloc (cmd_size);
+	  /* Create an actual addr2line command.  */
+	  sz = snprintf (cmd, cmd_size, CMD_TMPL, GUPCR_BACKTRACE_ADDR2LINE,
+			 __upc_abs_execname, strace[i]);
+	  if ((sz >= cmd_size) || (sz < 0))
+	    {
+	      fprintf (traceout, "unable to create addr2line "
+				 "command line\n");
+	      return;
+	    }
+	  /* Execute addr2line.  */
+	  a2l = popen (cmd, "r");
+	  free (cmd);
+	  if (a2l)
+	    {
+	      /* addr2line responds with two lines: procedure name and
+		 the file name with line number.  */
+	      int max_rep = 2 * FILENAME_MAX;
+	      /* Build a data structure that is identical to the
+		 structure returned by the glibc backtrace_symbol().  */
+	      struct back_trace {
+		char *addr;
+	        char data[1];
+	      };
+	      struct back_trace *rep = malloc (max_rep);
+	      int index = 0;
+	      if (!rep)
+		{
+		  fprintf (traceout, "unable to acquire memory "
+				     "for backtracing\n");
+		  return;
+		}
+	      rep->data[0] = '\0';
+	      /* Read addr2line response.  */
+	      while (fgets(&rep->data[index], max_rep-index, a2l))
+		{
+		  /* Remove all the new lines, as addr2line returns
+		     info in multiple lines.  */
+		  index = strlen (&rep->data[0]);
+		  if (rep->data[index - 1] == '\n')
+		    rep->data[index - 1] = ' ';
+		}
+	      pclose (a2l);
+	      rep->addr = &rep->data[0];
+	      strace_str = &rep->addr;
+	    }
+	  else
+	    {
+	      /* Somehow we failed to invoke addr2line, fall back
+	         to glibc.  */
+	      strace_str = backtrace_symbols (&strace[i], 1);
+	    }
+# else
+	  strace_str = backtrace_symbols (&strace[i], 1);
+# endif
 	  fprintf (traceout, "[%4d][%lld] %s\n", MYTHREAD, 
-	      (long long int) (i - GUPCR_BT_SKIP_FRAME_CNT), strace_str[i]);
+	      (long long int) (i - GUPCR_BT_SKIP_FRAME_CNT), *strace_str);
 	  /* Extra info for the barrier. */
-	  if ( strstr( strace_str[i], "__upc_wait"))
+	  if (strstr( *strace_str, "__upc_wait"))
 	    {
 	      fprintf (traceout, "[%4d]       BARRIER ID: %d\n", MYTHREAD, 
 		       __upc_barrier_id);
 	    }
+          if (strstr (*strace_str, "upc_main"))
+	    under_upc_main = 0;
+	  /* Symbol trace buffer must be released.  */
+	  free (strace_str);
 	}
-      if (under_upc_main && strstr (strace_str[i], "upc_main"))
-        under_upc_main = 0;
     }
   fflush (traceout);
   if (file_env)
@@ -140,7 +214,7 @@ __upc_backtrace (void)
  * Backtrace on fatal errors.
  *
  * Print backtrace (stack frames) on fatal errors: run-time
- * fatal error or segementation fault. 
+ * fatal error or segmentation fault. 
  *
  * Only print backtrace if environment variable UPC_BACKTRACE
  * is set to 1. The following order of backtrace capabilities
@@ -148,7 +222,7 @@ __upc_backtrace (void)
  *
  * (1) Use GDB for backtrace (if enabled)
  * (2) Use GLIBC backtrace with source file/line display (if
- *     libbfd is available)
+ *     addr2line is available)
  * (3) Use GLIBC backtrace with raw addresses (display is 
  *     improved if -rdynamic option is supported by the linker)
  *
@@ -300,7 +374,10 @@ __upc_backtrace_init (const char *execname)
      might be able to read "/proc/self/exe" to the get the full
      executable path. But, it is not portable. */
   int slen = sizeof (__upc_abs_execname) - strlen (execname) - 2;
-  __upc_abs_execname[0] = 0;
+  __upc_abs_execname = malloc (PATH_MAX + 1);
+  if (!__upc_abs_execname)
+    __upc_fatal ("cannot allocate space for executable file name");
+  *__upc_abs_execname = '\0';
   if (execname[0] != '/')
     {
       if (!getcwd (__upc_abs_execname, slen))

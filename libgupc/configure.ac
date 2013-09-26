@@ -880,54 +880,7 @@ if test "$upc_runtime_model" = "smp"; then
     AC_MSG_RESULT([$upc_backtrace_signal])
   fi
 
-  # UPC source file/line backtrace requires BFD library
   if test "$enable_upc_backtrace" = yes; then
-    # Specify a location for BFD lib
-    AC_ARG_WITH(bfd,
-    [AS_HELP_STRING([--with-bfd=PATH],
-                [specify prefix directory for the installed BFD library
-                 needed to provide extended UPC backtrace information
-                 (source file name and line numbers); equivalent to
-                 --with-bfd-include=PATH/include
-                 plus --with-bfd-lib=PATH/lib])])
-    AC_ARG_WITH(bfd-include,
-    [AS_HELP_STRING([--with-bfd-include=PATH],
-                [specify directory for installed BFD include files])])
-    AC_ARG_WITH(bfd-lib,
-    [AS_HELP_STRING([--with-bfd-lib=PATH],
-                [specify directory for the installed BFD library])])
-
-    if test "x$with_bfd" != x; then
-      bfdlibs="-L$with_bfd/lib $bfdlibs"
-      bfdinc="-I$with_bfd/include $bfdinc"
-    fi
-    if test "x$with_bfd_include" != x; then
-      bfdinc="-I$with_bfd_include $bfdinc"
-    fi
-    if test "x$with_bfd_lib" != x; then
-      bfdlibs="-L$with_bfd_lib $bfdlibs"
-    fi
-
-    have_bfd=yes
-    saved_CFLAGS="$CFLAGS"
-    saved_LIBS="$LIBS"
-    CFLAGS="$CFLAGS $bfdinc"
-    LIBS="$LIBS -lbfd -ldl"
-    AC_MSG_CHECKING([for the libbfd])
-    AC_TRY_LINK([
-	#include <bfd.h>
-	bfd_error_type error;
-	void foo () { error = bfd_get_error (); }
-	],[ ],
-      [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_bfd=no ])
-    CFLAGS="$saved_CFLAGS"
-    LIBS="$saved_LIBS"
-
-    if test "$have_bfd" = "yes"; then
-      AC_DEFINE(HAVE_LIBBFD, 1,
-        [Use BFD library for improved backtrace.])
-    fi
-
     # Check for "-rdynamic" for UPC backtrace
     case "${host}" in
       *-*-darwin*)
@@ -959,6 +912,14 @@ if test "$upc_runtime_model" = "smp"; then
       fi
     fi
     AC_MSG_RESULT([$have_rdynamic])
+
+    # Check if backtrace can use addr2line
+    if test x"$ADDR2LINE" != x""; then
+      AC_DEFINE(HAVE_UPC_BACKTRACE_ADDR2LINE, 1,
+        [Define to 1 if UPC backtrace with ADDR2LINE is enabled.])
+      AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_ADDR2LINE, "$ADDR2LINE",
+        [Define path to preferred addr2line for backtrace])
+    fi
   fi
 
   AC_MSG_CHECKING([for UPC runtime maximum number of locks held per thread])
@@ -1365,7 +1326,6 @@ AM_CONDITIONAL(LIBGUPC_AFFINITY, [test "$upc_affinity" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
 AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$enable_upc_backtrace" = "yes"])
-AM_CONDITIONAL(LIBGUPC_BACKTRACE_SUP, [test "$have_bfd" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_POSIX, [test "$upc_node_local" = "posix"])
 AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_MMAP, [test "$upc_node_local" = "mmap"])
 
