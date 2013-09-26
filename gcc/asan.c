@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "alloc-pool.h"
 #include "cfgloop.h"
+#include "gimple-builder.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.

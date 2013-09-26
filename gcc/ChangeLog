@@ -1,3 +1,25 @@
+2013-09-26  Andrew MacLeod <amacleod@redhat.com>
+
+	* gimple.c (gimple_replace_lhs): Move to tree-ssa.c and rename.
+	(struct count_ptr_d, count_ptr_derefs, count_uses_and_derefs): Move to
+	tree-ssa.c
+	(create_gimple_tmp): Delete.
+	(get_expr_type, build_assign, build_type_cast): Move to...
+	* gimple-builder.c: New File.
+	(get_expr_type): Relocate from gimple.c.
+	(build_assign, build_type_cast): Change to only create ssanames.
+	* gimple.h: Move prototypes to...
+	* gimple-builder.h: New File. Here.
+	* tree-ssa.h: And here.
+	* tree-ssa.c (struct count_ptr_d, count_ptr_derefs,
+	count_uses_and_derefs): Relocate from gimple.c.
+	(gimple_replace_ssa_lhs): Renamed gimple_replace_ssa from gimple.c
+	* tree-ssa-reassoc.c (repropagate_negates): Use gimple_replace_ssa_lhs.
+	* tree-ssa-math-opts (execute_cse_reciprocals): Use
+	gimple_replace_ssa_lhs.
+	* asan.c: Include gimple-builder.h.
+	* Makefile.in: Add gimple-builder.o.
+
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-live.c (var_map_base_init): Handle SSA names with
