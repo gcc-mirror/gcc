@@ -56,11 +56,6 @@ extern void delete_tree_ssa (void);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
 
-/* Call-back function for walk_use_def_chains().  At each reaching
-   definition, a function with this prototype is called.  */
-typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
-extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
-
 extern bool ssa_undefined_value_p (tree);
 extern void execute_update_addresses_taken (void);
 

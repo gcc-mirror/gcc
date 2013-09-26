@@ -725,33 +725,6 @@ Returns the version number of the @code{SSA_NAME} object @var{var}.
 @end defmac
 
 
-@subsection Walking use-def chains
-
-@deftypefn {Tree SSA function} void walk_use_def_chains (@var{var}, @var{fn}, @var{data})
-
-Walks use-def chains starting at the @code{SSA_NAME} node @var{var}.
-Calls function @var{fn} at each reaching definition found.  Function
-@var{FN} takes three arguments: @var{var}, its defining statement
-(@var{def_stmt}) and a generic pointer to whatever state information
-that @var{fn} may want to maintain (@var{data}).  Function @var{fn} is
-able to stop the walk by returning @code{true}, otherwise in order to
-continue the walk, @var{fn} should return @code{false}.
-
-Note, that if @var{def_stmt} is a @code{PHI} node, the semantics are
-slightly different.  For each argument @var{arg} of the PHI node, this
-function will:
-
-@enumerate
-@item Walk the use-def chains for @var{arg}.
-@item Call @code{FN (@var{arg}, @var{phi}, @var{data})}.
-@end enumerate
-
-Note how the first argument to @var{fn} is no longer the original
-variable @var{var}, but the PHI argument currently being examined.
-If @var{fn} wants to get at @var{var}, it should call
-@code{PHI_RESULT} (@var{phi}).
-@end deftypefn
-
 @subsection Walking the dominator tree
 
 @deftypefn {Tree SSA function} void walk_dominator_tree (@var{walk_data}, @var{bb})
