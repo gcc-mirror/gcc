@@ -1,3 +1,9 @@
+2013-09-26  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/aarch64/aarch64.opt (mlra): New option.
+	* config/aarch64/aarch64.c (aarch64_lra_p): New function.
+	(TARGET_LRA_P): Define.
+
 2013-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_assignment): Remove obsolete comment.
