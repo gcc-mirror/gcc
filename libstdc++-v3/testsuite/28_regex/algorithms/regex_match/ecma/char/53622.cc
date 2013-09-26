@@ -21,7 +21,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.11.2 regex_match
-// Tests Extended grouping against a std::string target.
 
 #include <regex>
 #include <testsuite_hooks.h>
@@ -33,7 +32,7 @@ test01()
   bool test __attribute__((unused)) = true;
 
   {
-    std::regex  re("zxcv/(one.*)abc", std::regex::extended);
+    std::regex  re("zxcv/(one.*)abc", std::regex::ECMAScript);
     std::string target("zxcv/onetwoabc");
     std::smatch m;
 
@@ -46,7 +45,7 @@ test01()
   }
 
   {
-    std::regex  re("zxcv/(one.*)abc()\\2", std::regex::extended);
+    std::regex  re("zxcv/(one.*)abc()\\2", std::regex::ECMAScript);
     std::string target("zxcv/onetwoabc");
     std::smatch m;
 

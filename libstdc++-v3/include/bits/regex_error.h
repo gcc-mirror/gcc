@@ -61,7 +61,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_error_badrepeat,
       _S_error_complexity,
       _S_error_stack,
-      _S_error_last
     };
 
   /** The expression contained an invalid collating element name. */

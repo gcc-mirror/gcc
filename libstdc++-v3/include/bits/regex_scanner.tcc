@@ -345,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      ++_M_current;
 	    }
 	  else
-	    __throw_regex_error(regex_constants::error_brace);
+	    __throw_regex_error(regex_constants::error_badbrace);
 	}
       else if (__c == '}')
 	{
@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_token = _S_token_interval_end;
 	}
       else
-	__throw_regex_error(regex_constants::error_brace);
+	__throw_regex_error(regex_constants::error_badbrace);
     }
 
   template<typename _FwdIter>
@@ -428,6 +428,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+  // Differences between styles:
+  // 1) Extended doesn't support backref, but basic does.
   template<typename _FwdIter>
     void
     _Scanner<_FwdIter>::
@@ -449,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_eat_escape_awk();
 	  return;
 	}
-      else if (_M_ctype.is(_CtypeT::digit, __c) && __c != '0')
+      else if (_M_is_basic() && _M_ctype.is(_CtypeT::digit, __c) && __c != '0')
 	{
 	  _M_token = _S_token_backref;
 	  _M_value.assign(1, __c);
