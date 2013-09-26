@@ -1,5 +1,10 @@
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
+	* tree-into-ssa.c (rewrite_into_ssa): Make more SSA names
+	to anonymous.
+
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
 	* alias.h (component_uses_parent_alias_set): Rename to ...
 	(component_uses_parent_alias_set_from): ... this.
 	* alias.c (component_uses_parent_alias_set): Rename to ...
