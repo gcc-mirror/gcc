@@ -730,19 +730,6 @@ union GTY ((desc ("gimple_statement_structure (&%h)"),
   struct gimple_statement_transaction GTY((tag ("GSS_TRANSACTION"))) gimple_transaction;
 };
 
-/* In gimple.c.  */
-
-/* Helper functions to build GIMPLE statements.  */
-tree create_gimple_tmp (tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, int, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, int, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, gimple, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, gimple, enum ssa_mode = M_SSA);
-gimple build_type_cast (tree, tree, enum ssa_mode = M_SSA);
-gimple build_type_cast (tree, gimple, enum ssa_mode = M_SSA);
-
 /* Offset in bytes to the location of the operand vector.
    Zero if there is no operand vector for this tuple structure.  */
 extern size_t const gimple_ops_offset_[];
@@ -909,8 +896,6 @@ extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);
-extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
-				   unsigned *);
 extern bool walk_stmt_load_store_addr_ops (gimple, void *,
 					   bool (*)(gimple, tree, void *),
 					   bool (*)(gimple, tree, void *),

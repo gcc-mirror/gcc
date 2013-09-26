@@ -1220,6 +1220,7 @@ OBJS = \
 	gcse.o \
 	ggc-common.o \
 	gimple.o \
+	gimple-builder.o \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-low.o \

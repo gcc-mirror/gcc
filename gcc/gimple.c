@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "diagnostic.h"
-#include "tree-ssa.h"
+#include "tree-flow.h"
 #include "value-prof.h"
 #include "flags.h"
 #include "alias.h"
@@ -2156,39 +2156,6 @@ gimple_set_lhs (gimple stmt, tree lhs)
     gcc_unreachable();
 }
 
-/* Replace the LHS of STMT, an assignment, either a GIMPLE_ASSIGN or a
-   GIMPLE_CALL, with NLHS, in preparation for modifying the RHS to an
-   expression with a different value.
-
-   This will update any annotations (say debug bind stmts) referring
-   to the original LHS, so that they use the RHS instead.  This is
-   done even if NLHS and LHS are the same, for it is understood that
-   the RHS will be modified afterwards, and NLHS will not be assigned
-   an equivalent value.
-
-   Adjusting any non-annotation uses of the LHS, if needed, is a
-   responsibility of the caller.
-
-   The effect of this call should be pretty much the same as that of
-   inserting a copy of STMT before STMT, and then removing the
-   original stmt, at which time gsi_remove() would have update
-   annotations, but using this function saves all the inserting,
-   copying and removing.  */
-
-void
-gimple_replace_lhs (gimple stmt, tree nlhs)
-{
-  if (MAY_HAVE_DEBUG_STMTS)
-    {
-      tree lhs = gimple_get_lhs (stmt);
-
-      gcc_assert (SSA_NAME_DEF_STMT (lhs) == stmt);
-
-      insert_debug_temp_for_var_def (NULL, lhs);
-    }
-
-  gimple_set_lhs (stmt, nlhs);
-}
 
 /* Return a deep copy of statement STMT.  All the operands from STMT
    are reallocated and copied using unshare_expr.  The DEF, USE, VDEF
@@ -3739,96 +3706,6 @@ gimple_get_alias_set (tree t)
 }
 
 
-/* Data structure used to count the number of dereferences to PTR
-   inside an expression.  */
-struct count_ptr_d
-{
-  tree ptr;
-  unsigned num_stores;
-  unsigned num_loads;
-};
-
-/* Helper for count_uses_and_derefs.  Called by walk_tree to look for
-   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
-
-static tree
-count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
-{
-  struct walk_stmt_info *wi_p = (struct walk_stmt_info *) data;
-  struct count_ptr_d *count_p = (struct count_ptr_d *) wi_p->info;
-
-  /* Do not walk inside ADDR_EXPR nodes.  In the expression &ptr->fld,
-     pointer 'ptr' is *not* dereferenced, it is simply used to compute
-     the address of 'fld' as 'ptr + offsetof(fld)'.  */
-  if (TREE_CODE (*tp) == ADDR_EXPR)
-    {
-      *walk_subtrees = 0;
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (*tp) == MEM_REF && TREE_OPERAND (*tp, 0) == count_p->ptr)
-    {
-      if (wi_p->is_lhs)
-	count_p->num_stores++;
-      else
-	count_p->num_loads++;
-    }
-
-  return NULL_TREE;
-}
-
-/* Count the number of direct and indirect uses for pointer PTR in
-   statement STMT.  The number of direct uses is stored in
-   *NUM_USES_P.  Indirect references are counted separately depending
-   on whether they are store or load operations.  The counts are
-   stored in *NUM_STORES_P and *NUM_LOADS_P.  */
-
-void
-count_uses_and_derefs (tree ptr, gimple stmt, unsigned *num_uses_p,
-		       unsigned *num_loads_p, unsigned *num_stores_p)
-{
-  ssa_op_iter i;
-  tree use;
-
-  *num_uses_p = 0;
-  *num_loads_p = 0;
-  *num_stores_p = 0;
-
-  /* Find out the total number of uses of PTR in STMT.  */
-  FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
-    if (use == ptr)
-      (*num_uses_p)++;
-
-  /* Now count the number of indirect references to PTR.  This is
-     truly awful, but we don't have much choice.  There are no parent
-     pointers inside INDIRECT_REFs, so an expression like
-     '*x_1 = foo (x_1, *x_1)' needs to be traversed piece by piece to
-     find all the indirect and direct uses of x_1 inside.  The only
-     shortcut we can take is the fact that GIMPLE only allows
-     INDIRECT_REFs inside the expressions below.  */
-  if (is_gimple_assign (stmt)
-      || gimple_code (stmt) == GIMPLE_RETURN
-      || gimple_code (stmt) == GIMPLE_ASM
-      || is_gimple_call (stmt))
-    {
-      struct walk_stmt_info wi;
-      struct count_ptr_d count;
-
-      count.ptr = ptr;
-      count.num_stores = 0;
-      count.num_loads = 0;
-
-      memset (&wi, 0, sizeof (wi));
-      wi.info = &count;
-      walk_gimple_op (stmt, count_ptr_derefs, &wi);
-
-      *num_stores_p = count.num_stores;
-      *num_loads_p = count.num_loads;
-    }
-
-  gcc_assert (*num_uses_p >= *num_loads_p + *num_stores_p);
-}
-
 /* From a tree operand OP return the base of a load or store operation
    or NULL_TREE if OP is not a load or a store.  */
 
@@ -4222,106 +4099,6 @@ gimple_asm_clobbers_memory_p (const_gimple stmt)
     }
 
   return false;
-}
-
-
-/* Create and return an unnamed temporary.  MODE indicates whether
-   this should be an SSA or NORMAL temporary.  TYPE is the type to use
-   for the new temporary.  */
-
-tree
-create_gimple_tmp (tree type, enum ssa_mode mode)
-{
-  return (mode == M_SSA)
-         ? make_ssa_name (type, NULL)
-         : create_tmp_var (type, NULL);
-}
-
-
-/* Return the expression type to use based on the CODE and type of
-   the given operand OP.  If the expression CODE is a comparison,
-   the returned type is boolean_type_node.  Otherwise, it returns
-   the type of OP.  */
-
-static tree
-get_expr_type (enum tree_code code, tree op)
-{
-  return (TREE_CODE_CLASS (code) == tcc_comparison)
-	 ? boolean_type_node
-	 : TREE_TYPE (op);
-}
-
-
-/* Build a new gimple assignment.  The LHS of the assignment is a new
-   temporary whose type matches the given expression.  MODE indicates
-   whether the LHS should be an SSA or a normal temporary.  CODE is
-   the expression code for the RHS.  OP1 is the first operand and VAL
-   is an integer value to be used as the second operand.  */
-
-gimple
-build_assign (enum tree_code code, tree op1, int val, enum ssa_mode mode)
-{
-  tree op2 = build_int_cst (TREE_TYPE (op1), val);
-  tree lhs = create_gimple_tmp (get_expr_type (code, op1), mode);
-  return gimple_build_assign_with_ops (code, lhs, op1, op2);
-}
-
-gimple
-build_assign (enum tree_code code, gimple g, int val, enum ssa_mode mode)
-{
-  return build_assign (code, gimple_assign_lhs (g), val, mode);
-}
-
-
-/* Build and return a new GIMPLE assignment.  The new assignment will
-   have the opcode CODE and operands OP1 and OP2.  The type of the
-   expression on the RHS is inferred to be the type of OP1.
-
-   The LHS of the statement will be an SSA name or a GIMPLE temporary
-   in normal form depending on the type of builder invoking this
-   function.  */
-
-gimple
-build_assign (enum tree_code code, tree op1, tree op2, enum ssa_mode mode)
-{
-  tree lhs = create_gimple_tmp (get_expr_type (code, op1), mode);
-  return gimple_build_assign_with_ops (code, lhs, op1, op2);
-}
-
-gimple
-build_assign (enum tree_code code, gimple op1, tree op2, enum ssa_mode mode)
-{
-  return build_assign (code, gimple_assign_lhs (op1), op2, mode);
-}
-
-gimple
-build_assign (enum tree_code code, tree op1, gimple op2, enum ssa_mode mode)
-{
-  return build_assign (code, op1, gimple_assign_lhs (op2), mode);
-}
-
-gimple
-build_assign (enum tree_code code, gimple op1, gimple op2, enum ssa_mode mode)
-{
-  return build_assign (code, gimple_assign_lhs (op1), gimple_assign_lhs (op2),
-                       mode);
-}
-
-
-/* Create and return a type cast assignment. This creates a NOP_EXPR
-   that converts OP to TO_TYPE.  */
-
-gimple
-build_type_cast (tree to_type, tree op, enum ssa_mode mode)
-{
-  tree lhs = create_gimple_tmp (to_type, mode);
-  return gimple_build_assign_with_ops (NOP_EXPR, lhs, op, NULL_TREE);
-}
-
-gimple
-build_type_cast (tree to_type, gimple op, enum ssa_mode mode)
-{
-  return build_type_cast (to_type, gimple_assign_lhs (op), mode);
 }
 
 
