@@ -1,3 +1,9 @@
+2013-09-26  Florian Weimer  <fw@deneb.enyo.de>
+
+	* tree-ssa.h (walk_use_def_chains_fn, walk_use_def_chains): Delete.
+	* tree-ssa.c (walk_use_def_chains_1, walk_use_def_chains): Delete.
+	* doc/tree-ssa.texi (Walking use-def chains): Delete.
+
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-into-ssa.c (rewrite_into_ssa): Make more SSA names
