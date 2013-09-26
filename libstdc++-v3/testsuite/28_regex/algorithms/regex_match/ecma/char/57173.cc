@@ -20,8 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.11.3 regex_search
-// Tests Extended against a std::string target.
+// 28.11.2 regex_match
 
 #include <regex>
 #include <testsuite_hooks.h>
@@ -34,7 +33,7 @@ test01()
   bool test __attribute__((unused)) = true;
 
   {
-    std::regex  re("/asdf(/.*)", std::regex::extended);
+    std::regex  re("/asdf(/.*)", std::regex::ECMAScript);
     std::string target("/asdf/qwerty");
     std::smatch m;
 
@@ -43,7 +42,7 @@ test01()
     VERIFY( std::string(m[1].first, m[1].second) == "/qwerty");
   }
   {
-    std::regex  re("/asdf(/.*)()\\2", std::regex::extended);
+    std::regex  re("/asdf(/.*)()\\2", std::regex::ECMAScript);
     std::string target("/asdf/qwerty");
     std::smatch m;
 

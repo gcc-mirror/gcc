@@ -1,3 +1,16 @@
+2013-09-26  Tim Shen  <timshen91@gmail.com>
+
+	* regex_error.h: Remove _S_error_last to follow the standard.
+	* regex_scanner.tcc:
+	(_Scanner<_FwdIter>::_M_scan_in_brace): Change error_brace to
+	error_badbrace.
+	(_Scanner<>::_M_eat_escape_posix): Extended doesn't support
+	back-reference.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/53622.cc:
+	Move here from ../../extended.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/57173.cc:
+	Likewise.
+
 2013-09-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338
