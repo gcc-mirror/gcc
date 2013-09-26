@@ -1,3 +1,15 @@
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	* alias.h (component_uses_parent_alias_set): Rename to ...
+	(component_uses_parent_alias_set_from): ... this.
+	* alias.c (component_uses_parent_alias_set): Rename to ...
+	(component_uses_parent_alias_set_from): ... this and return
+	the desired parent.
+	(reference_alias_ptr_type_1): Use the result from
+	component_uses_parent_alias_set_from instead of stripping
+	components one at a time.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust.
+
 2013-09-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs): Move

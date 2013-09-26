@@ -500,51 +500,58 @@ objects_must_conflict_p (tree t1, tree t2)
   return alias_sets_must_conflict_p (set1, set2);
 }
 
-/* Return true if all nested component references handled by
-   get_inner_reference in T are such that we should use the alias set
-   provided by the object at the heart of T.
+/* Return the outermost parent of component present in the chain of
+   component references handled by get_inner_reference in T with the
+   following property:
+     - the component is non-addressable, or
+     - the parent has alias set zero,
+   or NULL_TREE if no such parent exists.  In the former cases, the alias
+   set of this parent is the alias set that must be used for T itself.  */
 
-   This is true for non-addressable components (which don't have their
-   own alias set), as well as components of objects in alias set zero.
-   This later point is a special case wherein we wish to override the
-   alias set used by the component, but we don't have per-FIELD_DECL
-   assignable alias sets.  */
-
-bool
-component_uses_parent_alias_set (const_tree t)
+tree
+component_uses_parent_alias_set_from (const_tree t)
 {
-  while (1)
-    {
-      /* If we're at the end, it vacuously uses its own alias set.  */
-      if (!handled_component_p (t))
-	return false;
+  const_tree found = NULL_TREE;
 
+  while (handled_component_p (t))
+    {
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
 	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-	    return true;
+	    found = t;
 	  break;
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
-	    return true;
+	    found = t;
 	  break;
 
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	  break;
 
-	default:
+	case BIT_FIELD_REF:
+	case VIEW_CONVERT_EXPR:
 	  /* Bitfields and casts are never addressable.  */
-	  return true;
+	  found = t;
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
 
+      if (get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) == 0)
+	found = t;
+
       t = TREE_OPERAND (t, 0);
-      if (get_alias_set (TREE_TYPE (t)) == 0)
-	return true;
     }
+ 
+  if (found)
+    return TREE_OPERAND (found, 0);
+
+  return NULL_TREE;
 }
 
 
@@ -645,14 +652,11 @@ reference_alias_ptr_type_1 (tree *t)
 	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
     return TREE_TYPE (TREE_OPERAND (inner, 1));
 
-  /* Otherwise, pick up the outermost object that we could have a pointer
-     to, processing conversions as above.  */
-  /* ???  Ick, this is worse than quadratic!  */
-  while (component_uses_parent_alias_set (*t))
-    {
-      *t = TREE_OPERAND (*t, 0);
-      STRIP_NOPS (*t);
-    }
+  /* Otherwise, pick up the outermost object that we could have
+     a pointer to.  */
+  tree tem = component_uses_parent_alias_set_from (*t);
+  if (tem)
+    *t = tem;
 
   return NULL_TREE;
 }

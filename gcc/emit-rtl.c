@@ -1704,7 +1704,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
       /* If this expression uses it's parent's alias set, mark it such
 	 that we won't change it.  */
-      if (component_uses_parent_alias_set (t))
+      if (component_uses_parent_alias_set_from (t) != NULL_TREE)
 	MEM_KEEP_ALIAS_SET_P (ref) = 1;
 
       /* If this is a decl, set the attributes of the MEM from it.  */
