@@ -1,3 +1,21 @@
+2013-09-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs): Move
+	prototypes to...
+	* tree-ssa-ter.h: New File.  Move prototypes here.
+	* tree-flow.h (stmt_is_replaceable_p): Remove prototype.
+	* tree-outof-ssa.h: New. Rename ssaexpand.h, include tree-ssa-ter.h.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): New.  Refactor common bits
+	from is_replaceable_p. 
+	* tree-ssa-ter.c (is_replaceable_p, stmt_is_replaceable_p): Delete.
+	(ter_is_replaceable_p): New.  Use new refactored ssa_is_replaceable_p.
+	(process_replaceable): Use ter_is_replaceable_p.
+	(find_replaceable_in_bb): Use ter_is_replaceable_p.
+	* expr.c (stmt_is_replaceable_p): Relocate from tree-ssa-ter.c.  Use
+	newly refactored ssa_is_replaceable_p.
+	* cfgexpand.c: Include tree-outof-ssa.h.
+	* ssaexpand.h: Delete.
+
 2013-09-26  Andrew MacLeod <amacleod@redhat.com>
 
 	* gimple.c (gimple_replace_lhs): Move to tree-ssa.c and rename.

@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "df.h"
 #include "diagnostic.h"
-#include "ssaexpand.h"
+#include "tree-outof-ssa.h"
 #include "target-globals.h"
 #include "params.h"
 
@@ -9125,6 +9125,24 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   return REDUCE_BIT_FIELD (temp);
 }
 #undef REDUCE_BIT_FIELD
+
+
+/* Return TRUE if expression STMT is suitable for replacement.  
+   Never consider memory loads as replaceable, because those don't ever lead 
+   into constant expressions.  */
+
+static bool
+stmt_is_replaceable_p (gimple stmt)
+{
+  if (ssa_is_replaceable_p (stmt))
+    {
+      /* Don't move around loads.  */
+      if (!gimple_assign_single_p (stmt)
+	  || is_gimple_val (gimple_assign_rhs1 (stmt)))
+	return true;
+    }
+  return false;
+}
 
 rtx
 expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,

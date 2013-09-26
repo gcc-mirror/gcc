@@ -325,10 +325,4 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
 /* From tree-ssa-coalesce.c  */
 extern var_map coalesce_ssa_name (void);
 
-
-/* From tree-ssa-ter.c  */
-extern bitmap find_replaceable_exprs (var_map);
-extern void dump_replaceable_exprs (FILE *, bitmap);
-
-
 #endif /* _TREE_SSA_LIVE_H  */
