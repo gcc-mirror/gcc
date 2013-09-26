@@ -980,10 +980,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 	      {
 		tree lhs = gimple_assign_lhs (stmt);
 		tree rhs1 = gimple_assign_rhs1 (stmt);
-
-		if (gimple_assign_copy_p (stmt)
-                    && TREE_CODE (lhs) == SSA_NAME
-		    && TREE_CODE (rhs1) == SSA_NAME
+		if (gimple_assign_ssa_name_copy_p (stmt)
 		    && gimple_can_coalesce_p (lhs, rhs1))
 		  {
 		    v1 = SSA_NAME_VERSION (lhs);
@@ -1347,7 +1344,11 @@ gimple_can_coalesce_p (tree name1, tree name2)
 {
   /* First check the SSA_NAME's associated DECL.  We only want to
      coalesce if they have the same DECL or both have no associated DECL.  */
-  if (SSA_NAME_VAR (name1) != SSA_NAME_VAR (name2))
+  tree var1 = SSA_NAME_VAR (name1);
+  tree var2 = SSA_NAME_VAR (name2);
+  var1 = (var1 && (!VAR_P (var1) || !DECL_IGNORED_P (var1))) ? var1 : NULL_TREE;
+  var2 = (var2 && (!VAR_P (var2) || !DECL_IGNORED_P (var2))) ? var2 : NULL_TREE;
+  if (var1 != var2)
     return false;
 
   /* Now check the types.  If the types are the same, then we should

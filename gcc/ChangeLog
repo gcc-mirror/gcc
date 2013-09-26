@@ -1,3 +1,13 @@
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.c (var_map_base_init): Handle SSA names with
+	DECL_IGNORED_P base VAR_DECLs like anonymous SSA names.
+	(loe_visit_block): Use gcc_checking_assert.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Use
+	gimple_assign_ssa_name_copy_p.
+	(gimple_can_coalesce_p): Adjust according to the var_map_base_init
+	change.
+
 2013-09-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/t-rs6000 (rs6000.o): Remove.
