@@ -1,3 +1,7 @@
+2013-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_assignment): Remove obsolete comment.
+
 2013-09-25  Jeff Law  <law@redhat.com>
 
 	* tree-flow.h (thread_through_all_blocks): Prototype moved into
@@ -33,7 +37,7 @@
 	(strip_address_mutations): Add bitfield operations handling.
 	(must_be_index_p): Add shifting and rotate operations handling.
 	(set_address_base): Use must_be_base_p predicate.
-	(set_address_index):Use must_be_index_p predicate.
+	(set_address_index): Use must_be_index_p predicate.
 
 2013-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>

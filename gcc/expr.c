@@ -4836,11 +4836,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      /* If the field is at offset zero, we could have been given the
 		 DECL_RTX of the parent struct.  Don't munge it.  */
 	      to_rtx = shallow_copy_rtx (to_rtx);
-
 	      set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
-
-	      /* Deal with volatile and readonly fields.  The former is only
-		 done for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
 	      if (volatilep)
 		MEM_VOLATILE_P (to_rtx) = 1;
 	    }
