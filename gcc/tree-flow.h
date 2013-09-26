@@ -641,10 +641,6 @@ bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode,
 				      addr_space_t);
 bool may_be_nonaddressable_p (tree expr);
 
-/* In tree-ssa-threadupdate.c.  */
-extern bool thread_through_all_blocks (bool);
-extern void register_jump_thread (vec<edge>, bool);
-
 /* In gimplify.c  */
 tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
 tree force_gimple_operand (tree, gimple_seq *, bool, tree);

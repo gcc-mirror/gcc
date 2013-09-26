@@ -1,3 +1,7 @@
+2013-09-25  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Update expected output.
+
 2013-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58436
