@@ -1291,7 +1291,7 @@ msp430_expand_epilogue (int is_eh)
   if (cfun->machine->need_to_save [10])
     {
       /* Check for a helper function.  */
-      helper_n = 7; /* for when the loop below never sees a match.  */
+      helper_n = 7; /* For when the loop below never sees a match.  */
       for (i = 9; i >= 4; i--)
 	if (!cfun->machine->need_to_save [i])
 	  {
@@ -1354,7 +1354,7 @@ msp430_expand_epilogue (int is_eh)
 		 && ! is_critical_func ()
 		 && crtl->args.pretend_args_size == 0
 		 /* Calling the helper takes as many bytes as the POP;RET sequence.  */
-		 && helper_n != 1
+		 && helper_n > 1
 		 && !is_eh)
 	  {
 	    emit_insn (gen_epilogue_helper (GEN_INT (helper_n)));
@@ -1494,7 +1494,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
       /* Note that the INTVAL is limited in value and length by the conditional above.  */
       int len = strlen (helper_name) + 4;
       helper_const = (char *) xmalloc (len);
-      snprintf (helper_const, len, "%s_%ld", helper_name, (int) INTVAL (operands[2]));
+      snprintf (helper_const, len, "%s_%d", helper_name, (int) INTVAL (operands[2]));
     }
 
   emit_move_insn (gen_rtx_REG (arg1mode, 12),
@@ -1722,12 +1722,10 @@ msp430_output_labelref (FILE *file, const char *name)
   fputs (name, file);
 }
 
-#undef  TARGET_PRINT_OPERAND
-#define TARGET_PRINT_OPERAND		msp430_print_operand
+/* Common code for msp430_print_operand...  */
 
-/* Common code for msp430_print_operand().  */
 static void
-msp430_print_operand_raw (FILE * file, rtx op, int letter ATTRIBUTE_UNUSED)
+msp430_print_operand_raw (FILE * file, rtx op)
 {
   int i;
 
@@ -1758,6 +1756,45 @@ msp430_print_operand_raw (FILE * file, rtx op, int letter ATTRIBUTE_UNUSED)
       break;
     }
 }
+
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS	msp430_print_operand_addr
+
+/* Output to stdio stream FILE the assembler syntax for an
+   instruction operand that is a memory reference whose address
+   is ADDR.  */
+
+static void
+msp430_print_operand_addr (FILE * file, rtx addr)
+{
+  switch (GET_CODE (addr))
+    {
+    case PLUS:
+      msp430_print_operand_raw (file, XEXP (addr, 1));
+      gcc_assert (REG_P (XEXP (addr, 0)));
+      fprintf (file, "(%s)", reg_names [REGNO (XEXP (addr, 0))]);
+      return;
+
+    case REG:
+      fprintf (file, "@");
+      break;
+
+    case CONST:
+    case CONST_INT:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      fprintf (file, "&");
+      break;
+
+    default:
+      break;
+    }
+
+  msp430_print_operand_raw (file, addr);
+}
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND		msp430_print_operand
 
 static void
 msp430_print_operand (FILE * file, rtx op, int letter)
@@ -1803,7 +1840,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	case GT: fprintf (file, "GE"); break;
 	case LE: fprintf (file, "L"); break;
 	default:
-	  msp430_print_operand_raw (file, op, letter);
+	  msp430_print_operand_raw (file, op);
 	  break;
 	}
       return;
@@ -1815,7 +1852,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	case GT: fprintf (file, "L"); break;
 	case LE: fprintf (file, "GE"); break;
 	default:
-	  msp430_print_operand_raw (file, op, letter);
+	  msp430_print_operand_raw (file, op);
 	  break;
 	}
       return;
@@ -1897,38 +1934,18 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       fprintf (file, "%d",
 	       msp430_initial_elimination_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)
 	        - 2);
-      return ;
+      return;
     }
 
   switch (GET_CODE (op))
     {
     case REG:
-      msp430_print_operand_raw (file, op, letter);
+      msp430_print_operand_raw (file, op);
       break;
 
     case MEM:
       addr = XEXP (op, 0);
-      switch (GET_CODE (addr))
-	{
-	case REG:
-	  fprintf (file, "@%s", reg_names [REGNO (addr)]);
-	  break;
-	case PLUS:
-	  msp430_print_operand_raw (file, XEXP (addr, 1), letter);
-	  fprintf (file, "(%s)", reg_names [REGNO (XEXP (addr, 0))]);
-	  break;
-	case CONST:
-	case CONST_INT:
-	case SYMBOL_REF:
-	case LABEL_REF:
-	  fprintf (file, "&");
-	  msp430_print_operand_raw (file, addr, letter);
-	  break;
-
-	default:
-	  print_rtl (file, addr);
-	  break;
-	}
+      msp430_print_operand_addr (file, addr);
       break;
 
     case CONST_INT:
@@ -1937,7 +1954,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case LABEL_REF:
       if (letter == 0)
 	fprintf (file, "#");
-      msp430_print_operand_raw (file, op, letter);
+      msp430_print_operand_raw (file, op);
       break;
 
     case EQ: fprintf (file, "EQ"); break;
@@ -1951,7 +1968,6 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       print_rtl (file, op);
       break;
     }
-
 }
 
 

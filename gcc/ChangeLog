@@ -1,3 +1,18 @@
+2013-09-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_expand_epilogue): Fix compile
+	time warning message.
+	(msp430_print_operand_raw): Delete unused letter parameter.
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(msp430_print_operand_address): New function.
+	(msp430_print_operand): Move address printing code from here to
+	new function.
+	* config/msp430/msp430.md (movsipsi2): Add comment in generated
+	assembler.
+	(zero_extendpsisi2): Likewise.
+	(extendpsisi2): New pattern.
+	(andneghi3): New pattern.
+
 2013-09-26  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/aarch64/aarch64.opt (mlra): New option.
