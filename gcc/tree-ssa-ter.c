@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "tree-ssa.h"
 #include "dumpfile.h"
-#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
 #include "flags.h"
 
 
@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
    information is tracked.
 
    Variables which only have one use, and whose defining stmt is considered
-   a replaceable expression (see is_replaceable_p) are tracked to see whether
+   a replaceable expression (see ssa_is_replaceable_p) are tracked to see whether
    they can be replaced at their use location.
 
    n_12 = C * 10
@@ -359,111 +359,6 @@ add_dependence (temp_expr_table_p tab, int version, tree var)
 }
 
 
-/* Return TRUE if expression STMT is suitable for replacement.
-   TER is true if is_replaceable_p is called from within TER, false
-   when used from within stmt_is_replaceable_p, i.e. EXPAND_INITIALIZER
-   expansion.  The differences are that with !TER some tests are skipped
-   to make it more aggressive (doesn't require the same bb, or for -O0
-   same locus and same BLOCK), on the other side never considers memory
-   loads as replaceable, because those don't ever lead into constant
-   expressions.  */
-
-static inline bool
-is_replaceable_p (gimple stmt, bool ter)
-{
-  use_operand_p use_p;
-  tree def;
-  gimple use_stmt;
-  location_t locus1, locus2;
-  tree block1, block2;
-
-  /* Only consider modify stmts.  */
-  if (!is_gimple_assign (stmt))
-    return false;
-
-  /* If the statement may throw an exception, it cannot be replaced.  */
-  if (stmt_could_throw_p (stmt))
-    return false;
-
-  /* Punt if there is more than 1 def.  */
-  def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
-  if (!def)
-    return false;
-
-  /* Only consider definitions which have a single use.  */
-  if (!single_imm_use (def, &use_p, &use_stmt))
-    return false;
-
-  /* If the use isn't in this block, it wont be replaced either.  */
-  if (ter && gimple_bb (use_stmt) != gimple_bb (stmt))
-    return false;
-
-  locus1 = gimple_location (stmt);
-  block1 = LOCATION_BLOCK (locus1);
-  locus1 = LOCATION_LOCUS (locus1);
-
-  if (gimple_code (use_stmt) == GIMPLE_PHI)
-    locus2 = gimple_phi_arg_location (use_stmt, PHI_ARG_INDEX_FROM_USE (use_p));
-  else
-    locus2 = gimple_location (use_stmt);
-  block2 = LOCATION_BLOCK (locus2);
-  locus2 = LOCATION_LOCUS (locus2);
-
-  if ((!optimize || optimize_debug)
-      && ter
-      && ((locus1 != UNKNOWN_LOCATION
-	   && locus1 != locus2)
-	  || (block1 != NULL_TREE
-	      && block1 != block2)))
-    return false;
-
-  /* Used in this block, but at the TOP of the block, not the end.  */
-  if (gimple_code (use_stmt) == GIMPLE_PHI)
-    return false;
-
-  /* There must be no VDEFs.  */
-  if (gimple_vdef (stmt))
-    return false;
-
-  /* Without alias info we can't move around loads.  */
-  if ((!optimize || !ter)
-      && gimple_assign_single_p (stmt)
-      && !is_gimple_val (gimple_assign_rhs1 (stmt)))
-    return false;
-
-  /* Float expressions must go through memory if float-store is on.  */
-  if (flag_float_store
-      && FLOAT_TYPE_P (gimple_expr_type (stmt)))
-    return false;
-
-  /* An assignment with a register variable on the RHS is not
-     replaceable.  */
-  if (gimple_assign_rhs_code (stmt) == VAR_DECL
-      && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
-    return false;
-
-  /* No function calls can be replaced.  */
-  if (is_gimple_call (stmt))
-    return false;
-
-  /* Leave any stmt with volatile operands alone as well.  */
-  if (gimple_has_volatile_ops (stmt))
-    return false;
-
-  return true;
-}
-
-
-/* Variant of is_replaceable_p test for use in EXPAND_INITIALIZER
-   expansion.  */
-
-bool
-stmt_is_replaceable_p (gimple stmt)
-{
-  return is_replaceable_p (stmt, false);
-}
-
-
 /* This function will remove the expression for VERSION from replacement
    consideration in table TAB.  If FREE_EXPR is true, then remove the
    expression from consideration as well by freeing the decl uid bitmap.  */
@@ -487,6 +382,62 @@ finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
 }
 
 
+/* Return TRUE if expression STMT is suitable for replacement.
+   In addition to ssa_is_replaceable_p, require the same bb, and for -O0
+   same locus and same BLOCK), Considers memory loads as replaceable if aliasing
+   is available.  */
+
+static inline bool
+ter_is_replaceable_p (gimple stmt)
+{
+
+  if (ssa_is_replaceable_p (stmt))
+    {
+      use_operand_p use_p;
+      tree def;
+      gimple use_stmt;
+      location_t locus1, locus2;
+      tree block1, block2;
+
+      /* Only consider definitions which have a single use.  ssa_is_replaceable_p
+	 already performed this check, but the use stmt pointer is required for
+	 further checks.  */
+      def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+      if (!single_imm_use (def, &use_p, &use_stmt))
+	  return false;
+
+      /* If the use isn't in this block, it wont be replaced either.  */
+      if (gimple_bb (use_stmt) != gimple_bb (stmt))
+        return false;
+
+      locus1 = gimple_location (stmt);
+      block1 = LOCATION_BLOCK (locus1);
+      locus1 = LOCATION_LOCUS (locus1);
+
+      if (gimple_code (use_stmt) == GIMPLE_PHI)
+	locus2 = gimple_phi_arg_location (use_stmt, 
+					  PHI_ARG_INDEX_FROM_USE (use_p));
+      else
+	locus2 = gimple_location (use_stmt);
+      block2 = LOCATION_BLOCK (locus2);
+      locus2 = LOCATION_LOCUS (locus2);
+
+      if ((!optimize || optimize_debug)
+	  && ((locus1 != UNKNOWN_LOCATION && locus1 != locus2)
+	      || (block1 != NULL_TREE && block1 != block2)))
+	return false;
+
+      /* Without alias info we can't move around loads.  */
+      if (!optimize && gimple_assign_single_p (stmt)
+	  && !is_gimple_val (gimple_assign_rhs1 (stmt)))
+	return false;
+
+      return true;
+    }
+  return false;
+}
+
+
 /* Create an expression entry for a replaceable expression.  */
 
 static void
@@ -497,7 +448,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
   ssa_op_iter iter;
   bitmap def_vars, use_vars;
 
-  gcc_checking_assert (is_replaceable_p (stmt, true));
+  gcc_checking_assert (ter_is_replaceable_p (stmt));
 
   def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
   version = SSA_NAME_VERSION (def);
@@ -612,7 +563,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
       if (is_gimple_debug (stmt))
 	continue;
 
-      stmt_replaceable = is_replaceable_p (stmt, true);
+      stmt_replaceable = ter_is_replaceable_p (stmt);
 
       /* Determine if this stmt finishes an existing expression.  */
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)

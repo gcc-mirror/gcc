@@ -30,12 +30,67 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
-#include "ssaexpand.h"
+#include "tree-outof-ssa.h"
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
    should be in cfgexpand.c.  */
 #include "expr.h"
 
+/* Return TRUE if expression STMT is suitable for replacement.  */
+
+bool
+ssa_is_replaceable_p (gimple stmt)
+{
+  use_operand_p use_p;
+  tree def;
+  gimple use_stmt;
+
+  /* Only consider modify stmts.  */
+  if (!is_gimple_assign (stmt))
+    return false;
+
+  /* If the statement may throw an exception, it cannot be replaced.  */
+  if (stmt_could_throw_p (stmt))
+    return false;
+
+  /* Punt if there is more than 1 def.  */
+  def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+  if (!def)
+    return false;
+
+  /* Only consider definitions which have a single use.  */
+  if (!single_imm_use (def, &use_p, &use_stmt))
+    return false;
+
+  /* Used in this block, but at the TOP of the block, not the end.  */
+  if (gimple_code (use_stmt) == GIMPLE_PHI)
+    return false;
+
+  /* There must be no VDEFs.  */
+  if (gimple_vdef (stmt))
+    return false;
+
+  /* Float expressions must go through memory if float-store is on.  */
+  if (flag_float_store
+      && FLOAT_TYPE_P (gimple_expr_type (stmt)))
+    return false;
+
+  /* An assignment with a register variable on the RHS is not
+     replaceable.  */
+  if (gimple_assign_rhs_code (stmt) == VAR_DECL
+      && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
+    return false;
+
+  /* No function calls can be replaced.  */
+  if (is_gimple_call (stmt))
+    return false;
+
+  /* Leave any stmt with volatile operands alone as well.  */
+  if (gimple_has_volatile_ops (stmt))
+    return false;
+
+  return true;
+}
 
 
 /* Used to hold all the components required to do SSA PHI elimination.

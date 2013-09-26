@@ -679,9 +679,6 @@ bool fixup_noreturn_call (gimple stmt);
 /* In ipa-pure-const.c  */
 void warn_function_noreturn (tree);
 
-/* In tree-ssa-ter.c  */
-bool stmt_is_replaceable_p (gimple);
-
 /* In tree-parloops.c  */
 bool parallelized_function_p (tree);
 
