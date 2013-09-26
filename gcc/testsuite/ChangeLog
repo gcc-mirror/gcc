@@ -1,3 +1,8 @@
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58539
+	* gcc.dg/torture/pr58539.c: New testcase.
+
 2013-09-25  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Update expected output.
