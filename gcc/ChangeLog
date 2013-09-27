@@ -1,3 +1,9 @@
+2013-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58459
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Remove
+	restriction not propagating into loops.
+
 2013-09-26  Florian Weimer  <fw@deneb.enyo.de>
 
 	* tree-ssa.h (walk_use_def_chains_fn, walk_use_def_chains): Delete.
