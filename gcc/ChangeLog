@@ -1,5 +1,10 @@
 2013-09-27  Paulo Matos  <pmatos@broadcom.com>
 
+	PR middle-end/58463
+	* gcc.dg/pr58463.c: New test.
+
+2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+
 	* cfgloop.h (number_of_loops): Fix typo in check for null.
 
 2013-09-27  Jakub Jelinek  <jakub@redhat.com>
