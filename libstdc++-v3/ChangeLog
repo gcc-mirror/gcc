@@ -1,3 +1,11 @@
+2013-08-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57465
+	* include/std/functional
+	(_Function_base::_Base_manager::_M_not_empty_function): Fix overload
+	for pointers.
+	* testsuite/20_util/function/cons/57465.cc: New.
+
 2013-09-26  Tim Shen  <timshen91@gmail.com>
 
 	* regex_error.h: Remove _S_error_last to follow the standard.
