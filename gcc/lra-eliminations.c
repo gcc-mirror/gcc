@@ -1160,9 +1160,9 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 static void
 init_elim_table (void)
 {
-  bool value_p;
   struct elim_table *ep;
 #ifdef ELIMINABLE_REGS
+  bool value_p;
   const struct elim_table_1 *ep1;
 #endif
 
