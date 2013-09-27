@@ -6739,6 +6739,7 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
       return;
 
     case INSN_LIST:
+    case INT_LIST:
       gcc_unreachable ();
 
     default:

@@ -1075,6 +1075,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
       break;
 
     case INSN_LIST:
+    case INT_LIST:
       if (XEXP (x, 1))
 	reg_scan_mark_refs (XEXP (x, 1), insn);
       break;
