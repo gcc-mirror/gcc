@@ -1,3 +1,24 @@
+2013-09-27  Xinliang David Li  <davidxl@google.com>
+
+	* opts.c (finish_options): Adjust parameters
+	according to vect cost model.
+	(common_handle_option): Set dynamic vect cost
+	model for FDO.
+	targhooks.c (default_add_stmt_cost): Compute stmt cost
+	unconditionally.
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters):
+	Use helper function.
+	* tree-vectorizer.h (unlimited_cost_model): New function.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Use helper function.
+	* tree-vect-data-refs.c (vect_peeling_hash_insert): Use helper
+	function.
+	(vect_enhance_data_refs_alignment): Ditto.
+	* flag-types.h: New enum.
+	* common/config/i386/i386-common.c (ix86_option_init_struct):
+	No need to initialize vect_cost_model flag.
+	* config/i386/i386.c (ix86_add_stmt_cost): Compute stmt cost
+	unconditionally.
+
 2013-09-27  Diego Novillo  <dnovillo@google.com>
 
 	* gimple.h (enum ssa_mode): Remove.
