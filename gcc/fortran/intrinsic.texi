@@ -3461,7 +3461,7 @@ program test_time_and_date
     call date_and_time(TIME=time)
     call date_and_time(VALUES=values)
     print '(a,2x,a,2x,a)', date, time, zone
-    print '(8i5))', values
+    print '(8i5)', values
 end program test_time_and_date
 @end smallexample
 
