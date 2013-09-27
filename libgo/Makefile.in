@@ -1087,12 +1087,18 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
-@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = 
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = 
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = \
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefuncgo_386.go
+
 @LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_file = \
 @LIBGO_IS_X86_64_TRUE@	go/reflect/makefuncgo_amd64.go
 
-@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
-@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_dummy.c
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_dummy.c
+
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_386.S
 
 @LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_s_file = \
 @LIBGO_IS_X86_64_TRUE@	go/reflect/makefunc_amd64.S

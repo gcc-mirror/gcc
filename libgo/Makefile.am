@@ -901,9 +901,16 @@ go_reflect_makefunc_file = \
 go_reflect_makefunc_s_file = \
 	go/reflect/makefunc_amd64.S
 else
+if LIBGO_IS_386
+go_reflect_makefunc_file = \
+	go/reflect/makefuncgo_386.go
+go_reflect_makefunc_s_file = \
+	go/reflect/makefunc_386.S
+else
 go_reflect_makefunc_file =
 go_reflect_makefunc_s_file = \
 	go/reflect/makefunc_dummy.c
+endif
 endif
 
 go_reflect_files = \

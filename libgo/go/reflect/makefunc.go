@@ -47,7 +47,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 	}
 
 	switch runtime.GOARCH {
-	case "amd64":
+	case "amd64", "386":
 	default:
 		panic("reflect.MakeFunc not implemented for " + runtime.GOARCH)
 	}
