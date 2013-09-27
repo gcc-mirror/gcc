@@ -1,7 +1,6 @@
 FAIL: g++.dg/guality/pr55665.C -O2  line 23 p == 40
 FAIL: g++.dg/guality/pr55665.C -O3 -fomit-frame-pointer  line 23 p == 40
 FAIL: g++.dg/guality/pr55665.C -O3 -g  line 23 p == 40
-FAIL: gcc.dg/attr-ifunc-4.c execution test
 XPASS: gcc.dg/guality/example.c -O0  execution test
 XPASS: gcc.dg/guality/example.c -O2  execution test
 XPASS: gcc.dg/guality/example.c -O2 -flto -fno-use-linker-plugin -flto-partition=none  execution test
@@ -100,23 +99,11 @@ FAIL: gcc.dg/guality/vla-2.c -O2 -flto -fno-use-linker-plugin -flto-partition=no
 FAIL: gcc.dg/guality/vla-2.c -O2 -flto -fno-use-linker-plugin -flto-partition=none  line 25 sizeof (a) == 6 * sizeof (int)
 FAIL: gcc.dg/guality/vla-2.c -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects  line 16 sizeof (a) == 5 * sizeof (int)
 FAIL: gcc.dg/guality/vla-2.c -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects  line 25 sizeof (a) == 6 * sizeof (int)
-FAIL: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o link, -O0 -flto -flto-partition=none -fuse-linker-plugin
-UNRESOLVED: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o execute -O0 -flto -flto-partition=none -fuse-linker-plugin
-FAIL: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o link, -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin
-UNRESOLVED: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o execute -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin
-FAIL: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o link, -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects
-UNRESOLVED: gcc.dg/lto/20090218-1 c_lto_20090218-1_0.o-c_lto_20090218-1_1.o execute -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects
-FAIL: gfortran.dg/round_4.f90 -O0  execution test
-FAIL: gfortran.dg/round_4.f90 -O1  execution test
-FAIL: gfortran.dg/round_4.f90 -O2  execution test
-FAIL: gfortran.dg/round_4.f90 -O3 -fomit-frame-pointer  execution test
-FAIL: gfortran.dg/round_4.f90 -O3 -fomit-frame-pointer -funroll-loops  execution test
-FAIL: gfortran.dg/round_4.f90 -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions  execution test
-FAIL: gfortran.dg/round_4.f90 -O3 -g  execution test
-FAIL: gfortran.dg/round_4.f90 -Os  execution test
+FAIL: gcc.dg/tree-ssa/slsr-39.c scan-tree-dump-times slsr "MEM" 4
 FAIL: libmudflap.c++/pass41-frag.cxx ( -O) execution test
 FAIL: libmudflap.c++/pass41-frag.cxx (-O2) execution test
 FAIL: libmudflap.c++/pass41-frag.cxx (-O3) execution test
+FAIL: libmudflap.c++/pass55-frag.cxx (-O3) execution test
 FAIL: sourcelocation output - source compiled test
 FAIL: sourcelocation -findirect-dispatch output - source compiled test
 FAIL: sourcelocation -O3 output - source compiled test
