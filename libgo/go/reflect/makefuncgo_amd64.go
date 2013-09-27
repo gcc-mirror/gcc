@@ -431,8 +431,14 @@ argloop:
 func amd64Memarg(in []Value, ap uintptr, rt *rtype) ([]Value, uintptr) {
 	ap = align(ap, ptrSize)
 	ap = align(ap, uintptr(rt.align))
-	p := Value{rt, unsafe.Pointer(ap), flag(rt.Kind()<<flagKindShift) | flagIndir}
-	in = append(in, p)
+
+	// We have to copy the argument onto the heap in case the
+	// function hangs onto the reflect.Value we pass it.
+	p := unsafe_New(rt)
+	memmove(p, unsafe.Pointer(ap), rt.size)
+
+	v := Value{rt, p, flag(rt.Kind()<<flagKindShift) | flagIndir}
+	in = append(in, v)
 	ap += rt.size
 	return in, ap
 }
