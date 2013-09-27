@@ -68,6 +68,7 @@
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 #include <bits/move.h> // For std::swap and _GLIBCXX_MOVE
+#include <bits/predefined_ops.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -862,6 +863,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { return true; }
     };
 
+  template<typename _II1, typename _II2, typename _Compare>
+    bool
+    __lexicographical_compare_impl(_II1 __first1, _II1 __last1,
+				   _II2 __first2, _II2 __last2,
+				   _Compare __comp)
+    {
+      typedef typename iterator_traits<_II1>::iterator_category _Category1;
+      typedef typename iterator_traits<_II2>::iterator_category _Category2;
+      typedef std::__lc_rai<_Category1, _Category2> __rai_type;
+
+      __last1 = __rai_type::__newlast1(__first1, __last1, __first2, __last2);
+      for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
+	   ++__first1, ++__first2)
+	{
+	  if (__comp(__first1, __first2))
+	    return true;
+	  if (__comp(__first2, __first1))
+	    return false;
+	}
+      return __first1 == __last1 && __first2 != __last2;
+    }
+
   template<bool _BoolType>
     struct __lexicographical_compare
     {
@@ -875,21 +898,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __lexicographical_compare<_BoolType>::
       __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
       {
-	typedef typename iterator_traits<_II1>::iterator_category _Category1;
-	typedef typename iterator_traits<_II2>::iterator_category _Category2;
-	typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
-	
-	__last1 = __rai_type::__newlast1(__first1, __last1,
-					 __first2, __last2);
-	for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
-	     ++__first1, ++__first2)
-	  {
-	    if (*__first1 < *__first2)
-	      return true;
-	    if (*__first2 < *__first1)
-	      return false;
-	  }
-	return __first1 == __last1 && __first2 != __last2;
+	return std::__lexicographical_compare_impl(
+		__first1, __last1, __first2, __last2,
+		__gnu_cxx::__ops::__iter_less_iter());
       }
 
   template<>
@@ -926,6 +937,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							    __first2, __last2);
     }
 
+  template<typename _ForwardIterator, typename _Tp, typename _Compare>
+    _ForwardIterator
+    __lower_bound(_ForwardIterator __first, _ForwardIterator __last,
+		  const _Tp& __val, _Compare __comp)
+    {
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
+
+      _DistanceType __len = std::distance(__first, __last);
+
+      while (__len > 0)
+	{
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__comp(__middle, __val))
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else
+	    __len = __half;
+	}
+      return __first;
+    }
+
   /**
    *  @brief Finds the first position in which @a val could be inserted
    *         without changing the ordering.
@@ -942,35 +980,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
-#ifdef _GLIBCXX_CONCEPT_CHECKS
-      typedef typename iterator_traits<_ForwardIterator>::value_type
-	_ValueType;
-#endif
-      typedef typename iterator_traits<_ForwardIterator>::difference_type
-	_DistanceType;
-
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_LessThanOpConcept<_ValueType, _Tp>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
 
-      _DistanceType __len = std::distance(__first, __last);
-
-      while (__len > 0)
-	{
-	  _DistanceType __half = __len >> 1;
-	  _ForwardIterator __middle = __first;
-	  std::advance(__middle, __half);
-	  if (*__middle < __val)
-	    {
-	      __first = __middle;
-	      ++__first;
-	      __len = __len - __half - 1;
-	    }
-	  else
-	    __len = __half;
-	}
-      return __first;
+      return std::__lower_bound(__first, __last, __val,
+				__gnu_cxx::__ops::__iter_less_val());
     }
 
   /// This is a helper function for the sort routines and for random.tcc.
@@ -1100,7 +1117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	  auto __d2 = std::distance(__first2, __last2);
 	  if (__d1 != __d2)
 	    return false;
-	  return std::equal(__first1, __last1, __first2);
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
 	}
 
       for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
@@ -1146,7 +1163,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	  auto __d2 = std::distance(__first2, __last2);
 	  if (__d1 != __d2)
 	    return false;
-	  return std::equal(__first1, __last1, __first2, __binary_pred);
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
+				       __binary_pred);
 	}
 
       for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
@@ -1212,26 +1230,29 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2, _Compare __comp)
     {
-      typedef typename iterator_traits<_II1>::iterator_category _Category1;
-      typedef typename iterator_traits<_II2>::iterator_category _Category2;
-      typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
-
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II1>)
       __glibcxx_function_requires(_InputIteratorConcept<_II2>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      __last1 = __rai_type::__newlast1(__first1, __last1, __first2, __last2);
-      for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
-	   ++__first1, ++__first2)
-	{
-	  if (__comp(*__first1, *__first2))
-	    return true;
-	  if (__comp(*__first2, *__first1))
-	    return false;
-	}
-      return __first1 == __last1 && __first2 != __last2;
+      return std::__lexicographical_compare_impl
+	(__first1, __last1, __first2, __last2,
+	 __gnu_cxx::__ops::__iter_comp_iter(__comp));
+    }
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _BinaryPredicate>
+    pair<_InputIterator1, _InputIterator2>
+    __mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	       _InputIterator2 __first2, _BinaryPredicate __binary_pred)
+    {
+      while (__first1 != __last1 && __binary_pred(__first1, __first2))
+        {
+	  ++__first1;
+	  ++__first2;
+        }
+      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
   /**
@@ -1260,12 +1281,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      while (__first1 != __last1 && *__first1 == *__first2)
-        {
-	  ++__first1;
-	  ++__first2;
-        }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return _GLIBCXX_STD_A::__mismatch(__first1, __last1, __first2,
+			     __gnu_cxx::__ops::__iter_equal_to_iter());
     }
 
   /**
@@ -1295,7 +1312,21 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
+      return _GLIBCXX_STD_A::__mismatch(__first1, __last1, __first2,
+	__gnu_cxx::__ops::__iter_comp_iter(__binary_pred));
+    }
+
+#if __cplusplus > 201103L
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _BinaryPredicate>
+    pair<_InputIterator1, _InputIterator2>
+    __mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	       _InputIterator2 __first2, _InputIterator2 __last2,
+	       _BinaryPredicate __binary_pred)
+    {
+      while (__first1 != __last1 && __first2 != __last2
+	     && __binary_pred(__first1, __first2))
         {
 	  ++__first1;
 	  ++__first2;
@@ -1303,7 +1334,6 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
-#if __cplusplus > 201103L
   /**
    *  @brief Finds the places in ranges which don't match.
    *  @ingroup non_mutating_algorithms
@@ -1332,13 +1362,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      while (__first1 != __last1 && __first2 != __last2
-	  && *__first1 == *__first2)
-        {
-	  ++__first1;
-	  ++__first2;
-        }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return _GLIBCXX_STD_A::__mismatch(__first1, __last1, __first2, __last2,
+			     __gnu_cxx::__ops::__iter_equal_to_iter());
     }
 
   /**
@@ -1371,13 +1396,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      while (__first1 != __last1 && __first2 != __last2
-	  && bool(__binary_pred(*__first1, *__first2)))
-        {
-	  ++__first1;
-	  ++__first2;
-        }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return _GLIBCXX_STD_A::__mismatch(__first1, __last1, __first2, __last2,
+			     __gnu_cxx::__ops::__iter_comp_iter(__binary_pred));
     }
 #endif
 

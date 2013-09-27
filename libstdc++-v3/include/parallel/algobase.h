@@ -122,6 +122,25 @@ namespace __parallel
                                _IteratorCategory1(), _IteratorCategory2());
     }
 
+#if __cplusplus > 201103L
+  template<typename _InputIterator1, typename _InputIterator2>
+    inline pair<_InputIterator1, _InputIterator2>
+    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	     _InputIterator2 __first2, _InputIterator2 __last2)
+    { return _GLIBCXX_STD_A::mismatch(__first1, __last1, __first2, __last2); }
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _BinaryPredicate>
+    inline pair<_InputIterator1, _InputIterator2>
+    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	     _InputIterator2 __first2, _InputIterator2 __last2,
+	     _BinaryPredicate __binary_pred)
+    {
+      return _GLIBCXX_STD_A::mismatch(__first1, __last1, __first2, __last2,
+				      __binary_pred);
+    }
+#endif
+
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>
     inline bool
@@ -154,6 +173,22 @@ namespace __parallel
       return __gnu_parallel::mismatch(__begin1, __end1, __begin2, __pred).first
               == __end1;
     }
+
+#if __cplusplus > 201103L
+  template<typename _II1, typename _II2>
+    inline bool
+    equal(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+    { return _GLIBCXX_STD_A::equal(__first1, __last1, __first2, __last2); }
+
+  template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    inline bool
+    equal(_IIter1 __first1, _IIter1 __last1,
+	  _IIter2 __first2, _IIter2 __last2, _BinaryPredicate __binary_pred)
+    {
+      return _GLIBCXX_STD_A::equal(__first1, __last1, __first2, __last2,
+				   __binary_pred);
+    }
+#endif
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>

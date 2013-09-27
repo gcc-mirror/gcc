@@ -1,4 +1,120 @@
-2013-08-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2013-09-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/predefined_ops.h: New.
+	* include/bits/stl_heap.h: Include <bits/predefined_ops.h>.
+	(__is_heap_until, __push_heap, __adjust_heap, __pop_heap): Remove
+	algo duplication.
+	(__is_heap): Adapt.
+	(__make_heap): New.
+	(make_heap): Adapt to use latter.
+	(__sort_heap): New.
+	(sort_heap): Adapt to use latter.
+	* include/bits/algobase.h: Include <bits/predefined_ops.h>.
+	(__lexicographical_compare_impl): New.
+	(__lexicographical_compare<false>::__lc): Adapt to use latter.
+	(lexicographical_compare): Likewise.
+	(__lower_bound): New.
+	(lower_bound): Adapt to use latter.
+	(equal): Use _GLIBCXX_STD_A::equal in N3671 overloads.
+	(__mismatch): New.
+	(mismatch): Use latter.
+	* include/bits/algo.h: Include <bits/predefined_ops.h>. Remove
+	<functional> include.
+	(__move_median_first, __find, __find_if, __find_if_not): Remove
+	algo duplication.
+	(__find_end): Likewise.
+	(__search_n): Rename into ...
+	(__search_n_aux): ... this.
+	(__search_n): Renew, use latter.
+	(search_n): Use latter.
+	(__search): New.
+	(search): Use latter.
+	(__find_end): Likewise.
+	(__remove_copy_if): New.
+	(remove_copy): Use latter.
+	(__adjacent_find): New.
+	(adjacent_find): Use latter.
+	(__unique): New.
+	(unique): Use latter.
+	(__unique_copy): Remove algo duplication.
+	(__stable_partition): New.
+	(stable_partition): Use latter.
+	(__heap_select): Remove algo duplication, use __make_heap.
+	(__partial_sort): New, use latter.
+	(partial_sort): Use latter.
+	(__partial_sort_copy): New.
+	(partial_sort_copy): Use latter.
+	(__unguarded_linear_insert, __insertion_sort): Remove algo
+	duplication.
+	(__unguarded_insertion_sort, __final_insertion_sort): Likewise.
+	(__unguarded_partition, __unguarded_partition_pivot): Likewise.
+	(__partial_sort): New.
+	(partial_sort): Use latter.
+	(__sort): New.
+	(sort): Use latter.
+	(lower_bound): Use __lower_bound.
+	(__upper_bound): New.
+	(upper_bound): Use latter.
+	(__equal_range): New.
+	(equal_range): Use latter.
+	(__move_merge_adaptive, __move_merge_adaptive_backward): Remove
+	algo duplication.
+	(__merge_adaptive, __merge_without_buffer): Likewise.
+	(__inplace_merge): New.
+	(inplace_merge): Use latter.
+	(__move_merge, __merge_sort_loop, __chunk_insertion_sort): Remove
+	algo duplication.
+	(__merge_sort_with_buffer, __stable_sort_adaptive): Likewise.
+	(__inplace_stable_sort): Likewise.
+	(__include): New.
+	(includes): Use latter.
+	(__next_permutation): New.
+	(next_permutation): Use latter.
+	(__prev_permutation): New.
+	(prev_permutation): Use latter.
+	(__replace_copy_if): New.
+	(replace_copy): Use latter.
+	(__is_sorted_until): New.
+	(is_sorted_unitl): Use latter.
+	(__minmax_element): New.
+	(minmax_element): Use latter.
+	(__is_permutation): New.
+	(is_permutation): Use latter.
+	(__adjacent_find): New.
+	(adjacent_find): Use latter.
+	(__count_if): New.
+	(count): Use latter.
+	(count_if): Likewise.
+	(__merge): New.
+	(merge): Use latter.
+	(__stable_sort): New.
+	(stable_sort): Use latter.
+	(__set_union): New.
+	(set_union): Use latter.
+	(__set_intersection): New.
+	(set_intersection): Use latter.
+	(__set_difference): New.
+	(set_difference): Use latter.
+	(__set_symmetric_difference): New.
+	(set_symmetric_difference): Use latter.
+	(__min_element): New.
+	(min_element): Use latter.
+	(__max_element): New.
+	(max_element): Use latter.
+	* include/Makefile.am: Add predefined_ops.h.
+	* include/Makefile.in: Regenerate.
+	* include/parallel/algobase.h (equal, mismatch): Add overloads
+	from N3671.
+	* testsuite/25_algorithms/is_permutation/vectorbool.cc: New.
+	* testsuite/25_algorithms/adjacent_find/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/find/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/find_if/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/find_first_of/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/heap/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/find_end/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/vectorbool.cc: Likewise.
+
+2013-09-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/57465
 	* include/std/functional
