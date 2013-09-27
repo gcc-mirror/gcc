@@ -2237,18 +2237,37 @@ perform_var_substitution (constraint_graph_t graph)
       {
 	unsigned j = si->node_mapping[i];
 	if (j != i)
-	  fprintf (dump_file, "%s node id %d (%s) mapped to SCC leader "
-		   "node id %d (%s)\n",
-		    bitmap_bit_p (graph->direct_nodes, i)
-		    ? "Direct" : "Indirect", i, get_varinfo (i)->name,
-		    j, get_varinfo (j)->name);
+	  {
+	    fprintf (dump_file, "%s node id %d ",
+		     bitmap_bit_p (graph->direct_nodes, i)
+		     ? "Direct" : "Indirect", i);
+	    if (i < FIRST_REF_NODE)
+	      fprintf (dump_file, "\"%s\"", get_varinfo (i)->name);
+	    else
+	      fprintf (dump_file, "\"*%s\"",
+		       get_varinfo (i - FIRST_REF_NODE)->name);
+	    fprintf (dump_file, " mapped to SCC leader node id %d ", j);
+	    if (j < FIRST_REF_NODE)
+	      fprintf (dump_file, "\"%s\"\n", get_varinfo (j)->name);
+	    else
+	      fprintf (dump_file, "\"*%s\"\n",
+		       get_varinfo (j - FIRST_REF_NODE)->name);
+	  }
 	else
-	  fprintf (dump_file,
-		   "Equivalence classes for %s node id %d (%s): pointer %d"
-		   ", location %d\n",
-		   bitmap_bit_p (graph->direct_nodes, i)
-		   ? "direct" : "indirect", i, get_varinfo (i)->name,
-		   graph->pointer_label[i], graph->loc_label[i]);
+	  {
+	    fprintf (dump_file,
+		     "Equivalence classes for %s node id %d ",
+		     bitmap_bit_p (graph->direct_nodes, i)
+		     ? "direct" : "indirect", i);
+	    if (i < FIRST_REF_NODE)
+	      fprintf (dump_file, "\"%s\"", get_varinfo (i)->name);
+	    else
+	      fprintf (dump_file, "\"*%s\"",
+		       get_varinfo (i - FIRST_REF_NODE)->name);
+	    fprintf (dump_file,
+		     ": pointer %d, location %d\n",
+		     graph->pointer_label[i], graph->loc_label[i]);
+	  }
       }
 
   /* Quickly eliminate our non-pointer variables.  */
