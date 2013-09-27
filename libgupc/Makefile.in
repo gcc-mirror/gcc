@@ -54,8 +54,9 @@ target_triplet = @target@
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lock_sup.h smp/upc_lock_sup.c \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_NUMA_SUP) smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_nb.upc smp/upc_numa.h $(UPC_NUMA_SUP) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_pupc.h smp/upc_sup.h smp/upc_sync.h smp/upc_sysdep.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_sysdep.h smp/upc_tick.c smp/upc_vm.c
 
@@ -175,35 +176,36 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_defs.h smp/upc_gasp.c smp/upc_gum.c smp/upc_libg.c \
 	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
 	smp/upc_lock_sup.h smp/upc_lock_sup.c smp/upc_main.c \
-	smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h smp/upc_numa_stub.c \
-	smp/upc_numa.c smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
-	smp/upc_pupc.h smp/upc_sup.h smp/upc_sync.h smp/upc_sysdep.c \
-	smp/upc_sysdep.h smp/upc_tick.c smp/upc_vm.c \
-	portals4/gupcr_access.c portals4/gupcr_access.h \
-	portals4/gupcr_addr.c portals4/gupcr_alloc.upc \
-	portals4/gupcr_alloc.h portals4/gupcr_atomic.upc \
-	portals4/gupcr_atomic_sup.h portals4/gupcr_atomic_sup.c \
-	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
-	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
-	portals4/gupcr_castable.upc portals4/gupcr_clock.c \
-	portals4/gupcr_coll_sup.h portals4/gupcr_coll_sup.c \
-	portals4/gupcr_config.h portals4/gupcr_defs.h \
-	portals4/gupcr_env.c portals4/gupcr_gmem.h \
-	portals4/gupcr_gmem.c portals4/gupcr_lib.h \
-	portals4/gupcr_lock.upc portals4/gupcr_lock.h \
-	portals4/gupcr_lock_sup.c portals4/gupcr_lock_sup.h \
-	portals4/gupcr_main.c portals4/gupcr_nb.upc \
-	portals4/gupcr_nb_sup.c portals4/gupcr_nb_sup.h \
-	portals4/gupcr_node.c portals4/gupcr_node.h \
-	portals4/gupcr_mem.c portals4/gupcr_portals.c \
-	portals4/gupcr_pgm_info.c portals4/gupcr_pts.h \
-	portals4/gupcr_runtime.h portals4/gupcr_runtime.c \
-	portals4/gupcr_shutdown.h portals4/gupcr_shutdown.c \
-	portals4/gupcr_sup.h portals4/gupcr_sync.h \
-	portals4/gupcr_tick.c portals4/gupcr_utils.h \
-	portals4/gupcr_utils.c portals4/gupcr_node_mem_posix.c \
-	portals4/gupcr_node_mem_mmap.c portals4/upc_coll.h \
-	portals4/gupcr_coll_broadcast.upc portals4/gupcr_coll_init.upc \
+	smp/upc_mem.c smp/upc_mem.h smp/upc_nb.upc smp/upc_numa.h \
+	smp/upc_numa_stub.c smp/upc_numa.c smp/upc_pgm_info.c \
+	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
+	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h \
+	smp/upc_tick.c smp/upc_vm.c portals4/gupcr_access.c \
+	portals4/gupcr_access.h portals4/gupcr_addr.c \
+	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
+	portals4/gupcr_atomic.upc portals4/gupcr_atomic_sup.h \
+	portals4/gupcr_atomic_sup.c portals4/gupcr_barrier.h \
+	portals4/gupcr_barrier.c portals4/gupcr_broadcast.h \
+	portals4/gupcr_broadcast.c portals4/gupcr_castable.upc \
+	portals4/gupcr_clock.c portals4/gupcr_coll_sup.h \
+	portals4/gupcr_coll_sup.c portals4/gupcr_config.h \
+	portals4/gupcr_defs.h portals4/gupcr_env.c \
+	portals4/gupcr_gmem.h portals4/gupcr_gmem.c \
+	portals4/gupcr_lib.h portals4/gupcr_lock.upc \
+	portals4/gupcr_lock.h portals4/gupcr_lock_sup.c \
+	portals4/gupcr_lock_sup.h portals4/gupcr_main.c \
+	portals4/gupcr_nb.upc portals4/gupcr_nb_sup.c \
+	portals4/gupcr_nb_sup.h portals4/gupcr_node.c \
+	portals4/gupcr_node.h portals4/gupcr_mem.c \
+	portals4/gupcr_portals.c portals4/gupcr_pgm_info.c \
+	portals4/gupcr_pts.h portals4/gupcr_runtime.h \
+	portals4/gupcr_runtime.c portals4/gupcr_shutdown.h \
+	portals4/gupcr_shutdown.c portals4/gupcr_sup.h \
+	portals4/gupcr_sync.h portals4/gupcr_tick.c \
+	portals4/gupcr_utils.h portals4/gupcr_utils.c \
+	portals4/gupcr_node_mem_posix.c portals4/gupcr_node_mem_mmap.c \
+	portals4/upc_coll.h portals4/gupcr_coll_broadcast.upc \
+	portals4/gupcr_coll_init.upc \
 	$(LIBGUPC_COLL_SRCDIR)/upc_coll_reduce.upc \
 	$(LIBGUPC_PORTALS4_SRCDIR)/gupcr_coll_reduce.upc \
 	collectives/upc_coll_broadcast.upc \
@@ -230,7 +232,7 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_debug.lo upc_gasp.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_4) upc_libg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock.lo upc_lock_sup.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_main.lo upc_mem.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_main.lo upc_mem.lo upc_nb.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_5) upc_pgm_info.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_pupc.lo upc_sysdep.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_tick.lo upc_vm.lo
@@ -315,6 +317,7 @@ libgupc_la_OBJECTS = $(am_libgupc_la_OBJECTS)
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_lock_sup.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_main.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_mem.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_nb.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_20) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_pgm_info.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_pupc.lo \
@@ -1046,6 +1049,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_lock_sup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_main.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_mem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_nb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_numa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_numa_stub.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_pgm_info.Plo@am__quote@
@@ -1083,6 +1087,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_lock_sup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_main.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_mem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_nb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_numa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_numa_stub.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_pgm_info.Plo@am__quote@
@@ -1763,6 +1768,13 @@ upc_lock.lo: smp/upc_lock.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_lock.lo `test -f 'smp/upc_lock.upc' || echo '$(srcdir)/'`smp/upc_lock.upc
 
+upc_nb.lo: smp/upc_nb.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT upc_nb.lo -MD -MP -MF $(DEPDIR)/upc_nb.Tpo -c -o upc_nb.lo `test -f 'smp/upc_nb.upc' || echo '$(srcdir)/'`smp/upc_nb.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/upc_nb.Tpo $(DEPDIR)/upc_nb.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_nb.upc' object='upc_nb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_nb.lo `test -f 'smp/upc_nb.upc' || echo '$(srcdir)/'`smp/upc_nb.upc
+
 gupcr_alloc.lo: portals4/gupcr_alloc.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT gupcr_alloc.lo -MD -MP -MF $(DEPDIR)/gupcr_alloc.Tpo -c -o gupcr_alloc.lo `test -f 'portals4/gupcr_alloc.upc' || echo '$(srcdir)/'`portals4/gupcr_alloc.upc
 @am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/gupcr_alloc.Tpo $(DEPDIR)/gupcr_alloc.Plo
@@ -1937,6 +1949,13 @@ libgupc_pt_la-upc_lock.lo: smp/upc_lock.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_lock.upc' object='libgupc_pt_la-upc_lock.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_lock.lo `test -f 'smp/upc_lock.upc' || echo '$(srcdir)/'`smp/upc_lock.upc
+
+libgupc_pt_la-upc_nb.lo: smp/upc_nb.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-upc_nb.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_nb.Tpo -c -o libgupc_pt_la-upc_nb.lo `test -f 'smp/upc_nb.upc' || echo '$(srcdir)/'`smp/upc_nb.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_nb.Tpo $(DEPDIR)/libgupc_pt_la-upc_nb.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_nb.upc' object='libgupc_pt_la-upc_nb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_nb.lo `test -f 'smp/upc_nb.upc' || echo '$(srcdir)/'`smp/upc_nb.upc
 
 libgupc_pt_la-gupcr_alloc.lo: portals4/gupcr_alloc.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-gupcr_alloc.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-gupcr_alloc.Tpo -c -o libgupc_pt_la-gupcr_alloc.lo `test -f 'portals4/gupcr_alloc.upc' || echo '$(srcdir)/'`portals4/gupcr_alloc.upc

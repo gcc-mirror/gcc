@@ -1,3 +1,12 @@
+2013-09-27  Gary Funck  <gary@intrepid.com>
+
+	Implement non-blocking transfer operations for SMP runtime.
+	* Makefile.am (UPC_RUNTIME_SRC): Add upc_nb.upc.
+	* Makefile.in: Re-generate.
+	* configure: Re-generate.
+	* smp/gcc-upc-lib.in: Add __UPC_NB__ definition.
+	* smp/gupcr_nb.upc: New. Non-blocking transfers library.
+
 2013-09-26  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Makefile.am (UPC_BACKTRACE_SUP): Remove upc_backtrace_sup.c.
@@ -15,6 +24,7 @@
 	* smp/upc_backtrace.h: Remove libbfd support function prototype.
 	* smp/upc_backtrace_sup.c: Delete.
 
+>>>>>>> .r202955
 2013-09-10  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Implement non-blocking transfer operations for Portals4 runtime.
