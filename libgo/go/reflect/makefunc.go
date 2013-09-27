@@ -7,6 +7,7 @@
 package reflect
 
 import (
+	"runtime"
 	"unsafe"
 )
 
@@ -45,13 +46,32 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 		panic("reflect: call of MakeFunc with non-Func type")
 	}
 
+	switch runtime.GOARCH {
+	case "amd64":
+	default:
+		panic("reflect.MakeFunc not implemented for " + runtime.GOARCH)
+	}
+
 	t := typ.common()
 	ftyp := (*funcType)(unsafe.Pointer(t))
 
-	_, _ = t, ftyp
+	// Indirect Go func value (dummy) to obtain
+	// actual code address. (A Go func value is a pointer
+	// to a C function pointer. http://golang.org/s/go11func.)
+	dummy := makeFuncStub
+	code := **(**uintptr)(unsafe.Pointer(&dummy))
 
-	panic("reflect MakeFunc not implemented")
+	impl := &makeFuncImpl{code: code, typ: ftyp, fn: fn}
+
+	return Value{t, unsafe.Pointer(impl), flag(Func) << flagKindShift}
 }
+
+// makeFuncStub is an assembly function that is the code half of
+// the function returned from MakeFunc. It expects a *callReflectFunc
+// as its context register, and its job is to invoke callReflect(ctxt, frame)
+// where ctxt is the context register and frame is a pointer to the first
+// word in the passed-in argument frame.
+func makeFuncStub()
 
 // makeMethodValue converts v from the rcvr+method index representation
 // of a method value to an actual method func value, which is

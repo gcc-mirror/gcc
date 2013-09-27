@@ -134,17 +134,17 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	errors.lo expvar.lo flag.lo fmt.lo hash.lo html.lo image.lo \
 	io.lo log.lo math.lo mime.lo net.lo os.lo path.lo \
-	reflect-go.lo regexp.lo runtime-go.lo sort.lo strconv.lo \
-	strings.lo sync.lo syscall.lo syscall/errno.lo \
-	syscall/signame.lo syscall/wait.lo testing.lo time-go.lo \
-	unicode.lo archive/tar.lo archive/zip.lo compress/bzip2.lo \
-	compress/flate.lo compress/gzip.lo compress/lzw.lo \
-	compress/zlib.lo container/heap.lo container/list.lo \
-	container/ring.lo crypto/aes.lo crypto/cipher.lo crypto/des.lo \
-	crypto/dsa.lo crypto/ecdsa.lo crypto/elliptic.lo \
-	crypto/hmac.lo crypto/md5.lo crypto/rand.lo crypto/rc4.lo \
-	crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo crypto/sha512.lo \
-	crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
+	reflect-go.lo reflect/makefunc.lo regexp.lo runtime-go.lo \
+	sort.lo strconv.lo strings.lo sync.lo syscall.lo \
+	syscall/errno.lo syscall/signame.lo syscall/wait.lo testing.lo \
+	time-go.lo unicode.lo archive/tar.lo archive/zip.lo \
+	compress/bzip2.lo compress/flate.lo compress/gzip.lo \
+	compress/lzw.lo compress/zlib.lo container/heap.lo \
+	container/list.lo container/ring.lo crypto/aes.lo \
+	crypto/cipher.lo crypto/des.lo crypto/dsa.lo crypto/ecdsa.lo \
+	crypto/elliptic.lo crypto/hmac.lo crypto/md5.lo crypto/rand.lo \
+	crypto/rc4.lo crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo \
+	crypto/sha512.lo crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
 	crypto/x509/pkix.lo database/sql.lo database/sql/driver.lo \
 	debug/dwarf.lo debug/elf.lo debug/gosym.lo debug/macho.lo \
 	debug/pe.lo encoding/ascii85.lo encoding/asn1.lo \
@@ -1087,9 +1087,20 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
+@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = 
+@LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_file = \
+@LIBGO_IS_X86_64_TRUE@	go/reflect/makefuncgo_amd64.go
+
+@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_dummy.c
+
+@LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_X86_64_TRUE@	go/reflect/makefunc_amd64.S
+
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
+	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
 
@@ -1846,6 +1857,7 @@ libgo_go_objs = \
 	os.lo \
 	path.lo \
 	reflect-go.lo \
+	reflect/makefunc.lo \
 	regexp.lo \
 	runtime-go.lo \
 	sort.lo \
@@ -4499,6 +4511,9 @@ reflect-go.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
+reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
+	@$(MKDIR_P) reflect
+	$(LTCOMPILE) -c -o $@ $<
 .PHONY: reflect/check
 
 @go_include@ regexp.lo.dep

@@ -895,9 +895,21 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
+if LIBGO_IS_X86_64
+go_reflect_makefunc_file = \
+	go/reflect/makefuncgo_amd64.go
+go_reflect_makefunc_s_file = \
+	go/reflect/makefunc_amd64.S
+else
+go_reflect_makefunc_file =
+go_reflect_makefunc_s_file = \
+	go/reflect/makefunc_dummy.c
+endif
+
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
+	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
 
@@ -1761,6 +1773,7 @@ libgo_go_objs = \
 	os.lo \
 	path.lo \
 	reflect-go.lo \
+	reflect/makefunc.lo \
 	regexp.lo \
 	runtime-go.lo \
 	sort.lo \
@@ -2147,6 +2160,9 @@ reflect-go.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
+reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
+	@$(MKDIR_P) reflect
+	$(LTCOMPILE) -c -o $@ $<
 .PHONY: reflect/check
 
 @go_include@ regexp.lo.dep
