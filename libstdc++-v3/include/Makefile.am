@@ -121,6 +121,7 @@ bits_headers = \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/parse_numbers.h \
 	${bits_srcdir}/postypes.h \
+	${bits_srcdir}/predefined_ops.h \
 	${bits_srcdir}/ptr_traits.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
