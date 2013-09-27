@@ -1,3 +1,7 @@
+2013-09-27  Diego Novillo  <dnovillo@google.com>
+
+	* gimple.h (enum ssa_mode): Remove.
+
 2013-09-27  Paulo Matos  <pmatos@broadcom.com>
 
 	PR middle-end/58463
