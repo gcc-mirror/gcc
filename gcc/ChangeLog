@@ -1,3 +1,11 @@
+2013-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58551
+	* tree-cfg.c (move_sese_region_to_fn): Also move loops that
+	are children of outermost saved_cfun's loop, and set it up to
+	be moved to dest_cfun's outermost loop.  Fix up num_nodes adjustments
+	if loop != loop0 and SESE region contains bbs that belong to loop0.
+
 2013-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtlanal.c (must_be_base_p, must_be_index_p): Delete.

@@ -6662,12 +6662,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   struct function *saved_cfun = cfun;
   int *entry_flag, *exit_flag;
   unsigned *entry_prob, *exit_prob;
-  unsigned i, num_entry_edges, num_exit_edges;
+  unsigned i, num_entry_edges, num_exit_edges, num_nodes;
   edge e;
   edge_iterator ei;
   htab_t new_label_map;
   struct pointer_map_t *vars_map, *eh_map;
   struct loop *loop = entry_bb->loop_father;
+  struct loop *loop0 = get_loop (saved_cfun, 0);
   struct move_stmt_d d;
 
   /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
@@ -6760,16 +6761,29 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   set_loops_for_fn (dest_cfun, loops);
 
   /* Move the outlined loop tree part.  */
+  num_nodes = bbs.length ();
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
-      if (bb->loop_father->header == bb
-	  && loop_outer (bb->loop_father) == loop)
+      if (bb->loop_father->header == bb)
 	{
 	  struct loop *this_loop = bb->loop_father;
-	  flow_loop_tree_node_remove (bb->loop_father);
-	  flow_loop_tree_node_add (get_loop (dest_cfun, 0), this_loop);
-	  fixup_loop_arrays_after_move (saved_cfun, cfun, this_loop);
+	  struct loop *outer = loop_outer (this_loop);
+	  if (outer == loop
+	      /* If the SESE region contains some bbs ending with
+		 a noreturn call, those are considered to belong
+		 to the outermost loop in saved_cfun, rather than
+		 the entry_bb's loop_father.  */
+	      || outer == loop0)
+	    {
+	      if (outer != loop)
+		num_nodes -= this_loop->num_nodes;
+	      flow_loop_tree_node_remove (bb->loop_father);
+	      flow_loop_tree_node_add (get_loop (dest_cfun, 0), this_loop);
+	      fixup_loop_arrays_after_move (saved_cfun, cfun, this_loop);
+	    }
 	}
+      else if (bb->loop_father == loop0 && loop0 != loop)
+	num_nodes--;
 
       /* Remove loop exits from the outlined region.  */
       if (loops_for_fn (saved_cfun)->exits)
@@ -6789,6 +6803,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Setup a mapping to be used by move_block_to_fn.  */
   loop->aux = current_loops->tree_root;
+  loop0->aux = current_loops->tree_root;
 
   pop_cfun ();
 
@@ -6817,11 +6832,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     }
 
   loop->aux = NULL;
+  loop0->aux = NULL;
   /* Loop sizes are no longer correct, fix them up.  */
-  loop->num_nodes -= bbs.length ();
+  loop->num_nodes -= num_nodes;
   for (struct loop *outer = loop_outer (loop);
        outer; outer = loop_outer (outer))
-    outer->num_nodes -= bbs.length ();
+    outer->num_nodes -= num_nodes;
+  loop0->num_nodes -= bbs.length () - num_nodes;
 
   if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
     {
