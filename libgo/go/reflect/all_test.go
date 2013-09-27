@@ -1430,11 +1430,13 @@ func TestFunc(t *testing.T) {
 	}
 }
 
-/*
-
-Not yet implemented for gccgo.
-
 func TestMakeFunc(t *testing.T) {
+	switch runtime.GOARCH {
+	case "amd64":
+	default:
+		t.Skip("MakeFunc not implemented for " + runtime.GOARCH)
+	}
+
 	f := dummy
 	fv := MakeFunc(TypeOf(f), func(in []Value) []Value { return in })
 	ValueOf(&f).Elem().Set(fv)
@@ -1451,8 +1453,6 @@ func TestMakeFunc(t *testing.T) {
 		t.Errorf("Call returned %d, %d, %d, %v, %d, %g, %d; want 10, 20, 30, [40, 50], 60, 70, 80", i, j, k, l, m, n, o)
 	}
 }
-
-*/
 
 type Point struct {
 	x, y int
