@@ -5521,26 +5521,50 @@ strip_address_mutations (rtx *loc, enum rtx_code *outer_code)
     }
 }
 
-/* Return true if X must be a base rather than an index.  */
+/* Return true if CODE applies some kind of scale.  The scaled value is
+   is the first operand and the scale is the second.  */
 
 static bool
-must_be_base_p (rtx x)
+binary_scale_code_p (enum rtx_code code)
 {
-  return GET_CODE (x) == LO_SUM;
+  return (code == MULT
+          || code == ASHIFT
+          /* Needed by ARM targets.  */
+          || code == ASHIFTRT
+          || code == LSHIFTRT
+          || code == ROTATE
+          || code == ROTATERT);
 }
 
-/* Return true if X must be an index rather than a base.  */
+/* If *INNER can be interpreted as a base, return a pointer to the inner term
+   (see address_info).  Return null otherwise.  */
 
-static bool
-must_be_index_p (rtx x)
+static rtx *
+get_base_term (rtx *inner)
 {
-  return (GET_CODE (x) == MULT
-          || GET_CODE (x) == ASHIFT
-          /* Needed by ARM targets.  */
-          || GET_CODE (x) == ASHIFTRT
-          || GET_CODE (x) == LSHIFTRT
-          || GET_CODE (x) == ROTATE
-          || GET_CODE (x) == ROTATERT);
+  if (GET_CODE (*inner) == LO_SUM)
+    inner = strip_address_mutations (&XEXP (*inner, 0));
+  if (REG_P (*inner)
+      || MEM_P (*inner)
+      || GET_CODE (*inner) == SUBREG)
+    return inner;
+  return 0;
+}
+
+/* If *INNER can be interpreted as an index, return a pointer to the inner term
+   (see address_info).  Return null otherwise.  */
+
+static rtx *
+get_index_term (rtx *inner)
+{
+  /* At present, only constant scales are allowed.  */
+  if (binary_scale_code_p (GET_CODE (*inner)) && CONSTANT_P (XEXP (*inner, 1)))
+    inner = strip_address_mutations (&XEXP (*inner, 0));
+  if (REG_P (*inner)
+      || MEM_P (*inner)
+      || GET_CODE (*inner) == SUBREG)
+    return inner;
+  return 0;
 }
 
 /* Set the segment part of address INFO to LOC, given that INNER is the
@@ -5549,8 +5573,6 @@ must_be_index_p (rtx x)
 static void
 set_address_segment (struct address_info *info, rtx *loc, rtx *inner)
 {
-  gcc_checking_assert (GET_CODE (*inner) == UNSPEC);
-
   gcc_assert (!info->segment);
   info->segment = loc;
   info->segment_term = inner;
@@ -5562,12 +5584,6 @@ set_address_segment (struct address_info *info, rtx *loc, rtx *inner)
 static void
 set_address_base (struct address_info *info, rtx *loc, rtx *inner)
 {
-  if (must_be_base_p (*inner))
-    inner = strip_address_mutations (&XEXP (*inner, 0));
-  gcc_checking_assert (REG_P (*inner)
-		       || MEM_P (*inner)
-		       || GET_CODE (*inner) == SUBREG);
-
   gcc_assert (!info->base);
   info->base = loc;
   info->base_term = inner;
@@ -5579,12 +5595,6 @@ set_address_base (struct address_info *info, rtx *loc, rtx *inner)
 static void
 set_address_index (struct address_info *info, rtx *loc, rtx *inner)
 {
-  if (must_be_index_p (*inner) && CONSTANT_P (XEXP (*inner, 1)))
-    inner = strip_address_mutations (&XEXP (*inner, 0));
-  gcc_checking_assert (REG_P (*inner)
-		       || MEM_P (*inner)
-		       || GET_CODE (*inner) == SUBREG);
-
   gcc_assert (!info->index);
   info->index = loc;
   info->index_term = inner;
@@ -5596,8 +5606,6 @@ set_address_index (struct address_info *info, rtx *loc, rtx *inner)
 static void
 set_address_disp (struct address_info *info, rtx *loc, rtx *inner)
 {
-  gcc_checking_assert (CONSTANT_P (*inner));
-
   gcc_assert (!info->disp);
   info->disp = loc;
   info->disp_term = inner;
@@ -5677,12 +5685,6 @@ static int
 baseness (rtx x, enum machine_mode mode, addr_space_t as,
 	  enum rtx_code outer_code, enum rtx_code index_code)
 {
-  /* See whether we can be certain.  */
-  if (must_be_base_p (x))
-    return 3;
-  if (must_be_index_p (x))
-    return -3;
-
   /* Believe *_POINTER unless the address shape requires otherwise.  */
   if (REG_P (x) && REG_POINTER (x))
     return 2;
@@ -5717,8 +5719,8 @@ decompose_normal_address (struct address_info *info)
   if (n_ops > 1)
     info->base_outer_code = PLUS;
 
-  /* Separate the parts that contain a REG or MEM from those that don't.
-     Record the latter in INFO and leave the former in OPS.  */
+  /* Try to classify each sum operand now.  Leave those that could be
+     either a base or an index in OPS.  */
   rtx *inner_ops[4];
   size_t out = 0;
   for (size_t in = 0; in < n_ops; ++in)
@@ -5731,18 +5733,31 @@ decompose_normal_address (struct address_info *info)
 	set_address_segment (info, loc, inner);
       else
 	{
-	  ops[out] = loc;
-	  inner_ops[out] = inner;
-	  ++out;
+	  /* The only other possibilities are a base or an index.  */
+	  rtx *base_term = get_base_term (inner);
+	  rtx *index_term = get_index_term (inner);
+	  gcc_assert (base_term || index_term);
+	  if (!base_term)
+	    set_address_index (info, loc, index_term);
+	  else if (!index_term)
+	    set_address_base (info, loc, base_term);
+	  else
+	    {
+	      gcc_assert (base_term == index_term);
+	      ops[out] = loc;
+	      inner_ops[out] = base_term;
+	      ++out;
+	    }
 	}
     }
 
   /* Classify the remaining OPS members as bases and indexes.  */
   if (out == 1)
     {
-      /* Assume that the remaining value is a base unless the shape
-	 requires otherwise.  */
-      if (!must_be_index_p (*inner_ops[0]))
+      /* If we haven't seen a base or an index yet, assume that this is
+	 the base.  If we were confident that another term was the base
+	 or index, treat the remaining operand as the other kind.  */
+      if (!info->base)
 	set_address_base (info, ops[0], inner_ops[0]);
       else
 	set_address_index (info, ops[0], inner_ops[0]);
