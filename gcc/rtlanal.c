@@ -5476,7 +5476,7 @@ lsb_bitfield_op_p (rtx x)
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_BITFIELD_OPS)
     {
       enum machine_mode mode = GET_MODE (XEXP (x, 0));
-      unsigned HOST_WIDE_INT len = INTVAL (XEXP (x, 1));
+      HOST_WIDE_INT len = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
 
       return (pos == (BITS_BIG_ENDIAN ? GET_MODE_PRECISION (mode) - len : 0));

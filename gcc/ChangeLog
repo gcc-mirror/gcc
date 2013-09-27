@@ -1,3 +1,9 @@
+2013-09-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR middle-end/58547
+	* rtlanal.c (lsb_bitfield_op_p): Make both parts of the comparison
+	signed.
+
 2013-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58459
