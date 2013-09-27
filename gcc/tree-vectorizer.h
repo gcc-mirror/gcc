@@ -880,6 +880,14 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
   return (DR_MISALIGNMENT (data_ref_info) != -1);
 }
 
+
+/* Return true if the vect cost model is unlimited.  */
+static inline bool
+unlimited_cost_model ()
+{
+  return flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED;
+}
+
 /* Source location */
 extern LOC vect_location;
 

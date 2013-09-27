@@ -2680,7 +2680,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
   /* Cost model disabled.  */
-  if (!flag_vect_cost_model)
+  if (unlimited_cost_model ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.\n");
       *ret_min_profitable_niters = 0;

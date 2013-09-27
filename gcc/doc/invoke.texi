@@ -423,7 +423,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
 -ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
--ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
+-ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
@@ -6770,7 +6770,7 @@ optimizations designed to reduce code size.
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
 -falign-labels  -freorder-blocks  -freorder-blocks-and-partition @gol
--fprefetch-loop-arrays  -ftree-vect-loop-version}
+-fprefetch-loop-arrays}
 
 @item -Ofast
 @opindex Ofast
@@ -8025,19 +8025,20 @@ Perform loop vectorization on trees. This flag is enabled by default at
 Perform basic block vectorization on trees. This flag is enabled by default at
 @option{-O3} and when @option{-ftree-vectorize} is enabled.
 
-@item -ftree-vect-loop-version
-@opindex ftree-vect-loop-version
-Perform loop versioning when doing loop vectorization on trees.  When a loop
-appears to be vectorizable except that data alignment or data dependence cannot
-be determined at compile time, then vectorized and non-vectorized versions of
-the loop are generated along with run-time checks for alignment or dependence
-to control which version is executed.  This option is enabled by default
-except at level @option{-Os} where it is disabled.
-
-@item -fvect-cost-model
+@item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
-Enable cost model for vectorization.  This option is enabled by default at
-@option{-O3}.
+Alter the cost model used for vectorization.  The @var{model} argument
+should be one of @code{unlimited}, @code{dynamic} or @code{cheap}.
+With the @code{unlimited} model the vectorized code-path is assumed
+to be profitable while with the @code{dynamic} model a runtime check
+will guard the vectorized code-path to enable it only for iteration
+counts that will likely execute faster than when executing the original
+scalar loop.  The @code{cheap} model will disable vectorization of
+loops where doing so would be cost prohibitive for example due to
+required runtime checks for data dependence or alignment but otherwise
+is equal to the @code{dynamic} model.
+The default cost model depends on other optimization flags and is
+either @code{dynamic} or @code{cheap}.
 
 @item -ftree-vrp
 @opindex ftree-vrp
@@ -9443,13 +9444,11 @@ constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alignment in the vectorizer.  See option
-@option{-ftree-vect-loop-version} for more information.
+doing loop versioning for alignment in the vectorizer. 
 
 @item vect-max-version-for-alias-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alias in the vectorizer.  See option
-@option{-ftree-vect-loop-version} for more information.
+doing loop versioning for alias in the vectorizer. 
 
 @item vect-max-peeling-for-alignment
 The maximum number of loop peels to enhance access alignment
