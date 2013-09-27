@@ -1,5 +1,15 @@
 2013-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtlanal.c (must_be_base_p, must_be_index_p): Delete.
+	(binary_scale_code_p, get_base_term, get_index_term): New functions.
+	(set_address_segment, set_address_base, set_address_index)
+	(set_address_disp): Accept the argument unconditionally.
+	(baseness): Remove must_be_base_p and must_be_index_p checks.
+	(decompose_normal_address): Classify as much as possible in the
+	main loop.
+
+2013-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cse.c (count_reg_usage): Handle INT_LIST.
 	* lra-eliminations.c (lra_eliminate_regs_1): Likewise.
 	* reginfo.c (reg_scan_mark_refs): Likewise.
