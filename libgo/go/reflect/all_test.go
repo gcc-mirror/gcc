@@ -1432,7 +1432,7 @@ func TestFunc(t *testing.T) {
 
 func TestMakeFunc(t *testing.T) {
 	switch runtime.GOARCH {
-	case "amd64":
+	case "amd64", "386":
 	default:
 		t.Skip("MakeFunc not implemented for " + runtime.GOARCH)
 	}
