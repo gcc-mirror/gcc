@@ -34,15 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef gimple gimple_seq_node;
 
-/* Types of supported temporaries.  GIMPLE temporaries may be symbols
-   in normal form (i.e., regular decls) or SSA names.  This enum is
-   used by create_gimple_tmp to tell it what kind of temporary the
-   caller wants.  */
-enum ssa_mode {
-    M_SSA = 0,
-    M_NORMAL
-};
-
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
 typedef vec<gimple> gimple_vec;
