@@ -1,3 +1,11 @@
+2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+
+	Backport from mainline.
+
+	2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+	PR middle-end/58463
+	* gcc.dg/pr58463.c: New test.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
