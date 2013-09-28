@@ -1,3 +1,34 @@
+2013-09-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* expr.h (extract_bit_field): Remove packedp parameter.
+	* expmed.c (extract_fixed_bit_field): Remove packedp parameter
+	from forward declaration.
+	(store_split_bit_field): Remove packedp arg from calls to
+	extract_fixed_bit_field.
+	(extract_bit_field_1): Remove packedp parameter and packedp
+	argument from recursive calls and calls to extract_fixed_bit_field.
+	(extract_bit_field): Remove packedp parameter and corresponding
+	arg to extract_bit_field_1.
+	(extract_fixed_bit_field): Remove packedp parameter.  Remove code
+	to issue warnings.
+	(extract_split_bit_field): Remove packedp arg from call to
+	extract_fixed_bit_field.
+	* expr.c (emit_group_load_1): Adjust calls to extract_bit_field.
+	(copy_blkmode_from_reg): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(read_complex_part): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_1): Likewise.
+	* calls.c (store_unaligned_arguments_into_pseudos): Adjust call
+	to extract_bit_field.
+	* config/tilegx/tilegx.c (tilegx_expand_unaligned_load): Adjust
+	call to extract_bit_field.
+	* config/tilepro/tilepro.c (tilepro_expand_unaligned_load): Adjust
+	call to extract_bit_field.
+	* doc/invoke.texi (Code Gen Options): Remove mention of warnings
+	and special packedp behavior from -fstrict-volatile-bitfields
+	documentation.
+
 2013-09-27  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* lra-eliminations.c (init_elim_table): Guard value_p.

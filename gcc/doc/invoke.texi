@@ -21169,14 +21169,6 @@ instruction, even though that accesses bytes that do not contain
 any portion of the bit-field, or memory-mapped registers unrelated to
 the one being updated.
 
-If the target requires strict alignment, and honoring the field
-type would require violating this alignment, a warning is issued.
-If the field has @code{packed} attribute, the access is done without
-honoring the field type.  If the field doesn't have @code{packed}
-attribute, the access is done honoring the field type.  In both cases,
-GCC assumes that the user knows something about the target hardware
-that it is unaware of.
-
 The default value of this option is determined by the application binary
 interface for the target processor.
 

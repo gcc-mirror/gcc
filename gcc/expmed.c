@@ -54,7 +54,7 @@ static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   rtx);
 static rtx extract_fixed_bit_field (enum machine_mode, rtx,
 				    unsigned HOST_WIDE_INT,
-				    unsigned HOST_WIDE_INT, rtx, int, bool);
+				    unsigned HOST_WIDE_INT, rtx, int);
 static rtx mask_rtx (enum machine_mode, int, int, int);
 static rtx lshift_value (enum machine_mode, unsigned HOST_WIDE_INT, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
@@ -1128,7 +1128,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 		 endianness compensation) to fetch the piece we want.  */
 	      part = extract_fixed_bit_field (word_mode, value, thissize,
 					      total_bits - bitsize + bitsdone,
-					      NULL_RTX, 1, false);
+					      NULL_RTX, 1);
 	    }
 	}
       else
@@ -1140,7 +1140,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
 	  else
 	    part = extract_fixed_bit_field (word_mode, value, thissize,
-					    bitsdone, NULL_RTX, 1, false);
+					    bitsdone, NULL_RTX, 1);
 	}
 
       /* If OP0 is a register, then handle OFFSET here.
@@ -1301,8 +1301,7 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
 
 static rtx
 extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
-		     unsigned HOST_WIDE_INT bitnum,
-		     int unsignedp, bool packedp, rtx target,
+		     unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
 		     enum machine_mode mode, enum machine_mode tmode,
 		     bool fallback_p)
 {
@@ -1517,7 +1516,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  rtx result_part
 	    = extract_bit_field_1 (op0, MIN (BITS_PER_WORD,
 					     bitsize - i * BITS_PER_WORD),
-				   bitnum + bit_offset, 1, false, target_part,
+				   bitnum + bit_offset, 1, target_part,
 				   mode, word_mode, fallback_p);
 
 	  gcc_assert (target_part);
@@ -1621,7 +1620,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  xop0 = copy_to_reg (xop0);
 	  rtx result = extract_bit_field_1 (xop0, bitsize, bitpos,
-					    unsignedp, packedp, target,
+					    unsignedp, target,
 					    mode, tmode, false);
 	  if (result)
 	    return result;
@@ -1641,7 +1640,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   gcc_assert (int_mode != BLKmode);
 
   target = extract_fixed_bit_field (int_mode, op0, bitsize, bitnum,
-				    target, unsignedp, packedp);
+				    target, unsignedp);
   return convert_extracted_bit_field (target, mode, tmode, unsignedp);
 }
 
@@ -1652,7 +1651,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
    STR_RTX is the structure containing the byte (a REG or MEM).
    UNSIGNEDP is nonzero if this is an unsigned bit field.
-   PACKEDP is nonzero if the field has the packed attribute.
    MODE is the natural mode of the field value once extracted.
    TMODE is the mode the caller would like the value to have;
    but the value may be returned with type MODE instead.
@@ -1664,10 +1662,10 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 rtx
 extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
-		   unsigned HOST_WIDE_INT bitnum, int unsignedp, bool packedp,
-		   rtx target, enum machine_mode mode, enum machine_mode tmode)
+		   unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
+		   enum machine_mode mode, enum machine_mode tmode)
 {
-  return extract_bit_field_1 (str_rtx, bitsize, bitnum, unsignedp, packedp,
+  return extract_bit_field_1 (str_rtx, bitsize, bitnum, unsignedp,
 			      target, mode, tmode, true);
 }
 
@@ -1675,8 +1673,6 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
    from bit BITNUM of OP0.
 
    UNSIGNEDP is nonzero for an unsigned bit field (don't sign-extend value).
-   PACKEDP is true if the field has the packed attribute.
-
    If TARGET is nonzero, attempts to store the value there
    and return TARGET, but this is not guaranteed.
    If TARGET is not used, create a pseudo-reg of mode TMODE for the value.  */
@@ -1685,7 +1681,7 @@ static rtx
 extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 			 unsigned HOST_WIDE_INT bitsize,
 			 unsigned HOST_WIDE_INT bitnum, rtx target,
-			 int unsignedp, bool packedp)
+			 int unsignedp)
 {
   enum machine_mode mode;
 
@@ -1726,45 +1722,10 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  && bitnum % BITS_PER_UNIT + bitsize <= total_bits
 	  && bitnum % GET_MODE_BITSIZE (mode) + bitsize > total_bits)
 	{
+	  /* If the target doesn't support unaligned access, give up and
+	     split the access into two.  */
 	  if (STRICT_ALIGNMENT)
-	    {
-	      static bool informed_about_misalignment = false;
-
-	      if (packedp)
-		{
-		  if (bitsize == total_bits)
-		    warning_at (input_location, OPT_fstrict_volatile_bitfields,
-				"multiple accesses to volatile structure"
-				" member because of packed attribute");
-		  else
-		    warning_at (input_location, OPT_fstrict_volatile_bitfields,
-				"multiple accesses to volatile structure"
-				" bitfield because of packed attribute");
-
-		  return extract_split_bit_field (op0, bitsize, bitnum,
-						  unsignedp);
-		}
-
-	      if (bitsize == total_bits)
-		warning_at (input_location, OPT_fstrict_volatile_bitfields,
-			    "mis-aligned access used for structure member");
-	      else
-		warning_at (input_location, OPT_fstrict_volatile_bitfields,
-			    "mis-aligned access used for structure bitfield");
-
-	      if (! informed_about_misalignment)
-		{
-		  informed_about_misalignment = true;
-		  inform (input_location,
-			  "when a volatile object spans multiple type-sized"
-			  " locations, the compiler must choose between using"
-			  " a single mis-aligned access to preserve the"
-			  " volatility, or using multiple aligned accesses"
-			  " to avoid runtime faults; this code may fail at"
-			  " runtime if the hardware does not allow this"
-			  " access");
-		}
-	    }
+	    return extract_split_bit_field (op0, bitsize, bitnum, unsignedp);
 	  bit_offset = bitnum - bitnum % BITS_PER_UNIT;
 	}
       op0 = adjust_bitfield_address (op0, mode, bit_offset / BITS_PER_UNIT);
@@ -1940,7 +1901,7 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	 whose meaning is determined by BYTES_PER_UNIT.
 	 OFFSET is in UNITs, and UNIT is in bits.  */
       part = extract_fixed_bit_field (word_mode, word, thissize,
-				      offset * unit + thispos, 0, 1, false);
+				      offset * unit + thispos, 0, 1);
       bitsdone += thissize;
 
       /* Shift this part into place for the result.  */
