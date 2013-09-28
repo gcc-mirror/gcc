@@ -457,7 +457,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_value.assign(1, __c);
 	}
       else
-	__throw_regex_error(regex_constants::error_escape);
+	{
+#ifdef __STRICT_ANSI__
+	  __throw_regex_error(regex_constants::error_escape);
+#else
+	  _M_token = _S_token_ord_char;
+	  _M_value.assign(1, __c);
+#endif
+	}
       ++_M_current;
     }
 

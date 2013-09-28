@@ -1,3 +1,10 @@
+2013-09-28  Tim Shen <timshen91@gmail.com>
+
+	* include/bits/regex_scanner.tcc (_Scanner<>::_M_eat_escape_posix):
+	Let ordinary char escaping in POSIX be valid.
+	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: Test this
+	change.
+
 2013-09-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/predefined_ops.h: New.
