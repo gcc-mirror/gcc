@@ -180,7 +180,7 @@ static vec<invariant_p> invariants;
 static void
 check_invariant_table_size (void)
 {
-  if (invariant_table_size < DF_DEFS_TABLE_SIZE())
+  if (invariant_table_size < DF_DEFS_TABLE_SIZE ())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
       invariant_table = XRESIZEVEC (struct invariant *, invariant_table, new_size);
@@ -274,13 +274,13 @@ invariant_for_use (df_ref use)
     return NULL;
   def = defs->ref;
   check_invariant_table_size ();
-  if (!invariant_table[DF_REF_ID(def)])
+  if (!invariant_table[DF_REF_ID (def)])
     return NULL;
 
   def_bb = DF_REF_BB (def);
   if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
     return NULL;
-  return invariant_table[DF_REF_ID(def)];
+  return invariant_table[DF_REF_ID (def)];
 }
 
 /* Computes hash value for invariant expression X in INSN.  */
@@ -807,7 +807,7 @@ check_dependency (basic_block bb, df_ref use, bitmap depends_on)
 
   def = defs->ref;
   check_invariant_table_size ();
-  inv = invariant_table[DF_REF_ID(def)];
+  inv = invariant_table[DF_REF_ID (def)];
   if (!inv)
     return false;
 
@@ -908,7 +908,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
     {
       ref = df_find_def (insn, dest);
       check_invariant_table_size ();
-      invariant_table[DF_REF_ID(ref)] = inv;
+      invariant_table[DF_REF_ID (ref)] = inv;
     }
 }
 

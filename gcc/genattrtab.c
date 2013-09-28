@@ -90,9 +90,9 @@ along with GCC; see the file COPYING3.  If not see
    `return_val' (ATTR_PERMANENT_P): This rtx is permanent and unique
       (see attr_rtx).  */
 
-#define ATTR_IND_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), unchanging))
-#define ATTR_CURR_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), in_struct))
-#define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), return_val))
+#define ATTR_IND_SIMPLIFIED_P(RTX) (RTX_FLAG ((RTX), unchanging))
+#define ATTR_CURR_SIMPLIFIED_P(RTX) (RTX_FLAG ((RTX), in_struct))
+#define ATTR_PERMANENT_P(RTX) (RTX_FLAG ((RTX), return_val))
 
 #if 0
 #define strcmp_check(S1, S2) ((S1) == (S2)		\
@@ -2815,7 +2815,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	      x = evaluate_eq_attr (exp, attr, av->value,
 				    insn_code, insn_index);
 	      x = SIMPLIFY_TEST_EXP (x, insn_code, insn_index);
-	      if (attr_rtx_cost(x) < 7)
+	      if (attr_rtx_cost (x) < 7)
 		return x;
 	    }
 	}
@@ -4403,7 +4403,7 @@ write_upcase (FILE *outf, const char *str)
   while (*str)
     {
       /* The argument of TOUPPER should not have side effects.  */
-      fputc (TOUPPER(*str), outf);
+      fputc (TOUPPER (*str), outf);
       str++;
     }
 }
@@ -5285,7 +5285,7 @@ main (int argc, char **argv)
       {
         FILE *outf;
 
-#define IS_ATTR_GROUP(X) (!strncmp(attr->name,X,strlen(X)))
+#define IS_ATTR_GROUP(X) (!strncmp (attr->name, X, strlen (X)))
 	if (IS_ATTR_GROUP ("*internal_dfa_insn_code"))
 	  outf = dfa_file;
 	else if (IS_ATTR_GROUP ("*insn_default_latency"))

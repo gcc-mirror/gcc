@@ -68,7 +68,7 @@ print_code (RTX_CODE code)
 {
   const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
-    putchar (TOUPPER(*p1));
+    putchar (TOUPPER (*p1));
 }
 
 static void

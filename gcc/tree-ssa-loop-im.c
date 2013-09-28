@@ -227,7 +227,7 @@ get_lim_data (gimple stmt)
 static void
 free_lim_aux_data (struct lim_aux_data *data)
 {
-  data->depends.release();
+  data->depends.release ();
   free (data);
 }
 
@@ -1695,12 +1695,12 @@ for_all_locs_in_loop (struct loop *loop, mem_ref_p ref, FN fn)
 struct rewrite_mem_ref_loc
 {
   rewrite_mem_ref_loc (tree tmp_var_) : tmp_var (tmp_var_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   tree tmp_var;
 };
 
 bool
-rewrite_mem_ref_loc::operator()(mem_ref_loc_p loc)
+rewrite_mem_ref_loc::operator () (mem_ref_loc_p loc)
 {
   *loc->ref = tmp_var;
   update_stmt (loc->stmt);
@@ -1720,12 +1720,12 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
 struct first_mem_ref_loc_1
 {
   first_mem_ref_loc_1 (mem_ref_loc_p *locp_) : locp (locp_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   mem_ref_loc_p *locp;
 };
 
 bool
-first_mem_ref_loc_1::operator()(mem_ref_loc_p loc)
+first_mem_ref_loc_1::operator () (mem_ref_loc_p loc)
 {
   *locp = loc;
   return true;
@@ -2001,12 +2001,12 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 struct sm_set_flag_if_changed
 {
   sm_set_flag_if_changed (tree flag_) : flag (flag_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   tree flag;
 };
 
 bool
-sm_set_flag_if_changed::operator()(mem_ref_loc_p loc)
+sm_set_flag_if_changed::operator () (mem_ref_loc_p loc)
 {
   /* Only set the flag for writes.  */
   if (is_gimple_assign (loc->stmt)
@@ -2130,14 +2130,14 @@ struct ref_always_accessed
 {
   ref_always_accessed (struct loop *loop_, tree base_, bool stored_p_)
       : loop (loop_), base (base_), stored_p (stored_p_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   struct loop *loop;
   tree base;
   bool stored_p;
 };
 
 bool
-ref_always_accessed::operator()(mem_ref_loc_p loc)
+ref_always_accessed::operator () (mem_ref_loc_p loc)
 {
   struct loop *must_exec;
 

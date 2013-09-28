@@ -76,7 +76,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  int c = p[i];			   				      \
 	  if (c == '\"' || c == '\\')					      \
 	    putc ('\\', asm_out_file);					      \
-	  if (ISPRINT(c))						      \
+	  if (ISPRINT (c))						      \
 	    putc (c, asm_out_file);					      \
 	  else								      \
 	    {								      \
@@ -86,7 +86,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 		 The VAX assembler fails to stop reading the escape	      \
 		 after three digits, so this is the only way we		      \
 		 can get it to parse the data properly.  */		      \
-	      if (i < thissize - 1 && ISDIGIT(p[i + 1]))		      \
+	      if (i < thissize - 1 && ISDIGIT (p[i + 1]))		      \
 		fprintf (asm_out_file, "\"\n\t.ascii \"");		      \
 	  }								      \
 	}								      \
@@ -351,7 +351,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* If we have named sections, and we're using crtstuff to run ctors,
    use them for registering eh frame information.  */
 #if defined (TARGET_ASM_NAMED_SECTION) && DWARF2_UNWIND_INFO \
-    && !defined(EH_FRAME_IN_DATA_SECTION)
+    && !defined (EH_FRAME_IN_DATA_SECTION)
 #ifndef EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"
 #endif
@@ -1278,7 +1278,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    SET_RATIO or more simple move-instruction sequences, we will do a movmem
    or libcall instead.  */
 #ifndef SET_RATIO
-#define SET_RATIO(speed) MOVE_RATIO(speed)
+#define SET_RATIO(speed) MOVE_RATIO (speed)
 #endif
 
 /* Supply a default definition for FUNCTION_ARG_PADDING:

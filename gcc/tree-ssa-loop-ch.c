@@ -277,8 +277,8 @@ const pass_data pass_data_ch =
 class pass_ch : public gimple_opt_pass
 {
 public:
-  pass_ch(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_ch, ctxt)
+  pass_ch (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_ch, ctxt)
   {}
 
   /* opt_pass methods: */

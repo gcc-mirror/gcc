@@ -1443,6 +1443,6 @@ account_profile_record (struct profile_record *record, int after_pass)
 	  || bb == EXIT_BLOCK_PTR_FOR_FUNCTION (cfun))
 	continue;
       gcc_assert (cfg_hooks->account_profile_record);
-      cfg_hooks->account_profile_record(bb, after_pass, record);
+      cfg_hooks->account_profile_record (bb, after_pass, record);
    }
 }

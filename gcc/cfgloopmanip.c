@@ -950,7 +950,7 @@ unloop (struct loop *loop, bool *irred_invalidated,
 	remove_bb_from_loops (body[i]);
 	add_bb_to_loop (body[i], loop_outer (loop));
       }
-  free(body);
+  free (body);
 
   while (loop->inner)
     {

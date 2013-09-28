@@ -892,7 +892,7 @@ get_avail_load_store_reg (rtx insn)
 {
   if (REG_P (SET_DEST (PATTERN (insn))))
     /* A load.  */
-    return SET_DEST(PATTERN(insn));
+    return SET_DEST (PATTERN (insn));
   else
     {
       /* A store.  */
@@ -1344,8 +1344,8 @@ const pass_data pass_data_gcse2 =
 class pass_gcse2 : public rtl_opt_pass
 {
 public:
-  pass_gcse2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_gcse2, ctxt)
+  pass_gcse2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_gcse2, ctxt)
   {}
 
   /* opt_pass methods: */

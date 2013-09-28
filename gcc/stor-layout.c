@@ -1352,7 +1352,7 @@ place_field (record_layout_info rli, tree field)
 
 	      /* Cause a new bitfield to be captured, either this time (if
 		 currently a bitfield) or next time we see one.  */
-	      if (!DECL_BIT_FIELD_TYPE(field)
+	      if (!DECL_BIT_FIELD_TYPE (field)
 		  || integer_zerop (DECL_SIZE (field)))
 		rli->prev_field = NULL;
 	    }

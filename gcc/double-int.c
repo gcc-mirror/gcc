@@ -1555,11 +1555,11 @@ mpz_get_double_int (const_tree type, mpz_t val, bool wrap)
      for representing the value.  The code to calculate count is
      extracted from the GMP manual, section "Integer Import and Export":
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
-  numb = 8*sizeof(HOST_WIDE_INT);
+  numb = 8 * sizeof (HOST_WIDE_INT);
   count = (mpz_sizeinbase (val, 2) + numb-1) / numb;
   if (count < 2)
     count = 2;
-  vp = (unsigned HOST_WIDE_INT *) alloca (count * sizeof(HOST_WIDE_INT));
+  vp = (unsigned HOST_WIDE_INT *) alloca (count * sizeof (HOST_WIDE_INT));
 
   vp[0] = 0;
   vp[1] = 0;

@@ -267,7 +267,7 @@ adjust_line (const char *line, int max_width, int *column_p)
   int line_width = strlen (line);
   int column = *column_p;
 
-  right_margin = MIN(line_width - column, right_margin);
+  right_margin = MIN (line_width - column, right_margin);
   right_margin = max_width - right_margin;
   if (line_width >= max_width && column > right_margin)
     {
@@ -354,7 +354,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
   /* Skip functions in diagnostic.c.  */
   if (*pcount == 0
       && filename != NULL
-      && strcmp (lbasename(filename), "diagnostic.c") == 0)
+      && strcmp (lbasename (filename), "diagnostic.c") == 0)
     return 0;
 
   /* Print up to 20 functions.  We could make this a --param, but
@@ -881,7 +881,7 @@ diagnostic_append_note (diagnostic_context *context,
   pp_destroy_prefix (context->printer);
   pp_set_prefix (context->printer, saved_prefix);
   diagnostic_show_locus (context, &diagnostic);
-  va_end(ap);
+  va_end (ap);
 }
 
 bool

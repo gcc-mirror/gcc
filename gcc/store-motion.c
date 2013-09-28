@@ -271,7 +271,7 @@ store_ops_ok (const_rtx x, int *regs_set)
   for (; x; x = XEXP (x, 1))
     {
       reg = XEXP (x, 0);
-      if (regs_set[REGNO(reg)])
+      if (regs_set[REGNO (reg)])
 	return false;
     }
 
@@ -1256,8 +1256,8 @@ const pass_data pass_data_rtl_store_motion =
 class pass_rtl_store_motion : public rtl_opt_pass
 {
 public:
-  pass_rtl_store_motion(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_store_motion, ctxt)
+  pass_rtl_store_motion (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_store_motion, ctxt)
   {}
 
   /* opt_pass methods: */

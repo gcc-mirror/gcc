@@ -529,7 +529,7 @@ write_match_code_switch (rtx exp)
 	  putchar (TOUPPER (*code));
 	  code++;
 	}
-      fputs(":\n", stdout);
+      fputs (":\n", stdout);
     }
 }
 
@@ -596,9 +596,9 @@ write_predicate_stmts (rtx exp)
       break;
     }
 
-  fputs("  return ",stdout);
+  fputs ("  return ",stdout);
   write_predicate_expr (exp);
-  fputs(";\n", stdout);
+  fputs (";\n", stdout);
 }
 
 /* Given a predicate, write out a complete C function to compute it.  */
@@ -932,7 +932,7 @@ write_lookup_constraint (void)
 	"  switch (str[0])\n"
 	"    {");
 
-  for (i = 0; i < ARRAY_SIZE(constraints_by_letter_table); i++)
+  for (i = 0; i < ARRAY_SIZE (constraints_by_letter_table); i++)
     {
       struct constraint_data *c = constraints_by_letter_table[i];
       if (!c)
@@ -975,7 +975,7 @@ write_insn_constraint_len (void)
 	"  switch (fc)\n"
 	"    {");
 
-  for (i = 0; i < ARRAY_SIZE(constraints_by_letter_table); i++)
+  for (i = 0; i < ARRAY_SIZE (constraints_by_letter_table); i++)
     {
       struct constraint_data *c = constraints_by_letter_table[i];
 

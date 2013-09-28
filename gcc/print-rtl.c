@@ -399,7 +399,8 @@ print_rtx (const_rtx in_rtx)
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
 	    if (INSN_LOCATION (in_rtx) && insn_file (in_rtx))
-	      fprintf(outfile, " %s:%i", insn_file (in_rtx), insn_line (in_rtx));
+	      fprintf (outfile, " %s:%i", insn_file (in_rtx),
+		       insn_line (in_rtx));
 #endif
 	  }
 	else if (i == 6 && GET_CODE (in_rtx) == ASM_OPERANDS)

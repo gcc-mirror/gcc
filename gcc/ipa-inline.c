@@ -904,8 +904,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       sreal tmp, relbenefit_real, growth_real;
       int relbenefit = relative_time_benefit (callee_info, edge, edge_time);
 
-      sreal_init(&relbenefit_real, relbenefit, 0);
-      sreal_init(&growth_real, growth, 0);
+      sreal_init (&relbenefit_real, relbenefit, 0);
+      sreal_init (&growth_real, growth, 0);
 
       /* relative_edge_count.  */
       sreal_init (&tmp, edge->count, 0);
@@ -2311,8 +2311,8 @@ const pass_data pass_data_early_inline =
 class pass_early_inline : public gimple_opt_pass
 {
 public:
-  pass_early_inline(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_early_inline, ctxt)
+  pass_early_inline (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_inline, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2361,17 +2361,17 @@ const pass_data pass_data_ipa_inline =
 class pass_ipa_inline : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_inline(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_inline, ctxt,
-		     inline_generate_summary, /* generate_summary */
-		     inline_write_summary, /* write_summary */
-		     inline_read_summary, /* read_summary */
-		     NULL, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     inline_transform, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_inline (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_inline, ctxt,
+		      inline_generate_summary, /* generate_summary */
+		      inline_write_summary, /* write_summary */
+		      inline_read_summary, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      inline_transform, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */

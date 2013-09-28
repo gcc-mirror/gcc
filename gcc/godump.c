@@ -1213,7 +1213,7 @@ go_finish (const char *filename)
 	  break;
 
 	default:
-	  gcc_unreachable();
+	  gcc_unreachable ();
 	}
     }
 

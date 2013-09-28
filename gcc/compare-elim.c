@@ -247,7 +247,7 @@ class find_comparison_dom_walker : public dom_walker
 {
 public:
   find_comparison_dom_walker (cdi_direction direction)
-    : dom_walker(direction) {}
+    : dom_walker (direction) {}
 
   virtual void before_dom_children (basic_block);
 };
@@ -673,8 +673,8 @@ const pass_data pass_data_compare_elim_after_reload =
 class pass_compare_elim_after_reload : public rtl_opt_pass
 {
 public:
-  pass_compare_elim_after_reload(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_compare_elim_after_reload, ctxt)
+  pass_compare_elim_after_reload (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_compare_elim_after_reload, ctxt)
   {}
 
   /* opt_pass methods: */

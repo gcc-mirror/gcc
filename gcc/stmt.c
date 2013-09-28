@@ -1641,11 +1641,11 @@ dump_case_nodes (FILE *f, struct case_node *root,
 
   fputs (";; ", f);
   if (high == low)
-    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC,
-	    indent_step * indent_level, "", low);
+    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC,
+	     indent_step * indent_level, "", low);
   else
-    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
-	    indent_step * indent_level, "", low, high);
+    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
+	     indent_step * indent_level, "", low, high);
   fputs ("\n", f);
 
   dump_case_nodes (f, root->right, indent_step, indent_level);
@@ -1802,7 +1802,7 @@ get_outgoing_edge_probs (basic_block bb)
   int prob_sum = 0;
   if (!bb)
     return 0;
-  FOR_EACH_EDGE(e, ei, bb->succs)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     prob_sum += e->probability;
   return prob_sum;
 }
@@ -1851,7 +1851,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   rtx fallback_label = label_rtx (case_list->code_label);
   rtx table_label = gen_label_rtx ();
   bool has_gaps = false;
-  edge default_edge = stmt_bb ? EDGE_SUCC(stmt_bb, 0) : NULL;
+  edge default_edge = stmt_bb ? EDGE_SUCC (stmt_bb, 0) : NULL;
   int default_prob = default_edge ? default_edge->probability : 0;
   int base = get_outgoing_edge_probs (stmt_bb);
   bool try_with_tablejump = false;
@@ -1976,7 +1976,7 @@ reset_out_edges_aux (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  FOR_EACH_EDGE(e, ei, bb->succs)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     e->aux = (void *)0;
 }
 
@@ -2042,7 +2042,7 @@ expand_case (gimple stmt)
 
   /* Find the default case target label.  */
   default_label = label_rtx (CASE_LABEL (gimple_switch_default_label (stmt)));
-  edge default_edge = EDGE_SUCC(bb, 0);
+  edge default_edge = EDGE_SUCC (bb, 0);
   int default_prob = default_edge->probability;
 
   /* Get upper and lower bounds of case values.  */

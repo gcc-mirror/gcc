@@ -54,7 +54,7 @@ EXPORTED_CONST size_t gimple_ops_offset_[] = {
 };
 #undef DEFGSSTRUCT
 
-#define DEFGSSTRUCT(SYM, STRUCT, HAS_TREE_OP) sizeof(struct STRUCT),
+#define DEFGSSTRUCT(SYM, STRUCT, HAS_TREE_OP) sizeof (struct STRUCT),
 static const size_t gsstruct_code_size[] = {
 #include "gsstruct.def"
 };
@@ -2153,7 +2153,7 @@ gimple_set_lhs (gimple stmt, tree lhs)
   else if (code == GIMPLE_CALL)
     gimple_call_set_lhs (stmt, lhs);
   else
-    gcc_unreachable();
+    gcc_unreachable ();
 }
 
 

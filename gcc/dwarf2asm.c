@@ -315,7 +315,7 @@ dw2_asm_output_nstring (const char *str, size_t orig_len,
 	  int c = str[i];
 	  if (c == '\"' || c == '\\')
 	    fputc ('\\', asm_out_file);
-	  if (ISPRINT(c))
+	  if (ISPRINT (c))
 	    fputc (c, asm_out_file);
 	  else
 	    fprintf (asm_out_file, "\\%o", c);

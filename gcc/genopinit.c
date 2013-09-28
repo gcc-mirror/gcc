@@ -194,7 +194,7 @@ match_pattern (pattern *p, const char *name, const char *pat)
 	    for (i = (MAX_MACHINE_MODE) - 1; i >= 0; i--)
 	      {
 		const char *p, *q;
-		for (p = GET_MODE_NAME(i), q = name; *p; p++, q++)
+		for (p = GET_MODE_NAME (i), q = name; *p; p++, q++)
 		  if (TOLOWER (*p) != *q)
 		    break;
 		if (*p == 0
@@ -372,7 +372,7 @@ main (int argc, char **argv)
   /* Sort the (real) optabs.  Better than forcing the optabs.def file to
      remain sorted by kind.  We also scrogged any real ordering with the
      purging of the X patterns above.  */
-  qsort (optabs, n, sizeof(optab_def), optab_kind_cmp);
+  qsort (optabs, n, sizeof (optab_def), optab_kind_cmp);
 
   /* Emit the optab enumeration for the header file.  */
   fprintf (h_file, "enum optab_tag {\n");

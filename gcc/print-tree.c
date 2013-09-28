@@ -818,7 +818,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		if (ch >= ' ' && ch < 127)
 		  putc (ch, file);
 		else
-		  fprintf(file, "\\%03o", ch & 0xFF);
+		  fprintf (file, "\\%03o", ch & 0xFF);
 	      }
 	    fputc ('\"', file);
 	  }

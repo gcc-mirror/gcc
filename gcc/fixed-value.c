@@ -97,7 +97,7 @@ fixed_from_double_int (double_int payload, enum machine_mode mode)
   else if (UNSIGNED_SCALAR_FIXED_POINT_MODE_P (mode))
     value.data = payload.zext (GET_MODE_IBIT (mode) + GET_MODE_FBIT (mode));
   else
-    gcc_unreachable();
+    gcc_unreachable ();
 
   value.mode = mode;
 

@@ -289,8 +289,8 @@ const pass_data pass_data_nrv =
 class pass_nrv : public gimple_opt_pass
 {
 public:
-  pass_nrv(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_nrv, ctxt)
+  pass_nrv (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_nrv, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -393,8 +393,8 @@ const pass_data pass_data_return_slot =
 class pass_return_slot : public gimple_opt_pass
 {
 public:
-  pass_return_slot(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_return_slot, ctxt)
+  pass_return_slot (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_return_slot, ctxt)
   {}
 
   /* opt_pass methods: */

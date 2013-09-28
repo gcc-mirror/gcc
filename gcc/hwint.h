@@ -37,7 +37,7 @@
 # if GCC_VERSION >= 3000
 #  define HAVE_LONG_LONG 1
 #  define SIZEOF_LONG_LONG 8
-extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
+extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
 # endif
 #endif
 
@@ -110,11 +110,11 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #endif
 
 
-#define HOST_WIDE_INT_UC(X) HOST_WIDE_INT_C(X ## U)
-#define HOST_WIDE_INT_1 HOST_WIDE_INT_C(1)
-#define HOST_WIDE_INT_1U HOST_WIDE_INT_UC(1)
-#define HOST_WIDE_INT_M1 HOST_WIDE_INT_C(-1)
-#define HOST_WIDE_INT_M1U HOST_WIDE_INT_UC(-1)
+#define HOST_WIDE_INT_UC(X) HOST_WIDE_INT_C (X ## U)
+#define HOST_WIDE_INT_1 HOST_WIDE_INT_C (1)
+#define HOST_WIDE_INT_1U HOST_WIDE_INT_UC (1)
+#define HOST_WIDE_INT_M1 HOST_WIDE_INT_C (-1)
+#define HOST_WIDE_INT_M1U HOST_WIDE_INT_UC (-1)
 
 /* This is a magic identifier which allows GCC to figure out the type
    of HOST_WIDE_INT for %wd specifier checks.  You must issue this
@@ -168,7 +168,7 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      HOST_WIDE_INT_PRINT_UNSIGNED
 # define HOST_WIDEST_INT_PRINT_HEX	      HOST_WIDE_INT_PRINT_HEX
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     HOST_WIDE_INT_PRINT_DOUBLE_HEX
-# define HOST_WIDEST_INT_C(X)		      HOST_WIDE_INT(X)
+# define HOST_WIDEST_INT_C(X)		      HOST_WIDE_INT (X)
 #else
 # if HOST_BITS_PER_LONGLONG >= 64
 #  define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_LONGLONG

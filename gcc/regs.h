@@ -69,7 +69,7 @@ extern struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;
 
 /* Indexed by n, gives number of times (REG n) is used or set.  */
 static inline int
-REG_N_REFS(int regno)
+REG_N_REFS (int regno)
 {
   return regstat_n_sets_and_refs[regno].refs;
 }

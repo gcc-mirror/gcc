@@ -456,8 +456,8 @@ public:
 	    int (*Callback) (value_type **slot, Argument argument)>
   void traverse (Argument argument);
 
-  iterator begin();
-  iterator end();
+  iterator begin ();
+  iterator end ();
 };
 
 
@@ -522,7 +522,7 @@ hash_table <Descriptor, Allocator>::remove_elt (const value_type *value)
 template <typename Descriptor,
 	  template <typename Type> class Allocator>
 inline size_t
-hash_table <Descriptor, Allocator>::size()
+hash_table <Descriptor, Allocator>::size ()
 {
   return htab->size;
 }
@@ -556,7 +556,7 @@ hash_table <Descriptor, Allocator>::elements_with_deleted ()
 template <typename Descriptor,
 	  template <typename Type> class Allocator>
 inline double
-hash_table <Descriptor, Allocator>::collisions()
+hash_table <Descriptor, Allocator>::collisions ()
 {
   if (htab->searches == 0)
     return 0.0;

@@ -759,7 +759,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
       gimple_stmt_iterator gsi;
       struct walk_stmt_info wi;
 
-      memset (&wi, 0, sizeof(wi));
+      memset (&wi, 0, sizeof (wi));
       for (gsi = gsi_start_bb (this_block);
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
@@ -1520,17 +1520,17 @@ const pass_data pass_data_ipa_pure_const =
 class pass_ipa_pure_const : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_pure_const(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_pure_const, ctxt,
-		     pure_const_generate_summary, /* generate_summary */
-		     pure_const_write_summary, /* write_summary */
-		     pure_const_read_summary, /* read_summary */
-		     NULL, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_pure_const (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_pure_const, ctxt,
+		      pure_const_generate_summary, /* generate_summary */
+		      pure_const_write_summary, /* write_summary */
+		      pure_const_read_summary, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */
@@ -1704,8 +1704,8 @@ const pass_data pass_data_local_pure_const =
 class pass_local_pure_const : public gimple_opt_pass
 {
 public:
-  pass_local_pure_const(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_local_pure_const, ctxt)
+  pass_local_pure_const (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_local_pure_const, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -3564,8 +3564,8 @@ const pass_data pass_data_strength_reduction =
 class pass_strength_reduction : public gimple_opt_pass
 {
 public:
-  pass_strength_reduction(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_strength_reduction, ctxt)
+  pass_strength_reduction (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strength_reduction, ctxt)
   {}
 
   /* opt_pass methods: */

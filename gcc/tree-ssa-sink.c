@@ -607,8 +607,8 @@ const pass_data pass_data_sink_code =
 class pass_sink_code : public gimple_opt_pass
 {
 public:
-  pass_sink_code(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_sink_code, ctxt)
+  pass_sink_code (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sink_code, ctxt)
   {}
 
   /* opt_pass methods: */

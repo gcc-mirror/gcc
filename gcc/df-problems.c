@@ -326,7 +326,7 @@ df_rd_bb_local_compute_process_def (struct df_rd_bb_info *bb_info,
 		      if (n_defs > DF_SPARSE_THRESHOLD)
 			{
 			  bitmap_set_bit (&bb_info->sparse_kill, regno);
-			  bitmap_clear_range(&bb_info->gen, begin, n_defs);
+			  bitmap_clear_range (&bb_info->gen, begin, n_defs);
 			}
 		      else
 			{
@@ -594,7 +594,7 @@ df_rd_start_dump (FILE *file)
 {
   struct df_rd_problem_data *problem_data
     = (struct df_rd_problem_data *) df_rd->problem_data;
-  unsigned int m = DF_REG_SIZE(df);
+  unsigned int m = DF_REG_SIZE (df);
   unsigned int regno;
 
   if (!df_rd->block_info)
@@ -622,7 +622,7 @@ df_rd_dump_defs_set (bitmap defs_set, const char *prefix, FILE *file)
 {
   bitmap_head tmp;
   unsigned int regno;
-  unsigned int m = DF_REG_SIZE(df);
+  unsigned int m = DF_REG_SIZE (df);
   bool first_reg = true;
 
   fprintf (file, "%s\t(%d) ", prefix, (int) bitmap_count_bits (defs_set));

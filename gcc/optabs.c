@@ -401,8 +401,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? usdiv_optab : ssdiv_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? usdiv_optab : ssdiv_optab;
       return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
 
     case LSHIFT_EXPR:
@@ -413,8 +413,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 
 	  gcc_assert (subtype == optab_scalar);
 	}
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? usashl_optab : ssashl_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? usashl_optab : ssashl_optab;
       return ashl_optab;
 
     case RSHIFT_EXPR:
@@ -556,23 +556,23 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? usadd_optab : ssadd_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? usadd_optab : ssadd_optab;
       return trapv ? addv_optab : add_optab;
 
     case MINUS_EXPR:
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? ussub_optab : sssub_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? ussub_optab : sssub_optab;
       return trapv ? subv_optab : sub_optab;
 
     case MULT_EXPR:
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? usmul_optab : ssmul_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? usmul_optab : ssmul_optab;
       return trapv ? smulv_optab : smul_optab;
 
     case NEGATE_EXPR:
-      if (TYPE_SATURATING(type))
-	return TYPE_UNSIGNED(type) ? usneg_optab : ssneg_optab;
+      if (TYPE_SATURATING (type))
+	return TYPE_UNSIGNED (type) ? usneg_optab : ssneg_optab;
       return trapv ? negv_optab : neg_optab;
 
     case ABS_EXPR:
@@ -5714,7 +5714,7 @@ gen_interclass_conv_libfunc (convert_optab tab,
   fname = GET_MODE_NAME (fmode);
   tname = GET_MODE_NAME (tmode);
 
-  if (DECIMAL_FLOAT_MODE_P(fmode) || DECIMAL_FLOAT_MODE_P(tmode))
+  if (DECIMAL_FLOAT_MODE_P (fmode) || DECIMAL_FLOAT_MODE_P (tmode))
     {
       libfunc_name = dec_name;
       suffix = dec_suffix;
@@ -5847,7 +5847,7 @@ gen_intraclass_conv_libfunc (convert_optab tab, const char *opname,
   fname = GET_MODE_NAME (fmode);
   tname = GET_MODE_NAME (tmode);
 
-  if (DECIMAL_FLOAT_MODE_P(fmode) || DECIMAL_FLOAT_MODE_P(tmode))
+  if (DECIMAL_FLOAT_MODE_P (fmode) || DECIMAL_FLOAT_MODE_P (tmode))
     {
       libfunc_name = dec_name;
       suffix = dec_suffix;
@@ -7585,7 +7585,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
   /* If the size of the object is greater than word size on this target,
      a default store will not be atomic, Try a mem_exchange and throw away
      the result.  If that doesn't work, don't do anything.  */
-  if (GET_MODE_PRECISION(mode) > BITS_PER_WORD)
+  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
     {
       rtx target = maybe_emit_atomic_exchange (NULL_RTX, mem, val, model);
       if (!target)

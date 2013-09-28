@@ -663,8 +663,8 @@ const pass_data pass_data_stack_adjustments =
 class pass_stack_adjustments : public rtl_opt_pass
 {
 public:
-  pass_stack_adjustments(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_stack_adjustments, ctxt)
+  pass_stack_adjustments (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stack_adjustments, ctxt)
   {}
 
   /* opt_pass methods: */

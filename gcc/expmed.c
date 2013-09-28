@@ -2806,7 +2806,7 @@ choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
      `unsigned int' */
   if (HOST_BITS_PER_INT >= GET_MODE_UNIT_BITSIZE (mode))
     {
-      op_cost = neg_cost(speed, mode);
+      op_cost = neg_cost (speed, mode);
       if (MULT_COST_LESS (&alg->cost, mult_cost))
 	{
 	  limit.cost = alg->cost.cost - op_cost;
@@ -3124,7 +3124,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	     calculation of the synth_mult.  */
 	  coeff = -(unsigned HOST_WIDE_INT) coeff;
 	  max_cost = (set_src_cost (gen_rtx_MULT (mode, fake_reg, op1), speed)
-		      - neg_cost(speed, mode));
+		      - neg_cost (speed, mode));
 	  if (max_cost <= 0)
 	    goto skip_synth;
 
@@ -3877,7 +3877,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
     {
       if (rem_flag)
 	return const0_rtx;
-      return expand_unop (mode, flag_trapv && GET_MODE_CLASS(mode) == MODE_INT
+      return expand_unop (mode, flag_trapv && GET_MODE_CLASS (mode) == MODE_INT
 			  ? negv_optab : neg_optab, op0, target, 0);
     }
 

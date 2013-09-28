@@ -73,7 +73,7 @@ struct GTY(()) real_value {
 
 /* Verify the guess.  */
 extern char test_real_width
-  [sizeof(REAL_VALUE_TYPE) <= REAL_WIDTH*sizeof(HOST_WIDE_INT) ? 1 : -1];
+  [sizeof (REAL_VALUE_TYPE) <= REAL_WIDTH * sizeof (HOST_WIDE_INT) ? 1 : -1];
 
 /* Calculate the format for CONST_DOUBLE.  We need as many slots as
    are necessary to overlay a REAL_VALUE_TYPE on them.  This could be

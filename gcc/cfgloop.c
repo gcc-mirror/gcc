@@ -433,7 +433,7 @@ flow_loops_find (struct loops *loops)
 
   /* Gather all loop headers in reverse completion order and allocate
      loop structures for loops that are not already present.  */
-  larray.create (loops->larray->length());
+  larray.create (loops->larray->length ());
   for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
     {
       basic_block header = BASIC_BLOCK (rc_order[b]);
@@ -509,7 +509,7 @@ flow_loops_find (struct loops *loops)
 	}
     }
 
-  larray.release();
+  larray.release ();
 
   return loops;
 }

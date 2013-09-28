@@ -657,8 +657,8 @@ const pass_data pass_data_cse_reciprocals =
 class pass_cse_reciprocals : public gimple_opt_pass
 {
 public:
-  pass_cse_reciprocals(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_cse_reciprocals, ctxt)
+  pass_cse_reciprocals (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cse_reciprocals, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1575,8 +1575,8 @@ const pass_data pass_data_cse_sincos =
 class pass_cse_sincos : public gimple_opt_pass
 {
 public:
-  pass_cse_sincos(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_cse_sincos, ctxt)
+  pass_cse_sincos (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cse_sincos, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2065,8 +2065,8 @@ const pass_data pass_data_optimize_bswap =
 class pass_optimize_bswap : public gimple_opt_pass
 {
 public:
-  pass_optimize_bswap(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_optimize_bswap, ctxt)
+  pass_optimize_bswap (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_optimize_bswap, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2871,8 +2871,8 @@ const pass_data pass_data_optimize_widening_mul =
 class pass_optimize_widening_mul : public gimple_opt_pass
 {
 public:
-  pass_optimize_widening_mul(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_optimize_widening_mul, ctxt)
+  pass_optimize_widening_mul (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_optimize_widening_mul, ctxt)
   {}
 
   /* opt_pass methods: */

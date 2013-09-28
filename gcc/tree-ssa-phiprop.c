@@ -414,8 +414,8 @@ const pass_data pass_data_phiprop =
 class pass_phiprop : public gimple_opt_pass
 {
 public:
-  pass_phiprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_phiprop, ctxt)
+  pass_phiprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_phiprop, ctxt)
   {}
 
   /* opt_pass methods: */

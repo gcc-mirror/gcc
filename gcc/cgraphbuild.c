@@ -393,8 +393,8 @@ const pass_data pass_data_build_cgraph_edges =
 class pass_build_cgraph_edges : public gimple_opt_pass
 {
 public:
-  pass_build_cgraph_edges(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_build_cgraph_edges, ctxt)
+  pass_build_cgraph_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_cgraph_edges, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -525,8 +525,8 @@ const pass_data pass_data_rebuild_cgraph_edges =
 class pass_rebuild_cgraph_edges : public gimple_opt_pass
 {
 public:
-  pass_rebuild_cgraph_edges(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_rebuild_cgraph_edges, ctxt)
+  pass_rebuild_cgraph_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_rebuild_cgraph_edges, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -573,8 +573,8 @@ const pass_data pass_data_remove_cgraph_callee_edges =
 class pass_remove_cgraph_callee_edges : public gimple_opt_pass
 {
 public:
-  pass_remove_cgraph_callee_edges(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_remove_cgraph_callee_edges, ctxt)
+  pass_remove_cgraph_callee_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_remove_cgraph_callee_edges, ctxt)
   {}
 
   /* opt_pass methods: */

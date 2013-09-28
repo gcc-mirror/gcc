@@ -4480,8 +4480,8 @@ const pass_data pass_data_reassoc =
 class pass_reassoc : public gimple_opt_pass
 {
 public:
-  pass_reassoc(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_reassoc, ctxt)
+  pass_reassoc (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_reassoc, ctxt)
   {}
 
   /* opt_pass methods: */

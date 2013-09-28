@@ -2877,7 +2877,7 @@ variable_union (variable src, dataflow_set *set)
 	      /* The most common case, much simpler, no qsort is needed.  */
 	      location_chain dstnode = dst->var_part[j].loc_chain;
 	      dst->var_part[k].loc_chain = dstnode;
-	      VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET(dst, j);
+	      VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET (dst, j);
 	      node2 = dstnode;
 	      for (node = src->var_part[i].loc_chain; node; node = node->next)
 		if (!((REG_P (dstnode->loc)
@@ -10256,8 +10256,8 @@ const pass_data pass_data_variable_tracking =
 class pass_variable_tracking : public rtl_opt_pass
 {
 public:
-  pass_variable_tracking(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_variable_tracking, ctxt)
+  pass_variable_tracking (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_variable_tracking, ctxt)
   {}
 
   /* opt_pass methods: */

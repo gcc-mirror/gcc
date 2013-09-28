@@ -553,8 +553,8 @@ const pass_data pass_data_release_ssa_names =
 class pass_release_ssa_names : public gimple_opt_pass
 {
 public:
-  pass_release_ssa_names(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_release_ssa_names, ctxt)
+  pass_release_ssa_names (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_release_ssa_names, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -246,7 +246,8 @@ insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table,
 
   /* Record bitmap_index of the implicit set in implicit_set_indexes.  */
   if (implicit)
-    implicit_set_indexes[BLOCK_FOR_INSN(insn)->index] = cur_expr->bitmap_index;
+    implicit_set_indexes[BLOCK_FOR_INSN (insn)->index]
+      = cur_expr->bitmap_index;
 }
 
 /* Determine whether the rtx X should be treated as a constant for CPROP.
@@ -1402,9 +1403,9 @@ find_implicit_sets (void)
       implicit_sets[dest->index] = new_rtx;
       if (dump_file)
 	{
-	  fprintf(dump_file, "Implicit set of reg %d in ",
-		  REGNO (XEXP (cond, 0)));
-	  fprintf(dump_file, "basic block %d\n", dest->index);
+	  fprintf (dump_file, "Implicit set of reg %d in ",
+		   REGNO (XEXP (cond, 0)));
+	  fprintf (dump_file, "basic block %d\n", dest->index);
 	}
       count++;
     }
@@ -1934,8 +1935,8 @@ const pass_data pass_data_rtl_cprop =
 class pass_rtl_cprop : public rtl_opt_pass
 {
 public:
-  pass_rtl_cprop(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_cprop, ctxt)
+  pass_rtl_cprop (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_cprop, ctxt)
   {}
 
   /* opt_pass methods: */

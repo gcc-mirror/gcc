@@ -578,8 +578,7 @@ generate_summary (void)
 	    EXECUTE_IF_SET_IN_BITMAP (l->statics_written,
 				      0, index, bi)
 	      {
-	        fprintf(dump_file, "%s ",
-		        get_static_name (index));
+	        fprintf (dump_file, "%s ", get_static_name (index));
 	      }
 	}
 }
@@ -949,7 +948,7 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
   EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
     {
       tree decl = (tree)splay_tree_lookup (reference_vars_to_consider, index)->value;
-      lto_output_var_decl_index(ob->decl_state, ob->main_stream, decl);
+      lto_output_var_decl_index (ob->decl_state, ob->main_stream, decl);
     }
 }
 
@@ -1175,20 +1174,20 @@ const pass_data pass_data_ipa_reference =
 class pass_ipa_reference : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_reference(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_reference, ctxt,
-		     NULL, /* generate_summary */
-		     NULL, /* write_summary */
-		     NULL, /* read_summary */
-		     ipa_reference_write_optimization_summary, /*
-		     write_optimization_summary */
-		     ipa_reference_read_optimization_summary, /*
-		     read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
-  {}
+  pass_ipa_reference (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_reference, ctxt,
+		      NULL, /* generate_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
+		      ipa_reference_write_optimization_summary, /*
+		      write_optimization_summary */
+		      ipa_reference_read_optimization_summary, /*
+		      read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
+    {}
 
   /* opt_pass methods: */
   bool gate () { return gate_reference (); }

@@ -1747,7 +1747,7 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
     {
       if (c->rhs.type == ADDRESSOF)
 	{
-	  gcc_unreachable();
+	  gcc_unreachable ();
 	}
       else
 	{
@@ -2096,7 +2096,7 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 		}
 	    }
 	  else
-	    bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
+	    bitmap_ior_into (graph->points_to[n], graph->points_to[w]);
 	}
     }
 
@@ -4301,8 +4301,8 @@ find_func_aliases_for_builtin_call (gimple t)
 	    rhsc.safe_push (nul);
 	    get_constraint_for (gimple_call_lhs (t), &lhsc);
 	    process_all_all_constraints (lhsc, rhsc);
-	    lhsc.release();
-	    rhsc.release();
+	    lhsc.release ();
+	    rhsc.release ();
 	  }
 	return true;
       /* Trampolines are special - they set up passing the static
@@ -6980,8 +6980,8 @@ const pass_data pass_data_build_alias =
 class pass_build_alias : public gimple_opt_pass
 {
 public:
-  pass_build_alias(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_build_alias, ctxt)
+  pass_build_alias (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_alias, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -7020,8 +7020,8 @@ const pass_data pass_data_build_ealias =
 class pass_build_ealias : public gimple_opt_pass
 {
 public:
-  pass_build_ealias(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_build_ealias, ctxt)
+  pass_build_ealias (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_ealias, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -7414,8 +7414,8 @@ const pass_data pass_data_ipa_pta =
 class pass_ipa_pta : public simple_ipa_opt_pass
 {
 public:
-  pass_ipa_pta(gcc::context *ctxt)
-    : simple_ipa_opt_pass(pass_data_ipa_pta, ctxt)
+  pass_ipa_pta (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_pta, ctxt)
   {}
 
   /* opt_pass methods: */

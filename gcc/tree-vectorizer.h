@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef source_location LOC;
 #define UNKNOWN_LOC UNKNOWN_LOCATION
-#define EXPR_LOC(e) EXPR_LOCATION(e)
+#define EXPR_LOC(e) EXPR_LOCATION (e)
 #define LOC_FILE(l) LOCATION_FILE (l)
 #define LOC_LINE(l) LOCATION_LINE (l)
 
@@ -356,7 +356,7 @@ typedef struct _loop_vec_info {
 && TREE_INT_CST_LOW ((n)) > 0)
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
-NITERS_KNOWN_P((L)->num_iters)
+NITERS_KNOWN_P ((L)->num_iters)
 
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)

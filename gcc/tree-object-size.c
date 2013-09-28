@@ -392,7 +392,8 @@ alloc_object_size (const_gimple call, int object_size_type)
   if (!callee)
     return unknown[object_size_type];
 
-  alloc_size = lookup_attribute ("alloc_size", TYPE_ATTRIBUTES (TREE_TYPE(callee)));
+  alloc_size = lookup_attribute ("alloc_size",
+				 TYPE_ATTRIBUTES (TREE_TYPE (callee)));
   if (alloc_size && TREE_VALUE (alloc_size))
     {
       tree p = TREE_VALUE (alloc_size);
@@ -1282,8 +1283,8 @@ const pass_data pass_data_object_sizes =
 class pass_object_sizes : public gimple_opt_pass
 {
 public:
-  pass_object_sizes(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_object_sizes, ctxt)
+  pass_object_sizes (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_object_sizes, ctxt)
   {}
 
   /* opt_pass methods: */

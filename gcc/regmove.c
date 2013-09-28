@@ -1382,8 +1382,8 @@ const pass_data pass_data_regmove =
 class pass_regmove : public rtl_opt_pass
 {
 public:
-  pass_regmove(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_regmove, ctxt)
+  pass_regmove (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_regmove, ctxt)
   {}
 
   /* opt_pass methods: */

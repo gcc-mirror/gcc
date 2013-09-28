@@ -2739,8 +2739,8 @@ const pass_data pass_data_inline_parameters =
 class pass_inline_parameters : public gimple_opt_pass
 {
 public:
-  pass_inline_parameters(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_inline_parameters, ctxt)
+  pass_inline_parameters (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_inline_parameters, ctxt)
   {}
 
   /* opt_pass methods: */

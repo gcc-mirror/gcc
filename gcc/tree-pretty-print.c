@@ -46,7 +46,7 @@ static void do_niy (pretty_printer *, const_tree);
 #define INDENT(SPACE) do { \
   int i; for (i = 0; i<SPACE; i++) pp_space (buffer); } while (0)
 
-#define NIY do_niy(buffer,node)
+#define NIY do_niy (buffer, node)
 
 static pretty_printer buffer;
 static int initialized = 0;

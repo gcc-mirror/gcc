@@ -99,8 +99,8 @@ static unsigned int iv_ref_table_size = 0;
 static struct rtx_iv ** iv_ref_table;
 
 /* Induction variable stored at the reference.  */
-#define DF_REF_IV(REF) iv_ref_table[DF_REF_ID(REF)]
-#define DF_REF_IV_SET(REF, IV) iv_ref_table[DF_REF_ID(REF)] = (IV)
+#define DF_REF_IV(REF) iv_ref_table[DF_REF_ID (REF)]
+#define DF_REF_IV_SET(REF, IV) iv_ref_table[DF_REF_ID (REF)] = (IV)
 
 /* The current loop.  */
 
@@ -212,7 +212,7 @@ lowpart_subreg (enum machine_mode outer_mode, rtx expr,
 static void
 check_iv_ref_table_size (void)
 {
-  if (iv_ref_table_size < DF_DEFS_TABLE_SIZE())
+  if (iv_ref_table_size < DF_DEFS_TABLE_SIZE ())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
       iv_ref_table = XRESIZEVEC (struct rtx_iv *, iv_ref_table, new_size);

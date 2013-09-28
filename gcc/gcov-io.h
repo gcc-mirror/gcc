@@ -382,7 +382,7 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 /* Return nonzero if SUB is an immediate subtag of TAG.  */
 #define GCOV_TAG_IS_SUBTAG(TAG,SUB)				\
 	(GCOV_TAG_MASK (TAG) >> 8 == GCOV_TAG_MASK (SUB) 	\
-	 && !(((SUB) ^ (TAG)) & ~GCOV_TAG_MASK(TAG)))
+	 && !(((SUB) ^ (TAG)) & ~GCOV_TAG_MASK (TAG)))
 
 /* Return nonzero if SUB is at a sublevel to TAG.  */
 #define GCOV_TAG_IS_SUBLEVEL(TAG,SUB)				\

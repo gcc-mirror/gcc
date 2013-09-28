@@ -102,7 +102,7 @@ public:
   virtual unsigned int execute ();
 
 protected:
-  opt_pass(const pass_data&, gcc::context *);
+  opt_pass (const pass_data&, gcc::context *);
 
 public:
   /* A list of sub-passes to run, dependent on gate predicate.  */
@@ -122,8 +122,8 @@ protected:
 class gimple_opt_pass : public opt_pass
 {
 protected:
-  gimple_opt_pass(const pass_data& data, gcc::context *ctxt)
-    : opt_pass(data, ctxt)
+  gimple_opt_pass (const pass_data& data, gcc::context *ctxt)
+    : opt_pass (data, ctxt)
   {
   }
 };
@@ -132,8 +132,8 @@ protected:
 class rtl_opt_pass : public opt_pass
 {
 protected:
-  rtl_opt_pass(const pass_data& data, gcc::context *ctxt)
-    : opt_pass(data, ctxt)
+  rtl_opt_pass (const pass_data& data, gcc::context *ctxt)
+    : opt_pass (data, ctxt)
   {
   }
 };
@@ -174,27 +174,26 @@ public:
   void (*variable_transform) (struct varpool_node *);
 
 protected:
-  ipa_opt_pass_d(const pass_data& data, gcc::context *ctxt,
-                 void (*generate_summary) (void),
-                 void (*write_summary) (void),
-                 void (*read_summary) (void),
-                 void (*write_optimization_summary) (void),
-                 void (*read_optimization_summary) (void),
-                 void (*stmt_fixup) (struct cgraph_node *, gimple *),
-                 unsigned int function_transform_todo_flags_start,
-                 unsigned int (*function_transform) (struct cgraph_node *),
-                 void (*variable_transform) (struct varpool_node *))
-    : opt_pass(data, ctxt),
-	       generate_summary(generate_summary),
-	       write_summary(write_summary),
-	       read_summary(read_summary),
-	       write_optimization_summary(write_optimization_summary),
-	       read_optimization_summary(read_optimization_summary),
-	       stmt_fixup(stmt_fixup),
-	       function_transform_todo_flags_start(
-	         function_transform_todo_flags_start),
-	       function_transform(function_transform),
-	       variable_transform(variable_transform)
+  ipa_opt_pass_d (const pass_data& data, gcc::context *ctxt,
+		  void (*generate_summary) (void),
+		  void (*write_summary) (void),
+		  void (*read_summary) (void),
+		  void (*write_optimization_summary) (void),
+		  void (*read_optimization_summary) (void),
+		  void (*stmt_fixup) (struct cgraph_node *, gimple *),
+		  unsigned int function_transform_todo_flags_start,
+		  unsigned int (*function_transform) (struct cgraph_node *),
+		  void (*variable_transform) (struct varpool_node *))
+    : opt_pass (data, ctxt),
+      generate_summary (generate_summary),
+      write_summary (write_summary),
+      read_summary (read_summary),
+      write_optimization_summary (write_optimization_summary),
+      read_optimization_summary (read_optimization_summary),
+      stmt_fixup (stmt_fixup),
+      function_transform_todo_flags_start (function_transform_todo_flags_start),
+      function_transform (function_transform),
+      variable_transform (variable_transform)
   {
   }
 };
@@ -204,8 +203,8 @@ protected:
 class simple_ipa_opt_pass : public opt_pass
 {
 protected:
-  simple_ipa_opt_pass(const pass_data& data, gcc::context *ctxt)
-    : opt_pass(data, ctxt)
+  simple_ipa_opt_pass (const pass_data& data, gcc::context *ctxt)
+    : opt_pass (data, ctxt)
   {
   }
 };

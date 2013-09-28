@@ -2402,8 +2402,8 @@ const pass_data pass_data_build_ssa =
 class pass_build_ssa : public gimple_opt_pass
 {
 public:
-  pass_build_ssa(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_build_ssa, ctxt)
+  pass_build_ssa (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_ssa, ctxt)
   {}
 
   /* opt_pass methods: */

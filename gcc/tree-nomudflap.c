@@ -105,8 +105,8 @@ const pass_data pass_data_mudflap_1 =
 class pass_mudflap_1 : public gimple_opt_pass
 {
 public:
-  pass_mudflap_1(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_mudflap_1, ctxt)
+  pass_mudflap_1 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_mudflap_1, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -142,8 +142,8 @@ const pass_data pass_data_mudflap_2 =
 class pass_mudflap_2 : public gimple_opt_pass
 {
 public:
-  pass_mudflap_2(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_mudflap_2, ctxt)
+  pass_mudflap_2 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_mudflap_2, ctxt)
   {}
 
   /* opt_pass methods: */

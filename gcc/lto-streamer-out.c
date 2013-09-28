@@ -2034,17 +2034,17 @@ const pass_data pass_data_ipa_lto_gimple_out =
 class pass_ipa_lto_gimple_out : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_lto_gimple_out(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_lto_gimple_out, ctxt,
-		     NULL, /* generate_summary */
-		     lto_output, /* write_summary */
-		     NULL, /* read_summary */
-		     lto_output, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_lto_gimple_out (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_lto_gimple_out, ctxt,
+		      NULL, /* generate_summary */
+		      lto_output, /* write_summary */
+		      NULL, /* read_summary */
+		      lto_output, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */
@@ -2248,7 +2248,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
       && !targetm.binds_local_p (t))
     visibility = GCCPV_DEFAULT;
   else
-    switch (DECL_VISIBILITY(t))
+    switch (DECL_VISIBILITY (t))
       {
       case VISIBILITY_DEFAULT:
 	visibility = GCCPV_DEFAULT;
@@ -2458,7 +2458,7 @@ produce_asm_for_decls (void)
       lto_output_decl_state_refs (ob, decl_state_stream, fn_out_state);
     }
   lto_write_stream (decl_state_stream);
-  free(decl_state_stream);
+  free (decl_state_stream);
 
   lto_write_stream (ob->main_stream);
   lto_write_stream (ob->string_stream);
@@ -2506,17 +2506,17 @@ const pass_data pass_data_ipa_lto_finish_out =
 class pass_ipa_lto_finish_out : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_lto_finish_out(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_lto_finish_out, ctxt,
-		     NULL, /* generate_summary */
-		     produce_asm_for_decls, /* write_summary */
-		     NULL, /* read_summary */
-		     produce_asm_for_decls, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_lto_finish_out (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_lto_finish_out, ctxt,
+		      NULL, /* generate_summary */
+		      produce_asm_for_decls, /* write_summary */
+		      NULL, /* read_summary */
+		      produce_asm_for_decls, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */

@@ -1136,13 +1136,13 @@ common_affine_function (conflict_function *cf)
   affine_fn comm;
 
   if (!CF_NONTRIVIAL_P (cf))
-    return affine_fn();
+    return affine_fn ();
 
   comm = cf->fns[0];
 
   for (i = 1; i < cf->n; i++)
     if (!affine_function_equal_p (comm, cf->fns[i]))
-      return affine_fn();
+      return affine_fn ();
 
   return comm;
 }
@@ -1637,12 +1637,12 @@ conflict_fn (unsigned n, ...)
   va_list ap;
 
   gcc_assert (0 < n && n <= MAX_DIM);
-  va_start(ap, n);
+  va_start (ap, n);
 
   ret->n = n;
   for (i = 0; i < n; i++)
     ret->fns[i] = va_arg (ap, affine_fn);
-  va_end(ap);
+  va_end (ap);
 
   return ret;
 }

@@ -1009,8 +1009,8 @@ const pass_data pass_data_merge_phi =
 class pass_merge_phi : public gimple_opt_pass
 {
 public:
-  pass_merge_phi(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_merge_phi, ctxt)
+  pass_merge_phi (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_merge_phi, ctxt)
   {}
 
   /* opt_pass methods: */

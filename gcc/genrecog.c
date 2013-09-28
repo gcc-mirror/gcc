@@ -58,7 +58,7 @@
 #include "gensupport.h"
 
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
-  printf("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
+  printf ("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
 
 /* Ways of obtaining an rtx to be tested.  */
 enum position_type {
@@ -1619,7 +1619,7 @@ write_afterward (struct decision *start, struct decision *afterward,
 		 const char *indent)
 {
   if (!afterward || start->subroutine_number > 0)
-    printf("%sgoto ret0;\n", indent);
+    printf ("%sgoto ret0;\n", indent);
   else
     {
       change_state (start->position, afterward->position, indent);
@@ -1669,7 +1669,7 @@ write_switch (struct decision *start, int depth)
       struct decision *ret;
       RTX_CODE code;
 
-      memset (codemap, 0, sizeof(codemap));
+      memset (codemap, 0, sizeof (codemap));
 
       printf ("  switch (GET_CODE (x%d))\n    {\n", depth);
       code = p->tests->u.code;
@@ -1762,7 +1762,8 @@ write_switch (struct decision *start, int depth)
       if (type == DT_elt_zero_wide_safe)
 	{
 	  indent = "  ";
-	  printf("  if ((int) XWINT (x%d, 0) == XWINT (x%d, 0))\n", depth, depth);
+	  printf ("  if ((int) XWINT (x%d, 0) == XWINT (x%d, 0))\n",
+		  depth, depth);
 	}
       printf ("%s  switch (", indent);
       switch (type)
@@ -1937,7 +1938,7 @@ write_action (struct decision *p, struct decision_test *test,
 
   if (test->type == DT_accept_op)
     {
-      printf("%soperands[%d] = x%d;\n", indent, test->u.opno, depth);
+      printf ("%soperands[%d] = x%d;\n", indent, test->u.opno, depth);
 
       /* Only allow DT_accept_insn to follow.  */
       if (test->next)
@@ -1992,7 +1993,7 @@ write_action (struct decision *p, struct decision_test *test,
     }
   else
     {
-      printf("%sgoto L%d;\n", indent, success->number);
+      printf ("%sgoto L%d;\n", indent, success->number);
       success->need_label = 1;
     }
 
@@ -2357,7 +2358,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
 
   validate_pattern (x, insn, NULL_RTX, 0);
 
-  memset(&head, 0, sizeof(head));
+  memset (&head, 0, sizeof (head));
   last = add_to_sequence (x, &head, &root_pos, type, 1);
 
   /* Find the end of the test chain on the last node.  */
@@ -2423,7 +2424,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
 		}
 
 	      /* Recognize it.  */
-	      memset (&clobber_head, 0, sizeof(clobber_head));
+	      memset (&clobber_head, 0, sizeof (clobber_head));
 	      last = add_to_sequence (new_rtx, &clobber_head, &root_pos,
 				      type, 1);
 
@@ -2493,7 +2494,7 @@ process_tree (struct decision_head *head, enum routine_type subroutine_type)
       /* We run this after find_afterward, because find_afterward needs
 	 the redundant DT_mode tests on predicates to determine whether
 	 two tests can both be true or not.  */
-      simplify_tests(head);
+      simplify_tests (head);
 
       write_subroutines (head, subroutine_type);
     }
@@ -2601,12 +2602,12 @@ debug_decision_2 (struct decision_test *test)
       break;
     case DT_pred:
       fprintf (stderr, "pred=(%s,%s)",
-	       test->u.pred.name, GET_MODE_NAME(test->u.pred.mode));
+	       test->u.pred.name, GET_MODE_NAME (test->u.pred.mode));
       break;
     case DT_c_test:
       {
 	char sub[16+4];
-	strncpy (sub, test->u.c_test, sizeof(sub));
+	strncpy (sub, test->u.c_test, sizeof (sub));
 	memcpy (sub+16, "...", 4);
 	fprintf (stderr, "c_test=\"%s\"", sub);
       }
