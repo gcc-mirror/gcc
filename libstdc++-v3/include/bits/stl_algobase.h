@@ -898,9 +898,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __lexicographical_compare<_BoolType>::
       __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
       {
-	return std::__lexicographical_compare_impl(
-		__first1, __last1, __first2, __last2,
-		__gnu_cxx::__ops::__iter_less_iter());
+	return std::__lexicographical_compare_impl(__first1, __last1,
+						   __first2, __last2,
+					__gnu_cxx::__ops::__iter_less_iter());
       }
 
   template<>
@@ -976,7 +976,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
-    _ForwardIterator
+    inline _ForwardIterator
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
@@ -1226,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  comp parameter instead of @c <.
   */
   template<typename _II1, typename _II2, typename _Compare>
-    bool
+    inline bool
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2, _Compare __comp)
     {
@@ -1269,7 +1269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
-    pair<_InputIterator1, _InputIterator2>
+    inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2)
     {
@@ -1303,7 +1303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
-    pair<_InputIterator1, _InputIterator2>
+    inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
     {
@@ -1349,7 +1349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
-    pair<_InputIterator1, _InputIterator2>
+    inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2)
     {
@@ -1385,7 +1385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
-    pair<_InputIterator1, _InputIterator2>
+    inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2,
 	     _BinaryPredicate __binary_pred)

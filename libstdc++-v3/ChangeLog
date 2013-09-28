@@ -1,3 +1,18 @@
+2013-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (remove_copy, remove_copy_if): Declare
+	inline.
+	(rotate_copy, stable_partition, partial_sort_copy): Likewise.
+	(lower_bound, upper_bound, equal_range, inplace_merge): Likewise.
+	(includes, next_permutation, prev_permutation): Likewise.
+	(replace_copy, replace_copy_if, is_sorted_until): Likewise.
+	(minmax_element, is_permutation, adjacent_find): Likewise.
+	(count, count_if, search, search_n, merge): Likewise.
+	(set_intersection, set_difference): Likewise.
+	(set_symmetric_difference, min_element, max_element): Likewise.
+	* include/bits/stl_algobase.h (lower_bound): Likewise.
+	(lexicographical_compare, mismatch): Likewise.
+
 2013-09-28  Tim Shen <timshen91@gmail.com>
 
 	* include/bits/regex_scanner.tcc (_Scanner<>::_M_eat_escape_posix):

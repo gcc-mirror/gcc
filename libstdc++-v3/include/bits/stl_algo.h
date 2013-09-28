@@ -661,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  are copied is unchanged.
   */
   template<typename _InputIterator, typename _OutputIterator, typename _Tp>
-    _OutputIterator
+    inline _OutputIterator
     remove_copy(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, const _Tp& __value)
     {
@@ -694,7 +694,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _Predicate>
-    _OutputIterator
+    inline _OutputIterator
     remove_copy_if(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _Predicate __pred)
     {
@@ -1414,9 +1414,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
-      typedef typename iterator_traits<_ForwardIterator>::iterator_category
-	_IterType;
-      std::__rotate(__first, __middle, __last, _IterType());
+      std::__rotate(__first, __middle, __last,
+		    std::__iterator_category(__first));
     }
 
   /**
@@ -1440,7 +1439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for each @p n in the range @p [0,__last-__first).
   */
   template<typename _ForwardIterator, typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     rotate_copy(_ForwardIterator __first, _ForwardIterator __middle,
                 _ForwardIterator __last, _OutputIterator __result)
     {
@@ -1647,7 +1646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  relative ordering after calling @p stable_partition().
   */
   template<typename _ForwardIterator, typename _Predicate>
-    _ForwardIterator
+    inline _ForwardIterator
     stable_partition(_ForwardIterator __first, _ForwardIterator __last,
 		     _Predicate __pred)
     {
@@ -1733,7 +1732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  The value returned is @p __result_first+N.
   */
   template<typename _InputIterator, typename _RandomAccessIterator>
-    _RandomAccessIterator
+    inline _RandomAccessIterator
     partial_sort_copy(_InputIterator __first, _InputIterator __last,
 		      _RandomAccessIterator __result_first,
 		      _RandomAccessIterator __result_last)
@@ -1782,7 +1781,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _InputIterator, typename _RandomAccessIterator,
 	   typename _Compare>
-    _RandomAccessIterator
+    inline _RandomAccessIterator
     partial_sort_copy(_InputIterator __first, _InputIterator __last,
 		      _RandomAccessIterator __result_first,
 		      _RandomAccessIterator __result_last,
@@ -2016,7 +2015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the function used for the initial sort.
   */
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
-    _ForwardIterator
+    inline _ForwardIterator
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
@@ -2073,7 +2072,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
-    _ForwardIterator
+    inline _ForwardIterator
     upper_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
@@ -2105,7 +2104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the function used for the initial sort.
   */
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
-    _ForwardIterator
+    inline _ForwardIterator
     upper_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
@@ -2179,7 +2178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  but does not actually call those functions.
   */
   template<typename _ForwardIterator, typename _Tp>
-    pair<_ForwardIterator, _ForwardIterator>
+    inline pair<_ForwardIterator, _ForwardIterator>
     equal_range(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
     {
@@ -2216,7 +2215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  but does not actually call those functions.
   */
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
-    pair<_ForwardIterator, _ForwardIterator>
+    inline pair<_ForwardIterator, _ForwardIterator>
     equal_range(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
@@ -2580,7 +2579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  distance(__first,__last).
   */
   template<typename _BidirectionalIterator>
-    void
+    inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,
 		  _BidirectionalIterator __last)
@@ -2620,7 +2619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the function used for the initial sort.
   */
   template<typename _BidirectionalIterator, typename _Compare>
-    void
+    inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,
 		  _BidirectionalIterator __last,
@@ -2827,7 +2826,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  returned.
   */
   template<typename _InputIterator1, typename _InputIterator2>
-    bool
+    inline bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2)
     {
@@ -2870,7 +2869,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _Compare>
-    bool
+    inline bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2,
 	     _Compare __comp)
@@ -2951,7 +2950,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  is the largest of the set, the smallest is generated and false returned.
   */
   template<typename _BidirectionalIterator>
-    bool
+    inline bool
     next_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last)
     {
@@ -2982,7 +2981,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  smallest is generated and false returned.
   */
   template<typename _BidirectionalIterator, typename _Compare>
-    bool
+    inline bool
     next_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last, _Compare __comp)
     {
@@ -3049,7 +3048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  returned.
   */
   template<typename _BidirectionalIterator>
-    bool
+    inline bool
     prev_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last)
     {
@@ -3080,7 +3079,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the largest is generated and false returned.
   */
   template<typename _BidirectionalIterator, typename _Compare>
-    bool
+    inline bool
     prev_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last, _Compare __comp)
     {
@@ -3129,7 +3128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  equal to @p __old_value with @p __new_value.
   */
   template<typename _InputIterator, typename _OutputIterator, typename _Tp>
-    _OutputIterator
+    inline _OutputIterator
     replace_copy(_InputIterator __first, _InputIterator __last,
 		 _OutputIterator __result,
 		 const _Tp& __old_value, const _Tp& __new_value)
@@ -3164,7 +3163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _Predicate, typename _Tp>
-    _OutputIterator
+    inline _OutputIterator
     replace_copy_if(_InputIterator __first, _InputIterator __last,
 		    _OutputIterator __result,
 		    _Predicate __pred, const _Tp& __new_value)
@@ -3245,7 +3244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           for which the range [__first, i) is sorted.
   */
   template<typename _ForwardIterator>
-    _ForwardIterator
+    inline _ForwardIterator
     is_sorted_until(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
@@ -3268,7 +3267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           for which the range [__first, i) is sorted.
   */
   template<typename _ForwardIterator, typename _Compare>
-    _ForwardIterator
+    inline _ForwardIterator
     is_sorted_until(_ForwardIterator __first, _ForwardIterator __last,
 		    _Compare __comp)
     {
@@ -3390,7 +3389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           such that no other element in the range is larger.
   */
   template<typename _ForwardIterator>
-    pair<_ForwardIterator, _ForwardIterator>
+    inline pair<_ForwardIterator, _ForwardIterator>
     minmax_element(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
@@ -3416,7 +3415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *           such that no other element in the range is larger.
   */
   template<typename _ForwardIterator, typename _Compare>
-    pair<_ForwardIterator, _ForwardIterator>
+    inline pair<_ForwardIterator, _ForwardIterator>
     minmax_element(_ForwardIterator __first, _ForwardIterator __last,
 		   _Compare __comp)
     {
@@ -3520,7 +3519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          returns true; otherwise, returns false.
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2>
-    bool
+    inline bool
     is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 		   _ForwardIterator2 __first2)
     {
@@ -3552,7 +3551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2,
 	   typename _BinaryPredicate>
-    bool
+    inline bool
     is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 		   _ForwardIterator2 __first2, _BinaryPredicate __pred)
     {
@@ -3643,7 +3642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          otherwise, returns false.
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2>
-    bool
+    inline bool
     is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 		   _ForwardIterator2 __first2, _ForwardIterator2 __last2)
     {
@@ -3671,7 +3670,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2,
 	   typename _BinaryPredicate>
-    bool
+    inline bool
     is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 		   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
 		   _BinaryPredicate __pred)
@@ -3891,7 +3890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  or @p __last if no such iterator exists.
   */
   template<typename _ForwardIterator>
-    _ForwardIterator
+    inline _ForwardIterator
     adjacent_find(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
@@ -3916,7 +3915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  exists.
   */
   template<typename _ForwardIterator, typename _BinaryPredicate>
-    _ForwardIterator
+    inline _ForwardIterator
     adjacent_find(_ForwardIterator __first, _ForwardIterator __last,
 		  _BinaryPredicate __binary_pred)
     {
@@ -3941,7 +3940,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  for which @c *i == @p __value
   */
   template<typename _InputIterator, typename _Tp>
-    typename iterator_traits<_InputIterator>::difference_type
+    inline typename iterator_traits<_InputIterator>::difference_type
     count(_InputIterator __first, _InputIterator __last, const _Tp& __value)
     {
       // concept requirements
@@ -3964,7 +3963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  for which @p __pred(*i) is true.
   */
   template<typename _InputIterator, typename _Predicate>
-    typename iterator_traits<_InputIterator>::difference_type
+    inline typename iterator_traits<_InputIterator>::difference_type
     count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
     {
       // concept requirements
@@ -4004,7 +4003,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @p [__first1,__last1-(__last2-__first2))
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2>
-    _ForwardIterator1
+    inline _ForwardIterator1
     search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 	   _ForwardIterator2 __first2, _ForwardIterator2 __last2)
     {
@@ -4044,7 +4043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _ForwardIterator1, typename _ForwardIterator2,
 	   typename _BinaryPredicate>
-    _ForwardIterator1
+    inline _ForwardIterator1
     search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 	   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
 	   _BinaryPredicate  __predicate)
@@ -4078,7 +4077,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  equal to @p __val.
   */
   template<typename _ForwardIterator, typename _Integer, typename _Tp>
-    _ForwardIterator
+    inline _ForwardIterator
     search_n(_ForwardIterator __first, _ForwardIterator __last,
 	     _Integer __count, const _Tp& __val)
     {
@@ -4112,7 +4111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _ForwardIterator, typename _Integer, typename _Tp,
            typename _BinaryPredicate>
-    _ForwardIterator
+    inline _ForwardIterator
     search_n(_ForwardIterator __first, _ForwardIterator __last,
 	     _Integer __count, const _Tp& __val,
 	     _BinaryPredicate __binary_pred)
@@ -4751,7 +4750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     merge(_InputIterator1 __first1, _InputIterator1 __last1,
 	  _InputIterator2 __first2, _InputIterator2 __last2,
 	  _OutputIterator __result)
@@ -4799,7 +4798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
+    inline _OutputIterator
     merge(_InputIterator1 __first1, _InputIterator1 __last1,
 	  _InputIterator2 __first2, _InputIterator2 __last2,
 	  _OutputIterator __result, _Compare __comp)
@@ -4961,7 +4960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     set_union(_InputIterator1 __first1, _InputIterator1 __last1,
 	      _InputIterator2 __first2, _InputIterator2 __last2,
 	      _OutputIterator __result)
@@ -5008,7 +5007,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
+    inline _OutputIterator
     set_union(_InputIterator1 __first1, _InputIterator1 __last1,
 	      _InputIterator2 __first2, _InputIterator2 __last2,
 	      _OutputIterator __result, _Compare __comp)
@@ -5076,7 +5075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _InputIterator2 __last2,
 		     _OutputIterator __result)
@@ -5122,7 +5121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
+    inline _OutputIterator
     set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _InputIterator2 __last2,
 		     _OutputIterator __result, _Compare __comp)
@@ -5192,7 +5191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     set_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 		   _InputIterator2 __first2, _InputIterator2 __last2,
 		   _OutputIterator __result)
@@ -5240,7 +5239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
+    inline _OutputIterator
     set_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 		   _InputIterator2 __first2, _InputIterator2 __last2,
 		   _OutputIterator __result, _Compare __comp)
@@ -5316,7 +5315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator>
-    _OutputIterator
+    inline _OutputIterator
     set_symmetric_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 			     _InputIterator2 __first2, _InputIterator2 __last2,
 			     _OutputIterator __result)
@@ -5364,7 +5363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
+    inline _OutputIterator
     set_symmetric_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 			     _InputIterator2 __first2, _InputIterator2 __last2,
 			     _OutputIterator __result,
@@ -5414,7 +5413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _ForwardIterator>
     _ForwardIterator
-    min_element(_ForwardIterator __first, _ForwardIterator __last)
+    inline min_element(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
@@ -5436,7 +5435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  according to __comp.
   */
   template<typename _ForwardIterator, typename _Compare>
-    _ForwardIterator
+    inline _ForwardIterator
     min_element(_ForwardIterator __first, _ForwardIterator __last,
 		_Compare __comp)
     {
@@ -5472,7 +5471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @return  Iterator referencing the first instance of the largest value.
   */
   template<typename _ForwardIterator>
-    _ForwardIterator
+    inline _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
@@ -5495,7 +5494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  according to __comp.
   */
   template<typename _ForwardIterator, typename _Compare>
-    _ForwardIterator
+    inline _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last,
 		_Compare __comp)
     {
