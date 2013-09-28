@@ -1676,7 +1676,7 @@ tilepro_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
       rtx extracted =
 	extract_bit_field (gen_lowpart (SImode, wide_result),
 			   bitsize, bit_offset % BITS_PER_UNIT,
-			   !sign, false, gen_lowpart (SImode, dest_reg),
+			   !sign, gen_lowpart (SImode, dest_reg),
 			   SImode, SImode);
 
       if (extracted != dest_reg)
