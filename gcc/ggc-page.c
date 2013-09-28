@@ -462,7 +462,7 @@ static struct globals
 /* The size in bytes required to maintain a bitmap for the objects
    on a page-entry.  */
 #define BITMAP_SIZE(Num_objects) \
-  (CEIL ((Num_objects), HOST_BITS_PER_LONG) * sizeof(long))
+  (CEIL ((Num_objects), HOST_BITS_PER_LONG) * sizeof (long))
 
 /* Allocate pages in chunks of this size, to throttle calls to memory
    allocation routines.  The first page is used, the rest go onto the
@@ -785,7 +785,7 @@ alloc_page (unsigned order)
       page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE, false);
       if (page == NULL)
      	{
-	  page = alloc_anon(NULL, G.pagesize, true);
+	  page = alloc_anon (NULL, G.pagesize, true);
           entries = 1;
 	}
 
@@ -1644,7 +1644,7 @@ init_ggc (void)
 {
   unsigned order;
 
-  G.pagesize = getpagesize();
+  G.pagesize = getpagesize ();
   G.lg_pagesize = exact_log2 (G.pagesize);
 
 #ifdef HAVE_MMAP_DEV_ZERO
@@ -2163,7 +2163,7 @@ ggc_print_statistics (void)
     }
   fprintf (stderr, "%-5s %10lu%c %10lu%c %10lu%c\n", "Total",
 	   SCALE (G.bytes_mapped), STAT_LABEL (G.bytes_mapped),
-	   SCALE (G.allocated), STAT_LABEL(G.allocated),
+	   SCALE (G.allocated), STAT_LABEL (G.allocated),
 	   SCALE (total_overhead), STAT_LABEL (total_overhead));
 
   if (GATHER_STATISTICS)
@@ -2315,13 +2315,13 @@ ggc_pch_write_object (struct ggc_pch_data *d,
 
   if (size != OBJECT_SIZE (order))
     {
-      unsigned padding = OBJECT_SIZE(order) - size;
+      unsigned padding = OBJECT_SIZE (order) - size;
 
       /* To speed small writes, we use a nulled-out array that's larger
          than most padding requests as the source for our null bytes.  This
          permits us to do the padding with fwrite() rather than fseek(), and
          limits the chance the OS may try to flush any outstanding writes.  */
-      if (padding <= sizeof(emptyBytes))
+      if (padding <= sizeof (emptyBytes))
         {
           if (fwrite (emptyBytes, 1, padding, f) != padding)
             fatal_error ("can%'t write PCH file");
@@ -2419,7 +2419,7 @@ ggc_pch_read (FILE *f, void *addr)
 #endif
   /* Since we free all the allocated objects, the free list becomes
      useless.  Validate it now, which will also clear it.  */
-  validate_free_objects();
+  validate_free_objects ();
 
   /* No object read from a PCH file should ever be freed.  So, set the
      context depth to 1, and set the depth of all the currently-allocated

@@ -144,7 +144,7 @@ struct access_matrix
 #define AM_NB_INDUCTION_VARS(M) (M)->nb_induction_vars
 #define AM_PARAMETERS(M) (M)->parameters
 #define AM_MATRIX(M) (M)->matrix
-#define AM_NB_PARAMETERS(M) (AM_PARAMETERS(M)).length ()
+#define AM_NB_PARAMETERS(M) (AM_PARAMETERS (M)).length ()
 #define AM_CONST_COLUMN_INDEX(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M))
 #define AM_NB_COLUMNS(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M) + 1)
 #define AM_GET_SUBSCRIPT_ACCESS_VECTOR(M, I) AM_MATRIX (M)[I]
@@ -162,7 +162,7 @@ am_vector_index_for_loop (struct access_matrix *access_matrix, int loop_num)
     if (l->num == loop_num)
       return i;
 
-  gcc_unreachable();
+  gcc_unreachable ();
 }
 
 struct data_reference

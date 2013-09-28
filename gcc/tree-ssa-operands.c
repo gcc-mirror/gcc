@@ -1203,7 +1203,7 @@ verify_imm_links (FILE *f, tree var)
   fprintf (f, " IMM ERROR : (use_p : tree - %p:%p)", (void *)ptr,
 	   (void *)ptr->use);
   print_generic_expr (f, USE_FROM_PTR (ptr), TDF_SLIM);
-  fprintf(f, "\n");
+  fprintf (f, "\n");
   return true;
 }
 
@@ -1238,7 +1238,7 @@ dump_immediate_uses_for (FILE *file, tree var)
 	else
 	  print_gimple_stmt (file, USE_STMT (use_p), 0, TDF_SLIM);
     }
-  fprintf(file, "\n");
+  fprintf (file, "\n");
 }
 
 
@@ -1253,7 +1253,7 @@ dump_immediate_uses (FILE *file)
   fprintf (file, "Immediate_uses: \n\n");
   for (x = 1; x < num_ssa_names; x++)
     {
-      var = ssa_name(x);
+      var = ssa_name (x);
       if (!var)
         continue;
       dump_immediate_uses_for (file, var);

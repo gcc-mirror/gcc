@@ -273,8 +273,8 @@ const pass_data pass_data_build_cfg =
 class pass_build_cfg : public gimple_opt_pass
 {
 public:
-  pass_build_cfg(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_build_cfg, ctxt)
+  pass_build_cfg (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_cfg, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3360,7 +3360,7 @@ verify_gimple_assign_unary (gimple stmt)
       {
 	if ((!INTEGRAL_TYPE_P (rhs1_type) || !SCALAR_FLOAT_TYPE_P (lhs_type))
 	    && (!VECTOR_INTEGER_TYPE_P (rhs1_type)
-	        || !VECTOR_FLOAT_TYPE_P(lhs_type)))
+	        || !VECTOR_FLOAT_TYPE_P (lhs_type)))
 	  {
 	    error ("invalid types in conversion to floating point");
 	    debug_generic_expr (lhs_type);
@@ -3375,7 +3375,7 @@ verify_gimple_assign_unary (gimple stmt)
       {
         if ((!INTEGRAL_TYPE_P (lhs_type) || !SCALAR_FLOAT_TYPE_P (rhs1_type))
             && (!VECTOR_INTEGER_TYPE_P (lhs_type)
-                || !VECTOR_FLOAT_TYPE_P(rhs1_type)))
+                || !VECTOR_FLOAT_TYPE_P (rhs1_type)))
 	  {
 	    error ("invalid types in conversion to integer");
 	    debug_generic_expr (lhs_type);
@@ -7957,8 +7957,8 @@ const pass_data pass_data_split_crit_edges =
 class pass_split_crit_edges : public gimple_opt_pass
 {
 public:
-  pass_split_crit_edges(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_split_crit_edges, ctxt)
+  pass_split_crit_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_split_crit_edges, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -8129,8 +8129,8 @@ const pass_data pass_data_warn_function_return =
 class pass_warn_function_return : public gimple_opt_pass
 {
 public:
-  pass_warn_function_return(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_warn_function_return, ctxt)
+  pass_warn_function_return (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_warn_function_return, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -8183,8 +8183,8 @@ const pass_data pass_data_warn_function_noreturn =
 class pass_warn_function_noreturn : public gimple_opt_pass
 {
 public:
-  pass_warn_function_noreturn(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_warn_function_noreturn, ctxt)
+  pass_warn_function_noreturn (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_warn_function_noreturn, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -8300,8 +8300,8 @@ const pass_data pass_data_warn_unused_result =
 class pass_warn_unused_result : public gimple_opt_pass
 {
 public:
-  pass_warn_unused_result(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_warn_unused_result, ctxt)
+  pass_warn_unused_result (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_warn_unused_result, ctxt)
   {}
 
   /* opt_pass methods: */

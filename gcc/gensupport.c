@@ -392,7 +392,7 @@ static struct queue_elem *
 queue_pattern (rtx pattern, struct queue_elem ***list_tail,
 	       const char *filename, int lineno)
 {
-  struct queue_elem *e = XNEW(struct queue_elem);
+  struct queue_elem *e = XNEW (struct queue_elem);
   e->data = pattern;
   e->filename = filename;
   e->lineno = lineno;
@@ -429,7 +429,7 @@ remove_from_queue (struct queue_elem *elem, struct queue_elem **queue)
 static void
 add_define_attr (const char *name)
 {
-  struct queue_elem *e = XNEW(struct queue_elem);
+  struct queue_elem *e = XNEW (struct queue_elem);
   rtx t1 = rtx_alloc (DEFINE_ATTR);
   XSTR (t1, 0) = name;
   XSTR (t1, 1) = "no,yes";
@@ -2870,7 +2870,7 @@ record_insn_name (int code, const char *name)
       new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
       insn_name_ptr = XRESIZEVEC (char *, insn_name_ptr, new_size);
       memset (insn_name_ptr + insn_name_ptr_size, 0,
-	      sizeof(char *) * (new_size - insn_name_ptr_size));
+	      sizeof (char *) * (new_size - insn_name_ptr_size));
       insn_name_ptr_size = new_size;
     }
 

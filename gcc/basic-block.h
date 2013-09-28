@@ -214,8 +214,8 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
    struct rtl_bb_info, so that inlining the former into basic_block_def
    is the better choice.  */
 typedef int __assert_gimple_bb_smaller_rtl_bb
-              [(int)sizeof(struct rtl_bb_info)
-               - (int)sizeof (struct gimple_bb_info)];
+              [(int) sizeof (struct rtl_bb_info)
+               - (int) sizeof (struct gimple_bb_info)];
 
 
 #define BB_FREQ_MAX 10000
@@ -324,9 +324,9 @@ struct GTY(()) control_flow_graph {
 #define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
 
 #define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  ((*basic_block_info_for_function(FN))[(N)])
+  ((*basic_block_info_for_function (FN))[(N)])
 #define SET_BASIC_BLOCK_FOR_FUNCTION(FN,N,BB) \
-  ((*basic_block_info_for_function(FN))[(N)] = (BB))
+  ((*basic_block_info_for_function (FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
 #define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
@@ -353,7 +353,7 @@ struct GTY(()) control_flow_graph {
 #define FOR_EACH_BB_REVERSE_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
 
-#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN(BB, cfun)
+#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN (BB, cfun)
 
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
@@ -951,7 +951,7 @@ extern void default_rtl_profile (void);
 
 /* In profile.c.  */
 typedef struct gcov_working_set_info gcov_working_set_t;
-extern gcov_working_set_t *find_working_set(unsigned pct_times_10);
+extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
 
 /* Check tha probability is sane.  */
 

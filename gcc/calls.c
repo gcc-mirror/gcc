@@ -1732,7 +1732,8 @@ internal_arg_pointer_based_exp_scan (void)
 	  if (val != NULL_RTX)
 	    {
 	      if (idx >= internal_arg_pointer_exp_state.cache.length ())
-		internal_arg_pointer_exp_state.cache.safe_grow_cleared(idx + 1);
+		internal_arg_pointer_exp_state.cache
+		  .safe_grow_cleared (idx + 1);
 	      internal_arg_pointer_exp_state.cache[idx] = val;
 	    }
 	}

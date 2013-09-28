@@ -159,8 +159,8 @@ const pass_data pass_data_cleanup_barriers =
 class pass_cleanup_barriers : public rtl_opt_pass
 {
 public:
-  pass_cleanup_barriers(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_cleanup_barriers, ctxt)
+  pass_cleanup_barriers (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cleanup_barriers, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -401,9 +401,9 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       /* These CONST_CAST's are okay because prev_nonnote_insn just
 	 returns its argument and we assign it to a const_rtx
 	 variable.  */
-      for (prev = prev_nonnote_insn (CONST_CAST_RTX(insn));
+      for (prev = prev_nonnote_insn (CONST_CAST_RTX (insn));
 	   prev != 0 && !LABEL_P (prev);
-	   prev = prev_nonnote_insn (CONST_CAST_RTX(prev)))
+	   prev = prev_nonnote_insn (CONST_CAST_RTX (prev)))
 	{
 	  const_rtx set = set_of (arg0, prev);
 	  if (set && GET_CODE (set) == SET

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef va_copy
 # ifdef __va_copy
-#   define va_copy(d,s)  __va_copy((d),(s))
+#   define va_copy(d,s)  __va_copy (d, s)
 # else
 #   define va_copy(d,s)  ((d) = (s))
 # endif
@@ -53,9 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef fopen 
 #undef freopen 
 
-#define fopen(PATH,MODE) fopen_unlocked(PATH,MODE)
-#define fdopen(FILDES,MODE) fdopen_unlocked(FILDES,MODE)
-#define freopen(PATH,MODE,STREAM) freopen_unlocked(PATH,MODE,STREAM)
+#define fopen(PATH, MODE) fopen_unlocked (PATH, MODE)
+#define fdopen(FILDES, MODE) fdopen_unlocked (FILDES, MODE)
+#define freopen(PATH, MODE, STREAM) freopen_unlocked (PATH, MODE, STREAM)
 
 /* The compiler is not a multi-threaded application and therefore we
    do not have to use the locking functions.  In fact, using the locking
@@ -294,7 +294,7 @@ extern int errno;
 /* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
    It is necessary at least when t == time_t.  */
 #define INTTYPE_MINIMUM(t) ((t) (INTTYPE_SIGNED (t) \
-                             ? ~ (t) 0 << (sizeof(t) * CHAR_BIT - 1) : (t) 0))
+                             ? ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
 #define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
 
 /* Use that infrastructure to provide a few constants.  */
@@ -536,7 +536,7 @@ extern int snprintf (char *, size_t, const char *, ...);
 #endif
 
 #if defined (HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
-extern int vsnprintf(char *, size_t, const char *, va_list);
+extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 
 #ifdef __cplusplus
@@ -611,11 +611,11 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 
 /* Some systems have mkdir that takes a single argument.  */
 #ifdef MKDIR_TAKES_ONE_ARG
-# define mkdir(a,b) mkdir(a)
+# define mkdir(a,b) mkdir (a)
 #endif
 
 #ifndef HAVE_KILL
-# define kill(p,s) raise(s)
+# define kill(p,s) raise (s)
 #endif
 
 /* Provide a way to print an address via printf.  */
@@ -693,7 +693,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
    ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
 #elif (GCC_VERSION >= 4005)
 #define gcc_assert(EXPR) 						\
-  ((void)(__builtin_expect(!(EXPR), 0) ? __builtin_unreachable(), 0 : 0))
+  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
@@ -708,7 +708,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING
-#define gcc_unreachable() __builtin_unreachable()
+#define gcc_unreachable() __builtin_unreachable ()
 #else
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
@@ -1011,11 +1011,11 @@ helper_const_non_const_cast (const char *p)
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((TOTYPE)(FROMTYPE)(X))
 #endif
 #endif
-#define CONST_CAST(TYPE,X) CONST_CAST2(TYPE, const TYPE, (X))
-#define CONST_CAST_TREE(X) CONST_CAST(union tree_node *, (X))
-#define CONST_CAST_RTX(X) CONST_CAST(struct rtx_def *, (X))
-#define CONST_CAST_BB(X) CONST_CAST(struct basic_block_def *, (X))
-#define CONST_CAST_GIMPLE(X) CONST_CAST(union gimple_statement_d *, (X))
+#define CONST_CAST(TYPE,X) CONST_CAST2 (TYPE, const TYPE, (X))
+#define CONST_CAST_TREE(X) CONST_CAST (union tree_node *, (X))
+#define CONST_CAST_RTX(X) CONST_CAST (struct rtx_def *, (X))
+#define CONST_CAST_BB(X) CONST_CAST (struct basic_block_def *, (X))
+#define CONST_CAST_GIMPLE(X) CONST_CAST (union gimple_statement_d *, (X))
 
 /* Activate certain diagnostics as warnings (not errors via the
    -Werror flag).  */

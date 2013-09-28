@@ -488,7 +488,7 @@ gt_pch_save (FILE *f)
   char *this_object = NULL;
   size_t this_object_size = 0;
   struct mmap_info mmi;
-  const size_t mmap_offset_alignment = host_hooks.gt_pch_alloc_granularity();
+  const size_t mmap_offset_alignment = host_hooks.gt_pch_alloc_granularity ();
 
   gt_pch_save_stringpool ();
 
@@ -749,7 +749,7 @@ default_gt_pch_use_address (void *base, size_t size, int fd ATTRIBUTE_UNUSED,
 size_t
 default_gt_pch_alloc_granularity (void)
 {
-  return getpagesize();
+  return getpagesize ();
 }
 
 #if HAVE_MMAP_FILE
@@ -837,7 +837,7 @@ ggc_rlimit_bound (double limit)
 static int
 ggc_min_expand_heuristic (void)
 {
-  double min_expand = physmem_total();
+  double min_expand = physmem_total ();
 
   /* Adjust for rlimits.  */
   min_expand = ggc_rlimit_bound (min_expand);
@@ -856,7 +856,7 @@ ggc_min_expand_heuristic (void)
 static int
 ggc_min_heapsize_heuristic (void)
 {
-  double phys_kbytes = physmem_total();
+  double phys_kbytes = physmem_total ();
   double limit_kbytes = ggc_rlimit_bound (phys_kbytes * 2);
 
   phys_kbytes /= 1024; /* Convert to Kbytes.  */

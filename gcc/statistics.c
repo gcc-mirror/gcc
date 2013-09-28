@@ -76,7 +76,7 @@ stats_counter_hasher::equal (const value_type *c1, const compare_type *c2)
 inline void
 stats_counter_hasher::remove (value_type *v)
 {
-  free (CONST_CAST(char *, v->id));
+  free (CONST_CAST (char *, v->id));
   free (v);
 }
 

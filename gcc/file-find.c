@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool debug = false;
 
 void
-find_file_set_debug(bool debug_state)
+find_file_set_debug (bool debug_state)
 {
   debug = debug_state;
 }

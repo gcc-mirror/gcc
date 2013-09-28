@@ -773,7 +773,7 @@ pretty_printer::pretty_printer (const char *p, int l)
     format_decoder (),
     emitted_prefix (),
     need_newline (),
-    translate_identifiers(true),
+    translate_identifiers (true),
     show_color ()
 {
   pp_line_cutoff (this) = l;

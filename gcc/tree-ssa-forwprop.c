@@ -3177,9 +3177,9 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	    return 0;
 	  arg1 = arg0;
 	}
-      opt = fold_ternary (VEC_PERM_EXPR, TREE_TYPE(op0), arg0, arg1, op2);
+      opt = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (op0), arg0, arg1, op2);
       if (!opt
-	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE(opt) != VECTOR_CST))
+	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE (opt) != VECTOR_CST))
 	return 0;
       gimple_assign_set_rhs_from_tree (gsi, opt);
       update_stmt (gsi_stmt (*gsi));
@@ -3560,8 +3560,8 @@ const pass_data pass_data_forwprop =
 class pass_forwprop : public gimple_opt_pass
 {
 public:
-  pass_forwprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_forwprop, ctxt)
+  pass_forwprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_forwprop, ctxt)
   {}
 
   /* opt_pass methods: */

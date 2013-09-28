@@ -3374,8 +3374,8 @@ const pass_data pass_data_sms =
 class pass_sms : public rtl_opt_pass
 {
 public:
-  pass_sms(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_sms, ctxt)
+  pass_sms (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_sms, ctxt)
   {}
 
   /* opt_pass methods: */

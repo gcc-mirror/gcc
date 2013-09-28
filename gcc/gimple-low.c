@@ -118,7 +118,8 @@ lower_function_body (void)
      need to do anything special.  Otherwise build one by hand.  */
   if (gimple_seq_may_fallthru (lowered_body)
       && (data.return_statements.is_empty ()
-	  || gimple_return_retval (data.return_statements.last().stmt) != NULL))
+	  || (gimple_return_retval (data.return_statements.last().stmt)
+	      != NULL)))
     {
       x = gimple_build_return (NULL);
       gimple_set_location (x, cfun->function_end_locus);
@@ -197,8 +198,8 @@ const pass_data pass_data_lower_cf =
 class pass_lower_cf : public gimple_opt_pass
 {
 public:
-  pass_lower_cf(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_cf, ctxt)
+  pass_lower_cf (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_cf, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -707,7 +708,7 @@ block_may_fallthru (const_tree block)
 {
   /* This CONST_CAST is okay because expr_last returns its argument
      unmodified and we assign it to a const_tree.  */
-  const_tree stmt = expr_last (CONST_CAST_TREE(block));
+  const_tree stmt = expr_last (CONST_CAST_TREE (block));
 
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {

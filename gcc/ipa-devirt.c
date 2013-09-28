@@ -373,7 +373,7 @@ add_type_duplicate (odr_type val, tree type)
 	      unsigned int i;
 
 	      TYPE_BINFO (val->type) = TYPE_BINFO (type);
-	      for (i = 0; i < val->types->length(); i++)
+	      for (i = 0; i < val->types->length (); i++)
 		{
 		  if (TYPE_BINFO ((*val->types)[i])
 		      == master_binfo)
@@ -438,7 +438,7 @@ get_odr_type (tree type, bool insert)
 	  }
       /* First record bases, then add into array so ids are increasing.  */
       if (odr_types_ptr)
-        val->id = odr_types.length();
+        val->id = odr_types.length ();
       vec_safe_push (odr_types_ptr, val);
     }
   return val;
@@ -460,17 +460,17 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
 	       DECL_SOURCE_FILE (TYPE_NAME (t->type)),
 	       DECL_SOURCE_LINE (TYPE_NAME (t->type)));
     }
-  if (t->bases.length())
+  if (t->bases.length ())
     {
       fprintf (f, "%*s base odr type ids: ", indent * 2, "");
-      for (i = 0; i < t->bases.length(); i++)
+      for (i = 0; i < t->bases.length (); i++)
 	fprintf (f, " %i", t->bases[i]->id);
       fprintf (f, "\n");
     }
-  if (t->derived_types.length())
+  if (t->derived_types.length ())
     {
       fprintf (f, "%*s derived types:\n", indent * 2, "");
-      for (i = 0; i < t->derived_types.length(); i++)
+      for (i = 0; i < t->derived_types.length (); i++)
         dump_odr_type (f, t->derived_types[i], indent + 1);
     }
   fprintf (f, "\n");
@@ -485,19 +485,19 @@ dump_type_inheritance_graph (FILE *f)
   if (!odr_types_ptr)
     return;
   fprintf (f, "\n\nType inheritance graph:\n");
-  for (i = 0; i < odr_types.length(); i++)
+  for (i = 0; i < odr_types.length (); i++)
     {
-      if (odr_types[i]->bases.length() == 0)
+      if (odr_types[i]->bases.length () == 0)
 	dump_odr_type (f, odr_types[i]);
     }
-  for (i = 0; i < odr_types.length(); i++)
+  for (i = 0; i < odr_types.length (); i++)
     {
-      if (odr_types[i]->types && odr_types[i]->types->length())
+      if (odr_types[i]->types && odr_types[i]->types->length ())
 	{
 	  unsigned int j;
 	  fprintf (f, "Duplicate tree types for odr type %i\n", i);
 	  print_node (f, "", odr_types[i]->type, 0);
-	  for (j = 0; j < odr_types[i]->types->length(); j++)
+	  for (j = 0; j < odr_types[i]->types->length (); j++)
 	    {
 	      tree t;
 	      fprintf (f, "duplicate #%i\n", j);
@@ -665,7 +665,7 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 
   record_binfo (nodes, binfo, otr_type, binfo, otr_token, inserted,
 	        matched_vtables, type->anonymous_namespace);
-  for (i = 0; i < type->derived_types.length(); i++)
+  for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
 					 otr_type,
@@ -854,7 +854,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   /* Walk recursively all derived types.  Here we need to lookup proper basetype
      via their BINFO walk that is done by record_binfo  */
-  for (i = 0; i < type->derived_types.length(); i++)
+  for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted,
 					 matched_vtables,
 					 otr_type, type->derived_types[i],
@@ -1030,7 +1030,7 @@ ipa_devirt (void)
 		nmultiple++;
 		continue;
 	      }
-	    for (i = 0; i < targets.length(); i++)
+	    for (i = 0; i < targets.length (); i++)
 	      if (likely_target_p (targets[i]))
 		{
 		  if (likely_target)
@@ -1163,17 +1163,17 @@ const pass_data pass_data_ipa_devirt =
 class pass_ipa_devirt : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_devirt(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_devirt, ctxt,
-		     NULL, /* generate_summary */
-		     NULL, /* write_summary */
-		     NULL, /* read_summary */
-		     NULL, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_devirt (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_devirt, ctxt,
+		      NULL, /* generate_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */

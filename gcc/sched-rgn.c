@@ -3638,8 +3638,8 @@ const pass_data pass_data_sched =
 class pass_sched : public rtl_opt_pass
 {
 public:
-  pass_sched(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_sched, ctxt)
+  pass_sched (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_sched, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3677,8 +3677,8 @@ const pass_data pass_data_sched2 =
 class pass_sched2 : public rtl_opt_pass
 {
 public:
-  pass_sched2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_sched2, ctxt)
+  pass_sched2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_sched2, ctxt)
   {}
 
   /* opt_pass methods: */

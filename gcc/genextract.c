@@ -165,9 +165,9 @@ gen_insn (rtx insn, int insn_code_number)
   p->duplocs = p->oplocs + op_count;
   p->dupnums = (int *)(p->duplocs + dup_count);
 
-  memcpy(p->oplocs,  acc.oplocs.address(),   op_count*sizeof(locstr));
-  memcpy(p->duplocs, acc.duplocs.address(), dup_count*sizeof(locstr));
-  memcpy(p->dupnums, acc.dupnums.address(), dup_count*sizeof(int));
+  memcpy (p->oplocs, acc.oplocs.address (), op_count * sizeof (locstr));
+  memcpy (p->duplocs, acc.duplocs.address (), dup_count * sizeof (locstr));
+  memcpy (p->dupnums, acc.dupnums.address (), dup_count * sizeof (int));
 
  done:
   acc.oplocs.release ();
@@ -334,7 +334,7 @@ print_path (const char *path)
     {
       if (ISLOWER (path[i]))
 	printf (", 0, %d)", path[i] - 'a');
-      else if (ISDIGIT(path[i]))
+      else if (ISDIGIT (path[i]))
 	printf (", %d)", path[i] - '0');
       else
 	gcc_unreachable ();

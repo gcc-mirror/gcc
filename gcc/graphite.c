@@ -265,7 +265,7 @@ graphite_transform_loops (void)
     return;
 
   ctx = isl_ctx_alloc ();
-  isl_options_set_on_error(ctx, ISL_ON_ERROR_ABORT);
+  isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
   if (!graphite_initialize (ctx))
     return;
 

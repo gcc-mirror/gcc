@@ -3023,7 +3023,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
     }
   else
     {
-      inter.release();
+      inter.release ();
       return vec<ipa_agg_jf_item_t>();
     }
   return inter;
@@ -3194,7 +3194,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 	return false;
 
       values = intersect_aggregates_with_edge (cs, i, values);
-      if (!values.exists())
+      if (!values.exists ())
 	return false;
 
       for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
@@ -3213,7 +3213,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 		}
 	    if (!found)
 	      {
-		values.release();
+		values.release ();
 		return false;
 	      }
 	  }
@@ -3679,19 +3679,19 @@ const pass_data pass_data_ipa_cp =
 class pass_ipa_cp : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_cp(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_cp, ctxt,
-		     ipcp_generate_summary, /* generate_summary */
-		     ipcp_write_summary, /* write_summary */
-		     ipcp_read_summary, /* read_summary */
-		     ipa_prop_write_all_agg_replacement, /*
-		     write_optimization_summary */
-		     ipa_prop_read_all_agg_replacement, /*
-		     read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     ipcp_transform_function, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_cp (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_cp, ctxt,
+		      ipcp_generate_summary, /* generate_summary */
+		      ipcp_write_summary, /* write_summary */
+		      ipcp_read_summary, /* read_summary */
+		      ipa_prop_write_all_agg_replacement, /*
+		      write_optimization_summary */
+		      ipa_prop_read_all_agg_replacement, /*
+		      read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      ipcp_transform_function, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */

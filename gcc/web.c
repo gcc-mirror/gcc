@@ -374,7 +374,7 @@ web_main (void)
     }
 
   /* Record the number of uses and defs at the beginning of the optimization.  */
-  def_entry = XCNEWVEC (struct web_entry, DF_DEFS_TABLE_SIZE());
+  def_entry = XCNEWVEC (struct web_entry, DF_DEFS_TABLE_SIZE ());
   used = XCNEWVEC (unsigned, max);
   use_entry = XCNEWVEC (struct web_entry, uses_num);
 
@@ -469,8 +469,8 @@ const pass_data pass_data_web =
 class pass_web : public rtl_opt_pass
 {
 public:
-  pass_web(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_web, ctxt)
+  pass_web (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_web, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -923,10 +923,10 @@ set_prologue_iterations (basic_block bb_before_first_loop,
     unshare_expr (LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop)));
 
   e = single_pred_edge (bb_before_first_loop);
-  cond_bb = split_edge(e);
+  cond_bb = split_edge (e);
 
   e = single_pred_edge (bb_before_first_loop);
-  then_bb = split_edge(e);
+  then_bb = split_edge (e);
   set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
 
   e_false = make_single_succ_edge (cond_bb, bb_before_first_loop,
@@ -2449,7 +2449,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "alignment\n");
 
     }
-  free_original_copy_tables();
+  free_original_copy_tables ();
 
   /* Loop versioning violates an assumption we try to maintain during
      vectorization - that the loop exit block has a single predecessor.

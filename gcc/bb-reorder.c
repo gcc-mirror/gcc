@@ -2329,8 +2329,8 @@ const pass_data pass_data_reorder_blocks =
 class pass_reorder_blocks : public rtl_opt_pass
 {
 public:
-  pass_reorder_blocks(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_reorder_blocks, ctxt)
+  pass_reorder_blocks (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_reorder_blocks, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2495,8 +2495,8 @@ const pass_data pass_data_duplicate_computed_gotos =
 class pass_duplicate_computed_gotos : public rtl_opt_pass
 {
 public:
-  pass_duplicate_computed_gotos(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_duplicate_computed_gotos, ctxt)
+  pass_duplicate_computed_gotos (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_duplicate_computed_gotos, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2719,8 +2719,8 @@ const pass_data pass_data_partition_blocks =
 class pass_partition_blocks : public rtl_opt_pass
 {
 public:
-  pass_partition_blocks(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_partition_blocks, ctxt)
+  pass_partition_blocks (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_partition_blocks, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -569,8 +569,8 @@ extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
 extern vec<tree> ssa_name_values;
 #define SSA_NAME_VALUE(x) \
-    (SSA_NAME_VERSION(x) < ssa_name_values.length () \
-     ? ssa_name_values[SSA_NAME_VERSION(x)] \
+    (SSA_NAME_VERSION (x) < ssa_name_values.length () \
+     ? ssa_name_values[SSA_NAME_VERSION (x)] \
      : NULL_TREE)
 extern void set_ssa_name_value (tree, tree);
 extern bool potentially_threadable_block (basic_block);

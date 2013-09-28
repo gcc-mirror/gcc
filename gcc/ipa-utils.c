@@ -54,9 +54,9 @@ ipa_print_order (FILE* out,
   fprintf (out, "\n\n ordered call graph: %s\n", note);
 
   for (i = count - 1; i >= 0; i--)
-    dump_cgraph_node(dump_file, order[i]);
+    dump_cgraph_node (dump_file, order[i]);
   fprintf (out, "\n");
-  fflush(out);
+  fflush (out);
 }
 
 

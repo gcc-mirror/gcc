@@ -386,7 +386,7 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
           h_cnt++;
         }
     }
-  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH(h_cnt));
+  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH (h_cnt));
   gcov_write_unsigned (summary->checksum);
   for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
     {
@@ -559,7 +559,7 @@ gcov_read_summary (struct gcov_summary *summary)
           while (!cur_bitvector)
             {
               h_ix = bv_ix * 32;
-              gcc_assert(bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE);
+              gcc_assert (bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE);
               cur_bitvector = histo_bitvector[bv_ix++];
             }
           while (!(cur_bitvector & 0x1))
@@ -567,7 +567,7 @@ gcov_read_summary (struct gcov_summary *summary)
               h_ix++;
               cur_bitvector >>= 1;
             }
-          gcc_assert(h_ix < GCOV_HISTOGRAM_SIZE);
+          gcc_assert (h_ix < GCOV_HISTOGRAM_SIZE);
 
           csum->histogram[h_ix].num_counters = gcov_read_unsigned ();
           csum->histogram[h_ix].min_value = gcov_read_counter ();
@@ -709,7 +709,7 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
   gcov_bucket_type tmp_histo[GCOV_HISTOGRAM_SIZE];
   int src_done = 0;
 
-  memset(tmp_histo, 0, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+  memset (tmp_histo, 0, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
 
   /* Assume that the counters are in the same relative order in both
      histograms. Walk the histograms from largest to smallest entry,
@@ -797,7 +797,7 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
 
           /* The merged counters get placed in the new merged histogram
              at the entry for the merged min_value.  */
-          tmp_i = gcov_histo_index(merge_min);
+          tmp_i = gcov_histo_index (merge_min);
           gcc_assert (tmp_i < GCOV_HISTOGRAM_SIZE);
           tmp_histo[tmp_i].num_counters += merge_num;
           tmp_histo[tmp_i].cum_value += merge_cum;
@@ -829,12 +829,13 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
     }
   /* At this point, tmp_i should be the smallest non-zero entry in the
      tmp_histo.  */
-  gcc_assert(tmp_i >= 0 && tmp_i < GCOV_HISTOGRAM_SIZE
-             && tmp_histo[tmp_i].num_counters > 0);
+  gcc_assert (tmp_i >= 0 && tmp_i < GCOV_HISTOGRAM_SIZE
+	      && tmp_histo[tmp_i].num_counters > 0);
   tmp_histo[tmp_i].cum_value += src_cum;
 
   /* Finally, copy the merged histogram into tgt_histo.  */
-  memcpy(tgt_histo, tmp_histo, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+  memcpy (tgt_histo, tmp_histo,
+	  sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
 }
 #endif /* !IN_GCOV */
 

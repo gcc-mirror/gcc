@@ -364,8 +364,8 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
   if (rd->outgoing_edge->aux)
     {
       e->aux = XNEWVEC (edge, 2);
-      THREAD_TARGET(e) = THREAD_TARGET (rd->outgoing_edge);
-      THREAD_TARGET2(e) = THREAD_TARGET2 (rd->outgoing_edge);
+      THREAD_TARGET (e) = THREAD_TARGET (rd->outgoing_edge);
+      THREAD_TARGET2 (e) = THREAD_TARGET2 (rd->outgoing_edge);
     }
   else
     {
@@ -1306,7 +1306,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
   else
     bitmap_copy (threaded_blocks, tmp);
 
-  BITMAP_FREE(tmp);
+  BITMAP_FREE (tmp);
 }
 
 

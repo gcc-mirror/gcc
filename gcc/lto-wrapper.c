@@ -744,7 +744,7 @@ run_gcc (unsigned argc, char *argv[])
 
   if (lto_mode == LTO_MODE_LTO)
     {
-      printf("%s\n", flto_out);
+      printf ("%s\n", flto_out);
       free (flto_out);
       flto_out = NULL;
     }
@@ -820,9 +820,9 @@ cont:
 	    {
 	      char *dumpbase
 		  = (char *) xmalloc (strlen (linker_output)
-				      + sizeof(DUMPBASE_SUFFIX) + 1);
+				      + sizeof (DUMPBASE_SUFFIX) + 1);
 	      snprintf (dumpbase,
-			strlen (linker_output) + sizeof(DUMPBASE_SUFFIX),
+			strlen (linker_output) + sizeof (DUMPBASE_SUFFIX),
 			"%s.ltrans%u", linker_output, i);
 	      argv_ptr[0] = dumpbase;
 	    }

@@ -569,7 +569,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
       || pt->vars == NULL
       /* The pointed-to vars bitmap is shared, it is enough to
 	 visit it once.  */
-      || pointer_set_insert(visited, pt->vars))
+      || pointer_set_insert (visited, pt->vars))
     return;
 
   bitmap_clear (temp);
@@ -1184,7 +1184,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
     {
       /* stack_alignment_estimated shouldn't change after stack
          realign decision made */
-      gcc_assert(!crtl->stack_realign_processed);
+      gcc_assert (!crtl->stack_realign_processed);
       crtl->stack_alignment_estimated = align;
     }
 
@@ -1723,7 +1723,7 @@ expand_used_vars (void)
 
     case SPCT_FLAG_DEFAULT:
       if (cfun->calls_alloca || has_protected_decls)
-	create_stack_guard();
+	create_stack_guard ();
       break;
 
     default:
@@ -1770,7 +1770,7 @@ expand_used_vars (void)
 	  var_end_seq
 	    = asan_emit_stack_protection (virtual_stack_vars_rtx,
 					  data.asan_vec.address (),
-					  data.asan_decl_vec. address(),
+					  data.asan_decl_vec. address (),
 					  data.asan_vec.length ());
 	}
 
@@ -4934,8 +4934,8 @@ const pass_data pass_data_expand =
 class pass_expand : public rtl_opt_pass
 {
 public:
-  pass_expand(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_expand, ctxt)
+  pass_expand (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_expand, ctxt)
   {}
 
   /* opt_pass methods: */

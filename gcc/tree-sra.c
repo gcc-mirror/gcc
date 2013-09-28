@@ -3468,8 +3468,8 @@ const pass_data pass_data_sra_early =
 class pass_sra_early : public gimple_opt_pass
 {
 public:
-  pass_sra_early(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_sra_early, ctxt)
+  pass_sra_early (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sra_early, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3506,8 +3506,8 @@ const pass_data pass_data_sra =
 class pass_sra : public gimple_opt_pass
 {
 public:
-  pass_sra(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_sra, ctxt)
+  pass_sra (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sra, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4292,7 +4292,7 @@ analyze_all_param_acesses (void)
 
   repr_state = splice_all_param_accesses (representatives);
   if (repr_state == NO_GOOD_ACCESS)
-    return ipa_parm_adjustment_vec();
+    return ipa_parm_adjustment_vec ();
 
   /* If there are any parameters passed by reference which are not modified
      directly, we need to check whether they can be modified indirectly.  */
@@ -4356,7 +4356,7 @@ analyze_all_param_acesses (void)
     adjustments = turn_representatives_into_adjustments (representatives,
 							 adjustments_count);
   else
-    adjustments = ipa_parm_adjustment_vec();
+    adjustments = ipa_parm_adjustment_vec ();
 
   representatives.release ();
   return adjustments;
@@ -4952,7 +4952,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
     }
 
   if ((DECL_COMDAT (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
-      && inline_summary(node)->size >= MAX_INLINE_INSNS_AUTO)
+      && inline_summary (node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)
 	fprintf (dump_file, "Function too big to be made truly local.\n");
@@ -5088,8 +5088,8 @@ const pass_data pass_data_early_ipa_sra =
 class pass_early_ipa_sra : public gimple_opt_pass
 {
 public:
-  pass_early_ipa_sra(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_early_ipa_sra, ctxt)
+  pass_early_ipa_sra (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_ipa_sra, ctxt)
   {}
 
   /* opt_pass methods: */

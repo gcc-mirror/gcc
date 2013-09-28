@@ -2325,7 +2325,7 @@ mark_home_live_1 (int regno, enum machine_mode mode)
     return;
   lim = end_hard_regno (mode, i);
   while (i < lim)
-    df_set_regs_ever_live(i++, true);
+    df_set_regs_ever_live (i++, true);
 }
 
 /* Mark the slots in regs_ever_live for the hard regs

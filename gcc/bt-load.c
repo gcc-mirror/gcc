@@ -605,7 +605,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 	}
 
       if (dump_file)
-	dump_btrs_live(i);
+	dump_btrs_live (i);
     }
 }
 
@@ -691,13 +691,13 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		     for this one.  */
 		  bitmap_and_compl (reaching_defs, reaching_defs,
 				      btr_defset[def->btr - first_btr]);
-		  bitmap_set_bit(reaching_defs, insn_uid);
+		  bitmap_set_bit (reaching_defs, insn_uid);
 		}
 
 	      if (user != NULL)
 		{
 		  /* Find all the reaching defs for this use.  */
-		  sbitmap reaching_defs_of_reg = sbitmap_alloc(max_uid);
+		  sbitmap reaching_defs_of_reg = sbitmap_alloc (max_uid);
 		  unsigned int uid = 0;
 		  sbitmap_iterator sbi;
 
@@ -1363,7 +1363,7 @@ migrate_btr_def (btr_def def, int min_cost)
 	  if (btr != -1)
 	    {
 	      move_btr_def (attempt, btr, def, live_range, &btrs_live_in_range);
-	      bitmap_copy(live_range, def->live_range);
+	      bitmap_copy (live_range, def->live_range);
 	      btr_used_near_def = 0;
 	      def_moved = 1;
 	      def_basic_block_freq = basic_block_freq (def->bb);
@@ -1406,11 +1406,11 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  fprintf(dump_file,
-	    "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
-	    " loop-depth = %d idom = %d\n",
-	    i, (HOST_WIDEST_INT) bb->count, bb_loop_depth (bb),
-	    get_immediate_dominator (CDI_DOMINATORS, bb)->index);
+	  fprintf (dump_file,
+		   "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
+		   " loop-depth = %d idom = %d\n",
+		   i, (HOST_WIDEST_INT) bb->count, bb_loop_depth (bb),
+		   get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
     }
 
@@ -1524,8 +1524,8 @@ const pass_data pass_data_branch_target_load_optimize1 =
 class pass_branch_target_load_optimize1 : public rtl_opt_pass
 {
 public:
-  pass_branch_target_load_optimize1(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_branch_target_load_optimize1, ctxt)
+  pass_branch_target_load_optimize1 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_branch_target_load_optimize1, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1593,8 +1593,8 @@ const pass_data pass_data_branch_target_load_optimize2 =
 class pass_branch_target_load_optimize2 : public rtl_opt_pass
 {
 public:
-  pass_branch_target_load_optimize2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_branch_target_load_optimize2, ctxt)
+  pass_branch_target_load_optimize2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_branch_target_load_optimize2, ctxt)
   {}
 
   /* opt_pass methods: */

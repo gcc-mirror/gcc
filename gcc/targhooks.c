@@ -93,7 +93,7 @@ void
 default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_EXTERNAL_LIBCALL
-  ASM_OUTPUT_EXTERNAL_LIBCALL(asm_out_file, fun);
+  ASM_OUTPUT_EXTERNAL_LIBCALL (asm_out_file, fun);
 #endif
 }
 
@@ -1427,7 +1427,7 @@ default_debug_unwind_info (void)
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
 enum machine_mode
-default_get_reg_raw_mode(int regno)
+default_get_reg_raw_mode (int regno)
 {
   return reg_raw_mode[regno];
 }

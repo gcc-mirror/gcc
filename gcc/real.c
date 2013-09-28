@@ -2855,7 +2855,7 @@ real_hash (const REAL_VALUE_TYPE *r)
       gcc_unreachable ();
     }
 
-  if (sizeof(unsigned long) > sizeof(unsigned int))
+  if (sizeof (unsigned long) > sizeof (unsigned int))
     for (i = 0; i < SIGSZ; ++i)
       {
 	unsigned long s = r->sig[i];

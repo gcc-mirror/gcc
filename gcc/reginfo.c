@@ -447,7 +447,7 @@ init_reg_sets_1 (void)
         }
     }
 
-  COPY_HARD_REG_SET(call_fixed_reg_set, fixed_reg_set);
+  COPY_HARD_REG_SET (call_fixed_reg_set, fixed_reg_set);
 
   /* Preserve global registers if called more than once.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -495,7 +495,7 @@ init_reg_modes_target (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 0; j < MAX_MACHINE_MODE; j++)
-      hard_regno_nregs[i][j] = HARD_REGNO_NREGS(i, (enum machine_mode)j);
+      hard_regno_nregs[i][j] = HARD_REGNO_NREGS (i, (enum machine_mode)j);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -980,8 +980,8 @@ const pass_data pass_data_reginfo_init =
 class pass_reginfo_init : public rtl_opt_pass
 {
 public:
-  pass_reginfo_init(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_reginfo_init, ctxt)
+  pass_reginfo_init (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_reginfo_init, ctxt)
   {}
 
   /* opt_pass methods: */

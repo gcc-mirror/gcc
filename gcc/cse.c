@@ -468,7 +468,7 @@ struct table_elt
    a cost of 2.  Aside from these special cases, call `rtx_cost'.  */
 
 #define CHEAP_REGNO(N)							\
-  (REGNO_PTR_FRAME_P(N)							\
+  (REGNO_PTR_FRAME_P (N)						\
    || (HARD_REGISTER_NUM_P (N)						\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
@@ -4839,7 +4839,7 @@ cse_insn (rtx insn)
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
-	  memset (memory_extend_rtx, 0, sizeof(*memory_extend_rtx));
+	  memset (memory_extend_rtx, 0, sizeof (*memory_extend_rtx));
 	  PUT_CODE (memory_extend_rtx, LOAD_EXTEND_OP (mode));
 	  XEXP (memory_extend_rtx, 0) = src;
 
@@ -7479,8 +7479,8 @@ const pass_data pass_data_cse =
 class pass_cse : public rtl_opt_pass
 {
 public:
-  pass_cse(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_cse, ctxt)
+  pass_cse (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cse, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -7559,8 +7559,8 @@ const pass_data pass_data_cse2 =
 class pass_cse2 : public rtl_opt_pass
 {
 public:
-  pass_cse2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_cse2, ctxt)
+  pass_cse2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cse2, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -7637,8 +7637,8 @@ const pass_data pass_data_cse_after_global_opts =
 class pass_cse_after_global_opts : public rtl_opt_pass
 {
 public:
-  pass_cse_after_global_opts(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_cse_after_global_opts, ctxt)
+  pass_cse_after_global_opts (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cse_after_global_opts, ctxt)
   {}
 
   /* opt_pass methods: */

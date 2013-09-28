@@ -735,7 +735,7 @@ do_SUBST (rtx *into, rtx newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST(INTO, NEWVAL)	do_SUBST(&(INTO), (NEWVAL))
+#define SUBST(INTO, NEWVAL)	do_SUBST (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but NEWVAL is an int expression.  Note that substitution
    for the value of a HOST_WIDE_INT value (including CONST_INT) is
@@ -763,7 +763,7 @@ do_SUBST_INT (int *into, int newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
+#define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but just substitute the mode.  This is used when
    changing the mode of a pseudo-register, so that any other
@@ -792,7 +792,7 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
+#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
 #ifndef HAVE_cc0
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
@@ -1197,8 +1197,8 @@ combine_instructions (rtx f, unsigned int nregs)
 	      INSN_COST (insn) = insn_rtx_cost (PATTERN (insn),
 	      					optimize_this_for_speed_p);
 	    if (dump_file)
-	      fprintf(dump_file, "insn_cost %d: %d\n",
-		    INSN_UID (insn), INSN_COST (insn));
+	      fprintf (dump_file, "insn_cost %d: %d\n",
+		       INSN_UID (insn), INSN_COST (insn));
 	  }
     }
 
@@ -2328,7 +2328,7 @@ can_change_dest_mode (rtx x, int added_sets, enum machine_mode mode)
 {
   unsigned int regno;
 
-  if (!REG_P(x))
+  if (!REG_P (x))
     return false;
 
   regno = REGNO (x);
@@ -4279,7 +4279,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (undobuf.other_insn);
     }
 
-  if (i0 && !(NOTE_P(i0) && (NOTE_KIND (i0) == NOTE_INSN_DELETED)))
+  if (i0 && !(NOTE_P (i0) && (NOTE_KIND (i0) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4289,7 +4289,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (i0);
     }
 
-  if (i1 && !(NOTE_P(i1) && (NOTE_KIND (i1) == NOTE_INSN_DELETED)))
+  if (i1 && !(NOTE_P (i1) && (NOTE_KIND (i1) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4299,7 +4299,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (i1);
     }
 
-  if (i2 && !(NOTE_P(i2) && (NOTE_KIND (i2) == NOTE_INSN_DELETED)))
+  if (i2 && !(NOTE_P (i2) && (NOTE_KIND (i2) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4309,7 +4309,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (i2);
     }
 
-  if (i3 && !(NOTE_P(i3) && (NOTE_KIND (i3) == NOTE_INSN_DELETED)))
+  if (i3 && !(NOTE_P (i3) && (NOTE_KIND (i3) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -11015,7 +11015,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	 this shift are known to be zero for both inputs and if the type of
 	 comparison is compatible with the shift.  */
       if (GET_CODE (op0) == GET_CODE (op1)
-	  && HWI_COMPUTABLE_MODE_P (GET_MODE(op0))
+	  && HWI_COMPUTABLE_MODE_P (GET_MODE (op0))
 	  && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
 	      || ((GET_CODE (op0) == LSHIFTRT || GET_CODE (op0) == ASHIFT)
 		  && (code != GT && code != LT && code != GE && code != LE))
@@ -13875,8 +13875,8 @@ const pass_data pass_data_combine =
 class pass_combine : public rtl_opt_pass
 {
 public:
-  pass_combine(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_combine, ctxt)
+  pass_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_combine, ctxt)
   {}
 
   /* opt_pass methods: */

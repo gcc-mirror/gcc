@@ -107,12 +107,12 @@ opt_pass::execute ()
   return 0;
 }
 
-opt_pass::opt_pass(const pass_data &data, context *ctxt)
-  : pass_data(data),
-    sub(NULL),
-    next(NULL),
-    static_pass_number(0),
-    ctxt_(ctxt)
+opt_pass::opt_pass (const pass_data &data, context *ctxt)
+  : pass_data (data),
+    sub (NULL),
+    next (NULL),
+    static_pass_number (0),
+    ctxt_ (ctxt)
 {
 }
 
@@ -350,8 +350,8 @@ const pass_data pass_data_early_local_passes =
 class pass_early_local_passes : public simple_ipa_opt_pass
 {
 public:
-  pass_early_local_passes(gcc::context *ctxt)
-    : simple_ipa_opt_pass(pass_data_early_local_passes, ctxt)
+  pass_early_local_passes (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_early_local_passes, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -398,8 +398,8 @@ const pass_data pass_data_all_early_optimizations =
 class pass_all_early_optimizations : public gimple_opt_pass
 {
 public:
-  pass_all_early_optimizations(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_all_early_optimizations, ctxt)
+  pass_all_early_optimizations (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_all_early_optimizations, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -443,8 +443,8 @@ const pass_data pass_data_all_optimizations =
 class pass_all_optimizations : public gimple_opt_pass
 {
 public:
-  pass_all_optimizations(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_all_optimizations, ctxt)
+  pass_all_optimizations (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_all_optimizations, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -488,8 +488,8 @@ const pass_data pass_data_all_optimizations_g =
 class pass_all_optimizations_g : public gimple_opt_pass
 {
 public:
-  pass_all_optimizations_g(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_all_optimizations_g, ctxt)
+  pass_all_optimizations_g (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_all_optimizations_g, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -533,8 +533,8 @@ const pass_data pass_data_rest_of_compilation =
 class pass_rest_of_compilation : public rtl_opt_pass
 {
 public:
-  pass_rest_of_compilation(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rest_of_compilation, ctxt)
+  pass_rest_of_compilation (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rest_of_compilation, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -576,8 +576,8 @@ const pass_data pass_data_postreload =
 class pass_postreload : public rtl_opt_pass
 {
 public:
-  pass_postreload(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_postreload, ctxt)
+  pass_postreload (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_postreload, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -836,7 +836,7 @@ dump_one_pass (struct opt_pass *pass, int pass_indent)
   const char *pn;
   bool is_on, is_really_on;
 
-  is_on = pass->has_gate ? pass->gate() : true;
+  is_on = pass->has_gate ? pass->gate () : true;
   is_really_on = override_gate_status (pass, current_function_decl, is_on);
 
   if (pass->static_pass_number <= 0)
@@ -879,7 +879,7 @@ pass_manager::dump_passes () const
 {
   struct cgraph_node *n, *node = NULL;
 
-  create_pass_tab();
+  create_pass_tab ();
 
   FOR_EACH_FUNCTION (n)
     if (DECL_STRUCT_FUNCTION (n->symbol.decl))
@@ -1485,10 +1485,10 @@ pass_manager::operator new (size_t sz)
 }
 
 pass_manager::pass_manager (context *ctxt)
-: all_passes(NULL), all_small_ipa_passes(NULL), all_lowering_passes(NULL),
-  all_regular_ipa_passes(NULL), all_lto_gen_passes(NULL),
-  all_late_ipa_passes(NULL), passes_by_id(NULL), passes_by_id_size(0),
-  ctxt_(ctxt)
+: all_passes (NULL), all_small_ipa_passes (NULL), all_lowering_passes (NULL),
+  all_regular_ipa_passes (NULL), all_lto_gen_passes (NULL),
+  all_late_ipa_passes (NULL), passes_by_id (NULL), passes_by_id_size (0),
+  ctxt_ (ctxt)
 {
   struct opt_pass **p;
 
@@ -2090,7 +2090,7 @@ apply_ipa_transforms (void *data)
   if (!node->global.inlined_to && node->ipa_transforms_to_apply.exists ())
     {
       *(bool *)data = true;
-      execute_all_ipa_transforms();
+      execute_all_ipa_transforms ();
       rebuild_cgraph_edges ();
     }
 }
@@ -2139,7 +2139,7 @@ execute_one_pass (struct opt_pass *pass)
 
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
-  gate_status = pass->has_gate ? pass->gate() : true;
+  gate_status = pass->has_gate ? pass->gate () : true;
   gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */

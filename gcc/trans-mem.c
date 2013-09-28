@@ -821,8 +821,8 @@ const pass_data pass_data_diagnose_tm_blocks =
 class pass_diagnose_tm_blocks : public gimple_opt_pass
 {
 public:
-  pass_diagnose_tm_blocks(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_diagnose_tm_blocks, ctxt)
+  pass_diagnose_tm_blocks (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_diagnose_tm_blocks, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1631,7 +1631,7 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
   /* If the transaction calls abort or if this is an outer transaction,
      add an "over" label afterwards.  */
   if ((this_state & (GTMA_HAVE_ABORT))
-      || (gimple_transaction_subcode(stmt) & GTMA_IS_OUTER))
+      || (gimple_transaction_subcode (stmt) & GTMA_IS_OUTER))
     {
       tree label = create_artificial_label (UNKNOWN_LOCATION);
       gimple_transaction_set_label (stmt, label);
@@ -1744,8 +1744,8 @@ const pass_data pass_data_lower_tm =
 class pass_lower_tm : public gimple_opt_pass
 {
 public:
-  pass_lower_tm(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_tm, ctxt)
+  pass_lower_tm (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_tm, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2024,8 +2024,8 @@ const pass_data pass_data_tm_init =
 class pass_tm_init : public gimple_opt_pass
 {
 public:
-  pass_tm_init(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tm_init, ctxt)
+  pass_tm_init (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tm_init, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2753,8 +2753,8 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       ei->probability = PROB_ALWAYS;
       et->probability = PROB_LIKELY;
       ef->probability = PROB_UNLIKELY;
-      et->count = apply_probability(test_bb->count, et->probability);
-      ef->count = apply_probability(test_bb->count, ef->probability);
+      et->count = apply_probability (test_bb->count, et->probability);
+      ef->count = apply_probability (test_bb->count, ef->probability);
 
       code_bb->count = et->count;
       code_bb->frequency = EDGE_FREQUENCY (et);
@@ -2793,14 +2793,14 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       fallthru_edge->flags = EDGE_FALSE_VALUE;
       fallthru_edge->probability = PROB_VERY_LIKELY;
       fallthru_edge->count
-	= apply_probability(test_bb->count, fallthru_edge->probability);
+	= apply_probability (test_bb->count, fallthru_edge->probability);
 
       // Abort/over edge.
       redirect_edge_pred (abort_edge, test_bb);
       abort_edge->flags = EDGE_TRUE_VALUE;
       abort_edge->probability = PROB_VERY_UNLIKELY;
       abort_edge->count
-	= apply_probability(test_bb->count, abort_edge->probability);
+	= apply_probability (test_bb->count, abort_edge->probability);
 
       transaction_bb = test_bb;
     }
@@ -2842,13 +2842,13 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       inst_edge->flags = EDGE_FALSE_VALUE;
       inst_edge->probability = REG_BR_PROB_BASE / 2;
       inst_edge->count
-	= apply_probability(test_bb->count, inst_edge->probability);
+	= apply_probability (test_bb->count, inst_edge->probability);
 
       redirect_edge_pred (uninst_edge, test_bb);
       uninst_edge->flags = EDGE_TRUE_VALUE;
       uninst_edge->probability = REG_BR_PROB_BASE / 2;
       uninst_edge->count
-	= apply_probability(test_bb->count, uninst_edge->probability);
+	= apply_probability (test_bb->count, uninst_edge->probability);
     }
 
   // If we have no previous special cases, and we have PHIs at the beginning
@@ -3000,8 +3000,8 @@ const pass_data pass_data_tm_mark =
 class pass_tm_mark : public gimple_opt_pass
 {
 public:
-  pass_tm_mark(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tm_mark, ctxt)
+  pass_tm_mark (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tm_mark, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3183,8 +3183,8 @@ const pass_data pass_data_tm_edges =
 class pass_tm_edges : public gimple_opt_pass
 {
 public:
-  pass_tm_edges(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tm_edges, ctxt)
+  pass_tm_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tm_edges, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3923,8 +3923,8 @@ const pass_data pass_data_tm_memopt =
 class pass_tm_memopt : public gimple_opt_pass
 {
 public:
-  pass_tm_memopt(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tm_memopt, ctxt)
+  pass_tm_memopt (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tm_memopt, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4287,7 +4287,7 @@ ipa_tm_scan_irr_block (basic_block bb)
 		if (find_tm_replacement_function (fn))
 		  break;
 
-		node = cgraph_get_node(fn);
+		node = cgraph_get_node (fn);
 		d = get_cg_data (&node, true);
 
 		/* Return true if irrevocable, but above all, believe
@@ -4991,7 +4991,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   cgraph_create_edge (node, cgraph_get_create_node (gettm_fn), g, 0,
 		      compute_call_stmt_bb_frequency (node->symbol.decl,
-						      gimple_bb(g)));
+						      gimple_bb (g)));
 
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */
@@ -5272,9 +5272,9 @@ ipa_tm_transform_clone (struct cgraph_node *node)
 static unsigned int
 ipa_tm_execute (void)
 {
-  cgraph_node_queue tm_callees = cgraph_node_queue();
+  cgraph_node_queue tm_callees = cgraph_node_queue ();
   /* List of functions that will go irrevocable.  */
-  cgraph_node_queue irr_worklist = cgraph_node_queue();
+  cgraph_node_queue irr_worklist = cgraph_node_queue ();
 
   struct cgraph_node *node;
   struct tm_ipa_cg_data *d;
@@ -5558,8 +5558,8 @@ const pass_data pass_data_ipa_tm =
 class pass_ipa_tm : public simple_ipa_opt_pass
 {
 public:
-  pass_ipa_tm(gcc::context *ctxt)
-    : simple_ipa_opt_pass(pass_data_ipa_tm, ctxt)
+  pass_ipa_tm (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_tm, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -375,8 +375,8 @@ const pass_data pass_data_dse =
 class pass_dse : public gimple_opt_pass
 {
 public:
-  pass_dse(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_dse, ctxt)
+  pass_dse (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_dse, ctxt)
   {}
 
   /* opt_pass methods: */

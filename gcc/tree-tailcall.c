@@ -1083,8 +1083,8 @@ const pass_data pass_data_tail_recursion =
 class pass_tail_recursion : public gimple_opt_pass
 {
 public:
-  pass_tail_recursion(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tail_recursion, ctxt)
+  pass_tail_recursion (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tail_recursion, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1122,8 +1122,8 @@ const pass_data pass_data_tail_calls =
 class pass_tail_calls : public gimple_opt_pass
 {
 public:
-  pass_tail_calls(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tail_calls, ctxt)
+  pass_tail_calls (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tail_calls, ctxt)
   {}
 
   /* opt_pass methods: */

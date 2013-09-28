@@ -556,7 +556,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	|| !iter.fits_shwi ())
       iter_rtx = const0_rtx;
     else
-      iter_rtx = GEN_INT (iter.to_shwi());
+      iter_rtx = GEN_INT (iter.to_shwi ());
     init = gen_doloop_begin (counter_reg,
 			     desc->const_iter ? desc->niter_expr : const0_rtx,
 			     iter_rtx,
@@ -673,7 +673,7 @@ doloop_optimize (struct loop *loop)
       || !iter.fits_shwi ())
     iterations_max = const0_rtx;
   else
-    iterations_max = GEN_INT (iter.to_shwi());
+    iterations_max = GEN_INT (iter.to_shwi ());
   level = get_loop_level (loop) + 1;
 
   /* Generate looping insn.  If the pattern FAILs then give up trying

@@ -602,7 +602,7 @@ is_ctor_dtor (const char *s)
     {
       if (ch == p->name[0]
 	  && (!p->two_underscores || ((s - orig_s) >= 2))
-	  && strncmp(s, p->name, p->len) == 0)
+	  && strncmp (s, p->name, p->len) == 0)
 	{
 	  return p->ret;
 	}
@@ -777,7 +777,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	 plus number of partitions.  */
       for (lto_ld_argv_size = 0; lto_ld_argv[lto_ld_argv_size]; lto_ld_argv_size++)
 	;
-      out_lto_ld_argv = XCNEWVEC(char *, num_files + lto_ld_argv_size + 1);
+      out_lto_ld_argv = XCNEWVEC (char *, num_files + lto_ld_argv_size + 1);
       out_lto_ld_argv_size = 0;
 
       /* After running the LTO back end, we will relink, substituting
@@ -1644,9 +1644,9 @@ main (int argc, char **argv)
                                    "%d destructors found\n",
                                    destructors.number),
                          destructors.number);
-      notice_translated (ngettext("%d frame table found\n",
-                                  "%d frame tables found\n",
-                                  frame_tables.number),
+      notice_translated (ngettext ("%d frame table found\n",
+                                   "%d frame tables found\n",
+				   frame_tables.number),
                          frame_tables.number);
     }
 
@@ -1698,7 +1698,7 @@ main (int argc, char **argv)
   sort_ids (&constructors);
   sort_ids (&destructors);
 
-  maybe_unlink(output_file);
+  maybe_unlink (output_file);
   outf = fopen (c_file, "w");
   if (outf == (FILE *) 0)
     fatal_error ("fopen %s: %m", c_file);
@@ -1812,8 +1812,8 @@ collect_wait (const char *prog, struct pex_obj *pex)
 	{
 	  int sig = WTERMSIG (status);
 	  error ("%s terminated with signal %d [%s]%s",
-		 prog, sig, strsignal(sig),
-		 WCOREDUMP(status) ? ", core dumped" : "");
+		 prog, sig, strsignal (sig),
+		 WCOREDUMP (status) ? ", core dumped" : "");
 	  exit (FATAL_EXIT_CODE);
 	}
 
@@ -2255,8 +2255,8 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 
   if (shared_obj)
     {
-      COLLECT_SHARED_INIT_FUNC(stream, initname);
-      COLLECT_SHARED_FINI_FUNC(stream, fininame);
+      COLLECT_SHARED_INIT_FUNC (stream, initname);
+      COLLECT_SHARED_FINI_FUNC (stream, fininame);
     }
 }
 
@@ -2727,16 +2727,16 @@ scan_libraries (const char *prog_name)
 
 #if defined (EXTENDED_COFF)
 
-#   define GCC_SYMBOLS(X)	(SYMHEADER(X).isymMax + SYMHEADER(X).iextMax)
+#   define GCC_SYMBOLS(X)	(SYMHEADER (X).isymMax + SYMHEADER (X).iextMax)
 #   define GCC_SYMENT		SYMR
 #   define GCC_OK_SYMBOL(X)	((X).st == stProc || (X).st == stGlobal)
 #   define GCC_SYMINC(X)	(1)
-#   define GCC_SYMZERO(X)	(SYMHEADER(X).isymMax)
-#   define GCC_CHECK_HDR(X)	(PSYMTAB(X) != 0)
+#   define GCC_SYMZERO(X)	(SYMHEADER (X).isymMax)
+#   define GCC_CHECK_HDR(X)	(PSYMTAB (X) != 0)
 
 #else
 
-#   define GCC_SYMBOLS(X)	(HEADER(ldptr).f_nsyms)
+#   define GCC_SYMBOLS(X)	(HEADER (ldptr).f_nsyms)
 #   define GCC_SYMENT		SYMENT
 #   if defined (C_WEAKEXT)
 #     define GCC_OK_SYMBOL(X) \
@@ -2994,7 +2994,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   while (ldclose (ldptr) == FAILURE);
 #else
   /* Otherwise we simply close ldptr.  */
-  (void) ldclose(ldptr);
+  (void) ldclose (ldptr);
 #endif
 }
 #endif /* OBJECT_FORMAT_COFF */
@@ -3014,7 +3014,7 @@ resolve_lib_name (const char *name)
     if (libpaths[i]->max_len > l)
       l = libpaths[i]->max_len;
 
-  lib_buf = XNEWVEC (char, l + strlen(name) + 10);
+  lib_buf = XNEWVEC (char, l + strlen (name) + 10);
 
   for (i = 0; libpaths[i]; i++)
     {
@@ -3025,7 +3025,7 @@ resolve_lib_name (const char *name)
 	     may contain directories both with trailing DIR_SEPARATOR and
 	     without it.  */
 	  const char *p = "";
-	  if (!IS_DIR_SEPARATOR (list->prefix[strlen(list->prefix)-1]))
+	  if (!IS_DIR_SEPARATOR (list->prefix[strlen (list->prefix)-1]))
 	    p = "/";
 	  for (j = 0; j < 2; j++)
 	    {

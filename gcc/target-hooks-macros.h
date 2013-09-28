@@ -37,7 +37,7 @@
    HOOK_VECTOR_END: Close a struct declaration, providing a member declarator
                     name for nested use.  */
 #ifndef HOOK_VECTOR_1
-#define HOOK_VECTOR_1(NAME, FRAGMENT) HOOKSTRUCT(FRAGMENT)
+#define HOOK_VECTOR_1(NAME, FRAGMENT) HOOKSTRUCT (FRAGMENT)
 #endif
 #define HOOK_VECTOR(INIT_NAME, SNAME) HOOK_VECTOR_1 (INIT_NAME, struct SNAME {)
 #define HOOK_VECTOR_END(DECL_NAME) HOOK_VECTOR_1(,} DECL_NAME ;)

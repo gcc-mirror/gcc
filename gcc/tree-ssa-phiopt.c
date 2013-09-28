@@ -2034,8 +2034,8 @@ const pass_data pass_data_phiopt =
 class pass_phiopt : public gimple_opt_pass
 {
 public:
-  pass_phiopt(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_phiopt, ctxt)
+  pass_phiopt (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_phiopt, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2080,8 +2080,8 @@ const pass_data pass_data_cselim =
 class pass_cselim : public gimple_opt_pass
 {
 public:
-  pass_cselim(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_cselim, ctxt)
+  pass_cselim (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cselim, ctxt)
   {}
 
   /* opt_pass methods: */

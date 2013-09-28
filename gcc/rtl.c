@@ -222,7 +222,7 @@ shared_const_p (const_rtx orig)
      a LABEL_REF, it isn't sharable.  */
   return (GET_CODE (XEXP (orig, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
-	  && CONST_INT_P(XEXP (XEXP (orig, 0), 1)));
+	  && CONST_INT_P (XEXP (XEXP (orig, 0), 1)));
 }
 
 

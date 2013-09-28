@@ -636,7 +636,7 @@ dbxout_begin_complex_stabs_noforcetext (void)
 #define stabstr_C(chr) obstack_1grow (&stabstr_ob, chr)
 
 /* Add STR, a normal C string, to the string being built.  */
-#define stabstr_S(str) obstack_grow (&stabstr_ob, str, strlen(str))
+#define stabstr_S(str) obstack_grow (&stabstr_ob, str, strlen (str))
 
 /* Add the text of ID, an IDENTIFIER_NODE, to the string being built.  */
 #define stabstr_I(id) obstack_grow (&stabstr_ob, \
@@ -2434,7 +2434,7 @@ dbxout_class_name_qualifiers (tree decl)
   tree context = decl_type_context (decl);
 
   if (context != NULL_TREE
-      && TREE_CODE(context) == RECORD_TYPE
+      && TREE_CODE (context) == RECORD_TYPE
       && TYPE_NAME (context) != 0
       && (TREE_CODE (TYPE_NAME (context)) == IDENTIFIER_NODE
           || (DECL_NAME (TYPE_NAME (context)) != 0)))
@@ -3302,8 +3302,8 @@ dbxout_common_check (tree decl, int *value)
      for thread-local symbols.  Can be handled via same mechanism as used
      in dwarf2out.c.  */
   if (TREE_CODE (decl) != VAR_DECL
-      || !TREE_STATIC(decl)
-      || !DECL_HAS_VALUE_EXPR_P(decl)
+      || !TREE_STATIC (decl)
+      || !DECL_HAS_VALUE_EXPR_P (decl)
       || DECL_THREAD_LOCAL_P (decl)
       || !is_fortran ())
     return NULL;
@@ -3337,21 +3337,21 @@ dbxout_common_check (tree decl, int *value)
           if (CONST_INT_P (XEXP (sym_addr, 0)))
             {
               name =
-                targetm.strip_name_encoding(XSTR (XEXP (sym_addr, 1), 0));
+                targetm.strip_name_encoding (XSTR (XEXP (sym_addr, 1), 0));
               *value = INTVAL (XEXP (sym_addr, 0));
               cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 1));
             }
           else
             {
               name =
-                targetm.strip_name_encoding(XSTR (XEXP (sym_addr, 0), 0));
+                targetm.strip_name_encoding (XSTR (XEXP (sym_addr, 0), 0));
               *value = INTVAL (XEXP (sym_addr, 1));
               cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 0));
             }
           break;
 
         case SYMBOL_REF:
-          name = targetm.strip_name_encoding(XSTR (sym_addr, 0));
+          name = targetm.strip_name_encoding (XSTR (sym_addr, 0));
           *value = 0;
           cdecl = SYMBOL_REF_DECL (sym_addr);
           break;
@@ -3364,7 +3364,7 @@ dbxout_common_check (tree decl, int *value)
       /* Check area common symbol is offset into.  If this is not public, then
          it is not a symbol in a common block.  It must be a .lcomm symbol, not
          a .comm symbol.  */
-      if (cdecl == NULL || !TREE_PUBLIC(cdecl))
+      if (cdecl == NULL || !TREE_PUBLIC (cdecl))
         name = NULL;
     }
   else

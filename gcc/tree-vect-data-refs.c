@@ -1223,7 +1223,7 @@ vect_peeling_hash_choose_best_peeling (loop_vec_info loop_vinfo,
    struct _vect_peel_extended_info res;
 
    res.peel_info.dr = NULL;
-   res.body_cost_vec = stmt_vector_for_cost();
+   res.body_cost_vec = stmt_vector_for_cost ();
 
    if (!unlimited_cost_model ())
      {
@@ -1358,7 +1358,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned possible_npeel_number = 1;
   tree vectype;
   unsigned int nelements, mis, same_align_drs_max = 0;
-  stmt_vector_for_cost body_cost_vec = stmt_vector_for_cost();
+  stmt_vector_for_cost body_cost_vec = stmt_vector_for_cost ();
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2538,7 +2538,7 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
   /* Sort the array of datarefs to make building the interleaving chains
      linear.  */
-  qsort (datarefs.address(), datarefs.length (),
+  qsort (datarefs.address (), datarefs.length (),
 	 sizeof (data_reference_p), dr_group_sort_cmp);
 
   /* Build the interleaving chains.  */

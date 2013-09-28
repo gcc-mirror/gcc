@@ -2304,7 +2304,7 @@ remap_vla_decls (tree block, struct nesting_info *root)
 static bool
 fold_mem_refs (const void *e, void *data ATTRIBUTE_UNUSED)
 {
-  tree *ref_p = CONST_CAST2(tree *, const tree *, (const tree *)e);
+  tree *ref_p = CONST_CAST2 (tree *, const tree *, (const tree *)e);
   *ref_p = fold (*ref_p);
   return true;
 }

@@ -5854,7 +5854,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
     }
 
   /* Traverse all PHI nodes in BB, updating live.  */
-  for (si = gsi_start_phis (bb); !gsi_end_p(si); gsi_next (&si))
+  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
     {
       use_operand_p arg_p;
       ssa_op_iter i;
@@ -9665,8 +9665,8 @@ const pass_data pass_data_vrp =
 class pass_vrp : public gimple_opt_pass
 {
 public:
-  pass_vrp(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_vrp, ctxt)
+  pass_vrp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_vrp, ctxt)
   {}
 
   /* opt_pass methods: */

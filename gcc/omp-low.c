@@ -6860,8 +6860,8 @@ const pass_data pass_data_expand_omp =
 class pass_expand_omp : public gimple_opt_pass
 {
 public:
-  pass_expand_omp(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_expand_omp, ctxt)
+  pass_expand_omp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_expand_omp, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -8056,8 +8056,8 @@ const pass_data pass_data_lower_omp =
 class pass_lower_omp : public gimple_opt_pass
 {
 public:
-  pass_lower_omp(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_omp, ctxt)
+  pass_lower_omp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_omp, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -8337,8 +8337,8 @@ const pass_data pass_data_diagnose_omp_blocks =
 class pass_diagnose_omp_blocks : public gimple_opt_pass
 {
 public:
-  pass_diagnose_omp_blocks(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_diagnose_omp_blocks, ctxt)
+  pass_diagnose_omp_blocks (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_diagnose_omp_blocks, ctxt)
   {}
 
   /* opt_pass methods: */

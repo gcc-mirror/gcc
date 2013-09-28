@@ -4090,7 +4090,7 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
   NEXT_INSN (to) = NEXT_INSN (after);
   PREV_INSN (from) = after;
   NEXT_INSN (after) = from;
-  if (after == get_last_insn())
+  if (after == get_last_insn ())
     set_last_insn (to);
 }
 
@@ -4300,7 +4300,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
   if (after_after)
     PREV_INSN (after_after) = last;
 
-  if (after == get_last_insn())
+  if (after == get_last_insn ())
     set_last_insn (last);
 
   return last;
@@ -4700,7 +4700,7 @@ emit_debug_insn_before (rtx pattern, rtx before)
 rtx
 emit_insn (rtx x)
 {
-  rtx last = get_last_insn();
+  rtx last = get_last_insn ();
   rtx insn;
 
   if (x == NULL_RTX)
@@ -4747,7 +4747,7 @@ emit_insn (rtx x)
 rtx
 emit_debug_insn (rtx x)
 {
-  rtx last = get_last_insn();
+  rtx last = get_last_insn ();
   rtx insn;
 
   if (x == NULL_RTX)
@@ -5804,9 +5804,9 @@ init_emit_once (void)
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      FCONST0(mode).data.high = 0;
-      FCONST0(mode).data.low = 0;
-      FCONST0(mode).mode = mode;
+      FCONST0 (mode).data.high = 0;
+      FCONST0 (mode).data.low = 0;
+      FCONST0 (mode).mode = mode;
       const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST0 (mode), mode);
     }
@@ -5815,9 +5815,9 @@ init_emit_once (void)
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      FCONST0(mode).data.high = 0;
-      FCONST0(mode).data.low = 0;
-      FCONST0(mode).mode = mode;
+      FCONST0 (mode).data.high = 0;
+      FCONST0 (mode).data.low = 0;
+      FCONST0 (mode).mode = mode;
       const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST0 (mode), mode);
     }
@@ -5826,17 +5826,17 @@ init_emit_once (void)
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      FCONST0(mode).data.high = 0;
-      FCONST0(mode).data.low = 0;
-      FCONST0(mode).mode = mode;
+      FCONST0 (mode).data.high = 0;
+      FCONST0 (mode).data.low = 0;
+      FCONST0 (mode).mode = mode;
       const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST0 (mode), mode);
 
       /* We store the value 1.  */
-      FCONST1(mode).data.high = 0;
-      FCONST1(mode).data.low = 0;
-      FCONST1(mode).mode = mode;
-      FCONST1(mode).data
+      FCONST1 (mode).data.high = 0;
+      FCONST1 (mode).data.low = 0;
+      FCONST1 (mode).mode = mode;
+      FCONST1 (mode).data
 	= double_int_one.lshift (GET_MODE_FBIT (mode),
 				 HOST_BITS_PER_DOUBLE_INT,
 				 SIGNED_FIXED_POINT_MODE_P (mode));
@@ -5848,17 +5848,17 @@ init_emit_once (void)
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      FCONST0(mode).data.high = 0;
-      FCONST0(mode).data.low = 0;
-      FCONST0(mode).mode = mode;
+      FCONST0 (mode).data.high = 0;
+      FCONST0 (mode).data.low = 0;
+      FCONST0 (mode).mode = mode;
       const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST0 (mode), mode);
 
       /* We store the value 1.  */
-      FCONST1(mode).data.high = 0;
-      FCONST1(mode).data.low = 0;
-      FCONST1(mode).mode = mode;
-      FCONST1(mode).data
+      FCONST1 (mode).data.high = 0;
+      FCONST1 (mode).data.low = 0;
+      FCONST1 (mode).mode = mode;
+      FCONST1 (mode).data
 	= double_int_one.lshift (GET_MODE_FBIT (mode),
 				 HOST_BITS_PER_DOUBLE_INT,
 				 SIGNED_FIXED_POINT_MODE_P (mode));

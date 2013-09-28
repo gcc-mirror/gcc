@@ -1005,8 +1005,8 @@ const pass_data pass_data_stdarg =
 class pass_stdarg : public gimple_opt_pass
 {
 public:
-  pass_stdarg(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_stdarg, ctxt)
+  pass_stdarg (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_stdarg, ctxt)
   {}
 
   /* opt_pass methods: */

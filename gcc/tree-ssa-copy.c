@@ -858,8 +858,8 @@ const pass_data pass_data_copy_prop =
 class pass_copy_prop : public gimple_opt_pass
 {
 public:
-  pass_copy_prop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_copy_prop, ctxt)
+  pass_copy_prop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_copy_prop, ctxt)
   {}
 
   /* opt_pass methods: */

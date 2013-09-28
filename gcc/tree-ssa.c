@@ -1247,8 +1247,8 @@ const pass_data pass_data_init_datastructures =
 class pass_init_datastructures : public gimple_opt_pass
 {
 public:
-  pass_init_datastructures(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_init_datastructures, ctxt)
+  pass_init_datastructures (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_init_datastructures, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1778,8 +1778,8 @@ const pass_data pass_data_update_address_taken =
 class pass_update_address_taken : public gimple_opt_pass
 {
 public:
-  pass_update_address_taken(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_update_address_taken, ctxt)
+  pass_update_address_taken (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_update_address_taken, ctxt)
   {}
 
   /* opt_pass methods: */

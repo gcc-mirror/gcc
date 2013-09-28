@@ -1022,7 +1022,7 @@ thread_across_edge (gimple dummy_cond,
 
 	for (unsigned int i = 0; i < path.length (); i++)
 	  delete path[i];
-        path.release();
+        path.release ();
       }
     BITMAP_FREE (visited);
   }

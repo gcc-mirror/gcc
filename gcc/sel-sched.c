@@ -509,12 +509,12 @@ typedef vec<vinsn_t> vinsn_vec_t;
    can't be moved up due to bookkeeping created during code motion to another
    fence.  See comment near the call to update_and_record_unavailable_insns
    for the detailed explanations.  */
-static vinsn_vec_t vec_bookkeeping_blocked_vinsns = vinsn_vec_t();
+static vinsn_vec_t vec_bookkeeping_blocked_vinsns = vinsn_vec_t ();
 
 /* This vector has vinsns which are scheduled with renaming on the first fence
    and then seen on the second.  For expressions with such vinsns, target
    availability information may be wrong.  */
-static vinsn_vec_t vec_target_unavailable_vinsns = vinsn_vec_t();
+static vinsn_vec_t vec_target_unavailable_vinsns = vinsn_vec_t ();
 
 /* Vector to store temporary nops inserted in move_op to prevent removal
    of empty bbs.  */
@@ -809,7 +809,7 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
       /* Bail out if mode is different or more than one register is used.  */
       if (GET_MODE (*cur_rtx) != GET_MODE (p->x)
           || (HARD_REGISTER_P (*cur_rtx)
-	      && hard_regno_nregs[REGNO(*cur_rtx)][GET_MODE (*cur_rtx)] > 1))
+	      && hard_regno_nregs[REGNO (*cur_rtx)][GET_MODE (*cur_rtx)] > 1))
         {
           p->n = 0;
           return 1;

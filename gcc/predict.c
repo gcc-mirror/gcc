@@ -2957,8 +2957,8 @@ const pass_data pass_data_profile =
 class pass_profile : public gimple_opt_pass
 {
 public:
-  pass_profile(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_profile, ctxt)
+  pass_profile (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_profile, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2995,8 +2995,8 @@ const pass_data pass_data_strip_predict_hints =
 class pass_strip_predict_hints : public gimple_opt_pass
 {
 public:
-  pass_strip_predict_hints(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_strip_predict_hints, ctxt)
+  pass_strip_predict_hints (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strip_predict_hints, ctxt)
   {}
 
   /* opt_pass methods: */

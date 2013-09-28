@@ -1635,7 +1635,7 @@ release_function_body (tree decl)
 	}
       if (cfun->value_histograms)
 	free_histograms ();
-      pop_cfun();
+      pop_cfun ();
       gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
@@ -1762,7 +1762,7 @@ cgraph_remove_node (struct cgraph_node *node)
 
   /* Clear out the node to NULL all pointers and add the node to the free
      list.  */
-  memset (node, 0, sizeof(*node));
+  memset (node, 0, sizeof (*node));
   node->symbol.type = SYMTAB_FUNCTION;
   node->uid = uid;
   SET_NEXT_FREE_NODE (node, free_nodes);
@@ -1947,13 +1947,13 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf (f, "(%.2f per call) ",
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (edge->speculative)
-	fprintf(f, "(speculative) ");
+	fprintf (f, "(speculative) ");
       if (!edge->inline_failed)
-	fprintf(f, "(inlined) ");
+	fprintf (f, "(inlined) ");
       if (edge->indirect_inlining_edge)
-	fprintf(f, "(indirect_inlining) ");
+	fprintf (f, "(indirect_inlining) ");
       if (edge->can_throw_external)
-	fprintf(f, "(can throw external) ");
+	fprintf (f, "(can throw external) ");
     }
 
   fprintf (f, "\n  Calls: ");
@@ -1962,11 +1962,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
       fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->callee),
 	       edge->callee->symbol.order);
       if (edge->speculative)
-	fprintf(f, "(speculative) ");
+	fprintf (f, "(speculative) ");
       if (!edge->inline_failed)
-	fprintf(f, "(inlined) ");
+	fprintf (f, "(inlined) ");
       if (edge->indirect_inlining_edge)
-	fprintf(f, "(indirect_inlining) ");
+	fprintf (f, "(indirect_inlining) ");
       if (edge->count)
 	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
 		 (HOST_WIDEST_INT)edge->count);
@@ -1974,7 +1974,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf (f, "(%.2f per call) ",
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (edge->can_throw_external)
-	fprintf(f, "(can throw external) ");
+	fprintf (f, "(can throw external) ");
     }
   fprintf (f, "\n");
 

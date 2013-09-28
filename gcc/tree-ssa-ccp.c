@@ -2166,8 +2166,8 @@ const pass_data pass_data_ccp =
 class pass_ccp : public gimple_opt_pass
 {
 public:
-  pass_ccp(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_ccp, ctxt)
+  pass_ccp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_ccp, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2583,8 +2583,8 @@ const pass_data pass_data_fold_builtins =
 class pass_fold_builtins : public gimple_opt_pass
 {
 public:
-  pass_fold_builtins(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_fold_builtins, ctxt)
+  pass_fold_builtins (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fold_builtins, ctxt)
   {}
 
   /* opt_pass methods: */

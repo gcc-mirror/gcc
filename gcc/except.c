@@ -641,7 +641,7 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
   gcc_assert (ifun->eh->region_array);
   gcc_assert (ifun->eh->region_tree);
 
-  b_outer = sbitmap_alloc (ifun->eh->region_array->length());
+  b_outer = sbitmap_alloc (ifun->eh->region_array->length ());
   bitmap_clear (b_outer);
 
   do
@@ -2021,8 +2021,8 @@ const pass_data pass_data_set_nothrow_function_flags =
 class pass_set_nothrow_function_flags : public rtl_opt_pass
 {
 public:
-  pass_set_nothrow_function_flags(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_set_nothrow_function_flags, ctxt)
+  pass_set_nothrow_function_flags (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_set_nothrow_function_flags, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2652,8 +2652,8 @@ const pass_data pass_data_convert_to_eh_region_ranges =
 class pass_convert_to_eh_region_ranges : public rtl_opt_pass
 {
 public:
-  pass_convert_to_eh_region_ranges(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_convert_to_eh_region_ranges, ctxt)
+  pass_convert_to_eh_region_ranges (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_convert_to_eh_region_ranges, ctxt)
   {}
 
   /* opt_pass methods: */

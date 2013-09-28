@@ -5037,7 +5037,7 @@ gsi_start_1 (gimple_seq *seq)
   return i;
 }
 
-#define gsi_start(x) gsi_start_1(&(x))
+#define gsi_start(x) gsi_start_1 (&(x))
 
 static inline gimple_stmt_iterator
 gsi_none (void)
@@ -5080,7 +5080,7 @@ gsi_last_1 (gimple_seq *seq)
   return i;
 }
 
-#define gsi_last(x) gsi_last_1(&(x))
+#define gsi_last(x) gsi_last_1 (&(x))
 
 /* Return a new iterator pointing to the last statement in basic block BB.  */
 

@@ -336,7 +336,7 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
       if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	goto insn_done;
 
-      gcc_assert(NONJUMP_INSN_P (insn) || CALL_P (insn));
+      gcc_assert (NONJUMP_INSN_P (insn) || CALL_P (insn));
 
       /* Remove USE insns that get in the way.  */
       if (reload_completed && GET_CODE (PATTERN (insn)) == USE)
@@ -4503,8 +4503,8 @@ const pass_data pass_data_rtl_ifcvt =
 class pass_rtl_ifcvt : public rtl_opt_pass
 {
 public:
-  pass_rtl_ifcvt(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_ifcvt, ctxt)
+  pass_rtl_ifcvt (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_ifcvt, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4558,8 +4558,8 @@ const pass_data pass_data_if_after_combine =
 class pass_if_after_combine : public rtl_opt_pass
 {
 public:
-  pass_if_after_combine(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_if_after_combine, ctxt)
+  pass_if_after_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_if_after_combine, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4612,8 +4612,8 @@ const pass_data pass_data_if_after_reload =
 class pass_if_after_reload : public rtl_opt_pass
 {
 public:
-  pass_if_after_reload(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_if_after_reload, ctxt)
+  pass_if_after_reload (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_if_after_reload, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -2071,7 +2071,7 @@ struct instantiate_cache_type
   htab_t map;
   vec<scev_info_str> entries;
 
-  instantiate_cache_type () : map (NULL), entries(vNULL) {}
+  instantiate_cache_type () : map (NULL), entries (vNULL) {}
   ~instantiate_cache_type ();
   tree get (unsigned slot) { return entries[slot].chrec; }
   void set (unsigned slot, tree chrec) { entries[slot].chrec = chrec; }

@@ -1237,7 +1237,7 @@ dump_var_map (FILE *f, var_map map)
 	    {
 	      if (t++ == 0)
 	        {
-		  fprintf(f, "Partition %d (", x);
+		  fprintf (f, "Partition %d (", x);
 		  print_generic_expr (f, partition_to_var (map, p), TDF_SLIM);
 		  fprintf (f, " - ");
 		}

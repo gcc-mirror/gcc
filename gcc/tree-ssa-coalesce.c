@@ -635,7 +635,7 @@ new_live_track (var_map map)
   ptr->map = map;
   lim = num_basevars (map);
   bitmap_obstack_initialize (&ptr->obstack);
-  ptr->live_base_partitions = (bitmap *) xmalloc(sizeof (bitmap *) * lim);
+  ptr->live_base_partitions = (bitmap *) xmalloc (sizeof (bitmap *) * lim);
   ptr->live_base_var = BITMAP_ALLOC (&ptr->obstack);
   for (x = 0; x < lim; x++)
     ptr->live_base_partitions[x] = BITMAP_ALLOC (&ptr->obstack);

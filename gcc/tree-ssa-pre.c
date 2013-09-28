@@ -360,10 +360,10 @@ typedef struct bitmap_set
 } *bitmap_set_t;
 
 #define FOR_EACH_EXPR_ID_IN_SET(set, id, bi)		\
-  EXECUTE_IF_SET_IN_BITMAP(&(set)->expressions, 0, (id), (bi))
+  EXECUTE_IF_SET_IN_BITMAP (&(set)->expressions, 0, (id), (bi))
 
 #define FOR_EACH_VALUE_ID_IN_SET(set, id, bi)		\
-  EXECUTE_IF_SET_IN_BITMAP(&(set)->values, 0, (id), (bi))
+  EXECUTE_IF_SET_IN_BITMAP (&(set)->values, 0, (id), (bi))
 
 /* Mapping from value id to expressions with that value_id.  */
 static vec<bitmap> value_expressions;
@@ -1344,7 +1344,7 @@ get_expr_type (const pre_expr e)
     case NARY:
       return PRE_EXPR_NARY (e)->type;
     }
-  gcc_unreachable();
+  gcc_unreachable ();
 }
 
 /* Get a representative SSA_NAME for a given expression.
@@ -1488,7 +1488,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    else
 	      {
 		new_val_id = get_next_value_id ();
-		value_expressions.safe_grow_cleared (get_max_value_id() + 1);
+		value_expressions.safe_grow_cleared (get_max_value_id () + 1);
 		nary = vn_nary_op_insert_pieces (newnary->length,
 						 newnary->opcode,
 						 newnary->type,
@@ -1673,7 +1673,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		if (changed || !same_valid)
 		  {
 		    new_val_id = get_next_value_id ();
-		    value_expressions.safe_grow_cleared(get_max_value_id() + 1);
+		    value_expressions.safe_grow_cleared
+		      (get_max_value_id () + 1);
 		  }
 		else
 		  new_val_id = ref->value_id;
@@ -4629,7 +4630,7 @@ init_pre (void)
   expressions.create (0);
   expressions.safe_push (NULL);
   value_expressions.create (get_max_value_id () + 1);
-  value_expressions.safe_grow_cleared (get_max_value_id() + 1);
+  value_expressions.safe_grow_cleared (get_max_value_id () + 1);
   name_to_id.create (0);
 
   inserted_exprs = BITMAP_ALLOC (NULL);
@@ -4789,8 +4790,8 @@ const pass_data pass_data_pre =
 class pass_pre : public gimple_opt_pass
 {
 public:
-  pass_pre(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_pre, ctxt)
+  pass_pre (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_pre, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4859,8 +4860,8 @@ const pass_data pass_data_fre =
 class pass_fre : public gimple_opt_pass
 {
 public:
-  pass_fre(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_fre, ctxt)
+  pass_fre (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fre, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The singleton holder of global state: */
 gcc::context *g;
 
-gcc::context::context()
+gcc::context::context ()
 {
   passes_ = new gcc::pass_manager (this);
 }

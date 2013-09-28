@@ -33,7 +33,7 @@
    VMS has non-numeric inodes.  */
 #ifdef VMS
 # define INO_T_EQ(A, B) (!memcmp (&(A), &(B), sizeof (A)))
-# define INO_T_COPY(DEST, SRC) memcpy(&(DEST), &(SRC), sizeof (SRC))
+# define INO_T_COPY(DEST, SRC) memcpy (&(DEST), &(SRC), sizeof (SRC))
 #elif !defined (HOST_LACKS_INODE_NUMBERS)
 # define INO_T_EQ(A, B) ((A) == (B))
 # define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
@@ -41,7 +41,7 @@
 
 #if defined INO_T_EQ
 #define DIRS_EQ(A, B) ((A)->dev == (B)->dev \
-	&& INO_T_EQ((A)->ino, (B)->ino))
+	&& INO_T_EQ ((A)->ino, (B)->ino))
 #else
 #define DIRS_EQ(A, B) (!filename_cmp ((A)->canonical_name, (B)->canonical_name))
 #endif
@@ -128,7 +128,7 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 		    const char *imultilib, int cxx_stdinc)
 {
   const struct default_include *p;
-  int relocated = cpp_relocated();
+  int relocated = cpp_relocated ();
   size_t len;
 
   if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0)
