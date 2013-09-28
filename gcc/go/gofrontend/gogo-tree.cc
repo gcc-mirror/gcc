@@ -1061,6 +1061,12 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
   if (this->tree_ != NULL_TREE)
     return this->tree_;
 
+  if (Gogo::is_erroneous_name(this->name_))
+    {
+      this->tree_ = error_mark_node;
+      return error_mark_node;
+    }
+
   tree name;
   if (this->classification_ == NAMED_OBJECT_TYPE)
     name = NULL_TREE;

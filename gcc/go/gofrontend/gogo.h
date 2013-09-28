@@ -387,6 +387,16 @@ class Gogo
   void
   mark_locals_used();
 
+  // Return a name to use for an error case.  This should only be used
+  // after reporting an error, and is used to avoid useless knockon
+  // errors.
+  static std::string
+  erroneous_name();
+
+  // Return whether the name indicates an error.
+  static bool
+  is_erroneous_name(const std::string&);
+
   // Return a name to use for a thunk function.  A thunk function is
   // one we create during the compilation, for a go statement or a
   // defer statement or a method expression.

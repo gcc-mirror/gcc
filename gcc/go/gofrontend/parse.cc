@@ -213,7 +213,7 @@ Parse::qualified_ident(std::string* pname, Named_object** ppackage)
   if (name == "_")
     {
       error_at(this->location(), "invalid use of %<_%>");
-      name = "blank";
+      name = Gogo::erroneous_name();
     }
 
   if (package->name() == this->gogo_->package_name())
@@ -3104,7 +3104,7 @@ Parse::selector(Expression* left, bool* is_type_switch)
       if (token->identifier() == "_")
 	{
 	  error_at(this->location(), "invalid use of %<_%>");
-	  name = this->gogo_->pack_hidden_name("blank", false);
+	  name = Gogo::erroneous_name();
 	}
       this->advance_token();
       return Expression::make_selector(left, name, location);
@@ -4929,7 +4929,7 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 	    {
 	      error_at(recv_var_loc,
 		       "no new variables on left side of %<:=%>");
-	      recv_var = "blank";
+	      recv_var = Gogo::erroneous_name();
 	    }
 	  *is_send = false;
 	  *varname = gogo->pack_hidden_name(recv_var, is_rv_exported);
@@ -4965,7 +4965,7 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 		    {
 		      error_at(recv_var_loc,
 			       "no new variables on left side of %<:=%>");
-		      recv_var = "blank";
+		      recv_var = Gogo::erroneous_name();
 		    }
 		  *is_send = false;
 		  if (recv_var != "_")
@@ -5502,7 +5502,7 @@ Parse::package_clause()
 	  if (name == "_")
 	    {
 	      error_at(this->location(), "invalid package name _");
-	      name = "blank";
+	      name = Gogo::erroneous_name();
 	    }
 	  this->advance_token();
 	}
