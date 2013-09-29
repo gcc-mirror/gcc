@@ -12047,7 +12047,7 @@ generic or @code{__flash} is used, then @code{RAMPZ} is set
 as needed before the operation.
 
 @item
-If the device supports RAM larger than 64@tie{KiB} and the compiler
+If the device supports RAM larger than 64@tie{}KiB and the compiler
 needs to change @code{RAMPZ} to accomplish an operation, @code{RAMPZ}
 is reset to zero after the operation.
 
@@ -12057,7 +12057,7 @@ prologue/epilogue saves/restores that SFR and initializes it with
 zero in case the ISR code might (implicitly) use it.
 
 @item
-RAM larger than 64@tie{KiB} is not supported by GCC for AVR targets.
+RAM larger than 64@tie{}KiB is not supported by GCC for AVR targets.
 If you use inline assembler to read from locations outside the
 16-bit address range and change one of the @code{RAMP} registers,
 you must reset it to zero after the access.
