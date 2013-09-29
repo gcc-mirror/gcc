@@ -1,3 +1,7 @@
+2013-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi: Fix usage of @tie{} command.
+
 2013-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sync.md: Add peephole for consecutive memory barriers.
@@ -9,7 +13,8 @@
 
 2013-09-28  Jan Hubicka  <jh@suse.cz>
 
-	* x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Enable for generic.
+	* x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Enable for
+	generic.
 	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Likewise.
 	(X86_TUNE_FOUR_JUMP_LIMIT): Drop for generic and buldozer.
 	(X86_TUNE_PAD_RETURNS): Drop for buldozer chips.
@@ -209,8 +214,7 @@
 
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
-	* tree-into-ssa.c (rewrite_into_ssa): Make more SSA names
-	to anonymous.
+	* tree-into-ssa.c (rewrite_into_ssa): Make more SSA names to anonymous.
 
 2013-09-26  Richard Biener  <rguenther@suse.de>
 
@@ -226,13 +230,13 @@
 
 2013-09-26  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs): Move
-	prototypes to...
+	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs):
+	Move prototypes to...
 	* tree-ssa-ter.h: New File.  Move prototypes here.
 	* tree-flow.h (stmt_is_replaceable_p): Remove prototype.
 	* tree-outof-ssa.h: New. Rename ssaexpand.h, include tree-ssa-ter.h.
 	* tree-outof-ssa.c (ssa_is_replaceable_p): New.  Refactor common bits
-	from is_replaceable_p. 
+	from is_replaceable_p.
 	* tree-ssa-ter.c (is_replaceable_p, stmt_is_replaceable_p): Delete.
 	(ter_is_replaceable_p): New.  Use new refactored ssa_is_replaceable_p.
 	(process_replaceable): Use ter_is_replaceable_p.
@@ -586,8 +590,7 @@
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add lto-wrapper.o.
-	($(ALL_HOST_OBJS)): Move order-only dependency to end
-	of file.
+	($(ALL_HOST_OBJS)): Move order-only dependency to end of file.
 
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
@@ -622,10 +625,10 @@
 
 	* config/sh/sh.md: Fix formatting.
 
-2013-09-24  Xinliang David Li <davidxl@google.com>
+2013-09-24  Xinliang David Li  <davidxl@google.com>
 
-	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): 
-	Check max peel iterations parameter.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Check
+	max peel iterations parameter.
 	* param.def: New parameter.
 	* doc/invoke.texi: Document New parameter.
 
@@ -644,9 +647,9 @@
 
 	PR middle-end/57134
 	PR middle-end/57586
-	* stmt.c (expand_asm_operands): Call expand_expr with
-	EXPAND_MEMORY for output operands that disallow regs.  Don't
-	use EXPAND_WRITE on inout operands.
+	* stmt.c (expand_asm_operands): Call expand_expr with EXPAND_MEMORY
+	for output operands that disallow regs.  Don't use EXPAND_WRITE on
+	inout operands.
 
 2013-09-24  Richard Biener  <rguenther@suse.de>
 
@@ -835,8 +838,7 @@
 	* tree-ssa-copy.c (fini_copy_prop): Likewise.
 	* tree-vrp.c (value_range_type): Remove definition, now in
 	tree-ssanames.h.
-	(vrp_finalize): Call set_range_info to update value range of
-	SSA_NAMEs.
+	(vrp_finalize): Call set_range_info to update value range of SSA_NAMEs.
 	* tree.h (SSA_NAME_PTR_INFO): Macro changed to access via union.
 	(SSA_NAME_RANGE_INFO): New macro.
 
@@ -844,8 +846,7 @@
 
 	PR tree-optimization/58464
 	* tree-ssa-pre.c (phi_trans_lookup): Remove.
-	(phi_trans_add): Change to add conditionally on being not
-	present.
+	(phi_trans_add): Change to add conditionally on being not present.
 	(phi_translate_1): Remove recursion detection here.
 	(phi_translate): Pre-seed the cache with NULL to catch
 	recursion here in a more generic way.
@@ -865,7 +866,8 @@
 	Revert r202780:
 	2013-09-20  Renlin Li  <renlin.li@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use
+	plus_constant.
 	(aarch64_expand_epilogue): Likewise.
 	(aarch64_legitimize_reload_address): Likewise.
 
@@ -905,7 +907,7 @@
 	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
 
 2013-09-20  DJ Delorie  <dj@redhat.com>
-            Nick Clifton  <nickc@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c: Various whitespace and comment tweaks.
 	(need_to_save): Save bank 0 on interrupts.
@@ -963,14 +965,14 @@
 
 2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside 
-          plugin argument.
+	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside
+	plugin argument.
 
 2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
-       * gengtype.c (file_rules): Added rule for *.cc files.
-       (get_output_file_with_visibility): Give fatal message when no
-       rules found.
+	* gengtype.c (file_rules): Added rule for *.cc files.
+	(get_output_file_with_visibility): Give fatal message when no
+	rules found.
 
 2013-09-20  Renlin Li  <renlin.li@arm.com>
 
@@ -1044,7 +1046,8 @@
 	* i386-c.c (ix86_target_macros_internal): Unify generic64 and 32.
 	(ix86_target_macros_internal): Likewise.
 	* driver-i386.c (host_detect_local_cpu): Likewise.
-	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename to ..
+	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename
+	to ..
 	(generic_memcpy, generic_memset, generic_cost): This one.
 	(generic32_memcpy, generic32_memset, generic32_cost): Remove.
 	(m_GENERIC32, m_GENERIC64): Remove.
@@ -1233,9 +1236,8 @@
 
 2013-09-18  Bin Cheng  <bin.cheng@arm.com>
 
-	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn
-	before branch in same basic block.  Check both src and dest of
-	the move insn.
+	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn before
+	branch in same basic block.  Check both src and dest of the move insn.
 
 2013-09-17  Nick Clifton  <nickc@redhat.com>
 
@@ -1305,20 +1307,22 @@
 	tree-ssa-threadupdate.c
 	(thread_across_edge): Don't check PHI argument equality when
 	threading through joiner block here.
-	
+
 2013-09-17  Andrew MacLeod <amacleod@redhat.com>
 
 	* tree-flow.h (ssa_undefined_value_p): Remove prototype.
 	* tree-ssa.c (ssa_undefined_value_p): Move pass independent parts here.
-	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
-	make_pass_early_warn_uninitialized): Move to tree-ssa-uninit.c.
+	(warn_uninit, warn_uninitialized_vars,
+	execute_early_warn_uninitialized, make_pass_early_warn_uninitialized):
+	Move to tree-ssa-uninit.c.
 	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c
-	(has_undefined_value_p): New.  Pass dependant parts of 
+	(has_undefined_value_p): New.  Pass dependant parts of
 	ssa_undefined_value_p.
 	(uninit_undefined_value_p): Use has_undefined_value_p.
-	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
-	make_pass_early_warn_uninitialized): Move from tree-ssa.c
-	* tree-ssa.h: Adjust prototypes
+	(warn_uninit, warn_uninitialized_vars,
+	execute_early_warn_uninitialized, make_pass_early_warn_uninitialized):
+	Move from tree-ssa.c.
+	* tree-ssa.h: Adjust prototypes.
 
 2013-09-17  Jan Hubicka  <jh@suse.cz>
 
@@ -1429,7 +1433,8 @@
 2013-09-17  Alan Modra  <amodra@gmail.com>
 
 	PR target/57589
-	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11 patch.
+	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11
+	patch.
 
 2013-09-16  DJ Delorie  <dj@redhat.com>
 
@@ -1459,7 +1464,7 @@
 	(tree_vectorize): Ditto.
 	(pass_vectorize::gate): Call new function.
 	(pass_vectorize::execute): Ditto.
-	opts.c: O3 default setting change.
+	* opts.c: O3 default setting change.
 	(finish_options): Check new flag.
 	* doc/invoke.texi: Document new flags.
 	* common.opt: New flags.
@@ -1592,14 +1597,12 @@
 
 2013-09-16  Diego Novillo  <dnovillo@google.com>
 
-	* tree-core.h: Add missing comment lines from refactoring
-	of tree.h.
+	* tree-core.h: Add missing comment lines from refactoring of tree.h.
 
 2013-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Do not accept
-	abstract functions; for static functions check the presence
-	of body.
+	abstract functions; for static functions check the presence of body.
 
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -3805,7 +3808,7 @@
 2013-09-04  Dodji Seketeli  <dodji@redhat.com>
 
 	* tree.h (DECL_BUILT_IN, DECL_IS_BUILTIN): Add more comments
-    	explaining their differences.
+	explaining their differences.
 
 2013-09-04  Sandeep Kumar Singh<Sandeep.Singh2@kpitcummins.com>
 
@@ -5051,12 +5054,12 @@
 
 2013-08-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/sse.md (V16): Rename to...
-        (VMOVE): this.
-        (mov<mode>): Update iterator name.
-        (*mov<mode>_internal): Ditto.
-        (push<mode>1): Ditto.
-        (movmisalign<mode>): Ditto.
+	* config/i386/sse.md (V16): Rename to...
+	(VMOVE): this.
+	(mov<mode>): Update iterator name.
+	(*mov<mode>_internal): Ditto.
+	(push<mode>1): Ditto.
+	(movmisalign<mode>): Ditto.
 
 2013-08-20  Jan Hubicka  <jh@suse.cz>
 
