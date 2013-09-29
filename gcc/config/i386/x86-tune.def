@@ -115,9 +115,9 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMDFAM10 
           | m_BDVER | m_GENERIC)
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-          m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM)
+          m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM | m_GENERIC)
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-          m_COREI7 | m_BDVER | m_SLM)
+          m_COREI7 | m_BDVER | m_SLM | m_GENERIC)
 DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal",
           m_BDVER)
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
@@ -146,8 +146,7 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
 /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
    than 4 branch instructions in the 16 byte window.  */
 DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
-          m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE 
-          | m_GENERIC)
+          m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_ATHLON_K8 | m_AMDFAM10)
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
           m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE 
           | m_AMD_MULTIPLE | m_GENERIC)
@@ -156,13 +155,13 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
           ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC))
 DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
-          m_AMD_MULTIPLE | m_GENERIC)
+          m_ATHLON_K8 | m_AMDFAM10 | m_GENERIC)
 DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function", m_ATOM)
 DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
           | m_ATHLON_K8 | m_GENERIC)
 DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
-          m_K8 | m_GENERIC)
+          m_K8)
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
 DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
@@ -217,7 +216,7 @@ DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel",
 /* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
    during reassociation of fp computation.  */
 DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
-          m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2)
+          m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2 | m_GENERIC)
 /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
    regs instead of memory.  */
 DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
