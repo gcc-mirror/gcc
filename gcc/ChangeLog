@@ -1,5 +1,10 @@
 2013-09-28  Jan Hubicka  <jh@suse.cz>
 
+	* config/i386/x86-tune.def: Add documentation for each of the options;
+	add whitespace.
+
+2013-09-28  Jan Hubicka  <jh@suse.cz>
+
 	* x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Enable for generic.
 	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Likewise.
 	(X86_TUNE_FOUR_JUMP_LIMIT): Drop for generic and buldozer.
