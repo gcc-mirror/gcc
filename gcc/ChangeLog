@@ -1,3 +1,12 @@
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/t-darwin (darwin.o, darwin-c.o, darwin-f.o,
+	darwin-driver.o): Use COMPILE and POSTCOMPILE.
+	* config/x-darwin (host-darwin.o): Likewise.
+	* config/i386/x-darwin (host-i386-darwin.o): Likewise.
+	* config/rs6000/x-darwin (host-ppc-darwin.o): Likewise.
+	* config/rs6000/x-darwin64 (host-ppc64-darwin.o): Likewise.
+
 2013-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi: Fix usage of @tie{} command.
