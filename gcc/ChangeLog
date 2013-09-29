@@ -1,3 +1,12 @@
+2013-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Enable for generic.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Likewise.
+	(X86_TUNE_FOUR_JUMP_LIMIT): Drop for generic and buldozer.
+	(X86_TUNE_PAD_RETURNS): Drop for buldozer chips.
+	(X86_TUNE_AVOID_VECTOR_DECODE): Drop for generic.
+	(X86_TUNE_REASSOC_FP_TO_PARALLEL): Enable for generic.
+
 2013-09-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* alloc-pool.c, asan.c, auto-inc-dec.c, basic-block.h, bb-reorder.c,
