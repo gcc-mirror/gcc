@@ -1,3 +1,9 @@
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
+	* mh-darwin (BOOT_CFLAGS): Only add -mdynamic-no-pic for m32 hosts.
+	(STAGE1_CFLAGS, STAGE1_LDFLAGS): New.
+	Fix over-length lines and amend comments.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* bootstrap-ubsan.mk: New.
