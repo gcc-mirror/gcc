@@ -1,5 +1,10 @@
 2013-09-29  Iain Sandoe  <iain@codesourcery.com>
 
+	* config/rs6000/rs6000.c (rs6000_init_dwarf_reg_sizes_extra): Ensure
+	that altivec registers are correctly sized on Darwin.
+
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
 	* config/t-darwin (darwin.o, darwin-c.o, darwin-f.o,
 	darwin-driver.o): Use COMPILE and POSTCOMPILE.
 	* config/x-darwin (host-darwin.o): Likewise.

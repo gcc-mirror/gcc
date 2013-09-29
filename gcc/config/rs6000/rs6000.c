@@ -29050,6 +29050,27 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 	  emit_move_insn (adjust_address (mem, mode, offset), value);
 	}
     }
+
+  if (TARGET_MACHO && ! TARGET_ALTIVEC)
+    {
+      int i;
+      enum machine_mode mode = TYPE_MODE (char_type_node);
+      rtx addr = expand_expr (address, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      rtx mem = gen_rtx_MEM (BLKmode, addr);
+      rtx value = gen_int_mode (16, mode);
+
+      /* On Darwin, libgcc may be built to run on both G3 and G4/5.
+	 The unwinder still needs to know the size of Altivec registers.  */
+
+      for (i = FIRST_ALTIVEC_REGNO; i < LAST_ALTIVEC_REGNO+1; i++)
+	{
+	  int column = DWARF_REG_TO_UNWIND_COLUMN (i);
+	  HOST_WIDE_INT offset
+	    = DWARF_FRAME_REGNUM (column) * GET_MODE_SIZE (mode);
+
+	  emit_move_insn (adjust_address (mem, mode, offset), value);
+	}
+    }
 }
 
 /* Map internal gcc register numbers to DWARF2 register numbers.  */
