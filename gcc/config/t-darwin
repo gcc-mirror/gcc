@@ -18,25 +18,19 @@
 
 TM_H += $(srcdir)/config/darwin-sections.def
 
-darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
-  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(REAL_H) insn-config.h         \
-  conditions.h insn-flags.h output.h insn-attr.h flags.h $(TREE_H) expr.h   \
-  reload.h function.h $(GGC_H) langhooks.h $(TARGET_H) $(TM_P_H) gt-darwin.h \
-  config/darwin-sections.def
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/darwin.c
+darwin.o: $(srcdir)/config/darwin.c config/darwin-sections.def
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
-darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) $(TM_P_H) \
-  incpath.h flags.h $(C_COMMON_H) $(C_TARGET_H) $(C_TARGET_DEF_H) $(CPP_INTERNAL_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/darwin-c.c $(PREPROCESSOR_DEFINES)
+darwin-c.o: $(srcdir)/config/darwin-c.c
+	$(COMPILE) $(PREPROCESSOR_DEFINES) $<
+	$(POSTCOMPILE)
 
-darwin-f.o: $(srcdir)/config/darwin-f.c $(CONFIG_H) $(SYSTEM_H) coretypes.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/config/darwin-f.c $(PREPROCESSOR_DEFINES)
 
-darwin-driver.o: $(srcdir)/config/darwin-driver.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) opts.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/config/darwin-driver.c
+darwin-f.o: $(srcdir)/config/darwin-f.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+darwin-driver.o: $(srcdir)/config/darwin-driver.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

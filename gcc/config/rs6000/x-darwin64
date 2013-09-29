@@ -1,5 +1,3 @@
-host-ppc64-darwin.o : $(srcdir)/config/rs6000/host-ppc64-darwin.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h hosthooks.h $(HOSTHOOKS_DEF_H) toplev.h \
-  config/host-darwin.h $(DIAGNOSTIC_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		$(INCLUDES) $< -o $@
+host-ppc64-darwin.o : $(srcdir)/config/rs6000/host-ppc64-darwin.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
