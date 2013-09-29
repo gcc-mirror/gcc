@@ -1,5 +1,19 @@
 2013-09-29  Iain Sandoe  <iain@codesourcery.com>
 
+	PR target/10901
+	* config/darwin-protos.h (machopic_get_function_picbase): New.
+	* config/darwin.c (machopic_get_function_picbase): New.
+	* config/rs6000/darwin.md (load_macho_picbase_si): Update picbase
+	label for a new func.  (load_macho_picbase_di): Likewise.
+	(reload_macho_picbase): New expand.
+	(reload_macho_picbase_si): New insn.
+	(reload_macho_picbase_di): New insn.
+	(nonlocal_goto_receiver): New define and split.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_RELD_MPIC.
+	(unspecv enum): Add UNSPECV_NLGR.
+
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
 	* config/rs6000/rs6000.c (rs6000_init_dwarf_reg_sizes_extra): Ensure
 	that altivec registers are correctly sized on Darwin.
 

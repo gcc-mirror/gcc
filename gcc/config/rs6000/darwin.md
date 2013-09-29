@@ -260,7 +260,10 @@ You should have received a copy of the GNU General Public License
 	(unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-  "bcl 20,31,%0\\n%0:"
+{
+  machopic_should_output_picbase_label (); /* Update for new func.  */
+  return "bcl 20,31,%0\\n%0:";
+}
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -269,7 +272,10 @@ You should have received a copy of the GNU General Public License
 	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
-  "bcl 20,31,%0\\n%0:"
+{
+  machopic_should_output_picbase_label (); /* Update for new func.  */
+  return "bcl 20,31,%0\\n%0:";
+}
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -370,3 +376,86 @@ You should have received a copy of the GNU General Public License
 }
   [(set_attr "type" "branch,branch")
    (set_attr "length" "4,8")])
+
+(define_expand "reload_macho_picbase"
+  [(set (reg:SI 65)
+        (unspec [(match_operand 0 "" "")]
+                   UNSPEC_RELD_MPIC))]
+  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
+{
+  if (TARGET_32BIT)
+    emit_insn (gen_reload_macho_picbase_si (operands[0]));
+  else
+    emit_insn (gen_reload_macho_picbase_di (operands[0]));
+
+  DONE;
+})
+
+(define_insn "reload_macho_picbase_si"
+  [(set (reg:SI 65)
+        (unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
+		    (pc)] UNSPEC_RELD_MPIC))]
+  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
+{
+  if (machopic_should_output_picbase_label ())
+    {
+      static char tmp[64];
+      const char *cnam = machopic_get_function_picbase ();
+      snprintf (tmp, 64, "bcl 20,31,%s\\n%s:\\n%%0:", cnam, cnam);
+      return tmp;
+    }
+  else
+    return "bcl 20,31,%0\\n%0:";
+}
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "reload_macho_picbase_di"
+  [(set (reg:DI 65)
+	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
+		    (pc)] UNSPEC_RELD_MPIC))]
+  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
+{
+  if (machopic_should_output_picbase_label ())
+    {
+      static char tmp[64];
+      const char *cnam = machopic_get_function_picbase ();
+      snprintf (tmp, 64, "bcl 20,31,%s\\n%s:\\n%%0:", cnam, cnam);
+      return tmp;
+    }
+  else
+    return "bcl 20,31,%0\\n%0:";
+}
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+;; We need to restore the PIC register, at the site of nonlocal label.
+
+(define_insn_and_split "nonlocal_goto_receiver"
+  [(unspec_volatile [(const_int 0)] UNSPECV_NLGR)]
+  "TARGET_MACHO && flag_pic"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (crtl->uses_pic_offset_table)
+    {
+      static unsigned n = 0;
+      rtx picrtx = gen_rtx_SYMBOL_REF (Pmode, MACHOPIC_FUNCTION_BASE_NAME);
+      rtx picreg = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
+      rtx tmplrtx;
+      char tmplab[20];
+
+      ASM_GENERATE_INTERNAL_LABEL(tmplab, "Lnlgr", ++n);
+      tmplrtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (tmplab));
+
+      emit_insn (gen_reload_macho_picbase (tmplrtx));
+      emit_move_insn (picreg, gen_rtx_REG (Pmode, LR_REGNO));
+      emit_insn (gen_macho_correct_pic (picreg, picreg, picrtx, tmplrtx));
+    }
+  else
+    /* Not using PIC reg, no reload needed.  */
+    emit_note (NOTE_INSN_DELETED);
+
+  DONE;
+})
