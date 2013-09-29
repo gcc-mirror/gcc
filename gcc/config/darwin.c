@@ -405,6 +405,19 @@ machopic_output_function_base_name (FILE *file)
   fprintf (file, "L%d$pb", current_pic_label_num);
 }
 
+char curr_picbasename[32];
+
+const char *
+machopic_get_function_picbase (void)
+{
+  /* If dynamic-no-pic is on, we should not get here.  */
+  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+
+  update_pic_label_number_if_needed ();
+  snprintf (curr_picbasename, 32, "L%d$pb", current_pic_label_num);
+  return (const char *) curr_picbasename;
+}
+
 bool
 machopic_should_output_picbase_label (void)
 {
