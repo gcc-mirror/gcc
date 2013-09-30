@@ -1,3 +1,7 @@
+2013-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/algo.h (__find_switch): Use __binder2nd.
+
 2013-09-30  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/58437
