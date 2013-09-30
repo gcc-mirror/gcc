@@ -15448,7 +15448,7 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 	    if (TREE_CODE (inner_type) == REAL_TYPE)
 	      return tree_expr_nonnegative_warnv_p (op0,
 						    strict_overflow_p);
-	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	    if (INTEGRAL_TYPE_P (inner_type))
 	      {
 		if (TYPE_UNSIGNED (inner_type))
 		  return true;
@@ -15456,12 +15456,12 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 						      strict_overflow_p);
 	      }
 	  }
-	else if (TREE_CODE (outer_type) == INTEGER_TYPE)
+	else if (INTEGRAL_TYPE_P (outer_type))
 	  {
 	    if (TREE_CODE (inner_type) == REAL_TYPE)
 	      return tree_expr_nonnegative_warnv_p (op0,
 						    strict_overflow_p);
-	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	    if (INTEGRAL_TYPE_P (inner_type))
 	      return TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type)
 		      && TYPE_UNSIGNED (inner_type);
 	  }

@@ -1,6 +1,10 @@
 2013-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58564
+	* fold-const.c (tree_unary_nonnegative_warnv_p): Use
+	INTEGRAL_TYPE_P (t) instead of TREE_CODE (t) == INTEGER_TYPE.
+
+	PR middle-end/58564
 	* fold-const.c (fold_ternary_loc): For A < 0 : <sign bit of A> : 0
 	optimization, punt if sign_bit_p looked through any zero extension.
 
