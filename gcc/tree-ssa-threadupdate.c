@@ -403,6 +403,7 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	 threading through.  That's the edge we want to redirect.  */
       victim = find_edge (rd->dup_block, THREAD_TARGET (e)->dest);
       e2 = redirect_edge_and_branch (victim, THREAD_TARGET2 (e)->dest);
+      e2->count = THREAD_TARGET2 (e)->count;
 
       /* If we redirected the edge, then we need to copy PHI arguments
 	 at the target.  If the edge already existed (e2 != victim case),
@@ -497,18 +498,8 @@ ssa_redirect_edges (struct redirection_data **slot,
       free (el);
 
       thread_stats.num_threaded_edges++;
-      /* If we are threading through a joiner block, then we have to
-	 find the edge we want to redirect and update some PHI nodes.  */
-      if (THREAD_TARGET2 (e))
-	{
-	  edge e2;
 
-	  /* We want to redirect the incoming edge to the joiner block (E)
-	     to instead reach the duplicate of the joiner block.  */
-	  e2 = redirect_edge_and_branch (e, rd->dup_block);
-	  flush_pending_stmts (e2);
-	}
-      else if (rd->dup_block)
+      if (rd->dup_block)
 	{
 	  edge e2;
 
@@ -522,9 +513,15 @@ ssa_redirect_edges (struct redirection_data **slot,
 	     the computation overflows.  */
 	  if (rd->dup_block->frequency < BB_FREQ_MAX * 2)
 	    rd->dup_block->frequency += EDGE_FREQUENCY (e);
-	  EDGE_SUCC (rd->dup_block, 0)->count += e->count;
-	  /* Redirect the incoming edge to the appropriate duplicate
-	     block.  */
+
+	  /* In the case of threading through a joiner block, the outgoing
+	     edges from the duplicate block were updated when they were
+	     redirected during ssa_fix_duplicate_block_edges.  */
+	  if (!THREAD_TARGET2 (e))
+	    EDGE_SUCC (rd->dup_block, 0)->count += e->count;
+
+	  /* Redirect the incoming edge (possibly to the joiner block) to the
+	     appropriate duplicate block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_block);
 	  gcc_assert (e == e2);
 	  flush_pending_stmts (e2);
