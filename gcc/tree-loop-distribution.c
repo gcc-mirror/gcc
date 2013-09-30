@@ -1206,7 +1206,9 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	  && !SSA_NAME_IS_DEFAULT_DEF (rhs)
 	  && flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (rhs))))
 	return;
-      if (!adjacent_dr_p (single_store))
+      if (!adjacent_dr_p (single_store)
+	  || !dominated_by_p (CDI_DOMINATORS,
+			      loop->latch, gimple_bb (stmt)))
 	return;
       partition->kind = PKIND_MEMSET;
       partition->main_dr = single_store;
@@ -1222,7 +1224,9 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       if (!adjacent_dr_p (single_store)
 	  || !adjacent_dr_p (single_load)
 	  || !operand_equal_p (DR_STEP (single_store),
-			       DR_STEP (single_load), 0))
+			       DR_STEP (single_load), 0)
+	  || !dominated_by_p (CDI_DOMINATORS,
+			      loop->latch, gimple_bb (store)))
 	return;
       /* Now check that if there is a dependence this dependence is
          of a suitable form for memmove.  */
@@ -1719,6 +1723,7 @@ out:
 	{
 	  if (!cd)
 	    {
+	      calculate_dominance_info (CDI_DOMINATORS);
 	      calculate_dominance_info (CDI_POST_DOMINATORS);
 	      cd = new control_dependences (create_edge_list ());
 	      free_dominance_info (CDI_POST_DOMINATORS);

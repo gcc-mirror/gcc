@@ -1,3 +1,8 @@
+2013-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58554
+	* gcc.dg/torture/pr58554.c: New testcase.
+
 2013-09-30  Simon Cook  <simon.cook@embecosm.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
