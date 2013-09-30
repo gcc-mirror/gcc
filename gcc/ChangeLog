@@ -1,3 +1,13 @@
+2013-09-30  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/rs6000/darwin.md (load_macho_picbase_si): Wrap machopic
+	calls and defines in TARGET_MACHO conditional.
+	(load_macho_picbase_di): Likewise.
+	(reload_macho_picbase): Likewise.
+	(reload_macho_picbase_si): Likewise.
+	(reload_macho_picbase_di): Likewise.
+	(nonlocal_goto_receiver): Likewise.
+
 2013-09-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430x_names): New array.  Lists MCUs
