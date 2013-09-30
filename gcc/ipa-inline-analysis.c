@@ -2744,7 +2744,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_inline_parameters (ctxt_); }
+  opt_pass * clone () { return new pass_inline_parameters (m_ctxt); }
   unsigned int execute () {
     return compute_inline_parameters_for_current ();
   }

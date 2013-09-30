@@ -3000,7 +3000,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_strip_predict_hints (ctxt_); }
+  opt_pass * clone () { return new pass_strip_predict_hints (m_ctxt); }
   unsigned int execute () { return strip_predict_hints (); }
 
 }; // class pass_strip_predict_hints

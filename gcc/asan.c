@@ -2273,7 +2273,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_asan (ctxt_); }
+  opt_pass * clone () { return new pass_asan (m_ctxt); }
   bool gate () { return gate_asan (); }
   unsigned int execute () { return asan_instrument (); }
 

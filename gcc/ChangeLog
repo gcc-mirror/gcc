@@ -1,3 +1,67 @@
+2013-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* basic-block.h (edge_list): Prefix member names with "m_".
+	* context.h (context): Likewise.
+	* domwalk.h (dom_walker): Likewise.
+	* gengtype-state.c (s_expr_writer, state_writer): Likewise.
+	* graphite-sese-to-poly.c (sese_dom_walker): Likewise.
+	* hash-table.h (hash_table): Likewise.
+	* machmode.h (bit_field_mode_iterator): Likewise.
+	* pass_manager.h (pass_list): Likewise.
+	* tree-into-ssa.c (mark_def_dom_walker): Likewise.
+	* tree-pass.h (pass_data): Likewise.
+	* tree-ssa-dom.c (dom_opt_dom_walker): Likewise.
+	* tree-ssa-phiopt.c (nontrapping_dom_walker): Likewise,
+	* tree-ssa-uncprop.c (uncprop_dom_walker): Likewise.
+	* asan.c (pass_data_asan): Update accordingly.
+	* cfganal.c (control_dependences::find_control_dependence): Likewise.
+	(control_dependences::control_dependences): Likewise.
+	(control_dependences::~control_dependences): Likewise.
+	(control_dependences::~control_dependences): Likewise.
+	(control_dependences::get_edges_dependent_on): Likewise.
+	* cgraphbuild.c (pass_data_rebuild_cgraph_edges::clone): Likewise.
+	(pass_data_remove_cgraph_callee_edges::clone): Likewise.
+	* context.c (gcc::context::context): Likewise.
+	* cprop.c (pass_rtl_cprop::clone): Likewise.
+	* domwalk.c (dom_walker::walk): Likewise.
+	* ipa-inline-analysis.c (pass_inline_parameters::clone): Likewise.
+	* ipa-pure-const.c (pass_local_pure_const::clone): Likewise.
+	* mode-switching.c (pass_mode_switching::clone): Likewise.
+	* passes.c (opt_pass::opt_pass): Likewise.
+	(pass_manager::pass_manager): Likewise.
+	* predict.c (pass_strip_predict_hints::clone): Likewise.
+	* recog.c (pass_data pass_data_peephole2::clone): Likewise.
+	(pass_split_all_insns::clone): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Likewise.
+	(bit_field_mode_iterator::next_mode): Likewise.
+	(bit_field_mode_iterator::prefer_smaller_modes): Likewise.
+	* tree-cfg.c (pass_split_crit_edges::clone): Likewise.
+	* tree-cfgcleanup.c (pass_merge_phi::clone): Likewise.
+	* tree-complex.c (pass_lower_complex::clone): Likewise.
+	* tree-eh.c (pass_cleanup_eh::clone): Likewise.
+	* tree-object-size.c (pass_object_sizes::clone): Likewise.
+	* tree-optimize.c (pass_fixup_cfg::clone): Likewise.
+	* tree-ssa-ccp.c (pass_data_ccp::clone): Likewise.
+	(pass_fold_builtins::clone): Likewise.
+	* tree-ssa-copy.c (pass_data_copy_prop::clone): Likewise.
+	* tree-ssa-copyrename.c (pass_rename_ssa_copies::clone): Likewise.
+	* tree-ssa-dce.c (pass_dce::clone, pass_dce_loop::clone): Likewise.
+	(pass_cd_dce::clone): Likewise.
+	* tree-ssa-dom.c (pass_dominator::clone): Likewise.
+	(pass_phi_only_cprop::clone): Likewise.
+	* tree-ssa-dse.c (pass_dse::clone): Likewise.
+	* tree-ssa-forwprop.c (pass_forwprop::clone): Likewise.
+	* tree-ssa-loop.c (pass_lim::clone): Likewise.
+	* tree-ssa-phiopt.c (pass_phiopt::clone): Likewise.
+	* tree-ssa-pre.c (pass_fre::clone): Likewise.
+	* tree-ssa-reassoc.c (pass_reassoc::clone): Likewise.
+	* tree-ssa-uninit.c (pass_late_warn_uninitialized::clone): Likewise.
+	* tree-tailcall.c (pass_tail_recursion::clone): Likewise.
+	* tree-vect-generic.c (pass_lower_vector_ssa::clone): Likewise.
+	* tree-vrp.c (pass_vrp::clone): Likewise.
+	* tsan.c (pass_tsan::clone): Likewise.
+
 2013-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58564

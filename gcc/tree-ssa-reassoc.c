@@ -4485,7 +4485,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_reassoc (ctxt_); }
+  opt_pass * clone () { return new pass_reassoc (m_ctxt); }
   bool gate () { return gate_tree_ssa_reassoc (); }
   unsigned int execute () { return execute_reassoc (); }
 

@@ -1088,7 +1088,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tail_recursion (ctxt_); }
+  opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
   bool gate () { return gate_tail_calls (); }
   unsigned int execute () { return execute_tail_recursion (); }
 

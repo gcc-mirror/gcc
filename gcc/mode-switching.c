@@ -811,7 +811,7 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
-  opt_pass * clone () { return new pass_mode_switching (ctxt_); }
+  opt_pass * clone () { return new pass_mode_switching (m_ctxt); }
   bool gate () { return gate_mode_switching (); }
   unsigned int execute () { return rest_of_handle_mode_switching (); }
 

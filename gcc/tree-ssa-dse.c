@@ -380,7 +380,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dse (ctxt_); }
+  opt_pass * clone () { return new pass_dse (m_ctxt); }
   bool gate () { return gate_dse (); }
   unsigned int execute () { return tree_ssa_dse (); }
 

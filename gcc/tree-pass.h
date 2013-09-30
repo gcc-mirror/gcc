@@ -115,7 +115,7 @@ public:
   int static_pass_number;
 
 protected:
-  gcc::context *ctxt_;
+  gcc::context *m_ctxt;
 };
 
 /* Description of GIMPLE pass.  */

@@ -9670,7 +9670,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_vrp (ctxt_); }
+  opt_pass * clone () { return new pass_vrp (m_ctxt); }
   bool gate () { return gate_vrp (); }
   unsigned int execute () { return execute_vrp (); }
 

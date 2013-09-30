@@ -97,7 +97,7 @@ private:
   void register_dump_files (struct opt_pass *pass, int properties);
 
 private:
-  context *ctxt_;
+  context *m_ctxt;
 
   /* References to all of the individual passes.
      These fields are generated via macro expansion.

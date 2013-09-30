@@ -29,5 +29,5 @@ gcc::context *g;
 
 gcc::context::context ()
 {
-  passes_ = new gcc::pass_manager (this);
+  m_passes = new gcc::pass_manager (this);
 }

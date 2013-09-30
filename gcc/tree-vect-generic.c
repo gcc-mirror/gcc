@@ -1523,7 +1523,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lower_vector_ssa (ctxt_); }
+  opt_pass * clone () { return new pass_lower_vector_ssa (m_ctxt); }
   unsigned int execute () { return expand_vector_operations (); }
 
 }; // class pass_lower_vector_ssa

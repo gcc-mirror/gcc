@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 class dom_walker
 {
 public:
-  dom_walker (cdi_direction direction) : dom_direction_ (direction) {}
+  dom_walker (cdi_direction direction) : m_dom_direction (direction) {}
 
   /* Walk the dominator tree.  */
   void walk (basic_block);
@@ -46,7 +46,7 @@ private:
      if it is set to CDI_DOMINATORS, then we walk the dominator tree,
      if it is set to CDI_POST_DOMINATORS, then we walk the post
      dominator tree.  */
-  const ENUM_BITFIELD (cdi_direction) dom_direction_ : 2;
+  const ENUM_BITFIELD (cdi_direction) m_dom_direction : 2;
 };
 
 #endif
