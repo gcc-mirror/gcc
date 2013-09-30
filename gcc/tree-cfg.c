@@ -1013,6 +1013,9 @@ make_abnormal_goto_edges (basic_block bb, bool for_call)
 	      break;
 	    }
 	}
+      if (!gsi_end_p (gsi)
+	  && is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
       if (!gsi_end_p (gsi))
 	{
 	  /* Make an edge to every setjmp-like call.  */

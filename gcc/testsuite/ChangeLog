@@ -1,3 +1,8 @@
+2013-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58532
+	* g++.dg/torture/pr58552.C: New testcase.
+
 2013-09-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-ldst.c: New test for -mupper-regs-sf
