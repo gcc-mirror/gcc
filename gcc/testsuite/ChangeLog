@@ -1,8 +1,12 @@
+2013-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58564
+	* gcc.c-torture/execute/pr58564.c: New test.
+
 2013-09-30  Teresa Johnson  <tejohnson@google.com>
 
 	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-3.c (expand_one_var):
 	Update for additional dump message.
-
 
 2013-09-30  Richard Biener  <rguenther@suse.de>
 
