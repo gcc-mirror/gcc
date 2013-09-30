@@ -1,5 +1,10 @@
 2013-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* vec.h (vec_prefix, vec): Prefix member names with "m_".
+	* vec.c (vec_prefix::calculate_allocation): Update accordingly.
+
+2013-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* basic-block.h (edge_list): Prefix member names with "m_".
 	* context.h (context): Likewise.
 	* domwalk.h (dom_walker): Likewise.
