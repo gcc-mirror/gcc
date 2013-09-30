@@ -1,3 +1,10 @@
+2013-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58554
+	* tree-loop-distribution.c (classify_partition): Require unconditionally
+	executed stores for memcpy and memset recognition.
+	(tree_loop_distribution): Calculate dominance info.
+
 2013-09-30  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
 	* config/aarch64/aarch64.h (MCOUNT_NAME): Define.
