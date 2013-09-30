@@ -1,3 +1,11 @@
+2013-09-30  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
+	* config/aarch64/aarch64.h (MCOUNT_NAME): Define.
+	(NO_PROFILE_COUNTERS): Likewise.
+	(PROFILE_HOOK): Likewise.
+	(FUNCTION_PROFILER): Likewise.
+	* config/aarch64/aarch64.c (aarch64_function_profiler): Remove.
+
 2013-09-30  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/rs6000/darwin.md (load_macho_picbase_si): Wrap machopic

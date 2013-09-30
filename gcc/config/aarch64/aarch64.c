@@ -3858,13 +3858,6 @@ aarch64_print_operand_address (FILE *f, rtx x)
   output_addr_const (f, x);
 }
 
-void
-aarch64_function_profiler (FILE *f ATTRIBUTE_UNUSED,
-			   int labelno ATTRIBUTE_UNUSED)
-{
-  sorry ("function profiling");
-}
-
 bool
 aarch64_label_mentioned_p (rtx x)
 {

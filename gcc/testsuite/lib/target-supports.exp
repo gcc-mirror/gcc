@@ -494,13 +494,6 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
-    # We don't yet support profiling for AArch64.
-    if { [istarget aarch64*-*-*]
-	 && ([lindex $test_what 1] == "-p"
-	     || [lindex $test_what 1] == "-pg") } {
-	return 0
-    }
-
     # cygwin does not support -p.
     if { [istarget *-*-cygwin*] && $test_what == "-p" } {
 	return 0
