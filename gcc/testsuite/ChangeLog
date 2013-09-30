@@ -1,3 +1,9 @@
+2013-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-3.c (expand_one_var):
+	Update for additional dump message.
+
+
 2013-09-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58554
