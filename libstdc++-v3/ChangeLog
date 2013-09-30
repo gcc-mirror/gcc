@@ -1,3 +1,13 @@
+2013-09-30  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/58437
+	* include/bits/stl_algo.h (__move_median_first): Rename to
+	__move_median_to_first, change to take an addition argument.
+	(__unguarded_partition_pivot): Adjust.
+	* testsuite/performance/25_algorithms/sort.cc: New.
+	* testsuite/performance/25_algorithms/sort_heap.cc: Likewise.
+	* testsuite/performance/25_algorithms/stable_sort.cc: Likewise.
+
 2013-09-19  Mitsuru Kariya  <kariya_mitsuru@hotmail.com>
 	    Chris Jefferson  <chris@bubblescope.net>
 
