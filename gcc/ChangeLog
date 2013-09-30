@@ -1,3 +1,9 @@
+2013-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58564
+	* fold-const.c (fold_ternary_loc): For A < 0 : <sign bit of A> : 0
+	optimization, punt if sign_bit_p looked through any zero extension.
+
 2013-09-30  Teresa Johnson  <tejohnson@google.com>
 
 	* tree-ssa-threadupdate.c (ssa_fix_duplicate_block_edges):
