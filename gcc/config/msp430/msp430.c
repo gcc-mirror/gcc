@@ -109,15 +109,89 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
+static const char * msp430x_names [] =
+{
+  "msp430x",   /* Generic name.  */
+  "msp430xv2", /* Generic name.  */
+
+  /* These names have been provided by TI and match the names currently
+     supported by GAS.
+
+     NB/ This list should be kept in sync with the ones in:
+       gcc/config/msp430/t-msp430
+       gas/config/tc-msp430.c
+
+     FIXME: We ought to read the names in from a file at run, rather
+     than having them built in like this.  Also such a file should be
+     shared with gas.  */
+  
+  "msp430cg4616", "msp430cg4617", "msp430cg4618", "msp430cg4619", "msp430f2416",
+  "msp430f2417",  "msp430f2418",  "msp430f2419",  "msp430f2616",  "msp430f2617",
+  "msp430f2618",  "msp430f2619",  "msp430f47126", "msp430f47127", "msp430f47163",
+  "msp430f47173", "msp430f47183", "msp430f47193", "msp430f47166", "msp430f47176",
+  "msp430f47186", "msp430f47196", "msp430f47167", "msp430f47177", "msp430f47187",
+  "msp430f47197", "msp430f46161", "msp430f46171", "msp430f46181", "msp430f46191",
+  "msp430f4616",  "msp430f4617",  "msp430f4618",  "msp430f4619",  "msp430fg4616",
+  "msp430fg4617", "msp430fg4618", "msp430fg4619", "msp430f5418",  "msp430f5419",
+  "msp430f5435",  "msp430f5436",  "msp430f5437",  "msp430f5438",  "msp430f5418a",
+  "msp430f5419a", "msp430f5435a", "msp430f5436a", "msp430f5437a", "msp430f5438a",
+  "msp430f5212",  "msp430f5213",  "msp430f5214",  "msp430f5217",  "msp430f5218",
+  "msp430f5219",  "msp430f5222",  "msp430f5223",  "msp430f5224",  "msp430f5227",
+  "msp430f5228",  "msp430f5229",  "msp430f5304",  "msp430f5308",  "msp430f5309",
+  "msp430f5310",  "msp430f5340",  "msp430f5341",  "msp430f5342",  "msp430f5324",
+  "msp430f5325",  "msp430f5326",  "msp430f5327",  "msp430f5328",  "msp430f5329",
+  "msp430f5500",  "msp430f5501",  "msp430f5502",  "msp430f5503",  "msp430f5504",
+  "msp430f5505",  "msp430f5506",  "msp430f5507",  "msp430f5508",  "msp430f5509",
+  "msp430f5510",  "msp430f5513",  "msp430f5514",  "msp430f5515",  "msp430f5517",
+  "msp430f5519",  "msp430f5521",  "msp430f5522",  "msp430f5524",  "msp430f5525",
+  "msp430f5526",  "msp430f5527",  "msp430f5528",  "msp430f5529",   "cc430f5133",
+  "cc430f5135",    "cc430f5137",   "cc430f6125",   "cc430f6126",   "cc430f6127",
+  "cc430f6135",    "cc430f6137",   "cc430f5123",   "cc430f5125",   "cc430f5143",
+  "cc430f5145",    "cc430f5147",   "cc430f6143",   "cc430f6145",   "cc430f6147",
+  "msp430f5333",  "msp430f5335",  "msp430f5336",  "msp430f5338",  "msp430f5630",
+  "msp430f5631",  "msp430f5632",  "msp430f5633",  "msp430f5634",  "msp430f5635",
+  "msp430f5636",  "msp430f5637",  "msp430f5638",  "msp430f6433",  "msp430f6435",
+  "msp430f6436",  "msp430f6438",  "msp430f6630",  "msp430f6631",  "msp430f6632",
+  "msp430f6633",  "msp430f6634",  "msp430f6635",  "msp430f6636",  "msp430f6637",
+  "msp430f6638",  "msp430f5358",  "msp430f5359",  "msp430f5658",  "msp430f5659",
+  "msp430f6458",  "msp430f6459",  "msp430f6658",  "msp430f6659",  "msp430f5131",
+  "msp430f5151",  "msp430f5171",  "msp430f5132",  "msp430f5152",  "msp430f5172",
+  "msp430f6720",  "msp430f6721",  "msp430f6723",  "msp430f6724",  "msp430f6725",
+  "msp430f6726",  "msp430f6730",  "msp430f6731",  "msp430f6733",  "msp430f6734",
+  "msp430f6735",  "msp430f6736",  "msp430f67451", "msp430f67651", "msp430f67751",
+  "msp430f67461", "msp430f67661", "msp430f67761", "msp430f67471", "msp430f67671",
+  "msp430f67771", "msp430f67481", "msp430f67681", "msp430f67781", "msp430f67491",
+  "msp430f67691", "msp430f67791", "msp430f6745",  "msp430f6765",  "msp430f6775",
+  "msp430f6746",  "msp430f6766",  "msp430f6776",  "msp430f6747",  "msp430f6767",
+  "msp430f6777",  "msp430f6748",  "msp430f6768",  "msp430f6778",  "msp430f6749",
+  "msp430f6769",  "msp430f6779",  "msp430fr5720", "msp430fr5721", "msp430fr5722",
+  "msp430fr5723", "msp430fr5724", "msp430fr5725", "msp430fr5726", "msp430fr5727",
+  "msp430fr5728", "msp430fr5729", "msp430fr5730", "msp430fr5731", "msp430fr5732",
+  "msp430fr5733", "msp430fr5734", "msp430fr5735", "msp430fr5736", "msp430fr5737",
+  "msp430fr5738", "msp430fr5739", "msp430bt5190", "msp430fr5949", "msp430fr5969",
+  "msp430sl5438a"
+};
+  
 static void
 msp430_option_override (void)
 {
   init_machine_status = msp430_init_machine_status;
 
-  if (target_cpu
-      && (strstr (target_cpu, "430x")
-	  || strstr (target_cpu, "430X")))
-    msp430x = true;
+  if (target_cpu)
+    {
+      unsigned i;
+
+      for (i = ARRAY_SIZE (msp430x_names); i--;)
+	if (strcasecmp (target_cpu, msp430x_names[i]))
+	  {
+	    msp430x = true;
+	    break;
+	  }
+      /* Note - it is not an error if we did not recognize the MCU
+	 name.  The msp430x_names array only contains those MCU names
+	 which are currently known to use the MSP430X ISA.  There are
+	 lots of other MCUs which just use the MSP430 ISA.  */
+    }
 
   if (TARGET_LARGE && !msp430x)
     error ("-mlarge requires a 430X-compatible -mmcu=");
