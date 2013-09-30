@@ -1565,7 +1565,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dce (ctxt_); }
+  opt_pass * clone () { return new pass_dce (m_ctxt); }
   bool gate () { return gate_dce (); }
   unsigned int execute () { return tree_ssa_dce (); }
 
@@ -1604,7 +1604,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dce_loop (ctxt_); }
+  opt_pass * clone () { return new pass_dce_loop (m_ctxt); }
   bool gate () { return gate_dce (); }
   unsigned int execute () { return tree_ssa_dce_loop (); }
 
@@ -1643,7 +1643,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_cd_dce (ctxt_); }
+  opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
   bool gate () { return gate_dce (); }
   unsigned int execute () { return tree_ssa_cd_dce (); }
 

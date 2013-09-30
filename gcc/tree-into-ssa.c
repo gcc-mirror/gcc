@@ -2235,17 +2235,17 @@ private:
   /* Notice that this bitmap is indexed using variable UIDs, so it must be
      large enough to accommodate all the variables referenced in the
      function, not just the ones we are renaming.  */
-  bitmap kills_;
+  bitmap m_kills;
 };
 
 mark_def_dom_walker::mark_def_dom_walker (cdi_direction direction)
-  : dom_walker (direction), kills_ (BITMAP_ALLOC (NULL))
+  : dom_walker (direction), m_kills (BITMAP_ALLOC (NULL))
 {
 }
 
 mark_def_dom_walker::~mark_def_dom_walker ()
 {
-  BITMAP_FREE (kills_);
+  BITMAP_FREE (m_kills);
 }
 
 /* Block processing routine for mark_def_sites.  Clear the KILLS bitmap
@@ -2256,9 +2256,9 @@ mark_def_dom_walker::before_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
-  bitmap_clear (kills_);
+  bitmap_clear (m_kills);
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    mark_def_sites (bb, gsi_stmt (gsi), kills_);
+    mark_def_sites (bb, gsi_stmt (gsi), m_kills);
 }
 
 /* Initialize internal data needed during renaming.  */

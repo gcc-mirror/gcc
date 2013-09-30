@@ -1940,7 +1940,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rtl_cprop (ctxt_); }
+  opt_pass * clone () { return new pass_rtl_cprop (m_ctxt); }
   bool gate () { return gate_rtl_cprop (); }
   unsigned int execute () { return execute_rtl_cprop (); }
 

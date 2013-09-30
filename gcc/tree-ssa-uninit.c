@@ -2198,7 +2198,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_late_warn_uninitialized (ctxt_); }
+  opt_pass * clone () { return new pass_late_warn_uninitialized (m_ctxt); }
   bool gate () { return gate_warn_uninitialized (); }
   unsigned int execute () { return execute_late_warn_uninitialized (); }
 

@@ -419,8 +419,8 @@ public:
     inline iterator &operator ++ ();
     inline bool operator != (const iterator &) const;
   private:
-    value_type **slot_;
-    value_type **limit_;
+    value_type **m_slot;
+    value_type **m_limit;
   };
 
 private:
@@ -959,7 +959,7 @@ template <typename Descriptor,
 	  template <typename Type> class Allocator>
 inline
 hash_table <Descriptor, Allocator>::iterator::iterator ()
-: slot_ (NULL), limit_ (NULL)
+: m_slot (NULL), m_limit (NULL)
 {
 }
 
@@ -970,7 +970,7 @@ template <typename Descriptor,
 inline
 hash_table <Descriptor, Allocator>::iterator::iterator
    (value_type **slot, value_type **limit)
-: slot_ (slot), limit_ (limit)
+: m_slot (slot), m_limit (limit)
 {
 }
 
@@ -981,7 +981,7 @@ template <typename Descriptor,
 inline typename hash_table <Descriptor, Allocator>::value_type &
 hash_table <Descriptor, Allocator>::iterator::operator * ()
 {
-  return **slot_;
+  return **m_slot;
 }
 
 /* Slide down the iterator slots until an active entry is found.  */
@@ -991,14 +991,14 @@ template <typename Descriptor,
 void
 hash_table <Descriptor, Allocator>::iterator::slide ()
 {
-  for ( ; slot_ < limit_; ++slot_ )
+  for ( ; m_slot < m_limit; ++m_slot )
     {
-      value_type *x = *slot_;
+      value_type *x = *m_slot;
       if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
         return;
     }
-  slot_ = NULL;
-  limit_ = NULL;
+  m_slot = NULL;
+  m_limit = NULL;
 }
 
 /* Bump the iterator.  */
@@ -1008,7 +1008,7 @@ template <typename Descriptor,
 inline typename hash_table <Descriptor, Allocator>::iterator &
 hash_table <Descriptor, Allocator>::iterator::operator ++ ()
 {
-  ++slot_;
+  ++m_slot;
   slide ();
   return *this;
 }
@@ -1021,7 +1021,7 @@ inline bool
 hash_table <Descriptor, Allocator>::iterator::
   operator != (const iterator &other) const
 {
-  return slot_ != other.slot_ || limit_ != other.limit_;
+  return m_slot != other.m_slot || m_limit != other.m_limit;
 }
 
 /* Hash table iterator producers.  */

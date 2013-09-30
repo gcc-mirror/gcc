@@ -112,7 +112,7 @@ opt_pass::opt_pass (const pass_data &data, context *ctxt)
     sub (NULL),
     next (NULL),
     static_pass_number (0),
-    ctxt_ (ctxt)
+    m_ctxt (ctxt)
 {
 }
 
@@ -1488,7 +1488,7 @@ pass_manager::pass_manager (context *ctxt)
 : all_passes (NULL), all_small_ipa_passes (NULL), all_lowering_passes (NULL),
   all_regular_ipa_passes (NULL), all_lto_gen_passes (NULL),
   all_late_ipa_passes (NULL), passes_by_id (NULL), passes_by_id_size (0),
-  ctxt_ (ctxt)
+  m_ctxt (ctxt)
 {
   struct opt_pass **p;
 
@@ -1513,7 +1513,7 @@ pass_manager::pass_manager (context *ctxt)
   do { \
     gcc_assert (NULL == PASS ## _ ## NUM); \
     if ((NUM) == 1)                              \
-      PASS ## _1 = make_##PASS (ctxt_);          \
+      PASS ## _1 = make_##PASS (m_ctxt);          \
     else                                         \
       {                                          \
         gcc_assert (PASS ## _1);                 \

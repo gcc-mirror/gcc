@@ -2627,12 +2627,12 @@ bit_field_mode_iterator
 			   HOST_WIDE_INT bitregion_start,
 			   HOST_WIDE_INT bitregion_end,
 			   unsigned int align, bool volatilep)
-: mode_ (GET_CLASS_NARROWEST_MODE (MODE_INT)), bitsize_ (bitsize),
-  bitpos_ (bitpos), bitregion_start_ (bitregion_start),
-  bitregion_end_ (bitregion_end), align_ (align),
-  volatilep_ (volatilep), count_ (0)
+: m_mode (GET_CLASS_NARROWEST_MODE (MODE_INT)), m_bitsize (bitsize),
+  m_bitpos (bitpos), m_bitregion_start (bitregion_start),
+  m_bitregion_end (bitregion_end), m_align (align),
+  m_volatilep (volatilep), m_count (0)
 {
-  if (!bitregion_end_)
+  if (!m_bitregion_end)
     {
       /* We can assume that any aligned chunk of ALIGN bits that overlaps
 	 the bitfield is mapped and won't trap, provided that ALIGN isn't
@@ -2642,8 +2642,8 @@ bit_field_mode_iterator
 	= MIN (align, MAX (BIGGEST_ALIGNMENT, BITS_PER_WORD));
       if (bitsize <= 0)
 	bitsize = 1;
-      bitregion_end_ = bitpos + bitsize + units - 1;
-      bitregion_end_ -= bitregion_end_ % units + 1;
+      m_bitregion_end = bitpos + bitsize + units - 1;
+      m_bitregion_end -= m_bitregion_end % units + 1;
     }
 }
 
@@ -2654,12 +2654,12 @@ bit_field_mode_iterator
 bool
 bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
 {
-  for (; mode_ != VOIDmode; mode_ = GET_MODE_WIDER_MODE (mode_))
+  for (; m_mode != VOIDmode; m_mode = GET_MODE_WIDER_MODE (m_mode))
     {
-      unsigned int unit = GET_MODE_BITSIZE (mode_);
+      unsigned int unit = GET_MODE_BITSIZE (m_mode);
 
       /* Skip modes that don't have full precision.  */
-      if (unit != GET_MODE_PRECISION (mode_))
+      if (unit != GET_MODE_PRECISION (m_mode))
 	continue;
 
       /* Stop if the mode is too wide to handle efficiently.  */
@@ -2668,31 +2668,31 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
 
       /* Don't deliver more than one multiword mode; the smallest one
 	 should be used.  */
-      if (count_ > 0 && unit > BITS_PER_WORD)
+      if (m_count > 0 && unit > BITS_PER_WORD)
 	break;
 
       /* Skip modes that are too small.  */
-      unsigned HOST_WIDE_INT substart = (unsigned HOST_WIDE_INT) bitpos_ % unit;
-      unsigned HOST_WIDE_INT subend = substart + bitsize_;
+      unsigned HOST_WIDE_INT substart = (unsigned HOST_WIDE_INT) m_bitpos % unit;
+      unsigned HOST_WIDE_INT subend = substart + m_bitsize;
       if (subend > unit)
 	continue;
 
       /* Stop if the mode goes outside the bitregion.  */
-      HOST_WIDE_INT start = bitpos_ - substart;
-      if (bitregion_start_ && start < bitregion_start_)
+      HOST_WIDE_INT start = m_bitpos - substart;
+      if (m_bitregion_start && start < m_bitregion_start)
 	break;
       HOST_WIDE_INT end = start + unit;
-      if (end > bitregion_end_ + 1)
+      if (end > m_bitregion_end + 1)
 	break;
 
       /* Stop if the mode requires too much alignment.  */
-      if (GET_MODE_ALIGNMENT (mode_) > align_
-	  && SLOW_UNALIGNED_ACCESS (mode_, align_))
+      if (GET_MODE_ALIGNMENT (m_mode) > m_align
+	  && SLOW_UNALIGNED_ACCESS (m_mode, m_align))
 	break;
 
-      *out_mode = mode_;
-      mode_ = GET_MODE_WIDER_MODE (mode_);
-      count_++;
+      *out_mode = m_mode;
+      m_mode = GET_MODE_WIDER_MODE (m_mode);
+      m_count++;
       return true;
     }
   return false;
@@ -2704,7 +2704,7 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
 bool
 bit_field_mode_iterator::prefer_smaller_modes ()
 {
-  return (volatilep_
+  return (m_volatilep
 	  ? targetm.narrow_volatile_bitfield ()
 	  : !SLOW_BYTE_ACCESS);
 }

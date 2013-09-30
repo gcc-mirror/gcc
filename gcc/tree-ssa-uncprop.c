@@ -360,11 +360,11 @@ public:
   uncprop_dom_walker (cdi_direction direction)
     : dom_walker (direction)
   {
-    equiv_stack_.create (2);
+    m_equiv_stack.create (2);
   }
   ~uncprop_dom_walker ()
   {
-    equiv_stack_.release ();
+    m_equiv_stack.release ();
   }
 
   virtual void before_dom_children (basic_block);
@@ -372,11 +372,11 @@ public:
 
 private:
 
-/* As we enter each block we record the value for any edge equivalency
-   leading to this block.  If no such edge equivalency exists, then we
-   record NULL.  These equivalences are live until we leave the dominator
-   subtree rooted at the block where we record the equivalency.  */
-  vec<tree> equiv_stack_;
+  /* As we enter each block we record the value for any edge equivalency
+     leading to this block.  If no such edge equivalency exists, then we
+     record NULL.  These equivalences are live until we leave the dominator
+     subtree rooted at the block where we record the equivalency.  */
+  vec<tree> m_equiv_stack;
 };
 
 /* Main driver for un-cprop.  */
@@ -428,7 +428,7 @@ void
 uncprop_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 {
   /* Pop the topmost value off the equiv stack.  */
-  tree value = equiv_stack_.pop ();
+  tree value = m_equiv_stack.pop ();
 
   /* If that value was non-null, then pop the topmost equivalency off
      its equivalency stack.  */
@@ -566,13 +566,13 @@ uncprop_dom_walker::before_dom_children (basic_block bb)
 	  struct edge_equivalency *equiv = (struct edge_equivalency *) e->aux;
 
 	  record_equiv (equiv->rhs, equiv->lhs);
-	  equiv_stack_.safe_push (equiv->rhs);
+	  m_equiv_stack.safe_push (equiv->rhs);
 	  recorded = true;
 	}
     }
 
   if (!recorded)
-    equiv_stack_.safe_push (NULL_TREE);
+    m_equiv_stack.safe_push (NULL_TREE);
 
   uncprop_into_successor_phis (bb);
 }
@@ -608,7 +608,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_uncprop (ctxt_); }
+  opt_pass * clone () { return new pass_uncprop (m_ctxt); }
   bool gate () { return gate_uncprop (); }
   unsigned int execute () { return tree_ssa_uncprop (); }
 

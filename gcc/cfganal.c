@@ -389,18 +389,18 @@ control_dependences::find_control_dependence (int edge_index)
   basic_block current_block;
   basic_block ending_block;
 
-  gcc_assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
+  gcc_assert (INDEX_EDGE_PRED_BB (m_el, edge_index) != EXIT_BLOCK_PTR);
 
-  if (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
+  if (INDEX_EDGE_PRED_BB (m_el, edge_index) == ENTRY_BLOCK_PTR)
     ending_block = single_succ (ENTRY_BLOCK_PTR);
   else
-    ending_block = find_pdom (INDEX_EDGE_PRED_BB (el, edge_index));
+    ending_block = find_pdom (INDEX_EDGE_PRED_BB (m_el, edge_index));
 
-  for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
+  for (current_block = INDEX_EDGE_SUCC_BB (m_el, edge_index);
        current_block != ending_block && current_block != EXIT_BLOCK_PTR;
        current_block = find_pdom (current_block))
     {
-      edge e = INDEX_EDGE (el, edge_index);
+      edge e = INDEX_EDGE (m_el, edge_index);
 
       /* For abnormal edges, we don't make current_block control
 	 dependent because instructions that throw are always necessary
@@ -416,13 +416,13 @@ control_dependences::find_control_dependence (int edge_index)
    list EL, ala Morgan, Section 3.6.  */
 
 control_dependences::control_dependences (struct edge_list *edges)
-  : el (edges)
+  : m_el (edges)
 {
   timevar_push (TV_CONTROL_DEPENDENCES);
   control_dependence_map.create (last_basic_block);
   for (int i = 0; i < last_basic_block; ++i)
     control_dependence_map.quick_push (BITMAP_ALLOC (NULL));
-  for (int i = 0; i < NUM_EDGES (el); ++i)
+  for (int i = 0; i < NUM_EDGES (m_el); ++i)
     find_control_dependence (i);
   timevar_pop (TV_CONTROL_DEPENDENCES);
 }
@@ -434,7 +434,7 @@ control_dependences::~control_dependences ()
   for (unsigned i = 0; i < control_dependence_map.length (); ++i)
     BITMAP_FREE (control_dependence_map[i]);
   control_dependence_map.release ();
-  free_edge_list (el);
+  free_edge_list (m_el);
 }
 
 /* Returns the bitmap of edges the basic-block I is dependent on.  */
@@ -450,7 +450,7 @@ control_dependences::get_edges_dependent_on (int i)
 edge
 control_dependences::get_edge (int i)
 {
-  return INDEX_EDGE (el, i);
+  return INDEX_EDGE (m_el, i);
 }
 
 

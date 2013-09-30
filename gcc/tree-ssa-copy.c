@@ -863,7 +863,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_copy_prop (ctxt_); }
+  opt_pass * clone () { return new pass_copy_prop (m_ctxt); }
   bool gate () { return gate_copy_prop (); }
   unsigned int execute () { return execute_copy_prop (); }
 

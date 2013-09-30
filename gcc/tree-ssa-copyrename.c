@@ -460,7 +460,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rename_ssa_copies (ctxt_); }
+  opt_pass * clone () { return new pass_rename_ssa_copies (m_ctxt); }
   bool gate () { return gate_copyrename (); }
   unsigned int execute () { return rename_ssa_copies (); }
 

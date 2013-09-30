@@ -479,7 +479,7 @@ private:
   void clear_control_dependence_bitmap (basic_block);
   void find_control_dependence (int);
   vec<bitmap> control_dependence_map;
-  edge_list *el;
+  edge_list *m_el;
 };
 
 /* The base value for branch probability notes and edge probabilities.  */

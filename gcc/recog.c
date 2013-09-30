@@ -3808,7 +3808,7 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
-  opt_pass * clone () { return new pass_peephole2 (ctxt_); }
+  opt_pass * clone () { return new pass_peephole2 (m_ctxt); }
   bool gate () { return gate_handle_peephole2 (); }
   unsigned int execute () { return rest_of_handle_peephole2 (); }
 
@@ -3856,7 +3856,7 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so
      we need a clone method.  */
-  opt_pass * clone () { return new pass_split_all_insns (ctxt_); }
+  opt_pass * clone () { return new pass_split_all_insns (m_ctxt); }
   unsigned int execute () { return rest_of_handle_split_all_insns (); }
 
 }; // class pass_split_all_insns

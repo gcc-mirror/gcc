@@ -1379,13 +1379,13 @@ class nontrapping_dom_walker : public dom_walker
 {
 public:
   nontrapping_dom_walker (cdi_direction direction, pointer_set_t *ps)
-    : dom_walker (direction), nontrapping_ (ps) {}
+    : dom_walker (direction), m_nontrapping (ps) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
-  pointer_set_t *nontrapping_;
+  pointer_set_t *m_nontrapping;
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
@@ -1416,8 +1416,8 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
 	nt_call_phase++;
       else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
-	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrapping_, true);
-	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrapping_, false);
+	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), m_nontrapping, true);
+	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), m_nontrapping, false);
 	}
     }
 }
@@ -2039,7 +2039,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phiopt (ctxt_); }
+  opt_pass * clone () { return new pass_phiopt (m_ctxt); }
   bool gate () { return gate_phiopt (); }
   unsigned int execute () { return tree_ssa_phiopt (); }
 

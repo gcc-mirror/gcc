@@ -34,11 +34,11 @@ public:
 
   /* Pass-management.  */
 
-  pass_manager *get_passes () { gcc_assert (passes_); return passes_; }
+  pass_manager *get_passes () { gcc_assert (m_passes); return m_passes; }
 
 private:
   /* Pass-management.  */
-  pass_manager *passes_;
+  pass_manager *m_passes;
 
 }; // class context
 

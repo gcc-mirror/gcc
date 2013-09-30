@@ -1709,7 +1709,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_local_pure_const (ctxt_); }
+  opt_pass * clone () { return new pass_local_pure_const (m_ctxt); }
   bool gate () { return gate_pure_const (); }
   unsigned int execute () { return local_pure_const (); }
 

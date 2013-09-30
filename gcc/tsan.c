@@ -758,7 +758,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tsan (ctxt_); }
+  opt_pass * clone () { return new pass_tsan (m_ctxt); }
   bool gate () { return tsan_gate (); }
   unsigned int execute () { return tsan_pass (); }
 
