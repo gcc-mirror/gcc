@@ -1,3 +1,31 @@
+2013-09-30  Simon Cook  <simon.cook@embecosm.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/arc/barrel-shifter-1.c: New test.
+	* gcc.target/arc/barrel-shifter-2.c: Likewise.
+	* gcc.target/arc/long-calls.c, gcc.target/arc/mA6.c: Likewise.
+	* gcc.target/arc/mA7.c, gcc.target/arc/mARC600.c: Likewise.
+	* gcc.target/arc/mARC601.c, gcc.target/arc/mARC700.c: Likewise.
+	* gcc.target/arc/mcpu-arc600.c, gcc.target/arc/mcpu-arc601.c: Likewise.
+	* gcc.target/arc/mcpu-arc700.c, gcc.target/arc/mcrc.c: Likewise.
+	* gcc.target/arc/mdpfp.c, gcc.target/arc/mdsp-packa.c: Likewise.
+	* gcc.target/arc/mdvbf.c, gcc.target/arc/mlock.c: Likewise.
+	* gcc.target/arc/mmac-24.c, gcc.target/arc/mmac-d16.c: Likewise.
+	* gcc.target/arc/mno-crc.c, gcc.target/arc/mno-dsp-packa.c: Likewise.
+	* gcc.target/arc/mno-dvbf.c, gcc.target/arc/mno-lock.c: Likewise.
+	* gcc.target/arc/mno-mac-24.c, gcc.target/arc/mno-mac-d16.c: Likewise.
+	* gcc.target/arc/mno-rtsc.c, gcc.target/arc/mno-swape.c: Likewise.
+	* gcc.target/arc/mno-xy.c, gcc.target/arc/mrtsc.c: Likewise.
+	* gcc.target/arc/mspfp.c, gcc.target/arc/mswape.c: Likewise.
+	* gcc.target/arc/mtune-ARC600.c: Likewise.
+	* gcc.target/arc/mtune-ARC601.c: Likewise.
+	* gcc.target/arc/mtune-ARC700-xmac: Likewise.
+	* gcc.target/arc/mtune-ARC700.c: Likewise.
+	* gcc.target/arc/mtune-ARC725D.c: Likewise.
+	* gcc.target/arc/mtune-ARC750D.c: Likewise.
+	* gcc.target/arc/mul64.c, gcc.target/arc/mxy.c: Likewise.
+	* gcc.target/arc/no-dpfp-lrsr.c: Likewise.
+
 2013-09-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58532
