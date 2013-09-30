@@ -1,3 +1,13 @@
+2013-09-30  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/58437
+	* include/bits/stl_algo.h (__move_median_first): Rename to
+	__move_median_to_first, change to take an addition argument.
+	(__unguarded_partition_pivot): Adjust.
+	* testsuite/performance/25_algorithms/sort.cc: New.
+	* testsuite/performance/25_algorithms/sort_heap.cc: Likewise.
+	* testsuite/performance/25_algorithms/stable_sort.cc: Likewise.
+
 2013-09-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h (remove_copy, remove_copy_if): Declare
@@ -607,23 +617,23 @@
 
 	* regex_automaton.h: Rearrange _NFA's layout.
 	* include/bits/regex_compiler.h: Add _AnyMatcher and _CharMatcher.
-	  Rearrange _BracketMatcher's layout.
-	  (_BracketMatcher<>::_M_add_char): Use set instead of vector for
-	  _M_char_set.
-	  (_BracketMatcher<>::_M_add_collating_element): Likewise.
-	  (_BracketMatcher<>::_M_make_range): Likewise.
+	Rearrange _BracketMatcher's layout.
+	(_BracketMatcher<>::_M_add_char): Use set instead of vector for
+	_M_char_set.
+	(_BracketMatcher<>::_M_add_collating_element): Likewise.
+	(_BracketMatcher<>::_M_make_range): Likewise.
 	* include/bits/regex_compiler.tcc (_Compiler<>::_M_atom): Use
-	  apropriate constructors of matchers above.
+	appropriate constructors of matchers above.
 	* testsuite/28_regex/algorithms/regex_match/ecma/char/anymatcher.cc:
-	  New.
+	New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc: New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/char/empty_range.cc:
-	  New.
+	New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/char/emptygroup.cc:
-	  New.
+	New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/char/hex.cc: New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
-	  New.
+	New.
 	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc: New.
 
 2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
@@ -656,33 +666,33 @@
 2013-08-29  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (basic_regex<>::assign): Don't lose _M_traits.
-	  (regex_iterator<>::regex_iterator): Return nullptr when regex_search
-	     failed.
-	  (regex_token_iterator<>::_M_end_of_seq): Should be defined true when
-	    _M_result is(not isn't) nullptr.
+	(regex_iterator<>::regex_iterator): Return nullptr when regex_search
+	failed.
+	(regex_token_iterator<>::_M_end_of_seq): Should be defined true when
+	_M_result is(not isn't) nullptr.
 	* include/bits/regex_compiler.h: Store _Compiler::_M_traits by reference
-	  instead of by value.
+	instead of by value.
 	* include/bits/regex_executor.h (_DFSExecutor<>::_DFSExecutor): Add
-	  _M_traits to _DFSExecutor.
+	_M_traits to _DFSExecutor.
 	* include/bits/regex_executor.tcc (__get_executor<>): Pass traits to
-	  _DFSExecutor too.
+	_DFSExecutor too.
 	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
-	  New.
+	New.
 	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
-	  wstring_02.cc: New.
+	wstring_02.cc: New.
 
 2013-08-26  Tim Shen  <timshen91@gmail.com>
 
 	* include/Makefile.am: Add regex_scanner.{h,tcc}.
 	* include/Makefile.in: Regenerate.
 	* include/bits/regex.h (match_search): Handle the `__first == __last`
-	  situation correctly.
+	situation correctly.
 	* include/bits/regex_compiler.h: Move _Scanner...
 	* include/bits/regex_scanner.h: ...to here. New.
 	* include/bits/regex_compiler.tcc: Move _Scanner...
 	* include/bits/regex_scanner.tcc: ...to here, too. New.
 	* include/bits/regex_executor.tcc: Use value instead of reference for
-	  submatch.
+	submatch.
 	* include/std/regex: Add regex_scanner.h
 	* testsuite/28_regex/algorithms/regex_match/awk/cstring_01.cc: New.
 	* testsuite/28_regex/algorithms/regex_match/basic/empty_range.cc: New.
