@@ -1,3 +1,12 @@
+2013-09-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430x_names): New array.  Lists MCUs
+	that use the MSP430X ISA.
+	(msp430_option_override): Scan -mmcu command line option for any
+	MCU name that supports the MSP430X ISA.
+	* config/msp430/t-msp430 (MULTILIB_MATCHES): Add matches for known
+	-mmcu options which enable the MSP430X ISA.
+
 2013-09-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58532
