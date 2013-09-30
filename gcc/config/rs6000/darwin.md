@@ -261,7 +261,11 @@ You should have received a copy of the GNU General Public License
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
+#if TARGET_MACHO
   machopic_should_output_picbase_label (); /* Update for new func.  */
+#else
+  gcc_unreachable ();
+#endif
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
@@ -273,7 +277,11 @@ You should have received a copy of the GNU General Public License
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
 {
+#if TARGET_MACHO
   machopic_should_output_picbase_label (); /* Update for new func.  */
+#else
+  gcc_unreachable ();
+#endif
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
@@ -397,6 +405,7 @@ You should have received a copy of the GNU General Public License
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
+#if TARGET_MACHO
   if (machopic_should_output_picbase_label ())
     {
       static char tmp[64];
@@ -405,6 +414,9 @@ You should have received a copy of the GNU General Public License
       return tmp;
     }
   else
+#else
+  gcc_unreachable ();
+#endif
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
@@ -416,6 +428,7 @@ You should have received a copy of the GNU General Public License
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
 {
+#if TARGET_MACHO
   if (machopic_should_output_picbase_label ())
     {
       static char tmp[64];
@@ -424,6 +437,9 @@ You should have received a copy of the GNU General Public License
       return tmp;
     }
   else
+#else
+  gcc_unreachable ();
+#endif
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
@@ -438,6 +454,7 @@ You should have received a copy of the GNU General Public License
   "&& reload_completed"
   [(const_int 0)]
 {
+#if TARGET_MACHO
   if (crtl->uses_pic_offset_table)
     {
       static unsigned n = 0;
@@ -456,6 +473,8 @@ You should have received a copy of the GNU General Public License
   else
     /* Not using PIC reg, no reload needed.  */
     emit_note (NOTE_INSN_DELETED);
-
+#else
+  gcc_unreachable ();
+#endif
   DONE;
 })
