@@ -142,7 +142,7 @@ static long state_bol = 0;	/* offset of beginning of line */
 class s_expr_writer
 {
 public:
-  s_expr_writer();
+  s_expr_writer ();
 
   void write_new_line ();
   void write_any_indent (int leading_spaces);
@@ -159,7 +159,7 @@ private:
 class state_writer : public s_expr_writer
 {
 public:
-  state_writer();
+  state_writer ();
 
 private:
   void write_state_fileloc (struct fileloc *floc);
@@ -205,7 +205,7 @@ private:
 
 
 /* class s_expr_writer's trivial constructor.  */
-s_expr_writer::s_expr_writer()
+s_expr_writer::s_expr_writer ()
   : indent_amount_(0),
     had_recent_newline_(0)
 {
@@ -269,9 +269,9 @@ s_expr_writer::end_s_expr (void)
 
 
 /* class state_writer's trivial constructor.  */
-state_writer::state_writer()
-  : s_expr_writer(),
-    state_written_type_count(0)
+state_writer::state_writer ()
+  : s_expr_writer (),
+    state_written_type_count (0)
 {
 }
 
@@ -309,7 +309,7 @@ fatal_reading_state (struct state_token_st* tok, const char*msg)
     else						\
       fatal ("%s:%d: Invalid state file; " Fmt,		\
 	     state_path, state_line, __VA_ARGS__);	\
-  } while(0)
+  } while (0)
 
 
 /* Find or allocate an identifier in our name hash table.  */

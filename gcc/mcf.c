@@ -385,7 +385,7 @@ add_fixup_edge (fixup_graph_type *fixup_graph, int src, int dest,
 		edge_type type, gcov_type weight, gcov_type cost,
 		gcov_type max_capacity)
 {
-  fixup_edge_p curr_edge = add_edge(fixup_graph, src, dest, cost);
+  fixup_edge_p curr_edge = add_edge (fixup_graph, src, dest, cost);
   curr_edge->type = type;
   curr_edge->weight = weight;
   curr_edge->max_capacity = max_capacity;

@@ -16318,47 +16318,43 @@ cp_parser_init_declarator (cp_parser* parser,
 			       "a function-definition is not allowed here");
 	      return error_mark_node;
 	    }
+
+	  location_t func_brace_location
+	    = cp_lexer_peek_token (parser->lexer)->location;
+
+	  /* Neither attributes nor an asm-specification are allowed
+	     on a function-definition.  */
+	  if (asm_specification)
+	    error_at (asm_spec_start_token->location,
+		      "an asm-specification is not allowed "
+		      "on a function-definition");
+	  if (attributes)
+	    error_at (attributes_start_token->location,
+		      "attributes are not allowed "
+		      "on a function-definition");
+	  /* This is a function-definition.  */
+	  *function_definition_p = true;
+
+	  /* Parse the function definition.  */
+	  if (member_p)
+	    decl = cp_parser_save_member_function_body (parser,
+							decl_specifiers,
+							declarator,
+							prefix_attributes);
 	  else
+	    decl =
+	      (cp_parser_function_definition_from_specifiers_and_declarator
+	       (parser, decl_specifiers, prefix_attributes, declarator));
+
+	  if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
 	    {
-	      location_t func_brace_location
-		= cp_lexer_peek_token (parser->lexer)->location;
-
-	      /* Neither attributes nor an asm-specification are allowed
-		 on a function-definition.  */
-	      if (asm_specification)
-		error_at (asm_spec_start_token->location,
-			  "an asm-specification is not allowed "
-			  "on a function-definition");
-	      if (attributes)
-		error_at (attributes_start_token->location,
-			  "attributes are not allowed "
-			  "on a function-definition");
-	      /* This is a function-definition.  */
-	      *function_definition_p = true;
-
-	      /* Parse the function definition.  */
-	      if (member_p)
-		decl = cp_parser_save_member_function_body (parser,
-							    decl_specifiers,
-							    declarator,
-							    prefix_attributes);
-	      else
-		decl =
-		  (cp_parser_function_definition_from_specifiers_and_declarator
-		   (parser, decl_specifiers, prefix_attributes, declarator));
-
-	      if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
-		{
-		  /* This is where the prologue starts...  */
-		  DECL_STRUCT_FUNCTION (decl)->function_start_locus
-		    = func_brace_location;
-		}
-
-	      return decl;
+	      /* This is where the prologue starts...  */
+	      DECL_STRUCT_FUNCTION (decl)->function_start_locus
+		= func_brace_location;
 	    }
+
+	  return decl;
 	}
-      else if (parser->fully_implicit_function_template_p)
-	decl = finish_fully_implicit_template (parser, decl);
     }
 
   /* [dcl.dcl]
@@ -16580,6 +16576,15 @@ cp_parser_init_declarator (cp_parser* parser,
 
   if (!friend_p && pushed_scope)
     pop_scope (pushed_scope);
+
+  if (function_declarator_p (declarator)
+      && parser->fully_implicit_function_template_p)
+    {
+      if (member_p)
+	decl = finish_fully_implicit_template (parser, decl);
+      else
+	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+    }
 
   return decl;
 }
@@ -28897,11 +28902,12 @@ c_parse_file (void)
 /* Create an identifier for a generic parameter type (a synthesized
    template parameter implied by `auto' or a concept identifier). */
 
+static GTY(()) int generic_parm_count;
 static tree
-make_generic_type_name (int i)
+make_generic_type_name ()
 {
   char buf[32];
-  sprintf (buf, "__GenT%d", i);
+  sprintf (buf, "<auto%d>", ++generic_parm_count);
   return get_identifier (buf);
 }
 
@@ -28915,14 +28921,14 @@ tree_type_is_auto_or_concept (const_tree t)
   return TREE_TYPE (t) && is_auto_or_concept (TREE_TYPE (t));
 }
 
-/* Add COUNT implicit template parameters gleaned from the generic
-   type parameters in PARAMETERS to the CURRENT_TEMPLATE_PARMS
-   (creating a new template parameter list if necessary).  Returns
-   PARAMETERS suitably rewritten to reference the newly created types
-   or ERROR_MARK_NODE on failure.  */
+/* Add EXPECT_COUNT implicit template parameters gleaned from the generic
+   type parameters in PARAMETERS to the CURRENT_TEMPLATE_PARMS (creating a new
+   template parameter list if necessary).  Returns PARAMETERS suitably rewritten
+   to reference the newly created types or ERROR_MARK_NODE on failure.  */
 
 tree
-add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
+add_implicit_template_parms (cp_parser *parser, size_t expect_count,
+			     tree parameters)
 {
   gcc_assert (current_binding_level->kind == sk_function_parms);
 
@@ -28931,7 +28937,7 @@ add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
   bool become_template =
     fn_parms_scope->level_chain->kind != sk_template_parms;
 
-  size_t synth_idx = 0;
+  size_t synth_count = 0;
 
   /* Roll back a scope level and either introduce a new template parameter list
      or update an existing one.  The function scope is added back after template
@@ -28973,7 +28979,7 @@ add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
       ++processing_template_parmlist;
     }
 
-  for (tree p = parameters; p && synth_idx < count; p = TREE_CHAIN (p))
+  for (tree p = parameters; p && synth_count < expect_count; p = TREE_CHAIN (p))
     {
       tree generic_type_ptr
 	= find_type_usage (TREE_VALUE (p), tree_type_is_auto_or_concept);
@@ -28981,7 +28987,9 @@ add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
       if (!generic_type_ptr)
 	continue;
 
-      tree synth_id = make_generic_type_name (synth_idx++);
+      ++synth_count;
+
+      tree synth_id = make_generic_type_name ();
       tree synth_tmpl_parm = finish_template_type_parm (class_type_node,
 							synth_id);
       tparms = process_template_parm (tparms, DECL_SOURCE_LOCATION (TREE_VALUE
@@ -29004,7 +29012,7 @@ add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
 	cur_type = new_type;
     }
 
-  gcc_assert (synth_idx == count);
+  gcc_assert (synth_count == expect_count);
 
   push_binding_level (fn_parms_scope);
 

@@ -876,7 +876,7 @@ mostly_true_jump (rtx jump_insn)
   rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);
   if (note)
     {
-      int prob = INTVAL (XEXP (note, 0));
+      int prob = XINT (note, 0);
 
       if (prob >= REG_BR_PROB_BASE * 9 / 10)
 	return 2;
@@ -2173,7 +2173,7 @@ fill_simple_delay_slots (int non_jumps_p)
 		  && ! (maybe_never && may_trap_or_fault_p (pat))
 		  && (trial = try_split (pat, trial, 0))
 		  && eligible_for_delay (insn, slots_filled, trial, flags)
-		  && ! can_throw_internal(trial))
+		  && ! can_throw_internal (trial))
 		{
 		  next_trial = next_nonnote_insn (trial);
 		  delay_list = add_to_delay_list (trial, delay_list);
@@ -2363,8 +2363,8 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
   int flags;
 
   /* Validate our arguments.  */
-  gcc_assert(condition != const_true_rtx || thread_if_true);
-  gcc_assert(own_thread || thread_if_true);
+  gcc_assert (condition != const_true_rtx || thread_if_true);
+  gcc_assert (own_thread || thread_if_true);
 
   flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
@@ -3888,8 +3888,8 @@ const pass_data pass_data_delay_slots =
 class pass_delay_slots : public rtl_opt_pass
 {
 public:
-  pass_delay_slots(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_delay_slots, ctxt)
+  pass_delay_slots (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_delay_slots, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3941,8 +3941,8 @@ const pass_data pass_data_machine_reorg =
 class pass_machine_reorg : public rtl_opt_pass
 {
 public:
-  pass_machine_reorg(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_machine_reorg, ctxt)
+  pass_machine_reorg (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_machine_reorg, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -569,8 +569,8 @@ extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
 extern vec<tree> ssa_name_values;
 #define SSA_NAME_VALUE(x) \
-    (SSA_NAME_VERSION(x) < ssa_name_values.length () \
-     ? ssa_name_values[SSA_NAME_VERSION(x)] \
+    (SSA_NAME_VERSION (x) < ssa_name_values.length () \
+     ? ssa_name_values[SSA_NAME_VERSION (x)] \
      : NULL_TREE)
 extern void set_ssa_name_value (tree, tree);
 extern bool potentially_threadable_block (basic_block);
@@ -641,10 +641,6 @@ bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode,
 				      addr_space_t);
 bool may_be_nonaddressable_p (tree expr);
 
-/* In tree-ssa-threadupdate.c.  */
-extern bool thread_through_all_blocks (bool);
-extern void register_jump_thread (vec<edge>, bool);
-
 /* In gimplify.c  */
 tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
 tree force_gimple_operand (tree, gimple_seq *, bool, tree);
@@ -682,9 +678,6 @@ bool fixup_noreturn_call (gimple stmt);
 
 /* In ipa-pure-const.c  */
 void warn_function_noreturn (tree);
-
-/* In tree-ssa-ter.c  */
-bool stmt_is_replaceable_p (gimple);
 
 /* In tree-parloops.c  */
 bool parallelized_function_p (tree);

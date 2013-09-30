@@ -33,7 +33,7 @@ extern alias_set_type get_alias_set (tree);
 extern alias_set_type get_deref_alias_set (tree);
 extern alias_set_type get_varargs_alias_set (void);
 extern alias_set_type get_frame_alias_set (void);
-extern bool component_uses_parent_alias_set (const_tree);
+extern tree component_uses_parent_alias_set_from (const_tree);
 extern bool alias_set_subset_of (alias_set_type, alias_set_type);
 extern void record_alias_subset (alias_set_type, alias_set_type);
 extern void record_component_aliases (tree);
@@ -41,6 +41,8 @@ extern int alias_sets_conflict_p (alias_set_type, alias_set_type);
 extern int alias_sets_must_conflict_p (alias_set_type, alias_set_type);
 extern int objects_must_conflict_p (tree, tree);
 extern int nonoverlapping_memrefs_p (const_rtx, const_rtx, bool);
+tree reference_alias_ptr_type (tree);
+bool alias_ptr_types_compatible_p (tree, tree);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference

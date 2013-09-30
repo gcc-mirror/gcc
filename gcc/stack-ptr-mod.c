@@ -110,8 +110,8 @@ const pass_data pass_data_stack_ptr_mod =
 class pass_stack_ptr_mod : public rtl_opt_pass
 {
 public:
-  pass_stack_ptr_mod(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_stack_ptr_mod, ctxt)
+  pass_stack_ptr_mod (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stack_ptr_mod, ctxt)
   {}
 
   /* opt_pass methods: */

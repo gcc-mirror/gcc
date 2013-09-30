@@ -783,7 +783,7 @@
 	tst	%0,%0
 	cmp/eq	%1,%0
 	cmp/eq	%1,%0"
-   [(set_attr "type" "mt_group")])
+  [(set_attr "type" "mt_group")])
 
 ;; FIXME: For some reason, on SH4A and SH2A combine fails to simplify this
 ;; pattern by itself.  What this actually does is:
@@ -809,7 +809,7 @@
   "@
 	cmp/pl	%0
 	cmp/gt	%1,%0"
-   [(set_attr "type" "mt_group")])
+  [(set_attr "type" "mt_group")])
 
 (define_insn "cmpgesi_t"
   [(set (reg:SI T_REG)
@@ -819,7 +819,7 @@
   "@
 	cmp/pz	%0
 	cmp/ge	%1,%0"
-   [(set_attr "type" "mt_group")])
+  [(set_attr "type" "mt_group")])
 
 ;; FIXME: This is actually wrong.  There is no way to literally move a
 ;; general reg to t reg.  Luckily, it seems that this pattern will be only
@@ -831,7 +831,7 @@
   [(set (reg:SI T_REG) (match_operand:SI 0 "arith_reg_operand" "r"))]
   "TARGET_SH1"
   "cmp/pl	%0"
-   [(set_attr "type" "mt_group")])
+  [(set_attr "type" "mt_group")])
 
 ;; Some integer sign comparison patterns can be realized with the div0s insn.
 ;;	div0s	Rm,Rn		T = (Rm >> 31) ^ (Rn >> 31)
@@ -6898,9 +6898,9 @@ label:
 	(match_operand:QIHI 1 "register_operand" "r,*z,m"))]
   "TARGET_SH1 && !t_reg_operand (operands[1], VOIDmode)"
   "@
-    mov		%1,%0
-    mov.<bw>	%1,%0
-    mov.<bw>	%1,%0"
+	mov	%1,%0
+	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0"
   [(set_attr "type" "move,store,load")])
 
 ;; FIXME: The non-SH2A and SH2A variants should be combined by adding

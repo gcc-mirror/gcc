@@ -479,8 +479,8 @@ const pass_data pass_data_free_cfg =
 class pass_free_cfg : public rtl_opt_pass
 {
 public:
-  pass_free_cfg(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_free_cfg, ctxt)
+  pass_free_cfg (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_free_cfg, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1441,7 +1441,7 @@ void
 emit_barrier_after_bb (basic_block bb)
 {
   rtx barrier = emit_barrier_after (BB_END (bb));
-  gcc_assert (current_ir_type() == IR_RTL_CFGRTL
+  gcc_assert (current_ir_type () == IR_RTL_CFGRTL
               || current_ir_type () == IR_RTL_CFGLAYOUT);
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
     BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
@@ -1480,7 +1480,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       note = find_reg_note (BB_END (e->src), REG_BR_PROB, NULL_RTX);
       if (note)
 	{
-	  int prob = INTVAL (XEXP (note, 0));
+	  int prob = XINT (note, 0);
 
 	  b->probability = prob;
           /* Update this to use GCOV_COMPUTE_SCALE.  */
@@ -2207,9 +2207,9 @@ update_br_prob_note (basic_block bb)
   if (!JUMP_P (BB_END (bb)))
     return;
   note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX);
-  if (!note || INTVAL (XEXP (note, 0)) == BRANCH_EDGE (bb)->probability)
+  if (!note || XINT (note, 0) == BRANCH_EDGE (bb)->probability)
     return;
-  XEXP (note, 0) = GEN_INT (BRANCH_EDGE (bb)->probability);
+  XINT (note, 0) = BRANCH_EDGE (bb)->probability;
 }
 
 /* Get the last insn associated with block BB (that includes barriers and
@@ -2346,7 +2346,7 @@ verify_hot_cold_block_grouping (void)
      again (in compgoto). Ensure we don't call this before going back
      into linearized RTL when any layout fixes would have been committed.  */
   if (!crtl->bb_reorder_complete
-      || current_ir_type() != IR_RTL_CFGRTL)
+      || current_ir_type () != IR_RTL_CFGRTL)
     return err;
 
   FOR_EACH_BB (bb)
@@ -2399,11 +2399,11 @@ rtl_verify_edges (void)
 	  && EDGE_COUNT (bb->succs) >= 2
 	  && any_condjump_p (BB_END (bb)))
 	{
-	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability
+	  if (XINT (note, 0) != BRANCH_EDGE (bb)->probability
 	      && profile_status != PROFILE_ABSENT)
 	    {
-	      error ("verify_flow_info: REG_BR_PROB does not match cfg %wi %i",
-		     INTVAL (XEXP (note, 0)), BRANCH_EDGE (bb)->probability);
+	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
+		     XINT (note, 0), BRANCH_EDGE (bb)->probability);
 	      err = 1;
 	    }
 	}
@@ -3104,7 +3104,7 @@ purge_dead_edges (basic_block bb)
 
 	  b = BRANCH_EDGE (bb);
 	  f = FALLTHRU_EDGE (bb);
-	  b->probability = INTVAL (XEXP (note, 0));
+	  b->probability = XINT (note, 0);
 	  f->probability = REG_BR_PROB_BASE - b->probability;
           /* Update these to use GCOV_COMPUTE_SCALE.  */
 	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
@@ -3484,8 +3484,8 @@ const pass_data pass_data_into_cfg_layout_mode =
 class pass_into_cfg_layout_mode : public rtl_opt_pass
 {
 public:
-  pass_into_cfg_layout_mode(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_into_cfg_layout_mode, ctxt)
+  pass_into_cfg_layout_mode (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_into_cfg_layout_mode, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3521,8 +3521,8 @@ const pass_data pass_data_outof_cfg_layout_mode =
 class pass_outof_cfg_layout_mode : public rtl_opt_pass
 {
 public:
-  pass_outof_cfg_layout_mode(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_outof_cfg_layout_mode, ctxt)
+  pass_outof_cfg_layout_mode (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_outof_cfg_layout_mode, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3735,7 +3735,7 @@ fixup_reorder_chain (void)
 		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
 
 		  if (note
-		      && INTVAL (XEXP (note, 0)) < REG_BR_PROB_BASE / 2
+		      && XINT (note, 0) < REG_BR_PROB_BASE / 2
 		      && invert_jump (bb_end_insn,
 				      (e_fall->dest == EXIT_BLOCK_PTR
 				       ? NULL_RTX
@@ -4887,7 +4887,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   end_sequence ();
 
   /* Add the new cond , in the new head.  */
-  emit_insn_after(seq, BB_END(cond_bb));
+  emit_insn_after (seq, BB_END (cond_bb));
 }
 
 

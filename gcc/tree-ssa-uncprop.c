@@ -603,8 +603,8 @@ const pass_data pass_data_uncprop =
 class pass_uncprop : public gimple_opt_pass
 {
 public:
-  pass_uncprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_uncprop, ctxt)
+  pass_uncprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_uncprop, ctxt)
   {}
 
   /* opt_pass methods: */

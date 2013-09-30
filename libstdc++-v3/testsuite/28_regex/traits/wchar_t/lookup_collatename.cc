@@ -33,13 +33,9 @@ test01()
   typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 
-	wchar_t name[] = L"ll";
-	traits t;
-
-	traits::string_type sname =
-          t.lookup_collatename(name, name+sizeof(name)/sizeof(*name)-1);
-
-  VERIFY( !sname.empty() );
+  traits t;
+  CharT name[] = L"tilde";
+  VERIFY(t.lookup_collatename(name, name+sizeof(name)/sizeof(*name)-1) == L"~");
 }
 
 int main()

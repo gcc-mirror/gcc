@@ -901,21 +901,21 @@ cgraph_node_asm_name (struct cgraph_node *node)
 
 /* Return asm name of varpool node.  */
 static inline const char *
-varpool_node_asm_name(struct varpool_node *node)
+varpool_node_asm_name (struct varpool_node *node)
 {
   return symtab_node_asm_name ((symtab_node)node);
 }
 
 /* Return name of cgraph node.  */
 static inline const char *
-cgraph_node_name(struct cgraph_node *node)
+cgraph_node_name (struct cgraph_node *node)
 {
   return symtab_node_name ((symtab_node)node);
 }
 
 /* Return name of varpool node.  */
 static inline const char *
-varpool_node_name(struct varpool_node *node)
+varpool_node_name (struct varpool_node *node)
 {
   return symtab_node_name ((symtab_node)node);
 }

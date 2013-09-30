@@ -1,4 +1,3 @@
-host-i386-darwin.o : $(srcdir)/config/i386/host-i386-darwin.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h hosthooks.h $(HOSTHOOKS_DEF_H) \
-  config/host-darwin.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+host-i386-darwin.o : $(srcdir)/config/i386/host-i386-darwin.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

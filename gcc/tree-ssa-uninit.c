@@ -2193,8 +2193,8 @@ const pass_data pass_data_late_warn_uninitialized =
 class pass_late_warn_uninitialized : public gimple_opt_pass
 {
 public:
-  pass_late_warn_uninitialized(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_late_warn_uninitialized, ctxt)
+  pass_late_warn_uninitialized (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_late_warn_uninitialized, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2254,8 +2254,8 @@ const pass_data pass_data_early_warn_uninitialized =
 class pass_early_warn_uninitialized : public gimple_opt_pass
 {
 public:
-  pass_early_warn_uninitialized(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_early_warn_uninitialized, ctxt)
+  pass_early_warn_uninitialized (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_warn_uninitialized, ctxt)
   {}
 
   /* opt_pass methods: */

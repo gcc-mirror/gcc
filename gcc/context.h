@@ -30,7 +30,7 @@ class pass_manager;
 class context
 {
 public:
-  context();
+  context ();
 
   /* Pass-management.  */
 

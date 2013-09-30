@@ -672,7 +672,7 @@ scan_comma_elt (const char **pstr)
 
   if (*p == ',')
     p++;
-  while (ISSPACE(*p))
+  while (ISSPACE (*p))
     p++;
 
   if (*p == '\0')

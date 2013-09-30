@@ -2693,8 +2693,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
 		  && types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1))
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 1)))
-		      == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg1, 1))))
+		  && alias_ptr_types_compatible_p
+		       (TREE_TYPE (TREE_OPERAND (arg0, 1)),
+			TREE_TYPE (TREE_OPERAND (arg1, 1)))
 		  && OP_SAME (0) && OP_SAME (1));
 
 	case ARRAY_REF:
@@ -11758,8 +11759,8 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg1) == INTEGER_CST)
 	{
 	  double_int cst1 = tree_to_double_int (arg1);
-	  double_int ncst1 = (-cst1).ext(TYPE_PRECISION (TREE_TYPE (arg1)),
-					 TYPE_UNSIGNED (TREE_TYPE (arg1)));
+	  double_int ncst1 = (-cst1).ext (TYPE_PRECISION (TREE_TYPE (arg1)),
+					  TYPE_UNSIGNED (TREE_TYPE (arg1)));
 	  if ((cst1 & ncst1) == ncst1
 	      && multiple_of_p (type, arg0,
 				double_int_to_tree (TREE_TYPE (arg1), ncst1)))

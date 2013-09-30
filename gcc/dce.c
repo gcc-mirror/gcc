@@ -806,8 +806,8 @@ const pass_data pass_data_ud_rtl_dce =
 class pass_ud_rtl_dce : public rtl_opt_pass
 {
 public:
-  pass_ud_rtl_dce(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_ud_rtl_dce, ctxt)
+  pass_ud_rtl_dce (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_ud_rtl_dce, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1239,8 +1239,8 @@ const pass_data pass_data_fast_rtl_dce =
 class pass_fast_rtl_dce : public rtl_opt_pass
 {
 public:
-  pass_fast_rtl_dce(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_fast_rtl_dce, ctxt)
+  pass_fast_rtl_dce (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_fast_rtl_dce, ctxt)
   {}
 
   /* opt_pass methods: */

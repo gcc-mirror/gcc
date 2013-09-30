@@ -3515,7 +3515,7 @@ setup_reg_equiv (void)
 static void
 print_insn_chain (FILE *file, struct insn_chain *c)
 {
-  fprintf (file, "insn=%d, ", INSN_UID(c->insn));
+  fprintf (file, "insn=%d, ", INSN_UID (c->insn));
   bitmap_print (file, &c->live_throughout, "live_throughout: ", ", ");
   bitmap_print (file, &c->dead_or_set, "dead_or_set: ", "\n");
 }
@@ -4391,9 +4391,9 @@ allocate_initial_values (void)
 		  /* Update global register liveness information.  */
 		  FOR_EACH_BB (bb)
 		    {
-		      if (REGNO_REG_SET_P(df_get_live_in (bb), regno))
+		      if (REGNO_REG_SET_P (df_get_live_in (bb), regno))
 			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);
-		      if (REGNO_REG_SET_P(df_get_live_out (bb), regno))
+		      if (REGNO_REG_SET_P (df_get_live_out (bb), regno))
 			SET_REGNO_REG_SET (df_get_live_out (bb), new_regno);
 		    }
 		}
@@ -4792,8 +4792,8 @@ const pass_data pass_data_ira =
 class pass_ira : public rtl_opt_pass
 {
 public:
-  pass_ira(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_ira, ctxt)
+  pass_ira (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_ira, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4836,8 +4836,8 @@ const pass_data pass_data_reload =
 class pass_reload : public rtl_opt_pass
 {
 public:
-  pass_reload(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_reload, ctxt)
+  pass_reload (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_reload, ctxt)
   {}
 
   /* opt_pass methods: */

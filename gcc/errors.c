@@ -48,7 +48,7 @@ warning (const char *format, ...)
   fprintf (stderr, "%s: warning: ", progname);
   vfprintf (stderr, format, ap);
   va_end (ap);
-  fputc('\n', stderr);
+  fputc ('\n', stderr);
 }
 
 
@@ -63,7 +63,7 @@ error (const char *format, ...)
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
   va_end (ap);
-  fputc('\n', stderr);
+  fputc ('\n', stderr);
 
   have_error = 1;
 }
@@ -80,7 +80,7 @@ fatal (const char *format, ...)
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
   va_end (ap);
-  fputc('\n', stderr);
+  fputc ('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }
 

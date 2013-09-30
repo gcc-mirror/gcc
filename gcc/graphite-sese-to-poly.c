@@ -665,7 +665,7 @@ extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
 
   id = isl_id_for_ssa_name (s, e);
   dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
-  isl_id_free(id);
+  isl_id_free (id);
   dom = isl_set_universe (isl_space_copy (space));
   aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
   aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
@@ -994,7 +994,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   if (TREE_CODE (nb_iters) == INTEGER_CST)
     {
       c = isl_inequality_alloc
-	  (isl_local_space_from_space(isl_space_copy (space)));
+	  (isl_local_space_from_space (isl_space_copy (space)));
       c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
       tree_int_to_gmp (nb_iters, g);
       isl_int_set_gmp (v, g);
@@ -1132,8 +1132,8 @@ add_condition_to_pbb (poly_bb_p pbb, gimple stmt, enum tree_code code)
 	break;
 
       default:
-	isl_pw_aff_free(lhs);
-	isl_pw_aff_free(rhs);
+	isl_pw_aff_free (lhs);
+	isl_pw_aff_free (rhs);
 	return;
     }
 

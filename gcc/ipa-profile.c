@@ -240,7 +240,7 @@ ipa_profile_write_summary (void)
     = lto_create_simple_output_block (LTO_section_ipa_profile);
   unsigned int i;
 
-  streamer_write_uhwi_stream (ob->main_stream, histogram.length());
+  streamer_write_uhwi_stream (ob->main_stream, histogram.length ());
   for (i = 0; i < histogram.length (); i++)
     {
       streamer_write_gcov_count_stream (ob->main_stream, histogram[i]->count);
@@ -560,7 +560,7 @@ ipa_profile (void)
           set_hot_bb_threshold (threshold);
 	}
     }
-  histogram.release();
+  histogram.release ();
   free_alloc_pool (histogram_pool);
 
   /* Produce speculative calls: we saved common traget from porfiling into
@@ -732,17 +732,17 @@ const pass_data pass_data_ipa_profile =
 class pass_ipa_profile : public ipa_opt_pass_d
 {
 public:
-  pass_ipa_profile(gcc::context *ctxt)
-    : ipa_opt_pass_d(pass_data_ipa_profile, ctxt,
-		     ipa_profile_generate_summary, /* generate_summary */
-		     ipa_profile_write_summary, /* write_summary */
-		     ipa_profile_read_summary, /* read_summary */
-		     NULL, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
-		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+  pass_ipa_profile (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_profile, ctxt,
+		      ipa_profile_generate_summary, /* generate_summary */
+		      ipa_profile_write_summary, /* write_summary */
+		      ipa_profile_read_summary, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
   {}
 
   /* opt_pass methods: */

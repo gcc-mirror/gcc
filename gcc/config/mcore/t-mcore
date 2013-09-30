@@ -16,9 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# We have values for float.h.
-CROSS_FLOAT_H = $(srcdir)/config/mcore/gfloat.h
-
 # If support for -m4align is ever re-enabled then comment out the
 # following line and uncomment the multilib lines below.
 

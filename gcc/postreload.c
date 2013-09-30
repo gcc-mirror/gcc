@@ -2359,8 +2359,8 @@ const pass_data pass_data_postreload_cse =
 class pass_postreload_cse : public rtl_opt_pass
 {
 public:
-  pass_postreload_cse(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_postreload_cse, ctxt)
+  pass_postreload_cse (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_postreload_cse, ctxt)
   {}
 
   /* opt_pass methods: */

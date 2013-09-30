@@ -2067,40 +2067,52 @@ Floating point register (containing 32-bit value)
 Altivec vector register
 
 @item wa
-Any VSX register
+Any VSX register if the -mvsx option was used or NO_REGS.
 
 @item wd
-VSX vector register to hold vector double data
+VSX vector register to hold vector double data or NO_REGS.
 
 @item wf
-VSX vector register to hold vector float data
+VSX vector register to hold vector float data or NO_REGS.
 
 @item wg
-If @option{-mmfpgpr} was used, a floating point register
+If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
 
 @item wl
-If the LFIWAX instruction is enabled, a floating point register
+Floating point register if the LFIWAX instruction is enabled or NO_REGS.
 
 @item wm
-If direct moves are enabled, a VSX register.
+VSX register if direct move instructions are enabled, or NO_REGS.
 
 @item wn
-No register.
+No register (NO_REGS).
 
 @item wr
-General purpose register if 64-bit mode is used
+General purpose register if 64-bit instructions are enabled or NO_REGS.
 
 @item ws
-VSX vector register to hold scalar float data
+VSX vector register to hold scalar double values or NO_REGS.
 
 @item wt
-VSX vector register to hold 128 bit integer
+VSX vector register to hold 128 bit integer or NO_REGS.
+
+@item wu
+Altivec register to use for float/32-bit int loads/stores  or NO_REGS.
+
+@item wv
+Altivec register to use for double loads/stores  or NO_REGS.
+
+@item ww
+FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
 
 @item wx
-If the STFIWX instruction is enabled, a floating point register
+Floating point register if the STFIWX instruction is enabled or NO_REGS.
+
+@item wy
+VSX vector register to hold scalar float values or NO_REGS.
 
 @item wz
-If the LFIWZX instruction is enabled, a floating point register
+Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
 @item wQ
 A memory address that will work with the @code{lq} and @code{stq}

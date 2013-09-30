@@ -316,7 +316,7 @@ pool_alloc (alloc_pool pool)
 
   /* Pull the first free element from the free list, and return it.  */
   header = pool->returned_free_list;
-  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (header, sizeof(*header)));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (header, sizeof (*header)));
   pool->returned_free_list = header->next;
   pool->elts_free--;
 

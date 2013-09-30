@@ -9269,7 +9269,11 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
     }
   else
     {
-      if (!ambig1.empty())
+      if (Gogo::is_erroneous_name(name))
+	{
+	  // An error was already reported.
+	}
+      else if (!ambig1.empty())
 	error_at(location, "%qs is ambiguous via %qs and %qs",
 		 Gogo::message_name(name).c_str(), ambig1.c_str(),
 		 ambig2.c_str());

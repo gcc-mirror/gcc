@@ -109,7 +109,7 @@ gen_macro (const char *name, int real, int expect)
   for (i = 0; name[i]; i++)
     putchar (TOUPPER (name[i]));
 
-  putchar('(');
+  putchar ('(');
   for (i = 0; i < expect - 1; i++)
     printf ("%c, ", i + 'A');
   printf ("%c) gen_%s (", i + 'A', name);
@@ -290,7 +290,7 @@ main (int argc, char **argv)
   for (insn_ptr = insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);
 
-  puts("\n#endif /* GCC_INSN_FLAGS_H */");
+  puts ("\n#endif /* GCC_INSN_FLAGS_H */");
 
   if (have_error || ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;

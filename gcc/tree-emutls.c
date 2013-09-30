@@ -606,7 +606,7 @@ static inline void
 clear_access_vars (void)
 {
   memset (access_vars.address (), 0,
-          access_vars.length () * sizeof(tree));
+          access_vars.length () * sizeof (tree));
 }
 
 /* Lower the entire function NODE.  */
@@ -831,8 +831,8 @@ const pass_data pass_data_ipa_lower_emutls =
 class pass_ipa_lower_emutls : public simple_ipa_opt_pass
 {
 public:
-  pass_ipa_lower_emutls(gcc::context *ctxt)
-    : simple_ipa_opt_pass(pass_data_ipa_lower_emutls, ctxt)
+  pass_ipa_lower_emutls (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_lower_emutls, ctxt)
   {}
 
   /* opt_pass methods: */

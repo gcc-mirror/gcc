@@ -253,7 +253,7 @@ static void replace_reg (rtx *, int);
 static void remove_regno_note (rtx, enum reg_note, unsigned int);
 static int get_hard_regnum (stack_ptr, rtx);
 static rtx emit_pop_insn (rtx, stack_ptr, rtx, enum emit_where);
-static void swap_to_top(rtx, stack_ptr, rtx, rtx);
+static void swap_to_top (rtx, stack_ptr, rtx, rtx);
 static bool move_for_stack_reg (rtx, stack_ptr, rtx);
 static bool move_nan_for_stack_reg (rtx, stack_ptr, rtx);
 static int swap_rtx_condition_1 (rtx);
@@ -2058,6 +2058,8 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
   n_notes = 0;
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     {
+      if (GET_CODE (note) != EXPR_LIST)
+	continue;
       rtx reg = XEXP (note, 0);
       rtx *loc = & XEXP (note, 0);
 
@@ -3312,8 +3314,8 @@ const pass_data pass_data_stack_regs =
 class pass_stack_regs : public rtl_opt_pass
 {
 public:
-  pass_stack_regs(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_stack_regs, ctxt)
+  pass_stack_regs (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stack_regs, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3361,8 +3363,8 @@ const pass_data pass_data_stack_regs_run =
 class pass_stack_regs_run : public rtl_opt_pass
 {
 public:
-  pass_stack_regs_run(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_stack_regs_run, ctxt)
+  pass_stack_regs_run (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stack_regs_run, ctxt)
   {}
 
   /* opt_pass methods: */

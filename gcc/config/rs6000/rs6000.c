@@ -189,9 +189,6 @@ unsigned char rs6000_hard_regno_nregs[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 /* Map register number to register class.  */
 enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
-/* Reload functions based on the type and the vector unit.  */
-static enum insn_code rs6000_vector_reload[NUM_MACHINE_MODES][2];
-
 static int dbg_cost_ctrl;
 
 /* Built in types.  */
@@ -316,11 +313,16 @@ static enum rs6000_reg_type reg_class_to_reg_type[N_REG_CLASSES];
 
 #define IS_FP_VECT_REG_TYPE(RTYPE) IN_RANGE(RTYPE, VSX_REG_TYPE, FPR_REG_TYPE)
 
-/* Direct moves to/from vsx/gpr registers that need an additional register to
-   do the move.  */
-static enum insn_code reload_fpr_gpr[NUM_MACHINE_MODES];
-static enum insn_code reload_gpr_vsx[NUM_MACHINE_MODES];
-static enum insn_code reload_vsx_gpr[NUM_MACHINE_MODES];
+/* Register type masks based on the type, of valid addressing modes.  */
+struct rs6000_reg_addr {
+  enum insn_code reload_load;		/* INSN to reload for loading. */
+  enum insn_code reload_store;		/* INSN to reload for storing.  */
+  enum insn_code reload_fpr_gpr;	/* INSN to move from FPR to GPR.  */
+  enum insn_code reload_gpr_vsx;	/* INSN to move from GPR to VSX.  */
+  enum insn_code reload_vsx_gpr;	/* INSN to move from VSX to GPR.  */
+};
+
+static struct rs6000_reg_addr reg_addr[NUM_MACHINE_MODES];
 
 
 /* Target cpu costs.  */
@@ -1624,19 +1626,28 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
   /* VSX registers that overlap the FPR registers are larger than for non-VSX
      implementations.  Don't allow an item to be split between a FP register
-     and an Altivec register.  */
-  if (VECTOR_MEM_VSX_P (mode))
+     and an Altivec register.  Allow TImode in all VSX registers if the user
+     asked for it.  */
+  if (TARGET_VSX && VSX_REGNO_P (regno)
+      && (VECTOR_MEM_VSX_P (mode)
+	  || (TARGET_VSX_SCALAR_FLOAT && mode == SFmode)
+	  || (TARGET_VSX_SCALAR_DOUBLE && (mode == DFmode || mode == DImode))
+	  || (TARGET_VSX_TIMODE && mode == TImode)))
     {
       if (FP_REGNO_P (regno))
 	return FP_REGNO_P (last_regno);
 
       if (ALTIVEC_REGNO_P (regno))
-	return ALTIVEC_REGNO_P (last_regno);
-    }
+	{
+	  if (mode == SFmode && !TARGET_UPPER_REGS_SF)
+	    return 0;
 
-  /* Allow TImode in all VSX registers if the user asked for it.  */
-  if (mode == TImode && TARGET_VSX_TIMODE && VSX_REGNO_P (regno))
-    return 1;
+	  if ((mode == DFmode || mode == DImode) && !TARGET_UPPER_REGS_DF)
+	    return 0;
+
+	  return ALTIVEC_REGNO_P (last_regno);
+	}
+    }
 
   /* The GPRs can hold any mode, but values bigger than one register
      cannot go past R31.  */
@@ -1891,8 +1902,11 @@ rs6000_debug_reg_global (void)
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
 	   "wt reg_class = %s\n"
+	   "wu reg_class = %s\n"
 	   "wv reg_class = %s\n"
+	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
+	   "wy reg_class = %s\n"
 	   "wz reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
@@ -1907,14 +1921,17 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wu]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wy]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]]);
 
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
     if (rs6000_vector_unit[m] || rs6000_vector_mem[m]
-	|| (rs6000_vector_reload[m][0] != CODE_FOR_nothing)
-	|| (rs6000_vector_reload[m][1] != CODE_FOR_nothing))
+	|| (reg_addr[m].reload_load != CODE_FOR_nothing)
+	|| (reg_addr[m].reload_store != CODE_FOR_nothing))
       {
 	nl = "\n";
 	fprintf (stderr,
@@ -1923,8 +1940,8 @@ rs6000_debug_reg_global (void)
 		 GET_MODE_NAME (m),
 		 rs6000_debug_vector_unit[ rs6000_vector_unit[m] ],
 		 rs6000_debug_vector_unit[ rs6000_vector_mem[m] ],
-		 (rs6000_vector_reload[m][0] != CODE_FOR_nothing) ? 'y' : 'n',
-		 (rs6000_vector_reload[m][1] != CODE_FOR_nothing) ? 'y' : 'n');
+		 (reg_addr[m].reload_store != CODE_FOR_nothing) ? 'y' : 'n',
+		 (reg_addr[m].reload_load != CODE_FOR_nothing) ? 'y' : 'n');
       }
 
   if (nl)
@@ -2168,7 +2185,7 @@ rs6000_debug_reg_global (void)
 static void
 rs6000_init_hard_regno_mode_ok (bool global_init_p)
 {
-  int r, m, c;
+  ssize_t r, m, c;
   int align64;
   int align32;
 
@@ -2233,13 +2250,17 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       reg_class_to_reg_type[(int)ALTIVEC_REGS] = ALTIVEC_REG_TYPE;
     }
 
-  /* Precalculate vector information, this must be set up before the
-     rs6000_hard_regno_nregs_internal below.  */
+  /* Precalculate the valid memory formats as well as the vector information,
+     this must be set up before the rs6000_hard_regno_nregs_internal calls
+     below.  */
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
     {
       rs6000_vector_unit[m] = rs6000_vector_mem[m] = VECTOR_NONE;
-      rs6000_vector_reload[m][0] = CODE_FOR_nothing;
-      rs6000_vector_reload[m][1] = CODE_FOR_nothing;
+      reg_addr[m].reload_load = CODE_FOR_nothing;
+      reg_addr[m].reload_store = CODE_FOR_nothing;
+      reg_addr[m].reload_fpr_gpr = CODE_FOR_nothing;
+      reg_addr[m].reload_gpr_vsx = CODE_FOR_nothing;
+      reg_addr[m].reload_vsx_gpr = CODE_FOR_nothing;
     }
 
   for (c = 0; c < (int)(int)RS6000_CONSTRAINT_MAX; c++)
@@ -2320,7 +2341,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     {
       rs6000_vector_unit[DFmode] = VECTOR_VSX;
       rs6000_vector_mem[DFmode]
-	= (TARGET_VSX_SCALAR_MEMORY ? VECTOR_VSX : VECTOR_NONE);
+	= (TARGET_UPPER_REGS_DF ? VECTOR_VSX : VECTOR_NONE);
       rs6000_vector_align[DFmode] = align64;
     }
 
@@ -2334,7 +2355,34 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   /* TODO add SPE and paired floating point vector support.  */
 
   /* Register class constraints for the constraints that depend on compile
-     switches.  */
+     switches. When the VSX code was added, different constraints were added
+     based on the type (DFmode, V2DFmode, V4SFmode).  For the vector types, all
+     of the VSX registers are used.  The register classes for scalar floating
+     point types is set, based on whether we allow that type into the upper
+     (Altivec) registers.  GCC has register classes to target the Altivec
+     registers for load/store operations, to select using a VSX memory
+     operation instead of the traditional floating point operation.  The
+     constraints are:
+
+	d  - Register class to use with traditional DFmode instructions.
+	f  - Register class to use with traditional SFmode instructions.
+	v  - Altivec register.
+	wa - Any VSX register.
+	wd - Preferred register class for V2DFmode.
+	wf - Preferred register class for V4SFmode.
+	wg - Float register for power6x move insns.
+	wl - Float register if we can do 32-bit signed int loads.
+	wm - VSX register for ISA 2.07 direct move operations.
+	wr - GPR if 64-bit mode is permitted.
+	ws - Register class to do ISA 2.06 DF operations.
+	wu - Altivec register for ISA 2.07 VSX SF/SI load/stores.
+	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
+	wt - VSX register for TImode in VSX registers.
+	ww - Register class to do SF conversions in with VSX operations.
+	wx - Float register if we can do 32-bit int stores.
+	wy - Register class to do ISA 2.07 SF operations.
+	wz - Float register if we can do 32-bit unsigned int loads.  */
+
   if (TARGET_HARD_FLOAT && TARGET_FPRS)
     rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;
 
@@ -2343,19 +2391,20 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_VSX)
     {
-      /* At present, we just use VSX_REGS, but we have different constraints
-	 based on the use, in case we want to fine tune the default register
-	 class used.  wa = any VSX register, wf = register class to use for
-	 V4SF, wd = register class to use for V2DF, and ws = register classs to
-	 use for DF scalars.  */
       rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wd] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_ws] = (TARGET_VSX_SCALAR_MEMORY
-						  ? VSX_REGS
-						  : FLOAT_REGS);
+      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;
+
       if (TARGET_VSX_TIMODE)
 	rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;
+
+      if (TARGET_UPPER_REGS_DF)
+	{
+	  rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;
+	  rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
+	}
+      else
+	rs6000_constraints[RS6000_CONSTRAINT_ws] = FLOAT_REGS;
     }
 
   /* Add conditional constraints based on various options, to allow us to
@@ -2375,8 +2424,19 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (TARGET_POWERPC64)
     rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
 
-  if (TARGET_P8_VECTOR)
-    rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
+  if (TARGET_P8_VECTOR && TARGET_UPPER_REGS_SF)
+    {
+      rs6000_constraints[RS6000_CONSTRAINT_wu] = ALTIVEC_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
+    }
+  else if (TARGET_P8_VECTOR)
+    {
+      rs6000_constraints[RS6000_CONSTRAINT_wy] = FLOAT_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
+    }
+  else if (TARGET_VSX)
+    rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;
@@ -2384,112 +2444,104 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (TARGET_LFIWZX)
     rs6000_constraints[RS6000_CONSTRAINT_wz] = FLOAT_REGS;
 
-  /* Setup the direct move combinations.  */
-  for (m = 0; m < NUM_MACHINE_MODES; ++m)
-    {
-      reload_fpr_gpr[m] = CODE_FOR_nothing;
-      reload_gpr_vsx[m] = CODE_FOR_nothing;
-      reload_vsx_gpr[m] = CODE_FOR_nothing;
-    }
-
   /* Set up the reload helper and direct move functions.  */
   if (TARGET_VSX || TARGET_ALTIVEC)
     {
       if (TARGET_64BIT)
 	{
-	  rs6000_vector_reload[V16QImode][0] = CODE_FOR_reload_v16qi_di_store;
-	  rs6000_vector_reload[V16QImode][1] = CODE_FOR_reload_v16qi_di_load;
-	  rs6000_vector_reload[V8HImode][0]  = CODE_FOR_reload_v8hi_di_store;
-	  rs6000_vector_reload[V8HImode][1]  = CODE_FOR_reload_v8hi_di_load;
-	  rs6000_vector_reload[V4SImode][0]  = CODE_FOR_reload_v4si_di_store;
-	  rs6000_vector_reload[V4SImode][1]  = CODE_FOR_reload_v4si_di_load;
-	  rs6000_vector_reload[V2DImode][0]  = CODE_FOR_reload_v2di_di_store;
-	  rs6000_vector_reload[V2DImode][1]  = CODE_FOR_reload_v2di_di_load;
-	  rs6000_vector_reload[V4SFmode][0]  = CODE_FOR_reload_v4sf_di_store;
-	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_di_load;
-	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_di_store;
-	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_di_load;
-	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	  reg_addr[V16QImode].reload_store = CODE_FOR_reload_v16qi_di_store;
+	  reg_addr[V16QImode].reload_load  = CODE_FOR_reload_v16qi_di_load;
+	  reg_addr[V8HImode].reload_store  = CODE_FOR_reload_v8hi_di_store;
+	  reg_addr[V8HImode].reload_load   = CODE_FOR_reload_v8hi_di_load;
+	  reg_addr[V4SImode].reload_store  = CODE_FOR_reload_v4si_di_store;
+	  reg_addr[V4SImode].reload_load   = CODE_FOR_reload_v4si_di_load;
+	  reg_addr[V2DImode].reload_store  = CODE_FOR_reload_v2di_di_store;
+	  reg_addr[V2DImode].reload_load   = CODE_FOR_reload_v2di_di_load;
+	  reg_addr[V4SFmode].reload_store  = CODE_FOR_reload_v4sf_di_store;
+	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_di_load;
+	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_di_store;
+	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_di_load;
+	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
-	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_di_store;
-	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_di_load;
-	      rs6000_vector_reload[DDmode][0]  = CODE_FOR_reload_dd_di_store;
-	      rs6000_vector_reload[DDmode][1]  = CODE_FOR_reload_dd_di_load;
+	      reg_addr[DFmode].reload_store  = CODE_FOR_reload_df_di_store;
+	      reg_addr[DFmode].reload_load   = CODE_FOR_reload_df_di_load;
+	      reg_addr[DDmode].reload_store  = CODE_FOR_reload_dd_di_store;
+	      reg_addr[DDmode].reload_load   = CODE_FOR_reload_dd_di_load;
 	    }
 	  if (TARGET_P8_VECTOR)
 	    {
-	      rs6000_vector_reload[SFmode][0]  = CODE_FOR_reload_sf_di_store;
-	      rs6000_vector_reload[SFmode][1]  = CODE_FOR_reload_sf_di_load;
-	      rs6000_vector_reload[SDmode][0]  = CODE_FOR_reload_sd_di_store;
-	      rs6000_vector_reload[SDmode][1]  = CODE_FOR_reload_sd_di_load;
+	      reg_addr[SFmode].reload_store  = CODE_FOR_reload_sf_di_store;
+	      reg_addr[SFmode].reload_load   = CODE_FOR_reload_sf_di_load;
+	      reg_addr[SDmode].reload_store  = CODE_FOR_reload_sd_di_store;
+	      reg_addr[SDmode].reload_load   = CODE_FOR_reload_sd_di_load;
 	    }
 	  if (TARGET_VSX_TIMODE)
 	    {
-	      rs6000_vector_reload[TImode][0]  = CODE_FOR_reload_ti_di_store;
-	      rs6000_vector_reload[TImode][1]  = CODE_FOR_reload_ti_di_load;
+	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_di_store;
+	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_di_load;
 	    }
 	  if (TARGET_DIRECT_MOVE)
 	    {
 	      if (TARGET_POWERPC64)
 		{
-		  reload_gpr_vsx[TImode]    = CODE_FOR_reload_gpr_from_vsxti;
-		  reload_gpr_vsx[V2DFmode]  = CODE_FOR_reload_gpr_from_vsxv2df;
-		  reload_gpr_vsx[V2DImode]  = CODE_FOR_reload_gpr_from_vsxv2di;
-		  reload_gpr_vsx[V4SFmode]  = CODE_FOR_reload_gpr_from_vsxv4sf;
-		  reload_gpr_vsx[V4SImode]  = CODE_FOR_reload_gpr_from_vsxv4si;
-		  reload_gpr_vsx[V8HImode]  = CODE_FOR_reload_gpr_from_vsxv8hi;
-		  reload_gpr_vsx[V16QImode] = CODE_FOR_reload_gpr_from_vsxv16qi;
-		  reload_gpr_vsx[SFmode]    = CODE_FOR_reload_gpr_from_vsxsf;
+		  reg_addr[TImode].reload_gpr_vsx    = CODE_FOR_reload_gpr_from_vsxti;
+		  reg_addr[V2DFmode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv2df;
+		  reg_addr[V2DImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv2di;
+		  reg_addr[V4SFmode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv4sf;
+		  reg_addr[V4SImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv4si;
+		  reg_addr[V8HImode].reload_gpr_vsx  = CODE_FOR_reload_gpr_from_vsxv8hi;
+		  reg_addr[V16QImode].reload_gpr_vsx = CODE_FOR_reload_gpr_from_vsxv16qi;
+		  reg_addr[SFmode].reload_gpr_vsx    = CODE_FOR_reload_gpr_from_vsxsf;
 
-		  reload_vsx_gpr[TImode]    = CODE_FOR_reload_vsx_from_gprti;
-		  reload_vsx_gpr[V2DFmode]  = CODE_FOR_reload_vsx_from_gprv2df;
-		  reload_vsx_gpr[V2DImode]  = CODE_FOR_reload_vsx_from_gprv2di;
-		  reload_vsx_gpr[V4SFmode]  = CODE_FOR_reload_vsx_from_gprv4sf;
-		  reload_vsx_gpr[V4SImode]  = CODE_FOR_reload_vsx_from_gprv4si;
-		  reload_vsx_gpr[V8HImode]  = CODE_FOR_reload_vsx_from_gprv8hi;
-		  reload_vsx_gpr[V16QImode] = CODE_FOR_reload_vsx_from_gprv16qi;
-		  reload_vsx_gpr[SFmode]    = CODE_FOR_reload_vsx_from_gprsf;
+		  reg_addr[TImode].reload_vsx_gpr    = CODE_FOR_reload_vsx_from_gprti;
+		  reg_addr[V2DFmode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv2df;
+		  reg_addr[V2DImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv2di;
+		  reg_addr[V4SFmode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv4sf;
+		  reg_addr[V4SImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv4si;
+		  reg_addr[V8HImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv8hi;
+		  reg_addr[V16QImode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprv16qi;
+		  reg_addr[SFmode].reload_vsx_gpr    = CODE_FOR_reload_vsx_from_gprsf;
 		}
 	      else
 		{
-		  reload_fpr_gpr[DImode] = CODE_FOR_reload_fpr_from_gprdi;
-		  reload_fpr_gpr[DDmode] = CODE_FOR_reload_fpr_from_gprdd;
-		  reload_fpr_gpr[DFmode] = CODE_FOR_reload_fpr_from_gprdf;
+		  reg_addr[DImode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdi;
+		  reg_addr[DDmode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdd;
+		  reg_addr[DFmode].reload_fpr_gpr = CODE_FOR_reload_fpr_from_gprdf;
 		}
 	    }
 	}
       else
 	{
-	  rs6000_vector_reload[V16QImode][0] = CODE_FOR_reload_v16qi_si_store;
-	  rs6000_vector_reload[V16QImode][1] = CODE_FOR_reload_v16qi_si_load;
-	  rs6000_vector_reload[V8HImode][0]  = CODE_FOR_reload_v8hi_si_store;
-	  rs6000_vector_reload[V8HImode][1]  = CODE_FOR_reload_v8hi_si_load;
-	  rs6000_vector_reload[V4SImode][0]  = CODE_FOR_reload_v4si_si_store;
-	  rs6000_vector_reload[V4SImode][1]  = CODE_FOR_reload_v4si_si_load;
-	  rs6000_vector_reload[V2DImode][0]  = CODE_FOR_reload_v2di_si_store;
-	  rs6000_vector_reload[V2DImode][1]  = CODE_FOR_reload_v2di_si_load;
-	  rs6000_vector_reload[V4SFmode][0]  = CODE_FOR_reload_v4sf_si_store;
-	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_si_load;
-	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_si_store;
-	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_si_load;
-	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	  reg_addr[V16QImode].reload_store = CODE_FOR_reload_v16qi_si_store;
+	  reg_addr[V16QImode].reload_load  = CODE_FOR_reload_v16qi_si_load;
+	  reg_addr[V8HImode].reload_store  = CODE_FOR_reload_v8hi_si_store;
+	  reg_addr[V8HImode].reload_load   = CODE_FOR_reload_v8hi_si_load;
+	  reg_addr[V4SImode].reload_store  = CODE_FOR_reload_v4si_si_store;
+	  reg_addr[V4SImode].reload_load   = CODE_FOR_reload_v4si_si_load;
+	  reg_addr[V2DImode].reload_store  = CODE_FOR_reload_v2di_si_store;
+	  reg_addr[V2DImode].reload_load   = CODE_FOR_reload_v2di_si_load;
+	  reg_addr[V4SFmode].reload_store  = CODE_FOR_reload_v4sf_si_store;
+	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_si_load;
+	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_si_store;
+	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_si_load;
+	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
-	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_si_store;
-	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_si_load;
-	      rs6000_vector_reload[DDmode][0]  = CODE_FOR_reload_dd_si_store;
-	      rs6000_vector_reload[DDmode][1]  = CODE_FOR_reload_dd_si_load;
+	      reg_addr[DFmode].reload_store  = CODE_FOR_reload_df_si_store;
+	      reg_addr[DFmode].reload_load   = CODE_FOR_reload_df_si_load;
+	      reg_addr[DDmode].reload_store  = CODE_FOR_reload_dd_si_store;
+	      reg_addr[DDmode].reload_load   = CODE_FOR_reload_dd_si_load;
 	    }
 	  if (TARGET_P8_VECTOR)
 	    {
-	      rs6000_vector_reload[SFmode][0]  = CODE_FOR_reload_sf_si_store;
-	      rs6000_vector_reload[SFmode][1]  = CODE_FOR_reload_sf_si_load;
-	      rs6000_vector_reload[SDmode][0]  = CODE_FOR_reload_sd_si_store;
-	      rs6000_vector_reload[SDmode][1]  = CODE_FOR_reload_sd_si_load;
+	      reg_addr[SFmode].reload_store  = CODE_FOR_reload_sf_si_store;
+	      reg_addr[SFmode].reload_load   = CODE_FOR_reload_sf_si_load;
+	      reg_addr[SDmode].reload_store  = CODE_FOR_reload_sd_si_store;
+	      reg_addr[SDmode].reload_load   = CODE_FOR_reload_sd_si_load;
 	    }
 	  if (TARGET_VSX_TIMODE)
 	    {
-	      rs6000_vector_reload[TImode][0]  = CODE_FOR_reload_ti_si_store;
-	      rs6000_vector_reload[TImode][1]  = CODE_FOR_reload_ti_si_load;
+	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_si_store;
+	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_si_load;
 	    }
 	}
     }
@@ -7195,10 +7247,13 @@ rs6000_debug_legitimate_address_p (enum machine_mode mode, rtx x,
   bool ret = rs6000_legitimate_address_p (mode, x, reg_ok_strict);
   fprintf (stderr,
 	   "\nrs6000_legitimate_address_p: return = %s, mode = %s, "
-	   "strict = %d, code = %s\n",
+	   "strict = %d, reload = %s, code = %s\n",
 	   ret ? "true" : "false",
 	   GET_MODE_NAME (mode),
 	   reg_ok_strict,
+	   (reload_completed
+	    ? "after"
+	    : (reload_in_progress ? "progress" : "before")),
 	   GET_RTX_NAME (GET_CODE (x)));
   debug_rtx (x);
 
@@ -14721,7 +14776,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	    {
 	      cost = 3;			/* 2 mtvsrd's, 1 xxpermdi.  */
-	      icode = reload_vsx_gpr[(int)mode];
+	      icode = reg_addr[mode].reload_vsx_gpr;
 	    }
 
 	  /* Handle moving 128-bit values from VSX point registers to GPRs on
@@ -14730,7 +14785,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  else if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	    {
 	      cost = 3;			/* 2 mfvsrd's, 1 xxpermdi.  */
-	      icode = reload_gpr_vsx[(int)mode];
+	      icode = reg_addr[mode].reload_gpr_vsx;
 	    }
 	}
 
@@ -14739,13 +14794,13 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
 	  if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	    {
 	      cost = 3;			/* xscvdpspn, mfvsrd, and.  */
-	      icode = reload_gpr_vsx[(int)mode];
+	      icode = reg_addr[mode].reload_gpr_vsx;
 	    }
 
 	  else if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	    {
 	      cost = 2;			/* mtvsrz, xscvspdpn.  */
-	      icode = reload_vsx_gpr[(int)mode];
+	      icode = reg_addr[mode].reload_vsx_gpr;
 	    }
 	}
     }
@@ -14758,7 +14813,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	{
 	  cost = 3;			/* 2 mtvsrd's, 1 xxpermdi.  */
-	  icode = reload_vsx_gpr[(int)mode];
+	  icode = reg_addr[mode].reload_vsx_gpr;
 	}
 
       /* Handle moving 128-bit values from VSX point registers to GPRs on
@@ -14767,7 +14822,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       else if (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)
 	{
 	  cost = 3;			/* 2 mfvsrd's, 1 xxpermdi.  */
-	  icode = reload_gpr_vsx[(int)mode];
+	  icode = reg_addr[mode].reload_gpr_vsx;
 	}
     }
 
@@ -14783,7 +14838,7 @@ rs6000_secondary_reload_direct_move (enum rs6000_reg_type to_type,
       if (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE && !altivec_p)
 	{
 	  cost = 3;			/* 2 mtvsrwz's, 1 fmrgow.  */
-	  icode = reload_fpr_gpr[(int)mode];
+	  icode = reg_addr[mode].reload_fpr_gpr;
 	}
     }
 
@@ -14866,7 +14921,9 @@ rs6000_secondary_reload (bool in_p,
   bool default_p = false;
 
   sri->icode = CODE_FOR_nothing;
-  icode = rs6000_vector_reload[mode][in_p != false];
+  icode = ((in_p)
+	   ? reg_addr[mode].reload_load
+	   : reg_addr[mode].reload_store);
 
   if (REG_P (x) || register_operand (x, mode))
     {
@@ -14881,6 +14938,7 @@ rs6000_secondary_reload (bool in_p,
 	  from_type = exchange;
 	}
 
+      /* Can we do a direct move of some sort?  */
       if (rs6000_secondary_reload_move (to_type, from_type, mode, sri,
 					altivec_p))
 	{
@@ -17557,7 +17615,7 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
   if (note != NULL_RTX)
     {
       /* PROB is the difference from 50%.  */
-      int prob = INTVAL (XEXP (note, 0)) - REG_BR_PROB_BASE / 2;
+      int prob = XINT (note, 0) - REG_BR_PROB_BASE / 2;
 
       /* Only hint for highly probable/improbable branches on newer
 	 cpus as static prediction overrides processor dynamic
@@ -18163,12 +18221,12 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 static void
 emit_unlikely_jump (rtx cond, rtx label)
 {
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
   rtx x;
 
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
   x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  add_reg_note (x, REG_BR_PROB, very_unlikely);
+  add_int_reg_note (x, REG_BR_PROB, very_unlikely);
 }
 
 /* A subroutine of the atomic operation splitters.  Emit a load-locked
@@ -29009,6 +29067,27 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 	  emit_move_insn (adjust_address (mem, mode, offset), value);
 	}
     }
+
+  if (TARGET_MACHO && ! TARGET_ALTIVEC)
+    {
+      int i;
+      enum machine_mode mode = TYPE_MODE (char_type_node);
+      rtx addr = expand_expr (address, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      rtx mem = gen_rtx_MEM (BLKmode, addr);
+      rtx value = gen_int_mode (16, mode);
+
+      /* On Darwin, libgcc may be built to run on both G3 and G4/5.
+	 The unwinder still needs to know the size of Altivec registers.  */
+
+      for (i = FIRST_ALTIVEC_REGNO; i < LAST_ALTIVEC_REGNO+1; i++)
+	{
+	  int column = DWARF_REG_TO_UNWIND_COLUMN (i);
+	  HOST_WIDE_INT offset
+	    = DWARF_FRAME_REGNUM (column) * GET_MODE_SIZE (mode);
+
+	  emit_move_insn (adjust_address (mem, mode, offset), value);
+	}
+    }
 }
 
 /* Map internal gcc register numbers to DWARF2 register numbers.  */
@@ -29179,6 +29258,8 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
   { "string",			OPTION_MASK_STRING,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
+  { "upper-regs-df",		OPTION_MASK_UPPER_REGS_DF,	false, false },
+  { "upper-regs-sf",		OPTION_MASK_UPPER_REGS_SF,	false, false },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
   { "vsx-timode",		OPTION_MASK_VSX_TIMODE,		false, true  },
 #ifdef OPTION_MASK_64BIT

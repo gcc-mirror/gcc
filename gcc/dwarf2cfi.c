@@ -2841,14 +2841,14 @@ create_cie_data (void)
   dw_stack_pointer_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
   dw_frame_pointer_regnum = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 
-  memset (&cie_trace, 0, sizeof(cie_trace));
+  memset (&cie_trace, 0, sizeof (cie_trace));
   cur_trace = &cie_trace;
 
   add_cfi_vec = &cie_cfi_vec;
   cie_cfi_row = cur_row = new_cfi_row ();
 
   /* On entry, the Canonical Frame Address is at SP.  */
-  memset(&loc, 0, sizeof (loc));
+  memset (&loc, 0, sizeof (loc));
   loc.reg = dw_stack_pointer_regnum;
   loc.offset = INCOMING_FRAME_SP_OFFSET;
   def_cfa_1 (&loc);
@@ -3268,7 +3268,7 @@ dump_cfi_row (FILE *f, dw_cfi_row *row)
   if (!cfi)
     {
       dw_cfa_location dummy;
-      memset(&dummy, 0, sizeof(dummy));
+      memset (&dummy, 0, sizeof (dummy));
       dummy.reg = INVALID_REGNUM;
       cfi = def_cfa_0 (&dummy, &row->cfa);
     }
@@ -3391,8 +3391,8 @@ const pass_data pass_data_dwarf2_frame =
 class pass_dwarf2_frame : public rtl_opt_pass
 {
 public:
-  pass_dwarf2_frame(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_dwarf2_frame, ctxt)
+  pass_dwarf2_frame (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_dwarf2_frame, ctxt)
   {}
 
   /* opt_pass methods: */

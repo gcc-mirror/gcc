@@ -111,7 +111,7 @@ unsigned int
 hash_table_higher_prime_index (unsigned long n)
 {
   unsigned int low = 0;
-  unsigned int high = sizeof(prime_tab) / sizeof(prime_tab[0]);
+  unsigned int high = sizeof (prime_tab) / sizeof (prime_tab[0]);
 
   while (low != high)
     {

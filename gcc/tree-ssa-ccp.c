@@ -1728,6 +1728,9 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
 	insert_clobber_before_stack_restore (gimple_phi_result (stmt), var,
 					     visited);
       }
+    else if (gimple_assign_ssa_name_copy_p (stmt))
+      insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
+					   visited);
     else
       gcc_assert (is_gimple_debug (stmt));
 }
@@ -2163,8 +2166,8 @@ const pass_data pass_data_ccp =
 class pass_ccp : public gimple_opt_pass
 {
 public:
-  pass_ccp(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_ccp, ctxt)
+  pass_ccp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_ccp, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2580,8 +2583,8 @@ const pass_data pass_data_fold_builtins =
 class pass_fold_builtins : public gimple_opt_pass
 {
 public:
-  pass_fold_builtins(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_fold_builtins, ctxt)
+  pass_fold_builtins (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fold_builtins, ctxt)
   {}
 
   /* opt_pass methods: */

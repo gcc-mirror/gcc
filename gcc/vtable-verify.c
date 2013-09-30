@@ -173,7 +173,7 @@ vtbl_map_node_registration_find (struct vtbl_map_node *node,
   struct vtable_registration key;
   struct vtable_registration **slot;
 
-  gcc_assert (node && node->registered.is_created());
+  gcc_assert (node && node->registered.is_created ());
 
   key.vtable_decl = vtable_decl;
   slot = (struct vtable_registration **) node->registered.find_slot (&key,
@@ -182,7 +182,7 @@ vtbl_map_node_registration_find (struct vtbl_map_node *node,
   if (slot && (*slot))
     {
       unsigned i;
-      for (i = 0; i < ((*slot)->offsets).length(); ++i)
+      for (i = 0; i < ((*slot)->offsets).length (); ++i)
         if ((*slot)->offsets[i] == offset)
           return true;
     }
@@ -203,7 +203,7 @@ vtbl_map_node_registration_insert (struct vtbl_map_node *node,
   struct vtable_registration **slot;
   bool inserted_something = false;
 
-  if (!node || !node->registered.is_created())
+  if (!node || !node->registered.is_created ())
     return false;
 
   key.vtable_decl = vtable_decl;
@@ -227,7 +227,7 @@ vtbl_map_node_registration_insert (struct vtbl_map_node *node,
          contains the offset.  If not, we need to add the offset.  */
       unsigned i;
       bool found = false;
-      for (i = 0; i < ((*slot)->offsets).length() && !found; ++i)
+      for (i = 0; i < ((*slot)->offsets).length () && !found; ++i)
         if ((*slot)->offsets[i] == offset)
           found = true;
 
@@ -319,7 +319,7 @@ vtbl_map_get_node (tree class_type)
   tree class_name;
   unsigned int type_quals;
 
-  if (!vtbl_map_hash.is_created())
+  if (!vtbl_map_hash.is_created ())
     return NULL;
 
   gcc_assert (TREE_CODE (class_type) == RECORD_TYPE);
@@ -356,7 +356,7 @@ find_or_create_vtbl_map_node (tree base_class_type)
   tree class_type_decl;
   unsigned int type_quals;
 
-  if (!vtbl_map_hash.is_created())
+  if (!vtbl_map_hash.is_created ())
     vtbl_map_hash.create (10);
 
   /* Find the TYPE_DECL for the class.  */
@@ -772,8 +772,8 @@ const pass_data pass_data_vtable_verify =
 class pass_vtable_verify : public gimple_opt_pass
 {
 public:
-  pass_vtable_verify(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_vtable_verify, ctxt)
+  pass_vtable_verify (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_vtable_verify, ctxt)
   {}
 
   /* opt_pass methods: */

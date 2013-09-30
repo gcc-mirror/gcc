@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
 #include "params.h"
 
@@ -934,8 +935,8 @@ const pass_data pass_data_dominator =
 class pass_dominator : public gimple_opt_pass
 {
 public:
-  pass_dominator(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_dominator, ctxt)
+  pass_dominator (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_dominator, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3127,8 +3128,8 @@ const pass_data pass_data_phi_only_cprop =
 class pass_phi_only_cprop : public gimple_opt_pass
 {
 public:
-  pass_phi_only_cprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_phi_only_cprop, ctxt)
+  pass_phi_only_cprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_phi_only_cprop, ctxt)
   {}
 
   /* opt_pass methods: */

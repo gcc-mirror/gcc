@@ -1932,7 +1932,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
 	template<typename _Tp>
 	  static bool
-	  _M_not_empty_function(const _Tp*& __fp)
+	  _M_not_empty_function(_Tp* const& __fp)
 	  { return __fp; }
 
 	template<typename _Class, typename _Tp>

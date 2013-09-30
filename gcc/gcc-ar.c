@@ -123,7 +123,7 @@ setup_prefixes (const char *exec_path)
 }
 
 int 
-main(int ac, char **av)
+main (int ac, char **av)
 {
   const char *exe_name;
   char *plugin;
@@ -166,7 +166,7 @@ main(int ac, char **av)
   nargv[1] = "--plugin";
   nargv[2] = plugin;
   if (is_ar && av[1] && av[1][0] != '-')
-    av[1] = concat("-", av[1], NULL);
+    av[1] = concat ("-", av[1], NULL);
   for (k = 1; k < ac; k++)
     nargv[2 + k] = av[k];
   nargv[2 + k] = NULL;
@@ -176,18 +176,18 @@ main(int ac, char **av)
   err_msg = pex_one (PEX_LAST|PEX_SEARCH, 
 		     exe_name, 
 		     CONST_CAST2 (char * const *, const char **, nargv),
-		     concat("gcc-", exe_name, NULL), 
+		     concat ("gcc-", exe_name, NULL),
 		     NULL,NULL,  &status, &err);
   if (err_msg) 
-    fprintf(stderr, "Error running %s: %s\n", exe_name, err_msg);
+    fprintf (stderr, "Error running %s: %s\n", exe_name, err_msg);
   else if (status)
     {
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
 	  fprintf (stderr, "%s terminated with signal %d [%s]%s\n",
-		   exe_name, sig, strsignal(sig),
-		   WCOREDUMP(status) ? ", core dumped" : "");
+		   exe_name, sig, strsignal (sig),
+		   WCOREDUMP (status) ? ", core dumped" : "");
 	}
       else if (WIFEXITED (status))
 	exit_code = WEXITSTATUS (status);

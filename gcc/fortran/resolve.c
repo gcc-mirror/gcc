@@ -9602,8 +9602,9 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		  && gfc_expr_attr ((*code)->expr1).allocatable)
 		{
 		  gfc_code *block;
-                  gfc_expr *cond;
-                  cond = gfc_get_expr ();
+		  gfc_expr *cond;
+
+		  cond = gfc_get_expr ();
 		  cond->ts.type = BT_LOGICAL;
 		  cond->ts.kind = gfc_default_logical_kind;
 		  cond->expr_type = EXPR_OP;
@@ -9621,7 +9622,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		  add_code_to_chain (&block, &head, &tail);
 		}
 	    }
-	  }
+	}
       else if (this_code->op == EXEC_ASSIGN && !this_code->next)
 	{
 	  /* Don't add intrinsic assignments since they are already
@@ -9643,19 +9644,34 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	}
     }
 
-  /* This is probably not necessary.  */
-  if (this_code)
-    {
-      gfc_free_statements (this_code);
-      this_code = NULL;
-    }
-
   /* Put the temporary assignments at the top of the generated code.  */
   if (tmp_head && component_assignment_level == 1)
     {
       gfc_append_code (tmp_head, head);
       head = tmp_head;
       tmp_head = tmp_tail = NULL;
+    }
+
+  // If we did a pointer assignment - thus, we need to ensure that the LHS is
+  // not accidentally deallocated. Hence, nullify t1.
+  if (t1 && (*code)->expr1->symtree->n.sym->attr.allocatable
+      && gfc_expr_attr ((*code)->expr1).allocatable)
+    {
+      gfc_code *block;
+      gfc_expr *cond;
+      gfc_expr *e;
+
+      e = gfc_lval_expr_from_sym ((*code)->expr1->symtree->n.sym);
+      cond = gfc_build_intrinsic_call (ns, GFC_ISYM_ASSOCIATED, "associated",
+				       (*code)->loc, 2, gfc_copy_expr (t1), e);
+      block = gfc_get_code (EXEC_IF);
+      block->block = gfc_get_code (EXEC_IF);
+      block->block->expr1 = cond;
+      block->block->next = build_assignment (EXEC_POINTER_ASSIGN,
+					t1, gfc_get_null_expr (&(*code)->loc),
+					NULL, NULL, (*code)->loc);
+      gfc_append_code (tail, block);
+      tail = block;
     }
 
   /* Now attach the remaining code chain to the input code.  Step on
@@ -9667,7 +9683,8 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
   gfc_free_expr ((*code)->expr1);
   gfc_free_expr ((*code)->expr2);
   **code = *head;
-  free (head);
+  if (head != tail)
+    free (head);
   *code = tail;
 
   component_assignment_level--;

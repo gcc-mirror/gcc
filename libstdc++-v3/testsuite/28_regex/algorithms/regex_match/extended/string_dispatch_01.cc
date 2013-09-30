@@ -38,9 +38,10 @@ template<typename _Bi_iter, typename _Alloc,
              regex_constants::match_flag_type         __flags
                             = regex_constants::match_default)
   {
+    auto& __res = (vector<sub_match<_Bi_iter>, _Alloc>&)(__m);
     VERIFY( (dynamic_cast
              <__detail::_DFSExecutor<_Bi_iter, _Alloc, _Ch_type, _Rx_traits>*>
-             (&*__detail::__get_executor(__s, __e, __m, __re, __flags))
+             (&*__detail::__get_executor(__s, __e, __res, __re, __flags))
              != nullptr) );
   }
 

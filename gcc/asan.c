@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "alloc-pool.h"
 #include "cfgloop.h"
+#include "gimple-builder.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -908,7 +909,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_cmp_and_jump_insns (addr, end, LT, NULL_RTX, Pmode, true, top_label);
   jump = get_last_insn ();
   gcc_assert (JUMP_P (jump));
-  add_reg_note (jump, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE * 80 / 100));
+  add_int_reg_note (jump, REG_BR_PROB, REG_BR_PROB_BASE * 80 / 100);
 }
 
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
@@ -2267,8 +2268,8 @@ const pass_data pass_data_asan =
 class pass_asan : public gimple_opt_pass
 {
 public:
-  pass_asan(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_asan, ctxt)
+  pass_asan (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_asan, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2313,8 +2314,8 @@ const pass_data pass_data_asan_O0 =
 class pass_asan_O0 : public gimple_opt_pass
 {
 public:
-  pass_asan_O0(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_asan_O0, ctxt)
+  pass_asan_O0 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_asan_O0, ctxt)
   {}
 
   /* opt_pass methods: */

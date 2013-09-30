@@ -355,7 +355,7 @@ main (int argc, char **argv)
       printf ("#define MAX_INSNS_PER_PEEP2 %d\n", max_insns_per_peep2);
     }
 
-  puts("\n#endif /* GCC_INSN_CONFIG_H */");
+  puts ("\n#endif /* GCC_INSN_CONFIG_H */");
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;

@@ -3920,7 +3920,7 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
 
   if (ratio == 1)
     {
-      if(operand_equal_p (ubase, cbase, 0))
+      if (operand_equal_p (ubase, cbase, 0))
         return -1;
 
       if (TREE_CODE (ubase) == ADDR_EXPR

@@ -2680,7 +2680,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
   /* Cost model disabled.  */
-  if (!flag_vect_cost_model)
+  if (unlimited_cost_model ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.\n");
       *ret_min_profitable_niters = 0;
@@ -4411,7 +4411,8 @@ vect_finalize_reduction:
          result.  (The reduction result is expected to have two immediate uses -
          one at the latch block, and one at the loop exit).  */
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
-        if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
+        if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p)))
+	    && !is_gimple_debug (USE_STMT (use_p)))
           phis.safe_push (USE_STMT (use_p));
 
       /* While we expect to have found an exit_phi because of loop-closed-ssa
@@ -4541,7 +4542,10 @@ vect_finalize_reduction:
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
         {
           if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
-            phis.safe_push (USE_STMT (use_p));
+	    {
+	      if (!is_gimple_debug (USE_STMT (use_p)))
+		phis.safe_push (USE_STMT (use_p));
+	    }
           else
             {
               if (double_reduc && gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
@@ -4551,7 +4555,8 @@ vect_finalize_reduction:
                   FOR_EACH_IMM_USE_FAST (phi_use_p, phi_imm_iter, phi_res)
                     {
                       if (!flow_bb_inside_loop_p (loop,
-                                             gimple_bb (USE_STMT (phi_use_p))))
+                                             gimple_bb (USE_STMT (phi_use_p)))
+			  && !is_gimple_debug (USE_STMT (phi_use_p)))
                         phis.safe_push (USE_STMT (phi_use_p));
                     }
                 }

@@ -259,11 +259,18 @@ ubsan_type_descriptor (tree type)
   unsigned short tkind, tinfo;
 
   /* At least for INTEGER_TYPE/REAL_TYPE/COMPLEX_TYPE, this should work.
-     ??? For e.g. type_unsigned_for (type), the TYPE_NAME would be NULL.  */
+     For e.g. type_unsigned_for (type) or bit-fields, the TYPE_NAME
+     would be NULL.  */
   if (TYPE_NAME (type) != NULL)
-    tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+    {
+      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+	tname = IDENTIFIER_POINTER (TYPE_NAME (type));
+      else
+	tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+    }
   else
     tname = "<unknown>";
+
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
       /* For INTEGER_TYPE, this is 0x0000.  */

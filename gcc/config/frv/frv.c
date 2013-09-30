@@ -2643,7 +2643,7 @@ frv_print_operand_jump_hint (rtx insn)
   rtx note;
   rtx labelref;
   int ret;
-  HOST_WIDE_INT prob = -1;
+  int prob = -1;
   enum { UNKNOWN, BACKWARD, FORWARD } jump_type = UNKNOWN;
 
   gcc_assert (JUMP_P (insn));
@@ -2669,7 +2669,7 @@ frv_print_operand_jump_hint (rtx insn)
 
       else
 	{
-	  prob = INTVAL (XEXP (note, 0));
+	  prob = XINT (note, 0);
 	  ret = ((prob >= (REG_BR_PROB_BASE / 2))
 		 ? FRV_JUMP_LIKELY
 		 : FRV_JUMP_NOT_LIKELY);
@@ -2690,10 +2690,10 @@ frv_print_operand_jump_hint (rtx insn)
 	}
 
       fprintf (stderr,
-	       "%s: uid %ld, %s, probability = %ld, max prob. = %ld, hint = %d\n",
+	       "%s: uid %ld, %s, probability = %d, max prob. = %d, hint = %d\n",
 	       IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
-	       (long)INSN_UID (insn), direction, (long)prob,
-	       (long)REG_BR_PROB_BASE, ret);
+	       (long)INSN_UID (insn), direction, prob,
+	       REG_BR_PROB_BASE, ret);
     }
 #endif
 

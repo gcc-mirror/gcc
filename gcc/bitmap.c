@@ -811,7 +811,7 @@ bitmap_first_set_bit (const_bitmap a)
   bit_no += ix * BITMAP_WORD_BITS;
 
 #if GCC_VERSION >= 3004
-  gcc_assert (sizeof(long) == sizeof (word));
+  gcc_assert (sizeof (long) == sizeof (word));
   bit_no += __builtin_ctzl (word);
 #else
   /* Binary search for the first set bit.  */
@@ -863,7 +863,7 @@ bitmap_last_set_bit (const_bitmap a)
  found_bit:
   bit_no += ix * BITMAP_WORD_BITS;
 #if GCC_VERSION >= 3004
-  gcc_assert (sizeof(long) == sizeof (word));
+  gcc_assert (sizeof (long) == sizeof (word));
   bit_no += BITMAP_WORD_BITS - __builtin_clzl (word) - 1;
 #else
   /* Hopefully this is a twos-complement host...  */

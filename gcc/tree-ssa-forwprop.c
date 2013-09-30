@@ -1001,7 +1001,6 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 static bool
 forward_propagate_addr_expr (tree name, tree rhs)
 {
-  int stmt_loop_depth = bb_loop_depth (gimple_bb (SSA_NAME_DEF_STMT (name)));
   imm_use_iterator iter;
   gimple use_stmt;
   bool all = true;
@@ -1014,37 +1013,24 @@ forward_propagate_addr_expr (tree name, tree rhs)
 
       /* If the use is not in a simple assignment statement, then
 	 there is nothing we can do.  */
-      if (gimple_code (use_stmt) != GIMPLE_ASSIGN)
+      if (!is_gimple_assign (use_stmt))
 	{
 	  if (!is_gimple_debug (use_stmt))
 	    all = false;
 	  continue;
 	}
 
-      /* If the use is in a deeper loop nest, then we do not want
-	 to propagate non-invariant ADDR_EXPRs into the loop as that
-	 is likely adding expression evaluations into the loop.  */
-      if (bb_loop_depth (gimple_bb (use_stmt)) > stmt_loop_depth
-	  && !is_gimple_min_invariant (rhs))
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+      result = forward_propagate_addr_expr_1 (name, rhs, &gsi,
+					      single_use_p);
+      /* If the use has moved to a different statement adjust
+	 the update machinery for the old statement too.  */
+      if (use_stmt != gsi_stmt (gsi))
 	{
-	  all = false;
-	  continue;
+	  update_stmt (use_stmt);
+	  use_stmt = gsi_stmt (gsi);
 	}
-
-      {
-	gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-	result = forward_propagate_addr_expr_1 (name, rhs, &gsi,
-						single_use_p);
-	/* If the use has moved to a different statement adjust
-	   the update machinery for the old statement too.  */
-	if (use_stmt != gsi_stmt (gsi))
-	  {
-	    update_stmt (use_stmt);
-	    use_stmt = gsi_stmt (gsi);
-	  }
-
-	update_stmt (use_stmt);
-      }
+      update_stmt (use_stmt);
       all &= result;
 
       /* Remove intermediate now unused copy and conversion chains.  */
@@ -3191,9 +3177,9 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	    return 0;
 	  arg1 = arg0;
 	}
-      opt = fold_ternary (VEC_PERM_EXPR, TREE_TYPE(op0), arg0, arg1, op2);
+      opt = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (op0), arg0, arg1, op2);
       if (!opt
-	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE(opt) != VECTOR_CST))
+	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE (opt) != VECTOR_CST))
 	return 0;
       gimple_assign_set_rhs_from_tree (gsi, opt);
       update_stmt (gsi_stmt (*gsi));
@@ -3574,8 +3560,8 @@ const pass_data pass_data_forwprop =
 class pass_forwprop : public gimple_opt_pass
 {
 public:
-  pass_forwprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_forwprop, ctxt)
+  pass_forwprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_forwprop, ctxt)
   {}
 
   /* opt_pass methods: */

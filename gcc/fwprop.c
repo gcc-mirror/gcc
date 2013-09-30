@@ -1504,8 +1504,8 @@ const pass_data pass_data_rtl_fwprop =
 class pass_rtl_fwprop : public rtl_opt_pass
 {
 public:
-  pass_rtl_fwprop(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_fwprop, ctxt)
+  pass_rtl_fwprop (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_fwprop, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1570,8 +1570,8 @@ const pass_data pass_data_rtl_fwprop_addr =
 class pass_rtl_fwprop_addr : public rtl_opt_pass
 {
 public:
-  pass_rtl_fwprop_addr(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_fwprop_addr, ctxt)
+  pass_rtl_fwprop_addr (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_fwprop_addr, ctxt)
   {}
 
   /* opt_pass methods: */

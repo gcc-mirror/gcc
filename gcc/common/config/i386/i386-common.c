@@ -811,7 +811,6 @@ ix86_option_init_struct (struct gcc_options *opts)
 
   opts->x_flag_pcc_struct_return = 2;
   opts->x_flag_asynchronous_unwind_tables = 2;
-  opts->x_flag_vect_cost_model = 1;
 }
 
 /* On the x86 -fsplit-stack and -fstack-protector both use the same

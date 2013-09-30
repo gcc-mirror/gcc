@@ -240,7 +240,7 @@ dot_rdg (struct graph *rdg)
 {
   /* When debugging, you may want to enable the following code.  */
 #if 1
-  FILE *file = popen("dot -Tx11", "w");
+  FILE *file = popen ("dot -Tx11", "w");
   if (!file)
     return;
   dot_rdg_1 (file, rdg);
@@ -1784,8 +1784,8 @@ const pass_data pass_data_loop_distribution =
 class pass_loop_distribution : public gimple_opt_pass
 {
 public:
-  pass_loop_distribution(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_loop_distribution, ctxt)
+  pass_loop_distribution (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_loop_distribution, ctxt)
   {}
 
   /* opt_pass methods: */

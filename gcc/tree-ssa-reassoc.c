@@ -3682,7 +3682,7 @@ repropagate_negates (void)
 	      tree a = gimple_assign_rhs1 (feed);
 	      tree rhs2 = gimple_assign_rhs2 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (feed), gsi2;
-	      gimple_replace_lhs (feed, negate);
+	      gimple_replace_ssa_lhs (feed, negate);
 	      gimple_assign_set_rhs_with_ops (&gsi, PLUS_EXPR, a, rhs2);
 	      update_stmt (gsi_stmt (gsi));
 	      gsi2 = gsi_for_stmt (user);
@@ -4480,8 +4480,8 @@ const pass_data pass_data_reassoc =
 class pass_reassoc : public gimple_opt_pass
 {
 public:
-  pass_reassoc(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_reassoc, ctxt)
+  pass_reassoc (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_reassoc, ctxt)
   {}
 
   /* opt_pass methods: */

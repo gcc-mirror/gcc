@@ -719,7 +719,7 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len PASS_MEM_STAT);
-  memset (&(v->address()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  memset (&(v->address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
 }
 
 
@@ -858,7 +858,7 @@ vec<T, A, vl_embed>::space (unsigned nelems) const
    element of this vector.  Use this to iterate over the elements of a
    vector as follows,
 
-     for (ix = 0; vec<T, A>::iterate(v, ix, &ptr); ix++)
+     for (ix = 0; vec<T, A>::iterate (v, ix, &ptr); ix++)
        continue;  */
 
 template<typename T, typename A>
@@ -882,7 +882,7 @@ vec<T, A, vl_embed>::iterate (unsigned ix, T *ptr) const
    IX'th element of this vector.  Use this to iterate over the
    elements of a vector as follows,
 
-     for (ix = 0; v->iterate(ix, &ptr); ix++)
+     for (ix = 0; v->iterate (ix, &ptr); ix++)
        continue;
 
    This variant is for vectors of objects.  */
@@ -916,7 +916,7 @@ vec<T, A, vl_embed>::copy (ALONE_MEM_STAT_DECL) const
     {
       vec_alloc (new_vec, len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
-      memcpy (new_vec->address(), vecdata_, sizeof (T) * len);
+      memcpy (new_vec->address (), vecdata_, sizeof (T) * len);
     }
   return new_vec;
 }
@@ -929,11 +929,11 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::splice (vec<T, A, vl_embed> &src)
 {
-  unsigned len = src.length();
+  unsigned len = src.length ();
   if (len)
     {
       gcc_checking_assert (space (len));
-      memcpy (address() + length(), src.address(), len * sizeof (T));
+      memcpy (address () + length (), src.address (), len * sizeof (T));
       vecpfx_.num_ += len;
     }
 }
@@ -1008,7 +1008,7 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 {
-  gcc_checking_assert (ix < length());
+  gcc_checking_assert (ix < length ());
   T *slot = &vecdata_[ix];
   memmove (slot, slot + 1, (--vecpfx_.num_ - ix) * sizeof (T));
 }
@@ -1021,7 +1021,7 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::unordered_remove (unsigned ix)
 {
-  gcc_checking_assert (ix < length());
+  gcc_checking_assert (ix < length ());
   vecdata_[ix] = vecdata_[--vecpfx_.num_];
 }
 
@@ -1033,7 +1033,7 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::block_remove (unsigned ix, unsigned len)
 {
-  gcc_checking_assert (ix + len <= length());
+  gcc_checking_assert (ix + len <= length ());
   T *slot = &vecdata_[ix];
   vecpfx_.num_ -= len;
   memmove (slot, slot + len, (vecpfx_.num_ - ix) * sizeof (T));
@@ -1047,7 +1047,7 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::qsort (int (*cmp) (const void *, const void *))
 {
-  ::qsort (address(), length(), sizeof (T), cmp);
+  ::qsort (address (), length (), sizeof (T), cmp);
 }
 
 
@@ -1091,7 +1091,7 @@ vec<T, A, vl_embed>::lower_bound (T obj, bool (*lessthan)(const T &, const T &))
    final member):
 
    size_t vec<T, A, vl_embed>::embedded_size (unsigned alloc);
-   void v->embedded_init(unsigned alloc, unsigned num);
+   void v->embedded_init (unsigned alloc, unsigned num);
 
    These allow the caller to perform the memory allocation.  */
 
@@ -1137,7 +1137,7 @@ vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
 {
   unsigned oldlen = length ();
   quick_grow (len);
-  memset (&(address()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  memset (&(address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
 }
 
 
@@ -1232,10 +1232,10 @@ public:
   { return vec_ != NULL; }
 
   bool is_empty (void) const
-  { return vec_ ? vec_->is_empty() : true; }
+  { return vec_ ? vec_->is_empty () : true; }
 
   unsigned length (void) const
-  { return vec_ ? vec_->length() : 0; }
+  { return vec_ ? vec_->length () : 0; }
 
   T *address (void)
   { return vec_ ? vec_->vecdata_ : NULL; }
@@ -1250,13 +1250,13 @@ public:
   { return !(*this == other); }
 
   bool operator==(const vec &other) const
-  { return address() == other.address(); }
+  { return address () == other.address (); }
 
   T &operator[] (unsigned ix)
   { return (*vec_)[ix]; }
 
   T &last (void)
-  { return vec_->last(); }
+  { return vec_->last (); }
 
   bool space (int nelems) const
   { return vec_ ? vec_->space (nelems) : nelems == 0; }
@@ -1285,8 +1285,8 @@ public:
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
 
   template<typename T1>
-  friend void va_stack::alloc(vec<T1, va_stack, vl_ptr>&, unsigned,
-			      vec<T1, va_stack, vl_embed> *);
+  friend void va_stack::alloc (vec<T1, va_stack, vl_ptr>&, unsigned,
+			       vec<T1, va_stack, vl_embed> *);
 
   /* FIXME - This field should be private, but we need to cater to
 	     compilers that have stricter notions of PODness for types.  */
@@ -1386,7 +1386,7 @@ vec_free (vec<T> *&v)
    element of this vector.  Use this to iterate over the elements of a
    vector as follows,
 
-     for (ix = 0; v.iterate(ix, &ptr); ix++)
+     for (ix = 0; v.iterate (ix, &ptr); ix++)
        continue;  */
 
 template<typename T, typename A>
@@ -1407,7 +1407,7 @@ vec<T, A, vl_ptr>::iterate (unsigned ix, T *ptr) const
    IX'th element of this vector.  Use this to iterate over the
    elements of a vector as follows,
 
-     for (ix = 0; v->iterate(ix, &ptr); ix++)
+     for (ix = 0; v->iterate (ix, &ptr); ix++)
        continue;
 
    This variant is for vectors of objects.  */
@@ -1544,9 +1544,9 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_ptr>::safe_splice (vec<T, A, vl_ptr> &src MEM_STAT_DECL)
 {
-  if (src.length())
+  if (src.length ())
     {
-      reserve_exact (src.length());
+      reserve_exact (src.length ());
       splice (src);
     }
 }
@@ -1626,7 +1626,7 @@ vec<T, A, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
   safe_grow (len PASS_MEM_STAT);
-  memset (&(address()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  memset (&(address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
 }
 
 

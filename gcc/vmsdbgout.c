@@ -221,9 +221,9 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
 
 #ifndef UNALIGNED_OFFSET_ASM_OP
 #define UNALIGNED_OFFSET_ASM_OP(OFFSET) \
-  (NUMBYTES(OFFSET) == 4 \
+  (NUMBYTES (OFFSET) == 4 \
    ? VMS_UNALIGNED_LONG_ASM_OP \
-   : (NUMBYTES(OFFSET) == 2 ? VMS_UNALIGNED_SHORT_ASM_OP : VMS_ASM_BYTE_OP))
+   : (NUMBYTES (OFFSET) == 2 ? VMS_UNALIGNED_SHORT_ASM_OP : VMS_ASM_BYTE_OP))
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -329,7 +329,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef ASM_OUTPUT_DEBUG_DATA
 #define ASM_OUTPUT_DEBUG_DATA(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_OFFSET_ASM_OP(VALUE), VALUE)
+  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_OFFSET_ASM_OP (VALUE), VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_ADDR_DATA
@@ -351,7 +351,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #define ASM_OUTPUT_DEBUG_STRING(FILE,P)		\
   do						\
     {						\
-      register int slen = strlen(P);		\
+      register int slen = strlen (P);		\
       register const char *p = (P);		\
       register int i;				\
       fprintf (FILE, "\t.ascii \"");		\

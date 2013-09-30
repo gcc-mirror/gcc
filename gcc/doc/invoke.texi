@@ -423,7 +423,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
 -ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
--ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
+-ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
@@ -6770,7 +6770,7 @@ optimizations designed to reduce code size.
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
 -falign-labels  -freorder-blocks  -freorder-blocks-and-partition @gol
--fprefetch-loop-arrays  -ftree-vect-loop-version}
+-fprefetch-loop-arrays}
 
 @item -Ofast
 @opindex Ofast
@@ -8025,19 +8025,20 @@ Perform loop vectorization on trees. This flag is enabled by default at
 Perform basic block vectorization on trees. This flag is enabled by default at
 @option{-O3} and when @option{-ftree-vectorize} is enabled.
 
-@item -ftree-vect-loop-version
-@opindex ftree-vect-loop-version
-Perform loop versioning when doing loop vectorization on trees.  When a loop
-appears to be vectorizable except that data alignment or data dependence cannot
-be determined at compile time, then vectorized and non-vectorized versions of
-the loop are generated along with run-time checks for alignment or dependence
-to control which version is executed.  This option is enabled by default
-except at level @option{-Os} where it is disabled.
-
-@item -fvect-cost-model
+@item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
-Enable cost model for vectorization.  This option is enabled by default at
-@option{-O3}.
+Alter the cost model used for vectorization.  The @var{model} argument
+should be one of @code{unlimited}, @code{dynamic} or @code{cheap}.
+With the @code{unlimited} model the vectorized code-path is assumed
+to be profitable while with the @code{dynamic} model a runtime check
+will guard the vectorized code-path to enable it only for iteration
+counts that will likely execute faster than when executing the original
+scalar loop.  The @code{cheap} model will disable vectorization of
+loops where doing so would be cost prohibitive for example due to
+required runtime checks for data dependence or alignment but otherwise
+is equal to the @code{dynamic} model.
+The default cost model depends on other optimization flags and is
+either @code{dynamic} or @code{cheap}.
 
 @item -ftree-vrp
 @opindex ftree-vrp
@@ -9443,13 +9444,15 @@ constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alignment in the vectorizer.  See option
-@option{-ftree-vect-loop-version} for more information.
+doing loop versioning for alignment in the vectorizer. 
 
 @item vect-max-version-for-alias-checks
 The maximum number of run-time checks that can be performed when
-doing loop versioning for alias in the vectorizer.  See option
-@option{-ftree-vect-loop-version} for more information.
+doing loop versioning for alias in the vectorizer. 
+
+@item vect-max-peeling-for-alignment
+The maximum number of loop peels to enhance access alignment
+for vectorizer. Value -1 means 'no limit'.
 
 @item max-iterations-to-track
 The maximum number of iterations of a loop the brute-force algorithm
@@ -12044,7 +12047,7 @@ generic or @code{__flash} is used, then @code{RAMPZ} is set
 as needed before the operation.
 
 @item
-If the device supports RAM larger than 64@tie{KiB} and the compiler
+If the device supports RAM larger than 64@tie{}KiB and the compiler
 needs to change @code{RAMPZ} to accomplish an operation, @code{RAMPZ}
 is reset to zero after the operation.
 
@@ -12054,7 +12057,7 @@ prologue/epilogue saves/restores that SFR and initializes it with
 zero in case the ISR code might (implicitly) use it.
 
 @item
-RAM larger than 64@tie{KiB} is not supported by GCC for AVR targets.
+RAM larger than 64@tie{}KiB is not supported by GCC for AVR targets.
 If you use inline assembler to read from locations outside the
 16-bit address range and change one of the @code{RAMP} registers,
 you must reset it to zero after the access.
@@ -21165,14 +21168,6 @@ instruction.  In the previous example, that might be a 32-bit load
 instruction, even though that accesses bytes that do not contain
 any portion of the bit-field, or memory-mapped registers unrelated to
 the one being updated.
-
-If the target requires strict alignment, and honoring the field
-type would require violating this alignment, a warning is issued.
-If the field has @code{packed} attribute, the access is done without
-honoring the field type.  If the field doesn't have @code{packed}
-attribute, the access is done honoring the field type.  In both cases,
-GCC assumes that the user knows something about the target hardware
-that it is unaware of.
 
 The default value of this option is determined by the application binary
 interface for the target processor.

@@ -108,8 +108,8 @@ const pass_data pass_data_cleanup_cfg_post_optimizing =
 class pass_cleanup_cfg_post_optimizing : public gimple_opt_pass
 {
 public:
-  pass_cleanup_cfg_post_optimizing(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_cleanup_cfg_post_optimizing, ctxt)
+  pass_cleanup_cfg_post_optimizing (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cleanup_cfg_post_optimizing, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -250,8 +250,8 @@ const pass_data pass_data_fixup_cfg =
 class pass_fixup_cfg : public gimple_opt_pass
 {
 public:
-  pass_fixup_cfg(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_fixup_cfg, ctxt)
+  pass_fixup_cfg (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fixup_cfg, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -1,3 +1,903 @@
+2013-09-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430x_names): New array.  Lists MCUs
+	that use the MSP430X ISA.
+	(msp430_option_override): Scan -mmcu command line option for any
+	MCU name that supports the MSP430X ISA.
+	* config/msp430/t-msp430 (MULTILIB_MATCHES): Add matches for known
+	-mmcu options which enable the MSP430X ISA.
+
+2013-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58532
+	* tree-cfg.c (make_abnormal_goto_edges): Skip debug statements
+	before looking for setjmp-like calls.
+
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/10901
+	* config/darwin-protos.h (machopic_get_function_picbase): New.
+	* config/darwin.c (machopic_get_function_picbase): New.
+	* config/rs6000/darwin.md (load_macho_picbase_si): Update picbase
+	label for a new func.  (load_macho_picbase_di): Likewise.
+	(reload_macho_picbase): New expand.
+	(reload_macho_picbase_si): New insn.
+	(reload_macho_picbase_di): New insn.
+	(nonlocal_goto_receiver): New define and split.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_RELD_MPIC.
+	(unspecv enum): Add UNSPECV_NLGR.
+
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_dwarf_reg_sizes_extra): Ensure
+	that altivec registers are correctly sized on Darwin.
+
+2013-09-29  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/t-darwin (darwin.o, darwin-c.o, darwin-f.o,
+	darwin-driver.o): Use COMPILE and POSTCOMPILE.
+	* config/x-darwin (host-darwin.o): Likewise.
+	* config/i386/x-darwin (host-i386-darwin.o): Likewise.
+	* config/rs6000/x-darwin (host-ppc-darwin.o): Likewise.
+	* config/rs6000/x-darwin64 (host-ppc64-darwin.o): Likewise.
+
+2013-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi: Fix usage of @tie{} command.
+
+2013-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sync.md: Add peephole for consecutive memory barriers.
+
+2013-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def: Add documentation for each of the options;
+	add whitespace.
+
+2013-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Enable for
+	generic.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Likewise.
+	(X86_TUNE_FOUR_JUMP_LIMIT): Drop for generic and buldozer.
+	(X86_TUNE_PAD_RETURNS): Drop for buldozer chips.
+	(X86_TUNE_AVOID_VECTOR_DECODE): Drop for generic.
+	(X86_TUNE_REASSOC_FP_TO_PARALLEL): Enable for generic.
+
+2013-09-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* alloc-pool.c, asan.c, auto-inc-dec.c, basic-block.h, bb-reorder.c,
+	bitmap.c, bitmap.h, bt-load.c, builtins.c, calls.c, cfgcleanup.c,
+	cfgexpand.c, cfghooks.c, cfgloop.c, cfgloopmanip.c, cfgrtl.c, cgraph.c,
+	cgraph.h, cgraphbuild.c, cgraphclones.c, cgraphunit.c, collect2.c,
+	combine-stack-adj.c, combine.c, compare-elim.c, context.c, context.h,
+	cprop.c, cse.c, cselib.c, dbxout.c, dce.c, defaults.h, df-core.c,
+	df-problems.c, df-scan.c, df.h, diagnostic.c, double-int.c, dse.c,
+	dumpfile.c, dwarf2asm.c, dwarf2cfi.c, dwarf2out.c, emit-rtl.c,
+	errors.c, except.c, expmed.c, expr.c, file-find.c, final.c,
+	fixed-value.c, fold-const.c, function.c, fwprop.c, gcc-ar.c, gcc.c,
+	gcov-io.c, gcov-io.h, gcov.c, gcse.c, genattr-common.c, genattr.c,
+	genattrtab.c, genautomata.c, genconfig.c, genemit.c, genextract.c,
+	genflags.c, gengenrtl.c, gengtype-state.c, gengtype.c, genmodes.c,
+	genopinit.c, genoutput.c, genpeep.c, genpreds.c, genrecog.c,
+	gensupport.c, ggc-common.c, ggc-page.c, gimple-fold.c, gimple-low.c,
+	gimple-pretty-print.c, gimple-ssa-strength-reduction.c, gimple.c,
+	gimple.h, godump.c, graphite-clast-to-gimple.c,
+	graphite-optimize-isl.c, graphite-poly.h, graphite-sese-to-poly.c,
+	graphite.c, haifa-sched.c, hash-table.c, hash-table.h, hwint.c,
+	hwint.h, ifcvt.c, incpath.c, init-regs.c, input.h, intl.c, intl.h,
+	ipa-cp.c, ipa-devirt.c, ipa-inline-analysis.c, ipa-inline.c,
+	ipa-profile.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c,
+	ipa-utils.c, ipa.c, ira-build.c, ira.c, jump.c, loop-doloop.c,
+	loop-init.c, loop-invariant.c, loop-iv.c, lower-subreg.c, lto-cgraph.c,
+	lto-streamer-in.c, lto-streamer-out.c, lto-wrapper.c, mcf.c,
+	mode-switching.c, modulo-sched.c, omp-low.c, optabs.c, opts.c,
+	pass_manager.h, passes.c, plugin.c, postreload-gcse.c, postreload.c,
+	predict.c, prefix.c, pretty-print.c, print-rtl.c, print-tree.c,
+	profile.c, read-md.c, real.c, real.h, recog.c, ree.c, reg-stack.c,
+	regcprop.c, reginfo.c, regmove.c, regrename.c, regs.h, regstat.c,
+	reload1.c, reorg.c, rtl.c, rtl.h, rtlanal.c, sbitmap.c, sched-rgn.c,
+	sdbout.c, sel-sched-ir.c, sel-sched.c, sparseset.c, stack-ptr-mod.c,
+	statistics.c, stmt.c, stor-layout.c, store-motion.c, streamer-hooks.h,
+	system.h, target-hooks-macros.h, targhooks.c, targhooks.h, toplev.c,
+	tracer.c, trans-mem.c, tree-browser.c, tree-call-cdce.c, tree-cfg.c,
+	tree-cfgcleanup.c, tree-complex.c, tree-data-ref.c, tree-data-ref.h,
+	tree-eh.c, tree-emutls.c, tree-flow.h, tree-if-conv.c, tree-into-ssa.c,
+	tree-iterator.c, tree-loop-distribution.c, tree-mudflap.c,
+	tree-nested.c, tree-nomudflap.c, tree-nrv.c, tree-object-size.c,
+	tree-optimize.c, tree-pass.h, tree-pretty-print.c, tree-profile.c,
+	tree-scalar-evolution.c, tree-sra.c, tree-ssa-ccp.c,
+	tree-ssa-coalesce.c, tree-ssa-copy.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-live.c, tree-ssa-loop-ch.c,
+	tree-ssa-loop-im.c, tree-ssa-loop-ivopts.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop.c, tree-ssa-math-opts.c, tree-ssa-operands.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-threadedge.c, tree-ssa-threadupdate.c,
+	tree-ssa-uncprop.c, tree-ssa-uninit.c, tree-ssa.c, tree-ssanames.c,
+	tree-stdarg.c, tree-switch-conversion.c, tree-tailcall.c,
+	tree-vect-data-refs.c, tree-vect-generic.c, tree-vect-loop-manip.c,
+	tree-vect-stmts.c, tree-vectorizer.c, tree-vectorizer.h, tree-vrp.c,
+	tree.c, tree.h, tsan.c, tsystem.h, value-prof.c, var-tracking.c,
+	varasm.c, vec.h, vmsdbgout.c, vtable-verify.c, web.c: Add missing
+	whitespace before "(".
+
+2013-09-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* expr.h (extract_bit_field): Remove packedp parameter.
+	* expmed.c (extract_fixed_bit_field): Remove packedp parameter
+	from forward declaration.
+	(store_split_bit_field): Remove packedp arg from calls to
+	extract_fixed_bit_field.
+	(extract_bit_field_1): Remove packedp parameter and packedp
+	argument from recursive calls and calls to extract_fixed_bit_field.
+	(extract_bit_field): Remove packedp parameter and corresponding
+	arg to extract_bit_field_1.
+	(extract_fixed_bit_field): Remove packedp parameter.  Remove code
+	to issue warnings.
+	(extract_split_bit_field): Remove packedp arg from call to
+	extract_fixed_bit_field.
+	* expr.c (emit_group_load_1): Adjust calls to extract_bit_field.
+	(copy_blkmode_from_reg): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(read_complex_part): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_1): Likewise.
+	* calls.c (store_unaligned_arguments_into_pseudos): Adjust call
+	to extract_bit_field.
+	* config/tilegx/tilegx.c (tilegx_expand_unaligned_load): Adjust
+	call to extract_bit_field.
+	* config/tilepro/tilepro.c (tilepro_expand_unaligned_load): Adjust
+	call to extract_bit_field.
+	* doc/invoke.texi (Code Gen Options): Remove mention of warnings
+	and special packedp behavior from -fstrict-volatile-bitfields
+	documentation.
+
+2013-09-27  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* lra-eliminations.c (init_elim_table): Guard value_p.
+
+2013-09-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Allow
+	DFmode, DImode, and SFmode in the upper VSX registers based on the
+	-mupper-regs-{df,sf} flags.  Fix wu constraint to be ALTIVEC_REGS
+	if -mpower8-vector.  Combine -mvsx-timode handling with the rest
+	of the VSX register handling.
+
+	* config/rs6000/rs6000.md (f32_lv): Use %x0 for VSX regsters.
+	(f32_sv): Likewise.
+	(zero_extendsidi2_lfiwzx): Add support for loading into the
+	Altivec registers with -mpower8-vector.  Use wu/wv constraints to
+	only do VSX memory options on Altivec registers.
+	(extendsidi2_lfiwax): Likewise.
+	(extendsfdf2_fpr): Likewise.
+	(mov<mode>_hardfloat, SF/SD modes): Likewise.
+	(mov<mode>_hardfloat32, DF/DD modes): Likewise.
+	(mov<mode>_hardfloat64, DF/DD modes): Likewise.
+	(movdi_internal64): Likewise.
+
+2013-09-27  Xinliang David Li  <davidxl@google.com>
+
+	* opts.c (finish_options): Adjust parameters
+	according to vect cost model.
+	(common_handle_option): Set dynamic vect cost
+	model for FDO.
+	targhooks.c (default_add_stmt_cost): Compute stmt cost
+	unconditionally.
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters):
+	Use helper function.
+	* tree-vectorizer.h (unlimited_cost_model): New function.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Use helper function.
+	* tree-vect-data-refs.c (vect_peeling_hash_insert): Use helper
+	function.
+	(vect_enhance_data_refs_alignment): Ditto.
+	* flag-types.h: New enum.
+	* common/config/i386/i386-common.c (ix86_option_init_struct):
+	No need to initialize vect_cost_model flag.
+	* config/i386/i386.c (ix86_add_stmt_cost): Compute stmt cost
+	unconditionally.
+
+2013-09-27  Diego Novillo  <dnovillo@google.com>
+
+	* gimple.h (enum ssa_mode): Remove.
+
+2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+
+	PR middle-end/58463
+	* gcc.dg/pr58463.c: New test.
+
+2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+
+	* cfgloop.h (number_of_loops): Fix typo in check for null.
+
+2013-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58551
+	* tree-cfg.c (move_sese_region_to_fn): Also move loops that
+	are children of outermost saved_cfun's loop, and set it up to
+	be moved to dest_cfun's outermost loop.  Fix up num_nodes adjustments
+	if loop != loop0 and SESE region contains bbs that belong to loop0.
+
+2013-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtlanal.c (must_be_base_p, must_be_index_p): Delete.
+	(binary_scale_code_p, get_base_term, get_index_term): New functions.
+	(set_address_segment, set_address_base, set_address_index)
+	(set_address_disp): Accept the argument unconditionally.
+	(baseness): Remove must_be_base_p and must_be_index_p checks.
+	(decompose_normal_address): Classify as much as possible in the
+	main loop.
+
+2013-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* cse.c (count_reg_usage): Handle INT_LIST.
+	* lra-eliminations.c (lra_eliminate_regs_1): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Likewise.
+	* reload1.c (eliminate_regs_1): Likewise.
+
+2013-09-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR middle-end/58547
+	* rtlanal.c (lsb_bitfield_op_p): Make both parts of the comparison
+	signed.
+
+2013-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58459
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Remove
+	restriction not propagating into loops.
+
+2013-09-26  Florian Weimer  <fw@deneb.enyo.de>
+
+	* tree-ssa.h (walk_use_def_chains_fn, walk_use_def_chains): Delete.
+	* tree-ssa.c (walk_use_def_chains_1, walk_use_def_chains): Delete.
+	* doc/tree-ssa.texi (Walking use-def chains): Delete.
+
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.c (rewrite_into_ssa): Make more SSA names to anonymous.
+
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	* alias.h (component_uses_parent_alias_set): Rename to ...
+	(component_uses_parent_alias_set_from): ... this.
+	* alias.c (component_uses_parent_alias_set): Rename to ...
+	(component_uses_parent_alias_set_from): ... this and return
+	the desired parent.
+	(reference_alias_ptr_type_1): Use the result from
+	component_uses_parent_alias_set_from instead of stripping
+	components one at a time.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust.
+
+2013-09-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs):
+	Move prototypes to...
+	* tree-ssa-ter.h: New File.  Move prototypes here.
+	* tree-flow.h (stmt_is_replaceable_p): Remove prototype.
+	* tree-outof-ssa.h: New. Rename ssaexpand.h, include tree-ssa-ter.h.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): New.  Refactor common bits
+	from is_replaceable_p.
+	* tree-ssa-ter.c (is_replaceable_p, stmt_is_replaceable_p): Delete.
+	(ter_is_replaceable_p): New.  Use new refactored ssa_is_replaceable_p.
+	(process_replaceable): Use ter_is_replaceable_p.
+	(find_replaceable_in_bb): Use ter_is_replaceable_p.
+	* expr.c (stmt_is_replaceable_p): Relocate from tree-ssa-ter.c.  Use
+	newly refactored ssa_is_replaceable_p.
+	* cfgexpand.c: Include tree-outof-ssa.h.
+	* ssaexpand.h: Delete.
+
+2013-09-26  Andrew MacLeod <amacleod@redhat.com>
+
+	* gimple.c (gimple_replace_lhs): Move to tree-ssa.c and rename.
+	(struct count_ptr_d, count_ptr_derefs, count_uses_and_derefs): Move to
+	tree-ssa.c
+	(create_gimple_tmp): Delete.
+	(get_expr_type, build_assign, build_type_cast): Move to...
+	* gimple-builder.c: New File.
+	(get_expr_type): Relocate from gimple.c.
+	(build_assign, build_type_cast): Change to only create ssanames.
+	* gimple.h: Move prototypes to...
+	* gimple-builder.h: New File. Here.
+	* tree-ssa.h: And here.
+	* tree-ssa.c (struct count_ptr_d, count_ptr_derefs,
+	count_uses_and_derefs): Relocate from gimple.c.
+	(gimple_replace_ssa_lhs): Renamed gimple_replace_ssa from gimple.c
+	* tree-ssa-reassoc.c (repropagate_negates): Use gimple_replace_ssa_lhs.
+	* tree-ssa-math-opts (execute_cse_reciprocals): Use
+	gimple_replace_ssa_lhs.
+	* asan.c: Include gimple-builder.h.
+	* Makefile.in: Add gimple-builder.o.
+
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.c (var_map_base_init): Handle SSA names with
+	DECL_IGNORED_P base VAR_DECLs like anonymous SSA names.
+	(loe_visit_block): Use gcc_checking_assert.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Use
+	gimple_assign_ssa_name_copy_p.
+	(gimple_can_coalesce_p): Adjust according to the var_map_base_init
+	change.
+
+2013-09-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/t-rs6000 (rs6000.o): Remove.
+	(rs6000-c.o): Use COMPILE and POSTCOMPILE.
+
+2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58539
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Honor
+	the fact that debug statements are not taking part in loop-closed
+	SSA construction.
+
+2013-09-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_expand_epilogue): Fix compile
+	time warning message.
+	(msp430_print_operand_raw): Delete unused letter parameter.
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(msp430_print_operand_address): New function.
+	(msp430_print_operand): Move address printing code from here to
+	new function.
+	* config/msp430/msp430.md (movsipsi2): Add comment in generated
+	assembler.
+	(zero_extendpsisi2): Likewise.
+	(extendpsisi2): New pattern.
+	(andneghi3): New pattern.
+
+2013-09-26  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/aarch64/aarch64.opt (mlra): New option.
+	* config/aarch64/aarch64.c (aarch64_lra_p): New function.
+	(TARGET_LRA_P): Define.
+
+2013-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_assignment): Remove obsolete comment.
+
+2013-09-25  Jeff Law  <law@redhat.com>
+
+	* tree-flow.h (thread_through_all_blocks): Prototype moved into
+	tree-ssa-threadupdate.h.
+	(register_jump_thread): Similarly.
+	* tree-ssa-threadupdate.h: New header file.
+	* tree-ssa-dom.c: Include tree-ssa-threadupdate.h.
+	* tree-vrp.c: Likewise.
+	* tree-ssa-threadedge.c: Include tree-ssa-threadupdate.h.
+	(thread_around_empty_blocks): Change type of path vector argument to
+	an edge,type pair from just an edge.  Initialize both elements when
+	appending to a jump threading path.  Tweak references to elements
+	appropriately.
+	(thread_across_edge): Similarly.  Release memory for the elements
+	as needed.
+	* tree-ssa-threadupdate.c: Include tree-ssa-threadupdate.h.
+	(dump_jump_thread_path): New function broken out from
+	register_jump_thread.
+	(register_jump_thread): Use dump_jump_thread_path.  Change type of
+	path vector entries.  Search the path for NULL edges and dump
+	the path if one is found.  Tweak the conversion of path to 3-edge
+	form to use the block copy type information embedded in the path.
+
+2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
+
+	* lra.c (update_inc_notes): Remove all REG_DEAD and REG_UNUSED notes.
+
+2013-09-25  Yvan Roux  <yvan.roux@linaro.org>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtlanal.c (lsb_bitfield_op_p): New predicate for bitfield operations
+	from the least significant bit.
+	(strip_address_mutations): Add bitfield operations handling.
+	(must_be_index_p): Add shifting and rotate operations handling.
+	(set_address_base): Use must_be_base_p predicate.
+	(set_address_index): Use must_be_index_p predicate.
+
+2013-09-25  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Use new names.
+	(ix86_expand_vector_move_misalign): Support new unaligned load and
+	stores and use new names.
+	(CODE_FOR_sse2_storedqu): Rename to ...
+	(CODE_FOR_sse2_storedquv16qi): ... this.
+	(CODE_FOR_sse2_loaddqu): Rename to ...
+	(CODE_FOR_sse2_loaddquv16qi): ... this.
+	(CODE_FOR_avx_loaddqu256): Rename to ...
+	(CODE_FOR_avx_loaddquv32qi): ... this.
+	(CODE_FOR_avx_storedqu256): Rename to ...
+	(CODE_FOR_avx_storedquv32qi): ... this.
+	* config/i386/i386.md (fpint_logic): New.
+	* config/i386/sse.md (VMOVE): Extend for AVX512.
+	(VF): Ditto.
+	(VF_128_256): New.
+	(VF_512): Ditto.
+	(VI_UNALIGNED_LOADSTORE): Ditto.
+	(sse2_avx_avx512f): Ditto.
+	(sse2_avx2): Extend for AVX512.
+	(sse4_1_avx2): Ditto.
+	(avx2_avx512f): New.
+	(sse): Extend for AVX512.
+	(sse2): Ditto.
+	(sse4_1): Ditto.
+	(avxsizesuffix): Ditto.
+	(sseintvecmode): Ditto.
+	(ssePSmode): Ditto.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse2>_loaddqu<avxsizesuffix>): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_loaddqu<mode>): ... this.
+	(<sse2>_storedqu<avxsizesuffix>): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_storedqu<mode): ... this.
+	(<sse>_movnt<mode>): Replace constraint "x" with "v".
+	(STORENT_MODE): Extend for AVX512.
+	(*absneg<mode>2): Replace constraint "x" with "v".
+	(*mul<mode>3): Ditto.
+	(*ieee_smin<mode>3): Ditto.
+	(*ieee_smax<mode>3): Ditto.
+	(avx_cmp<mode>3): Replace VF with VF_128_256.
+	(*<sse>_maskcmp<mode>3_comm): Ditto.
+	(<sse>_maskcmp<mode>3): Ditto.
+	(<sse>_andnot<mode>3): Extend for AVX512.
+	(<code><mode>3, anylogic): Replace VF with VF_128_256.
+	(<code><mode>3, fpint_logic): New.
+	(*<code><mode>3): Extend for AVX512.
+	(avx512flogicsuff): New.
+	(avx512f_<logic><mode>): Ditto.
+	(<sse>_movmsk<ssemodesuffix><avxsizesuffix>): Replace VF with
+	VF_128_256.
+	(<sse4_1>_blend<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_dp<ssemodesuffix><avxsizesuffix>): Ditto.
+	(avx_vtest<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse4_1>_round<ssemodesuffix><avxsizesuffix>): Ditto.
+	(xop_vpermil2<mode>3): Ditto.
+	(*avx_vpermilp<mode>): Extend for AVX512 and rename to ...
+	(*<sse2_avx_avx512f>_vpermilp<mode>): ... this.
+	(avx_vpermilvar<mode>3): Extend for AVX512 and rename to ...
+	(<sse2_avx_avx512f>_vpermilvar<mode>3): ... this.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (PARTITION_H, LTO_SYMTAB_H, COMMON_TARGET_DEF_H)
+	(RTL_ERROR_H, TRANS_MEM_H, COVERAGE_H, DEMANGLE_H, ALIAS_H)
+	(SCHED_INT_H, SEL_SCHED_IR_H, SEL_SCHED_DUMP_H, VALTRACK_H, DDG_H)
+	(GGC_INTERNAL_H, DECNUM_H, BACKTRACE_H, MKDEPS_H, TREE_HASHER_H)
+	(TREE_SSA_LIVE_H, SSAEXPAND_H, DWARF2OUT_H, SCEV_H, OMEGA_H)
+	(TREE_DATA_REF_H, IRA_INT_H, LRA_INT_H, DBGCNT_H, DATA_STREAMER_H)
+	(GIMPLE_STREAMER_H, TREE_STREAMER_H, STREAMER_HOOKS_H)
+	(TREE_VECTORIZER_H, IPA_INLINE_H, GSTAB_H, LIBFUNCS_H)
+	(GRAPHITE_HTAB_H): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* config/mcore/t-mcore (CROSS_FLOAT_H): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* config/t-glibc (glibc-c.o): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* config/i386/t-i386 (i386.o): Remove.
+	(i386-c.o): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in ($(out_object_file)): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (graph.o, sbitmap.o, sparseset.o, gcc-ar.o)
+	(gcc-ranlib.o, gcc-nm.o, collect2.o, collect2-aix.o, tlink.o)
+	(lto-wrapper.o, default-c.o, attribs.o, incpath.o, prefix.o)
+	(gcc.o, options.o, options-save.o, version.o, gtype-desc.o)
+	(trans-mem.o, ggc-common.o, ggc-page.o, ggc-none.o, stringpool.o)
+	(convert.o, double-int.o, lto-compress.o, data-streamer-in.o)
+	(data-streamer-out.o, data-streamer.o, gimple-streamer-in.o)
+	(gimple-streamer-out.o, tree-streamer.o, tree-streamer-in.o)
+	(tree-streamer-out.o, streamer-hooks.o, lto-cgraph.o)
+	(lto-streamer-in.o, lto-streamer-out.o, lto-section-in.o)
+	(lto-section-out.o, lto-opts.o, lto-streamer.o, langhooks.o)
+	(test-dump.o, tree.o, tree-dump.o, tree-inline.o, print-tree.o)
+	(stor-layout.o, asan.o, tsan.o, ubsan.o, tree-ssa-tail-merge.o)
+	(tree-ssa-structalias.o, tree-ssa-uninit.o, tree-ssa.o)
+	(tree-into-ssa.o, tree-ssa-ter.o, tree-ssa-coalesce.o)
+	(tree-outof-ssa.o, tree-ssa-dse.o, tree-ssa-forwprop.o)
+	(tree-ssa-phiprop.o, tree-ssa-ifcombine.o, tree-ssa-phiopt.o)
+	(tree-nrv.o, tree-ssa-copy.o, tree-ssa-propagate.o)
+	(tree-ssa-dom.o, tree-ssa-uncprop.o, tree-ssa-threadedge.o)
+	(tree-ssa-threadupdate.o, tree-ssanames.o, tree-phinodes.o)
+	(domwalk.o, tree-ssa-live.o, tree-ssa-copyrename.o)
+	(tree-ssa-pre.o, tree-ssa-sccvn.o)
+	(gimple-ssa-strength-reduction.o, tree-vrp.o, tree-cfg.o)
+	(tree-cfgcleanup.o, tree-tailcall.o, tree-ssa-sink.o)
+	(tree-nested.o, tree-if-conv.o, tree-iterator.o, tree-dfa.o)
+	(tree-ssa-operands.o, tree-eh.o, tree-ssa-loop.o)
+	(tree-ssa-loop-unswitch.o, tree-ssa-address.o)
+	(tree-ssa-loop-niter.o, tree-ssa-loop-ivcanon.o)
+	(tree-ssa-loop-ch.o, tree-ssa-loop-prefetch.o, tree-predcom.o)
+	(tree-ssa-loop-ivopts.o, tree-affine.o, tree-ssa-loop-manip.o)
+	(tree-ssa-loop-im.o, tree-ssa-math-opts.o, tree-ssa-alias.o)
+	(tree-ssa-reassoc.o, tree-optimize.o, gimplify.o)
+	(gimple-iterator.o, gimple-fold.o, gimple-low.o, omp-low.o)
+	(tree-browser.o, omega.o, tree-chrec.o, tree-scalar-evolution.o)
+	(tree-data-ref.o, sese.o, graphite.o, graphite-blocking.o)
+	(graphite-clast-to-gimple.o, graphite-dependences.o)
+	(graphite-interchange.o, graphite-poly.o)
+	(graphite-scop-detection.o, graphite-sese-to-poly.o)
+	(graphite-optimize-isl.o, tree-vect-loop.o)
+	(tree-vect-loop-manip.o, tree-vect-patterns.o, tree-vect-slp.o)
+	(tree-vect-stmts.o, tree-vect-data-refs.o, tree-vectorizer.o)
+	(vtable-verify.o, tree-loop-distribution.o, tree-parloops.o)
+	(tree-stdarg.o, tree-object-size.o, internal-fn.o, gimple.o)
+	(gimple-pretty-print.o, tree-mudflap.o, tree-nomudflap.o)
+	(tree-pretty-print.o, tree-diagnostic.o, fold-const.o)
+	(diagnostic.o, diagnostic-color.o, opts.o, opts-global.o)
+	(opts-common.o, targhooks.o, common/common-targhooks.o, input.o)
+	(toplev.o, hwint.o, passes.o, plugin.o, main.o, host-default.o)
+	(rtl-error.o, rtl.o, print-rtl.o, rtlanal.o, varasm.o, function.o)
+	(statistics.o, stmt.o, except.o, expr.o, dojump.o, builtins.o)
+	(calls.o, expmed.o, explow.o, optabs.o, dbxout.o, debug.o)
+	(sdbout.o, dwarf2out.o, dwarf2cfi.o, dwarf2asm.o, vmsdbgout.o)
+	(xcoffout.o, godump.o, emit-rtl.o, real.o, realmpfr.o, dfp.o)
+	(fixed-value.o, jump.o, simplify-rtx.o, symtab.o, cgraph.o)
+	(cgraphunit.o, cgraphclones.o, cgraphbuild.o, varpool.o, ipa.o)
+	(ipa-profile.o, ipa-devirt.o, ipa-prop.o, ipa-ref.o, ipa-cp.o)
+	(ipa-split.o, ipa-inline.o, ipa-inline-analysis.o)
+	(ipa-inline-transform.o, ipa-utils.o, ipa-reference.o)
+	(ipa-pure-const.o, coverage.o, cselib.o, cse.o, dce.o, dumpfile.o)
+	(dse.o, fwprop.o, web.o, ree.o, cprop.o, gcse.o, store-motion.o)
+	(resource.o, lcm.o, mode-switching.o, tree-ssa-dce.o)
+	(tree-call-cdce.o, tree-ssa-ccp.o, tree-ssa-strlen.o, tree-sra.o)
+	(tree-switch-conversion.o, tree-complex.o, tree-emutls.o)
+	(tree-vect-generic.o, df-core.o, df-problems.o, df-scan.o)
+	(regstat.o, valtrack.o, var-tracking.o, profile.o, mcf.o)
+	(tree-profile.o, value-prof.o, loop-doloop.o, alloc-pool.o)
+	(auto-inc-dec.o, cfg.o, cfghooks.o, cfgexpand.o, cfgrtl.o)
+	(cfganal.o, cfgbuild.o, cfgcleanup.o, cfgloop.o, cfgloopanal.o)
+	(graphds.o, loop-iv.o, loop-invariant.o, cfgloopmanip.o)
+	(loop-init.o, loop-unswitch.o, loop-unroll.o, dominance.o)
+	(et-forest.o, combine.o, reginfo.o, bitmap.o, vec.o, hash-table.o)
+	(reload.o, reload1.o, rtlhooks.o, postreload.o, postreload-gcse.o)
+	(caller-save.o, bt-load.o, reorg.o, alias.o, stack-ptr-mod.o)
+	(init-regs.o, ira-build.o, ira-costs.o, ira-conflicts.o)
+	(ira-color.o, ira-emit.o, ira-lives.o, ira.o, lra.o)
+	(lra-assigns.o, lra-coalesce.o, lra-constraints.o)
+	(lra-eliminations.o, lra-lives.o, lra-spills.o, regmove.o)
+	(combine-stack-adj.o, compare-elim.o, ddg.o, modulo-sched.o)
+	(haifa-sched.o, sched-deps.o, sched-rgn.o, sched-ebb.o)
+	(sched-vis.o, sel-sched.o, sel-sched-dump.o, sel-sched-ir.o)
+	(final.o, recog.o, reg-stack.o, sreal.o, predict.o, lists.o)
+	(bb-reorder.o, tracer.o, timevar.o, regcprop.o, regrename.o)
+	(ifcvt.o, params.o, pointer-set.o, hooks.o, pretty-print.o)
+	(errors.o, dbgcnt.o, lower-subreg.o, target-globals.o)
+	(hw-doloop.o, file-find.o, context.o, $(common_out_object_file))
+	(insn-attrtab.o, insn-automata.o, insn-dfatab.o, insn-emit.o)
+	(insn-enums.o, insn-extract.o, insn-latencytab.o, insn-modes.o)
+	(insn-opinit.o, insn-output.o, insn-peep.o, insn-preds.o)
+	(insn-recog.o, intl.o, cppbuiltin.o, cppdefault.o, gcov.o)
+	(gcov-dump.o): Remove.
+	(default-c.o): Use COMPILE and POSTCOMPILE.
+	(CFLAGS-gcc.o): New variable.
+	($(common_out_object_file)): Use COMPILE and POSTCOMPILE.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (c-family/cppspec.o, c-family/c-common.o)
+	(c-family/c-cppbuiltin.o, c-family/c-dump.o, c-family/c-format.o)
+	(c-family/c-gimplify.o, c-family/c-lex.o, c-family/c-omp.o)
+	(c-family/c-opts.o, c-family/c-pch.o, c-family/c-ppoutput.o)
+	(c-family/c-pragma.o, c-family/c-pretty-print.o)
+	(c-family/c-semantics.o, c-family/c-ada-spec.o)
+	(c-family/array-notation-common.o, c-family/stub-objc.o)
+	(c-family/c-ubsan.o): Remove.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (C_TREE_H): Reference c/c-tree.h.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (DRIVER_DEFINES): Use $(and), not shell code,
+	to add -DENABLE_SHARED_LIBGCC.
+	(gcc.o): Don't use subshell.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (OUTPUT_OPTION): Define as "-o $@".
+	* configure.ac: Don't invoke AM_PROG_CC_C_O.
+	(NO_MINUS_C_MINUS_O, OUTPUT_OPTION): Don't subst.
+	* configure, config.in: Rebuild.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (CCDEPMODE, DEPDIR, depcomp, COMPILE.base)
+	(COMPILE, POSTCOMPILE): New variables.
+	(.cc.o .c.o): Use COMPILE, POSTCOMPILE.
+	(DEPFILES): New variable.
+	Include ".Po" files.
+	* configure.ac: Add checks for dependency checking.
+	* configure, aclocal.m4: Regenerate.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add lto-wrapper.o.
+	($(ALL_HOST_OBJS)): Move order-only dependency to end of file.
+
+2013-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (generated_files): Add options.h,
+	target-hooks-def.h, insn-opinit.h,
+	common/common-target-hooks-def.h, pass-instances.def,
+	c-family/c-target-hooks-def.h.
+
+2013-09-25  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Use foo.last () rather
+	than foo[foo.length () - 1] to access last member in a vec.
+	* tree-ssa-threadupdate.c (register_jump_thread): Similarly.
+
+2013-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58521
+	* tree.c (iterative_hash_expr): Remove MEM_REF special handling.
+
+2013-09-25  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_resolve_speculation): Use semantical equivalency
+	test.
+
+2013-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58420
+	* ubsan.c (ubsan_type_descriptor): Handle IDENTIFIER_NODEs
+	when determining the type name.
+
+2013-09-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md: Fix formatting.
+
+2013-09-24  Xinliang David Li  <davidxl@google.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Check
+	max peel iterations parameter.
+	* param.def: New parameter.
+	* doc/invoke.texi: Document New parameter.
+
+2013-09-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gimple-pretty-print.c: Various whitespace tweaks.
+	* tree-core.h: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssanames.c: Likewise.
+	* tree-ssanames.h: Likewise.
+	* tree-vrp.c: Likewise.
+
+2013-09-24  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/57134
+	PR middle-end/57586
+	* stmt.c (expand_asm_operands): Call expand_expr with EXPAND_MEMORY
+	for output operands that disallow regs.  Don't use EXPAND_WRITE on
+	inout operands.
+
+2013-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58513
+	* tree.c (reference_alias_ptr_type): Move ...
+	* alias.c (reference_alias_ptr_type): ... here and implement
+	in terms of the new reference_alias_ptr_type_1.
+	(ref_all_alias_ptr_type_p): New helper.
+	(get_deref_alias_set_1): Drop flag_strict_aliasing here,
+	use ref_all_alias_ptr_type_p.
+	(get_deref_alias_set): Add flag_strict_aliasing check here.
+	(reference_alias_ptr_type_1): New function, split out from ...
+	(get_alias_set): ... here.
+	(alias_ptr_types_compatible_p): New function.
+	* alias.h (reference_alias_ptr_type): Declare.
+	(alias_ptr_types_compatible_p): Likewise.
+	* tree.h (reference_alias_ptr_type): Remove.
+	* fold-const.c (operand_equal_p): Use alias_ptr_types_compatible_p
+	to compare MEM_REF alias types.
+
+2013-09-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_finalize): Check for SSA name presence.
+
+2013-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_vector_reload): Delete, combine
+	reload helper function arrays into a single array reg_addr.
+	(reload_fpr_gpr): Likewise.
+	(reload_gpr_vsx): Likewise.
+	(reload_vsx_gpr): Likewise.
+	(struct rs6000_reg_addr): Likewise.
+	(reg_addr): Likewise.
+	(rs6000_debug_reg_global): Change rs6000_vector_reload,
+	reload_fpr_gpr, reload_gpr_vsx, reload_vsx_gpr uses to reg_addr.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_secondary_reload_direct_move): Likewise.
+	(rs6000_secondary_reload): Likewise.
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add new
+	constraints: wu, ww, and wy.  Repurpose wv constraint added during
+	power8 changes.  Put wg constraint in alphabetical order.
+
+	* config/rs6000/rs6000.opt (-mvsx-scalar-float): New debug switch
+	for future work to add ISA 2.07 VSX single precision support.
+	(-mvsx-scalar-double): Change default from -1 to 1, update
+	documentation comment.
+	(-mvsx-scalar-memory): Rename debug switch to -mupper-regs-df.
+	(-mupper-regs-df): New debug switch to control whether DF values
+	can go in the traditional Altivec registers.
+	(-mupper-regs-sf): New debug switch to control whether SF values
+	can go in the traditional Altivec registers.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print wu, ww,
+	and wy constraints.
+	(rs6000_init_hard_regno_mode_ok): Use ssize_t instead of int for
+	loop variables.  Rename -mvsx-scalar-memory to -mupper-regs-df.
+	Add new constraints, wu/ww/wy.  Repurpose wv constraint.
+	(rs6000_debug_legitimate_address_p): Print if we are running
+	before, during, or after reload.
+	(rs6000_secondary_reload): Add a comment.
+	(rs6000_opt_masks): Add -mupper-regs-df, -mupper-regs-sf.
+
+	* config/rs6000/constraints.md (wa constraint): Sort w<x>
+	constraints.  Update documentation string.
+	(wd constraint): Likewise.
+	(wf constraint): Likewise.
+	(wg constraint): Likewise.
+	(wn constraint): Likewise.
+	(ws constraint): Likewise.
+	(wt constraint): Likewise.
+	(wx constraint): Likewise.
+	(wz constraint): Likewise.
+	(wu constraint): New constraint for ISA 2.07 SFmode scalar
+	instructions.
+	(ww constraint): Likewise.
+	(wy constraint): Likewise.
+	(wv constraint): Repurpose ISA 2.07 constraint that we not used in
+	the previous submissions.
+	* doc/md.texi (PowerPC and IBM RS6000): Likewise.
+
+2013-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/rtl.texi (REG_NOTES): Say that int_list can also be used.
+	(REG_BR_PROB): Say that the probability is stored in an int_list.
+	* reg-notes.def: Update commentary to mention INT_LIST.
+	* rtl.def (EXPR_LIST, INSN_LIST): Capitalize comments.
+	(INT_LIST): New rtx.
+	* rtl.h (add_int_reg_note, add_shallow_copy_of_reg_note): Declare.
+	* rtlanal.c (int_reg_note_p): New function.
+	(alloc_reg_note): Assert that the note does not have an int argument.
+	(add_int_reg_note, add_shallow_copy_of_reg_note): New functions.
+	* combine.c (distribute_notes): Use add_shallow_copy_of_rtx.
+	* cse.c (cse_process_notes_1): Expect REG_EQUAL to be an EXPR_LIST
+	rather than an INSN_LIST.  Handle INT_LIST.
+	* ifcvt.c (cond_exec_process_insns): Take the probability as an int
+	rather than an rtx.  Use gen_rtx_INT_LIST to create a REG_BR_PROB note.
+	(cond_exec_process_if_block): Use XINT to extract REG_BR_PROB values.
+	Manipulate them as ints rather than rtxes.
+	* reg-stack.c (subst_asm_stack_regs): Only handle EXPR_LIST notes.
+	* regmove.c (copy_src_to_dest): Likewise.
+	* sched-vis.c (print_insn_with_notes): Handle INT_LIST.
+
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): Sink pat assignment
+	into the cases that need it.
+	* config/arm/arm.c (arm_unwind_emit): Likewise.
+
+	* asan.c (asan_clear_shadow): Use add_int_reg_note for REG_BR_PROB.
+	* emit-rtl.c (try_split, emit_copy_of_insn_after): Likewise.
+	* loop-doloop.c (add_test, doloop_modify): Likewise.
+	* loop-unswitch.c (compare_and_jump_seq): Likewise.
+	* optabs.c (emit_cmp_and_jump_insn_1): Likewise.
+	* predict.c (combine_predictions_for_insn): Likewise.
+	* print-rtl.c (print_rtx): Handle INT_LIST.
+	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): Likewise.
+	* config/alpha/alpha.c (emit_unlikely_jump): Likewise.
+	* config/arm/arm.c (emit_unlikely_jump): Likewise.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Likewise.
+	(ix86_split_fp_branch, predict_jump): Likewise.
+	* config/rs6000/rs6000.c (emit_unlikely_jump): Likewise.
+	* config/sh/sh.c (expand_cbranchsi4): Likewise.
+	* config/spu/spu.c (ea_load_store_inline): Likewise.
+
+	* cfgbuild.c (compute_outgoing_frequencies): Use XINT to access the
+	value of a REG_BR_PROB note.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+	(update_br_prob_note, rtl_verify_edges, purge_dead_edges): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* predict.c (br_prob_note_reliable_p): Likewise.
+	(invert_br_probabilities, combine_predictions_for_insn): Likewise.
+	* reorg.c (mostly_true_jump): Likewise.
+	* config/bfin/bfin.c (cbranch_predicted_taken_p): Likewise.
+	* config/frv/frv.c (frv_print_operand_jump_hint): Likewise.
+	* config/i386/i386.c (ix86_print_operand): Likewise.
+	* config/ia64/ia64.c (ia64_print_operand): Likewise.
+	* config/mmix/mmix.c (mmix_print_operand): Likewise.
+	* config/rs6000/rs6000.c (output_cbranch): Likewise.
+	* config/s390/s390.c (s390_expand_tbegin): Likewise.
+	* config/sh/sh.c (sh_print_operand, sh_adjust_cost): Likewise.
+	* config/sparc/sparc.c (output_cbranch): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+	* config/tilegx/tilegx.c (cbranch_predicted_p): Likewise.
+	* config/tilepro/tilepro.c (cbranch_predicted_p): Likewise.
+
+2013-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Add sanity check
+	for ipa-devirt.
+	* ipa-utils.h (possible_polymorphic_call_target_p): New function.
+	* ipa-devirt.c (possible_polymorphic_call_target_p): Be tolerant
+	of external calls
+	* gimple-fold.c: Include ipa-utils.h and gimple-pretty-print.h
+	(gimple_fold_call): Dump inconsistent devirtualizations; add
+	sanity check for type based devirtualizations.
+	* ipa-prop.c: Include ipa-utils.h
+	(ipa_intraprocedural_devirtualization): Add sanity check.
+	(try_make_edge_direct_virtual_call): Likewise.
+
+2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
+	assignment statements.
+
+2013-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gimple-pretty-print.c (dump_ssaname_info): New function.
+	(dump_gimple_phi): Call it.
+	(pp_gimple_stmt_1): Likewise.
+	* tree-core.h (tree_ssa_name): New union ssa_name_info_type field.
+	(range_info_def): Declare.
+	* tree-pretty-print.c (pp_double_int): New function.
+	(dump_generic_node): Call it.
+	* tree-pretty-print.h (pp_double_int): Declare.
+	* tree-ssa-alias.c (dump_alias_info): Check pointer type.
+	* tree-ssanames.h (range_info_def): New structure.
+	(value_range_type): Move definition here.
+	(set_range_info, value_range_type, duplicate_ssa_name_range_info):
+	Declare.
+	* tree-ssanames.c (make_ssa_name_fn): Check pointer type at
+	initialization.
+	(set_range_info): New function.
+	(get_range_info): Likewise.
+	(duplicate_ssa_name_range_info): Likewise.
+	(duplicate_ssa_name_fn): Check pointer type and call
+	duplicate_ssa_name_range_info.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* tree-vrp.c (value_range_type): Remove definition, now in
+	tree-ssanames.h.
+	(vrp_finalize): Call set_range_info to update value range of SSA_NAMEs.
+	* tree.h (SSA_NAME_PTR_INFO): Macro changed to access via union.
+	(SSA_NAME_RANGE_INFO): New macro.
+
+2013-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58464
+	* tree-ssa-pre.c (phi_trans_lookup): Remove.
+	(phi_trans_add): Change to add conditionally on being not present.
+	(phi_translate_1): Remove recursion detection here.
+	(phi_translate): Pre-seed the cache with NULL to catch
+	recursion here in a more generic way.
+	(bitmap_find_leader): Adjust comment.
+	(get_representative_for): Dump value-numbers.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+
 2013-09-23  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/58475
@@ -9,11 +909,11 @@
 	Revert r202780:
 	2013-09-20  Renlin Li  <renlin.li@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use
+	plus_constant.
 	(aarch64_expand_epilogue): Likewise.
 	(aarch64_legitimize_reload_address): Likewise.
 
->>>>>>> .r202824
 2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to
@@ -50,7 +950,7 @@
 	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
 
 2013-09-20  DJ Delorie  <dj@redhat.com>
-            Nick Clifton  <nickc@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c: Various whitespace and comment tweaks.
 	(need_to_save): Save bank 0 on interrupts.
@@ -108,14 +1008,14 @@
 
 2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside 
-          plugin argument.
+	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside
+	plugin argument.
 
 2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
-       * gengtype.c (file_rules): Added rule for *.cc files.
-       (get_output_file_with_visibility): Give fatal message when no
-       rules found.
+	* gengtype.c (file_rules): Added rule for *.cc files.
+	(get_output_file_with_visibility): Give fatal message when no
+	rules found.
 
 2013-09-20  Renlin Li  <renlin.li@arm.com>
 
@@ -189,7 +1089,8 @@
 	* i386-c.c (ix86_target_macros_internal): Unify generic64 and 32.
 	(ix86_target_macros_internal): Likewise.
 	* driver-i386.c (host_detect_local_cpu): Likewise.
-	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename to ..
+	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename
+	to ..
 	(generic_memcpy, generic_memset, generic_cost): This one.
 	(generic32_memcpy, generic32_memset, generic32_cost): Remove.
 	(m_GENERIC32, m_GENERIC64): Remove.
@@ -378,9 +1279,8 @@
 
 2013-09-18  Bin Cheng  <bin.cheng@arm.com>
 
-	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn
-	before branch in same basic block.  Check both src and dest of
-	the move insn.
+	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn before
+	branch in same basic block.  Check both src and dest of the move insn.
 
 2013-09-17  Nick Clifton  <nickc@redhat.com>
 
@@ -450,20 +1350,22 @@
 	tree-ssa-threadupdate.c
 	(thread_across_edge): Don't check PHI argument equality when
 	threading through joiner block here.
-	
+
 2013-09-17  Andrew MacLeod <amacleod@redhat.com>
 
 	* tree-flow.h (ssa_undefined_value_p): Remove prototype.
 	* tree-ssa.c (ssa_undefined_value_p): Move pass independent parts here.
-	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
-	make_pass_early_warn_uninitialized): Move to tree-ssa-uninit.c.
+	(warn_uninit, warn_uninitialized_vars,
+	execute_early_warn_uninitialized, make_pass_early_warn_uninitialized):
+	Move to tree-ssa-uninit.c.
 	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c
-	(has_undefined_value_p): New.  Pass dependant parts of 
+	(has_undefined_value_p): New.  Pass dependant parts of
 	ssa_undefined_value_p.
 	(uninit_undefined_value_p): Use has_undefined_value_p.
-	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
-	make_pass_early_warn_uninitialized): Move from tree-ssa.c
-	* tree-ssa.h: Adjust prototypes
+	(warn_uninit, warn_uninitialized_vars,
+	execute_early_warn_uninitialized, make_pass_early_warn_uninitialized):
+	Move from tree-ssa.c.
+	* tree-ssa.h: Adjust prototypes.
 
 2013-09-17  Jan Hubicka  <jh@suse.cz>
 
@@ -574,7 +1476,8 @@
 2013-09-17  Alan Modra  <amodra@gmail.com>
 
 	PR target/57589
-	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11 patch.
+	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11
+	patch.
 
 2013-09-16  DJ Delorie  <dj@redhat.com>
 
@@ -604,7 +1507,7 @@
 	(tree_vectorize): Ditto.
 	(pass_vectorize::gate): Call new function.
 	(pass_vectorize::execute): Ditto.
-	opts.c: O3 default setting change.
+	* opts.c: O3 default setting change.
 	(finish_options): Check new flag.
 	* doc/invoke.texi: Document new flags.
 	* common.opt: New flags.
@@ -737,14 +1640,12 @@
 
 2013-09-16  Diego Novillo  <dnovillo@google.com>
 
-	* tree-core.h: Add missing comment lines from refactoring
-	of tree.h.
+	* tree-core.h: Add missing comment lines from refactoring of tree.h.
 
 2013-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Do not accept
-	abstract functions; for static functions check the presence
-	of body.
+	abstract functions; for static functions check the presence of body.
 
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -2950,7 +3851,7 @@
 2013-09-04  Dodji Seketeli  <dodji@redhat.com>
 
 	* tree.h (DECL_BUILT_IN, DECL_IS_BUILTIN): Add more comments
-    	explaining their differences.
+	explaining their differences.
 
 2013-09-04  Sandeep Kumar Singh<Sandeep.Singh2@kpitcummins.com>
 
@@ -4196,12 +5097,12 @@
 
 2013-08-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/sse.md (V16): Rename to...
-        (VMOVE): this.
-        (mov<mode>): Update iterator name.
-        (*mov<mode>_internal): Ditto.
-        (push<mode>1): Ditto.
-        (movmisalign<mode>): Ditto.
+	* config/i386/sse.md (V16): Rename to...
+	(VMOVE): this.
+	(mov<mode>): Update iterator name.
+	(*mov<mode>_internal): Ditto.
+	(push<mode>1): Ditto.
+	(movmisalign<mode>): Ditto.
 
 2013-08-20  Jan Hubicka  <jh@suse.cz>
 

@@ -471,6 +471,7 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
       /* ... fall through ...  */
 
     case INSN_LIST:
+    case INT_LIST:
       /* Now do eliminations in the rest of the chain.	If this was
 	 an EXPR_LIST, this might result in allocating more memory than is
 	 strictly needed, but it simplifies the code.  */
@@ -1159,9 +1160,9 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 static void
 init_elim_table (void)
 {
-  bool value_p;
   struct elim_table *ep;
 #ifdef ELIMINABLE_REGS
+  bool value_p;
   const struct elim_table_1 *ep1;
 #endif
 

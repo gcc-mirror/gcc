@@ -278,18 +278,8 @@ rm -f a.out a.exe b.out
 
 # Find the native compiler
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_PROG_CXX
 ACX_PROG_GNAT([-I"$srcdir"/ada])
-
-# autoconf is lame and doesn't give us any substitution variable for this.
-if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
-  NO_MINUS_C_MINUS_O=yes
-else
-  OUTPUT_OPTION='-o $@'
-fi
-AC_SUBST(NO_MINUS_C_MINUS_O)
-AC_SUBST(OUTPUT_OPTION)
 
 # Remove the -O2: for historical reasons, unless bootstrapping we prefer
 # optimizations to be activated explicitly by the toplevel.
@@ -1145,6 +1135,22 @@ AC_CHECK_HEADERS(unordered_map)
 AC_CHECK_HEADERS(tr1/unordered_map)
 AC_CHECK_HEADERS(ext/hash_map)
 
+AC_LANG_POP(C++)
+
+# --------
+# Dependency checking.
+# --------
+
+AC_LANG_PUSH(C++)
+ZW_CREATE_DEPDIR
+AC_CONFIG_COMMANDS([gccdepdir],[
+  ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
+  for lang in $subdirs c-family common
+  do
+      ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
+  done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
+
+ZW_PROG_COMPILER_DEPENDENCIES([CC])
 AC_LANG_POP(C++)
 
 # --------

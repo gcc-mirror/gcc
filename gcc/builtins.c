@@ -1703,7 +1703,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   else
 #endif
     emit_stack_restore (SAVE_BLOCK, old_stack_level);
-  fixup_args_size_notes (call_insn, get_last_insn(), 0);
+  fixup_args_size_notes (call_insn, get_last_insn (), 0);
 
   OK_DEFER_POP;
 
@@ -4172,7 +4172,7 @@ std_canonical_va_list_type (tree type)
 
   if (INDIRECT_REF_P (type))
     type = TREE_TYPE (type);
-  else if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE(type)))
+  else if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (type)))
     type = TREE_TYPE (type);
   wtype = va_list_type_node;
   htype = type;
@@ -5342,7 +5342,7 @@ get_memmodel (tree exp)
       return MEMMODEL_SEQ_CST;
     }
 
-  if ((INTVAL(op) & MEMMODEL_MASK) >= MEMMODEL_LAST)
+  if ((INTVAL (op) & MEMMODEL_MASK) >= MEMMODEL_LAST)
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model argument to builtin");
@@ -5546,7 +5546,7 @@ expand_builtin_atomic_fetch_op (enum machine_mode mode, tree exp, rtx target,
   STRIP_NOPS (addr);
 
   gcc_assert (TREE_OPERAND (addr, 0) == fndecl);
-  TREE_OPERAND (addr, 0) = builtin_decl_explicit(ext_call);
+  TREE_OPERAND (addr, 0) = builtin_decl_explicit (ext_call);
 
   /* Expand the call here so we can emit trailing code.  */
   ret = expand_call (exp, target, ignore);
@@ -9644,8 +9644,8 @@ static tree
 fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
 {
   if (validate_arg (arg0, REAL_TYPE)
-      && validate_arg(arg1, REAL_TYPE)
-      && validate_arg(arg2, REAL_TYPE))
+      && validate_arg (arg1, REAL_TYPE)
+      && validate_arg (arg2, REAL_TYPE))
     {
       tree tem = fold_fma (loc, type, arg0, arg1, arg2);
       if (tem)
@@ -10387,13 +10387,13 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     break;
 
     CASE_FLT_FN (BUILT_IN_CCOS):
-      return fold_builtin_ccos(loc, arg0, type, fndecl, /*hyper=*/ false);
+      return fold_builtin_ccos (loc, arg0, type, fndecl, /*hyper=*/ false);
 
     CASE_FLT_FN (BUILT_IN_CCOSH):
-      return fold_builtin_ccos(loc, arg0, type, fndecl, /*hyper=*/ true);
+      return fold_builtin_ccos (loc, arg0, type, fndecl, /*hyper=*/ true);
 
     CASE_FLT_FN (BUILT_IN_CPROJ):
-      return fold_builtin_cproj(loc, arg0, type);
+      return fold_builtin_cproj (loc, arg0, type);
 
     CASE_FLT_FN (BUILT_IN_CSIN):
       if (validate_arg (arg0, COMPLEX_TYPE)
@@ -10768,26 +10768,26 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
     CASE_FLT_FN (BUILT_IN_DREM):
     CASE_FLT_FN (BUILT_IN_REMAINDER):
       if (validate_arg (arg0, REAL_TYPE)
-          && validate_arg(arg1, REAL_TYPE))
+          && validate_arg (arg1, REAL_TYPE))
         return do_mpfr_arg2 (arg0, arg1, type, mpfr_remainder);
     break;
 
     CASE_FLT_FN_REENT (BUILT_IN_GAMMA): /* GAMMA_R */
     CASE_FLT_FN_REENT (BUILT_IN_LGAMMA): /* LGAMMA_R */
       if (validate_arg (arg0, REAL_TYPE)
-	  && validate_arg(arg1, POINTER_TYPE))
+	  && validate_arg (arg1, POINTER_TYPE))
 	return do_mpfr_lgamma_r (arg0, arg1, type);
     break;
 
     CASE_FLT_FN (BUILT_IN_ATAN2):
       if (validate_arg (arg0, REAL_TYPE)
-	  && validate_arg(arg1, REAL_TYPE))
+	  && validate_arg (arg1, REAL_TYPE))
 	return do_mpfr_arg2 (arg0, arg1, type, mpfr_atan2);
     break;
 
     CASE_FLT_FN (BUILT_IN_FDIM):
       if (validate_arg (arg0, REAL_TYPE)
-	  && validate_arg(arg1, REAL_TYPE))
+	  && validate_arg (arg1, REAL_TYPE))
 	return do_mpfr_arg2 (arg0, arg1, type, mpfr_dim);
     break;
 
@@ -10969,8 +10969,8 @@ fold_builtin_3 (location_t loc, tree fndecl,
 
     CASE_FLT_FN (BUILT_IN_REMQUO):
       if (validate_arg (arg0, REAL_TYPE)
-	  && validate_arg(arg1, REAL_TYPE)
-	  && validate_arg(arg2, POINTER_TYPE))
+	  && validate_arg (arg1, REAL_TYPE)
+	  && validate_arg (arg2, POINTER_TYPE))
 	return do_mpfr_remquo (arg0, arg1, arg2);
     break;
 
@@ -13943,7 +13943,7 @@ do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
       && host_integerp (arg1, 0)
       && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
     {
-      const HOST_WIDE_INT n = tree_low_cst(arg1, 0);
+      const HOST_WIDE_INT n = tree_low_cst (arg1, 0);
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg2);
 
       if (n == (long)n
@@ -14071,7 +14071,7 @@ do_mpfr_lgamma_r (tree arg, tree arg_sg, tree type)
 	 negative integer.  */
       if (real_isfinite (ra)
 	  && ra->cl != rvc_zero
-	  && !(real_isneg(ra) && real_isinteger(ra, TYPE_MODE (type))))
+	  && !(real_isneg (ra) && real_isinteger (ra, TYPE_MODE (type))))
         {
 	  const struct real_format *fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
 	  const int prec = fmt->p;
@@ -14140,8 +14140,8 @@ do_mpc_arg1 (tree arg, tree type, int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
 	  mpc_t m;
 
 	  mpc_init2 (m, prec);
-	  mpfr_from_real (mpc_realref(m), re, rnd);
-	  mpfr_from_real (mpc_imagref(m), im, rnd);
+	  mpfr_from_real (mpc_realref (m), re, rnd);
+	  mpfr_from_real (mpc_imagref (m), im, rnd);
 	  mpfr_clear_flags ();
 	  inexact = func (m, m, crnd);
 	  result = do_mpc_ckconv (m, type, inexact, /*force_convert=*/ 0);
@@ -14196,10 +14196,10 @@ do_mpc_arg2 (tree arg0, tree arg1, tree type, int do_nonfinite,
 
 	  mpc_init2 (m0, prec);
 	  mpc_init2 (m1, prec);
-	  mpfr_from_real (mpc_realref(m0), re0, rnd);
-	  mpfr_from_real (mpc_imagref(m0), im0, rnd);
-	  mpfr_from_real (mpc_realref(m1), re1, rnd);
-	  mpfr_from_real (mpc_imagref(m1), im1, rnd);
+	  mpfr_from_real (mpc_realref (m0), re0, rnd);
+	  mpfr_from_real (mpc_imagref (m0), im0, rnd);
+	  mpfr_from_real (mpc_realref (m1), re1, rnd);
+	  mpfr_from_real (mpc_imagref (m1), im1, rnd);
 	  mpfr_clear_flags ();
 	  inexact = func (m0, m0, m1, crnd);
 	  result = do_mpc_ckconv (m0, type, inexact, do_nonfinite);

@@ -515,7 +515,7 @@ static inline unsigned
 number_of_loops (struct function *fn)
 {
   struct loops *loops = loops_for_fn (fn);
-  if (!fn)
+  if (!loops)
     return 0;
 
   return vec_safe_length (loops->larray);

@@ -34,15 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef gimple gimple_seq_node;
 
-/* Types of supported temporaries.  GIMPLE temporaries may be symbols
-   in normal form (i.e., regular decls) or SSA names.  This enum is
-   used by create_gimple_tmp to tell it what kind of temporary the
-   caller wants.  */
-enum ssa_mode {
-    M_SSA = 0,
-    M_NORMAL
-};
-
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
 typedef vec<gimple> gimple_vec;
@@ -730,19 +721,6 @@ union GTY ((desc ("gimple_statement_structure (&%h)"),
   struct gimple_statement_transaction GTY((tag ("GSS_TRANSACTION"))) gimple_transaction;
 };
 
-/* In gimple.c.  */
-
-/* Helper functions to build GIMPLE statements.  */
-tree create_gimple_tmp (tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, int, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, int, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, tree, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, tree, gimple, enum ssa_mode = M_SSA);
-gimple build_assign (enum tree_code, gimple, gimple, enum ssa_mode = M_SSA);
-gimple build_type_cast (tree, tree, enum ssa_mode = M_SSA);
-gimple build_type_cast (tree, gimple, enum ssa_mode = M_SSA);
-
 /* Offset in bytes to the location of the operand vector.
    Zero if there is no operand vector for this tuple structure.  */
 extern size_t const gimple_ops_offset_[];
@@ -909,8 +887,6 @@ extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);
-extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
-				   unsigned *);
 extern bool walk_stmt_load_store_addr_ops (gimple, void *,
 					   bool (*)(gimple, tree, void *),
 					   bool (*)(gimple, tree, void *),
@@ -5062,7 +5038,7 @@ gsi_start_1 (gimple_seq *seq)
   return i;
 }
 
-#define gsi_start(x) gsi_start_1(&(x))
+#define gsi_start(x) gsi_start_1 (&(x))
 
 static inline gimple_stmt_iterator
 gsi_none (void)
@@ -5105,7 +5081,7 @@ gsi_last_1 (gimple_seq *seq)
   return i;
 }
 
-#define gsi_last(x) gsi_last_1(&(x))
+#define gsi_last(x) gsi_last_1 (&(x))
 
 /* Return a new iterator pointing to the last statement in basic block BB.  */
 

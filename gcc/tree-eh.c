@@ -1737,7 +1737,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
 	{
 	  gimple_seq new_eh_seq = eh_seq;
 	  eh_seq = old_eh_seq;
-	  gimple_seq_add_seq(&eh_seq, new_eh_seq);
+	  gimple_seq_add_seq (&eh_seq, new_eh_seq);
 	}
     }
 
@@ -2177,8 +2177,8 @@ const pass_data pass_data_lower_eh =
 class pass_lower_eh : public gimple_opt_pass
 {
 public:
-  pass_lower_eh(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_eh, ctxt)
+  pass_lower_eh (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_eh, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3054,8 +3054,8 @@ const pass_data pass_data_refactor_eh =
 class pass_refactor_eh : public gimple_opt_pass
 {
 public:
-  pass_refactor_eh(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_refactor_eh, ctxt)
+  pass_refactor_eh (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_refactor_eh, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3281,8 +3281,8 @@ const pass_data pass_data_lower_resx =
 class pass_lower_resx : public gimple_opt_pass
 {
 public:
-  pass_lower_resx(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_resx, ctxt)
+  pass_lower_resx (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_resx, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3692,8 +3692,8 @@ const pass_data pass_data_lower_eh_dispatch =
 class pass_lower_eh_dispatch : public gimple_opt_pass
 {
 public:
-  pass_lower_eh_dispatch(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_eh_dispatch, ctxt)
+  pass_lower_eh_dispatch (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_eh_dispatch, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -4536,8 +4536,8 @@ const pass_data pass_data_cleanup_eh =
 class pass_cleanup_eh : public gimple_opt_pass
 {
 public:
-  pass_cleanup_eh(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_cleanup_eh, ctxt)
+  pass_cleanup_eh (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cleanup_eh, ctxt)
   {}
 
   /* opt_pass methods: */

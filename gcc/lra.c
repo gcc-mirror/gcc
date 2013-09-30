@@ -2163,7 +2163,9 @@ update_inc_notes (void)
 	pnote = &REG_NOTES (insn);
 	while (*pnote != 0)
 	  {
-	    if (REG_NOTE_KIND (*pnote) == REG_INC)
+	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
+                || REG_NOTE_KIND (*pnote) == REG_UNUSED
+                || REG_NOTE_KIND (*pnote) == REG_INC)
 	      *pnote = XEXP (*pnote, 1);
 	    else
 	      pnote = &XEXP (*pnote, 1);

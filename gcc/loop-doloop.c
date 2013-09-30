@@ -381,7 +381,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   JUMP_LABEL (jump) = label;
 
   /* The jump is supposed to handle an unlikely special case.  */
-  add_reg_note (jump, REG_BR_PROB, const0_rtx);
+  add_int_reg_note (jump, REG_BR_PROB, 0);
 
   LABEL_NUSES (label)++;
 
@@ -556,7 +556,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	|| !iter.fits_shwi ())
       iter_rtx = const0_rtx;
     else
-      iter_rtx = GEN_INT (iter.to_shwi());
+      iter_rtx = GEN_INT (iter.to_shwi ());
     init = gen_doloop_begin (counter_reg,
 			     desc->const_iter ? desc->niter_expr : const0_rtx,
 			     iter_rtx,
@@ -594,8 +594,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   if (true_prob_val)
     {
       /* Seems safer to use the branch probability.  */
-      add_reg_note (jump_insn, REG_BR_PROB,
-		    GEN_INT (desc->in_edge->probability));
+      add_int_reg_note (jump_insn, REG_BR_PROB, desc->in_edge->probability);
     }
 }
 
@@ -674,7 +673,7 @@ doloop_optimize (struct loop *loop)
       || !iter.fits_shwi ())
     iterations_max = const0_rtx;
   else
-    iterations_max = GEN_INT (iter.to_shwi());
+    iterations_max = GEN_INT (iter.to_shwi ());
   level = get_loop_level (loop) + 1;
 
   /* Generate looping insn.  If the pattern FAILs then give up trying

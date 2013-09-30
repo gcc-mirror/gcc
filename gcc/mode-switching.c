@@ -804,8 +804,8 @@ const pass_data pass_data_mode_switching =
 class pass_mode_switching : public rtl_opt_pass
 {
 public:
-  pass_mode_switching(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_mode_switching, ctxt)
+  pass_mode_switching (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_mode_switching, ctxt)
   {}
 
   /* opt_pass methods: */

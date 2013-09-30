@@ -1256,8 +1256,8 @@ const pass_data pass_data_cprop_hardreg =
 class pass_cprop_hardreg : public rtl_opt_pass
 {
 public:
-  pass_cprop_hardreg(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_cprop_hardreg, ctxt)
+  pass_cprop_hardreg (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cprop_hardreg, ctxt)
   {}
 
   /* opt_pass methods: */

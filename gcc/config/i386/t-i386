@@ -16,22 +16,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-i386.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H) \
-  $(RTL_H) $(TREE_H) $(TM_P_H) $(REGS_H) hard-reg-set.h \
-  $(REAL_H) insn-config.h conditions.h output.h insn-codes.h \
-  $(INSN_ATTR_H) $(FLAGS_H) $(C_COMMON_H) except.h $(FUNCTION_H) \
-  $(RECOG_H) $(EXPR_H) $(OPTABS_H) toplev.h $(BASIC_BLOCK_H) \
-  $(GGC_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h $(CGRAPH_H) \
-  $(TREE_GIMPLE_H) $(DWARF2_H) $(DF_H) tm-constrs.h $(PARAMS_H) \
-  i386-builtin-types.inc debug.h dwarf2out.h sbitmap.h $(FIBHEAP_H) \
-  $(OPTS_H) $(DIAGNOSTIC_H) $(COMMON_TARGET_H) $(CONTEXT_H) $(PASS_MANAGER_H)
-
-i386-c.o: $(srcdir)/config/i386/i386-c.c \
-  $(srcdir)/config/i386/i386-protos.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TREE_H) $(TM_P_H) $(FLAGS_H) $(C_COMMON_H) $(GGC_H) \
-  $(TARGET_H) $(TARGET_DEF_H) $(CPPLIB_H) $(C_PRAGMA_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/i386/i386-c.c
+i386-c.o: $(srcdir)/config/i386/i386-c.c i386-builtin-types.inc
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
 
 
 i386-builtin-types.inc: s-i386-bt ; @true

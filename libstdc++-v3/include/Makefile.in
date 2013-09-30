@@ -388,11 +388,13 @@ bits_headers = \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/parse_numbers.h \
 	${bits_srcdir}/postypes.h \
+	${bits_srcdir}/predefined_ops.h \
 	${bits_srcdir}/ptr_traits.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
 	${bits_srcdir}/regex.h \
+	${bits_srcdir}/regex.tcc \
 	${bits_srcdir}/regex_constants.h \
 	${bits_srcdir}/regex_error.h \
 	${bits_srcdir}/regex_scanner.h \

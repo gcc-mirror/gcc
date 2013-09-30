@@ -751,7 +751,10 @@ print_insn_with_notes (pretty_printer *pp, const_rtx x)
       {
 	pp_printf (pp, "%s      %s ", print_rtx_head,
 		   GET_REG_NOTE_NAME (REG_NOTE_KIND (note)));
-	print_pattern (pp, XEXP (note, 0), 1);
+	if (GET_CODE (note) == INT_LIST)
+	  pp_printf (pp, "%d", XINT (note, 0));
+	else
+	  print_pattern (pp, XEXP (note, 0), 1);
 	pp_newline (pp);
       }
 }

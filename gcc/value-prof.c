@@ -249,7 +249,7 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       if (hist->hvalue.counters)
 	{
 	   unsigned int i;
-	   fprintf(dump_file, " [");
+	   fprintf (dump_file, " [");
            for (i = 0; i < hist->hdata.intvl.steps; i++)
 	     fprintf (dump_file, " %d:"HOST_WIDEST_INT_PRINT_DEC,
 		      hist->hdata.intvl.int_start + i,
@@ -1568,7 +1568,7 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
 
   fndecl = gimple_call_fndecl (vcall_stmt);
   if (!interesting_stringop_to_profile_p (fndecl, vcall_stmt, &size_arg))
-    gcc_unreachable();
+    gcc_unreachable ();
 
   cond_bb = gimple_bb (vcall_stmt);
   gsi = gsi_for_stmt (vcall_stmt);

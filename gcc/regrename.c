@@ -1862,8 +1862,8 @@ const pass_data pass_data_regrename =
 class pass_regrename : public rtl_opt_pass
 {
 public:
-  pass_regrename(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_regrename, ctxt)
+  pass_regrename (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_regrename, ctxt)
   {}
 
   /* opt_pass methods: */

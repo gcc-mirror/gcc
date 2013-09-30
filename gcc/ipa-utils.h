@@ -108,6 +108,19 @@ possible_polymorphic_call_target_p (struct cgraph_edge *e,
   return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
 					     e->indirect_info->otr_token, n);
 }
+
+/* Return true if N can be possibly target of a polymorphic call of
+   OBJ_TYPE_REF expression CALL.  */
+
+inline bool
+possible_polymorphic_call_target_p (tree call,
+				    struct cgraph_node *n)
+{
+  return possible_polymorphic_call_target_p (obj_type_ref_class (call),
+					     tree_low_cst
+						(OBJ_TYPE_REF_TOKEN (call), 1),
+					     n);
+}
 #endif  /* GCC_IPA_UTILS_H  */
 
 

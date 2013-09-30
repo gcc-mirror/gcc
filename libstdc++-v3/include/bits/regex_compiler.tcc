@@ -63,9 +63,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_FwdIter, _CharT, _TraitsT>::
     _Compiler(_FwdIter __b, _FwdIter __e,
 	      const _TraitsT& __traits, _FlagT __flags)
-    : _M_traits(__traits), _M_scanner(__b, __e, __flags, _M_traits.getloc()),
-      _M_ctype(std::use_facet<std::ctype<_CharT>>(_M_traits.getloc())),
-      _M_nfa(__flags), _M_flags(__flags)
+    : _M_flags((__flags
+		& (regex_constants::ECMAScript
+		   | regex_constants::basic
+		   | regex_constants::extended
+		   | regex_constants::grep
+		   | regex_constants::egrep
+		   | regex_constants::awk))
+	       ? __flags
+	       : __flags | regex_constants::ECMAScript),
+    _M_traits(__traits),
+    _M_scanner(__b, __e, _M_flags, _M_traits.getloc()),
+    _M_ctype(std::use_facet<std::ctype<_CharT>>(_M_traits.getloc())),
+    _M_nfa(_M_flags)
     {
       _StateSeqT __r(_M_nfa, _M_nfa._M_start());
       __r._M_append(_M_nfa._M_insert_subexpr_begin());
@@ -85,7 +95,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_disjunction()
     {
       this->_M_alternative();
-      // TODO empty alternative like, um, "(|asdf)"
       while (_M_match_token(_ScannerT::_S_token_or))
 	{
 	  _StateSeqT __alt1 = _M_pop();
@@ -170,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_FwdIter, _CharT, _TraitsT>::
     _M_quantifier()
     {
-      bool __neg = regex_constants::ECMAScript;
+      bool __neg = (_M_flags & regex_constants::ECMAScript);
       auto __init = [this, &__neg]()
 	{
 	  if (_M_stack.empty())
@@ -207,53 +216,66 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_match_token(_ScannerT::_S_token_interval_begin))
 	{
-	  __init();
+	  if (_M_stack.empty())
+	    __throw_regex_error(regex_constants::error_badrepeat);
 	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
 	    __throw_regex_error(regex_constants::error_badbrace);
 	  _StateSeqT __r(_M_pop());
 	  _StateSeqT __e(_M_nfa, _M_nfa._M_insert_dummy());
 	  int __min_rep = _M_cur_int_value(10);
+	  bool __infi = false;
+	  int __n;
+
 	  // {3
-	  for (int __i = 0; __i < __min_rep; ++__i)
-	    __e._M_append(__r._M_clone());
 	  if (_M_match_token(_ScannerT::_S_token_comma))
 	    if (_M_match_token(_ScannerT::_S_token_dup_count)) // {3,7}
-	      {
-		int __n = _M_cur_int_value(10) - __min_rep;
-		if (__n < 0)
-		  __throw_regex_error(regex_constants::error_badbrace);
-		auto __end = _M_nfa._M_insert_dummy();
-		// _M_alt is the "match more" branch, and _M_next is the
-		// "match less" one. Switch _M_alt and _M_next of all created
-		// nodes. This is a hacking but IMO works well.
-		std::stack<_StateIdT> __stack;
-		for (int __i = 0; __i < __n; ++__i)
-		  {
-		    auto __tmp = __r._M_clone();
-		    auto __alt = _M_nfa._M_insert_alt(__tmp._M_start,
-						      __end, __neg);
-		    __stack.push(__alt);
-		    __e._M_append(_StateSeqT(_M_nfa, __alt, __tmp._M_end));
-		  }
-		__e._M_append(__end);
-		while (!__stack.empty())
-		  {
-		    auto& __tmp = _M_nfa[__stack.top()];
-		    __stack.pop();
-		    swap(__tmp._M_next, __tmp._M_alt);
-		  }
-	      }
-	    else // {3,}
-	      {
-		auto __tmp = __r._M_clone();
-		_StateSeqT __s(_M_nfa,
-			       _M_nfa._M_insert_alt(_S_invalid_state_id,
-						    __tmp._M_start, __neg));
-		__tmp._M_append(__s);
-		__e._M_append(__s);
-	      }
+	      __n = _M_cur_int_value(10) - __min_rep;
+	    else
+	      __infi = true;
+	  else
+	    __n = 0;
 	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
 	    __throw_regex_error(regex_constants::error_brace);
+
+	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
+
+	  for (int __i = 0; __i < __min_rep; ++__i)
+	    __e._M_append(__r._M_clone());
+
+	  if (__infi)
+	    {
+	      auto __tmp = __r._M_clone();
+	      _StateSeqT __s(_M_nfa,
+			     _M_nfa._M_insert_alt(_S_invalid_state_id,
+						  __tmp._M_start, __neg));
+	      __tmp._M_append(__s);
+	      __e._M_append(__s);
+	    }
+	  else
+	    {
+	      if (__n < 0)
+		__throw_regex_error(regex_constants::error_badbrace);
+	      auto __end = _M_nfa._M_insert_dummy();
+	      // _M_alt is the "match more" branch, and _M_next is the
+	      // "match less" one. Switch _M_alt and _M_next of all created
+	      // nodes. This is a hacking but IMO works well.
+	      std::stack<_StateIdT> __stack;
+	      for (int __i = 0; __i < __n; ++__i)
+		{
+		  auto __tmp = __r._M_clone();
+		  auto __alt = _M_nfa._M_insert_alt(__tmp._M_start,
+						    __end, __neg);
+		  __stack.push(__alt);
+		  __e._M_append(_StateSeqT(_M_nfa, __alt, __tmp._M_end));
+		}
+	      __e._M_append(__end);
+	      while (!__stack.empty())
+		{
+		  auto& __tmp = _M_nfa[__stack.top()];
+		  __stack.pop();
+		  swap(__tmp._M_next, __tmp._M_alt);
+		}
+	    }
 	  _M_stack.push(__e);
 	}
     }

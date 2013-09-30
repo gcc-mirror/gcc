@@ -2408,8 +2408,8 @@ remove_unnecessary_regions (bool all_p)
     mark_all_loops_for_removal ();
   else
     mark_loops_for_removal ();
-  children_vec.create(last_basic_block + number_of_loops (cfun));
-  removed_loop_vec.create(last_basic_block + number_of_loops (cfun));
+  children_vec.create (last_basic_block + number_of_loops (cfun));
+  removed_loop_vec.create (last_basic_block + number_of_loops (cfun));
   remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root);
   children_vec.release ();
   if (all_p)
