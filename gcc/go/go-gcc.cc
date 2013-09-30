@@ -208,6 +208,16 @@ class Gcc_backend : public Backend
   Bexpression*
   zero_expression(Btype*);
 
+  Bexpression*
+  error_expression()
+  { return this->make_expression(error_mark_node); }
+
+  Bexpression*
+  var_expression(Bvariable* var, Location);
+
+  Bexpression*
+  indirect_expression(Bexpression* expr, bool known_valid, Location);
+
   // Statements.
 
   Bstatement*
@@ -845,6 +855,30 @@ Gcc_backend::zero_expression(Btype* btype)
     ret = error_mark_node;
   else
     ret = build_zero_cst(t);
+  return tree_to_expr(ret);
+}
+
+// An expression that references a variable.
+
+Bexpression*
+Gcc_backend::var_expression(Bvariable* var, Location)
+{
+  tree ret = var->get_tree();
+  if (ret == error_mark_node)
+    return this->error_expression();
+  return tree_to_expr(ret);
+}
+
+// An expression that indirectly references an expression.
+
+Bexpression*
+Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
+                                 Location location)
+{
+  tree ret = build_fold_indirect_ref_loc(location.gcc_location(),
+                                         expr->get_tree());
+  if (known_valid)
+    TREE_THIS_NOTRAP(ret) = 1;
   return tree_to_expr(ret);
 }
 

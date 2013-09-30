@@ -231,6 +231,22 @@ class Backend
   virtual Bexpression*
   zero_expression(Btype*) = 0;
 
+  // Create an error expression. This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  virtual Bexpression*
+  error_expression() = 0;
+
+  // Create a reference to a variable.
+  virtual Bexpression*
+  var_expression(Bvariable* var, Location) = 0;
+
+  // Create an expression that indirects through the pointer expression EXPR
+  // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
+  // is known to point to a valid memory location.
+  virtual Bexpression*
+  indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should
