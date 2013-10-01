@@ -2179,31 +2179,27 @@ particular release.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.1</entry>
       <entry>General</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.2</entry>
       <entry>Definitions</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.3</entry>
       <entry>Requirements</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.4</entry>
       <entry>Header <code>&lt;regex&gt;</code> synopsis</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -2223,48 +2219,43 @@ particular release.
       <entry>28.7</entry>
       <entry>Class template <code>regex_traits</code></entry>
       <entry>Partial</entry>
+      <entry><code>transform_primary</code> is not implemented</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>28.8</entry>
       <entry>Class template <code>basic_regex</code></entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>28.9</entry>
       <entry>Class template <code>sub_match</code></entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>28.10</entry>
       <entry>Class template <code>match_results</code></entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.11</entry>
       <entry>Regular expression algorithms</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.12</entry>
       <entry>Regular expression Iterators</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>28.13</entry>
       <entry>Modified ECMAScript regular expression grammar</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
