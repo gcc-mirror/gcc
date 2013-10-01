@@ -433,7 +433,7 @@ func (v Value) call(op string, in []Value) []Value {
 	if v.flag&flagMethod != 0 {
 		nin++
 	}
-	firstPointer := len(in) > 0 && Kind(t.In(0).(*rtype).kind) != Ptr && v.flag&flagMethod == 0 && isMethod(v.typ)
+	firstPointer := len(in) > 0 && t.In(0).Kind() != Ptr && v.flag&flagMethod == 0 && isMethod(v.typ)
 	params := make([]unsafe.Pointer, nin)
 	off := 0
 	if v.flag&flagMethod != 0 {
@@ -497,8 +497,10 @@ func isMethod(t *rtype) bool {
 	sawRet := false
 	for i, c := range s {
 		if c == '(' {
+			if parens == 0 {
+				params++
+			}
 			parens++
-			params++
 		} else if c == ')' {
 			parens--
 		} else if parens == 0 && c == ' ' && s[i+1] != '(' && !sawRet {
