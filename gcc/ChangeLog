@@ -1,3 +1,22 @@
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* doc/install.texi (--with-cpu): Mention ARC.
+	(arc-*-elf32): New paragraph.
+	(arc-linux-uclibc): Likewise.
+	* doc/md.texi (Machine Constraints): Add ARC part.
+	* doc/invoke.texi: (menu): Add ARC Options.
+	(Machine Dependent Options) <ARC Options>: Add synopsis.
+	(node ARC Options): Add.
+	* doc/extend.texi (long_call / short_call attribute): Add ARC.
+	(ARC Built-in Functions): New section defining
+	generic ARC built-in functions.
+	(ARC SIMD Built-in Functions): New section defining SIMD specific
+	built-in functions.
+	(Declaring Attributes of Functions): Extended
+	description of short_call and long_call attributes for ARC and
+	added index entries.
+
 2013-10-01  Saurabh Verma  <saurabh.verma@codito.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>

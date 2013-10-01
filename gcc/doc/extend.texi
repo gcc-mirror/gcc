@@ -2813,8 +2813,9 @@ least version 2.20.1), and GNU C library (at least version 2.11.1).
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, CR16, Epiphany, M32C, M32R/D, m68k, MeP, MIPS,
-MSP430, RL78, RX and Xstormy16 ports to indicate that the specified function is an
+Use this attribute on the ARC, ARM, AVR, CR16, Epiphany, M32C, M32R/D,
+m68k, MeP, MIPS, MSP430, RL78, RX and Xstormy16 ports to indicate that
+the specified function is an
 interrupt handler.  The compiler generates function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
 is present.  With Epiphany targets it may also generate a special section with
@@ -2822,6 +2823,16 @@ code to initialize the interrupt vector table.
 
 Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
 and SH processors can be specified via the @code{interrupt_handler} attribute.
+
+Note, on the ARC, you must specify the kind of interrupt to be handled
+in a parameter to the interrupt attribute like this:
+
+@smallexample
+void f () __attribute__ ((interrupt ("ilink1")));
+@end smallexample
+
+Permissible values for this parameter are: @w{@code{ilink1}} and
+@w{@code{ilink2}}.
 
 Note, on the AVR, the hardware globally disables interrupts when an
 interrupt is executed.  The first instruction of an interrupt handler
@@ -3021,17 +3032,32 @@ unit.  This is to allow easy merging of multiple compilation units into one,
 for example, by using the link-time optimization.  For this reason the
 attribute is not allowed on types to annotate indirect calls.
 
-@item long_call/short_call
+@item long_call/medium_call/short_call
+@cindex indirect calls on ARC
 @cindex indirect calls on ARM
-This attribute specifies how a particular function is called on
-ARM and Epiphany.  Both attributes override the
-@option{-mlong-calls} (@pxref{ARM Options})
-command-line switch and @code{#pragma long_calls} settings.  The
+@cindex indirect calls on Epiphany
+These attribute specifies how a particular function is called on
+ARC, ARM and Epiphany - with @code{medium_call} being specific to ARC.
+These attributes override the
+@option{-mlong-calls} (@pxref{ARM Options} and @ref{ARC Options})
+and @option{-mmedium-calls} (@pxref{ARC Options})
+command-line switches and @code{#pragma long_calls} settings.  For ARM, the
 @code{long_call} attribute indicates that the function might be far
 away from the call site and require a different (more expensive)
 calling sequence.   The @code{short_call} attribute always places
 the offset to the function from the call site into the @samp{BL}
 instruction directly.
+
+For ARC, a function marked with the @code{long_call} attribute is
+always called using register-indirect jump-and-link instructions,
+thereby enabling the called function to be placed anywhere within the
+32-bit address space.  A function marked with the @code{medium_call}
+attribute will always be close enough to be called with an unconditional
+branch-and-link instruction, which has a 25-bit offset from
+the call site.  A function marked with the @code{short_call}
+attribute will always be close enough to be called with a conditional
+branch-and-link instruction, which has a 21-bit offset from
+the call site.
 
 @item longcall/shortcall
 @cindex functions called via pointer on the RS/6000 and PowerPC
@@ -8870,6 +8896,8 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * Alpha Built-in Functions::
+* ARC Built-in Functions::
+* ARC SIMD Built-in Functions::
 * ARM iWMMXt Built-in Functions::
 * ARM NEON Intrinsics::
 * AVR Built-in Functions::
@@ -8976,6 +9004,430 @@ PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
 void *__builtin_thread_pointer (void)
 void __builtin_set_thread_pointer (void *)
 @end smallexample
+
+@node ARC Built-in Functions
+@subsection ARC Built-in Functions
+
+The following built-in functions are provided for ARC targets.  The
+built-ins generate the corresponding assembly instructions.  In the
+examples given below, the generated code often requires an operand or
+result to be in a register.  Where necessary further code will be
+generated to ensure this is true, but for brevity this is not
+described in each case.
+
+@emph{Note:} Using a built-in to generate an instruction not supported
+by a target may cause problems. At present the compiler is not
+guaranteed to detect such misuse, and as a result an internal compiler
+error may be generated.
+
+@deftypefn {Built-in Function} int __builtin_arc_aligned (void *@var{val}, int @var{alignval})
+Return 1 if @var{val} is known to have the byte alignment given
+by @var{alignval}, otherwise return 0.
+Note that this is different from
+@smallexample
+__alignof__(*(char *)@var{val}) >= alignval
+@end smallexample
+because __alignof__ sees only the type of the dereference, wheras
+__builtin_arc_align uses alignment information from the pointer
+as well as from the pointed-to type.
+The information available will depend on optimization level.
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_brk (void)
+Generates
+@example
+brk
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} {unsigned int} __builtin_arc_core_read (unsigned int @var{regno})
+The operand is the number of a register to be read.  Generates:
+@example
+mov  @var{dest}, r@var{regno}
+@end example
+where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_core_write (unsigned int @var{regno}, unsigned int @var{val})
+The first operand is the number of a register to be written, the
+second operand is a compile time constant to write into that
+register.  Generates:
+@example
+mov  r@var{regno}, @var{val}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_arc_divaw (int @var{a}, int @var{b})
+Only available if either @option{-mcpu=ARC700} or @option{-meA} is set.
+Generates:
+@example
+divaw  @var{dest}, @var{a}, @var{b}
+@end example
+where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_flag (unsigned int @var{a})
+Generates
+@example
+flag  @var{a}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} {unsigned int} __builtin_arc_lr (unsigned int @var{auxr})
+The operand, @var{auxv}, is the address of an auxiliary register and
+must be a compile time constant.  Generates:
+@example
+lr  @var{dest}, [@var{auxr}]
+@end example
+Where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_mul64 (int @var{a}, int @var{b})
+Only available with @option{-mmul64}.  Generates:
+@example
+mul64  @var{a}, @var{b}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_mulu64 (unsigned int @var{a}, unsigned int @var{b})
+Only available with @option{-mmul64}.  Generates:
+@example
+mulu64  @var{a}, @var{b}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin_arc_nop (void)
+Generates:
+@example
+nop
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_arc_norm (int @var{src})
+Only valid if the @samp{norm} instruction is available through the
+@option{-mnorm} option or by default with @option{-mcpu=ARC700}.
+Generates:
+@example
+norm  @var{dest}, @var{src}
+@end example
+Where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function}  {short int} __builtin_arc_normw (short int @var{src})
+Only valid if the @samp{normw} instruction is available through the
+@option{-mnorm} option or by default with @option{-mcpu=ARC700}.
+Generates:
+@example
+normw  @var{dest}, @var{src}
+@end example
+Where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_rtie (void)
+Generates:
+@example
+rtie
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_sleep (int @var{a}
+Generates:
+@example
+sleep  @var{a}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_sr (unsigned int @var{auxr}, unsigned int @var{val})
+The first argument, @var{auxv}, is the address of an auxiliary
+register, the second argument, @var{val}, is a compile time constant
+to be written to the register.  Generates:
+@example
+sr  @var{auxr}, [@var{val}]
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  int __builtin_arc_swap (int @var{src})
+Only valid with @option{-mswap}.  Generates:
+@example
+swap  @var{dest}, @var{src}
+@end example
+Where the value in @var{dest} will be the result returned from the
+built-in.
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_swi (void)
+Generates:
+@example
+swi
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_sync (void)
+Only available with @option{-mcpu=ARC700}.  Generates:
+@example
+sync
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_trap_s (unsigned int @var{c})
+Only available with @option{-mcpu=ARC700}.  Generates:
+@example
+trap_s  @var{c}
+@end example
+@end deftypefn
+
+@deftypefn {Built-in Function}  void __builtin_arc_unimp_s (void)
+Only available with @option{-mcpu=ARC700}.  Generates:
+@example
+unimp_s
+@end example
+@end deftypefn
+
+The instructions generated by the following builtins are not
+considered as candidates for scheduling.  They are not moved around by
+the compiler during scheduling, and thus can be expected to appear
+where they are put in the C code:
+@example
+__builtin_arc_brk()
+__builtin_arc_core_read()
+__builtin_arc_core_write()
+__builtin_arc_flag()
+__builtin_arc_lr()
+__builtin_arc_sleep()
+__builtin_arc_sr()
+__builtin_arc_swi()
+@end example
+
+@node ARC SIMD Built-in Functions
+@subsection ARC SIMD Built-in Functions
+
+SIMD builtins provided by the compiler can be used to generate the
+vector instructions.  This section describes the available builtins
+and their usage in programs.  With the @option{-msimd} option, the
+compiler provides 128-bit vector types, which can be specified using
+the @code{vector_size} attribute.  The header file @file{arc-simd.h}
+can be included to use the following predefined types:
+@example
+typedef int __v4si   __attribute__((vector_size(16)));
+typedef short __v8hi __attribute__((vector_size(16)));
+@end example
+
+These types can be used to define 128-bit variables.  The built-in
+functions listed in the following section can be used on these
+variables to generate the vector operations.
+
+For all builtins, @code{__builtin_arc_@var{someinsn}}, the header file
+@file{arc-simd.h} also provides equivalent macros called
+@code{_@var{someinsn}} that can be used for programming ease and
+improved readability.  The following macros for DMA control are also
+provided:
+@example
+#define _setup_dma_in_channel_reg _vdiwr
+#define _setup_dma_out_channel_reg _vdowr
+@end example
+
+The following is a complete list of all the SIMD built-ins provided
+for ARC, grouped by calling signature.
+
+The following take two @code{__v8hi} arguments and return a
+@code{__v8hi} result:
+@example
+__v8hi __builtin_arc_vaddaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vaddw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vand (__v8hi, __v8hi)
+__v8hi __builtin_arc_vandaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vavb (__v8hi, __v8hi)
+__v8hi __builtin_arc_vavrb (__v8hi, __v8hi)
+__v8hi __builtin_arc_vbic (__v8hi, __v8hi)
+__v8hi __builtin_arc_vbicaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vdifaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vdifw (__v8hi, __v8hi)
+__v8hi __builtin_arc_veqw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vh264f (__v8hi, __v8hi)
+__v8hi __builtin_arc_vh264ft (__v8hi, __v8hi)
+__v8hi __builtin_arc_vh264fw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vlew (__v8hi, __v8hi)
+__v8hi __builtin_arc_vltw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmaxaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmaxw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vminaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vminw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr1aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr1w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr2aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr2w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr3aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr3w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr4aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr4w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr5aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr5w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr6aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr6w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr7aw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmr7w (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmrb (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmulaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmulfaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmulfw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vmulw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vnew (__v8hi, __v8hi)
+__v8hi __builtin_arc_vor (__v8hi, __v8hi)
+__v8hi __builtin_arc_vsubaw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vsubw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vsummw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vvc1f (__v8hi, __v8hi)
+__v8hi __builtin_arc_vvc1ft (__v8hi, __v8hi)
+__v8hi __builtin_arc_vxor (__v8hi, __v8hi)
+__v8hi __builtin_arc_vxoraw (__v8hi, __v8hi)
+@end example
+
+The following take one @code{__v8hi} and one @code{int} argument and return a
+@code{__v8hi} result:
+
+@example
+__v8hi __builtin_arc_vbaddw (__v8hi, int)
+__v8hi __builtin_arc_vbmaxw (__v8hi, int)
+__v8hi __builtin_arc_vbminw (__v8hi, int)
+__v8hi __builtin_arc_vbmulaw (__v8hi, int)
+__v8hi __builtin_arc_vbmulfw (__v8hi, int)
+__v8hi __builtin_arc_vbmulw (__v8hi, int)
+__v8hi __builtin_arc_vbrsubw (__v8hi, int)
+__v8hi __builtin_arc_vbsubw (__v8hi, int)
+@end example
+
+The following take one @code{__v8hi} argument and one @code{int} argument which
+must be a 3-bit compile time constant indicating a register number
+I0-I7.  They return a @code{__v8hi} result.
+@example
+__v8hi __builtin_arc_vasrw (__v8hi, const int)
+__v8hi __builtin_arc_vsr8 (__v8hi, const int)
+__v8hi __builtin_arc_vsr8aw (__v8hi, const int)
+@end example
+
+The following take one @code{__v8hi} argument and one @code{int}
+argument which must be a 6-bit compile time constant.  They return a
+@code{__v8hi} result.
+@example
+__v8hi __builtin_arc_vasrpwbi (__v8hi, const int)
+__v8hi __builtin_arc_vasrrpwbi (__v8hi, const int)
+__v8hi __builtin_arc_vasrrwi (__v8hi, const int)
+__v8hi __builtin_arc_vasrsrwi (__v8hi, const int)
+__v8hi __builtin_arc_vasrwi (__v8hi, const int)
+__v8hi __builtin_arc_vsr8awi (__v8hi, const int)
+__v8hi __builtin_arc_vsr8i (__v8hi, const int)
+@end example
+
+The following take one @code{__v8hi} argument and one @code{int} argument which
+must be a 8-bit compile time constant.  They return a @code{__v8hi}
+result.
+@example
+__v8hi __builtin_arc_vd6tapf (__v8hi, const int)
+__v8hi __builtin_arc_vmvaw (__v8hi, const int)
+__v8hi __builtin_arc_vmvw (__v8hi, const int)
+__v8hi __builtin_arc_vmvzw (__v8hi, const int)
+@end example
+
+The following take two @code{int} arguments, the second of which which
+must be a 8-bit compile time constant.  They return a @code{__v8hi}
+result:
+@example
+__v8hi __builtin_arc_vmovaw (int, const int)
+__v8hi __builtin_arc_vmovw (int, const int)
+__v8hi __builtin_arc_vmovzw (int, const int)
+@end example
+
+The following take a single @code{__v8hi} argument and return a
+@code{__v8hi} result:
+@example
+__v8hi __builtin_arc_vabsaw (__v8hi)
+__v8hi __builtin_arc_vabsw (__v8hi)
+__v8hi __builtin_arc_vaddsuw (__v8hi)
+__v8hi __builtin_arc_vexch1 (__v8hi)
+__v8hi __builtin_arc_vexch2 (__v8hi)
+__v8hi __builtin_arc_vexch4 (__v8hi)
+__v8hi __builtin_arc_vsignw (__v8hi)
+__v8hi __builtin_arc_vupbaw (__v8hi)
+__v8hi __builtin_arc_vupbw (__v8hi)
+__v8hi __builtin_arc_vupsbaw (__v8hi)
+__v8hi __builtin_arc_vupsbw (__v8hi)
+@end example
+
+The followign take two @code{int} arguments and return no result:
+@example
+void __builtin_arc_vdirun (int, int)
+void __builtin_arc_vdorun (int, int)
+@end example
+
+The following take two @code{int} arguments and return no result.  The
+first argument must a 3-bit compile time constant indicating one of
+the DR0-DR7 DMA setup channels:
+@example
+void __builtin_arc_vdiwr (const int, int)
+void __builtin_arc_vdowr (const int, int)
+@end example
+
+The following take an @code{int} argument and return no result:
+@example
+void __builtin_arc_vendrec (int)
+void __builtin_arc_vrec (int)
+void __builtin_arc_vrecrun (int)
+void __builtin_arc_vrun (int)
+@end example
+
+The following take a @code{__v8hi} argument and two @code{int}
+arguments and return a @code{__v8hi} result.  The second argument must
+be a 3-bit compile time constants, indicating one the registers I0-I7,
+and the third argument must be an 8-bit compile time constant.
+
+@emph{Note:} Although the equivalent hardware instructions do not take
+an SIMD register as an operand, these builtins overwrite the relevant
+bits of the @code{__v8hi} register provided as the first argument with
+the value loaded from the @code{[Ib, u8]} location in the SDM.
+
+@example
+__v8hi __builtin_arc_vld32 (__v8hi, const int, const int)
+__v8hi __builtin_arc_vld32wh (__v8hi, const int, const int)
+__v8hi __builtin_arc_vld32wl (__v8hi, const int, const int)
+__v8hi __builtin_arc_vld64 (__v8hi, const int, const int)
+@end example
+
+The following take two @code{int} arguments and return a @code{__v8hi}
+result.  The first argument must be a 3-bit compile time constants,
+indicating one the registers I0-I7, and the second argument must be an
+8-bit compile time constant.
+
+@example
+__v8hi __builtin_arc_vld128 (const int, const int)
+__v8hi __builtin_arc_vld64w (const int, const int)
+@end example
+
+The following take a @code{__v8hi} argument and two @code{int}
+arguments and return no result.  The second argument must be a 3-bit
+compile time constants, indicating one the registers I0-I7, and the
+third argument must be an 8-bit compile time constant.
+
+@example
+void __builtin_arc_vst128 (__v8hi, const int, const int)
+void __builtin_arc_vst64 (__v8hi, const int, const int)
+@end example
+
+The following take a @code{__v8hi} argument and three @code{int}
+arguments and return no result.  The second argument must be a 3-bit
+compile-time constant, identifying the 16-bit sub-register to be
+stored, the third argument must be a 3-bit compile time constants,
+indicating one the registers I0-I7, and the fourth argument must be an
+8-bit compile time constant.
+
+@example
+void __builtin_arc_vst16_n (__v8hi, const int, const int, const int)
+void __builtin_arc_vst32_n (__v8hi, const int, const int, const int)
+@end example
 
 @node ARM iWMMXt Built-in Functions
 @subsection ARM iWMMXt Built-in Functions
@@ -16831,3 +17283,6 @@ implicitly scoped inside a C language scope.  Also, an empty prototype
 @code{()} is treated as an unspecified number of arguments, rather
 than no arguments, as C++ demands.
 @end table
+
+@c  LocalWords:  emph deftypefn builtin ARCv2EM SIMD builtins msimd
+@c  LocalWords:  typedef v4si v8hi DMA dma vdiwr vdowr followign

@@ -1725,6 +1725,54 @@ DF modes
 @end table
 
 
+@item ARC ---@file{config/arc/constraints.md}
+@table @code
+@item q
+Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
+@code{r12}-@code{r15}.  This constraint can only match when the @option{-mq}
+option is in effect.
+
+@item e
+Registers usable as base-regs of memory addresses in ARCompact 16-bit memory
+instructions: @code{r0}-@code{r3}, @code{r12}-@code{r15}, @code{sp}.
+This constraint can only match when the @option{-mq}
+option is in effect.
+@item D
+ARC FPX (dpfp) 64-bit registers. @code{D0}, @code{D1}.
+
+@item I
+A signed 12-bit integer constant.
+
+@item Cal
+constant for arithmetic/logical operations.  This might be any constant
+that can be put into a long immediate by the assmbler or linker without
+involving a PIC relocation.
+
+@item K
+A 3-bit unsigned integer constant.
+
+@item L
+A 6-bit unsigned integer constant.
+
+@item CnL
+One's complement of a 6-bit unsigned integer constant.
+
+@item CmL
+Two's complement of a 6-bit unsigned integer constant.
+
+@item M
+A 5-bit unsigned integer constant.
+
+@item O
+A 7-bit unsigned integer constant.
+
+@item P
+A 8-bit unsigned integer constant.
+
+@item H
+Any const_double value.
+@end table
+
 @item ARM family---@file{config/arm/constraints.md}
 @table @code
 @item w
