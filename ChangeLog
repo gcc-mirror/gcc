@@ -1,3 +1,9 @@
+2013-01-10  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	Import from savannah.gnu.org:
+	* config.guess: Update to 2013-06-10 version.
+	* config.sub: Update to 2013-10-01 version.
+
 2013-10-01  Simon Cook  <simon.cook@embecosm.com>
 
 	Changes to build configuration to allow big endian ARC ELF toolchain
