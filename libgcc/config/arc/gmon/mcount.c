@@ -81,7 +81,7 @@ _MCOUNT_DECL(count_ptr, selfpc)	/* _mcount; may be static, inline, etc */
 						   GMON_PROF_ON))
 	  return;
 #elif defined (__ARC700__)
-/* ??? This could temporrarily loose the ERROR / OFF condition in a race,
+/* ??? This could temporarily lose the ERROR / OFF condition in a race,
    but doing an actual compare_and_exchange would be too costly.  It would
    be better if we had a semaphore independent of the 'sticky' state, but
    then we could run into ABI compatibility problems with the size of struct
