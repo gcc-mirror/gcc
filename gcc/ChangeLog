@@ -1,3 +1,8 @@
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (pass_arc_ifcvt::clone):
+	Update for ctxt_ ->m_ctxt change.
+
 2013-10-01  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (struct redirection_data): Delete
