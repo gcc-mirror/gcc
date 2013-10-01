@@ -1,0 +1,40 @@
+# GCC Makefile fragment for the Synopsys DesignWare ARC700 CPU with uClibc.
+
+# Copyright (C) 2007-2012 Free Software Foundation, Inc.
+# Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
+#              on behalf of Synopsys Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# Under Section 7 of GPL version 3, you are granted additional
+# permissions described in the GCC Runtime Library Exception, version
+# 3.1, as published by the Free Software Foundation.
+
+# You should have received a copy of the GNU General Public License and
+# a copy of the GCC Runtime Library Exception along with this program;
+# see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+# <http://www.gnu.org/licenses/>.  */
+
+CRTSTUFF_T_CFLAGS += -mno-sdata
+
+# Compile crtbeginS.o and crtendS.o with pic.
+CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -mA7 -fPIC
+
+# Compile libgcc2.a with pic.
+TARGET_LIBGCC2_CFLAGS = -mA7 -fPIC
+
+PROFILE_OSDEP = prof-freq.o
+
+# Override t-slibgcc-elf-ver to hide some lib1func
+# routines which should not be called via PLT.
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/arc/libgcc-excl.ver

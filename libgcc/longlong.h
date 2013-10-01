@@ -188,16 +188,20 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 	     "rIJ" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
 	     "rIJ" ((USItype) (bl)))
-/* Call libgcc routine.  */
-#define umul_ppmm(w1, w0, u, v) \
-do {									\
-  DWunion __w;								\
-  __w.ll = __umulsidi3 (u, v);						\
-  w1 = __w.s.high;							\
-  w0 = __w.s.low;							\
-} while (0)
-#define __umulsidi3 __umulsidi3
-UDItype __umulsidi3 (USItype, USItype);
+
+#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
+#ifdef __ARC_NORM__
+#define count_leading_zeros(count, x) \
+  do									\
+    {									\
+      SItype c_;							\
+									\
+      __asm__ ("norm.f\t%0,%1\n\tmov.mi\t%0,-1" : "=r" (c_) : "r" (x) : "cc");\
+      (count) = c_ + 1;							\
+    }									\
+  while (0)
+#define COUNT_LEADING_ZEROS_0 32
+#endif
 #endif
 
 #if defined (__arm__) && (defined (__thumb2__) || !defined (__thumb__)) \

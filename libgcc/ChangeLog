@@ -1,3 +1,14 @@
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Brendan Kehoe  <brendan@zen.org>
+	    Simon Cook  <simon.cook@embecosm.com>
+
+	* config.host (arc*-*-elf*, arc*-*-linux-uclibc*): New configurations.
+	* config/arc: New directory.
+	* longlong.h [__arc__] (umul_ppmm): Remove.
+	[__arc__] (__umulsidi3): Define.
+	[__arc__ && __ARC_NORM__] (count_leading_zeroes): Define.
+	[__arc__ && __ARC_NORM__] (COUNT_LEADING_ZEROS_0): Likewise.
+
 2013-09-17  Jacek Caban  <jacek@codeweavers.com>
 
 	* config/i386/gthr-win32.c: CreateSemaphoreW instead of
