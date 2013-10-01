@@ -1,3 +1,13 @@
+2013-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58553
+	* tree-loop-distribution.c (struct partition_s): Add niter member.
+	(classify_partition): Populate niter member for the partition
+	and properly identify whether the relevant store happens before
+	or after the loop exit.
+	(generate_memset_builtin): Use niter member from the partition.
+	(generate_memcpy_builtin): Likewise.
+
 2013-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* vec.h (vec_prefix, vec): Prefix member names with "m_".
