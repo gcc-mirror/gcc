@@ -1,3 +1,10 @@
+2013-10-01  Tim Shen  <timshen91@gmail.com>
+
+	PR libstdc++/58576
+	* include/bits/regex_automaton.tcc (_NFA<>::_M_eliminate_dummy)
+	(_StateSeq<>::_M_clone): Add _S_opcode_subexpr_lookahead branch.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/58576.cc: New.
+
 2013-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/algo.h (__find_switch): Use __binder2nd.
