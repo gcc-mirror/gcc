@@ -1,4 +1,10 @@
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage):
+	Use ARC_FIRST_SIMD_VR_REG / ARC_LAST_SIMD_VR_REG.
+	Also set reg_alloc_order for DMA config regs.
+
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Jeremy Bennett  <jeremy.bennett@embecosm.com>
 
 	* doc/install.texi (--with-cpu): Mention ARC.
