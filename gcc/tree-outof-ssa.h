@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-ssa-live.h"
 #include "tree-ssa-ter.h"
+#include "tree-ssa-coalesce.h"
 
 /* This structure (of which only a singleton SA exists) is used to
    pass around information between the outof-SSA functions, cfgexpand

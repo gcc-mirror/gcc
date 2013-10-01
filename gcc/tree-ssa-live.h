@@ -321,8 +321,4 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
   bitmap_set_bit (live->global, p);
 }
 
-
-/* From tree-ssa-coalesce.c  */
-extern var_map coalesce_ssa_name (void);
-
 #endif /* _TREE_SSA_LIVE_H  */

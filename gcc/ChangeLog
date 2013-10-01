@@ -1,5 +1,14 @@
 2013-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-ssa-live.h (coalesce_ssa_name): Move Prototype to...
+	* tree-ssa-coalesce.h: New. Move prototype to here.
+	* tree-outof-ssa.h: Include tree-ssa-coalesce.h.
+	* tree-ssa-coalesce.c: Include tree-outof-ssa.h.
+	(gimple_can_coalesce_p): Move to...
+	* gimple.c (gimple_can_coalesce_p): Here.
+
+2013-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
 	* tree-into-ssa.c (enum need_phi_state): Relocate from tree-flow.h.
 	(dump_decl_set): Move to gimple.c.
 	* gimple.h: Don't include tree-ssa-operands.h.
