@@ -25,7 +25,6 @@
 	plain comment about bl_s.
 
 	* config/arc/arc.c (stdio.h): Don't include directly.
-	(arc_frame_info): Remove GTY marker.
 	(arc_expand_epilogue): Remove [0]: Remove fp_restored_p.
 	Remove if (1) condition.
 	(arc_encode_section_info): Fix comment.
