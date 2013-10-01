@@ -1,3 +1,7 @@
+2013-10-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect_saddl_1.c: New.
+
 2013-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58574
@@ -10,9 +14,9 @@
 
 2013-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-     PR tree-optimization/58556
-     * gcc.dg/tree-ssa/gen-vect-26.c: Use dynamic vector cost model.
-     * gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+	PR tree-optimization/58556
+	* gcc.dg/tree-ssa/gen-vect-26.c: Use dynamic vector cost model.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
 
 2013-10-01  Nick Clifton  <nickc@redhat.com>
 
