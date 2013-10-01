@@ -3173,8 +3173,8 @@ information have to.
 <!-- -------- host/target specific issues start here ---------------- -->
 <hr />
 @end html
-@heading @anchor{alpha-x-x}alpha*-*-*
-
+@anchor{alpha-x-x}
+@heading alpha*-*-*
 This section contains general configuration information for all
 alpha-based platforms using ELF (in particular, ignore this section for
 DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
@@ -3188,7 +3188,8 @@ shared libraries.
 @html
 <hr />
 @end html
-@heading @anchor{alpha-dec-osf51}alpha*-dec-osf5.1
+@anchor{alpha-dec-osf51}
+@heading alpha*-dec-osf5.1
 Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
@@ -3201,14 +3202,15 @@ are the versions which identify themselves as DEC OSF/1.)
 @html
 <hr />
 @end html
-@heading @anchor{amd64-x-solaris210}amd64-*-solaris2.1[0-9]*
-
+@anchor{amd64-x-solaris210}
+@heading amd64-*-solaris2.1[0-9]*
 This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 
 @html
 <hr />
 @end html
-@heading @anchor{arm-x-eabi}arm-*-eabi
+@anchor{arm-x-eabi}
+@heading arm-*-eabi
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
 @code{arm-*-netbsdelf}, @code{arm-*-*linux-*}
@@ -3217,8 +3219,8 @@ and @code{arm-*-rtemseabi}.
 @html
 <hr />
 @end html
-@heading @anchor{avr}avr
-
+@anchor{avr}
+@heading avr
 ATMEL AVR-family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 @ifnothtml
@@ -3254,8 +3256,8 @@ indicates that you should upgrade to a newer version of the binutils.
 @html
 <hr />
 @end html
-@heading @anchor{bfin}Blackfin
-
+@anchor{bfin}
+@heading Blackfin
 The Blackfin processor, an Analog Devices DSP.
 @ifnothtml
 @xref{Blackfin Options,, Blackfin Options, gcc, Using the GNU Compiler
@@ -3271,10 +3273,10 @@ is available at @uref{http://blackfin.uclinux.org}
 @html
 <hr />
 @end html
-@heading @anchor{cr16}CR16
-
-The CR16 CompactRISC architecture is a 16-bit architecture. This architecture is 
-used in embedded applications.
+@anchor{cr16}
+@heading CR16
+The CR16 CompactRISC architecture is a 16-bit architecture. This
+architecture is used in embedded applications.
 
 @ifnothtml
 @xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
@@ -3288,14 +3290,14 @@ See ``CR16 Options'' in the main manual for a list of CR16-specific options.
 Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
 GCC@ for building a CR16 elf cross-compiler.
 
-Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to configure
-GCC@ for building a CR16 uclinux cross-compiler.
+Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to
+configure GCC@ for building a CR16 uclinux cross-compiler.
 
 @html
 <hr />
 @end html
-@heading @anchor{cris}CRIS
-
+@anchor{cris}
+@heading CRIS
 CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
 series.  These are used in embedded applications.
 
@@ -3329,8 +3331,8 @@ information about this platform is available at
 @html
 <hr />
 @end html
-@heading @anchor{dos}DOS
-
+@anchor{dos}
+@heading DOS
 Please have a look at the @uref{binaries.html,,binaries page}.
 
 You cannot install GCC by itself on MSDOS; it will not compile under
@@ -3341,15 +3343,16 @@ and includes all the necessary compilation tools and libraries.
 @html
 <hr />
 @end html
-@heading @anchor{epiphany-x-elf}epiphany-*-elf
+@anchor{epiphany-x-elf}
+@heading epiphany-*-elf
 Adapteva Epiphany.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{x-x-freebsd}*-*-freebsd*
-
+@anchor{x-x-freebsd}
+@heading *-*-freebsd*
 Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
 FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
 discontinued in GCC 4.0.
@@ -3386,7 +3389,8 @@ the FreeBSD 7.0 release with GNU binutils after 2.16.1.
 @html
 <hr />
 @end html
-@heading @anchor{h8300-hms}h8300-hms
+@anchor{h8300-hms}
+@heading h8300-hms
 Renesas H8/300 series of processors.
 
 Please have a look at the @uref{binaries.html,,binaries page}.
@@ -3399,7 +3403,8 @@ longer a multiple of 2 bytes.
 @html
 <hr />
 @end html
-@heading @anchor{hppa-hp-hpux}hppa*-hp-hpux*
+@anchor{hppa-hp-hpux}
+@heading hppa*-hp-hpux*
 Support for HP-UX version 9 and older was discontinued in GCC 3.4.
 
 We require using gas/binutils on all hppa platforms.  Version 2.19 or
@@ -3451,8 +3456,8 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 @html
 <hr />
 @end html
-@heading @anchor{hppa-hp-hpux10}hppa*-hp-hpux10
-
+@anchor{hppa-hp-hpux10}
+@heading hppa*-hp-hpux10
 For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
 @code{PHCO_19798} from HP@.
 
@@ -3464,8 +3469,8 @@ with the one implemented under HP-UX 11 using secondary definitions.
 @html
 <hr />
 @end html
-@heading @anchor{hppa-hp-hpux11}hppa*-hp-hpux11
-
+@anchor{hppa-hp-hpux11}
+@heading hppa*-hp-hpux11
 GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
 be used to compile GCC 3.0 and up.
 
@@ -3575,8 +3580,8 @@ supported, so @option{--enable-threads=dce} does not work.
 @html
 <hr />
 @end html
-@heading @anchor{x-x-linux-gnu}*-*-linux-gnu
-
+@anchor{x-x-linux-gnu}
+@heading *-*-linux-gnu
 Versions of libstdc++-v3 starting with 3.2.1 require bug fixes present
 in glibc 2.2.5 and later.  More information is available in the
 libstdc++-v3 documentation.
@@ -3584,8 +3589,8 @@ libstdc++-v3 documentation.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-linux}i?86-*-linux*
-
+@anchor{ix86-x-linux}
+@heading i?86-*-linux*
 As of GCC 3.3, binutils 2.13.1 or later is required for this platform.
 See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
 
@@ -3596,7 +3601,8 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-solaris29}i?86-*-solaris2.9
+@anchor{ix86-x-solaris29}
+@heading i?86-*-solaris2.9
 The Sun assembler in Solaris 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
@@ -3616,7 +3622,8 @@ you have the patch installed, you can configure GCC with an appropriate
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
+@anchor{ix86-x-solaris210}
+@heading i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  Starting
 with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
 @samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
@@ -3645,7 +3652,8 @@ guarantee use of Sun @command{ld}.
 @html
 <hr />
 @end html
-@heading @anchor{ia64-x-linux}ia64-*-linux
+@anchor{ia64-x-linux}
+@heading ia64-*-linux
 IA-64 processor (also known as IPF, or Itanium Processor Family)
 running GNU/Linux.
 
@@ -3665,7 +3673,8 @@ more major ABI changes are expected.
 @html
 <hr />
 @end html
-@heading @anchor{ia64-x-hpux}ia64-*-hpux*
+@anchor{ia64-x-hpux}
+@heading ia64-*-hpux*
 Building GCC on this target requires the GNU Assembler.  The bundled HP
 assembler will not work.  To prevent GCC from using the wrong assembler,
 the option @option{--with-gnu-as} may be necessary.
@@ -3680,7 +3689,8 @@ removed and the system libunwind library will always be used.
 <hr />
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
-@heading @anchor{x-ibm-aix}*-ibm-aix*
+@anchor{x-ibm-aix}
+@heading *-ibm-aix*
 Support for AIX version 3 and older was discontinued in GCC 3.4.
 Support for AIX version 4.2 and older was discontinued in GCC 4.5.
 
@@ -3831,42 +3841,48 @@ switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
 @html
 <hr />
 @end html
-@heading @anchor{iq2000-x-elf}iq2000-*-elf
+@anchor{iq2000-x-elf}
+@heading iq2000-*-elf
 Vitesse IQ2000 processors.  These are used in embedded
 applications.  There are no standard Unix configurations.
 
 @html
 <hr />
 @end html
-@heading @anchor{lm32-x-elf}lm32-*-elf
+@anchor{lm32-x-elf}
+@heading lm32-*-elf
 Lattice Mico32 processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{lm32-x-uclinux}lm32-*-uclinux
+@anchor{lm32-x-uclinux}
+@heading lm32-*-uclinux
 Lattice Mico32 processor.
 This configuration is intended for embedded systems running uClinux.
 
 @html
 <hr />
 @end html
-@heading @anchor{m32c-x-elf}m32c-*-elf
+@anchor{m32c-x-elf}
+@heading m32c-*-elf
 Renesas M32C processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{m32r-x-elf}m32r-*-elf
+@anchor{m32r-x-elf}
+@heading m32r-*-elf
 Renesas M32R processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{m68k-x-x}m68k-*-*
+@anchor{m68k-x-x}
+@heading m68k-*-*
 By default,
 @samp{m68k-*-elf*}, @samp{m68k-*-rtems},  @samp{m68k-*-uclinux} and
 @samp{m68k-*-linux}
@@ -3894,31 +3910,34 @@ GCC requires at least binutils version 2.17 on these targets.
 @html
 <hr />
 @end html
-@heading @anchor{m68k-x-uclinux}m68k-*-uclinux
+@anchor{m68k-x-uclinux}
+@heading m68k-*-uclinux
 GCC 4.3 changed the uClinux configuration so that it uses the
 @samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
 It also added improved support for C++ and flat shared libraries,
 both of which were ABI changes.
 
-
 @html
 <hr />
 @end html
-@heading @anchor{mep-x-elf}mep-*-elf
+@anchor{mep-x-elf}
+@heading mep-*-elf
 Toshiba Media embedded Processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{microblaze-x-elf}microblaze-*-elf
+@anchor{microblaze-x-elf}
+@heading microblaze-*-elf
 Xilinx MicroBlaze processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{mips-x-x}mips-*-*
+@anchor{mips-x-x}
+@heading mips-*-*
 If on a MIPS system you get an error message saying ``does not have gp
 sections for all it's [sic] sectons [sic]'', don't worry about it.  This
 happens whenever you use GAS with the MIPS linker, but there is not
@@ -3970,15 +3989,15 @@ made after Nov. 9, 2006) should be free from both of these problems.
 @html
 <hr />
 @end html
-@heading @anchor{mips-sgi-irix5}mips-sgi-irix5
-
+@anchor{mips-sgi-irix5}
+@heading mips-sgi-irix5
 Support for IRIX 5 has been removed in GCC 4.6.
 
 @html
 <hr />
 @end html
-@heading @anchor{mips-sgi-irix6}mips-sgi-irix6
-
+@anchor{mips-sgi-irix6}
+@heading mips-sgi-irix6
 Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
 releases before 6.5 has been removed in GCC 4.6, as well as support for
 the O32 ABI.
@@ -3986,21 +4005,23 @@ the O32 ABI.
 @html
 <hr />
 @end html
-@heading @anchor{moxie-x-elf}moxie-*-elf
+@anchor{moxie-x-elf}
+@heading moxie-*-elf
 The moxie processor.
 
 @html
 <hr />
 @end html
-@heading @anchor{msp430-x-elf}msp430-*-elf
+@anchor{msp430-x-elf}
+@heading msp430-*-elf
 TI MSP430 processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-x}powerpc-*-*
-
+@anchor{powerpc-x-x}
+@heading powerpc-*-*
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
@@ -4011,7 +4032,8 @@ or newer for a working GCC@.
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-darwin}powerpc-*-darwin*
+@anchor{powerpc-x-darwin}
+@heading powerpc-*-darwin*
 PowerPC running Darwin (Mac OS X kernel).
 
 Pre-installed versions of Mac OS X may not include any developer tools,
@@ -4027,65 +4049,74 @@ on systems older than 10.3.9 (aka darwin7.9.0).
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-elf}powerpc-*-elf
+@anchor{powerpc-x-elf}
+@heading powerpc-*-elf
 PowerPC system in big endian mode, running System V.4.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-linux-gnu}powerpc*-*-linux-gnu*
-
+@anchor{powerpc-x-linux-gnu}
+@heading powerpc*-*-linux-gnu*
 PowerPC system in big endian mode running Linux.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-netbsd}powerpc-*-netbsd*
+@anchor{powerpc-x-netbsd}
+@heading powerpc-*-netbsd*
 PowerPC system in big endian mode running NetBSD@.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-eabisim}powerpc-*-eabisim
+@anchor{powerpc-x-eabisim}
+@heading powerpc-*-eabisim
 Embedded PowerPC system in big endian mode for use in running under the
 PSIM simulator.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-eabi}powerpc-*-eabi
+@anchor{powerpc-x-eabi}
+@heading powerpc-*-eabi
 Embedded PowerPC system in big endian mode.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpcle-x-elf}powerpcle-*-elf
+@anchor{powerpcle-x-elf}
+@heading powerpcle-*-elf
 PowerPC system in little endian mode, running System V.4.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpcle-x-eabisim}powerpcle-*-eabisim
+@anchor{powerpcle-x-eabisim}
+@heading powerpcle-*-eabisim
 Embedded PowerPC system in little endian mode for use in running under
 the PSIM simulator.
 
 @html
 <hr />
 @end html
-@heading @anchor{powerpcle-x-eabi}powerpcle-*-eabi
+@anchor{powerpcle-x-eabi}
+@heading powerpcle-*-eabi
 Embedded PowerPC system in little endian mode.
 
 @html
 <hr />
 @end html
-@heading @anchor{rl78-x-elf}rl78-*-elf
+@anchor{rl78-x-elf}
+@heading rl78-*-elf
 The Renesas RL78 processor.
 This configuration is intended for embedded systems.
 
 @html
 <hr />
 @end html
-@heading @anchor{rx-x-elf}rx-*-elf
+@anchor{rx-x-elf}
+@heading rx-*-elf
 The Renesas RX processor.  See
 @uref{http://eu.renesas.com/fmwk.jsp?cnt=rx600_series_landing.jsp&fp=/products/mpumcu/rx_family/rx600_series}
 for more information about this processor.
@@ -4093,19 +4124,22 @@ for more information about this processor.
 @html
 <hr />
 @end html
-@heading @anchor{s390-x-linux}s390-*-linux*
+@anchor{s390-x-linux}
+@heading s390-*-linux*
 S/390 system running GNU/Linux for S/390@.
 
 @html
 <hr />
 @end html
-@heading @anchor{s390x-x-linux}s390x-*-linux*
+@anchor{s390x-x-linux}
+@heading s390x-*-linux*
 zSeries system (64-bit) running GNU/Linux for zSeries@.
 
 @html
 <hr />
 @end html
-@heading @anchor{s390x-ibm-tpf}s390x-ibm-tpf*
+@anchor{s390x-ibm-tpf}
+@heading s390x-ibm-tpf*
 zSeries system (64-bit) running TPF@.  This platform is
 supported as cross-compilation target only.
 
@@ -4116,8 +4150,8 @@ supported as cross-compilation target only.
 @c with 2.0 until 2.6, 7, 8, etc.  Solaris 1 was a marketing name for
 @c SunOS 4 releases which we don't use to avoid confusion.  Solaris
 @c alone is too unspecific and must be avoided.
-@heading @anchor{x-x-solaris2}*-*-solaris2*
-
+@anchor{x-x-solaris2}
+@heading *-*-solaris2*
 Support for Solaris 9 has been obsoleted in GCC 4.9, but can still be
 enabled by configuring with @option{--enable-obsolete}.  Support will be
 removed in GCC 4.10.  Support for Solaris 8 has removed in GCC 4.8.
@@ -4223,8 +4257,8 @@ additional bug fixes.
 @html
 <hr />
 @end html
-@heading @anchor{sparc-x-x}sparc*-*-*
-
+@anchor{sparc-x-x}
+@heading sparc*-*-*
 This section contains general configuration information for all
 SPARC-based platforms.  In addition to reading this section, please
 read all other sections that match your target.
@@ -4238,8 +4272,8 @@ in @uref{prerequisites.html,,the prerequisites}.
 @html
 <hr />
 @end html
-@heading @anchor{sparc-sun-solaris2}sparc-sun-solaris2*
-
+@anchor{sparc-sun-solaris2}
+@heading sparc-sun-solaris2*
 When GCC is configured to use GNU binutils 2.14 or later, the binaries
 produced are smaller than the ones produced using Sun's native tools;
 this difference is quite significant for binaries containing debugging
@@ -4300,8 +4334,8 @@ not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 @html
 <hr />
 @end html
-@heading @anchor{sparc-sun-solaris210}sparc-sun-solaris2.10
-
+@anchor{sparc-sun-solaris210}
+@heading sparc-sun-solaris2.10
 There is a bug in older versions of the Sun assembler which breaks
 thread-local storage (TLS).  A typical error message is
 
@@ -4316,7 +4350,8 @@ This bug is fixed in Sun patch 118683-03 or later.
 @html
 <hr />
 @end html
-@heading @anchor{sparc-x-linux}sparc-*-linux*
+@anchor{sparc-x-linux}
+@heading sparc-*-linux*
 
 GCC versions 3.0 and higher require binutils 2.11.2 and glibc 2.2.4
 or newer on this platform.  All earlier binutils and glibc
@@ -4326,8 +4361,8 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 @html
 <hr />
 @end html
-@heading @anchor{sparc64-x-solaris2}sparc64-*-solaris2*
-
+@anchor{sparc64-x-solaris2}
+@heading sparc64-*-solaris2*
 When configuring the GNU Multiple Precision Library (GMP), the MPFR
 library or the MPC library, the canonical target triplet must be specified
 as the @command{build} parameter on the configure line.  For example
@@ -4351,37 +4386,38 @@ and @option{-xildoff} turns off the incremental linker.
 @html
 <hr />
 @end html
-@heading @anchor{sparcv9-x-solaris2}sparcv9-*-solaris2*
-
+@anchor{sparcv9-x-solaris2}
+@heading sparcv9-*-solaris2*
 This is a synonym for @samp{sparc64-*-solaris2*}.
 
 @html
 <hr />
 @end html
-@heading @anchor{c6x-x-x}c6x-*-*
-
+@anchor{c6x-x-x}
+@heading c6x-*-*
 The C6X family of processors. This port requires binutils-2.22 or newer.
 
 @html
 <hr />
 @end html
-@heading @anchor{tilegx-*-linux}tilegx-*-linux*
-
+@anchor{tilegx-*-linux}
+@heading tilegx-*-linux*
 The TILE-Gx processor running GNU/Linux.  This port requires
 binutils-2.22 or newer.
 
 @html
 <hr />
 @end html
-@heading @anchor{tilepro-*-linux}tilepro-*-linux*
-
+@anchor{tilepro-*-linux}
+@heading tilepro-*-linux*
 The TILEPro processor running GNU/Linux.  This port requires
 binutils-2.22 or newer.
 
 @html
 <hr />
 @end html
-@heading @anchor{x-x-vxworks}*-*-vxworks*
+@anchor{x-x-vxworks}
+@heading *-*-vxworks*
 Support for VxWorks is in flux.  At present GCC supports @emph{only} the
 very recent VxWorks 5.5 (aka Tornado 2.2) release, and only on PowerPC@.
 We welcome patches for other architectures supported by VxWorks 5.5.
@@ -4416,8 +4452,8 @@ VxWorks will incorporate this module.)
 @html
 <hr />
 @end html
-@heading @anchor{x86-64-x-x}x86_64-*-*, amd64-*-*
-
+@anchor{x86-64-x-x}
+@heading x86_64-*-*, amd64-*-*
 GCC supports the x86-64 architecture implemented by the AMD64 processor
 (amd64-*-* is an alias for x86_64-*-*) on GNU/Linux, FreeBSD and NetBSD@.
 On GNU/Linux the default is a bi-arch compiler which is able to generate
@@ -4426,8 +4462,8 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @html
 <hr />
 @end html
-@heading @anchor{x86-64-x-solaris210}x86_64-*-solaris2.1[0-9]*
-
+@anchor{x86-64-x-solaris210}
+@heading x86_64-*-solaris2.1[0-9]*
 GCC also supports the x86-64 architecture implemented by the AMD64
 processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
 Solaris 10 or later.  Unlike other systems, without special options a
@@ -4442,8 +4478,8 @@ and @samp{CC=gcc -m64}.
 @html
 <hr />
 @end html
-@heading @anchor{xtensa-x-elf}xtensa*-*-elf
-
+@anchor{xtensa-x-elf}
+@heading xtensa*-*-elf
 This target is intended for embedded Xtensa systems using the
 @samp{newlib} C library.  It uses ELF but does not support shared
 objects.  Designed-defined instructions specified via the
@@ -4460,8 +4496,8 @@ which you can use to replace the default header file.
 @html
 <hr />
 @end html
-@heading @anchor{xtensa-x-linux}xtensa*-*-linux*
-
+@anchor{xtensa-x-linux}
+@heading xtensa*-*-linux*
 This target is for Xtensa systems running GNU/Linux.  It supports ELF
 shared objects and the GNU C library (glibc).  It also generates
 position-independent code (PIC) regardless of whether the
@@ -4472,7 +4508,8 @@ respects, this target is the same as the
 @html
 <hr />
 @end html
-@heading @anchor{windows}Microsoft Windows
+@anchor{windows}
+@heading Microsoft Windows
 
 @subheading Intel 16-bit versions
 The 16-bit versions of Microsoft Windows, such as Windows 3.1, are not
@@ -4482,7 +4519,6 @@ However, the 32-bit port has limited support for Microsoft
 Windows 3.11 in the Win32s environment, as a target only.  See below.
 
 @subheading Intel 32-bit versions
-
 The 32-bit versions of Windows, including Windows 95, Windows NT, Windows
 XP, and Windows Vista, are supported by several different target
 platforms.  These targets differ in which Windows subsystem they target
@@ -4500,7 +4536,6 @@ the Win32 subsystem that provides a subset of POSIX.
 @end itemize
 
 @subheading Intel 64-bit versions
-
 GCC contains support for x86-64 using the mingw-w64
 runtime library, available from @uref{http://mingw-w64.sourceforge.net/}.
 This library should be used with the target triple x86_64-pc-mingw32.
@@ -4508,12 +4543,10 @@ This library should be used with the target triple x86_64-pc-mingw32.
 Presently Windows for Itanium is not supported.
 
 @subheading Windows CE
-
 Windows CE is supported as a target only on Hitachi
 SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 
 @subheading Other Windows Platforms
-
 GCC no longer supports Windows NT on the Alpha or PowerPC.
 
 GCC no longer supports the Windows POSIX subsystem.  However, it does
@@ -4529,8 +4562,8 @@ UWIN support has been removed due to a lack of maintenance.
 @html
 <hr />
 @end html
-@heading @anchor{x-x-cygwin}*-*-cygwin
-
+@anchor{x-x-cygwin}
+@heading *-*-cygwin
 Ports of GCC are included with the
 @uref{http://www.cygwin.com/,,Cygwin environment}.
 
@@ -4546,8 +4579,8 @@ or version 2.20 or above if building your own.
 @html
 <hr />
 @end html
-@heading @anchor{x-x-interix}*-*-interix
-
+@anchor{x-x-interix}
+@heading *-*-interix
 The Interix target is used by OpenNT, Interix, Services For UNIX (SFU),
 and Subsystem for UNIX-based Applications (SUA).  Applications compiled
 with this target run in the Interix subsystem, which is separate from
@@ -4556,8 +4589,8 @@ the Win32 subsystem.  This target was last known to work in GCC 3.3.
 @html
 <hr />
 @end html
-@heading @anchor{x-x-mingw32}*-*-mingw32
-
+@anchor{x-x-mingw32}
+@heading *-*-mingw32
 GCC will build with and support only MinGW runtime 3.12 and later.
 Earlier versions of headers are incompatible with the new default semantics
 of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
@@ -4565,8 +4598,8 @@ of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
 @html
 <hr />
 @end html
-@heading @anchor{older}Older systems
-
+@anchor{older}
+@heading Older systems
 GCC contains support files for many older (1980s and early
 1990s) Unix variants.  For the most part, support for these systems
 has not been deliberately removed, but it has not been maintained for
@@ -4611,8 +4644,8 @@ current GCC) is to be found in the GCC texinfo manual.
 @html
 <hr />
 @end html
-@heading @anchor{elf}all ELF targets (SVR4, Solaris 2, etc.)
-
+@anchor{elf}
+@heading all ELF targets (SVR4, Solaris 2, etc.)
 C++ support is significantly better on ELF targets if you use the
 @uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of
 inlines, vtables and template instantiations will be discarded

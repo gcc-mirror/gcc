@@ -1,3 +1,10 @@
+2013-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/install.texi (Host/target specific installation notes for GCC):
+	Put @anchor before @heading.
+	* doc/gcc.texi (titlepage): Use @uref and http:// prefix for website.
+	Use @email for email addresses.
+
 2013-10-01  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_across_edge): Make path a pointer to
@@ -159,8 +166,8 @@
 2013-09-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58554
-	* tree-loop-distribution.c (classify_partition): Require unconditionally
-	executed stores for memcpy and memset recognition.
+	* tree-loop-distribution.c (classify_partition): Require
+	unconditionally executed stores for memcpy and memset recognition.
 	(tree_loop_distribution): Calculate dominance info.
 
 2013-09-30  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
