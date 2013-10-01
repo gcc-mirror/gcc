@@ -1,3 +1,8 @@
+2013-10-01  Alan Modra  <amodra@gmail.com>
+
+	* stmt.c (expand_asm_operands): Revert part of 2013-09-24 special
+	casing inout operands.
+
 2013-10-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58553
