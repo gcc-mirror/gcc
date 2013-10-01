@@ -21756,7 +21756,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		 is dependent.  */
 	      type = make_typename_type (parser->scope, name, tag_type,
 					 /*complain=*/tf_error);
-	      decl = TYPE_NAME (type);
+	      if (type != error_mark_node)
+		decl = TYPE_NAME (type);
 	    }
 	  else if (is_template
 		   && (cp_parser_next_token_ends_template_argument_p (parser)
