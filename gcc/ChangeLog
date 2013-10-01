@@ -1,3 +1,11 @@
+2013-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/58574
+	* config/s390/s390.c (s390_chunkify_start): Handle tablejump_p first,
+	continue when done, for other jumps look through PARALLEL
+	unconditionally.
+
 2013-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58564
