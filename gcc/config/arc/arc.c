@@ -1808,7 +1808,7 @@ Notes:
 
 /* Structure to be filled in by arc_compute_frame_size with register
    save masks, and offsets for the current function.  */
-struct arc_frame_info
+struct GTY (()) arc_frame_info
 {
   unsigned int total_size;	/* # bytes that the entire frame takes up.  */
   unsigned int extra_size;	/* # bytes of extra stuff.  */
