@@ -616,7 +616,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_arc_ifcvt (ctxt_); }
+  opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
   unsigned int execute () { return arc_ifcvt (); }
 };
 
