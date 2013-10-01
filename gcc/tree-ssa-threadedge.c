@@ -929,13 +929,13 @@ thread_across_edge (gimple dummy_cond,
 	  if (dest == NULL || dest == e->dest)
 	    goto fail;
 
-	  vec<jump_thread_edge *> path = vNULL;
+	  vec<jump_thread_edge *> *path = new vec<jump_thread_edge *> ();
           jump_thread_edge *x
 	    = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
-	  path.safe_push (x);
+	  path->safe_push (x);
 
 	  x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_BLOCK);
-	  path.safe_push (x);
+	  path->safe_push (x);
 
 	  /* See if we can thread through DEST as well, this helps capture
 	     secondary effects of threading without having to re-run DOM or
@@ -953,17 +953,14 @@ thread_across_edge (gimple dummy_cond,
 					  handle_dominating_asserts,
 					  simplify,
 					  visited,
-					  &path);
+					  path);
 	      BITMAP_FREE (visited);
 	    }
 
 	  remove_temporary_equivalences (stack);
-	  propagate_threaded_block_debug_into (path.last ()->e->dest,
+	  propagate_threaded_block_debug_into (path->last ()->e->dest,
 					       e->dest);
 	  register_jump_thread (path);
-	  for (unsigned int i = 0; i < path.length (); i++)
-	    delete path[i];
-	  path.release ();
 	  return;
 	}
     }
@@ -992,37 +989,39 @@ thread_across_edge (gimple dummy_cond,
 	bitmap_clear (visited);
 	bitmap_set_bit (visited, taken_edge->dest->index);
 	bitmap_set_bit (visited, e->dest->index);
-        vec<jump_thread_edge *> path = vNULL;
+        vec<jump_thread_edge *> *path = new vec<jump_thread_edge *> ();
 
 	/* Record whether or not we were able to thread through a successor
 	   of E->dest.  */
         jump_thread_edge *x = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
-	path.safe_push (x);
+	path->safe_push (x);
 
         x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
-	path.safe_push (x);
+	path->safe_push (x);
 	found = false;
 	if ((e->flags & EDGE_DFS_BACK) == 0
-	    || ! cond_arg_set_in_bb (path.last ()->e, e->dest))
+	    || ! cond_arg_set_in_bb (path->last ()->e, e->dest))
 	  found = thread_around_empty_blocks (taken_edge,
 					      dummy_cond,
 					      handle_dominating_asserts,
 					      simplify,
 					      visited,
-					      &path);
+					      path);
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
 	if (found)
 	  {
-	    propagate_threaded_block_debug_into (path.last ()->e->dest,
+	    propagate_threaded_block_debug_into (path->last ()->e->dest,
 						 taken_edge->dest);
 	    register_jump_thread (path);
 	  }
-
-	for (unsigned int i = 0; i < path.length (); i++)
-	  delete path[i];
-        path.release ();
+	else
+	  {
+	    for (unsigned int i = 0; i < path->length (); i++)
+	      delete (*path)[i];
+	    path->release();
+	  }
       }
     BITMAP_FREE (visited);
   }

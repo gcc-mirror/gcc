@@ -1,3 +1,39 @@
+2013-10-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Make path a pointer to
+	a vec.  Only delete the path if we create one without successfully
+	registering a jump thread.
+	* tree-ssa-threadupdate.h (register_jump_thread): Pass in path vector
+	as a pointer.
+	* tree-ssa-threadupdate.c (threaded_edges): Remove.  No longer used
+	(paths): New vector of jump threading paths.
+	(THREAD_TARGET, THREAD_TARGET2): Remove accessor macros.
+	(THREAD_PATH): New accessor macro for the entire thread path.
+	(lookup_redirection_data): Get intermediate and final outgoing edge
+	from the thread path.
+	(create_edge_and_update_destination_phis): Copy the threading path.
+	(ssa_fix_duplicate_block_edges): Get edges and block types from the
+	jump threading path.
+	(ssa_redirect_edges): Get edges and block types from the jump threading
+	path.  Free the path vector.
+	(thread_block): Get edges from the jump threading path.  Look at the
+	entire path to see if we thread to a loop exit.  If we cancel a jump
+	thread request, then free the path vector.
+	(thread_single_edge): Get edges and block types from the jump threading
+	path.  Free the path vector.
+	(thread_through_loop_header): Get edges and block types from the jump
+	threading path.  Free the path vector.
+	(mark_threaded_blocks): Iterate over the vector of paths and store
+	the path on the appropriate edge.  Get edges and block types from the
+	jump threading path.
+	(mark_threaded_blocks): Get edges and block types from the jump
+	threading path.  Free the path vector.
+	(thread_through_all_blocks): Use the vector of paths rather than
+	a vector of 3-edge sets.
+	(register_jump_thread): Accept pointer to a path vector rather
+	than the path vector itself.  Store the path vector for later use.
+	Simplify.
+
 2013-10-01  Jakub Jelinek  <jakub@redhat.com>
             Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
