@@ -2219,7 +2219,7 @@ particular release.
       <entry>28.7</entry>
       <entry>Class template <code>regex_traits</code></entry>
       <entry>Partial</entry>
-      <entry><code>transform_primary</code> is not implemented</entry>
+      <entry><code>transform_primary</code> is not correctly implemented</entry>
       <entry/>
     </row>
     <row>

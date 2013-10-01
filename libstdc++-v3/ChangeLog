@@ -1,5 +1,10 @@
 2013-10-01  Tim Shen  <timshen91@gmail.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Change "is not implemented" to
+	"is not correctly implemented".
+
+2013-10-01  Tim Shen  <timshen91@gmail.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Update regex status.
 	* include/bits/regex.h (match_results<>::begin,
 	match_results<>::cbegin, match_results<>::end, match_results<>::cend):
