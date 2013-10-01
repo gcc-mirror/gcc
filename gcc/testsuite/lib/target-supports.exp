@@ -1751,6 +1751,13 @@ proc check_effective_target_int32plus { } {
 # options, 0 otherwise.
 
 proc check_effective_target_ptr32plus { } {
+    # The msp430 has 16-bit or 20-bit pointers.  The 20-bit pointer is stored
+    # in a 32-bit slot when in memory, so sizeof(void *) returns 4, but it
+    # cannot really hold a 32-bit address, so we always return false here.
+    if { [istarget msp430-*-*] } {
+        return 0
+    }
+ 
     return [check_no_compiler_messages ptr32plus object {
 	int dummy[sizeof (void *) >= 4 ? 1 : -1];
     }]

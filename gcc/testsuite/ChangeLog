@@ -1,3 +1,16 @@
+2013-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_ptr32plus): Fail
+	for MSP430.
+	* gcc.c-torture/compile/20010327-1.c: Only run the test for
+	ptr32plus targets.
+	* gcc.c-torture/compile/pr41181.c: Likewise.
+	* gcc.c-torture/compile/calls.c: Likewise.
+	* gcc.c-torture/compile/990617-1.c: Likewise.
+	* gcc.c-torture/compile/pr55955.c: Only run the test for
+	int32plus targets.
+	* gcc.c-torture/compile/limits-externdecl.c: Likewise.
+
 2013-10-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58553
