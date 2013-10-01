@@ -1,3 +1,10 @@
+2013-10-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55469
+	* io/list_read (parse_repeat, read_integer, read_character,
+	parse_real, read_real, check_type, list_formatted_read_scalar,
+	finish_list_read): Call list_free.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.
