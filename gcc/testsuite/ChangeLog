@@ -1,3 +1,8 @@
+2013-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58563
+	* g++.dg/cpp0x/pr58563.C: New.
+
 2013-10-01  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect_saddl_1.c: New.

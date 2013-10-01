@@ -1,3 +1,9 @@
+2013-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58563
+	* parser.c (cp_parser_lookup_name): Check make_typename_type return
+	value for error_mark_node.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (CXX_TREE_H, CXX_PARSER_H, CXX_PRETTY_PRINT_H):
