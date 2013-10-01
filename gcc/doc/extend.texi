@@ -3036,7 +3036,7 @@ attribute is not allowed on types to annotate indirect calls.
 @cindex indirect calls on ARC
 @cindex indirect calls on ARM
 @cindex indirect calls on Epiphany
-These attribute specify how a particular function is called on
+These attributes specify how a particular function is called on
 ARC, ARM and Epiphany - with @code{medium_call} being specific to ARC.
 These attributes override the
 @option{-mlong-calls} (@pxref{ARM Options} and @ref{ARC Options})
