@@ -1200,8 +1200,8 @@ This is an alias for @option{--enable-tls=no}.
 @itemx --with-cpu-64=@var{cpu}
 Specify which cpu variant the compiler should generate code for by default.
 @var{cpu} will be used as the default value of the @option{-mcpu=} switch.
-This option is only supported on some targets, including ARM, i386, M68k,
-PowerPC, and SPARC@.  The @option{--with-cpu-32} and
+This option is only supported on some targets, including ARC, ARM, i386, M68k,
+PowerPC, and SPARC@.  It is mandatory for ARC@.  The @option{--with-cpu-32} and
 @option{--with-cpu-64} options specify separate default CPUs for
 32-bit and 64-bit modes; these options are only supported for i386,
 x86-64 and PowerPC.
@@ -3205,6 +3205,24 @@ are the versions which identify themselves as DEC OSF/1.)
 @anchor{amd64-x-solaris210}
 @heading amd64-*-solaris2.1[0-9]*
 This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
+
+@html
+<hr />
+@end html
+@anchor{arc-x-elf32}
+@heading arc-*-elf32
+
+Use @samp{configure --target=arc-elf32 --with-cpu=@var{cpu} --enable-languages="c,c++"}
+to configure GCC, with @var{cpu} being one of @samp{arc600}, @samp{arc601},
+or @samp{arc700}@.
+
+@html
+<hr />
+@end html
+@anchor{arc-linux-uclibc}
+@heading arc-linux-uclibc
+
+Use @samp{configure --target=arc-linux-uclibc --with-cpu=arc700 --enable-languages="c,c++"} to configure GCC@.
 
 @html
 <hr />
