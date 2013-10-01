@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include <stdio.h>
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -1809,7 +1808,7 @@ Notes:
 
 /* Structure to be filled in by arc_compute_frame_size with register
    save masks, and offsets for the current function.  */
-struct GTY (()) arc_frame_info
+struct arc_frame_info
 {
   unsigned int total_size;	/* # bytes that the entire frame takes up.  */
   unsigned int extra_size;	/* # bytes of extra stuff.  */
@@ -2259,158 +2258,149 @@ arc_expand_epilogue (int sibcall_p)
 	   ? arc_compute_frame_size (size)
 	   : cfun->machine->frame_info.total_size);
 
-  if (1)
+  unsigned int pretend_size = cfun->machine->frame_info.pretend_size;
+  unsigned int frame_size;
+  unsigned int size_to_deallocate;
+  int restored;
+  int can_trust_sp_p = !cfun->calls_alloca;
+  int first_offset = 0;
+  int millicode_p = cfun->machine->frame_info.millicode_end_reg > 0;
+
+  size_to_deallocate = size;
+
+  frame_size = size - (pretend_size +
+		       cfun->machine->frame_info.reg_size +
+		       cfun->machine->frame_info.extra_size);
+
+  /* ??? There are lots of optimizations that can be done here.
+     EG: Use fp to restore regs if it's closer.
+     Maybe in time we'll do them all.  For now, always restore regs from
+     sp, but don't restore sp if we don't have to.  */
+
+  if (!can_trust_sp_p)
+    gcc_assert (frame_pointer_needed);
+
+  /* Restore stack pointer to the beginning of saved register area for
+     ARCompact ISA.  */
+  if (frame_size)
     {
-      unsigned int pretend_size = cfun->machine->frame_info.pretend_size;
-      unsigned int frame_size;
-      unsigned int size_to_deallocate;
-      int restored;
-#if 0
-      bool fp_restored_p;
-#endif
-      int can_trust_sp_p = !cfun->calls_alloca;
-      int first_offset = 0;
-      int millicode_p = cfun->machine->frame_info.millicode_end_reg > 0;
-
-      size_to_deallocate = size;
-
-      frame_size = size - (pretend_size +
-			   cfun->machine->frame_info.reg_size +
-			   cfun->machine->frame_info.extra_size);
-
-      /* ??? There are lots of optimizations that can be done here.
-	 EG: Use fp to restore regs if it's closer.
-	 Maybe in time we'll do them all.  For now, always restore regs from
-	 sp, but don't restore sp if we don't have to.  */
-
-      if (!can_trust_sp_p)
-	gcc_assert (frame_pointer_needed);
-
-      /* Restore stack pointer to the beginning of saved register area for
-	 ARCompact ISA.  */
-      if (frame_size)
-	{
-	  if (frame_pointer_needed)
-	    frame_move (stack_pointer_rtx, frame_pointer_rtx);
-	  else
-	    first_offset = frame_size;
-	  size_to_deallocate -= frame_size;
-	}
-      else if (!can_trust_sp_p)
-	frame_stack_add (-frame_size);
-
-
-      /* Restore any saved registers.  */
       if (frame_pointer_needed)
-	{
-	      rtx addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-
-	      frame_move_inc (frame_pointer_rtx, gen_frame_mem (Pmode, addr),
-			      stack_pointer_rtx, 0);
-	      size_to_deallocate -= UNITS_PER_WORD;
-	}
-
-      /* Load blink after the calls to thunk calls in case of optimize size.  */
-      if (millicode_p)
-	{
-	      int sibthunk_p = (!sibcall_p
-				&& fn_type == ARC_FUNCTION_NORMAL
-				&& !cfun->machine->frame_info.pretend_size);
-
-	      gcc_assert (!(cfun->machine->frame_info.gmask
-			    & (FRAME_POINTER_MASK | RETURN_ADDR_MASK)));
-	      arc_save_restore (stack_pointer_rtx,
-				cfun->machine->frame_info.gmask,
-				1 + sibthunk_p, &first_offset);
-	      if (sibthunk_p)
-		goto epilogue_done;
-	}
-      /* If we are to restore registers, and first_offset would require
-	 a limm to be encoded in a PRE_MODIFY, yet we can add it with a
-	 fast add to the stack pointer, do this now.  */
-      if ((!SMALL_INT (first_offset)
-	   && cfun->machine->frame_info.gmask
-	   && ((TARGET_ARC700 && !optimize_size)
-		? first_offset <= 0x800
-		: satisfies_constraint_C2a (GEN_INT (first_offset))))
-	   /* Also do this if we have both gprs and return
-	      address to restore, and they both would need a LIMM.  */
-	   || (MUST_SAVE_RETURN_ADDR
-	       && !SMALL_INT ((cfun->machine->frame_info.reg_size + first_offset) >> 2)
-	       && cfun->machine->frame_info.gmask))
-	{
-	  frame_stack_add (first_offset);
-	  first_offset = 0;
-	}
-      if (MUST_SAVE_RETURN_ADDR)
-	{
-	  rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-	  int ra_offs = cfun->machine->frame_info.reg_size + first_offset;
-	  rtx addr = plus_constant (Pmode, stack_pointer_rtx, ra_offs);
-
-	  /* If the load of blink would need a LIMM, but we can add
-	     the offset quickly to sp, do the latter.  */
-	  if (!SMALL_INT (ra_offs >> 2)
-	      && !cfun->machine->frame_info.gmask
-	      && ((TARGET_ARC700 && !optimize_size)
-		   ? ra_offs <= 0x800
-		   : satisfies_constraint_C2a (GEN_INT (ra_offs))))
-	    {
-	       size_to_deallocate -= ra_offs - first_offset;
-	       first_offset = 0;
-	       frame_stack_add (ra_offs);
-	       ra_offs = 0;
-	       addr = stack_pointer_rtx;
-	    }
-	  /* See if we can combine the load of the return address with the
-	     final stack adjustment.
-	     We need a separate load if there are still registers to
-	     restore.  We also want a separate load if the combined insn
-	     would need a limm, but a separate load doesn't.  */
-	  if (ra_offs
-	      && !cfun->machine->frame_info.gmask
-	      && (SMALL_INT (ra_offs) || !SMALL_INT (ra_offs >> 2)))
-	    {
-	      addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, addr);
-	      first_offset = 0;
-	      size_to_deallocate -= cfun->machine->frame_info.reg_size;
-	    }
-	  else if (!ra_offs && size_to_deallocate == UNITS_PER_WORD)
-	    {
-	      addr = gen_rtx_POST_INC (Pmode, addr);
-	      size_to_deallocate = 0;
-	    }
-	  frame_move_inc (ra, gen_frame_mem (Pmode, addr), stack_pointer_rtx, addr);
-	}
-
-      if (!millicode_p)
-	{
-	   if (cfun->machine->frame_info.reg_size)
-	     arc_save_restore (stack_pointer_rtx,
-	       /* The zeroing of these two bits is unnecessary, but leave this in for clarity.  */
-			       cfun->machine->frame_info.gmask
-			       & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK), 1, &first_offset);
-	}
-
-
-      /* The rest of this function does the following:
-	 ARCompact    : handle epilogue_delay, restore sp (phase-2), return
-      */
-
-      /* Keep track of how much of the stack pointer we've restored.
-	 It makes the following a lot more readable.  */
-      size_to_deallocate += first_offset;
-      restored = size - size_to_deallocate;
-#if 0
-      fp_restored_p = 1;
-#endif
-
-      if (size > restored)
-	frame_stack_add (size - restored);
-      /* Emit the return instruction.  */
-      if (sibcall_p == FALSE)
-	emit_jump_insn (gen_simple_return ());
+	frame_move (stack_pointer_rtx, frame_pointer_rtx);
+      else
+	first_offset = frame_size;
+      size_to_deallocate -= frame_size;
     }
+  else if (!can_trust_sp_p)
+    frame_stack_add (-frame_size);
+
+
+  /* Restore any saved registers.  */
+  if (frame_pointer_needed)
+    {
+	  rtx addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+
+	  frame_move_inc (frame_pointer_rtx, gen_frame_mem (Pmode, addr),
+			  stack_pointer_rtx, 0);
+	  size_to_deallocate -= UNITS_PER_WORD;
+    }
+
+  /* Load blink after the calls to thunk calls in case of optimize size.  */
+  if (millicode_p)
+    {
+	  int sibthunk_p = (!sibcall_p
+			    && fn_type == ARC_FUNCTION_NORMAL
+			    && !cfun->machine->frame_info.pretend_size);
+
+	  gcc_assert (!(cfun->machine->frame_info.gmask
+			& (FRAME_POINTER_MASK | RETURN_ADDR_MASK)));
+	  arc_save_restore (stack_pointer_rtx,
+			    cfun->machine->frame_info.gmask,
+			    1 + sibthunk_p, &first_offset);
+	  if (sibthunk_p)
+	    goto epilogue_done;
+    }
+  /* If we are to restore registers, and first_offset would require
+     a limm to be encoded in a PRE_MODIFY, yet we can add it with a
+     fast add to the stack pointer, do this now.  */
+  if ((!SMALL_INT (first_offset)
+       && cfun->machine->frame_info.gmask
+       && ((TARGET_ARC700 && !optimize_size)
+	    ? first_offset <= 0x800
+	    : satisfies_constraint_C2a (GEN_INT (first_offset))))
+       /* Also do this if we have both gprs and return
+	  address to restore, and they both would need a LIMM.  */
+       || (MUST_SAVE_RETURN_ADDR
+	   && !SMALL_INT ((cfun->machine->frame_info.reg_size + first_offset) >> 2)
+	   && cfun->machine->frame_info.gmask))
+    {
+      frame_stack_add (first_offset);
+      first_offset = 0;
+    }
+  if (MUST_SAVE_RETURN_ADDR)
+    {
+      rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      int ra_offs = cfun->machine->frame_info.reg_size + first_offset;
+      rtx addr = plus_constant (Pmode, stack_pointer_rtx, ra_offs);
+
+      /* If the load of blink would need a LIMM, but we can add
+	 the offset quickly to sp, do the latter.  */
+      if (!SMALL_INT (ra_offs >> 2)
+	  && !cfun->machine->frame_info.gmask
+	  && ((TARGET_ARC700 && !optimize_size)
+	       ? ra_offs <= 0x800
+	       : satisfies_constraint_C2a (GEN_INT (ra_offs))))
+	{
+	   size_to_deallocate -= ra_offs - first_offset;
+	   first_offset = 0;
+	   frame_stack_add (ra_offs);
+	   ra_offs = 0;
+	   addr = stack_pointer_rtx;
+	}
+      /* See if we can combine the load of the return address with the
+	 final stack adjustment.
+	 We need a separate load if there are still registers to
+	 restore.  We also want a separate load if the combined insn
+	 would need a limm, but a separate load doesn't.  */
+      if (ra_offs
+	  && !cfun->machine->frame_info.gmask
+	  && (SMALL_INT (ra_offs) || !SMALL_INT (ra_offs >> 2)))
+	{
+	  addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, addr);
+	  first_offset = 0;
+	  size_to_deallocate -= cfun->machine->frame_info.reg_size;
+	}
+      else if (!ra_offs && size_to_deallocate == UNITS_PER_WORD)
+	{
+	  addr = gen_rtx_POST_INC (Pmode, addr);
+	  size_to_deallocate = 0;
+	}
+      frame_move_inc (ra, gen_frame_mem (Pmode, addr), stack_pointer_rtx, addr);
+    }
+
+  if (!millicode_p)
+    {
+       if (cfun->machine->frame_info.reg_size)
+	 arc_save_restore (stack_pointer_rtx,
+	   /* The zeroing of these two bits is unnecessary, but leave this in for clarity.  */
+			   cfun->machine->frame_info.gmask
+			   & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK), 1, &first_offset);
+    }
+
+
+  /* The rest of this function does the following:
+     ARCompact    : handle epilogue_delay, restore sp (phase-2), return
+  */
+
+  /* Keep track of how much of the stack pointer we've restored.
+     It makes the following a lot more readable.  */
+  size_to_deallocate += first_offset;
+  restored = size - size_to_deallocate;
+
+  if (size > restored)
+    frame_stack_add (size - restored);
+  /* Emit the return instruction.  */
+  if (sibcall_p == FALSE)
+    emit_jump_insn (gen_simple_return ());
  epilogue_done:
   if (!TARGET_EPILOGUE_CFI)
     {
@@ -3975,11 +3965,7 @@ branch_dest (rtx branch)
 }
 
 
-/* Symbols in the text segment can be accessed without indirecting via the
-   constant pool; it may take an extra binary operation, but this is still
-   faster than indirecting via memory.  Don't do this when not optimizing,
-   since we won't be calculating al of the offsets necessary to do this
-   simplification.  */
+/* Implement TARGET_ENCODE_SECTION_INFO hook.  */
 
 static void
 arc_encode_section_info (tree decl, rtx rtl, int first)

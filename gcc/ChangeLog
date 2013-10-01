@@ -14,6 +14,12 @@
 	Replace commented out call_value_via_label_mixed with a
 	plain comment about bl_s.
 
+	* config/arc/arc.c (stdio.h): Don't include directly.
+	(arc_frame_info): Remove GTY marker.
+	(arc_expand_epilogue): Remove [0]: Remove fp_restored_p.
+	Remove if (1) condition.
+	(arc_encode_section_info): Fix comment.
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_conditional_register_usage):
