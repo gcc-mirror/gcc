@@ -1,5 +1,12 @@
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* config/arc/simdext.md (UNSPEC_ARC_SIMD_VLD32WH): Delete.
+	(UNSPEC_ARC_SIMD_VLD32WL): Likewise.
+	(vld32wh_insn, vld32wl_insn): Delete commented-out old
+	versions of these patterns.
+
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	* config/arc/arc.c (arc_conditional_register_usage):
 	Use ARC_FIRST_SIMD_VR_REG / ARC_LAST_SIMD_VR_REG.
 	Also set reg_alloc_order for DMA config regs.
