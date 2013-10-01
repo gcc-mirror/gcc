@@ -1,3 +1,14 @@
+2013-10-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* aarch64-simd.md
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l2<mode>_internal): Rename to ...
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>_hi_internal): ... this;
+	Insert '\t' to output template.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>_lo_internal): New.
+	(aarch64_saddl2<mode>, aarch64_uaddl2<mode>): Modify to call
+	gen_aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>_hi_internal() instead.
+	(aarch64_ssubl2<mode>, aarch64_usubl2<mode>): Ditto.
+
 2013-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/install.texi (Host/target specific installation notes for GCC):
@@ -42,7 +53,7 @@
 	Simplify.
 
 2013-10-01  Jakub Jelinek  <jakub@redhat.com>
-            Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/58574
 	* config/s390/s390.c (s390_split_branches): Modify check for table
