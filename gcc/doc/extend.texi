@@ -3036,7 +3036,7 @@ attribute is not allowed on types to annotate indirect calls.
 @cindex indirect calls on ARC
 @cindex indirect calls on ARM
 @cindex indirect calls on Epiphany
-These attribute specifies how a particular function is called on
+These attribute specify how a particular function is called on
 ARC, ARM and Epiphany - with @code{medium_call} being specific to ARC.
 These attributes override the
 @option{-mlong-calls} (@pxref{ARM Options} and @ref{ARC Options})
@@ -9027,7 +9027,7 @@ Note that this is different from
 @smallexample
 __alignof__(*(char *)@var{val}) >= alignval
 @end smallexample
-because __alignof__ sees only the type of the dereference, wheras
+because __alignof__ sees only the type of the dereference, whereas
 __builtin_arc_align uses alignment information from the pointer
 as well as from the pointed-to type.
 The information available will depend on optimization level.

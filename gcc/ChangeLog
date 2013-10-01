@@ -1,9 +1,13 @@
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Diego Novillo <dnovillo@google.com>
 
 	* config/arc/simdext.md (UNSPEC_ARC_SIMD_VLD32WH): Delete.
 	(UNSPEC_ARC_SIMD_VLD32WL): Likewise.
 	(vld32wh_insn, vld32wl_insn): Delete commented-out old
 	versions of these patterns.
+
+	* doc/extend.texi (long_call/medium_call/short_call): Typo fix.
+	(__builtin_arc_aligned): Likewise.
 
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
