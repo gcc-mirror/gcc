@@ -20,8 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_H
 #define GCC_TREE_SSA_H
 
-#include "tree-flow.h"
+#include "gimple.h"
+#include "tree-ssa-operands.h"
+#include "tree-phinodes.h"
+#include "gimple-ssa.h"
+#include "ssa-iterators.h"
 #include "tree-ssanames.h"
+#include "tree-flow.h"
 
 /* Mapping for redirected edges.  */
 struct _edge_var_map {

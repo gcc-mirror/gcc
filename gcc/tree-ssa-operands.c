@@ -1092,18 +1092,19 @@ update_stmt_operands (gimple stmt)
    to test the validity of the swap operation.  */
 
 void
-swap_tree_operands (gimple stmt, tree *exp0, tree *exp1)
+swap_ssa_operands (gimple stmt, tree *exp0, tree *exp1)
 {
   tree op0, op1;
   op0 = *exp0;
   op1 = *exp1;
 
-  /* If the operand cache is active, attempt to preserve the relative
-     positions of these two operands in their respective immediate use
-     lists by adjusting their use pointer to point to the new
-     operand position.  */
-  if (ssa_operands_active (cfun) && op0 != op1)
+  gcc_checking_assert (ssa_operands_active (cfun));
+
+  if (op0 != op1)
     {
+      /* Attempt to preserve the relative positions of these two operands in
+	 their * respective immediate use lists by adjusting their use pointer
+	 to point to the new operand position.  */
       use_optype_p use0, use1, ptr;
       use0 = use1 = NULL;
 
@@ -1128,11 +1129,11 @@ swap_tree_operands (gimple stmt, tree *exp0, tree *exp1)
 	USE_OP_PTR (use0)->use = exp1;
       if (use1)
 	USE_OP_PTR (use1)->use = exp0;
-    }
 
-  /* Now swap the data.  */
-  *exp0 = op1;
-  *exp1 = op0;
+      /* Now swap the data.  */
+      *exp0 = op1;
+      *exp1 = op0;
+    }
 }
 
 
@@ -1322,3 +1323,47 @@ unlink_stmt_vdef (gimple stmt)
     SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
 }
 
+
+/* Return true if the var whose chain of uses starts at PTR has no
+   nondebug uses.  */
+bool
+has_zero_uses_1 (const ssa_use_operand_t *head)
+{
+  const ssa_use_operand_t *ptr;
+
+  for (ptr = head->next; ptr != head; ptr = ptr->next)
+    if (!is_gimple_debug (USE_STMT (ptr)))
+      return false;
+
+  return true;
+}
+
+
+/* Return true if the var whose chain of uses starts at PTR has a
+   single nondebug use.  Set USE_P and STMT to that single nondebug
+   use, if so, or to NULL otherwise.  */
+bool
+single_imm_use_1 (const ssa_use_operand_t *head,
+		  use_operand_p *use_p, gimple *stmt)
+{
+  ssa_use_operand_t *ptr, *single_use = 0;
+
+  for (ptr = head->next; ptr != head; ptr = ptr->next)
+    if (!is_gimple_debug (USE_STMT (ptr)))
+      {
+	if (single_use)
+	  {
+	    single_use = NULL;
+	    break;
+	  }
+	single_use = ptr;
+      }
+
+  if (use_p)
+    *use_p = single_use;
+
+  if (stmt)
+    *stmt = single_use ? single_use->loc.stmt : NULL;
+
+  return single_use;
+}

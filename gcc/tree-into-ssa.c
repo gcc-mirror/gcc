@@ -128,6 +128,30 @@ struct mark_def_sites_global_data
   bitmap kills;
 };
 
+/* It is advantageous to avoid things like life analysis for variables which
+   do not need PHI nodes.  This enum describes whether or not a particular
+   variable may need a PHI node.  */
+
+enum need_phi_state {
+  /* This is the default.  If we are still in this state after finding
+     all the definition and use sites, then we will assume the variable
+     needs PHI nodes.  This is probably an overly conservative assumption.  */
+  NEED_PHI_STATE_UNKNOWN,
+
+  /* This state indicates that we have seen one or more sets of the
+     variable in a single basic block and that the sets dominate all
+     uses seen so far.  If after finding all definition and use sites
+     we are still in this state, then the variable does not need any
+     PHI nodes.  */
+  NEED_PHI_STATE_NO,
+
+  /* This state indicates that we have either seen multiple definitions of
+     the variable in multiple blocks, or that we encountered a use in a
+     block that was not dominated by the block containing the set(s) of
+     this variable.  This variable is assumed to need PHI nodes.  */
+  NEED_PHI_STATE_MAYBE
+};
+
 /* Information stored for both SSA names and decls.  */
 struct common_info_d
 {
@@ -1489,31 +1513,6 @@ rewrite_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 
       get_common_info (var)->current_def = saved_def;
     }
-}
-
-
-/* Dump bitmap SET (assumed to contain VAR_DECLs) to FILE.  */
-
-void
-dump_decl_set (FILE *file, bitmap set)
-{
-  if (set)
-    {
-      bitmap_iterator bi;
-      unsigned i;
-
-      fprintf (file, "{ ");
-
-      EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
-	{
-	  fprintf (file, "D.%u", i);
-	  fprintf (file, " ");
-	}
-
-      fprintf (file, "}");
-    }
-  else
-    fprintf (file, "NIL");
 }
 
 

@@ -3580,9 +3580,9 @@ linearize_expr_tree (vec<operand_entry_t> *ops, gimple stmt,
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
 
-      swap_tree_operands (stmt,
-			  gimple_assign_rhs1_ptr (stmt),
-			  gimple_assign_rhs2_ptr (stmt));
+      swap_ssa_operands (stmt,
+			 gimple_assign_rhs1_ptr (stmt),
+			 gimple_assign_rhs2_ptr (stmt));
       update_stmt (stmt);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3649,9 +3649,9 @@ repropagate_negates (void)
 	     to force the negated operand to the RHS of the PLUS_EXPR.  */
 	  if (gimple_assign_rhs1 (user) == negate)
 	    {
-	      swap_tree_operands (user,
-				  gimple_assign_rhs1_ptr (user),
-				  gimple_assign_rhs2_ptr (user));
+	      swap_ssa_operands (user,
+				 gimple_assign_rhs1_ptr (user),
+				 gimple_assign_rhs2_ptr (user));
 	    }
 
 	  /* Now transform the PLUS_EXPR into a MINUS_EXPR and replace
