@@ -1196,7 +1196,10 @@ arc_conditional_register_usage (void)
   if (TARGET_SIMD_SET)
     {
       int i;
-      for (i=64; i<88; i++)
+      for (i = ARC_FIRST_SIMD_VR_REG; i <= ARC_LAST_SIMD_VR_REG; i++)
+	reg_alloc_order [i] = i;
+      for (i = ARC_FIRST_SIMD_DMA_CONFIG_REG;
+	   i <= ARC_LAST_SIMD_DMA_CONFIG_REG; i++)
 	reg_alloc_order [i] = i;
     }
   /* For Arctangent-A5 / ARC600, lp_count may not be read in an instruction
