@@ -9,6 +9,11 @@
 	* doc/extend.texi (long_call/medium_call/short_call): Typo fix.
 	(__builtin_arc_aligned): Likewise.
 
+	* config/arc/arc.md: Expand adc_0 comment stating the intended
+	purpose and why it isn't ready.
+	Replace commented out call_value_via_label_mixed with a
+	plain comment about bl_s.
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_conditional_register_usage):

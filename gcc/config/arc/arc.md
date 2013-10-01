@@ -2394,6 +2394,8 @@
       (set (match_dup 0)
 	   (plus:SI (match_dup 1) (match_dup 2)))])])
 
+; ??? need to delve into combine to find out why this is not useful.
+; We'd like to be able to grok various C idioms for carry bit usage.
 ;(define_insn "*adc_0"
 ;  [(set (match_operand:SI 0 "dest_reg_operand" "=w")
 ;	(plus:SI (ltu:SI (reg:CC_C CC_REG) (const_int 0))
@@ -3850,16 +3852,10 @@
    (set_attr "predicable" "no,no,yes,yes,no,yes,no,yes")
    (set_attr "length" "*,*,4,4,4,4,4,8")])
 
+; There is a bl_s instruction (16 bit opcode branch-and-link), but we can't
+; use it for lack of inter-procedural branch shortening.
+; Link-time relaxation would help...
 
-;; TODO - supporting 16-bit short "branch and link" insns if required.
-;(define_insn "*call_value_via_label_mixed"
-;  [(set (match_operand 0 "register_operand" "=r")
-;	 (call (mem:SI (match_operand:SI 1 "call_address_operand" ""))
-;	       (match_operand 2 "" "")))
-;  (clobber (reg:SI 31))]
-;  "TARGET_MIXED_CODE"
-;  "bl_s %1"
-;  [(set_attr "type" "call")])
 
 (define_insn "call_value_prof"
   [(set (match_operand 0 "dest_reg_operand" "=r,r")
