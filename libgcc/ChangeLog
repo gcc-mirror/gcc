@@ -1,4 +1,9 @@
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* config/arc/gmon/mcount.c (_MCOUNT_DECL): Comment typo fix.
+
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Brendan Kehoe  <brendan@zen.org>
 	    Simon Cook  <simon.cook@embecosm.com>
 
