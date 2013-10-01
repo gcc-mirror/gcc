@@ -15070,6 +15070,8 @@ EOF
   test $ac_status = 0; }; then
       if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
 	enable_sjlj_exceptions=yes
+      elif grep _Unwind_SjLj_Register conftest.s >/dev/null 2>&1 ; then
+	enable_sjlj_exceptions=yes
       elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
 	enable_sjlj_exceptions=no
       elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
@@ -15402,7 +15404,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15405 "configure"
+#line 15407 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15437,7 +15439,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15440 "configure"
+#line 15442 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15472,7 +15474,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15475 "configure"
+#line 15477 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15508,7 +15510,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15511 "configure"
+#line 15513 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15587,7 +15589,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15590 "configure"
+#line 15592 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15629,7 +15631,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15632 "configure"
+#line 15634 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15663,7 +15665,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15666 "configure"
+#line 15668 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

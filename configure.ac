@@ -956,7 +956,7 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
     ;;
-  arc-*-*)
+  arc-*-*|arceb-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   arm-*-pe*)
