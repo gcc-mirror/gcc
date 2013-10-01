@@ -28,10 +28,12 @@
 #include <bits/locale_facets.h>
 
 namespace std {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _ValueT>
   int
   __int_to_char(_CharT* __bufend, _ValueT __v, const _CharT* __lit,
                 ios_base::fmtflags __flags, bool __dec);
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 namespace __gnu_cxx {

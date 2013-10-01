@@ -1,3 +1,8 @@
+2013-10-01  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* src/c++11/snprintf_lite.cc: Add missing
+	_GLIBCXX_{BEGIN,END}_NAMESPACE_VERSION
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Also check for
