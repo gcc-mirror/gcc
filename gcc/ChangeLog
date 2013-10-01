@@ -1,3 +1,9 @@
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Brendan Kehoe  <brendan@zen.org>
+	    Simon Cook  <simon.cook@embecosm.com>
+
+	* config.gcc (arc*-*-elf*, arc*-*-linux-uclibc*): New configurations.
+
 2013-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-live.h (coalesce_ssa_name): Move Prototype to...

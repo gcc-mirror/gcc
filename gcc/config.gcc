@@ -324,6 +324,9 @@ alpha*-*-*)
 am33_2.0-*-linux*)
 	cpu_type=mn10300
 	;;
+arc*-*-*)
+	cpu_type=arc
+	;;
 arm*-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h arm_neon.h"
@@ -838,7 +841,7 @@ case ${target} in
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
   ;;
-*-*-elf)
+*-*-elf|arc*-*-elf*)
   # Assume that newlib is being used and so __cxa_atexit is provided.
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
@@ -925,6 +928,54 @@ alpha*-dec-*vms*)
 	tm_file="${tm_file} vms/vms.h alpha/vms.h"
 	tmake_file="${tmake_file} alpha/t-vms"
 	;;
+arc*-*-elf*)
+	extra_headers="arc-simd.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="arc/t-arc-newlib arc/t-arc"
+	case x"${with_cpu}" in
+	  xarc600|xarc601|xarc700)
+		target_cpu_default="TARGET_CPU_$with_cpu"
+		;;
+	esac
+	if test x${with_endian} = x; then
+		case ${target} in
+		arc*be-*-* | arc*eb-*-*)	with_endian=big ;;
+		*)				with_endian=little ;;
+		esac
+	fi
+	case ${with_endian} in
+	big|little)		;;
+	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
+	esac
+	case ${with_endian} in
+	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	esac
+	;;
+arc*-*-linux-uclibc*)
+	extra_headers="arc-simd.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} arc/t-arc-uClibc arc/t-arc"
+	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
+	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
+	case x"${with_cpu}" in
+	  xarc600|xarc601|xarc700)
+		target_cpu_default="TARGET_CPU_$with_cpu"
+		;;
+	esac
+	if test x${with_endian} = x; then
+		case ${target} in
+		arc*be-*-* | arc*eb-*-*)	with_endian=big ;;
+		*)				with_endian=little ;;
+		esac
+	fi
+	case ${with_endian} in
+	big|little)		;;
+	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
+	esac
+	case ${with_endian} in
+	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	esac
+        ;;
 arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	extra_options="${extra_options} arm/vxworks.opt"
@@ -3336,6 +3387,17 @@ case "${target}" in
 				;;
 			esac
 		done
+		;;
+
+	arc*-*-*) # was:	arc*-*-linux-uclibc)
+		supported_defaults="cpu"
+		case $with_cpu in
+		  arc600|arc601|arc700)
+			;;
+		  *) echo "Unknown cpu type"
+			exit 1
+			;;
+		esac
 		;;
 
 	arm*-*-*)

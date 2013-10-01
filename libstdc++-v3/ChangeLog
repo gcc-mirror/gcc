@@ -1,3 +1,9 @@
+2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Also check for
+	_Unwind_SjLj_Register when deciding if to set enable_sjlj_exceptions.
+	* configure: Regenerate.
+
 2013-10-01  Tim Shen  <timshen91@gmail.com>
 
 	PR libstdc++/58576

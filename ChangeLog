@@ -1,3 +1,9 @@
+2013-10-01  Simon Cook  <simon.cook@embecosm.com>
+
+	Changes to build configuration to allow big endian ARC ELF toolchain
+	* configure.ac: Also add target-libgloss to noconfigdirs for arceb-*-*.
+	* configure: Regenerate.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* libtool.m4 (_LT_ENABLE_LOCK <ld -m flags>): Remove non-canonical
