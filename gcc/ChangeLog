@@ -1,3 +1,12 @@
+2013-10-01  Jakub Jelinek  <jakub@redhat.com>
+            Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/58574
+	* config/s390/s390.c (s390_split_branches): Modify check for table
+	jump insns.
+	(s390_chunkify_start): Rearrange table jump insn check in order to
+	deal with compare and branch insns correctly.
+
 2013-10-01  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/58578
