@@ -1,4 +1,5 @@
-/* { dg-skip-if "too much data" { "avr-*-*" "m32c-*-*" "pdp11-*-*" } { "*" } { "" } } */
+/* { dg-require-effective-target int32plus } */
+
 struct peakbufStruct {
     unsigned int lnum [5000];
     int lscan [5000][4000];
