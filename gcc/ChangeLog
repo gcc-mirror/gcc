@@ -1,3 +1,15 @@
+2013-10-01  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/58578
+	Revert
+	2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+	* config/arm/arm.md (arm_ashldi3_1bit):  define_insn into
+	define_insn_and_split.
+	(arm_ashrdi3_1bit,arm_lshrdi3_1bit): Likewise.
+	(shiftsi3_compare): New pattern.
+	(rrx): New pattern.
+	* config/arm/unspecs.md (UNSPEC_RRX): New.
+
 2013-10-01  Alan Modra  <amodra@gmail.com>
 
 	* stmt.c (expand_asm_operands): Revert part of 2013-09-24 special

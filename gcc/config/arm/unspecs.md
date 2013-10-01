@@ -83,8 +83,6 @@
                         ; FPSCR rounding mode and signal inexactness.
   UNSPEC_VRINTA         ; Represent a float to integral float rounding
                         ; towards nearest, ties away from zero.
-  UNSPEC_RRX            ; Rotate Right with Extend shifts register right
-                        ; by one place, with Carry flag shifted into bit[31].
 ])
 
 (define_c_enum "unspec" [
