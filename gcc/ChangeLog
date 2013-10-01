@@ -1,3 +1,14 @@
+2013-10-01  Saurabh Verma  <saurabh.verma@codito.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Muhammad Khurram Riaz  <khurram.riaz@arc.com>
+	    Brendan Kehoe  <brendan@zen.org>
+	    Michael Eager  <eager@eagercon.com>
+	    Simon Cook  <simon.cook@embecosm.com>
+	    Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* config/arc, common/config/arc: New directories.
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Brendan Kehoe  <brendan@zen.org>
 	    Simon Cook  <simon.cook@embecosm.com>
