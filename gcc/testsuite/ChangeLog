@@ -1,3 +1,9 @@
+2013-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+     PR tree-optimization/58556
+     * gcc.dg/tree-ssa/gen-vect-26.c: Use dynamic vector cost model.
+     * gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
 2013-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_ptr32plus): Fail
