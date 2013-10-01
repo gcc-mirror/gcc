@@ -1,3 +1,8 @@
+2013-10-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/parallel/algobase.h (mismatch, equal): Provide parallel
+	version for N3671 overloads.
+
 2013-10-01  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	* src/c++11/snprintf_lite.cc: Add missing
