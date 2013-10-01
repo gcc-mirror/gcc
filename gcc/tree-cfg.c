@@ -1516,49 +1516,6 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   return true;
 }
 
-/* Return true if the var whose chain of uses starts at PTR has no
-   nondebug uses.  */
-bool
-has_zero_uses_1 (const ssa_use_operand_t *head)
-{
-  const ssa_use_operand_t *ptr;
-
-  for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
-      return false;
-
-  return true;
-}
-
-/* Return true if the var whose chain of uses starts at PTR has a
-   single nondebug use.  Set USE_P and STMT to that single nondebug
-   use, if so, or to NULL otherwise.  */
-bool
-single_imm_use_1 (const ssa_use_operand_t *head,
-		  use_operand_p *use_p, gimple *stmt)
-{
-  ssa_use_operand_t *ptr, *single_use = 0;
-
-  for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
-      {
-	if (single_use)
-	  {
-	    single_use = NULL;
-	    break;
-	  }
-	single_use = ptr;
-      }
-
-  if (use_p)
-    *use_p = single_use;
-
-  if (stmt)
-    *stmt = single_use ? single_use->loc.stmt : NULL;
-
-  return !!single_use;
-}
-
 /* Replaces all uses of NAME by VAL.  */
 
 void

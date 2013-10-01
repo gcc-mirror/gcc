@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "basic-block.h"
 #include "tree.h"
-#include "tree-ssa-operands.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 
@@ -1055,6 +1054,7 @@ extern void omp_firstprivatize_variable (struct gimplify_omp_ctx *, tree);
 extern tree gimple_boolify (tree);
 extern gimple_predicate rhs_predicate_for (tree);
 extern tree canonicalize_cond_expr_cond (tree);
+extern void dump_decl_set (FILE *, bitmap);
 
 /* In omp-low.c.  */
 extern tree omp_reduction_init (tree, tree);
@@ -1462,34 +1462,6 @@ gimple_set_use_ops (gimple g, struct use_optype_d *use)
 }
 
 
-/* Return the set of VUSE operand for statement G.  */
-
-static inline use_operand_p
-gimple_vuse_op (const_gimple g)
-{
-  struct use_optype_d *ops;
-  if (!gimple_has_mem_ops (g))
-    return NULL_USE_OPERAND_P;
-  ops = g->gsops.opbase.use_ops;
-  if (ops
-      && USE_OP_PTR (ops)->use == &g->gsmembase.vuse)
-    return USE_OP_PTR (ops);
-  return NULL_USE_OPERAND_P;
-}
-
-/* Return the set of VDEF operand for statement G.  */
-
-static inline def_operand_p
-gimple_vdef_op (gimple g)
-{
-  if (!gimple_has_mem_ops (g))
-    return NULL_DEF_OPERAND_P;
-  if (g->gsmembase.vdef)
-    return &g->gsmembase.vdef;
-  return NULL_DEF_OPERAND_P;
-}
-
-
 /* Return the single VUSE operand of the statement G.  */
 
 static inline tree
@@ -1589,27 +1561,6 @@ gimple_expr_code (const_gimple stmt)
     }
 }
 
-
-/* Mark statement S as modified, and update it.  */
-
-static inline void
-update_stmt (gimple s)
-{
-  if (gimple_has_ops (s))
-    {
-      gimple_set_modified (s, true);
-      update_stmt_operands (s);
-    }
-}
-
-/* Update statement S if it has been optimized.  */
-
-static inline void
-update_stmt_if_modified (gimple s)
-{
-  if (gimple_modified_p (s))
-    update_stmt_operands (s);
-}
 
 /* Return true if statement STMT contains volatile operands.  */
 
@@ -3571,6 +3522,96 @@ gimple_phi_set_arg (gimple gs, unsigned index, struct phi_arg_d * phiarg)
   gcc_gimple_checking_assert (index <= gs->gimple_phi.nargs);
   gs->gimple_phi.args[index] = *phiarg;
 }
+
+/* PHI nodes should contain only ssa_names and invariants.  A test
+   for ssa_name is definitely simpler; don't let invalid contents
+   slip in in the meantime.  */
+
+static inline bool
+phi_ssa_name_p (const_tree t)
+{
+  if (TREE_CODE (t) == SSA_NAME)
+    return true;
+  gcc_checking_assert (is_gimple_min_invariant (t));
+  return false;
+}
+
+/* Return the PHI nodes for basic block BB, or NULL if there are no
+   PHI nodes.  */
+
+static inline gimple_seq
+phi_nodes (const_basic_block bb)
+{
+  gcc_checking_assert (!(bb->flags & BB_RTL));
+  return bb->il.gimple.phi_nodes;
+}
+
+/* Return a pointer to the PHI nodes for basic block BB.  */
+
+static inline gimple_seq *
+phi_nodes_ptr (basic_block bb)
+{
+  gcc_checking_assert (!(bb->flags & BB_RTL));
+  return &bb->il.gimple.phi_nodes;
+}
+
+/* Return the tree operand for argument I of PHI node GS.  */
+
+static inline tree
+gimple_phi_arg_def (gimple gs, size_t index)
+{
+  return gimple_phi_arg (gs, index)->def;
+}
+
+
+/* Return a pointer to the tree operand for argument I of PHI node GS.  */
+
+static inline tree *
+gimple_phi_arg_def_ptr (gimple gs, size_t index)
+{
+  return &gimple_phi_arg (gs, index)->def;
+}
+
+/* Return the edge associated with argument I of phi node GS.  */
+
+static inline edge
+gimple_phi_arg_edge (gimple gs, size_t i)
+{
+  return EDGE_PRED (gimple_bb (gs), i);
+}
+
+/* Return the source location of gimple argument I of phi node GS.  */
+
+static inline source_location
+gimple_phi_arg_location (gimple gs, size_t i)
+{
+  return gimple_phi_arg (gs, i)->locus;
+}
+
+/* Return the source location of the argument on edge E of phi node GS.  */
+
+static inline source_location
+gimple_phi_arg_location_from_edge (gimple gs, edge e)
+{
+  return gimple_phi_arg (gs, e->dest_idx)->locus;
+}
+
+/* Set the source location of gimple argument I of phi node GS to LOC.  */
+
+static inline void
+gimple_phi_arg_set_location (gimple gs, size_t i, source_location loc)
+{
+  gimple_phi_arg (gs, i)->locus = loc;
+}
+
+/* Return TRUE if argument I of phi node GS has a location record.  */
+
+static inline bool
+gimple_phi_arg_has_location (gimple gs, size_t i)
+{
+  return gimple_phi_arg_location (gs, i) != UNKNOWN_LOCATION;
+}
+
 
 /* Return the region number for GIMPLE_RESX GS.  */
 

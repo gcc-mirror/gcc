@@ -3923,7 +3923,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
     {
       for (i = 0; i < gimple_phi_num_args (stmt); ++i)
 	{
-	  tree op = PHI_ARG_DEF (stmt, i);
+	  tree op = gimple_phi_arg_def (stmt, i);
 	  if (TREE_CODE (op) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
 	}
@@ -4356,5 +4356,28 @@ types_compatible_p (tree type1, tree type2)
 	      && useless_type_conversion_p (type2, type1)));
 }
 
+/* Dump bitmap SET (assumed to contain VAR_DECLs) to FILE.  */
+
+void
+dump_decl_set (FILE *file, bitmap set)
+{
+  if (set)
+    {
+      bitmap_iterator bi;
+      unsigned i;
+
+      fprintf (file, "{ ");
+
+      EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+	{
+	  fprintf (file, "D.%u", i);
+	  fprintf (file, " ");
+	}
+
+      fprintf (file, "}");
+    }
+  else
+    fprintf (file, "NIL");
+}
 
 #include "gt-gimple.h"

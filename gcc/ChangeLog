@@ -1,3 +1,90 @@
+2013-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-into-ssa.c (enum need_phi_state): Relocate from tree-flow.h.
+	(dump_decl_set): Move to gimple.c.
+	* gimple.h: Don't include tree-ssa-operands.h.
+	(dump_decl_set): Add prototype.
+	(gimple_vuse_op, gimple_vdef_op, update_stmt, update_stmt_if_modified):
+	Move to gimple-ssa.h.
+	(phi_ssa_name_p, phi_nodes, phi_nodes_ptr, gimple_phi_arg_def,
+	gimple_phi_arg_def_ptr, gimple_phi_arg_edge, gimple_phi_arg_location,
+	gimple_phi_arg_location_from_edge, gimple_phi_arg_set_location,
+	gimple_phi_arg_has_location): Relocate from tree-flow-inline.h
+	* gimple.c (walk_stmt_load_store_ops): Use gimple_phi_arg_def rather
+	than PHI_ARG_DEF.
+	(dump_decl_set): Relocate here.
+	* gimple-ssa.h: New file.
+	(gimple_vuse_op, gimple_vdef_op, update_stmt, update_stmt_if_modified):
+	Relocate from gimple.h.
+	* tree-cfg.c (has_zero_uses_1, single_imm_use_1): Move to...
+	* tree-ssa-operands.c (swap_ssa_operands): Rename from
+	swap_tree_operands and remove non-ssa path.
+	(has_zero_uses_1, single_imm_use_1): Relocate from tree-cfg.c.
+	* tree-ssa-reassoc.c (linearize_expr_tree, repropagate_negates): Use
+	swap_ssa_operands.
+	* tree-vect-loop.c (destroy_loop_vec_info, vect_is_slp_reduction,
+	vect_is_simple_reduction_1): Use swap_ssa_operands.
+	* tree-flow.h: Move various prototypes to tree-phinodes.h.
+	(enum need_phi_state): Move to tree-into-ssa.c.
+	(struct immediate_use_iterator_d, FOR_EACH_IMM_*,
+	BREAK_FROM_IMM_USE_STMT): Move to ssa-iterators.h.
+	(swap_tree_operands): Rename and move prototype to tree-ssa-operands.h.
+	* tree-flow-inline.h (delink_imm_use, link_imm_use_to_list,
+	link_imm_use, set_ssa_use_from_ptr, link_imm_use_stmt, relink_imm_use,
+	relink_imm_use_stmt, end_readonly_imm_use_p, first_readonly_imm_use,
+	next_readonly_imm_use, has_zero_uses, has_single_use, single_imm_use,
+	num_imm_uses): Move to ssa-iterators.h.
+	(get_use_from_ptr, get_def_from_ptr): Move to tree-ssa-operands.h
+	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Move to 
+	tree-phinodes.h.
+	(op_iter_done, op_iter_next_def, op_iter_next_tree,
+	clear_and_done_ssa_iter, op_iter_init, op_iter_init_use,
+	op_iter_init_def, op_iter_init_tree, single_ssa_tree_operand,
+	single_ssa_use_operand, single_ssa_def_operand, zero_ssa_operands,
+	num_ssa_operands, delink_stmt_imm_use, single_phi_def,
+	op_iter_init_phiuse, op_iter_init_phidef, end_imm_use_stmt_p,
+	end_imm_use_stmt_traverse, move_use_after_head, link_use_stmts_after,
+	first_imm_use_stmt, next_imm_use_stmt, first_imm_use_on_stmt,
+	end_imm_use_on_stmt_p, next_imm_use_on_stmt): Move to ssa-iterators.h.
+	(gimple_phi_arg_def, gimple_phi_arg_def_ptr, gimple_phi_arg_edge,
+	gimple_phi_arg_location, gimple_phi_arg_location_from_edge,
+	gimple_phi_arg_set_location, gimple_phi_arg_has_location, phi_nodes,
+	phi_nodes_ptr, phi_ssa_name_p): Move to gimple.h.
+	(set_phi_nodes): Move to tree-phinodes.h.
+	* tree-ssa-operands.h (enum ssa_op_iter_type,
+	struct ssa_operand_iterator_d, SSA_OP*, FOR_EACH_SSA*, SINGLE_SSA*,
+	ZERO_SSA_OPERANDS, NUM_SSA_OPERANDS): Move to ssa-iterators.h.
+	(dump_decl_set): Remove prototype.
+	(get_use_from_ptr, get_def_from_ptr): Relocate from tree-flow.h.
+	* tree-phinodes.h: New file.  Move some prototypes from tree-flow.h.
+	(set_phi_nodes): Relocate from tree-flow-inline.h.
+	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Relocate from
+	tree-flow-inline.h
+	* tree-ssa.h: Add tree-phinodes.h, gimple-ssa.h, ssa-iterators.h to
+	include list.  Temporarily add gimple.h to include list.
+	* ssa-iterators.h: New file.
+	(struct immediate_use_iterator_d, FOR_EACH_IMM_*,
+	BREAK_FROM_IMM_USE_STMT): Relocate from tree-flow.h.
+	(enum ssa_op_iter_type, struct ssa_operand_iterator_d, SSA_OP*,
+	FOR_EACH_SSA*, SINGLE_SSA*, ZERO_SSA_OPERANDS, NUM_SSA_OPERANDS):
+	Relocate from tree-ssa-operands.h.
+	(delink_imm_use, link_imm_use_to_list, link_imm_use,
+	set_ssa_use_from_ptr, link_imm_use_stmt, relink_imm_use,
+	relink_imm_use_stmt, end_readonly_imm_use_p, first_readonly_imm_use,
+	next_readonly_imm_use, has_zero_uses, has_single_use, single_imm_use,
+	num_imm_uses, get_use_from_ptr, get_def_from_ptr,
+	phi_arg_index_from_use, op_iter_done, op_iter_next_def,
+	op_iter_next_tree, clear_and_done_ssa_iter, op_iter_init,
+	op_iter_init_use, op_iter_init_def, op_iter_init_tree,
+	single_ssa_tree_operand, single_ssa_use_operand, single_ssa_def_operand,
+	zero_ssa_operands, num_ssa_operands, delink_stmt_imm_use,
+	single_phi_def, op_iter_init_phiuse, op_iter_init_phidef,
+	end_imm_use_stmt_p, end_imm_use_stmt_traverse, move_use_after_head,
+	link_use_stmts_after, first_imm_use_stmt, next_imm_use_stmt,
+	first_imm_use_on_stmt, end_imm_use_on_stmt_p, next_imm_use_on_stmt):
+	Relocate from tree-flow-inline.h.
+	* tree-outof-ssa.h: Change _SSAEXPAND_H macro to GCC_TREE_OUTOF_SSA_H.
+
 2013-10-01  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* aarch64-simd.md
