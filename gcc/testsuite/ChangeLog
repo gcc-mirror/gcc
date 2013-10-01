@@ -1,3 +1,8 @@
+2013-10-01  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR Target/58578
+	* gcc.target/arm/pr58578.c: New test.
+
 2013-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
      PR tree-optimization/58556
