@@ -1,3 +1,9 @@
+2013-10-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58579
+	* trans-expr.c (gfc_conv_string_tmp): Correctly obtain
+	the byte size of a single character.
+
 2013-09-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi (DATE_AND_TIME): Fix example.

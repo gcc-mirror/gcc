@@ -2355,11 +2355,14 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
     {
       /* Allocate a temporary to hold the result.  */
       var = gfc_create_var (type, "pstr");
-      tmp = gfc_call_malloc (&se->pre, type,
-			     fold_build2_loc (input_location, MULT_EXPR,
-					      TREE_TYPE (len), len,
-					      fold_convert (TREE_TYPE (len),
-							    TYPE_SIZE (type))));
+      gcc_assert (POINTER_TYPE_P (type));
+      tmp = TREE_TYPE (type);
+      gcc_assert (TREE_CODE (tmp) == ARRAY_TYPE);
+      tmp = TYPE_SIZE_UNIT (TREE_TYPE (tmp));
+      tmp = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
+			    fold_convert (size_type_node, len),
+			    fold_convert (size_type_node, tmp));
+      tmp = gfc_call_malloc (&se->pre, type, tmp);
       gfc_add_modify (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
