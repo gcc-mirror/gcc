@@ -4837,10 +4837,10 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && upc_shared_type_p (TREE_TYPE (otype)))
         {
-	  error_at (loc, "UPC does not allow casts from a pointer-to-shared to an integer");
-	  return error_mark_node;
+	  /* UPC pointer-to-shared -> integer
+	     This will be lowered by the genericize pass.  */
+	  return build1 (CONVERT_EXPR, type, value);
 	}
-
 
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE

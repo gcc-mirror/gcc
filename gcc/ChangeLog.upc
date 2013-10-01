@@ -1,3 +1,11 @@
+2013-10-01 Gary Funck  <gary@intrepid.com>
+
+	Implement pointer-to-shared -> integer conversions.
+	Required per UPC 1.3 Specification.
+	c/c-typeck.c (build_c_cast): Remove logic that diagnosed
+	PTS->int conversions as an error.  Rewrite into a CONVERT_EXPR
+	for later processing by upc_genericize().
+
 2013-09-30 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 203026 into gupc branch.

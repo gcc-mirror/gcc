@@ -1,3 +1,10 @@
+2013-10-01 Gary Funck  <gary@intrepid.com>
+
+	Implement pointer-to-shared -> integer conversions.
+	Required per UPC 1.3 Specification.
+	upc-genericize.c (upc_genericize_pts_to_int_cvt): New.
+	(upc_genericize_expr): Call upc_genericize_pts_to_int_cvt().
+
 2013-06-19 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200149 into gupc branch.

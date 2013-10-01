@@ -102,6 +102,7 @@ static void upc_genericize_modify_expr (location_t, tree *, int);
 static void upc_genericize_pts_arith_expr (location_t, tree *);
 static void upc_genericize_pts_cond_expr (location_t, tree *);
 static void upc_genericize_pts_cvt (location_t, tree *);
+static void upc_genericize_pts_to_int_cvt (location_t, tree *);
 static void upc_genericize_real_imag_ref (location_t, tree *);
 static void upc_genericize_shared_inc_dec_expr (location_t, tree *, int);
 static void upc_genericize_shared_var_ref (location_t, tree *);
@@ -804,6 +805,34 @@ upc_genericize_pts_cvt (location_t loc, tree *expr_p)
   *expr_p = (*upc_pts.cvt) (loc, *expr_p);
 }
 
+/* Handle conversions from a UPC pointer-to-shared into
+   an integer value.  */
+
+static void
+upc_genericize_pts_to_int_cvt (location_t loc, tree *expr_p)
+{
+  tree pts, pts_arg, ref_type, upc_addrfield;
+  tree *pts_p;
+  int shared_quals;
+  upc_addrfield = identifier_global_value (get_identifier ("upc_addrfield"));
+  if (!upc_addrfield)
+    internal_error ("UPC runtime function `upc_addrfield` not found");
+  pts_p = &TREE_OPERAND (*expr_p, 0);
+  pts = *pts_p;
+  ref_type = TREE_TYPE (TREE_TYPE (pts));
+  shared_quals = TYPE_QUALS (ref_type) | TREE_QUALS (pts);
+  gcc_assert (shared_quals & TYPE_QUAL_SHARED);
+  if ((shared_quals & TYPE_QUAL_CONST) != 0)
+    {
+      /* drop 'const' qualifier to arg. type mis-match.  */
+      shared_quals &= ~TYPE_QUAL_CONST;
+      ref_type = c_build_qualified_type_1 (ref_type, shared_quals, size_zero_node);
+      TREE_TYPE (pts) = build_pointer_type (ref_type);
+    }
+  pts_arg = tree_cons (NULL_TREE, pts, NULL_TREE);
+  *pts_p = build_function_call (loc, upc_addrfield, pts_arg);
+}
+
 /* Rewrite op0 CMP op1 into either a bitwise
    comparison of the UPC pointer-to-shared operands
    or by taking the difference, and comparing it
@@ -1076,6 +1105,10 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
 	TREE_TYPE (expr) = build_upc_unshared_type (type);
       if (upc_pts_cvt_op_p (expr))
 	upc_genericize_pts_cvt (loc, expr_p);
+      else if (code == CONVERT_EXPR && TREE_CODE (type) == INTEGER_TYPE
+	       && POINTER_TYPE_P (type0)
+	       && upc_shared_type_p (TREE_TYPE (type0)))
+	upc_genericize_pts_to_int_cvt (loc, expr_p);
       break;
 
     case EQ_EXPR:
