@@ -1,3 +1,13 @@
+2013-10-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (struct redirection_data): Delete
+	outgoing_edge and intermediate_edge fields.  Instead store the path.
+	(redirection_data::hash): Hash on the last edge's destination index.
+	(redirection_data::equal): Check the entire thread path.
+	(lookup_redirectio_data): Corresponding changes.
+	(create_edge_and_update_destination_phis): Likewise.
+	(thread_single_edge): Likewise.
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Diego Novillo <dnovillo@google.com>
 
