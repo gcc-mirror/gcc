@@ -1,3 +1,10 @@
+2013-10-01  Tim Shen  <timshen91@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update regex status.
+	* include/bits/regex.h (match_results<>::begin,
+	match_results<>::cbegin, match_results<>::end, match_results<>::cend):
+	[28.10.3.13], [28.10.3.14] Always iterate the range [0, size()-2).
+
 2013-10-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/parallel/algobase.h (mismatch, equal): Provide parallel

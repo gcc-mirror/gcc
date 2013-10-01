@@ -220,10 +220,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	string_type
 	transform_primary(_Fwd_iter __first, _Fwd_iter __last) const
 	{
+	  // TODO : this is not entirely correct.
+	  // This function requires extra support from the platform.
+	  //
+	  // Read http://gcc.gnu.org/ml/libstdc++/2013-09/msg00117.html and
+	  // http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/2003/n1429.htm
+	  // for details.
 	  typedef std::ctype<char_type> __ctype_type;
 	  const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
 	  std::vector<char_type> __s(__first, __last);
-	  // FIXME : this is not entirely correct
 	  __fctyp.tolower(__s.data(), __s.data() + __s.size());
 	  return this->transform(__s.data(), __s.data() + __s.size());
 	}
@@ -416,8 +421,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @throws regex_error if @p __p is not a valid regular expression.
        */
-      basic_regex(const _Ch_type* __p,
-		  std::size_t __len, flag_type __f = ECMAScript)
+      basic_regex(const _Ch_type* __p, std::size_t __len,
+		  flag_type __f = ECMAScript)
       : basic_regex(__p, __p + __len, __f)
       { }
 
@@ -484,8 +489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @throws regex_error if @p __l is not a valid regular expression.
        */
-      basic_regex(initializer_list<_Ch_type> __l,
-		  flag_type __f = ECMAScript)
+      basic_regex(initializer_list<_Ch_type> __l, flag_type __f = ECMAScript)
       : basic_regex(__l.begin(), __l.end(), __f)
       { }
 
@@ -1494,17 +1498,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @name 10.? Public Types
        */
       //@{
-      typedef _Alloc                                       allocator_type;
       typedef sub_match<_Bi_iter>                          value_type;
       typedef const value_type&                            const_reference;
       typedef const_reference                              reference;
       typedef typename _Base_type::const_iterator          const_iterator;
       typedef const_iterator                               iterator;
       typedef typename __iter_traits::difference_type	   difference_type;
-      typedef typename __iter_traits::value_type 	   char_type;
       typedef typename allocator_traits<_Alloc>::size_type size_type;
-
-
+      typedef _Alloc                                       allocator_type;
+      typedef typename __iter_traits::value_type 	   char_type;
       typedef std::basic_string<char_type>                 string_type;
       //@}
 
@@ -1730,21 +1732,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       const_iterator
       cbegin() const
-      { return _Base_type::cbegin(); }
+      { return _Base_type::cbegin() + 2; }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
       end() const
-      { return !empty() ? _Base_type::end() - 2 : _Base_type::end(); }
+      { return _Base_type::end() - 2; }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
       cend() const
-      { return end(); }
+      { return _Base_type::cend(); }
 
       //@}
 
@@ -2263,14 +2265,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Rx_traits, typename _Ch_type,
 	   typename _St, typename _Sa, typename _Fst, typename _Fsa>
-    inline basic_string<_Ch_type>
+    inline basic_string<_Ch_type, _St, _Sa>
     regex_replace(const basic_string<_Ch_type, _St, _Sa>& __s,
 		  const basic_regex<_Ch_type, _Rx_traits>& __e,
 		  const basic_string<_Ch_type, _Fst, _Fsa>& __fmt,
 		  regex_constants::match_flag_type __flags
 		  = regex_constants::match_default)
     {
-      basic_string<_Ch_type> __result;
+      basic_string<_Ch_type, _St, _Sa> __result;
       regex_replace(std::back_inserter(__result),
 		    __s.begin(), __s.end(), __e, __fmt, __flags);
       return __result;
@@ -2289,14 +2291,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Rx_traits, typename _Ch_type,
 	   typename _St, typename _Sa>
-    inline basic_string<_Ch_type>
+    inline basic_string<_Ch_type, _St, _Sa>
     regex_replace(const basic_string<_Ch_type, _St, _Sa>& __s,
 		  const basic_regex<_Ch_type, _Rx_traits>& __e,
 		  const _Ch_type* __fmt,
 		  regex_constants::match_flag_type __flags
 		  = regex_constants::match_default)
     {
-      basic_string<_Ch_type> __result;
+      basic_string<_Ch_type, _St, _Sa> __result;
       regex_replace(std::back_inserter(__result),
 		    __s.begin(), __s.end(), __e, __fmt, __flags);
       return __result;
@@ -2662,7 +2664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_end_of_seq()
       { return _M_result == nullptr; }
 
-      _Position _M_position;
+      _Position         _M_position;
       const value_type* _M_result;
       value_type        _M_suffix;
       std::size_t       _M_n;
