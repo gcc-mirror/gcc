@@ -346,7 +346,7 @@ DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
    from FP to FP.  This form of instructions avoids partial write to the
    destination.  */
 DEF_TUNE (X86_TUNE_USE_VECTOR_FP_CONVERTS, "use_vector_fp_converts",
-          m_CORE_ALL | m_AMDFAM10 | m_GENERIC)
+          m_AMDFAM10 | m_GENERIC)
 
 /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
    from integer to FP. */

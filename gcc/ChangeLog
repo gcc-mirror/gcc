@@ -1,3 +1,10 @@
+2013-10-01  Wei Mi  <wmi@google.com>
+
+	* config/i386/x86-tune.def (DEF_TUNE): Remove
+	m_CORE_ALL.
+	* config/i386/i386.md: Add define_peephole2 to
+	break partial reg stall for cvtss2sd/cvtsd2ss.
+
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (pass_arc_ifcvt::clone):
