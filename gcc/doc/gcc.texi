@@ -83,11 +83,11 @@ This file documents the use of the GNU compilers.
 Published by:
 @multitable @columnfractions 0.5 0.5
 @item GNU Press
-@tab Website: www.gnupress.org
+@tab Website: @uref{http://www.gnupress.org}
 @item a division of the
-@tab General: @tex press@@gnu.org @end tex
+@tab General: @email{press@@gnu.org}
 @item Free Software Foundation
-@tab Orders:  @tex sales@@gnu.org @end tex
+@tab Orders:  @email{sales@@gnu.org}
 @item 51 Franklin Street, Fifth Floor
 @tab Tel 617-542-5942
 @item Boston, MA 02110-1301 USA
