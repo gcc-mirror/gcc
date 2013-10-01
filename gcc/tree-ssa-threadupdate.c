@@ -116,14 +116,11 @@ struct redirection_data : typed_free_remove<redirection_data>
      targets a single successor of B.  */
   basic_block dup_block;
 
-  /* An outgoing edge from B.  DUP_BLOCK will have OUTGOING_EDGE->dest as
-     its single successor.  */
-  edge outgoing_edge;
+  /* The jump threading path.  */
+  vec<jump_thread_edge *> *path;
 
-  edge intermediate_edge;
-
-  /* A list of incoming edges which we want to thread to
-     OUTGOING_EDGE->dest.  */
+  /* A list of incoming edges which we want to thread to the
+     same path.  */
   struct el *incoming_edges;
 
   /* hash_table support.  */
@@ -133,21 +130,36 @@ struct redirection_data : typed_free_remove<redirection_data>
   static inline int equal (const value_type *, const compare_type *);
 };
 
+/* Simple hashing function.  For any given incoming edge E, we're going
+   to be most concerned with the final destination of its jump thread
+   path.  So hash on the block index of the final edge in the path.  */
+
 inline hashval_t
 redirection_data::hash (const value_type *p)
 {
-  edge e = p->outgoing_edge;
-  return e->dest->index;
+  vec<jump_thread_edge *> *path = p->path;
+  return path->last ()->e->dest->index;
 }
 
+/* Given two hash table entries, return true if they have the same
+   jump threading path.  */
 inline int
 redirection_data::equal (const value_type *p1, const compare_type *p2)
 {
-  edge e1 = p1->outgoing_edge;
-  edge e2 = p2->outgoing_edge;
-  edge e3 = p1->intermediate_edge;
-  edge e4 = p2->intermediate_edge;
-  return e1 == e2 && e3 == e4;
+  vec<jump_thread_edge *> *path1 = p1->path;
+  vec<jump_thread_edge *> *path2 = p2->path;
+
+  if (path1->length () != path2->length ())
+    return false;
+
+  for (unsigned int i = 1; i < path1->length (); i++)
+    {
+      if ((*path1)[i]->type != (*path2)[i]->type
+	  || (*path1)[i]->e != (*path2)[i]->e)
+	return false;
+    }
+
+  return true;
 }
 
 /* Data structure of information to pass to hash table traversal routines.  */
@@ -259,10 +271,7 @@ lookup_redirection_data (edge e, enum insert_option insert)
  /* Build a hash table element so we can see if E is already
      in the table.  */
   elt = XNEW (struct redirection_data);
-  /* Right now, if we have a joiner, it is always index 1 into the vector.  */
-  elt->intermediate_edge
-    = (*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK ? (*path)[1]->e : NULL;
-  elt->outgoing_edge = path->last ()->e;
+  elt->path = path;
   elt->dup_block = NULL;
   elt->incoming_edges = NULL;
 
@@ -356,7 +365,7 @@ static void
 create_edge_and_update_destination_phis (struct redirection_data *rd,
 					 basic_block bb)
 {
-  edge e = make_edge (bb, rd->outgoing_edge->dest, EDGE_FALLTHRU);
+  edge e = make_edge (bb, rd->path->last ()->e->dest, EDGE_FALLTHRU);
 
   rescan_loop_exit (e, true, false);
   e->probability = REG_BR_PROB_BASE;
@@ -364,9 +373,9 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
 
   /* We have to copy path -- which means creating a new vector as well
      as all the jump_thread_edge entries.  */
-  if (rd->outgoing_edge->aux)
+  if (rd->path->last ()->e->aux)
     {
-      vec<jump_thread_edge *> *path = THREAD_PATH (rd->outgoing_edge);
+      vec<jump_thread_edge *> *path = THREAD_PATH (rd->path->last ()->e);
       vec<jump_thread_edge *> *copy = new vec<jump_thread_edge *> ();
 
       /* Sadly, the elements of the vector are pointers and need to
@@ -388,7 +397,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
      from the duplicate block, then we will need to add a new argument
      to them.  The argument should have the same value as the argument
      associated with the outgoing edge stored in RD.  */
-  copy_phi_args (e->dest, rd->outgoing_edge, e);
+  copy_phi_args (e->dest, rd->path->last ()->e, e);
 }
 
 /* Wire up the outgoing edges from the duplicate block and
@@ -787,7 +796,13 @@ thread_single_edge (edge e)
   if (e->dest == eto->src)
     update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
 
-  rd.outgoing_edge = eto;
+  vec<jump_thread_edge *> *npath = new vec<jump_thread_edge *> ();
+  jump_thread_edge *x = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
+  npath->safe_push (x);
+
+  x = new jump_thread_edge (eto, EDGE_COPY_SRC_BLOCK);
+  npath->safe_push (x);
+  rd.path = npath;
 
   create_block_for_threading (bb, &rd);
   remove_ctrl_stmt_and_useless_edges (rd.dup_block, NULL);
