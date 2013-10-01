@@ -2,6 +2,9 @@
 	    Diego Novillo  <dnovillo@google.com>
 
 	* config/arc/gmon/mcount.c (_MCOUNT_DECL): Comment typo fix.
+	* config/arc/ieee-754/arc600-dsp/muldf3.S (.Linf_denorm): Likewise.
+	* config/arc/ieee-754/arc600-mul64/muldf3.S (.Linf_denorm): Likewise.
+	* config/arc/ieee-754/muldf3.S (.Linf_denorm): Likewise.
 
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Brendan Kehoe  <brendan@zen.org>
