@@ -1,4 +1,3 @@
-driver-i386.o : $(srcdir)/config/i386/driver-i386.c \
-  $(srcdir)/config/i386/cpuid.h \
-  $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+driver-i386.o : $(srcdir)/config/i386/driver-i386.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
