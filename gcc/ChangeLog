@@ -1,3 +1,8 @@
+2013-10-02  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	(aarch64_expand_epilogue): Likewise.
+
 2013-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
