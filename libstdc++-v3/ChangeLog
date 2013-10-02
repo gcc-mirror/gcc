@@ -1,3 +1,11 @@
+2013-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Daniel Krugler  <daniel.kruegler@gmail.com>
+
+	PR libstdc++/58569
+	* include/std/functional (function::_CheckResult): Move to namespace
+	scope and rename to __check_func_return_type.
+	* testsuite/20_util/function/58569.cc: New.
+
 2013-09-30  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/58437
