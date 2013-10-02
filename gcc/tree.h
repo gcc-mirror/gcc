@@ -4528,10 +4528,9 @@ extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
 extern bool virtual_method_call_p (tree);
 extern tree obj_type_ref_class (tree ref);
 extern bool types_same_for_odr (tree type1, tree type2);
-extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
-				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool type_in_anonymous_namespace_p (tree);
+extern bool block_may_fallthru (const_tree);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);
@@ -4879,9 +4878,6 @@ is_lang_specific (tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
 }
-
-/* In gimple-low.c.  */
-extern bool block_may_fallthru (const_tree);
 
 /* In vtable-verify.c.  */
 extern void save_vtable_map_decl (tree);

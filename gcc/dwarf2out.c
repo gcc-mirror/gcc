@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lra.h"
 #include "dumpfile.h"
 #include "opts.h"
+#include "tree-dfa.h"
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx last_var_location_insn;

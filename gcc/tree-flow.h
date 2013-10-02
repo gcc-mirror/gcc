@@ -30,7 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "ipa-reference.h"
 #include "tree-ssa-alias.h"
-
+#include "tree-cfgcleanup.h"
+#include "tree-dfa.h"
+#include "tree-pretty-print.h"
+#include "gimple-low.h"
+#include "tree-into-ssa.h"
 
 /* This structure is used to map a gimple statement to a label,
    or list of labels to represent transaction restart.  */
@@ -91,21 +95,6 @@ struct GTY(()) gimple_df {
      restart and abort.  */
   htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
 };
-
-
-typedef struct
-{
-  htab_t htab;
-  PTR *slot;
-  PTR *limit;
-} htab_iterator;
-
-/* Iterate through the elements of hashtable HTAB, using htab_iterator ITER,
-   storing each element in RESULT, which is of type TYPE.  */
-#define FOR_EACH_HTAB_ELEMENT(HTAB, RESULT, TYPE, ITER) \
-  for (RESULT = (TYPE) first_htab_element (&(ITER), (HTAB)); \
-	!end_htab_p (&(ITER)); \
-	RESULT = (TYPE) next_htab_element (&(ITER)))
 
 static inline int get_lineno (const_gimple);
 
@@ -254,48 +243,6 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
-
-/* In tree-cfgcleanup.c  */
-extern bitmap cfgcleanup_altered_bbs;
-extern bool cleanup_tree_cfg (void);
-
-/* In tree-pretty-print.c.  */
-extern void dump_generic_bb (FILE *, basic_block, int, int);
-extern int op_code_prio (enum tree_code);
-extern int op_prio (const_tree);
-extern const char *op_symbol_code (enum tree_code);
-
-/* In tree-dfa.c  */
-extern void renumber_gimple_stmt_uids (void);
-extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
-extern void dump_dfa_stats (FILE *);
-extern void debug_dfa_stats (void);
-extern void dump_variable (FILE *, tree);
-extern void debug_variable (tree);
-extern void set_ssa_default_def (struct function *, tree, tree);
-extern tree ssa_default_def (struct function *, tree);
-extern tree get_or_create_ssa_default_def (struct function *, tree);
-extern bool stmt_references_abnormal_ssa_name (gimple);
-extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
-extern void dump_enumerated_decls (FILE *, int);
-
-/* In gimple-low.c  */
-extern void record_vars_into (tree, tree);
-extern void record_vars (tree);
-extern bool gimple_seq_may_fallthru (gimple_seq);
-extern bool gimple_stmt_may_fallthru (gimple);
-extern bool gimple_check_call_matching_types (gimple, tree, bool);
-
-/* In tree-into-ssa.c  */
-void update_ssa (unsigned);
-void delete_update_ssa (void);
-tree create_new_def_for (tree, gimple, def_operand_p);
-bool need_ssa_update_p (struct function *);
-bool name_registered_for_update_p (tree);
-void release_ssa_name_after_update_ssa (tree);
-void mark_virtual_operands_for_renaming (struct function *);
-tree get_current_def (tree);
-void set_current_def (tree, tree);
 
 /* In tree-ssa-ccp.c  */
 tree fold_const_aggregate_ref (tree);
@@ -539,7 +486,6 @@ void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
 unsigned int execute_fixup_cfg (void);
-bool fixup_noreturn_call (gimple stmt);
 
 /* In ipa-pure-const.c  */
 void warn_function_noreturn (tree);
