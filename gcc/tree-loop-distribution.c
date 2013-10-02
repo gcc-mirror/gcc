@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"
+#include "tree-vectorizer.h"
 
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
@@ -557,14 +558,14 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
 
 
 enum partition_kind {
-    PKIND_NORMAL, PKIND_REDUCTION, PKIND_MEMSET, PKIND_MEMCPY
+    PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY
 };
 
 typedef struct partition_s
 {
   bitmap stmts;
   bitmap loops;
-  bool has_writes;
+  bool reduction_p;
   enum partition_kind kind;
   /* data-references a kind != PKIND_NORMAL partition is about.  */
   data_reference_p main_dr;
@@ -581,7 +582,7 @@ partition_alloc (bitmap stmts, bitmap loops)
   partition_t partition = XCNEW (struct partition_s);
   partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
   partition->loops = loops ? loops : BITMAP_ALLOC (NULL);
-  partition->has_writes = false;
+  partition->reduction_p = false;
   partition->kind = PKIND_NORMAL;
   return partition;
 }
@@ -601,16 +602,28 @@ partition_free (partition_t partition)
 static bool
 partition_builtin_p (partition_t partition)
 {
-  return partition->kind > PKIND_REDUCTION;
+  return partition->kind != PKIND_NORMAL;
 }
 
-/* Returns true if the partition has an writes.  */
+/* Returns true if the partition contains a reduction.  */
 
 static bool
-partition_has_writes (partition_t partition)
+partition_reduction_p (partition_t partition)
 {
-  return partition->has_writes;
+  return partition->reduction_p;
 }
+
+/* Merge PARTITION into the partition DEST.  */
+
+static void
+partition_merge_into (partition_t dest, partition_t partition)
+{
+  dest->kind = PKIND_NORMAL;
+  bitmap_ior_into (dest->stmts, partition->stmts);
+  if (partition_reduction_p (partition))
+    dest->reduction_p = true;
+}
+
 
 /* Returns true when DEF is an SSA_NAME defined in LOOP and used after
    the LOOP.  */
@@ -998,58 +1011,31 @@ generate_code_for_partition (struct loop *loop,
 {
   switch (partition->kind)
     {
+    case PKIND_NORMAL:
+      /* Reductions all have to be in the last partition.  */
+      gcc_assert (!partition_reduction_p (partition)
+		  || !copy_p);
+      generate_loops_for_partition (loop, partition, copy_p);
+      return;
+
     case PKIND_MEMSET:
       generate_memset_builtin (loop, partition);
-      /* If this is the last partition for which we generate code, we have
-	 to destroy the loop.  */
-      if (!copy_p)
-	destroy_loop (loop);
       break;
 
     case PKIND_MEMCPY:
       generate_memcpy_builtin (loop, partition);
-      /* If this is the last partition for which we generate code, we have
-	 to destroy the loop.  */
-      if (!copy_p)
-	destroy_loop (loop);
-      break;
-
-    case PKIND_REDUCTION:
-      /* Reductions all have to be in the last partition.  */
-      gcc_assert (!copy_p);
-    case PKIND_NORMAL:
-      generate_loops_for_partition (loop, partition, copy_p);
       break;
 
     default:
       gcc_unreachable ();
     }
+
+  /* Common tail for partitions we turn into a call.  If this was the last
+     partition for which we generate code, we have to destroy the loop.  */
+  if (!copy_p)
+    destroy_loop (loop);
 }
 
-
-/* Returns true if the node V of RDG cannot be recomputed.  */
-
-static bool
-rdg_cannot_recompute_vertex_p (struct graph *rdg, int v)
-{
-  if (RDG_MEM_WRITE_STMT (rdg, v))
-    return true;
-
-  return false;
-}
-
-/* Returns true when the vertex V has already been generated in the
-   current partition (V is in PROCESSED), or when V belongs to another
-   partition and cannot be recomputed (V is not in REMAINING_STMTS).  */
-
-static inline bool
-already_processed_vertex_p (bitmap processed, int v)
-{
-  return bitmap_bit_p (processed, v);
-}
-
-static void rdg_flag_vertex_and_dependent (struct graph *, int, partition_t,
-					   bitmap);
 
 /* Flag V from RDG as part of PARTITION, and also flag its loop number
    in LOOPS.  */
@@ -1064,9 +1050,6 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition)
 
   loop = loop_containing_stmt (RDG_STMT (rdg, v));
   bitmap_set_bit (partition->loops, loop->num);
-
-  if (rdg_cannot_recompute_vertex_p (rdg, v))
-    partition->has_writes = true;
 }
 
 /* Flag in the bitmap PARTITION the vertex V and all its predecessors.
@@ -1127,15 +1110,10 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       if (gimple_has_volatile_ops (stmt))
 	volatiles_p = true;
 
-      /* If the stmt has uses outside of the loop fail.
-	 ???  If the stmt is generated in another partition that
-	 is not created as builtin we can ignore this.  */
+      /* If the stmt has uses outside of the loop mark it as reduction.  */
       if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "not generating builtin, partition has "
-		     "scalar uses outside of the loop\n");
-	  partition->kind = PKIND_REDUCTION;
+	  partition->reduction_p = true;
 	  return;
 	}
     }
@@ -1356,21 +1334,17 @@ rdg_build_partitions (struct graph *rdg,
 
       np = build_rdg_partition_for_vertex (rdg, v);
       bitmap_ior_into (partition->stmts, np->stmts);
-      partition->has_writes = partition_has_writes (np);
       bitmap_ior_into (processed, np->stmts);
       partition_free (np);
 
-      if (partition_has_writes (partition))
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "ldist useful partition:\n");
-	      dump_bitmap (dump_file, partition->stmts);
-	    }
-
-	  partitions->safe_push (partition);
-	  partition = partition_alloc (NULL, NULL);
+	  fprintf (dump_file, "ldist useful partition:\n");
+	  dump_bitmap (dump_file, partition->stmts);
 	}
+
+      partitions->safe_push (partition);
+      partition = partition_alloc (NULL, NULL);
     }
 
   /* All vertices should have been assigned to at least one partition now,
@@ -1480,7 +1454,7 @@ partition_contains_all_rw (struct graph *rdg,
 
 static int
 distribute_loop (struct loop *loop, vec<gimple> stmts,
-		 control_dependences *cd)
+		 control_dependences *cd, int *nb_calls)
 {
   struct graph *rdg;
   vec<loop_p> loop_nest;
@@ -1489,6 +1463,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
   bool any_builtin;
   int i, nbp;
 
+  *nb_calls = 0;
   loop_nest.create (3);
   if (!find_loop_nest (loop, &loop_nest))
     {
@@ -1551,9 +1526,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 		  fprintf (dump_file, "because they have similar "
 			   "memory accesses\n");
 		}
-	      bitmap_ior_into (into->stmts, partition->stmts);
-	      if (partition->kind == PKIND_REDUCTION)
-		into->kind = PKIND_REDUCTION;
+	      partition_merge_into (into, partition);
 	      partitions.ordered_remove (j);
 	      partition_free (partition);
 	      j--;
@@ -1577,9 +1550,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 	  for (++i; partitions.iterate (i, &partition); ++i)
 	    if (!partition_builtin_p (partition))
 	      {
-		bitmap_ior_into (into->stmts, partition->stmts);
-		if (partition->kind == PKIND_REDUCTION)
-		  into->kind = PKIND_REDUCTION;
+		partition_merge_into (into, partition);
 		partitions.ordered_remove (i);
 		partition_free (partition);
 		i--;
@@ -1597,7 +1568,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
       for (i = partitions.length () - 2; i >= 0; --i)
 	{
 	  partition_t what = partitions[i];
-	  if (what->kind == PKIND_REDUCTION)
+	  if (partition_reduction_p (what))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -1606,8 +1577,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 		  dump_bitmap (dump_file, what->stmts);
 		  fprintf (dump_file, "because the latter has reductions\n");
 		}
-	      bitmap_ior_into (into->stmts, what->stmts);
-	      into->kind = PKIND_REDUCTION;
+	      partition_merge_into (into, what);
 	      partitions.ordered_remove (i);
 	      partition_free (what);
 	    }
@@ -1627,7 +1597,11 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
     dump_rdg_partitions (dump_file, partitions);
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
-    generate_code_for_partition (loop, partition, i < nbp - 1);
+    {
+      if (partition_builtin_p (partition))
+	(*nb_calls)++;
+      generate_code_for_partition (loop, partition, i < nbp - 1);
+    }
 
  ldist_done:
 
@@ -1637,7 +1611,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 
   free_rdg (rdg);
   loop_nest.release ();
-  return nbp;
+  return nbp - *nb_calls;
 }
 
 /* Distribute all loops in the current function.  */
@@ -1667,7 +1641,6 @@ tree_loop_distribution (void)
       vec<gimple> work_list = vNULL;
       basic_block *bbs;
       int num = loop->num;
-      int nb_generated_loops = 0;
       unsigned int i;
 
       /* If the loop doesn't have a single exit we will fail anyway,
@@ -1722,6 +1695,9 @@ tree_loop_distribution (void)
 out:
       free (bbs);
 
+      int nb_generated_loops = 0;
+      int nb_generated_calls = 0;
+      location_t loc = find_loop_location (loop);
       if (work_list.length () > 0)
 	{
 	  if (!cd)
@@ -1731,20 +1707,20 @@ out:
 	      cd = new control_dependences (create_edge_list ());
 	      free_dominance_info (CDI_POST_DOMINATORS);
 	    }
-	  nb_generated_loops = distribute_loop (loop, work_list, cd);
+	  nb_generated_loops = distribute_loop (loop, work_list, cd,
+						&nb_generated_calls);
 	}
 
-      if (nb_generated_loops > 0)
-	changed = true;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      if (nb_generated_loops + nb_generated_calls > 0)
 	{
-	  if (nb_generated_loops > 1)
-	    fprintf (dump_file, "Loop %d distributed: split to %d loops.\n",
-		     num, nb_generated_loops);
-	  else
-	    fprintf (dump_file, "Loop %d is the same.\n", num);
+	  changed = true;
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
+			   loc, "Loop %d distributed: split to %d loops "
+			   "and %d library calls.\n",
+			   num, nb_generated_loops, nb_generated_calls);
 	}
+      else if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Loop %d is the same.\n", num);
 
       work_list.release ();
     }

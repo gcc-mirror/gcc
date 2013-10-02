@@ -1,3 +1,28 @@
+2013-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c: Include tree-vectorizer.h for
+	find_loop_location.
+	(enum partition_kind): Remove PKIND_REDUCTION.
+	(struct partition_s): Remove has_writes member, add reduction_p
+	member.
+	(partition_alloc): Adjust.
+	(partition_builtin_p): Likewise.
+	(partition_has_writes): Remove.
+	(partition_reduction_p): New function.
+	(partition_merge_into): Likewise.
+	(generate_code_for_partition): Commonize builtin partition
+	handling tail.
+	(rdg_cannot_recompute_vertex_p): Remove.
+	(already_processed_vertex_p): Likewise.
+	(rdg_flag_vertex): Do not set has_writes.
+	(classify_partition): Adjust.
+	(rdg_build_partitions): Do not set has_writes, treat all
+	partitions as useful.
+	(distribute_loop): Record number of library calls generated.
+	Adjust.
+	(tree_loop_distribution): Report number of loops and library
+	calls generated as opt-info.
+
 2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h: Include new .h files.  Move prototypes.
