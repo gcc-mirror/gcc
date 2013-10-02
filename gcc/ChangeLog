@@ -1,3 +1,7 @@
+2013-10-02  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (DRIVER_DEFINES): Use $(if), not $(and).
+
 2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h: Remove some prototypes.
