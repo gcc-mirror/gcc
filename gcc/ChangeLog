@@ -1,3 +1,10 @@
+2013-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/x-i386 (driver-i386.o): Remove header dependencies.
+	Use $(COMPILE) and $(POSTCOMPILE).
+
+	* config/alpha/x-alpha (driver-alpha.o): Ditto.
+
 2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h: Remove some prototypes.
@@ -22,8 +29,7 @@
 	* tree-loop-distribution.c: Include tree-vectorizer.h for
 	find_loop_location.
 	(enum partition_kind): Remove PKIND_REDUCTION.
-	(struct partition_s): Remove has_writes member, add reduction_p
-	member.
+	(struct partition_s): Remove has_writes member, add reduction_p member.
 	(partition_alloc): Adjust.
 	(partition_builtin_p): Likewise.
 	(partition_has_writes): Remove.
@@ -37,8 +43,7 @@
 	(classify_partition): Adjust.
 	(rdg_build_partitions): Do not set has_writes, treat all
 	partitions as useful.
-	(distribute_loop): Record number of library calls generated.
-	Adjust.
+	(distribute_loop): Record number of library calls generated.  Adjust.
 	(tree_loop_distribution): Report number of loops and library
 	calls generated as opt-info.
 
@@ -53,7 +58,7 @@
 	({debug|dump}*): Move debugging prototypes out of tree-into-ssa.c.
 	* tree-into-ssa.c ({debug|dump}*): Move prototypes to header file.
 	* tree.h (get_ref_base_and_extent): Move prototype out.
-	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): Move to 
+	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): Move to
 	tree-dfa.h.
 	* gimple-low.h: New File.  Add prototypes from tree-flow.h.
 	* gimple-low.c (try_catch_may_fallthru, block_may_fallthru): Move to...
@@ -95,7 +100,8 @@
 
 2013-10-02  Renlin Li  <renlin.li@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use
+	plus_constant.
 	(aarch64_expand_epilogue): Likewise.
 
 2013-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
@@ -114,15 +120,14 @@
 
 2013-10-01  Wei Mi  <wmi@google.com>
 
-	* config/i386/x86-tune.def (DEF_TUNE): Remove
-	m_CORE_ALL.
+	* config/i386/x86-tune.def (DEF_TUNE): Remove m_CORE_ALL.
 	* config/i386/i386.md: Add define_peephole2 to
 	break partial reg stall for cvtss2sd/cvtsd2ss.
 
 2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (pass_arc_ifcvt::clone):
-	Update for ctxt_ ->m_ctxt change.
+	Update for ctxt_ -> m_ctxt change.
 
 2013-10-01  Jeff Law  <law@redhat.com>
 
@@ -1854,7 +1859,7 @@
 	(warn_uninit, warn_uninitialized_vars,
 	execute_early_warn_uninitialized, make_pass_early_warn_uninitialized):
 	Move to tree-ssa-uninit.c.
-	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c
+	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c.
 	(has_undefined_value_p): New.  Pass dependant parts of
 	ssa_undefined_value_p.
 	(uninit_undefined_value_p): Use has_undefined_value_p.
