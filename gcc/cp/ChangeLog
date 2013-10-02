@@ -1,3 +1,8 @@
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58565
+	* semantics.c (potential_constant_expression_1): Handle LABEL_EXPR.
+
 2013-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58563

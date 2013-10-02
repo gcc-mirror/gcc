@@ -1,3 +1,8 @@
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58565
+	* g++.dg/parse/crash64.C: New.
+
 2013-10-02  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.dg/tree-ssa/slsr-40.c: New test.
