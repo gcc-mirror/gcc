@@ -1,3 +1,7 @@
+2013-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in (expmed.o-warn): Remove.
+
 2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* graphite-scop-detection.c: Include tree-ssa-propagate,h.
@@ -20,7 +24,7 @@
 	* tree-into-ssa.c (mark_virtual_operand_for_renaming,
 	mark_virtual_phi_result_for_renaming): Relocate here.
 	* tree-into-ssa.h: Add prototypes.
-	* tree-ssa-phiopt.c: (tree_ssa_phiopt_worker) Use 
+	* tree-ssa-phiopt.c: (tree_ssa_phiopt_worker) Use
 	single_pred_before_succ_order.
 	(blocks_in_phiopt_order): Rename and move to cfganal.c.
 	(nonfreeing_call_p) Move to gimple.c.
