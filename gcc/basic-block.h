@@ -803,6 +803,7 @@ extern int dfs_enumerate_from (basic_block, int,
 			       basic_block *, int, const void *);
 extern void compute_dominance_frontiers (struct bitmap_head_def *);
 extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
+extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */
 extern rtx block_label (basic_block);

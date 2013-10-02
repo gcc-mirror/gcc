@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "ssa-iterators.h"
 #include "tree-ssanames.h"
+#include "tree-ssa-dom.h"
 #include "tree-flow.h"
 
 /* Mapping for redirected edges.  */

@@ -907,48 +907,6 @@ propagate_necessity (bool aggressive)
     }
 }
 
-/* Replace all uses of NAME by underlying variable and mark it
-   for renaming.  This assumes the defining statement of NAME is
-   going to be removed.  */
-
-void
-mark_virtual_operand_for_renaming (tree name)
-{
-  tree name_var = SSA_NAME_VAR (name);
-  bool used = false;
-  imm_use_iterator iter;
-  use_operand_p use_p;
-  gimple stmt;
-
-  gcc_assert (VAR_DECL_IS_VIRTUAL_OPERAND (name_var));
-  FOR_EACH_IMM_USE_STMT (stmt, iter, name)
-    {
-      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-        SET_USE (use_p, name_var);
-      used = true;
-    }
-  if (used)
-    mark_virtual_operands_for_renaming (cfun);
-}
-
-/* Replace all uses of the virtual PHI result by its underlying variable
-   and mark it for renaming.  This assumes the PHI node is going to be
-   removed.  */
-
-void
-mark_virtual_phi_result_for_renaming (gimple phi)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Marking result for renaming : ");
-      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
-      fprintf (dump_file, "\n");
-    }
-
-  mark_virtual_operand_for_renaming (gimple_phi_result (phi));
-}
-
-
 /* Remove dead PHI nodes from block BB.  */
 
 static bool

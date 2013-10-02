@@ -1054,6 +1054,7 @@ extern tree gimple_boolify (tree);
 extern gimple_predicate rhs_predicate_for (tree);
 extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
+extern bool nonfreeing_call_p (gimple);
 
 /* In omp-low.c.  */
 extern tree omp_reduction_init (tree, tree);
