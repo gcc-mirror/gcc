@@ -1,3 +1,8 @@
+2013-10-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58593
+	* gfortran.dg/char_length_19.f90: New.
+
 2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58535

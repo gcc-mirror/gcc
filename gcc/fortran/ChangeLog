@@ -1,3 +1,9 @@
+2013-10-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58593
+	* trans-expr.c (gfc_conv_string_tmp): Fix obtaining
+	the byte size of a single character.
+
 2013-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58579

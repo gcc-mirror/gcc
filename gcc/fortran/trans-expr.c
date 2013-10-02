@@ -2357,8 +2357,9 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
       var = gfc_create_var (type, "pstr");
       gcc_assert (POINTER_TYPE_P (type));
       tmp = TREE_TYPE (type);
-      gcc_assert (TREE_CODE (tmp) == ARRAY_TYPE);
-      tmp = TYPE_SIZE_UNIT (TREE_TYPE (tmp));
+      if (TREE_CODE (tmp) == ARRAY_TYPE)
+        tmp = TREE_TYPE (tmp);
+      tmp = TYPE_SIZE_UNIT (tmp);
       tmp = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
 			    fold_convert (size_type_node, len),
 			    fold_convert (size_type_node, tmp));
