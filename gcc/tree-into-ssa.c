@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "params.h"
 #include "diagnostic-core.h"
+#include "tree-into-ssa.h"
 
 
 /* This file builds the SSA form for a function as described in:
@@ -252,27 +253,6 @@ enum rewrite_mode {
        names with new ones.  See update_ssa for details.  */
     REWRITE_UPDATE
 };
-
-
-
-
-/* Prototypes for debugging functions.  */
-extern void dump_tree_ssa (FILE *);
-extern void debug_tree_ssa (void);
-extern void debug_def_blocks (void);
-extern void dump_tree_ssa_stats (FILE *);
-extern void debug_tree_ssa_stats (void);
-extern void dump_update_ssa (FILE *);
-extern void debug_update_ssa (void);
-extern void dump_names_replaced_by (FILE *, tree);
-extern void debug_names_replaced_by (tree);
-extern void dump_var_infos (FILE *);
-extern void debug_var_infos (void);
-extern void dump_defs_stack (FILE *, int);
-extern void debug_defs_stack (int);
-extern void dump_currdefs (FILE *);
-extern void debug_currdefs (void);
-
 
 /* The set of symbols we ought to re-write into SSA form in update_ssa.  */
 static bitmap symbols_to_rename_set;

@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "tree-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-ssa.h"

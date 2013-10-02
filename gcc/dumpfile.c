@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "dumpfile.h"
-#include "gimple-pretty-print.h"
 #include "tree.h"
+#include "gimple-pretty-print.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */

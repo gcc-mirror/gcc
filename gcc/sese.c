@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "hash-table.h"
+#include "tree.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
