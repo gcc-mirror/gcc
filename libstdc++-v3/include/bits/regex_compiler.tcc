@@ -437,9 +437,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator()(_CharT __ch) const
     {
       bool __ret = false;
-      if (_M_traits.isctype(__ch, _M_class_set))
-	__ret = true;
-      else if (_M_char_set.count(_M_translate(__ch)))
+      if (_M_traits.isctype(__ch, _M_class_set)
+	  || _M_char_set.count(_M_translate(__ch))
+	  || _M_equiv_set.count(_M_traits.transform_primary(&__ch, &__ch+1)))
 	__ret = true;
       else
 	{

@@ -1,3 +1,12 @@
+2013-10-02  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_compiler.h
+	(_BracketMatcher<>::_M_add_equivalence_class): Implement it correctly.
+	* include/bits/regex_compiler.tcc (_BracketMatcher<>::operator()):
+	Add _M_equiv_set support.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_bracket_01.cc: Add new "[[=a=]]" testcase.
+
 2013-10-01  Tim Shen  <timshen91@gmail.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Change "is not implemented" to
