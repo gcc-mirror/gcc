@@ -1925,7 +1925,7 @@ DRIVER_DEFINES = \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
-  $(and $(SHLIB),$(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC) \
+  $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
   -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
 
 CFLAGS-gcc.o += $(DRIVER_DEFINES)
