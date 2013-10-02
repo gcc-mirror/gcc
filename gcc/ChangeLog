@@ -1,3 +1,8 @@
+2013-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_legitimize_reload_address): Explain why
+	plus_constant is not used.
+
 2013-10-01  Wei Mi  <wmi@google.com>
 
 	* config/i386/x86-tune.def (DEF_TUNE): Remove
