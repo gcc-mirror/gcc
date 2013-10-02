@@ -1,3 +1,8 @@
+2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* graphite-scop-detection.c: Include tree-ssa-propagate,h.
+	* graphite-sese-to-poly.c: Include tree-ssa-propagate.h.
+
 2013-10-02  Teresa Johnson  <tejohnson@google.com>
 
 	* dojump.c (do_jump_1): Divide probability between

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 #include "sese.h"
+#include "tree-ssa-propagate.h"
 
 #ifdef HAVE_cloog
 #include "graphite-poly.h"
