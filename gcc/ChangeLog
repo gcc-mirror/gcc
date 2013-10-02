@@ -1,3 +1,8 @@
+2013-10-02  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gimple-ssa-strength-reduction.c (backtrace_base_for_ref):
+	Fix whitespace.
+
 2013-10-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/t-sol2 (sol2-c.o): Remove header dependencies.
