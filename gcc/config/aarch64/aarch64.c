@@ -2066,9 +2066,9 @@ aarch64_expand_prologue (void)
 	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (-frame_size))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  -frame_size)));
 	}
       else if (frame_size > 0)
 	{
@@ -2152,9 +2152,9 @@ aarch64_expand_prologue (void)
 					   GEN_INT (fp_offset)));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, hard_frame_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (fp_offset))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  fp_offset)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
 					   hard_frame_pointer_rtx));
@@ -2350,9 +2350,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (frame_size))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  frame_size)));
 	}
       else if (frame_size > 0)
 	{
@@ -2374,10 +2374,10 @@ aarch64_expand_epilogue (bool for_sibcall)
 	    }
 	}
 
-      aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					   gen_rtx_PLUS (Pmode,
-							 stack_pointer_rtx,
-							 GEN_INT (offset))));
+        aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
+					     plus_constant (Pmode,
+							    stack_pointer_rtx,
+							    offset)));
     }
 
   emit_use (gen_rtx_REG (DImode, LR_REGNUM));
