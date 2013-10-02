@@ -11139,7 +11139,8 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 	 A member function template shall not be virtual.  */
       if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	error_at (token->location, "templates may not be %<virtual%>");
-      set_and_check_decl_spec_loc (decl_specs, ds_virtual, token);
+      else
+	set_and_check_decl_spec_loc (decl_specs, ds_virtual, token);
       break;
 
     case RID_EXPLICIT:
