@@ -4418,4 +4418,27 @@ gimple_can_coalesce_p (tree name1, tree name2)
 
   return false;
 }
+
+/* Return true when CALL is a call stmt that definitely doesn't
+   free any memory or makes it unavailable otherwise.  */
+bool
+nonfreeing_call_p (gimple call)
+{
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)
+      && gimple_call_flags (call) & ECF_LEAF)
+    switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
+      {
+	/* Just in case these become ECF_LEAF in the future.  */
+	case BUILT_IN_FREE:
+	case BUILT_IN_TM_FREE:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STACK_RESTORE:
+	  return false;
+	default:
+	  return true;
+      }
+
+  return false;
+}
+
 #include "gt-gimple.h"

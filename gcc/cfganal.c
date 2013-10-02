@@ -1465,3 +1465,56 @@ bitmap_union_of_preds (sbitmap dst, sbitmap *src, basic_block b)
 	  *r++ |= *p++;
       }
 }
+
+/* Returns the list of basic blocks in the function in an order that guarantees
+   that if a block X has just a single predecessor Y, then Y is after X in the
+   ordering.  */
+
+basic_block *
+single_pred_before_succ_order (void)
+{
+  basic_block x, y;
+  basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
+  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS;
+  unsigned np, i;
+  sbitmap visited = sbitmap_alloc (last_basic_block);
+
+#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
+#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
+
+  bitmap_clear (visited);
+
+  MARK_VISITED (ENTRY_BLOCK_PTR);
+  FOR_EACH_BB (x)
+    {
+      if (VISITED_P (x))
+	continue;
+
+      /* Walk the predecessors of x as long as they have precisely one
+	 predecessor and add them to the list, so that they get stored
+	 after x.  */
+      for (y = x, np = 1;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y))
+	np++;
+      for (y = x, i = n - np;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y), i++)
+	{
+	  order[i] = y;
+	  MARK_VISITED (y);
+	}
+      order[i] = y;
+      MARK_VISITED (y);
+
+      gcc_assert (i == n - 1);
+      n -= np;
+    }
+
+  sbitmap_free (visited);
+  gcc_assert (n == 0);
+  return order;
+
+#undef MARK_VISITED
+#undef VISITED_P
+}

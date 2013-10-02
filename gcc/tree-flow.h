@@ -244,13 +244,6 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
 
-/* In tree-ssa-dom.c  */
-extern void dump_dominator_optimization_stats (FILE *);
-extern void debug_dominator_optimization_stats (void);
-int loop_depth_of_name (tree);
-tree degenerate_phi_result (gimple);
-bool simple_iv_increment_p (gimple);
-
 /* In tree-ssa-loop-ch.c  */
 bool do_while_loop_p (struct loop *);
 
@@ -296,10 +289,6 @@ struct tree_niter_desc
   enum tree_code cmp;
 };
 
-/* In tree-ssa-phiopt.c */
-bool empty_block_p (basic_block);
-basic_block *blocks_in_phiopt_order (void);
-bool nonfreeing_call_p (gimple);
 
 /* In tree-ssa-loop*.c  */
 
@@ -358,10 +347,6 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
 bool stmt_dominates_stmt_p (gimple, gimple);
-
-/* In tree-ssa-dce.c */
-void mark_virtual_operand_for_renaming (tree);
-void mark_virtual_phi_result_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */
 extern void threadedge_initialize_values (void);

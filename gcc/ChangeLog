@@ -1,3 +1,24 @@
+2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Remove some prototypes.
+	* tree-ssa-dce.c (mark_virtual_operand_for_renaming,
+	mark_virtual_phi_result_for_renaming): Move to tree-into-ssa.c.
+	* tree-into-ssa.c (mark_virtual_operand_for_renaming,
+	mark_virtual_phi_result_for_renaming): Relocate here.
+	* tree-into-ssa.h: Add prototypes.
+	* tree-ssa-phiopt.c: (tree_ssa_phiopt_worker) Use 
+	single_pred_before_succ_order.
+	(blocks_in_phiopt_order): Rename and move to cfganal.c.
+	(nonfreeing_call_p) Move to gimple.c.
+	* cfganal.c (single_pred_before_succ_order): Move and renamed from
+	tree-ssa-phiopt.c.
+	* basic-block.h (single_pred_before_succ_order): Add prototype.
+	* gimple.c (nonfreeing_call_p): Relocate here.
+	* gimple.h: Add prototype.
+	* tree-ssa-ifcombine.c: Include tree-ssa-phiopt.h.
+	* tree-ssa-dom.h: New file.  Relocate prototypes here.
+	* tree-ssa.h: Include tree-ssa-dom.h.
+
 2013-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/x-i386 (driver-i386.o): Remove header dependencies.
