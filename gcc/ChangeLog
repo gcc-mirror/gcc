@@ -1,3 +1,8 @@
+2013-10-02  Teresa Johnson  <tejohnson@google.com>
+
+	* dojump.c (do_jump_1): Divide probability between
+	both conditions of a TRUTH_ANDIF_EXPR/TRUTH_ORIF_EXPR.
+
 2013-10-02  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (DRIVER_DEFINES): Use $(if), not $(and).
