@@ -1,3 +1,10 @@
+2013-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/58594
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_ptr_inplace::_M_get_deleter()): Cast away cv-quals.
+	* testsuite/20_util/shared_ptr/creation/58594.cc: New.
+
 2013-10-02  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_compiler.h

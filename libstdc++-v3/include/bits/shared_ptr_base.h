@@ -459,10 +459,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
 #ifdef __GXX_RTTI
-	return __ti == typeid(_Sp_make_shared_tag) ? _M_ptr() : nullptr;
-#else
-        return nullptr;
+	if (__ti == typeid(_Sp_make_shared_tag))
+	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 #endif
+	return nullptr;
       }
 
     private:
