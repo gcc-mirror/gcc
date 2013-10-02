@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
+#include "gimple-fold.h"
 
 typedef gimple gimple_seq_node;
 
@@ -833,8 +834,6 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 #define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
-tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
-tree gimple_extract_devirt_binfo_from_cst (tree, tree);
 
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
@@ -5420,21 +5419,6 @@ gimple_alloc_kind (enum gimple_code code)
 }
 
 extern void dump_gimple_statistics (void);
-
-/* In gimple-fold.c.  */
-void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
-tree gimple_fold_builtin (gimple);
-bool fold_stmt (gimple_stmt_iterator *);
-bool fold_stmt_inplace (gimple_stmt_iterator *);
-tree get_symbol_constant_value (tree);
-tree canonicalize_constructor_val (tree, tree);
-extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree, 
-					enum tree_code, tree, tree);
-extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
-				       enum tree_code, tree, tree);
-
-bool gimple_val_nonnegative_real_p (tree);
-
 
 /* Set the location of all statements in SEQ to LOC.  */
 

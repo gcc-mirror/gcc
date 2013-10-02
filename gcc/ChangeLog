@@ -1,3 +1,22 @@
+2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Remove some prototypes.
+	* gimple-fold.h: Add prototypes from gimple.h and tree-flow.h.
+	* tree-ssa-propagate.h: Relocate prototypes from tree-flow.h.
+	* tree-ssa-copy.c (may_propagate*, propagate_value, replace_exp,
+	propagate_tree_value*): Move from here to...
+	* tree-ssa-propagate.c (may_propagate*, propagate_value, replace_exp,
+	propagate_tree_value*): Relocate here.
+	* tree-ssa-propagate.h: Relocate prototypes from tree-flow.h.
+	* gimple.h: Include gimple-fold.h, move prototypes into gimple-fold.h.
+	* gimple-fold.c: Remove gimple-fold.h from include list.
+	* tree-vrp.c: Remove gimple-fold.h from include list.
+	* tree-ssa-sccvn.c: Remove gimple-fold.h from include list.
+	* tree-ssa-ccp.c: Remove gimple-fold.h from include list.
+	* tree-scalar-evolution.c: Add tree-ssa-propagate.h to include list.
+	* tree-ssa-pre.c: Add tree-ssa-propagate.h to include list.
+	* sese.c: Add tree-ssa-propagate.h to include list.
+
 2013-10-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c: Include tree-vectorizer.h for

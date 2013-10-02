@@ -127,7 +127,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic-core.h"
 #include "dbgcnt.h"
-#include "gimple-fold.h"
 #include "params.h"
 #include "hash-table.h"
 

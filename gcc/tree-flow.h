@@ -244,25 +244,12 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
 
-/* In tree-ssa-ccp.c  */
-tree fold_const_aggregate_ref (tree);
-tree gimple_fold_stmt_to_constant (gimple, tree (*)(tree));
-
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
 int loop_depth_of_name (tree);
 tree degenerate_phi_result (gimple);
 bool simple_iv_increment_p (gimple);
-
-/* In tree-ssa-copy.c  */
-extern void propagate_value (use_operand_p, tree);
-extern void propagate_tree_value (tree *, tree);
-extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
-extern void replace_exp (use_operand_p, tree);
-extern bool may_propagate_copy (tree, tree);
-extern bool may_propagate_copy_into_stmt (gimple, tree);
-extern bool may_propagate_copy_into_asm (tree);
 
 /* In tree-ssa-loop-ch.c  */
 bool do_while_loop_p (struct loop *);
