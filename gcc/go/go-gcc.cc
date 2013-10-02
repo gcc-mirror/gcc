@@ -29,6 +29,8 @@
 #include "gimple.h"
 #include "toplev.h"
 #include "output.h"
+#include "real.h"
+#include "realmpfr.h"
 
 #include "go-c.h"
 
@@ -217,6 +219,15 @@ class Gcc_backend : public Backend
 
   Bexpression*
   indirect_expression(Bexpression* expr, bool known_valid, Location);
+
+  Bexpression*
+  integer_constant_expression(Btype* btype, mpz_t val);
+
+  Bexpression*
+  float_constant_expression(Btype* btype, mpfr_t val);
+
+  Bexpression*
+  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag);
 
   // Statements.
 
@@ -879,6 +890,62 @@ Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
                                          expr->get_tree());
   if (known_valid)
     TREE_THIS_NOTRAP(ret) = 1;
+  return tree_to_expr(ret);
+}
+
+// Return a typed value as a constant integer.
+
+Bexpression*
+Gcc_backend::integer_constant_expression(Btype* btype, mpz_t val)
+{
+  tree t = btype->get_tree();
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  tree ret = double_int_to_tree(t, mpz_get_double_int(t, val, true));
+  return tree_to_expr(ret);
+}
+
+// Return a typed value as a constant floating-point number.
+
+Bexpression*
+Gcc_backend::float_constant_expression(Btype* btype, mpfr_t val)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  REAL_VALUE_TYPE r1;
+  real_from_mpfr(&r1, val, t, GMP_RNDN);
+  REAL_VALUE_TYPE r2;
+  real_convert(&r2, TYPE_MODE(t), &r1);
+  ret = build_real(t, r2);
+  return tree_to_expr(ret);
+}
+
+// Return a typed real and imaginary value as a constant complex number.
+
+Bexpression*
+Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  REAL_VALUE_TYPE r1;
+  real_from_mpfr(&r1, real, TREE_TYPE(t), GMP_RNDN);
+  REAL_VALUE_TYPE r2;
+  real_convert(&r2, TYPE_MODE(TREE_TYPE(t)), &r1);
+
+  REAL_VALUE_TYPE r3;
+  real_from_mpfr(&r3, imag, TREE_TYPE(t), GMP_RNDN);
+  REAL_VALUE_TYPE r4;
+  real_convert(&r4, TYPE_MODE(TREE_TYPE(t)), &r3);
+
+  ret = build_complex(t, build_real(TREE_TYPE(t), r2),
+                      build_real(TREE_TYPE(t), r4));
   return tree_to_expr(ret);
 }
 

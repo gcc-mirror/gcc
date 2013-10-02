@@ -7,6 +7,9 @@
 #ifndef GO_BACKEND_H
 #define GO_BACKEND_H
 
+#include <gmp.h>
+#include <mpfr.h>
+
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -246,6 +249,18 @@ class Backend
   // is known to point to a valid memory location.
   virtual Bexpression*
   indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
+
+  // Return an expression for the multi-precision integer VAL in BTYPE.
+  virtual Bexpression*
+  integer_constant_expression(Btype* btype, mpz_t val) = 0;
+
+  // Return an expression for the floating point value VAL in BTYPE.
+  virtual Bexpression*
+  float_constant_expression(Btype* btype, mpfr_t val) = 0;
+
+  // Return an expression for the complex value REAL/IMAG in BTYPE.
+  virtual Bexpression*
+  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag) = 0;
 
   // Statements.
 
