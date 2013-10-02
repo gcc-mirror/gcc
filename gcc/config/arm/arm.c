@@ -7015,7 +7015,11 @@ arm_legitimize_reload_address (rtx *p,
 	return false;
 
       /* Reload the high part into a base reg; leave the low part
-	 in the mem.  */
+	 in the mem.
+	 Note that replacing this gen_rtx_PLUS with plus_constant is
+	 wrong in this case because we rely on the
+	 (plus (plus reg c1) c2) structure being preserved so that
+	 XEXP (*p, 0) in push_reload below uses the correct term.  */
       *p = gen_rtx_PLUS (GET_MODE (*p),
 			 gen_rtx_PLUS (GET_MODE (*p), XEXP (*p, 0),
 				       GEN_INT (high)),
