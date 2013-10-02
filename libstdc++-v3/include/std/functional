@@ -2128,6 +2128,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       }
     };
 
+  template<typename _From, typename _To>
+    using __check_func_return_type
+      = __or_<is_void<_To>, is_convertible<_From, _To>>;
+
   /**
    *  @brief Primary class template for std::function.
    *  @ingroup functors
@@ -2145,16 +2149,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	using _Invoke = decltype(__callable_functor(std::declval<_Functor&>())
 				 (std::declval<_ArgTypes>()...) );
 
-      template<typename _CallRes, typename _Res1>
-	struct _CheckResult
-	: is_convertible<_CallRes, _Res1> { };
-
-      template<typename _CallRes>
-	struct _CheckResult<_CallRes, void>
-	: true_type { };
-
       template<typename _Functor>
-	using _Callable = _CheckResult<_Invoke<_Functor>, _Res>;
+	using _Callable = __check_func_return_type<_Invoke<_Functor>, _Res>;
 
       template<typename _Cond, typename _Tp>
 	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
