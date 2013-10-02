@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "ipa-prop.h"
+#include "tree-ssa-propagate.h"
 
 /* TODO:
 

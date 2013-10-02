@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "value-prof.h"
 #include "sese.h"
+#include "tree-ssa-propagate.h"
 
 /* Print to stderr the element ELT.  */
 
