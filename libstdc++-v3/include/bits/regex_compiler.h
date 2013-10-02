@@ -213,19 +213,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_add_equivalence_class(const _StringT& __s)
       {
-	_M_add_character_class(
-	  _M_traits.transform_primary(__s.data(),
-				      __s.data() + __s.size()));
+	auto __st = _M_traits.lookup_collatename(__s.data(),
+						 __s.data() + __s.size());
+	if (__st.empty())
+	  __throw_regex_error(regex_constants::error_collate);
+	__st = _M_traits.transform_primary(__st.data(),
+					   __st.data() + __st.size());
+	_M_equiv_set.insert(__st);
       }
 
       void
       _M_add_character_class(const _StringT& __s)
       {
-	auto __st = _M_traits.
-	  lookup_classname(__s.data(), __s.data() + __s.size(), _M_is_icase());
-	if (__st == 0)
+	auto __mask = _M_traits.lookup_classname(__s.data(),
+						 __s.data() + __s.size(),
+						 _M_is_icase());
+	if (__mask == 0)
 	  __throw_regex_error(regex_constants::error_ctype);
-	_M_class_set |= __st;
+	_M_class_set |= __mask;
       }
 
       void
@@ -260,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       std::set<_CharT>                   _M_char_set;
+      std::set<_StringT>                 _M_equiv_set;
       std::set<pair<_StringT, _StringT>> _M_range_set;
       const _TraitsT&                    _M_traits;
       _CharClassT                        _M_class_set;

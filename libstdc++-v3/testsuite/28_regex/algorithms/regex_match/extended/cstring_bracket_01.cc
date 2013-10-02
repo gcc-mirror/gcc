@@ -56,6 +56,11 @@ test01()
     VERIFY( std::regex_match("pre/a", re) );
     VERIFY( std::regex_match("pre/0", re) );
   }
+  {
+    std::regex  re("pre/[[=a=]]", std::regex::extended);
+    VERIFY( std::regex_match("pre/a", re) );
+    VERIFY( std::regex_match("pre/A", re) );
+  }
 }
 
 int
