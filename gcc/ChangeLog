@@ -1,3 +1,12 @@
+2013-10-02  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc-opts.h: Add 2013 to Copyright years.
+	* config/arc/arc700.md: Likewise.
+	* config/arc/arc-modes.def: Likewise.
+	* config/arc/arc-simd.h: Likewise.
+	* config/arc/t-arc-uClibc: Likewise.
+	* config/arc/t-arc-newlib: Likewise.
+
 2013-10-02  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
