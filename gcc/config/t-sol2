@@ -17,22 +17,21 @@
 # <http://www.gnu.org/licenses/>.
 
 # Solaris-specific format checking and pragmas
-sol2-c.o: $(srcdir)/config/sol2-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h c-family/c-format.h $(C_PRAGMA_H) $(C_COMMON_H) $(CPPLIB_H) \
-  intl.h $(TM_H) $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+sol2-c.o: $(srcdir)/config/sol2-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 # Solaris-specific C++ mangling.
-sol2-cxx.o: $(srcdir)/config/sol2-cxx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h cp/cp-tree.h $(TM_H) $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+sol2-cxx.o: $(srcdir)/config/sol2-cxx.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 # Corresponding stub routines.
-sol2-stubs.o: $(srcdir)/config/sol2-stubs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h $(TM_H) $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+sol2-stubs.o: $(srcdir)/config/sol2-stubs.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 # Solaris-specific attributes
-sol2.o: $(srcdir)/config/sol2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h output.h $(TM_H) $(TARGET_H) $(TM_P_H) $(GGC_H) $(HASH_TABLE_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+sol2.o: $(srcdir)/config/sol2.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

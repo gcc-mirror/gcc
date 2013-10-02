@@ -18,19 +18,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-sparc.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(TREE_H) $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h  \
-  insn-codes.h conditions.h output.h $(INSN_ATTR_H) $(FLAGS_H) \
-  $(FUNCTION_H) $(EXCEPT_H) $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
-  $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TM_P_H) debug.h $(TARGET_H) \
-  $(TARGET_DEF_H) $(COMMON_TARGET_H) $(GIMPLE_H) $(TREE_PASS_H) \
-  langhooks.h reload.h $(PARAMS_H) $(DF_H) $(OPTS_H) $(CONTEXT_H) \
-  gt-sparc.h
-
-sparc-c.o: $(srcdir)/config/sparc/sparc-c.c \
-    $(srcdir)/config/sparc/sparc-protos.h \
-    $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) $(FLAGS_H) \
-    $(TM_P_H) coretypes.h $(TM_H) $(TREE_H) \
-    $(C_COMMON_H) $(C_PRAGMA_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/sparc/sparc-c.c
+sparc-c.o: $(srcdir)/config/sparc/sparc-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
