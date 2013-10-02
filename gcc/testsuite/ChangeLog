@@ -1,3 +1,9 @@
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58535
+	* g++.dg/parse/crash65.C: New.
+	* g++.dg/cpp1y/pr58535.C: Likewise.
+
 2013-10-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-11.c: Adjust.

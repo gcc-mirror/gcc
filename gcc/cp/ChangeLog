@@ -1,5 +1,12 @@
 2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58535
+	* parser.c (cp_parser_function_specifier_opt): Upon error about
+	virtual templates don't set ds_virtual.
+	(finish_fully_implicit_template): Reject virtual implicit templates.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58565
 	* semantics.c (potential_constant_expression_1): Handle LABEL_EXPR.
 
