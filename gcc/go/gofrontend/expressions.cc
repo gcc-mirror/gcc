@@ -610,102 +610,57 @@ Expression::get_tree(Translate_context* context)
   return this->do_get_tree(context);
 }
 
-// Return a tree for VAL in TYPE.
-
-tree
-Expression::integer_constant_tree(mpz_t val, tree type)
+// Return a backend expression for VAL.
+Bexpression*
+Expression::backend_numeric_constant_expression(Translate_context* context,
+                                                Numeric_constant* val)
 {
-  if (type == error_mark_node)
-    return error_mark_node;
-  else if (TREE_CODE(type) == INTEGER_TYPE)
-    return double_int_to_tree(type,
-			      mpz_get_double_int(type, val, true));
-  else if (TREE_CODE(type) == REAL_TYPE)
-    {
-      mpfr_t fval;
-      mpfr_init_set_z(fval, val, GMP_RNDN);
-      tree ret = Expression::float_constant_tree(fval, type);
-      mpfr_clear(fval);
-      return ret;
-    }
-  else if (TREE_CODE(type) == COMPLEX_TYPE)
-    {
-      mpfr_t fval;
-      mpfr_init_set_z(fval, val, GMP_RNDN);
-      tree real = Expression::float_constant_tree(fval, TREE_TYPE(type));
-      mpfr_clear(fval);
-      tree imag = build_real_from_int_cst(TREE_TYPE(type),
-					  integer_zero_node);
-      return build_complex(type, real, imag);
-    }
-  else
-    go_unreachable();
-}
+  Gogo* gogo = context->gogo();
+  Type* type = val->type();
+  if (type == NULL)
+    return gogo->backend()->error_expression();
 
-// Return a tree for VAL in TYPE.
-
-tree
-Expression::float_constant_tree(mpfr_t val, tree type)
-{
-  if (type == error_mark_node)
-    return error_mark_node;
-  else if (TREE_CODE(type) == INTEGER_TYPE)
+  Btype* btype = type->get_backend(gogo);
+  Bexpression* ret;
+  if (type->integer_type() != NULL)
     {
       mpz_t ival;
-      mpz_init(ival);
-      mpfr_get_z(ival, val, GMP_RNDN);
-      tree ret = Expression::integer_constant_tree(ival, type);
+      if (!val->to_int(&ival))
+        {
+          go_assert(saw_errors());
+          return gogo->backend()->error_expression();
+        }
+      ret = gogo->backend()->integer_constant_expression(btype, ival);
       mpz_clear(ival);
-      return ret;
     }
-  else if (TREE_CODE(type) == REAL_TYPE)
+  else if (type->float_type() != NULL)
     {
-      REAL_VALUE_TYPE r1;
-      real_from_mpfr(&r1, val, type, GMP_RNDN);
-      REAL_VALUE_TYPE r2;
-      real_convert(&r2, TYPE_MODE(type), &r1);
-      return build_real(type, r2);
+      mpfr_t fval;
+      if (!val->to_float(&fval))
+        {
+          go_assert(saw_errors());
+          return gogo->backend()->error_expression();
+        }
+      ret = gogo->backend()->float_constant_expression(btype, fval);
+      mpfr_clear(fval);
     }
-  else if (TREE_CODE(type) == COMPLEX_TYPE)
+  else if (type->complex_type() != NULL)
     {
-      REAL_VALUE_TYPE r1;
-      real_from_mpfr(&r1, val, TREE_TYPE(type), GMP_RNDN);
-      REAL_VALUE_TYPE r2;
-      real_convert(&r2, TYPE_MODE(TREE_TYPE(type)), &r1);
-      tree imag = build_real_from_int_cst(TREE_TYPE(type),
-					  integer_zero_node);
-      return build_complex(type, build_real(TREE_TYPE(type), r2), imag);
+      mpfr_t real;
+      mpfr_t imag;
+      if (!val->to_complex(&real, &imag))
+        {
+          go_assert(saw_errors());
+          return gogo->backend()->error_expression();
+        }
+      ret = gogo->backend()->complex_constant_expression(btype, real, imag);
+      mpfr_clear(real);
+      mpfr_clear(imag);
     }
   else
     go_unreachable();
-}
 
-// Return a tree for REAL/IMAG in TYPE.
-
-tree
-Expression::complex_constant_tree(mpfr_t real, mpfr_t imag, tree type)
-{
-  if (type == error_mark_node)
-    return error_mark_node;
-  else if (TREE_CODE(type) == INTEGER_TYPE || TREE_CODE(type) == REAL_TYPE)
-    return Expression::float_constant_tree(real, type);
-  else if (TREE_CODE(type) == COMPLEX_TYPE)
-    {
-      REAL_VALUE_TYPE r1;
-      real_from_mpfr(&r1, real, TREE_TYPE(type), GMP_RNDN);
-      REAL_VALUE_TYPE r2;
-      real_convert(&r2, TYPE_MODE(TREE_TYPE(type)), &r1);
-
-      REAL_VALUE_TYPE r3;
-      real_from_mpfr(&r3, imag, TREE_TYPE(type), GMP_RNDN);
-      REAL_VALUE_TYPE r4;
-      real_convert(&r4, TYPE_MODE(TREE_TYPE(type)), &r3);
-
-      return build_complex(type, build_real(TREE_TYPE(type), r2),
-			   build_real(TREE_TYPE(type), r4));
-    }
-  else
-    go_unreachable();
+  return ret;
 }
 
 // Return a tree which evaluates to true if VAL, of arbitrary integer
@@ -1998,21 +1953,18 @@ Integer_expression::do_check_types(Gogo*)
 tree
 Integer_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
-  tree type;
+  Type* resolved_type = NULL;
   if (this->type_ != NULL && !this->type_->is_abstract())
-    type = type_to_tree(this->type_->get_backend(gogo));
+    resolved_type = this->type_;
   else if (this->type_ != NULL && this->type_->float_type() != NULL)
     {
       // We are converting to an abstract floating point type.
-      Type* ftype = Type::lookup_float_type("float64");
-      type = type_to_tree(ftype->get_backend(gogo));
+      resolved_type = Type::lookup_float_type("float64");
     }
   else if (this->type_ != NULL && this->type_->complex_type() != NULL)
     {
       // We are converting to an abstract complex type.
-      Type* ctype = Type::lookup_complex_type("complex128");
-      type = type_to_tree(ctype->get_backend(gogo));
+      resolved_type = Type::lookup_complex_type("complex128");
     }
   else
     {
@@ -2023,16 +1975,23 @@ Integer_expression::do_get_tree(Translate_context* context)
       int bits = mpz_sizeinbase(this->val_, 2);
       Type* int_type = Type::lookup_integer_type("int");
       if (bits < int_type->integer_type()->bits())
-	type = type_to_tree(int_type->get_backend(gogo));
+	resolved_type = int_type;
       else if (bits < 64)
-	{
-	  Type* t = Type::lookup_integer_type("int64");
-	  type = type_to_tree(t->get_backend(gogo));
-	}
+        resolved_type = Type::lookup_integer_type("int64");
       else
-	type = long_long_integer_type_node;
+        {
+          if (!saw_errors())
+            error_at(this->location(),
+                     "unknown type for large integer constant");
+          Bexpression* ret = context->gogo()->backend()->error_expression();
+          return expr_to_tree(ret);
+        }
     }
-  return Expression::integer_constant_tree(this->val_, type);
+  Numeric_constant nc;
+  nc.set_int(resolved_type, this->val_);
+  Bexpression* ret =
+      Expression::backend_numeric_constant_expression(context, &nc);
+  return expr_to_tree(ret);
 }
 
 // Write VAL to export data.
@@ -2286,24 +2245,32 @@ Float_expression::do_check_types(Gogo*)
 tree
 Float_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
-  tree type;
+  Type* resolved_type;
   if (this->type_ != NULL && !this->type_->is_abstract())
-    type = type_to_tree(this->type_->get_backend(gogo));
+    resolved_type = this->type_;
   else if (this->type_ != NULL && this->type_->integer_type() != NULL)
     {
       // We have an abstract integer type.  We just hope for the best.
-      type = type_to_tree(Type::lookup_integer_type("int")->get_backend(gogo));
+      resolved_type = Type::lookup_integer_type("int");
+    }
+  else if (this->type_ != NULL && this->type_->complex_type() != NULL)
+    {
+      // We are converting to an abstract complex type.
+      resolved_type = Type::lookup_complex_type("complex128");
     }
   else
     {
       // If we still have an abstract type here, then this is being
       // used in a constant expression which didn't get reduced.  We
       // just use float64 and hope for the best.
-      Type* ft = Type::lookup_float_type("float64");
-      type = type_to_tree(ft->get_backend(gogo));
+      resolved_type = Type::lookup_float_type("float64");
     }
-  return Expression::float_constant_tree(this->val_, type);
+
+  Numeric_constant nc;
+  nc.set_float(resolved_type, this->val_);
+  Bexpression* ret =
+      Expression::backend_numeric_constant_expression(context, &nc);
+  return expr_to_tree(ret);
 }
 
 // Write a floating point number to a string dump.
@@ -2463,19 +2430,32 @@ Complex_expression::do_check_types(Gogo*)
 tree
 Complex_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
-  tree type;
+  Type* resolved_type;
   if (this->type_ != NULL && !this->type_->is_abstract())
-    type = type_to_tree(this->type_->get_backend(gogo));
+    resolved_type = this->type_;
+  else if (this->type_ != NULL && this->type_->integer_type() != NULL)
+    {
+      // We are converting to an abstract integer type.
+      resolved_type = Type::lookup_integer_type("int");
+    }
+  else if (this->type_ != NULL && this->type_->float_type() != NULL)
+    {
+      // We are converting to an abstract float type.
+      resolved_type = Type::lookup_float_type("float64");
+    }
   else
     {
       // If we still have an abstract type here, this this is being
       // used in a constant expression which didn't get reduced.  We
       // just use complex128 and hope for the best.
-      Type* ct = Type::lookup_complex_type("complex128");
-      type = type_to_tree(ct->get_backend(gogo));
+      resolved_type = Type::lookup_complex_type("complex128");
     }
-  return Expression::complex_constant_tree(this->real_, this->imag_, type);
+
+  Numeric_constant nc;
+  nc.set_complex(resolved_type, this->real_, this->imag_);
+  Bexpression* ret =
+      Expression::backend_numeric_constant_expression(context, &nc);
+  return expr_to_tree(ret);
 }
 
 // Write REAL/IMAG to export data.
