@@ -28,6 +28,6 @@ void foo (int * __restrict__ ia,
   */
 }
 
-/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" } } */
+/* { dg-final { scan-tree-dump-times "distributed: split to 1 loops and 1 library calls" 1 "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated memset zero" 1 "ldist" } } */
 /* { dg-final { cleanup-tree-dump "ldist" } } */

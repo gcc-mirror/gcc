@@ -1,3 +1,11 @@
+2013-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-11.c: Adjust.
+	* gcc.dg/tree-ssa/ldist-17.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-23.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Likewise.
+	* gfortran.dg/ldist-pr45199.f: Likewise.
+
 2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58565
