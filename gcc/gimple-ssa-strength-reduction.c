@@ -379,6 +379,7 @@ static bool address_arithmetic_p;
 /* Forward function declarations.  */
 static slsr_cand_t base_cand_from_table (tree);
 static tree introduce_cast_before_cand (slsr_cand_t, tree, tree);
+static bool legal_cast_p_1 (tree, tree);
 
 /* Produce a pointer to the IDX'th candidate in the candidate vector.  */
 
@@ -768,6 +769,14 @@ backtrace_base_for_ref (tree *pbase)
   slsr_cand_t base_cand;
 
   STRIP_NOPS (base_in);
+
+  /* Strip off widening conversion(s) to handle cases where
+     e.g. 'B' is widened from an 'int' in order to calculate
+     a 64-bit address.  */
+  if (CONVERT_EXPR_P (base_in)
+      && legal_cast_p_1 (base_in, TREE_OPERAND (base_in, 0)))
+    base_in = get_unwidened (base_in, NULL_TREE);
+
   if (TREE_CODE (base_in) != SSA_NAME)
     return tree_to_double_int (integer_zero_node);
 
