@@ -795,7 +795,7 @@ backtrace_base_for_ref (tree *pbase)
       else if (base_cand->kind == CAND_ADD
 	       && TREE_CODE (base_cand->stride) == INTEGER_CST
 	       && integer_onep (base_cand->stride))
-        {
+	{
 	  /* X = B + (i * S), S is integer one.  */
 	  *pbase = base_cand->base_expr;
 	  return base_cand->index;
