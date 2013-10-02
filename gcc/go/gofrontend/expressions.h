@@ -652,17 +652,10 @@ class Expression
 		  Type* left_type, tree left_tree, Type* right_type,
 		  tree right_tree, Location);
 
-  // Return a tree for the multi-precision integer VAL in TYPE.
-  static tree
-  integer_constant_tree(mpz_t val, tree type);
-
-  // Return a tree for the floating point value VAL in TYPE.
-  static tree
-  float_constant_tree(mpfr_t val, tree type);
-
-  // Return a tree for the complex value REAL/IMAG in TYPE.
-  static tree
-  complex_constant_tree(mpfr_t real, mpfr_t imag, tree type);
+  // Return the backend expression for the numeric constant VAL.
+  static Bexpression*
+  backend_numeric_constant_expression(Translate_context*,
+                                      Numeric_constant* val);
 
   // Export the expression.  This is only used for constants.  It will
   // be used for things like values of named constants and sizes of
