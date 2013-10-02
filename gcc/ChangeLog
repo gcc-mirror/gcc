@@ -1,3 +1,26 @@
+2013-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Include new .h files.  Move prototypes.
+	* tree-cfgcleanup.h: New file.  Add prototypes from tree-flow.h.
+	* tree-dfa.h: New File.  Add prototypes from tree-flow.h.
+	(get_addr_base_and_unit_offset_1) Move from tree-flow-inline.h.
+	* tree-pretty-print.h: Add prototypes from tree-flow.h.
+	* tree-into-ssa.h: New File.  Add prototypes from tree-flow.h.
+	({debug|dump}*): Move debugging prototypes out of tree-into-ssa.c.
+	* tree-into-ssa.c ({debug|dump}*): Move prototypes to header file.
+	* tree.h (get_ref_base_and_extent): Move prototype out.
+	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): Move to 
+	tree-dfa.h.
+	* gimple-low.h: New File.  Add prototypes from tree-flow.h.
+	* gimple-low.c (try_catch_may_fallthru, block_may_fallthru): Move to...
+	* tree.c (try_catch_may_fallthru, block_may_fallthru): Here.
+	* tree-scalar-evolution.c: Include tree.h.
+	* sese.c: Include tree.h.
+	* dumpfile.c: Move gimple-pretty-print.h include after tree.h.
+	* dwarf2out.c: Include tree-dfa.h.
+	* tree-chrec.c: Include tree.h.
+	* tree-data-ref.c: Include tree.h.
+
 2013-10-02  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gimple-ssa-strength-reduction.c (backtrace_base_for_ref):
