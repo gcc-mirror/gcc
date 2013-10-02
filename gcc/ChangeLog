@@ -1,3 +1,12 @@
+2013-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gimple-ssa-strength-reduction.c (legal_cast_p_1): Forward
+	declaration.
+	(backtrace_base_for_ref): Call get_unwidened with 'base_in' if
+	'base_in' represent a conversion and legal_cast_p_1 holds; set
+	'base_in' with the returned value from get_unwidened.
+
 2013-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_legitimize_reload_address): Explain why
