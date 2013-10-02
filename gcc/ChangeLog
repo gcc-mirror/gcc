@@ -1,3 +1,17 @@
+2013-10-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/t-sol2 (sol2-c.o): Remove header dependencies.
+	Use $(COMPILE) and $(POSTCOMPILE).
+	(sol2-cxx.o): Likewise.
+	(sol2-stubs.o): Likewise.
+	(sol2.o): Likewise.
+	* config/x-solaris (host-solaris.o): Likewise.
+
+	* config/sparc/t-sparc (sparc.o): Remove.
+	(sparc-c.o): Remove header dependencies.
+	Use $(COMPILE) and $(POSTCOMPILE).
+	* config/sparc/x-sparc: Likewise.
+
 2013-10-02  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc-opts.h: Add 2013 to Copyright years.
