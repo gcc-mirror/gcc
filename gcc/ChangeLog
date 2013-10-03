@@ -1,3 +1,7 @@
+2013-10-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.gcc (hppa*64*-*-linux*): Don't add pa/t-linux to tmake_file.
+
 2013-10-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (process_alt_operand): Calculate scratch_p and
