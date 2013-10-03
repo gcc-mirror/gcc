@@ -4028,20 +4028,6 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  enum machine_mode mode,
 			  secondary_reload_info *sri)
 {
-  /* Address expressions of the form PLUS (SP, large_offset) need two
-     scratch registers, one for the constant, and one for holding a
-     copy of SP, since SP cannot be used on the RHS of an add-reg
-     instruction.  */
-  if (mode == DImode
-      && GET_CODE (x) == PLUS
-      && XEXP (x, 0) == stack_pointer_rtx
-      && CONST_INT_P (XEXP (x, 1))
-      && !aarch64_uimm12_shift (INTVAL (XEXP (x, 1))))
-    {
-      sri->icode = CODE_FOR_reload_sp_immediate;
-      return NO_REGS;
-    }
-
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
   if (REG_P (x) && (mode == TFmode || mode == TImode) && mode == GET_MODE (x)

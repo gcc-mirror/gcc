@@ -3955,38 +3955,6 @@
 ;; Reload support
 ;; -------------------------------------------------------------------
 
-;; Reload SP+imm where imm cannot be handled by a single ADD instruction.  
-;; Must load imm into a scratch register and copy SP to the dest reg before
-;; adding, since SP cannot be used as a source register in an ADD
-;; instruction.
-(define_expand "reload_sp_immediate"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "=r")
-		   (match_operand:DI 1 "" ""))
-	     (clobber (match_operand:TI 2 "register_operand" "=&r"))])]
-  ""
-  {
-    rtx sp = XEXP (operands[1], 0);
-    rtx val = XEXP (operands[1], 1);
-    unsigned regno = REGNO (operands[2]);
-    rtx scratch = operands[1];
-    gcc_assert (GET_CODE (operands[1]) == PLUS);
-    gcc_assert (sp == stack_pointer_rtx);
-    gcc_assert (CONST_INT_P (val));
-
-    /* It is possible that one of the registers we got for operands[2]
-       might coincide with that of operands[0] (which is why we made
-       it TImode).  Pick the other one to use as our scratch.  */
-    if (regno == REGNO (operands[0]))
-      regno++;
-    scratch = gen_rtx_REG (DImode, regno);
-
-    emit_move_insn (scratch, val);
-    emit_move_insn (operands[0], sp);
-    emit_insn (gen_adddi3 (operands[0], operands[0], scratch));
-    DONE;
-  }
-)
-
 (define_expand "aarch64_reload_mov<mode>"
   [(set (match_operand:TX 0 "register_operand" "=w")
         (match_operand:TX 1 "register_operand" "w"))
