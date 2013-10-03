@@ -1453,6 +1453,7 @@ process_alt_operands (int only_alternative)
 	  HARD_REG_SET this_alternative_set, this_costly_alternative_set;
 	  bool this_alternative_match_win, this_alternative_win;
 	  bool this_alternative_offmemok;
+	  bool scratch_p;
 	  enum machine_mode mode;
 
 	  opalt_num = nalt * n_operands + nop;
@@ -1858,6 +1859,8 @@ process_alt_operands (int only_alternative)
 	    }
 	  while ((p += len), c);
 
+	  scratch_p = (operand_reg[nop] != NULL_RTX
+		       && lra_former_scratch_p (REGNO (operand_reg[nop])));
 	  /* Record which operands fit this alternative.  */
 	  if (win)
 	    {
@@ -1878,14 +1881,17 @@ process_alt_operands (int only_alternative)
 		    }
 		  else
 		    {
-		      /* Prefer won reg to spilled pseudo under other equal
-			 conditions.  */
-		      if (lra_dump_file != NULL)
-			fprintf
-			  (lra_dump_file,
-			   "            %d Non pseudo reload: reject++\n",
-			   nop);
-		      reject++;
+		      /* Prefer won reg to spilled pseudo under other
+			 equal conditions for possibe inheritance.  */
+		      if (! scratch_p)
+			{
+			  if (lra_dump_file != NULL)
+			    fprintf
+			      (lra_dump_file,
+			       "            %d Non pseudo reload: reject++\n",
+			       nop);
+			  reject++;
+			}
 		      if (in_class_p (operand_reg[nop],
 				      this_costly_alternative, NULL))
 			{
@@ -1904,13 +1910,13 @@ process_alt_operands (int only_alternative)
 		     insns are generated for the scratches.  So it
 		     might cost something but probably less than old
 		     reload pass believes.  */
-		  if (lra_former_scratch_p (REGNO (operand_reg[nop])))
+		  if (scratch_p)
 		    {
 		      if (lra_dump_file != NULL)
 			fprintf (lra_dump_file,
-				 "            %d Scratch win: reject+=3\n",
+				 "            %d Scratch win: reject+=2\n",
 				 nop);
-		      reject += 3;
+		      reject += 2;
 		    }
 		}
 	    }
@@ -2124,7 +2130,7 @@ process_alt_operands (int only_alternative)
 		}
 	    }
 
-	  if (early_clobber_p)
+	  if (early_clobber_p && ! scratch_p)
 	    {
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,

@@ -1,3 +1,12 @@
+2013-10-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (process_alt_operand): Calculate scratch_p and
+	use it.  Use smaller increase for scratch.  Don't increase reject
+	for early clobber scratch.
+	* lra-eliminations.c (eliminate_regs_in_insn): Remove all insns
+	setting eliminated regs except setting fp from hfp.
+	(lra_eliminate): Check lra_insn_recog_data on NULL.
+
 2013-10-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/58587
