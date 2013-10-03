@@ -1,5 +1,13 @@
 2013-10-03  Rong Xu  <xur@google.com>
 
+        * ipa-inline-analysis.c (find_foldable_builtin_expect): Find
+        the candidate of builtin_expect such that we should fix the 
+        size/time estimation.
+        (estimate_function_body_sizes): Do the acutally size/time fix-up
+        for builtin_expect.
+
+2013-10-03  Rong Xu  <xur@google.com>
+
         * predict.c (tree_predict_by_opcode): Get the probability
         for builtin_expect from param builtin_expect_probability.
         * params.def (BUILTIN_EXPECT_PROBABILITY): New parameter.
