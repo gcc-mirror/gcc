@@ -1,3 +1,16 @@
+2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-fp.c: New test for floating point
+	scalar operations when using -mupper-regs-sf and -mupper-regs-df.
+	* gcc.target/powerpc/ppc-target-1.c: Update tests to allow either
+	VSX scalar operations or the traditional floating point form of
+	the instruction.
+	* gcc.target/powerpc/ppc-target-2.c: Likewise.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Likewise.
+	* gcc.target/powerpc/pr72747.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-3.c: Likewise.
+
 2013-10-03  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/58460

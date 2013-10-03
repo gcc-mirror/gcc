@@ -1209,9 +1209,9 @@ BU_VSX_1 (XVRSPIZ,	      "xvrspiz",	CONST,	vsx_btruncv4sf2)
 
 BU_VSX_1 (XSRDPI,	      "xsrdpi",		CONST,	vsx_xsrdpi)
 BU_VSX_1 (XSRDPIC,	      "xsrdpic",	CONST,	vsx_xsrdpic)
-BU_VSX_1 (XSRDPIM,	      "xsrdpim",	CONST,	vsx_floordf2)
-BU_VSX_1 (XSRDPIP,	      "xsrdpip",	CONST,	vsx_ceildf2)
-BU_VSX_1 (XSRDPIZ,	      "xsrdpiz",	CONST,	vsx_btruncdf2)
+BU_VSX_1 (XSRDPIM,	      "xsrdpim",	CONST,	floordf2)
+BU_VSX_1 (XSRDPIP,	      "xsrdpip",	CONST,	ceildf2)
+BU_VSX_1 (XSRDPIZ,	      "xsrdpiz",	CONST,	btruncdf2)
 
 /* VSX predicate functions.  */
 BU_VSX_P (XVCMPEQSP_P,	      "xvcmpeqsp_p",	CONST,	vector_eq_v4sf_p)
