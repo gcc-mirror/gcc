@@ -1,3 +1,9 @@
+2013-10-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* g++.dg/tree-ssa/pr19476-5.C: New file.
+	* g++.dg/tree-ssa/pr19476-1.C: Mention pr19476-5.C.
+
 2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58584
