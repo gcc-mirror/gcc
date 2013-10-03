@@ -43,6 +43,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 _GLIBCXX_WEAK_DEFINITION void
 operator delete(void* ptr) _GLIBCXX_USE_NOEXCEPT
 {
-  if (ptr)
-    std::free(ptr);
+  std::free(ptr);
 }
