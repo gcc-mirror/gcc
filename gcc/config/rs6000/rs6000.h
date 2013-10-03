@@ -617,6 +617,25 @@ extern int rs6000_vector_align[];
 			  || rs6000_cpu == PROCESSOR_PPC8548)
 
 
+/* Whether SF/DF operations are supported on the E500.  */
+#define TARGET_SF_SPE	(TARGET_HARD_FLOAT && TARGET_SINGLE_FLOAT	\
+			 && !TARGET_FPRS)
+
+#define TARGET_DF_SPE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT	\
+			 && !TARGET_FPRS && TARGET_E500_DOUBLE)
+
+/* Whether SF/DF operations are supported by by the normal floating point unit
+   (or the vector/scalar unit).  */
+#define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_FPRS		\
+			 && TARGET_SINGLE_FLOAT)
+
+#define TARGET_DF_FPR	(TARGET_HARD_FLOAT && TARGET_FPRS		\
+			 && TARGET_DOUBLE_FLOAT)
+
+/* Whether SF/DF operations are supported by any hardware.  */
+#define TARGET_SF_INSN	(TARGET_SF_FPR || TARGET_SF_SPE)
+#define TARGET_DF_INSN	(TARGET_DF_FPR || TARGET_DF_SPE)
+
 /* Which machine supports the various reciprocal estimate instructions.  */
 #define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT \
 			 && TARGET_FPRS && TARGET_SINGLE_FLOAT)

@@ -1,3 +1,136 @@
+2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (XSRDPIM): Use floatdf2,
+	ceildf2, btruncdf2, instead of vsx_* name.
+
+	* config/rs6000/vsx.md (vsx_add<mode>3): Change arithmetic
+	iterators to only do V2DF and V4SF here.  Move the DF code to
+	rs6000.md where it is combined with SF mode.  Replace <VSv> with
+	just 'v' since only vector operations are handled with these insns
+	after moving the DF support to rs6000.md.
+	(vsx_sub<mode>3): Likewise.
+	(vsx_mul<mode>3): Likewise.
+	(vsx_div<mode>3): Likewise.
+	(vsx_fre<mode>2): Likewise.
+	(vsx_neg<mode>2): Likewise.
+	(vsx_abs<mode>2): Likewise.
+	(vsx_nabs<mode>2): Likewise.
+	(vsx_smax<mode>3): Likewise.
+	(vsx_smin<mode>3): Likewise.
+	(vsx_sqrt<mode>2): Likewise.
+	(vsx_rsqrte<mode>2): Likewise.
+	(vsx_fms<mode>4): Likewise.
+	(vsx_nfma<mode>4): Likewise.
+	(vsx_copysign<mode>3): Likewise.
+	(vsx_btrunc<mode>2): Likewise.
+	(vsx_floor<mode>2): Likewise.
+	(vsx_ceil<mode>2): Likewise.
+	(vsx_smaxsf3): Delete scalar ops that were moved to rs6000.md.
+	(vsx_sminsf3): Likewise.
+	(vsx_fmadf4): Likewise.
+	(vsx_fmsdf4): Likewise.
+	(vsx_nfmadf4): Likewise.
+	(vsx_nfmsdf4): Likewise.
+	(vsx_cmpdf_internal1): Likewise.
+
+	* config/rs6000/rs6000.h (TARGET_SF_SPE): Define macros to make it
+	simpler to select whether a target has SPE or traditional floating
+	point support in iterators.
+	(TARGET_DF_SPE): Likewise.
+	(TARGET_SF_FPR): Likewise.
+	(TARGET_DF_FPR): Likewise.
+	(TARGET_SF_INSN): Macros to say whether floating point support
+	exists for a given operation for expanders.
+	(TARGET_DF_INSN): Likewise.
+
+	* config/rs6000/rs6000.c (Ftrad): New mode attributes to allow
+	combining of SF/DF mode operations, using both traditional and VSX
+	registers.
+	(Fvsx): Likewise.
+	(Ff): Likewise.
+	(Fv): Likewise.
+	(Fs): Likewise.
+	(Ffre): Likewise.
+	(FFRE): Likewise.
+	(abs<mode>2): Combine SF/DF modes using traditional floating point
+	instructions.  Add support for using the upper DF registers with
+	VSX support, and SF registers with power8-vector support.  Update
+	expanders for operations supported by both the SPE and traditional
+	floating point units.
+	(abs<mode>2_fpr): Likewise.
+	(nabs<mode>2): Likewise.
+	(nabs<mode>2_fpr): Likewise.
+	(neg<mode>2): Likewise.
+	(neg<mode>2_fpr): Likewise.
+	(add<mode>3): Likewise.
+	(add<mode>3_fpr): Likewise.
+	(sub<mode>3): Likewise.
+	(sub<mode>3_fpr): Likewise.
+	(mul<mode>3): Likewise.
+	(mul<mode>3_fpr): Likewise.
+	(div<mode>3): Likewise.
+	(div<mode>3_fpr): Likewise.
+	(sqrt<mode>3): Likewise.
+	(sqrt<mode>3_fpr): Likewise.
+	(fre<Fs>): Likewise.
+	(rsqrt<mode>2): Likewise.
+	(cmp<mode>_fpr): Likewise.
+	(smax<mode>3): Likewise.
+	(smin<mode>3): Likewise.
+	(smax<mode>3_vsx): Likewise.
+	(smin<mode>3_vsx): Likewise.
+	(negsf2): Delete SF operations that are merged with DF.
+	(abssf2): Likewise.
+	(addsf3): Likewise.
+	(subsf3): Likewise.
+	(mulsf3): Likewise.
+	(divsf3): Likewise.
+	(fres): Likewise.
+	(fmasf4_fpr): Likewise.
+	(fmssf4_fpr): Likewise.
+	(nfmasf4_fpr): Likewise.
+	(nfmssf4_fpr): Likewise.
+	(sqrtsf2): Likewise.
+	(rsqrtsf_internal1): Likewise.
+	(smaxsf3): Likewise.
+	(sminsf3): Likewise.
+	(cmpsf_internal1): Likewise.
+	(copysign<mode>3_fcpsgn): Add VSX/power8-vector support.
+	(negdf2): Delete DF operations that are merged with SF.
+	(absdf2): Likewise.
+	(nabsdf2): Likewise.
+	(adddf3): Likewise.
+	(subdf3): Likewise.
+	(muldf3): Likewise.
+	(divdf3): Likewise.
+	(fred): Likewise.
+	(rsqrtdf_internal1): Likewise.
+	(fmadf4_fpr): Likewise.
+	(fmsdf4_fpr): Likewise.
+	(nfmadf4_fpr): Likewise.
+	(nfmsdf4_fpr): Likewise.
+	(sqrtdf2): Likewise.
+	(smaxdf3): Likewise.
+	(smindf3): Likewise.
+	(cmpdf_internal1): Likewise.
+	(lrint<mode>di2): Use TARGET_<MODE>_FPR macro.
+	(btrunc<mode>2): Delete separate expander, and combine with the
+	insn and add VSX instruction support.  Use TARGET_<MODE>_FPR.
+	(btrunc<mode>2_fpr): Likewise.
+	(ceil<mode>2): Likewise.
+	(ceil<mode>2_fpr): Likewise.
+	(floor<mode>2): Likewise.
+	(floor<mode>2_fpr): Likewise.
+	(fma<mode>4_fpr): Combine SF and DF fused multiply/add support.
+	Add support for using the upper registers with VSX and
+	power8-vector.  Move insns to be closer to the define_expands. On
+	VSX systems, prefer the traditional form of FMA over the VSX
+	version, since the traditional form allows the target not to
+	overlap with the inputs.
+	(fms<mode>4_fpr): Likewise.
+	(nfma<mode>4_fpr): Likewise.
+	(nfms<mode>4_fpr): Likewise.
+
 2013-10-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Richard Earnshaw  <richard.earnshaw@arm.com>
 
