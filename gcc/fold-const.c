@@ -16222,7 +16222,15 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 					strict_overflow_p);
 
     case CALL_EXPR:
-      return alloca_call_p (t);
+      {
+	tree fndecl = get_callee_fndecl (t);
+	if (!fndecl) return false;
+	if (flag_delete_null_pointer_checks && !flag_check_new
+	    && DECL_IS_OPERATOR_NEW (fndecl)
+	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	return alloca_call_p (t);
+      }
 
     default:
       break;

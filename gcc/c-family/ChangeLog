@@ -1,3 +1,8 @@
+2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* c.opt (fcheck-new): Move to common.opt.
+
 2013-09-25  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
