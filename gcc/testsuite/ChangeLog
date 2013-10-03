@@ -1,3 +1,8 @@
+2013-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58510
+	* g++.dg/cpp0x/pr58510.C: New test.
+
 2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/19476
