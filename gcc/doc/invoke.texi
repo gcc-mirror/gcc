@@ -9491,6 +9491,11 @@ The known number of iterations is predicted correctly, while
 the unknown number of iterations average to roughly 10.  This means that the
 loop without bounds appears artificially cold relative to the other one.
 
+@item builtin-expect-probability
+Control the probability of the expression having the specified value. This
+parameter takes a percentage (i.e. 0 ... 100) as input.
+The default probability of 90 is obtained empirically.
+
 @item align-threshold
 
 Select fraction of the maximal frequency of executions of a basic block in

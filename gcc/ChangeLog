@@ -1,3 +1,15 @@
+2013-10-03  Rong Xu  <xur@google.com>
+
+        * predict.c (tree_predict_by_opcode): Get the probability
+        for builtin_expect from param builtin_expect_probability.
+        * params.def (BUILTIN_EXPECT_PROBABILITY): New parameter.
+        * predict.def (PRED_BUILTIN_EXPECT_RELAXED): Fix comments.
+        * doc/invoke.texi: Add documentation for builtin-expect-probability.
+        * gcc.target/i386/cold-attribute-2.c: Fix the test by using original
+        probability.
+        * gcc.dg/tree-ssa/ipa-split-5.c: Ditto.
+        * gcc.dg/tree-ssa/ipa-split-6.c: Ditto.
+
 2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/19476

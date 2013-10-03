@@ -2000,11 +2000,12 @@ tree_predict_by_opcode (basic_block bb)
   BITMAP_FREE (visited);
   if (val)
     {
+      int percent = PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY);
+
+      gcc_assert (percent >= 0 && percent <= 100);
       if (integer_zerop (val))
-	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, NOT_TAKEN);
-      else
-	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, TAKEN);
-      return;
+        percent = 100 - percent;
+      predict_edge (then_edge, PRED_BUILTIN_EXPECT, HITRATE (percent));
     }
   /* Try "pointer heuristic."
      A comparison ptr == 0 is predicted as false.
