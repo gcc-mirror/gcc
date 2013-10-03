@@ -1,3 +1,9 @@
+2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* libsupc++/del_op.cc (operator delete): Don't test for 0 before free.
+	* libsupc++/del_opnt.cc (free): Only declare if freestanding.
+	(operator delete): Qualify free with std::.
+
 2013-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Daniel Krugler  <daniel.kruegler@gmail.com>
 
