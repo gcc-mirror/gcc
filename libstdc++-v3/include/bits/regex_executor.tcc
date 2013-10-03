@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (!_M_cur_results[__state._M_subexpr].matched
 	      || _M_cur_results[__state._M_subexpr].first != __current)
 	    {
-	      auto __back = __current;
+	      auto __back = _M_cur_results[__state._M_subexpr].first;
 	      _M_cur_results[__state._M_subexpr].first = __current;
 	      __ret = _M_dfs(__state._M_next);
 	      _M_cur_results[__state._M_subexpr].first = __back;
