@@ -1,3 +1,11 @@
+2013-10-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58587
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Turn off
+	setting -mvsx-timode by default until the underlying problem is
+	fixed.
+	(RS6000_CPU, power7 defaults): Likewise.
+
 2013-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x-linux (host-linux.o): Remove header dependencies.
