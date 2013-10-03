@@ -1,3 +1,38 @@
+2013-10-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* config/arm/aarch-common-protos.h (struct alu_cost_table): New.
+	(struct mult_cost_table): Likewise.
+	(struct mem_cost_table): Likewise.
+	(struct fp_cost_table): Likewise.
+	(struct vector_cost_table): Likewise.
+	(cpu_cost_table): Likewise.
+	* config/arm/arm.opt (mold-rts-costs): New option.
+	(mnew-generic-costs): Likewise.
+	* config/arm/arm.c (generic_extra_costs): New table.
+	(cortexa15_extra_costs): Likewise.
+	(arm_slowmul_tune): Use NULL as new costs.
+	(arm_fastmul_tune): Likewise.
+	(arm_strongarm_tune): Likewise.
+	(arm_xscale_tune): Likewise.
+	(arm_9e_tune): Likewise.
+	(arm_v6t2_tune): Likewise.
+	(arm_cortex_a5_tune): Likewise.
+	(arm_cortex_a9_tune): Likewise.
+	(arm_v6m_tune): Likewise.
+	(arm_fa726te_tune): Likewise.
+	(arm_cortex_a15_tune): Use cortex15_extra_costs.
+	(arm_cortex_tune): Use generict_extra_costs.
+	(shifter_op_p): New function.
+	(arm_unspec_cost): Likewise.
+	(LIBCALL_COST): Define.
+	(arm_new_rtx_costs): New function.
+	(arm_rtx_costs): Use arm_new_rtx_costs when core-specific
+	table is available. Use old costs otherwise unless mnew-generic-costs
+	is specified.
+	* config/arm/arm-protos.h (tune_params): Add insn_extra_cost field.
+	(cpu_cost_table): Declare.
+
 2013-10-03  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/58460

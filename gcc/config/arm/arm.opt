@@ -243,6 +243,14 @@ mrestrict-it
 Target Report Var(arm_restrict_it) Init(2)
 Generate IT blocks appropriate for ARMv8.
 
+mold-rtx-costs
+Target Report Mask(OLD_RTX_COSTS)
+Use the old RTX costing tables (transitional).
+
+mnew-generic-costs
+Target Report Mask(NEW_GENERIC_COSTS)
+Use the new generic RTX cost tables if new core-specific cost table not available (transitional).
+
 mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
