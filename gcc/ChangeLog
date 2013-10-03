@@ -1,3 +1,13 @@
+2013-10-03  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/58460
+	* config/aarch64/aarch64.md (*adds_mul_imm_<mode>)
+	(*subs_mul_imm_<mode>)
+	(*add_<shift>_<mode>, *add_<shift>_si_uxtw,*add_mul_imm_<mode>)
+	(*sub_<shift>_<mode>)
+	(*sub_<shift>_si_uxtw,*sub_mul_imm_<mode>, *sub_mul_imm_si_uxtw):
+	Remove k constraint.
+
 2013-10-03  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_secondary_reload): Remove legacy

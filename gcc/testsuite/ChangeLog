@@ -1,3 +1,8 @@
+2013-10-03  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/58460
+	* gcc.target/aarch64/pr58460.c: New file.
+
 2013-10-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58593
