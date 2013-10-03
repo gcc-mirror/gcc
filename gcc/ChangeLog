@@ -1,5 +1,11 @@
 2013-10-03  Jan Hubicka  <jh@suse.cz>
 
+	* i386.c (ix86_issue_rate): Pentium4, Nocona has issue rate of 2.
+	Core2, Corei7 and Haswell has issue rate of 4.
+	(ix86_adjust_cost): Remove ATOM case; fix core2/corei7/Haswell case.
+
+2013-10-03  Jan Hubicka  <jh@suse.cz>
+
 	* i386.c (ix86_option_override_internal): Do not enable
 	accumulate-outgoing-args when producing unwind info.
 
