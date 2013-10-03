@@ -1,3 +1,7 @@
+2013-10-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.gcc (hppa*64*-*-linux*): Don't add pa/t-linux to tmake_file.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
