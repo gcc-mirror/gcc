@@ -21458,6 +21458,8 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	  alignas_expr =
 	    cp_parser_assignment_expression (parser, /*cast_p=*/false,
 					     /**cp_id_kind=*/NULL);
+	  if (alignas_expr == error_mark_node)
+	    cp_parser_skip_to_end_of_statement (parser);
 	  if (alignas_expr == NULL_TREE
 	      || alignas_expr == error_mark_node)
 	    return alignas_expr;

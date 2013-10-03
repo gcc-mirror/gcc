@@ -1,3 +1,8 @@
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58584
+	* g++.dg/cpp0x/gen-attrs-55.C: New.
+
 2013-10-03  Easwaran Raman  <eraman@google.com>
 
 	PR c++/33911
