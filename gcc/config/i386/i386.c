@@ -3793,27 +3793,10 @@ ix86_option_override_internal (bool main_args_p)
       }
 
   ix86_tune_mask = 1u << ix86_tune;
-  if ((!USE_IX86_FRAME_POINTER
-       || (x86_accumulate_outgoing_args & ix86_tune_mask))
+  if ((x86_accumulate_outgoing_args & ix86_tune_mask)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
-
-  /* ??? Unwind info is not correct around the CFG unless either a frame
-     pointer is present or M_A_O_A is set.  Fixing this requires rewriting
-     unwind info generation to be aware of the CFG and propagating states
-     around edges.  */
-  if ((flag_unwind_tables || flag_asynchronous_unwind_tables
-       || flag_exceptions || flag_non_call_exceptions)
-      && flag_omit_frame_pointer
-      && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
-    {
-      if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
-	warning (0, "unwind tables currently require either a frame pointer "
-		 "or %saccumulate-outgoing-args%s for correctness",
-		 prefix, suffix);
-      target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
-    }
 
   /* If stack probes are required, the space used for large function
      arguments on the stack must also be probed, so enable
