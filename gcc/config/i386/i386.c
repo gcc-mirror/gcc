@@ -24418,23 +24418,25 @@ ix86_issue_rate (void)
     case PROCESSOR_SLM:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
+    case PROCESSOR_PENTIUM4:
+    case PROCESSOR_NOCONA:
       return 2;
 
     case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_PENTIUM4:
-    case PROCESSOR_CORE2:
-    case PROCESSOR_COREI7:
-    case PROCESSOR_HASWELL:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
-    case PROCESSOR_NOCONA:
     case PROCESSOR_GENERIC:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
     case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
       return 3;
+
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
+      return 4;
 
     default:
       return 1;
@@ -24692,9 +24694,14 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
-    case PROCESSOR_ATOM:
     case PROCESSOR_GENERIC:
       memory = get_attr_memory (insn);
+
+      /* Stack engine allows to execute push&pop instructions in parall.  */
+      if (((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	   && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	  && (ix86_tune != PROCESSOR_ATHLON && ix86_tune != PROCESSOR_K8))
+	return 0;
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -24717,6 +24724,29 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
 	  if (cost >= loadcost)
 	    cost -= loadcost;
+	  else
+	    cost = 0;
+	}
+      break;
+
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
+      memory = get_attr_memory (insn);
+
+      /* Stack engine allows to execute push&pop instructions in parall.  */
+      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	return 0;
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependent (dep_insn, insn))
+	{
+	  if (cost >= 4)
+	    cost -= 4;
 	  else
 	    cost = 0;
 	}
