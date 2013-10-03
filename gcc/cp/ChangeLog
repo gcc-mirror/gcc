@@ -1,3 +1,12 @@
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58584
+	* decl2.c (save_template_attributes): Handle error_mark_node as
+	*attr_p argument.
+	(cp_check_const_attributes): Likewise for attributes.
+	* parser.c (cp_parser_std_attribute_spec): When alignas_expr is an
+	error_mark_node call cp_parser_skip_to_end_of_statement.
+
 2013-10-03  Easwaran Raman  <eraman@google.com>
 
 	PR c++/33911
