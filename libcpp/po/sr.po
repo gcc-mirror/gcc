@@ -1,13 +1,13 @@
 # Serbian translation of cpplib.
 # Copyright (C) 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012.
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012, 2013.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.7.0\n"
+"Project-Id-Version: cpplib-4.8.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2013-02-24 01:05+0000\n"
-"PO-Revision-Date: 2012-06-13 11:32+0200\n"
+"POT-Creation-Date: 2013-03-15 17:42+0000\n"
+"PO-Revision-Date: 2013-10-03 08:53+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <gnu@prevod.org>\n"
 "Language: sr\n"
@@ -340,14 +340,13 @@ msgid "current file is older than %s"
 msgstr "текућа датотека је старија од %s"
 
 #: directives.c:1653
-#, fuzzy, c-format
-#| msgid "invalid #pragma GCC poison directive"
+#, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
-msgstr "неисправна „#pragma GCC poison“ директива"
+msgstr "неисправна директива „#pragma GCC %s“"
 
 #: directives.c:1847
 msgid "_Pragma takes a parenthesized string literal"
-msgstr "_Прагма узима словност ниске затворену заградом"
+msgstr "_Прагма узима словност ниске затворене заградом"
 
 #: directives.c:1968
 msgid "#else without #if"
@@ -398,7 +397,7 @@ msgstr "предикат мора бити одредник"
 msgid "\"%s\" re-asserted"
 msgstr "„%s“ је поново утврђен"
 
-#: directives.c:2566
+#: directives.c:2567
 #, c-format
 msgid "unterminated #%s"
 msgstr "неокончано #%s"
@@ -570,39 +569,39 @@ msgstr "оператор зареза у операнду „#if“"
 msgid "division by zero in #if"
 msgstr "дељење нулом у „#if“"
 
-#: files.c:504
+#: files.c:505
 msgid "NULL directory in find_file"
 msgstr "НИШТАВАН директоријум у пронађи_датотеку"
 
-#: files.c:542
+#: files.c:553
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "једна или више ПЦХ датотека је пронађено, али су неисправне"
 
-#: files.c:545
+#: files.c:556
 msgid "use -Winvalid-pch for more information"
 msgstr "користите „-Winvalid-pch“ за више података"
 
-#: files.c:643
+#: files.c:660
 #, c-format
 msgid "%s is a block device"
 msgstr "%s је блок уређај"
 
-#: files.c:660
+#: files.c:677
 #, c-format
 msgid "%s is too large"
 msgstr "%s је превелико"
 
-#: files.c:700
+#: files.c:717
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s је краће од очекиваног"
 
-#: files.c:935
+#: files.c:953
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "нема путање укључивања у којој потражити „%s“"
 
-#: files.c:1363
+#: files.c:1381
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Више чувара укључивања може бити корисно за:\n"
 
@@ -710,7 +709,7 @@ msgstr "неокончана сирова ниска"
 
 #: lex.c:1573 lex.c:1706
 msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
-msgstr ""
+msgstr "неисправан суфикс у словности; Ц++11 захтева размак између словности и одредника"
 
 #: lex.c:1684
 msgid "null character(s) preserved in literal"
@@ -863,36 +862,36 @@ msgstr "макро аргумент „%s“ ће бити нискован у �
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "неисправна врста хеша %d у цпп_макро_одредници"
 
-#: pch.c:87 pch.c:335 pch.c:347 pch.c:365 pch.c:371 pch.c:380 pch.c:387
+#: pch.c:87 pch.c:345 pch.c:359 pch.c:377 pch.c:383 pch.c:392 pch.c:399
 msgid "while writing precompiled header"
 msgstr "за време уписивања претходно преведеног заглавља"
 
-#: pch.c:607
+#: pch.c:619
 #, c-format
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s: није употребљено зато што је „%.*s“ отровано"
 
-#: pch.c:629
+#: pch.c:641
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "%s: није употребљено зато што „%.*s“ није одређено"
 
-#: pch.c:641
+#: pch.c:653
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr "%s: није употребљено зато што „%.*s“ одређено као „%s“ није „%.*s“"
 
-#: pch.c:682
+#: pch.c:694
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "%s: није употребљено зато што је „%s“ одређено"
 
-#: pch.c:702
+#: pch.c:714
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: није употребљено зато што „__COUNTER__“ није исправно"
 
-#: pch.c:711 pch.c:886
+#: pch.c:723 pch.c:898
 msgid "while reading precompiled header"
 msgstr "за време читања претходно преведеног заглавља"
 
@@ -904,42 +903,3 @@ msgstr "откривено је дубачење за време ширења м
 #: traditional.c:968
 msgid "syntax error in macro parameter list"
 msgstr "садржајна грешка у списку параметара макроа"
-
-#~ msgid "too many decimal points in number"
-#~ msgstr "превише децималних тачака у броју"
-
-#~ msgid "invalid digit \"%c\" in binary constant"
-#~ msgstr "неисправна цифра „%c“ у бинарној константи"
-
-#~ msgid "invalid digit \"%c\" in octal constant"
-#~ msgstr "неисправна цифра „%c“ у окталној константи"
-
-#~ msgid "no digits in hexadecimal floating constant"
-#~ msgstr "нема цифара у хексадецималној покретној константи"
-
-#~ msgid "exponent has no digits"
-#~ msgstr "изложилац нема цифру"
-
-#~ msgid "hexadecimal floating constants require an exponent"
-#~ msgstr "хексадецималне покретне константе захтевају изложилац"
-
-#~ msgid "missing binary operator before token \"%s\""
-#~ msgstr "недостаје бинарни оператор пре симбола „%s“"
-
-#~ msgid "token \"%s\" is not valid in preprocessor expressions"
-#~ msgstr "симбол „%s“ није исправан у изразима претпроцесора"
-
-#~ msgid "missing expression between '(' and ')'"
-#~ msgstr "недостаје израз између ( и )"
-
-#~ msgid "%s with no expression"
-#~ msgstr "%s без израза"
-
-#~ msgid "operator '%s' has no right operand"
-#~ msgstr "оператор „%s“ нема десни операнд"
-
-#~ msgid "operator '%s' has no left operand"
-#~ msgstr "оператор „%s“ нема леви операнд"
-
-#~ msgid " ':' without preceding '?'"
-#~ msgstr " „:“ без предводећег „?“"
