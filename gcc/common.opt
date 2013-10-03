@@ -913,6 +913,10 @@ fcheck-data-deps
 Common Report Var(flag_check_data_deps)
 Compare the results of several data dependence analyzers.
 
+fcheck-new
+Common Var(flag_check_new)
+Check the return value of new in C++
+
 fcombine-stack-adjustments
 Common Report Var(flag_combine_stack_adjustments) Optimization
 Looks for opportunities to reduce stack adjustments and stack references.

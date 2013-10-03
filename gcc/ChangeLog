@@ -1,3 +1,13 @@
+2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* common.opt (fcheck-new): Moved from c.opt. Make it 'Common'.
+	* calls.c (alloca_call_p): Use get_callee_fndecl.
+	* fold-const.c (tree_expr_nonzero_warnv_p): Handle operator new.
+	* tree-vrp.c (gimple_stmt_nonzero_warnv_p, stmt_interesting_for_vrp):
+	Likewise.
+	(vrp_visit_stmt): Remove duplicated code.
+
 2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (XSRDPIM): Use floatdf2,

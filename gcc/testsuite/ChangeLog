@@ -1,3 +1,11 @@
+2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* g++.dg/tree-ssa/pr19476-1.C: New file.
+	* g++.dg/tree-ssa/pr19476-2.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-3.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-4.C: Likewise.
+
 2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-fp.c: New test for floating point
