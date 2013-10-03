@@ -1,3 +1,11 @@
+2013-10-02  Teresa Johnson  <tejohnson@google.com>
+
+	* predict.c (probably_never_executed): New function.
+	(probably_never_executed_bb_p): Invoke probably_never_executed.
+	(probably_never_executed_edge_p): Ditto.
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Treat profile insanities conservatively.
+
 2013-10-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.gcc (hppa*64*-*-linux*): Don't add pa/t-linux to tmake_file.

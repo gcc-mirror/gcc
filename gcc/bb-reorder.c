@@ -1564,7 +1564,23 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB (bb)
     {
+      bool cold_bb = false;
+
       if (probably_never_executed_bb_p (cfun, bb))
+        {
+          /* Handle profile insanities created by upstream optimizations
+             by also checking the incoming edge weights. If there is a non-cold
+             incoming edge, conservatively prevent this block from being split
+             into the cold section.  */
+          cold_bb = true;
+          FOR_EACH_EDGE (e, ei, bb->preds)
+            if (!probably_never_executed_edge_p (cfun, e))
+              {
+                cold_bb = false;
+                break;
+              }
+        }
+      if (cold_bb)
         {
           BB_SET_PARTITION (bb, BB_COLD_PARTITION);
           cold_bb_count++;
