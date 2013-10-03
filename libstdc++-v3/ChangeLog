@@ -1,3 +1,8 @@
+2013-10-03  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_executor.tcc (_DFSExecutor<>::_M_dfs): Fix wrong
+	backup variable initialization.
+
 2013-10-03  John Woolverton  <jdwoolverton@gmail.com>
 
 	PR libstdc++/58604
