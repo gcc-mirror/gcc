@@ -1,3 +1,8 @@
+2013-10-03  John Woolverton  <jdwoolverton@gmail.com>
+
+	PR libstdc++/58604
+	* include/std/vector: Fix garbled line in HP Copyright.
+
 2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* libsupc++/del_op.cc (operator delete): Don't test for 0 before free.
