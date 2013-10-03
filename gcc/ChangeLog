@@ -1,3 +1,9 @@
+2013-10-03  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_secondary_reload): Remove legacy
+	code.
+	* config/aarch64/aarch64.md (reload_sp_immediate): Likewise.
+
 2013-10-02  Teresa Johnson  <tejohnson@google.com>
 
 	* predict.c (probably_never_executed): New function.
