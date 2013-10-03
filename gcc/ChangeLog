@@ -1,3 +1,9 @@
+2013-10-03  Wei Mi  <wmi@google.com>
+
+	* lra-constraints.c (insert_move_for_subreg): New function
+	extracted from simplify_operand_subreg.
+	(simplify_operand_subreg): Add reload for paradoxical subreg.
+
 2013-10-03  Rong Xu  <xur@google.com>
 
         * ipa-inline-analysis.c (find_foldable_builtin_expect): Find
