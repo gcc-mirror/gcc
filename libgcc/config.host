@@ -446,6 +446,7 @@ h8300-*-elf*)
 	;;
 hppa*64*-*-linux*)
 	tmake_file="$tmake_file pa/t-linux pa/t-linux64"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	;;
 hppa*-*-linux*)
 	tmake_file="$tmake_file pa/t-linux t-slibgcc-libgcc"
@@ -455,6 +456,7 @@ hppa*-*-linux*)
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	md_unwind_header=pa/linux-unwind.h
 	;;
 hppa[12]*-*-hpux10*)
