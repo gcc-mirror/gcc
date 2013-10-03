@@ -1,3 +1,8 @@
+2013-10-03  Easwaran Raman  <eraman@google.com>
+
+	PR c++/33911
+	* g++.dg/ext/attribute47.C: New.
+
 2013-10-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58510

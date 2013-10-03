@@ -1,3 +1,9 @@
+2013-10-03  Easwaran Raman  <eraman@google.com>
+
+	PR c++/33911
+	* parser.c (cp_parser_init_declarator): Do not drop attributes
+	of template member functions.
+
 2013-10-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58510
