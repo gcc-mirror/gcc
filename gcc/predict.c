@@ -226,23 +226,26 @@ maybe_hot_edge_p (edge e)
 }
 
 
-/* Return true in case BB is probably never executed.  */
 
-bool
-probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
+/* Return true if profile COUNT and FREQUENCY, or function FUN static
+   node frequency reflects never being executed.  */
+   
+static bool
+probably_never_executed (struct function *fun,
+                         gcov_type count, int frequency)
 {
   gcc_checking_assert (fun);
   if (profile_status_for_function (fun) == PROFILE_READ)
     {
-      if ((bb->count * 4 + profile_info->runs / 2) / profile_info->runs > 0)
+      if ((count * 4 + profile_info->runs / 2) / profile_info->runs > 0)
 	return false;
-      if (!bb->frequency)
+      if (!frequency)
 	return true;
       if (!ENTRY_BLOCK_PTR->frequency)
 	return false;
       if (ENTRY_BLOCK_PTR->count && ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE)
 	{
-	  return (RDIV (bb->frequency * ENTRY_BLOCK_PTR->count,
+	  return (RDIV (frequency * ENTRY_BLOCK_PTR->count,
 		        ENTRY_BLOCK_PTR->frequency)
 		  < REG_BR_PROB_BASE / 4);
 	}
@@ -256,19 +259,21 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 }
 
 
+/* Return true in case BB is probably never executed.  */
+
+bool
+probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
+{
+  return probably_never_executed (fun, bb->count, bb->frequency);
+}
+
+
 /* Return true in case edge E is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
 {
-  gcc_checking_assert (fun);
-  if (profile_info && flag_branch_probabilities)
-    return ((e->count + profile_info->runs / 2) / profile_info->runs) == 0;
-  if ((!profile_info || !flag_branch_probabilities)
-      && (cgraph_get_node (fun->decl)->frequency
-	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
-    return true;
-  return false;
+  return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
 /* Return true if NODE should be optimized for size.  */
