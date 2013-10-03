@@ -1158,6 +1158,30 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
   return true;
 }
 
+/* Insert move insn in simplify_operand_subreg. BEFORE returns
+   the insn to be inserted before curr insn. AFTER returns the
+   the insn to be inserted after curr insn.  ORIGREG and NEWREG
+   are the original reg and new reg for reload.  */
+static void
+insert_move_for_subreg (rtx *before, rtx *after, rtx origreg, rtx newreg)
+{
+  if (before)
+    {
+      push_to_sequence (*before);
+      lra_emit_move (newreg, origreg);
+      *before = get_insns ();
+      end_sequence ();
+    }
+  if (after)
+    {
+      start_sequence ();
+      lra_emit_move (origreg, newreg);
+      emit_insn (*after);
+      *after = get_insns ();
+      end_sequence ();
+    }
+}
+
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
    any reload was generated.  */
@@ -1169,6 +1193,8 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
   enum machine_mode mode;
   rtx reg, new_reg;
   rtx operand = *curr_id->operand_loc[nop];
+  enum reg_class regclass;
+  enum op_type type;
 
   before = after = NULL_RTX;
 
@@ -1177,6 +1203,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 
   mode = GET_MODE (operand);
   reg = SUBREG_REG (operand);
+  type = curr_static_id->operand[nop].type;
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
      be slow.  So take this into consideration.  We should not worry
@@ -1221,7 +1248,6 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
        && ! LRA_SUBREG_P (operand))
       || CONSTANT_P (reg) || GET_CODE (reg) == PLUS || MEM_P (reg))
     {
-      enum op_type type = curr_static_id->operand[nop].type;
       /* The class will be defined later in curr_insn_transform.  */
       enum reg_class rclass
 	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
@@ -1229,27 +1255,83 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
 			  rclass, "subreg reg", &new_reg))
 	{
+	  bool insert_before, insert_after;
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
-	  if (type != OP_OUT
-	      || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode))
-	    {
-	      push_to_sequence (before);
-	      lra_emit_move (new_reg, reg);
-	      before = get_insns ();
-	      end_sequence ();
-	    }
-	  if (type != OP_IN)
-	    {
-	      start_sequence ();
-	      lra_emit_move (reg, new_reg);
-	      emit_insn (after);
-	      after = get_insns ();
-	      end_sequence ();
-	    }
+
+	  insert_before = (type != OP_OUT
+			   || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode));
+	  insert_after = (type != OP_IN);
+	  insert_move_for_subreg (insert_before ? &before : NULL,
+				  insert_after ? &after : NULL,
+				  reg, new_reg);
 	}
       SUBREG_REG (operand) = new_reg;
       lra_process_new_insns (curr_insn, before, after,
 			     "Inserting subreg reload");
+      return true;
+    }
+  /* Force a reload for a paradoxical subreg. For paradoxical subreg,
+     IRA allocates hardreg to the inner pseudo reg according to its mode
+     instead of the outermode, so the size of the hardreg may not be enough
+     to contain the outermode operand, in that case we may need to insert
+     reload for the reg. For the following two types of paradoxical subreg,
+     we need to insert reload:
+     1. If the op_type is OP_IN, and the hardreg could not be paired with
+        other hardreg to contain the outermode operand
+        (checked by in_hard_reg_set_p), we need to insert the reload.
+     2. If the op_type is OP_OUT or OP_INOUT.
+
+     Here is a paradoxical subreg example showing how the reload is generated:
+
+     (insn 5 4 7 2 (set (reg:TI 106 [ __comp ])
+        (subreg:TI (reg:DI 107 [ __comp ]) 0)) {*movti_internal_rex64}
+
+     In IRA, reg107 is allocated to a DImode hardreg. We use x86-64 as example
+     here, if reg107 is assigned to hardreg R15, because R15 is the last
+     hardreg, compiler cannot find another hardreg to pair with R15 to
+     contain TImode data. So we insert a TImode reload reg180 for it.
+     After reload is inserted:
+
+     (insn 283 0 0 (set (subreg:DI (reg:TI 180 [orig:107 __comp ] [107]) 0)
+        (reg:DI 107 [ __comp ])) -1
+     (insn 5 4 7 2 (set (reg:TI 106 [ __comp ])
+        (subreg:TI (reg:TI 180 [orig:107 __comp ] [107]) 0)) {*movti_internal_rex64}
+
+     Two reload hard registers will be allocated to reg180 to save TImode data
+     in LRA_assign.  */
+  else if (REG_P (reg)
+	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
+	   && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+	       < hard_regno_nregs[hard_regno][mode])
+	   && (regclass = lra_get_allocno_class (REGNO (reg)))
+	   && (type != OP_IN
+	       || !in_hard_reg_set_p (reg_class_contents[regclass],
+				      mode, hard_regno)))
+    {
+      /* The class will be defined later in curr_insn_transform.  */
+      enum reg_class rclass
+	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
+
+      if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
+                          rclass, "paradoxical subreg", &new_reg))
+        {
+	  rtx subreg;
+	  bool insert_before, insert_after;
+
+	  PUT_MODE (new_reg, mode);
+          subreg = simplify_gen_subreg (GET_MODE (reg), new_reg, mode, 0);
+	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
+
+	  insert_before = (type != OP_OUT);
+	  insert_after = (type != OP_IN);
+	  insert_move_for_subreg (insert_before ? &before : NULL,
+				  insert_after ? &after : NULL,
+				  reg, subreg);
+	}
+      SUBREG_REG (operand) = new_reg;
+      lra_process_new_insns (curr_insn, before, after,
+                             "Inserting paradoxical subreg reload");
       return true;
     }
   return false;
