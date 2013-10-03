@@ -2257,6 +2257,77 @@ array_index_predicate (struct inline_summary *info,
   return p;
 }
 
+/* For a typical usage of __builtin_expect (a<b, 1), we
+   may introduce an extra relation stmt:
+   With the builtin, we have
+     t1 = a <= b;
+     t2 = (long int) t1;
+     t3 = __builtin_expect (t2, 1);
+     if (t3 != 0)
+       goto ...
+   Without the builtin, we have
+     if (a<=b)
+       goto...
+   This affects the size/time estimation and may have
+   an impact on the earlier inlining.
+   Here find this pattern and fix it up later.  */
+
+static gimple
+find_foldable_builtin_expect (basic_block bb)
+{
+  gimple_stmt_iterator bsi;
+
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+    {
+      gimple stmt = gsi_stmt (bsi);
+      if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT))
+        {
+          tree var = gimple_call_lhs (stmt);
+          tree arg = gimple_call_arg (stmt, 0);
+          use_operand_p use_p;
+          gimple use_stmt;
+          bool match = false;
+          bool done = false;
+
+          if (!var || !arg)
+            continue;
+          gcc_assert (TREE_CODE (var) == SSA_NAME);
+
+          while (TREE_CODE (arg) == SSA_NAME)
+            {
+              gimple stmt_tmp = SSA_NAME_DEF_STMT (arg);
+              if (!is_gimple_assign (stmt_tmp))
+                break;
+              switch (gimple_assign_rhs_code (stmt_tmp))
+                {
+                  case LT_EXPR:
+                  case LE_EXPR:
+                  case GT_EXPR:
+                  case GE_EXPR:
+                  case EQ_EXPR:
+                  case NE_EXPR:
+                    match = true;
+                    done = true;
+                    break;
+                  case NOP_EXPR:
+                    break;
+                  default:
+                    done = true;
+                    break;
+                }
+              if (done)
+                break;
+              arg = gimple_assign_rhs1 (stmt_tmp);
+            }
+
+          if (match && single_imm_use (var, &use_p, &use_stmt)
+              && gimple_code (use_stmt) == GIMPLE_COND)
+            return use_stmt;
+        }
+    }
+  return NULL;
+}
+
 /* Compute function body size parameters for NODE.
    When EARLY is true, we compute only simple summaries without
    non-trivial predicates to drive the early inliner.  */
@@ -2280,6 +2351,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   int nblocks, n;
   int *order;
   predicate array_index = true_predicate ();
+  gimple fix_builtin_expect_stmt;
 
   info->conds = NULL;
   info->entry = NULL;
@@ -2360,6 +2432,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 	}
 
+      fix_builtin_expect_stmt = find_foldable_builtin_expect (bb);
+
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
@@ -2367,6 +2441,14 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
 	  struct predicate will_be_nonconstant;
+
+          /* This relation stmt should be folded after we remove
+             buildin_expect call. Adjust the cost here.  */
+	  if (stmt == fix_builtin_expect_stmt)
+            {
+              this_size--;
+              this_time--;
+            }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
