@@ -1,6 +1,6 @@
 /* PR tree-optimization/52019 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-tree-sra -fdump-tree-fnsplit -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-tree-sra -fdump-tree-fnsplit -fdump-tree-optimized --param=builtin-expect-probability=100" } */
 
 #include "ipa-split-5.c"
 

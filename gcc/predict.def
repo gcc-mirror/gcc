@@ -57,7 +57,10 @@ DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_ALWAYS,
 	       PRED_FLAG_FIRST_MATCH)
 
-/* Hints dropped by user via __builtin_expect feature.  */
+/* Hints dropped by user via __builtin_expect feature.  Note: the
+   probability of PROB_VERY_LIKELY is now overwritten by param
+   builtin_expect_probability with a default value of HITRATE(90).
+   Refer to param.def for details.  */
 DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
