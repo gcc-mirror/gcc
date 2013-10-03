@@ -980,9 +980,12 @@ sort_mem_initializers (tree t, tree mem_inits)
 	      else if (TREE_VALUE (*last_p) && !TREE_VALUE (init))
 		goto splice;
 	      else
-		error_at (DECL_SOURCE_LOCATION (current_function_decl),
-			  "initializations for multiple members of %qT",
-			  ctx);
+		{
+		  error_at (DECL_SOURCE_LOCATION (current_function_decl),
+			    "initializations for multiple members of %qT",
+			    ctx);
+		  goto splice;
+		}
 	    }
 
 	  last_p = p;

@@ -1,3 +1,8 @@
+2013-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58510
+	* init.c (sort_mem_initializers): Splice when giving an error.
+
 2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58535
