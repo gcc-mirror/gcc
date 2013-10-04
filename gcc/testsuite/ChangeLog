@@ -1,3 +1,10 @@
+2013-10-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	Backport from mainline.
+
+	PR target/58460
+	* gcc.target/aarch64/pr58460.c: New file.
+
 2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58535

@@ -1,3 +1,14 @@
+2013-10-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	Backport from mainline.
+
+	PR target/58460
+	* config/aarch64/aarch64.md (*add_<shift>_<mode>)
+	(*add_<shift>_si_uxtw,*add_mul_imm_<mode>)
+	(*sub_<shift>_<mode>)
+	(*sub_<shift>_si_uxtw,*sub_mul_imm_<mode>, *sub_mul_imm_si_uxtw):
+	Remove k constraint.
+
 2013-10-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.gcc (hppa*64*-*-linux*): Don't add pa/t-linux to tmake_file.
