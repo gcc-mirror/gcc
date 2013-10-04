@@ -63,7 +63,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 
 	impl := &makeFuncImpl{code: code, typ: ftyp, fn: fn}
 
-	return Value{t, unsafe.Pointer(impl), flag(Func) << flagKindShift}
+	return Value{t, unsafe.Pointer(&impl), flag(Func<<flagKindShift) | flagIndir}
 }
 
 // makeFuncStub is an assembly function that is the code half of
