@@ -1,3 +1,8 @@
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58448
+	* g++.dg/template/crash117.C: New.
+
 2013-10-04  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/19476
