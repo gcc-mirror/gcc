@@ -1,5 +1,10 @@
 2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58560
+	* g++.dg/cpp0x/auto39.C: New.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58503
 	* g++.dg/cpp0x/range-for26.C: New.
 	* g++.dg/cpp0x/range-for27.C: Likewise.
