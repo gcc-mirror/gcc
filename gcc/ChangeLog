@@ -1,3 +1,8 @@
+2013-10-04  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (dw_sra_loc_expr): Release addr_table entries when
+        discarding a location list expression (or a piece of one).
+
 2013-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (ix86_issue_rate): Pentium4, Nocona has issue
