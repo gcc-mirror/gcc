@@ -9960,11 +9960,15 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
       range_temp = convert_from_reference (build_range_temp (range_expr));
       iter_type = (cp_parser_perform_range_for_lookup
 		   (range_temp, &begin_dummy, &end_dummy));
-      iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE, iter_type);
-      iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
-					tf_warning_or_error);
-      TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
-					    iter_decl, auto_node);
+      if (iter_type)
+	{
+	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
+				  iter_type);
+	  iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
+					    tf_warning_or_error);
+	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
+						iter_decl, auto_node);
+	}
     }
 }
 
@@ -10171,6 +10175,11 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	  *begin = *end = error_mark_node;
 	  return error_mark_node;
 	}
+      else if (type_dependent_expression_p (*begin)
+	       || type_dependent_expression_p (*end))
+	/* Can happen, when, eg, in a template context, Koenig lookup
+	   can't resolve begin/end (c++/58503).  */
+	return NULL_TREE;
       else
 	{
 	  tree iter_type = cv_unqualified (TREE_TYPE (*begin));
