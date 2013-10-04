@@ -995,23 +995,24 @@ Temporary_reference_expression::do_address_taken(bool)
 tree
 Temporary_reference_expression::do_get_tree(Translate_context* context)
 {
+  Gogo* gogo = context->gogo();
   Bvariable* bvar = this->statement_->get_backend_variable(context);
+  Bexpression* ret = gogo->backend()->var_expression(bvar, this->location());
 
-  // The gcc backend can't represent the same set of recursive types
+  // The backend can't always represent the same set of recursive types
   // that the Go frontend can.  In some cases this means that a
   // temporary variable won't have the right backend type.  Correct
   // that here by adding a type cast.  We need to use base() to push
   // the circularity down one level.
-  tree ret = var_to_tree(bvar);
+  Type* stype = this->statement_->type();
   if (!this->is_lvalue_
-      && POINTER_TYPE_P(TREE_TYPE(ret))
-      && VOID_TYPE_P(TREE_TYPE(TREE_TYPE(ret))))
+      && stype->has_pointer()
+      && stype->deref()->is_void_type())
     {
-      Btype* type_btype = this->type()->base()->get_backend(context->gogo());
-      tree type_tree = type_to_tree(type_btype);
-      ret = fold_convert_loc(this->location().gcc_location(), type_tree, ret);
+      Btype* btype = this->type()->base()->get_backend(gogo);
+      ret = gogo->backend()->convert_expression(btype, ret, this->location());
     }
-  return ret;
+  return expr_to_tree(ret);
 }
 
 // Ast dump for temporary reference.
