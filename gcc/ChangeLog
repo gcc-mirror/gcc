@@ -1,3 +1,10 @@
+2013-10-04  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c: Fix some trailing whitespace problems.
+
+	* tree-ssa-threadedge.c (thread_through_normal_block): Broken out of ...
+	(thread_across_edge): Here.  Call it.
+
 2013-10-04  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (dw_sra_loc_expr): Release addr_table entries when
