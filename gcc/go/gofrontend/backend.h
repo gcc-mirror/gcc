@@ -7,6 +7,9 @@
 #ifndef GO_BACKEND_H
 #define GO_BACKEND_H
 
+#include <gmp.h>
+#include <mpfr.h>
+
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -230,6 +233,38 @@ class Backend
   // converting nil to other types.
   virtual Bexpression*
   zero_expression(Btype*) = 0;
+
+  // Create an error expression. This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  virtual Bexpression*
+  error_expression() = 0;
+
+  // Create a reference to a variable.
+  virtual Bexpression*
+  var_expression(Bvariable* var, Location) = 0;
+
+  // Create an expression that indirects through the pointer expression EXPR
+  // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
+  // is known to point to a valid memory location.
+  virtual Bexpression*
+  indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
+
+  // Return an expression for the multi-precision integer VAL in BTYPE.
+  virtual Bexpression*
+  integer_constant_expression(Btype* btype, mpz_t val) = 0;
+
+  // Return an expression for the floating point value VAL in BTYPE.
+  virtual Bexpression*
+  float_constant_expression(Btype* btype, mpfr_t val) = 0;
+
+  // Return an expression for the complex value REAL/IMAG in BTYPE.
+  virtual Bexpression*
+  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag) = 0;
+
+  // Return an expression that converts EXPR to TYPE.
+  virtual Bexpression*
+  convert_expression(Btype* type, Bexpression* expr, Location) = 0;
 
   // Statements.
 

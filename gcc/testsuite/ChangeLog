@@ -1,3 +1,34 @@
+2013-10-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	PR fortran/58469
+	* gfortran.dg/defined_assignment_8.f90: New.
+	* gfortran.dg/defined_assignment_9.f90: New.
+	* gfortran.dg/defined_assignment_10.f90: New.
+	* gfortran.dg/defined_assignment_11.f90: New.
+
+2013-10-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	Backport from mainline.
+
+	PR target/58460
+	* gcc.target/aarch64/pr58460.c: New file.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58535
+	* g++.dg/parse/crash62.C: New.
+
+2013-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58574
+	* gcc.c-torture/execute/pr58574.c: New test.
+
+2013-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58564
+	* gcc.c-torture/execute/pr58564.c: New test.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt28.ad[sb]: New test.

@@ -1,3 +1,13 @@
+2013-10-04  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2013-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	PR fortran/58469
+	* resolve.c (generate_component_assignments): Avoid double free
+	at runtime and freeing a still-being used expr.
+
 2013-08-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57798

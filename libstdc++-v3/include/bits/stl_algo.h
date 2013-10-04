@@ -72,10 +72,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  /// Swaps the median value of *__a, *__b and *__c to *__a
+  /// Swaps the median value of *__a, *__b and *__c to *__result
   template<typename _Iterator>
     void
-    __move_median_first(_Iterator __a, _Iterator __b, _Iterator __c)
+    __move_median_to_first(_Iterator __result, _Iterator __a,
+			   _Iterator __b, _Iterator __c)
     {
       // concept requirements
       __glibcxx_function_requires(_LessThanComparableConcept<
@@ -84,23 +85,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (*__a < *__b)
 	{
 	  if (*__b < *__c)
-	    std::iter_swap(__a, __b);
+	    std::iter_swap(__result, __b);
 	  else if (*__a < *__c)
-	    std::iter_swap(__a, __c);
+	    std::iter_swap(__result, __c);
+	  else
+	    std::iter_swap(__result, __a);
 	}
       else if (*__a < *__c)
-	return;
+      	std::iter_swap(__result, __a);
       else if (*__b < *__c)
-	std::iter_swap(__a, __c);
+	std::iter_swap(__result, __c);
       else
-	std::iter_swap(__a, __b);
+	std::iter_swap(__result, __b);
     }
 
-  /// Swaps the median value of *__a, *__b and *__c under __comp to *__a
+  /// Swaps the median value of *__a, *__b and *__c under __comp to *__result
   template<typename _Iterator, typename _Compare>
     void
-    __move_median_first(_Iterator __a, _Iterator __b, _Iterator __c,
-			_Compare __comp)
+    __move_median_to_first(_Iterator __result, _Iterator __a,
+			   _Iterator __b, _Iterator __c,
+			   _Compare __comp)
     {
       // concept requirements
       __glibcxx_function_requires(_BinaryFunctionConcept<_Compare, bool,
@@ -110,16 +114,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__comp(*__a, *__b))
 	{
 	  if (__comp(*__b, *__c))
-	    std::iter_swap(__a, __b);
+	    std::iter_swap(__result, __b);
 	  else if (__comp(*__a, *__c))
-	    std::iter_swap(__a, __c);
+	    std::iter_swap(__result, __c);
+	  else
+	    std::iter_swap(__result, __a);
 	}
       else if (__comp(*__a, *__c))
-	return;
+	std::iter_swap(__result, __a);
       else if (__comp(*__b, *__c))
-	std::iter_swap(__a, __c);
+	std::iter_swap(__result, __c);
       else
-	std::iter_swap(__a, __b);
+	std::iter_swap(__result, __b);
     }
 
   // for_each
@@ -2273,7 +2279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_RandomAccessIterator __last)
     {
       _RandomAccessIterator __mid = __first + (__last - __first) / 2;
-      std::__move_median_first(__first, __mid, (__last - 1));
+      std::__move_median_to_first(__first, __first + 1, __mid, (__last - 2));
       return std::__unguarded_partition(__first + 1, __last, *__first);
     }
 
@@ -2285,7 +2291,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_RandomAccessIterator __last, _Compare __comp)
     {
       _RandomAccessIterator __mid = __first + (__last - __first) / 2;
-      std::__move_median_first(__first, __mid, (__last - 1), __comp);
+      std::__move_median_to_first(__first, __first + 1, __mid, (__last - 2),
+				  __comp);
       return std::__unguarded_partition(__first + 1, __last, *__first, __comp);
     }
 

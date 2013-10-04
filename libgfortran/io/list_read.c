@@ -616,6 +616,7 @@ parse_repeat (st_parameter_dt *dtp)
   free_saved (dtp);
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return 1;
     }
@@ -905,11 +906,14 @@ read_integer (st_parameter_dt *dtp, int length)
   free_saved (dtp);  
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return;
     }
   else if (c != '\n')
     eat_line (dtp);
+
+  free_line (dtp);
   snprintf (message, MSGLEN, "Bad integer for item %d in list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
@@ -1079,7 +1083,6 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
       unget_char (dtp, c);
       eat_separator (dtp);
       dtp->u.p.saved_type = BT_CHARACTER;
-      free_line (dtp);
     }
   else 
     {
@@ -1088,10 +1091,12 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 		  dtp->u.p.item_count);
       generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
     }
+  free_line (dtp);
   return;
 
  eof:
   free_saved (dtp);
+  free_line (dtp);
   hit_eof (dtp);
 }
 
@@ -1286,11 +1291,14 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   free_saved (dtp);
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return 1;
     }
   else if (c != '\n')
     eat_line (dtp);
+
+  free_line (dtp);
   snprintf (message, MSGLEN, "Bad floating point number for item %d",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
@@ -1391,11 +1399,14 @@ eol_4:
   free_saved (dtp);
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return;
     }
   else if (c != '\n')   
     eat_line (dtp);
+
+  free_line (dtp);
   snprintf (message, MSGLEN, "Bad complex value in item %d of list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
@@ -1630,7 +1641,10 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
   eat_separator (dtp);
   push_char (dtp, '\0');
   if (convert_real (dtp, dest, dtp->u.p.saved_string, length))
-    return;
+    {
+      free_saved (dtp);
+      return;
+    }
 
   free_saved (dtp);
   dtp->u.p.saved_type = BT_REAL;
@@ -1768,12 +1782,14 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
   free_saved (dtp);
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return;
     }
   else if (c != '\n')
     eat_line (dtp);
 
+  free_line (dtp);
   snprintf (message, MSGLEN, "Bad real number in item %d of list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
@@ -1790,6 +1806,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
 
   if (dtp->u.p.saved_type != BT_UNKNOWN && dtp->u.p.saved_type != type)
     {
+      free_line (dtp);
       snprintf (message, MSGLEN, "Read type %s where %s was expected for item %d",
 		  type_name (dtp->u.p.saved_type), type_name (type),
 		  dtp->u.p.item_count);
@@ -1803,6 +1820,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
 
   if (dtp->u.p.saved_length != len)
     {
+      free_line (dtp);
       snprintf (message, MSGLEN,
 		  "Read kind %d %s where kind %d is required for item %d",
 		  dtp->u.p.saved_length, type_name (dtp->u.p.saved_type), len,
@@ -1976,7 +1994,10 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 
 cleanup:
   if (err == LIBERROR_END)
-    hit_eof (dtp);
+    {
+      free_line (dtp);
+      hit_eof (dtp);
+    }
   return err;
 }
 
@@ -2024,7 +2045,10 @@ finish_list_read (st_parameter_dt *dtp)
 
   err = eat_line (dtp);
   if (err == LIBERROR_END)
-    hit_eof (dtp);
+    {
+      free_line (dtp);
+      hit_eof (dtp);
+    }
 }
 
 /*			NAMELIST INPUT

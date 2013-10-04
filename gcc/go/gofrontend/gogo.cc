@@ -1192,6 +1192,27 @@ Gogo::record_interface_type(Interface_type* itype)
   this->interface_types_.push_back(itype);
 }
 
+// Return an erroneous name that indicates that an error has already
+// been reported.
+
+std::string
+Gogo::erroneous_name()
+{
+  static int erroneous_count;
+  char name[50];
+  snprintf(name, sizeof name, "$erroneous%d", erroneous_count);
+  ++erroneous_count;
+  return name;
+}
+
+// Return whether a name is an erroneous name.
+
+bool
+Gogo::is_erroneous_name(const std::string& name)
+{
+  return name.compare(0, 10, "$erroneous") == 0;
+}
+
 // Return a name for a thunk object.
 
 std::string

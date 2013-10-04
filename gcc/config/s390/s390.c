@@ -7064,25 +7064,12 @@ s390_chunkify_start (void)
 	 or a casesi jump, check all potential targets.  */
       else if (GET_CODE (insn) == JUMP_INSN)
 	{
-          rtx pat = PATTERN (insn);
-	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
-	    pat = XVECEXP (pat, 0, 0);
-
-          if (GET_CODE (pat) == SET)
-            {
-	      rtx label = JUMP_LABEL (insn);
-	      if (label)
-		{
-	          if (s390_find_pool (pool_list, label)
-		      != s390_find_pool (pool_list, insn))
-		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
-		}
-            }
-	  else if (GET_CODE (pat) == PARALLEL
-		   && XVECLEN (pat, 0) == 2
-		   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
-		   && GET_CODE (XVECEXP (pat, 0, 1)) == USE
-		   && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == LABEL_REF)
+	  rtx pat = PATTERN (insn);
+	  if (GET_CODE (pat) == PARALLEL
+	      && XVECLEN (pat, 0) == 2
+	      && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+	      && GET_CODE (XVECEXP (pat, 0, 1)) == USE
+	      && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == LABEL_REF)
 	    {
 	      /* Find the jump table used by this casesi jump.  */
 	      rtx vec_label = XEXP (XEXP (XVECEXP (pat, 0, 1), 0), 0);
@@ -7104,8 +7091,23 @@ s390_chunkify_start (void)
 			bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		    }
 		}
+	      continue;
 	    }
-        }
+
+	  if (GET_CODE (pat) == PARALLEL)
+	    pat = XVECEXP (pat, 0, 0);
+
+	  if (GET_CODE (pat) == SET)
+	    {
+	      rtx label = JUMP_LABEL (insn);
+	      if (label)
+		{
+		  if (s390_find_pool (pool_list, label)
+		      != s390_find_pool (pool_list, insn))
+		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
+		}
+	    }
+	}
     }
 
   /* Insert base register reload insns before every pool.  */
