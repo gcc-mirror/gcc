@@ -14,6 +14,13 @@
 	PR c++/33911
 	* g++.dg/ext/attribute47.C: New.
 
+2013-10-03  Rong Xu  <xur@google.com>
+
+	* gcc.target/i386/cold-attribute-2.c: Fix the test by using original
+	probability.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Ditto.
+	* gcc.dg/tree-ssa/ipa-split-6.c: Ditto.
+
 2013-10-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58510

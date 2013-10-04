@@ -1,12 +1,12 @@
 2013-10-03  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_issue_rate): Pentium4, Nocona has issue rate of 2.
-	Core2, Corei7 and Haswell has issue rate of 4.
+	* config/i386/i386.c (ix86_issue_rate): Pentium4, Nocona has issue
+	rate of 2.  Core2, Corei7 and Haswell has issue rate of 4.
 	(ix86_adjust_cost): Remove ATOM case; fix core2/corei7/Haswell case.
 
 2013-10-03  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_option_override_internal): Do not enable
+	* config/i386/i386.c (ix86_option_override_internal): Do not enable
 	accumulate-outgoing-args when producing unwind info.
 
 2013-10-03  Wei Mi  <wmi@google.com>
@@ -17,23 +17,23 @@
 
 2013-10-03  Rong Xu  <xur@google.com>
 
-        * ipa-inline-analysis.c (find_foldable_builtin_expect): Find
-        the candidate of builtin_expect such that we should fix the 
-        size/time estimation.
-        (estimate_function_body_sizes): Do the acutally size/time fix-up
-        for builtin_expect.
+	* ipa-inline-analysis.c (find_foldable_builtin_expect): Find
+	the candidate of builtin_expect such that we should fix the
+	size/time estimation.
+	(estimate_function_body_sizes): Do the acutally size/time fix-up
+	for builtin_expect.
 
 2013-10-03  Rong Xu  <xur@google.com>
 
-        * predict.c (tree_predict_by_opcode): Get the probability
-        for builtin_expect from param builtin_expect_probability.
-        * params.def (BUILTIN_EXPECT_PROBABILITY): New parameter.
-        * predict.def (PRED_BUILTIN_EXPECT_RELAXED): Fix comments.
-        * doc/invoke.texi: Add documentation for builtin-expect-probability.
-        * gcc.target/i386/cold-attribute-2.c: Fix the test by using original
-        probability.
-        * gcc.dg/tree-ssa/ipa-split-5.c: Ditto.
-        * gcc.dg/tree-ssa/ipa-split-6.c: Ditto.
+	* predict.c (tree_predict_by_opcode): Get the probability
+	for builtin_expect from param builtin_expect_probability.
+	* params.def (BUILTIN_EXPECT_PROBABILITY): New parameter.
+	* predict.def (PRED_BUILTIN_EXPECT_RELAXED): Fix comments.
+	* doc/invoke.texi: Add documentation for builtin-expect-probability.
+	* gcc.target/i386/cold-attribute-2.c: Fix the test by using original
+	probability.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Ditto.
+	* gcc.dg/tree-ssa/ipa-split-6.c: Ditto.
 
 2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -179,7 +179,7 @@
 	(nfms<mode>4_fpr): Likewise.
 
 2013-10-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Richard Earnshaw  <richard.earnshaw@arm.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* config/arm/aarch-common-protos.h (struct alu_cost_table): New.
 	(struct mult_cost_table): Likewise.
@@ -254,8 +254,7 @@
 
 	PR target/58587
 	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Turn off
-	setting -mvsx-timode by default until the underlying problem is
-	fixed.
+	setting -mvsx-timode by default until the underlying problem is fixed.
 	(RS6000_CPU, power7 defaults): Likewise.
 
 2013-10-02  Uros Bizjak  <ubizjak@gmail.com>
