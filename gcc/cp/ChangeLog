@@ -1,5 +1,13 @@
 2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58503
+	* parser.c (cp_parser_perform_range_for_lookup): If eventually
+	either *begin or *end is type-dependent, return NULL_TREE.
+	(do_range_for_auto_deduction): If cp_parser_perform_range_for_lookup
+	returns NULL_TREE, don't actually do_auto_deduction.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58448
 	* pt.c (tsubst): Use error_operand_p on parameter t.
 

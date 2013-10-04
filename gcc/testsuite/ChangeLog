@@ -1,5 +1,11 @@
 2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58503
+	* g++.dg/cpp0x/range-for26.C: New.
+	* g++.dg/cpp0x/range-for27.C: Likewise.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58448
 	* g++.dg/template/crash117.C: New.
 
