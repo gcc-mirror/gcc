@@ -1,3 +1,7 @@
+2013-10-04  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Backend::convert_expression): New function.
+
 2013-10-02  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc: Include "real.h" and "realmpfr.h".

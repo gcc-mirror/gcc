@@ -262,6 +262,10 @@ class Backend
   virtual Bexpression*
   complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag) = 0;
 
+  // Return an expression that converts EXPR to TYPE.
+  virtual Bexpression*
+  convert_expression(Btype* type, Bexpression* expr, Location) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should

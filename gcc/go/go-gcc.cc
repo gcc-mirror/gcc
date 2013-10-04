@@ -229,6 +229,9 @@ class Gcc_backend : public Backend
   Bexpression*
   complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag);
 
+  Bexpression*
+  convert_expression(Btype* type, Bexpression* expr, Location);
+
   // Statements.
 
   Bstatement*
@@ -946,6 +949,20 @@ Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
 
   ret = build_complex(t, build_real(TREE_TYPE(t), r2),
                       build_real(TREE_TYPE(t), r4));
+  return tree_to_expr(ret);
+}
+
+// An expression that converts an expression to a different type.
+
+Bexpression*
+Gcc_backend::convert_expression(Btype* type, Bexpression* expr, Location)
+{
+  tree type_tree = type->get_tree();
+  tree expr_tree = expr->get_tree();
+  if (type_tree == error_mark_node || expr_tree == error_mark_node)
+    return this->error_expression();
+
+  tree ret = fold_convert(type_tree, expr_tree);
   return tree_to_expr(ret);
 }
 
