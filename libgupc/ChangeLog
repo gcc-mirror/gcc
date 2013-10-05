@@ -1,3 +1,28 @@
+2013-10-04  Nenad Vukicevic <nenad@intrepid.com>
+
+	Add UPC backtrace to Portals4 runtime.
+	* Makefile.am: UPC_BACKTRACE_SUP is common define now.
+	(UPC_RUNTIME_SRC): Portals4, add UPC backtrace files.
+	* Makefile.in: Re-generate.
+	* configure.ac: Check for UPC backtrace options is common
+	to SMP and Portals4 runtimes.
+	* configure: Re-generate.
+	* portals4/gupcr_backtrace.c: New. Port from the SMP implementation.
+	* portals4/gupcr_backtrace.h: Ditto.
+	* portals4/gupcr_barrier.c (gupcr_barrier_id): Make it global.
+	* portals4/gupcr_barrier.h: Ditto.
+	* portals4/gupcr_env.c (gupcr_env_kind): Add ENV_UPC_BACKTRACE.
+	(gupcr_env_var_table): Add ENV_UPC_BACKTRACE.
+	(gupcr_env_init): Add support for ENV_UPC_BACKTRACE.
+	* portals4/gupcr_main.c (gupcr_init): Initialized UPC backtrace
+	if enabled.
+	* portals4/gupcr_utils.c (gupcr_backtrace): Add.
+	(gupcr_create_temp_file): Add.
+	(gupcr_set_backtrace):Add.
+	(gupcr_is_backtrace_enabled): Add.
+	* portals4/gupcr_utils.h: Add prototypes for the new utility
+	functions.
+
 2013-09-27  Gary Funck  <gary@intrepid.com>
 
 	Implement non-blocking transfer operations for SMP runtime.
@@ -24,7 +49,6 @@
 	* smp/upc_backtrace.h: Remove libbfd support function prototype.
 	* smp/upc_backtrace_sup.c: Delete.
 
->>>>>>> .r202955
 2013-09-10  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Implement non-blocking transfer operations for Portals4 runtime.

@@ -605,8 +605,6 @@ LIBGUPC_NODE_LOCAL_MEM_MMAP_FALSE
 LIBGUPC_NODE_LOCAL_MEM_MMAP_TRUE
 LIBGUPC_NODE_LOCAL_MEM_POSIX_FALSE
 LIBGUPC_NODE_LOCAL_MEM_POSIX_TRUE
-LIBGUPC_BACKTRACE_FALSE
-LIBGUPC_BACKTRACE_TRUE
 LIBGUPC_GUM_FALSE
 LIBGUPC_GUM_TRUE
 LIBGUPC_NUMA_FALSE
@@ -615,6 +613,8 @@ LIBGUPC_AFFINITY_FALSE
 LIBGUPC_AFFINITY_TRUE
 LIBGUPC_PTHREADS_FALSE
 LIBGUPC_PTHREADS_TRUE
+LIBGUPC_BACKTRACE_FALSE
+LIBGUPC_BACKTRACE_TRUE
 LIBGUPC_GENERIC_COLLECTIVES_FALSE
 LIBGUPC_GENERIC_COLLECTIVES_TRUE
 LIBGUPC_LINK_SCRIPT_FALSE
@@ -639,7 +639,6 @@ bfdinc
 config_path
 portals4inc
 portals4libs
-PATH_TO_GDB
 DOXYGEN_DATE
 DOXYGEN_DATETIME
 DOXYGEN_AUTHOR
@@ -695,6 +694,7 @@ DX_ENV
 DX_DOCDIR
 DX_CONFIG
 DX_PROJECT
+PATH_TO_GDB
 enable_upc_runtime_debug
 LIBGUPC_BUILD_VERSIONED_SHLIB_FALSE
 LIBGUPC_BUILD_VERSIONED_SHLIB_TRUE
@@ -853,6 +853,11 @@ enable_upc_runtime_trace
 enable_upc_runtime_debug
 enable_upc_link_script
 with_upc_runtime_tree_fanout
+enable_upc_backtrace
+enable_upc_backtrace_gdb
+with_upc_backtrace_gdb
+enable_upc_backtrace_signal
+with_upc_backtrace_signal
 enable_upc_gum_debug
 enable_doxygen_doc
 enable_doxygen_dot
@@ -864,11 +869,6 @@ enable_doxygen_chi
 enable_doxygen_html
 enable_doxygen_ps
 enable_doxygen_pdf
-enable_upc_backtrace
-enable_upc_backtrace_gdb
-with_upc_backtrace_gdb
-enable_upc_backtrace_signal
-with_upc_backtrace_signal
 with_upc_runtime_max_locks
 with_portals4
 with_portals4_include
@@ -1570,6 +1570,15 @@ Optional Features:
                           will define the UPC shared section as a no load
                           section on targets where this feature is supported
                           (requires GNU LD)
+  --enable-upc-backtrace  enable UPC backtrace; enable stack frame backtrace
+                          report when UPC run-time fatal errors occur or by
+                          user request (via signal)
+  --enable-upc-backtrace-gdb
+                          enable the use of GDB for UPC stack backtrace
+                          [default='yes']
+  --enable-upc-backtrace-signal
+                          enable signal support for UPC stack backtrace
+                          [default='yes']
   --enable-upc-gum-debug  enable UPC's source level debugging with GDB and GUM
                           support (requires UPC aware GDB)
   --enable-doxygen-doc    generate any doxygen documentation
@@ -1583,15 +1592,6 @@ Optional Features:
   --disable-doxygen-html  don't generate doxygen plain HTML documentation
   --disable-doxygen-ps    don't generate doxygen PostScript documentation
   --disable-doxygen-pdf   don't generate doxygen PDF documentation
-  --enable-upc-backtrace  enable UPC backtrace; enable stack frame backtrace
-                          report when UPC run-time fatal errors occur or by
-                          user request (via signal)
-  --enable-upc-backtrace-gdb
-                          enable the use of GDB for UPC stack backtrace
-                          [default='yes']
-  --enable-upc-backtrace-signal
-                          enable signal support for UPC stack backtrace
-                          [default='yes']
   --enable-upc-runtime-triggered-ops
                           enable UPC runtime support for Portals4 triggered
                           operations. [default=yes]
@@ -15185,7 +15185,229 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace support" >&5
+$as_echo_n "checking for UPC backtrace support... " >&6; }
+# Check whether --enable-upc-backtrace was given.
+if test "${enable_upc_backtrace+set}" = set; then :
+  enableval=$enable_upc_backtrace;
+  case $enableval in
+    yes | no) ;;
+    *)
+      as_fn_error "--enable-upc-backtrace accepts only yes or no" "$LINENO" 5
+  esac
+
+else
+
+  enable_upc_backtrace=yes
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace" >&5
+$as_echo "$enable_upc_backtrace" >&6; }
+if test "$enable_upc_backtrace" = yes; then
+
+$as_echo "#define HAVE_UPC_BACKTRACE 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB support" >&5
+$as_echo_n "checking for UPC backtrace GDB support... " >&6; }
+# Check whether --enable-upc-backtrace-gdb was given.
+if test "${enable_upc_backtrace_gdb+set}" = set; then :
+  enableval=$enable_upc_backtrace_gdb;
+  case "$enableval" in
+    yes | no) ;;
+    *)
+      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no" "$LINENO" 5
+  esac
+
+else
+
+  enable_upc_backtrace_gdb=yes
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_gdb" >&5
+$as_echo "$enable_upc_backtrace_gdb" >&6; }
+if test "$enable_upc_backtrace_gdb" = yes; then
+
+$as_echo "#define HAVE_UPC_BACKTRACE_GDB 1" >>confdefs.h
+
+
+  # Check for user specified GDB
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB to use" >&5
+$as_echo_n "checking for UPC backtrace GDB to use... " >&6; }
+
+# Check whether --with-upc-backtrace-gdb was given.
+if test "${with_upc_backtrace_gdb+set}" = set; then :
+  withval=$with_upc_backtrace_gdb;
+    upc_backtrace_gdb=$withval
+
+else
+
+    upc_backtrace_gdb=gdb
+
+fi
+
+  for ac_prog in $GDB $upc_backtrace_gdb
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_PATH_TO_GDB+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PATH_TO_GDB in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PATH_TO_GDB="$PATH_TO_GDB" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/bin:${PATH}"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PATH_TO_GDB="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PATH_TO_GDB=$ac_cv_path_PATH_TO_GDB
+if test -n "$PATH_TO_GDB"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
+$as_echo "$PATH_TO_GDB" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$PATH_TO_GDB" && break
+done
+
+  if test -n "$PATH_TO_GDB"; then
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_BACKTRACE_GDB "$PATH_TO_GDB"
+_ACEOF
+
+  else
+    as_fn_error "cannot find gdb. Try the correct --with-upc-backtrace-gdb
+       option or disable GDB for backtrace with
+       --disable-upc-backtrace option)" "$LINENO" 5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
+$as_echo "$PATH_TO_GDB" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace signal support" >&5
+$as_echo_n "checking for UPC backtrace signal support... " >&6; }
+# Check whether --enable-upc-backtrace-signal was given.
+if test "${enable_upc_backtrace_signal+set}" = set; then :
+  enableval=$enable_upc_backtrace_signal;
+  case "$enableval" in
+  yes | no) ;;
+  *)
+    as_fn_error "--enable-upc-backtrace-signal accepts only yes or no" "$LINENO" 5
+  esac
+
+else
+
+  enable_upc_backtrace_signal=yes
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_signal" >&5
+$as_echo "$enable_upc_backtrace_signal" >&6; }
+if test "$enable_upc_backtrace_signal" = yes; then
+
+$as_echo "#define HAVE_UPC_BACKTRACE_SIGNAL 1" >>confdefs.h
+
+
+  # Check for user specified signal name/number
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace signal name/number" >&5
+$as_echo_n "checking for UPC backtrace signal name/number... " >&6; }
+
+# Check whether --with-upc-backtrace-signal was given.
+if test "${with_upc_backtrace_signal+set}" = set; then :
+  withval=$with_upc_backtrace_signal;
+      upc_backtrace_signal=$withval
+
+else
+
+      upc_backtrace_signal=SIGUSR1
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_BACKTRACE_SIGNAL $upc_backtrace_signal
+_ACEOF
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_backtrace_signal" >&5
+$as_echo "$upc_backtrace_signal" >&6; }
+fi
+
+if test "$enable_upc_backtrace" = yes; then
+  # Check for "-rdynamic" for UPC backtrace
+  case "${host}" in
+    *-*-darwin*)
+      if test x$build = x$host; then
+        export_sym_check="nm${exeext} -g"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_nm -g"
+      else
+        export_sym_check=
+      fi
+    ;;
+    *)
+      if test x$build = x$host; then
+        export_sym_check="objdump${exeext} -T"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_objdump -T"
+      else
+        export_sym_check=
+      fi
+    ;;
+  esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
+$as_echo_n "checking for -rdynamic... " >&6; }
+  if test "x$export_sym_check" != x; then
+    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+      -o conftest > /dev/null 2>&1
+    if $export_sym_check conftest | grep foobar > /dev/null; then
+      have_rdynamic=yes
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
+$as_echo "$have_rdynamic" >&6; }
+
+  # Check if backtrace can use addr2line
+  if test x"$ADDR2LINE" != x""; then
+
+$as_echo "#define HAVE_UPC_BACKTRACE_ADDR2LINE 1" >>confdefs.h
+
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_BACKTRACE_ADDR2LINE "$ADDR2LINE"
+_ACEOF
+
+  fi
+fi
+
 if test "$upc_runtime_model" = "smp"; then
+
   targ_runtime_pthreads=
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the GCC __threads extension is supported." >&5
@@ -15358,9 +15580,9 @@ $as_echo_n "checking for UPC GUM debugging support... " >&6; }
 if test "${enable_upc_gum_debug+set}" = set; then :
   enableval=$enable_upc_gum_debug;
     case $enableval in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-gum-debug accepts only yes or no" "$LINENO" 5
+      yes | no) ;;
+      *)
+        as_fn_error "--enable-upc-gum-debug accepts only yes or no" "$LINENO" 5
     esac
     upc_gum_debug=$enableval
 
@@ -17450,227 +17672,6 @@ fi
 #echo DX_FLAG_ps=$DX_FLAG_ps
 #echo DX_ENV=$DX_ENV
 
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace support" >&5
-$as_echo_n "checking for UPC backtrace support... " >&6; }
-  # Check whether --enable-upc-backtrace was given.
-if test "${enable_upc_backtrace+set}" = set; then :
-  enableval=$enable_upc_backtrace;
-    case $enableval in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-backtrace accepts only yes or no" "$LINENO" 5
-    esac
-
-else
-
-    enable_upc_backtrace=yes
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace" >&5
-$as_echo "$enable_upc_backtrace" >&6; }
-  if test "$enable_upc_backtrace" = yes; then
-
-$as_echo "#define HAVE_UPC_BACKTRACE 1" >>confdefs.h
-
-  fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB support" >&5
-$as_echo_n "checking for UPC backtrace GDB support... " >&6; }
-  # Check whether --enable-upc-backtrace-gdb was given.
-if test "${enable_upc_backtrace_gdb+set}" = set; then :
-  enableval=$enable_upc_backtrace_gdb;
-    case "$enableval" in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no" "$LINENO" 5
-    esac
-
-else
-
-    enable_upc_backtrace_gdb=yes
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_gdb" >&5
-$as_echo "$enable_upc_backtrace_gdb" >&6; }
-  if test "$enable_upc_backtrace_gdb" = yes; then
-
-$as_echo "#define HAVE_UPC_BACKTRACE_GDB 1" >>confdefs.h
-
-
-    # Check for user specified GDB
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB to use" >&5
-$as_echo_n "checking for UPC backtrace GDB to use... " >&6; }
-
-# Check whether --with-upc-backtrace-gdb was given.
-if test "${with_upc_backtrace_gdb+set}" = set; then :
-  withval=$with_upc_backtrace_gdb;
-      upc_backtrace_gdb=$withval
-
-else
-
-      upc_backtrace_gdb=gdb
-
-fi
-
-    for ac_prog in $GDB $upc_backtrace_gdb
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_PATH_TO_GDB+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PATH_TO_GDB in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PATH_TO_GDB="$PATH_TO_GDB" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="/usr/bin:${PATH}"
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_PATH_TO_GDB="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PATH_TO_GDB=$ac_cv_path_PATH_TO_GDB
-if test -n "$PATH_TO_GDB"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
-$as_echo "$PATH_TO_GDB" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$PATH_TO_GDB" && break
-done
-
-    if test -n "$PATH_TO_GDB"; then
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_BACKTRACE_GDB "$PATH_TO_GDB"
-_ACEOF
-
-    else
-      as_fn_error "cannot find gdb. Try the correct --with-upc-backtrace-gdb
-         option or disable GDB for backtrace with
-         --disable-upc-backtrace option)" "$LINENO" 5
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
-$as_echo "$PATH_TO_GDB" >&6; }
-  fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace signal support" >&5
-$as_echo_n "checking for UPC backtrace signal support... " >&6; }
-  # Check whether --enable-upc-backtrace-signal was given.
-if test "${enable_upc_backtrace_signal+set}" = set; then :
-  enableval=$enable_upc_backtrace_signal;
-    case "$enableval" in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-backtrace-signal accepts only yes or no" "$LINENO" 5
-    esac
-
-else
-
-    enable_upc_backtrace_signal=yes
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_signal" >&5
-$as_echo "$enable_upc_backtrace_signal" >&6; }
-  if test "$enable_upc_backtrace_signal" = yes; then
-
-$as_echo "#define HAVE_UPC_BACKTRACE_SIGNAL 1" >>confdefs.h
-
-
-    # Check for user specified signal name/number
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace signal name/number" >&5
-$as_echo_n "checking for UPC backtrace signal name/number... " >&6; }
-
-# Check whether --with-upc-backtrace-signal was given.
-if test "${with_upc_backtrace_signal+set}" = set; then :
-  withval=$with_upc_backtrace_signal;
-        upc_backtrace_signal=$withval
-
-else
-
-        upc_backtrace_signal=SIGUSR1
-
-fi
-
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_BACKTRACE_SIGNAL $upc_backtrace_signal
-_ACEOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_backtrace_signal" >&5
-$as_echo "$upc_backtrace_signal" >&6; }
-  fi
-
-  if test "$enable_upc_backtrace" = yes; then
-    # Check for "-rdynamic" for UPC backtrace
-    case "${host}" in
-      *-*-darwin*)
-        if test x$build = x$host; then
-          export_sym_check="nm${exeext} -g"
-        elif test x$host = x$target; then
-          export_sym_check="$gcc_cv_nm -g"
-        else
-          export_sym_check=
-        fi
-      ;;
-      *)
-        if test x$build = x$host; then
-          export_sym_check="objdump${exeext} -T"
-        elif test x$host = x$target; then
-          export_sym_check="$gcc_cv_objdump -T"
-        else
-          export_sym_check=
-        fi
-      ;;
-    esac
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
-$as_echo_n "checking for -rdynamic... " >&6; }
-    if test "x$export_sym_check" != x; then
-      echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
-        -o conftest > /dev/null 2>&1
-      if $export_sym_check conftest | grep foobar > /dev/null; then
-        have_rdynamic=yes
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
-$as_echo "$have_rdynamic" >&6; }
-
-    # Check if backtrace can use addr2line
-    if test x"$ADDR2LINE" != x""; then
-
-$as_echo "#define HAVE_UPC_BACKTRACE_ADDR2LINE 1" >>confdefs.h
-
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_BACKTRACE_ADDR2LINE "$ADDR2LINE"
-_ACEOF
-
-    fi
-  fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime maximum number of locks held per thread" >&5
 $as_echo_n "checking for UPC runtime maximum number of locks held per thread... " >&6; }
@@ -20310,6 +20311,14 @@ else
   LIBGUPC_GENERIC_COLLECTIVES_FALSE=
 fi
 
+ if test "$enable_upc_backtrace" = "yes"; then
+  LIBGUPC_BACKTRACE_TRUE=
+  LIBGUPC_BACKTRACE_FALSE='#'
+else
+  LIBGUPC_BACKTRACE_TRUE='#'
+  LIBGUPC_BACKTRACE_FALSE=
+fi
+
 
  if test "$targ_runtime_pthreads" = "yes"; then
   LIBGUPC_PTHREADS_TRUE=
@@ -20341,14 +20350,6 @@ fi
 else
   LIBGUPC_GUM_TRUE='#'
   LIBGUPC_GUM_FALSE=
-fi
-
- if test "$enable_upc_backtrace" = "yes"; then
-  LIBGUPC_BACKTRACE_TRUE=
-  LIBGUPC_BACKTRACE_FALSE='#'
-else
-  LIBGUPC_BACKTRACE_TRUE='#'
-  LIBGUPC_BACKTRACE_FALSE=
 fi
 
  if test "$upc_node_local" = "posix"; then
@@ -20710,6 +20711,10 @@ if test -z "${LIBGUPC_GENERIC_COLLECTIVES_TRUE}" && test -z "${LIBGUPC_GENERIC_C
   as_fn_error "conditional \"LIBGUPC_GENERIC_COLLECTIVES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${LIBGUPC_BACKTRACE_TRUE}" && test -z "${LIBGUPC_BACKTRACE_FALSE}"; then
+  as_fn_error "conditional \"LIBGUPC_BACKTRACE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${LIBGUPC_PTHREADS_TRUE}" && test -z "${LIBGUPC_PTHREADS_FALSE}"; then
   as_fn_error "conditional \"LIBGUPC_PTHREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -20724,10 +20729,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGUPC_GUM_TRUE}" && test -z "${LIBGUPC_GUM_FALSE}"; then
   as_fn_error "conditional \"LIBGUPC_GUM\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGUPC_BACKTRACE_TRUE}" && test -z "${LIBGUPC_BACKTRACE_FALSE}"; then
-  as_fn_error "conditional \"LIBGUPC_BACKTRACE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGUPC_NODE_LOCAL_MEM_POSIX_TRUE}" && test -z "${LIBGUPC_NODE_LOCAL_MEM_POSIX_FALSE}"; then

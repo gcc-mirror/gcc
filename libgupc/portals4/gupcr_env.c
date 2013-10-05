@@ -36,6 +36,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /**
 
+ UPC_BACKTRACE
+
+	If set, enable enable backtrace for runtime fatal events.  By
+	default backtrace logging on fatal events is disabled (even though
+	it may be configured).
+
  UPC_DEBUG
 
 	If set, specifies a list of "facilities" that
@@ -168,6 +174,7 @@ gupcr_facility_table[] =
 typedef enum
 {
   ENV_NONE = 0,
+  ENV_UPC_BACKTRACE,
   ENV_UPC_DEBUG,
   ENV_UPC_DEBUGFILE,
   ENV_UPC_FIRSTTOUCH,
@@ -194,6 +201,7 @@ static const struct gupcr_env_var_struct
 }
 gupcr_env_var_table[] =
 {
+  {"UPC_BACKTRACE", ENV_UPC_BACKTRACE},
   {"UPC_DEBUG", ENV_UPC_DEBUG},
   {"UPC_DEBUGFILE", ENV_UPC_DEBUGFILE},
   {"UPC_FIRSTTOUCH", ENV_UPC_FIRSTTOUCH},
@@ -424,6 +432,9 @@ gupcr_env_init (void)
 	  size_t heap_size;
 	  switch (env_kind)
 	    {
+	    case ENV_UPC_BACKTRACE:
+	      gupcr_set_backtrace (gupcr_env_boolean (env_var));
+	      break;
 	    case ENV_UPC_DEBUG:
 	      facility_mask = gupcr_env_facility_list (env_var);
 	      if (facility_mask)

@@ -684,7 +684,155 @@ AC_MSG_RESULT([$upc_runtime_tree_fanout])
 AC_DEFINE_UNQUOTED(GUPCR_TREE_FANOUT, [$upc_runtime_tree_fanout],
   [Maximum number of children at each level of a collective operation tree.])
 
+AC_MSG_CHECKING([for UPC backtrace support])
+AC_ARG_ENABLE(upc-backtrace,
+[AS_HELP_STRING([--enable-upc-backtrace],
+		[enable UPC backtrace;
+		 enable stack frame backtrace report
+		 when UPC run-time fatal errors occur
+		 or by user request (via signal)])],
+[
+  case $enableval in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no])
+  esac
+],
+[
+  enable_upc_backtrace=yes
+])
+AC_MSG_RESULT($enable_upc_backtrace)
+if test "$enable_upc_backtrace" = yes; then
+  AC_DEFINE(HAVE_UPC_BACKTRACE, 1,
+    [Define to 1 if UPC backtrace is enabled.])
+fi
+
+AC_MSG_CHECKING([for UPC backtrace GDB support])
+AC_ARG_ENABLE(upc-backtrace-gdb,
+[AS_HELP_STRING([--enable-upc-backtrace-gdb],
+		[enable the use of GDB for UPC stack backtrace
+		[default='yes']])],
+[
+  case "$enableval" in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no])
+  esac
+],
+[
+  enable_upc_backtrace_gdb=yes
+])
+AC_MSG_RESULT([$enable_upc_backtrace_gdb])
+if test "$enable_upc_backtrace_gdb" = yes; then
+  AC_DEFINE(HAVE_UPC_BACKTRACE_GDB, 1,
+    [Define to 1 if UPC backtrace with GDB is enabled.])
+
+  # Check for user specified GDB
+  AC_MSG_CHECKING([for UPC backtrace GDB to use])
+  AC_ARG_WITH(upc-backtrace-gdb,
+    [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
+    [specify which GDB to use for UPC backtrace support
+    [default='gdb']])],
+  [
+    upc_backtrace_gdb=$withval
+  ],
+  [
+    upc_backtrace_gdb=gdb
+  ])
+  AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
+  if test -n "$PATH_TO_GDB"; then
+    AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
+      [Define path to preferred GDB for backtrace])
+  else
+    AC_MSG_ERROR(
+      [cannot find gdb. Try the correct --with-upc-backtrace-gdb
+       option or disable GDB for backtrace with
+       --disable-upc-backtrace option)])
+  fi
+  AC_MSG_RESULT([$PATH_TO_GDB])
+fi
+
+AC_MSG_CHECKING([for UPC backtrace signal support])
+AC_ARG_ENABLE(upc-backtrace-signal,
+[AS_HELP_STRING([--enable-upc-backtrace-signal],
+		[enable signal support for UPC stack backtrace
+		[default='yes']])],
+[
+  case "$enableval" in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-backtrace-signal accepts only yes or no])
+  esac
+  ],
+[
+  enable_upc_backtrace_signal=yes
+])
+AC_MSG_RESULT([$enable_upc_backtrace_signal])
+if test "$enable_upc_backtrace_signal" = yes; then
+  AC_DEFINE(HAVE_UPC_BACKTRACE_SIGNAL, 1,
+    [Define to 1 if UPC backtrace signal is enabled.])
+
+  # Check for user specified signal name/number
+  AC_MSG_CHECKING([for UPC backtrace signal name/number])
+  AC_ARG_WITH(upc-backtrace-signal,
+    [AS_HELP_STRING([--with-upc-backtrace-signal=SIGNAL],
+    [specify the signal to be used for UPC stack backtrace
+    [default='SIGUSR1']])],
+    [
+      upc_backtrace_signal=$withval
+    ],
+    [
+      upc_backtrace_signal=SIGUSR1
+    ])
+  AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_SIGNAL, $upc_backtrace_signal,
+    [Define to preferred signal for UPC backtrace.])
+  AC_MSG_RESULT([$upc_backtrace_signal])
+fi
+
+if test "$enable_upc_backtrace" = yes; then
+  # Check for "-rdynamic" for UPC backtrace
+  case "${host}" in
+    *-*-darwin*)
+      if test x$build = x$host; then
+        export_sym_check="nm${exeext} -g"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_nm -g"
+      else
+        export_sym_check=
+      fi
+    ;;
+    *)
+      if test x$build = x$host; then
+        export_sym_check="objdump${exeext} -T"
+      elif test x$host = x$target; then
+        export_sym_check="$gcc_cv_objdump -T"
+      else
+        export_sym_check=
+      fi
+    ;;
+  esac
+  AC_MSG_CHECKING([for -rdynamic])
+  if test "x$export_sym_check" != x; then
+    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+      -o conftest > /dev/null 2>&1
+    if $export_sym_check conftest | grep foobar > /dev/null; then
+      have_rdynamic=yes
+    fi
+  fi
+  AC_MSG_RESULT([$have_rdynamic])
+
+  # Check if backtrace can use addr2line
+  if test x"$ADDR2LINE" != x""; then
+    AC_DEFINE(HAVE_UPC_BACKTRACE_ADDR2LINE, 1,
+      [Define to 1 if UPC backtrace with ADDR2LINE is enabled.])
+    AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_ADDR2LINE, "$ADDR2LINE",
+      [Define path to preferred addr2line for backtrace])
+  fi
+fi
+
 if test "$upc_runtime_model" = "smp"; then
+
   targ_runtime_pthreads=
   LIBGUPC_GCC_TLS_SUPPORTED
   if test "$upc_cv_gcc_tls_supported"x = "yes"x ; then
@@ -755,9 +903,9 @@ if test "$upc_runtime_model" = "smp"; then
                    support (requires UPC aware GDB)])],
   [
     case $enableval in
-    yes | no) ;;
-    *)
-      AC_MSG_ERROR([--enable-upc-gum-debug accepts only yes or no])
+      yes | no) ;;
+      *)
+        AC_MSG_ERROR([--enable-upc-gum-debug accepts only yes or no])
     esac
     upc_gum_debug=$enableval
   ],
@@ -774,153 +922,6 @@ if test "$upc_runtime_model" = "smp"; then
 
   DX_DOXYGEN_FEATURE(OFF)
   DX_INIT_DOXYGEN(${PACKAGE}, doxygen.cfg, doc)
-
-  AC_MSG_CHECKING([for UPC backtrace support])
-  AC_ARG_ENABLE(upc-backtrace,
-  [AS_HELP_STRING([--enable-upc-backtrace],
-                  [enable UPC backtrace;
-                   enable stack frame backtrace report
-		   when UPC run-time fatal errors occur
-		   or by user request (via signal)])],
-  [
-    case $enableval in
-    yes | no) ;;
-    *)
-      AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no])
-    esac
-  ],
-  [
-    enable_upc_backtrace=yes
-  ])
-  AC_MSG_RESULT($enable_upc_backtrace)
-  if test "$enable_upc_backtrace" = yes; then
-    AC_DEFINE(HAVE_UPC_BACKTRACE, 1,
-      [Define to 1 if UPC backtrace is enabled.])
-  fi
-
-  AC_MSG_CHECKING([for UPC backtrace GDB support])
-  AC_ARG_ENABLE(upc-backtrace-gdb,
-  [AS_HELP_STRING([--enable-upc-backtrace-gdb],
-	 	  [enable the use of GDB for UPC stack backtrace
-		   [default='yes']])],
-  [
-    case "$enableval" in
-    yes | no) ;;
-    *)
-      AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no])
-    esac
-  ],
-  [
-    enable_upc_backtrace_gdb=yes
-  ])
-  AC_MSG_RESULT([$enable_upc_backtrace_gdb])
-  if test "$enable_upc_backtrace_gdb" = yes; then
-    AC_DEFINE(HAVE_UPC_BACKTRACE_GDB, 1,
-      [Define to 1 if UPC backtrace with GDB is enabled.])
-
-    # Check for user specified GDB
-    AC_MSG_CHECKING([for UPC backtrace GDB to use])
-    AC_ARG_WITH(upc-backtrace-gdb,
-      [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
-      [specify which GDB to use for UPC backtrace support
-      [default='gdb']])],
-    [
-      upc_backtrace_gdb=$withval
-    ],
-    [
-      upc_backtrace_gdb=gdb
-    ])
-    AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
-    if test -n "$PATH_TO_GDB"; then
-      AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
-        [Define path to preferred GDB for backtrace])
-    else
-      AC_MSG_ERROR(
-        [cannot find gdb. Try the correct --with-upc-backtrace-gdb
-         option or disable GDB for backtrace with
-         --disable-upc-backtrace option)])
-    fi
-    AC_MSG_RESULT([$PATH_TO_GDB])
-  fi
-
-  AC_MSG_CHECKING([for UPC backtrace signal support])
-  AC_ARG_ENABLE(upc-backtrace-signal,
-  [AS_HELP_STRING([--enable-upc-backtrace-signal],
-	 	  [enable signal support for UPC stack backtrace
-		   [default='yes']])],
-  [
-    case "$enableval" in
-    yes | no) ;;
-    *)
-      AC_MSG_ERROR([--enable-upc-backtrace-signal accepts only yes or no])
-    esac
-  ],
-  [
-    enable_upc_backtrace_signal=yes
-  ])
-  AC_MSG_RESULT([$enable_upc_backtrace_signal])
-  if test "$enable_upc_backtrace_signal" = yes; then
-    AC_DEFINE(HAVE_UPC_BACKTRACE_SIGNAL, 1,
-      [Define to 1 if UPC backtrace signal is enabled.])
-
-    # Check for user specified signal name/number
-    AC_MSG_CHECKING([for UPC backtrace signal name/number])
-    AC_ARG_WITH(upc-backtrace-signal,
-      [AS_HELP_STRING([--with-upc-backtrace-signal=SIGNAL],
-      [specify the signal to be used for UPC stack backtrace
-      [default='SIGUSR1']])],
-      [
-        upc_backtrace_signal=$withval
-      ],
-      [
-        upc_backtrace_signal=SIGUSR1
-      ])
-    AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_SIGNAL, $upc_backtrace_signal,
-      [Define to preferred signal for UPC backtrace.])
-    AC_MSG_RESULT([$upc_backtrace_signal])
-  fi
-
-  if test "$enable_upc_backtrace" = yes; then
-    # Check for "-rdynamic" for UPC backtrace
-    case "${host}" in
-      *-*-darwin*)
-        if test x$build = x$host; then
-          export_sym_check="nm${exeext} -g"
-        elif test x$host = x$target; then
-          export_sym_check="$gcc_cv_nm -g"
-        else
-          export_sym_check=
-        fi
-      ;;
-      *)
-        if test x$build = x$host; then
-          export_sym_check="objdump${exeext} -T"
-        elif test x$host = x$target; then
-          export_sym_check="$gcc_cv_objdump -T"
-        else
-          export_sym_check=
-        fi
-      ;;
-    esac
-    AC_MSG_CHECKING([for -rdynamic])
-    if test "x$export_sym_check" != x; then
-      echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
-        -o conftest > /dev/null 2>&1
-      if $export_sym_check conftest | grep foobar > /dev/null; then
-        have_rdynamic=yes
-      fi
-    fi
-    AC_MSG_RESULT([$have_rdynamic])
-
-    # Check if backtrace can use addr2line
-    if test x"$ADDR2LINE" != x""; then
-      AC_DEFINE(HAVE_UPC_BACKTRACE_ADDR2LINE, 1,
-        [Define to 1 if UPC backtrace with ADDR2LINE is enabled.])
-      AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_ADDR2LINE, "$ADDR2LINE",
-        [Define path to preferred addr2line for backtrace])
-    fi
-  fi
 
   AC_MSG_CHECKING([for UPC runtime maximum number of locks held per thread])
   AC_ARG_WITH(upc-runtime-max-locks,
@@ -1319,13 +1320,13 @@ AM_CONDITIONAL(LIBGUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
 AM_CONDITIONAL(LIBGUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GENERIC_COLLECTIVES,
                [test "$use_generic_collectives" = "yes"])
+AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$enable_upc_backtrace" = "yes"])
 
 dnl 'smp' runtime specific settings
 AM_CONDITIONAL(LIBGUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
 AM_CONDITIONAL(LIBGUPC_AFFINITY, [test "$upc_affinity" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
-AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$enable_upc_backtrace" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_POSIX, [test "$upc_node_local" = "posix"])
 AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_MMAP, [test "$upc_node_local" = "mmap"])
 

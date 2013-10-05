@@ -44,6 +44,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gupcr_coll_sup.h"
 #include "gupcr_atomic_sup.h"
 #include "gupcr_nb_sup.h"
+#include "gupcr_backtrace.h"
 
 /** User's main program */
 extern int GUPCR_MAIN (int argc, char *argv[]);
@@ -123,6 +124,11 @@ gupcr_init (void)
 			  "not equal to compiled threads (%d)",
 			  run_threads_count, THREADS);
   gupcr_assert (THREADS >= 1);
+
+#if HAVE_UPC_BACKTRACE                                                          
+  /* Initialize backtrace support. */                                           
+  gupcr_backtrace_init (gupcr_get_pgm_name () );                                        
+#endif 
 
   /* Initialize the Portals Network Interface.  */
   gupcr_portals_ni_init ();

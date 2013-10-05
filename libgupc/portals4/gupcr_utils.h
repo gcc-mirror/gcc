@@ -297,6 +297,7 @@ extern const char *gupcr_get_pid_as_string (void);
 extern size_t gupcr_get_shared_heap_size (void);
 extern int gupcr_is_node_local_memory_enabled (void);
 extern int gupcr_is_forcetouch_enabled (void);
+extern int gupcr_is_backtrace_enabled (void);
 extern void gupcr_unique_local_name (char *, const char *, int, int);
 extern void gupcr_log_print (const char *fmt, ...)
   __attribute__ ((__format__ (__printf__, 1, 2)));
@@ -310,6 +311,8 @@ extern void gupcr_trace_print (const char *fmt, ...)
   __attribute__ ((__format__ (__printf__, 1, 2)));
 extern void gupcr_warn_print (const char *fmt, ...)
   __attribute__ ((__format__ (__printf__, 1, 2)));
+extern int gupcr_create_temp_file (const char *, char *,
+				   const char **);
 extern void gupcr_utils_init (void);
 extern void gupcr_utils_fini (void);
 
@@ -319,6 +322,7 @@ extern void gupcr_no_warn (void);
 extern void gupcr_set_shared_heap_size (size_t heap_size);
 extern void gupcr_set_node_local_memory (int value);
 extern void gupcr_set_forcetouch (int value);
+extern void gupcr_set_backtrace (int value);
 extern void gupcr_set_debug_facility (gupcr_facility_t);
 extern void gupcr_set_debug_filename (const char *);
 extern void gupcr_set_log_facility (gupcr_facility_t);

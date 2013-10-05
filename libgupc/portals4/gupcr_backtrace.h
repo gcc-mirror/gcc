@@ -1,5 +1,5 @@
 /* Copyright (C) 2012-2013 Free Software Foundation, Inc.
-   This file is part of the UPC runtime Library.
+   This file is part of the UPC runtime library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
 
@@ -24,26 +24,22 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _GUPCR_BARRIER_H_
-#define _GUPCR_BARRIER_H_
 
-/**
- * @file gupcr_barrier.h
- * GUPC Portals4 barrier implementation.
- *
- * @addtogroup BARRIER GUPCR Barrier Functions
- * @{
- */
+#ifndef GUPCR_BACKTRACE_H_
+#define GUPCR_BACKTRACE_H_
 
-extern void gupcr_barrier_init (void);
-extern void gupcr_barrier_fini (void);
+/* Environment variables. */
+/** Enable/Disable backtrace env variable. */
+#define GUPCR_BACKTRACE_ENV "UPC_BACKTRACE"
+/** Enable/Disable STAT backtrace env variable. */
+#define GUPCR_BACKTRACE_FILE_ENV "UPC_BACKTRACEFILE"
+/** GDB command for backtrace env variable. */
+#define GUPCR_BACKTRACE_GDB_ENV "UPC_BACKTRACE_GDB"
 
-/* Broadcast support functions.  */
-extern void gupcr_bcast_send (void *, size_t);
-extern void gupcr_bcast_recv (void *, size_t);
+/* Interfaces. */
+extern void gupcr_backtrace (void);
+extern void gupcr_fatal_backtrace (void);
+extern void gupcr_backtrace_init (const char *execname);
+extern void gupcr_backtrace_restore_handlers (void);
 
-/* Current barrier ID.  */
-extern int gupcr_barrier_id;
-
-/** @} */
-#endif /* gupcr_barrier.h */
+#endif /* gupc_backtrace.h */

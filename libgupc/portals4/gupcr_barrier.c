@@ -123,7 +123,7 @@ static int gupcr_barrier_active = 0;
 #define INNER_THREAD ((gupcr_child_cnt != 0) && (gupcr_parent_thread != -1))
 
 /** Thread's current barrier ID */
-static int gupcr_barrier_id;
+int gupcr_barrier_id;
 
 /** Memory storage for notify barrier ID.  Mapped by
     LE for external access, and MD for internal access.  */

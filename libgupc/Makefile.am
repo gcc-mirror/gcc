@@ -94,6 +94,14 @@ EXTRA_DIST += $(UPC_OPS_DEFS) $(UPC_TYPES_DEF)
 
 AUTOGEN = autogen
 
+UPC_BACKTRACE_SUP =
+if LIBGUPC_BACKTRACE
+if LIBGUPC_PORTALS4_RUNTIME
+    UPC_BACKTRACE_SUP += portals4/gupcr_backtrace.h portals4/gupcr_backtrace.c
+else
+    UPC_BACKTRACE_SUP += smp/upc_backtrace.h smp/upc_backtrace.c
+endif
+endif
 if LIBGUPC_SMP_RUNTIME
 
 EXTRA_DIST += smp/gcc-upc-lib.in
@@ -123,10 +131,6 @@ if LIBGUPC_NUMA
   UPC_NUMA_SUP = smp/upc_numa.c
 else
   UPC_NUMA_SUP = smp/upc_numa_stub.c
-endif
-UPC_BACKTRACE_SUP =
-if LIBGUPC_BACKTRACE
-  UPC_BACKTRACE_SUP += smp/upc_backtrace.h smp/upc_backtrace.c
 endif
 
 if MAINTAINER_MODE
@@ -174,6 +178,7 @@ UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
 	portals4/gupcr_atomic.upc \
 	portals4/gupcr_atomic_sup.h portals4/gupcr_atomic_sup.c \
+	$(UPC_BACKTRACE_SUP) \
 	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
 	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
 	portals4/gupcr_castable.upc \

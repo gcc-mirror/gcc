@@ -74,6 +74,7 @@ static int gupcr_warn_user = 1;
 static size_t gupcr_shared_heap_size;
 static int gupcr_node_local_memory = 1;
 static int gupcr_forcetouch = 1;
+static int gupcr_backtrace = 0;
 
 static gupcr_open_file_ref gupcr_open_files_list;
 static int gupcr_debug_enabled;
@@ -268,6 +269,18 @@ int
 gupcr_is_forcetouch_enabled (void)
 {
   return gupcr_forcetouch;
+}
+
+void
+gupcr_set_backtrace (int value)
+{
+  gupcr_backtrace = value;
+}
+
+int
+gupcr_is_backtrace_enabled (void)
+{
+  return gupcr_backtrace;
 }
 
 /** Node local unique name.  */
@@ -698,6 +711,37 @@ gupcr_strtoll_error (const char *const str,
       gupcr_fatal_error ("unreachable statement");
       break;
     }
+}
+
+/* Given a "tag" (a relative filename ending in XXXXXX),
+   create a temporary file using the tag.
+   Return a file descriptor associated with the newly
+   created temporary file.
+   [see: http://www.linux.com/howtos/Secure-Programs-HOWTO/avoid-race.shtml]  */
+
+int
+gupcr_create_temp_file (const char *tag, char *tmp_fname,
+                        const char **err_msg)
+{
+  const char *tmpdir = NULL;
+  mode_t old_mode;
+  int fd;
+  if ((getuid () == geteuid ()) && (getgid () == getegid ()))
+    {
+      tmpdir = getenv ("TMPDIR");
+      if (!tmpdir)
+        tmpdir = getenv ("TMP");
+    }
+  if (!tmpdir)
+    tmpdir = "/tmp";
+  sprintf (tmp_fname, "%s/%s", tmpdir, tag);
+  /* Create file with restrictive permissions */
+  old_mode = umask (077);
+  fd = mkstemp (tmp_fname);
+  (void) umask (old_mode);
+  if (fd < 0)
+    *err_msg = "Couldn't open temporary file";
+  return fd;
 }
 
 static void
