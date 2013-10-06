@@ -650,9 +650,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isnormal(_Tp __x)
     { return __x != 0 ? true : false; }
 
+  // The front-end doesn't provide a type generic builtin (libstdc++/58625).
   constexpr bool
   signbit(float __x)
-  { return __builtin_signbit(__x); }
+  { return __builtin_signbitf(__x); }
 
   constexpr bool
   signbit(double __x)
@@ -660,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr bool
   signbit(long double __x)
-  { return __builtin_signbit(__x); }
+  { return __builtin_signbitl(__x); }
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,

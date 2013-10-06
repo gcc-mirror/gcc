@@ -1,3 +1,10 @@
+2013-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58625
+	* include/c_global/cmath (signbit): Use __builtin_signbitf and
+	__builtin_signbitl.
+
 2013-10-03  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_executor.tcc (_DFSExecutor<>::_M_dfs): Fix wrong
