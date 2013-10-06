@@ -2120,11 +2120,24 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
-	      if (using_new)
-		error ("uninitialized reference member in %q#T "
-		       "using %<new%> without new-initializer", origin);
+	      if (DECL_CONTEXT (field) == origin)
+		{
+		  if (using_new)
+		    error ("uninitialized reference member in %q#T "
+			   "using %<new%> without new-initializer", origin);
+		  else
+		    error ("uninitialized reference member in %q#T", origin);
+		}
 	      else
-		error ("uninitialized reference member in %q#T", origin);
+		{
+		  if (using_new)
+		    error ("uninitialized reference member in base %q#T "
+			   "of %q#T using %<new%> without new-initializer",
+			   DECL_CONTEXT (field), origin);
+		  else
+		    error ("uninitialized reference member in base %q#T "
+			   "of %q#T", DECL_CONTEXT (field), origin);
+		}
 	      inform (DECL_SOURCE_LOCATION (field),
 		      "%qD should be initialized", field);
 	    }
@@ -2135,11 +2148,24 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
-	      if (using_new)
-		error ("uninitialized const member in %q#T "
-		       "using %<new%> without new-initializer", origin);
+	      if (DECL_CONTEXT (field) == origin)
+		{
+		  if (using_new)
+		    error ("uninitialized const member in %q#T "
+			   "using %<new%> without new-initializer", origin);
+		  else
+		    error ("uninitialized const member in %q#T", origin);
+		}
 	      else
-		error ("uninitialized const member in %q#T", origin);
+		{
+		  if (using_new)
+		    error ("uninitialized const member in base %q#T "
+			   "of %q#T using %<new%> without new-initializer",
+			   DECL_CONTEXT (field), origin);
+		  else
+		    error ("uninitialized const member in base %q#T "
+			   "of %q#T", DECL_CONTEXT (field), origin);
+		}
 	      inform (DECL_SOURCE_LOCATION (field),
 		      "%qD should be initialized", field);
 	    }
