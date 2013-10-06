@@ -25,13 +25,17 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(std::regex_search("", std::regex("")));
+  VERIFY(regex_search_debug("", std::regex("")));
 }
 
 int

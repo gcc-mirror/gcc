@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -33,21 +35,21 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(!regex_search("2123456", regex("^1234")));
-  VERIFY(regex_search("123456", regex("^1234")));
-  VERIFY(regex_search("123456", regex("(5|^)1234")));
-  VERIFY(regex_search("5123456", regex("(5|^)1234")));
-  VERIFY(!regex_search("1234562", regex("3456$")));
-  VERIFY(regex_search("123456", regex("3456$")));
-  VERIFY(!regex_search("123456", regex("(?=1234)56")));
-  VERIFY(regex_search("123456", regex("(?=1234)123456")));
-  VERIFY(regex_search("123456", regex("(?!1234)56")));
-  VERIFY(!regex_search("123456", regex("(?!1234)123456")));
+  VERIFY(!regex_search_debug("2123456", regex("^1234")));
+  VERIFY(regex_search_debug("123456", regex("^1234")));
+  VERIFY(regex_search_debug("123456", regex("(5|^)1234")));
+  VERIFY(regex_search_debug("5123456", regex("(5|^)1234")));
+  VERIFY(!regex_search_debug("1234562", regex("3456$")));
+  VERIFY(regex_search_debug("123456", regex("3456$")));
+  VERIFY(!regex_search_debug("123456", regex("(?=1234)56")));
+  VERIFY(regex_search_debug("123456", regex("(?=1234)123456")));
+  VERIFY(regex_search_debug("123456", regex("(?!1234)56")));
+  VERIFY(!regex_search_debug("123456", regex("(?!1234)123456")));
 
-  VERIFY(regex_search("a-", regex("a\\b-")));
-  VERIFY(!regex_search("ab", regex("a\\bb")));
-  VERIFY(!regex_search("a-", regex("a\\B-")));
-  VERIFY(regex_search("ab", regex("a\\Bb")));
+  VERIFY(regex_search_debug("a-", regex("a\\b-")));
+  VERIFY(!regex_search_debug("ab", regex("a\\bb")));
+  VERIFY(!regex_search_debug("a-", regex("a\\B-")));
+  VERIFY(regex_search_debug("ab", regex("a\\Bb")));
 
   string s("This is a regular expression");
   string sol[] =

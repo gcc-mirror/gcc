@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -35,30 +37,30 @@ test01()
 
   cmatch m;
 #define TEST(i, s) VERIFY(m[i].matched && string(m[i].first, m[i].second) == s)
-  VERIFY(regex_search("aaaa", m, regex("a*")));
+  VERIFY(regex_search_debug("aaaa", m, regex("a*")));
   TEST(0, "aaaa");
-  VERIFY(regex_search("aaaa", m, regex("a*?")));
+  VERIFY(regex_search_debug("aaaa", m, regex("a*?")));
   TEST(0, "");
-  VERIFY(regex_search("aaaa", m, regex("a+")));
+  VERIFY(regex_search_debug("aaaa", m, regex("a+")));
   TEST(0, "aaaa");
-  VERIFY(regex_search("aaaa", m, regex("a+?")));
+  VERIFY(regex_search_debug("aaaa", m, regex("a+?")));
   TEST(0, "a");
-  VERIFY(regex_search("a", m, regex("a?")));
+  VERIFY(regex_search_debug("a", m, regex("a?")));
   TEST(0, "a");
-  VERIFY(regex_search("a", m, regex("a??")));
+  VERIFY(regex_search_debug("a", m, regex("a??")));
   TEST(0, "");
-  VERIFY(regex_search("", m, regex("a??")));
+  VERIFY(regex_search_debug("", m, regex("a??")));
   TEST(0, "");
-  VERIFY(regex_search("aaaa", m, regex("(a+)(a+)")));
+  VERIFY(regex_search_debug("aaaa", m, regex("(a+)(a+)")));
   TEST(1, "aaa");
   TEST(2, "a");
-  VERIFY(regex_search("aaaa", m, regex("(a+?)(a+)")));
+  VERIFY(regex_search_debug("aaaa", m, regex("(a+?)(a+)")));
   TEST(1, "a");
   TEST(2, "aaa");
-  VERIFY(regex_search("aaaa", m, regex("(a+?)(a+)")));
+  VERIFY(regex_search_debug("aaaa", m, regex("(a+?)(a+)")));
   TEST(1, "a");
   TEST(2, "aaa");
-  VERIFY(regex_search("aaaa", m, regex("(a+?)(a+?)")));
+  VERIFY(regex_search_debug("aaaa", m, regex("(a+?)(a+?)")));
   TEST(1, "a");
   TEST(2, "a");
 }

@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -37,7 +39,7 @@ test01()
   {\
     regex re(res);\
     string st(s);\
-    VERIFY(!regex_match(st, re));\
+    VERIFY(!regex_match_debug(st, re));\
   }
   TEST(".", "\0");
   TEST(".", "\n");

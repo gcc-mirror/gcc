@@ -25,8 +25,10 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
 using namespace std;
+using namespace __gnu_test;
 
 void
 test01()
@@ -34,8 +36,8 @@ test01()
   bool test __attribute__((unused)) = true;
 
   cmatch m;
-  VERIFY(regex_search("*** this is a string !!!", m,
-		      regex("(\\w+) (\\w+) (\\w+) (\\w+)")));
+  VERIFY(regex_search_debug("*** this is a string !!!", m,
+			    regex("(\\w+) (\\w+) (\\w+) (\\w+)")));
   VERIFY(m.format("$&|$`|$3|$4|$2|$1|$'$$$")
 	 == "this is a string|*** |a|string|is|this| !!!$$");
   VERIFY(m.format("&|\\3|\\4|\\2|\\1|\\",

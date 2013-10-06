@@ -24,13 +24,15 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 // libstdc++/58576
 void
 test01()
 {
-  using namespace std;
-
   bool test __attribute__((unused)) = true;
 
   string domain_name = "valid.hostname.org";
@@ -74,9 +76,9 @@ test01()
   };
   try
     {
-      VERIFY(regex_match( domain_name, m, fqdn_regex ));
+      VERIFY(regex_match_debug( domain_name, m, fqdn_regex ));
       VERIFY(m.size() == sizeof(sol) / sizeof(*sol));
-      for (int i = 0; i < (int)m.size(); i++) {
+      for (size_t i = 0; i < m.size(); i++) {
 	  string s(m[i].first, m[i].second);
 	  VERIFY(s == sol[i]);
       }
