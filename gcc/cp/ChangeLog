@@ -1,5 +1,14 @@
 2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58126
+	* class.c (check_bases): Propagate CLASSTYPE_READONLY_FIELDS_NEED_INIT
+	and CLASSTYPE_REF_FIELDS_NEED_INIT from bases to derived.
+	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Extend error
+	messages about uninitialized const and references members to mention
+	the base class.
+
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/56060
 	* pt.c (type_dependent_expression_p): Handle EXPR_PACK_EXPANSION.
 

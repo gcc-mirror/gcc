@@ -1,5 +1,10 @@
 2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58126
+	* g++.dg/init/uninitialized1.C: New.
+
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/56060
 	* g++.dg/cpp0x/variadic144.C: New.
 
