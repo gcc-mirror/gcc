@@ -1,3 +1,8 @@
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56060
+	* pt.c (type_dependent_expression_p): Handle EXPR_PACK_EXPANSION.
+
 2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58560

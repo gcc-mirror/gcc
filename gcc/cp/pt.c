@@ -20403,6 +20403,10 @@ type_dependent_expression_p (tree expression)
       if (TREE_CODE (expression) == SCOPE_REF)
 	return false;
 
+      /* Always dependent, on the number of arguments if nothing else.  */
+      if (TREE_CODE (expression) == EXPR_PACK_EXPANSION)
+	return true;
+
       if (BASELINK_P (expression))
 	expression = BASELINK_FUNCTIONS (expression);
 
