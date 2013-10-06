@@ -222,9 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __throw_regex_error(regex_constants::error_badbrace);
 	  _StateSeqT __r(_M_pop());
 	  _StateSeqT __e(_M_nfa, _M_nfa._M_insert_dummy());
-	  int __min_rep = _M_cur_int_value(10);
+	  long __min_rep = _M_cur_int_value(10);
 	  bool __infi = false;
-	  int __n;
+	  long __n;
 
 	  // {3
 	  if (_M_match_token(_ScannerT::_S_token_comma))
@@ -239,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
 
-	  for (int __i = 0; __i < __min_rep; ++__i)
+	  for (long __i = 0; __i < __min_rep; ++__i)
 	    __e._M_append(__r._M_clone());
 
 	  if (__infi)
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      // "match less" one. Switch _M_alt and _M_next of all created
 	      // nodes. This is a hacking but IMO works well.
 	      std::stack<_StateIdT> __stack;
-	      for (int __i = 0; __i < __n; ++__i)
+	      for (long __i = 0; __i < __n; ++__i)
 		{
 		  auto __tmp = __r._M_clone();
 		  auto __alt = _M_nfa._M_insert_alt(__tmp._M_start,
@@ -318,7 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
 	{
-	  int __mark = _M_nfa._M_sub_count();
+	  auto __mark = _M_nfa._M_sub_count();
 	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_subexpr_begin());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
@@ -425,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_FwdIter, _CharT, _TraitsT>::
     _M_cur_int_value(int __radix)
     {
-      int __v = 0;
+      long __v = 0;
       for (typename _StringT::size_type __i = 0;
 	   __i < _M_value.length(); ++__i)
 	__v =__v * __radix + _M_traits.value(_M_value[__i], __radix);

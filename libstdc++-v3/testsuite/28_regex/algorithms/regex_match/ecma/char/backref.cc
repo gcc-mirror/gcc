@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void

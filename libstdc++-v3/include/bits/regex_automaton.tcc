@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __ostr << "digraph _Nfa {\n"
        << "  rankdir=LR;\n";
-      for (unsigned int __i = 0; __i < this->size(); ++__i)
+      for (size_t __i = 0; __i < this->size(); ++__i)
       { this->at(__i)._M_dot(__ostr, __i); }
       __ostr << "}\n";
       return __ostr;
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _TraitsT>
     _StateIdT _NFA<_CharT, _TraitsT>::
-    _M_insert_backref(unsigned int __index)
+    _M_insert_backref(size_t __index)
     {
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing

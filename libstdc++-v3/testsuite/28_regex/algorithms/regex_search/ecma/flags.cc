@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -35,32 +37,34 @@ test01()
 
   cmatch m;
   regex re("((as)(df))", regex_constants::ECMAScript | regex_constants::nosubs);
-  VERIFY(regex_search("asdf", m, re));
+  VERIFY(regex_search_debug("asdf", m, re));
   VERIFY(m.size() == 1);
   VERIFY(m[0].matched && string(m[0].first, m[0].second) == "asdf");
 
-  VERIFY( regex_search("a", regex("^a")));
-  VERIFY(!regex_search("a", regex("^a"), regex_constants::match_not_bol));
-  VERIFY( regex_search("a", regex("a$")));
-  VERIFY(!regex_search("a", regex("a$"), regex_constants::match_not_eol));
-  VERIFY( regex_search("a", regex("\\ba")));
-  VERIFY(!regex_search("a", regex("\\ba"), regex_constants::match_not_bow));
-  VERIFY( regex_search("a", regex("a\\b")));
-  VERIFY(!regex_search("a", regex("a\\b"), regex_constants::match_not_eow));
-  VERIFY( regex_search("", regex("")));
-  VERIFY(!regex_search("", regex(""), regex_constants::match_not_null));
-  VERIFY( regex_search("", regex("^$")));
-  VERIFY(!regex_search("", regex("^$"), regex_constants::match_not_null));
-  VERIFY( regex_search("aaa", m, regex("a*?"),
-		       regex_constants::match_not_null));
+  VERIFY( regex_search_debug("a", regex("^a")));
+  VERIFY(!regex_search_debug("a", regex("^a"), regex_constants::match_not_bol));
+  VERIFY( regex_search_debug("a", regex("a$")));
+  VERIFY(!regex_search_debug("a", regex("a$"), regex_constants::match_not_eol));
+  VERIFY( regex_search_debug("a", regex("\\ba")));
+  VERIFY(!regex_search_debug("a", regex("\\ba"),
+			     regex_constants::match_not_bow));
+  VERIFY( regex_search_debug("a", regex("a\\b")));
+  VERIFY(!regex_search_debug("a", regex("a\\b"),
+			     regex_constants::match_not_eow));
+  VERIFY( regex_search_debug("", regex("")));
+  VERIFY(!regex_search_debug("", regex(""), regex_constants::match_not_null));
+  VERIFY( regex_search_debug("", regex("^$")));
+  VERIFY(!regex_search_debug("", regex("^$"), regex_constants::match_not_null));
+  VERIFY( regex_search_debug("aaa", m, regex("a*?"),
+			     regex_constants::match_not_null));
   VERIFY(m[0].matched && string(m[0].first, m[0].second) == "a");
-  VERIFY( regex_search("asdf", regex("sdf")));
-  VERIFY(!regex_search("asdf", regex("sdf"),
-		       regex_constants::match_continuous));
-  VERIFY( regex_search(" a"+1, regex("\\ba"),
-		       regex_constants::match_prev_avail));
-  VERIFY( regex_search("ba"+1, regex("\\Ba"),
-		       regex_constants::match_prev_avail));
+  VERIFY( regex_search_debug("asdf", regex("sdf")));
+  VERIFY(!regex_search_debug("asdf", regex("sdf"),
+			     regex_constants::match_continuous));
+  VERIFY( regex_search_debug(" a"+1, regex("\\ba"),
+			     regex_constants::match_prev_avail));
+  VERIFY( regex_search_debug("ba"+1, regex("\\Ba"),
+			     regex_constants::match_prev_avail));
 }
 
 int

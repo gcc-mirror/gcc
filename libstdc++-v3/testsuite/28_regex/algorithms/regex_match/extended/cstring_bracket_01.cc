@@ -25,6 +25,10 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 void
 test01()
@@ -33,33 +37,33 @@ test01()
 
   {
     std::regex  re("pre/[za-x]", std::regex::extended);
-    VERIFY( std::regex_match("pre/z", re) );
-    VERIFY( std::regex_match("pre/a", re) );
-    VERIFY( !std::regex_match("pre/y", re) );
+    VERIFY( regex_match_debug("pre/z", re) );
+    VERIFY( regex_match_debug("pre/a", re) );
+    VERIFY( !regex_match_debug("pre/y", re) );
   }
   {
     std::regex  re("pre/[[:uPPer:]]", std::regex::extended);
-    VERIFY( std::regex_match("pre/Z", re) );
-    VERIFY( !std::regex_match("pre/_", re) );
-    VERIFY( !std::regex_match("pre/a", re) );
-    VERIFY( !std::regex_match("pre/0", re) );
+    VERIFY( regex_match_debug("pre/Z", re) );
+    VERIFY( !regex_match_debug("pre/_", re) );
+    VERIFY( !regex_match_debug("pre/a", re) );
+    VERIFY( !regex_match_debug("pre/0", re) );
   }
   {
     std::regex  re("pre/[[:lOWer:]]", std::regex::extended | std::regex::icase);
-    VERIFY( std::regex_match("pre/Z", re) );
-    VERIFY( std::regex_match("pre/a", re) );
+    VERIFY( regex_match_debug("pre/Z", re) );
+    VERIFY( regex_match_debug("pre/a", re) );
   }
   {
     std::regex  re("pre/[[:w:][.tilde.]]", std::regex::extended);
-    VERIFY( std::regex_match("pre/~", re) );
-    VERIFY( std::regex_match("pre/_", re) );
-    VERIFY( std::regex_match("pre/a", re) );
-    VERIFY( std::regex_match("pre/0", re) );
+    VERIFY( regex_match_debug("pre/~", re) );
+    VERIFY( regex_match_debug("pre/_", re) );
+    VERIFY( regex_match_debug("pre/a", re) );
+    VERIFY( regex_match_debug("pre/0", re) );
   }
   {
     std::regex  re("pre/[[=a=]]", std::regex::extended);
-    VERIFY( std::regex_match("pre/a", re) );
-    VERIFY( std::regex_match("pre/A", re) );
+    VERIFY( regex_match_debug("pre/a", re) );
+    VERIFY( regex_match_debug("pre/A", re) );
   }
 }
 

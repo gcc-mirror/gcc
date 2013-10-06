@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -45,8 +47,8 @@ test01()
     }
   FAIL("[]");
   FAIL("[^]");
-  VERIFY(regex_match("]", regex("[]]", regex_constants::basic)));
-  VERIFY(!regex_match("]", regex("[^]]", regex_constants::basic)));
+  VERIFY(regex_match_debug ("]", regex("[]]", regex_constants::basic)));
+  VERIFY(!regex_match_debug ("]", regex("[^]]", regex_constants::basic)));
 }
 
 int

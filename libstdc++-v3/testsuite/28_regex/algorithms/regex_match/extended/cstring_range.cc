@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -35,29 +37,29 @@ test01()
 
   regex re;
   re.assign("(ab){3}", std::regex::extended);
-  VERIFY(!regex_match("abab", re));
-  VERIFY(regex_match("ababab", re));
-  VERIFY(!regex_match("abababab", re));
+  VERIFY(!regex_match_debug("abab", re));
+  VERIFY(regex_match_debug("ababab", re));
+  VERIFY(!regex_match_debug("abababab", re));
   re.assign("(ab){3,}", std::regex::extended);
-  VERIFY(!regex_match("abab", re));
-  VERIFY(regex_match("ababab", re));
-  VERIFY(regex_match("abababab", re));
-  VERIFY(regex_match("ababababab", re));
+  VERIFY(!regex_match_debug("abab", re));
+  VERIFY(regex_match_debug("ababab", re));
+  VERIFY(regex_match_debug("abababab", re));
+  VERIFY(regex_match_debug("ababababab", re));
   re.assign("(ab){0,3}", std::regex::extended);
-  VERIFY(regex_match("", re));
-  VERIFY(regex_match("ab", re));
-  VERIFY(regex_match("abab", re));
-  VERIFY(regex_match("ababab", re));
-  VERIFY(!regex_match("abababab", re));
+  VERIFY(regex_match_debug("", re));
+  VERIFY(regex_match_debug("ab", re));
+  VERIFY(regex_match_debug("abab", re));
+  VERIFY(regex_match_debug("ababab", re));
+  VERIFY(!regex_match_debug("abababab", re));
   re.assign("(a|b){0,2}", std::regex::extended);
-  VERIFY(regex_match("", re));
-  VERIFY(regex_match("a", re));
-  VERIFY(regex_match("b", re));
-  VERIFY(regex_match("aa", re));
-  VERIFY(regex_match("ab", re));
-  VERIFY(regex_match("ba", re));
-  VERIFY(regex_match("bb", re));
-  VERIFY(!regex_match("aaa", re));
+  VERIFY(regex_match_debug("", re));
+  VERIFY(regex_match_debug("a", re));
+  VERIFY(regex_match_debug("b", re));
+  VERIFY(regex_match_debug("aa", re));
+  VERIFY(regex_match_debug("ab", re));
+  VERIFY(regex_match_debug("ba", re));
+  VERIFY(regex_match_debug("bb", re));
+  VERIFY(!regex_match_debug("aaa", re));
 }
 
 int

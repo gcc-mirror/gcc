@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -37,7 +39,7 @@ test01()
     regex re("()*\\1");
     cmatch m;
     const char s[] = "";
-    VERIFY( regex_match(s, m, re) );
+    VERIFY( regex_match_debug(s, m, re) );
     VERIFY( m.size() == 2 );
     VERIFY( m[0].matched );
     VERIFY( m[1].matched );
@@ -46,7 +48,7 @@ test01()
     regex re("()*");
     cmatch m;
     const char s[] = "";
-    VERIFY( regex_match(s, m, re) );
+    VERIFY( regex_match_debug(s, m, re) );
   }
 }
 

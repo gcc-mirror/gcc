@@ -1,3 +1,76 @@
+2013-10-06  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: (regex_token_iterator<>::regex_token_iterator):
+	Fix compile error.
+	* include/bits/regex.tcc: (regex_replace<>): Remove default parameter.
+
+2013-10-06  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (__regex_algo_impl<>, regex_match<>,
+	regex_search<>): New abstract function for regex_match and regex_search.
+	* include/bits/regex.tcc (__regex_algo_impl<>): Implement.
+	* include/bits/regex_executor.h
+	(_Executor<>::_M_lookahead,
+	 _DFSExecutor<>::_M_clone,
+	 _BFSExecutor<>::_M_clone): Let _M_clone to choose which executor to
+	use.
+	* include/bits/regex_executor.tcc (__get_executor<>): Update the
+	definition to support __policy.
+	* testsuite/28_regex/algorithms/regex_match/awk/cstring_01.cc: Use
+	*_debug.
+	* testsuite/28_regex/algorithms/regex_match/basic/empty_range.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/basic/string_01.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_00_03.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_01_03.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_02_03.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/53622.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/57173.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/58576.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/anymatcher.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/empty_range.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/emptygroup.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/hex.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/quoted_char.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_bracket_01.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/cstring_plus.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_questionmark.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/cstring_range.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/string_any.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_00_03.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_01_03.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_02_03.cc: Same.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Same.
+	* testsuite/28_regex/algorithms/regex_search/basic/string_01.cc: Same.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc: Same.
+	* testsuite/28_regex/algorithms/regex_search/ecma/flags.cc: Same.
+	* testsuite/28_regex/algorithms/regex_search/ecma/greedy.cc: Same.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc: Same.
+	* testsuite/28_regex/match_results/format.cc: Same.
+	* testsuite/util/testsuite_regex.h
+	(regex_match_debug<>, regex_search_debug<>): Implement.
+
 2013-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

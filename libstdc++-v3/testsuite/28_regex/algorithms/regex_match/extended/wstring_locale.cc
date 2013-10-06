@@ -26,6 +26,10 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 void
 test01()
@@ -37,7 +41,7 @@ test01()
   re2.imbue(std::locale("de_DE.UTF-8"));
   re2.assign(L"[[:upper:]]*", std::regex::extended);
   std::wsmatch m2;
-  VERIFY(std::regex_match(str2, m2, re2));
+  VERIFY(regex_match_debug(str2, m2, re2));
 }
 
 int
