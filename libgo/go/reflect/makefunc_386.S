@@ -1,12 +1,12 @@
-# Copyright 2013 The Go Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file.
+/* Copyright 2013 The Go Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style
+   license that can be found in the LICENSE file.
 
-# MakeFunc 386 assembly code.
+   MakeFunc 386 assembly code.  */
 
 #include "config.h"
 
-	.global reflect.makeFuncStub
+	.globl reflect.makeFuncStub
 
 #ifdef __ELF__
 	.type reflect.makeFuncStub,@function
@@ -15,25 +15,26 @@
 reflect.makeFuncStub:
 .LFB1:
 
-	# Go does not provide any equivalent to the regparm function
-	# attribute, so on Go we do not need to worry about passing
-	# parameters in registers.  We just pass a pointer to the
-	# arguments on the stack.
-	#
-	# We do need to pick up the return values, though, so we pass
-	# a pointer to a struct that looks like this.
-	# struct {
-	#   esp uint32		// 0x0
-	#   eax uint32		// 0x4
-	#   st0 uint64		// 0x8
-	# }
+	/* Go does not provide any equivalent to the regparm function
+	   attribute, so on Go we do not need to worry about passing
+	   parameters in registers.  We just pass a pointer to the
+	   arguments on the stack.
+	
+	   We do need to pick up the return values, though, so we pass
+	   a pointer to a struct that looks like this.
+	   struct {
+	     esp uint32		// 0x0
+	     eax uint32		// 0x4
+	     st0 uint64		// 0x8
+	   }
+	*/
 
 	pushl	%ebp
 .LCFI0:
 	movl	%esp, %ebp
 .LCFI1:
-	pushl	%ebx		# In case this is PIC.
-	subl	$36, %esp	# Enough for args and to align stack.
+	pushl	%ebx		/* In case this is PIC.  */
+	subl	$36, %esp	/* Enough for args and to align stack.  */
 .LCFI2:
 
 #ifdef __PIC__
@@ -41,7 +42,7 @@ reflect.makeFuncStub:
 	addl	$_GLOBAL_OFFSET_TABLE_, %ebx
 #endif
 
-	leal	8(%ebp), %eax	# Set esp field in struct.
+	leal	8(%ebp), %eax	/* Set esp field in struct.  */
 	movl	%eax, -24(%ebp)
 
 #ifdef __PIC__
@@ -61,14 +62,14 @@ reflect.makeFuncStub:
 	call	reflect.MakeFuncStubGo
 #endif
 
-	# Set return registers.
+	/* Set return registers.  */
 
 	movl	-20(%ebp), %eax
 	fldl	-16(%ebp)
 
 #ifdef __SSE2__
-	# In case we are compiling with -msseregparm.  This won't work
-	# correctly if only SSE1 is supported, but that seems unlikely.
+	/* In case we are compiling with -msseregparm.  This won't work
+	   correctly if only SSE1 is supported, but that seems unlikely.  */
 	movsd	-16(%ebp), %xmm0
 #endif
 
