@@ -4541,7 +4541,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_cleanup_eh (ctxt_); }
+  opt_pass * clone () { return new pass_cleanup_eh (m_ctxt); }
   bool gate () { return gate_cleanup_eh (); }
   unsigned int execute () { return execute_cleanup_eh (); }
 

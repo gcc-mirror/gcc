@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-chrec.h"
 #include "tree-ssa-threadupdate.h"
-#include "gimple-fold.h"
 #include "expr.h"
 #include "optabs.h"
 
@@ -1052,7 +1051,15 @@ gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
     case GIMPLE_ASSIGN:
       return gimple_assign_nonzero_warnv_p (stmt, strict_overflow_p);
     case GIMPLE_CALL:
-      return gimple_alloca_call_p (stmt);
+      {
+	tree fndecl = gimple_call_fndecl (stmt);
+	if (!fndecl) return false;
+	if (flag_delete_null_pointer_checks && !flag_check_new
+	    && DECL_IS_OPERATOR_NEW (fndecl)
+	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	return gimple_alloca_call_p (stmt);
+      }
     default:
       gcc_unreachable ();
     }
@@ -6491,7 +6498,8 @@ stmt_interesting_for_vrp (gimple stmt)
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
 	  && ((is_gimple_call (stmt)
 	       && gimple_call_fndecl (stmt) != NULL_TREE
-	       && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
+	       && (DECL_BUILT_IN (gimple_call_fndecl (stmt))
+		   || DECL_IS_OPERATOR_NEW (gimple_call_fndecl (stmt))))
 	      || !gimple_vuse (stmt)))
 	return true;
     }
@@ -7412,16 +7420,7 @@ vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
   if (!stmt_interesting_for_vrp (stmt))
     gcc_assert (stmt_ends_bb_p (stmt));
   else if (is_gimple_assign (stmt) || is_gimple_call (stmt))
-    {
-      /* In general, assignments with virtual operands are not useful
-	 for deriving ranges, with the obvious exception of calls to
-	 builtin functions.  */
-      if ((is_gimple_call (stmt)
-	   && gimple_call_fndecl (stmt) != NULL_TREE
-	   && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
-	  || !gimple_vuse (stmt))
-	return vrp_visit_assignment_or_call (stmt, output_p);
-    }
+    return vrp_visit_assignment_or_call (stmt, output_p);
   else if (gimple_code (stmt) == GIMPLE_COND)
     return vrp_visit_cond_stmt (stmt, taken_edge_p);
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
@@ -9670,7 +9669,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_vrp (ctxt_); }
+  opt_pass * clone () { return new pass_vrp (m_ctxt); }
   bool gate () { return gate_vrp (); }
   unsigned int execute () { return execute_vrp (); }
 

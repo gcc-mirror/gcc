@@ -32,6 +32,83 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // Result of merging regex_match and regex_search.
+  //
+  // __policy now can be _S_auto(auto dispatch by checking back-references)
+  // and _S_force_dfs(just use _DFSExecutor).
+  //
+  // That __match_mode is true means regex_match, else regex_search.
+  template<typename _BiIter, typename _Alloc,
+	   typename _CharT, typename _TraitsT,
+	   _RegexExecutorPolicy __policy,
+	   bool __match_mode>
+    bool
+    __regex_algo_impl(_BiIter                              __s,
+		      _BiIter                              __e,
+		      match_results<_BiIter, _Alloc>&      __m,
+		      const basic_regex<_CharT, _TraitsT>& __re,
+		      regex_constants::match_flag_type     __flags)
+    {
+      if (__re._M_automaton == nullptr)
+	return false;
+
+      typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
+      __res.resize(__re._M_automaton->_M_sub_count() + 2);
+      for (auto& __it : __res)
+	__it.matched = false;
+
+      typedef std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
+	_ExecutorPtr;
+      typedef _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _DFSExecutorT;
+      typedef _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _BFSExecutorT;
+
+      _ExecutorPtr __executor =
+	__get_executor<_BiIter, _Alloc, _CharT, _TraitsT,
+	  __policy>(__s, __e, __res, __re, __flags);
+
+      bool __ret;
+      if (__match_mode)
+	__ret = __executor->_M_match();
+      else
+	__ret = __executor->_M_search();
+      if (__ret)
+	{
+	  for (auto __it : __res)
+	    if (!__it.matched)
+	      __it.first = __it.second = __e;
+	  auto& __pre = __res[__res.size()-2];
+	  auto& __suf = __res[__res.size()-1];
+	  if (__match_mode)
+	    {
+	      __pre.matched = false;
+	      __pre.first = __s;
+	      __pre.second = __s;
+	      __suf.matched = false;
+	      __suf.first = __e;
+	      __suf.second = __e;
+	    }
+	  else
+	    {
+	      __pre.first = __s;
+	      __pre.second = __res[0].first;
+	      __pre.matched = (__pre.first != __pre.second);
+	      __suf.first = __res[0].second;
+	      __suf.second = __e;
+	      __suf.matched = (__suf.first != __suf.second);
+	    }
+	  if (__re.flags() & regex_constants::nosubs)
+	    __res.resize(3);
+	}
+      return __ret;
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+
   template<typename _Ch_type>
   template<typename _Fwd_iter>
     typename regex_traits<_Ch_type>::string_type
@@ -295,7 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     value(_Ch_type __ch, int __radix) const
     {
       std::basic_istringstream<char_type> __is(string_type(1, __ch));
-      int __v;
+      long __v;
       if (__radix == 8)
 	__is >> std::oct;
       else if (__radix == 16)
@@ -318,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const __ctype_type&
 	__fctyp(use_facet<__ctype_type>(__traits.getloc()));
 
-      auto __output = [&](int __idx)
+      auto __output = [&](size_t __idx)
 	{
 	  auto& __sub = _Base_type::operator[](__idx);
 	  if (__sub.matched)
@@ -376,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__output(_Base_type::size()-1);
 	      else if (__fctyp.is(__ctype_type::digit, *__next))
 		{
-		  int __num = __traits.value(*__next, 10);
+		  long __num = __traits.value(*__next, 10);
 		  if (++__next != __fmt_last
 		      && __fctyp.is(__ctype_type::digit, *__next))
 		    {
@@ -395,90 +472,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __out;
     }
 
-  template<typename _Bi_iter, typename _Alloc,
-	   typename _Ch_type, typename _Rx_traits>
-    bool
-    regex_match(_Bi_iter                                 __s,
-		_Bi_iter                                 __e,
-		match_results<_Bi_iter, _Alloc>&         __m,
-		const basic_regex<_Ch_type, _Rx_traits>& __re,
-		regex_constants::match_flag_type         __flags
-			       = regex_constants::match_default)
-    {
-      if (__re._M_automaton == nullptr)
-	return false;
-
-      typename match_results<_Bi_iter, _Alloc>::_Base_type& __res = __m;
-      auto __size = __re._M_automaton->_M_sub_count();
-      __size += 2;
-      __res.resize(__size);
-      for (decltype(__size) __i = 0; __i < __size; ++__i)
-	__res[__i].matched = false;
-
-      if (__detail::__get_executor(__s, __e, __res, __re, __flags)->_M_match())
-	{
-	  for (auto __it : __res)
-	    if (!__it.matched)
-	      __it.first = __it.second = __e;
-	  auto& __pre = __res[__res.size()-2];
-	  auto& __suf = __res[__res.size()-1];
-	  __pre.matched = false;
-	  __pre.first = __s;
-	  __pre.second = __s;
-	  __suf.matched = false;
-	  __suf.first = __e;
-	  __suf.second = __e;
-	  return true;
-	}
-      return false;
-    }
-
-  template<typename _Bi_iter, typename _Alloc,
-	   typename _Ch_type, typename _Rx_traits>
-    bool
-    regex_search(_Bi_iter __first, _Bi_iter __last,
-		 match_results<_Bi_iter, _Alloc>& __m,
-		 const basic_regex<_Ch_type, _Rx_traits>& __re,
-		 regex_constants::match_flag_type __flags
-		 = regex_constants::match_default)
-    {
-      if (__re._M_automaton == nullptr)
-	return false;
-
-      typename match_results<_Bi_iter, _Alloc>::_Base_type& __res = __m;
-      auto __size = __re._M_automaton->_M_sub_count();
-      __size += 2;
-      __res.resize(__size);
-      for (decltype(__size) __i = 0; __i < __size; ++__i)
-	__res[__i].matched = false;
-
-      if (__detail::__get_executor(__first, __last, __res, __re, __flags)
-	  ->_M_search())
-	{
-	  for (auto __it : __res)
-	    if (!__it.matched)
-	      __it.first = __it.second = __last;
-	  auto& __pre = __res[__res.size()-2];
-	  auto& __suf = __res[__res.size()-1];
-	  __pre.first = __first;
-	  __pre.second = __res[0].first;
-	  __pre.matched = (__pre.first != __pre.second);
-	  __suf.first = __res[0].second;
-	  __suf.second = __last;
-	  __suf.matched = (__suf.first != __suf.second);
-	  return true;
-	}
-      return false;
-    }
-
   template<typename _Out_iter, typename _Bi_iter,
 	   typename _Rx_traits, typename _Ch_type>
     _Out_iter
     regex_replace(_Out_iter __out, _Bi_iter __first, _Bi_iter __last,
 		  const basic_regex<_Ch_type, _Rx_traits>& __e,
 		  const _Ch_type* __fmt,
-		  regex_constants::match_flag_type __flags
-		  = regex_constants::match_default)
+		  regex_constants::match_flag_type __flags)
     {
       typedef regex_iterator<_Bi_iter, _Ch_type, _Rx_traits> _IterT;
       _IterT __i(__first, __last, __e, __flags);

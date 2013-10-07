@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -33,7 +35,7 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(regex_match(":", regex("\\x3a")));
+  VERIFY(regex_match_debug(":", regex("\\x3a")));
   try
     {
       regex("\\u400x");

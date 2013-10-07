@@ -1,3 +1,178 @@
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-nofloat-2.c: New testcase.
+
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-1.c: Add more tests to cover different
+	operand types.
+
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58126
+	* g++.dg/init/uninitialized1.C: New.
+
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56060
+	* g++.dg/cpp0x/variadic144.C: New.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58560
+	* g++.dg/cpp0x/auto39.C: New.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58503
+	* g++.dg/cpp0x/range-for26.C: New.
+	* g++.dg/cpp0x/range-for27.C: Likewise.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58448
+	* g++.dg/template/crash117.C: New.
+
+2013-10-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* g++.dg/tree-ssa/pr19476-5.C: New file.
+	* g++.dg/tree-ssa/pr19476-1.C: Mention pr19476-5.C.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58584
+	* g++.dg/cpp0x/gen-attrs-55.C: New.
+
+2013-10-03  Easwaran Raman  <eraman@google.com>
+
+	PR c++/33911
+	* g++.dg/ext/attribute47.C: New.
+
+2013-10-03  Rong Xu  <xur@google.com>
+
+	* gcc.target/i386/cold-attribute-2.c: Fix the test by using original
+	probability.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Ditto.
+	* gcc.dg/tree-ssa/ipa-split-6.c: Ditto.
+
+2013-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58510
+	* g++.dg/cpp0x/pr58510.C: New test.
+
+2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* g++.dg/tree-ssa/pr19476-1.C: New file.
+	* g++.dg/tree-ssa/pr19476-2.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-3.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-4.C: Likewise.
+
+2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-fp.c: New test for floating point
+	scalar operations when using -mupper-regs-sf and -mupper-regs-df.
+	* gcc.target/powerpc/ppc-target-1.c: Update tests to allow either
+	VSX scalar operations or the traditional floating point form of
+	the instruction.
+	* gcc.target/powerpc/ppc-target-2.c: Likewise.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Likewise.
+	* gcc.target/powerpc/pr72747.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-3.c: Likewise.
+
+2013-10-03  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/58460
+	* gcc.target/aarch64/pr58460.c: New file.
+
+2013-10-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58593
+	* gfortran.dg/char_length_19.f90: New.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58535
+	* g++.dg/parse/crash65.C: New.
+	* g++.dg/cpp1y/pr58535.C: Likewise.
+
+2013-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-11.c: Adjust.
+	* gcc.dg/tree-ssa/ldist-17.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-23.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Likewise.
+	* gfortran.dg/ldist-pr45199.f: Likewise.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58565
+	* g++.dg/parse/crash64.C: New.
+
+2013-10-02  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/tree-ssa/slsr-40.c: New test.
+
+2013-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58563
+	* g++.dg/cpp0x/pr58563.C: New.
+
+2013-10-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect_saddl_1.c: New.
+
+2013-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58574
+	* gcc.c-torture/execute/pr58574.c: New testcase.
+
+2013-10-01  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR Target/58578
+	* gcc.target/arm/pr58578.c: New test.
+
+2013-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/58556
+	* gcc.dg/tree-ssa/gen-vect-26.c: Use dynamic vector cost model.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
+2013-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_ptr32plus): Fail
+	for MSP430.
+	* gcc.c-torture/compile/20010327-1.c: Only run the test for
+	ptr32plus targets.
+	* gcc.c-torture/compile/pr41181.c: Likewise.
+	* gcc.c-torture/compile/calls.c: Likewise.
+	* gcc.c-torture/compile/990617-1.c: Likewise.
+	* gcc.c-torture/compile/pr55955.c: Only run the test for
+	int32plus targets.
+	* gcc.c-torture/compile/limits-externdecl.c: Likewise.
+
+2013-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58553
+	* gcc.dg/torture/pr58553.c: New testcase.
+
+2013-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58564
+	* gcc.c-torture/execute/pr58564.c: New test.
+
+2013-09-30  Teresa Johnson  <tejohnson@google.com>
+
+	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-3.c (expand_one_var):
+	Update for additional dump message.
+
+2013-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58554
+	* gcc.dg/torture/pr58554.c: New testcase.
+
 2013-09-30  Simon Cook  <simon.cook@embecosm.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 

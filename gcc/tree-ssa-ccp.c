@@ -127,7 +127,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic-core.h"
 #include "dbgcnt.h"
-#include "gimple-fold.h"
 #include "params.h"
 #include "hash-table.h"
 
@@ -2171,7 +2170,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_ccp (ctxt_); }
+  opt_pass * clone () { return new pass_ccp (m_ctxt); }
   bool gate () { return gate_ccp (); }
   unsigned int execute () { return do_ssa_ccp (); }
 
@@ -2588,7 +2587,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fold_builtins (ctxt_); }
+  opt_pass * clone () { return new pass_fold_builtins (m_ctxt); }
   unsigned int execute () { return execute_fold_all_builtins (); }
 
 }; // class pass_fold_builtins

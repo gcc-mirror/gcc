@@ -4,6 +4,8 @@
 
 # MakeFunc amd64 assembly code.
 
+#include "config.h"
+
 	.global	reflect.makeFuncStub
 
 #ifdef __ELF__
@@ -11,7 +13,7 @@
 #endif
 
 reflect.makeFuncStub:
-	.cfi_startproc
+.LFB1:
 
 	# Store all the parameter registers in a struct that looks
 	# like:
@@ -35,10 +37,9 @@ reflect.makeFuncStub:
 	# };
 
 	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset %rbp, -16
+.LCFI0:
 	movq	%rsp, %rbp
-	.cfi_def_cfa_register %rbp
+.LCFI1:
 
 	subq	$0xc0, %rsp		# Space for struct on stack.
 
@@ -91,16 +92,70 @@ reflect.makeFuncStub:
 	# double type.
 
 	leave
-	.cfi_def_cfa %rsp, 8
+.LCFI2:
 
 	ret
+.LFE1:
 
-	.cfi_endproc
 #ifdef __ELF__
 	.size	reflect.makeFuncStub, . - reflect.makeFuncStub
 #endif
 
 #ifdef __ELF__
+#ifdef HAVE_AS_X86_64_UNWIND_SECTION_TYPE
+	.section	.eh_frame,"a",@unwind
+#else
+	.section	.eh_frame,"a",@progbits
+#endif
+.Lframe1:
+	.long	.LECIE1-.LSCIE1	/* Length of Common Information Entry */
+.LSCIE1:
+	.long	0x0		/* CIE Identifier Tag */
+	.byte	0x1		/* CIE Version */
+	.ascii "zR\0"		/* CIE Augmentation */
+	.uleb128 1		/* CIE Code Alignment Factor */
+	.sleb128 -8		/* CIE Data Alignment Factor */
+	.byte	0x10		/* CIE RA Column */
+	.uleb128 1		/* Augmentation size */
+	.byte	0x1b		/* FDE Encoding (pcrel sdata4) */
+	.byte	0xc		/* DW_CFA_def_cfa, %rsp offset 8 */
+	.uleb128 7
+	.uleb128 8
+	.byte	0x80+16		/* DW_CFA_offset, %rip offset 1*-8 */
+	.uleb128 1
+	.align 8
+.LECIE1:
+.LSFDE1:
+	.long	.LEFDE1-.LASFDE1	/* FDE Length */
+.LASFDE1:
+	.long	.LASFDE1-.Lframe1	/* FDE CIE offset */
+#if HAVE_AS_X86_PCREL
+	.long	.LFB1-.			/* FDE initial location */
+#else
+	.long	.LFB1@rel
+#endif
+	.long	.LFE1-.LFB1		/* FDE address range */
+	.uleb128 0x0			/* Augmentation size */
+	.byte	0x4			/* DW_CFA_advance_loc4 */
+	.long	.LCFI0-.LFB1
+	.byte	0xe			/* DW_CFA_def_cfa_offset */
+	.uleb128 16
+	.byte	0x86			/* DW_CFA_offset, column 0x6 */
+	.uleb128 2
+	.byte	0x4			/* DW_CFA_advance_loc4 */
+	.long	.LCFI1-.LCFI0
+	.byte	0xd			/* DW_CFA_def_cfa_register */
+	.uleb128 6
+	.byte	0x2			/* DW_CFA_advance_loc1 */
+	.byte	.LCFI2-.LCFI1
+	.byte	0xc			/* DW_CFA_def_cfa */
+	.uleb128 7
+	.uleb128 8
+	.align 8
+.LEFDE1:
+#endif /* __ELF__ */
+
+#if defined(__ELF__) && defined(__linux__)
 	.section	.note.GNU-stack,"",@progbits
 	.section	.note.GNU-split-stack,"",@progbits
 	.section	.note.GNU-no-split-stack,"",@progbits

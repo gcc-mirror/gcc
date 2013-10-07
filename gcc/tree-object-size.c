@@ -1288,7 +1288,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_object_sizes (ctxt_); }
+  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
   unsigned int execute () { return compute_object_sizes (); }
 
 }; // class pass_object_sizes

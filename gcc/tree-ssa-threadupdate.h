@@ -41,5 +41,5 @@ public:
   enum jump_thread_edge_type type;
 };
 
-extern void register_jump_thread (vec<class jump_thread_edge *>);
+extern void register_jump_thread (vec <class jump_thread_edge *> *);
 #endif

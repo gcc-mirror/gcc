@@ -1517,6 +1517,12 @@ check_bases (tree t,
 	|= CLASSTYPE_CONTAINS_EMPTY_CLASS_P (basetype);
       TYPE_HAS_COMPLEX_DFLT (t) |= (!TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
 				    || TYPE_HAS_COMPLEX_DFLT (basetype));
+      SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT
+	(t, CLASSTYPE_READONLY_FIELDS_NEED_INIT (t)
+	 | CLASSTYPE_READONLY_FIELDS_NEED_INIT (basetype));
+      SET_CLASSTYPE_REF_FIELDS_NEED_INIT
+	(t, CLASSTYPE_REF_FIELDS_NEED_INIT (t)
+	 | CLASSTYPE_REF_FIELDS_NEED_INIT (basetype));
 
       /*  A standard-layout class is a class that:
 	  ...

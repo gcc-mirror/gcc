@@ -24,6 +24,10 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 // libstdc++/53622
 void
@@ -36,7 +40,7 @@ test01()
     std::string target("zxcv/onetwoabc");
     std::smatch m;
 
-    VERIFY( std::regex_match(target, m, re) );
+    VERIFY( regex_match_debug(target, m, re) );
     VERIFY( m.size() == 2 );
     VERIFY( m[0].matched == true );
     VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
@@ -49,7 +53,7 @@ test01()
     std::string target("zxcv/onetwoabc");
     std::smatch m;
 
-    VERIFY( std::regex_match(target, m, re) );
+    VERIFY( regex_match_debug(target, m, re) );
     VERIFY( m.size() == 3 );
     VERIFY( m[0].matched == true );
     VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );

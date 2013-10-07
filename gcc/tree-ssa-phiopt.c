@@ -308,7 +308,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
      This ensures that we collapse inner ifs before visiting the
      outer ones, and also that we do not try to visit a removed
      block.  */
-  bb_order = blocks_in_phiopt_order ();
+  bb_order = single_pred_before_succ_order ();
   n = n_basic_blocks - NUM_FIXED_BLOCKS;
 
   for (i = 0; i < n; i++)
@@ -474,59 +474,6 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
   else if (cfgchanged)
     return TODO_cleanup_cfg;
   return 0;
-}
-
-/* Returns the list of basic blocks in the function in an order that guarantees
-   that if a block X has just a single predecessor Y, then Y is after X in the
-   ordering.  */
-
-basic_block *
-blocks_in_phiopt_order (void)
-{
-  basic_block x, y;
-  basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
-  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS;
-  unsigned np, i;
-  sbitmap visited = sbitmap_alloc (last_basic_block);
-
-#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
-#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
-
-  bitmap_clear (visited);
-
-  MARK_VISITED (ENTRY_BLOCK_PTR);
-  FOR_EACH_BB (x)
-    {
-      if (VISITED_P (x))
-	continue;
-
-      /* Walk the predecessors of x as long as they have precisely one
-	 predecessor and add them to the list, so that they get stored
-	 after x.  */
-      for (y = x, np = 1;
-	   single_pred_p (y) && !VISITED_P (single_pred (y));
-	   y = single_pred (y))
-	np++;
-      for (y = x, i = n - np;
-	   single_pred_p (y) && !VISITED_P (single_pred (y));
-	   y = single_pred (y), i++)
-	{
-	  order[i] = y;
-	  MARK_VISITED (y);
-	}
-      order[i] = y;
-      MARK_VISITED (y);
-
-      gcc_assert (i == n - 1);
-      n -= np;
-    }
-
-  sbitmap_free (visited);
-  gcc_assert (n == 0);
-  return order;
-
-#undef MARK_VISITED
-#undef VISITED_P
 }
 
 /* Replace PHI node element whose edge is E in block BB with variable NEW.
@@ -1353,39 +1300,17 @@ add_or_mark_expr (basic_block bb, tree exp,
     }
 }
 
-/* Return true when CALL is a call stmt that definitely doesn't
-   free any memory or makes it unavailable otherwise.  */
-bool
-nonfreeing_call_p (gimple call)
-{
-  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)
-      && gimple_call_flags (call) & ECF_LEAF)
-    switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
-      {
-	/* Just in case these become ECF_LEAF in the future.  */
-	case BUILT_IN_FREE:
-	case BUILT_IN_TM_FREE:
-	case BUILT_IN_REALLOC:
-	case BUILT_IN_STACK_RESTORE:
-	  return false;
-	default:
-	  return true;
-      }
-
-  return false;
-}
-
 class nontrapping_dom_walker : public dom_walker
 {
 public:
   nontrapping_dom_walker (cdi_direction direction, pointer_set_t *ps)
-    : dom_walker (direction), nontrapping_ (ps) {}
+    : dom_walker (direction), m_nontrapping (ps) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
-  pointer_set_t *nontrapping_;
+  pointer_set_t *m_nontrapping;
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
@@ -1416,8 +1341,8 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
 	nt_call_phase++;
       else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
-	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrapping_, true);
-	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrapping_, false);
+	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), m_nontrapping, true);
+	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), m_nontrapping, false);
 	}
     }
 }
@@ -2039,7 +1964,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phiopt (ctxt_); }
+  opt_pass * clone () { return new pass_phiopt (m_ctxt); }
   bool gate () { return gate_phiopt (); }
   unsigned int execute () { return tree_ssa_phiopt (); }
 

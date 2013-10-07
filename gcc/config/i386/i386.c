@@ -3793,27 +3793,10 @@ ix86_option_override_internal (bool main_args_p)
       }
 
   ix86_tune_mask = 1u << ix86_tune;
-  if ((!USE_IX86_FRAME_POINTER
-       || (x86_accumulate_outgoing_args & ix86_tune_mask))
+  if ((x86_accumulate_outgoing_args & ix86_tune_mask)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
-
-  /* ??? Unwind info is not correct around the CFG unless either a frame
-     pointer is present or M_A_O_A is set.  Fixing this requires rewriting
-     unwind info generation to be aware of the CFG and propagating states
-     around edges.  */
-  if ((flag_unwind_tables || flag_asynchronous_unwind_tables
-       || flag_exceptions || flag_non_call_exceptions)
-      && flag_omit_frame_pointer
-      && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
-    {
-      if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
-	warning (0, "unwind tables currently require either a frame pointer "
-		 "or %saccumulate-outgoing-args%s for correctness",
-		 prefix, suffix);
-      target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
-    }
 
   /* If stack probes are required, the space used for large function
      arguments on the stack must also be probed, so enable
@@ -24450,23 +24433,25 @@ ix86_issue_rate (void)
     case PROCESSOR_SLM:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
+    case PROCESSOR_PENTIUM4:
+    case PROCESSOR_NOCONA:
       return 2;
 
     case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_PENTIUM4:
-    case PROCESSOR_CORE2:
-    case PROCESSOR_COREI7:
-    case PROCESSOR_HASWELL:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
-    case PROCESSOR_NOCONA:
     case PROCESSOR_GENERIC:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
     case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
       return 3;
+
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
+      return 4;
 
     default:
       return 1;
@@ -24724,9 +24709,14 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
-    case PROCESSOR_ATOM:
     case PROCESSOR_GENERIC:
       memory = get_attr_memory (insn);
+
+      /* Stack engine allows to execute push&pop instructions in parall.  */
+      if (((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	   && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	  && (ix86_tune != PROCESSOR_ATHLON && ix86_tune != PROCESSOR_K8))
+	return 0;
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -24749,6 +24739,29 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
 	  if (cost >= loadcost)
 	    cost -= loadcost;
+	  else
+	    cost = 0;
+	}
+      break;
+
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
+      memory = get_attr_memory (insn);
+
+      /* Stack engine allows to execute push&pop instructions in parall.  */
+      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	return 0;
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependent (dep_insn, insn))
+	{
+	  if (cost >= 4)
+	    cost -= 4;
 	  else
 	    cost = 0;
 	}

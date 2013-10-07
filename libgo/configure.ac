@@ -757,6 +757,68 @@ if test "$libgo_cv_lib_setcontext_clobbers_tls" = "yes"; then
 	    [Define if setcontext clobbers TLS variables])
 fi
 
+AC_CACHE_CHECK([whether .eh_frame section should be read-only],
+libgo_cv_ro_eh_frame, [
+libgo_cv_ro_eh_frame=no
+echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
+if $CC $CFLAGS -S -fpic -fexceptions -o conftest.s conftest.c > /dev/null 2>&1; then
+  if grep '.section.*eh_frame.*"a"' conftest.s > /dev/null; then
+    libgo_cv_ro_eh_frame=yes
+  elif grep '.section.*eh_frame.*#alloc' conftest.c \
+       | grep -v '#write' > /dev/null; then
+    libgo_cv_ro_eh_frame=yes
+  fi
+fi
+rm -f conftest.*
+])
+if test "x$libgo_cv_ro_eh_frame" = xyes; then
+  AC_DEFINE(EH_FRAME_FLAGS, "a",
+	    [Define to the flags needed for the .section .eh_frame directive.])
+else
+  AC_DEFINE(EH_FRAME_FLAGS, "aw",
+	    [Define to the flags needed for the .section .eh_frame directive.])
+fi
+
+AC_CACHE_CHECK([if assembler supports GNU comdat group syntax],
+libgo_cv_as_comdat_gnu, [
+echo '.section .text,"axG",@progbits,.foo,comdat' > conftest.s
+if $CC $CFLAGS -c conftest.s > /dev/null 2>&1; then
+  libgo_cv_as_comdat_gnu=yes
+else
+  libgo_cv_as_comdat_gnu=no
+fi
+])
+if test "x$libgo_cv_as_comdat_gnu" = xyes; then
+  AC_DEFINE(HAVE_AS_COMDAT_GAS, 1,
+	    [Define if your assembler supports GNU comdat group syntax.])
+fi
+
+AC_CACHE_CHECK([assembler supports pc related relocs],
+libgo_cv_as_x86_pcrel, [
+libgo_cv_as_x86_pcrel=yes
+echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
+    libgo_cv_as_x86_pcrel=no
+fi
+])
+if test "x$libgo_cv_as_x86_pcrel" = xyes; then
+  AC_DEFINE(HAVE_AS_X86_PCREL, 1,
+	    [Define if your assembler supports PC relative relocs.])
+fi
+
+AC_CACHE_CHECK([assembler supports unwind section type],
+libgo_cv_as_x86_64_unwind_section_type, [
+libgo_cv_as_x86_64_unwind_section_type=yes
+echo '.section .eh_frame,"a",@unwind' > conftest.s
+if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+    libgo_cv_as_x86_64_unwind_section_type=no
+fi
+])
+if test "x$libgo_cv_as_x86_64_unwind_section_type" = xyes; then
+  AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,
+	    [Define if your assembler supports unwind section type.])
+fi
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then

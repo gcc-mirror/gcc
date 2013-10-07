@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -34,12 +36,12 @@ test01()
   bool test __attribute__((unused)) = true;
 
   regex("\\[", regex_constants::awk);
-  VERIFY(regex_match("\"", regex("[\\\"]", regex_constants::awk)));
-  VERIFY(regex_match("/", regex("/", regex_constants::awk)));
-  VERIFY(regex_match("\a", regex("\\a", regex_constants::awk)));
-  VERIFY(regex_match("\"", regex("\\\"", regex_constants::awk)));
-  VERIFY(regex_match("5", regex("\\65", regex_constants::awk)));
-  VERIFY(regex_match("53", regex("\\0653", regex_constants::awk)));
+  VERIFY(regex_match_debug("\"", regex("[\\\"]", regex_constants::awk)));
+  VERIFY(regex_match_debug("/", regex("/", regex_constants::awk)));
+  VERIFY(regex_match_debug("\a", regex("\\a", regex_constants::awk)));
+  VERIFY(regex_match_debug("\"", regex("\\\"", regex_constants::awk)));
+  VERIFY(regex_match_debug("5", regex("\\65", regex_constants::awk)));
+  VERIFY(regex_match_debug("53", regex("\\0653", regex_constants::awk)));
 }
 
 int

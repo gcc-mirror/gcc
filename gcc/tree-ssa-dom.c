@@ -775,7 +775,7 @@ class dom_opt_dom_walker : public dom_walker
 {
 public:
   dom_opt_dom_walker (cdi_direction direction)
-    : dom_walker (direction), dummy_cond_ (NULL) {}
+    : dom_walker (direction), m_dummy_cond (NULL) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -783,7 +783,7 @@ public:
 private:
   void thread_across_edge (edge);
 
-  gimple dummy_cond_;
+  gimple m_dummy_cond;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -940,7 +940,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dominator (ctxt_); }
+  opt_pass * clone () { return new pass_dominator (m_ctxt); }
   bool gate () { return gate_dominator (); }
   unsigned int execute () { return tree_ssa_dominator_optimize (); }
 
@@ -1107,8 +1107,8 @@ record_temporary_equivalences (edge e)
 void
 dom_opt_dom_walker::thread_across_edge (edge e)
 {
-  if (! dummy_cond_)
-    dummy_cond_ =
+  if (! m_dummy_cond)
+    m_dummy_cond =
         gimple_build_cond (NE_EXPR,
                            integer_zero_node, integer_zero_node,
                            NULL, NULL);
@@ -1123,7 +1123,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
-  ::thread_across_edge (dummy_cond_, e, false,
+  ::thread_across_edge (m_dummy_cond, e, false,
 		        &const_and_copies_stack,
 		        simplify_stmt_for_jump_threading);
 
@@ -3133,7 +3133,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phi_only_cprop (ctxt_); }
+  opt_pass * clone () { return new pass_phi_only_cprop (m_ctxt); }
   bool gate () { return gate_dominator (); }
   unsigned int execute () { return eliminate_degenerate_phis (); }
 

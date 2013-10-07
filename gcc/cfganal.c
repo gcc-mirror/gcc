@@ -389,18 +389,18 @@ control_dependences::find_control_dependence (int edge_index)
   basic_block current_block;
   basic_block ending_block;
 
-  gcc_assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
+  gcc_assert (INDEX_EDGE_PRED_BB (m_el, edge_index) != EXIT_BLOCK_PTR);
 
-  if (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
+  if (INDEX_EDGE_PRED_BB (m_el, edge_index) == ENTRY_BLOCK_PTR)
     ending_block = single_succ (ENTRY_BLOCK_PTR);
   else
-    ending_block = find_pdom (INDEX_EDGE_PRED_BB (el, edge_index));
+    ending_block = find_pdom (INDEX_EDGE_PRED_BB (m_el, edge_index));
 
-  for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
+  for (current_block = INDEX_EDGE_SUCC_BB (m_el, edge_index);
        current_block != ending_block && current_block != EXIT_BLOCK_PTR;
        current_block = find_pdom (current_block))
     {
-      edge e = INDEX_EDGE (el, edge_index);
+      edge e = INDEX_EDGE (m_el, edge_index);
 
       /* For abnormal edges, we don't make current_block control
 	 dependent because instructions that throw are always necessary
@@ -416,13 +416,13 @@ control_dependences::find_control_dependence (int edge_index)
    list EL, ala Morgan, Section 3.6.  */
 
 control_dependences::control_dependences (struct edge_list *edges)
-  : el (edges)
+  : m_el (edges)
 {
   timevar_push (TV_CONTROL_DEPENDENCES);
   control_dependence_map.create (last_basic_block);
   for (int i = 0; i < last_basic_block; ++i)
     control_dependence_map.quick_push (BITMAP_ALLOC (NULL));
-  for (int i = 0; i < NUM_EDGES (el); ++i)
+  for (int i = 0; i < NUM_EDGES (m_el); ++i)
     find_control_dependence (i);
   timevar_pop (TV_CONTROL_DEPENDENCES);
 }
@@ -434,7 +434,7 @@ control_dependences::~control_dependences ()
   for (unsigned i = 0; i < control_dependence_map.length (); ++i)
     BITMAP_FREE (control_dependence_map[i]);
   control_dependence_map.release ();
-  free_edge_list (el);
+  free_edge_list (m_el);
 }
 
 /* Returns the bitmap of edges the basic-block I is dependent on.  */
@@ -450,7 +450,7 @@ control_dependences::get_edges_dependent_on (int i)
 edge
 control_dependences::get_edge (int i)
 {
-  return INDEX_EDGE (el, i);
+  return INDEX_EDGE (m_el, i);
 }
 
 
@@ -1464,4 +1464,57 @@ bitmap_union_of_preds (sbitmap dst, sbitmap *src, basic_block b)
 	for (i = 0; i < set_size; i++)
 	  *r++ |= *p++;
       }
+}
+
+/* Returns the list of basic blocks in the function in an order that guarantees
+   that if a block X has just a single predecessor Y, then Y is after X in the
+   ordering.  */
+
+basic_block *
+single_pred_before_succ_order (void)
+{
+  basic_block x, y;
+  basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
+  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS;
+  unsigned np, i;
+  sbitmap visited = sbitmap_alloc (last_basic_block);
+
+#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
+#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
+
+  bitmap_clear (visited);
+
+  MARK_VISITED (ENTRY_BLOCK_PTR);
+  FOR_EACH_BB (x)
+    {
+      if (VISITED_P (x))
+	continue;
+
+      /* Walk the predecessors of x as long as they have precisely one
+	 predecessor and add them to the list, so that they get stored
+	 after x.  */
+      for (y = x, np = 1;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y))
+	np++;
+      for (y = x, i = n - np;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y), i++)
+	{
+	  order[i] = y;
+	  MARK_VISITED (y);
+	}
+      order[i] = y;
+      MARK_VISITED (y);
+
+      gcc_assert (i == n - 1);
+      n -= np;
+    }
+
+  sbitmap_free (visited);
+  gcc_assert (n == 0);
+  return order;
+
+#undef MARK_VISITED
+#undef VISITED_P
 }

@@ -31,9 +31,12 @@ namespace __gnu_test
   // Test on a compilation of simple expressions, throw regex_error on error.
   typedef std::regex				regex_type;
   typedef regex_type::flag_type			flag_type;
+  typedef std::regex_constants::match_flag_type	match_flag_type;
   typedef std::regex_constants::error_type	error_type;
   typedef std::size_t				size_type;
   typedef std::string				string_type;
+  using std::basic_regex;
+  using std::match_results;
 
   // Utilities
   struct regex_expected_fail { };
@@ -125,6 +128,178 @@ namespace __gnu_test
 	throw;
       }
   }
+
+  // regex_match_debug behaves like regex_match, but will run *two* executors
+  // (if there's no back-reference) and check if their results agree. If not,
+  // an exception throws. One can use them just in the way of using regex_match.
+  template<typename _Bi_iter, typename _Alloc,
+	   typename _Ch_type, typename _Rx_traits>
+    bool
+    regex_match_debug(_Bi_iter                                 __s,
+		      _Bi_iter                                 __e,
+		      match_results<_Bi_iter, _Alloc>&         __m,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __flags
+		      = std::regex_constants::match_default)
+    {
+      using namespace std::__detail;
+      auto __res1 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
+	   _RegexExecutorPolicy::_S_auto, true>
+	(__s, __e, __m, __re, __flags);
+      match_results<_Bi_iter, _Alloc> __mm;
+      auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
+	   _RegexExecutorPolicy::_S_force_dfs, true>
+	(__s, __e, __mm, __re, __flags);
+      if (__res1 == __res2 && __m == __mm)
+	return __res1;
+      throw(std::exception());
+    }
+
+  // No match_results version
+  template<typename _Bi_iter, typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_match_debug(_Bi_iter                                 __first,
+		      _Bi_iter                                 __last,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __flags
+		      = std::regex_constants::match_default)
+    {
+      match_results<_Bi_iter> __what;
+      return regex_match_debug(__first, __last, __what, __re, __flags);
+    }
+
+  // C-string version
+  template<typename _Ch_type, typename _Alloc, typename _Rx_traits>
+    inline bool
+    regex_match_debug(const _Ch_type*                          __s,
+		      match_results<const _Ch_type*, _Alloc>&  __m,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __f
+		      = std::regex_constants::match_default)
+      { return regex_match_debug(__s, __s + _Rx_traits::length(__s),
+				 __m, __re, __f); }
+
+  // C-string version without match_results
+  template<typename _Ch_type, class _Rx_traits>
+    inline bool
+    regex_match_debug(const _Ch_type*                          __s,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __f
+		      = std::regex_constants::match_default)
+      { return regex_match_debug(__s, __s + _Rx_traits::length(__s),
+				 __re, __f); }
+
+  // std::basic_string version
+  template<typename _Ch_traits, typename _Ch_alloc,
+           typename _Alloc, typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_match_debug(const std::basic_string<_Ch_type, _Ch_traits,
+			_Ch_alloc>& __s,
+		      match_results<typename std::basic_string<_Ch_type,
+			_Ch_traits, _Ch_alloc>::const_iterator,
+			_Alloc>& __m,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __flags
+		      = std::regex_constants::match_default)
+      { return regex_match_debug(__s.begin(), __s.end(),
+				 __m, __re, __flags); }
+
+  // std::basic_string version without match_results
+  template<typename _Ch_traits, typename _Str_allocator,
+           typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_match_debug(const std::basic_string<_Ch_type, _Ch_traits,
+		      _Str_allocator>&                         __s,
+		      const basic_regex<_Ch_type, _Rx_traits>& __re,
+		      match_flag_type                          __flags
+		      = std::regex_constants::match_default)
+    { return regex_match_debug(__s.begin(), __s.end(), __re, __flags); }
+
+  // regex_match_debug behaves like regex_match, but will run *two* executors
+  // (if there's no back-reference) and check if their results agree. If not,
+  // an exception throws. One can use them just in the way of using regex_match.
+  template<typename _Bi_iter, typename _Alloc,
+           typename _Ch_type, typename _Rx_traits>
+    bool
+    regex_search_debug(_Bi_iter                                 __s,
+		       _Bi_iter                                 __e,
+		       match_results<_Bi_iter, _Alloc>&         __m,
+		       const basic_regex<_Ch_type, _Rx_traits>& __re,
+		       match_flag_type   __flags
+		       = std::regex_constants::match_default)
+    {
+      using namespace std::__detail;
+      auto __res1 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
+	   _RegexExecutorPolicy::_S_auto, false>
+        (__s, __e, __m, __re, __flags);
+      match_results<_Bi_iter, _Alloc> __mm;
+      auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
+	   _RegexExecutorPolicy::_S_force_dfs, false>
+        (__s, __e, __mm, __re, __flags);
+      if (__res1 == __res2 && __m == __mm)
+        return __res1;
+      throw(std::exception()); // Let test fail. Give it a name.
+    }
+
+  // No match_results version
+  template<typename _Bi_iter, typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_search_debug(_Bi_iter                                 __first,
+		       _Bi_iter                                 __last,
+		       const basic_regex<_Ch_type, _Rx_traits>& __re,
+		       match_flag_type                          __flags
+		       = std::regex_constants::match_default)
+    {
+      match_results<_Bi_iter> __what;
+      return regex_search_debug(__first, __last, __what, __re, __flags);
+    }
+
+  // C-string version
+  template<typename _Ch_type, class _Alloc, class _Rx_traits>
+    inline bool
+    regex_search_debug(const _Ch_type*                          __s,
+		       match_results<const _Ch_type*, _Alloc>&  __m,
+		       const basic_regex<_Ch_type, _Rx_traits>& __e,
+		       match_flag_type                          __f
+		       = std::regex_constants::match_default)
+    { return regex_search_debug(__s, __s + _Rx_traits::length(__s),
+				__m, __e, __f); }
+
+  // C-string version without match_results
+  template<typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_search_debug(const _Ch_type*                          __s,
+		       const basic_regex<_Ch_type, _Rx_traits>& __e,
+		       match_flag_type                          __f
+		       = std::regex_constants::match_default)
+    { return regex_search_debug(__s, __s + _Rx_traits::length(__s),
+				__e, __f); }
+
+  // std::basic_string version
+  template<typename _Ch_traits, typename _Ch_alloc,
+           typename _Alloc, typename _Ch_type,
+           typename _Rx_traits>
+    inline bool
+    regex_search_debug(const std::basic_string<_Ch_type, _Ch_traits,
+		       _Ch_alloc>& __s,
+		       match_results<typename std::basic_string<_Ch_type,
+		       _Ch_traits, _Ch_alloc>::const_iterator, _Alloc>&
+		       __m,
+		       const basic_regex<_Ch_type, _Rx_traits>& __e,
+		       match_flag_type                          __f
+		       = std::regex_constants::match_default)
+    { return regex_search_debug(__s.begin(), __s.end(), __m, __e, __f); }
+
+  // std::basic_string version without match_results
+  template<typename _Ch_traits, typename _String_allocator,
+           typename _Ch_type, typename _Rx_traits>
+    inline bool
+    regex_search_debug(const std::basic_string<_Ch_type, _Ch_traits,
+		       _String_allocator>&                      __s,
+		       const basic_regex<_Ch_type, _Rx_traits>& __e,
+		       match_flag_type                          __f
+		       = std::regex_constants::match_default)
+    { return regex_search_debug(__s.begin(), __s.end(), __e, __f); }
 
 } // namespace __gnu_test
 #endif

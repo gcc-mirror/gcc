@@ -1014,7 +1014,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_merge_phi (ctxt_); }
+  opt_pass * clone () { return new pass_merge_phi (m_ctxt); }
   bool gate () { return gate_merge_phi (); }
   unsigned int execute () { return merge_phi_nodes (); }
 

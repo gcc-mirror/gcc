@@ -30,7 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "ipa-reference.h"
 #include "tree-ssa-alias.h"
-
+#include "tree-cfgcleanup.h"
+#include "tree-dfa.h"
+#include "tree-pretty-print.h"
+#include "gimple-low.h"
+#include "tree-into-ssa.h"
 
 /* This structure is used to map a gimple statement to a label,
    or list of labels to represent transaction restart.  */
@@ -92,146 +96,7 @@ struct GTY(()) gimple_df {
   htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
 };
 
-
-typedef struct
-{
-  htab_t htab;
-  PTR *slot;
-  PTR *limit;
-} htab_iterator;
-
-/* Iterate through the elements of hashtable HTAB, using htab_iterator ITER,
-   storing each element in RESULT, which is of type TYPE.  */
-#define FOR_EACH_HTAB_ELEMENT(HTAB, RESULT, TYPE, ITER) \
-  for (RESULT = (TYPE) first_htab_element (&(ITER), (HTAB)); \
-	!end_htab_p (&(ITER)); \
-	RESULT = (TYPE) next_htab_element (&(ITER)))
-
-/* It is advantageous to avoid things like life analysis for variables which
-   do not need PHI nodes.  This enum describes whether or not a particular
-   variable may need a PHI node.  */
-
-enum need_phi_state {
-  /* This is the default.  If we are still in this state after finding
-     all the definition and use sites, then we will assume the variable
-     needs PHI nodes.  This is probably an overly conservative assumption.  */
-  NEED_PHI_STATE_UNKNOWN,
-
-  /* This state indicates that we have seen one or more sets of the
-     variable in a single basic block and that the sets dominate all
-     uses seen so far.  If after finding all definition and use sites
-     we are still in this state, then the variable does not need any
-     PHI nodes.  */
-  NEED_PHI_STATE_NO,
-
-  /* This state indicates that we have either seen multiple definitions of
-     the variable in multiple blocks, or that we encountered a use in a
-     block that was not dominated by the block containing the set(s) of
-     this variable.  This variable is assumed to need PHI nodes.  */
-  NEED_PHI_STATE_MAYBE
-};
-
-
-/* Immediate use lists are used to directly access all uses for an SSA
-   name and get pointers to the statement for each use.
-
-   The structure ssa_use_operand_d consists of PREV and NEXT pointers
-   to maintain the list.  A USE pointer, which points to address where
-   the use is located and a LOC pointer which can point to the
-   statement where the use is located, or, in the case of the root
-   node, it points to the SSA name itself.
-
-   The list is anchored by an occurrence of ssa_operand_d *in* the
-   ssa_name node itself (named 'imm_uses').  This node is uniquely
-   identified by having a NULL USE pointer. and the LOC pointer
-   pointing back to the ssa_name node itself.  This node forms the
-   base for a circular list, and initially this is the only node in
-   the list.
-
-   Fast iteration allows each use to be examined, but does not allow
-   any modifications to the uses or stmts.
-
-   Normal iteration allows insertion, deletion, and modification. the
-   iterator manages this by inserting a marker node into the list
-   immediately before the node currently being examined in the list.
-   this marker node is uniquely identified by having null stmt *and* a
-   null use pointer.
-
-   When iterating to the next use, the iteration routines check to see
-   if the node after the marker has changed. if it has, then the node
-   following the marker is now the next one to be visited. if not, the
-   marker node is moved past that node in the list (visualize it as
-   bumping the marker node through the list).  this continues until
-   the marker node is moved to the original anchor position. the
-   marker node is then removed from the list.
-
-   If iteration is halted early, the marker node must be removed from
-   the list before continuing.  */
-typedef struct immediate_use_iterator_d
-{
-  /* This is the current use the iterator is processing.  */
-  ssa_use_operand_t *imm_use;
-  /* This marks the last use in the list (use node from SSA_NAME)  */
-  ssa_use_operand_t *end_p;
-  /* This node is inserted and used to mark the end of the uses for a stmt.  */
-  ssa_use_operand_t iter_node;
-  /* This is the next ssa_name to visit.  IMM_USE may get removed before
-     the next one is traversed to, so it must be cached early.  */
-  ssa_use_operand_t *next_imm_name;
-} imm_use_iterator;
-
-
-/* Use this iterator when simply looking at stmts.  Adding, deleting or
-   modifying stmts will cause this iterator to malfunction.  */
-
-#define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)		\
-  for ((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR));	\
-       !end_readonly_imm_use_p (&(ITER));			\
-       (void) ((DEST) = next_readonly_imm_use (&(ITER))))
-
-/* Use this iterator to visit each stmt which has a use of SSAVAR.  */
-
-#define FOR_EACH_IMM_USE_STMT(STMT, ITER, SSAVAR)		\
-  for ((STMT) = first_imm_use_stmt (&(ITER), (SSAVAR));		\
-       !end_imm_use_stmt_p (&(ITER));				\
-       (void) ((STMT) = next_imm_use_stmt (&(ITER))))
-
-/* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to
-   do so will result in leaving a iterator marker node in the immediate
-   use list, and nothing good will come from that.   */
-#define BREAK_FROM_IMM_USE_STMT(ITER)				\
-   {								\
-     end_imm_use_stmt_traverse (&(ITER));			\
-     break;							\
-   }
-
-
-/* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to
-   get access to each occurrence of ssavar on the stmt returned by
-   that iterator..  for instance:
-
-     FOR_EACH_IMM_USE_STMT (stmt, iter, var)
-       {
-         FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	   {
-	     SET_USE (use_p, blah);
-	   }
-	 update_stmt (stmt);
-       }							 */
-
-#define FOR_EACH_IMM_USE_ON_STMT(DEST, ITER)			\
-  for ((DEST) = first_imm_use_on_stmt (&(ITER));		\
-       !end_imm_use_on_stmt_p (&(ITER));			\
-       (void) ((DEST) = next_imm_use_on_stmt (&(ITER))))
-
-
-
-static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
-
-/* Accessors for basic block annotations.  */
-static inline gimple_seq phi_nodes (const_basic_block);
-static inline void set_phi_nodes (basic_block, gimple_seq);
 
 /*---------------------------------------------------------------------------
 			      Global declarations
@@ -379,79 +244,6 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
 
-/* In tree-cfgcleanup.c  */
-extern bitmap cfgcleanup_altered_bbs;
-extern bool cleanup_tree_cfg (void);
-
-/* In tree-pretty-print.c.  */
-extern void dump_generic_bb (FILE *, basic_block, int, int);
-extern int op_code_prio (enum tree_code);
-extern int op_prio (const_tree);
-extern const char *op_symbol_code (enum tree_code);
-
-/* In tree-dfa.c  */
-extern void renumber_gimple_stmt_uids (void);
-extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
-extern void dump_dfa_stats (FILE *);
-extern void debug_dfa_stats (void);
-extern void dump_variable (FILE *, tree);
-extern void debug_variable (tree);
-extern void set_ssa_default_def (struct function *, tree, tree);
-extern tree ssa_default_def (struct function *, tree);
-extern tree get_or_create_ssa_default_def (struct function *, tree);
-extern bool stmt_references_abnormal_ssa_name (gimple);
-extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
-extern void dump_enumerated_decls (FILE *, int);
-
-/* In tree-phinodes.c  */
-extern void reserve_phi_args_for_new_edge (basic_block);
-extern void add_phi_node_to_bb (gimple phi, basic_block bb);
-extern gimple create_phi_node (tree, basic_block);
-extern void add_phi_arg (gimple, tree, edge, source_location);
-extern void remove_phi_args (edge);
-extern void remove_phi_node (gimple_stmt_iterator *, bool);
-extern void remove_phi_nodes (basic_block);
-extern void release_phi_node (gimple);
-extern void phinodes_print_statistics (void);
-
-/* In gimple-low.c  */
-extern void record_vars_into (tree, tree);
-extern void record_vars (tree);
-extern bool gimple_seq_may_fallthru (gimple_seq);
-extern bool gimple_stmt_may_fallthru (gimple);
-extern bool gimple_check_call_matching_types (gimple, tree, bool);
-
-/* In tree-into-ssa.c  */
-void update_ssa (unsigned);
-void delete_update_ssa (void);
-tree create_new_def_for (tree, gimple, def_operand_p);
-bool need_ssa_update_p (struct function *);
-bool name_registered_for_update_p (tree);
-void release_ssa_name_after_update_ssa (tree);
-void mark_virtual_operands_for_renaming (struct function *);
-tree get_current_def (tree);
-void set_current_def (tree, tree);
-
-/* In tree-ssa-ccp.c  */
-tree fold_const_aggregate_ref (tree);
-tree gimple_fold_stmt_to_constant (gimple, tree (*)(tree));
-
-/* In tree-ssa-dom.c  */
-extern void dump_dominator_optimization_stats (FILE *);
-extern void debug_dominator_optimization_stats (void);
-int loop_depth_of_name (tree);
-tree degenerate_phi_result (gimple);
-bool simple_iv_increment_p (gimple);
-
-/* In tree-ssa-copy.c  */
-extern void propagate_value (use_operand_p, tree);
-extern void propagate_tree_value (tree *, tree);
-extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
-extern void replace_exp (use_operand_p, tree);
-extern bool may_propagate_copy (tree, tree);
-extern bool may_propagate_copy_into_stmt (gimple, tree);
-extern bool may_propagate_copy_into_asm (tree);
-
 /* In tree-ssa-loop-ch.c  */
 bool do_while_loop_p (struct loop *);
 
@@ -497,10 +289,6 @@ struct tree_niter_desc
   enum tree_code cmp;
 };
 
-/* In tree-ssa-phiopt.c */
-bool empty_block_p (basic_block);
-basic_block *blocks_in_phiopt_order (void);
-bool nonfreeing_call_p (gimple);
 
 /* In tree-ssa-loop*.c  */
 
@@ -559,10 +347,6 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
 bool stmt_dominates_stmt_p (gimple, gimple);
-
-/* In tree-ssa-dce.c */
-void mark_virtual_operand_for_renaming (tree);
-void mark_virtual_phi_result_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */
 extern void threadedge_initialize_values (void);
@@ -674,7 +458,6 @@ void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
 unsigned int execute_fixup_cfg (void);
-bool fixup_noreturn_call (gimple stmt);
 
 /* In ipa-pure-const.c  */
 void warn_function_noreturn (tree);
@@ -683,7 +466,5 @@ void warn_function_noreturn (tree);
 bool parallelized_function_p (tree);
 
 #include "tree-flow-inline.h"
-
-void swap_tree_operands (gimple, tree *, tree *);
 
 #endif /* _TREE_FLOW_H  */

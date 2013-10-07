@@ -530,7 +530,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rebuild_cgraph_edges (ctxt_); }
+  opt_pass * clone () { return new pass_rebuild_cgraph_edges (m_ctxt); }
   unsigned int execute () { return rebuild_cgraph_edges (); }
 
 }; // class pass_rebuild_cgraph_edges
@@ -579,7 +579,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () {
-    return new pass_remove_cgraph_callee_edges (ctxt_);
+    return new pass_remove_cgraph_callee_edges (m_ctxt);
   }
   unsigned int execute () { return remove_cgraph_callee_edges (); }
 

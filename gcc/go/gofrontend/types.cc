@@ -5665,8 +5665,10 @@ Array_type::get_length_tree(Gogo* gogo)
 	    t = Type::lookup_integer_type("int");
 	  else if (t->is_abstract())
 	    t = t->make_non_abstract_type();
-	  tree tt = type_to_tree(t->get_backend(gogo));
-	  this->length_tree_ = Expression::integer_constant_tree(val, tt);
+          Btype* btype = t->get_backend(gogo);
+          Bexpression* iexpr =
+              gogo->backend()->integer_constant_expression(btype, val);
+	  this->length_tree_ = expr_to_tree(iexpr);
 	  mpz_clear(val);
 	}
       else

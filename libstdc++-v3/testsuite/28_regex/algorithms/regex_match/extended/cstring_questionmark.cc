@@ -25,6 +25,10 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
+
+using namespace __gnu_test;
+using namespace std;
 
 void
 test01()
@@ -35,7 +39,7 @@ test01()
   char target[] = "a";
   std::cmatch m;
 
-  VERIFY( std::regex_match(target, m, re) );
+  VERIFY( regex_match_debug(target, m, re) );
 
   VERIFY( re.mark_count() == 1 );
   VERIFY( m.size()  == re.mark_count()+1 );
@@ -53,9 +57,9 @@ test01()
   VERIFY( m[1].second == target+sizeof(target)-1 );
   VERIFY( m[1].matched == true );
 
-  VERIFY(std::regex_match("", std::regex("a?", std::regex::extended)));
-  VERIFY(std::regex_match("a", std::regex("a?", std::regex::extended)));
-  VERIFY(!std::regex_match("aa", std::regex("a?", std::regex::extended)));
+  VERIFY(regex_match_debug("", std::regex("a?", std::regex::extended)));
+  VERIFY(regex_match_debug("a", std::regex("a?", std::regex::extended)));
+  VERIFY(!regex_match_debug("aa", std::regex("a?", std::regex::extended)));
 }
 
 

@@ -1757,7 +1757,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   tree type;
   vec<tree, va_gc> *parmvec;
 
-  if (exp == error_mark_node || parms == error_mark_node)
+  if (error_operand_p (exp) || parms == error_mark_node)
     return error_mark_node;
 
   if (TREE_CODE (exp) == TYPE_DECL)

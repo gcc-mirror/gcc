@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "ipa-prop.h"
+#include "tree-ssa-propagate.h"
 
 /* TODO:
 
@@ -4865,7 +4866,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fre (ctxt_); }
+  opt_pass * clone () { return new pass_fre (m_ctxt); }
   bool gate () { return gate_fre (); }
   unsigned int execute () { return execute_fre (); }
 

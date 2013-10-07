@@ -45,6 +45,6 @@ mad_synth_mute (struct mad_synth *synth)
   return;
 }
 
-/* { dg-final { scan-tree-dump "distributed: split to 4" "ldist" } } */
+/* { dg-final { scan-tree-dump "distributed: split to 0 loops and 4 library calls" "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated memset zero" 4 "ldist" } } */
 /* { dg-final { cleanup-tree-dump "ldist" } } */

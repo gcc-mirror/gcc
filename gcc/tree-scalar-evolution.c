@@ -256,6 +256,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "hash-table.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa.h"
@@ -264,6 +265,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
 #include "params.h"
+#include "tree-ssa-propagate.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,

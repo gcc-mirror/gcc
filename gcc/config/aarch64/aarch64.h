@@ -783,8 +783,22 @@ do {									     \
 #define PRINT_OPERAND_ADDRESS(STREAM, X) \
   aarch64_print_operand_address (STREAM, X)
 
-#define FUNCTION_PROFILER(STREAM, LABELNO) \
-  aarch64_function_profiler (STREAM, LABELNO)
+#define MCOUNT_NAME "_mcount"
+
+#define NO_PROFILE_COUNTERS 1
+
+/* Emit rtl for profiling.  Output assembler code to FILE
+   to call "_mcount" for profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)                                    \
+{                                                              \
+  rtx fun,lr;                                                  \
+  lr = get_hard_reg_initial_val (Pmode, LR_REGNUM);            \
+  fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);               \
+  emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lr, Pmode); \
+}
+
+/* All the work done in PROFILE_HOOK, but still required.  */
+#define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)
 
 /* For some reason, the Linux headers think they know how to define
    these macros.  They don't!!!  */

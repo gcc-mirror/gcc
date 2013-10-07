@@ -183,8 +183,8 @@ vec_prefix::calculate_allocation (vec_prefix *pfx, unsigned reserve,
 
   if (pfx)
     {
-      alloc = pfx->alloc_;
-      num = pfx->num_;
+      alloc = pfx->m_alloc;
+      num = pfx->m_num;
     }
   else if (!reserve)
     /* If there's no vector, and we've not requested anything, then we

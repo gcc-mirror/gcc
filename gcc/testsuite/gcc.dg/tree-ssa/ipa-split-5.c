@@ -1,5 +1,5 @@
 /* { dg-do compile { target nonpic } } */
-/* { dg-options "-O3 -fdump-tree-fnsplit -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-fnsplit -fdump-tree-optimized --param=builtin-expect-probability=100" } */
 
 struct a {int a,b;};
 struct a make_me_big (int a);

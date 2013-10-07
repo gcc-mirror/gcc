@@ -15179,6 +15179,101 @@ $as_echo "#define SETCONTEXT_CLOBBERS_TLS 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether .eh_frame section should be read-only" >&5
+$as_echo_n "checking whether .eh_frame section should be read-only... " >&6; }
+if test "${libgo_cv_ro_eh_frame+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+libgo_cv_ro_eh_frame=no
+echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
+if $CC $CFLAGS -S -fpic -fexceptions -o conftest.s conftest.c > /dev/null 2>&1; then
+  if grep '.section.*eh_frame.*"a"' conftest.s > /dev/null; then
+    libgo_cv_ro_eh_frame=yes
+  elif grep '.section.*eh_frame.*#alloc' conftest.c \
+       | grep -v '#write' > /dev/null; then
+    libgo_cv_ro_eh_frame=yes
+  fi
+fi
+rm -f conftest.*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ro_eh_frame" >&5
+$as_echo "$libgo_cv_ro_eh_frame" >&6; }
+if test "x$libgo_cv_ro_eh_frame" = xyes; then
+
+$as_echo "#define EH_FRAME_FLAGS \"a\"" >>confdefs.h
+
+else
+
+$as_echo "#define EH_FRAME_FLAGS \"aw\"" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if assembler supports GNU comdat group syntax" >&5
+$as_echo_n "checking if assembler supports GNU comdat group syntax... " >&6; }
+if test "${libgo_cv_as_comdat_gnu+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+echo '.section .text,"axG",@progbits,.foo,comdat' > conftest.s
+if $CC $CFLAGS -c conftest.s > /dev/null 2>&1; then
+  libgo_cv_as_comdat_gnu=yes
+else
+  libgo_cv_as_comdat_gnu=no
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_as_comdat_gnu" >&5
+$as_echo "$libgo_cv_as_comdat_gnu" >&6; }
+if test "x$libgo_cv_as_comdat_gnu" = xyes; then
+
+$as_echo "#define HAVE_AS_COMDAT_GAS 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports pc related relocs" >&5
+$as_echo_n "checking assembler supports pc related relocs... " >&6; }
+if test "${libgo_cv_as_x86_pcrel+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+libgo_cv_as_x86_pcrel=yes
+echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
+    libgo_cv_as_x86_pcrel=no
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_as_x86_pcrel" >&5
+$as_echo "$libgo_cv_as_x86_pcrel" >&6; }
+if test "x$libgo_cv_as_x86_pcrel" = xyes; then
+
+$as_echo "#define HAVE_AS_X86_PCREL 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports unwind section type" >&5
+$as_echo_n "checking assembler supports unwind section type... " >&6; }
+if test "${libgo_cv_as_x86_64_unwind_section_type+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+libgo_cv_as_x86_64_unwind_section_type=yes
+echo '.section .eh_frame,"a",@unwind' > conftest.s
+if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+    libgo_cv_as_x86_64_unwind_section_type=no
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_as_x86_64_unwind_section_type" >&5
+$as_echo "$libgo_cv_as_x86_64_unwind_section_type" >&6; }
+if test "x$libgo_cv_as_x86_64_unwind_section_type" = xyes; then
+
+$as_echo "#define HAVE_AS_X86_64_UNWIND_SECTION_TYPE 1" >>confdefs.h
+
+fi
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

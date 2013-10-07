@@ -6025,11 +6025,11 @@ s390_split_branches (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (! JUMP_P (insn))
+      if (! JUMP_P (insn) || tablejump_p (insn, NULL, NULL))
 	continue;
 
       pat = PATTERN (insn);
-      if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+      if (GET_CODE (pat) == PARALLEL)
 	pat = XVECEXP (pat, 0, 0);
       if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
 	continue;
@@ -7049,6 +7049,8 @@ s390_chunkify_start (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
+      rtx table;
+
       /* Labels marked with LABEL_PRESERVE_P can be target
 	 of non-local jumps, so we have to mark them.
 	 The same holds for named labels.
@@ -7063,42 +7065,41 @@ s390_chunkify_start (void)
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
+      /* Check potential targets in a table jump (casesi_jump).  */
+      else if (tablejump_p (insn, NULL, &table))
+	{
+	  rtx vec_pat = PATTERN (table);
+	  int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
 
-      /* If we have a direct jump (conditional or unconditional)
-	 or a casesi jump, check all potential targets.  */
+	  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
+	    {
+	      rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
+
+	      if (s390_find_pool (pool_list, label)
+		  != s390_find_pool (pool_list, insn))
+		bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
+	    }
+	}
+      /* If we have a direct jump (conditional or unconditional),
+	 check all potential targets.  */
       else if (JUMP_P (insn))
 	{
-          rtx pat = PATTERN (insn);
-          rtx table;
+	  rtx pat = PATTERN (insn);
 
-	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+	  if (GET_CODE (pat) == PARALLEL)
 	    pat = XVECEXP (pat, 0, 0);
 
-          if (GET_CODE (pat) == SET)
-            {
+	  if (GET_CODE (pat) == SET)
+	    {
 	      rtx label = JUMP_LABEL (insn);
 	      if (label)
 		{
-	          if (s390_find_pool (pool_list, label)
+		  if (s390_find_pool (pool_list, label)
 		      != s390_find_pool (pool_list, insn))
 		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
-            }
-         else if (tablejump_p (insn, NULL, &table))
-           {
-             rtx vec_pat = PATTERN (table);
-             int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
-
-             for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
-               {
-                 rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
-
-                 if (s390_find_pool (pool_list, label)
-                     != s390_find_pool (pool_list, insn))
-                   bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
-		}
 	    }
-        }
+	}
     }
 
   /* Insert base register reload insns before every pool.  */
@@ -7508,8 +7509,11 @@ s390_register_info (int clobbered_regs[])
     {
       cfun_frame_layout.fpr_bitmap = 0;
       cfun_frame_layout.high_fprs = 0;
-      if (TARGET_64BIT)
-	for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
+
+      for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
+	{
+	  if (call_really_used_regs[i])
+	    continue;
 	  /* During reload we have to use the df_regs_ever_live infos
 	     since reload is marking FPRs used as spill slots there as
 	     live before actually making the code changes.  Without
@@ -7522,8 +7526,11 @@ s390_register_info (int clobbered_regs[])
 	      && !global_regs[i])
 	    {
 	      cfun_set_fpr_save (i);
-	      cfun_frame_layout.high_fprs++;
+
+	      if (i >= FPR8_REGNUM)
+		cfun_frame_layout.high_fprs++;
 	    }
+	}
     }
 
   for (i = 0; i < 16; i++)
@@ -7553,6 +7560,7 @@ s390_register_info (int clobbered_regs[])
 	|| TARGET_TPF_PROFILING
 	|| cfun_save_high_fprs_p
 	|| get_frame_size () > 0
+	|| (reload_completed && cfun_frame_layout.frame_size > 0)
 	|| cfun->calls_alloca
 	|| cfun->stdarg);
 
@@ -7650,14 +7658,6 @@ s390_register_info (int clobbered_regs[])
 	  for (i = min_fpr; i < max_fpr; i++)
 	    cfun_set_fpr_save (i + FPR0_REGNUM);
 	}
-    }
-
-  if (!TARGET_64BIT)
-    {
-      if (df_regs_ever_live_p (FPR4_REGNUM) && !global_regs[FPR4_REGNUM])
-	cfun_set_fpr_save (FPR4_REGNUM);
-      if (df_regs_ever_live_p (FPR6_REGNUM) && !global_regs[FPR6_REGNUM])
-	cfun_set_fpr_save (FPR6_REGNUM);
     }
 }
 

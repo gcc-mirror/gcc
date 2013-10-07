@@ -9960,11 +9960,15 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
       range_temp = convert_from_reference (build_range_temp (range_expr));
       iter_type = (cp_parser_perform_range_for_lookup
 		   (range_temp, &begin_dummy, &end_dummy));
-      iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE, iter_type);
-      iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
-					tf_warning_or_error);
-      TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
-					    iter_decl, auto_node);
+      if (iter_type)
+	{
+	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
+				  iter_type);
+	  iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
+					    tf_warning_or_error);
+	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
+						iter_decl, auto_node);
+	}
     }
 }
 
@@ -10171,6 +10175,11 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	  *begin = *end = error_mark_node;
 	  return error_mark_node;
 	}
+      else if (type_dependent_expression_p (*begin)
+	       || type_dependent_expression_p (*end))
+	/* Can happen, when, eg, in a template context, Koenig lookup
+	   can't resolve begin/end (c++/58503).  */
+	return NULL_TREE;
       else
 	{
 	  tree iter_type = cv_unqualified (TREE_TYPE (*begin));
@@ -11460,7 +11469,8 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 	 A member function template shall not be virtual.  */
       if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	error_at (token->location, "templates may not be %<virtual%>");
-      set_and_check_decl_spec_loc (decl_specs, ds_virtual, token);
+      else
+	set_and_check_decl_spec_loc (decl_specs, ds_virtual, token);
       break;
 
     case RID_EXPLICIT:
@@ -16547,7 +16557,7 @@ cp_parser_init_declarator (cp_parser* parser,
       decl = grokfield (declarator, decl_specifiers,
 			initializer, !is_non_constant_init,
 			/*asmspec=*/NULL_TREE,
-			prefix_attributes);
+			chainon (attributes, prefix_attributes));
       if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	cp_parser_save_default_args (parser, decl);
     }
@@ -21457,6 +21467,8 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	  alignas_expr =
 	    cp_parser_assignment_expression (parser, /*cast_p=*/false,
 					     /**cp_id_kind=*/NULL);
+	  if (alignas_expr == error_mark_node)
+	    cp_parser_skip_to_end_of_statement (parser);
 	  if (alignas_expr == NULL_TREE
 	      || alignas_expr == error_mark_node)
 	    return alignas_expr;
@@ -21756,7 +21768,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		 is dependent.  */
 	      type = make_typename_type (parser->scope, name, tag_type,
 					 /*complain=*/tf_error);
-	      decl = TYPE_NAME (type);
+	      if (type != error_mark_node)
+		decl = TYPE_NAME (type);
 	    }
 	  else if (is_template
 		   && (cp_parser_next_token_ends_template_argument_p (parser)
@@ -29033,6 +29046,14 @@ tree
 finish_fully_implicit_template (cp_parser *parser, tree member_decl_opt)
 {
   gcc_assert (parser->fully_implicit_function_template_p);
+
+  if (member_decl_opt && member_decl_opt != error_mark_node
+      && DECL_VIRTUAL_P (member_decl_opt))
+    {
+      error_at (DECL_SOURCE_LOCATION (member_decl_opt),
+		"implicit templates may not be %<virtual%>");
+      DECL_VIRTUAL_P (member_decl_opt) = false;
+    }
 
   pop_deferring_access_checks ();
   if (member_decl_opt)

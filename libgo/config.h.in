@@ -3,6 +3,9 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Define to the flags needed for the .section .eh_frame directive. */
+#undef EH_FRAME_FLAGS
+
 /* Define to 1 if you have the `accept4' function. */
 #undef HAVE_ACCEPT4
 
@@ -11,6 +14,15 @@
 
 /* Define to 1 if you have the `asinl' function. */
 #undef HAVE_ASINL
+
+/* Define if your assembler supports GNU comdat group syntax. */
+#undef HAVE_AS_COMDAT_GAS
+
+/* Define if your assembler supports unwind section type. */
+#undef HAVE_AS_X86_64_UNWIND_SECTION_TYPE
+
+/* Define if your assembler supports PC relative relocs. */
+#undef HAVE_AS_X86_PCREL
 
 /* Define to 1 if you have the `atan2l' function. */
 #undef HAVE_ATAN2L

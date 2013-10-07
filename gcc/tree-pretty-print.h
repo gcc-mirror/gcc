@@ -31,24 +31,24 @@ along with GCC; see the file COPYING3.  If not see
 
 #define pp_ti_abstract_origin(TI) ((tree *) (TI)->x_data)
 
-extern void pp_tree_identifier (pretty_printer *, tree);
 
-/* In tree-pretty-print.c  */
-extern void print_declaration (pretty_printer *, tree, int, int);
-extern int dump_generic_node (pretty_printer *, tree, int, int, bool);
-extern void print_generic_stmt (FILE *, tree, int);
-extern void print_generic_stmt_indented (FILE *, tree, int, int);
-extern void print_generic_expr (FILE *, tree, int);
-extern void print_generic_decl (FILE *, tree, int);
-extern void dump_omp_clauses (pretty_printer *, tree, int, int);
-extern void print_call_name (pretty_printer *, tree, int);
 extern void debug_generic_expr (tree);
 extern void debug_generic_stmt (tree);
 extern void debug_tree_chain (tree);
+extern void print_generic_decl (FILE *, tree, int);
+extern void print_generic_stmt (FILE *, tree, int);
+extern void print_generic_stmt_indented (FILE *, tree, int, int);
+extern void print_generic_expr (FILE *, tree, int);
+extern void dump_omp_clauses (pretty_printer *, tree, int, int);
+extern int dump_generic_node (pretty_printer *, tree, int, int, bool);
+extern void print_declaration (pretty_printer *, tree, int, int);
+extern int op_code_prio (enum tree_code);
+extern int op_prio (const_tree);
+extern const char *op_symbol_code (enum tree_code);
+extern void print_call_name (pretty_printer *, tree, int);
 extern void percent_K_format (text_info *);
+extern void pp_tree_identifier (pretty_printer *, tree);
 extern void dump_function_header (FILE *, tree, int);
 extern void pp_double_int (pretty_printer *pp, double_int d, bool uns);
-/* In c-pretty-print.c  */
-extern void debug_c_tree (tree);
 
 #endif /* ! GCC_TREE_PRETTY_PRINT_H */

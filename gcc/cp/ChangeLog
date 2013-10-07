@@ -1,3 +1,78 @@
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58126
+	* class.c (check_bases): Propagate CLASSTYPE_READONLY_FIELDS_NEED_INIT
+	and CLASSTYPE_REF_FIELDS_NEED_INIT from bases to derived.
+	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Extend error
+	messages about uninitialized const and references members to mention
+	the base class.
+
+2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56060
+	* pt.c (type_dependent_expression_p): Handle EXPR_PACK_EXPANSION.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58560
+	* typeck2.c (build_functional_cast): Use error_operand_p on exp.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58503
+	* parser.c (cp_parser_perform_range_for_lookup): If eventually
+	either *begin or *end is type-dependent, return NULL_TREE.
+	(do_range_for_auto_deduction): If cp_parser_perform_range_for_lookup
+	returns NULL_TREE, don't actually do_auto_deduction.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58448
+	* pt.c (tsubst): Use error_operand_p on parameter t.
+
+2013-10-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/19476
+	* decl.c (cxx_init_decl_processing): Set operator_new_flag.
+
+2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58584
+	* decl2.c (save_template_attributes): Handle error_mark_node as
+	*attr_p argument.
+	(cp_check_const_attributes): Likewise for attributes.
+	* parser.c (cp_parser_std_attribute_spec): When alignas_expr is an
+	error_mark_node call cp_parser_skip_to_end_of_statement.
+
+2013-10-03  Easwaran Raman  <eraman@google.com>
+
+	PR c++/33911
+	* parser.c (cp_parser_init_declarator): Do not drop attributes
+	of template member functions.
+
+2013-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58510
+	* init.c (sort_mem_initializers): Splice when giving an error.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58535
+	* parser.c (cp_parser_function_specifier_opt): Upon error about
+	virtual templates don't set ds_virtual.
+	(finish_fully_implicit_template): Reject virtual implicit templates.
+
+2013-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58565
+	* semantics.c (potential_constant_expression_1): Handle LABEL_EXPR.
+
+2013-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58563
+	* parser.c (cp_parser_lookup_name): Check make_typename_type return
+	value for error_mark_node.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (CXX_TREE_H, CXX_PARSER_H, CXX_PRETTY_PRINT_H):

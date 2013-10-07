@@ -1,0 +1,38 @@
+# GCC Makefile fragment for Synopsys DesignWare ARC with newlib.
+
+# Copyright (C) 2007-2013 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3, or (at your option) any later version.
+
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+
+# You should have received a copy of the GNU General Public License along
+# with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Selecting -mA5 uses the same functional multilib files/libraries
+# as get used for -mARC600 aka -mA6.
+MULTILIB_OPTIONS=mcpu=ARC600/mcpu=ARC601 mmul64/mmul32x16 mnorm
+MULTILIB_DIRNAMES=arc600 arc601 mul64 mul32x16 norm
+#
+# Aliases:
+MULTILIB_MATCHES  = mcpu?ARC600=mcpu?arc600
+MULTILIB_MATCHES += mcpu?ARC600=mARC600
+MULTILIB_MATCHES += mcpu?ARC600=mA6
+MULTILIB_MATCHES += mcpu?ARC600=mA5
+MULTILIB_MATCHES += mcpu?ARC600=mno-mpy
+MULTILIB_MATCHES += mcpu?ARC601=mcpu?arc601
+MULTILIB_MATCHES += EL=mlittle-endian
+MULTILIB_MATCHES += EB=mbig-endian
+#
+# These don't make sense for the ARC700 default target:
+MULTILIB_EXCEPTIONS=mmul64* mmul32x16* mnorm*
+# And neither of the -mmul* options make sense without -mnorm:
+MULTILIB_EXCLUSIONS=mARC600/mmul64/!mnorm mcpu=ARC601/mmul64/!mnorm mARC600/mmul32x16/!mnorm

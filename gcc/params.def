@@ -398,6 +398,19 @@ DEFPARAM(PARAM_MAX_PREDICTED_ITERATIONS,
 	 "max-predicted-iterations",
 	 "The maximum number of loop iterations we predict statically",
 	 100, 0, 0)
+
+/* This parameter controls the probability of builtin_expect. The default
+   value is 90%. This empirical value is obtained through the weighted
+   probability of FDO counters (with the FDO count value as the weight)
+   in some real world programs:  
+   (1) Google performance test benchmarks: the probability is 0.9081.
+   (2) Linux 3.3 kernel running Google search workload: the probability
+   is 0.8717.  */
+
+DEFPARAM(BUILTIN_EXPECT_PROBABILITY,
+	 "builtin-expect-probability",
+	 "Set the estimated probability in percentage for builtin expect. The default value is 90% probability.",
+	 90, 0, 100)
 DEFPARAM(TRACER_DYNAMIC_COVERAGE_FEEDBACK,
 	 "tracer-dynamic-coverage-feedback",
 	 "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available",

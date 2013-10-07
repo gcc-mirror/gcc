@@ -151,8 +151,8 @@ public:
   void end_s_expr ();
 
 private:
-  int indent_amount_;
-  int had_recent_newline_;
+  int m_indent_amount;
+  int m_had_recent_newline;
 }; // class s_expr_writer
 
 /* A class for writing out "gtype.state".  */
@@ -200,14 +200,14 @@ private:
 
 private:
   /* Counter of written types.  */
-  int state_written_type_count;
+  int m_state_written_type_count;
 }; // class state_writer
 
 
 /* class s_expr_writer's trivial constructor.  */
 s_expr_writer::s_expr_writer ()
-  : indent_amount_(0),
-    had_recent_newline_(0)
+  : m_indent_amount (0),
+    m_had_recent_newline (0)
 {
 }
 
@@ -216,10 +216,10 @@ void
 s_expr_writer::write_new_line (void)
 {
   /* Don't add a newline if we've just had one.  */
-  if (!had_recent_newline_)
+  if (!m_had_recent_newline)
     {
       fprintf (state_file, "\n");
-      had_recent_newline_ = 1;
+      m_had_recent_newline = 1;
     }
 }
 
@@ -236,11 +236,11 @@ void
 s_expr_writer::write_any_indent (int leading_spaces)
 {
   int i;
-  int amount = indent_amount_ - leading_spaces;
-  if (had_recent_newline_)
+  int amount = m_indent_amount - leading_spaces;
+  if (m_had_recent_newline)
     for (i = 0; i < amount; i++)
       fprintf (state_file, " ");
-  had_recent_newline_ = 0;
+  m_had_recent_newline = 0;
 }
 
 /* Write the beginning of a new s-expresion e.g. "(!foo "
@@ -253,7 +253,7 @@ s_expr_writer::begin_s_expr (const char *tag)
   write_new_line ();
   write_any_indent (0);
   fprintf (state_file, "(!%s ", tag);
-  indent_amount_++;
+  m_indent_amount++;
 }
 
 /* Write out the end of an s-expression: any necssessary indentation,
@@ -261,7 +261,7 @@ s_expr_writer::begin_s_expr (const char *tag)
 void
 s_expr_writer::end_s_expr (void)
 {
-  indent_amount_--;
+  m_indent_amount--;
   write_any_indent (0);
   fprintf (state_file, ")");
   write_new_line ();
@@ -271,7 +271,7 @@ s_expr_writer::end_s_expr (void)
 /* class state_writer's trivial constructor.  */
 state_writer::state_writer ()
   : s_expr_writer (),
-    state_written_type_count (0)
+    m_state_written_type_count (0)
 {
 }
 
@@ -1136,10 +1136,10 @@ state_writer::write_state_type (type_p current)
     }
   else
     {
-      state_written_type_count++;
-      DBGPRINTF ("writing type #%d @%p old number %d", state_written_type_count,
+      m_state_written_type_count++;
+      DBGPRINTF ("writing type #%d @%p old number %d", m_state_written_type_count,
 		 (void *) current, current->state_number);
-      current->state_number = state_written_type_count;
+      current->state_number = m_state_written_type_count;
       switch (current->kind)
 	{
 	case TYPE_NONE:
@@ -1441,7 +1441,7 @@ write_state (const char *state_path)
 
   if (verbosity_level >= 1)
     printf ("%s wrote state file %s of %ld bytes with %d GTY-ed types\n",
-	    progname, state_path, statelen, sw.state_written_type_count);
+	    progname, state_path, statelen, sw.m_state_written_type_count);
 
 }
 

@@ -1,3 +1,7 @@
+2013-10-07 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 203240 into gupc branch.
+
 2013-10-01 Gary Funck  <gary@intrepid.com>
 
 	Implement pointer-to-shared -> integer conversions.

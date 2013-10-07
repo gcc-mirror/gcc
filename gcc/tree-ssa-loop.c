@@ -176,7 +176,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lim (ctxt_); }
+  opt_pass * clone () { return new pass_lim (m_ctxt); }
   bool gate () { return gate_tree_ssa_loop_im (); }
   unsigned int execute () { return tree_ssa_loop_im (); }
 

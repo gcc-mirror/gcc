@@ -3565,7 +3565,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_forwprop (ctxt_); }
+  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
   bool gate () { return gate_forwprop (); }
   unsigned int execute () { return ssa_forward_propagate_and_combine (); }
 

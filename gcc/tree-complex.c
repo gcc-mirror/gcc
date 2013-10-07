@@ -1662,7 +1662,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lower_complex (ctxt_); }
+  opt_pass * clone () { return new pass_lower_complex (m_ctxt); }
   unsigned int execute () { return tree_lower_complex (); }
 
 }; // class pass_lower_complex

@@ -246,9 +246,12 @@ struct cpu_vec_costs {
 #ifdef RTX_CODE
 /* This needs to be here because we need RTX_CODE and similar.  */
 
+struct cpu_cost_table;
+
 struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
+  const struct cpu_cost_table *insn_extra_cost;
   bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
   int constant_limit;
   /* Maximum number of instructions to conditionalise.  */
