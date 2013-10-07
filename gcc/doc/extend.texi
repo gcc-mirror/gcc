@@ -15046,7 +15046,7 @@ depth is returned as integer value.  For a nesting depth of 0 the code
 is not executed as part of an transaction.
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin_non_tx_store (unsigned long long *, unsigned long long)
+@deftypefn {Built-in Function} void __builtin_non_tx_store (uint64_t *, uint64_t)
 
 Generates the @code{ntstg} machine instruction.  The second argument
 is written to the first arguments location.  The store operation will

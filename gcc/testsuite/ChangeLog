@@ -1,3 +1,8 @@
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-1.c: Add more tests to cover different
+	operand types.
+
 2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58126
