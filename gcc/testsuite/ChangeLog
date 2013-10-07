@@ -1,3 +1,12 @@
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	Backport from mainline
+	2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+        * gcc.target/s390/htm-1.c: New file.
+        * gcc.target/s390/htm-nofloat-1.c: New file.
+        * gcc.target/s390/htm-xl-intrin-1.c: New file.
+
 2013-10-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57697
@@ -291,15 +300,6 @@
 	PR middle-end/58041
 	* gcc.dg/torture/pr58041.c: New test.
 	* gcc.target/arm/pr58041.c: Likewise.
-
-2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-
-	Backport from mainline
-	2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-
-        * gcc.target/s390/htm-1.c: New file.
-        * gcc.target/s390/htm-nofloat-1.c: New file.
-        * gcc.target/s390/htm-xl-intrin-1.c: New file.
 
 2013-07-28  Tobias Burnus  <burnus@net-b.de>
 
