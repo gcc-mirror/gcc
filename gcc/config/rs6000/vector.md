@@ -88,7 +88,8 @@
 				 (smax "smax")])
 
 
-;; Vector move instructions.
+;; Vector move instructions.  Little-endian VSX loads and stores require
+;; special handling to circumvent "element endianness."
 (define_expand "mov<mode>"
   [(set (match_operand:VEC_M 0 "nonimmediate_operand" "")
 	(match_operand:VEC_M 1 "any_operand" ""))]
@@ -103,6 +104,15 @@
       else if (!vlogical_operand (operands[0], <MODE>mode)
 	       && !vlogical_operand (operands[1], <MODE>mode))
 	operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
+  if (!BYTES_BIG_ENDIAN
+      && VECTOR_MEM_VSX_P (<MODE>mode)
+      && <MODE>mode != TImode
+      && (memory_operand (operands[0], <MODE>mode)
+          ^ memory_operand (operands[1], <MODE>mode)))
+    {
+      rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
+      DONE;
     }
 })
 

@@ -7665,6 +7665,106 @@ rs6000_eliminate_indexed_memrefs (rtx operands[2])
 			       copy_addr_to_reg (XEXP (operands[1], 0)));
 }
 
+/* Generate a vector of constants to permute MODE for a little-endian
+   storage operation by swapping the two halves of a vector.  */
+static rtvec
+rs6000_const_vec (enum machine_mode mode)
+{
+  int i, subparts;
+  rtvec v;
+
+  switch (mode)
+    {
+    case V2DFmode:
+    case V2DImode:
+      subparts = 2;
+      break;
+    case V4SFmode:
+    case V4SImode:
+      subparts = 4;
+      break;
+    case V8HImode:
+      subparts = 8;
+      break;
+    case V16QImode:
+      subparts = 16;
+      break;
+    default:
+      gcc_unreachable();
+    }
+
+  v = rtvec_alloc (subparts);
+
+  for (i = 0; i < subparts / 2; ++i)
+    RTVEC_ELT (v, i) = gen_rtx_CONST_INT (DImode, i + subparts / 2);
+  for (i = subparts / 2; i < subparts; ++i)
+    RTVEC_ELT (v, i) = gen_rtx_CONST_INT (DImode, i - subparts / 2);
+
+  return v;
+}
+
+/* Generate a permute rtx that represents an lxvd2x, stxvd2x, or xxpermdi
+   for a VSX load or store operation.  */
+rtx
+rs6000_gen_le_vsx_permute (rtx source, enum machine_mode mode)
+{
+  rtx par = gen_rtx_PARALLEL (VOIDmode, rs6000_const_vec (mode));
+  return gen_rtx_VEC_SELECT (mode, source, par);
+}
+
+/* Emit a little-endian load from vector memory location SOURCE to VSX
+   register DEST in mode MODE.  The load is done with two permuting
+   insn's that represent an lxvd2x and xxpermdi.  */
+void
+rs6000_emit_le_vsx_load (rtx dest, rtx source, enum machine_mode mode)
+{
+  rtx tmp = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (dest) : dest;
+  rtx permute_mem = rs6000_gen_le_vsx_permute (source, mode);
+  rtx permute_reg = rs6000_gen_le_vsx_permute (tmp, mode);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp, permute_mem));
+  emit_insn (gen_rtx_SET (VOIDmode, dest, permute_reg));
+}
+
+/* Emit a little-endian store to vector memory location DEST from VSX
+   register SOURCE in mode MODE.  The store is done with two permuting
+   insn's that represent an xxpermdi and an stxvd2x.  */
+void
+rs6000_emit_le_vsx_store (rtx dest, rtx source, enum machine_mode mode)
+{
+  rtx tmp = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (source) : source;
+  rtx permute_src = rs6000_gen_le_vsx_permute (source, mode);
+  rtx permute_tmp = rs6000_gen_le_vsx_permute (tmp, mode);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp, permute_src));
+  emit_insn (gen_rtx_SET (VOIDmode, dest, permute_tmp));
+}
+
+/* Emit a sequence representing a little-endian VSX load or store,
+   moving data from SOURCE to DEST in mode MODE.  This is done
+   separately from rs6000_emit_move to ensure it is called only
+   during expand.  LE VSX loads and stores introduced later are
+   handled with a split.  The expand-time RTL generation allows
+   us to optimize away redundant pairs of register-permutes.  */
+void
+rs6000_emit_le_vsx_move (rtx dest, rtx source, enum machine_mode mode)
+{
+  gcc_assert (!BYTES_BIG_ENDIAN
+	      && VECTOR_MEM_VSX_P (mode)
+	      && mode != TImode
+	      && (MEM_P (source) ^ MEM_P (dest)));
+
+  if (MEM_P (source))
+    {
+      gcc_assert (REG_P (dest));
+      rs6000_emit_le_vsx_load (dest, source, mode);
+    }
+  else
+    {
+      if (!REG_P (source))
+	source = force_reg (mode, source);
+      rs6000_emit_le_vsx_store (dest, source, mode);
+    }
+}
+
 /* Emit a move from SOURCE to DEST in mode MODE.  */
 void
 rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)

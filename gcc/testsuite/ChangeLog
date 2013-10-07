@@ -1,3 +1,8 @@
+2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr43154.c: Skip for ppc64 little endian.
+	* gcc.target/powerpc/fusion.c: Likewise.
+
 2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/htm-nofloat-2.c: New testcase.
