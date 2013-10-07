@@ -1,3 +1,35 @@
+2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (mov<mode>): Emit permuted move
+	sequences for LE VSX loads and stores at expand time.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_le_vsx_move): New
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_const_vec): New.
+	(rs6000_gen_le_vsx_permute): New.
+	(rs6000_gen_le_vsx_load): New.
+	(rs6000_gen_le_vsx_store): New.
+	(rs6000_gen_le_vsx_move): New.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_v2di): New.
+	(*vsx_le_perm_load_v4si): New.
+	(*vsx_le_perm_load_v8hi): New.
+	(*vsx_le_perm_load_v16qi): New.
+	(*vsx_le_perm_store_v2di): New.
+	(*vsx_le_perm_store_v4si): New.
+	(*vsx_le_perm_store_v8hi): New.
+	(*vsx_le_perm_store_v16qi): New.
+	(*vsx_xxpermdi2_le_<mode>): New.
+	(*vsx_xxpermdi4_le_<mode>): New.
+	(*vsx_xxpermdi8_le_V8HI): New.
+	(*vsx_xxpermdi16_le_V16QI): New.
+	(*vsx_lxvd2x2_le_<mode>): New.
+	(*vsx_lxvd2x4_le_<mode>): New.
+	(*vsx_lxvd2x8_le_V8HI): New.
+	(*vsx_lxvd2x16_le_V16QI): New.
+	(*vsx_stxvd2x2_le_<mode>): New.
+	(*vsx_stxvd2x4_le_<mode>): New.
+	(*vsx_stxvd2x8_le_V8HI): New.
+	(*vsx_stxvd2x16_le_V16QI): New.
+
 2013-10-07  Renlin Li  <Renlin.Li@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a53): Use cortex tuning.
