@@ -1,5 +1,11 @@
 2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_register_info): Make the call-saved FPR
+	loop to work also for 31bit ABI.
+	Save the stack pointer for frame_size > 0.
+
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.md ("tbegin", "tbegin_nofloat", "tbegin_retry")
 	("tbegin_retry_nofloat", "tend", "tabort", "tx_assist"): Remove
 	constraint letters from expanders.

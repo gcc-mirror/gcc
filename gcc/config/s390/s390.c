@@ -7509,8 +7509,11 @@ s390_register_info (int clobbered_regs[])
     {
       cfun_frame_layout.fpr_bitmap = 0;
       cfun_frame_layout.high_fprs = 0;
-      if (TARGET_64BIT)
-	for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
+
+      for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
+	{
+	  if (call_really_used_regs[i])
+	    continue;
 	  /* During reload we have to use the df_regs_ever_live infos
 	     since reload is marking FPRs used as spill slots there as
 	     live before actually making the code changes.  Without
@@ -7523,8 +7526,11 @@ s390_register_info (int clobbered_regs[])
 	      && !global_regs[i])
 	    {
 	      cfun_set_fpr_save (i);
-	      cfun_frame_layout.high_fprs++;
+
+	      if (i >= FPR8_REGNUM)
+		cfun_frame_layout.high_fprs++;
 	    }
+	}
     }
 
   for (i = 0; i < 16; i++)
@@ -7554,6 +7560,7 @@ s390_register_info (int clobbered_regs[])
 	|| TARGET_TPF_PROFILING
 	|| cfun_save_high_fprs_p
 	|| get_frame_size () > 0
+	|| (reload_completed && cfun_frame_layout.frame_size > 0)
 	|| cfun->calls_alloca
 	|| cfun->stdarg);
 
@@ -7651,14 +7658,6 @@ s390_register_info (int clobbered_regs[])
 	  for (i = min_fpr; i < max_fpr; i++)
 	    cfun_set_fpr_save (i + FPR0_REGNUM);
 	}
-    }
-
-  if (!TARGET_64BIT)
-    {
-      if (df_regs_ever_live_p (FPR4_REGNUM) && !global_regs[FPR4_REGNUM])
-	cfun_set_fpr_save (FPR4_REGNUM);
-      if (df_regs_ever_live_p (FPR6_REGNUM) && !global_regs[FPR6_REGNUM])
-	cfun_set_fpr_save (FPR6_REGNUM);
     }
 }
 
