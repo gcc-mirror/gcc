@@ -1,5 +1,10 @@
 2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const_le): New.
+	(altivec_expand_vec_perm_const): Call it.
+
+2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/vector.md (mov<mode>): Emit permuted move
 	sequences for LE VSX loads and stores at expand time.
 	* config/rs6000/rs6000-protos.h (rs6000_emit_le_vsx_move): New

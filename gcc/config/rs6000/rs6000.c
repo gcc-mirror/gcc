@@ -28526,6 +28526,88 @@ rs6000_emit_parity (rtx dst, rtx src)
     }
 }
 
+/* Expand an Altivec constant permutation for little endian mode.
+   There are two issues: First, the two input operands must be
+   swapped so that together they form a double-wide array in LE
+   order.  Second, the vperm instruction has surprising behavior
+   in LE mode:  it interprets the elements of the source vectors
+   in BE mode ("left to right") and interprets the elements of
+   the destination vector in LE mode ("right to left").  To
+   correct for this, we must subtract each element of the permute
+   control vector from 31.
+
+   For example, suppose we want to concatenate vr10 = {0, 1, 2, 3}
+   with vr11 = {4, 5, 6, 7} and extract {0, 2, 4, 6} using a vperm.
+   We place {0,1,2,3,8,9,10,11,16,17,18,19,24,25,26,27} in vr12 to
+   serve as the permute control vector.  Then, in BE mode,
+
+     vperm 9,10,11,12
+
+   places the desired result in vr9.  However, in LE mode the 
+   vector contents will be
+
+     vr10 = 00000003 00000002 00000001 00000000
+     vr11 = 00000007 00000006 00000005 00000004
+
+   The result of the vperm using the same permute control vector is
+
+     vr9  = 05000000 07000000 01000000 03000000
+
+   That is, the leftmost 4 bytes of vr10 are interpreted as the
+   source for the rightmost 4 bytes of vr9, and so on.
+
+   If we change the permute control vector to
+
+     vr12 = {31,20,29,28,23,22,21,20,15,14,13,12,7,6,5,4}
+
+   and issue
+
+     vperm 9,11,10,12
+
+   we get the desired
+
+   vr9  = 00000006 00000004 00000002 00000000.  */
+
+void
+altivec_expand_vec_perm_const_le (rtx operands[4])
+{
+  unsigned int i;
+  rtx perm[16];
+  rtx constv, unspec;
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx sel = operands[3];
+
+  /* Unpack and adjust the constant selector.  */
+  for (i = 0; i < 16; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      unsigned int elt = 31 - (INTVAL (e) & 31);
+      perm[i] = GEN_INT (elt);
+    }
+
+  /* Expand to a permute, swapping the inputs and using the
+     adjusted selector.  */
+  if (!REG_P (op0))
+    op0 = force_reg (V16QImode, op0);
+  if (!REG_P (op1))
+    op1 = force_reg (V16QImode, op1);
+
+  constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+  constv = force_reg (V16QImode, constv);
+  unspec = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, op1, op0, constv),
+			   UNSPEC_VPERM);
+  if (!REG_P (target))
+    {
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, unspec);
+      unspec = tmp;
+    }
+
+  emit_move_insn (target, unspec);
+}
+
 /* Expand an Altivec constant permutation.  Return true if we match
    an efficient implementation; false to fall back to VPERM.  */
 
@@ -28704,6 +28786,12 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	    emit_move_insn (target, gen_lowpart (V16QImode, x));
 	  return true;
 	}
+    }
+
+  if (!BYTES_BIG_ENDIAN)
+    {
+      altivec_expand_vec_perm_const_le (operands);
+      return true;
     }
 
   return false;
