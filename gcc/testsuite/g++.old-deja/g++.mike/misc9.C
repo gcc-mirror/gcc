@@ -8,6 +8,6 @@ class bee {
 
 class foo {
  public:
-  int bee::bar;		// { dg-error "not derived" } you cannot do this
+  int bee::bar;		// { dg-error "invalid use" } you cannot do this
     int me();
 };
