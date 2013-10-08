@@ -1,3 +1,15 @@
+2013-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/58659
+	* include/bits/shared_ptr_base.h (__shared_count::__shared_count(P,D)):
+	Delegate to constructor taking allocator.
+	(__shared_count::_S_create_from_up): Inline into ...
+	(__shared_count::__shared_count(unique_ptr<Y,D>&&): Here. Use
+	std::conditional instead of constrained overloads. Allocate memory
+	using the allocator type that will be used for deallocation.
+	* testsuite/20_util/shared_ptr/cons/58659.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust.
+
 2013-10-08  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_executor.h: Add _TodoList class.
