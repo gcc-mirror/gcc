@@ -2090,7 +2090,10 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  n = (tree *) pointer_map_contains (id->decl_map,
 			LOCATION_BLOCK (locus));
 		  gcc_assert (n);
-		  locus = COMBINE_LOCATION_DATA (line_table, locus, *n);
+		  if (*n)
+		    locus = COMBINE_LOCATION_DATA (line_table, locus, *n);
+		  else
+		    locus = LOCATION_LOCUS (locus);
 		}
 	      else
 		locus = LOCATION_LOCUS (locus);
