@@ -495,29 +495,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Ptr, typename _Deleter>
-	__shared_count(_Ptr __p, _Deleter __d) : _M_pi(0)
-	{
-	  // The allocator's value_type doesn't matter, will rebind it anyway.
-	  typedef std::allocator<int> _Alloc;
-	  typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
-	  typedef typename allocator_traits<_Alloc>::template
-	    rebind_traits<_Sp_cd_type> _Alloc_traits;
-	  typename _Alloc_traits::allocator_type __a;
-	  _Sp_cd_type* __mem = 0;
-	  __try
-	    {
-	      __mem = _Alloc_traits::allocate(__a, 1);
-	      _Alloc_traits::construct(__a, __mem, __p, std::move(__d));
-	      _M_pi = __mem;
-	    }
-	  __catch(...)
-	    {
-	      __d(__p); // Call _Deleter on __p.
-	      if (__mem)
-	        _Alloc_traits::deallocate(__a, __mem, 1);
-	      __throw_exception_again;
-	    }
-	}
+	__shared_count(_Ptr __p, _Deleter __d)
+	: __shared_count(__p, std::move(__d), allocator<void>())
+	{ }
 
       template<typename _Ptr, typename _Deleter, typename _Alloc>
 	__shared_count(_Ptr __p, _Deleter __d, _Alloc __a) : _M_pi(0)
@@ -576,16 +556,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Special case for unique_ptr<_Tp,_Del> to provide the strong guarantee.
       template<typename _Tp, typename _Del>
         explicit
-	__shared_count(std::unique_ptr<_Tp, _Del>&& __r)
-	: _M_pi(_S_create_from_up(std::move(__r)))
-	{ __r.release(); }
+	__shared_count(std::unique_ptr<_Tp, _Del>&& __r) : _M_pi(0)
+	{
+	  using _Ptr = typename unique_ptr<_Tp, _Del>::pointer;
+	  using _Del2 = typename conditional<is_reference<_Del>::value,
+	      reference_wrapper<typename remove_reference<_Del>::type>,
+	      _Del>::type;
+	  using _Sp_cd_type
+	    = _Sp_counted_deleter<_Ptr, _Del2, allocator<void>, _Lp>;
+	  using _Alloc = allocator<_Sp_cd_type>;
+	  using _Alloc_traits = allocator_traits<_Alloc>;
+	  _Alloc __a;
+	  _Sp_cd_type* __mem = _Alloc_traits::allocate(__a, 1);
+	  _Alloc_traits::construct(__a, __mem, __r.release(),
+				   __r.get_deleter());  // non-throwing
+	  _M_pi = __mem;
+	}
 
       // Throw bad_weak_ptr when __r._M_get_use_count() == 0.
       explicit __shared_count(const __weak_count<_Lp>& __r);
 
       ~__shared_count() noexcept
       {
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_release();
       }
 
@@ -646,28 +639,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend class __weak_count<_Lp>;
-
-      template<typename _Tp, typename _Del>
-	static _Sp_counted_base<_Lp>*
-	_S_create_from_up(std::unique_ptr<_Tp, _Del>&& __r,
-	  typename std::enable_if<!std::is_reference<_Del>::value>::type* = 0)
-	{
-	  typedef typename unique_ptr<_Tp, _Del>::pointer _Ptr;
-	  return new _Sp_counted_deleter<_Ptr, _Del, std::allocator<void>,
-	    _Lp>(__r.get(), __r.get_deleter());
-	}
-
-      template<typename _Tp, typename _Del>
-	static _Sp_counted_base<_Lp>*
-	_S_create_from_up(std::unique_ptr<_Tp, _Del>&& __r,
-	  typename std::enable_if<std::is_reference<_Del>::value>::type* = 0)
-	{
-	  typedef typename unique_ptr<_Tp, _Del>::pointer _Ptr;
-	  typedef typename std::remove_reference<_Del>::type _Del1;
-	  typedef std::reference_wrapper<_Del1> _Del2;
-	  return new _Sp_counted_deleter<_Ptr, _Del2, std::allocator<void>,
-	    _Lp>(__r.get(), std::ref(__r.get_deleter()));
-	}
 
       _Sp_counted_base<_Lp>*  _M_pi;
     };
