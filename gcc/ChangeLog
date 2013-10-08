@@ -1,3 +1,9 @@
+2013-10-08  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR target/58423
+	* config/arm/arm.c (arm_emit_ldrd_pop): Attach
+	RTX_FRAME_RELATED_P on INSN.
+
 2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const_le): New.
