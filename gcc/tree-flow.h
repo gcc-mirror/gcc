@@ -375,38 +375,6 @@ enum move_pos
 extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
-/* In tree-flow-inline.h  */
-static inline bool unmodifiable_var_p (const_tree);
-static inline bool ref_contains_array_ref (const_tree);
-
-/* In tree-eh.c  */
-extern void make_eh_edges (gimple);
-extern bool make_eh_dispatch_edges (gimple);
-extern edge redirect_eh_edge (edge, basic_block);
-extern void redirect_eh_dispatch_edge (gimple, edge, basic_block);
-extern bool stmt_could_throw_p (gimple);
-extern bool stmt_can_throw_internal (gimple);
-extern bool stmt_can_throw_external (gimple);
-extern void add_stmt_to_eh_lp_fn (struct function *, gimple, int);
-extern void add_stmt_to_eh_lp (gimple, int);
-extern bool remove_stmt_from_eh_lp (gimple);
-extern bool remove_stmt_from_eh_lp_fn (struct function *, gimple);
-extern int lookup_stmt_eh_lp_fn (struct function *, gimple);
-extern int lookup_stmt_eh_lp (gimple);
-extern bool maybe_clean_eh_stmt_fn (struct function *, gimple);
-extern bool maybe_clean_eh_stmt (gimple);
-extern bool maybe_clean_or_replace_eh_stmt (gimple, gimple);
-extern bool maybe_duplicate_eh_stmt_fn (struct function *, gimple,
-					struct function *, gimple,
-					struct pointer_map_t *, int);
-extern bool maybe_duplicate_eh_stmt (gimple, gimple);
-extern bool verify_eh_edges (gimple);
-extern bool verify_eh_dispatch_edge (gimple);
-extern void maybe_remove_unreachable_handlers (void);
-
-/* In tree-ssa-pre.c  */
-void debug_value_expressions (unsigned int);
-
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (void);
 extern unsigned perfect_loop_nest_depth (struct loop *);

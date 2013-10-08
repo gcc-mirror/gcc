@@ -1,3 +1,16 @@
+2013-10-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Remove some prototypes.
+	* tree.h: Remove some protypes, add a couple.
+	* tree.c (using_eh_for_cleanups_flag, using_eh_for_cleanups,
+	using_eh_for_cleanups_p): Add interface routines for front ends.
+	* tree-eh.h: New file.  Add protoptyes.
+	* tree-eh.c (using_eh_for_cleanups_p, using_eh_for_cleanups): Delete.
+	(add_stmt_to_eh_lp_fn): Make static.
+	(lower_try_finally): Use new using_eh_for_cleanups_p.
+	* emit-rtl.c: Include tree-eh.h.
+	* gimple.h: Include tree-eh.h.
+
 2013-10-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/58480
