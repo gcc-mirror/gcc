@@ -75,4 +75,4 @@ int main()
   VERIFY(check_array(val_g, ans4));
 
   return 0;
-};
+}

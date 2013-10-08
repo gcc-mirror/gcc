@@ -26,4 +26,4 @@
 int main()
 {
   __gnu_test::bitmask_operators<std::ios_base::fmtflags>();
-};
+}
