@@ -1,3 +1,8 @@
+2013-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.c (ix86_option_override_internal): Switch
+	to SSE math for -ffast-math when target ISA supports SSE2.
+
 2013-10-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h: Remove some prototypes.

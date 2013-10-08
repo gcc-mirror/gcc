@@ -3769,6 +3769,19 @@ ix86_option_override_internal (bool main_args_p)
 	    }
 	}
     }
+  /* For all chips supporting SSE2, -mfpmath=sse performs better than
+     fpmath=387.  The second is however default at many targets since the
+     extra 80bit precision of temporaries is considered to be part of ABI.
+     Overwrite the default at least for -ffast-math. 
+     TODO: -mfpmath=both seems to produce same performing code with bit
+     smaller binaries.  It is however not clear if register allocation is
+     ready for this setting.
+     Also -mfpmath=387 is overall a lot more compact (bout 4-5%) than SSE
+     codegen.  We may switch to 387 with -ffast-math for size optimized
+     functions. */
+  else if (fast_math_flags_set_p (&global_options)
+	   && TARGET_SSE2)
+    ix86_fpmath = FPMATH_SSE;
   else
     ix86_fpmath = TARGET_FPMATH_DEFAULT;
 
