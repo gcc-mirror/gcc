@@ -1,3 +1,12 @@
+2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58665
+	Revert:
+	2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58448
+	* pt.c (tsubst): Use error_operand_p on parameter t.
+
 2013-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58126
