@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
+#include "tree-eh.h"
 
 typedef gimple gimple_seq_node;
 

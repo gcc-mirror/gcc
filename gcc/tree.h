@@ -4216,15 +4216,6 @@ extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
 
-/* In tree-eh.c */
-extern void using_eh_for_cleanups (void);
-
-extern bool tree_could_trap_p (tree);
-extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
-					   bool, tree, bool *);
-extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
-extern bool tree_could_throw_p (tree);
-
 /* Compare and hash for any structure which begins with a canonical
    pointer.  Assumes all pointers are interchangeable, which is sort
    of already assumed by gcc elsewhere IIRC.  */
@@ -4531,6 +4522,8 @@ extern bool types_same_for_odr (tree type1, tree type2);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool type_in_anonymous_namespace_p (tree);
 extern bool block_may_fallthru (const_tree);
+extern void using_eh_for_cleanups (void);
+extern bool using_eh_for_cleanups_p (void);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);

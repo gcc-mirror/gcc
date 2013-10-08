@@ -12247,4 +12247,22 @@ block_may_fallthru (const_tree block)
     }
 }
 
+/* True if we are using EH to handle cleanups.  */
+static bool using_eh_for_cleanups_flag = false;
+
+/* This routine is called from front ends to indicate eh should be used for
+   cleanups.  */
+void
+using_eh_for_cleanups (void)
+{
+  using_eh_for_cleanups_flag = true;
+}
+
+/* Query whether EH is used for cleanups.  */
+bool
+using_eh_for_cleanups_p (void)
+{
+  return using_eh_for_cleanups_flag;
+}
+
 #include "gt-tree.h"
