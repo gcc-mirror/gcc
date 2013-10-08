@@ -11293,7 +11293,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
     }
 
   Expression* e = Expression::make_composite_literal(array_type, 0, false,
-						     bytes, loc);
+						     bytes, false, loc);
 
   Variable* var = new Variable(array_type, e, true, false, false, loc);
 
@@ -13236,9 +13236,11 @@ class Composite_literal_expression : public Parser_expression
 {
  public:
   Composite_literal_expression(Type* type, int depth, bool has_keys,
-			       Expression_list* vals, Location location)
+			       Expression_list* vals, bool all_are_names,
+			       Location location)
     : Parser_expression(EXPRESSION_COMPOSITE_LITERAL, location),
-      type_(type), depth_(depth), vals_(vals), has_keys_(has_keys)
+      type_(type), depth_(depth), vals_(vals), has_keys_(has_keys),
+      all_are_names_(all_are_names)
   { }
 
  protected:
@@ -13256,6 +13258,7 @@ class Composite_literal_expression : public Parser_expression
 					    (this->vals_ == NULL
 					     ? NULL
 					     : this->vals_->copy()),
+					    this->all_are_names_,
 					    this->location());
   }
 
@@ -13285,6 +13288,9 @@ class Composite_literal_expression : public Parser_expression
   // If this is true, then VALS_ is a list of pairs: a key and a
   // value.  In an array initializer, a missing key will be NULL.
   bool has_keys_;
+  // If this is true, then HAS_KEYS_ is true, and every key is a
+  // simple identifier.
+  bool all_are_names_;
 };
 
 // Traversal.
@@ -13387,6 +13393,8 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
   std::vector<Expression*> vals(field_count);
   std::vector<int>* traverse_order = new(std::vector<int>);
   Expression_list::const_iterator p = this->vals_->begin();
+  Expression* external_expr = NULL;
+  const Named_object* external_no = NULL;
   while (p != this->vals_->end())
     {
       Expression* name_expr = *p;
@@ -13492,6 +13500,12 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
       if (no != NULL)
 	{
+	  if (no->package() != NULL && external_expr == NULL)
+	    {
+	      external_expr = name_expr;
+	      external_no = no;
+	    }
+
 	  name = no->name();
 
 	  // A predefined name won't be packed.  If it starts with a
@@ -13539,6 +13553,23 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
       vals[index] = val;
       traverse_order->push_back(index);
+    }
+
+  if (!this->all_are_names_)
+    {
+      // This is a weird case like bug462 in the testsuite.
+      if (external_expr == NULL)
+	error_at(this->location(), "unknown field in %qs literal",
+		 (type->named_type() != NULL
+		  ? type->named_type()->message_name().c_str()
+		  : "unnamed struct"));
+      else
+	error_at(external_expr->location(), "unknown field %qs in %qs",
+		 external_no->message_name().c_str(),
+		 (type->named_type() != NULL
+		  ? type->named_type()->message_name().c_str()
+		  : "unnamed struct"));
+      return Expression::make_error(location);
     }
 
   Expression_list* list = new Expression_list;
@@ -13830,11 +13861,11 @@ Composite_literal_expression::do_dump_expression(
 
 Expression*
 Expression::make_composite_literal(Type* type, int depth, bool has_keys,
-				   Expression_list* vals,
+				   Expression_list* vals, bool all_are_names,
 				   Location location)
 {
   return new Composite_literal_expression(type, depth, has_keys, vals,
-					  location);
+					  all_are_names, location);
 }
 
 // Return whether this expression is a composite literal.

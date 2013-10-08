@@ -291,10 +291,13 @@ class Expression
   make_unsafe_cast(Type*, Expression*, Location);
 
   // Make a composite literal.  The DEPTH parameter is how far down we
-  // are in a list of composite literals with omitted types.
+  // are in a list of composite literals with omitted types.  HAS_KEYS
+  // is true if the expression list has keys alternating with values.
+  // ALL_ARE_NAMES is true if all the keys could be struct field
+  // names.
   static Expression*
   make_composite_literal(Type*, int depth, bool has_keys, Expression_list*,
-			 Location);
+			 bool all_are_names, Location);
 
   // Make a struct composite literal.
   static Expression*
