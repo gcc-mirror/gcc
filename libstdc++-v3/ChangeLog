@@ -1,3 +1,11 @@
+2013-10-08  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_executor.h: Add _TodoList class.
+	* include/bits/regex_executor.tcc (_BFSExecutor<>::_M_main): Add
+	_M_match_stack and _M_stack to make everything faster. Break if
+	_M_stack is empty, to reduce unnecessary idling.
+	* testsuite/performance/28_regex/split.cc: New.
+
 2013-10-06  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: (regex_token_iterator<>::regex_token_iterator):
