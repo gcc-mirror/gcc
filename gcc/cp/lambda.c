@@ -138,6 +138,8 @@ begin_lambda_type (tree lambda)
                      name,
                      /*scope=*/ts_lambda,
                      /*template_header_p=*/false);
+    if (type == error_mark_node)
+      return error_mark_node;
   }
 
   /* Designate it as a struct so that we can use aggregate initialization.  */
@@ -152,8 +154,6 @@ begin_lambda_type (tree lambda)
 
   /* Start the class.  */
   type = begin_class_definition (type);
-  if (type == error_mark_node)
-    return error_mark_node;
 
   return type;
 }

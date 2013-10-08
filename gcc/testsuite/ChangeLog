@@ -1,5 +1,11 @@
 2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58568
+	* g++.dg/cpp0x/lambda/lambda-ice10.C: New.
+	* g++.old-deja/g++.mike/misc9.C: Adjust.
+
+2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58665
 	Revert:
 	2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>

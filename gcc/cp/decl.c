@@ -8774,8 +8774,8 @@ grokdeclarator (const cp_declarator *declarator,
 			     && !uniquely_derived_from_p (ctype,
 							  current_class_type))
 		      {
-			error ("type %qT is not derived from type %qT",
-			       ctype, current_class_type);
+			error ("invalid use of qualified-name %<%T::%D%>",
+			       qualifying_scope, decl);
 			return error_mark_node;
 		      }
 		  }
