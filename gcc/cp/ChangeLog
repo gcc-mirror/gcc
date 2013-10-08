@@ -1,5 +1,12 @@
 2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58568
+	* lambda.c (begin_lambda_type): Check return value of xref_tag
+	for error_mark_node; tidy.
+	* decl.c (grokdeclarator): Tweak error message.
+
+2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58665
 	Revert:
 	2013-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
