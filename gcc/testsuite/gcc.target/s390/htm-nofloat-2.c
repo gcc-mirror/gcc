@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -mhtm -Wa,-march=zEC12 --save-temps" } */
+/* { dg-options "-O3 -mhtm -Wa,-march=zEC12,-mzarch --save-temps" } */
 
 /* __builtin_tbegin has to emit clobbers for all FPRs since the tbegin
    instruction does not automatically preserves them.  If the

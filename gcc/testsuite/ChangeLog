@@ -1,3 +1,7 @@
+2013-10-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-nofloat-2.c: Add -mzarch to asm options.
+
 2013-10-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/58480
