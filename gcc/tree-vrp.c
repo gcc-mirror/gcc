@@ -4462,6 +4462,56 @@ fp_predicate (gimple stmt)
 }
 
 
+/* If OP can be inferred to be non-zero after STMT executes, return true.  */
+
+static bool
+infer_nonnull_range (gimple stmt, tree op)
+{
+  /* We can only assume that a pointer dereference will yield
+     non-NULL if -fdelete-null-pointer-checks is enabled.  */
+  if (!flag_delete_null_pointer_checks
+      || !POINTER_TYPE_P (TREE_TYPE (op))
+      || gimple_code (stmt) == GIMPLE_ASM)
+    return false;
+
+  unsigned num_uses, num_loads, num_stores;
+
+  count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
+  if (num_loads + num_stores > 0)
+    return true;
+
+  if (gimple_code (stmt) == GIMPLE_CALL)
+    {
+      tree fntype = gimple_call_fntype (stmt);
+      tree attrs = TYPE_ATTRIBUTES (fntype);
+      for (; attrs; attrs = TREE_CHAIN (attrs))
+	{
+	  attrs = lookup_attribute ("nonnull", attrs);
+
+	  /* If "nonnull" wasn't specified, we know nothing about
+	     the argument.  */
+	  if (attrs == NULL_TREE)
+	    return false;
+
+	  /* If "nonnull" applies to all the arguments, then ARG
+	     is non-null.  */
+	  if (TREE_VALUE (attrs) == NULL_TREE)
+	    return true;
+
+	  /* Now see if op appears in the nonnull list.  */
+	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
+	    {
+	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
+	      tree arg = gimple_call_arg (stmt, idx);
+	      if (op == arg)
+		return true;
+	    }
+	}
+    }
+
+  return false;
+}
+
 /* If the range of values taken by OP can be inferred after STMT executes,
    return the comparison code (COMP_CODE_P) and value (VAL_P) that
    describes the inferred range.  Return true if a range could be
@@ -4479,7 +4529,7 @@ infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_
     return false;
 
   /* Similarly, don't infer anything from statements that may throw
-     exceptions.  */
+     exceptions. ??? Relax this requirement?  */
   if (stmt_could_throw_p (stmt))
     return false;
 
@@ -4490,21 +4540,11 @@ infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_
   if (stmt_ends_bb_p (stmt) && EDGE_COUNT (gimple_bb (stmt)->succs) == 0)
     return false;
 
-  /* We can only assume that a pointer dereference will yield
-     non-NULL if -fdelete-null-pointer-checks is enabled.  */
-  if (flag_delete_null_pointer_checks
-      && POINTER_TYPE_P (TREE_TYPE (op))
-      && gimple_code (stmt) != GIMPLE_ASM)
+  if (infer_nonnull_range (stmt, op))
     {
-      unsigned num_uses, num_loads, num_stores;
-
-      count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
-      if (num_loads + num_stores > 0)
-	{
-	  *val_p = build_int_cst (TREE_TYPE (op), 0);
-	  *comp_code_p = NE_EXPR;
-	  return true;
-	}
+      *val_p = build_int_cst (TREE_TYPE (op), 0);
+      *comp_code_p = NE_EXPR;
+      return true;
     }
 
   return false;

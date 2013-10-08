@@ -1,3 +1,9 @@
+2013-10-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/58480
+	* tree-vrp.c (infer_nonnull_range): New function.
+	(infer_value_range): Call infer_nonnull_range.
+
 2013-10-08  Dehao Chen  <dehao@google.com>
 
 	PR tree-optimization/58619

@@ -1,3 +1,8 @@
+2013-10-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/58480
+	* gcc.dg/tree-ssa/pr58480.c: New file.
+
 2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr43154.c: Skip for ppc64 little endian.
