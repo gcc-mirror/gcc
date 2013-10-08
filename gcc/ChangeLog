@@ -1,3 +1,9 @@
+2013-10-08  Dehao Chen  <dehao@google.com>
+
+	PR tree-optimization/58619
+	* tree-inline.c (copy_phis_for_bb): Combine location data
+	only if non-null.
+
 2013-10-08  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	PR target/58423
