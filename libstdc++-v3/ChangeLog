@@ -1,5 +1,9 @@
 2013-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/*: Remove stray semi-colons after function definitions.
+
+2013-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/58659
 	* include/bits/shared_ptr_base.h (__shared_count::__shared_count(P,D)):
 	Delegate to constructor taking allocator.

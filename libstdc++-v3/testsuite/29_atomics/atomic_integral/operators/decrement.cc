@@ -26,4 +26,4 @@ int main()
   __gnu_test::has_decrement_operators test;
   using __gnu_test::atomic_integrals_no_bool;
   __gnu_cxx::typelist::apply_generator(test, atomic_integrals_no_bool::type());
-};
+}
