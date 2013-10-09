@@ -52,6 +52,8 @@ tree_is_chrec (const_tree expr)
 }
 
 
+enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
+enum ev_direction scev_direction (const_tree);
 
 /* Chrec folding functions.  */
 extern tree chrec_fold_plus (tree, tree, tree);
@@ -72,6 +74,8 @@ extern tree hide_evolution_in_other_loops_than_loop (tree, unsigned);
 extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
+extern bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple,
+				 bool);
 
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);

@@ -1,5 +1,63 @@
 2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-flow.h: Remove all remaining prototypes, enums and structs that
+	are not related to tree-cfg.c.
+	* tree-ssa-address.h: New file.  Relocate prototypes.
+	* tree-ssa-address.c: (struct mem_address): Relocate from tree-flow.h.
+	(addr_for_mem_ref): New.  Combine call to get_address_description and
+	return addr_for_mem_ref.
+	* expr.c (expand_expr_real_1): Use new addr_for_mem_ref routine.
+	* tree-ssa-live.h: Adjust prototypes.
+	* passes.c: Include tree-ssa-live.h.
+	* gimple-pretty-print.h (gimple_dump_bb): Add prototype.
+	* graphite.c (graphite_transform_loops): Make static.
+	(graphite_transforms, gate_graphite_transforms, pass_data_graphite,
+	make_pass_graphite, pass_data_graphite_transforms, 
+	make_pass_graphite_transforms): Relocate here from tree-ssa-loop.c.
+	* ipa-pure-const.c (warn_function_noreturn): Make static.
+	(execute_warn_function_noreturn, gate_warn_function_noreturn,
+	class pass_warn_function_noreturn, make_pass_warn_function_noreturn):
+	Relocate from tree-cfg.c
+	* tree-cfg.c (tree_node_can_be_shared, gimple_empty_block_p): Make
+	static.
+	(execute_warn_function_noreturn, gate_warn_function_noreturn,
+	class pass_warn_function_noreturn, make_pass_warn_function_noreturn):
+	Move to ipa-pure-const.c.
+	(execute_fixup_cfg, class pass_fixup_cfg, make_pass_fixup_cfg): Relocate
+	from tree-optimize.c.
+	* tree-optimize.c (execute_fixup_cfg, class pass_fixup_cfg,
+	make_pass_fixup_cfg): Move to tree-cfg.c.
+	* tree-chrec.h: (enum ev_direction): Relocate here from tree-flow.h.
+	Relocate some prototypes.
+	* tree-data-ref.h (tree_check_data_deps) Add prototype.
+	* tree-dump.c (dump_function_to_file): Remove prototype.
+	Add tree-flow.h to the include file.
+	* tree-dump.h: Remove prototype.
+	* tree-parloops.h: New File.  Add prototypes.
+	* tree-parloops.c (gate_tree_parallelize_loops, tree_parallelize_loops,
+	pass_data_parallelize_loops,  make_pass_parallelize_loops): Relocate
+	from tree-ssa-loop.c.
+	* tree-predcom.c (run_tree_predictive_commoning,
+	gate_tree_predictive_commoning, pass_data_predcom, make_pass_predcom):
+	Relocate here from tree-ssa-loop.c.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize) Don't call 
+	ssa_name_values.release ().
+	* tree-ssa-threadedge.h: New File.  Relocate prototypes here.
+	(ssa_name_values): Relocate from tree-flow.h.
+	* tree-ssa.h: Include tree-ssa-threadedge.h and tree-ssa-address.h.
+	* tree-ssa-loop.c (run_tree_predictive_commoning,
+	gate_tree_predictive_commoning, pass_data_predcom, make_pass_predcom,
+	graphite_transforms, gate_graphite_transforms, pass_data_graphite,
+	make_pass_graphite, pass_data_graphite_transforms,
+	make_pass_graphite_transforms, gate_tree_parallelize_loops,
+	tree_parallelize_loops, pass_data_parallelize_loops,
+	make_pass_parallelize_loops): Move to other files.
+	* tree-vectorizer.h (lpeel_tree_duplicate_loop_to_edge_cfg): Prototype
+	moved here.
+	* tree.h: Remove prototypes from tree-address.c.
+
+2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
 	* tree-flow.h (tm_restart_node, gimple_df): Move to gimple-ssa.h.
 	(struct int_tree_map): Move to tree-hasher.h
 	(SCALE, LABEL, PERCENT): Move to gimple.h

@@ -2563,3 +2563,60 @@ tree_predictive_commoning (void)
 
   return ret;
 }
+
+/* Predictive commoning Pass.  */
+
+static unsigned
+run_tree_predictive_commoning (void)
+{
+  if (!current_loops)
+    return 0;
+
+  return tree_predictive_commoning ();
+}
+
+static bool
+gate_tree_predictive_commoning (void)
+{
+  return flag_predictive_commoning != 0;
+}
+
+namespace {
+
+const pass_data pass_data_predcom =
+{
+  GIMPLE_PASS, /* type */
+  "pcom", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_PREDCOM, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa_only_virtuals, /* todo_flags_finish */
+};
+
+class pass_predcom : public gimple_opt_pass
+{
+public:
+  pass_predcom (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_predcom, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_predictive_commoning (); }
+  unsigned int execute () { return run_tree_predictive_commoning (); }
+
+}; // class pass_predcom
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_predcom (gcc::context *ctxt)
+{
+  return new pass_predcom (ctxt);
+}
+
+
