@@ -1,5 +1,12 @@
 2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_register_info_stdarg_fpr): Remove
+	packed stack special handling.
+	(s390_frame_info, s390_emit_prologue, s390_emit_epilogue): Switch
+	back to fixed stack slots for FPRs saved due to stdarg.
+
+2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c (s390_frame_info): Restructure function.
 
 2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
