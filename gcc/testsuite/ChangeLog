@@ -1,5 +1,9 @@
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* gcc.target/aarch64/vdiv_f.c: New testcase.
+
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* gcc.target/aarch64/vneg_f.c: New testcase.
 	* gcc.target/aarch64/vneg_s.c: New testcase.
 
