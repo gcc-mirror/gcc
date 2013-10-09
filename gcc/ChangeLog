@@ -1,5 +1,9 @@
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* config/aarch64/arm_neon.h (vdiv_f64): Added.
+
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* config/aarch64/arm_neon.h (vneg_f32): Asm replaced with C.
 	(vneg_f64): New intrinsic.
 	(vneg_s8): Asm replaced with C.

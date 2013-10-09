@@ -1204,6 +1204,12 @@ vdiv_f32 (float32x2_t __a, float32x2_t __b)
   return __a / __b;
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vdiv_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return __a / __b;
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vdivq_f32 (float32x4_t __a, float32x4_t __b)
 {
