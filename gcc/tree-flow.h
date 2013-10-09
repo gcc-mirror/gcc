@@ -37,87 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-ssa-loop.h"
 
-/* This structure is used to map a gimple statement to a label,
-   or list of labels to represent transaction restart.  */
-
-struct GTY(()) tm_restart_node {
-  gimple stmt;
-  tree label_or_list;
-};
-
-/* Gimple dataflow datastructure. All publicly available fields shall have
-   gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
-   fields should have gimple_set accessor.  */
-struct GTY(()) gimple_df {
-  /* A vector of all the noreturn calls passed to modify_stmt.
-     cleanup_control_flow uses it to detect cases where a mid-block
-     indirect call has been turned into a noreturn call.  When this
-     happens, all the instructions after the call are no longer
-     reachable and must be deleted as dead.  */
-  vec<gimple, va_gc> *modified_noreturn_calls;
-
-  /* Array of all SSA_NAMEs used in the function.  */
-  vec<tree, va_gc> *ssa_names;
-
-  /* Artificial variable used for the virtual operand FUD chain.  */
-  tree vop;
-
-  /* The PTA solution for the ESCAPED artificial variable.  */
-  struct pt_solution escaped;
-
-  /* A map of decls to artificial ssa-names that point to the partition
-     of the decl.  */
-  struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
-
-  /* Free list of SSA_NAMEs.  */
-  vec<tree, va_gc> *free_ssanames;
-
-  /* Hashtable holding definition for symbol.  If this field is not NULL, it
-     means that the first reference to this variable in the function is a
-     USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
-     for this variable with an empty defining statement.  */
-  htab_t GTY((param_is (union tree_node))) default_defs;
-
-  /* True if there are any symbols that need to be renamed.  */
-  unsigned int ssa_renaming_needed : 1;
-
-  /* True if all virtual operands need to be renamed.  */
-  unsigned int rename_vops : 1;
-
-  /* True if the code is in ssa form.  */
-  unsigned int in_ssa_p : 1;
-
-  /* True if IPA points-to information was computed for this function.  */
-  unsigned int ipa_pta : 1;
-
-  struct ssa_operands ssa_operands;
-
-  /* Map gimple stmt to tree label (or list of labels) for transaction
-     restart and abort.  */
-  htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
-};
-
-static inline int get_lineno (const_gimple);
-
-/*---------------------------------------------------------------------------
-			      Global declarations
----------------------------------------------------------------------------*/
-struct int_tree_map {
-  unsigned int uid;
-  tree to;
-};
-
-/* Macros for showing usage statistics.  */
-#define SCALE(x) ((unsigned long) ((x) < 1024*10	\
-		  ? (x)					\
-		  : ((x) < 1024*1024*10			\
-		     ? (x) / 1024			\
-		     : (x) / (1024*1024))))
-
-#define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
-
-#define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
-
 /*---------------------------------------------------------------------------
 			      OpenMP Region Tree
 ---------------------------------------------------------------------------*/
@@ -322,7 +241,5 @@ void warn_function_noreturn (tree);
 
 /* In tree-parloops.c  */
 bool parallelized_function_p (tree);
-
-#include "tree-flow-inline.h"
 
 #endif /* _TREE_FLOW_H  */

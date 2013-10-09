@@ -141,5 +141,28 @@ extern void dump_pta_stats (FILE *);
 
 extern GTY(()) struct pt_solution ipa_escaped_pt;
 
+/* Return true, if the two ranges [POS1, SIZE1] and [POS2, SIZE2]
+   overlap.  SIZE1 and/or SIZE2 can be (unsigned)-1 in which case the
+   range is open-ended.  Otherwise return false.  */
+
+static inline bool
+ranges_overlap_p (unsigned HOST_WIDE_INT pos1,
+		  unsigned HOST_WIDE_INT size1,
+		  unsigned HOST_WIDE_INT pos2,
+		  unsigned HOST_WIDE_INT size2)
+{
+  if (pos1 >= pos2
+      && (size2 == (unsigned HOST_WIDE_INT)-1
+	  || pos1 < (pos2 + size2)))
+    return true;
+  if (pos2 >= pos1
+      && (size1 == (unsigned HOST_WIDE_INT)-1
+	  || pos2 < (pos1 + size1)))
+    return true;
+
+  return false;
+}
+
+
 
 #endif /* TREE_SSA_ALIAS_H  */

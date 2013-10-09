@@ -122,6 +122,13 @@ static void get_expr_operands (gimple, tree *, int);
 /* Number of functions with initialized ssa_operands.  */
 static int n_initialized = 0;
 
+/* Accessor to tree-ssa-operands.c caches.  */
+static inline struct ssa_operands *
+gimple_ssa_operands (const struct function *fun)
+{
+  return &fun->gimple_df->ssa_operands;
+}
+
 
 /*  Return true if the SSA operands cache is active.  */
 

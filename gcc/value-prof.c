@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "ggc.h"
 #include "tree-ssa.h"
-#include "tree-flow-inline.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "coverage.h"

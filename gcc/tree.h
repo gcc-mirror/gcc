@@ -4951,6 +4951,31 @@ builtin_decl_implicit_p (enum built_in_function fncode)
 	  && builtin_info.implicit_p[uns_fncode]);
 }
 
+/* Return true if T (assumed to be a DECL) is a global variable.
+   A variable is considered global if its storage is not automatic.  */
+
+static inline bool
+is_global_var (const_tree t)
+{
+  return (TREE_STATIC (t) || DECL_EXTERNAL (t));
+}
+
+/* Return true if VAR may be aliased.  A variable is considered as
+   maybe aliased if it has its address taken by the local TU
+   or possibly by another TU and might be modified through a pointer.  */
+
+static inline bool
+may_be_aliased (const_tree var)
+{
+  return (TREE_CODE (var) != CONST_DECL
+	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
+	       && TREE_READONLY (var)
+	       && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
+	  && (TREE_PUBLIC (var)
+	      || DECL_EXTERNAL (var)
+	      || TREE_ADDRESSABLE (var)));
+}
+
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
    not be harmful if it does.  */
