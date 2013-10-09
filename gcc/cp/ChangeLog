@@ -1,3 +1,11 @@
+2013-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58635
+	* semantics.c (finish_return_stmt): Return error_mark_node
+	when error_operand_p of the expr is true.
+	(build_transaction_expr): Check for EXPR_P before setting the
+	expr location.
+
 2013-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58568
