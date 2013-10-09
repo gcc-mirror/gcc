@@ -1,3 +1,10 @@
+2013-10-08  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_print_operand_1): Change %c to %C to
+	avoid conflict with the MI use of %c.
+	* config/rl78/rl78-real.md: change %c to %C throughout.
+	* config/rl78/rl78-virt.md: Likewise.
+
 2013-10-08  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (ix86_option_override_internal): Switch
