@@ -1,3 +1,10 @@
+2013-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parallel.c (GOMP_parallel_end): Remember team->nthreads and call
+	gomp_team_end before adjusting gomp_remaining_threads_count, increment
+	gomp_remaining_threads_count instead of decrementing it again.
+	* testsuite/libgomp.c/thread-limit-1.c: New test.
+
 2013-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/sections-2.c: New test.
