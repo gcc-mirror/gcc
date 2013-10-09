@@ -7781,7 +7781,7 @@ s390_optimize_register_info ()
 static void
 s390_frame_info (void)
 {
-  int i;
+  HOST_WIDE_INT lowest_offset;
 
   cfun_frame_layout.first_save_gpr_slot = cfun_frame_layout.first_save_gpr;
   cfun_frame_layout.last_save_gpr_slot = cfun_frame_layout.last_save_gpr;
@@ -7805,6 +7805,7 @@ s390_frame_info (void)
 
   if (!TARGET_PACKED_STACK)
     {
+      /* Fixed stack layout.  */
       cfun_frame_layout.backchain_offset = 0;
       cfun_frame_layout.f0_offset = 16 * UNITS_PER_LONG;
       cfun_frame_layout.f4_offset = cfun_frame_layout.f0_offset + 2 * 8;
@@ -7812,45 +7813,30 @@ s390_frame_info (void)
       cfun_frame_layout.gprs_offset = (cfun_frame_layout.first_save_gpr_slot
 				       * UNITS_PER_LONG);
     }
-  else if (TARGET_BACKCHAIN) /* kernel stack layout */
+  else if (TARGET_BACKCHAIN)
     {
+      /* Kernel stack layout - packed stack, backchain, no float  */
+      gcc_assert (TARGET_SOFT_FLOAT);
       cfun_frame_layout.backchain_offset = (STACK_POINTER_OFFSET
 					    - UNITS_PER_LONG);
+
+      /* The distance between the backchain and the return address
+	 save slot must not change.  So we always need a slot for the
+	 stack pointer which resides in between.  */
+      cfun_frame_layout.last_save_gpr_slot = STACK_POINTER_REGNUM;
+
       cfun_frame_layout.gprs_offset
-	= (cfun_frame_layout.backchain_offset
-	   - (STACK_POINTER_REGNUM - cfun_frame_layout.first_save_gpr_slot + 1)
-	   * UNITS_PER_LONG);
+	= cfun_frame_layout.backchain_offset - cfun_gprs_save_area_size;
 
-      if (TARGET_64BIT)
-	{
-	  cfun_frame_layout.f4_offset
-	    = (cfun_frame_layout.gprs_offset
-	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		      + cfun_fpr_save_p (FPR6_REGNUM)));
-
-	  cfun_frame_layout.f0_offset
-	    = (cfun_frame_layout.f4_offset
-	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		      + cfun_fpr_save_p (FPR2_REGNUM)));
-	}
-      else
-	{
-	  /* On 31 bit we have to care about alignment of the
-	     floating point regs to provide fastest access.  */
-	  cfun_frame_layout.f0_offset
-	    = ((cfun_frame_layout.gprs_offset
-		& ~(STACK_BOUNDARY / BITS_PER_UNIT - 1))
-	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		      + cfun_fpr_save_p (FPR2_REGNUM)));
-
-	  cfun_frame_layout.f4_offset
-	    = (cfun_frame_layout.f0_offset
-	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		      + cfun_fpr_save_p (FPR6_REGNUM)));
-	}
+      /* FPRs will not be saved.  Nevertheless pick sane values to
+	 keep area calculations valid.  */
+      cfun_frame_layout.f0_offset =
+	cfun_frame_layout.f4_offset =
+	cfun_frame_layout.f8_offset = cfun_frame_layout.gprs_offset;
     }
-  else /* no backchain */
+  else
     {
+      /* Packed stack layout without backchain.  */
       cfun_frame_layout.f4_offset
 	= (STACK_POINTER_OFFSET
 	   - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
@@ -7863,47 +7849,49 @@ s390_frame_info (void)
 
       cfun_frame_layout.gprs_offset
 	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
+
+      cfun_frame_layout.f8_offset = (cfun_frame_layout.gprs_offset
+				     - cfun_frame_layout.high_fprs * 8);
     }
 
+  if (cfun_save_high_fprs_p)
+    cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
+
+  if (!crtl->is_leaf)
+    cfun_frame_layout.frame_size += crtl->outgoing_args_size;
+
+  /* In the following cases we have to allocate a STACK_POINTER_OFFSET
+     sized area at the bottom of the stack.  This is required also for
+     leaf functions.  When GCC generates a local stack reference it
+     will always add STACK_POINTER_OFFSET to all these references.  */
   if (crtl->is_leaf
       && !TARGET_TPF_PROFILING
       && cfun_frame_layout.frame_size == 0
-      && !cfun_save_high_fprs_p
       && !cfun->calls_alloca)
     return;
 
-  if (!TARGET_PACKED_STACK)
-    cfun_frame_layout.frame_size += (STACK_POINTER_OFFSET
-				     + crtl->outgoing_args_size
-				     + cfun_frame_layout.high_fprs * 8);
+  /* Calculate the number of bytes we have used in our own register
+     save area.  With the packed stack layout we can re-use the
+     remaining bytes for normal stack elements.  */
+
+  if (TARGET_PACKED_STACK)
+    lowest_offset = MIN (MIN (cfun_frame_layout.f0_offset,
+			      cfun_frame_layout.f4_offset),
+			 cfun_frame_layout.gprs_offset);
   else
-    {
-      if (TARGET_BACKCHAIN)
-	cfun_frame_layout.frame_size += UNITS_PER_LONG;
+    lowest_offset = 0;
 
-      /* No alignment trouble here because f8-f15 are only saved under
-	 64 bit.  */
-      cfun_frame_layout.f8_offset = (MIN (MIN (cfun_frame_layout.f0_offset,
-					       cfun_frame_layout.f4_offset),
-					  cfun_frame_layout.gprs_offset)
-				     - cfun_frame_layout.high_fprs * 8);
+  if (TARGET_BACKCHAIN)
+    lowest_offset = MIN (lowest_offset, cfun_frame_layout.backchain_offset);
 
-      cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
+  cfun_frame_layout.frame_size += STACK_POINTER_OFFSET - lowest_offset;
 
-      for (i = FPR0_REGNUM; i <= FPR7_REGNUM; i++)
-	if (cfun_fpr_save_p (i))
-	  cfun_frame_layout.frame_size += 8;
-
-      cfun_frame_layout.frame_size += cfun_gprs_save_area_size;
-
-      /* If under 31 bit an odd number of gprs has to be saved we have to adjust
-	 the frame size to sustain 8 byte alignment of stack frames.  */
-      cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
-				       STACK_BOUNDARY / BITS_PER_UNIT - 1)
-				      & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
-
-      cfun_frame_layout.frame_size += crtl->outgoing_args_size;
-    }
+  /* If under 31 bit an odd number of gprs has to be saved we have to
+     adjust the frame size to sustain 8 byte alignment of stack
+     frames.  */
+  cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
+				   STACK_BOUNDARY / BITS_PER_UNIT - 1)
+				  & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
 }
 
 /* Generate frame layout.  Fills in register and frame data for the current
