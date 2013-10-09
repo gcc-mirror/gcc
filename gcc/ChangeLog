@@ -1,3 +1,8 @@
+2013-10-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-common.c (arm_early_load_addr_dep):
+	Place comment above function.
+
 2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h: Remove all remaining prototypes, enums and structs that
