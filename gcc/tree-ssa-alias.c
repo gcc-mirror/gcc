@@ -803,12 +803,13 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
 	 goto may_overlap;
 
-      /* Different fields of the same record type cannot overlap.  */
+      /* Different fields of the same record type cannot overlap.
+	 ??? Bitfields can overlap at RTL level so punt on them.  */
       if (field1 != field2)
 	{
 	  component_refs1.release ();
 	  component_refs2.release ();
-	  return true;
+	  return !(DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2));
 	}
     }
 
