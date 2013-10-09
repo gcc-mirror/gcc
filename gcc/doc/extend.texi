@@ -2133,7 +2133,8 @@ attributes are currently defined for functions on all targets:
 @code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{ifunc},
-@code{warn_unused_result}, @code{nonnull}, @code{gnu_inline},
+@code{warn_unused_result}, @code{nonnull},
+@code{returns_nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
 @code{no_sanitize_undefined},
@@ -3308,6 +3309,20 @@ extern void *
 my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
+
+@item returns_nonnull (@var{arg-index}, @dots{})
+@cindex @code{returns_nonnull} function attribute
+The @code{returns_nonnull} attribute specifies that the function
+return value should be a non-null pointer.  For instance, the declaration:
+
+@smallexample
+extern void *
+mymalloc (size_t len) __attribute__((returns_nonnull));
+@end smallexample
+
+@noindent
+lets the compiler optimize callers based on the knowledge
+that the return value will never be null.
 
 @item noreturn
 @cindex @code{noreturn} function attribute

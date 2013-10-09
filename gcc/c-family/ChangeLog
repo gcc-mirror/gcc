@@ -1,3 +1,9 @@
+2013-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/20318
+	* c-common.c (handle_returns_nonnull_attribute): New function.
+	(c_common_attribute_table): Add returns_nonnull.
+
 2013-10-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/19476
