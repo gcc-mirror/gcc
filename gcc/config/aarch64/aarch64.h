@@ -739,7 +739,7 @@ do {									     \
    : reverse_condition (CODE))
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = ((MODE) == SImode ? 32 : 64), 2)
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE))
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = ((MODE) == SImode ? 32 : 64), 2)
 
