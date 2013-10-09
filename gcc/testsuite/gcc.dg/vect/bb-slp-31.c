@@ -10,3 +10,4 @@ void f(){
 }
 
 /* { dg-final { scan-tree-dump "basic block vectorized" "slp" } } */
+/* { dg-final { cleanup-tree-dump "slp" } } */
