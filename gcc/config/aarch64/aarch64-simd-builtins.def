@@ -45,7 +45,7 @@
   BUILTIN_VDQF (UNOP, sqrt, 2)
   BUILTIN_VD_BHSI (BINOP, addp, 0)
   VAR1 (UNOP, addp, 0, di)
-  VAR1 (UNOP, clz, 2, v4si)
+  BUILTIN_VDQ_BHSI (UNOP, clz, 2)
 
   BUILTIN_VALL (GETLANE, get_lane, 0)
   VAR1 (GETLANE, get_lane, 0, di)

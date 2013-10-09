@@ -1,5 +1,15 @@
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* config/aarch64/arm_neon.h (vclz_s8, vclz_s16, vclz_s32)
+	(vclzq_s8, vclzq_s16, vclzq_s32, vclz_u8, vclz_u16, vclz_u32)
+	(vclzq_u8, vclzq_u16, vclzq_u32): Replace ASM with C.
+	* config/aarch64/aarch64.h
+	(CLZ_DEFINED_VALUE_AT_ZERO): Macro fixed for clz.
+	* config/aarch64/aarch64-simd-builtins.def
+	(VAR1 (UNOP, clz, 0, v4si)): Replaced with iterator.
+
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* config/aarch64/arm_neon.h (vadd_f64, vsub_f64): Implementation added.
 
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
