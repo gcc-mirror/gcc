@@ -21,9 +21,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 
-/* Return nonzero if the CONSUMER instruction (a load) does need
-   PRODUCER's value to calculate the address.  */
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -33,6 +30,9 @@
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "rtl.h"
+
+/* Return nonzero if the CONSUMER instruction (a load) does need
+   PRODUCER's value to calculate the address.  */
 
 int
 arm_early_load_addr_dep (rtx producer, rtx consumer)
