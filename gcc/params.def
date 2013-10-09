@@ -682,6 +682,12 @@ DEFPARAM (PARAM_SSP_BUFFER_SIZE,
 	  "The lower bound for a buffer to be considered for stack smashing protection",
 	  8, 1, 0)
 
+DEFPARAM (PARAM_MIN_SIZE_FOR_STACK_SHARING,
+	  "min-size-for-stack-sharing",
+	  "The minimum size of variables taking part in stack slot sharing "
+	  "when not optimizing",
+	  32, 0, 0)
+
 /* When we thread through a block we have to make copies of the
    statements within the block.  Clearly for large blocks the code
    duplication is bad.

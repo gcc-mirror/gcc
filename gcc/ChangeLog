@@ -1,3 +1,9 @@
+2013-10-09  Easwaran Raman <eraman@google.com>
+
+	* params.def (PARAM_MIN_SIZE_FOR_STACK_SHARING): New param...
+	* cfgexpand.c (defer_stack_allocation): ...use here
+	* doc/invoke.texi: Add documentation for min-size-for-stack-sharing.
+
 2013-10-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* tree-ssa-phiopts.c (rhs_is_fed_for_value_replacement): New function.

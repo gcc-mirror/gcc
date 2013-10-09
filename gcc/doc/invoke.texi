@@ -9686,6 +9686,10 @@ value of a shared integer constant.  The default value is 256.
 The minimum size of buffers (i.e.@: arrays) that receive stack smashing
 protection when @option{-fstack-protection} is used.
 
+@item min-size-for-stack-sharing
+The minimum size of variables taking part in stack slot sharing when not
+optimizing. The default value is 32.
+
 @item max-jump-thread-duplication-stmts
 Maximum number of statements allowed in a block that needs to be
 duplicated when threading jumps.
