@@ -1,3 +1,40 @@
+2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (struct s390_frame_layout): New field
+	gpr_save_slots.
+	(cfun_save_arg_fprs_p, cfun_gpr_save_slot): New macros.
+	(s390_reg_clobbered_rtx, s390_regs_ever_clobbered): Change type of
+	regs_ever_clobbered to char*.
+	(s390_regs_ever_clobbered): Check crtl->saves_all_registers
+	instead of cfun->has_nonlocal_label.  Ignore frame related restore
+	INSNs.
+	(s390_register_info): Enable FPR save slots.  Move/Copy some
+	functionality into ...
+	(s390_register_info_gprtofpr, s390_register_info_stdarg_fpr)
+	(s390_register_info_stdarg_gpr, s390_optimize_register_info): New
+	function.
+	(s390_frame_info): Do gpr slot allocation here now.  stdarg does
+	not imply a stack frame.
+	(s390_init_frame_layout): Remove variable clobbered_regs.
+	(s390_update_register_info): Remove function.
+	(s390_hard_regno_rename_ok): Call-saved regs without a save slot
+	cannot be used for register renaming.
+	(s390_hard_regno_scratch_ok): New function.
+	(TARGET_HARD_REGNO_SCRATCH_OK): Define target hook.
+	(s390_initial_elimination_offset): Change offset calculation of
+	the return address pointer.
+	(save_gprs): Deal with only r6 being saved from the call-saved
+	regs.
+	(restore_gprs): Set frame related flag.
+	(s390_save_gprs_to_fprs, s390_restore_gprs_from_fprs): New
+	functions.
+	(s390_emit_prologue): Call s390_register_info instead of
+	s390_update_frame_layout.  Call s390_save_gprs_to_fprs.
+	(s390_emit_epilogue): Call s390_restore_gprs_from_fprs.
+	(s390_optimize_prologue): Call s390_optimize_register_info.
+	Try to remove also FPR slot save/restore INSNs.  Remove frame
+	related flags from restore INSNs.
+
 2013-10-08  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-expand.md (movqi): use operands[] not operandN.
