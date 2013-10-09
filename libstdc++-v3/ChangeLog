@@ -1,3 +1,7 @@
+2013-10-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* testsuite/20_util/shared_ptr/cons/58659.cc: Use __builtin_abort().
+
 2013-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/*: Remove stray semi-colons after function definitions.
