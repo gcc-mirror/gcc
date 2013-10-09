@@ -1,3 +1,9 @@
+2013-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/58570
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p): Return
+	false if both components are bitfields.
+
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/arm_neon.h (vclz_s8, vclz_s16, vclz_s32)
