@@ -320,7 +320,7 @@
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"
-  "v.cmp\t%1, %2\\n\tv.b%c0\t%3"
+  "v.cmp\t%1, %2\\n\tv.b%C0\t%3"
   [(set_attr "valloc" "cmp")]
   )
 
@@ -332,7 +332,7 @@
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"
-  "v.cmp\t%1, %2\\n\tv.b%c0\t%3"
+  "v.cmp\t%1, %2\\n\tv.b%C0\t%3"
   [(set_attr "valloc" "cmp")]
   )
 
@@ -344,7 +344,7 @@
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"
-  "v.cmpw\t%1, %2\\n\tv.b%c0\t%3"
+  "v.cmpw\t%1, %2\\n\tv.b%C0\t%3"
   [(set_attr "valloc" "cmp")]
   )
 
@@ -356,7 +356,7 @@
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_virt_insns_ok ()"
-  "v.cmpw\t%1, %2\\n\tv.b%c0\t%3"
+  "v.cmpw\t%1, %2\\n\tv.b%C0\t%3"
   [(set_attr "valloc" "cmp")]
   )
 
@@ -370,7 +370,7 @@
    (clobber (reg:HI AX_REG))
    ]
   "rl78_virt_insns_ok ()"
-  "v.cmpd\t%1, %2\\n\tv.b%c0\t%3"
+  "v.cmpd\t%1, %2\\n\tv.b%C0\t%3"
   [(set_attr "valloc" "macax")]
   )
 
