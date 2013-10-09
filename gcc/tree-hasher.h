@@ -22,7 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_HASHER_H 1
 
 #include "hash-table.h"
-#include "tree-flow.h"
+
+struct int_tree_map {
+  unsigned int uid;
+  tree to;
+};
 
 /* Hashtable helpers.  */
 

@@ -1,5 +1,30 @@
 2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-flow.h (tm_restart_node, gimple_df): Move to gimple-ssa.h.
+	(struct int_tree_map): Move to tree-hasher.h
+	(SCALE, LABEL, PERCENT): Move to gimple.h
+	* tree-flow-inline.h: Delete.  Move functions to other files.
+	(unmodifiable_var_p, ref_contains_array_ref): Unused, so delete.
+	* gimple-ssa.h (tm_restart_node, gimple_df): Relocate from tree-flow.h.
+	(gimple_in_ssa_p, gimple_vop): Relocate from tree-flow-inline.h
+	* gimple.h (imple_stmt_max_uid, set_gimple_stmt_max_uid,
+	inc_gimple_stmt_max_uid, get_lineno): Relocate from tree-flow-inline.h.
+	(SCALE, LABEL, PERCENT): Relocate from tree-flow.h
+	* tree-hasher.h: Don't include tree-flow.h.
+	(struct int_tree_map): Relocate from tree-flow.h.
+	* tree-sra.c (contains_view_convert_expr_p): Relocate from
+	tree-flow-inline.h and make static.
+	* tree-ssa-alias.h (ranges_overlap_p): Relocate from tree-flow-inline.h.
+	* tree-ssa-operands.c (gimple_ssa_operands): Relocate from
+	tree-flow-inline.h and make static.
+	* tree.h (is_global_var, may_be_aliased): Relocate from
+	tree-flow-inline.h.
+	* Makefile.in (GTFILES): Remove tree-flow.h and add gimple-ssa.h.
+	* value-prof.c: No longer include tree-flow-inline.h.
+	* tree-switch-conversion.c: No longer include tree-flow-inline.h.
+
+2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
 	* tree-flow.h: Move some protoypes.  Include new tree-ssa-loop.h.
 	(struct affine_iv, struct tree_niter_desc): Move to tree-ssa-loop.h.
 	(enum move_pos): Move to tree-ssa-loop-im.h

@@ -21,6 +21,88 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_SSA_H
 #define GCC_GIMPLE_SSA_H
 
+/* This structure is used to map a gimple statement to a label,
+   or list of labels to represent transaction restart.  */
+
+struct GTY(()) tm_restart_node {
+  gimple stmt;
+  tree label_or_list;
+};
+
+/* Gimple dataflow datastructure. All publicly available fields shall have
+   gimple_ accessor defined, all publicly modifiable fields should have
+   gimple_set accessor.  */
+struct GTY(()) gimple_df {
+  /* A vector of all the noreturn calls passed to modify_stmt.
+     cleanup_control_flow uses it to detect cases where a mid-block
+     indirect call has been turned into a noreturn call.  When this
+     happens, all the instructions after the call are no longer
+     reachable and must be deleted as dead.  */
+  vec<gimple, va_gc> *modified_noreturn_calls;
+
+  /* Array of all SSA_NAMEs used in the function.  */
+  vec<tree, va_gc> *ssa_names;
+
+  /* Artificial variable used for the virtual operand FUD chain.  */
+  tree vop;
+
+  /* The PTA solution for the ESCAPED artificial variable.  */
+  struct pt_solution escaped;
+
+  /* A map of decls to artificial ssa-names that point to the partition
+     of the decl.  */
+  struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
+
+  /* Free list of SSA_NAMEs.  */
+  vec<tree, va_gc> *free_ssanames;
+
+  /* Hashtable holding definition for symbol.  If this field is not NULL, it
+     means that the first reference to this variable in the function is a
+     USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
+     for this variable with an empty defining statement.  */
+  htab_t GTY((param_is (union tree_node))) default_defs;
+
+  /* True if there are any symbols that need to be renamed.  */
+  unsigned int ssa_renaming_needed : 1;
+
+  /* True if all virtual operands need to be renamed.  */
+  unsigned int rename_vops : 1;
+
+  /* True if the code is in ssa form.  */
+  unsigned int in_ssa_p : 1;
+
+  /* True if IPA points-to information was computed for this function.  */
+  unsigned int ipa_pta : 1;
+
+  struct ssa_operands ssa_operands;
+
+  /* Map gimple stmt to tree label (or list of labels) for transaction
+     restart and abort.  */
+  htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
+};
+
+
+/* Return true when gimple SSA form was built.
+   gimple_in_ssa_p is queried by gimplifier in various early stages before SSA
+   infrastructure is initialized.  Check for presence of the datastructures
+   at first place.  */
+static inline bool
+gimple_in_ssa_p (const struct function *fun)
+{
+  return fun && fun->gimple_df && fun->gimple_df->in_ssa_p;
+}
+
+/* Inline functions for manipulating various data structures defined in
+   tree-flow.h.  See tree-flow.h for documentation.  */
+
+/* Artificial variable used for the virtual operand FUD chain.  */
+static inline tree
+gimple_vop (const struct function *fun)
+{
+  gcc_checking_assert (fun && fun->gimple_df);
+  return fun->gimple_df->vop;
+}
+
 /* Return the set of VUSE operand for statement G.  */
 
 static inline use_operand_p

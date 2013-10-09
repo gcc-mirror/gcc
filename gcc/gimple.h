@@ -1028,6 +1028,27 @@ is_gimple_sizepos (tree expr)
 	  || CONTAINS_PLACEHOLDER_P (expr));
 }                                        
 
+/* Get the number of the next statement uid to be allocated.  */
+static inline unsigned int
+gimple_stmt_max_uid (struct function *fn)
+{
+  return fn->last_stmt_uid;
+}
+
+/* Set the number of the next statement uid to be allocated.  */
+static inline void
+set_gimple_stmt_max_uid (struct function *fn, unsigned int maxid)
+{
+  fn->last_stmt_uid = maxid;
+}
+
+/* Set the number of the next statement uid to be allocated.  */
+static inline unsigned int
+inc_gimple_stmt_max_uid (struct function *fn)
+{
+  return fn->last_stmt_uid++;
+}
+
 extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t);
 extern void gimplify_type_sizes (tree, gimple_seq *);
@@ -1055,6 +1076,7 @@ extern tree gimple_boolify (tree);
 extern gimple_predicate rhs_predicate_for (tree);
 extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
+extern bool gimple_can_coalesce_p (tree, tree);
 extern bool nonfreeing_call_p (gimple);
 
 /* In omp-low.c.  */
@@ -1076,9 +1098,6 @@ extern tree gimple_assign_rhs_to_tree (gimple);
 
 /* In builtins.c  */
 extern bool validate_gimple_arglist (const_gimple, ...);
-
-/* In tree-ssa-coalesce.c */
-extern bool gimple_can_coalesce_p (tree, tree);
 
 /* Return the first node in GIMPLE sequence S.  */
 
@@ -3910,6 +3929,23 @@ gimple_debug_source_bind_set_value (gimple dbg, tree value)
   gimple_set_op (dbg, 1, value);
 }
 
+/* Return the line number for EXPR, or return -1 if we have no line
+   number information for it.  */
+static inline int
+get_lineno (const_gimple stmt)
+{
+  location_t loc;
+
+  if (!stmt)
+    return -1;
+
+  loc = gimple_location (stmt);
+  if (loc == UNKNOWN_LOCATION)
+    return -1;
+
+  return LOCATION_LINE (loc);
+}
+
 /* Return a pointer to the body for the OMP statement GS.  */
 
 static inline gimple_seq *
@@ -5430,5 +5466,17 @@ gimple_seq_set_location (gimple_seq seq, location_t loc)
   for (gimple_stmt_iterator i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     gimple_set_location (gsi_stmt (i), loc);
 }
+
+/* Macros for showing usage statistics.  */
+#define SCALE(x) ((unsigned long) ((x) < 1024*10	\
+		  ? (x)					\
+		  : ((x) < 1024*1024*10			\
+		     ? (x) / 1024			\
+		     : (x) / (1024*1024))))
+
+#define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
+
+#define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
+
 
 #endif  /* GCC_GIMPLE_H */
