@@ -1,5 +1,9 @@
 2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_frame_info): Restructure function.
+
+2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c (struct s390_frame_layout): New field
 	gpr_save_slots.
 	(cfun_save_arg_fprs_p, cfun_gpr_save_slot): New macros.
