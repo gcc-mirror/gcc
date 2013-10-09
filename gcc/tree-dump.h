@@ -90,7 +90,4 @@ extern void queue_and_dump_type (dump_info_p, const_tree);
 extern void dump_function (int, tree);
 extern int dump_flag (dump_info_p, int, const_tree);
 
-/* In tree-cfg.c  */
-extern void dump_function_to_file (tree, FILE *, int);
-
 #endif /* ! GCC_TREE_DUMP_H */

@@ -406,6 +406,7 @@ extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *, bool);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
+extern void tree_check_data_deps (void);
 
 
 /* Return true when the base objects of data references A and B are

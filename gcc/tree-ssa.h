@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-ssa-dom.h"
 #include "tree-flow.h"
+#include "tree-ssa-threadedge.h"
+#include "tree-ssa-address.h"
 
 /* Mapping for redirected edges.  */
 struct _edge_var_map {
