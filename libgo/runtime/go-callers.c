@@ -53,6 +53,21 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	return 0;
     }
 
+  /* Skip thunks and recover functions.  There is no equivalent to
+     these functions in the gc toolchain, so returning them here means
+     significantly different results for runtime.Caller(N).  */
+  if (function != NULL)
+    {
+      const char *p;
+
+      p = __builtin_strchr (function, '.');
+      if (p != NULL && __builtin_strncmp (p + 1, "$thunk", 6) == 0)
+	return 0;
+      p = __builtin_strrchr (function, '$');
+      if (p != NULL && __builtin_strcmp(p, "$recover") == 0)
+	return 0;
+    }
+
   if (arg->skip > 0)
     {
       --arg->skip;
