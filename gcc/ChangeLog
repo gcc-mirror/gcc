@@ -1,3 +1,13 @@
+2013-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58539
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Honor
+	the fact that debug statements are not taking part in loop-closed
+	SSA construction.
+
 2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_register_info): Make the call-saved FPR
