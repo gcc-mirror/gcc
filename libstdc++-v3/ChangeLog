@@ -1,3 +1,8 @@
+2013-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/cons/58659.cc: Use VERIFY instead of
+	aborting.
+
 2013-10-09  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* testsuite/20_util/shared_ptr/cons/58659.cc: Use __builtin_abort().
