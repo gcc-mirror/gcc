@@ -16229,6 +16229,10 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	    && DECL_IS_OPERATOR_NEW (fndecl)
 	    && !TREE_NOTHROW (fndecl))
 	  return true;
+	if (flag_delete_null_pointer_checks
+	    && lookup_attribute ("returns_nonnull",
+		 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	  return true;
 	return alloca_call_p (t);
       }
 

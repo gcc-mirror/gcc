@@ -1038,7 +1038,7 @@ gimple_assign_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
     }
 }
 
-/* Return true if STMT is know to to compute a non-zero value.
+/* Return true if STMT is known to compute a non-zero value.
    If the return value is based on the assumption that signed overflow is
    undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.*/
@@ -1057,6 +1057,10 @@ gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
 	if (flag_delete_null_pointer_checks && !flag_check_new
 	    && DECL_IS_OPERATOR_NEW (fndecl)
 	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	if (flag_delete_null_pointer_checks && 
+	    lookup_attribute ("returns_nonnull",
+			      TYPE_ATTRIBUTES (gimple_call_fntype (stmt))))
 	  return true;
 	return gimple_alloca_call_p (stmt);
       }
@@ -6536,10 +6540,7 @@ stmt_interesting_for_vrp (gimple stmt)
       if (lhs && TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && ((is_gimple_call (stmt)
-	       && gimple_call_fndecl (stmt) != NULL_TREE
-	       && (DECL_BUILT_IN (gimple_call_fndecl (stmt))
-		   || DECL_IS_OPERATOR_NEW (gimple_call_fndecl (stmt))))
+	  && (is_gimple_call (stmt)
 	      || !gimple_vuse (stmt)))
 	return true;
     }

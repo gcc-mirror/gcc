@@ -1,3 +1,12 @@
+2013-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/20318
+	* doc/extend.texi (returns_nonnull): New function attribute.
+	* fold-const.c (tree_expr_nonzero_warnv_p): Look for returns_nonnull
+	attribute.
+	* tree-vrp.c (gimple_stmt_nonzero_warnv_p): Likewise.
+	(stmt_interesting_for_vrp): Accept all GIMPLE_CALL.
+
 2013-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/58570
