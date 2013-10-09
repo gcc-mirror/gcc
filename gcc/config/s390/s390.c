@@ -7589,13 +7589,6 @@ s390_register_info_stdarg_fpr ()
   if (max_fpr > FP_ARG_NUM_REG)
     max_fpr = FP_ARG_NUM_REG;
 
-  /* The va_arg algorithm accesses the FPRs in the reg save area using
-     a constant offset from r0.  With the packed stack layout omitting
-     FPRs from the beginning would change the offset for the
-     subsequent FPRs.  */
-  if (TARGET_PACKED_STACK)
-    min_fpr = 0;
-
   for (i = min_fpr; i < max_fpr; i++)
     cfun_set_fpr_save (i + FPR0_REGNUM);
 }
@@ -7836,16 +7829,20 @@ s390_frame_info (void)
     }
   else
     {
-      /* Packed stack layout without backchain.  */
-      cfun_frame_layout.f4_offset
-	= (STACK_POINTER_OFFSET
-	   - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		  + cfun_fpr_save_p (FPR6_REGNUM)));
+      int num_fprs;
 
-      cfun_frame_layout.f0_offset
-	= (cfun_frame_layout.f4_offset
-	   - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		  + cfun_fpr_save_p (FPR2_REGNUM)));
+      /* Packed stack layout without backchain.  */
+
+      /* With stdarg FPRs need their dedicated slots.  */
+      num_fprs = (TARGET_64BIT && cfun->stdarg ? 2
+		  : (cfun_fpr_save_p (FPR4_REGNUM) +
+		     cfun_fpr_save_p (FPR6_REGNUM)));
+      cfun_frame_layout.f4_offset = STACK_POINTER_OFFSET - 8 * num_fprs;
+
+      num_fprs = (cfun->stdarg ? 2
+		  : (cfun_fpr_save_p (FPR0_REGNUM)
+		     + cfun_fpr_save_p (FPR2_REGNUM)));
+      cfun_frame_layout.f0_offset = cfun_frame_layout.f4_offset - 8 * num_fprs;
 
       cfun_frame_layout.gprs_offset
 	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
@@ -8680,8 +8677,8 @@ s390_emit_prologue (void)
 	  save_fpr (stack_pointer_rtx, offset, i);
 	  offset += 8;
 	}
-      else if (!TARGET_PACKED_STACK)
-	  offset += 8;
+      else if (!TARGET_PACKED_STACK || cfun->stdarg)
+	offset += 8;
     }
 
   /* Save f4 and f6.  */
@@ -8693,12 +8690,12 @@ s390_emit_prologue (void)
 	  insn = save_fpr (stack_pointer_rtx, offset, i);
 	  offset += 8;
 
-	  /* If f4 and f6 are call clobbered they are saved due to stdargs and
-	     therefore are not frame related.  */
+	  /* If f4 and f6 are call clobbered they are saved due to
+	     stdargs and therefore are not frame related.  */
 	  if (!call_really_used_regs[i])
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      else if (!TARGET_PACKED_STACK)
+      else if (!TARGET_PACKED_STACK || call_really_used_regs[i])
 	offset += 8;
     }
 
