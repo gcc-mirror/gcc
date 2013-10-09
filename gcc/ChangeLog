@@ -1,3 +1,18 @@
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/arm_neon.h (vneg_f32): Asm replaced with C.
+	(vneg_f64): New intrinsic.
+	(vneg_s8): Asm replaced with C.
+	(vneg_s16): Likewise.
+	(vneg_s32): Likewise.
+	(vneg_s64): New intrinsic.
+	(vnegq_f32): Asm replaced with C.
+	(vnegq_f64): Likewise.
+	(vnegq_s8): Likewise.
+	(vnegq_s16): Likewise.
+	(vnegq_s32): Likewise.
+	(vnegq_s64): Likewise.
+
 2013-10-09  Renlin Li  <Renlin.Li@arm.com>
 
 	* config/arm/arm.c (arm_output_mi_thunk): Use plus_constant.
