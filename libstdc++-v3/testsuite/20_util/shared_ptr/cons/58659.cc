@@ -47,8 +47,7 @@ namespace std
 
       void deallocate(value_type* p, size_t n)
       {
-        if (n != 1 || p != (void*)storage || !allocated)
-          abort();
+        VERIFY(n == 1 && p == (void*)storage && allocated);
         allocated = false;
       }
 
