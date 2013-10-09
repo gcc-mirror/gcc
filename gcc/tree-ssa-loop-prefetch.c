@@ -1988,3 +1988,60 @@ tree_ssa_prefetch_arrays (void)
   free_original_copy_tables ();
   return todo_flags;
 }
+
+/* Prefetching.  */
+
+static unsigned int
+tree_ssa_loop_prefetch (void)
+{
+  if (number_of_loops (cfun) <= 1)
+    return 0;
+
+  return tree_ssa_prefetch_arrays ();
+}
+
+static bool
+gate_tree_ssa_loop_prefetch (void)
+{
+  return flag_prefetch_loop_arrays > 0;
+}
+
+namespace {
+
+const pass_data pass_data_loop_prefetch =
+{
+  GIMPLE_PASS, /* type */
+  "aprefetch", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PREFETCH, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_loop_prefetch : public gimple_opt_pass
+{
+public:
+  pass_loop_prefetch (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_loop_prefetch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_ssa_loop_prefetch (); }
+  unsigned int execute () { return tree_ssa_loop_prefetch (); }
+
+}; // class pass_loop_prefetch
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_loop_prefetch (gcc::context *ctxt)
+{
+  return new pass_loop_prefetch (ctxt);
+}
+
+

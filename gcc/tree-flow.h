@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple-low.h"
 #include "tree-into-ssa.h"
+#include "tree-ssa-loop.h"
 
 /* This structure is used to map a gimple statement to a label,
    or list of labels to represent transaction restart.  */
@@ -244,109 +245,19 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
 
-/* In tree-ssa-loop-ch.c  */
-bool do_while_loop_p (struct loop *);
-
-/* Affine iv.  */
-
-typedef struct
-{
-  /* Iv = BASE + STEP * i.  */
-  tree base, step;
-
-  /* True if this iv does not overflow.  */
-  bool no_overflow;
-} affine_iv;
-
-/* Description of number of iterations of a loop.  All the expressions inside
-   the structure can be evaluated at the end of the loop's preheader
-   (and due to ssa form, also anywhere inside the body of the loop).  */
-
-struct tree_niter_desc
-{
-  tree assumptions;	/* The boolean expression.  If this expression evaluates
-			   to false, then the other fields in this structure
-			   should not be used; there is no guarantee that they
-			   will be correct.  */
-  tree may_be_zero;	/* The boolean expression.  If it evaluates to true,
-			   the loop will exit in the first iteration (i.e.
-			   its latch will not be executed), even if the niter
-			   field says otherwise.  */
-  tree niter;		/* The expression giving the number of iterations of
-			   a loop (provided that assumptions == true and
-			   may_be_zero == false), more precisely the number
-			   of executions of the latch of the loop.  */
-  double_int max;	/* The upper bound on the number of iterations of
-			   the loop.  */
-
-  /* The simplified shape of the exit condition.  The loop exits if
-     CONTROL CMP BOUND is false, where CMP is one of NE_EXPR,
-     LT_EXPR, or GT_EXPR, and step of CONTROL is positive if CMP is
-     LE_EXPR and negative if CMP is GE_EXPR.  This information is used
-     by loop unrolling.  */
-  affine_iv control;
-  tree bound;
-  enum tree_code cmp;
-};
 
 
 /* In tree-ssa-loop*.c  */
 
-unsigned int tree_ssa_lim (void);
-unsigned int tree_ssa_unswitch_loops (void);
-unsigned int canonicalize_induction_variables (void);
-unsigned int tree_unroll_loops_completely (bool, bool);
-unsigned int tree_ssa_prefetch_arrays (void);
-void tree_ssa_iv_optimize (void);
 unsigned tree_predictive_commoning (void);
-tree canonicalize_loop_ivs (struct loop *, tree *, bool);
 bool parallelize_loops (void);
 
-bool loop_only_exit_p (const struct loop *, const_edge);
-bool number_of_iterations_exit (struct loop *, edge,
-				struct tree_niter_desc *niter, bool,
-				bool every_iteration = true);
-tree find_loop_niter (struct loop *, edge *);
-tree loop_niter_by_eval (struct loop *, edge);
-tree find_loop_niter_by_eval (struct loop *, edge *);
-void estimate_numbers_of_iterations (void);
-bool scev_probably_wraps_p (tree, tree, gimple, struct loop *, bool);
 bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple, bool);
 
-bool nowrap_type_p (tree);
 enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
 enum ev_direction scev_direction (const_tree);
 
-void free_numbers_of_iterations_estimates (void);
-void free_numbers_of_iterations_estimates_loop (struct loop *);
-void rewrite_into_loop_closed_ssa (bitmap, unsigned);
-void verify_loop_closed_ssa (bool);
-bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
-void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *, bool,
-		tree *, tree *);
-basic_block split_loop_exit_edge (edge);
-void standard_iv_increment_position (struct loop *, gimple_stmt_iterator *,
-				     bool *);
-basic_block ip_end_pos (struct loop *);
-basic_block ip_normal_pos (struct loop *);
-bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
-					 unsigned int, sbitmap,
-					 edge, vec<edge> *,
-					 int);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
-tree expand_simple_operations (tree);
-void substitute_in_loop_info (struct loop *, tree, tree);
-edge single_dom_exit (struct loop *);
-bool can_unroll_loop_p (struct loop *loop, unsigned factor,
-			struct tree_niter_desc *niter);
-void tree_unroll_loop (struct loop *, unsigned,
-		       edge, struct tree_niter_desc *);
-typedef void (*transform_callback)(struct loop *, void *);
-void tree_transform_and_unroll_loop (struct loop *, unsigned,
-				     edge, struct tree_niter_desc *,
-				     transform_callback, void *);
-bool contains_abnormal_ssa_name_p (tree);
-bool stmt_dominates_stmt_p (gimple, gimple);
 
 /* In tree-ssa-threadedge.c */
 extern void threadedge_initialize_values (void);
@@ -362,19 +273,6 @@ extern void thread_across_edge (gimple, edge, bool,
 				vec<tree> *, tree (*) (gimple, gimple));
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
 
-/* In tree-ssa-loop-im.c  */
-/* The possibilities of statement movement.  */
-
-enum move_pos
-  {
-    MOVE_IMPOSSIBLE,		/* No movement -- side effect expression.  */
-    MOVE_PRESERVE_EXECUTION,	/* Must not cause the non-executed statement
-				   become executed -- memory accesses, ... */
-    MOVE_POSSIBLE		/* Unlimited movement.  */
-  };
-extern enum move_pos movement_possibility (gimple);
-char *get_lsm_tmp_name (tree, unsigned);
-
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (void);
 extern unsigned perfect_loop_nest_depth (struct loop *);
@@ -384,14 +282,6 @@ extern void graphite_transform_loops (void);
 
 /* In tree-data-ref.c  */
 extern void tree_check_data_deps (void);
-
-/* In tree-ssa-loop-ivopts.c  */
-bool expr_invariant_in_loop_p (struct loop *, tree);
-bool stmt_invariant_in_loop_p (struct loop *, gimple);
-struct loop *outermost_invariant_loop_for_expr (struct loop *, tree);
-bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode,
-				      addr_space_t);
-bool may_be_nonaddressable_p (tree expr);
 
 /* In gimplify.c  */
 tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);

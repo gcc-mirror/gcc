@@ -107,21 +107,6 @@ may_be_aliased (const_tree var)
 	      || TREE_ADDRESSABLE (var)));
 }
 
-
-/* Returns the loop of the statement STMT.  */
-
-static inline struct loop *
-loop_containing_stmt (gimple stmt)
-{
-  basic_block bb = gimple_bb (stmt);
-  if (!bb)
-    return NULL;
-
-  return bb->loop_father;
-}
-
-
-
 /* Return true if VAR cannot be modified by the program.  */
 
 static inline bool

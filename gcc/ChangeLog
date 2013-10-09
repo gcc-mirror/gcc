@@ -1,3 +1,78 @@
+2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Move some protoypes.  Include new tree-ssa-loop.h.
+	(struct affine_iv, struct tree_niter_desc): Move to tree-ssa-loop.h.
+	(enum move_pos): Move to tree-ssa-loop-im.h
+	* cfgloop.h: Move some prototypes.
+	(gcov_type_to_double_int): relocate from tree-ssa-loop.niter.c.
+	* tree-flow-inline.h (loop_containing_stmt): Move to tree-ssa-loop.h.
+	* tree-ssa-loop.h: New File.  Include other tree-ssa-loop-*.h files.
+	(struct affine_iv, struct tree_niter_desc): Relocate from tree-flow.h.
+	(loop_containing_stmt): Relocate from tree-flow-inline.h.
+	* tree-ssa-loop-ch.c: (do_while_loop_p): Make static.
+	* tree-ssa-loop-im.c (for_each_index): Move to tree-ssa-loop.c.
+	(enum move_pos): Relocate here.
+	(lsm_tmp_name_add, gen_lsm_tmp_name, get_lsm_tmp_name): Move to
+	tree-ssa-loop.c.
+	(execute_sm_if_changed_flag_set): Change get_lsm_tmp_name call.
+	(tree_ssa_loop_im, gate_tree_ssa_loop_im, pass_data_lim, make_pass_lim):
+	Relocate here from tree-ssa-loop.c.
+	* tree-ssa-loop-ivcanon.c (tree_num_loop_insns): Move to 
+	tree-ssa-loop.c.
+	(loop_edge_to_cancel, unloop_loops): Make static.
+	(tree_ssa_loop_ivcanon, gate_tree_ssa_loop_ivcanon, pass_data_iv_canon,
+	make_pass_iv_canon): Relocate from tree-ssa-loop.c.
+	(tree_complete_unroll, gate_tree_complete_unroll,
+	pass_data_complete_unroll, make_pass_complete_unroll): Relocate here.
+	(tree_complete_unroll_inner, gate_tree_complete_unroll_inner,
+	pass_data_complete_unrolli, make_pass_complete_unrolli): Relocate here.
+	* tree-ssa-loop-ivopts.c: Remove local prototypes.
+	(stmt_invariant_in_loop_p): Remove unused function.
+	* tree-ssa-loop-ivopts.h: New file.  Add prototypes.
+	* tree-ssa-loop-manip.h: New file.  Add prototypes.
+	* tree-ssa-loop-niter.c (record_niter_bound): Move to cfgloop.c.
+	(gcov_type_to_double_int): Move to cfgloop.h.
+	(double_int_cmp, bound_index,
+	estimate_numbers_of_iterations_loop): Make static.
+	(estimated_loop_iterations): Factor out get_estimated_loop_iterations.
+	(max_loop_iterations): Factor out get_max_loop_iterations.
+	(estimated_loop_iterations_int, max_stmt_executions_int): Move to
+	cfgloop.c.
+	* tree-ssa-loop-niter.h: New file.  Add prototypes.
+	* tree-ssa-loop-prefetch.c (tree_ssa_loop_prefetch,
+	gate_tree_ssa_loop_prefetch, pass_data_loop_prefetch,
+	make_pass_loop_prefetch): Relocate from tree-ssa-loop.c.
+	* tree-ssa-loop-unswitch.c (tree_ssa_loop_unswitch,
+	gate_tree_ssa_loop_unswitch, pass_data_tree_unswitch,
+	make_pass_tree_unswitch): Relocate from tree-ssa-loop.c.
+	* tree-ssa-loop.c (tree_ssa_loop_im, gate_tree_ssa_loop_im,
+	pass_data_lim, make_pass_lim): Move to tree-ssa-loop-im.c.
+	(tree_ssa_loop_unswitch, gate_tree_ssa_loop_unswitch,
+	pass_data_tree_unswitch, make_pass_tree_unswitch): Move.
+	(tree_ssa_loop_ivcanon, gate_tree_ssa_loop_ivcanon, pass_data_iv_canon,
+	make_pass_iv_canon, tree_complete_unroll, gate_tree_complete_unroll,
+	pass_data_complete_unroll, make_pass_complete_unroll,
+	tree_complete_unroll_inner, gate_tree_complete_unroll_inner,
+	pass_data_complete_unrolli, make_pass_complete_unrolli): Move to
+	tree-ssa-loop-ivcanon.c.
+	(tree_ssa_loop_prefetch, gate_tree_ssa_loop_prefetch,
+	pass_data_loop_prefetch, make_pass_loop_prefetch): Move to
+	tree-ssa-loop-prefetch.c.
+	(for_each_index, lsm_tmp_name_add, gen_lsm_tmp_name): Relocate from
+	tree-ssa-loop-im.c.
+	(get_lsm_tmp_name): Relocate and add suffix parameter.
+	(tree_num_loop_insns): Relocate from tree-ssa-ivcanon.c.
+	* tree-scalar-evolution.h (simple_iv): Don't use affive_iv typedef.
+	* cfgloop.c (record_niter_bound, estimated_loop_iterations_int,
+	max_stmt_executions_int): Move from tree-ssa-loop-niter.c.
+	(get_estimated_loop_iterations): Factor out accessor from 
+	estimated_loop_iterations in tree-ssa-loop-niter.c.
+	(get_max_loop_iterations): Factor out accessor from _max_loop_iterations
+	in tree-ssa-niter.c.
+	* loop-unroll.c (decide_unroll_constant_iterations,
+	decide_unroll_runtime_iterations, decide_peel_simple,
+	decide_unroll_stupid): Use new get_* accessors.
+
 2013-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/20318

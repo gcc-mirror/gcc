@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-inline.h"
 #include "flags.h"
-#include "tree-inline.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
@@ -100,7 +99,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 
 /* Checks whether LOOP is a do-while style loop.  */
 
-bool
+static bool
 do_while_loop_p (struct loop *loop)
 {
   gimple stmt = last_stmt (loop->latch);
