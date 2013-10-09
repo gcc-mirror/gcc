@@ -1,3 +1,7 @@
+2013-10-09  Renlin Li  <Renlin.Li@arm.com>
+
+	* config/arm/arm.c (arm_output_mi_thunk): Use plus_constant.
+
 2013-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_register_info_stdarg_fpr): Remove
