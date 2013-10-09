@@ -1,3 +1,10 @@
+2013-10-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* tree-ssa-phiopts.c (rhs_is_fed_for_value_replacement): New function.
+	(operand_equal_for_value_replacement): New function, extracted from
+	value_replacement and enhanced to catch more cases.
+	(value_replacement): Use operand_equal_for_value_replacement.
+
 2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* loop-doloop.c (doloop_modify, doloop_optimize): Use 

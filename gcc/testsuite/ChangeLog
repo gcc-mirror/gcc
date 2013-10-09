@@ -1,3 +1,7 @@
+2013-10-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.dg/tree-ssa/phi-opt-11.c: New test.
+
 2013-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58635
