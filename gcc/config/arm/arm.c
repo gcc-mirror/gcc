@@ -27261,7 +27261,7 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	{
 	  /* Output ".word .LTHUNKn-7-.LTHUNKPCn".  */
 	  rtx tem = XEXP (DECL_RTL (function), 0);
-	  tem = gen_rtx_PLUS (GET_MODE (tem), tem, GEN_INT (-7));
+	  tem = plus_constant (GET_MODE (tem), tem, -7);
 	  tem = gen_rtx_MINUS (GET_MODE (tem),
 			       tem,
 			       gen_rtx_SYMBOL_REF (Pmode,
