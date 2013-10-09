@@ -9785,115 +9785,6 @@ vmvnq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vneg_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("fneg %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vneg_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("neg %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vneg_s16 (int16x4_t a)
-{
-  int16x4_t result;
-  __asm__ ("neg %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vneg_s32 (int32x2_t a)
-{
-  int32x2_t result;
-  __asm__ ("neg %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vnegq_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("fneg %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vnegq_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("fneg %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vnegq_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("neg %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vnegq_s16 (int16x8_t a)
-{
-  int16x8_t result;
-  __asm__ ("neg %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vnegq_s32 (int32x4_t a)
-{
-  int32x4_t result;
-  __asm__ ("neg %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vnegq_s64 (int64x2_t a)
-{
-  int64x2_t result;
-  __asm__ ("neg %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vpadal_s8 (int16x4_t a, int8x8_t b)
@@ -21239,6 +21130,80 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vmulq_laneq_u32 (uint32x4_t __a, uint32x4_t __b, const int __lane)
 {
   return __a * __aarch64_vgetq_lane_u32 (__b, __lane);
+}
+
+/* vneg  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vneg_f32 (float32x2_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vneg_f64 (float64x1_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vneg_s8 (int8x8_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vneg_s16 (int16x4_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vneg_s32 (int32x2_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vneg_s64 (int64x1_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vnegq_f32 (float32x4_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vnegq_f64 (float64x2_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vnegq_s8 (int8x16_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vnegq_s16 (int16x8_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vnegq_s32 (int32x4_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vnegq_s64 (int64x2_t __a)
+{
+  return -__a;
 }
 
 /* vqabs */
