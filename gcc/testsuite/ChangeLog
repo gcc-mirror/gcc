@@ -1,5 +1,10 @@
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* gcc.target/aarch64/vadd_f64.c: New testcase.
+	* gcc.target/aarch64/vsub_f64.c: New testcase.
+
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* gcc.target/aarch64/vdiv_f.c: New testcase.
 
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
