@@ -1,5 +1,9 @@
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* config/aarch64/arm_neon.h (vadd_f64, vsub_f64): Implementation added.
+
+2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* config/aarch64/arm_neon.h (vdiv_f64): Added.
 
 2013-10-09  Alex Velenko  <Alex.Velenko@arm.com>
