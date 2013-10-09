@@ -424,6 +424,7 @@ runtime_files = \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-can-convert-interface.c \
+	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-check-interface.c \
 	runtime/go-construct-map.c \
