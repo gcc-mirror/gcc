@@ -25,25 +25,25 @@
 	(match_operand:QI 1 "general_operand"))]
   ""
   {
-    if (MEM_P (operand0) && MEM_P (operand1))
-      operands[1] = copy_to_mode_reg (QImode, operand1);
-    if (rl78_far_p (operand0) && rl78_far_p (operand1))
-      operands[1] = copy_to_mode_reg (QImode, operand1);
+    if (MEM_P (operands[0]) && MEM_P (operands[1]))
+      operands[1] = copy_to_mode_reg (QImode, operands[1]);
+    if (rl78_far_p (operands[0]) && rl78_far_p (operands[1]))
+      operands[1] = copy_to_mode_reg (QImode, operands[1]);
 
     /* FIXME: Not sure how GCC can generate (SUBREG (SYMBOL_REF)),
        but it does.  Since this makes no sense, reject it here.  */
-    if (GET_CODE (operand1) == SUBREG
-        && GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF)
+    if (GET_CODE (operands[1]) == SUBREG
+        && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
       FAIL;
     /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).
        cf. g++.dg/abi/packed.C.  */
-    if (GET_CODE (operand1) == SUBREG
-	&& GET_CODE (XEXP (operand1, 0)) == CONST
-        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
-        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
+    if (GET_CODE (operands[1]) == SUBREG
+	&& GET_CODE (XEXP (operands[1], 0)) == CONST
+        && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == PLUS
+        && GET_CODE (XEXP (XEXP (XEXP (operands[1], 0), 0), 0)) == SYMBOL_REF)
       FAIL;
 
-    if (CONST_INT_P (operand1) && ! IN_RANGE (INTVAL (operand1), (-1 << 8) + 1, (1 << 8) - 1))
+    if (CONST_INT_P (operands[1]) && ! IN_RANGE (INTVAL (operands[1]), (-1 << 8) + 1, (1 << 8) - 1))
       FAIL;
   }
 )
@@ -53,21 +53,21 @@
 	(match_operand:HI 1 "general_operand"))]
   ""
   {
-    if (MEM_P (operand0) && MEM_P (operand1))
-      operands[1] = copy_to_mode_reg (HImode, operand1);
-    if (rl78_far_p (operand0) && rl78_far_p (operand1))
-      operands[1] = copy_to_mode_reg (HImode, operand1);
+    if (MEM_P (operands[0]) && MEM_P (operands[1]))
+      operands[1] = copy_to_mode_reg (HImode, operands[1]);
+    if (rl78_far_p (operands[0]) && rl78_far_p (operands[1]))
+      operands[1] = copy_to_mode_reg (HImode, operands[1]);
 
     /* FIXME: Not sure how GCC can generate (SUBREG (SYMBOL_REF)),
        but it does.  Since this makes no sense, reject it here.  */
-    if (GET_CODE (operand1) == SUBREG
-        && GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF)
+    if (GET_CODE (operands[1]) == SUBREG
+        && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
       FAIL;
     /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).  */
-    if (GET_CODE (operand1) == SUBREG
-	&& GET_CODE (XEXP (operand1, 0)) == CONST
-        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
-        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
+    if (GET_CODE (operands[1]) == SUBREG
+	&& GET_CODE (XEXP (operands[1], 0)) == CONST
+        && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == PLUS
+        && GET_CODE (XEXP (XEXP (XEXP (operands[1], 0), 0), 0)) == SYMBOL_REF)
       FAIL;
   }
 )
