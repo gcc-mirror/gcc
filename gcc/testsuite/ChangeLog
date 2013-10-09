@@ -1,3 +1,9 @@
+2013-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58635
+	* g++.dg/tm/pr58635-1.C: New test.
+	* g++.dg/tm/pr58635-2.C: New test.
+
 2013-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/bb-slp-31.c: Add cleanup-tree-dump.

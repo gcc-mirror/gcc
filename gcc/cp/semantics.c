@@ -787,7 +787,8 @@ finish_return_stmt (tree expr)
 
   expr = check_return_expr (expr, &no_warning);
 
-  if (flag_openmp && !check_omp_return ())
+  if (error_operand_p (expr)
+      || (flag_openmp && !check_omp_return ()))
     return error_mark_node;
   if (!processing_template_decl)
     {
@@ -5221,7 +5222,8 @@ build_transaction_expr (location_t loc, tree expr, int flags, tree noex)
   if (noex)
     {
       expr = build_must_not_throw_expr (expr, noex);
-      SET_EXPR_LOCATION (expr, loc);
+      if (EXPR_P (expr))
+	SET_EXPR_LOCATION (expr, loc);
       TREE_SIDE_EFFECTS (expr) = 1;
     }
   ret = build1 (TRANSACTION_EXPR, TREE_TYPE (expr), expr);
