@@ -5967,6 +5967,43 @@ Binary_expression::do_get_tree(Translate_context* context)
 				right);
     }
 
+  // For complex division Go wants slightly different results than the
+  // GCC library provides, so we have our own runtime routine.
+  if (this->op_ == OPERATOR_DIV && this->left_->type()->complex_type() != NULL)
+    {
+      const char *name;
+      tree *pdecl;
+      Type* ctype;
+      static tree complex64_div_decl;
+      static tree complex128_div_decl;
+      switch (this->left_->type()->complex_type()->bits())
+	{
+	case 64:
+	  name = "__go_complex64_div";
+	  pdecl = &complex64_div_decl;
+	  ctype = Type::lookup_complex_type("complex64");
+	  break;
+	case 128:
+	  name = "__go_complex128_div";
+	  pdecl = &complex128_div_decl;
+	  ctype = Type::lookup_complex_type("complex128");
+	  break;
+	default:
+	  go_unreachable();
+	}
+      Btype* cbtype = ctype->get_backend(gogo);
+      tree ctype_tree = type_to_tree(cbtype);
+      return Gogo::call_builtin(pdecl,
+				this->location(),
+				name,
+				2,
+				ctype_tree,
+				ctype_tree,
+				fold_convert_loc(gccloc, ctype_tree, left),
+				type,
+				fold_convert_loc(gccloc, ctype_tree, right));
+    }
+
   tree compute_type = excess_precision_type(type);
   if (compute_type != NULL_TREE)
     {
