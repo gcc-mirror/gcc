@@ -7542,7 +7542,7 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
       switch (nc.to_unsigned_long(&v))
 	{
 	case Numeric_constant::NC_UL_VALID:
-	  return true;
+	  break;
 	case Numeric_constant::NC_UL_NOTINT:
 	  error_at(e->location(), "non-integer %s argument to make",
 		   is_length ? "len" : "cap");
@@ -7554,8 +7554,23 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 	case Numeric_constant::NC_UL_BIG:
 	  // We don't want to give a compile-time error for a 64-bit
 	  // value on a 32-bit target.
-	  return true;
+	  break;
 	}
+
+      mpz_t val;
+      if (!nc.to_int(&val))
+	go_unreachable();
+      int bits = mpz_sizeinbase(val, 2);
+      mpz_clear(val);
+      Type* int_type = Type::lookup_integer_type("int");
+      if (bits >= int_type->integer_type()->bits())
+	{
+	  error_at(e->location(), "%s argument too large for make",
+		   is_length ? "len" : "cap");
+	  return false;
+	}
+
+      return true;
     }
 
   if (e->type()->integer_type() != NULL)
