@@ -30,8 +30,10 @@
 ------------------------------------------------------------------------------
 
 --  This spec is derived from package Ada.Containers.Bounded_Hashed_Sets in the
---  Ada 2012 RM. The modifications are to facilitate formal proofs by making it
---  easier to express properties.
+--  Ada 2012 RM. The modifications are meant to facilitate formal proofs by
+--  making it easier to express properties, and by making the specification of
+--  this unit compatible with SPARK 2014. Note that the API of this unit may be
+--  subject to incompatible changes as SPARK 2014 evolves.
 
 --  The modifications are:
 
@@ -49,7 +51,7 @@
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
 
---    See detailed specifications for these subprograms
+--    See detailed specifications for these subprograms.
 
 private with Ada.Containers.Hash_Tables;
 
