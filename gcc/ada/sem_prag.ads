@@ -38,11 +38,13 @@ package Sem_Prag is
    --  the pragmas below implement an aspect.
 
    Pragma_On_Body_Or_Stub_OK : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Refined_Post => True,
-      Pragma_Refined_Pre  => True,
-      Pragma_SPARK_Mode   => True,
-      Pragma_Warnings     => True,
-      others              => False);
+     (Pragma_Refined_Depends => True,
+      Pragma_Refined_Global  => True,
+      Pragma_Refined_Post    => True,
+      Pragma_Refined_Pre     => True,
+      Pragma_SPARK_Mode      => True,
+      Pragma_Warnings        => True,
+      others                 => False);
 
    -----------------
    -- Subprograms --
@@ -60,21 +62,27 @@ package Sem_Prag is
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global
 
-   procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Special analyze routine for precondition/postcondition pragma that
-   --  appears within a declarative part where the pragma is associated
-   --  with a subprogram specification. N is the pragma node, and S is the
-   --  entity for the related subprogram. This procedure does a preanalysis
-   --  of the expressions in the pragma as "spec expressions" (see section
-   --  in Sem "Handling of Default and Per-Object Expressions...").
+   procedure Analyze_Pre_Post_Condition_In_Decl_Part
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id);
+   --  Perform preanalysis of a [refined] precondition or postcondition that
+   --  appears on a subprogram declaration or body [stub]. Prag denotes the
+   --  pragma, Subp_Id is the entity of the related subprogram. The preanalysis
+   --  of the expression is done as "spec expression" (see section "Handling
+   --  of Default and Per-Object Expressions in Sem).
+
+   procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
+   --  Preform full analysis of delayed pragma Refined_Depends
+
+   procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Refined_Global
 
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Special analyze routine for contract-case and test-case pragmas that
-   --  appears within a declarative part where the pragma is associated with
-   --  a subprogram specification. N is the pragma node, and S is the entity
-   --  for the related subprogram. This procedure does a preanalysis of the
-   --  expressions in the pragma as "spec expressions" (see section in Sem
-   --  "Handling of Default and Per-Object Expressions...").
+   --  Perform preanalysis of pragma Test_Case that applies to a subprogram
+   --  declaration. Parameter N denotes the pragma, S is the entity of the
+   --  related subprogram. The preanalysis of the expression is done as "spec
+   --  expression" (see section "Handling of Default and Per-Object Expressions
+   --  in Sem).
 
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If

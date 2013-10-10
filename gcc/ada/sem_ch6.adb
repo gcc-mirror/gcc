@@ -212,17 +212,6 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure Process_PPCs
-     (N       : Node_Id;
-      Spec_Id : Entity_Id;
-      Body_Id : Entity_Id);
-   --  Called from Analyze[_Generic]_Subprogram_Body to deal with scanning post
-   --  conditions for the body and assembling and inserting the _postconditions
-   --  procedure. N is the node for the subprogram body and Body_Id/Spec_Id are
-   --  the entities for the body and separate spec (if there is no separate
-   --  spec, Spec_Id is Empty). Note that invariants and predicates may also
-   --  provide postconditions, and are also handled in this procedure.
-
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
    --  setting the proper validity status for this entity, which depends on
@@ -1120,7 +1109,7 @@ package body Sem_Ch6 is
          --  Visible generic entity is callable within its own body
 
          Set_Ekind          (Gen_Id,  Ekind (Body_Id));
-         Set_Contract       (Body_Id, Empty);
+         Set_Contract       (Body_Id, Make_Contract (Sloc (Body_Id)));
          Set_Ekind          (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
@@ -1156,13 +1145,14 @@ package body Sem_Ch6 is
 
          Set_Actual_Subtypes (N, Current_Scope);
 
-         --  Deal with preconditions and postconditions. In formal verification
-         --  mode, we keep pre- and postconditions attached to entities rather
-         --  than inserted in the code, in order to facilitate a distinct
-         --  treatment for them.
+         --  Deal with [refined] preconditions, postconditions, Contract_Cases,
+         --  invariants and predicates associated with the body and its spec.
+         --  Note that this is not pure expansion as Expand_Subprogram_Contract
+         --  prepares the contract assertions for generic subprograms or for
+         --  ASIS. Do not generate contract checks in SPARK mode.
 
          if not SPARK_Mode then
-            Process_PPCs (N, Gen_Id, Body_Id);
+            Expand_Subprogram_Contract (N, Gen_Id, Body_Id);
          end if;
 
          --  If the generic unit carries pre- or post-conditions, copy them
@@ -1980,6 +1970,18 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
    end Analyze_Subprogram_Body;
+
+   --------------------------------------
+   -- Analyze_Subprogram_Body_Contract --
+   --------------------------------------
+
+   --  ??? To be implemented
+
+   procedure Analyze_Subprogram_Body_Contract (Subp : Entity_Id) is
+      pragma Unreferenced (Subp);
+   begin
+      null;
+   end Analyze_Subprogram_Body_Contract;
 
    ------------------------------------
    -- Analyze_Subprogram_Body_Helper --
@@ -2933,7 +2935,7 @@ package body Sem_Ch6 is
          end if;
 
          Set_Corresponding_Body (Unit_Declaration_Node (Spec_Id), Body_Id);
-         Set_Contract (Body_Id, Empty);
+         Set_Contract (Body_Id, Make_Contract (Sloc (Body_Id)));
          Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
@@ -3117,13 +3119,14 @@ package body Sem_Ch6 is
       HSS := Handled_Statement_Sequence (N);
       Set_Actual_Subtypes (N, Current_Scope);
 
-      --  Deal with preconditions and postconditions. In formal verification
-      --  mode, we keep pre- and postconditions attached to entities rather
-      --  than inserted in the code, in order to facilitate a distinct
-      --  treatment for them.
+      --  Deal with [refined] preconditions, postconditions, Contract_Cases,
+      --  invariants and predicates associated with the body and its spec.
+      --  Note that this is not pure expansion as Expand_Subprogram_Contract
+      --  prepares the contract assertions for generic subprograms or for ASIS.
+      --  Do not generate contract checks in SPARK mode.
 
       if not SPARK_Mode then
-         Process_PPCs (N, Spec_Id, Body_Id);
+         Expand_Subprogram_Contract (N, Spec_Id, Body_Id);
       end if;
 
       --  Add a declaration for the Protection object, renaming declarations
@@ -3535,6 +3538,7 @@ package body Sem_Ch6 is
       Items       : constant Node_Id := Contract (Subp);
       Error_CCase : Node_Id;
       Error_Post  : Node_Id;
+      Nam         : Name_Id;
       Prag        : Node_Id;
 
    --  Start of processing for Analyze_Subprogram_Contract
@@ -3549,7 +3553,7 @@ package body Sem_Ch6 is
 
          Prag := Pre_Post_Conditions (Items);
          while Present (Prag) loop
-            Analyze_PPC_In_Decl_Part (Prag, Subp);
+            Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Subp);
 
             --  Verify whether a postcondition mentions attribute 'Result and
             --  its expression introduces a post-state.
@@ -3567,7 +3571,9 @@ package body Sem_Ch6 is
 
          Prag := Contract_Test_Cases (Items);
          while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Contract_Cases then
+            Nam := Pragma_Name (Prag);
+
+            if Nam = Name_Contract_Cases then
                Analyze_Contract_Cases_In_Decl_Part (Prag);
 
                --  Verify whether contract-cases mention attribute 'Result and
@@ -3581,7 +3587,7 @@ package body Sem_Ch6 is
                end if;
 
             else
-               pragma Assert (Pragma_Name (Prag) = Name_Test_Case);
+               pragma Assert (Nam = Name_Test_Case);
                Analyze_Test_Case_In_Decl_Part (Prag, Subp);
             end if;
 
@@ -3592,10 +3598,12 @@ package body Sem_Ch6 is
 
          Prag := Classifications (Contract (Subp));
          while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Depends then
+            Nam := Pragma_Name (Prag);
+
+            if Nam = Name_Depends then
                Analyze_Depends_In_Decl_Part (Prag);
             else
-               pragma Assert (Pragma_Name (Prag) = Name_Global);
+               pragma Assert (Nam = Name_Global);
                Analyze_Global_In_Decl_Part (Prag);
             end if;
 
@@ -11247,867 +11255,6 @@ package body Sem_Ch6 is
          Set_Is_Only_Out_Parameter (First_Out_Param);
       end if;
    end Process_Formals;
-
-   ------------------
-   -- Process_PPCs --
-   ------------------
-
-   procedure Process_PPCs
-     (N       : Node_Id;
-      Spec_Id : Entity_Id;
-      Body_Id : Entity_Id)
-   is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Prag  : Node_Id;
-      Parms : List_Id;
-
-      Designator : Entity_Id;
-      --  Subprogram designator, set from Spec_Id if present, else Body_Id
-
-      Precond : Node_Id := Empty;
-      --  Set non-Empty if we prepend precondition to the declarations. This
-      --  is used to hook up inherited preconditions (adding the condition
-      --  expression with OR ELSE, and adding the message).
-
-      Inherited_Precond : Node_Id;
-      --  Precondition inherited from parent subprogram
-
-      Inherited : constant Subprogram_List :=
-                     Inherited_Subprograms (Spec_Id);
-      --  List of subprograms inherited by this subprogram
-
-      Plist : List_Id := No_List;
-      --  List of generated postconditions
-
-      procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id);
-      --  Append a node to a list. If there is no list, create a new one. When
-      --  the item denotes a pragma, it is added to the list only when it is
-      --  enabled.
-
-      procedure Check_Access_Invariants (E : Entity_Id);
-      --  If the subprogram returns an access to a type with invariants, or
-      --  has access parameters whose designated type has an invariant, then
-      --  under the same visibility conditions as for other invariant checks,
-      --  the type invariant must be applied to the returned value.
-
-      procedure Collect_Body_Postconditions (Post_Nam : Name_Id);
-      --  Examine the declarations of the body, looking for pragmas with name
-      --  Post_Nam. Parameter Post_Nam must denote either Name_Postcondition or
-      --  Name_Refined_Post. Chain any relevant postconditions to Plist.
-
-      function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id;
-      --  Prag contains an analyzed precondition or postcondition pragma. This
-      --  function copies the pragma, changes it to the corresponding Check
-      --  pragma and returns the Check pragma as the result. If Pspec is non-
-      --  empty, this is the case of inheriting a PPC, where we must change
-      --  references to parameters of the inherited subprogram to point to the
-      --  corresponding parameters of the current subprogram.
-
-      function Has_Checked_Predicate (Typ : Entity_Id) return Boolean;
-      --  Determine whether type Typ has or inherits at least one predicate
-      --  aspect or pragma, for which the applicable policy is Checked.
-
-      function Has_Null_Body (Proc_Id : Entity_Id) return Boolean;
-      --  Determine whether the body of procedure Proc_Id contains a sole null
-      --  statement, possibly followed by an optional return.
-
-      procedure Insert_After_Last_Declaration (Nod : Node_Id);
-      --  Insert node Nod after the last declaration of the context
-
-      function Is_Public_Subprogram_For (T : Entity_Id) return Boolean;
-      --  T is the entity for a private type for which invariants are defined.
-      --  This function returns True if the procedure corresponding to the
-      --  value of Designator is a public procedure from the point of view of
-      --  this type (i.e. its spec is in the visible part of the package that
-      --  contains the declaration of the private type). A True value means
-      --  that an invariant check is required (for an IN OUT parameter, or
-      --  the returned value of a function.
-
-      -------------------------
-      -- Append_Enabled_Item --
-      -------------------------
-
-      procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id) is
-      begin
-         --  Do not chain ignored or disabled pragmas
-
-         if Nkind (Item) = N_Pragma
-           and then (Is_Ignored (Item) or else Is_Disabled (Item))
-         then
-            null;
-
-         --  Add the item
-
-         else
-            if No (List) then
-               List := New_List;
-            end if;
-
-            Append (Item, List);
-         end if;
-      end Append_Enabled_Item;
-
-      -----------------------------
-      -- Check_Access_Invariants --
-      -----------------------------
-
-      procedure Check_Access_Invariants (E : Entity_Id) is
-         Call : Node_Id;
-         Obj  : Node_Id;
-         Typ  : Entity_Id;
-
-      begin
-         if Is_Access_Type (Etype (E))
-           and then not Is_Access_Constant (Etype (E))
-         then
-            Typ := Designated_Type (Etype (E));
-
-            if Has_Invariants (Typ)
-              and then Present (Invariant_Procedure (Typ))
-              and then not Has_Null_Body (Invariant_Procedure (Typ))
-              and then Is_Public_Subprogram_For (Typ)
-            then
-               Obj :=
-                 Make_Explicit_Dereference (Loc,
-                   Prefix => New_Occurrence_Of (E, Loc));
-               Set_Etype (Obj, Typ);
-
-               Call := Make_Invariant_Call (Obj);
-
-               Append_Enabled_Item
-                 (Make_If_Statement (Loc,
-                    Condition =>
-                      Make_Op_Ne (Loc,
-                        Left_Opnd   => Make_Null (Loc),
-                        Right_Opnd  => New_Occurrence_Of (E, Loc)),
-                    Then_Statements => New_List (Call)),
-                  List => Plist);
-            end if;
-         end if;
-      end Check_Access_Invariants;
-
-      ---------------------------------
-      -- Collect_Body_Postconditions --
-      ---------------------------------
-
-      procedure Collect_Body_Postconditions (Post_Nam : Name_Id) is
-         Next_Prag : Node_Id;
-
-      begin
-         pragma Assert
-           (Nam_In (Post_Nam, Name_Postcondition, Name_Refined_Post));
-
-         Prag := First (Declarations (N));
-         while Present (Prag) loop
-            Next_Prag := Next (Prag);
-
-            if Nkind (Prag) = N_Pragma then
-
-               --  Capture postcondition pragmas
-
-               if Pragma_Name (Prag) = Post_Nam then
-                  Analyze (Prag);
-
-                  --  All Refined_Post pragmas must be relocated to the body
-                  --  of the generated _Postconditions routine, otherwise they
-                  --  will be duplicated twice - once in the declarations of
-                  --  the body and once in _Postconditions.
-
-                  if Pragma_Name (Prag) = Name_Refined_Post then
-                     Remove (Prag);
-                  end if;
-
-                  --  If expansion is disabled, as in a generic unit, save
-                  --  pragma for later expansion.
-
-                  if not Expander_Active then
-                     Prepend (Grab_PPC, Declarations (N));
-                  else
-                     Append_Enabled_Item (Grab_PPC, Plist);
-                  end if;
-               end if;
-
-            --  Skip internally generated code
-
-            elsif not Comes_From_Source (Prag) then
-               null;
-
-            else
-               exit;
-            end if;
-
-            Prag := Next_Prag;
-         end loop;
-      end Collect_Body_Postconditions;
-
-      --------------
-      -- Grab_PPC --
-      --------------
-
-      function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id is
-         Nam : constant Name_Id := Pragma_Name (Prag);
-         Map : Elist_Id;
-         CP  : Node_Id;
-
-         Ename : Name_Id;
-         --  Effective name of pragma (maybe Pre/Post rather than Precondition/
-         --  Postcodition if the pragma came from a Pre/Post aspect). We need
-         --  the name right when we generate the Check pragma, since we want
-         --  the right set of check policies to apply.
-
-      begin
-         --  Prepare map if this is the case where we have to map entities of
-         --  arguments in the overridden subprogram to corresponding entities
-         --  of the current subprogram.
-
-         if No (Pspec) then
-            Map := No_Elist;
-
-         else
-            declare
-               PF : Entity_Id;
-               CF : Entity_Id;
-
-            begin
-               Map := New_Elmt_List;
-               PF := First_Formal (Pspec);
-               CF := First_Formal (Designator);
-               while Present (PF) loop
-                  Append_Elmt (PF, Map);
-                  Append_Elmt (CF, Map);
-                  Next_Formal (PF);
-                  Next_Formal (CF);
-               end loop;
-            end;
-         end if;
-
-         --  Now we can copy the tree, doing any required substitutions
-
-         CP := New_Copy_Tree (Prag, Map => Map, New_Scope => Current_Scope);
-
-         --  Set Analyzed to false, since we want to reanalyze the check
-         --  procedure. Note that it is only at the outer level that we
-         --  do this fiddling, for the spec cases, the already preanalyzed
-         --  parameters are not affected.
-
-         Set_Analyzed (CP, False);
-
-         --  We also make sure Comes_From_Source is False for the copy
-
-         Set_Comes_From_Source (CP, False);
-
-         --  For a postcondition pragma within a generic, preserve the pragma
-         --  for later expansion. This is also used when an error was detected,
-         --  thus setting Expander_Active to False.
-
-         if Nam = Name_Postcondition
-           and then not Expander_Active
-         then
-            return CP;
-         end if;
-
-         --  Get effective name of aspect
-
-         if Present (Corresponding_Aspect (Prag)) then
-            Ename := Chars (Identifier (Corresponding_Aspect (Prag)));
-         else
-            Ename := Nam;
-         end if;
-
-         --  Change copy of pragma into corresponding pragma Check
-
-         Prepend_To (Pragma_Argument_Associations (CP),
-           Make_Pragma_Argument_Association (Sloc (Prag),
-             Expression => Make_Identifier (Loc, Ename)));
-         Set_Pragma_Identifier (CP, Make_Identifier (Sloc (Prag), Name_Check));
-
-         --  If this is inherited case and the current message starts with
-         --  "failed p", we change it to "failed inherited p...".
-
-         if Present (Pspec) then
-            declare
-               Msg : constant Node_Id :=
-                       Last (Pragma_Argument_Associations (CP));
-
-            begin
-               if Chars (Msg) = Name_Message then
-                  String_To_Name_Buffer (Strval (Expression (Msg)));
-
-                  if Name_Buffer (1 .. 8) = "failed p" then
-                     Insert_Str_In_Name_Buffer ("inherited ", 8);
-                     Set_Strval
-                       (Expression (Last (Pragma_Argument_Associations (CP))),
-                        String_From_Name_Buffer);
-                  end if;
-               end if;
-            end;
-         end if;
-
-         --  Return the check pragma
-
-         return CP;
-      end Grab_PPC;
-
-      ---------------------------
-      -- Has_Checked_Predicate --
-      ---------------------------
-
-      function Has_Checked_Predicate (Typ : Entity_Id) return Boolean is
-         Anc  : Entity_Id;
-         Pred : Node_Id;
-
-      begin
-         --  Climb the ancestor type chain staring from the input. This is done
-         --  because the input type may lack aspect/pragma predicate and simply
-         --  inherit those from its ancestor.
-
-         --  Note that predicate pragmas include all three cases of predicate
-         --  aspects (Predicate, Dynamic_Predicate, Static_Predicate), so this
-         --  routine checks for all three cases.
-
-         Anc := Typ;
-         while Present (Anc) loop
-            Pred := Get_Pragma (Anc, Pragma_Predicate);
-
-            if Present (Pred) and then not Is_Ignored (Pred) then
-               return True;
-            end if;
-
-            Anc := Nearest_Ancestor (Anc);
-         end loop;
-
-         return False;
-      end Has_Checked_Predicate;
-
-      -------------------
-      -- Has_Null_Body --
-      -------------------
-
-      function Has_Null_Body (Proc_Id : Entity_Id) return Boolean is
-         Body_Id : Entity_Id;
-         Decl    : Node_Id;
-         Spec    : Node_Id;
-         Stmt1   : Node_Id;
-         Stmt2   : Node_Id;
-
-      begin
-         Spec := Parent (Proc_Id);
-         Decl := Parent (Spec);
-
-         --  Retrieve the entity of the invariant procedure body
-
-         if Nkind (Spec) = N_Procedure_Specification
-           and then Nkind (Decl) = N_Subprogram_Declaration
-         then
-            Body_Id := Corresponding_Body (Decl);
-
-         --  The body acts as a spec
-
-         else
-            Body_Id := Proc_Id;
-         end if;
-
-         --  The body will be generated later
-
-         if No (Body_Id) then
-            return False;
-         end if;
-
-         Spec := Parent (Body_Id);
-         Decl := Parent (Spec);
-
-         pragma Assert
-           (Nkind (Spec) = N_Procedure_Specification
-              and then Nkind (Decl) = N_Subprogram_Body);
-
-         Stmt1 := First (Statements (Handled_Statement_Sequence (Decl)));
-
-         --  Look for a null statement followed by an optional return statement
-
-         if Nkind (Stmt1) = N_Null_Statement then
-            Stmt2 := Next (Stmt1);
-
-            if Present (Stmt2) then
-               return Nkind (Stmt2) = N_Simple_Return_Statement;
-            else
-               return True;
-            end if;
-         end if;
-
-         return False;
-      end Has_Null_Body;
-
-      -----------------------------------
-      -- Insert_After_Last_Declaration --
-      -----------------------------------
-
-      procedure Insert_After_Last_Declaration (Nod : Node_Id) is
-         Decls : constant List_Id := Declarations (N);
-
-      begin
-         if No (Decls) then
-            Set_Declarations (N, New_List (Nod));
-         else
-            Append_To (Decls, Nod);
-         end if;
-      end Insert_After_Last_Declaration;
-
-      ------------------------------
-      -- Is_Public_Subprogram_For --
-      ------------------------------
-
-      --  The type T is a private type, its declaration is therefore in
-      --  the list of public declarations of some package. The test for a
-      --  public subprogram is that its declaration is in this same list
-      --  of declarations for the same package (note that all the public
-      --  declarations are in one list, and all the private declarations
-      --  in another, so this deals with the public/private distinction).
-
-      function Is_Public_Subprogram_For (T : Entity_Id) return Boolean is
-         DD : constant Node_Id := Unit_Declaration_Node (Designator);
-         --  The subprogram declaration for the subprogram in question
-
-         TL : constant List_Id :=
-                Visible_Declarations
-                  (Specification (Unit_Declaration_Node (Scope (T))));
-         --  The list of declarations containing the private declaration of
-         --  the type. We know it is a private type, so we know its scope is
-         --  the package in question, and we know it must be in the visible
-         --  declarations of this package.
-
-      begin
-         --  If the subprogram declaration is not a list member, it must be
-         --  an Init_Proc, in which case we want to consider it to be a
-         --  public subprogram, since we do get initializations to deal with.
-         --  Other internally generated subprograms are not public.
-
-         if not Is_List_Member (DD)
-           and then Is_Init_Proc (Defining_Entity (DD))
-         then
-            return True;
-
-         --  The declaration may have been generated for an expression function
-         --  so check whether that function comes from source.
-
-         elsif not Comes_From_Source (DD)
-           and then
-             (Nkind (Original_Node (DD)) /= N_Expression_Function
-               or else not Comes_From_Source (Defining_Entity (DD)))
-         then
-            return False;
-
-         --  Otherwise we test whether the subprogram is declared in the
-         --  visible declarations of the package containing the type.
-
-         else
-            return TL = List_Containing (DD);
-         end if;
-      end Is_Public_Subprogram_For;
-
-      --  Local variables
-
-      Formal     : Node_Id;
-      Formal_Typ : Entity_Id;
-      Func_Typ   : Entity_Id;
-      Post_Proc  : Entity_Id;
-      Result     : Node_Id;
-
-   --  Start of processing for Process_PPCs
-
-   begin
-      --  Capture designator from spec if present, else from body
-
-      if Present (Spec_Id) then
-         Designator := Spec_Id;
-      else
-         Designator := Body_Id;
-      end if;
-
-      --  Do not process a predicate function as its body will contain a
-      --  recursive call to itself and blow up the stack.
-
-      if Ekind (Designator) = E_Function
-        and then Is_Predicate_Function (Designator)
-      then
-         return;
-
-      --  Internally generated subprograms, such as type-specific functions,
-      --  don't get assertion checks.
-
-      elsif Get_TSS_Name (Designator) /= TSS_Null then
-         return;
-      end if;
-
-      --  Grab preconditions from spec
-
-      if Present (Spec_Id) then
-
-         --  Loop through PPC pragmas from spec. Note that preconditions from
-         --  the body will be analyzed and converted when we scan the body
-         --  declarations below.
-
-         Prag := Pre_Post_Conditions (Contract (Spec_Id));
-         while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Precondition then
-
-               --  For Pre (or Precondition pragma), we simply prepend the
-               --  pragma to the list of declarations right away so that it
-               --  will be executed at the start of the procedure. Note that
-               --  this processing reverses the order of the list, which is
-               --  what we want since new entries were chained to the head of
-               --  the list. There can be more than one precondition when we
-               --  use pragma Precondition.
-
-               if not Class_Present (Prag) then
-                  Prepend (Grab_PPC, Declarations (N));
-
-               --  For Pre'Class there can only be one pragma, and we save
-               --  it in Precond for now. We will add inherited Pre'Class
-               --  stuff before inserting this pragma in the declarations.
-               else
-                  Precond := Grab_PPC;
-               end if;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Now deal with inherited preconditions
-
-         for J in Inherited'Range loop
-            Prag := Pre_Post_Conditions (Contract (Inherited (J)));
-
-            while Present (Prag) loop
-               if Pragma_Name (Prag) = Name_Precondition
-                 and then Class_Present (Prag)
-               then
-                  Inherited_Precond := Grab_PPC (Inherited (J));
-
-                  --  No precondition so far, so establish this as the first
-
-                  if No (Precond) then
-                     Precond := Inherited_Precond;
-
-                  --  Here we already have a precondition, add inherited one
-
-                  else
-                     --  Add new precondition to old one using OR ELSE
-
-                     declare
-                        New_Expr : constant Node_Id :=
-                          Get_Pragma_Arg
-                            (Next (First (Pragma_Argument_Associations
-                                            (Inherited_Precond))));
-                        Old_Expr : constant Node_Id :=
-                          Get_Pragma_Arg
-                            (Next (First (Pragma_Argument_Associations
-                                             (Precond))));
-
-                     begin
-                        if Paren_Count (Old_Expr) = 0 then
-                           Set_Paren_Count (Old_Expr, 1);
-                        end if;
-
-                        if Paren_Count (New_Expr) = 0 then
-                           Set_Paren_Count (New_Expr, 1);
-                        end if;
-
-                        Rewrite (Old_Expr,
-                          Make_Or_Else (Sloc (Old_Expr),
-                            Left_Opnd  => Relocate_Node (Old_Expr),
-                            Right_Opnd => New_Expr));
-                     end;
-
-                     --  Add new message in the form:
-
-                     --     failed precondition from bla
-                     --       also failed inherited precondition from bla
-                     --       ...
-
-                     --  Skip this if exception locations are suppressed
-
-                     if not Exception_Locations_Suppressed then
-                        declare
-                           New_Msg : constant Node_Id :=
-                                       Get_Pragma_Arg
-                                         (Last
-                                            (Pragma_Argument_Associations
-                                               (Inherited_Precond)));
-                           Old_Msg : constant Node_Id :=
-                                       Get_Pragma_Arg
-                                         (Last
-                                            (Pragma_Argument_Associations
-                                               (Precond)));
-                        begin
-                           Start_String (Strval (Old_Msg));
-                           Store_String_Chars (ASCII.LF & "  also ");
-                           Store_String_Chars (Strval (New_Msg));
-                           Set_Strval (Old_Msg, End_String);
-                        end;
-                     end if;
-                  end if;
-               end if;
-
-               Prag := Next_Pragma (Prag);
-            end loop;
-         end loop;
-
-         --  If we have built a precondition for Pre'Class (including any
-         --  Pre'Class aspects inherited from parent subprograms), then we
-         --  insert this composite precondition at this stage.
-
-         if Present (Precond) then
-            Prepend (Precond, Declarations (N));
-         end if;
-      end if;
-
-      --  Build postconditions procedure if needed and prepend the following
-      --  declaration to the start of the declarations for the subprogram.
-
-      --     procedure _postconditions [(_Result : resulttype)] is
-      --     begin
-      --        pragma Check (Refined_Post, condition);
-      --        pragma Check (Refined_Post, condition);
-      --        pragma Check (Postcondition, condition [,message]);
-      --        pragma Check (Postcondition, condition [,message]);
-      --        ...
-      --        Invariant_Procedure (_Result) ...
-      --        Invariant_Procedure (Arg1)
-      --        ...
-      --     end;
-
-      --  First we deal with the postconditions in the body
-
-      Collect_Body_Postconditions (Name_Refined_Post);
-      Collect_Body_Postconditions (Name_Postcondition);
-
-      --  Now deal with any postconditions from the spec
-
-      if Present (Spec_Id) then
-         Spec_Postconditions : declare
-            procedure Process_Contract_Cases (Spec : Node_Id);
-            --  This processes the Contract_Test_Cases from Spec, processing
-            --  any contract-cases from the list. The caller has checked that
-            --  Contract_Test_Cases is non-Empty.
-
-            procedure Process_Post_Conditions
-              (Spec  : Node_Id;
-               Class : Boolean);
-            --  This processes the Pre_Post_Conditions from Spec, processing
-            --  any postconditions from the list. If Class is True, then only
-            --  postconditions marked with Class_Present are considered. The
-            --  caller has checked that Pre_Post_Conditions is non-Empty.
-
-            ----------------------------
-            -- Process_Contract_Cases --
-            ----------------------------
-
-            procedure Process_Contract_Cases (Spec : Node_Id) is
-            begin
-               --  Loop through Contract_Cases pragmas from spec
-
-               Prag := Contract_Test_Cases (Contract (Spec));
-               loop
-                  if Pragma_Name (Prag) = Name_Contract_Cases then
-                     Expand_Contract_Cases
-                       (CCs     => Prag,
-                        Subp_Id => Spec_Id,
-                        Decls   => Declarations (N),
-                        Stmts   => Plist);
-                  end if;
-
-                  Prag := Next_Pragma (Prag);
-                  exit when No (Prag);
-               end loop;
-            end Process_Contract_Cases;
-
-            -----------------------------
-            -- Process_Post_Conditions --
-            -----------------------------
-
-            procedure Process_Post_Conditions
-              (Spec  : Node_Id;
-               Class : Boolean)
-            is
-               Pspec : Node_Id;
-
-            begin
-               if Class then
-                  Pspec := Spec;
-               else
-                  Pspec := Empty;
-               end if;
-
-               --  Loop through PPC pragmas from spec
-
-               Prag := Pre_Post_Conditions (Contract (Spec));
-               loop
-                  if Pragma_Name (Prag) = Name_Postcondition
-                    and then (not Class or else Class_Present (Prag))
-                  then
-                     if not Expander_Active then
-                        Prepend (Grab_PPC (Pspec), Declarations (N));
-                     else
-                        Append_Enabled_Item (Grab_PPC (Pspec), Plist);
-                     end if;
-                  end if;
-
-                  Prag := Next_Pragma (Prag);
-                  exit when No (Prag);
-               end loop;
-            end Process_Post_Conditions;
-
-         --  Start of processing for Spec_Postconditions
-
-         begin
-            --  Process postconditions expressed as contract-cases
-
-            if Present (Contract_Test_Cases (Contract (Spec_Id))) then
-               Process_Contract_Cases (Spec_Id);
-            end if;
-
-            --  Process spec postconditions
-
-            if Present (Pre_Post_Conditions (Contract (Spec_Id))) then
-               Process_Post_Conditions (Spec_Id, Class => False);
-            end if;
-
-            --  Process inherited postconditions
-
-            for J in Inherited'Range loop
-               if Present (Pre_Post_Conditions (Contract (Inherited (J)))) then
-                  Process_Post_Conditions (Inherited (J), Class => True);
-               end if;
-            end loop;
-         end Spec_Postconditions;
-      end if;
-
-      --  Add an invariant call to check the result of a function
-
-      if Ekind (Designator) /= E_Procedure and then Expander_Active then
-         Func_Typ := Etype (Designator);
-         Result   := Make_Defining_Identifier (Loc, Name_uResult);
-
-         Set_Etype (Result, Func_Typ);
-
-         --  Add argument for return
-
-         Parms := New_List (
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier => Result,
-             Parameter_Type      => New_Occurrence_Of (Func_Typ, Loc)));
-
-         --  Add invariant call if returning type with invariants and this is a
-         --  public function, i.e. a function declared in the visible part of
-         --  the package defining the private type.
-
-         if Has_Invariants (Func_Typ)
-           and then Present (Invariant_Procedure (Func_Typ))
-           and then not Has_Null_Body (Invariant_Procedure (Func_Typ))
-           and then Is_Public_Subprogram_For (Func_Typ)
-         then
-            Append_Enabled_Item
-              (Make_Invariant_Call (New_Occurrence_Of (Result, Loc)), Plist);
-         end if;
-
-         --  Same if return value is an access to type with invariants
-
-         Check_Access_Invariants (Result);
-
-      --  Procedure case
-
-      else
-         Parms := No_List;
-      end if;
-
-      --  Add invariant calls and predicate calls for parameters. Note that
-      --  this is done for functions as well, since in Ada 2012 they can have
-      --  IN OUT args.
-
-      if Expander_Active then
-         Formal := First_Formal (Designator);
-         while Present (Formal) loop
-            if Ekind (Formal) /= E_In_Parameter
-              or else Is_Access_Type (Etype (Formal))
-            then
-               Formal_Typ := Etype (Formal);
-
-               if Has_Invariants (Formal_Typ)
-                 and then Present (Invariant_Procedure (Formal_Typ))
-                 and then not Has_Null_Body (Invariant_Procedure (Formal_Typ))
-                 and then Is_Public_Subprogram_For (Formal_Typ)
-               then
-                  Append_Enabled_Item
-                    (Make_Invariant_Call (New_Occurrence_Of (Formal, Loc)),
-                     Plist);
-               end if;
-
-               Check_Access_Invariants (Formal);
-
-               if Has_Predicates (Formal_Typ)
-                 and then Present (Predicate_Function (Formal_Typ))
-                 and then Has_Checked_Predicate (Formal_Typ)
-               then
-                  Append_Enabled_Item
-                    (Make_Predicate_Check
-                      (Formal_Typ, New_Occurrence_Of (Formal, Loc)),
-                     Plist);
-               end if;
-            end if;
-
-            Next_Formal (Formal);
-         end loop;
-      end if;
-
-      --  Build and insert postcondition procedure
-
-      if Expander_Active and then Present (Plist) then
-         Post_Proc :=
-           Make_Defining_Identifier (Loc, Chars => Name_uPostconditions);
-
-         --  Insert the corresponding body of a post condition pragma after the
-         --  last declaration of the context. This ensures that the body will
-         --  not cause any premature freezing as it may mention types:
-
-         --    procedure Proc (Obj : Array_Typ) is
-         --       procedure _postconditions is
-         --       begin
-         --          ... Obj ...
-         --       end _postconditions;
-
-         --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
-         --    begin
-
-         --  In the example above, Obj is of type T but the incorrect placement
-         --  of _postconditions will cause a crash in gigi due to an out of
-         --  order reference. The body of _postconditions must be placed after
-         --  the declaration of Temp to preserve correct visibility.
-
-         Insert_After_Last_Declaration (
-           Make_Subprogram_Body (Loc,
-             Specification              =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name       => Post_Proc,
-                 Parameter_Specifications => Parms),
-
-             Declarations               => Empty_List,
-
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Plist)));
-
-         Set_Ekind (Post_Proc, E_Procedure);
-
-         --  If this is a procedure, set the Postcondition_Proc attribute on
-         --  the proper defining entity for the subprogram.
-
-         if Ekind (Designator) = E_Procedure then
-            Set_Postcondition_Proc (Designator, Post_Proc);
-         end if;
-
-         Set_Has_Postconditions (Designator);
-      end if;
-   end Process_PPCs;
 
    ----------------------------
    -- Reference_Body_Formals --

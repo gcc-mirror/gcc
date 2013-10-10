@@ -82,6 +82,18 @@ package Exp_Ch6 is
    --  Subp_Id's body. All generated code is added to list Stmts. If Stmts is
    --  empty, a new list is created.
 
+   procedure Expand_Subprogram_Contract
+     (N       : Node_Id;
+      Spec_Id : Entity_Id;
+      Body_Id : Entity_Id);
+   --  Expand the contracts of a subprogram body and its correspoding spec (if
+   --  any). This routine processes all [refined] pre- and postconditions as
+   --  well as Contract_Cases, invariants and predicates. N is the body of the
+   --  subprogram. Spec_Id denotes the entity of its specification. Body_Id
+   --  denotes the entity of the subprogram body. This routine is not a "pure"
+   --  expansion mechanism as it is invoked during analysis and may perform
+   --  actions for generic subprograms or set up contract assertions for ASIS.
+
    procedure Freeze_Subprogram (N : Node_Id);
    --  generate the appropriate expansions related to Subprogram freeze
    --  nodes (e.g. the filling of the corresponding Dispatch Table for

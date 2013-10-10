@@ -1928,6 +1928,20 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
 
+               --  Refined_Depends
+
+               --  ??? To be implemented
+
+               when Aspect_Refined_Depends =>
+                  null;
+
+               --  Refined_Global
+
+               --  ??? To be implemented
+
+               when Aspect_Refined_Global =>
+                  null;
+
                --  Refined_Post
 
                when Aspect_Refined_Post =>
@@ -7962,6 +7976,8 @@ package body Sem_Ch13 is
               Aspect_Postcondition        |
               Aspect_Pre                  |
               Aspect_Precondition         |
+              Aspect_Refined_Depends      |
+              Aspect_Refined_Global       |
               Aspect_Refined_Post         |
               Aspect_Refined_Pre          |
               Aspect_SPARK_Mode           |

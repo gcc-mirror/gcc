@@ -404,6 +404,7 @@ package body Sem_Prag is
       Arg1      : constant Node_Id := First (Pragma_Argument_Associations (N));
       All_Cases : Node_Id;
       CCase     : Node_Id;
+      Restore   : Boolean := False;
       Subp_Decl : Node_Id;
       Subp_Id   : Entity_Id;
 
@@ -431,6 +432,7 @@ package body Sem_Prag is
             --  for subprogram bodies because the formals are already visible.
 
             if Requires_Profile_Installation (N, Subp_Decl) then
+               Restore := True;
                Push_Scope (Subp_Id);
                Install_Formals (Subp_Id);
             end if;
@@ -441,7 +443,7 @@ package body Sem_Prag is
                Next (CCase);
             end loop;
 
-            if Requires_Profile_Installation (N, Subp_Decl) then
+            if Restore then
                End_Scope;
             end if;
          end if;
@@ -1234,6 +1236,9 @@ package body Sem_Prag is
       Last_Clause : Node_Id;
       Subp_Decl   : Node_Id;
 
+      Restore_Scope : Boolean := False;
+      --  Gets set True if we do a Push_Scope needing a Pop_Scope on exit
+
    --  Start of processing for Analyze_Depends_In_Decl_Part
 
    begin
@@ -1287,6 +1292,7 @@ package body Sem_Prag is
          --  bodies because the formals are already visible.
 
          if Requires_Profile_Installation (N, Subp_Decl) then
+            Restore_Scope := True;
             Push_Scope (Subp_Id);
             Install_Formals (Subp_Id);
          end if;
@@ -1317,7 +1323,7 @@ package body Sem_Prag is
             Next (Clause);
          end loop;
 
-         if Requires_Profile_Installation (N, Subp_Decl) then
+         if Restore_Scope then
             End_Scope;
          end if;
 
@@ -1690,6 +1696,9 @@ package body Sem_Prag is
       List      : Node_Id;
       Subp_Decl : Node_Id;
 
+      Restore_Scope : Boolean := False;
+      --  Set True if we do a Push_Scope requiring a Pop_Scope on exit
+
    --  Start of processing for Analyze_Global_In_Decl_List
 
    begin
@@ -1714,170 +1723,18 @@ package body Sem_Prag is
          --  subprogram declarations.
 
          if Requires_Profile_Installation (N, Subp_Decl) then
+            Restore_Scope := True;
             Push_Scope (Subp_Id);
             Install_Formals (Subp_Id);
          end if;
 
          Analyze_Global_List (List);
 
-         if Requires_Profile_Installation (N, Subp_Decl) then
+         if Restore_Scope then
             End_Scope;
          end if;
       end if;
    end Analyze_Global_In_Decl_Part;
-
-   ------------------------------
-   -- Analyze_PPC_In_Decl_Part --
-   ------------------------------
-
-   procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
-      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
-
-   begin
-      --  Install formals and push subprogram spec onto scope stack so that we
-      --  can see the formals from the pragma.
-
-      Install_Formals (S);
-      Push_Scope (S);
-
-      --  Preanalyze the boolean expression, we treat this as a spec expression
-      --  (i.e. similar to a default expression).
-
-      --  In ASIS mode, for a pragma generated from a source aspect, analyze
-      --  directly the the original aspect expression, which is shared with
-      --  the generated pragma.
-
-      if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-         Preanalyze_Assert_Expression
-           (Expression (Corresponding_Aspect (N)), Standard_Boolean);
-      else
-         Preanalyze_Assert_Expression
-            (Get_Pragma_Arg (Arg1), Standard_Boolean);
-      end if;
-
-      --  For a class-wide condition, a reference to a controlling formal must
-      --  be interpreted as having the class-wide type (or an access to such)
-      --  so that the inherited condition can be properly applied to any
-      --  overriding operation (see ARM12 6.6.1 (7)).
-
-      if Class_Present (N) then
-         Class_Wide_Condition : declare
-            T   : constant Entity_Id := Find_Dispatching_Type (S);
-
-            ACW : Entity_Id := Empty;
-            --  Access to T'class, created if there is a controlling formal
-            --  that is an access parameter.
-
-            function Get_ACW return Entity_Id;
-            --  If the expression has a reference to an controlling access
-            --  parameter, create an access to T'class for the necessary
-            --  conversions if one does not exist.
-
-            function Process (N : Node_Id) return Traverse_Result;
-            --  ARM 6.1.1: Within the expression for a Pre'Class or Post'Class
-            --  aspect for a primitive subprogram of a tagged type T, a name
-            --  that denotes a formal parameter of type T is interpreted as
-            --  having type T'Class. Similarly, a name that denotes a formal
-            --  accessparameter of type access-to-T is interpreted as having
-            --  type access-to-T'Class. This ensures the expression is well-
-            --  defined for a primitive subprogram of a type descended from T.
-            --  Note that this replacement is not done for selector names in
-            --  parameter associations. These carry an entity for reference
-            --  purposes, but semantically they are just identifiers.
-
-            -------------
-            -- Get_ACW --
-            -------------
-
-            function Get_ACW return Entity_Id is
-               Loc  : constant Source_Ptr := Sloc (N);
-               Decl : Node_Id;
-
-            begin
-               if No (ACW) then
-                  Decl := Make_Full_Type_Declaration (Loc,
-                    Defining_Identifier => Make_Temporary (Loc, 'T'),
-                    Type_Definition =>
-                       Make_Access_To_Object_Definition (Loc,
-                       Subtype_Indication =>
-                         New_Occurrence_Of (Class_Wide_Type (T), Loc),
-                       All_Present => True));
-
-                  Insert_Before (Unit_Declaration_Node (S), Decl);
-                  Analyze (Decl);
-                  ACW := Defining_Identifier (Decl);
-                  Freeze_Before (Unit_Declaration_Node (S), ACW);
-               end if;
-
-               return ACW;
-            end Get_ACW;
-
-            -------------
-            -- Process --
-            -------------
-
-            function Process (N : Node_Id) return Traverse_Result is
-               Loc : constant Source_Ptr := Sloc (N);
-               Typ : Entity_Id;
-
-            begin
-               if Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Is_Formal (Entity (N))
-                 and then Nkind (Parent (N)) /= N_Type_Conversion
-                 and then
-                   (Nkind (Parent (N)) /= N_Parameter_Association
-                     or else N /= Selector_Name (Parent (N)))
-               then
-                  if Etype (Entity (N)) = T then
-                     Typ := Class_Wide_Type (T);
-
-                  elsif Is_Access_Type (Etype (Entity (N)))
-                    and then Designated_Type (Etype (Entity (N))) = T
-                  then
-                     Typ := Get_ACW;
-                  else
-                     Typ := Empty;
-                  end if;
-
-                  if Present (Typ) then
-                     Rewrite (N,
-                       Make_Type_Conversion (Loc,
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Typ, Loc),
-                         Expression  => New_Occurrence_Of (Entity (N), Loc)));
-                     Set_Etype (N, Typ);
-                  end if;
-               end if;
-
-               return OK;
-            end Process;
-
-            procedure Replace_Type is new Traverse_Proc (Process);
-
-         --  Start of processing for Class_Wide_Condition
-
-         begin
-            if not Present (T) then
-               Error_Msg_Name_1 :=
-                 Chars (Identifier (Corresponding_Aspect (N)));
-
-               Error_Msg_Name_2 := Name_Class;
-
-               Error_Msg_N
-                 ("aspect `%''%` can only be specified for a primitive "
-                  & "operation of a tagged type", Corresponding_Aspect (N));
-            end if;
-
-            Replace_Type (Get_Pragma_Arg (Arg1));
-         end Class_Wide_Condition;
-      end if;
-
-      --  Remove the subprogram from the scope stack now that the pre-analysis
-      --  of the precondition/postcondition is done.
-
-      End_Scope;
-   end Analyze_PPC_In_Decl_Part;
 
    --------------------
    -- Analyze_Pragma --
@@ -1922,15 +1779,9 @@ package body Sem_Prag is
       --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
       --  should be caught by the No_Implementation_Pragmas restriction.
 
-      procedure Analyze_Refined_Pre_Post
-        (Body_Decl : out Node_Id;
-         Spec_Id   : out Entity_Id;
-         Legal     : out Boolean);
+      procedure Analyze_Refined_Pre_Post_Condition;
       --  Subsidiary routine to the analysis of pragmas Refined_Pre and
-      --  Refined_Post. Body_Decl is the declaration of the subprogram body
-      --  [stub] subject to the pragma. Spec_Id is the corresponding spec of
-      --  the subprogram body [stub]. Flag Legal denotes whether the pragma
-      --  passes all legality rules.
+      --  Refined_Post.
 
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
@@ -2458,26 +2309,18 @@ package body Sem_Prag is
          end if;
       end Ada_2012_Pragma;
 
-      ------------------------------
-      -- Analyze_Refined_Pre_Post --
-      ------------------------------
+      ----------------------------------------
+      -- Analyze_Refined_Pre_Post_Condition --
+      ----------------------------------------
 
-      procedure Analyze_Refined_Pre_Post
-        (Body_Decl : out Node_Id;
-         Spec_Id   : out Entity_Id;
-         Legal     : out Boolean)
-      is
+      procedure Analyze_Refined_Pre_Post_Condition is
+         Body_Decl : Node_Id := Parent (N);
          Pack_Spec : Node_Id;
          Spec_Decl : Node_Id;
+         Spec_Id   : Entity_Id;
          Stmt      : Node_Id;
 
       begin
-         --  Assume that the pragma is illegal
-
-         Body_Decl := Parent (N);
-         Spec_Id   := Empty;
-         Legal     := False;
-
          GNAT_Pragma;
          Check_Arg_Count (1);
          Check_No_Identifiers;
@@ -2576,10 +2419,10 @@ package body Sem_Prag is
             return;
          end if;
 
-         --  If we get here, the placement and legality of the pragma is OK
+         --  Analyze the boolean expression as a "spec expression"
 
-         Legal := True;
-      end Analyze_Refined_Pre_Post;
+         Analyze_Pre_Post_Condition_In_Decl_Part (N, Spec_Id);
+      end Analyze_Refined_Pre_Post_Condition;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -3791,7 +3634,7 @@ package body Sem_Prag is
             --  analyzed.
 
             if SPARK_Mode or else ASIS_Mode then
-               Analyze_PPC_In_Decl_Part
+               Analyze_Pre_Post_Condition_In_Decl_Part
                  (N, Defining_Entity (Unit (Parent (PO))));
             end if;
 
@@ -16092,32 +15935,35 @@ package body Sem_Prag is
          when Pragma_Rational =>
             Set_Rational_Profile;
 
+         ---------------------
+         -- Refined_Depends --
+         ---------------------
+
+         --  ??? To be implemented
+
+         when Pragma_Refined_Depends =>
+            null;
+
+         --------------------
+         -- Refined_Global --
+         --------------------
+
+         --  ??? To be implemented
+
+         --  Would be better if these generated an error message saying that
+         --  the feature was not yet implemented ???
+
+         when Pragma_Refined_Global =>
+            null;
+
          ------------------
          -- Refined_Post --
          ------------------
 
          --  pragma Refined_Post (boolean_EXPRESSION);
 
-         when Pragma_Refined_Post => Refined_Post : declare
-            Body_Decl : Node_Id;
-            Legal     : Boolean;
-            Spec_Id   : Entity_Id;
-
-         begin
-            --  Verify the legal placement of the pragma. The pragma is left
-            --  intentionally semi-analyzed. Process_PPCs does the remaining
-            --  analysis of the expression when Refined_Post is converted into
-            --  pragma Check.
-
-            Analyze_Refined_Pre_Post (Body_Decl, Spec_Id, Legal);
-
-            --  Analyze the expression when code generation is disabled because
-            --  the contract of the related subprogram will never be processed.
-
-            if Legal and then not Expander_Active then
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg1), Standard_Boolean);
-            end if;
-         end Refined_Post;
+         when Pragma_Refined_Post =>
+            Analyze_Refined_Pre_Post_Condition;
 
          -----------------
          -- Refined_Pre --
@@ -16125,48 +15971,8 @@ package body Sem_Prag is
 
          --  pragma Refined_Pre (boolean_EXPRESSION);
 
-         when Pragma_Refined_Pre => Refined_Pre : declare
-            Body_Decl : Node_Id;
-            Legal     : Boolean;
-            Restore   : Boolean := False;
-            Spec_Id   : Entity_Id;
-
-         begin
-            Analyze_Refined_Pre_Post (Body_Decl, Spec_Id, Legal);
-
-            if Legal then
-               pragma Assert (Present (Body_Decl));
-               pragma Assert (Present (Spec_Id));
-
-               if Nkind (Body_Decl) = N_Subprogram_Body_Stub
-                 and then No (Library_Unit (Body_Decl))
-                 and then Current_Scope /= Spec_Id
-               then
-                  Restore := True;
-                  Push_Scope (Spec_Id);
-                  Install_Formals (Spec_Id);
-               end if;
-
-               --  Convert pragma Refined_Pre into pragma Check. The analysis
-               --  of the generated pragma will take care of the expression.
-
-               Rewrite (N,
-                 Make_Pragma (Loc,
-                   Chars                        => Name_Check,
-                   Pragma_Argument_Associations => New_List (
-                     Make_Pragma_Argument_Association (Loc,
-                       Expression => Make_Identifier (Loc, Pname)),
-
-                     Make_Pragma_Argument_Association (Sloc (Arg1),
-                       Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
-
-               Analyze (N);
-
-               if Restore then
-                  Pop_Scope;
-               end if;
-            end if;
-         end Refined_Pre;
+         when Pragma_Refined_Pre =>
+            Analyze_Refined_Pre_Post_Condition;
 
          -----------------------
          -- Relative_Deadline --
@@ -18499,6 +18305,195 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
+   ---------------------------------------------
+   -- Analyze_Pre_Post_Condition_In_Decl_Part --
+   ---------------------------------------------
+
+   procedure Analyze_Pre_Post_Condition_In_Decl_Part
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id)
+   is
+      Arg1    : constant Node_Id :=
+                  First (Pragma_Argument_Associations (Prag));
+      Expr    : Node_Id;
+      Restore : Boolean := False;
+
+   begin
+      --  Ensure that the subprogram and its formals are visible when analyzing
+      --  the expression of the pragma.
+
+      if Current_Scope /= Subp_Id then
+         Restore := True;
+         Push_Scope (Subp_Id);
+         Install_Formals (Subp_Id);
+      end if;
+
+      --  Preanalyze the boolean expression, we treat this as a spec expression
+      --  (i.e. similar to a default expression).
+
+      Expr := Get_Pragma_Arg (Arg1);
+
+      --  In ASIS mode, for a pragma generated from a source aspect, analyze
+      --  the original aspect expression, which is shared with the generated
+      --  pragma.
+
+      if ASIS_Mode and then Present (Corresponding_Aspect (Prag)) then
+         Expr := Expression (Corresponding_Aspect (Prag));
+      end if;
+
+      Preanalyze_Assert_Expression (Expr, Standard_Boolean);
+
+      --  For a class-wide condition, a reference to a controlling formal must
+      --  be interpreted as having the class-wide type (or an access to such)
+      --  so that the inherited condition can be properly applied to any
+      --  overriding operation (see ARM12 6.6.1 (7)).
+
+      if Class_Present (Prag) then
+         Class_Wide_Condition : declare
+            T : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
+
+            ACW : Entity_Id := Empty;
+            --  Access to T'class, created if there is a controlling formal
+            --  that is an access parameter.
+
+            function Get_ACW return Entity_Id;
+            --  If the expression has a reference to an controlling access
+            --  parameter, create an access to T'class for the necessary
+            --  conversions if one does not exist.
+
+            function Process (N : Node_Id) return Traverse_Result;
+            --  ARM 6.1.1: Within the expression for a Pre'Class or Post'Class
+            --  aspect for a primitive subprogram of a tagged type T, a name
+            --  that denotes a formal parameter of type T is interpreted as
+            --  having type T'Class. Similarly, a name that denotes a formal
+            --  accessparameter of type access-to-T is interpreted as having
+            --  type access-to-T'Class. This ensures the expression is well-
+            --  defined for a primitive subprogram of a type descended from T.
+            --  Note that this replacement is not done for selector names in
+            --  parameter associations. These carry an entity for reference
+            --  purposes, but semantically they are just identifiers.
+
+            -------------
+            -- Get_ACW --
+            -------------
+
+            function Get_ACW return Entity_Id is
+               Loc  : constant Source_Ptr := Sloc (Prag);
+               Decl : Node_Id;
+
+            begin
+               if No (ACW) then
+                  Decl :=
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'T'),
+                      Type_Definition     =>
+                         Make_Access_To_Object_Definition (Loc,
+                           Subtype_Indication =>
+                             New_Occurrence_Of (Class_Wide_Type (T), Loc),
+                           All_Present        => True));
+
+                  Insert_Before (Unit_Declaration_Node (Subp_Id), Decl);
+                  Analyze (Decl);
+                  ACW := Defining_Identifier (Decl);
+                  Freeze_Before (Unit_Declaration_Node (Subp_Id), ACW);
+               end if;
+
+               return ACW;
+            end Get_ACW;
+
+            -------------
+            -- Process --
+            -------------
+
+            function Process (N : Node_Id) return Traverse_Result is
+               Loc : constant Source_Ptr := Sloc (N);
+               Typ : Entity_Id;
+
+            begin
+               if Is_Entity_Name (N)
+                 and then Present (Entity (N))
+                 and then Is_Formal (Entity (N))
+                 and then Nkind (Parent (N)) /= N_Type_Conversion
+                 and then
+                   (Nkind (Parent (N)) /= N_Parameter_Association
+                     or else N /= Selector_Name (Parent (N)))
+               then
+                  if Etype (Entity (N)) = T then
+                     Typ := Class_Wide_Type (T);
+
+                  elsif Is_Access_Type (Etype (Entity (N)))
+                    and then Designated_Type (Etype (Entity (N))) = T
+                  then
+                     Typ := Get_ACW;
+                  else
+                     Typ := Empty;
+                  end if;
+
+                  if Present (Typ) then
+                     Rewrite (N,
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark =>
+                           New_Occurrence_Of (Typ, Loc),
+                         Expression  => New_Occurrence_Of (Entity (N), Loc)));
+                     Set_Etype (N, Typ);
+                  end if;
+               end if;
+
+               return OK;
+            end Process;
+
+            procedure Replace_Type is new Traverse_Proc (Process);
+
+         --  Start of processing for Class_Wide_Condition
+
+         begin
+            if not Present (T) then
+               Error_Msg_Name_1 :=
+                 Chars (Identifier (Corresponding_Aspect (Prag)));
+
+               Error_Msg_Name_2 := Name_Class;
+
+               Error_Msg_N
+                 ("aspect `%''%` can only be specified for a primitive "
+                  & "operation of a tagged type", Corresponding_Aspect (Prag));
+            end if;
+
+            Replace_Type (Get_Pragma_Arg (Arg1));
+         end Class_Wide_Condition;
+      end if;
+
+      --  Remove the subprogram from the scope stack now that the pre-analysis
+      --  of the precondition/postcondition is done.
+
+      if Restore then
+         End_Scope;
+      end if;
+   end Analyze_Pre_Post_Condition_In_Decl_Part;
+
+   ------------------------------------------
+   -- Analyze_Refined_Depends_In_Decl_Part --
+   ------------------------------------------
+
+   --  ??? To be implemented
+
+   procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id) is
+      pragma Unreferenced (N);
+   begin
+      null;
+   end Analyze_Refined_Depends_In_Decl_Part;
+
+   -----------------------------------------
+   -- Analyze_Refined_Global_In_Decl_Part --
+   -----------------------------------------
+
+   --  ??? To be implemented
+
+   procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id) is
+      pragma Unreferenced (N);
+   begin
+      null;
+   end Analyze_Refined_Global_In_Decl_Part;
+
    ------------------------------------
    -- Analyze_Test_Case_In_Decl_Part --
    ------------------------------------
@@ -19251,6 +19246,8 @@ package body Sem_Prag is
       Pragma_Queuing_Policy                 => -1,
       Pragma_Rational                       => -1,
       Pragma_Ravenscar                      => -1,
+      Pragma_Refined_Depends                => -1,
+      Pragma_Refined_Global                 => -1,
       Pragma_Refined_Post                   => -1,
       Pragma_Refined_Pre                    => -1,
       Pragma_Relative_Deadline              => -1,

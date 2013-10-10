@@ -111,6 +111,8 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT
       Aspect_Priority,
       Aspect_Read,
+      Aspect_Refined_Depends,               -- GNAT
+      Aspect_Refined_Global,                -- GNAT
       Aspect_Refined_Post,                  -- GNAT
       Aspect_Refined_Pre,                   -- GNAT
       Aspect_Relative_Deadline,
@@ -321,6 +323,8 @@ package Aspects is
       Aspect_Predicate               => Expression,
       Aspect_Priority                => Expression,
       Aspect_Read                    => Name,
+      Aspect_Refined_Depends         => Expression,
+      Aspect_Refined_Global          => Expression,
       Aspect_Refined_Post            => Expression,
       Aspect_Refined_Pre             => Expression,
       Aspect_Relative_Deadline       => Expression,
@@ -419,6 +423,8 @@ package Aspects is
       Aspect_Pure_12                      => Name_Pure_12,
       Aspect_Pure_Function                => Name_Pure_Function,
       Aspect_Read                         => Name_Read,
+      Aspect_Refined_Depends              => Name_Refined_Depends,
+      Aspect_Refined_Global               => Name_Refined_Global,
       Aspect_Refined_Post                 => Name_Refined_Post,
       Aspect_Refined_Pre                  => Name_Refined_Pre,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
@@ -612,6 +618,8 @@ package Aspects is
       Aspect_Pure_12                      => Always_Delay,
       Aspect_Pure_Function                => Always_Delay,
       Aspect_Read                         => Always_Delay,
+      Aspect_Refined_Depends              => Always_Delay,
+      Aspect_Refined_Global               => Always_Delay,
       Aspect_Relative_Deadline            => Always_Delay,
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
@@ -703,7 +711,9 @@ package Aspects is
    --  Sem_Prag if the aspects below are implemented by a pragma.
 
    Aspect_On_Body_Or_Stub_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Refined_Post                 => True,
+     (Aspect_Refined_Depends              => True,
+      Aspect_Refined_Global               => True,
+      Aspect_Refined_Post                 => True,
       Aspect_Refined_Pre                  => True,
       Aspect_SPARK_Mode                   => True,
       Aspect_Warnings                     => True,

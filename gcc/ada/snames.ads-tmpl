@@ -580,6 +580,8 @@ package Snames is
    Name_Pure_05                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_12                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_Function                  : constant Name_Id := N + $; -- GNAT
+   Name_Refined_Depends                : constant Name_Id := N + $; -- GNAT
+   Name_Refined_Global                 : constant Name_Id := N + $; -- GNAT
    Name_Refined_Post                   : constant Name_Id := N + $; -- GNAT
    Name_Refined_Pre                    : constant Name_Id := N + $; -- GNAT
    Name_Relative_Deadline              : constant Name_Id := N + $; -- Ada 05
@@ -1865,6 +1867,8 @@ package Snames is
       Pragma_Pure_05,
       Pragma_Pure_12,
       Pragma_Pure_Function,
+      Pragma_Refined_Depends,
+      Pragma_Refined_Global,
       Pragma_Refined_Post,
       Pragma_Refined_Pre,
       Pragma_Relative_Deadline,
