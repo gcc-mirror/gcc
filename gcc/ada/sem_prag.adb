@@ -3654,9 +3654,11 @@ package body Sem_Prag is
          elsif Nkind (PO) = N_Compilation_Unit_Aux then
 
             --  In formal verification mode, analyze pragma expression for
-            --  correctness, as it is not expanded later.
+            --  correctness, as it is not expanded later. Ditto in ASIS_Mode
+            --  where there is no later point at which the aspect will be
+            --  analyzed.
 
-            if SPARK_Mode then
+            if SPARK_Mode or else ASIS_Mode then
                Analyze_PPC_In_Decl_Part
                  (N, Defining_Entity (Unit (Parent (PO))));
             end if;
@@ -10110,9 +10112,7 @@ package body Sem_Prag is
          -- Contract_Cases --
          --------------------
 
-         --  pragma Contract_Cases (CONTRACT_CASE_LIST);
-
-         --  CONTRACT_CASE_LIST ::= CONTRACT_CASE {, CONTRACT_CASE}
+         --  pragma Contract_Cases ((CONTRACT_CASE {, CONTRACT_CASE));
 
          --  CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 

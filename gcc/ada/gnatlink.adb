@@ -265,9 +265,7 @@ procedure Gnatlink is
       end loop;
 
       Findex2 := File_Name'Last;
-      while Findex2 > Findex1
-        and then File_Name (Findex2) /=  '.'
-      loop
+      while Findex2 > Findex1 and then File_Name (Findex2) /=  '.' loop
          Findex2 := Findex2 - 1;
       end loop;
 
@@ -343,7 +341,8 @@ procedure Gnatlink is
    ------------------
 
    procedure Process_Args is
-      Next_Arg  : Integer;
+      Next_Arg : Integer;
+
       Skip_Next : Boolean := False;
       --  Set to true if the next argument is to be added into the list of
       --  linker's argument without parsing it.
@@ -637,8 +636,8 @@ procedure Gnatlink is
                   Linker_Objects.Table (Linker_Objects.Last) :=
                     new String'(Arg);
 
-               --  If host object file, record object file
-               --  e.g. accept foo.o as well as foo.obj on VMS target
+               --  If host object file, record object file e.g. accept foo.o
+               --  as well as foo.obj on VMS target.
 
                elsif Arg'Length > Get_Object_Suffix.all'Length
                  and then Arg
@@ -684,8 +683,8 @@ procedure Gnatlink is
         and then Linker_Options.Last >= Linker_Options.First
       then
          Ali_File_Name :=
-           new String'(Linker_Options.Table (Linker_Options.First).all &
-                                                                   ".ali");
+           new String'(Linker_Options.Table (Linker_Options.First).all
+                       & ".ali");
       end if;
    end Process_Args;
 
@@ -895,6 +894,7 @@ procedure Gnatlink is
 
       procedure Store_File_Context is
          use type System.CRTL.long;
+
       begin
          RB_Next_Line := Next_Line;
          RB_Nfirst    := Nfirst;
@@ -995,9 +995,10 @@ procedure Gnatlink is
          Linker_Objects.Table (Linker_Objects.Last) :=
            new String'(Next_Line (Nfirst .. Nlast));
 
-         Link_Bytes := Link_Bytes + Nlast - Nfirst + 2;
          --  Nlast - Nfirst + 1, for the size, plus one for the space between
          --  each arguments.
+
+         Link_Bytes := Link_Bytes + Nlast - Nfirst + 2;
       end loop;
 
       Objs_End := Linker_Objects.Last;
@@ -1127,10 +1128,12 @@ procedure Gnatlink is
                elsif Next_Line (Nfirst .. Nlast) = "-ldecgnat"
                  or else Next_Line (Nfirst .. Nlast) = "-lgnarl"
                  or else Next_Line (Nfirst .. Nlast) = "-lgnat"
-                 or else Next_Line
+                 or else
+                   Next_Line
                      (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) =
                        Shared_Lib ("gnarl")
-                 or else Next_Line
+                 or else
+                   Next_Line
                      (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) =
                        Shared_Lib ("gnat")
                then
@@ -1138,8 +1141,8 @@ procedure Gnatlink is
                   --  We will be looking for the static version of the library
                   --  as it is in the same directory as the shared version.
 
-                  if Next_Line (Nlast - Library_Version'Length + 1 .. Nlast)
-                       = Library_Version
+                  if Next_Line (Nlast - Library_Version'Length + 1 .. Nlast) =
+                       Library_Version
                   then
                      --  Set Last to point to last character before the
                      --  library version.
@@ -1159,11 +1162,10 @@ procedure Gnatlink is
                      File_Path : String_Access;
 
                      Object_Lib_Extension : constant String :=
-                                              Value (Object_Library_Ext_Ptr);
+                       Value (Object_Library_Ext_Ptr);
 
                      File_Name : constant String := "lib" &
-                                   Next_Line (Nfirst + 2 .. Last) &
-                                   Object_Lib_Extension;
+                       Next_Line (Nfirst + 2 .. Last) & Object_Lib_Extension;
 
                      Run_Path_Opt : constant String :=
                        Value (Run_Path_Option_Ptr);
@@ -1179,9 +1181,9 @@ procedure Gnatlink is
                      if File_Path /= null then
                         if GNAT_Static then
 
-                           --  If static gnatlib found, explicitly
-                           --  specify to overcome possible linker
-                           --  default usage of shared version.
+                           --  If static gnatlib found, explicitly specify to
+                           --  overcome possible linker default usage of shared
+                           --  version.
 
                            Linker_Options.Increment_Last;
 
@@ -1191,9 +1193,9 @@ procedure Gnatlink is
                         elsif GNAT_Shared then
                            if Opt.Run_Path_Option then
 
-                              --  If shared gnatlib desired, add the
-                              --  appropriate system specific switch
-                              --  so that it can be located at runtime.
+                              --  If shared gnatlib desired, add appropriate
+                              --  system specific switch so that it can be
+                              --  located at runtime.
 
                               if Run_Path_Opt'Length /= 0 then
 
@@ -1204,6 +1206,7 @@ procedure Gnatlink is
 
                                  declare
                                     Path : String (1 .. File_Path'Length + 15);
+
                                     Path_Last : constant Natural :=
                                                   File_Path'Length;
 
@@ -1299,9 +1302,9 @@ procedure Gnatlink is
                                                                  Run_Path_Opt
                                           then
                                              --  We have found an already
-                                             --  specified run_path_option: we
-                                             --  will add to this switch,
-                                             --  because only one
+                                             --  specified run_path_option:
+                                             --  we will add to this
+                                             --  switch, because only one
                                              --  run_path_option should be
                                              --  specified.
 
@@ -1378,9 +1381,8 @@ procedure Gnatlink is
                         end if;
 
                      else
-                        --  If gnatlib library not found, then
-                        --  add it anyway in case some other
-                        --  mechanism may find it.
+                        --  If gnatlib library not found, then add it anyway in
+                        --  case some other mechanism may find it.
 
                         Linker_Options.Increment_Last;
                         Linker_Options.Table (Linker_Options.Last) :=
@@ -1872,8 +1874,9 @@ begin
    if Compile_Bind_File then
       Bind_Step : declare
          Success : Boolean;
-         Args    : Argument_List
-           (1 .. Binder_Options_From_ALI.Last + Binder_Options.Last + 1);
+
+         Args : Argument_List
+                 (1 .. Binder_Options_From_ALI.Last + Binder_Options.Last + 1);
 
       begin
          for J in 1 .. Binder_Options_From_ALI.Last loop
@@ -1954,8 +1957,7 @@ begin
 
          elsif RTX_RTSS_Kernel_Module_On_Target then
 
-            --  Remove flags not relevant for Microsoft linker and adapt some
-            --  others.
+            --  Remove irrelevant flags for Microsoft linker, adapt some others
 
             for J in reverse Linker_Options.First .. Linker_Options.Last loop
 
@@ -1976,12 +1978,13 @@ begin
 
                --  Replace "-L" by its counterpart "/LIBPATH:" and UNIX "/" by
                --  Windows "\".
+
                elsif Linker_Options.Table (J) (1 .. 2) = "-L" then
                   declare
                      Libpath_Option : constant String_Access := new String'
                        ("/LIBPATH:" &
-                        Linker_Options.Table (J)
-                          (3 .. Linker_Options.Table (J).all'Last));
+                          Linker_Options.Table
+                            (J) (3 .. Linker_Options.Table (J).all'Last));
                   begin
                      for Index in 10 .. Libpath_Option'Last loop
                         if Libpath_Option (Index) = '/' then
@@ -1993,10 +1996,12 @@ begin
                   end;
 
                --  Replace "-g" by "/DEBUG"
+
                elsif Linker_Options.Table (J) (1 .. 2) = "-g" then
                   Linker_Options.Table (J) := new String'("/DEBUG");
 
                --  Replace "-o" by "/OUT:"
+
                elsif Linker_Options.Table (J) (1 .. 2) = "-o" then
                   Linker_Options.Table (J + 1) := new String'
                     ("/OUT:" & Linker_Options.Table (J + 1).all);
@@ -2007,6 +2012,7 @@ begin
                   Num_Args := Num_Args - 1;
 
                --  Replace "--stack=" by "/STACK:"
+
                elsif Linker_Options.Table (J) (1 .. 8) = "--stack=" then
                   Linker_Options.Table (J) := new String'
                     ("/STACK:" &
@@ -2014,6 +2020,7 @@ begin
                        (9 .. Linker_Options.Table (J).all'Last));
 
                --  Replace "-v" by its counterpart "/VERBOSE"
+
                elsif Linker_Options.Table (J) (1 .. 2) = "-v" then
                   Linker_Options.Table (J) := new String'("/VERBOSE");
                end if;
@@ -2069,30 +2076,30 @@ begin
             end;
          end if;
 
-         --  Remove duplicate stack size setting from the Linker_Options
-         --  table. The stack setting option "-Xlinker --stack=R,C" can be
-         --  found in one line when set by a pragma Linker_Options or in two
-         --  lines ("-Xlinker" then "--stack=R,C") when set on the command
-         --  line. We also check for the "-Wl,--stack=R" style option.
+         --  Remove duplicate stack size setting from the Linker_Options table.
+         --  The stack setting option "-Xlinker --stack=R,C" can be found
+         --  in one line when set by a pragma Linker_Options or in two lines
+         --  ("-Xlinker" then "--stack=R,C") when set on the command line. We
+         --  also check for the "-Wl,--stack=R" style option.
 
-         --  We must remove the second stack setting option instance
-         --  because the one on the command line will always be the first
-         --  one. And any subsequent stack setting option will overwrite the
-         --  previous one. This is done especially for GNAT/NT where we set
-         --  the stack size for tasking programs by a pragma in the NT
-         --  specific tasking package System.Task_Primitives.Operations.
+         --  We must remove the second stack setting option instance because
+         --  the one on the command line will always be the first one. And any
+         --  subsequent stack setting option will overwrite the previous one.
+         --  This is done especially for GNAT/NT where we set the stack size
+         --  for tasking programs by a pragma in the NT specific tasking
+         --  package System.Task_Primitives.Operations.
 
          --  Note: This is not a FOR loop that runs from Linker_Options.First
          --  to Linker_Options.Last, since operations within the loop can
          --  modify the length of the table.
 
          Clean_Link_Option_Set : declare
-            J : Natural := Linker_Options.First;
+            J                  : Natural;
             Shared_Libgcc_Seen : Boolean := False;
 
          begin
+            J := Linker_Options.First;
             while J <= Linker_Options.Last loop
-
                if Linker_Options.Table (J).all = "-Xlinker"
                  and then J < Linker_Options.Last
                  and then Linker_Options.Table (J + 1)'Length > 8
@@ -2128,12 +2135,12 @@ begin
                --  pragma Linker_Options set in the NT runtime.
 
                if (Linker_Options.Table (J)'Length > 17
-                   and then Linker_Options.Table (J) (1 .. 17)
-                           = "-Xlinker --stack=")
+                    and then Linker_Options.Table (J) (1 .. 17) =
+                                                     "-Xlinker --stack=")
                  or else
                   (Linker_Options.Table (J)'Length > 12
-                   and then Linker_Options.Table (J) (1 .. 12)
-                            = "-Wl,--stack=")
+                    and then Linker_Options.Table (J) (1 .. 12) =
+                                                     "-Wl,--stack=")
                then
                   if Stack_Op then
                      Linker_Options.Table (J .. Linker_Options.Last - 1) :=
@@ -2245,8 +2252,7 @@ begin
                   Write_Eol;
 
                   for J in
-                    Response_File_Objects.First ..
-                    Response_File_Objects.Last
+                    Response_File_Objects.First .. Response_File_Objects.Last
                   loop
                      Write_Str (Response_File_Objects.Table (J).all);
                      Write_Eol;

@@ -1,5 +1,37 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* gnatlink.adb: Minor reformatting.
+
+2013-10-10  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Free flag d.E and change doc for flag d.K.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Precondition_Postcondition): If the
+	pragma comes from an aspect spec, and the subprogram is a
+	library unit, treat as a ppc in a declarative part in ASIS mode,
+	so that expression in aspect is properly analyzed. In this case
+	there is no later point at which the aspect specification would
+	be examined.
+
+2013-10-10  Bob Duff  <duff@adacore.com>
+
+	* opt.ads: Minor comment fix.
+
+2013-10-10  Vadim Godunko  <godunko@adacore.com>
+
+	* a-coinho-shared.ads, a-coinho-shared.adb: New file.
+	* s-atocou.ads: Add procedure to initialize counter.
+	* s-atocou.adb: Likewise.
+	* s-atocou-builtin.adb: Likewise.
+	* s-atocou-x86.adb: Likewise.
+	* gcc-interface/Makefile.in: Select special version of
+	Indefinite_Holders package on platforms where atomic built-ins
+	are supported. Update tools target pairs for PikeOS.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb: Minor reformatting.
 
 2013-10-10  Robert Dewar  <dewar@adacore.com>
