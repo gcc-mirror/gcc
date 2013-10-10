@@ -1,3 +1,9 @@
+2013-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def: Enable X86_TUNE_SSE_TYPELESS_STORES
+	for generic, enable X86_TUNE_SSE_LOAD0_BY_PXOR for Bulldozer,
+	Bobcat and generic.
+
 2013-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58670

@@ -1,3 +1,11 @@
+2013-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/avx256-unaligned-store-3.c: Update template for
+	tuning change.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Likewise.
+	* gcc.target/i386/pr49168-1.c: Likewise.
+	* gcc.target/i386/pr49002-2.c: Likewise.
+
 2013-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58670
