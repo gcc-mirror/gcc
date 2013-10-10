@@ -5040,21 +5040,41 @@ package body Sem_Attr is
       --------------------------
 
       when Attribute_Scalar_Storage_Order => Scalar_Storage_Order :
+      declare
+         Ent : Entity_Id := Empty;
       begin
          Check_E0;
          Check_Type;
 
-         if not Is_Record_Type (P_Type) or else Is_Array_Type (P_Type) then
-            Error_Attr_P
-              ("prefix of % attribute must be record or array type");
+         if not (Is_Record_Type (P_Type) or else Is_Array_Type (P_Type)) then
+
+            --  In GNAT mode, the attribute applies to generic types as well
+            --  as composite types, and for non-composite types always returns
+            --  the default bit order for the target.
+
+            if not (GNAT_Mode and then Is_Generic_Type (P_Type))
+                  and then not In_Instance
+            then
+               Error_Attr_P
+                 ("prefix of % attribute must be record or array type");
+
+            elsif not Is_Generic_Type (P_Type) then
+               if Bytes_Big_Endian then
+                  Ent := RTE (RE_High_Order_First);
+               else
+                  Ent := RTE (RE_Low_Order_First);
+               end if;
+            end if;
+
+         elsif Bytes_Big_Endian xor Reverse_Storage_Order (P_Type) then
+            Ent := RTE (RE_High_Order_First);
+
+         else
+            Ent := RTE (RE_Low_Order_First);
          end if;
 
-         if Bytes_Big_Endian xor Reverse_Storage_Order (P_Type) then
-            Rewrite (N,
-              New_Occurrence_Of (RTE (RE_High_Order_First), Loc));
-         else
-            Rewrite (N,
-              New_Occurrence_Of (RTE (RE_Low_Order_First), Loc));
+         if Present (Ent) then
+            Rewrite (N, New_Occurrence_Of (Ent, Loc));
          end if;
 
          Set_Etype (N, RTE (RE_Bit_Order));
