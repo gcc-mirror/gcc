@@ -1,5 +1,9 @@
 2013-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* doc/md.texi: Document the mnemonic attribute.
+
+2013-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	PR target/57377
 	* gensupport.c (gen_mnemonic_attr): Handle (set (attr x) y) and
 	(set_attr_alternative x ...) when searching for user defined
