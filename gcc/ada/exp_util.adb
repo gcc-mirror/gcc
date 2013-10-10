@@ -1631,10 +1631,15 @@ package body Exp_Util is
             --  node to recognize this case.
 
            or else Present (Interface_List (Parent (Typ)))
-           or else
-             (((Has_Attach_Handler (Typ) and then not Restricted_Profile)
-                 or else Has_Interrupt_Handler (Typ))
-               and then not Restriction_Active (No_Dynamic_Attachment))
+
+            --  Protected types with interrupt handlers (when not using a
+            --  restricted profile) are also considered equivalent to
+            --  protected types with entries. The types which are used
+            --  (Static_Interrupt_Protection and Dynamic_Interrupt_Protection)
+            --  are derived from Protection_Entries.
+
+           or else (Has_Attach_Handler (Typ) and then not Restricted_Profile)
+           or else Has_Interrupt_Handler (Typ)
          then
             if Abort_Allowed
               or else Restriction_Active (No_Entry_Queue) = False

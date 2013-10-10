@@ -8987,8 +8987,6 @@ package body Exp_Ch9 is
                                      (Prot_Typ, Cdecls, Loc);
 
          begin
-            --  Could this be simplified using Corresponding_Runtime_Package???
-
             if Has_Attach_Handler (Prot_Typ) then
                Ritem := First_Rep_Item (Prot_Typ);
                while Present (Ritem) loop
@@ -9000,47 +8998,40 @@ package body Exp_Ch9 is
 
                   Next_Rep_Item (Ritem);
                end loop;
+            end if;
 
-               if Restricted_Profile then
-                  if Has_Entries (Prot_Typ) then
-                     Protection_Subtype :=
-                       New_Reference_To (RTE (RE_Protection_Entry), Loc);
-                  else
-                     Protection_Subtype :=
-                       New_Reference_To (RTE (RE_Protection), Loc);
-                  end if;
+            --  Determine the proper protection type. There are two special
+            --  cases: 1) when the protected type has dynamic interrupt
+            --  handlers, and 2) when it has static handlers and we use a
+            --  restricted profile.
 
-               else
-                  Protection_Subtype :=
-                    Make_Subtype_Indication (Loc,
-                       Subtype_Mark =>
-                         New_Reference_To
-                           (RTE (RE_Static_Interrupt_Protection), Loc),
-                       Constraint =>
-                         Make_Index_Or_Discriminant_Constraint (Loc,
-                           Constraints => New_List (
-                             Entry_Count_Expr,
-                             Make_Integer_Literal (Loc, Num_Attach_Handler))));
-               end if;
+            if Has_Attach_Handler (Prot_Typ)
+              and then not Restricted_Profile
+            then
+               Protection_Subtype :=
+                 Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To
+                        (RTE (RE_Static_Interrupt_Protection), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Entry_Count_Expr,
+                          Make_Integer_Literal (Loc, Num_Attach_Handler))));
 
             elsif Has_Interrupt_Handler (Prot_Typ)
               and then not Restriction_Active (No_Dynamic_Attachment)
             then
                Protection_Subtype :=
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Reference_To
-                        (RTE (RE_Dynamic_Interrupt_Protection), Loc),
-                    Constraint   =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints => New_List (Entry_Count_Expr)));
+                 Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Reference_To
+                     (RTE (RE_Dynamic_Interrupt_Protection), Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => New_List (Entry_Count_Expr)));
 
-            --  Type has explicit entries or generated primitive entry wrappers
-
-            elsif Has_Entries (Prot_Typ)
-              or else (Ada_Version >= Ada_2005
-                        and then Present (Interface_List (N)))
-            then
+            else
                case Corresponding_Runtime_Package (Prot_Typ) is
                   when System_Tasking_Protected_Objects_Entries =>
                      Protection_Subtype :=
@@ -9056,13 +9047,13 @@ package body Exp_Ch9 is
                      Protection_Subtype :=
                        New_Reference_To (RTE (RE_Protection_Entry), Loc);
 
+                  when System_Tasking_Protected_Objects =>
+                     Protection_Subtype :=
+                       New_Reference_To (RTE (RE_Protection), Loc);
+
                   when others =>
                      raise Program_Error;
                end case;
-
-            else
-               Protection_Subtype :=
-                 New_Reference_To (RTE (RE_Protection), Loc);
             end if;
 
             Object_Comp :=
@@ -13095,7 +13086,6 @@ package body Exp_Ch9 is
 
             if Has_Attach_Handler (Conc_Typ)
               and then not Restricted_Profile
-              and then not Restriction_Active (No_Dynamic_Attachment)
             then
                Prot_Typ := RE_Static_Interrupt_Protection;
 
@@ -13104,14 +13094,7 @@ package body Exp_Ch9 is
             then
                Prot_Typ := RE_Dynamic_Interrupt_Protection;
 
-            --  The type has explicit entries or generated primitive entry
-            --  wrappers.
-
-            elsif Has_Entries (Conc_Typ)
-              or else
-                (Ada_Version >= Ada_2005
-                  and then Present (Interface_List (Parent (Conc_Typ))))
-            then
+            else
                case Corresponding_Runtime_Package (Conc_Typ) is
                   when System_Tasking_Protected_Objects_Entries =>
                      Prot_Typ := RE_Protection_Entries;
@@ -13119,12 +13102,12 @@ package body Exp_Ch9 is
                   when System_Tasking_Protected_Objects_Single_Entry =>
                      Prot_Typ := RE_Protection_Entry;
 
+                  when System_Tasking_Protected_Objects =>
+                     Prot_Typ := RE_Protection;
+
                   when others =>
                      raise Program_Error;
                end case;
-
-            else
-               Prot_Typ := RE_Protection;
             end if;
 
             --  Generate:
@@ -13659,91 +13642,104 @@ package body Exp_Ch9 is
          --  considered equivalent to a protected type with entries in the
          --  context of dispatching select statements.
 
-         if Has_Entry
-           or else Has_Interfaces (Protect_Rec)
-           or else
-             ((Has_Attach_Handler (Ptyp) or else Has_Interrupt_Handler (Ptyp))
-                and then not Restriction_Active (No_Dynamic_Attachment))
-         then
-            declare
-               Pkg_Id : constant RTU_Id  :=
-                          Corresponding_Runtime_Package (Ptyp);
+         --  Protected types with interrupt handlers (when not using a
+         --  restricted profile) are also considered equivalent to protected
+         --  types with entries. The types which are used
+         --  (Static_Interrupt_Protection and Dynamic_Interrupt_Protection)
+         --  are derived from Protection_Entries.
 
-               Called_Subp : RE_Id;
+         declare
+            Pkg_Id : constant RTU_Id := Corresponding_Runtime_Package (Ptyp);
+            Called_Subp : RE_Id;
 
-            begin
-               case Pkg_Id is
-                  when System_Tasking_Protected_Objects_Entries =>
-                     Called_Subp := RE_Initialize_Protection_Entries;
+         begin
+            case Pkg_Id is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Called_Subp := RE_Initialize_Protection_Entries;
 
-                  when System_Tasking_Protected_Objects =>
-                     Called_Subp := RE_Initialize_Protection;
+                  --  Argument Compiler_Info
 
-                  when System_Tasking_Protected_Objects_Single_Entry =>
-                     Called_Subp := RE_Initialize_Protection_Entry;
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-               if Has_Entry
-                 or else not Restricted
-                 or else Has_Interfaces (Protect_Rec)
-               then
                   Append_To (Args,
                     Make_Attribute_Reference (Loc,
                       Prefix         => Make_Identifier (Loc, Name_uInit),
                       Attribute_Name => Name_Address));
-               end if;
 
-               --  Entry_Bodies parameter. This is a pointer to an array of
-               --  pointers to the entry body procedures and barrier functions
-               --  of the object. If the protected type has no entries this
-               --  object will not exist, in this case, pass a null.
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Called_Subp := RE_Initialize_Protection_Entry;
 
-               if Has_Entry then
-                  P_Arr := Entry_Bodies_Array (Ptyp);
+                  --  Argument Compiler_Info
 
                   Append_To (Args,
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (P_Arr, Loc),
+                      Prefix         => Make_Identifier (Loc, Name_uInit),
+                      Attribute_Name => Name_Address));
+
+               when System_Tasking_Protected_Objects =>
+                  Called_Subp := RE_Initialize_Protection;
+
+               when others =>
+                     raise Program_Error;
+            end case;
+
+            --  Entry_Bodies parameter. This is a pointer to an array of
+            --  pointers to the entry body procedures and barrier functions of
+            --  the object. If the protected type has no entries this object
+            --  will not exist, in this case, pass a null (it can happen when
+            --  there are protected interrupt handlers or interfaces).
+
+            if Has_Entry then
+               P_Arr := Entry_Bodies_Array (Ptyp);
+
+               --  Argument Entry_Body (for single entry) or Entry_Bodies (for
+               --  multiple entries).
+
+               Append_To (Args,
+                 Make_Attribute_Reference (Loc,
+                   Prefix => New_Reference_To (P_Arr, Loc),
+                            Attribute_Name => Name_Unrestricted_Access));
+
+               if Pkg_Id = System_Tasking_Protected_Objects_Entries then
+
+                  --  Find index mapping function (clumsy but ok for now)
+
+                  while Ekind (P_Arr) /= E_Function loop
+                     Next_Entity (P_Arr);
+                  end loop;
+
+                  Append_To (Args,
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Reference_To (P_Arr, Loc),
                       Attribute_Name => Name_Unrestricted_Access));
-
-                  if Pkg_Id = System_Tasking_Protected_Objects_Entries then
-
-                     --  Find index mapping function (clumsy but ok for now)
-
-                     while Ekind (P_Arr) /= E_Function loop
-                        Next_Entity (P_Arr);
-                     end loop;
-
-                     Append_To (Args,
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (P_Arr, Loc),
-                         Attribute_Name => Name_Unrestricted_Access));
-                  end if;
-
-               elsif Pkg_Id =
-                       System_Tasking_Protected_Objects_Single_Entry
-               then
-                  Append_To (Args, Make_Null (Loc));
-
-               elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
-                  Append_To (Args, Make_Null (Loc));
-                  Append_To (Args, Make_Null (Loc));
                end if;
 
-               Append_To (L,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To (RTE (Called_Subp), Loc),
-                   Parameter_Associations => Args));
-            end;
-         else
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry then
+               --  This is the case where we have a protected object with
+               --  interfaces and no entries, and the single entry restriction
+               --  is in effect. We pass a null pointer for the entry
+               --  parameter because there is no actual entry.
+
+               Append_To (Args, Make_Null (Loc));
+
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
+               --  This is the case where we have a protected object with no
+               --  entries and:
+               --    - either interrupt handlers with non restricted profile,
+               --    - or interfaces
+               --  Note that the types which are used for interrupt handlers
+               --  (Static/Dynamic_Interrupt_Protection) are derived from
+               --  Protection_Entries. We pass two null pointers because there
+               --  is no actual entry, and the initialization procedure needs
+               --  both Entry_Bodies and Find_Body_Index.
+
+               Append_To (Args, Make_Null (Loc));
+               Append_To (Args, Make_Null (Loc));
+            end if;
+
             Append_To (L,
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (RTE (RE_Initialize_Protection), Loc),
+                Name => New_Reference_To (RTE (Called_Subp), Loc),
                 Parameter_Associations => Args));
-         end if;
+         end;
       end if;
 
       if Has_Attach_Handler (Ptyp) then

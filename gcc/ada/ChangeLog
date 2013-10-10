@@ -1,3 +1,54 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For Address
+	attribute, consider it to be set in source, because of aliasing
+	considerations.
+	(Analyze_Attribute_Definition_Clause): For the
+	purpose of warning on overlays, take into account the aspect case.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads, a-cforse.ads,
+	a-cofove.ads: Minor reformatting.
+
+2013-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Remove obsolete mention to -laddr2line.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression):  Indicate that the
+	generated variable used as a target of the expression needs
+	no initialization.
+
+2013-10-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_util.adb (Corresponding_Runtime_Package): Remove the condition
+	related to No_Dynamic_Attachment which was wrong. Protected types
+	with interrupt handlers (when not using a restricted profile)
+	are always treated as protected types with entries, regardless
+	of the No_Dynamic_Attachment restriction.
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Simplify the code
+	using the result of Corresponding_Runtime_Package.
+	(Install_Private_Data_Declarations): When having
+	static handlers and a non restricted profile, we use the
+	type Static_Interrupt_Protection always, so we removed an
+	extra wrong condition looking at the No_Dynamic_Attachment
+	restriction. Simplify the code using the result of
+	Corresponding_Runtime_Package.
+	(Make_Initialize_Protection): Simplify the code using
+	the result of Corresponding_Runtime_Package.
+	(Install_Private_Data_Declaration): The No_Dynamic_Attachment
+	restriction has nothing to do with static handlers. Remove the extra
+	erroneous condition that was creating the wrong data type.
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): Attribute
+	'Old produces an object reference.
+	* gnat_rm.texi: Define accessibility level of
+	X'Update(...) result.
+
 2013-10-10  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi, a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,

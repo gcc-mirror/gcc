@@ -50,7 +50,7 @@
 --      function Left  (Container : Vector; Position : Cursor) return Vector;
 --      function Right (Container : Vector; Position : Cursor) return Vector;
 
---    See detailed specifications for these subprograms.
+--    See detailed specifications for these subprograms
 
 with Ada.Containers;
 use Ada.Containers;

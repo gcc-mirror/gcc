@@ -8829,6 +8829,8 @@ kept in mind when considering efficiency.
 
 The @code{Update} attribute cannot be applied to prefixes of a limited
 type, and cannot reference discriminants in the case of a record type.
+The accessibility level of an Update attribute result object is defined
+as for an aggregate.
 
 In the record case, no component can be mentioned more than once. In
 the array case, two overlapping ranges can appear in the aggregate,
