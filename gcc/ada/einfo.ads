@@ -1645,6 +1645,10 @@ package Einfo is
 --       are not considered to be significant since they do not affect
 --       stored bit patterns.
 
+--    Has_Null_Abstract_State (synth)
+--       Defined in package entities. True if the package is subject to a null
+--       Abstract_State aspect/pragma.
+
 --    Has_Object_Size_Clause (Flag172)
 --       Defined in entities for types and subtypes. Set if an Object_Size
 --       clause has been processed for the type Used to prevent multiple
@@ -3533,9 +3537,9 @@ package Einfo is
 --       we have a separate warning for variables that are only assigned and
 --       never read, and out parameters are a special case.
 
---    Refined_State (Node9)
---       Defined in E_Abstract_State entities. Contains the entity of the
---       abstract state completion which is usually foung in package bodies.
+--    Refined_State_Pragma (Node8)
+--       Defined in [generic] package bodies. Contains the pragma that refines
+--       all abstract states defined in the corresponding package declaration.
 
 --    Register_Exception_Call (Node20)
 --       Defined in exception entities. When an exception is declared,
@@ -5092,7 +5096,6 @@ package Einfo is
    ------------------------------------------
 
    --  E_Abstract_State
-   --    Refined_State                       (Node9)
    --    Is_External_State                   (synth)
    --    Is_Input_Only_State                 (synth)
    --    Is_Null_State                       (synth)
@@ -5636,10 +5639,12 @@ package Einfo is
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
+   --    Has_Null_Abstract_State             (synth)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
    --    Scope_Depth                         (synth)
 
    --  E_Package_Body
+   --    Refined_State_Pragma                (Node8)
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Related_Instance                    (Node15)   (non-generic case only)
    --    First_Entity                        (Node17)
@@ -6535,7 +6540,7 @@ package Einfo is
    function Referenced                          (Id : E) return B;
    function Referenced_As_LHS                   (Id : E) return B;
    function Referenced_As_Out_Parameter         (Id : E) return B;
-   function Refined_State                       (Id : E) return E;
+   function Refined_State_Pragma                (Id : E) return E;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
    function Related_Expression                  (Id : E) return N;
@@ -6674,6 +6679,7 @@ package Einfo is
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
+   function Has_Null_Abstract_State             (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
@@ -7152,7 +7158,7 @@ package Einfo is
    procedure Set_Referenced                      (Id : E; V : B := True);
    procedure Set_Referenced_As_LHS               (Id : E; V : B := True);
    procedure Set_Referenced_As_Out_Parameter     (Id : E; V : B := True);
-   procedure Set_Refined_State                   (Id : E; V : E);
+   procedure Set_Refined_State_Pragma            (Id : E; V : N);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
    procedure Set_Related_Expression              (Id : E; V : N);
@@ -7902,7 +7908,7 @@ package Einfo is
    pragma Inline (Referenced);
    pragma Inline (Referenced_As_LHS);
    pragma Inline (Referenced_As_Out_Parameter);
-   pragma Inline (Refined_State);
+   pragma Inline (Refined_State_Pragma);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
    pragma Inline (Related_Expression);
@@ -8318,7 +8324,7 @@ package Einfo is
    pragma Inline (Set_Referenced);
    pragma Inline (Set_Referenced_As_LHS);
    pragma Inline (Set_Referenced_As_Out_Parameter);
-   pragma Inline (Set_Refined_State);
+   pragma Inline (Set_Refined_State_Pragma);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
    pragma Inline (Set_Related_Expression);

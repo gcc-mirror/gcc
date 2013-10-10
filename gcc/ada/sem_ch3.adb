@@ -64,6 +64,7 @@ with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Smem; use Sem_Smem;
 with Sem_Type; use Sem_Type;
@@ -2079,8 +2080,11 @@ package body Sem_Ch3 is
 
       --  Local variables
 
+      Body_Id     : Entity_Id;
+      Context     : Node_Id;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
+      Spec_Id     : Entity_Id;
 
    --  Start of processing for Analyze_Declarations
 
@@ -2189,6 +2193,37 @@ package body Sem_Ch3 is
 
          Decl := Next_Decl;
       end loop;
+
+      --  Analyze the state refinements within a package body now, after all
+      --  hidden states have been encountered and freely visible. Refinements
+      --  must be processed before pragmas Refined_Depends and Refined_Global
+      --  because the last two may mention constituents.
+
+      if Present (L) then
+         Context := Parent (L);
+
+         if Nkind (Context) = N_Package_Body then
+            Body_Id := Defining_Entity (Context);
+            Spec_Id := Corresponding_Spec (Context);
+
+            --  The analysis of pragma Refined_State detects whether the spec
+            --  has abstract states available for refinement.
+
+            if Present (Refined_State_Pragma (Body_Id)) then
+               Analyze_Refined_State_In_Decl_Part
+                 (Refined_State_Pragma (Body_Id));
+
+            --  State refinement is required when the package declaration has
+            --  abstract states. Null states are not considered.
+
+            elsif Present (Abstract_States (Spec_Id))
+              and then not Has_Null_Abstract_State (Spec_Id)
+            then
+               Error_Msg_NE
+                 ("package & requires state refinement", Context, Spec_Id);
+            end if;
+         end if;
+      end if;
 
       --  Analyze the contracts of a subprogram declaration or a body now due
       --  to delayed visibility requirements of aspects.

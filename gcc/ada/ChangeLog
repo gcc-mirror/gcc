@@ -1,3 +1,63 @@
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry in table Canonical_Aspect for
+	Refined_State.
+	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,
+	Aspect_Names and Aspect_Delay for Refined_State.
+	* einfo.adb: Add with and use clauses for Elists.
+	Remove Refined_State from the list of node usage.
+	Add Refined_State_Pragma to the list of node usage.
+	(Has_Null_Abstract_State): New routine.
+	(Refined_State): Removed.
+	(Refined_State_Pragma): New routine.
+	(Set_Refined_State): Removed.
+	(Set_Refined_State_Pragma): New routine.
+	(Write_Field8_Name): Add output for Refined_State_Pragma.
+	(Write_Field9_Name): Remove the output for Refined_State.
+	* einfo.ads: Add new synthesized attribute Has_Null_Abstract_State
+	along with usage in nodes.  Remove attribute Refined_State along
+	with usage in nodes.  Add new attribute Refined_State_Pragma along
+	with usage in nodes.
+	(Has_Null_Abstract_State): New routine.
+	(Refined_State): Removed.
+	(Refined_State_Pragma): New routine.
+	(Set_Refined_State): Removed.
+	(Set_Refined_State_Pragma): New routine.
+	* elists.adb (Clone): New routine.
+	* elists.ads (Clone): New routine.
+	* par-prag.adb: Add Refined_State to the pragmas that do not
+	require special processing by the parser.
+	* sem_ch3.adb: Add with and use clause for Sem_Prag.
+	(Analyze_Declarations): Add local variables Body_Id, Context and
+	Spec_Id. Add processing for delayed aspect/pragma Refined_State.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Update the
+	handling of aspect Abstract_State.  Add processing for aspect
+	Refined_State. Remove the bizzare insertion policy for aspect
+	Abstract_State.
+	(Check_Aspect_At_Freeze_Point): Add an entry for Refined_State.
+	* sem_prag.adb: Add an entry to table Sig_Flags
+	for pragma Refined_State.
+	(Add_Item): Update the
+	comment on usage. The inserted items need not be unique.
+	(Analyze_Contract_Cases_In_Decl_Part): Rename variable Restore to
+	Restore_Scope and update all its occurrences.
+	(Analyze_Pragma):
+	Update the handling of pragma Abstract_State. Add processing for
+	pragma Refined_State.
+	(Analyze_Pre_Post_Condition_In_Decl_Part):
+	Rename variable Restore to Restore_Scope and update all its
+	occurrences.
+	(Analyze_Refined_State_In_Decl_Part): New routine.
+	* sem_prag.ads (Analyze_Refined_State_In_Decl_Part): New routine.
+	* snames.ads-tmpl: Add new predefined name for Refined_State. Add
+	new Pragma_Id for Refined_State.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Install_Limited_Withed_Unit): handle properly the
+	case of a record declaration in a limited view, when the record
+	contains a self-referential component of an anonymous access type.
+
 2013-10-10  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb (Process_Transient_Object): For any context other

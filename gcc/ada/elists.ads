@@ -153,6 +153,10 @@ package Elists is
    --  affected, but the space used by the list element may be (but is not
    --  required to be) freed for reuse in a subsequent Append_Elmt call.
 
+   function Clone (List : Elist_Id) return Elist_Id;
+   --  Create a copy of the input list. Internal list nodes are not shared and
+   --  order of elements is preserved.
+
    function Contains (List : Elist_Id; N : Node_Or_Entity_Id) return Boolean;
    --  Perform a sequential search to determine whether the given list contains
    --  a node or an entity.

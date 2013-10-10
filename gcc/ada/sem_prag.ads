@@ -77,6 +77,9 @@ package Sem_Prag is
    procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Refined_Global
 
+   procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Refined_State
+
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id);
    --  Perform preanalysis of pragma Test_Case that applies to a subprogram
    --  declaration. Parameter N denotes the pragma, S is the entity of the
