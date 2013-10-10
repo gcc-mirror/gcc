@@ -1,3 +1,32 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Identify duplicated
+	cases.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb (Analyze_Task_Body): Aspects are illegal
+	(Analyze_Protected_Body): Aspects are illegal.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb, sem_ch13.adb: Minor reformatting.
+	* sem_case.adb (Check_Choices): Fix bad listing of missing
+	values from predicated subtype case (Check_Choices): List
+	duplicated values.
+	* errout.adb (Set_Msg_Text): Process warning tags in VMS mode
+	* erroutc.adb (Output_Msg_Text): Handle VMS warning tags
+	* gnat_ugn.texi: Document /WARNINGS=TAG_WARNINGS for VMS
+	* ug_words: Add entries for -gnatw.d and -gnatw.D
+	* vms_data.ads: Add [NO]TAG_WARNINGS for -gnatw.D/-gnatw.d
+	* lib-writ.ads: Documentation fixes
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichha.adb, a-wichha.ads, a-zchhan.adb, a-zchhan.ads
+	(Is_Other_Format): New name for Is_Other.
+	(Is_Punctuation_Connector): New name for Is_Punctuation
+
 2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb: Add entries in table Canonical_Aspects for aspects

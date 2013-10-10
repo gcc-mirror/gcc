@@ -183,55 +183,55 @@ package Lib.Writ is
    --      corresponding source file. Parameters is a sequence of zero or more
    --      two letter codes that indicate configuration pragmas and other
    --      parameters that apply:
-   --
+
    --      The arguments are as follows:
-   --
+
    --         CE   Compilation errors. If this is present it means that the ali
    --              file resulted from a compilation with the -gnatQ switch set,
    --              and illegalities were detected. The ali file contents may
    --              not be completely reliable, but the format will be correct
    --              and complete. Note that NO is always present if CE is
    --              present.
-   --
+
    --         DB   Detect_Blocking pragma is in effect for all units in this
    --              file.
-   --
+
    --         Ex   A valid Partition_Elaboration_Policy pragma applies to all
    --              the units in this file, where x is the first character
    --              (upper case) of the policy name (e.g. 'C' for Concurrent).
-   --
+
    --         FD   Configuration pragmas apply to all the units in this file
    --              specifying a possibly non-standard floating point format
    --              (VAX float with Long_Float using D_Float).
-   --
+
    --         FG   Configuration pragmas apply to all the units in this file
    --              specifying a possibly non-standard floating point format
    --              (VAX float with Long_Float using G_Float).
-   --
+
    --         FI   Configuration pragmas apply to all the units in this file
    --              specifying a possibly non-standard floating point format
    --              (IEEE Float).
-   --
+
    --         Lx   A valid Locking_Policy pragma applies to all the units in
    --              this file, where x is the first character (upper case) of
    --              the policy name (e.g. 'C' for Ceiling_Locking).
-   --
+
    --         NO   No object. This flag indicates that the units in this file
    --              were not compiled to produce an object. This can occur as a
    --              result of the use of -gnatc, or if no object can be produced
    --              (e.g. when a package spec is compiled instead of the body,
    --              or a subunit on its own).
-   --
+
    --         NR   No_Run_Time. Indicates that a pragma No_Run_Time applies
    --              to all units in the file.
-   --
+
    --         NS   Normalize_Scalars pragma in effect for all units in
    --              this file.
-   --
+
    --         Qx   A valid Queueing_Policy pragma applies to all the units
    --              in this file, where x is the first character (upper case)
    --              of the policy name (e.g. 'P' for Priority_Queueing).
-   --
+
    --         SL   Indicates that the unit is an Interface to a Standalone
    --              Library. Note that this indication is never given by the
    --              compiler, but is added by the Project Manager in gnatmake
@@ -240,19 +240,19 @@ package Lib.Writ is
 
    --         SS   This unit references System.Secondary_Stack (that is,
    --              the unit makes use of the secondary stack facilities).
-   --
+
    --         Tx   A valid Task_Dispatching_Policy pragma applies to all
    --              the units in this file, where x is the first character
    --              (upper case) of the corresponding policy name (e.g. 'F'
    --              for FIFO_Within_Priorities).
-   --
+
    --         UA  Unreserve_All_Interrupts pragma was processed in one or
    --             more units in this file
-   --
+
    --         ZX  Units in this file use zero-cost exceptions and have
    --             generated exception tables. If ZX is not present, the
    --             longjmp/setjmp exception scheme is in use.
-   --
+
    --      Note that language defined units never output policy (Lx, Tx, Qx)
    --      parameters. Language defined units must correctly handle all
    --      possible cases. These values are checked for consistency by the
@@ -513,19 +513,19 @@ package Lib.Writ is
    --  The lines for each compilation unit have the following form
 
    --    U unit-name source-name version <<attributes>>
-   --
+
    --      This line identifies the unit to which this section of the library
    --      information file applies. The first three parameters are the unit
    --      name in internal format, as described in package Uname, and the name
    --      of the source file containing the unit.
-   --
+
    --      Version is the version given as eight hexadecimal characters with
    --      upper case letters. This value is the exclusive or of the source
    --      checksums of the unit and all its semantically dependent units.
-   --
+
    --      The <<attributes>> are a series of two letter codes indicating
    --      information about the unit:
-   --
+
    --         BD  Unit does not have pragma Elaborate_Body, but the elaboration
    --             circuit has determined that it would be a good idea if this
    --             pragma were present, since the body of the package contains
@@ -533,7 +533,7 @@ package Lib.Writ is
    --             visible part of the package. The binder will try, but does
    --             not promise, to keep the elaboration of the body close to
    --             the elaboration of the spec.
-   --
+
    --         DE  Dynamic Elaboration. This unit was compiled with the dynamic
    --             elaboration model, as set by either the -gnatE switch or
    --             pragma Elaboration_Checks (Dynamic).
@@ -545,7 +545,7 @@ package Lib.Writ is
    --             body together whenever possible, and for an instance it is
    --             always possible; however setting EB ensures that this is done
    --             even when using the -p gnatbind switch).
-   --
+
    --         EE  Elaboration entity is present which must be set true when
    --             the unit is elaborated. The name of the elaboration entity is
    --             formed from the unit name in the usual way. If EE is present,
@@ -554,28 +554,28 @@ package Lib.Writ is
    --             be set even if NE is set. This happens when the boolean is
    --             needed solely for checking for the case of access before
    --             elaboration.
-   --
+
    --         GE  Unit is a generic declaration, or corresponding body
    --
    --         IL  Unit source uses a style with identifiers in all lower-case
    --         IU  (IL) or all upper case (IU). If the standard mixed-case usage
    --             is detected, or the compiler cannot determine the style, then
    --             no I parameter will appear.
-   --
+
    --         IS  Initialize_Scalars pragma applies to this unit, or else there
    --             is at least one use of the Invalid_Value attribute.
-   --
+
    --         KM  Unit source uses a style with keywords in mixed case (KM)
    --         KU  or all upper case (KU). If the standard lower-case usage is
    --             is detected, or the compiler cannot determine the style, then
    --             no K parameter will appear.
-   --
+
    --         NE  Unit has no elaboration routine. All subprogram bodies and
    --             specs are in this category. Package bodies and specs may or
    --             may not have NE set, depending on whether or not elaboration
    --             code is required. Set if N_Compilation_Unit node has flag
    --             Has_No_Elaboration_Code set.
-   --
+
    --         OL   The units in this file are compiled with a local pragma
    --              Optimize_Alignment, so no consistency requirement applies
    --              to these units. All internal units have this status since
@@ -584,33 +584,33 @@ package Lib.Writ is
    --         OO   Optimize_Alignment (Off) is the default setting for all
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
-   --
+
    --         OS   Optimize_Alignment (Space) is the default setting for all
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
-   --
+
    --         OT   Optimize_Alignment (Time) is the default setting for all
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
-   --
+
    --         PF  The unit has a library-level (package) finalizer
-   --
+
    --         PK  Unit is package, rather than a subprogram
-   --
+
    --         PU  Unit has pragma Pure
-   --
+
    --         PR  Unit has pragma Preelaborate
-   --
+
    --         RA  Unit declares a Remote Access to Class-Wide (RACW) type
-   --
+
    --         RC  Unit has pragma Remote_Call_Interface
-   --
+
    --         RT  Unit has pragma Remote_Types
-   --
+
    --         SP  Unit has pragma Shared_Passive.
-   --
+
    --         SU  Unit is a subprogram, rather than a package
-   --
+
    --      The attributes may appear in any order, separated by spaces.
 
    --  -----------------------------
@@ -624,7 +624,7 @@ package Lib.Writ is
    --    Y unit-name [source-name lib-name] [E] [EA] [ED] [AD]
    --      or
    --    Z unit-name [source-name lib-name] [E] [EA] [ED] [AD]
-   --
+
    --      One W line is present for each unit that is mentioned in an explicit
    --      non-limited with clause by the current unit. One Y line is present
    --      for each unit that is mentioned in an explicit limited with clause
@@ -638,26 +638,32 @@ package Lib.Writ is
    --      third parameter is the file name of the library information file
    --      that contains the results of compiling this unit. The optional
    --      modifiers are used as follows:
-   --
+
    --        E   pragma Elaborate applies to this unit
-   --
+
    --        EA  pragma Elaborate_All applies to this unit
-   --
+
    --        ED  Elaborate_Desirable set for this unit, which means that there
    --            is no Elaborate, but the analysis suggests that Program_Error
    --            may be raised if the Elaborate conditions cannot be satisfied.
    --            The binder will attempt to treat ED as E if it can.
-   --
+
    --        AD  Elaborate_All_Desirable set for this unit, which means that
    --            there is no Elaborate_All, but the analysis suggests that
    --            Program_Error may be raised if the Elaborate_All conditions
    --            cannot be satisfied. The binder will attempt to treat AD as
    --            EA if it can.
-   --
+
    --      The parameter source-name and lib-name are omitted for the case of a
    --      generic unit compiled with earlier versions of GNAT which did not
-   --      generate object or ali files for generics.
-   --
+   --      generate object or ali files for generics. For compatibility in the
+   --      bootstrap path we continue to omit these entries for predefined
+   --      generic units, even though we do now generate object and ali files.
+
+   --      However, in SPARK mode, we always generate source-name and lib-name
+   --      parameters. Bootstrap issues do not apply there, and we need this
+   --      information to properly compute frame conditions of subprograms.
+
    --      The parameter source-name and lib-name are also omitted for the W
    --      lines that result from use of a Restriction_Set attribute which gets
    --      a result of False from a No_Dependence check, in the case where the
@@ -695,6 +701,12 @@ package Lib.Writ is
    --      corresponding Linker_Options (or Link_With) pragmas appear in the
    --      source file, so that this order is preserved by the binder in
    --      constructing the set of linker arguments.
+
+   --  Note: Linker_Options lines never appear in the ALI file generated for
+   --  a predefined generic unit, and there is cicuitry in Sem_Prag to enforce
+   --  this restriction, which is needed because of not generating source name
+   --  and lib name parameters on the with lines for such files, as explained
+   --  above in the section on with lines.
 
    --  --------------
    --  -- N  Notes --

@@ -82,13 +82,14 @@ package Ada.Wide_Wide_Characters.Handling is
    --  categorized as mark_non_spacing or mark_spacing_combining, otherwise
    --  returns false.
 
-   function Is_Other (Item : Wide_Wide_Character) return Boolean;
-   pragma Inline (Is_Other);
+   function Is_Other_Format (Item : Wide_Wide_Character) return Boolean;
+   pragma Inline (Is_Other_Format);
    --  Returns True if the Wide_Wide_Character designated by Item is
    --  categorized as other_format, otherwise returns false.
 
-   function Is_Punctuation (Item : Wide_Wide_Character) return Boolean;
-   pragma Inline (Is_Punctuation);
+   function Is_Punctuation_Connector
+     (Item : Wide_Wide_Character) return Boolean;
+   pragma Inline (Is_Punctuation_Connector);
    --  Returns True if the Wide_Wide_Character designated by Item is
    --  categorized as punctuation_connector, otherwise returns false.
 

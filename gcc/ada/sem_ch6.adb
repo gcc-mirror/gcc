@@ -2691,8 +2691,8 @@ package body Sem_Ch6 is
       end if;
 
       --  Language-defined aspects cannot appear in a subprogram body [stub] if
-      --  the corresponding spec already has aspects. An exception to this rule
-      --  are certain user-defined aspects.
+      --  the subprogram has a separate spec. Certainly implementation-defined
+      --  aspects are allowed to appear (per Aspects_On_Body_Of_Stub_OK).
 
       if Has_Aspects (N) then
          if Present (Spec_Id)
@@ -2705,7 +2705,7 @@ package body Sem_Ch6 is
          then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
-                N);
+               N);
 
          --  Delay the analysis of aspect specifications that apply to a body
          --  stub until the proper body is analyzed. If the corresponding body

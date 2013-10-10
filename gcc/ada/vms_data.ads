@@ -3094,6 +3094,10 @@ package VMS_Data is
                                                "-gnatwd "                  &
                                             "NO_IMPLICIT_DEREFERENCE "     &
                                                "-gnatwD "                  &
+                                            "TAG_WARNINGS "                &
+                                               "-gnatw.d "                 &
+                                            "NOTAG_WARNINGS "              &
+                                               "-gnatw.D "                 &
                                             "ERRORS "                      &
                                                "-gnatwe "                  &
                                             "UNREFERENCED_FORMALS "        &
@@ -3489,6 +3493,13 @@ package VMS_Data is
    --
    --   NOVARIABLES_UNINITIALIZED       Suppress warnings for uninitialized
    --                                   variables.
+   --
+   --   TAG_WARNINGS            Causes the string [xxx] to be added to warnings
+   --                           that are controlled by the warning string xxx,
+   --                           e.g. [REDUNDANT], or if the warning is enabled
+   --                           by default, the tag is [enabled by default].
+   --
+   --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
 
    S_GCC_WarnX   : aliased constant S := "/NOWARNINGS "                    &
                                             "-gnatws";

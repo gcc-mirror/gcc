@@ -1723,9 +1723,9 @@ package body Sem_Aggr is
 
       --  Variables local to Resolve_Array_Aggregate
 
-      Assoc   : Node_Id;
-      Choice  : Node_Id;
-      Expr    : Node_Id;
+      Assoc  : Node_Id;
+      Choice : Node_Id;
+      Expr   : Node_Id;
 
       Discard : Node_Id;
       pragma Warnings (Off, Discard);
@@ -1900,14 +1900,6 @@ package body Sem_Aggr is
             High : Node_Id;
             --  Denote the lowest and highest values in an aggregate choice
 
-            Hi_Val : Uint;
-            Lo_Val : Uint;
-            --  High end of one range and Low end of the next. Should be
-            --  contiguous if there is no hole in the list of values.
-
-            Missing_Values : Boolean;
-            --  Set True if missing index values
-
             S_Low  : Node_Id := Empty;
             S_High : Node_Id := Empty;
             --  if a choice in an aggregate is a subtype indication these
@@ -2064,14 +2056,14 @@ package body Sem_Aggr is
                   --  Resolve_Aggr_Expr to check the rules about
                   --  dimensionality.
 
-                  if not Resolve_Aggr_Expr (Assoc,
-                                            Single_Elmt => Single_Choice)
+                  if not Resolve_Aggr_Expr
+                           (Assoc, Single_Elmt => Single_Choice)
                   then
                      return Failure;
                   end if;
 
-               elsif not Resolve_Aggr_Expr (Expression (Assoc),
-                                            Single_Elmt => Single_Choice)
+               elsif not Resolve_Aggr_Expr
+                           (Expression (Assoc), Single_Elmt => Single_Choice)
                then
                   return Failure;
 
@@ -2134,80 +2126,129 @@ package body Sem_Aggr is
             end loop;
 
             --  If aggregate contains more than one choice then these must be
-            --  static. Sort them and check that they are contiguous.
+            --  static. Check for duplicate and missing values.
+
+            --  Note: there is duplicated code here wrt Check_Choice_Set in
+            --  the body of Sem_Case, and it is possible we could just reuse
+            --  that procedure. To be checked ???
 
             if Nb_Discrete_Choices > 1 then
-               Sort_Case_Table (Table);
-               Missing_Values := False;
+               Check_Choices : declare
+                  Choice : Node_Id;
+                  --  Location of choice for messages
 
-               Outer : for J in 1 .. Nb_Discrete_Choices - 1 loop
-                  if Expr_Value (Table (J).Choice_Hi) >=
-                       Expr_Value (Table (J + 1).Choice_Lo)
-                  then
-                     Error_Msg_N
-                       ("duplicate choice values in array aggregate",
-                        Table (J).Choice_Node);
-                     return Failure;
+                  Hi_Val : Uint;
+                  Lo_Val : Uint;
+                  --  High end of one range and Low end of the next. Should be
+                  --  contiguous if there is no hole in the list of values.
 
-                  elsif not Others_Present then
-                     Hi_Val := Expr_Value (Table (J).Choice_Hi);
-                     Lo_Val := Expr_Value (Table (J + 1).Choice_Lo);
+                  Missing_Or_Duplicates : Boolean := False;
+                  --  Set True if missing or duplicate choices found
 
-                     --  If missing values, output error messages
+                  procedure Output_Bad_Choices (Lo, Hi : Uint; C : Node_Id);
+                  --  Output continuation message with a representation of the
+                  --  bounds (just Lo if Lo = Hi, else Lo .. Hi). C is the
+                  --  choice node where the message is to be posted.
 
-                     if Lo_Val - Hi_Val > 1 then
+                  ------------------------
+                  -- Output_Bad_Choices --
+                  ------------------------
 
-                        --  Header message if not first missing value
+                  procedure Output_Bad_Choices (Lo, Hi : Uint; C : Node_Id) is
+                  begin
+                     --  Enumeration type case
 
-                        if not Missing_Values then
-                           Error_Msg_N
-                             ("missing index value(s) in array aggregate", N);
-                           Missing_Values := True;
+                     if Is_Enumeration_Type (Index_Typ) then
+                        Error_Msg_Name_1 :=
+                          Chars (Get_Enum_Lit_From_Pos (Index_Typ, Lo, Loc));
+                        Error_Msg_Name_2 :=
+                          Chars (Get_Enum_Lit_From_Pos (Index_Typ, Hi, Loc));
+
+                        if Lo = Hi then
+                           Error_Msg_N ("\\  %!", C);
+                        else
+                           Error_Msg_N ("\\  % .. %!", C);
                         end if;
-
-                        --  Output values of missing indexes
-
-                        Lo_Val := Lo_Val - 1;
-                        Hi_Val := Hi_Val + 1;
-
-                        --  Enumeration type case
-
-                        if Is_Enumeration_Type (Index_Typ) then
-                           Error_Msg_Name_1 :=
-                             Chars
-                               (Get_Enum_Lit_From_Pos
-                                 (Index_Typ, Hi_Val, Loc));
-
-                           if Lo_Val = Hi_Val then
-                              Error_Msg_N ("\  %", N);
-                           else
-                              Error_Msg_Name_2 :=
-                                Chars
-                                  (Get_Enum_Lit_From_Pos
-                                    (Index_Typ, Lo_Val, Loc));
-                              Error_Msg_N ("\  % .. %", N);
-                           end if;
 
                         --  Integer types case
 
-                        else
-                           Error_Msg_Uint_1 := Hi_Val;
+                     else
+                        Error_Msg_Uint_1 := Lo;
+                        Error_Msg_Uint_2 := Hi;
 
-                           if Lo_Val = Hi_Val then
-                              Error_Msg_N ("\  ^", N);
-                           else
-                              Error_Msg_Uint_2 := Lo_Val;
-                              Error_Msg_N ("\  ^ .. ^", N);
-                           end if;
+                        if Lo = Hi then
+                           Error_Msg_N ("\\  ^!", C);
+                        else
+                           Error_Msg_N ("\\  ^ .. ^!", C);
                         end if;
                      end if;
-                  end if;
-               end loop Outer;
+                  end Output_Bad_Choices;
 
-               if Missing_Values then
-                  Set_Etype (N, Any_Composite);
-                  return Failure;
-               end if;
+               --  Start of processing for Check_Choices
+
+               begin
+                  Sort_Case_Table (Table);
+
+                  --  Loop through entries in table to find duplicate indexes
+
+                  for J in 1 .. Nb_Discrete_Choices - 1 loop
+                     Hi_Val := Expr_Value (Table (J).Choice_Hi);
+                     Lo_Val := Expr_Value (Table (J + 1).Choice_Lo);
+
+                     if Hi_Val >= Lo_Val then
+                        Choice := Table (J + 1).Choice_Lo;
+                        Error_Msg_Sloc := Sloc (Table (J).Choice_Hi);
+
+                        if Hi_Val = Lo_Val then
+                           Error_Msg_N
+                             ("index value in array aggregate duplicates "
+                              & "the one given#",
+                              Choice);
+                        else
+                           Error_Msg_N
+                             ("index values in array aggregate duplicate "
+                              & "those given#", Choice);
+                        end if;
+
+                        Missing_Or_Duplicates := True;
+                        Output_Bad_Choices (Lo_Val, Hi_Val, Choice);
+                     end if;
+                  end loop;
+
+                  --  Loop through entries in table to find missing indexes.
+                  --  Not needed if others present, since missing impossible.
+
+                  if not Others_Present then
+                     for J in 1 .. Nb_Discrete_Choices - 1 loop
+                        Hi_Val := Expr_Value (Table (J).Choice_Hi);
+                        Lo_Val := Expr_Value (Table (J + 1).Choice_Lo);
+
+                        if Hi_Val < Lo_Val - 1 then
+                           Choice := Table (J + 1).Choice_Lo;
+
+                           if Hi_Val + 1 = Lo_Val - 1 then
+                              Error_Msg_N
+                                ("missing index value in array aggregate!",
+                                 Choice);
+                           else
+                              Error_Msg_N
+                                ("missing index values in array aggregate!",
+                                 Choice);
+                           end if;
+
+                           Missing_Or_Duplicates := True;
+                           Output_Bad_Choices (Hi_Val + 1, Lo_Val - 1, Choice);
+                        end if;
+                     end loop;
+                  end if;
+
+                  --  If either missing or duplicate values, return failure
+
+                  if Missing_Or_Duplicates then
+                     Set_Etype (N, Any_Composite);
+                     return Failure;
+                  end if;
+               end Check_Choices;
             end if;
 
             --  STEP 2 (B): Compute aggregate bounds and min/max choices values
