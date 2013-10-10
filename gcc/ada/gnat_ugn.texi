@@ -4782,9 +4782,7 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
-@ifclear vms
 @option{-gnatw.d} (tag warnings with -gnatw switch)
-@end ifclear
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatw.i} (overlapping actuals),
 @option{-gnatw.k} (redefinition of names in standard),
@@ -4950,6 +4948,24 @@ If this switch is set, then warning messages return to the default
 mode in which warnings are not tagged as described above for
 @code{-gnatw.d}.
 @end ifclear
+
+@ifset vms
+@item -gnatw.d
+@emph{Activate tagging of warning messages.}
+@cindex @option{-gnatw.d} (@command{gcc})
+If this switch is set, then warning messages are tagged, either with
+the appropriate WARNINGS qualifier string (e.g. [SUSPICIOUS_MODULUS]
+or with ``[enabled by default]'' if the warning is not under control of a
+specific WARNING qualifier switch. This mode is off by default, and is not
+affected by the use of @code{-gnatwa}.
+
+@item -gnatw.D
+@emph{Deactivate tagging of warning messages.}
+@cindex @option{-gnatw.d} (@command{gcc})
+If this switch is set, then warning messages return to the default
+mode in which warnings are not tagged as described above for
+@code{-gnatw.d}.
+@end ifset
 
 @item -gnatwe
 @emph{Treat warnings and style checks as errors.}

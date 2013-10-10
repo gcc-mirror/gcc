@@ -31,6 +31,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Csets;    use Csets;
 with Debug;    use Debug;
 with Err_Vars; use Err_Vars;
 with Namet;    use Namet;
@@ -450,6 +451,257 @@ package body Erroutc is
       Split    : Natural;
       Start    : Natural;
 
+      function Get_VMS_Warn_String (W : Character) return String;
+      --  On VMS, given a warning character W, returns VMS command string
+      --  that corresponds to that warning character
+
+      -------------------------
+      -- Get_VMS_Warn_String --
+      -------------------------
+
+      function Get_VMS_Warn_String (W : Character) return String is
+         S, E : Natural;
+         --  Start and end of VMS_QUALIFIER below
+
+         P : Natural;
+         --  Scans through string
+
+         --  The following is a copy of the S_GCC_Warn string from the package
+         --  VMS_Data. If we made that package part of the compiler sources
+         --  we could just with it and avoid the duplication ???
+
+         V : constant String :=          "/WARNINGS="                      &
+                                            "DEFAULT "                     &
+                                               "!-gnatws,!-gnatwe "        &
+                                            "ALL "                         &
+                                               "-gnatwa "                  &
+                                            "EVERY "                       &
+                                               "-gnatw.e "                 &
+                                            "OPTIONAL "                    &
+                                               "-gnatwa "                  &
+                                            "NOOPTIONAL "                  &
+                                               "-gnatwA "                  &
+                                            "NOALL "                       &
+                                               "-gnatwA "                  &
+                                            "ALL_GCC "                     &
+                                               "-Wall "                    &
+                                            "FAILING_ASSERTIONS "          &
+                                               "-gnatw.a "                 &
+                                            "NO_FAILING_ASSERTIONS "       &
+                                               "-gnatw.A "                 &
+                                            "BAD_FIXED_VALUES "            &
+                                               "-gnatwb "                  &
+                                            "NO_BAD_FIXED_VALUES "         &
+                                               "-gnatwB "                  &
+                                            "BIASED_REPRESENTATION "       &
+                                               "-gnatw.b "                 &
+                                            "NO_BIASED_REPRESENTATION "    &
+                                               "-gnatw.B "                 &
+                                            "CONDITIONALS "                &
+                                               "-gnatwc "                  &
+                                            "NOCONDITIONALS "              &
+                                               "-gnatwC "                  &
+                                            "MISSING_COMPONENT_CLAUSES "   &
+                                               "-gnatw.c "                 &
+                                            "NOMISSING_COMPONENT_CLAUSES " &
+                                               "-gnatw.C "                 &
+                                            "IMPLICIT_DEREFERENCE "        &
+                                               "-gnatwd "                  &
+                                            "NO_IMPLICIT_DEREFERENCE "     &
+                                               "-gnatwD "                  &
+                                            "TAG_WARNINGS "                &
+                                               "-gnatw.d "                 &
+                                            "NOTAG_WARNINGS "              &
+                                               "-gnatw.D "                 &
+                                            "ERRORS "                      &
+                                               "-gnatwe "                  &
+                                            "UNREFERENCED_FORMALS "        &
+                                               "-gnatwf "                  &
+                                            "NOUNREFERENCED_FORMALS "      &
+                                               "-gnatwF "                  &
+                                            "UNRECOGNIZED_PRAGMAS "        &
+                                               "-gnatwg "                  &
+                                            "NOUNRECOGNIZED_PRAGMAS "      &
+                                               "-gnatwG "                  &
+                                            "HIDING "                      &
+                                               "-gnatwh "                  &
+                                            "NOHIDING "                    &
+                                               "-gnatwH "                  &
+                                            "AVOIDGAPS "                   &
+                                               "-gnatw.h "                 &
+                                            "NOAVOIDGAPS "                 &
+                                               "-gnatw.H "                 &
+                                            "IMPLEMENTATION "              &
+                                               "-gnatwi "                  &
+                                            "NOIMPLEMENTATION "            &
+                                               "-gnatwI "                  &
+                                            "OBSOLESCENT "                 &
+                                               "-gnatwj "                  &
+                                            "NOOBSOLESCENT "               &
+                                               "-gnatwJ "                  &
+                                            "CONSTANT_VARIABLES "          &
+                                               "-gnatwk "                  &
+                                            "NOCONSTANT_VARIABLES "        &
+                                               "-gnatwK "                  &
+                                            "STANDARD_REDEFINITION "       &
+                                               "-gnatw.k "                 &
+                                            "NOSTANDARD_REDEFINITION "     &
+                                               "-gnatw.K "                 &
+                                            "ELABORATION "                 &
+                                               "-gnatwl "                  &
+                                            "NOELABORATION "               &
+                                               "-gnatwL "                  &
+                                            "MODIFIED_UNREF "              &
+                                               "-gnatwm "                  &
+                                            "NOMODIFIED_UNREF "            &
+                                               "-gnatwM "                  &
+                                            "SUSPICIOUS_MODULUS "          &
+                                               "-gnatw.m "                 &
+                                            "NOSUSPICIOUS_MODULUS "        &
+                                               "-gnatw.M "                 &
+                                            "NORMAL "                      &
+                                               "-gnatwn "                  &
+                                            "OVERLAYS "                    &
+                                               "-gnatwo "                  &
+                                            "NOOVERLAYS "                  &
+                                               "-gnatwO "                  &
+                                            "OUT_PARAM_UNREF "             &
+                                               "-gnatw.o "                 &
+                                            "NOOUT_PARAM_UNREF "           &
+                                               "-gnatw.O "                 &
+                                            "INEFFECTIVE_INLINE "          &
+                                               "-gnatwp "                  &
+                                            "NOINEFFECTIVE_INLINE "        &
+                                               "-gnatwP "                  &
+                                            "MISSING_PARENS "              &
+                                               "-gnatwq "                  &
+                                            "PARAMETER_ORDER "             &
+                                               "-gnatw.p "                 &
+                                            "NOPARAMETER_ORDER "           &
+                                               "-gnatw.P "                 &
+                                            "NOMISSING_PARENS "            &
+                                               "-gnatwQ "                  &
+                                            "REDUNDANT "                   &
+                                               "-gnatwr "                  &
+                                            "NOREDUNDANT "                 &
+                                               "-gnatwR "                  &
+                                            "OBJECT_RENAMES "              &
+                                               "-gnatw.r "                 &
+                                            "NOOBJECT_RENAMES "            &
+                                               "-gnatw.R "                 &
+                                            "SUPPRESS "                    &
+                                               "-gnatws "                  &
+                                            "OVERRIDING_SIZE "             &
+                                               "-gnatw.s "                 &
+                                            "NOOVERRIDING_SIZE "           &
+                                               "-gnatw.S "                 &
+                                            "DELETED_CODE "                &
+                                               "-gnatwt "                  &
+                                            "NODELETED_CODE "              &
+                                               "-gnatwT "                  &
+                                            "UNINITIALIZED "               &
+                                               "-Wuninitialized "          &
+                                            "UNUSED "                      &
+                                               "-gnatwu "                  &
+                                            "NOUNUSED "                    &
+                                               "-gnatwU "                  &
+                                            "UNORDERED_ENUMERATIONS "      &
+                                               "-gnatw.u "                 &
+                                            "NOUNORDERED_ENUMERATIONS "    &
+                                               "-gnatw.U "                 &
+                                            "VARIABLES_UNINITIALIZED "     &
+                                               "-gnatwv "                  &
+                                            "NOVARIABLES_UNINITIALIZED "   &
+                                               "-gnatwV "                  &
+                                            "REVERSE_BIT_ORDER "           &
+                                               "-gnatw.v "                 &
+                                            "NOREVERSE_BIT_ORDER "         &
+                                               "-gnatw.V "                 &
+                                            "LOWBOUND_ASSUMED "            &
+                                               "-gnatww "                  &
+                                            "NOLOWBOUND_ASSUMED "          &
+                                               "-gnatwW "                  &
+                                            "WARNINGS_OFF_PRAGMAS "        &
+                                               "-gnatw.w "                 &
+                                            "NO_WARNINGS_OFF_PRAGMAS "     &
+                                               "-gnatw.W "                 &
+                                            "IMPORT_EXPORT_PRAGMAS "       &
+                                               "-gnatwx "                  &
+                                            "NOIMPORT_EXPORT_PRAGMAS "     &
+                                               "-gnatwX "                  &
+                                            "LOCAL_RAISE_HANDLING "        &
+                                               "-gnatw.x "                 &
+                                            "NOLOCAL_RAISE_HANDLING "      &
+                                               "-gnatw.X "                 &
+                                            "ADA_2005_COMPATIBILITY "      &
+                                               "-gnatwy "                  &
+                                            "NOADA_2005_COMPATIBILITY "    &
+                                               "-gnatwY "                  &
+                                            "UNCHECKED_CONVERSIONS "       &
+                                               "-gnatwz "                  &
+                                            "NOUNCHECKED_CONVERSIONS "     &
+                                               "-gnatwZ";
+
+      --  Start of processing for Get_VMS_Warn_String
+
+      begin
+         --  This function works by inspecting the string S_GCC_Warn in the
+         --  package VMS_Data. We are looking for
+
+         --     space VMS_QUALIFIER space -gnatwq
+
+         --  where q is the lower case letter W if W is lower case, and the
+         --  two character string .W if W is upper case. If we find a match
+         --  we return VMS_QUALIFIER, otherwise we return empty (this should
+         --  be an error, but no point in bombing over something so trivial).
+
+         P := 1;
+
+         --  Loop through entries in S_GCC_Warn
+
+         loop
+            --  Scan to next blank
+
+            loop
+               if P >= V'Last - 1 then
+                  return "";
+               end if;
+
+               exit when V (P) = ' ' and then V (P + 1) in 'A' .. 'Z';
+               P := P + 1;
+            end loop;
+
+            P := P + 1;
+            S := P;
+
+            --  Scan to blank at end of VMS_QUALIFIER
+
+            loop
+               if P >= V'Last then
+                  return "";
+               end if;
+
+               exit when V (P) = ' ';
+               P := P + 1;
+            end loop;
+
+            E := P - 1;
+
+            --  See if this entry matches, and if so, return it
+
+            if V (P + 1 .. P + 6) = "-gnatw"
+              and then
+                ((W in 'a' .. 'z' and then V (P + 7) = W)
+                    or else
+                 (V (P + 7) = '.' and then Fold_Upper (V (P + 8)) = W))
+            then
+               return V (S .. E);
+            end if;
+         end loop;
+      end Get_VMS_Warn_String;
+
+   --  Start of processing for Output_Msg_Text
+
    begin
       --  Add warning doc tag if needed
 
@@ -457,14 +709,22 @@ package body Erroutc is
          if Warn_Chr = '?' then
             Warn_Tag := new String'(" [enabled by default]");
 
+         elsif OpenVMS_On_Target then
+            declare
+               Qual : constant String := Get_VMS_Warn_String (Warn_Chr);
+            begin
+               if Qual = "" then
+                  Warn_Tag := new String'(Qual);
+               else
+                  Warn_Tag := new String'(" [" & Qual & ']');
+               end if;
+            end;
+
          elsif Warn_Chr in 'a' .. 'z' then
             Warn_Tag := new String'(" [-gnatw" & Warn_Chr & ']');
 
          else pragma Assert (Warn_Chr in 'A' .. 'Z');
-            Warn_Tag :=
-              new String'(" [-gnatw."
-                          & Character'Val (Character'Pos (Warn_Chr) + 32)
-                          & ']');
+            Warn_Tag := new String'(" [-gnatw." & Fold_Lower (Warn_Chr) & ']');
          end if;
 
       else

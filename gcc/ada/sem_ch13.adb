@@ -1422,9 +1422,9 @@ package body Sem_Ch13 is
                goto Continue;
             end if;
 
-            --  Skip looking at aspect if it is totally disabled. Just mark
-            --  it as such for later reference in the tree. This also sets
-            --  the Is_Ignored and Is_Checked flags appropriately.
+            --  Skip looking at aspect if it is totally disabled. Just mark it
+            --  as such for later reference in the tree. This also sets the
+            --  Is_Ignored and Is_Checked flags appropriately.
 
             Check_Applicable_Policy (Aspect);
 

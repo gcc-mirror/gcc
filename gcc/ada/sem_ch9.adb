@@ -1736,16 +1736,16 @@ package body Sem_Ch9 is
 
       --  Protected bodies are currently removed by the expander. Since there
       --  are no language-defined aspects that apply to a protected body, it is
-      --  not worth changing the whole expansion to accomodate user-defined
-      --  aspects. Plus we cannot possibly known the semantics of user-defined
-      --  aspects in order to plan ahead.
+      --  not worth changing the whole expansion to accomodate implementation-
+      --  defined aspects. Plus we cannot possibly known the semantics of such
+      --  future implementation defined aspects in order to plan ahead.
 
       if Has_Aspects (N) then
          Error_Msg_N
-           ("?user-defined aspects on protected bodies are not supported", N);
+           ("aspects on protected bodies are not allowed",
+            First (Aspect_Specifications (N)));
 
-         --  The aspects are removed for now to prevent cascading errors down
-         --  stream.
+         --  Remove illegal aspects to prevent cascaded errors later on
 
          Remove_Aspects (N);
       end if;
@@ -2726,15 +2726,15 @@ package body Sem_Ch9 is
       --  Task bodies are transformed into a subprogram spec and body pair by
       --  the expander. Since there are no language-defined aspects that apply
       --  to a task body, it is not worth changing the whole expansion to
-      --  accomodate user-defined aspects. Plus we cannot possibly known the
-      --  semantics of user-defined aspects in order to plan ahead.
+      --  accomodate implementation-defined aspects. Plus we cannot possibly
+      --  know semantics of such aspects in order to plan ahead.
 
       if Has_Aspects (N) then
          Error_Msg_N
-           ("?user-defined aspects on task bodies are not supported", N);
+           ("aspects on task bodies are not allowed",
+            First (Aspect_Specifications (N)));
 
-         --  The aspects are removed for now to prevent cascading errors down
-         --  stream.
+         --  Remove illegal aspects to prevent cascaded errors later on
 
          Remove_Aspects (N);
       end if;
@@ -2763,7 +2763,6 @@ package body Sem_Ch9 is
       then
          if Nkind (Parent (Spec_Id)) = N_Task_Type_Declaration then
             Error_Msg_NE ("duplicate body for task type&", N, Spec_Id);
-
          else
             Error_Msg_NE ("duplicate body for task&", N, Spec_Id);
          end if;

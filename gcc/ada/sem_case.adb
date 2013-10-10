@@ -126,6 +126,10 @@ package body Sem_Case is
       --  choice that covered a predicate set. Error denotes whether the check
       --  found an illegal intersection.
 
+      procedure Dup_Choice (Lo, Hi : Uint; C : Node_Id);
+      --  Post message "duplication of choice value(s) bla bla at xx". Message
+      --  is posted at location C. Caller sets Error_Msg_Sloc for xx.
+
       procedure Explain_Non_Static_Bound;
       --  Called when we find a non-static bound, requiring the base type to
       --  be covered. Provides where possible a helpful explanation of why the
@@ -237,6 +241,7 @@ package body Sem_Case is
          Choice_Hi : constant Uint := Expr_Value (Choice.Hi);
          Choice_Lo : constant Uint := Expr_Value (Choice.Lo);
          Loc       : Source_Ptr;
+         LocN      : Node_Id;
          Next_Hi   : Uint;
          Next_Lo   : Uint;
          Pred_Hi   : Uint;
@@ -248,10 +253,12 @@ package body Sem_Case is
          --  Find the proper error message location
 
          if Present (Choice.Node) then
-            Loc := Sloc (Choice.Node);
+            LocN := Choice.Node;
          else
-            Loc := Sloc (Case_Node);
+            LocN := Case_Node;
          end if;
+
+         Loc := Sloc (LocN);
 
          if Present (Pred) then
             Pred_Lo := Expr_Value (Low_Bound  (Pred));
@@ -267,10 +274,12 @@ package body Sem_Case is
 
          --  Step 1: Detect duplicate choices
 
-         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo)
-           or else Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi)
-         then
-            Error_Msg ("duplication of choice value", Loc);
+         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo) then
+            Dup_Choice (Prev_Lo, UI_Min (Prev_Hi, Choice_Hi), LocN);
+            Error := True;
+
+         elsif Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi) then
+            Dup_Choice (UI_Max (Choice_Lo, Prev_Lo), Prev_Hi, LocN);
             Error := True;
 
          --  Step 2: Detect full coverage
@@ -419,6 +428,45 @@ package body Sem_Case is
             end if;
          end if;
       end Check_Against_Predicate;
+
+      ----------------
+      -- Dup_Choice --
+      ----------------
+
+      procedure Dup_Choice (Lo, Hi : Uint; C : Node_Id) is
+      begin
+         --  In some situations, we call this with a null range, and obviously
+         --  we don't want to complain in this case.
+
+         if Lo > Hi then
+            return;
+         end if;
+
+         --  Case of only one value that is missing
+
+         if Lo = Hi then
+            if Is_Integer_Type (Bounds_Type) then
+               Error_Msg_Uint_1 := Lo;
+               Error_Msg_N ("duplication of choice value: ^#!", C);
+            else
+               Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
+               Error_Msg_N ("duplication of choice value: %#!", C);
+            end if;
+
+         --  More than one choice value, so print range of values
+
+         else
+            if Is_Integer_Type (Bounds_Type) then
+               Error_Msg_Uint_1 := Lo;
+               Error_Msg_Uint_2 := Hi;
+               Error_Msg_N ("duplication of choice values: ^ .. ^#!", C);
+            else
+               Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
+               Error_Msg_Name_2 := Choice_Image (Hi, Bounds_Type);
+               Error_Msg_N ("duplication of choice values: % .. %#!", C);
+            end if;
+         end if;
+      end Dup_Choice;
 
       ------------------------------
       -- Explain_Non_Static_Bound --
@@ -691,10 +739,12 @@ package body Sem_Case is
 
                if Sloc (Prev_Choice) <= Sloc (Choice) then
                   Error_Msg_Sloc := Sloc (Prev_Choice);
-                  Error_Msg_N ("duplication of choice value#", Choice);
+                  Dup_Choice
+                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
                else
                   Error_Msg_Sloc := Sloc (Choice);
-                  Error_Msg_N ("duplication of choice value#", Prev_Choice);
+                  Dup_Choice
+                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Prev_Choice);
                end if;
 
             elsif not Others_Present and then Choice_Lo /= Prev_Hi + 1 then
@@ -706,10 +756,10 @@ package body Sem_Case is
             end if;
          end loop;
 
-         if not Others_Present and then Expr_Value (Bounds_Hi) > Choice_Hi then
-            Missing_Choice (Choice_Hi + 1, Bounds_Hi);
+         if not Others_Present and then Expr_Value (Bounds_Hi) > Prev_Hi then
+            Missing_Choice (Prev_Hi + 1, Bounds_Hi);
 
-            if Expr_Value (Bounds_Hi) > Choice_Hi + 1 then
+            if Expr_Value (Bounds_Hi) > Prev_Hi + 1 then
                Explain_Non_Static_Bound;
             end if;
          end if;
