@@ -5421,6 +5421,16 @@ package body Sem_Ch13 is
       end if;
    end Analyze_Freeze_Entity;
 
+   -----------------------------------
+   -- Analyze_Freeze_Generic_Entity --
+   -----------------------------------
+
+   procedure Analyze_Freeze_Generic_Entity (N : Node_Id) is
+   begin
+      --  Semantic checks here
+      null;
+   end Analyze_Freeze_Generic_Entity;
+
    ------------------------------------------
    -- Analyze_Record_Representation_Clause --
    ------------------------------------------

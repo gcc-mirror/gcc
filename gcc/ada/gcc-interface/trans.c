@@ -6988,6 +6988,10 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = end_stmt_group ();
       break;
 
+    case N_Freeze_Generic_Entity:
+      gnu_result = alloc_stmt_list ();
+      break;
+
     case N_Itype_Reference:
       if (!present_gnu_tree (Itype (gnat_node)))
 	process_type (Itype (gnat_node));

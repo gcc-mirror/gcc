@@ -7319,6 +7319,27 @@ package Sinfo is
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the FREEZE keyword in the Sprint file output.
 
+      ---------------------------
+      -- Freeze_Generic_Entity --
+      ---------------------------
+
+      --  The freeze point of an entity indicates the point at which the
+      --  information needed to generate code for the entity is complete.
+      --  The freeze node for an entity triggers expander activities, such as
+      --  build initialization procedures, and backend activities, such as
+      --  completing the elaboration of packages.
+
+      --  For entities declared within a generic unit, for which no code is
+      --  generated, the freeze point is not equally meaningful. However, in
+      --  Ada 2012 several semantic checks on declarations must be delayed to
+      --  the freeze point, and we need to include such a mark in the tree to
+      --  trigger these checks. The Freeze_Generic_Entity node plays no other
+      --  role, and is ignored by the expander and the back-end.
+
+      --  N_Freeze_Generic_Entity
+      --  Sloc points near freeze point
+      --  Entity (Node4-Sem)
+
       --------------------------------
       -- Implicit Label Declaration --
       --------------------------------
@@ -8085,6 +8106,7 @@ package Sinfo is
       N_Formal_Incomplete_Type_Definition,
       N_Formal_Signed_Integer_Type_Definition,
       N_Freeze_Entity,
+      N_Freeze_Generic_Entity,
       N_Generic_Association,
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
@@ -8179,8 +8201,8 @@ package Sinfo is
      N_Expanded_Name ..
      N_Attribute_Reference;
    --  Nodes that have Entity fields
-   --  Warning: DOES NOT INCLUDE N_Freeze_Entity, N_Aspect_Specification,
-   --  or N_Attribute_Definition_Clause.
+   --  Warning: DOES NOT INCLUDE N_Freeze_Entity, N_Freeze_Generic_Entity,
+   --  N_Aspect_Specification, or N_Attribute_Definition_Clause.
 
    subtype N_Has_Etype is Node_Kind range
      N_Error ..
@@ -11889,6 +11911,13 @@ package Sinfo is
         3 => False,   --  TSS_Elist (Elist3-Sem)
         4 => False,   --  Entity (Node4-Sem)
         5 => False),  --  First_Subtype_Link (Node5-Sem)
+
+     N_Freeze_Generic_Entity =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  Entity (Node4-Sem)
+        5 => False),  --  unused
 
      N_Implicit_Label_Declaration =>
        (1 => True,    --  Defining_Identifier (Node1)

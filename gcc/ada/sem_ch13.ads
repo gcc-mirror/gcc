@@ -33,6 +33,7 @@ package Sem_Ch13 is
    procedure Analyze_Enumeration_Representation_Clause  (N : Node_Id);
    procedure Analyze_Free_Statement                     (N : Node_Id);
    procedure Analyze_Freeze_Entity                      (N : Node_Id);
+   procedure Analyze_Freeze_Generic_Entity              (N : Node_Id);
    procedure Analyze_Record_Representation_Clause       (N : Node_Id);
    procedure Analyze_Code_Statement                     (N : Node_Id);
 

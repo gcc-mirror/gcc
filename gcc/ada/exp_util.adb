@@ -3516,7 +3516,8 @@ package body Exp_Util is
 
                --  Freeze entity behaves like a declaration or statement
 
-               N_Freeze_Entity
+               N_Freeze_Entity                          |
+               N_Freeze_Generic_Entity
             =>
                --  Do not insert here if the item is not a list member (this
                --  happens for example with a triggering statement, and the

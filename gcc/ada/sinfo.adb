@@ -1104,7 +1104,8 @@ package body Sinfo is
         or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Attribute_Definition_Clause
-        or else NT (N).Nkind = N_Freeze_Entity);
+        or else NT (N).Nkind = N_Freeze_Entity
+        or else NT (N).Nkind = N_Freeze_Generic_Entity);
       return Node4 (N);
    end Entity;
 
@@ -4251,7 +4252,8 @@ package body Sinfo is
         or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Attribute_Definition_Clause
-        or else NT (N).Nkind = N_Freeze_Entity);
+        or else NT (N).Nkind = N_Freeze_Entity
+        or else NT (N).Nkind = N_Freeze_Generic_Entity);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_Entity;
 

@@ -4311,7 +4311,7 @@ package body Exp_Ch6 is
 
          if No (Checks) then
             Checks :=
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (CCs,
                 Condition       => Cond,
                 Then_Statements => New_List (Error));
 
@@ -4481,7 +4481,7 @@ package body Exp_Ch6 is
             --    end if;
 
             Append_To (Decls,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (CCs,
                 Condition       => Relocate_Node (Case_Guard),
                 Then_Statements => New_List (
                   Set (Flag),
@@ -4536,7 +4536,7 @@ package body Exp_Ch6 is
       end if;
 
       CG_Checks :=
-        Make_If_Statement (Loc,
+        Make_Implicit_If_Statement (CCs,
           Condition       =>
             Make_Op_Eq (Loc,
               Left_Opnd  => New_Reference_To (Count, Loc),
@@ -9419,7 +9419,7 @@ package body Exp_Ch6 is
          --  generated.
 
          if not Expander_Active then
-            null;
+            return;
          end if;
 
          Prag := Contract_Test_Cases (Contract (Subp_Id));
