@@ -158,6 +158,34 @@ package body Elists is
       end loop;
    end Append_Unique_Elmt;
 
+   -----------
+   -- Clone --
+   ------------
+
+   function Clone (List : Elist_Id) return Elist_Id is
+      Result : Elist_Id;
+      Elmt   : Elmt_Id;
+
+   begin
+      if List = No_Elist then
+         return No_Elist;
+
+      --  Replicate the contents of the input list while preserving the
+      --  original order.
+
+      else
+         Result := New_Elmt_List;
+
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            Append_Elmt (Node (Elmt), Result);
+            Next_Elmt (Elmt);
+         end loop;
+
+         return Result;
+      end if;
+   end Clone;
+
    --------------
    -- Contains --
    --------------

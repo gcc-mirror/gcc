@@ -1883,12 +1883,45 @@ package body Sem_Ch13 is
 
                --  Abstract_State
 
-               when Aspect_Abstract_State =>
-                  Make_Aitem_Pragma
-                    (Pragma_Argument_Associations => New_List (
-                       Make_Pragma_Argument_Association (Loc,
-                         Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Name_Abstract_State);
+               when Aspect_Abstract_State => Abstract_State : declare
+                  Decls : List_Id;
+                  Spec  : Node_Id;
+
+               begin
+                  --  Aspect Abstract_State introduces implicit declarations
+                  --  for all state abstraction entities it defines. To emulate
+                  --  this behavior, insert the pragma at the beginning of the
+                  --  visible declarations of the related package so that it is
+                  --  analyzed immediately.
+
+                  if Nkind_In (N, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+                  then
+                     Spec  := Specification (N);
+                     Decls := Visible_Declarations (Spec);
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Abstract_State);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package declaration",
+                        Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Abstract_State;
 
                --  Depends
 
@@ -1966,6 +1999,42 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Pre);
+
+               --  Refined_State
+
+               when Aspect_Refined_State => Refined_State : declare
+                  Decls : List_Id;
+
+               begin
+                  --  The corresponding pragma for Refined_State is inserted in
+                  --  the declarations of the related package body. This action
+                  --  synchronizes both the source and from-aspect versions of
+                  --  the pragma.
+
+                  if Nkind (N) = N_Package_Body then
+                     Decls := Declarations (N);
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Refined_State);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package body", Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Refined_State;
 
                --  Relative_Deadline
 
@@ -2411,21 +2480,6 @@ package body Sem_Ch13 is
                Set_From_Aspect_Specification (Aitem, True);
             end if;
 
-            --  Aspect Abstract_State introduces implicit declarations for all
-            --  state abstraction entities it defines. To emulate this behavior
-            --  insert the pragma at the start of the visible declarations of
-            --  the related package.
-
-            if Nam = Name_Abstract_State
-              and then Nkind (N) = N_Package_Declaration
-            then
-               if No (Visible_Declarations (Specification (N))) then
-                  Set_Visible_Declarations (Specification (N), New_List);
-               end if;
-
-               Prepend (Aitem, Visible_Declarations (Specification (N)));
-               goto Continue;
-
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the N_Compilation_Unit_Aux
             --  node (no delay is required here) except for aspects on a
@@ -2434,7 +2488,7 @@ package body Sem_Ch13 is
             --  copy (see sem_ch12), and for package instantiations, where
             --  the library unit pragmas are better handled early.
 
-            elsif Nkind (Parent (N)) = N_Compilation_Unit
+            if Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
             then
                declare
@@ -7651,6 +7705,7 @@ package body Sem_Ch13 is
               Aspect_Refined_Global       |
               Aspect_Refined_Post         |
               Aspect_Refined_Pre          |
+              Aspect_Refined_State        |
               Aspect_SPARK_Mode           |
               Aspect_Test_Case            =>
             raise Program_Error;

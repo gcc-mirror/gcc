@@ -168,9 +168,9 @@ package body Sem_Prag is
    -------------------------------------
 
    procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id);
-   --  Subsidiary routine to the analysis of pragmas Depends and Global. Append
-   --  an input or output item to a list. If the list is empty, a new one is
-   --  created.
+   --  Subsidiary routine to the analysis of pragmas Depends, Global and
+   --  Refined_State. Append an entity to a list. If the list is empty, create
+   --  a new list.
 
    function Adjust_External_Name_Case (N : Node_Id) return Node_Id;
    --  This routine is used for possible casing adjustment of an explicit
@@ -285,7 +285,7 @@ package body Sem_Prag is
          To_List := New_Elmt_List;
       end if;
 
-      Append_Unique_Elmt (Item, To_List);
+      Append_Elmt (Item, To_List);
    end Add_Item;
 
    -------------------------------
@@ -404,9 +404,11 @@ package body Sem_Prag is
       Arg1      : constant Node_Id := First (Pragma_Argument_Associations (N));
       All_Cases : Node_Id;
       CCase     : Node_Id;
-      Restore   : Boolean := False;
       Subp_Decl : Node_Id;
       Subp_Id   : Entity_Id;
+
+      Restore_Scope : Boolean := False;
+      --  Gets set True if we do a Push_Scope needing a Pop_Scope on exit
 
    --  Start of processing for Analyze_Contract_Cases_In_Decl_Part
 
@@ -432,7 +434,7 @@ package body Sem_Prag is
             --  for subprogram bodies because the formals are already visible.
 
             if Requires_Profile_Installation (N, Subp_Decl) then
-               Restore := True;
+               Restore_Scope := True;
                Push_Scope (Subp_Id);
                Install_Formals (Subp_Id);
             end if;
@@ -443,7 +445,7 @@ package body Sem_Prag is
                Next (CCase);
             end loop;
 
-            if Restore then
+            if Restore_Scope then
                End_Scope;
             end if;
          end if;
@@ -8494,7 +8496,6 @@ package body Sem_Prag is
                Set_Parent            (Id, State);
                Set_Ekind             (Id, E_Abstract_State);
                Set_Etype             (Id, Standard_Void_Type);
-               Set_Refined_State     (Id, Empty);
 
                --  Every non-null state must be nameable and resolvable the
                --  same way a constant is.
@@ -8523,8 +8524,8 @@ package body Sem_Prag is
 
             --  Local variables
 
-            Par   : Node_Id;
-            State : Node_Id;
+            Context : constant Node_Id := Parent (Parent (N));
+            State   : Node_Id;
 
          --  Start of processing for Abstract_State
 
@@ -8536,24 +8537,14 @@ package body Sem_Prag is
             --  Ensure the proper placement of the pragma. Abstract states must
             --  be associated with a package declaration.
 
-            if From_Aspect_Specification (N) then
-               Par := Parent (Corresponding_Aspect (N));
-            else
-               Par := Parent (Parent (N));
-            end if;
-
-            if Nkind (Par) = N_Compilation_Unit then
-               Par := Unit (Par);
-            end if;
-
-            if not Nkind_In (Par, N_Generic_Package_Declaration,
-                                  N_Package_Declaration)
+            if not Nkind_In (Context, N_Generic_Package_Declaration,
+                                      N_Package_Declaration)
             then
                Pragma_Misplaced;
                return;
             end if;
 
-            Pack_Id := Defining_Entity (Par);
+            Pack_Id := Defining_Entity (Context);
             State   := Expression (Arg1);
 
             --  Multiple abstract states appear as an aggregate
@@ -15974,6 +15965,62 @@ package body Sem_Prag is
          when Pragma_Refined_Pre =>
             Analyze_Refined_Pre_Post_Condition;
 
+         -------------------
+         -- Refined_State --
+         -------------------
+
+         --  pragma Refined_State (REFINEMENT_LIST);
+
+         --  REFINEMENT_LIST ::=
+         --    REFINEMENT_CLAUSE
+         --    | (REFINEMENT_CLAUSE {, REFINEMENT_CLAUSE})
+
+         --  REFINEMENT_CLAUSE ::= state_NAME => CONSTITUENT_LIST
+
+         --  CONSTITUENT_LIST ::=
+         --    null
+         --    | CONSTITUENT
+         --    | (CONSTITUENT {, CONSTITUENT})
+
+         --  CONSTITUENT ::= object_NAME | state_NAME
+
+         when Pragma_Refined_State => Refined_State : declare
+            Context : constant Node_Id := Parent (N);
+            Spec_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Refined states must
+            --  be associated with a package body.
+
+            if Nkind (Context) /= N_Package_Body then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            --  State refinement is allowed only when the corresponding package
+            --  declaration has a non-null aspect/pragma Abstract_State.
+
+            Spec_Id := Corresponding_Spec (Context);
+
+            if No (Abstract_States (Spec_Id))
+              or else Has_Null_Abstract_State (Spec_Id)
+            then
+               Error_Pragma
+                 ("useless pragma %, package does not define abstract states");
+               return;
+            end if;
+
+            --  The pragma must be analyzed at the end of the declarations as
+            --  it has visibility over the whole declarative region. Save the
+            --  pragma for later (see Analyze_Refined_Depends_In_Decl_Part).
+
+            Set_Refined_State_Pragma (Defining_Entity (Context), N);
+         end Refined_State;
+
          -----------------------
          -- Relative_Deadline --
          -----------------------
@@ -18313,17 +18360,18 @@ package body Sem_Prag is
      (Prag    : Node_Id;
       Subp_Id : Entity_Id)
    is
-      Arg1    : constant Node_Id :=
-                  First (Pragma_Argument_Associations (Prag));
-      Expr    : Node_Id;
-      Restore : Boolean := False;
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (Prag));
+      Expr : Node_Id;
+
+      Restore_Scope : Boolean := False;
+      --  Gets set True if we do a Push_Scope needing a Pop_Scope on exit
 
    begin
       --  Ensure that the subprogram and its formals are visible when analyzing
       --  the expression of the pragma.
 
       if Current_Scope /= Subp_Id then
-         Restore := True;
+         Restore_Scope := True;
          Push_Scope (Subp_Id);
          Install_Formals (Subp_Id);
       end if;
@@ -18465,7 +18513,7 @@ package body Sem_Prag is
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.
 
-      if Restore then
+      if Restore_Scope then
          End_Scope;
       end if;
    end Analyze_Pre_Post_Condition_In_Decl_Part;
@@ -18493,6 +18541,497 @@ package body Sem_Prag is
    begin
       null;
    end Analyze_Refined_Global_In_Decl_Part;
+
+   ----------------------------------------
+   -- Analyze_Refined_State_In_Decl_Part --
+   ----------------------------------------
+
+   procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id) is
+      Pack_Body : constant Node_Id   := Parent (N);
+      Spec_Id   : constant Entity_Id := Corresponding_Spec (Pack_Body);
+
+      Abstr_States : Elist_Id := No_Elist;
+      --  A list of all abstract states defined in the package declaration. The
+      --  list is used to report unrefined states.
+
+      Constituents_Seen : Elist_Id := No_Elist;
+      --  A list that contains all constituents processed so far. The list is
+      --  used to detect multiple uses of the same constituent.
+
+      Hidden_States : Elist_Id := No_Elist;
+      --  A list of all hidden states (abstract states and variables) that
+      --  appear in the package spec and body. The list is used to report
+      --  unused hidden states.
+
+      Refined_States_Seen : Elist_Id := No_Elist;
+      --  A list that contains all refined states processed so far. The list is
+      --  used to detect duplicate refinements.
+
+      procedure Analyze_Refinement_Clause (Clause : Node_Id);
+      --  Perform full analysis of a single refinement clause
+
+      function Collect_Hidden_States return Elist_Id;
+      --  Gather the entities of all hidden states that appear in the spec and
+      --  body of the related package.
+
+      procedure Report_Unrefined_States;
+      --  Emit errors for all abstract states that have not been refined by
+      --  the pragma.
+
+      procedure Report_Unused_Hidden_States;
+      --  Emit errors for all hidden states of the related package that do not
+      --  participate in a refinement.
+
+      -------------------------------
+      -- Analyze_Refinement_Clause --
+      -------------------------------
+
+      procedure Analyze_Refinement_Clause (Clause : Node_Id) is
+         Non_Null_Seen : Boolean := False;
+         Null_Seen     : Boolean := False;
+         --  Flags used to detect multiple uses of null in a single clause or a
+         --  mixture of null and non-null constituents.
+
+         procedure Analyze_Constituent (Constit : Node_Id);
+         --  Perform full analysis of a single constituent
+
+         procedure Check_Matching_State
+           (State    : Node_Id;
+            State_Id : Entity_Id);
+         --  Determine whether state State denoted by its name State_Id appears
+         --  in Abstr_States. Emit an error when attempting to re-refine the
+         --  state or when the state is not defined in the package declaration.
+         --  Otherwise remove the state from Abstr_States.
+
+         -------------------------
+         -- Analyze_Constituent --
+         -------------------------
+
+         procedure Analyze_Constituent (Constit : Node_Id) is
+            procedure Check_Matching_Constituent (Constit_Id : Entity_Id);
+            --  Determine whether constituent Constit denoted by its entity
+            --  Constit_Id appears in Hidden_States. Emit an error when the
+            --  constituent is not a valid hidden state of the related package
+            --  or when it is used more than once. Otherwise remove the
+            --  constituent from Hidden_States.
+
+            --------------------------------
+            -- Check_Matching_Constituent --
+            --------------------------------
+
+            procedure Check_Matching_Constituent (Constit_Id : Entity_Id) is
+               State_Elmt : Elmt_Id;
+
+            begin
+               --  Detect a duplicate use of a constituent
+
+               if Contains (Constituents_Seen, Constit_Id) then
+                  Error_Msg_NE
+                    ("duplicate use of constituent &", Constit, Constit_Id);
+                  return;
+               end if;
+
+               --  Inspect the hidden states of the related package looking for
+               --  a match.
+
+               State_Elmt := First_Elmt (Hidden_States);
+               while Present (State_Elmt) loop
+
+                  --  A valid hidden state or variable participates in a
+                  --  refinement. Add the constituent to the list of processed
+                  --  items to aid with the detection of duplicate constituent
+                  --  use. Remove the constituent from Hidden_States to signal
+                  --  that it has already been used.
+
+                  if Node (State_Elmt) = Constit_Id then
+                     Add_Item (Constit_Id, Constituents_Seen);
+                     Remove_Elmt (Hidden_States, State_Elmt);
+
+                     return;
+                  end if;
+
+                  Next_Elmt (State_Elmt);
+               end loop;
+
+               --  If we get here, we are refining a state that is not hidden
+               --  with respect to the related package.
+
+               Error_Msg_Name_1 := Chars (Spec_Id);
+               Error_Msg_NE
+                 ("cannot use & in refinement, constituent is not a hidden "
+                  & "state of package %", Constit, Constit_Id);
+            end Check_Matching_Constituent;
+
+            --  Local variables
+
+            Constit_Id : Entity_Id;
+
+         --  Start of processing for Analyze_Constituent
+
+         begin
+            --  Detect multiple uses of null in a single refinement clause or a
+            --  mixture of null and non-null constituents.
+
+            if Nkind (Constit) = N_Null then
+               if Null_Seen then
+                  Error_Msg_N
+                    ("multiple null constituents not allowed", Constit);
+
+               elsif Non_Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null constituents", Constit);
+
+               else
+                  Null_Seen := True;
+               end if;
+
+            --  Non-null constituents
+
+            else
+               Non_Null_Seen := True;
+
+               if Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null constituents", Constit);
+               end if;
+
+               Analyze (Constit);
+
+               --  Ensure that the constituent denotes a valid state or a
+               --  whole variable.
+
+               if Is_Entity_Name (Constit) then
+                  Constit_Id := Entity (Constit);
+
+                  if Ekind_In (Constit_Id, E_Abstract_State, E_Variable) then
+                     Check_Matching_Constituent (Constit_Id);
+                  else
+                     Error_Msg_NE
+                       ("constituent & must denote a variable or state",
+                        Constit, Constit_Id);
+                  end if;
+
+               --  The constituent is illegal
+
+               else
+                  Error_Msg_N ("malformed constituent", Constit);
+               end if;
+            end if;
+         end Analyze_Constituent;
+
+         --------------------------
+         -- Check_Matching_State --
+         --------------------------
+
+         procedure Check_Matching_State
+           (State    : Node_Id;
+            State_Id : Entity_Id)
+         is
+            State_Elmt : Elmt_Id;
+
+         begin
+            --  Detect a duplicate refinement of a state
+
+            if Contains (Refined_States_Seen, State_Id) then
+               Error_Msg_NE
+                 ("duplicate refinement of state &", State, State_Id);
+               return;
+            end if;
+
+            --  Inspect the abstract states defined in the package declaration
+            --  looking for a match.
+
+            State_Elmt := First_Elmt (Abstr_States);
+            while Present (State_Elmt) loop
+
+               --  A valid abstract state is being refined in the body. Add
+               --  the state to the list of processed refined states to aid
+               --  with the detection of duplicate refinements. Remove the
+               --  state from Abstr_States to signal that it has already been
+               --  refined.
+
+               if Node (State_Elmt) = State_Id then
+                  Add_Item (State_Id, Refined_States_Seen);
+                  Remove_Elmt (Abstr_States, State_Elmt);
+
+                  return;
+               end if;
+
+               Next_Elmt (State_Elmt);
+            end loop;
+
+            --  If we get here, we are refining a state that is not defined in
+            --  the package declaration.
+
+            Error_Msg_Name_1 := Chars (Spec_Id);
+            Error_Msg_NE
+              ("cannot refine state, & is not defined in package %",
+               State, State_Id);
+         end Check_Matching_State;
+
+         --  Local declarations
+
+         Constit  : Node_Id;
+         State    : Node_Id;
+         State_Id : Entity_Id := Empty;
+
+      --  Start of processing for Analyze_Refinement_Clause
+
+      begin
+         --  Analyze the state name of a refinement clause
+
+         State := First (Choices (Clause));
+         while Present (State) loop
+            if Present (State_Id) then
+               Error_Msg_N
+                 ("refinement clause cannot cover multiple states", State);
+
+            else
+               Analyze (State);
+
+               --  Ensure that the state name denotes a valid abstract state
+               --  that is defined in the spec of the related package.
+
+               if Is_Entity_Name (State) then
+                  State_Id := Entity (State);
+
+                  --  Catch any attempts to re-refine a state or refine a
+                  --  state that is not defined in the package declaration.
+
+                  if Ekind (State_Id) = E_Abstract_State then
+                     Check_Matching_State (State, State_Id);
+                  else
+                     Error_Msg_NE
+                       ("& must denote an abstract state", State, State_Id);
+                  end if;
+
+               --  The state name is illegal
+
+               else
+                  Error_Msg_N
+                    ("malformed state name in refinement clause", State);
+               end if;
+            end if;
+
+            Next (State);
+         end loop;
+
+         --  Analyze all constituents of the refinement. Multiple constituents
+         --  appear as an aggregate.
+
+         Constit := Expression (Clause);
+
+         if Nkind (Constit) = N_Aggregate then
+            if Present (Component_Associations (Constit)) then
+               Error_Msg_N
+                 ("constituents of refinement clause must appear in "
+                  & "positional form", Constit);
+
+            else pragma Assert (Present (Expressions (Constit)));
+               Constit := First (Expressions (Constit));
+               while Present (Constit) loop
+                  Analyze_Constituent (Constit);
+
+                  Next (Constit);
+               end loop;
+            end if;
+
+         --  Various forms of a single constituent. Note that these may include
+         --  malformed constituents.
+
+         else
+            Analyze_Constituent (Constit);
+         end if;
+      end Analyze_Refinement_Clause;
+
+      ---------------------------
+      -- Collect_Hidden_States --
+      ---------------------------
+
+      function Collect_Hidden_States return Elist_Id is
+         Result : Elist_Id := No_Elist;
+
+         procedure Collect_Hidden_States_In_Decls (Decls : List_Id);
+         --  Find all hidden states that appear in declarative list Decls and
+         --  append their entities to Result.
+
+         ------------------------------------
+         -- Collect_Hidden_States_In_Decls --
+         ------------------------------------
+
+         procedure Collect_Hidden_States_In_Decls (Decls : List_Id) is
+            procedure Collect_Abstract_States (States : Elist_Id);
+            --  Copy the abstract states defined in list States to list Result
+
+            -----------------------------
+            -- Collect_Abstract_States --
+            -----------------------------
+
+            procedure Collect_Abstract_States (States : Elist_Id) is
+               State_Elmt : Elmt_Id;
+
+            begin
+               State_Elmt := First_Elmt (States);
+               while Present (State_Elmt) loop
+                  Add_Item (Node (State_Elmt), Result);
+
+                  Next_Elmt (State_Elmt);
+               end loop;
+            end Collect_Abstract_States;
+
+            --  Local variables
+
+            Decl : Node_Id;
+
+         --  Start of processing for Collect_Hidden_States_In_Decls
+
+         begin
+            Decl := First (Decls);
+            while Present (Decl) loop
+
+               --  Objects (non-constants) are valid hidden states
+
+               if Nkind (Decl) = N_Object_Declaration
+                 and then not Constant_Present (Decl)
+               then
+                  Add_Item (Defining_Entity (Decl), Result);
+
+               --  Gather the abstract states of a package along with all
+               --  hidden states in its visible declarations.
+
+               elsif Nkind (Decl) = N_Package_Declaration then
+                  Collect_Abstract_States
+                    (Abstract_States (Defining_Entity (Decl)));
+
+                  Collect_Hidden_States_In_Decls
+                    (Visible_Declarations (Specification (Decl)));
+               end if;
+
+               Next (Decl);
+            end loop;
+         end Collect_Hidden_States_In_Decls;
+
+         --  Local variables
+
+         Pack_Spec : constant Node_Id := Parent (Spec_Id);
+
+      --  Start of processing for Collect_Hidden_States
+
+      begin
+         --  Process the private declarations of the package spec and the
+         --  declarations of the body.
+
+         Collect_Hidden_States_In_Decls (Private_Declarations (Pack_Spec));
+         Collect_Hidden_States_In_Decls (Declarations (Pack_Body));
+
+         return Result;
+      end Collect_Hidden_States;
+
+      -----------------------------
+      -- Report_Unrefined_States --
+      -----------------------------
+
+      procedure Report_Unrefined_States is
+         State_Elmt : Elmt_Id;
+
+      begin
+         if Present (Abstr_States) then
+            State_Elmt := First_Elmt (Abstr_States);
+            while Present (State_Elmt) loop
+               Error_Msg_N
+                 ("abstract state & must be refined", Node (State_Elmt));
+
+               Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Report_Unrefined_States;
+
+      ---------------------------------
+      -- Report_Unused_Hidden_States --
+      ---------------------------------
+
+      procedure Report_Unused_Hidden_States is
+         Posted     : Boolean := False;
+         State_Elmt : Elmt_Id;
+         State_Id   : Entity_Id;
+
+      begin
+         if Present (Hidden_States) then
+            State_Elmt := First_Elmt (Hidden_States);
+            while Present (State_Elmt) loop
+               State_Id := Node (State_Elmt);
+
+               --  Generate an error message of the form:
+
+               --    package ... has unused hidden states
+               --      abstract state ... defined at ...
+               --      variable ... defined at ...
+
+               if not Posted then
+                  Posted := True;
+                  Error_Msg_NE
+                    ("package & has unused hidden states", N, Spec_Id);
+               end if;
+
+               Error_Msg_Sloc := Sloc (State_Id);
+
+               if Ekind (State_Id) = E_Abstract_State then
+                  Error_Msg_NE ("\  abstract state & defined #", N, State_Id);
+               else
+                  Error_Msg_NE ("\  variable & defined #", N, State_Id);
+               end if;
+
+               Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Report_Unused_Hidden_States;
+
+      --  Local declarations
+
+      Clauses : constant Node_Id :=
+                  Expression (First (Pragma_Argument_Associations (N)));
+      Clause  : Node_Id;
+
+   --  Start of processing for Analyze_Refined_State_In_Decl_Part
+
+   begin
+      Set_Analyzed (N);
+
+      --  Initialize the various lists used during analysis
+
+      Abstr_States  := Clone (Abstract_States (Spec_Id));
+      Hidden_States := Collect_Hidden_States;
+
+      --  Multiple state refinements appear as an aggregate
+
+      if Nkind (Clauses) = N_Aggregate then
+         if Present (Expressions (Clauses)) then
+            Error_Msg_N
+              ("state refinements must appear as component associations",
+               Clauses);
+
+         else pragma Assert (Present (Component_Associations (Clauses)));
+            Clause := First (Component_Associations (Clauses));
+            while Present (Clause) loop
+               Analyze_Refinement_Clause (Clause);
+
+               Next (Clause);
+            end loop;
+         end if;
+
+      --  Various forms of a single state refinement. Note that these may
+      --  include malformed refinements.
+
+      else
+         Analyze_Refinement_Clause (Clauses);
+      end if;
+
+      --  Ensure that all abstract states have been refined and all hidden
+      --  states of the related package unilized in refinements.
+
+      Report_Unrefined_States;
+      Report_Unused_Hidden_States;
+   end Analyze_Refined_State_In_Decl_Part;
 
    ------------------------------------
    -- Analyze_Test_Case_In_Decl_Part --
@@ -19250,6 +19789,7 @@ package body Sem_Prag is
       Pragma_Refined_Global                 => -1,
       Pragma_Refined_Post                   => -1,
       Pragma_Refined_Pre                    => -1,
+      Pragma_Refined_State                  => -1,
       Pragma_Relative_Deadline              => -1,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,

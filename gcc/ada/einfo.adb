@@ -33,6 +33,7 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
 with Atree;   use Atree;
+with Elists;  use Elists;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
 with Output;  use Output;
@@ -79,12 +80,12 @@ package body Einfo is
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
+   --    Refined_State_Pragma            Node8
    --    Return_Applies_To               Node8
    --    First_Exit_Statement            Node8
 
    --    Class_Wide_Type                 Node9
    --    Current_Value                   Node9
-   --    Refined_State                   Node9
    --    Renaming_Map                    Uint9
 
    --    Direct_Primitive_Operations     Elist10
@@ -2647,11 +2648,11 @@ package body Einfo is
       return Flag227 (Id);
    end Referenced_As_Out_Parameter;
 
-   function Refined_State (Id : E) return E is
+   function Refined_State_Pragma (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      return Node9 (Id);
-   end Refined_State;
+      pragma Assert (Ekind (Id) = E_Package_Body);
+      return Node8 (Id);
+   end Refined_State_Pragma;
 
    function Register_Exception_Call (Id : E) return N is
    begin
@@ -5307,11 +5308,11 @@ package body Einfo is
       Set_Flag227 (Id, V);
    end Set_Referenced_As_Out_Parameter;
 
-   procedure Set_Refined_State (Id : E; V : E) is
+   procedure Set_Refined_State_Pragma (Id : E; V : N) is
    begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      Set_Node9 (Id, V);
-   end Set_Refined_State;
+      pragma Assert (Ekind (Id) = E_Package_Body);
+      Set_Node8 (Id, V);
+   end Set_Refined_State_Pragma;
 
    procedure Set_Register_Exception_Call (Id : E; V : N) is
    begin
@@ -6426,6 +6427,19 @@ package body Einfo is
 
       return False;
    end Has_Interrupt_Handler;
+
+   -----------------------------
+   -- Has_Null_Abstract_State --
+   -----------------------------
+
+   function Has_Null_Abstract_State (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+
+      return
+        Present (Abstract_States (Id))
+          and then Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
+   end Has_Null_Abstract_State;
 
    --------------------
    -- Has_Unmodified --
@@ -8292,6 +8306,9 @@ package body Einfo is
          when E_Procedure                                  =>
             Write_Str ("Postcondition_Proc");
 
+         when E_Package_Body                               =>
+            Write_Str ("Refined_State_Pragma");
+
          when E_Return_Statement                           =>
             Write_Str ("Return_Applies_To");
 
@@ -8312,9 +8329,6 @@ package body Einfo is
 
          when Object_Kind                                  =>
             Write_Str ("Current_Value");
-
-         when E_Abstract_State                             =>
-            Write_Str ("Refined_State");
 
          when E_Function                                   |
               E_Generic_Function                           |

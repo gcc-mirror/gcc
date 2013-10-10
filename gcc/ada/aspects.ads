@@ -115,6 +115,7 @@ package Aspects is
       Aspect_Refined_Global,                -- GNAT
       Aspect_Refined_Post,                  -- GNAT
       Aspect_Refined_Pre,                   -- GNAT
+      Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
@@ -327,6 +328,7 @@ package Aspects is
       Aspect_Refined_Global          => Expression,
       Aspect_Refined_Post            => Expression,
       Aspect_Refined_Pre             => Expression,
+      Aspect_Refined_State           => Expression,
       Aspect_Relative_Deadline       => Expression,
       Aspect_Scalar_Storage_Order    => Expression,
       Aspect_Simple_Storage_Pool     => Name,
@@ -427,6 +429,7 @@ package Aspects is
       Aspect_Refined_Global               => Name_Refined_Global,
       Aspect_Refined_Post                 => Name_Refined_Post,
       Aspect_Refined_Pre                  => Name_Refined_Pre,
+      Aspect_Refined_State                => Name_Refined_State,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
       Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
@@ -620,6 +623,7 @@ package Aspects is
       Aspect_Read                         => Always_Delay,
       Aspect_Refined_Depends              => Always_Delay,
       Aspect_Refined_Global               => Always_Delay,
+      Aspect_Refined_State                => Always_Delay,
       Aspect_Relative_Deadline            => Always_Delay,
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
