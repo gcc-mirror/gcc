@@ -26,8 +26,6 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1297,9 +1295,7 @@ package body Sem_Case is
          --  then don't try any semantic checking on the choices since we have
          --  a complete mess.
 
-         if not Is_Discrete_Type (Subtyp)
-           or else Subtyp = Any_Type
-         then
+         if not Is_Discrete_Type (Subtyp) or else Subtyp = Any_Type then
             return;
          end if;
 
@@ -1357,7 +1353,6 @@ package body Sem_Case is
             else
                Choice := First (Discrete_Choices (Alt));
                while Present (Choice) loop
-                  Analyze (Choice);
                   Kind := Nkind (Choice);
 
                   --  Choice is a Range
@@ -1366,7 +1361,6 @@ package body Sem_Case is
                     or else (Kind = N_Attribute_Reference
                               and then Attribute_Name (Choice) = Name_Range)
                   then
-                     Resolve (Choice, Expected_Type);
                      Check (Choice, Low_Bound (Choice), High_Bound (Choice));
 
                   --  Choice is a subtype name
@@ -1374,12 +1368,6 @@ package body Sem_Case is
                   elsif Is_Entity_Name (Choice)
                     and then Is_Type (Entity (Choice))
                   then
-                     --  We have to make sure the subtype is frozen, it must be
-                     --  before we can do the following analyses on choices!
-
-                     Insert_Actions
-                       (N, Freeze_Entity (Entity (Choice), Choice));
-
                      --  Check for inappropriate type
 
                      if not Covers (Expected_Type, Etype (Choice)) then
@@ -1505,7 +1493,6 @@ package body Sem_Case is
                   --  Only other possibility is an expression
 
                   else
-                     Resolve (Choice, Expected_Type);
                      Check (Choice, Choice, Choice);
                   end if;
 
