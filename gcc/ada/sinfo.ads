@@ -7822,13 +7822,18 @@ package Sinfo is
       N_Raise_Program_Error,
       N_Raise_Storage_Error,
 
+      --  N_Subexpr, N_Has_Etype, N_Numeric_Or_String_Literal
+
+      N_Integer_Literal,
+      N_Real_Literal,
+      N_String_Literal,
+
       --  N_Subexpr, N_Has_Etype
 
       N_Explicit_Dereference,
       N_Expression_With_Actions,
       N_If_Expression,
       N_Indexed_Component,
-      N_Integer_Literal,
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
@@ -7838,11 +7843,9 @@ package Sinfo is
       N_Extension_Aggregate,
       N_Raise_Expression,
       N_Range,
-      N_Real_Literal,
       N_Reference,
       N_Selected_Component,
       N_Slice,
-      N_String_Literal,
       N_Subprogram_Info,
       N_Type_Conversion,
       N_Unchecked_Expression,
@@ -8172,6 +8175,10 @@ package Sinfo is
    subtype N_Membership_Test is Node_Kind range
       N_In ..
       N_Not_In;
+
+   subtype N_Numeric_Or_String_Literal is Node_Kind range
+      N_Integer_Literal ..
+      N_String_Literal;
 
    subtype N_Op is Node_Kind range
      N_Op_Add ..

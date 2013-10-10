@@ -9010,26 +9010,26 @@ package body Exp_Ch9 is
             then
                Protection_Subtype :=
                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Reference_To
-                        (RTE (RE_Static_Interrupt_Protection), Loc),
-                    Constraint =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints => New_List (
-                          Entry_Count_Expr,
-                          Make_Integer_Literal (Loc, Num_Attach_Handler))));
+                  Subtype_Mark =>
+                    New_Reference_To
+                      (RTE (RE_Static_Interrupt_Protection), Loc),
+                  Constraint   =>
+                    Make_Index_Or_Discriminant_Constraint (Loc,
+                      Constraints => New_List (
+                        Entry_Count_Expr,
+                        Make_Integer_Literal (Loc, Num_Attach_Handler))));
 
             elsif Has_Interrupt_Handler (Prot_Typ)
               and then not Restriction_Active (No_Dynamic_Attachment)
             then
                Protection_Subtype :=
                  Make_Subtype_Indication (Loc,
-                 Subtype_Mark =>
-                   New_Reference_To
-                     (RTE (RE_Dynamic_Interrupt_Protection), Loc),
-                 Constraint   =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints => New_List (Entry_Count_Expr)));
+                   Subtype_Mark =>
+                     New_Reference_To
+                       (RTE (RE_Dynamic_Interrupt_Protection), Loc),
+                   Constraint   =>
+                     Make_Index_Or_Discriminant_Constraint (Loc,
+                       Constraints => New_List (Entry_Count_Expr)));
 
             else
                case Corresponding_Runtime_Package (Prot_Typ) is
@@ -13644,12 +13644,14 @@ package body Exp_Ch9 is
 
          --  Protected types with interrupt handlers (when not using a
          --  restricted profile) are also considered equivalent to protected
-         --  types with entries. The types which are used
-         --  (Static_Interrupt_Protection and Dynamic_Interrupt_Protection)
-         --  are derived from Protection_Entries.
+         --  types with entries.
+
+         --  The types which are used (Static_Interrupt_Protection and
+         --  Dynamic_Interrupt_Protection) are derived from Protection_Entries.
 
          declare
             Pkg_Id : constant RTU_Id := Corresponding_Runtime_Package (Ptyp);
+
             Called_Subp : RE_Id;
 
          begin
@@ -13695,8 +13697,8 @@ package body Exp_Ch9 is
 
                Append_To (Args,
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (P_Arr, Loc),
-                            Attribute_Name => Name_Unrestricted_Access));
+                   Prefix         => New_Reference_To (P_Arr, Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
 
                if Pkg_Id = System_Tasking_Protected_Objects_Entries then
 
@@ -13713,6 +13715,7 @@ package body Exp_Ch9 is
                end if;
 
             elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry then
+
                --  This is the case where we have a protected object with
                --  interfaces and no entries, and the single entry restriction
                --  is in effect. We pass a null pointer for the entry
@@ -13721,6 +13724,7 @@ package body Exp_Ch9 is
                Append_To (Args, Make_Null (Loc));
 
             elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
+
                --  This is the case where we have a protected object with no
                --  entries and:
                --    - either interrupt handlers with non restricted profile,

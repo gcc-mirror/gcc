@@ -1167,17 +1167,31 @@ package body Sem_Ch7 is
                --  then finish off by looping through the nongeneric parents
                --  and installing their private declarations.
 
+               --  If one of the non-generic parents is itself on the scope
+               --  stack, do not install its private declarations: they are
+               --  installed in due time when the private part of that parent
+               --  is analyzed.
+
                else
                   while Present (Inst_Par)
                     and then Inst_Par /= Standard_Standard
                     and then (not In_Open_Scopes (Inst_Par)
                                or else not In_Private_Part (Inst_Par))
                   loop
-                     Install_Private_Declarations (Inst_Par);
-                     Set_Use (Private_Declarations
-                                (Specification
-                                   (Unit_Declaration_Node (Inst_Par))));
-                     Inst_Par := Scope (Inst_Par);
+                     if Nkind (Inst_Node) = N_Formal_Package_Declaration
+                       or else
+                         not Is_Ancestor_Package
+                               (Inst_Par, Cunit_Entity (Current_Sem_Unit))
+                     then
+                        Install_Private_Declarations (Inst_Par);
+                        Set_Use (Private_Declarations
+                                   (Specification
+                                      (Unit_Declaration_Node (Inst_Par))));
+                        Inst_Par := Scope (Inst_Par);
+
+                     else
+                        exit;
+                     end if;
                   end loop;
 
                   exit;

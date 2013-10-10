@@ -1068,13 +1068,14 @@ package body Freeze is
       Comp      : Entity_Id)
    is
       Comp_Type : Entity_Id;
-      Comp_Def  : Node_Id;
       Err_Node  : Node_Id;
       ADC       : Node_Id;
 
       Comp_Byte_Aligned : Boolean;
       --  Set True for the record case, when Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
+
+      Component_Aliased : Boolean;
 
    begin
       --  Record case
@@ -1084,15 +1085,15 @@ package body Freeze is
          Comp_Type := Etype (Comp);
 
          if Is_Tag (Comp) then
-            Comp_Def          := Empty;
             Comp_Byte_Aligned := True;
+            Component_Aliased := False;
 
          else
-            Comp_Def          := Component_Definition (Parent (Comp));
             Comp_Byte_Aligned :=
               Present (Component_Clause (Comp))
                 and then
                   Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            Component_Aliased := Is_Aliased (Comp);
          end if;
 
       --  Array case
@@ -1100,10 +1101,9 @@ package body Freeze is
       else
          Err_Node  := Encl_Type;
          Comp_Type := Component_Type (Encl_Type);
-         Comp_Def  := Component_Definition
-                        (Type_Definition (Declaration_Node (Encl_Type)));
 
          Comp_Byte_Aligned := False;
+         Component_Aliased := Has_Aliased_Components (Encl_Type);
       end if;
 
       --  Note: the Reverse_Storage_Order flag is set on the base type, but
@@ -1139,7 +1139,7 @@ package body Freeze is
                & "storage order as enclosing composite", Err_Node);
          end if;
 
-      elsif Present (Comp_Def) and then Aliased_Present (Comp_Def) then
+      elsif Component_Aliased then
          Error_Msg_N
            ("aliased component not permitted for type with "
             & "explicit Scalar_Storage_Order", Err_Node);
