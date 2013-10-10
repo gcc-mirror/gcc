@@ -822,6 +822,11 @@ package Sinfo is
    --    In Ada 2012, Corresponding_Spec is set on expression functions that
    --    complete a subprogram declaration.
 
+   --  Corresponding_Spec_Of_Stub (Node2-Sem)
+   --    This field is present in subprogram, package, task and protected body
+   --    stubs where it points to the corresponding spec of the stub. Due to
+   --    clashes in the structure of nodes, we cannot use Corresponding_Spec.
+
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
    --    the parent unit that is the stub declaration for the subunit. It is
@@ -6067,6 +6072,7 @@ package Sinfo is
       --  N_Subprogram_Body_Stub
       --  Sloc points to FUNCTION or PROCEDURE
       --  Specification (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6081,6 +6087,7 @@ package Sinfo is
       --  N_Package_Body_Stub
       --  Sloc points to PACKAGE
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6095,6 +6102,7 @@ package Sinfo is
       --  N_Task_Body_Stub
       --  Sloc points to TASK
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6111,6 +6119,7 @@ package Sinfo is
       --  N_Protected_Body_Stub
       --  Sloc points to PROTECTED
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -8503,6 +8512,9 @@ package Sinfo is
    function Corresponding_Spec
      (N : Node_Id) return Node_Id;    -- Node5
 
+   function Corresponding_Spec_Of_Stub
+     (N : Node_Id) return Node_Id;    -- Node2
+
    function Corresponding_Stub
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -9498,6 +9510,9 @@ package Sinfo is
 
    procedure Set_Corresponding_Spec
      (N : Node_Id; Val : Node_Id);            -- Node5
+
+   procedure Set_Corresponding_Spec_Of_Stub
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Corresponding_Stub
      (N : Node_Id; Val : Node_Id);            -- Node3
@@ -11509,28 +11524,28 @@ package Sinfo is
 
      N_Subprogram_Body_Stub =>
        (1 => True,    --  Specification (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Package_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Task_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Protected_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
@@ -12097,6 +12112,7 @@ package Sinfo is
    pragma Inline (Corresponding_Generic_Association);
    pragma Inline (Corresponding_Integer_Value);
    pragma Inline (Corresponding_Spec);
+   pragma Inline (Corresponding_Spec_Of_Stub);
    pragma Inline (Corresponding_Stub);
    pragma Inline (Dcheck_Function);
    pragma Inline (Declarations);
@@ -12426,6 +12442,7 @@ package Sinfo is
    pragma Inline (Set_Corresponding_Generic_Association);
    pragma Inline (Set_Corresponding_Integer_Value);
    pragma Inline (Set_Corresponding_Spec);
+   pragma Inline (Set_Corresponding_Spec_Of_Stub);
    pragma Inline (Set_Corresponding_Stub);
    pragma Inline (Set_Dcheck_Function);
    pragma Inline (Set_Declarations);

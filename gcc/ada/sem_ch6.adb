@@ -2672,20 +2672,30 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Language-defined aspects cannot appear in a subprogram body if the
-      --  corresponding spec already has aspects. Exception to this rule are
-      --  certain user-defined aspects. Aspects that apply to a body stub are
-      --  moved to the proper body. Do not emit an error in this case.
+      --  Language-defined aspects cannot appear in a subprogram body [stub] if
+      --  the corresponding spec already has aspects. An exception to this rule
+      --  are certain user-defined aspects.
 
       if Has_Aspects (N) then
          if Present (Spec_Id)
-           and then Nkind (N) not in N_Body_Stub
-           and then Nkind (Parent (N)) /= N_Subunit
-           and then not Aspects_On_Body_OK (N)
+           and then not Aspects_On_Body_Or_Stub_OK (N)
+
+            --  Do not emit an error on a subprogram body stub that act as
+            --  its own spec.
+
+           and then Nkind (Parent (Parent (Spec_Id))) /= N_Subprogram_Body_Stub
          then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
                 N);
+
+         --  Delay the analysis of aspect specifications that apply to a body
+         --  stub until the proper body is analyzed. If the corresponding body
+         --  is missing, the aspects are still analyzed in Analyze_Proper_Body.
+
+         elsif Nkind (N) in N_Body_Stub then
+            null;
+
          else
             Analyze_Aspect_Specifications (N, Body_Id);
          end if;
@@ -2835,7 +2845,12 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
-         if Nkind (N) /= N_Subprogram_Body_Stub then
+         if Nkind (N) = N_Subprogram_Body_Stub then
+            Set_Corresponding_Spec_Of_Stub (N, Spec_Id);
+
+         --  Regular body
+
+         else
             Set_Corresponding_Spec (N, Spec_Id);
 
             --  Ada 2005 (AI-345): If the operation is a primitive operation

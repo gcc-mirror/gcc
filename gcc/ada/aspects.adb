@@ -140,11 +140,11 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
-   ------------------------
-   -- Aspects_On_Body_OK --
-   ------------------------
+   --------------------------------
+   -- Aspects_On_Body_Or_Stub_OK --
+   --------------------------------
 
-   function Aspects_On_Body_OK (N : Node_Id) return Boolean is
+   function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean is
       Aspect  : Node_Id;
       Aspects : List_Id;
 
@@ -159,12 +159,12 @@ package body Aspects is
                                             N_Task_Body));
 
       --  Look through all aspects and see whether they can be applied to a
-      --  body.
+      --  body [stub].
 
       Aspects := Aspect_Specifications (N);
       Aspect  := First (Aspects);
       while Present (Aspect) loop
-         if not Aspect_On_Body_OK (Get_Aspect_Id (Aspect)) then
+         if not Aspect_On_Body_Or_Stub_OK (Get_Aspect_Id (Aspect)) then
             return False;
          end if;
 
@@ -172,7 +172,7 @@ package body Aspects is
       end loop;
 
       return True;
-   end Aspects_On_Body_OK;
+   end Aspects_On_Body_Or_Stub_OK;
 
    -----------------
    -- Find_Aspect --
@@ -368,9 +368,9 @@ package body Aspects is
       N_Single_Protected_Declaration           => True,
       N_Single_Task_Declaration                => True,
       N_Subprogram_Body                        => True,
+      N_Subprogram_Body_Stub                   => True,
       N_Subprogram_Declaration                 => True,
       N_Subprogram_Renaming_Declaration        => True,
-      N_Subprogram_Body_Stub                   => True,
       N_Subtype_Declaration                    => True,
       N_Task_Body                              => True,
       N_Task_Body_Stub                         => True,
@@ -466,6 +466,7 @@ package body Aspects is
     Aspect_Pure_05                      => Aspect_Pure_05,
     Aspect_Pure_12                      => Aspect_Pure_12,
     Aspect_Pure_Function                => Aspect_Pure_Function,
+    Aspect_Refined_Pre                  => Aspect_Refined_Pre,
     Aspect_Remote_Access_Type           => Aspect_Remote_Access_Type,
     Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
     Aspect_Remote_Types                 => Aspect_Remote_Types,

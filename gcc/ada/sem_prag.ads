@@ -26,10 +26,19 @@
 --  Pragma handling is isolated in a separate package
 --  (logically this processing belongs in chapter 4)
 
-with Namet; use Namet;
-with Types; use Types;
+with Namet;  use Namet;
+with Snames; use Snames;
+with Types;  use Types;
 
 package Sem_Prag is
+
+   --  The following table lists all the user-defined pragmas that may apply to
+   --  a body stub.
+
+   Pragma_On_Stub_OK : constant array (Pragma_Id) of Boolean :=
+     (Pragma_Refined_Pre  => True,
+      Pragma_SPARK_Mode   => True,
+      others              => False);
 
    -----------------
    -- Subprograms --
