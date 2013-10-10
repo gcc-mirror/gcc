@@ -1,3 +1,12 @@
+2013-10-10  Teresa Johnson  <tejohnson@google.com>
+
+	* predict.c (tree_estimate_probability): Add new parameter
+	for estimate_bb_frequencies.
+	(estimate_bb_frequencies): Add new parameter to force estimation.
+	(rebuild_frequencies): When max frequency in function is small,
+	recompute counts from frequencies.
+	* predict.h (estimate_bb_frequencies): New parameter.
+
 2013-10-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* ipa-inline.c (ipa_inline): Fix leak of "order" when
