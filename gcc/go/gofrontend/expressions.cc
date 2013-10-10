@@ -3055,8 +3055,7 @@ class Type_conversion_expression : public Expression
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
-  do_is_constant() const
-  { return this->expr_->is_constant(); }
+  do_is_constant() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -3196,6 +3195,27 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
     }
 
   return this;
+}
+
+// Return whether a type conversion is a constant.
+
+bool
+Type_conversion_expression::do_is_constant() const
+{
+  if (!this->expr_->is_constant())
+    return false;
+
+  // A conversion to a type that may not be used as a constant is not
+  // a constant.  For example, []byte(nil).
+  Type* type = this->type_;
+  if (type->integer_type() == NULL
+      && type->float_type() == NULL
+      && type->complex_type() == NULL
+      && !type->is_boolean_type()
+      && !type->is_string_type())
+    return false;
+
+  return true;
 }
 
 // Return the constant numeric value if there is one.
