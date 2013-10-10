@@ -1,3 +1,13 @@
+2013-10-10  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Compilation_Errors): In formal verification mode,
+	always return False.
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Collect_Hidden_States_In_Decls): Only consider source
+	non-constant objects.
+
 2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb: Add an entry in table Canonical_Aspect for

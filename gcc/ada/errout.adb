@@ -233,6 +233,15 @@ package body Errout is
    begin
       if not Finalize_Called then
          raise Program_Error;
+
+      --  In formal verification mode, errors issued when generating Why code
+      --  are not compilation errors, and should not result in exiting with
+      --  an error status. These errors are handled in the driver of the
+      --  verification process instead.
+
+      elsif SPARK_Mode and not Frame_Condition_Mode then
+         return False;
+
       else
          return Erroutc.Compilation_Errors;
       end if;
