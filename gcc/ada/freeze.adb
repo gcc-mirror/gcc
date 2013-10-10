@@ -2766,20 +2766,28 @@ package body Freeze is
                --  of course we already know the list of choices corresponding
                --  to the others choice (it's the list we're replacing!)
 
-               declare
-                  Last_Var    : constant Node_Id :=
-                                  Last_Non_Pragma (Variants (V));
-                  Others_Node : Node_Id;
-               begin
-                  if Nkind (First (Discrete_Choices (Last_Var))) /=
+               --  We only want to do this if the expander is active, since
+               --  we do not want to clobber the ASIS tree!
+
+               if Expander_Active then
+                  declare
+                     Last_Var : constant Node_Id :=
+                                     Last_Non_Pragma (Variants (V));
+
+                     Others_Node : Node_Id;
+
+                  begin
+                     if Nkind (First (Discrete_Choices (Last_Var))) /=
                                                             N_Others_Choice
-                  then
-                     Others_Node := Make_Others_Choice (Sloc (Last_Var));
-                     Set_Others_Discrete_Choices
-                       (Others_Node, Discrete_Choices (Last_Var));
-                     Set_Discrete_Choices (Last_Var, New_List (Others_Node));
-                  end if;
-               end;
+                     then
+                        Others_Node := Make_Others_Choice (Sloc (Last_Var));
+                        Set_Others_Discrete_Choices
+                          (Others_Node, Discrete_Choices (Last_Var));
+                        Set_Discrete_Choices
+                          (Last_Var, New_List (Others_Node));
+                     end if;
+                  end;
+               end if;
             end if;
          end Check_Variant_Part;
       end Freeze_Record_Type;

@@ -1,3 +1,24 @@
+2013-10-10  Pascal Obry  <obry@adacore.com>
+
+	* prj-conf.adb: Minor typo fixes in comment.
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-posix.adb (Compute_Deadline): New local subprogram,
+	factors common code between Timed_Sleep and Timed_Delay.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Don't replace others if
+	expander inactive. This avoids clobbering the ASIS tree in
+	-gnatct mode.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Op_Expon): Avoid crash testing for
+	fixed-point case in preanalysis mode (error will be caught during
+	full analysis).
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Refined_Pre and Refined_Post are now allowed as

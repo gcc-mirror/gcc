@@ -8295,19 +8295,22 @@ package body Sem_Res is
    begin
       --  Catch attempts to do fixed-point exponentiation with universal
       --  operands, which is a case where the illegality is not caught during
-      --  normal operator analysis.
+      --  normal operator analysis. This is not done in preanalysis mode
+      --  since the tree is not fully decorated during preanalysis.
 
-      if Is_Fixed_Point_Type (Typ) and then Comes_From_Source (N) then
-         Error_Msg_N ("exponentiation not available for fixed point", N);
-         return;
+      if Full_Analysis then
+         if Is_Fixed_Point_Type (Typ) and then Comes_From_Source (N) then
+            Error_Msg_N ("exponentiation not available for fixed point", N);
+            return;
 
-      elsif Nkind (Parent (N)) in N_Op
-        and then Is_Fixed_Point_Type (Etype (Parent (N)))
-        and then Etype (N) = Universal_Real
-        and then Comes_From_Source (N)
-      then
-         Error_Msg_N ("exponentiation not available for fixed point", N);
-         return;
+         elsif Nkind (Parent (N)) in N_Op
+           and then Is_Fixed_Point_Type (Etype (Parent (N)))
+           and then Etype (N) = Universal_Real
+           and then Comes_From_Source (N)
+         then
+            Error_Msg_N ("exponentiation not available for fixed point", N);
+            return;
+         end if;
       end if;
 
       if Comes_From_Source (N)
@@ -8326,7 +8329,7 @@ package body Sem_Res is
       end if;
 
       --  We do the resolution using the base type, because intermediate values
-      --  in expressions always are of the base type, not a subtype of it.
+      --  in expressions are always of the base type, not a subtype of it.
 
       Resolve (Left_Opnd (N), B_Typ);
       Resolve (Right_Opnd (N), Standard_Integer);
