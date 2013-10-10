@@ -53,6 +53,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Dist; use Sem_Dist;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -1581,6 +1582,7 @@ package body Sem_Ch10 is
 
          Set_Has_Completion (Nam);
          Set_Scope (Defining_Entity (N), Current_Scope);
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
       end if;
@@ -1594,11 +1596,84 @@ package body Sem_Ch10 is
       Subunit_Name : constant Unit_Name_Type := Get_Unit_Name (N);
       Unum         : Unit_Number_Type;
 
+      procedure Move_Stub_Pragmas_To_Body (Bod : Node_Id);
+      --  Relocate all pragmas that apply to a subprogram body stub to the
+      --  declarations of proper body Bod.
+      --  Should we do this for the reamining body stub kinds???
+
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
       --  present, which is user-friendly and in fact required for ASIS, but
       --  we don't complain if the subunit is missing.
+
+      -------------------------------
+      -- Move_Stub_Pragmas_To_Body --
+      -------------------------------
+
+      procedure Move_Stub_Pragmas_To_Body (Bod : Node_Id) is
+         procedure Move_Pragma (Prag : Node_Id);
+         --  Relocate one pragma to the declarations of Bod
+
+         -----------------
+         -- Move_Pragma --
+         -----------------
+
+         procedure Move_Pragma (Prag : Node_Id) is
+            Decls : List_Id := Declarations (Bod);
+
+         begin
+            if No (Decls) then
+               Decls := New_List;
+               Set_Declarations (Bod, Decls);
+            end if;
+
+            --  Unhook the pragma from its current list
+
+            Remove (Prag);
+            Prepend (Prag, Decls);
+         end Move_Pragma;
+
+         --  Local variables
+
+         Next_Stmt : Node_Id;
+         Stmt      : Node_Id;
+
+      --  Start of processing for Move_Stub_Pragmas_To_Body
+
+      begin
+         pragma Assert (Nkind (N) = N_Subprogram_Body_Stub);
+
+         --  Perform a bit of a lookahead - peek at any subsequent source
+         --  pragmas while skipping internally generated code.
+
+         Stmt := Next (N);
+         while Present (Stmt) loop
+            Next_Stmt := Next (Stmt);
+
+            --  Move a source pragma that applies to a subprogram stub to the
+            --  declarations of the proper body.
+
+            if Comes_From_Source (Stmt)
+              and then Nkind (Stmt) = N_Pragma
+              and then Pragma_On_Stub_OK (Get_Pragma_Id (Stmt))
+            then
+               Move_Pragma (Stmt);
+
+            --  Skip internally generated code
+
+            elsif not Comes_From_Source (Stmt) then
+               null;
+
+            --  No valid pragmas are available for relocation
+
+            else
+               exit;
+            end if;
+
+            Stmt := Next_Stmt;
+         end loop;
+      end Move_Stub_Pragmas_To_Body;
 
       ----------------------
       -- Optional_Subunit --
@@ -1663,6 +1738,10 @@ package body Sem_Ch10 is
             end if;
          end if;
       end Optional_Subunit;
+
+      --  Local variables
+
+      Stub_Id : Entity_Id;
 
    --  Start of processing for Analyze_Proper_Body
 
@@ -1818,6 +1897,7 @@ package body Sem_Ch10 is
 
                declare
                   Comp_Unit : constant Node_Id := Cunit (Unum);
+                  Prop_Body : Node_Id;
 
                begin
                   --  Check for child unit instead of subunit
@@ -1830,6 +1910,8 @@ package body Sem_Ch10 is
                   --  OK, we have a subunit
 
                   else
+                     Prop_Body := Proper_Body (Unit (Comp_Unit));
+
                      --  Set corresponding stub (even if errors)
 
                      Set_Corresponding_Stub (Unit (Comp_Unit), N);
@@ -1845,11 +1927,17 @@ package body Sem_Ch10 is
                         SCO_Record (Unum);
                      end if;
 
-                     --  Propagate any aspect specifications associated with
-                     --  with the stub to the proper body.
+                     --  Propagate all aspect specifications associated with
+                     --  the stub to the proper body.
 
-                     Move_Or_Merge_Aspects
-                       (From => N, To => Proper_Body (Unit (Comp_Unit)));
+                     Move_Or_Merge_Aspects (From => N, To => Prop_Body);
+
+                     --  Propagate all source pragmas associated with a
+                     --  subprogram body stub to the proper body.
+
+                     if Nkind (N) = N_Subprogram_Body_Stub then
+                        Move_Stub_Pragmas_To_Body (Prop_Body);
+                     end if;
 
                      --  Analyze the unit if semantics active
 
@@ -1869,6 +1957,24 @@ package body Sem_Ch10 is
                      Version_Update (Cunit (Main_Unit), Comp_Unit);
                   end if;
                end;
+
+            --  The unit which should contain the proper subprogram body does
+            --  not exist. Analyze the aspect specifications of the stub (if
+            --  any).
+
+            elsif Nkind (N) = N_Subprogram_Body_Stub
+              and then Has_Aspects (N)
+            then
+               Stub_Id := Defining_Unit_Name (Specification (N));
+
+               --  Restore the proper visibility of the stub and its formals
+
+               Push_Scope (Stub_Id);
+               Install_Formals (Stub_Id);
+
+               Analyze_Aspect_Specifications (N, Stub_Id);
+
+               Pop_Scope;
             end if;
          end if;
 
@@ -1906,6 +2012,7 @@ package body Sem_Ch10 is
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Set_Has_Completion (Etype (Nam));
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
          Analyze_Proper_Body (N, Etype (Nam));
       end if;
@@ -2351,6 +2458,7 @@ package body Sem_Ch10 is
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
 
          --  Check for duplicate stub, if so give message and terminate
 

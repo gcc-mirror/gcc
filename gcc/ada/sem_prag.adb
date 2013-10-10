@@ -75,7 +75,6 @@ with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinfo.CN; use Sinfo.CN;
 with Sinput;   use Sinput;
-with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stylesw;  use Stylesw;
 with Table;
@@ -15932,6 +15931,137 @@ package body Sem_Prag is
          when Pragma_Rational =>
             Set_Rational_Profile;
 
+         -----------------
+         -- Refined_Pre --
+         -----------------
+
+         --  pragma Refined_Pre (boolean_EXPRESSION);
+
+         when Pragma_Refined_Pre => Refined_Pre : declare
+            Body_Decl : Node_Id := Parent (N);
+            Pack_Spec : Node_Id;
+            Restore   : Boolean := False;
+            Spec_Decl : Node_Id;
+            Spec_Id   : Entity_Id;
+            Stmt      : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+
+            --  Verify the placement of the pragma and check for duplicates
+
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Skip prior pragmas, but check for duplicates
+
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
+
+               --  The pragma applies to a subprogram body stub
+
+               elsif Nkind (Stmt) = N_Subprogram_Body_Stub then
+                  Body_Decl := Stmt;
+                  exit;
+
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
+
+               else
+                  Pragma_Misplaced;
+                  return;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            --  Pragma Refined_Pre must apply to a subprogram body [stub]
+
+            if not Nkind_In (Body_Decl, N_Subprogram_Body,
+                                        N_Subprogram_Body_Stub)
+            then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            --  The body [stub] must not act as a spec
+
+            if Nkind (Body_Decl) = N_Subprogram_Body then
+               Spec_Id := Corresponding_Spec (Body_Decl);
+            else
+               Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+            end if;
+
+            if No (Spec_Id) then
+               Error_Pragma ("pragma % cannot apply to a stand alone body");
+               return;
+            end if;
+
+            --  Refined_Pre may only apply to the body [stub] of a subprogram
+            --  declared in the visible part of a package. Retrieve the context
+            --  of the subprogram declaration.
+
+            Spec_Decl := Parent (Parent (Spec_Id));
+
+            pragma Assert
+              (Nkind_In (Spec_Decl, N_Abstract_Subprogram_Declaration,
+                                    N_Generic_Subprogram_Declaration,
+                                    N_Subprogram_Declaration));
+
+            Pack_Spec := Parent (Spec_Decl);
+
+            if Nkind (Pack_Spec) /= N_Package_Specification
+              or else List_Containing (Spec_Decl) /=
+                        Visible_Declarations (Pack_Spec)
+            then
+               Error_Pragma
+                 ("pragma % must apply to the body of a visible subprogram");
+            end if;
+
+            --  When the pragma applies to a subprogram stub without a proper
+            --  body, we have to restore the visibility of the stub and its
+            --  formals to perform analysis.
+
+            if Nkind (Body_Decl) = N_Subprogram_Body_Stub
+              and then No (Library_Unit (Body_Decl))
+              and then Current_Scope /= Spec_Id
+            then
+               Restore := True;
+               Push_Scope (Spec_Id);
+               Install_Formals (Spec_Id);
+            end if;
+
+            --  Convert pragma Refined_Pre into pragma Check. The analysis of
+            --  the generated pragma will take care of the expression.
+
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Pname)),
+
+                  Make_Pragma_Argument_Association (Sloc (Arg1),
+                    Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
+
+            Analyze (N);
+
+            if Restore then
+               Pop_Scope;
+            end if;
+         end Refined_Pre;
+
          -----------------------
          -- Relative_Deadline --
          -----------------------
@@ -18994,12 +19124,12 @@ package body Sem_Prag is
       Pragma_Page                           => -1,
       Pragma_Partition_Elaboration_Policy   => -1,
       Pragma_Passive                        => -1,
-      Pragma_Preelaborable_Initialization   => -1,
-      Pragma_Polling                        => -1,
       Pragma_Persistent_BSS                 =>  0,
+      Pragma_Polling                        => -1,
       Pragma_Postcondition                  => -1,
       Pragma_Precondition                   => -1,
       Pragma_Predicate                      => -1,
+      Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   => -1,
       Pragma_Preelaborate_05                => -1,
       Pragma_Priority                       => -1,
@@ -19015,6 +19145,7 @@ package body Sem_Prag is
       Pragma_Queuing_Policy                 => -1,
       Pragma_Rational                       => -1,
       Pragma_Ravenscar                      => -1,
+      Pragma_Refined_Pre                    => -1,
       Pragma_Relative_Deadline              => -1,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,

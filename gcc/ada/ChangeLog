@@ -1,3 +1,65 @@
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch13.adb (Aspect_Specifications_Present)): In earlier than
+	Ada2012 mode, assume that a legal aspect name following "with"
+	keyword is an older gnat switch and not a misplaced with_clause.
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry for Aspect_Refined_Pre in
+	table Canonical_Aspect.
+	(Aspects_On_Body_OK): Renamed to
+	Aspects_On_Body_Or_Stub_OK.
+	(Aspects_On_Body_Or_Stub_OK):
+	Update the query in table Aspect_On_Body_OK.
+	* aspects.ads: Add an entry for Aspect_Refined_Pre in tables
+	Aspect_Id, Aspect_Argument, Aspect_Names, Aspect_Delay,
+	Aspect_On_Body_Or_Stub_OK. Table Aspect_On_Body_OK is now known as
+	Aspect_On_Body_Or_Stub_OK.  Add a section of aspect specifications
+	that apply to body stubs.
+	(Aspects_On_Body_OK): Renamed to Aspects_On_Body_Or_Stub_OK.
+	(Aspects_On_Body_Or_Stub_OK): Update the comment on usage.
+	* par-prag.adb: Add pragma Refined_Pre to the list of pragmas
+	that do not require special processing by the parser.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Delay the
+	analysis of aspect specifications that apply to a body stub
+	until the proper body is analyzed.
+	* sem_ch10.adb: Add with and use clause for Sem_Ch13.
+	(Analyze_Package_Body_Stub): Set the corresponding spec of the stub.
+	(Analyze_Proper_Body): Relocate all pragmas that apply
+	to a subprogram body stub to the declarations of the proper
+	body. Analyze the aspect specifications of the stub when the
+	proper body is not present.
+	(Analyze_Protected_Body_Stub): Set the corresponding spec of the stub.
+	(Analyze_Task_Body_Stub): Set the corresponding spec of the stub.
+	(Move_Stub_Pragmas_To_Body): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Refined_Pre.
+	(Check_Aspect_At_Freeze_Point): Aspect
+	Refined_Pre does not need delayed processing at the freeze point.
+	* sem_prag.adb: Remove with and use clause for Snames. Add
+	an entry for Pragma_Refined_Pre in table Sig_Flags.
+	(Analyze_Pragma): Add processing for pragma Refined_Pre.
+	* sem_prag.ads: Add with and use clause for Snames. Add table
+	Pragma_On_Stub_OK.
+	* sinfo.adb (Corresponding_Spec_Of_Stub): New routine.
+	(Set_Corresponding_Spec_Of_Stub): New routine.
+	* sinfo.ads: Add new attribute Corresponding_Spec_Of_Stub
+	along with comment on usage and occurrences in nodes.
+	(Corresponding_Spec_Of_Stub): New routine along with pragma
+	Inline.
+	(Set_Corresponding_Spec_Of_Stub): New routine along
+	with pragma Inline.
+	* snames.ads-tmpl: Add new predefined name for Refined_Pre. Add
+	new Pragma_Id for Refined_Pre.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation): Improve error message when
+	name in instantiation does not designate a generic unit of the
+	right kind.
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Variant_Part): Expand statically

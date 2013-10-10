@@ -111,9 +111,11 @@ package body Ch13 is
 
             --  The identifier may be the name of a boolean aspect with a
             --  defaulted True value. Further checks when analyzing aspect
-            --  specification.
+            --  specification, which may include further aspects.
 
-            elsif Token = Tok_Comma then
+            elsif Token = Tok_Comma
+              or else Token = Tok_Semicolon
+            then
                Result := True;
 
             elsif Token = Tok_Apostrophe then

@@ -691,6 +691,17 @@ package body Sinfo is
       return Node5 (N);
    end Corresponding_Spec;
 
+   function Corresponding_Spec_Of_Stub
+      (N : Node_Id) return Entity_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Package_Body_Stub
+        or else NT (N).Nkind = N_Protected_Body_Stub
+        or else NT (N).Nkind = N_Subprogram_Body_Stub
+        or else NT (N).Nkind = N_Task_Body_Stub);
+      return Node2 (N);
+   end Corresponding_Spec_Of_Stub;
+
    function Corresponding_Stub
       (N : Node_Id) return Node_Id is
    begin
@@ -3816,6 +3827,17 @@ package body Sinfo is
         or else NT (N).Nkind = N_With_Clause);
       Set_Node5 (N, Val); -- semantic field, no parent set
    end Set_Corresponding_Spec;
+
+   procedure Set_Corresponding_Spec_Of_Stub
+      (N : Node_Id; Val : Entity_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Package_Body_Stub
+        or else NT (N).Nkind = N_Protected_Body_Stub
+        or else NT (N).Nkind = N_Subprogram_Body_Stub
+        or else NT (N).Nkind = N_Task_Body_Stub);
+      Set_Node2 (N, Val); -- semantic field, no parent set
+   end Set_Corresponding_Spec_Of_Stub;
 
    procedure Set_Corresponding_Stub
       (N : Node_Id; Val : Node_Id) is
