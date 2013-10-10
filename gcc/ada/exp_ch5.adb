@@ -2537,7 +2537,11 @@ package body Exp_Ch5 is
          --  if statement, since this can result in subsequent optimizations.
          --  This helps not only with case statements in the source of a
          --  simple form, but also with generated code (discriminant check
-         --  functions in particular)
+         --  functions in particular).
+
+         --  Note: it is OK to do this before expanding out choices for any
+         --  static predicates, since the if statement processing will handle
+         --  the static predicate case fine.
 
          elsif Len = 2 then
             Chlist := Discrete_Choices (First (Alternatives (N)));
@@ -2617,12 +2621,14 @@ package body Exp_Ch5 is
             Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
          end if;
 
-         Alt := First (Alternatives (N));
-         while Present (Alt)
-           and then Nkind (Alt) = N_Case_Statement_Alternative
-         loop
+         --  Deal with possible declarations of controlled objects, and also
+         --  with rewriting choice sequences for static predicate references.
+
+         Alt := First_Non_Pragma (Alternatives (N));
+         while Present (Alt) loop
             Process_Statements_For_Controlled_Objects (Alt);
-            Next (Alt);
+            Expand_Static_Predicates_In_Choices (Alt);
+            Next_Non_Pragma (Alt);
          end loop;
       end;
    end Expand_N_Case_Statement;

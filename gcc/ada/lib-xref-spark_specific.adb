@@ -1020,17 +1020,28 @@ package body SPARK_Specific is
                Result := Defining_Unit_Name (Specification (Result));
                exit;
 
-            --  The enclosing subprogram for a pre- or postconditions should be
-            --  the subprogram to which the pragma is attached. This is not
-            --  always the case in the AST, as the pragma may be declared after
-            --  the declaration of the subprogram. Return Empty in this case.
-
             when N_Pragma =>
+
+               --  The enclosing subprogram for a precondition, a
+               --  postcondition, or a contract case should be the subprogram
+               --  to which the pragma is attached, which can be found by
+               --  following previous elements in the list to which the
+               --  pragma belongs.
+
                if Get_Pragma_Id (Result) = Pragma_Precondition
                     or else
                   Get_Pragma_Id (Result) = Pragma_Postcondition
+                    or else
+                  Get_Pragma_Id (Result) = Pragma_Contract_Cases
                then
-                  return Empty;
+                  if Is_List_Member (Result)
+                    and then Present (Prev (Result))
+                  then
+                     Result := Prev (Result);
+                  else
+                     Result := Parent (Result);
+                  end if;
+
                else
                   Result := Parent (Result);
                end if;

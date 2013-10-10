@@ -5846,23 +5846,35 @@ package body Exp_Ch3 is
    -- Expand_N_Variant_Part --
    ---------------------------
 
-   --  If the last variant does not contain the Others choice, replace it with
-   --  an N_Others_Choice node since Gigi always wants an Others. Note that we
-   --  do not bother to call Analyze on the modified variant part, since its
-   --  only effect would be to compute the Others_Discrete_Choices node
-   --  laboriously, and of course we already know the list of choices that
-   --  corresponds to the others choice (it's the list we are replacing!)
-
    procedure Expand_N_Variant_Part (N : Node_Id) is
       Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
       Others_Node : Node_Id;
+      Variant     : Node_Id;
+
    begin
+      --  If the last variant does not contain the Others choice, replace it
+      --  with an N_Others_Choice node since Gigi always wants an Others. Note
+      --  that we do not bother to call Analyze on the modified variant part,
+      --  since its only effect would be to compute the Others_Discrete_Choices
+      --  node laboriously, and of course we already know the list of choices
+      --  corresponding to the others choice (it's the list we're replacing!)
+
       if Nkind (First (Discrete_Choices (Last_Var))) /= N_Others_Choice then
          Others_Node := Make_Others_Choice (Sloc (Last_Var));
          Set_Others_Discrete_Choices
            (Others_Node, Discrete_Choices (Last_Var));
          Set_Discrete_Choices (Last_Var, New_List (Others_Node));
       end if;
+
+      --  Deal with any static predicates in the variant choices. Note that we
+      --  don't have to look at the last variant, since we know it is an others
+      --  choice, because we just rewrote it that way if necessary.
+
+      Variant := First_Non_Pragma (Variants (N));
+      while Variant /= Last_Var loop
+         Expand_Static_Predicates_In_Choices (Variant);
+         Next_Non_Pragma (Variant);
+      end loop;
    end Expand_N_Variant_Part;
 
    ---------------------------------

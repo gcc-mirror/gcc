@@ -57,9 +57,9 @@ package body Sem_Case is
    --  to the choice node itself.
 
    type Choice_Table_Type is array (Nat range <>) of Choice_Bounds;
-   --  Table type used to sort the choices present in a case statement, array
-   --  aggregate or record variant. The actual entries are stored in 1 .. Last,
-   --  but we have a 0 entry for convenience in sorting.
+   --  Table type used to sort the choices present in a case statement or
+   --  record variant. The actual entries are stored in 1 .. Last, but we
+   --  have a 0 entry for use in sorting.
 
    -----------------------
    -- Local Subprograms --
@@ -145,8 +145,7 @@ package body Sem_Case is
 
       procedure Missing_Choices (Pred : Node_Id; Prev_Hi : Uint);
       --  Emit an error message for each non-covered static predicate set.
-      --  Prev_Hi denotes the upper bound of the last choice that covered a
-      --  set.
+      --  Prev_Hi denotes the upper bound of the last choice covering a set.
 
       procedure Move_Choice (From : Natural; To : Natural);
       --  Move routine for sorting the Choice_Table
@@ -263,7 +262,6 @@ package body Sem_Case is
          else
             Illegal_Range (Loc, Choice_Lo, Choice_Hi);
             Error := True;
-
             return;
          end if;
 
@@ -443,21 +441,21 @@ package body Sem_Case is
 
             if Nkind (Case_Node) = N_Variant_Part then
                Error_Msg_NE
-                 ("bounds of & are not static," &
-                     " alternatives must cover base type", Expr, Expr);
+                 ("bounds of & are not static, "
+                  & "alternatives must cover base type!", Expr, Expr);
 
             --  If this is a case statement, the expression may be non-static
             --  or else the subtype may be at fault.
 
             elsif Is_Entity_Name (Expr) then
                Error_Msg_NE
-                 ("bounds of & are not static," &
-                    " alternatives must cover base type", Expr, Expr);
+                 ("bounds of & are not static, "
+                  & "alternatives must cover base type!", Expr, Expr);
 
             else
                Error_Msg_N
-                 ("subtype of expression is not static,"
-                  & " alternatives must cover base type!", Expr);
+                 ("subtype of expression is not static, "
+                  & "alternatives must cover base type!", Expr);
             end if;
 
          --  Otherwise the expression is not static, even if the bounds of the
@@ -1220,10 +1218,13 @@ package body Sem_Case is
             if Nkind (Alt) = N_Pragma then
                Analyze (Alt);
 
-            --  Otherwise check each choice against its base type
+            --  Otherwise we have an alternative. In most cases the semantic
+            --  processing leaves the list of choices unchanged
+
+            --  Check each choice against its base type
 
             else
-               Choice := First (Get_Choices (Alt));
+               Choice := First (Discrete_Choices (Alt));
                while Present (Choice) loop
                   Delete_Choice := False;
                   Analyze (Choice);
@@ -1260,33 +1261,29 @@ package body Sem_Case is
                            then
                               Bad_Predicated_Subtype_Use
                                 ("cannot use subtype& with non-static "
-                                 & "predicate as case alternative", Choice, E,
-                                 Suggest_Static => True);
+                                 & "predicate as case alternative",
+                                 Choice, E, Suggest_Static => True);
 
-                              --  Static predicate case
+                           --  Static predicate case
 
                            else
                               declare
-                                 Copy : constant List_Id := Empty_List;
-                                 P    : Node_Id;
-                                 C    : Node_Id;
+                                 P : Node_Id;
+                                 C : Node_Id;
 
                               begin
                                  --  Loop through entries in predicate list,
-                                 --  converting to choices. Note that if the
+                                 --  checking each entry. Note that if the
                                  --  list is empty, corresponding to a False
-                                 --  predicate, then no choices are inserted.
+                                 --  predicate, then no choices are checked.
 
                                  P := First (Static_Predicate (E));
                                  while Present (P) loop
                                     C := New_Copy (P);
                                     Set_Sloc (C, Sloc (Choice));
-                                    Append_To (Copy, C);
+                                    Check (C, Low_Bound (C), High_Bound (C));
                                     Next (P);
                                  end loop;
-
-                                 Insert_List_After (Choice, Copy);
-                                 Delete_Choice := True;
                               end;
                            end if;
 
@@ -1305,8 +1302,6 @@ package body Sem_Case is
                   elsif Kind = N_Subtype_Indication then
                      Resolve_Discrete_Subtype_Indication
                        (Choice, Expected_Type);
-
-                     --  Here for other than predicated subtype case
 
                      if Etype (Choice) /= Any_Type then
                         declare
@@ -1351,9 +1346,9 @@ package body Sem_Case is
                   --  alternative and as its only choice.
 
                   elsif Kind = N_Others_Choice then
-                     if not (Choice = First (Get_Choices (Alt))
-                             and then Choice = Last (Get_Choices (Alt))
-                             and then Alt = Last (Get_Alternatives (N)))
+                     if not (Choice = First (Discrete_Choices (Alt))
+                              and then Choice = Last (Discrete_Choices (Alt))
+                              and then Alt = Last (Get_Alternatives (N)))
                      then
                         Error_Msg_N
                           ("the choice OTHERS must appear alone and last",

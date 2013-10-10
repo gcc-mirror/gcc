@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,28 +40,22 @@ package Sem_Case is
 
    generic
       with function Get_Alternatives (N : Node_Id) return List_Id;
-      --  Function needed to get to the actual list of case statement
-      --  alternatives, or array aggregate component associations or
-      --  record variants from which we can then access the actual lists
-      --  of discrete choices. N is the node for the original construct
-      --  i.e. a case statement, an array aggregate or a record variant.
-
-      with function Get_Choices (A : Node_Id) return List_Id;
-      --  Given a case statement alternative, array aggregate component
-      --  association or record variant A we need different access functions
-      --  to get to the actual list of discrete choices.
+      --  Function used to get the list of case statement alternatives or
+      --  record variants, from which we can then access the actual lists of
+      --  discrete choices. N is the node for the original construct (case
+      --  statement or a record variant).
 
       with procedure Process_Empty_Choice (Choice : Node_Id);
-      --  Processing to carry out for an empty Choice
+      --  Processing to carry out for an empty Choice. Set to No_Op (declared
+      --  above) if no such processing is required.
 
       with procedure Process_Non_Static_Choice (Choice : Node_Id);
       --  Processing to carry out for a non static Choice
 
       with procedure Process_Associated_Node (A : Node_Id);
-      --  Associated with each case alternative, aggregate component
-      --  association or record variant A there is a node or list of nodes
-      --  that need semantic processing. This routine implements that
-      --  processing.
+      --  Associated with each case alternative or record variant A there is
+      --  a node or list of nodes that need semantic processing. This routine
+      --  implements that processing.
 
    package Generic_Choices_Processing is
 
@@ -70,12 +64,12 @@ package Sem_Case is
          Subtyp         : Entity_Id;
          Raises_CE      : out Boolean;
          Others_Present : out Boolean);
-      --  From a case expression, case statement, array aggregate or record
-      --  variant N, this routine analyzes the corresponding list of discrete
-      --  choices. Subtyp is the subtype of the discrete choices. The type
-      --  against which the discrete choices must be resolved is its base type.
+      --  From a case expression, case statement, or record variant N, this
+      --  routine analyzes the corresponding list of discrete choices. Subtyp
+      --  is the subtype of the discrete choices. The type against which the
+      --  discrete choices must be resolved is its base type.
       --
-      --  In one of the bounds of a discrete choice raises a constraint
+      --  If one of the bounds of a discrete choice raises a constraint
       --  error the flag Raise_CE is set.
       --
       --  Finally Others_Present is set to True if an Others choice is present

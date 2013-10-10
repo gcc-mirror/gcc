@@ -9100,7 +9100,12 @@ package body Sem_Ch6 is
       Iface_Prim  : Entity_Id;
       Prim        : Entity_Id) return Boolean
    is
-      Iface : constant Entity_Id := Find_Dispatching_Type (Iface_Prim);
+      --  The operation may in fact be an inherited (implicit) operation
+      --  rather than the original interface primitive, so retrieve the
+      --  ultimate ancestor.
+
+      Iface : constant Entity_Id :=
+                Find_Dispatching_Type (Ultimate_Alias (Iface_Prim));
       Typ   : constant Entity_Id := Find_Dispatching_Type (Prim);
 
       function Controlling_Formal (Prim : Entity_Id) return Entity_Id;
@@ -9185,7 +9190,7 @@ package body Sem_Ch6 is
             return False;
          else
             return
-              Type_Conformant (Prim, Iface_Prim,
+              Type_Conformant (Prim, Ultimate_Alias (Iface_Prim),
                 Skip_Controlling_Formals => True);
          end if;
 

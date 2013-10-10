@@ -4381,7 +4381,17 @@ package body Sem_Ch13 is
                               Name                => Expr);
 
                begin
-                  Insert_Before (N, Rnode);
+                  --  If the attribute definition clause comes from an aspect
+                  --  clause, then insert the renaming before the associated
+                  --  entity's declaration, since the attribute clause has
+                  --  not yet been appended to the declaration list.
+
+                  if From_Aspect_Specification (N) then
+                     Insert_Before (Parent (Entity (N)), Rnode);
+                  else
+                     Insert_Before (N, Rnode);
+                  end if;
+
                   Analyze (Rnode);
                   Set_Associated_Storage_Pool (U_Ent, Pool);
                end;
