@@ -612,6 +612,9 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
    CLOBBERS is a list of STRING_CST nodes each naming a hard register
    that is clobbered by this insn.
 
+   LABELS is a list of labels, and if LABELS is non-NULL, FALLTHRU_BB
+   should be the fallthru basic block of the asm goto.
+
    Not all kinds of lvalue that may appear in OUTPUTS can be stored directly.
    Some elements of OUTPUTS may be replaced with trees representing temporary
    values.  The caller should copy those temporary values to the originally
@@ -621,7 +624,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
 static void
 expand_asm_operands (tree string, tree outputs, tree inputs,
-		     tree clobbers, tree labels, int vol, location_t locus)
+		     tree clobbers, tree labels, basic_block fallthru_bb,
+		     int vol, location_t locus)
 {
   rtvec argvec, constraintvec, labelvec;
   rtx body;
@@ -642,6 +646,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
+  rtx fallthru_label = NULL_RTX;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
@@ -942,8 +947,24 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
   /* Copy labels to the vector.  */
   for (i = 0, tail = labels; i < nlabels; ++i, tail = TREE_CHAIN (tail))
-    ASM_OPERANDS_LABEL (body, i)
-      = gen_rtx_LABEL_REF (Pmode, label_rtx (TREE_VALUE (tail)));
+    {
+      rtx r;
+      /* If asm goto has any labels in the fallthru basic block, use
+	 a label that we emit immediately after the asm goto.  Expansion
+	 may insert further instructions into the same basic block after
+	 asm goto and if we don't do this, insertion of instructions on
+	 the fallthru edge might misbehave.  See PR58670.  */
+      if (fallthru_bb
+	  && label_to_block_fn (cfun, TREE_VALUE (tail)) == fallthru_bb)
+	{
+	  if (fallthru_label == NULL_RTX)
+	    fallthru_label = gen_label_rtx ();
+	  r = fallthru_label;
+	}
+      else
+	r = label_rtx (TREE_VALUE (tail));
+      ASM_OPERANDS_LABEL (body, i) = gen_rtx_LABEL_REF (Pmode, r);
+    }
 
   generating_concat_p = old_generating_concat_p;
 
@@ -1067,6 +1088,9 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	emit_insn (body);
     }
 
+  if (fallthru_label)
+    emit_label (fallthru_label);
+
   /* For any outputs that needed reloading into registers, spill them
      back to where they belong.  */
   for (i = 0; i < noutputs; ++i)
@@ -1087,6 +1111,7 @@ expand_asm_stmt (gimple stmt)
   const char *s;
   tree str, out, in, cl, labels;
   location_t locus = gimple_location (stmt);
+  basic_block fallthru_bb = NULL;
 
   /* Meh... convert the gimple asm operands into real tree lists.
      Eventually we should make all routines work on the vectors instead
@@ -1122,6 +1147,9 @@ expand_asm_stmt (gimple stmt)
   n = gimple_asm_nlabels (stmt);
   if (n > 0)
     {
+      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
+      if (fallthru)
+	fallthru_bb = fallthru->dest;
       t = labels = gimple_asm_label_op (stmt, 0);
       for (i = 1; i < n; i++)
 	t = TREE_CHAIN (t) = gimple_asm_label_op (stmt, i);
@@ -1147,7 +1175,7 @@ expand_asm_stmt (gimple stmt)
 
   /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
      OUTPUTS some trees for where the values were actually stored.  */
-  expand_asm_operands (str, outputs, in, cl, labels,
+  expand_asm_operands (str, outputs, in, cl, labels, fallthru_bb,
 		       gimple_asm_volatile_p (stmt), locus);
 
   /* Copy all the intermediate outputs into the specified outputs.  */

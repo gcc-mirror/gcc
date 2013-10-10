@@ -1,3 +1,8 @@
+2013-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58670
+	* gcc.dg/torture/pr58670.c: New test.
+
 2013-10-09  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.dg/tree-ssa/phi-opt-11.c: New test.
