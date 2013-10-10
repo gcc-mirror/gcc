@@ -888,7 +888,7 @@ package body Sem_Ch13 is
                      when Aspect_Scalar_Storage_Order =>
                         if (Is_Record_Type (E) or else Is_Array_Type (E))
                           and then No (Get_Attribute_Definition_Clause
-                                       (E, Attribute_Scalar_Storage_Order))
+                                         (E, Attribute_Scalar_Storage_Order))
                           and then Reverse_Storage_Order (P)
                         then
                            Set_Reverse_Storage_Order (Base_Type (E));
@@ -2208,7 +2208,29 @@ package body Sem_Ch13 is
                            Next (A);
                         end loop;
 
+                        --  It is legal to specify Import for a variable, in
+                        --  order to suppress initialization for it, without
+                        --  specifying explicitly its convention. However this
+                        --  is only legal if the convention of the object type
+                        --  is Ada or similar.
+
                         if No (A) then
+                           if Ekind (E) = E_Variable
+                             and then A_Id = Aspect_Import
+                           then
+                              declare
+                                 C : constant Convention_Id :=
+                                       Convention (Etype (E));
+                              begin
+                                 if C = Convention_Ada              or else
+                                    C = Convention_Ada_Pass_By_Copy or else
+                                    C = Convention_Ada_Pass_By_Reference
+                                 then
+                                    goto Continue;
+                                 end if;
+                              end;
+                           end if;
+
                            Error_Msg_N
                              ("missing Convention aspect for Export/Import",
                               Aspect);

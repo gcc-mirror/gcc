@@ -1,3 +1,28 @@
+2013-10-10  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Add gnat2xml doc.
+
+2013-10-10  Doug Rupp  <rupp@adacore.com>
+
+	* s-vxwork-arm.ads: Fix interface to FP_CONTEXT.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): An aspect Import
+	on a variable need not have a convention specified, as long as
+	the implicit convention of the object, obtained from its type,
+	is Ada or Ada-related.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Standard_Unsigned_64): New internal type.
+	* gnat_rm.texi: Update documentation on To_Address.
+	* sem_attr.adb (Analyze_Attribute, case To_Address): Fix
+	problem with out of range static values given as literals or
+	named numbers.
+	* stand.ads (Standard_Unsigned_64): New internal type.
+	* stand.adb: Minor reformatting.
+
 2013-10-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component,

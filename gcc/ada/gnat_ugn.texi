@@ -179,6 +179,9 @@ AdaCore@*
 * Tools Supporting Project Files::
 * The Cross-Referencing Tools gnatxref and gnatfind::
 * The GNAT Pretty-Printer gnatpp::
+@ifclear vms
+* The Ada-to-XML converter gnat2xml::
+@end ifclear
 * The GNAT Metrics Tool gnatmetric::
 * File Name Krunching with gnatkr::
 * Preprocessing with gnatprep::
@@ -327,6 +330,12 @@ way to navigate through sources.
 @ref{The GNAT Pretty-Printer gnatpp}, shows how to produce a reformatted
 version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
+
+@ifclear vms
+@item
+@ref{The Ada-to-XML converter gnat2xml}, shows how to convert Ada
+source code into XML.
+@end ifclear
 
 @item
 @ref{The GNAT Metrics Tool gnatmetric}, shows how to compute various
@@ -14785,6 +14794,468 @@ begin
 end Test;
 @end cartouche
 @end smallexample
+
+@ifclear vms
+@c *********************************
+@node The Ada-to-XML converter gnat2xml
+@chapter The Ada-to-XML converter @command{gnat2xml}
+@findex gnat2xml
+@cindex XML generation
+
+@noindent
+The @command{gnat2xml} tool is an ASIS-based utility that converts
+Ada source code into XML.
+
+@menu
+* Switches for gnat2xml::
+* Driving gnat2xml with gnatmake or gprbuild::
+* Other Programs::
+* Structure of the XML::
+@end menu
+
+@node Switches for gnat2xml
+@section Switches for @command{gnat2xml}
+
+@noindent
+@command{gnat2xml} takes Ada source code as input, and produces XML
+that conforms to the schema.
+
+Usage:
+
+@smallexample
+gnat2xml [options] files
+@end smallexample
+
+``files'' are the Ada source file names.
+
+@noindent
+Options:
+@smallexample
+-h
+--help -- generate usage information and quit, ignoring all other options
+
+-mdir -- generate one .xml file for each Ada source file, in directory
+         @file{dir}. (Default is to generate the XML to standard output.)
+
+-q -- debugging version, with interspersed source, and a more
+      compact representation of "sloc". This version does not conform
+      to any schema.
+
+-I <include-dir>
+    directories to search for dependencies
+    You can also set the ADA_INCLUDE_PATH environment variable for this.
+
+-v -- verbose (print out the command line options, and the names of
+      output files as they are generated).
+
+-t -- do not delete tree files when done (they are deleted by default).
+
+-cargs ... -- options to pass to gcc
+@end smallexample
+
+@noindent
+You can generate the ``tree files'' ahead of time using the -gnatct switch:
+
+@smallexample
+gnatmake -gnat2012 -gnatct *.ad[sb]
+@end smallexample
+
+@noindent
+If tree files do not exist, @command{gnat2xml} will create them by running gcc.
+See the ASIS documentation for more information on tree files.
+
+Example:
+
+@smallexample
+mkdir xml-files
+gnat2xml -v -mxml-files *.ad[sb] -cargs -gnat2012
+@end smallexample
+
+@noindent
+The above will create *.xml files in the @file{xml-files} subdirectory.
+For example, if there is an Ada package Mumble.Dumble, whose spec and
+body source code lives in mumble-dumble.ads and mumble-dumble.adb,
+the above will produce xml-files/mumble-dumble.ads.xml and
+xml-files/mumble-dumble.adb.xml.
+
+@node Driving gnat2xml with gnatmake or gprbuild
+@section Driving @command{gnat2xml} with @command{gnatmake} or @command{gprbuild}
+
+@noindent
+You can use gnatmake or gprbuild to drive @command{gnat2xml} to get
+incremental updates of the XML files on a per-source-file basis. For
+example, if you already have a bunch of XML files, and then you change
+one source file, it will regenerate XML files only for that source
+file, and other source files that depend on it. Gnatmake and gprbuild
+take care of tracking inter-file dependencies. For example, if
+this.adb says @code{with That;}, then this.adb depends on that.ads.
+
+To do this, you tell gnatmake/gprbuild to pretend that
+@command{gnat2xml} is the Ada compiler (instead of using gcc as the
+Ada compiler, as is normal).
+
+To tell gnatmake to use @command{gnat2xml} instead of gcc as the
+``compiler'', for example:
+
+@smallexample
+gnatmake -gnatc *.adb --GCC="gnat2xml -t -mxml"
+@end smallexample
+
+@noindent
+The @option{--GCC=} switch tells gnatmake that the ``compiler'' to run
+is @command{gnat2xml -t -mxml}. The @option{-t} switch means to keep the tree
+files, so they can be reused on the next run. (@command{gnat2xml}
+deletes them by default.) As usual, @option{-mxml} means to put the
+XML files in the @file{xml} subdirectory.
+
+You must give the @option{-gnatc} switch to gnatmake, which means
+``compile only; do not generate object code''. Otherwise, gnatmake will
+complain about missing object (*.o) files; @command{gnat2xml} of
+course does not generate *.o files.
+
+Using gprbuild is similar: you tell it to use @command{gnat2xml}
+instead of gcc. First write a project file, such as my_project.gpr:
+
+@smallexample @c projectfile
+project My_Project is
+
+   package Compiler is
+      for Driver ("ada") use "gnat2xml";
+      --  Use gnat2xml instead of the usual gcc.
+
+      for Default_Switches ("ada") use ("-t", "-mxml");
+      --  Same switches as in the gnatmake case.
+   end Compiler;
+
+end My_Project;
+@end smallexample
+
+@noindent
+Then:
+
+@smallexample @c projectfile
+gprbuild --no-object-check -P my_project.gpr
+@end smallexample
+
+@noindent
+The @option{--no-object-check} switch serves the same purpose as
+@option{-gnatc} in the gnatmake case --- it tells gprbuild not to
+expect that the ``compiler'' (really @command{gnat2xml}) will produce
+*.o files.
+
+See the gprbuild documentation for information on many other things
+you can put in the project file, such as telling it where to find
+the source files.
+
+@node Other Programs
+@section Other Programs
+
+@noindent
+The distribution includes two other programs that are related to
+@command{gnat2xml}:
+
+@command{gnat2xsd} is the schema generator, which generates the schema
+to standard output, based on the structure of Ada as encoded by
+ASIS. You don't need to run @command{gnat2xsd} in order to use
+@command{gnat2xml}. To generate the schema, type:
+
+@smallexample
+gnat2xsd > ada-schema.xsd
+@end smallexample
+
+@noindent
+@command{gnat2xml} generates XML files that will validate against
+@file{ada-schema.xsd}.
+
+@command{xml2gnat} is a back-translator that translates the XML back
+into Ada source code. The Ada generated by @command{xml2gnat} has
+identical semantics to the original Ada code passed to
+@command{gnat2xml}. It is not textually identical, however --- for
+example, no attempt is made to preserve the original indentation.
+
+@node Structure of the XML
+@section Structure of the XML
+
+@noindent
+The primary documentation for the structure of the XML generated by
+@command{gnat2xml} is the schema (see @command{gnat2xsd} above). The
+following documentation gives additional details needed to understand
+the schema and therefore the XML.
+
+The elements listed under Defining Occurrences, Usage Occurrences, and
+Other Elements represent the syntactic structure of the Ada program.
+Element names are given in lower case, with the corresponding element
+type Capitalized_Like_This. The element and element type names are
+derived directly from the ASIS enumeration type Flat_Element_Kinds,
+declared in Asis.Extensions.Flat_Kinds, with the leading ``An_'' or ``A_''
+removed. For example, the ASIS enumeration literal
+An_Assignment_Statement corresponds to the XML element
+assignment_statement of XML type Assignment_Statement.
+
+To understand the details of the schema and the corresponding XML, it is
+necessary to understand the ASIS standard, as well as the GNAT-specific
+extension to ASIS.
+
+A defining occurrence is an identifier (or character literal or operator
+symbol) declared by a declaration. A usage occurrence is an identifier
+(or ...) that references such a declared entity. For example, in:
+
+@smallexample
+type T is range 1..10;
+X, Y : constant T := 1;
+@end smallexample
+
+@noindent
+The first ``T'' is the defining occurrence of a type. The ``X'' is the
+defining occurrence of a constant, as is the ``Y'', and the second ``T'' is
+a usage occurrence referring to the defining occurrence of T.
+
+Each element has a 'sloc' (source location), and subelements for each
+syntactic subtree, reflecting the Ada grammar as implemented by ASIS.
+The types of subelements are as defined in the ASIS standard. For
+example, for the right-hand side of an assignment_statement we have
+the following comment in asis-statements.ads:
+
+@smallexample
+------------------------------------------------------------------------------
+--  18.3  function Assignment_Expression
+------------------------------------------------------------------------------
+
+   function Assignment_Expression
+     (Statement : Asis.Statement)
+      return      Asis.Expression;
+
+------------------------------------------------------------------------------
+...
+--  Returns the expression from the right hand side of the assignment.
+...
+--  Returns Element_Kinds:
+--       An_Expression
+@end smallexample
+
+@noindent
+The corresponding sub-element of type Assignment_Statement is:
+
+@smallexample
+<xsd:element name="assignment_expression_q" type="Expression_Class"/>
+@end smallexample
+
+@noindent
+where Expression_Class is defined by an xsd:choice of all the
+various kinds of expression.
+
+The 'sloc' of each element indicates the starting and ending line and
+column numbers. Column numbers are character counts; that is, a tab
+counts as 1, not as however many spaces it might expand to.
+
+Subelements of type Element have names ending in ``_q'' (for ASIS
+``Query''), and those of type Element_List end in ``_ql'' (``Query returning
+List'').
+
+Some subelements are ``Boolean''. For example, Private_Type_Definition
+has has_abstract_q and has_limited_q, to indicate whether those
+keywords are present, as in @code{type T is abstract limited
+private;}. False is represented by a Nil_Element. True is represented
+by an element type specific to that query (for example, Abstract and
+Limited).
+
+The root of the tree is a Compilation_Unit, with attributes:
+
+@itemize @bullet
+@item
+unit_kind, unit_class, and unit_origin. These are strings that match the
+enumeration literals of types Unit_Kinds, Unit_Classes, and Unit_Origins
+in package Asis.
+
+@item
+unit_full_name is the full expanded name of the unit, starting from a
+root library unit. So for @code{package P.Q.R is ...},
+@code{unit_full_name="P.Q.R"}. Same for @code{separate (P.Q) package R is ...}.
+
+@item
+def_name is the same as unit_full_name for library units; for subunits,
+it is just the simple name.
+
+@item
+source_file is the name of the Ada source file. For example, for
+the spec of @code{P.Q.R}, @code{source_file="p-q-r.ads"}. This allows one to
+interpret the source locations --- the ``sloc'' of all elements
+within this Compilation_Unit refers to line and column numbers
+within the named file.
+@end itemize
+
+@noindent
+Defining occurrences have these attributes:
+
+@itemize @bullet
+@item
+def_name is the simple name of the declared entity, as written in the Ada
+source code.
+
+@item
+def is a unique URI of the form:
+
+ ada://kind/fully/qualified/name
+
+where:
+
+ kind indicates the kind of Ada entity being declared (see below), and
+
+ fully/qualified/name, is the fully qualified name of the Ada
+ entity, with each of ``fully'', ``qualified'', and ``name'' being
+ mangled for uniqueness. We do not document the mangling
+ algorithm, which is subject to change; we just guarantee that the
+ names are unique in the face of overloading.
+
+@item
+type is the type of the declared object, or @code{null} for
+declarations of things other than objects.
+@end itemize
+
+@noindent
+Usage occurrences have these attributes:
+
+@itemize @bullet
+@item
+ref_name is the same as the def_name of the corresponding defining
+occurrence. This attribute is not of much use, because of
+overloading; use ref for lookups, instead.
+
+@item
+ref is the same as the def of the corresponding defining
+occurrence.
+@end itemize
+
+@noindent
+In summary, @code{def_name} and @code{ref_name} are as in the source
+code of the declaration, possibly overloaded, whereas @code{def} and
+@code{ref} are unique-ified.
+
+Literal elements have this attribute:
+
+@itemize @bullet
+@item
+lit_val is the value of the literal as written in the source text,
+appropriately escaped (e.g. @code{"} ---> @code{&quot;}). This applies
+only to numeric and string literals. Enumeration literals in Ada are
+not really "literals" in the usual sense; they are usage occurrences,
+and have ref_name and ref as described above. Note also that string
+literals used as operator symbols are treated as defining or usage
+occurrences, not as literals.
+@end itemize
+
+@noindent
+Elements that can syntactically represent names and expressions (which
+includes usage occurrences, plus function calls and so forth) have this
+attribute:
+
+@itemize @bullet
+@item
+type. If the element represents an expression or the name of an object,
+'type' is the 'def' for the defining occurrence of the type of that
+expression or name. Names of other kinds of entities, such as package
+names and type names, do not have a type in Ada; these have type="null"
+in the XML.
+@end itemize
+
+@noindent
+Pragma elements have this attribute:
+
+@itemize @bullet
+@item
+pragma_name is the name of the pragma. For language-defined pragmas, the
+pragma name is redundant with the element kind (for example, an
+assert_pragma element necessarily has pragma_name="Assert"). However, all
+implementation-defined pragmas are lumped together in ASIS as a single
+element kind (for example, the GNAT-specific pragma Unreferenced is
+represented by an implementation_defined_pragma element with
+pragma_name="Unreferenced").
+@end itemize
+
+@noindent
+Defining occurrences of formal parameters and generic formal objects have this
+attribute:
+
+@itemize @bullet
+@item
+mode indicates that the parameter is of mode 'in', 'in out', or 'out'.
+@end itemize
+
+@noindent
+The "kind" part of the "def" and "ref" attributes is taken from the ASIS
+enumeration type Flat_Declaration_Kinds, declared in
+Asis.Extensions.Flat_Kinds, with the leading "An_" or "A_" removed, and
+any trailing "_Declaration" or "_Specification" removed. Thus, the
+possible kinds are as follows:
+
+@smallexample
+ordinary_type
+task_type
+protected_type
+incomplete_type
+tagged_incomplete_type
+private_type
+private_extension
+subtype
+variable
+constant
+deferred_constant
+single_task
+single_protected
+integer_number
+real_number
+enumeration_literal
+discriminant
+component
+loop_parameter
+generalized_iterator
+element_iterator
+procedure
+function
+parameter
+procedure_body
+function_body
+return_variable
+return_constant
+null_procedure
+expression_function
+package
+package_body
+object_renaming
+exception_renaming
+package_renaming
+procedure_renaming
+function_renaming
+generic_package_renaming
+generic_procedure_renaming
+generic_function_renaming
+task_body
+protected_body
+entry
+entry_body
+entry_index
+procedure_body_stub
+function_body_stub
+package_body_stub
+task_body_stub
+protected_body_stub
+exception
+choice_parameter
+generic_procedure
+generic_function
+generic_package
+package_instantiation
+procedure_instantiation
+function_instantiation
+formal_object
+formal_type
+formal_incomplete_type
+formal_procedure
+formal_function
+formal_package
+formal_package_declaration_with_box
+@end smallexample
+@end ifclear
 
 @c *********************************
 @node The GNAT Metrics Tool gnatmetric

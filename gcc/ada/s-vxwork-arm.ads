@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +31,30 @@
 
 --  This is the ARM VxWorks version of this package
 
+with Interfaces.C;
+
 package System.VxWorks is
    pragma Preelaborate (System.VxWorks);
 
+   package IC renames Interfaces.C;
+
    --  Floating point context record. ARM version
+
+   FP_SGPR_NUM_REGS : constant := 32;
+   type Fpr_Sgpr_Array is array (1 .. FP_SGPR_NUM_REGS) of IC.unsigned;
 
    --  The record definition below matches what arch/arm/fppArmLib.h says
 
    type FP_CONTEXT is record
-      Dummy : Integer;
+      fpsid    : IC.unsigned;  --  system ID register
+      fpscr    : IC.unsigned;  --  status and control register
+      fpexc    : IC.unsigned;  --  exception register
+      fpinst   : IC.unsigned;  --  instruction register
+      fpinst2  : IC.unsigned;  --  instruction register 2
+      mfvfr0   : IC.unsigned;  --  media and VFP feature Register 0
+      mfvfr1   : IC.unsigned;  --  media and VFP feature Register 1
+      pad      : IC.unsigned;
+      vfp_gpr  : Fpr_Sgpr_Array;
    end record;
 
    for FP_CONTEXT'Alignment use 4;

@@ -5439,7 +5439,10 @@ package body Sem_Attr is
       -- To_Address --
       ----------------
 
-      when Attribute_To_Address =>
+      when Attribute_To_Address => To_Address : declare
+         Val : Uint;
+
+      begin
          Check_E1;
          Analyze (P);
 
@@ -5450,6 +5453,31 @@ package body Sem_Attr is
          Generate_Reference (RTE (RE_Address), P);
          Analyze_And_Resolve (E1, Any_Integer);
          Set_Etype (N, RTE (RE_Address));
+
+         --  Static expression case, check range and set appropriate type
+
+         if Is_OK_Static_Expression (E1) then
+            Val := Expr_Value (E1);
+
+            if Val < -(2 ** UI_From_Int (Standard'Address_Size - 1))
+                 or else
+               Val > 2 ** UI_From_Int (Standard'Address_Size) - 1
+            then
+               Error_Attr ("address value out of range for % attribute", E1);
+            end if;
+
+            --  Set type to universal integer if negative
+
+            if Val < 0 then
+               Set_Etype (E1, Universal_Integer);
+
+            --  Otherwise set type to Unsigned_64 to accomodate max values
+
+            else
+               Set_Etype (E1, Standard_Unsigned_64);
+            end if;
+         end if;
+      end To_Address;
 
       ------------
       -- To_Any --
