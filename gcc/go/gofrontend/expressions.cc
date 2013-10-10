@@ -5606,6 +5606,15 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.type = NULL;
     }
 
+  if (this->op_ == OPERATOR_ANDAND || this->op_ == OPERATOR_OROR)
+    {
+      // For a logical operation, the context does not determine the
+      // types of the operands.  The operands must be some boolean
+      // type but if the context has a boolean type they do not
+      // inherit it.  See http://golang.org/issue/3924.
+      subcontext.type = NULL;
+    }
+
   // Set the context for the left hand operand.
   if (is_shift_op)
     {
