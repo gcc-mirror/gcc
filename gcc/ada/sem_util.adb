@@ -5184,9 +5184,9 @@ package body Sem_Util is
          Discrim := First (Choices (Assoc));
          exit Find_Constraint when Chars (Discrim_Name) = Chars (Discrim)
            or else (Present (Corresponding_Discriminant (Entity (Discrim)))
-                      and then
-                    Chars (Corresponding_Discriminant (Entity (Discrim)))
-                         = Chars  (Discrim_Name))
+                     and then
+                       Chars (Corresponding_Discriminant (Entity (Discrim))) =
+                                                       Chars  (Discrim_Name))
            or else Chars (Original_Record_Component (Entity (Discrim)))
                          = Chars (Discrim_Name);
 
@@ -5274,7 +5274,6 @@ package body Sem_Util is
          Find_Discrete_Value : while Present (Variant) loop
             Discrete_Choice := First (Discrete_Choices (Variant));
             while Present (Discrete_Choice) loop
-
                exit Find_Discrete_Value when
                  Nkind (Discrete_Choice) = N_Others_Choice;
 
@@ -5305,8 +5304,8 @@ package body Sem_Util is
       --  If we have found the corresponding choice, recursively add its
       --  components to the Into list.
 
-      Gather_Components (Empty,
-        Component_List (Variant), Governed_By, Into, Report_Errors);
+      Gather_Components
+        (Empty, Component_List (Variant), Governed_By, Into, Report_Errors);
    end Gather_Components;
 
    ------------------------
@@ -8655,6 +8654,7 @@ package body Sem_Util is
                return Is_Fully_Initialized_Variant (U);
             end if;
          end;
+
       else
          return False;
       end if;

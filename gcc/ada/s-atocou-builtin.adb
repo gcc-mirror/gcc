@@ -64,8 +64,8 @@ package body System.Atomic_Counters is
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin
-      --  Note: the use of Unrestricted_Access here is required because we
-      --  are obtaining an access-to-volatile pointer to a non-volatile object.
+      --  Note: the use of Unrestricted_Access here is required because we are
+      --  obtaining an access-to-volatile pointer to a non-volatile object.
       --  This is not allowed for [Unchecked_]Access, but is safe in this case
       --  because we know that no aliases are being created.
 

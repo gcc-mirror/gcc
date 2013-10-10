@@ -8969,7 +8969,9 @@ package body Sem_Prag is
          --                        Precondition         |
          --                        Predicate            |
          --                        Statement_Assertions
-         --
+
+         --  Shouldn't Refined_Pre be in this list???
+
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions
          --  recognized by GNAT. The effect is to control the behavior of

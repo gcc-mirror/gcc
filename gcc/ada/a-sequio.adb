@@ -35,13 +35,15 @@
 --  (for specialized Sequential_IO functions)
 
 with Ada.Unchecked_Conversion;
+
 with System;
+with System.Byte_Swapping;
 with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
 with System.Storage_Elements;
+
 with Interfaces.C_Streams; use Interfaces.C_Streams;
-with GNAT.Byte_Swapping;
 
 package body Ada.Sequential_IO is
 
@@ -69,11 +71,11 @@ package body Ada.Sequential_IO is
    ---------------
 
    procedure Byte_Swap (Siz : in out size_t) is
-      use GNAT.Byte_Swapping;
+      use System.Byte_Swapping;
    begin
       case Siz'Size is
-         when 32     => Swap4 (Siz'Address);
-         when 64     => Swap8 (Siz'Address);
+         when 32     => Siz := size_t (Bswap_32 (U32 (Siz)));
+         when 64     => Siz := size_t (Bswap_64 (U64 (Siz)));
          when others => raise Program_Error;
       end case;
    end Byte_Swap;
@@ -189,6 +191,9 @@ package body Ada.Sequential_IO is
          FIO.Read_Buf
            (AP (File), Rsiz'Address, size_t'Size / System.Storage_Unit);
 
+         --  If item read has non-default scalar storage order, then the size
+         --  will have been written with that same order, so byte swap it.
+
          if Element_Type'Scalar_Storage_Order /= System.Default_Bit_Order then
             Byte_Swap (Rsiz);
          end if;
@@ -288,6 +293,9 @@ package body Ada.Sequential_IO is
       if not Element_Type'Definite
         or else Element_Type'Has_Discriminants
       then
+         --  If item written has non-default scalar storage order, then the
+         --  size is written with that same order, so byte swap it.
+
          if Element_Type'Scalar_Storage_Order /= System.Default_Bit_Order then
             Byte_Swap (Swapped_Siz);
          end if;

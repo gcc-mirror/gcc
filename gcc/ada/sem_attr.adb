@@ -5041,7 +5041,8 @@ package body Sem_Attr is
 
       when Attribute_Scalar_Storage_Order => Scalar_Storage_Order :
       declare
-         Ent : Entity_Id := Empty;
+            Ent : Entity_Id := Empty;
+
       begin
          Check_E0;
          Check_Type;
@@ -5053,7 +5054,7 @@ package body Sem_Attr is
             --  the default bit order for the target.
 
             if not (GNAT_Mode and then Is_Generic_Type (P_Type))
-                  and then not In_Instance
+                     and then not In_Instance
             then
                Error_Attr_P
                  ("prefix of % attribute must be record or array type");

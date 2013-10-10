@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1420,7 +1420,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
  ** appropriately (see thread.c).
  **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
-# define NEED_PTHREAD_CONDATTR_SETCLOCK
+# define NEED_PTHREAD_CONDATTR_SETCLOCK 1
 
 #elif defined(HAVE_CLOCK_REALTIME)
 /* By default use CLOCK_REALTIME */
@@ -1429,6 +1429,9 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
 #ifdef CLOCK_RT_Ada
 CNS(CLOCK_RT_Ada, "")
+#endif
+#ifdef NEED_PTHREAD_CONDATTR_SETCLOCK
+CND(NEED_PTHREAD_CONDATTR_SETCLOCK, "")
 #endif
 
 #if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)

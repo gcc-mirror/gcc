@@ -4590,60 +4590,31 @@ package body Sem_Ch3 is
    --------------------------
 
    procedure Analyze_Variant_Part (N : Node_Id) is
-
-      procedure Non_Static_Choice_Error (Choice : Node_Id);
-      --  Error routine invoked by the generic instantiation below when the
-      --  variant part has a non static choice.
-
-      procedure Process_Declarations (Variant : Node_Id);
-      --  Analyzes all the declarations associated with a Variant. Needed by
-      --  the generic instantiation below.
-
-      package Variant_Choices_Processing is new
-        Generic_Choices_Processing
-          (Get_Alternatives          => Variants,
-           Process_Empty_Choice      => No_OP,
-           Process_Non_Static_Choice => Non_Static_Choice_Error,
-           Process_Associated_Node   => Process_Declarations);
-      use Variant_Choices_Processing;
-      --  Instantiation of the generic choice processing package
-
-      -----------------------------
-      -- Non_Static_Choice_Error --
-      -----------------------------
-
-      procedure Non_Static_Choice_Error (Choice : Node_Id) is
-      begin
-         Flag_Non_Static_Expr
-           ("choice given in variant part is not static!", Choice);
-      end Non_Static_Choice_Error;
-
-      --------------------------
-      -- Process_Declarations --
-      --------------------------
-
-      procedure Process_Declarations (Variant : Node_Id) is
-      begin
-         if not Null_Present (Component_List (Variant)) then
-            Analyze_Declarations (Component_Items (Component_List (Variant)));
-
-            if Present (Variant_Part (Component_List (Variant))) then
-               Analyze (Variant_Part (Component_List (Variant)));
-            end if;
-         end if;
-      end Process_Declarations;
-
-      --  Local Variables
-
       Discr_Name : Node_Id;
       Discr_Type : Entity_Id;
 
-      Dont_Care      : Boolean;
-      Others_Present : Boolean := False;
+      procedure Process_Variant (A : Node_Id);
+      --  Analyze declarations for a single variant
 
-      pragma Warnings (Off, Dont_Care);
-      pragma Warnings (Off, Others_Present);
-      --  We don't care about the assigned values of any of these
+      package Analyze_Variant_Choices is
+        new Generic_Analyze_Choices (Process_Variant);
+      use Analyze_Variant_Choices;
+
+      ---------------------
+      -- Process_Variant --
+      ---------------------
+
+      procedure Process_Variant (A : Node_Id) is
+         CL : constant Node_Id := Component_List (A);
+      begin
+         if not Null_Present (CL) then
+            Analyze_Declarations (Component_Items (CL));
+
+            if Present (Variant_Part (CL)) then
+               Analyze (Variant_Part (CL));
+            end if;
+         end if;
+      end Process_Variant;
 
    --  Start of processing for Analyze_Variant_Part
 
@@ -4672,9 +4643,18 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      --  Call the instantiated Analyze_Choices which does the rest of the work
+      --  Now analyze the choices, which also analyzes the declarations that
+      --  are associated with each choice.
 
-      Analyze_Choices (N, Discr_Type, Dont_Care, Others_Present);
+      Analyze_Choices (Variants (N), Discr_Type);
+
+      --  Note: we used to instantiate and call Check_Choices here to check
+      --  that the choices covered the discriminant, but it's too early to do
+      --  that because of statically predicated subtypes, whose analysis may
+      --  be deferred to their freeze point which may be as late as the freeze
+      --  point of the containing record. So this call is now to be found in
+      --  Freeze_Record_Declaration.
+
    end Analyze_Variant_Part;
 
    ----------------------------

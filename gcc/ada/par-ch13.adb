@@ -88,9 +88,9 @@ package body Ch13 is
             Result := True;
          else
             Scan; -- past identifier
-            Result := Token = Tok_Arrow
-                         or else Token = Tok_Comma
-                         or else Token = Tok_Semicolon;
+            Result := Token = Tok_Arrow or else
+                      Token = Tok_Comma or else
+                      Token = Tok_Semicolon;
          end if;
 
       --  If earlier than Ada 2012, check for valid aspect identifier (possibly
@@ -113,9 +113,7 @@ package body Ch13 is
             --  defaulted True value. Further checks when analyzing aspect
             --  specification, which may include further aspects.
 
-            elsif Token = Tok_Comma
-              or else Token = Tok_Semicolon
-            then
+            elsif Token = Tok_Comma or else Token = Tok_Semicolon then
                Result := True;
 
             elsif Token = Tok_Apostrophe then

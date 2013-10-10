@@ -46,6 +46,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Case; use Sem_Case;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
@@ -846,8 +847,9 @@ package body Freeze is
                  and then Nkind (Type_Definition (Parent (T))) =
                                                N_Record_Definition
                  and then not Null_Present (Type_Definition (Parent (T)))
-                 and then Present (Variant_Part
-                            (Component_List (Type_Definition (Parent (T)))))
+                 and then
+                   Present (Variant_Part
+                              (Component_List (Type_Definition (Parent (T)))))
                then
                   --  If variant part is present, and type is unconstrained,
                   --  then we must have defaulted discriminants, or a size
@@ -2272,7 +2274,7 @@ package body Freeze is
                begin
                   if Present (Alloc) then
 
-                     --  If component is pointer to a classwide type, freeze
+                     --  If component is pointer to a class-wide type, freeze
                      --  the specific type in the expression being allocated.
                      --  The expression may be a subtype indication, in which
                      --  case freeze the subtype mark.
@@ -2367,7 +2369,8 @@ package body Freeze is
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
             if not (Placed_Component or else Is_Packed (Rec)) then
-               Error_Msg_N ("??bit order specification has no effect", ADC);
+               Error_Msg_N
+                 ("??bit order specification has no effect", ADC);
                Error_Msg_N
                  ("\??since no component clauses were specified", ADC);
 
@@ -2443,14 +2446,12 @@ package body Freeze is
          --  remote type here since that is what we are semantically freezing.
          --  This prevents the freeze node for that type in an inner scope.
 
-         --  Also, Check for controlled components and unchecked unions.
-         --  Finally, enforce the restriction that access attributes with a
-         --  current instance prefix can only apply to limited types.
-
          if Ekind (Rec) = E_Record_Type then
             if Present (Corresponding_Remote_Type (Rec)) then
                Freeze_And_Append (Corresponding_Remote_Type (Rec), N, Result);
             end if;
+
+            --  Check for controlled components and unchecked unions.
 
             Comp := First_Component (Rec);
             while Present (Comp) loop
@@ -2459,18 +2460,18 @@ package body Freeze is
                --  equivalent type. See Make_CW_Equivalent_Type.
 
                if not Is_Class_Wide_Equivalent_Type (Rec)
-                 and then (Has_Controlled_Component (Etype (Comp))
-                            or else (Chars (Comp) /= Name_uParent
-                                      and then Is_Controlled (Etype (Comp)))
-                            or else (Is_Protected_Type (Etype (Comp))
-                                      and then
-                                        Present
-                                          (Corresponding_Record_Type
-                                             (Etype (Comp)))
-                                      and then
-                                        Has_Controlled_Component
-                                          (Corresponding_Record_Type
-                                             (Etype (Comp)))))
+                 and then
+                   (Has_Controlled_Component (Etype (Comp))
+                     or else
+                       (Chars (Comp) /= Name_uParent
+                         and then Is_Controlled (Etype (Comp)))
+                     or else
+                       (Is_Protected_Type (Etype (Comp))
+                         and then
+                           Present (Corresponding_Record_Type (Etype (Comp)))
+                         and then
+                           Has_Controlled_Component
+                             (Corresponding_Record_Type (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
                end if;
@@ -2490,11 +2491,17 @@ package body Freeze is
             end loop;
          end if;
 
+         --  Enforce the restriction that access attributes with a current
+         --  instance prefix can only apply to limited types. This comment
+         --  is floating here, but does not seem to belong here???
+
+         --  Set component alignment if not otherwise already set
+
          Set_Component_Alignment_If_Not_Set (Rec);
 
          --  For first subtypes, check if there are any fixed-point fields with
          --  component clauses, where we must check the size. This is not done
-         --  till the freeze point, since for fixed-point types, we do not know
+         --  till the freeze point since for fixed-point types, we do not know
          --  the size until the type is frozen. Similar processing applies to
          --  bit packed arrays.
 
@@ -2613,6 +2620,142 @@ package body Freeze is
                end;
             end if;
          end if;
+
+         --  All done if not a full record definition
+
+         if Ekind (Rec) /= E_Record_Type then
+            return;
+         end if;
+
+         --  Finallly we need to check the variant part to make sure that
+         --  the set of choices for each variant covers the corresponding
+         --  discriminant. This check has to be delayed to the freeze point
+         --  because we may have statically predicated subtypes, whose choice
+         --  list is not known till the subtype is frozen.
+
+         Check_Variant_Part : declare
+            D : constant Node_Id := Declaration_Node (Rec);
+            T : Node_Id;
+            C : Node_Id;
+            V : Node_Id;
+
+            Others_Present            : Boolean;
+            pragma Warnings (Off, Others_Present);
+            --  Indicates others present, not used in this case
+
+            procedure Non_Static_Choice_Error (Choice : Node_Id);
+            --  Error routine invoked by the generic instantiation below when
+            --  the variant part has a non static choice.
+
+            procedure Process_Declarations (Variant : Node_Id);
+            --  Processes declarations associated with a variant. We analyzed
+            --  the declarations earlier (in Sem_Ch3.Analyze_Variant_Part),
+            --  but we still need the recursive call to Check_Choices for any
+            --  nested variant to get its choices properly processed. This is
+            --  also where we expand out the choices if expansion is active.
+
+            package Variant_Choices_Processing is new
+              Generic_Check_Choices
+                (Process_Empty_Choice      => No_OP,
+                 Process_Non_Static_Choice => Non_Static_Choice_Error,
+                 Process_Associated_Node   => Process_Declarations);
+            use Variant_Choices_Processing;
+
+            -----------------------------
+            -- Non_Static_Choice_Error --
+            -----------------------------
+
+            procedure Non_Static_Choice_Error (Choice : Node_Id) is
+            begin
+               Flag_Non_Static_Expr
+                 ("choice given in variant part is not static!", Choice);
+            end Non_Static_Choice_Error;
+
+            --------------------------
+            -- Process_Declarations --
+            --------------------------
+
+            procedure Process_Declarations (Variant : Node_Id) is
+               CL : constant Node_Id := Component_List (Variant);
+               VP : Node_Id;
+
+            begin
+               --  Check for static predicate present in this variant
+
+               if Has_SP_Choice (Variant) then
+
+                  --  Here we expand. You might expect to find this call in
+                  --  Expand_N_Variant_Part, but that is called when we first
+                  --  see the variant part, and we cannot do this expansion
+                  --  earlier than the freeze point, since for statically
+                  --  predicated subtypes, the predicate is not known till
+                  --  the freeze point.
+
+                  --  Furthermore, we do this expansion even if the expander
+                  --  is not active, because other semantic processing, e.g.
+                  --  for aggregates, requires the expanded list of choices.
+
+                  --  If the expander is not active, then we can't just clobber
+                  --  the list since it would invalidate the ASIS -gnatct tree.
+                  --  So we have to rewrite the variant part with a Rewrite
+                  --  call that replaces it with a copy and clobber the copy.
+
+                  if not Expander_Active then
+                     declare
+                        NewV : constant Node_Id := New_Copy (Variant);
+                     begin
+                        Set_Discrete_Choices
+                          (NewV, New_Copy_List (Discrete_Choices (Variant)));
+                        Rewrite (Variant, NewV);
+                     end;
+                  end if;
+
+                  Expand_Static_Predicates_In_Choices (Variant);
+               end if;
+
+               --  We don't need to worry about the declarations in the variant
+               --  (since they were analyzed by Analyze_Choices when we first
+               --  encountered the variant), but we do need to take care of
+               --  expansion of any nested variants.
+
+               if not Null_Present (CL) then
+                  VP := Variant_Part (CL);
+
+                  if Present (VP) then
+                     Check_Choices
+                       (VP, Variants (VP), Etype (Name (VP)), Others_Present);
+                  end if;
+               end if;
+            end Process_Declarations;
+
+         --  Start of processing for Check_Variant_Part
+
+         begin
+            --  Find component list
+
+            C := Empty;
+
+            if Nkind (D) = N_Full_Type_Declaration then
+               T := Type_Definition (D);
+
+               if Nkind (T) = N_Record_Definition then
+                  C := Component_List (T);
+
+               elsif Nkind (T) = N_Derived_Type_Definition
+                 and then Present (Record_Extension_Part (T))
+               then
+                  C := Component_List (Record_Extension_Part (T));
+               end if;
+            end if;
+
+            --  If we have a variant part, check choices
+
+            if Present (C) and then Present (Variant_Part (C)) then
+               V := Variant_Part (C);
+               Check_Choices
+                 (V, Variants (V), Etype (Name (V)), Others_Present);
+            end if;
+         end Check_Variant_Part;
       end Freeze_Record_Type;
 
    --  Start of processing for Freeze_Entity

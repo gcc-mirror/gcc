@@ -7790,7 +7790,7 @@ package body Sem_Ch13 is
               Aspect_Precondition         |
               Aspect_Refined_Pre          |
               Aspect_SPARK_Mode           |
-              Aspect_Test_Case     =>
+              Aspect_Test_Case            =>
             raise Program_Error;
 
       end case;

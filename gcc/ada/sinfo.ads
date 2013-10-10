@@ -1243,6 +1243,12 @@ package Sinfo is
    --    enclosing type. Such a self-reference can only appear in default-
    --    initialized aggregate for a record type.
 
+   --  Has_SP_Choice (Flag15-Sem)
+   --    Present in all nodes containing a Discrete_Choices field (N_Variant,
+   --    N_Case_Expression_Alternative, N_Case_Statement_Alternative). Set to
+   --    True if the Discrete_Choices list has at least one occurrence of a
+   --    statically predicated subtype.
+
    --  Has_Storage_Size_Pragma (Flag5-Sem)
    --    A flag present in an N_Task_Definition node to flag the presence of a
    --    Storage_Size pragma.
@@ -3061,8 +3067,7 @@ package Sinfo is
 
       --  VARIANT_PART ::=
       --    case discriminant_DIRECT_NAME is
-      --      VARIANT
-      --      {VARIANT}
+      --      VARIANT {VARIANT}
       --    end case;
 
       --  Note: the variants list can contain pragmas as well as variants.
@@ -3088,12 +3093,14 @@ package Sinfo is
       --  Enclosing_Variant (Node2-Sem)
       --  Present_Expr (Uint3-Sem)
       --  Dcheck_Function (Node5-Sem)
+      --  Has_SP_Choice (Flag15-Sem)
 
       --  Note: in the list of Discrete_Choices, the tree passed to the back
       --  end does not have choice entries corresponding to names of statically
       --  predicated subtypes. Such entries are always expanded out to the list
       --  of equivalent values or ranges. The ASIS tree generated in -gnatct
-      --  mode does not have this expansion, and has the original choices.
+      --  mode also has this expansion, but done with a proper Rewrite call on
+      --  the N_Variant node so that ASIS can properly retrieve the original.
 
       ---------------------------------
       -- 3.8.1  Discrete Choice List --
@@ -4078,11 +4085,15 @@ package Sinfo is
       --  Actions (List1)
       --  Discrete_Choices (List4)
       --  Expression (Node3)
+      --  Has_SP_Choice (Flag15-Sem)
 
       --  Note: The Actions field temporarily holds any actions associated with
       --  evaluation of the Expression. During expansion of the case expression
       --  these actions are wrapped into an N_Expressions_With_Actions node
       --  replacing the original expression.
+
+      --  Note: this node never appears in the tree passed to the back end,
+      --  since the expander converts case expressions into case statements.
 
       ---------------------------------
       -- 4.5.9 Quantified Expression --
@@ -4392,6 +4403,7 @@ package Sinfo is
       --  Sloc points to WHEN
       --  Discrete_Choices (List4)
       --  Statements (List3)
+      --  Has_SP_Choice (Flag15-Sem)
 
       --  Note: in the list of Discrete_Choices, the tree passed to the back
       --  end does not have choice entries corresponding to names of statically
@@ -8773,6 +8785,9 @@ package Sinfo is
    function Has_Self_Reference
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Has_SP_Choice
+     (N : Node_Id) return Boolean;    -- Flag15
+
    function Has_Storage_Size_Pragma
      (N : Node_Id) return Boolean;    -- Flag5
 
@@ -9768,6 +9783,9 @@ package Sinfo is
 
    procedure Set_Has_Self_Reference
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Has_SP_Choice
+     (N : Node_Id; Val : Boolean := True);    -- Flag15
 
    procedure Set_Has_Storage_Size_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag5
@@ -12195,6 +12213,7 @@ package Sinfo is
    pragma Inline (Has_Init_Expression);
    pragma Inline (Has_Local_Raise);
    pragma Inline (Has_Self_Reference);
+   pragma Inline (Has_SP_Choice);
    pragma Inline (Has_No_Elaboration_Code);
    pragma Inline (Has_Pragma_Suppress_All);
    pragma Inline (Has_Private_View);
@@ -12528,6 +12547,7 @@ package Sinfo is
    pragma Inline (Set_Has_Private_View);
    pragma Inline (Set_Has_Relative_Deadline_Pragma);
    pragma Inline (Set_Has_Self_Reference);
+   pragma Inline (Set_Has_SP_Choice);
    pragma Inline (Set_Has_Storage_Size_Pragma);
    pragma Inline (Set_Has_Wide_Character);
    pragma Inline (Set_Has_Wide_Wide_Character);

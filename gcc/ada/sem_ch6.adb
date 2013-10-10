@@ -2867,12 +2867,9 @@ package body Sem_Ch6 is
               and then Present (First_Entity (Spec_Id))
               and then Ekind (Etype (First_Entity (Spec_Id))) = E_Record_Type
               and then Is_Tagged_Type (Etype (First_Entity (Spec_Id)))
-              and then
-                Present (Interfaces (Etype (First_Entity (Spec_Id))))
-              and then
-                Present
-                  (Corresponding_Concurrent_Type
-                     (Etype (First_Entity (Spec_Id))))
+              and then Present (Interfaces (Etype (First_Entity (Spec_Id))))
+              and then Present (Corresponding_Concurrent_Type
+                                  (Etype (First_Entity (Spec_Id))))
             then
                declare
                   Typ  : constant Entity_Id := Etype (First_Entity (Spec_Id));
@@ -9131,9 +9128,10 @@ package body Sem_Ch6 is
       ------------------------
 
       function Controlling_Formal (Prim : Entity_Id) return Entity_Id is
-         E : Entity_Id := First_Entity (Prim);
+         E : Entity_Id;
 
       begin
+         E := First_Entity (Prim);
          while Present (E) loop
             if Is_Formal (E) and then Is_Controlling_Formal (E) then
                return E;
@@ -9178,8 +9176,8 @@ package body Sem_Ch6 is
       --  The mode of the controlling formals must match
 
       elsif Present (Iface_Ctrl_F)
-         and then Present (Prim_Ctrl_F)
-         and then Ekind (Iface_Ctrl_F) /= Ekind (Prim_Ctrl_F)
+        and then Present (Prim_Ctrl_F)
+        and then Ekind (Iface_Ctrl_F) /= Ekind (Prim_Ctrl_F)
       then
          return False;
 

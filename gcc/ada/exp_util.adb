@@ -1991,7 +1991,7 @@ package body Exp_Util is
                end if;
 
                --  Change Sloc to referencing choice (rather than the Sloc of
-               --  the predicate declarationo element itself).
+               --  the predicate declaration element itself).
 
                Set_Sloc (C, Sloc (Choice));
                Insert_Before (Choice, C);

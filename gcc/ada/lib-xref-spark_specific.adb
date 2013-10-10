@@ -1022,11 +1022,10 @@ package body SPARK_Specific is
 
             when N_Pragma =>
 
-               --  The enclosing subprogram for a precondition, a
-               --  postcondition, or a contract case should be the subprogram
-               --  to which the pragma is attached, which can be found by
-               --  following previous elements in the list to which the
-               --  pragma belongs.
+               --  The enclosing subprogram for a precondition, postcondition,
+               --  or contract case should be the subprogram to which the
+               --  pragma is attached, which can be found by following
+               --  previous elements in the list to which the pragma belongs.
 
                if Get_Pragma_Id (Result) = Pragma_Precondition
                     or else
