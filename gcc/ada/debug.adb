@@ -122,13 +122,13 @@ package body Debug is
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  SPARK strict mode
-   --  d.E  Force SPARK mode for gnat2why
+   --  d.E
    --  d.F  SPARK mode
    --  d.G  Frame condition mode for gnat2why
    --  d.H  Standard package only mode for gnat2why
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
-   --  d.K  SPARK detection only mode for gnat2why
+   --  d.K  SPARK check mode for gnat2why
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -597,10 +597,6 @@ package body Debug is
    --  d.D  SPARK strict mode. Interpret compiler permissions as strictly as
    --       possible in SPARK mode.
 
-   --  d.E  Force SPARK mode for gnat2why. In this mode, errors are issued for
-   --       all violations of SPARK in user code, and warnings are issued for
-   --       constructs not yet implemented in gnat2why.
-
    --  d.F  SPARK mode. Generate AST in a form suitable for formal
    --       verification, as well as additional cross reference information in
    --       ALI files to compute effects of subprograms. Note that ALI files
@@ -624,8 +620,8 @@ package body Debug is
    --       done in parallel to speed processing. This switch disables this
    --       behavior.
 
-   --  d.K  SPARK detection only mode for gnat2why. In this mode, gnat2why
-   --       does not generate Why code.
+   --  d.K  SPARK check mode for gnat2why. In this mode, gnat2why does not
+   --       generate Why code.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special

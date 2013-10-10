@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                       Copyright (C) 2011, AdaCore                        --
+--                    Copyright (C) 2011-2013, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,15 @@ package body System.Atomic_Counters is
 
       Sync_Add_And_Fetch (Item.Value'Unrestricted_Access, 1);
    end Increment;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (Item : out Atomic_Counter) is
+   begin
+      Item.Value := 1;
+   end Initialize;
 
    ------------
    -- Is_One --

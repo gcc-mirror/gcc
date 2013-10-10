@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                       Copyright (C) 2011, AdaCore                        --
+--                    Copyright (C) 2011-2013, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,12 @@ package System.Atomic_Counters is
    function Is_One (Item : Atomic_Counter) return Boolean;
    pragma Inline_Always (Is_One);
    --  Returns True when value of the atomic counter is one.
+
+   procedure Initialize (Item : out Atomic_Counter);
+   pragma Inline_Always (Initialize);
+   --  Initialize counter by setting its value to one. This subprogram is
+   --  intended to be used in special cases when counter object can't be
+   --  initialized in standard way.
 
 private
 
