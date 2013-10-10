@@ -1,5 +1,37 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Minor fix.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Address): Remove the Comes_From_Source test for the overlap
+	warning.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor code reorganization (use Nkind_In).
+	* sem_warn.adb: Minor code reorganization (optimization in
+	Check_Unset_Reference).
+	* exp_ch9.adb, exp_ch4.adb, sinfo.ads: Minor reformatting.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Install_Parent_Private_Declarations): When
+	instantiating a child unit, do not install private declaration of
+	a non-generic ancestor of the generic that is also an ancestor
+	of the current unit: its private part will be installed when
+	private part of ancestor itself is analyzed.
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Retrieve component
+	aliased status from type entities directly instead of going back
+	to original component definition.
+	* sem_ch7.adb: Minor reformatting.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch13.adb (Analyze_Aspect_Specifications): For Address
 	attribute, consider it to be set in source, because of aliasing
 	considerations.

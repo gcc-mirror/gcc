@@ -4959,11 +4959,10 @@ package body Exp_Ch4 is
          Append_To (Actions,
            Make_Full_Type_Declaration (Loc,
              Defining_Identifier => Pnn,
-             Type_Definition =>
+             Type_Definition     =>
                Make_Access_To_Object_Definition (Loc,
-                 All_Present => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Typ, Loc))));
+                 All_Present        => True,
+                 Subtype_Indication => New_Reference_To (Typ, Loc))));
          Ttyp := Pnn;
       end if;
 
@@ -4972,7 +4971,8 @@ package body Exp_Ch4 is
       --  Create declaration for target of expression, and indicate that it
       --  does not require initialization.
 
-      Decl :=  Make_Object_Declaration (Loc,
+      Decl :=
+        Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
           Object_Definition   => New_Occurrence_Of (Ttyp, Loc));
       Set_No_Initialization (Decl);

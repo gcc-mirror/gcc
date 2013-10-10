@@ -12217,8 +12217,8 @@ package body Sem_Util is
                end if;
 
                if Nkind (P) = N_Selected_Component
-                 and then Present (
-                   Entry_Formal (Entity (Selector_Name (P))))
+                 and then
+                   Present (Entry_Formal (Entity (Selector_Name (P))))
                then
                   --  Case of a reference to an entry formal
 
@@ -12242,15 +12242,15 @@ package body Sem_Util is
                end if;
             end;
 
-         elsif     Nkind (Exp) = N_Type_Conversion
-           or else Nkind (Exp) = N_Unchecked_Type_Conversion
+         elsif Nkind_In (Exp, N_Type_Conversion,
+                              N_Unchecked_Type_Conversion)
          then
             Exp := Expression (Exp);
             goto Continue;
 
-         elsif     Nkind (Exp) = N_Slice
-           or else Nkind (Exp) = N_Indexed_Component
-           or else Nkind (Exp) = N_Selected_Component
+         elsif Nkind_In (Exp, N_Slice,
+                              N_Indexed_Component,
+                              N_Selected_Component)
          then
             Exp := Prefix (Exp);
             goto Continue;
@@ -12309,7 +12309,9 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source or else SPARK_Mode then
+               --  Why is SPARK mode different here ???
+
+               if Modification_Comes_From_Source or SPARK_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable

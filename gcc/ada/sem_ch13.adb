@@ -3485,18 +3485,21 @@ package body Sem_Ch13 is
                   --  then we make an entry in the table for checking the size
                   --  and alignment of the overlaying variable. We defer this
                   --  check till after code generation to take full advantage
-                  --  of the annotation done by the back end. This entry is
-                  --  only made if the address clause comes from source or
-                  --  from an aspect clause (which is still from source).
+                  --  of the annotation done by the back end.
 
                   --  If the entity has a generic type, the check will be
                   --  performed in the instance if the actual type justifies
                   --  it, and we do not insert the clause in the table to
                   --  prevent spurious warnings.
 
+                  --  Note: we used to test Comes_From_Source and only give
+                  --  this warning for source entities, but we have removed
+                  --  this test. It really seems bogus to generate overlays
+                  --  that would trigger this warning in generated code.
+                  --  Furthermore, by removing the test, we handle the
+                  --  aspect case properly.
+
                   if Address_Clause_Overlay_Warnings
-                       and then (Comes_From_Source (N)
-                                  or else From_Aspect_Specification (N))
                     and then Present (O_Ent)
                     and then Is_Object (O_Ent)
                   then

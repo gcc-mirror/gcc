@@ -8781,7 +8781,7 @@ The @code{Update} attribute creates a copy of an array or record value
 with one or more modified components. The syntax is:
 
 @smallexample @c ada
-PREFIX'Update (AGGREGATE);
+PREFIX'Update (AGGREGATE)
 @end smallexample
 
 @noindent
