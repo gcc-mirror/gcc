@@ -183,7 +183,7 @@ package body System.Task_Primitives.Operations is
       Mode       : ST.Delay_Modes;
       Check_Time : out Duration;
       Abs_Time   : out Duration;
-      Rel_time   : out Duration);
+      Rel_Time   : out Duration);
    --  Helper for Timed_Sleep and Timed_Delay: given a deadline specified by
    --  Time and Mode, compute the current clock reading (Check_Time), and the
    --  target absolute and relative clock readings (Abs_Time, Rel_Time). The
@@ -257,7 +257,7 @@ package body System.Task_Primitives.Operations is
       Mode       : ST.Delay_Modes;
       Check_Time : out Duration;
       Abs_Time   : out Duration;
-      Rel_time   : out Duration)
+      Rel_Time   : out Duration)
    is
    begin
       Check_Time := Monotonic_Clock;
@@ -272,7 +272,8 @@ package body System.Task_Primitives.Operations is
          end if;
 
          pragma Warnings (Off);
-         --  Must comment a pragma Warnings (Off) to say why ???
+         --  Comparison "OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME" is compile
+         --  time known.
 
       --  Absolute deadline specified using the tasking clock (CLOCK_RT_Ada)
 

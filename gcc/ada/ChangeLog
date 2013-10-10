@@ -1,5 +1,23 @@
 2013-10-10  Thomas Quinot  <quinot@adacore.com>
 
+	* s-taprop-posix.adb: Add missing comment.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Move choice checking to
+	Analyze_Freeze_Entity (Freeze_Record_Type): Make sure all choices
+	are properly frozen
+	* sem_case.adb (Check_Choices): Remove misguided attempt to
+	freeze choices (this is now done in Freeze_Record_Type where
+	it belongs).
+	(Check_Choices): Remove some analyze/resolve calls
+	that are redundant since they are done in Analyze_Choices.
+	* sem_ch13.adb (Analyze_Freeze_Entity): Do the error
+	checking for choices in variant records here (moved here from
+	Freeze.Freeze_Record_Type)
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
 	* s-oscons-tmplt.c, s-taprop-posix.adb (CLOCK_REALTIME): Always define,
 	possibly using a dummy placeholder value.
 	(Compute_Deadline): For the case of an

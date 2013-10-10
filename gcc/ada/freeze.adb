@@ -46,7 +46,6 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
@@ -1995,6 +1994,11 @@ package body Freeze is
          --  freeze node at some eventual point of call. Protected operations
          --  are handled elsewhere.
 
+         procedure Freeze_Choices_In_Variant_Part (VP : Node_Id);
+         --  Make sure that all types mentioned in Discrete_Choices of the
+         --  variants referenceed by the Variant_Part VP are frozen. This is
+         --  a recursive routine to deal with nested variants.
+
          ---------------------
          -- Check_Allocator --
          ---------------------
@@ -2046,6 +2050,50 @@ package body Freeze is
                Set_Is_Frozen (Desig);
             end if;
          end Check_Itype;
+
+         ------------------------------------
+         -- Freeze_Choices_In_Variant_Part --
+         ------------------------------------
+
+         procedure Freeze_Choices_In_Variant_Part (VP : Node_Id) is
+            pragma Assert (Nkind (VP) = N_Variant_Part);
+
+            Variant : Node_Id;
+            Choice  : Node_Id;
+            CL      : Node_Id;
+
+         begin
+            --  Loop through variants
+
+            Variant := First_Non_Pragma (Variants (VP));
+            while Present (Variant) loop
+
+               --  Loop through choices, checking that all types are frozen
+
+               Choice := First_Non_Pragma (Discrete_Choices (Variant));
+               while Present (Choice) loop
+                  if Nkind (Choice) in N_Has_Etype
+                    and then Present (Etype (Choice))
+                  then
+                     Freeze_And_Append (Etype (Choice), N, Result);
+                  end if;
+
+                  Next_Non_Pragma (Choice);
+               end loop;
+
+               --  Check for nested variant part to process
+
+               CL := Component_List (Variant);
+
+               if not Null_Present (CL) then
+                  if Present (Variant_Part (CL)) then
+                     Freeze_Choices_In_Variant_Part (Variant_Part (CL));
+                  end if;
+               end if;
+
+               Next_Non_Pragma (Variant);
+            end loop;
+         end Freeze_Choices_In_Variant_Part;
 
       --  Start of processing for Freeze_Record_Type
 
@@ -2627,108 +2675,14 @@ package body Freeze is
             return;
          end if;
 
-         --  Finallly we need to check the variant part to make sure that
-         --  the set of choices for each variant covers the corresponding
-         --  discriminant. This check has to be delayed to the freeze point
-         --  because we may have statically predicated subtypes, whose choice
-         --  list is not known till the subtype is frozen.
+         --  Finally we need to check the variant part to make sure that
+         --  all types within choices are properly frozen as part of the
+         --  freezing of the record type.
 
          Check_Variant_Part : declare
             D : constant Node_Id := Declaration_Node (Rec);
             T : Node_Id;
             C : Node_Id;
-            V : Node_Id;
-
-            Others_Present : Boolean;
-            pragma Warnings (Off, Others_Present);
-            --  Indicates others present, not used in this case
-
-            procedure Non_Static_Choice_Error (Choice : Node_Id);
-            --  Error routine invoked by the generic instantiation below when
-            --  the variant part has a non static choice.
-
-            procedure Process_Declarations (Variant : Node_Id);
-            --  Processes declarations associated with a variant. We analyzed
-            --  the declarations earlier (in Sem_Ch3.Analyze_Variant_Part),
-            --  but we still need the recursive call to Check_Choices for any
-            --  nested variant to get its choices properly processed. This is
-            --  also where we expand out the choices if expansion is active.
-
-            package Variant_Choices_Processing is new
-              Generic_Check_Choices
-                (Process_Empty_Choice      => No_OP,
-                 Process_Non_Static_Choice => Non_Static_Choice_Error,
-                 Process_Associated_Node   => Process_Declarations);
-            use Variant_Choices_Processing;
-
-            -----------------------------
-            -- Non_Static_Choice_Error --
-            -----------------------------
-
-            procedure Non_Static_Choice_Error (Choice : Node_Id) is
-            begin
-               Flag_Non_Static_Expr
-                 ("choice given in variant part is not static!", Choice);
-            end Non_Static_Choice_Error;
-
-            --------------------------
-            -- Process_Declarations --
-            --------------------------
-
-            procedure Process_Declarations (Variant : Node_Id) is
-               CL : constant Node_Id := Component_List (Variant);
-               VP : Node_Id;
-
-            begin
-               --  Check for static predicate present in this variant
-
-               if Has_SP_Choice (Variant) then
-
-                  --  Here we expand. You might expect to find this call in
-                  --  Expand_N_Variant_Part, but that is called when we first
-                  --  see the variant part, and we cannot do this expansion
-                  --  earlier than the freeze point, since for statically
-                  --  predicated subtypes, the predicate is not known till
-                  --  the freeze point.
-
-                  --  Furthermore, we do this expansion even if the expander
-                  --  is not active, because other semantic processing, e.g.
-                  --  for aggregates, requires the expanded list of choices.
-
-                  --  If the expander is not active, then we can't just clobber
-                  --  the list since it would invalidate the ASIS -gnatct tree.
-                  --  So we have to rewrite the variant part with a Rewrite
-                  --  call that replaces it with a copy and clobber the copy.
-
-                  if not Expander_Active then
-                     declare
-                        NewV : constant Node_Id := New_Copy (Variant);
-                     begin
-                        Set_Discrete_Choices
-                          (NewV, New_Copy_List (Discrete_Choices (Variant)));
-                        Rewrite (Variant, NewV);
-                     end;
-                  end if;
-
-                  Expand_Static_Predicates_In_Choices (Variant);
-               end if;
-
-               --  We don't need to worry about the declarations in the variant
-               --  (since they were analyzed by Analyze_Choices when we first
-               --  encountered the variant), but we do need to take care of
-               --  expansion of any nested variants.
-
-               if not Null_Present (CL) then
-                  VP := Variant_Part (CL);
-
-                  if Present (VP) then
-                     Check_Choices
-                       (VP, Variants (VP), Etype (Name (VP)), Others_Present);
-                  end if;
-               end if;
-            end Process_Declarations;
-
-         --  Start of processing for Check_Variant_Part
 
          begin
             --  Find component list
@@ -2751,44 +2705,15 @@ package body Freeze is
             --  Case of variant part present
 
             if Present (C) and then Present (Variant_Part (C)) then
-               V := Variant_Part (C);
-
-               --  Check choices
-
-               Check_Choices
-                 (V, Variants (V), Etype (Name (V)), Others_Present);
-
-               --  If the last variant does not contain the Others choice,
-               --  replace it with an N_Others_Choice node since Gigi always
-               --  wants an Others. Note that we do not bother to call Analyze
-               --  on the modified variant part, since its only effect would be
-               --  to compute the Others_Discrete_Choices node laboriously, and
-               --  of course we already know the list of choices corresponding
-               --  to the others choice (it's the list we're replacing!)
-
-               --  We only want to do this if the expander is active, since
-               --  we do not want to clobber the ASIS tree!
-
-               if Expander_Active then
-                  declare
-                     Last_Var : constant Node_Id :=
-                                     Last_Non_Pragma (Variants (V));
-
-                     Others_Node : Node_Id;
-
-                  begin
-                     if Nkind (First (Discrete_Choices (Last_Var))) /=
-                                                            N_Others_Choice
-                     then
-                        Others_Node := Make_Others_Choice (Sloc (Last_Var));
-                        Set_Others_Discrete_Choices
-                          (Others_Node, Discrete_Choices (Last_Var));
-                        Set_Discrete_Choices
-                          (Last_Var, New_List (Others_Node));
-                     end if;
-                  end;
-               end if;
+               Freeze_Choices_In_Variant_Part (Variant_Part (C));
             end if;
+
+            --  Note: we used to call Check_Choices here, but it is too early,
+            --  since predicated subtypes are frozen here, but their freezing
+            --  actions are in Analyze_Freeze_Entity, which has not been called
+            --  yet for entities frozen within this procedure, so we moved that
+            --  call to the Analyze_Freeze_Entity for the record type.
+
          end Check_Variant_Part;
       end Freeze_Record_Type;
 
