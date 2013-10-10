@@ -1,3 +1,9 @@
+2013-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58656
+	* tree-ssa-pre.c (phi_translate): Do not cache failed
+	translations.
+
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimplify.c: Include expr.h and tm_p.h for targets with special va-arg
