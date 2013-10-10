@@ -1,5 +1,10 @@
 2013-10-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* ipa-inline.c (ipa_inline): Fix leak of "order" when
+	optimizations are disabled.
+
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* coverage.c (coverage_finish): Fix leak of da_file_name.
 
 2013-10-10  Jan Hubicka  <jh@suse.cz>
