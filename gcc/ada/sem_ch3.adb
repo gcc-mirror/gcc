@@ -5101,12 +5101,14 @@ package body Sem_Ch3 is
 
                   if Nkind (Def) = N_Access_Definition then
                      if Present (Access_To_Subprogram_Definition (Def)) then
-                        Set_Etype (Def,
+                        Set_Etype
+                          (Def,
                            Replace_Anonymous_Access_To_Protected_Subprogram
                             (Spec));
                      else
                         Find_Type (Subtype_Mark (Def));
                      end if;
+
                   else
                      Find_Type (Def);
                   end if;

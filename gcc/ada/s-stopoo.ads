@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,6 +41,7 @@ package System.Storage_Pools is
 
    type Root_Storage_Pool is abstract
      new Ada.Finalization.Limited_Controlled with private;
+   pragma Preelaborable_Initialization (Root_Storage_Pool);
 
    procedure Allocate
      (Pool                     : in out Root_Storage_Pool;
