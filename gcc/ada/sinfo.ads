@@ -7336,6 +7336,8 @@ package Sinfo is
       --  trigger these checks. The Freeze_Generic_Entity node plays no other
       --  role, and is ignored by the expander and the back-end.
 
+      --  Sprint syntax: freeze_generic entity-name
+
       --  N_Freeze_Generic_Entity
       --  Sloc points near freeze point
       --  Entity (Node4-Sem)

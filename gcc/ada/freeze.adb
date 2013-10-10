@@ -1953,8 +1953,8 @@ package body Freeze is
       -----------------------------
 
       function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id is
-         E : Entity_Id;
-         F : Node_Id;
+         E     : Entity_Id;
+         F     : Node_Id;
          Flist : List_Id;
 
       begin
@@ -2791,6 +2791,12 @@ package body Freeze is
         and then No (Full_View (Base_Type (E)))
         and then Ada_Version >= Ada_2012
       then
+         return No_List;
+
+      --  Generic types need no freeze node and have no delayed semantic
+      --  checks.
+
+      elsif Is_Generic_Type (E) then
          return No_List;
 
       --  Do not freeze a global entity within an inner scope created during

@@ -112,6 +112,13 @@ package body Sem_Ch13 is
    --  list is stored in Static_Predicate (Typ), and the Expr is rewritten as
    --  a canonicalized membership operation.
 
+   procedure Freeze_Entity_Checks (N : Node_Id);
+   --  Called from Analyze_Freeze_Entity and Analyze_Generic_Freeze Entity
+   --  to generate appropriate semantic checks that are delayed until this
+   --  point (they had to be delayed this long for cases of delayed aspects,
+   --  e.g. analysis of statically predicated subtypes in choices, for which
+   --  we have to be sure the subtypes in question are frozen before checking.
+
    function Get_Alignment_Value (Expr : Node_Id) return Uint;
    --  Given the expression for an alignment value, returns the corresponding
    --  Uint value. If the value is inappropriate, then error messages are
@@ -5072,353 +5079,8 @@ package body Sem_Ch13 is
    ---------------------------
 
    procedure Analyze_Freeze_Entity (N : Node_Id) is
-      E : constant Entity_Id := Entity (N);
-
    begin
-      --  Remember that we are processing a freezing entity. Required to
-      --  ensure correct decoration of internal entities associated with
-      --  interfaces (see New_Overloaded_Entity).
-
-      Inside_Freezing_Actions := Inside_Freezing_Actions + 1;
-
-      --  For tagged types covering interfaces add internal entities that link
-      --  the primitives of the interfaces with the primitives that cover them.
-      --  Note: These entities were originally generated only when generating
-      --  code because their main purpose was to provide support to initialize
-      --  the secondary dispatch tables. They are now generated also when
-      --  compiling with no code generation to provide ASIS the relationship
-      --  between interface primitives and tagged type primitives. They are
-      --  also used to locate primitives covering interfaces when processing
-      --  generics (see Derive_Subprograms).
-
-      if Ada_Version >= Ada_2005
-        and then Ekind (E) = E_Record_Type
-        and then Is_Tagged_Type (E)
-        and then not Is_Interface (E)
-        and then Has_Interfaces (E)
-      then
-         --  This would be a good common place to call the routine that checks
-         --  overriding of interface primitives (and thus factorize calls to
-         --  Check_Abstract_Overriding located at different contexts in the
-         --  compiler). However, this is not possible because it causes
-         --  spurious errors in case of late overriding.
-
-         Add_Internal_Interface_Entities (E);
-      end if;
-
-      --  Check CPP types
-
-      if Ekind (E) = E_Record_Type
-        and then Is_CPP_Class (E)
-        and then Is_Tagged_Type (E)
-        and then Tagged_Type_Expansion
-        and then Expander_Active
-      then
-         if CPP_Num_Prims (E) = 0 then
-
-            --  If the CPP type has user defined components then it must import
-            --  primitives from C++. This is required because if the C++ class
-            --  has no primitives then the C++ compiler does not added the _tag
-            --  component to the type.
-
-            pragma Assert (Chars (First_Entity (E)) = Name_uTag);
-
-            if First_Entity (E) /= Last_Entity (E) then
-               Error_Msg_N
-                 ("'C'P'P type must import at least one primitive from C++??",
-                  E);
-            end if;
-         end if;
-
-         --  Check that all its primitives are abstract or imported from C++.
-         --  Check also availability of the C++ constructor.
-
-         declare
-            Has_Constructors : constant Boolean := Has_CPP_Constructors (E);
-            Elmt             : Elmt_Id;
-            Error_Reported   : Boolean := False;
-            Prim             : Node_Id;
-
-         begin
-            Elmt := First_Elmt (Primitive_Operations (E));
-            while Present (Elmt) loop
-               Prim := Node (Elmt);
-
-               if Comes_From_Source (Prim) then
-                  if Is_Abstract_Subprogram (Prim) then
-                     null;
-
-                  elsif not Is_Imported (Prim)
-                    or else Convention (Prim) /= Convention_CPP
-                  then
-                     Error_Msg_N
-                       ("primitives of 'C'P'P types must be imported from C++ "
-                        & "or abstract??", Prim);
-
-                  elsif not Has_Constructors
-                     and then not Error_Reported
-                  then
-                     Error_Msg_Name_1 := Chars (E);
-                     Error_Msg_N
-                       ("??'C'P'P constructor required for type %", Prim);
-                     Error_Reported := True;
-                  end if;
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-         end;
-      end if;
-
-      --  Check Ada derivation of CPP type
-
-      if Expander_Active
-        and then Tagged_Type_Expansion
-        and then Ekind (E) = E_Record_Type
-        and then Etype (E) /= E
-        and then Is_CPP_Class (Etype (E))
-        and then CPP_Num_Prims (Etype (E)) > 0
-        and then not Is_CPP_Class (E)
-        and then not Has_CPP_Constructors (Etype (E))
-      then
-         --  If the parent has C++ primitives but it has no constructor then
-         --  check that all the primitives are overridden in this derivation;
-         --  otherwise the constructor of the parent is needed to build the
-         --  dispatch table.
-
-         declare
-            Elmt : Elmt_Id;
-            Prim : Node_Id;
-
-         begin
-            Elmt := First_Elmt (Primitive_Operations (E));
-            while Present (Elmt) loop
-               Prim := Node (Elmt);
-
-               if not Is_Abstract_Subprogram (Prim)
-                 and then No (Interface_Alias (Prim))
-                 and then Find_Dispatching_Type (Ultimate_Alias (Prim)) /= E
-               then
-                  Error_Msg_Name_1 := Chars (Etype (E));
-                  Error_Msg_N
-                    ("'C'P'P constructor required for parent type %", E);
-                  exit;
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-         end;
-      end if;
-
-      Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
-
-      --  If we have a type with predicates, build predicate function
-
-      if Is_Type (E) and then Has_Predicates (E) then
-         Build_Predicate_Functions (E, N);
-      end if;
-
-      --  If type has delayed aspects, this is where we do the preanalysis at
-      --  the freeze point, as part of the consistent visibility check. Note
-      --  that this must be done after calling Build_Predicate_Functions or
-      --  Build_Invariant_Procedure since these subprograms fix occurrences of
-      --  the subtype name in the saved expression so that they will not cause
-      --  trouble in the preanalysis.
-
-      if Has_Delayed_Aspects (E)
-        and then Scope (E) = Current_Scope
-      then
-         --  Retrieve the visibility to the discriminants in order to properly
-         --  analyze the aspects.
-
-         Push_Scope_And_Install_Discriminants (E);
-
-         declare
-            Ritem : Node_Id;
-
-         begin
-            --  Look for aspect specification entries for this entity
-
-            Ritem := First_Rep_Item (E);
-            while Present (Ritem) loop
-               if Nkind (Ritem) = N_Aspect_Specification
-                 and then Entity (Ritem) = E
-                 and then Is_Delayed_Aspect (Ritem)
-               then
-                  Check_Aspect_At_Freeze_Point (Ritem);
-               end if;
-
-               Next_Rep_Item (Ritem);
-            end loop;
-         end;
-
-         Uninstall_Discriminants_And_Pop_Scope (E);
-      end if;
-
-      --  For a record type, deal with variant parts. This has to be delayed
-      --  to this point, because of the issue of statically precicated
-      --  subtypes, which we have to ensure are frozen before checking
-      --  choices, since we need to have the static choice list set.
-
-      if Is_Record_Type (E) then
-         Check_Variant_Part : declare
-            D  : constant Node_Id := Declaration_Node (E);
-            T  : Node_Id;
-            C  : Node_Id;
-            VP : Node_Id;
-
-            Others_Present : Boolean;
-            pragma Warnings (Off, Others_Present);
-            --  Indicates others present, not used in this case
-
-            procedure Non_Static_Choice_Error (Choice : Node_Id);
-            --  Error routine invoked by the generic instantiation below when
-            --  the variant part has a non static choice.
-
-            procedure Process_Declarations (Variant : Node_Id);
-            --  Processes declarations associated with a variant. We analyzed
-            --  the declarations earlier (in Sem_Ch3.Analyze_Variant_Part),
-            --  but we still need the recursive call to Check_Choices for any
-            --  nested variant to get its choices properly processed. This is
-            --  also where we expand out the choices if expansion is active.
-
-            package Variant_Choices_Processing is new
-              Generic_Check_Choices
-                (Process_Empty_Choice      => No_OP,
-                 Process_Non_Static_Choice => Non_Static_Choice_Error,
-                 Process_Associated_Node   => Process_Declarations);
-            use Variant_Choices_Processing;
-
-            -----------------------------
-            -- Non_Static_Choice_Error --
-            -----------------------------
-
-            procedure Non_Static_Choice_Error (Choice : Node_Id) is
-            begin
-               Flag_Non_Static_Expr
-                 ("choice given in variant part is not static!", Choice);
-            end Non_Static_Choice_Error;
-
-            --------------------------
-            -- Process_Declarations --
-            --------------------------
-
-            procedure Process_Declarations (Variant : Node_Id) is
-               CL : constant Node_Id := Component_List (Variant);
-               VP : Node_Id;
-
-            begin
-               --  Check for static predicate present in this variant
-
-               if Has_SP_Choice (Variant) then
-
-                  --  Here we expand. You might expect to find this call in
-                  --  Expand_N_Variant_Part, but that is called when we first
-                  --  see the variant part, and we cannot do this expansion
-                  --  earlier than the freeze point, since for statically
-                  --  predicated subtypes, the predicate is not known till
-                  --  the freeze point.
-
-                  --  Furthermore, we do this expansion even if the expander
-                  --  is not active, because other semantic processing, e.g.
-                  --  for aggregates, requires the expanded list of choices.
-
-                  --  If the expander is not active, then we can't just clobber
-                  --  the list since it would invalidate the ASIS -gnatct tree.
-                  --  So we have to rewrite the variant part with a Rewrite
-                  --  call that replaces it with a copy and clobber the copy.
-
-                  if not Expander_Active then
-                     declare
-                        NewV : constant Node_Id := New_Copy (Variant);
-                     begin
-                        Set_Discrete_Choices
-                          (NewV, New_Copy_List (Discrete_Choices (Variant)));
-                        Rewrite (Variant, NewV);
-                     end;
-                  end if;
-
-                  Expand_Static_Predicates_In_Choices (Variant);
-               end if;
-
-               --  We don't need to worry about the declarations in the variant
-               --  (since they were analyzed by Analyze_Choices when we first
-               --  encountered the variant), but we do need to take care of
-               --  expansion of any nested variants.
-
-               if not Null_Present (CL) then
-                  VP := Variant_Part (CL);
-
-                  if Present (VP) then
-                     Check_Choices
-                       (VP, Variants (VP), Etype (Name (VP)), Others_Present);
-                  end if;
-               end if;
-            end Process_Declarations;
-
-         --  Start of processing for Check_Variant_Part
-
-         begin
-            --  Find component list
-
-            C := Empty;
-
-            if Nkind (D) = N_Full_Type_Declaration then
-               T := Type_Definition (D);
-
-               if Nkind (T) = N_Record_Definition then
-                  C := Component_List (T);
-
-               elsif Nkind (T) = N_Derived_Type_Definition
-                 and then Present (Record_Extension_Part (T))
-               then
-                  C := Component_List (Record_Extension_Part (T));
-               end if;
-            end if;
-
-            --  Case of variant part present
-
-            if Present (C) and then Present (Variant_Part (C)) then
-               VP := Variant_Part (C);
-
-               --  Check choices
-
-               Check_Choices
-                 (VP, Variants (VP), Etype (Name (VP)), Others_Present);
-
-               --  If the last variant does not contain the Others choice,
-               --  replace it with an N_Others_Choice node since Gigi always
-               --  wants an Others. Note that we do not bother to call Analyze
-               --  on the modified variant part, since its only effect would be
-               --  to compute the Others_Discrete_Choices node laboriously, and
-               --  of course we already know the list of choices corresponding
-               --  to the others choice (it's the list we're replacing!)
-
-               --  We only want to do this if the expander is active, since
-               --  we do not want to clobber the ASIS tree!
-
-               if Expander_Active then
-                  declare
-                     Last_Var : constant Node_Id :=
-                                     Last_Non_Pragma (Variants (VP));
-
-                     Others_Node : Node_Id;
-
-                  begin
-                     if Nkind (First (Discrete_Choices (Last_Var))) /=
-                                                            N_Others_Choice
-                     then
-                        Others_Node := Make_Others_Choice (Sloc (Last_Var));
-                        Set_Others_Discrete_Choices
-                          (Others_Node, Discrete_Choices (Last_Var));
-                        Set_Discrete_Choices
-                          (Last_Var, New_List (Others_Node));
-                     end if;
-                  end;
-               end if;
-            end if;
-         end Check_Variant_Part;
-      end if;
+      Freeze_Entity_Checks (N);
    end Analyze_Freeze_Entity;
 
    -----------------------------------
@@ -5427,8 +5089,7 @@ package body Sem_Ch13 is
 
    procedure Analyze_Freeze_Generic_Entity (N : Node_Id) is
    begin
-      --  Semantic checks here
-      null;
+      Freeze_Entity_Checks (N);
    end Analyze_Freeze_Generic_Entity;
 
    ------------------------------------------
@@ -9202,6 +8863,372 @@ package body Sem_Ch13 is
          end if;
       end if;
    end Check_Size;
+
+   --------------------------
+   -- Freeze_Entity_Checks --
+   --------------------------
+
+   procedure Freeze_Entity_Checks (N : Node_Id) is
+      E : constant Entity_Id := Entity (N);
+
+      Non_Generic_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
+      --  True in non-generic case. Some of the processing here is skipped
+      --  for the generic case since it is not needed. Basically in the
+      --  generic case, we only need to do stuff that might generate error
+      --  messages or warnings.
+   begin
+      --  Remember that we are processing a freezing entity. Required to
+      --  ensure correct decoration of internal entities associated with
+      --  interfaces (see New_Overloaded_Entity).
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions + 1;
+
+      --  For tagged types covering interfaces add internal entities that link
+      --  the primitives of the interfaces with the primitives that cover them.
+      --  Note: These entities were originally generated only when generating
+      --  code because their main purpose was to provide support to initialize
+      --  the secondary dispatch tables. They are now generated also when
+      --  compiling with no code generation to provide ASIS the relationship
+      --  between interface primitives and tagged type primitives. They are
+      --  also used to locate primitives covering interfaces when processing
+      --  generics (see Derive_Subprograms).
+
+      --  This is not needed in the generic case
+
+      if Ada_Version >= Ada_2005
+        and then Non_Generic_Case
+        and then Ekind (E) = E_Record_Type
+        and then Is_Tagged_Type (E)
+        and then not Is_Interface (E)
+        and then Has_Interfaces (E)
+      then
+         --  This would be a good common place to call the routine that checks
+         --  overriding of interface primitives (and thus factorize calls to
+         --  Check_Abstract_Overriding located at different contexts in the
+         --  compiler). However, this is not possible because it causes
+         --  spurious errors in case of late overriding.
+
+         Add_Internal_Interface_Entities (E);
+      end if;
+
+      --  Check CPP types
+
+      if Ekind (E) = E_Record_Type
+        and then Is_CPP_Class (E)
+        and then Is_Tagged_Type (E)
+        and then Tagged_Type_Expansion
+        and then Expander_Active       -- why? losing errors in -gnatc mode???
+      then
+         if CPP_Num_Prims (E) = 0 then
+
+            --  If the CPP type has user defined components then it must import
+            --  primitives from C++. This is required because if the C++ class
+            --  has no primitives then the C++ compiler does not added the _tag
+            --  component to the type.
+
+            pragma Assert (Chars (First_Entity (E)) = Name_uTag);
+
+            if First_Entity (E) /= Last_Entity (E) then
+               Error_Msg_N
+                 ("'C'P'P type must import at least one primitive from C++??",
+                  E);
+            end if;
+         end if;
+
+         --  Check that all its primitives are abstract or imported from C++.
+         --  Check also availability of the C++ constructor.
+
+         declare
+            Has_Constructors : constant Boolean := Has_CPP_Constructors (E);
+            Elmt             : Elmt_Id;
+            Error_Reported   : Boolean := False;
+            Prim             : Node_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (E));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if Comes_From_Source (Prim) then
+                  if Is_Abstract_Subprogram (Prim) then
+                     null;
+
+                  elsif not Is_Imported (Prim)
+                    or else Convention (Prim) /= Convention_CPP
+                  then
+                     Error_Msg_N
+                       ("primitives of 'C'P'P types must be imported from C++ "
+                        & "or abstract??", Prim);
+
+                  elsif not Has_Constructors
+                     and then not Error_Reported
+                  then
+                     Error_Msg_Name_1 := Chars (E);
+                     Error_Msg_N
+                       ("??'C'P'P constructor required for type %", Prim);
+                     Error_Reported := True;
+                  end if;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
+      end if;
+
+      --  Check Ada derivation of CPP type
+
+      if Expander_Active    -- why? losing errors in -gnatc mode???
+        and then Tagged_Type_Expansion
+        and then Ekind (E) = E_Record_Type
+        and then Etype (E) /= E
+        and then Is_CPP_Class (Etype (E))
+        and then CPP_Num_Prims (Etype (E)) > 0
+        and then not Is_CPP_Class (E)
+        and then not Has_CPP_Constructors (Etype (E))
+      then
+         --  If the parent has C++ primitives but it has no constructor then
+         --  check that all the primitives are overridden in this derivation;
+         --  otherwise the constructor of the parent is needed to build the
+         --  dispatch table.
+
+         declare
+            Elmt : Elmt_Id;
+            Prim : Node_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (E));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if not Is_Abstract_Subprogram (Prim)
+                 and then No (Interface_Alias (Prim))
+                 and then Find_Dispatching_Type (Ultimate_Alias (Prim)) /= E
+               then
+                  Error_Msg_Name_1 := Chars (Etype (E));
+                  Error_Msg_N
+                    ("'C'P'P constructor required for parent type %", E);
+                  exit;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
+      end if;
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
+
+      --  If we have a type with predicates, build predicate function. This
+      --  is not needed in the generic casee
+
+      if Non_Generic_Case and then Is_Type (E) and then Has_Predicates (E) then
+         Build_Predicate_Functions (E, N);
+      end if;
+
+      --  If type has delayed aspects, this is where we do the preanalysis at
+      --  the freeze point, as part of the consistent visibility check. Note
+      --  that this must be done after calling Build_Predicate_Functions or
+      --  Build_Invariant_Procedure since these subprograms fix occurrences of
+      --  the subtype name in the saved expression so that they will not cause
+      --  trouble in the preanalysis.
+
+      --  This is also not needed in the generic case
+
+      if Non_Generic_Case
+        and then Has_Delayed_Aspects (E)
+        and then Scope (E) = Current_Scope
+      then
+         --  Retrieve the visibility to the discriminants in order to properly
+         --  analyze the aspects.
+
+         Push_Scope_And_Install_Discriminants (E);
+
+         declare
+            Ritem : Node_Id;
+
+         begin
+            --  Look for aspect specification entries for this entity
+
+            Ritem := First_Rep_Item (E);
+            while Present (Ritem) loop
+               if Nkind (Ritem) = N_Aspect_Specification
+                 and then Entity (Ritem) = E
+                 and then Is_Delayed_Aspect (Ritem)
+               then
+                  Check_Aspect_At_Freeze_Point (Ritem);
+               end if;
+
+               Next_Rep_Item (Ritem);
+            end loop;
+         end;
+
+         Uninstall_Discriminants_And_Pop_Scope (E);
+      end if;
+
+      --  For a record type, deal with variant parts. This has to be delayed
+      --  to this point, because of the issue of statically precicated
+      --  subtypes, which we have to ensure are frozen before checking
+      --  choices, since we need to have the static choice list set.
+
+      if Is_Record_Type (E) then
+         Check_Variant_Part : declare
+            D  : constant Node_Id := Declaration_Node (E);
+            T  : Node_Id;
+            C  : Node_Id;
+            VP : Node_Id;
+
+            Others_Present : Boolean;
+            pragma Warnings (Off, Others_Present);
+            --  Indicates others present, not used in this case
+
+            procedure Non_Static_Choice_Error (Choice : Node_Id);
+            --  Error routine invoked by the generic instantiation below when
+            --  the variant part has a non static choice.
+
+            procedure Process_Declarations (Variant : Node_Id);
+            --  Processes declarations associated with a variant. We analyzed
+            --  the declarations earlier (in Sem_Ch3.Analyze_Variant_Part),
+            --  but we still need the recursive call to Check_Choices for any
+            --  nested variant to get its choices properly processed. This is
+            --  also where we expand out the choices if expansion is active.
+
+            package Variant_Choices_Processing is new
+              Generic_Check_Choices
+                (Process_Empty_Choice      => No_OP,
+                 Process_Non_Static_Choice => Non_Static_Choice_Error,
+                 Process_Associated_Node   => Process_Declarations);
+            use Variant_Choices_Processing;
+
+            -----------------------------
+            -- Non_Static_Choice_Error --
+            -----------------------------
+
+            procedure Non_Static_Choice_Error (Choice : Node_Id) is
+            begin
+               Flag_Non_Static_Expr
+                 ("choice given in variant part is not static!", Choice);
+            end Non_Static_Choice_Error;
+
+            --------------------------
+            -- Process_Declarations --
+            --------------------------
+
+            procedure Process_Declarations (Variant : Node_Id) is
+               CL : constant Node_Id := Component_List (Variant);
+               VP : Node_Id;
+
+            begin
+               --  Check for static predicate present in this variant
+
+               if Has_SP_Choice (Variant) then
+
+                  --  Here we expand. You might expect to find this call in
+                  --  Expand_N_Variant_Part, but that is called when we first
+                  --  see the variant part, and we cannot do this expansion
+                  --  earlier than the freeze point, since for statically
+                  --  predicated subtypes, the predicate is not known till
+                  --  the freeze point.
+
+                  --  Furthermore, we do this expansion even if the expander
+                  --  is not active, because other semantic processing, e.g.
+                  --  for aggregates, requires the expanded list of choices.
+
+                  --  If the expander is not active, then we can't just clobber
+                  --  the list since it would invalidate the ASIS -gnatct tree.
+                  --  So we have to rewrite the variant part with a Rewrite
+                  --  call that replaces it with a copy and clobber the copy.
+
+                  if not Expander_Active then
+                     declare
+                        NewV : constant Node_Id := New_Copy (Variant);
+                     begin
+                        Set_Discrete_Choices
+                          (NewV, New_Copy_List (Discrete_Choices (Variant)));
+                        Rewrite (Variant, NewV);
+                     end;
+                  end if;
+
+                  Expand_Static_Predicates_In_Choices (Variant);
+               end if;
+
+               --  We don't need to worry about the declarations in the variant
+               --  (since they were analyzed by Analyze_Choices when we first
+               --  encountered the variant), but we do need to take care of
+               --  expansion of any nested variants.
+
+               if not Null_Present (CL) then
+                  VP := Variant_Part (CL);
+
+                  if Present (VP) then
+                     Check_Choices
+                       (VP, Variants (VP), Etype (Name (VP)), Others_Present);
+                  end if;
+               end if;
+            end Process_Declarations;
+
+         --  Start of processing for Check_Variant_Part
+
+         begin
+            --  Find component list
+
+            C := Empty;
+
+            if Nkind (D) = N_Full_Type_Declaration then
+               T := Type_Definition (D);
+
+               if Nkind (T) = N_Record_Definition then
+                  C := Component_List (T);
+
+               elsif Nkind (T) = N_Derived_Type_Definition
+                 and then Present (Record_Extension_Part (T))
+               then
+                  C := Component_List (Record_Extension_Part (T));
+               end if;
+            end if;
+
+            --  Case of variant part present
+
+            if Present (C) and then Present (Variant_Part (C)) then
+               VP := Variant_Part (C);
+
+               --  Check choices
+
+               Check_Choices
+                 (VP, Variants (VP), Etype (Name (VP)), Others_Present);
+
+               --  If the last variant does not contain the Others choice,
+               --  replace it with an N_Others_Choice node since Gigi always
+               --  wants an Others. Note that we do not bother to call Analyze
+               --  on the modified variant part, since its only effect would be
+               --  to compute the Others_Discrete_Choices node laboriously, and
+               --  of course we already know the list of choices corresponding
+               --  to the others choice (it's the list we're replacing!)
+
+               --  We only want to do this if the expander is active, since
+               --  we do not want to clobber the ASIS tree!
+
+               if Expander_Active then
+                  declare
+                     Last_Var : constant Node_Id :=
+                                     Last_Non_Pragma (Variants (VP));
+
+                     Others_Node : Node_Id;
+
+                  begin
+                     if Nkind (First (Discrete_Choices (Last_Var))) /=
+                                                            N_Others_Choice
+                     then
+                        Others_Node := Make_Others_Choice (Sloc (Last_Var));
+                        Set_Others_Discrete_Choices
+                          (Others_Node, Discrete_Choices (Last_Var));
+                        Set_Discrete_Choices
+                          (Last_Var, New_List (Others_Node));
+                     end if;
+                  end;
+               end if;
+            end if;
+         end Check_Variant_Part;
+      end if;
+   end Freeze_Entity_Checks;
 
    -------------------------
    -- Get_Alignment_Value --

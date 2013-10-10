@@ -9017,10 +9017,6 @@ package body Einfo is
               Generic_Subprogram_Kind                      =>
             Write_Str ("Contract");
 
-            --  The Subprogram_Kind and Generic_Subrpogram_Kind entries
-            --  here are odd, since the assertions for [Set_]Contract do not
-            --  allow these possibilities ???
-
          when others                                       =>
             Write_Str ("Field24???");
       end case;

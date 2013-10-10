@@ -1022,9 +1022,9 @@ package Einfo is
 --       'COUNT when it applies to a family member.
 
 --    Contract (Node24)
---       Defined in entries, and in subprogram and generic subprogram entities.
---       Points to the contract of the entity, holding both pre- and
---       postconditions as well as test-cases.
+--       Defined in entry and entry family entities, subprogram body entities,
+--       subprograms, and generic subprograms. Points to the contract of the
+--       entity, holding both preconditions, postconditions, and test cases.
 
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
@@ -5306,7 +5306,7 @@ package Einfo is
    --    Accept_Address                      (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Protection_Object                   (Node23)   (protected kind)
-   --    Contract                            (Node24)   (for entry only)
+   --    Contract                            (Node24)
    --    PPC_Wrapper                         (Node25)
    --    Extra_Formals                       (Node28)
    --    Default_Expressions_Processed       (Flag108)
@@ -5567,6 +5567,7 @@ package Einfo is
    --    Alias                               (Node18)
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
+   --    Contract                            (Node24)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
    --    Has_Invariants                      (Flag232)
@@ -5863,6 +5864,7 @@ package Einfo is
    --    Corresponding_Protected_Entry       (Node18)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
+   --    Contract                            (Node24)
    --    Extra_Formals                       (Node28)
    --    SPARK_Mode_Pragmas                  (Node32)
    --    Scope_Depth                         (synth)
