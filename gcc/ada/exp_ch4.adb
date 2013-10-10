@@ -12402,15 +12402,7 @@ package body Exp_Ch4 is
                  Name       => New_Reference_To (Temp_Id, Loc),
                  Expression => Make_Null (Loc))));
 
-         --  Use the Actions list of logical operators when inserting the
-         --  finalization call. This ensures that all transient controlled
-         --  objects are finalized after the operators are evaluated.
-
-         if Nkind_In (Context, N_And_Then, N_Or_Else) then
-            Insert_Action (Context, Fin_Call);
-         else
-            Insert_Action_After (Context, Fin_Call);
-         end if;
+         Insert_Action_After (Context, Fin_Call);
       end if;
    end Process_Transient_Object;
 

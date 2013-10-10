@@ -8741,7 +8741,7 @@ package body Einfo is
             Write_Str ("Corresponding_Discriminant");
 
          when Scalar_Kind                                  =>
-            Write_Str ("Default_Value");
+            Write_Str ("Default_Aspect_Value");
 
          when E_Array_Type                                 =>
             Write_Str ("Default_Component_Value");

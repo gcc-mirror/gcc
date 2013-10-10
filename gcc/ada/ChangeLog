@@ -1,3 +1,37 @@
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): For any context other
+	than a simple return statement, insert the finalization action
+	after the context, not as an action on the context (which will
+	get evaluated before it).
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Write_Field19_Name): Correct the
+	string name of attribute Default_Aspect_Value.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Interface_Present_In_Ancestor): The progenitor
+	in a type declaration may be an interface subtype.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads (Do_Range_Check): Add special note on handling of
+	range checks for Succ and Pred.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.adb (Output_Msg_Text): Remove VMS special handling.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* a-chahan.ads, a-chahan.adb (Is_Line_Terminator): New function
+	(Is_Mark): New function.
+	(Is_Other_Format): New function.
+	(Is_Punctuation_Connector): New function.
+	(Is_Space): New function.
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): Redo duplicate/missing
