@@ -1,3 +1,35 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb (Check_Junk_Semicolon_Before_Return): Remove
+	junk code.
+
+2013-10-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Freeze_Entity_Checks): Avoid
+	loosing errors on CPP entities in -gnatc mode.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_If_Statement): Only diagnose redundant
+	if from source.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb (Check_SPARK_Restriction): Refine test (don't
+	automatically go to the original node).
+	* sem_ch11.adb (Analyze_Raise_Statement): Only raise
+	statements that come from source violate SPARK restrictions.
+	(Analyze_Raise_xxx_Error): Same fix.
+	* sem_ch3.adb (Analyze_Object_Declaration): Check OK SPARK
+	initialization on original node, not on possibly rewritten
+	expression.
+	* sem_ch4.adb (Analyze_If_Expression): Only if expressions that
+	come from source violate SPARK mode restrictions.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Fix confusing documentation for -gnatyM.
+
 2013-10-10  Yannick Moy  <moy@adacore.com>
 
 	* errout.adb (Compilation_Errors): In formal verification mode,

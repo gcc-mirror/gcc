@@ -19032,7 +19032,8 @@ by @command{gnatstub} to compile an argument source file.
 
 @item ^-gnatyM^/MAX_LINE_LENGTH=^@var{n}
 @cindex @option{^-gnatyM^/MAX_LINE_LENGTH^} (@command{gnatstub})
-(@var{n} is a non-negative integer). Set the maximum line length in the
+(@var{n} is a non-negative integer). Set the maximum line length that is
+allowed in a source file. The default is 79. The maximum value that can be
 body stub to @var{n}; the default is 79. The maximum value that can be
 specified is 32767. Note that in the special case of configuration
 pragma files, the maximum is always 32767 regardless of whether or

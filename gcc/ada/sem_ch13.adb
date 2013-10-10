@@ -8972,7 +8972,6 @@ package body Sem_Ch13 is
         and then Is_CPP_Class (E)
         and then Is_Tagged_Type (E)
         and then Tagged_Type_Expansion
-        and then Expander_Active       -- why? losing errors in -gnatc mode???
       then
          if CPP_Num_Prims (E) = 0 then
 
@@ -8980,8 +8979,6 @@ package body Sem_Ch13 is
             --  primitives from C++. This is required because if the C++ class
             --  has no primitives then the C++ compiler does not added the _tag
             --  component to the type.
-
-            pragma Assert (Chars (First_Entity (E)) = Name_uTag);
 
             if First_Entity (E) /= Last_Entity (E) then
                Error_Msg_N

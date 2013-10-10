@@ -3263,7 +3263,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Check incorrect use of dynamically tagged expressions.
+         --  Check incorrect use of dynamically tagged expressions
 
          if Is_Tagged_Type (T) then
             Check_Dynamically_Tagged_Expression
@@ -3281,7 +3281,7 @@ package body Sem_Ch3 is
            --  Only call test if needed
 
            and then Restriction_Check_Required (SPARK_05)
-           and then not Is_SPARK_Initialization_Expr (E)
+           and then not Is_SPARK_Initialization_Expr (Original_Node (E))
          then
             Check_SPARK_Restriction
               ("initialization expression is not appropriate", E);
