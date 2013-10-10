@@ -78,15 +78,19 @@ package body Ch13 is
       --  are in Ada 2012 mode, Strict is False, and we consider that we have
       --  an aspect specification if the identifier is an aspect name (even if
       --  not followed by =>) or the identifier is not an aspect name but is
-      --  followed by =>. P_Aspect_Specifications will generate messages if the
-      --  aspect specification is ill-formed.
+      --  followed by =>, by a comma, or by a semicolon. The last two cases
+      --  correspond to (misspelled) Boolean aspects with a defaulted value of
+      --  True. P_Aspect_Specifications will generate messages if the aspect
+      --  specification is ill-formed.
 
       elsif not Strict then
          if Get_Aspect_Id (Token_Name) /= No_Aspect then
             Result := True;
          else
             Scan; -- past identifier
-            Result := Token = Tok_Arrow;
+            Result := Token = Tok_Arrow
+                         or else Token = Tok_Comma
+                         or else Token = Tok_Semicolon;
          end if;
 
       --  If earlier than Ada 2012, check for valid aspect identifier (possibly

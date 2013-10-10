@@ -4602,7 +4602,6 @@ package body Sem_Ch3 is
       package Variant_Choices_Processing is new
         Generic_Choices_Processing
           (Get_Alternatives          => Variants,
-           Get_Choices               => Discrete_Choices,
            Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => Process_Declarations);

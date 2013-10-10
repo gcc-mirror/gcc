@@ -3084,6 +3084,12 @@ package Sinfo is
       --  Present_Expr (Uint3-Sem)
       --  Dcheck_Function (Node5-Sem)
 
+      --  Note: in the list of Discrete_Choices, the tree passed to the back
+      --  end does not have choice entries corresponding to names of statically
+      --  predicated subtypes. Such entries are always expanded out to the list
+      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
+      --  mode does not have this expansion, and has the original choices.
+
       ---------------------------------
       -- 3.8.1  Discrete Choice List --
       ---------------------------------
@@ -4381,6 +4387,12 @@ package Sinfo is
       --  Sloc points to WHEN
       --  Discrete_Choices (List4)
       --  Statements (List3)
+
+      --  Note: in the list of Discrete_Choices, the tree passed to the back
+      --  end does not have choice entries corresponding to names of statically
+      --  predicated subtypes. Such entries are always expanded out to the list
+      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
+      --  mode does not have this expansion, and has the original choices.
 
       -------------------------
       -- 5.5  Loop Statement --

@@ -1,5 +1,73 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch3.adb (Expand_N_Variant_Part): Expand statically
+	predicated subtype which appears in Discrete_Choices list.
+	* exp_ch5.adb (Expand_N_Case_Statement): Expand statically
+	predicated subtype which appears in Discrete_Choices list of
+	case statement alternative.
+	* exp_util.ads, exp_util.adb (Expand_Static_Predicates_In_Choices): New
+	procedure.
+	* sem_case.adb: Minor reformatting (Analyze_Choices): Don't
+	expand out Discrete_Choices that are names of subtypes with
+	static predicates. This is now done in the analyzer so that the
+	-gnatct tree is properly formed for ASIS.
+	* sem_case.ads (Generic_Choices_Processing): Does not apply
+	to aggregates any more, so change doc accordingly, and remove
+	unneeded Get_Choices argument.
+	* sem_ch3.adb (Analyze_Variant_Part): Remove no
+	longer used Get_Choices argument in instantiation of
+	Generic_Choices_Processing.
+	* sem_ch4.adb (Analyze_Case_Expression): Remove no
+	longer used Get_Choices argument in instantiation of
+	Generic_Choices_Processing.
+	* sem_ch5.adb (Analyze_Case_Statement): Remove no
+	longer used Get_Choices argument in instantiation of
+	Generic_Choices_Processing.
+	* sinfo.ads: For N_Variant_Part, and N_Case_Statement_Alternative,
+	document that choices that are names of statically predicated
+	subtypes are expanded in the code generation tree passed to the
+	back end, but not in the ASIS tree generated for -gnatct.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb: Revert previous change.
+
+2013-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): In the case where
+	the Storage_Pool aspect is specified by an aspect clause and a
+	renaming is used to capture the evaluation of the pool name,
+	insert the renaming in front of the aspect's associated entity
+	declaration rather than in front of the corresponding attribute
+	definition (which hasn't been appended to the declaration
+	list yet).
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Interface_Conformant): The controlling type
+	of the interface operation is obtained from the ultimate alias
+	of the interface primitive parameter, because that may be in
+	fact an implicit inherited operation whose signature involves
+	the type extension and not the desired interface.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch13.adb (Aspect_Specifications_Present): In Ada 2012,
+	recognize an aspect specification with a misspelled name if it
+	is followed by a a comma or semicolon.
+
+2013-10-10  Vadim Godunko  <godunko@adacore.com>
+
+	* s-atocou.adb, s-atocou.ads, s-atocou-x86.adb, s-atocou-builtin.adb:
+	Fix copyright notice.
+
+2013-10-10  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Enclosing_Subprogram_Or_Package): Get
+	enclosing subprogram for precondition/postcondition/contract cases.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Minor fix.
 
 2013-10-10  Robert Dewar  <dewar@adacore.com>

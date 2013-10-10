@@ -1318,7 +1318,6 @@ package body Sem_Ch4 is
       package Case_Choices_Processing is new
         Generic_Choices_Processing
           (Get_Alternatives          => Alternatives,
-           Get_Choices               => Discrete_Choices,
            Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => No_OP);
@@ -3962,8 +3961,8 @@ package body Sem_Ch4 is
             Next (Param);
          end loop;
 
-         --  One of the specs has additional formals, there is no match,
-         --  unless this may be an indexing of a parameterless call.
+         --  One of the specs has additional formals; there is no match, unless
+         --  this may be an indexing of a parameterless call.
 
          --  Note that when expansion is disabled, the corresponding record
          --  type of synchronized types is not constructed, so that there is
@@ -3977,7 +3976,6 @@ package body Sem_Ch4 is
               and then not Expander_Active
             then
                return True;
-
             else
                return False;
             end if;

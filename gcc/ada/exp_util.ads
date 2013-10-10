@@ -377,6 +377,12 @@ package Exp_Util is
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
 
+   procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
+   --  N is either a case alternative or a variant. The Discrete_Choices field
+   --  of N points to a list of choices. If any of these choices is the name
+   --  of a (statically) predicated subtype, then it is rewritten as the series
+   --  of choices that correspond to the values allowed for the subtype.
+
    procedure Expand_Subtype_From_Expr
      (N             : Node_Id;
       Unc_Type      : Entity_Id;
