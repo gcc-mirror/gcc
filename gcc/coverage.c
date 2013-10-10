@@ -1209,6 +1209,9 @@ coverage_finish (void)
 	fn_ctor = coverage_obj_fn (fn_ctor, fn->fn_decl, fn);
       coverage_obj_finish (fn_ctor);
     }
+
+  XDELETEVEC (da_file_name);
+  da_file_name = NULL;
 }
 
 #include "gt-coverage.h"
