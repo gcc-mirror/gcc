@@ -2033,7 +2033,9 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      Check_SPARK_Restriction ("if expression is not allowed", N);
+      if Comes_From_Source (N) then
+         Check_SPARK_Restriction ("if expression is not allowed", N);
+      end if;
 
       Else_Expr := Next (Then_Expr);
 

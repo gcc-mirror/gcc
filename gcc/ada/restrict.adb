@@ -1406,9 +1406,30 @@ package body Restrict is
    is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
+      Onode               : constant Node_Id := Original_Node (N);
 
    begin
-      if Force or else Comes_From_Source (Original_Node (N)) then
+      --  Output message if Force set
+
+      if Force
+
+        --  Or if this node comes from source
+
+        or else Comes_From_Source (N)
+
+        --  Or if this is a range node which rewrites a range attribute and
+        --  the range attribute comes from source.
+
+        or else (Nkind (N) = N_Range
+                  and then Nkind (Onode) = N_Attribute_Reference
+                  and then Attribute_Name (Onode) = Name_Range
+                  and then Comes_From_Source (Onode))
+
+        --  Or this is an expression that does not come from source, which is
+        --  a rewriting of an expression that does come from source.
+
+        or else (Nkind (N) in N_Subexpr and then Comes_From_Source (Onode))
+      then
          if Restriction_Check_Required (SPARK_05)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
          then

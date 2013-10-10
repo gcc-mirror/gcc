@@ -1580,7 +1580,13 @@ package body Sem_Ch5 is
 
       --  Warn on redundant if statement that has no effect
 
+      --  Note, we could also check empty ELSIF parts ???
+
       if Warn_On_Redundant_Constructs
+
+        --  If statement must be from source
+
+        and then Comes_From_Source (N)
 
         --  Condition must not have obvious side effect
 
