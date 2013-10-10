@@ -2389,7 +2389,7 @@ tree_estimate_probability (void)
   pointer_map_destroy (bb_predictions);
   bb_predictions = NULL;
 
-  estimate_bb_frequencies ();
+  estimate_bb_frequencies (false);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
 }
@@ -2692,7 +2692,7 @@ propagate_freq (basic_block head, bitmap tovisit)
     }
 }
 
-/* Estimate probabilities of loopback edges in loops at same nest level.  */
+/* Estimate frequencies in loops at same nest level.  */
 
 static void
 estimate_loops_at_level (struct loop *first_loop)
@@ -2801,15 +2801,17 @@ expensive_function_p (int threshold)
   return false;
 }
 
-/* Estimate basic blocks frequency by given branch probabilities.  */
+/* Estimate and propagate basic block frequencies using the given branch
+   probabilities.  If FORCE is true, the frequencies are used to estimate
+   the counts even when there are already non-zero profile counts.  */
 
 void
-estimate_bb_frequencies (void)
+estimate_bb_frequencies (bool force)
 {
   basic_block bb;
   sreal freq_max;
 
-  if (profile_status != PROFILE_READ || !counts_to_freqs ())
+  if (force || profile_status != PROFILE_READ || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 
@@ -2846,8 +2848,8 @@ estimate_bb_frequencies (void)
 	    }
 	}
 
-      /* First compute probabilities locally for each loop from innermost
-         to outermost to examine probabilities for back edges.  */
+      /* First compute frequencies locally for each loop from innermost
+         to outermost to examine frequencies for back edges.  */
       estimate_loops ();
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
@@ -3028,13 +3030,29 @@ void
 rebuild_frequencies (void)
 {
   timevar_push (TV_REBUILD_FREQUENCIES);
-  if (profile_status == PROFILE_GUESSED)
+
+  /* When the max bb count in the function is small, there is a higher
+     chance that there were truncation errors in the integer scaling
+     of counts by inlining and other optimizations. This could lead
+     to incorrect classification of code as being cold when it isn't.
+     In that case, force the estimation of bb counts/frequencies from the
+     branch probabilities, rather than computing frequencies from counts,
+     which may also lead to frequencies incorrectly reduced to 0. There
+     is less precision in the probabilities, so we only do this for small
+     max counts.  */
+  gcov_type count_max = 0;
+  basic_block bb;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    count_max = MAX (bb->count, count_max);
+
+  if (profile_status == PROFILE_GUESSED
+      || (profile_status == PROFILE_READ && count_max < REG_BR_PROB_BASE/10))
     {
       loop_optimizer_init (0);
       add_noreturn_fake_exit_edges ();
       mark_irreducible_loops ();
       connect_infinite_loops_to_exit ();
-      estimate_bb_frequencies ();
+      estimate_bb_frequencies (true);
       remove_fake_exit_edges ();
       loop_optimizer_finalize ();
     }
