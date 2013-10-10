@@ -1,3 +1,18 @@
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, s-taprop-posix.adb (CLOCK_REALTIME): Always define,
+	possibly using a dummy placeholder value.
+	(Compute_Deadline): For the case of an
+	Absolute_Calendar deadline, if the target uses another clock
+	than CLOCK_REALTIME as CLOCK_RT_Ada, compensate for possible
+	different epoch.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Handle properly a fully
+	qualified reference to a generic child unit within itself,
+	in an instantiation.
+
 2013-10-10  Pascal Obry  <obry@adacore.com>
 
 	* prj-conf.adb: Minor typo fixes in comment.
