@@ -18889,10 +18889,15 @@ package body Sem_Prag is
             Decl := First (Decls);
             while Present (Decl) loop
 
-               --  Objects (non-constants) are valid hidden states
+               --  Source objects (non-constants) are valid hidden states
+
+               --  This is a very odd test, it misses many cases, e.g.
+               --  renamings of objects, in-out parameters etc ???. Why
+               --  not test the Ekind ???
 
                if Nkind (Decl) = N_Object_Declaration
                  and then not Constant_Present (Decl)
+                 and then Comes_From_Source (Decl)
                then
                   Add_Item (Defining_Entity (Decl), Result);
 
