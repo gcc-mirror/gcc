@@ -76,7 +76,6 @@ package body Einfo is
    --    Associated_Node_For_Itype       Node8
    --    Dependent_Instances             Elist8
    --    Hiding_Loop_Variable            Node8
-   --    Integrity_Level                 Uint8
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
@@ -584,11 +583,11 @@ package body Einfo is
    -- Local subprograms --
    -----------------------
 
-   function Has_Property
-     (State    : Entity_Id;
-      Prop_Nam : Name_Id) return Boolean;
-   --  Determine whether abstract state State has a particular property denoted
-   --  by the name Prop_Nam.
+   function Has_Option
+     (State   : Entity_Id;
+      Opt_Nam : Name_Id) return Boolean;
+   --  Determine whether abstract state State has a particular option denoted
+   --  by the name Opt_Nam.
 
    ---------------
    -- Float_Rep --
@@ -600,40 +599,40 @@ package body Einfo is
       return F'Val (UI_To_Int (Uint10 (Base_Type (Id))));
    end Float_Rep;
 
-   ------------------
-   -- Has_Property --
-   ------------------
+   ----------------
+   -- Has_Option --
+   ----------------
 
-   function Has_Property
-     (State    : Entity_Id;
-      Prop_Nam : Name_Id) return Boolean
+   function Has_Option
+     (State   : Entity_Id;
+      Opt_Nam : Name_Id) return Boolean
    is
-      Par  : constant Node_Id := Parent (State);
-      Prop : Node_Id;
+      Par : constant Node_Id := Parent (State);
+      Opt : Node_Id;
 
    begin
       pragma Assert (Ekind (State) = E_Abstract_State);
 
-      --  States with properties appear as extension aggregates in the tree
+      --  States with options appear as extension aggregates in the tree
 
       if Nkind (Par) = N_Extension_Aggregate then
-         if Prop_Nam = Name_Integrity then
+         if Opt_Nam = Name_Part_Of then
             return Present (Component_Associations (Par));
 
          else
-            Prop := First (Expressions (Par));
-            while Present (Prop) loop
-               if Chars (Prop) = Prop_Nam then
+            Opt := First (Expressions (Par));
+            while Present (Opt) loop
+               if Chars (Opt) = Opt_Nam then
                   return True;
                end if;
 
-               Next (Prop);
+               Next (Opt);
             end loop;
          end if;
       end if;
 
       return False;
-   end Has_Property;
+   end Has_Option;
 
    --------------------------------
    -- Attribute Access Functions --
@@ -1759,12 +1758,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
       return Node28 (Id);
    end Initialization_Statements;
-
-   function Integrity_Level (Id : E) return U is
-   begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      return Uint8 (Id);
-   end Integrity_Level;
 
    function Inner_Instances (Id : E) return L is
    begin
@@ -4386,12 +4379,6 @@ package body Einfo is
       Set_Node28 (Id, V);
    end Set_Initialization_Statements;
 
-   procedure Set_Integrity_Level (Id : E; V : Uint) is
-   begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      Set_Uint8 (Id, V);
-   end Set_Integrity_Level;
-
    procedure Set_Inner_Instances (Id : E; V : L) is
    begin
       Set_Elist23 (Id, V);
@@ -6655,6 +6642,16 @@ package body Einfo is
                   and then Is_Entity_Attribute_Name (Attribute_Name (N)));
    end Is_Entity_Name;
 
+   -----------------------
+   -- Is_External_State --
+   -----------------------
+
+   function Is_External_State (Id : E) return B is
+   begin
+      return
+        Ekind (Id) = E_Abstract_State and then Has_Option (Id, Name_External);
+   end Is_External_State;
+
    ------------------
    -- Is_Finalizer --
    ------------------
@@ -6690,15 +6687,16 @@ package body Einfo is
       end if;
    end Is_Ghost_Subprogram;
 
-   --------------------
-   -- Is_Input_State --
-   --------------------
+   -------------------------
+   -- Is_Input_Only_State --
+   -------------------------
 
-   function Is_Input_State (Id : E) return B is
+   function Is_Input_Only_State (Id : E) return B is
    begin
       return
-        Ekind (Id) = E_Abstract_State and then Has_Property (Id, Name_Input);
-   end Is_Input_State;
+        Ekind (Id) = E_Abstract_State
+          and then Has_Option (Id, Name_Input_Only);
+   end Is_Input_Only_State;
 
    -------------------
    -- Is_Null_State --
@@ -6714,11 +6712,12 @@ package body Einfo is
    -- Is_Output_State --
    ---------------------
 
-   function Is_Output_State (Id : E) return B is
+   function Is_Output_Only_State (Id : E) return B is
    begin
       return
-        Ekind (Id) = E_Abstract_State and then Has_Property (Id, Name_Output);
-   end Is_Output_State;
+        Ekind (Id) = E_Abstract_State
+          and then Has_Option (Id, Name_Output_Only);
+   end Is_Output_Only_State;
 
    -----------------------------------
    -- Is_Package_Or_Generic_Package --
@@ -6867,7 +6866,7 @@ package body Einfo is
    begin
       return
         Ekind (Id) = E_Abstract_State
-          and then Has_Property (Id, Name_Volatile);
+          and then Has_Option (Id, Name_Volatile);
    end Is_Volatile_State;
 
    ------------------------
@@ -8280,9 +8279,6 @@ package body Einfo is
 
          when E_Variable                                   =>
             Write_Str ("Hiding_Loop_Variable");
-
-         when E_Abstract_State                             =>
-            Write_Str ("Integrity_Level");
 
          when Formal_Kind                                  |
               E_Function                                   |
