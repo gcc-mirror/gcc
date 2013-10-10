@@ -1389,13 +1389,10 @@ CST(Inet_Pton_Linkname, "")
 
 /* Note: On HP-UX, CLOCK_REALTIME is an enum, not a macro. */
 
-#if defined(CLOCK_REALTIME) || defined (__hpux__)
-# define HAVE_CLOCK_REALTIME
+#if !(defined (__hpux__) || defined (CLOCK_REALTIME))
+# define CLOCK_REALTIME -1
 #endif
-
-#ifdef HAVE_CLOCK_REALTIME
 CND(CLOCK_REALTIME, "System realtime clock")
-#endif
 
 #ifdef CLOCK_MONOTONIC
 CND(CLOCK_MONOTONIC, "System monotonic clock")

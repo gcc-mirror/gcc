@@ -262,6 +262,8 @@ package body System.Task_Primitives.Operations is
    begin
       Check_Time := Monotonic_Clock;
 
+      --  Relative deadline
+
       if Mode = Relative then
          Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
 
@@ -269,12 +271,40 @@ package body System.Task_Primitives.Operations is
             Rel_Time := Duration'Min (Max_Sensible_Delay, Time);
          end if;
 
-      else
+         pragma Warnings (Off);
+         --  Must comment a pragma Warnings (Off) to say why ???
+
+      --  Absolute deadline specified using the tasking clock (CLOCK_RT_Ada)
+
+      elsif Mode = Absolute_RT
+              or else OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME
+      then
+         pragma Warnings (On);
          Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
 
          if Relative_Timed_Wait then
             Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
          end if;
+
+      --  Absolute deadline specified using the real-time clock, in the
+      --  case where it is not the same as the tasking clock: compensate for
+      --  difference between clock epochs (Base_Time - Base_Cal_Time).
+
+      else
+         declare
+            Cal_Check_Time : constant Duration :=
+                               OS_Primitives.Monotonic_Clock;
+            RT_Time        : constant Duration :=
+                               Time + Check_Time - Cal_Check_Time;
+         begin
+            Abs_Time :=
+              Duration'Min (Check_Time + Max_Sensible_Delay, RT_Time);
+
+            if Relative_Timed_Wait then
+               Rel_Time :=
+                 Duration'Min (Max_Sensible_Delay, RT_Time - Check_Time);
+            end if;
+         end;
       end if;
    end Compute_Deadline;
 
