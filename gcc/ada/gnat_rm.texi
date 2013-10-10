@@ -8669,7 +8669,8 @@ static expression.  The result is that such an expression can be
 used in contexts (e.g.@: preelaborable packages) which require a
 static expression and where the function call could not be used
 (since the function call is always non-static, even if its
-argument is static).
+argument is static). The argument must be in the range 0 .. 2**m-1,
+where m is the memory size (typically 32 or 64).
 
 @node Attribute Type_Class
 @unnumberedsec Attribute Type_Class

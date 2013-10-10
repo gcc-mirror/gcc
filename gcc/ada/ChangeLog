@@ -1,3 +1,33 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sinput-c.adb (Load_File): Ensure Source_Align alignment.
+	* sinput-d.adb (Create_Debug_Source): Ensure Source_Align alignment.
+	* sinput-l.adb (Create_Instantiation_Source): Ensure Source_Align
+	alignment.
+	(Load_File): Ditto.
+	* sinput.ads, sinput.adb (Get_Source_File_Index): New optimized (single
+	line) version.
+	* types.ads (Source_Align): New definition.
+	(Source_Buffer): Document new alignment requirement.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Linker_Section): Allow
+	this for types.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor adjustment to doc for To_Address attribute.
+
+2013-10-10  Vadim Godunko  <godunko@adacore.com>
+
+	* s-stopoo.ads (Root_Storage_Pool): Add pragma
+	Preelaborable_Initialization.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* gcc-interface/Makefile.in (OUTPUT_OPTION): Define as "-o $@".
