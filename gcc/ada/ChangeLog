@@ -1,5 +1,53 @@
 2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb: Remove Integrity_Level from the node usage list.
+	(Has_Option): Update the implementation to match
+	the new terminology.
+	(Has_Property): Renamed to Has_Option.
+	(Integrity_Level): Removed.
+	(Is_External_State): New routine.
+	(Is_Input_Only_State): Use Has_Option to determine whether a state
+	is Input_Only.	(Is_Input_State): Renamed to Is_Input_Only_State.
+	(Is_Output_Only_State): Use Has_Option to determine whether
+	a state is Output_Only.
+	(Is_Output_State): Renamed to
+	Is_Output_Only_State.
+	(Is_Volatile_State): Use Has_Option to determine whether a state is
+	volatile.
+	(Set_Integrity_Level): Removed.
+	(Write_Field8): Remove the entry for Integrity_Level.
+	* einfo.ads: Remove Integrity_Level along with its documentation
+	and usage in nodes.  Rename Is_Input_State to Is_Input_Only_State.
+	Rename Is_Output_State to Is_Output_Only_State.  Update the
+	documentation of Is_Volatile_State.  Update the node structure of
+	E_Abstract_Entity.
+	(Integrity_Level): Removed along with pragma Inline.
+	(Is_External_State): New routine.
+	(Is_Input_State): Renamed to Is_Input_Only_State.
+	(Is_Output_State): Renamed to Is_Output_Only_State.
+	(Set_Integrity_Level): Removed along with pragma Inline.
+	* sem_prag.adb (Analyze_Pragma): Update the checks regarding
+	global items and abstract state modes. Update the implementation
+	of pragma Abstract_State to reflect the new rules and terminology.
+	* snames.ads-tmpl: Remove the predefined name for Integrity
+	level. Add new predefined names for Input_Only, Non_Volatile,
+	Output_Only and Part_Of.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Do not generate a reference
+	within a _postcondition procedure: a proper source reference has
+	already been generated when pre- analyzing the original aspect
+	specification, and the use of a formal in a pre/postcondition
+	should not count as a proper use in a subprogram body.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Why_Non_Static): Fix bomb for deferred constant
+	case
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb: Add an entry for Aspect_Refined_Post in table
 	Canonical_Aspect.
 	* aspects.ads: Add an entry for Aspect_Refined_Post in tables

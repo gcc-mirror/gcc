@@ -1463,27 +1463,27 @@ package body Sem_Prag is
             --  valid choices. Perform mode- and usage-specific checks.
 
             if Ekind (Item_Id) = E_Abstract_State
-              and then Is_Volatile_State (Item_Id)
+              and then Is_External_State (Item_Id)
             then
-               --  A global item of mode In_Out or Output cannot denote a
-               --  volatile Input state.
+               --  A global item of mode In_Out or Output cannot denote an
+               --  external Input_Only state.
 
-               if Is_Input_State (Item_Id)
+               if Is_Input_Only_State (Item_Id)
                  and then Nam_In (Global_Mode, Name_In_Out, Name_Output)
                then
                   Error_Msg_N
                     ("global item of mode In_Out or Output cannot reference "
-                     & "Volatile Input state", Item);
+                     & "External Input_Only state", Item);
 
-               --  A global item of mode In_Out or Input cannot reference a
-               --  volatile Output state.
+               --  A global item of mode In_Out or Input cannot reference an
+               --  external Output_Only state.
 
-               elsif Is_Output_State (Item_Id)
+               elsif Is_Output_Only_State (Item_Id)
                  and then Nam_In (Global_Mode, Name_In_Out, Name_Input)
                then
                   Error_Msg_N
                     ("global item of mode In_Out or Input cannot reference "
-                     & "Volatile Output state", Item);
+                     & "External Output_Only state", Item);
                end if;
             end if;
 
@@ -8417,19 +8417,21 @@ package body Sem_Prag is
 
          --  ABSTRACT_STATE_LIST ::=
          --    null
-         --  | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
+         --  | STATE_NAME_WITH_OPTIONS
+         --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS})
 
-         --  STATE_NAME_WITH_PROPERTIES ::=
-         --    STATE_NAME
-         --  | (STATE_NAME with PROPERTY_LIST)
+         --  STATE_NAME_WITH_OPTIONS ::=
+         --    state_NAME
+         --  | (state_NAME with OPTION_LIST)
 
-         --  PROPERTY_LIST ::= PROPERTY {, PROPERTY}
-         --  PROPERTY      ::= SIMPLE_PROPERTY | NAME_VALUE_PROPERTY
+         --  OPTION_LIST ::= OPTION {, OPTION}
 
-         --  SIMPLE_PROPERTY      ::= IDENTIFIER
-         --  NAME_VALUE_PROPERTY  ::= IDENTIFIER => EXPRESSION
+         --  OPTION ::= SIMPLE_OPTION | NAME_VALUE_OPTION
 
-         --  STATE_NAME ::= DEFINING_IDENTIFIER
+         --  SIMPLE_OPTION ::=
+         --    External | Non_Volatile | Input_Only | Output_Only
+
+         --  NAME_VALUE_OPTION ::= Part_Of => abstract_state_NAME
 
          when Pragma_Abstract_State => Abstract_State : declare
             Pack_Id : Entity_Id;
@@ -8449,46 +8451,47 @@ package body Sem_Prag is
             ----------------------------
 
             procedure Analyze_Abstract_State (State : Node_Id) is
-               procedure Check_Duplicate_Property
-                 (Prop   : Node_Id;
+               procedure Check_Duplicate_Option
+                 (Opt    : Node_Id;
                   Status : in out Boolean);
-               --  Flag Status denotes whether a particular property has been
+               --  Flag Status denotes whether a particular option has been
                --  seen while processing a state. This routine verifies that
-               --  Prop is not a duplicate property and sets the flag Status.
+               --  Opt is not a duplicate property and sets the flag Status.
 
-               ------------------------------
-               -- Check_Duplicate_Property --
-               ------------------------------
+               ----------------------------
+               -- Check_Duplicate_Option --
+               ----------------------------
 
-               procedure Check_Duplicate_Property
-                 (Prop   : Node_Id;
+               procedure Check_Duplicate_Option
+                 (Opt    : Node_Id;
                   Status : in out Boolean)
                is
                begin
                   if Status then
-                     Error_Msg_N ("duplicate state property", Prop);
+                     Error_Msg_N ("duplicate state option", Opt);
                   end if;
 
                   Status := True;
-               end Check_Duplicate_Property;
+               end Check_Duplicate_Option;
 
                --  Local variables
 
-               Errors  : constant Nat := Serious_Errors_Detected;
-               Loc     : constant Source_Ptr := Sloc (State);
-               Assoc   : Node_Id;
-               Id      : Entity_Id;
-               Is_Null : Boolean := False;
-               Level   : Uint := Uint_0;
-               Name    : Name_Id;
-               Prop    : Node_Id;
+               Errors    : constant Nat := Serious_Errors_Detected;
+               Loc       : constant Source_Ptr := Sloc (State);
+               Assoc     : Node_Id;
+               Id        : Entity_Id;
+               Is_Null   : Boolean := False;
+               Name      : Name_Id;
+               Opt       : Node_Id;
+               Par_State : Node_Id;
 
-               --  Flags used to verify the consistency of properties
+               --  Flags used to verify the consistency of options
 
-               Input_Seen     : Boolean := False;
-               Integrity_Seen : Boolean := False;
-               Output_Seen    : Boolean := False;
-               Volatile_Seen  : Boolean := False;
+               External_Seen     : Boolean := False;
+               Input_Seen        : Boolean := False;
+               Non_Volatile_Seen : Boolean := False;
+               Output_Seen       : Boolean := False;
+               Part_Of_Seen      : Boolean := False;
 
             --  Start of processing for Analyze_Abstract_State
 
@@ -8522,7 +8525,7 @@ package body Sem_Prag is
                   Name := Chars (State);
                   Non_Null_Seen := True;
 
-               --  State declaration with various properties. This construct
+               --  State declaration with various options. This construct
                --  appears as an extension aggregate in the tree.
 
                elsif Nkind (State) = N_Extension_Aggregate then
@@ -8535,69 +8538,93 @@ package body Sem_Prag is
                         Ancestor_Part (State));
                   end if;
 
-                  --  Process properties Input, Output and Volatile. Ensure
-                  --  that none of them appear more than once.
+                  --  Process options External, Input_Only, Output_Only and
+                  --  Volatile. Ensure that none of them appear more than once.
 
-                  Prop := First (Expressions (State));
-                  while Present (Prop) loop
-                     if Nkind (Prop) = N_Identifier then
-                        if Chars (Prop) = Name_Input then
-                           Check_Duplicate_Property (Prop, Input_Seen);
-                        elsif Chars (Prop) = Name_Output then
-                           Check_Duplicate_Property (Prop, Output_Seen);
-                        elsif Chars (Prop) = Name_Volatile then
-                           Check_Duplicate_Property (Prop, Volatile_Seen);
+                  Opt := First (Expressions (State));
+                  while Present (Opt) loop
+                     if Nkind (Opt) = N_Identifier then
+                        if Chars (Opt) = Name_External then
+                           Check_Duplicate_Option (Opt, External_Seen);
+                        elsif Chars (Opt) = Name_Input_Only then
+                           Check_Duplicate_Option (Opt, Input_Seen);
+                        elsif Chars (Opt) = Name_Output_Only then
+                           Check_Duplicate_Option (Opt, Output_Seen);
+                        elsif Chars (Opt) = Name_Non_Volatile then
+                           Check_Duplicate_Option (Opt, Non_Volatile_Seen);
+
+                        --  Ensure that the abstract state component of option
+                        --  Part_Of has not been omitted.
+
+                        elsif Chars (Opt) = Name_Part_Of then
+                           Error_Msg_N
+                             ("option Part_Of requires an abstract state",
+                              Opt);
                         else
-                           Error_Msg_N ("invalid state property", Prop);
+                           Error_Msg_N ("invalid state option", Opt);
                         end if;
                      else
-                        Error_Msg_N ("invalid state property", Prop);
+                        Error_Msg_N ("invalid state option", Opt);
                      end if;
 
-                     Next (Prop);
+                     Next (Opt);
                   end loop;
 
-                  --  Volatile requires exactly one Input or Output
+                  --  External requires exactly one Input_Only or Output_Only
 
-                  if Volatile_Seen and then Input_Seen = Output_Seen then
+                  if External_Seen and then Input_Seen = Output_Seen then
                      Error_Msg_N
-                       ("property Volatile requires exactly one Input or "
-                        & "Output", State);
+                       ("option External requires exactly one option "
+                        & "Input_Only or Output_Only", State);
                   end if;
 
-                  --  Either Input or Output require Volatile
+                  --  Either Input_Only or Output_Only require External
 
                   if (Input_Seen or Output_Seen)
-                    and then not Volatile_Seen
+                    and then not External_Seen
                   then
                      Error_Msg_N
-                       ("properties Input and Output require Volatile", State);
+                       ("options Input_Only and Output_Only require option "
+                        & "External", State);
                   end if;
 
-                  --  State property Integrity appears as a component
-                  --  association.
+                  --  Option Part_Of appears as a component association
 
                   Assoc := First (Component_Associations (State));
                   while Present (Assoc) loop
-                     Prop := First (Choices (Assoc));
-                     while Present (Prop) loop
-                        if Nkind (Prop) = N_Identifier
-                          and then Chars (Prop) = Name_Integrity
+                     Opt := First (Choices (Assoc));
+                     while Present (Opt) loop
+                        if Nkind (Opt) = N_Identifier
+                          and then Chars (Opt) = Name_Part_Of
                         then
-                           Check_Duplicate_Property (Prop, Integrity_Seen);
+                           Check_Duplicate_Option (Opt, Part_Of_Seen);
                         else
-                           Error_Msg_N ("invalid state property", Prop);
+                           Error_Msg_N ("invalid state option", Opt);
                         end if;
 
-                        Next (Prop);
+                        Next (Opt);
                      end loop;
 
-                     if Nkind (Expression (Assoc)) = N_Integer_Literal then
-                        Level := Intval (Expression (Assoc));
+                     --  Part_Of must denote a parent state. Ensure that the
+                     --  tree is not malformed by checking the expression of
+                     --  the component association.
+
+                     Par_State := Expression (Assoc);
+                     pragma Assert (Present (Par_State));
+
+                     Analyze (Par_State);
+
+                     --  Part_Of specified a legal state
+
+                     if Is_Entity_Name (Par_State)
+                       and then Present (Entity (Par_State))
+                       and then Ekind (Entity (Par_State)) = E_Abstract_State
+                     then
+                        null;
                      else
                         Error_Msg_N
-                          ("integrity level must be an integer literal",
-                           Expression (Assoc));
+                         ("option Part_Of must denote an abstract state",
+                          Par_State);
                      end if;
 
                      Next (Assoc);
@@ -8624,7 +8651,6 @@ package body Sem_Prag is
                Set_Parent            (Id, State);
                Set_Ekind             (Id, E_Abstract_State);
                Set_Etype             (Id, Standard_Void_Type);
-               Set_Integrity_Level   (Id, Level);
                Set_Refined_State     (Id, Empty);
 
                --  Every non-null state must be nameable and resolvable the

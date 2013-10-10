@@ -1969,11 +1969,6 @@ package Einfo is
 --       instantiated within the given generic. Used to diagnose circular
 --       instantiations.
 
---    Integrity_Level (Uint8)
---       Defined for E_Abstract_State entities. Contains the numerical value of
---       the integrity level state property. A value of Uint_0 designates a non
---       existent integrity.
-
 --    Interface_Alias (Node25)
 --       Defined in subprograms that cover a primitive operation of an abstract
 --       interface type. Can be set only if the Is_Hidden flag is also set,
@@ -2263,6 +2258,10 @@ package Einfo is
 --       and variables, but that may well change later on. Exceptions can only
 --       be exported in the OpenVMS and Java VM implementations of GNAT.
 
+--    Is_External_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       option External.
+
 --    Is_Finalizer (synthesized)
 --       Applies to all entities, true for procedures containing finalization
 --       code to process local or library level objects.
@@ -2380,9 +2379,9 @@ package Einfo is
 --       inherited by their instances. It is also set on the body entities
 --       of inlined subprograms. See also Has_Pragma_Inline.
 
---    Is_Input_State (synthesized)
+--    Is_Input_Only_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
---       property Input.
+--       option Input_Only.
 
 --    Is_Instantiated (Flag126)
 --       Defined in generic packages and generic subprograms. Set if the unit
@@ -2613,9 +2612,9 @@ package Einfo is
 --       Applies to all entities, true for ordinary fixed point types and
 --       subtypes.
 
---    Is_Output_State (synthesized)
+--    Is_Output_Only_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
---       property Output.
+--       option Output_Only.
 
 --    Is_Package_Or_Generic_Package (synthesized)
 --       Applies to all entities. True for packages and generic packages.
@@ -2976,7 +2975,7 @@ package Einfo is
 
 --    Is_Volatile_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
---       property Volatile.
+--       option Volatile.
 
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
@@ -5093,11 +5092,11 @@ package Einfo is
    ------------------------------------------
 
    --  E_Abstract_State
-   --    Integrity_Level                     (Uint8)
    --    Refined_State                       (Node9)
-   --    Is_Input_State                      (synth)
+   --    Is_External_State                   (synth)
+   --    Is_Input_Only_State                 (synth)
    --    Is_Null_State                       (synth)
-   --    Is_Output_State                     (synth)
+   --    Is_Output_Only_State                (synth)
    --    Is_Volatile_State                   (synth)
 
    --  E_Access_Protected_Subprogram_Type
@@ -6377,7 +6376,6 @@ package Einfo is
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
    function Initialization_Statements           (Id : E) return N;
-   function Integrity_Level                     (Id : E) return U;
    function Inner_Instances                     (Id : E) return L;
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
@@ -6680,12 +6678,13 @@ package Einfo is
    function Is_Constant_Object                  (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
+   function Is_External_State                   (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
    function Is_Ghost_Entity                     (Id : E) return B;
    function Is_Ghost_Subprogram                 (Id : E) return B;
-   function Is_Input_State                      (Id : E) return B;
+   function Is_Input_Only_State                 (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
-   function Is_Output_State                     (Id : E) return B;
+   function Is_Output_Only_State                (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
    function Is_Prival                           (Id : E) return B;
    function Is_Protected_Component              (Id : E) return B;
@@ -6988,7 +6987,6 @@ package Einfo is
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
    procedure Set_Initialization_Statements       (Id : E; V : N);
-   procedure Set_Integrity_Level                 (Id : E; V : U);
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
@@ -7696,7 +7694,6 @@ package Einfo is
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
-   pragma Inline (Integrity_Level);
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
@@ -8157,7 +8154,6 @@ package Einfo is
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
    pragma Inline (Set_Inner_Instances);
-   pragma Inline (Set_Integrity_Level);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);

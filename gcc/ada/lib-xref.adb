@@ -610,6 +610,15 @@ package body Lib.Xref is
          Error_Msg_NE ("& is only defined in Ada 2012?y?", N, E);
       end if;
 
+      --  Do not generate references if we are within a postcondition sub-
+      --  program, because the reference does not comes from source, and the
+      --  pre-analysis of the aspect has already created an entry for the ali
+      --  file at the proper source location.
+
+      if Chars (Current_Scope) = Name_uPostconditions then
+         return;
+      end if;
+
       --  Never collect references if not in main source unit. However, we omit
       --  this test if Typ is 'e' or 'k', since these entries are structural,
       --  and it is useful to have them in units that reference packages as
