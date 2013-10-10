@@ -3717,8 +3717,7 @@ package body Sem_Ch12 is
               (Unit_Requires_Body (Gen_Unit)
                   or else Enclosing_Body_Present
                   or else Present (Corresponding_Body (Gen_Decl)))
-                and then (Is_In_Main_Unit (N)
-                           or else Might_Inline_Subp)
+                and then (Is_In_Main_Unit (N) or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
@@ -3728,8 +3727,7 @@ package body Sem_Ch12 is
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
 
-            if (Front_End_Inlining
-                 and then not Expander_Active)
+            if (Front_End_Inlining and then not Expander_Active)
               or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
             then
                Needs_Body := False;

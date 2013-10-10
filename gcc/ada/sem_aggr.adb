@@ -3416,6 +3416,7 @@ package body Sem_Aggr is
 
    begin
       --  A record aggregate is restricted in SPARK:
+
       --    Each named association can have only a single choice.
       --    OTHERS cannot be used.
       --    Positional and named associations cannot be mixed.
@@ -3758,6 +3759,8 @@ package body Sem_Aggr is
             end loop;
          end Find_Private_Ancestor;
 
+      --  Start of processing for Step_5
+
       begin
          if Is_Derived_Type (Typ) and then Is_Tagged_Type (Typ) then
             Parent_Typ_List := New_Elmt_List;
@@ -3822,11 +3825,12 @@ package body Sem_Aggr is
 
                if Nkind (Dnode) = N_Full_Type_Declaration then
                   Record_Def := Type_Definition (Dnode);
-                  Gather_Components (Base_Type (Typ),
-                    Component_List (Record_Def),
-                    Governed_By   => New_Assoc_List,
-                    Into          => Components,
-                    Report_Errors => Errors_Found);
+                  Gather_Components
+                    (Base_Type (Typ),
+                     Component_List (Record_Def),
+                     Governed_By   => New_Assoc_List,
+                     Into          => Components,
+                     Report_Errors => Errors_Found);
                end if;
             end if;
 
@@ -3915,19 +3919,20 @@ package body Sem_Aggr is
                null;
 
             elsif not Has_Unknown_Discriminants (Typ) then
-               Gather_Components (Base_Type (Typ),
-                 Component_List (Record_Def),
-                 Governed_By   => New_Assoc_List,
-                 Into          => Components,
-                 Report_Errors => Errors_Found);
+               Gather_Components
+                 (Base_Type (Typ),
+                  Component_List (Record_Def),
+                  Governed_By   => New_Assoc_List,
+                  Into          => Components,
+                  Report_Errors => Errors_Found);
 
             else
                Gather_Components
                  (Base_Type (Underlying_Record_View (Typ)),
-                 Component_List (Record_Def),
-                 Governed_By   => New_Assoc_List,
-                 Into          => Components,
-                 Report_Errors => Errors_Found);
+                  Component_List (Record_Def),
+                  Governed_By   => New_Assoc_List,
+                  Into          => Components,
+                  Report_Errors => Errors_Found);
             end if;
          end if;
 

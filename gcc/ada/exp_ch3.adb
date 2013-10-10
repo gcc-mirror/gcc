@@ -5849,7 +5849,6 @@ package body Exp_Ch3 is
    procedure Expand_N_Variant_Part (N : Node_Id) is
       Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
       Others_Node : Node_Id;
-      Variant     : Node_Id;
 
    begin
       --  If the last variant does not contain the Others choice, replace it
@@ -5866,15 +5865,12 @@ package body Exp_Ch3 is
          Set_Discrete_Choices (Last_Var, New_List (Others_Node));
       end if;
 
-      --  Deal with any static predicates in the variant choices. Note that we
-      --  don't have to look at the last variant, since we know it is an others
-      --  choice, because we just rewrote it that way if necessary.
+      --  We have one more expansion activity, which is to deal with static
+      --  predicates in the variant choices. But we have to defer that to
+      --  the freeze point, because the statically predicated subtype won't
+      --  be fully processed till then, so this expansion activity is carried
+      --  out in Freeze_Record_Type.
 
-      Variant := First_Non_Pragma (Variants (N));
-      while Variant /= Last_Var loop
-         Expand_Static_Predicates_In_Choices (Variant);
-         Next_Non_Pragma (Variant);
-      end loop;
    end Expand_N_Variant_Part;
 
    ---------------------------------

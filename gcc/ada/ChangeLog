@@ -1,3 +1,46 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref-spark_specific.adb, par-ch13.adb, sem_prag.adb, sem_prag.ads,
+	sem_ch12.adb, sem_attr.adb, sem_ch6.adb, sem_ch13.adb, a-sequio.adb,
+	s-atocou-builtin.adb: Minor reformatting.
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c (NEED_PTHREAD_CONDATTR_SETCLOCK): This
+	constant needs to be output to s-oscons.h, as it is tested
+	by init.c.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Variant_Part): Don't expand choices, too early
+	* exp_ch5.adb (Expand_N_Case_Statement): Use new Has_SP_Choice
+	flag to avoid expanding choices when not necessary.
+	* exp_util.adb: Minor reformatting
+	* freeze.adb (Freeze_Record_Type): Redo expansion of variants
+	* sem_aggr.adb: Minor reformatting
+	* sem_case.ads, sem_case.adb: Major rewrite, separating Analysis and
+	Checking of choices.
+	* sem_ch3.adb (Analyze_Variant_Part): Rewrite to call new
+	Analyze_Choices.
+	* sem_ch4.adb (Analyze_Case_Expression): Call Analyze_Choices
+	and Check_Choices
+	* sem_ch5.adb (Analyze_Case_Statement): Call Analyze_Choices
+	and Check_Choices
+	* sem_util.adb: Minor reformatting
+	* sinfo.ads, sinfo.adb (Has_SP_Choice): New flag.
+
+2013-10-10  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Build_Library): Do not issue link dynamic
+	libraries with an Rpath, if switch -R was used.
+
+2013-10-10  Tristan Gingold  <gingold@adacore.com>
+
+	* s-stalib.ads (Image_Index_Table_8, Image_Index_Table_16,
+	Image_Index_Table_32): Remove as not used.
+	* s-imgint.adb (Image_Integer): Call Set_Image_Integer and
+	remove duplicated code.
+
 2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Provide a

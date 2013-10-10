@@ -2627,7 +2627,11 @@ package body Exp_Ch5 is
          Alt := First_Non_Pragma (Alternatives (N));
          while Present (Alt) loop
             Process_Statements_For_Controlled_Objects (Alt);
-            Expand_Static_Predicates_In_Choices (Alt);
+
+            if Has_SP_Choice (Alt) then
+               Expand_Static_Predicates_In_Choices (Alt);
+            end if;
+
             Next_Non_Pragma (Alt);
          end loop;
       end;

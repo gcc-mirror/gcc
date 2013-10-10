@@ -1018,12 +1018,12 @@ package body Sem_Ch5 is
       Exp_Type       : Entity_Id;
       Exp_Btype      : Entity_Id;
       Last_Choice    : Nat;
-      Dont_Care      : Boolean;
+
       Others_Present : Boolean;
+      --  Indicates if Others was present
 
       pragma Warnings (Off, Last_Choice);
-      pragma Warnings (Off, Dont_Care);
-      --  Don't care about assigned values
+      --  Don't care about assigned value
 
       Statements_Analyzed : Boolean := False;
       --  Set True if at least some statement sequences get analyzed. If False
@@ -1039,16 +1039,21 @@ package body Sem_Ch5 is
       --  case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
-      --  Analyzes all the statements associated with a case alternative.
-      --  Needed by the generic instantiation below.
+      --  Analyzes the statements associated with a case alternative. Needed
+      --  by instantiation below.
 
-      package Case_Choices_Processing is new
-        Generic_Choices_Processing
-          (Get_Alternatives          => Alternatives,
-           Process_Empty_Choice      => No_OP,
+      package Analyze_Case_Choices is new
+        Generic_Analyze_Choices
+          (Process_Associated_Node   => Process_Statements);
+      use Analyze_Case_Choices;
+      --  Instantiation of the generic choice analysis package
+
+      package Check_Case_Choices is new
+        Generic_Check_Choices
+          (Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
-           Process_Associated_Node   => Process_Statements);
-      use Case_Choices_Processing;
+           Process_Associated_Node   => No_Op);
+      use Check_Case_Choices;
       --  Instantiation of the generic choice processing package
 
       -----------------------------
@@ -1154,9 +1159,7 @@ package body Sem_Ch5 is
 
       --  If error already reported by Resolve, nothing more to do
 
-      if Exp_Btype = Any_Discrete
-        or else Exp_Btype = Any_Type
-      then
+      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
          return;
 
       elsif Exp_Btype = Any_Character then
@@ -1185,12 +1188,12 @@ package body Sem_Ch5 is
          Exp_Type := Exp_Btype;
       end if;
 
-      --  Call instantiated Analyze_Choices which does the rest of the work
+      --  Call instantiated procedures to analyzwe and check discrete choices
 
-      Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
+      Analyze_Choices (Alternatives (N), Exp_Type);
+      Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
 
-      --  A case statement with a single OTHERS alternative is not allowed
-      --  in SPARK.
+      --  Case statement with single OTHERS alternative not allowed in SPARK
 
       if Others_Present and then List_Length (Alternatives (N)) = 1 then
          Check_SPARK_Restriction
@@ -1212,6 +1215,12 @@ package body Sem_Ch5 is
       else
          Unblocked_Exit_Count := Save_Unblocked_Exit_Count;
       end if;
+
+      --  If the expander is active it will detect the case of a statically
+      --  determined single alternative and remove warnings for the case, but
+      --  if we are not doing expansion, that circuit won't be active. Here we
+      --  duplicate the effect of removing warnings in the same way, so that
+      --  we will get the same set of warnings in -gnatc mode.
 
       if not Expander_Active
         and then Compile_Time_Known_Value (Expression (N))

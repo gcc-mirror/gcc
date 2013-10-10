@@ -1552,6 +1552,16 @@ package body Sinfo is
       return Flag13 (N);
    end Has_Self_Reference;
 
+   function Has_SP_Choice
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression_Alternative
+        or else NT (N).Nkind = N_Case_Statement_Alternative
+        or else NT (N).Nkind = N_Variant);
+      return Flag15 (N);
+   end Has_SP_Choice;
+
    function Has_Storage_Size_Pragma
       (N : Node_Id) return Boolean is
    begin
@@ -4679,6 +4689,16 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extension_Aggregate);
       Set_Flag13 (N, Val);
    end Set_Has_Self_Reference;
+
+   procedure Set_Has_SP_Choice
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression_Alternative
+        or else NT (N).Nkind = N_Case_Statement_Alternative
+        or else NT (N).Nkind = N_Variant);
+      Set_Flag15 (N, Val);
+   end Set_Has_SP_Choice;
 
    procedure Set_Has_Storage_Size_Pragma
       (N : Node_Id; Val : Boolean := True) is

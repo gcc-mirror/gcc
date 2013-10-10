@@ -1315,13 +1315,17 @@ package body Sem_Ch4 is
       --  Error routine invoked by the generic instantiation below when
       --  the case expression has a non static choice.
 
-      package Case_Choices_Processing is new
-        Generic_Choices_Processing
-          (Get_Alternatives          => Alternatives,
-           Process_Empty_Choice      => No_OP,
+      package Case_Choices_Analysis is new
+        Generic_Analyze_Choices
+          (Process_Associated_Node => No_OP);
+      use Case_Choices_Analysis;
+
+      package Case_Choices_Checking is new
+        Generic_Check_Choices
+          (Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => No_OP);
-      use Case_Choices_Processing;
+      use Case_Choices_Checking;
 
       --------------------------
       -- Has_Static_Predicate --
@@ -1363,8 +1367,8 @@ package body Sem_Ch4 is
       Exp_Type  : Entity_Id;
       Exp_Btype : Entity_Id;
 
-      Dont_Care      : Boolean;
       Others_Present : Boolean;
+      --  Indicates if Others was present
 
    --  Start of processing for Analyze_Case_Expression
 
@@ -1427,9 +1431,7 @@ package body Sem_Ch4 is
 
       --  If error already reported by Resolve, nothing more to do
 
-      if Exp_Btype = Any_Discrete
-        or else Exp_Btype = Any_Type
-      then
+      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
          return;
 
       elsif Exp_Btype = Any_Character then
@@ -1461,10 +1463,11 @@ package body Sem_Ch4 is
       then
          null;
 
-      --  Call instantiated Analyze_Choices which does the rest of the work
+      --  Call Analyze_Choices and Check_Choices to do the rest of the work
 
       else
-         Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
+         Analyze_Choices (Alternatives (N), Exp_Type);
+         Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
       end if;
 
       if Exp_Type = Universal_Integer and then not Others_Present then

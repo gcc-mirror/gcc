@@ -32,8 +32,8 @@ with Types;  use Types;
 
 package Sem_Prag is
 
-   --  The following table lists all the user-defined pragmas that may apply to
-   --  a body stub.
+   --  The following table lists all the implementation-defined pragmas that
+   --  may apply to a body stub (no language defined pragmas apply).
 
    Pragma_On_Stub_OK : constant array (Pragma_Id) of Boolean :=
      (Pragma_Refined_Pre  => True,
