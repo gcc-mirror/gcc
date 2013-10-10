@@ -1250,6 +1250,8 @@ begin
            Pragma_Pure_12                        |
            Pragma_Pure_Function                  |
            Pragma_Queuing_Policy                 |
+           Pragma_Refined_Depends                |
+           Pragma_Refined_Global                 |
            Pragma_Refined_Post                   |
            Pragma_Refined_Pre                    |
            Pragma_Relative_Deadline              |

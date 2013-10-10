@@ -212,25 +212,25 @@ package body Sem_Util is
    -- Add_Contract_Item --
    -----------------------
 
-   procedure Add_Contract_Item (Item : Node_Id; Subp_Id : Entity_Id) is
+   procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id) is
       Items : constant Node_Id := Contract (Subp_Id);
       Nam   : Name_Id;
 
    begin
-      if Present (Items) and then Nkind (Item) = N_Pragma then
-         Nam := Pragma_Name (Item);
+      --  The related subprogram [body] must have a contract and the item to be
+      --  added must be a pragma.
 
-         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
-            Set_Next_Pragma (Item, Pre_Post_Conditions (Items));
-            Set_Pre_Post_Conditions (Items, Item);
+      pragma Assert (Present (Items));
+      pragma Assert (Nkind (Prag) = N_Pragma);
 
-         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
-            Set_Next_Pragma (Item, Contract_Test_Cases (Items));
-            Set_Contract_Test_Cases (Items, Item);
+      Nam := Pragma_Name (Prag);
 
-         elsif Nam_In (Nam, Name_Depends, Name_Global) then
-            Set_Next_Pragma (Item, Classifications (Items));
-            Set_Classifications (Items, Item);
+      --  Contract items related to subprogram bodies
+
+      if Ekind (Subp_Id) = E_Subprogram_Body then
+         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
 
          --  The pragma is not a proper contract item
 
@@ -238,10 +238,26 @@ package body Sem_Util is
             raise Program_Error;
          end if;
 
-      --  The subprogram has not been properly decorated or the item is illegal
+      --  Contract items related to subprogram declarations
 
       else
-         raise Program_Error;
+         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+            Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
+            Set_Pre_Post_Conditions (Items, Prag);
+
+         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
+            Set_Next_Pragma (Prag, Contract_Test_Cases (Items));
+            Set_Contract_Test_Cases (Items, Prag);
+
+         elsif Nam_In (Nam, Name_Depends, Name_Global) then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
       end if;
    end Add_Contract_Item;
 

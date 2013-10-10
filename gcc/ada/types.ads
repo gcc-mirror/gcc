@@ -172,7 +172,7 @@ package Types is
    for Physical_Line_Number'Size use 32;
    --  Line number type, used for storing physical line numbers (i.e. line
    --  numbers in the physical file being compiled, unaffected by the presence
-   --  of source reference pragmas.
+   --  of source reference pragmas).
 
    type Column_Number is range 0 .. 32767;
    for Column_Number'Size use 16;

@@ -2056,28 +2056,31 @@ package body Sem_Ch3 is
    --------------------------
 
    procedure Analyze_Declarations (L : List_Id) is
-      D           : Node_Id;
-      Freeze_From : Entity_Id := Empty;
-      Next_Node   : Node_Id;
+      Decl : Node_Id;
 
-      procedure Adjust_D;
-      --  Adjust D not to include implicit label declarations, since these
+      procedure Adjust_Decl;
+      --  Adjust Decl not to include implicit label declarations, since these
       --  have strange Sloc values that result in elaboration check problems.
       --  (They have the sloc of the label as found in the source, and that
       --  is ahead of the current declarative part).
 
-      --------------
-      -- Adjust_D --
-      --------------
+      -----------------
+      -- Adjust_Decl --
+      -----------------
 
-      procedure Adjust_D is
+      procedure Adjust_Decl is
       begin
-         while Present (Prev (D))
-           and then Nkind (D) = N_Implicit_Label_Declaration
+         while Present (Prev (Decl))
+           and then Nkind (Decl) = N_Implicit_Label_Declaration
          loop
-            Prev (D);
+            Prev (Decl);
          end loop;
-      end Adjust_D;
+      end Adjust_Decl;
+
+      --  Local variables
+
+      Freeze_From : Entity_Id := Empty;
+      Next_Decl   : Node_Id;
 
    --  Start of processing for Analyze_Declarations
 
@@ -2086,23 +2089,23 @@ package body Sem_Ch3 is
          Check_Later_Vs_Basic_Declarations (L, During_Parsing => False);
       end if;
 
-      D := First (L);
-      while Present (D) loop
+      Decl := First (L);
+      while Present (Decl) loop
 
          --  Package spec cannot contain a package declaration in SPARK
 
-         if Nkind (D) = N_Package_Declaration
+         if Nkind (Decl) = N_Package_Declaration
            and then Nkind (Parent (L)) = N_Package_Specification
          then
             Check_SPARK_Restriction
               ("package specification cannot contain a package declaration",
-               D);
+               Decl);
          end if;
 
          --  Complete analysis of declaration
 
-         Analyze (D);
-         Next_Node := Next (D);
+         Analyze (Decl);
+         Next_Decl := Next (Decl);
 
          if No (Freeze_From) then
             Freeze_From := First_Entity (Current_Scope);
@@ -2124,7 +2127,7 @@ package body Sem_Ch3 is
          --  be a freeze point once delayed freezing of bodies is implemented.
          --  (This is needed in any case for early instantiations ???).
 
-         if No (Next_Node) then
+         if No (Next_Decl) then
             if Nkind_In (Parent (L), N_Component_List,
                                      N_Task_Definition,
                                      N_Protected_Definition)
@@ -2136,8 +2139,8 @@ package body Sem_Ch3 is
                   Freeze_From := First_Entity (Current_Scope);
                end if;
 
-               Adjust_D;
-               Freeze_All (Freeze_From, D);
+               Adjust_Decl;
+               Freeze_All (Freeze_From, Decl);
                Freeze_From := Last_Entity (Current_Scope);
 
             elsif Scope (Current_Scope) /= Standard_Standard
@@ -2150,8 +2153,8 @@ package body Sem_Ch3 is
                or else No (Private_Declarations (Parent (L)))
                or else Is_Empty_List (Private_Declarations (Parent (L)))
             then
-               Adjust_D;
-               Freeze_All (Freeze_From, D);
+               Adjust_Decl;
+               Freeze_All (Freeze_From, Decl);
                Freeze_From := Last_Entity (Current_Scope);
             end if;
 
@@ -2170,44 +2173,39 @@ package body Sem_Ch3 is
          --  care to attach the bodies at a proper place in the tree so as to
          --  not cause unwanted freezing at that point.
 
-         elsif not Analyzed (Next_Node)
-           and then (Nkind_In (Next_Node, N_Subprogram_Body,
+         elsif not Analyzed (Next_Decl)
+           and then (Nkind_In (Next_Decl, N_Subprogram_Body,
                                           N_Entry_Body,
                                           N_Package_Body,
                                           N_Protected_Body,
                                           N_Task_Body)
                        or else
-                     Nkind (Next_Node) in N_Body_Stub)
+                     Nkind (Next_Decl) in N_Body_Stub)
          then
-            Adjust_D;
-            Freeze_All (Freeze_From, D);
+            Adjust_Decl;
+            Freeze_All (Freeze_From, Decl);
             Freeze_From := Last_Entity (Current_Scope);
          end if;
 
-         D := Next_Node;
+         Decl := Next_Decl;
       end loop;
 
-      --  One more thing to do, we need to scan the declarations to check for
-      --  any precondition/postcondition pragmas (Pre/Post aspects have by this
-      --  stage been converted into corresponding pragmas). It is at this point
-      --  that we analyze the expressions in such pragmas, to implement the
-      --  delayed visibility requirement.
+      --  Analyze the contracts of a subprogram declaration or a body now due
+      --  to delayed visibility requirements of aspects.
 
-      declare
-         Decl    : Node_Id;
-         Subp_Id : Entity_Id;
+      Decl := First (L);
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Subprogram_Body then
+            Analyze_Subprogram_Body_Contract
+              (Defining_Unit_Name (Specification (Decl)));
 
-      begin
-         Decl := First (L);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Subprogram_Declaration then
-               Subp_Id := Defining_Unit_Name (Specification (Decl));
-               Analyze_Subprogram_Contract (Subp_Id);
-            end if;
+         elsif Nkind (Decl) = N_Subprogram_Declaration then
+            Analyze_Subprogram_Contract
+              (Defining_Unit_Name (Specification (Decl)));
+         end if;
 
-            Next (Decl);
-         end loop;
-      end;
+         Next (Decl);
+      end loop;
    end Analyze_Declarations;
 
    -----------------------------------

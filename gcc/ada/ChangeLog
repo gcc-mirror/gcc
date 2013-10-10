@@ -1,3 +1,90 @@
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add entries in table Canonical_Aspects for aspects
+	Refined_Depends and Refined_Global.
+	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,
+	Aspect_Names, Aspect_Declay, Aspect_On_Body_Or_Stub_OK for
+	aspects Refined_Depends and Refined_Global.
+	* einfo.adb (Contract): Subprogram bodies are now valid owners
+	of contracts.
+	(Set_Contract): Subprogram bodies are now valid
+	owners of contracts.
+	(Write_Field24_Name): Output the contract
+	attribute for subprogram bodies.
+	* exp_ch6.adb (Expand_Subprogram_Contract): New routine.
+	* exp_ch6.ads (Expand_Subprogram_Contract): New routine.
+	* par-prag.adb: Pragmas Refined_Depends and Refined_Global do
+	not require any special processing by the parser.
+	* sem_ch3.adb (Adjust_D): Renamed to Adjust_Decl.
+	(Analyze_Declarations): Code reformatting. Analyze the contract
+	of a subprogram body at the end of the declarative region.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body):
+	Subprogram bodies can now have contracts.  Use
+	Expand_Subprogram_Contract to handle the various contract
+	assertions.
+	(Analyze_Subprogram_Body_Contract): New null routine.
+	(Analyze_Subprogram_Body_Helper): Subprogram bodies can now have
+	contracts.  Use Expand_Subprogram_Contract to handle the various
+	contract assertions.
+	(Analyze_Subprogram_Contract): Add local
+	variable Nam. Update the call to Analyze_PPC_In_Decl_Part. Capture
+	the pragma name in Nam.
+	(Process_PPCs): Removed.
+	* sem_ch6.ads (Analyze_Subprogram_Body_Contract): New routine.
+	(Analyze_Subprogram_Contract): Update the comment on usage.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add null
+	implementations for aspects Refined_Depends and Refined_Global.
+	(Check_Aspect_At_Freeze_Point): Aspects Refined_Depends and
+	Refined_Global do not need to be checked at the freeze point.
+	* sem_prag.adb: Add entries in table Sig_Flags
+	for pragmas Refined_Depends and Refined_Global.
+	(Analyze_Contract_Cases_In_Decl_Part): Add local
+	variable Restore. Use Restore to pop the scope.
+	(Analyze_Depends_In_Decl_Part): Add local variable Restore. Use
+	Restore to pop the scope.
+	(Analyze_Global_In_Decl_List): Add local variable Restore. Use Restore
+	to pop the scope.
+	(Analyze_PPC_In_Decl_Part): Renamed to
+	Analyze_Pre_Post_Condition_In_Decl_Part.
+	(Analyze_Pragma):
+	Add null implementations for pragmas Refined_Depends and
+	Refined_Global. Refined_Pre and Refined_Post are now
+	handled by routine Analyze_Refined_Pre_Post_Condition
+	exclusively.
+	(Analyze_Refined_Depends_In_Decl_Part): New
+	null routine.
+	(Analyze_Refined_Global_In_Decl_Part):
+	New null routine.
+	(Analyze_Refined_Pre_Post):
+	Renamed to Analyze_Refined_Pre_Post_Condition.
+	(Analyze_Refined_Pre_Post_Condition): Analyze the boolean
+	expression.
+	(Check_Precondition_Postcondition): Update the call
+	to Analyze_PPC_In_Decl_Part.
+	* sem_prag.ads: Add entries in table
+	Pragma_On_Body_Or_Stub_OK for pragmas Refined_Depends
+	and Refined_Global.
+	(Analyze_PPC_In_Decl_Part): Renamed
+	to Analyze_Pre_Post_Condition_In_Decl_Part.  Update the
+	comment on usage.
+	(Analyze_Refined_Depends_In_Decl_Part): New routine.
+	(Analyze_Refined_Global_In_Decl_Part): New routine.
+	(Analyze_Test_Case_In_Decl_Part): Update the comment on usage.
+	* sem_util.adb (Add_Contract_Item): Rename formal Item to Prag
+	and update all occurrences.  Subprogram body contracts can now
+	contain pragmas Refined_Depends and Refined_Global.
+	* sem_util.ads (Add_Contract_Item): Rename formal Item to
+	Prag. Update the comment on usage.
+	* sinfo.ads: Update the comment on structure and usage of
+	N_Contract.
+	* snames.ads-tmpl: Add new predefined names for Refined_Depends
+	and Refined_Global. Add entries in table Pragma_Id for
+	Refined_Depends and Refined_Global.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* types.ads: Minor reformatting.
+
 2013-10-10  Thomas Quinot  <quinot@adacore.com>
 
 	* s-taprop-posix.adb: Add missing comment.

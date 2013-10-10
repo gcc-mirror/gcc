@@ -7143,11 +7143,10 @@ package Sinfo is
       --------------
 
       --  This node is used to hold the various parts of an entry or subprogram
-      --  contract, consisting in pre- and postconditions on the one hand, and
-      --  test-cases on the other hand.
+      --  [body] contract, consisting of precondition, postconditions, contract
+      --  cases, test cases and global dependencies.
 
-      --  It is referenced from an entry, a subprogram or a generic subprogram
-      --  entity.
+      --  The node appears in an entry and [generic] subprogram [body] entity.
 
       --  Sprint syntax:  <none> as the node should not appear in the tree, but
       --                  only attached to an entry or [generic] subprogram
@@ -7160,9 +7159,10 @@ package Sinfo is
       --  Classifications (Node3) (set to Empty if none)
 
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
-      --  to pre- and postconditions associated with an entry or a subprogram.
-      --  The pragmas can either come from source or be the byproduct of aspect
-      --  expansion. The ordering in the list is in LIFO fashion.
+      --  to pre- and postconditions associated with an entry or a subprogram
+      --  [body or stub]. The pragmas can either come from source or be the
+      --  byproduct of aspect expansion. The ordering in the list is in LIFO
+      --  fashion.
 
       --  Note that there might be multiple preconditions or postconditions
       --  in this list, either because they come from separate pragmas in the
@@ -7175,8 +7175,8 @@ package Sinfo is
 
       --  Classifications contains pragmas that either categorize subprogram
       --  inputs and outputs or establish dependencies between them. Currently
-      --  pragmas Depends and Global are stored in this list. The ordering is
-      --  in LIFO fashion.
+      --  pragmas Depends, Global, Refined_Depends and Refined_Global are
+      --  stored in this list. The ordering is in LIFO fashion.
 
       -------------------
       -- Expanded_Name --

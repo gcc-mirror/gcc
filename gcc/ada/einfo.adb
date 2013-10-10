@@ -1065,7 +1065,7 @@ package body Einfo is
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family)
+        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body)
           or else Is_Subprogram (Id)
           or else Is_Generic_Subprogram (Id));
       return Node24 (Id);
@@ -3651,7 +3651,7 @@ package body Einfo is
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Void)
+        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body, E_Void)
           or else Is_Subprogram (Id)
           or else Is_Generic_Subprogram (Id));
       Set_Node24 (Id, V);
@@ -9012,9 +9012,14 @@ package body Einfo is
 
          when E_Entry                                      |
               E_Entry_Family                               |
+              E_Subprogram_Body                            |
               Subprogram_Kind                              |
               Generic_Subprogram_Kind                      =>
             Write_Str ("Contract");
+
+            --  The Subprogram_Kind and Generic_Subrpogram_Kind entries
+            --  here are odd, since the assertions for [Set_]Contract do not
+            --  allow these possibilities ???
 
          when others                                       =>
             Write_Str ("Field24???");
