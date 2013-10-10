@@ -1,3 +1,16 @@
+2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h: Move some prototypes to gimple.h.
+	(gimple_fold_indirect_ref): Move prototype to gimple-fold.h.
+	* gimple.h: Relocate some prototypes from tree-flow.h
+	* builtins.c (std_gimplify_va_arg_expr, build_va_arg_indirect_ref):
+	Move to gimplify.c.
+	* gimplify.c (gimple_fold_indirect_ref): Move to gimple-fold.c.
+	(build_va_arg_indirect_ref): Relocate and make static.
+	(std_gimplify_va_arg_expr): Relocate here.
+	* gimple-fold.c (gimple_fold_indirect_ref): Relocate here.
+	* gimple-fold.h (gimple_fold_indirect_ref): Add prototype.
+
 2013-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* doc/md.texi: Document the mnemonic attribute.
