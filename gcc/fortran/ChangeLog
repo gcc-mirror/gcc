@@ -1,3 +1,8 @@
+2013-10-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58226
+	* options.c (gfc_get_option_string): Handle zero arg case.
+
 2013-10-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58593

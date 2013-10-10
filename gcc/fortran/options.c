@@ -1166,6 +1166,10 @@ gfc_get_option_string (void)
   size_t len, pos;
   char *result;
 
+  /* Allocate and return a one-character string with '\0'.  */
+  if (!save_decoded_options_count)
+    return XCNEWVEC (char, 1);
+
   /* Determine required string length.  */
 
   len = 0;
