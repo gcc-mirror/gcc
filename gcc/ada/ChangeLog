@@ -1,3 +1,15 @@
+2013-10-10  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,
+	a-cforse.ads, a-cofove.ads: Update comment and doc of formal containers
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For Pre/Post
+	conditions that apply to a subprogram body, preserve the placement
+	and order of the generated pragmas, which must appear before
+	other declarations in the body.
+
 2013-10-10  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Add gnat2xml doc.

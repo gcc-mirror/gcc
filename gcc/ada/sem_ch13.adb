@@ -1189,10 +1189,29 @@ package body Sem_Ch13 is
 
          elsif Nkind (N) = N_Subprogram_Body then
             if No (Declarations (N)) then
-               Set_Declarations (N, New_List);
-            end if;
+               Set_Declarations (N, New_List (Prag));
+            else
+               declare
+                  D : Node_Id;
+               begin
 
-            Append (Prag, Declarations (N));
+                  --  There may be several aspects associated with the body;
+                  --  preserve the ordering of the corresponding pragmas.
+
+                  D := First (Declarations (N));
+                  while Present (D) loop
+                     exit when Nkind (D) /= N_Pragma
+                       or else not From_Aspect_Specification (D);
+                     Next (D);
+                  end loop;
+
+                  if No (D) then
+                     Append (Prag, Declarations (N));
+                  else
+                     Insert_Before (D, Prag);
+                  end if;
+               end;
+            end if;
 
          --  Default
 
@@ -2230,6 +2249,8 @@ package body Sem_Ch13 is
                                  end if;
                               end;
                            end if;
+
+                           --  Otherwise, Convention must be specified
 
                            Error_Msg_N
                              ("missing Convention aspect for Export/Import",

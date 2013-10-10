@@ -30,8 +30,10 @@
 ------------------------------------------------------------------------------
 
 --  This spec is derived from package Ada.Containers.Bounded_Vectors in the Ada
---  2012 RM. The modifications are to facilitate formal proofs by making it
---  easier to express properties.
+--  2012 RM. The modifications are meant to facilitate formal proofs by making
+--  it easier to express properties, and by making the specification of this
+--  unit compatible with SPARK 2014. Note that the API of this unit may be
+--  subject to incompatible changes as SPARK 2014 evolves.
 
 --  The modifications are:
 
@@ -48,12 +50,7 @@
 --      function Left  (Container : Vector; Position : Cursor) return Vector;
 --      function Right (Container : Vector; Position : Cursor) return Vector;
 
---      Left returns a container containing all elements preceding Position
---      (excluded) in Container. Right returns a container containing all
---      elements following Position (included) in Container. These two new
---      functions are useful to express invariant properties in loops which
---      iterate over containers. Left returns the part of the container already
---      scanned and Right the part not scanned yet.
+--    See detailed specifications for these subprograms.
 
 with Ada.Containers;
 use Ada.Containers;
@@ -350,9 +347,14 @@ package Ada.Containers.Formal_Vectors is
 
    function Left (Container : Vector; Position : Cursor) return Vector with
      Pre => Has_Element (Container, Position) or else Position = No_Element;
-
    function Right (Container : Vector; Position : Cursor) return Vector with
      Pre => Has_Element (Container, Position) or else Position = No_Element;
+   --  Left returns a container containing all elements preceding Position
+   --  (excluded) in Container. Right returns a container containing all
+   --  elements following Position (included) in Container. These two new
+   --  functions can be used to express invariant properties in loops which
+   --  iterate over containers. Left returns the part of the container already
+   --  scanned and Right the part not scanned yet.
 
 private
 
