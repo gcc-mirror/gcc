@@ -38,6 +38,7 @@ with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Osint.C;  use Osint.C;
+with Output;   use Output;
 with Par;
 with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
@@ -615,9 +616,27 @@ package body Lib.Writ is
 
          Write_With_Lines;
 
-         --  Output linker option lines
+         --  Generate the linker option lines
 
          for J in 1 .. Linker_Option_Lines.Last loop
+
+            --  Pragma Linker_Options is not allowed in predefined generic
+            --  units. This is because they won't be read, due to the fact that
+            --  with lines for generic units lack the file name and lib name
+            --  parameters (see Lib_Writ spec for an explanation).
+
+            if Is_Generic_Unit (Cunit_Entity (Main_Unit))
+              and then
+                Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+            then
+               Set_Standard_Error;
+               Write_Line
+                 ("linker options not allowed in predefined generic unit");
+               raise Unrecoverable_Error;
+            end if;
+
+            --  Output one linker option line
+
             declare
                S : Linker_Option_Entry renames Linker_Option_Lines.Table (J);
             begin

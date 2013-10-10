@@ -1389,8 +1389,8 @@ CST(Inet_Pton_Linkname, "")
 
 /* Note: On HP-UX, CLOCK_REALTIME is an enum, not a macro. */
 
-#if !(defined (__hpux__) || defined (CLOCK_REALTIME))
-# define CLOCK_REALTIME -1
+#if !(defined(CLOCK_REALTIME) || defined (__hpux__))
+# define CLOCK_REALTIME (-1)
 #endif
 CND(CLOCK_REALTIME, "System realtime clock")
 
@@ -1407,19 +1407,15 @@ CND(CLOCK_FASTEST, "Fastest clock")
 #endif
 CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
-#if defined(__APPLE__)
-/* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
-# define CLOCK_RT_Ada "-1"
 
-#elif defined(__FreeBSD__) || defined(_AIX)
+#if defined(__FreeBSD__) || defined(_AIX)
 /** On these platforms use system provided monotonic clock instead of
- ** the default CLOCK_REALTIME. We then need to set up cond var attributes
- ** appropriately (see thread.c).
+ ** the default CLOCK_REALTIME. Note: We then need to set up cond var
+ ** attributes appropriately (see thread.c).
  **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
-# define NEED_PTHREAD_CONDATTR_SETCLOCK 1
 
-#elif defined(HAVE_CLOCK_REALTIME)
+#else
 /* By default use CLOCK_REALTIME */
 # define CLOCK_RT_Ada "CLOCK_REALTIME"
 #endif
@@ -1427,21 +1423,16 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 #ifdef CLOCK_RT_Ada
 CNS(CLOCK_RT_Ada, "")
 #endif
-#ifdef NEED_PTHREAD_CONDATTR_SETCLOCK
-CND(NEED_PTHREAD_CONDATTR_SETCLOCK, "")
-#endif
 
 #if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
 /*
 
    --  Sizes of pthread data types
-
 */
 
 #if defined (__APPLE__) || defined (DUMMY)
 /*
    --  (on Darwin, these are just placeholders)
-
 */
 #define PTHREAD_SIZE            __PTHREAD_SIZE__
 #define PTHREAD_ATTR_SIZE       __PTHREAD_ATTR_SIZE__
@@ -1463,7 +1454,9 @@ CND(NEED_PTHREAD_CONDATTR_SETCLOCK, "")
 #define PTHREAD_RWLOCK_SIZE     (sizeof (pthread_rwlock_t))
 #define PTHREAD_ONCE_SIZE       (sizeof (pthread_once_t))
 #endif
+/*
 
+*/
 CND(PTHREAD_SIZE,            "pthread_t")
 CND(PTHREAD_ATTR_SIZE,       "pthread_attr_t")
 CND(PTHREAD_MUTEXATTR_SIZE,  "pthread_mutexattr_t")

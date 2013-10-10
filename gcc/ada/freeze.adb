@@ -1698,6 +1698,10 @@ package body Freeze is
       --  integer literal without an explicit corresponding size clause. The
       --  caller has checked that Utype is a modular integer type.
 
+      function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id;
+      --  Create Freeze_Generic_Entity nodes for types declared in a generic
+      --  package. Recurse on inner generic packages.
+
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze each component, handle some representation clauses, and freeze
       --  primitive operations if this is a tagged type.
@@ -1943,6 +1947,34 @@ package body Freeze is
             end;
          end if;
       end Check_Suspicious_Modulus;
+
+      -----------------------------
+      -- Freeze_Generic_Entities --
+      -----------------------------
+
+      function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id is
+         E : Entity_Id;
+         F : Node_Id;
+         Flist : List_Id;
+
+      begin
+         Flist := New_List;
+         E := First_Entity (Pack);
+         while Present (E) loop
+            if Is_Type (E) and then not Is_Generic_Type (E) then
+               F := Make_Freeze_Generic_Entity (Sloc (Pack));
+               Set_Entity (F, E);
+               Append_To (Flist, F);
+
+            elsif Ekind (E) = E_Generic_Package then
+               Append_List_To (Flist, Freeze_Generic_Entities (E));
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return Flist;
+      end Freeze_Generic_Entities;
 
       ------------------------
       -- Freeze_Record_Type --
@@ -2830,6 +2862,9 @@ package body Freeze is
                return No_List;
             end if;
          end;
+
+      elsif Ekind (E) = E_Generic_Package then
+         return Freeze_Generic_Entities (E);
       end if;
 
       --  Add checks to detect proper initialization of scalars that may appear
@@ -3501,7 +3536,9 @@ package body Freeze is
 
          if Present (Scope (E))
            and then Is_Generic_Unit (Scope (E))
-           and then not Has_Predicates (E)
+           and then
+             (not Has_Predicates (E)
+               and then not Has_Delayed_Freeze (E))
          then
             Check_Compile_Time_Size (E);
             return No_List;
@@ -4244,7 +4281,9 @@ package body Freeze is
          --  for the case of a private type with record extension (we will do
          --  that later when the full type is frozen).
 
-         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype) then
+         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype)
+           and then not Is_Generic_Unit (Scope (E))
+         then
             Freeze_Record_Type (E);
 
          --  For a concurrent type, freeze corresponding record type. This
@@ -4548,6 +4587,7 @@ package body Freeze is
             if Is_Pure_Unit_Access_Type (E)
               and then (Ada_Version < Ada_2005
                          or else not No_Pool_Assigned (E))
+              and then not Is_Generic_Unit (Scope (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
 

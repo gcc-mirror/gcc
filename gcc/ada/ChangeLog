@@ -1,5 +1,45 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* lib-writ.adb (Write_Unit_Information): Fatal error if linker
+	options are detected in a predefined generic unit.
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c (CLOCK_REALTIME): Always define, possibly using
+	a dummy placeholder value.
+	(NEED_PTHREAD_CONDATTR_SETCLOCK): Remove, not needed anymore.
+	* thread.c: Adjust #if test accordingly.
+
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Consequence_Error): Generate an
+	implicit if statement.
+	(Expand_Contract_Cases): Generate an implicit if statement.
+	(Process_Contract_Cases): Do not expand Contract_Cases when no code
+	is being generated.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Address_Checks): New procedure.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New Node Freeze_Generic_Entity, to trigger
+	semantic actions at the proper point for entities that previously
+	had no explicit freeze point.
+	* freeze.adb (Freeze_Generic_Entities): generate new nodes to
+	indicate the point at which semantic checks can be performed on
+	entities declared in generic packages.
+	* sem_ch13.ads, sem_ch13.adb: New procedure
+	Analyze_Freeze_Generic_Entity.
+	* exp_util.adb (Insert_Actions): Treat new node like Freeze_Entity.
+	* sem.adb (Analyze): Call Analyze_Freeze_Generic_Entity.
+	* sprint.adb (Sprint_Node): display Analyze_Freeze_Generic_Entity.
+	* gcc-interface/trans.c: Ignore Analyze_Freeze_Generic_Entity.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb (Resolve_Array_Aggregate): Identify duplicated
 	cases.
 

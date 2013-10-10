@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 2011, Free Software Foundation, Inc.           *
+ *          Copyright (C) 2011-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,7 +33,10 @@
 
 #include "s-oscons.h"
 
-#ifdef NEED_PTHREAD_CONDATTR_SETCLOCK
+/* If the clock we used for tasking (CLOCK_RT_Ada) is not the default
+ * CLOCK_REALTIME, we need to set cond var attributes accordingly.
+ */
+#if CLOCK_RT_Ada != CLOCK_REALTIME
 # include <pthread.h>
 # include <time.h>
 
