@@ -1962,14 +1962,15 @@ ipa_inline (void)
 {
   struct cgraph_node *node;
   int nnodes;
-  struct cgraph_node **order =
-    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_node **order;
   int i;
   int cold;
   bool remove_functions = false;
 
   if (!optimize)
     return 0;
+
+  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
 
   if (in_lto_p && optimize)
     ipa_update_after_lto_read ();
