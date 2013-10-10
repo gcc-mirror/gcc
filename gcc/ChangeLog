@@ -1,3 +1,15 @@
+2013-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58670
+	* stmt.c (expand_asm_operands): Add FALLTHRU_BB argument,
+	if any labels are in FALLTHRU_BB, use a special label emitted
+	immediately after the asm goto insn rather than label_rtx
+	of the LABEL_DECL.
+	(expand_asm_stmt): Adjust caller.
+	* cfgrtl.c (commit_one_edge_insertion): Force splitting of
+	edge if the last insn in predecessor is a jump with single successor,
+	but it isn't simplejump_p.
+
 2013-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58656

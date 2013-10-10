@@ -1959,10 +1959,18 @@ commit_one_edge_insertion (edge e)
     }
 
   /* If the source has one successor and the edge is not abnormal,
-     insert there.  Except for the entry block.  */
+     insert there.  Except for the entry block.
+     Don't do this if the predecessor ends in a jump other than
+     unconditional simple jump.  E.g. for asm goto that points all
+     its labels at the fallthru basic block, we can't insert instructions
+     before the asm goto, as the asm goto can have various of side effects,
+     and can't emit instructions after the asm goto, as it must end
+     the basic block.  */
   else if ((e->flags & EDGE_ABNORMAL) == 0
 	   && single_succ_p (e->src)
-	   && e->src != ENTRY_BLOCK_PTR)
+	   && e->src != ENTRY_BLOCK_PTR
+	   && (!JUMP_P (BB_END (e->src))
+	       || simplejump_p (BB_END (e->src))))
     {
       bb = e->src;
 
