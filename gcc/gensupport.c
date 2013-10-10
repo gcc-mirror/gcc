@@ -2445,14 +2445,29 @@ gen_mnemonic_attr (void)
       bool found = false;
 
       /* Check if the insn definition already has
-	 (set_attr "mnemonic" ...).  */
+	 (set_attr "mnemonic" ...) or (set (attr "mnemonic") ...).  */
       if (XVEC (insn, 4))
  	for (i = 0; i < XVECLEN (insn, 4); i++)
-	  if (strcmp (XSTR (XVECEXP (insn, 4, i), 0), MNEMONIC_ATTR_NAME) == 0)
-	    {
-	      found = true;
-	      break;
-	    }
+	  {
+	    rtx set_attr = XVECEXP (insn, 4, i);
+
+	    switch (GET_CODE (set_attr))
+	      {
+	      case SET_ATTR:
+	      case SET_ATTR_ALTERNATIVE:
+		if (strcmp (XSTR (set_attr, 0), MNEMONIC_ATTR_NAME) == 0)
+		  found = true;
+		break;
+	      case SET:
+		if (GET_CODE (SET_DEST (set_attr)) == ATTR
+		    && strcmp (XSTR (SET_DEST (set_attr), 0),
+			       MNEMONIC_ATTR_NAME) == 0)
+		  found = true;
+		break;
+	      default:
+		break;
+	      }
+	  }
 
       if (!found)
 	gen_mnemonic_setattr (mnemonic_htab, insn);
