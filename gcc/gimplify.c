@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
+#include "tree-mudflap.h"
 
 enum gimplify_omp_var_data
 {
@@ -4258,128 +4259,6 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
       return GS_ALL_DONE;
     }
-}
-
-/* Given a pointer value OP0, return a simplified version of an
-   indirection through OP0, or NULL_TREE if no simplification is
-   possible.  Note that the resulting type may be different from
-   the type pointed to in the sense that it is still compatible
-   from the langhooks point of view. */
-
-tree
-gimple_fold_indirect_ref (tree t)
-{
-  tree ptype = TREE_TYPE (t), type = TREE_TYPE (ptype);
-  tree sub = t;
-  tree subtype;
-
-  STRIP_NOPS (sub);
-  subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
-    return NULL_TREE;
-
-  if (TREE_CODE (sub) == ADDR_EXPR)
-    {
-      tree op = TREE_OPERAND (sub, 0);
-      tree optype = TREE_TYPE (op);
-      /* *&p => p */
-      if (useless_type_conversion_p (type, optype))
-        return op;
-
-      /* *(foo *)&fooarray => fooarray[0] */
-      if (TREE_CODE (optype) == ARRAY_TYPE
-	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (optype))) == INTEGER_CST
-	  && useless_type_conversion_p (type, TREE_TYPE (optype)))
-       {
-         tree type_domain = TYPE_DOMAIN (optype);
-         tree min_val = size_zero_node;
-         if (type_domain && TYPE_MIN_VALUE (type_domain))
-           min_val = TYPE_MIN_VALUE (type_domain);
-	 if (TREE_CODE (min_val) == INTEGER_CST)
-	   return build4 (ARRAY_REF, type, op, min_val, NULL_TREE, NULL_TREE);
-       }
-      /* *(foo *)&complexfoo => __real__ complexfoo */
-      else if (TREE_CODE (optype) == COMPLEX_TYPE
-               && useless_type_conversion_p (type, TREE_TYPE (optype)))
-        return fold_build1 (REALPART_EXPR, type, op);
-      /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
-      else if (TREE_CODE (optype) == VECTOR_TYPE
-               && useless_type_conversion_p (type, TREE_TYPE (optype)))
-        {
-          tree part_width = TYPE_SIZE (type);
-          tree index = bitsize_int (0);
-          return fold_build3 (BIT_FIELD_REF, type, op, part_width, index);
-        }
-    }
-
-  /* *(p + CST) -> ...  */
-  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
-      && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
-    {
-      tree addr = TREE_OPERAND (sub, 0);
-      tree off = TREE_OPERAND (sub, 1);
-      tree addrtype;
-
-      STRIP_NOPS (addr);
-      addrtype = TREE_TYPE (addr);
-
-      /* ((foo*)&vectorfoo)[1] -> BIT_FIELD_REF<vectorfoo,...> */
-      if (TREE_CODE (addr) == ADDR_EXPR
-	  && TREE_CODE (TREE_TYPE (addrtype)) == VECTOR_TYPE
-	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
-	  && host_integerp (off, 1))
-	{
-          unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
-          tree part_width = TYPE_SIZE (type);
-          unsigned HOST_WIDE_INT part_widthi
-            = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
-          unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
-          tree index = bitsize_int (indexi);
-          if (offset / part_widthi
-              <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
-            return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (addr, 0),
-                                part_width, index);
-	}
-
-      /* ((foo*)&complexfoo)[1] -> __imag__ complexfoo */
-      if (TREE_CODE (addr) == ADDR_EXPR
-	  && TREE_CODE (TREE_TYPE (addrtype)) == COMPLEX_TYPE
-	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype))))
-        {
-          tree size = TYPE_SIZE_UNIT (type);
-          if (tree_int_cst_equal (size, off))
-            return fold_build1 (IMAGPART_EXPR, type, TREE_OPERAND (addr, 0));
-        }
-
-      /* *(p + CST) -> MEM_REF <p, CST>.  */
-      if (TREE_CODE (addr) != ADDR_EXPR
-	  || DECL_P (TREE_OPERAND (addr, 0)))
-	return fold_build2 (MEM_REF, type,
-			    addr,
-			    build_int_cst_wide (ptype,
-						TREE_INT_CST_LOW (off),
-						TREE_INT_CST_HIGH (off)));
-    }
-
-  /* *(foo *)fooarrptr => (*fooarrptr)[0] */
-  if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
-      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (subtype)))) == INTEGER_CST
-      && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (subtype))))
-    {
-      tree type_domain;
-      tree min_val = size_zero_node;
-      tree osub = sub;
-      sub = gimple_fold_indirect_ref (sub);
-      if (! sub)
-	sub = build1 (INDIRECT_REF, TREE_TYPE (subtype), osub);
-      type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
-      if (type_domain && TYPE_MIN_VALUE (type_domain))
-        min_val = TYPE_MIN_VALUE (type_domain);
-      if (TREE_CODE (min_val) == INTEGER_CST)
-	return build4 (ARRAY_REF, type, sub, min_val, NULL_TREE, NULL_TREE);
-    }
-
-  return NULL_TREE;
 }
 
 /* Given a pointer value OP0, return a simplified version of an
@@ -8842,5 +8721,118 @@ force_gimple_operand_gsi (gimple_stmt_iterator *gsi, tree expr,
 				     var, before, m);
 }
 
+#ifndef PAD_VARARGS_DOWN
+#define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
+#endif
+
+/* Build an indirect-ref expression over the given TREE, which represents a
+   piece of a va_arg() expansion.  */
+tree
+build_va_arg_indirect_ref (tree addr)
+{
+  addr = build_simple_mem_ref_loc (EXPR_LOCATION (addr), addr);
+
+  if (flag_mudflap) /* Don't instrument va_arg INDIRECT_REF.  */
+    mf_mark (addr);
+
+  return addr;
+}
+
+/* The "standard" implementation of va_arg: read the value from the
+   current (padded) address and increment by the (padded) size.  */
+
+tree
+std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
+			  gimple_seq *post_p)
+{
+  tree addr, t, type_size, rounded_size, valist_tmp;
+  unsigned HOST_WIDE_INT align, boundary;
+  bool indirect;
+
+#ifdef ARGS_GROW_DOWNWARD
+  /* All of the alignment and movement below is for args-grow-up machines.
+     As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
+     implement their own specialized gimplify_va_arg_expr routines.  */
+  gcc_unreachable ();
+#endif
+
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
+
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
+
+  /* When we align parameter on stack for caller, if the parameter
+     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
+     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
+     here with caller.  */
+  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+
+  boundary /= BITS_PER_UNIT;
+
+  /* Hoist the valist value into a temporary for the moment.  */
+  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+
+  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
+     requires greater alignment, we must perform dynamic alignment.  */
+  if (boundary > align
+      && !integer_zerop (TYPE_SIZE (type)))
+    {
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
+      gimplify_and_add (t, pre_p);
+
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build2 (BIT_AND_EXPR, TREE_TYPE (valist),
+			       valist_tmp,
+			       build_int_cst (TREE_TYPE (valist), -boundary)));
+      gimplify_and_add (t, pre_p);
+    }
+  else
+    boundary = align;
+
+  /* If the actual alignment is less than the alignment of the type,
+     adjust the type accordingly so that we don't assume strict alignment
+     when dereferencing the pointer.  */
+  boundary *= BITS_PER_UNIT;
+  if (boundary < TYPE_ALIGN (type))
+    {
+      type = build_variant_type_copy (type);
+      TYPE_ALIGN (type) = boundary;
+    }
+
+  /* Compute the rounded size of the type.  */
+  type_size = size_in_bytes (type);
+  rounded_size = round_up (type_size, align);
+
+  /* Reduce rounded_size so it's sharable with the postqueue.  */
+  gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
+
+  /* Get AP.  */
+  addr = valist_tmp;
+  if (PAD_VARARGS_DOWN && !integer_zerop (rounded_size))
+    {
+      /* Small args are padded downward.  */
+      t = fold_build2_loc (input_location, GT_EXPR, sizetype,
+		       rounded_size, size_int (align));
+      t = fold_build3 (COND_EXPR, sizetype, t, size_zero_node,
+		       size_binop (MINUS_EXPR, rounded_size, type_size));
+      addr = fold_build_pointer_plus (addr, t);
+    }
+
+  /* Compute new value for AP.  */
+  t = fold_build_pointer_plus (valist_tmp, rounded_size);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+  gimplify_and_add (t, pre_p);
+
+  addr = fold_convert (build_pointer_type (type), addr);
+
+  if (indirect)
+    addr = build_va_arg_indirect_ref (addr);
+
+  return build_va_arg_indirect_ref (addr);
+}
 
 #include "gt-gimplify.h"

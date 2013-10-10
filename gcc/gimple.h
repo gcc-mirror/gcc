@@ -5354,6 +5354,14 @@ void gsi_commit_one_edge_insert (edge, basic_block *);
 void gsi_commit_edge_inserts (void);
 gimple gimple_call_copy_skip_args (gimple, bitmap);
 
+/* In gimplify.c.  */
+tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
+tree force_gimple_operand (tree, gimple_seq *, bool, tree);
+tree force_gimple_operand_gsi_1 (gimple_stmt_iterator *, tree,
+				 gimple_predicate, tree,
+				 bool, enum gsi_iterator_update);
+tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
+			       bool, enum gsi_iterator_update);
 
 /* Convenience routines to walk all statements of a gimple function.
    Note that this is useful exclusively before the code is converted
@@ -5477,6 +5485,5 @@ gimple_seq_set_location (gimple_seq seq, location_t loc)
 #define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
-
 
 #endif  /* GCC_GIMPLE_H */

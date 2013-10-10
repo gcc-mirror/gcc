@@ -159,15 +159,4 @@ extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern unsigned int execute_fixup_cfg (void);
 
-/* In gimplify.c  */
-tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
-tree force_gimple_operand (tree, gimple_seq *, bool, tree);
-tree force_gimple_operand_gsi_1 (gimple_stmt_iterator *, tree,
-				 gimple_predicate, tree,
-				 bool, enum gsi_iterator_update);
-tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
-			       bool, enum gsi_iterator_update);
-tree gimple_fold_indirect_ref (tree);
-
-
 #endif /* _TREE_FLOW_H  */
