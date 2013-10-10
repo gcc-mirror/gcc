@@ -9127,9 +9127,9 @@ package body Sem_Prag is
          --                        Postcondition        |
          --                        Precondition         |
          --                        Predicate            |
+         --                        Refined_Post         |
+         --                        Refined_Pre          |
          --                        Statement_Assertions
-
-         --  Shouldn't Refined_Pre be in this list???
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions
@@ -19482,6 +19482,8 @@ package body Sem_Prag is
             Name_Postcondition        |
             Name_Precondition         |
             Name_Predicate            |
+            Name_Refined_Post         |
+            Name_Refined_Pre          |
             Name_Statement_Assertions => return True;
 
          when others                  => return False;

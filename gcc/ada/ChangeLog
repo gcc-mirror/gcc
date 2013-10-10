@@ -1,3 +1,14 @@
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Refined_Pre and Refined_Post are now allowed as
+	assertion identifiers for pragma Assertion_Policy.
+	* sem_prag.adb (Is_Valid_Assertion_Kind): Add Refined_Pre/Refined_Post
+	* sem_ch13.adb: Minor reformatting.
+
+2013-10-10  Pascal Obry  <obry@adacore.com>
+
+	* prj-conf.adb: Code refactoring.
+
 2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb: Remove Integrity_Level from the node usage list.

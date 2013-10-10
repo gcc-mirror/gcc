@@ -68,16 +68,6 @@ package body Prj.Conf is
    -- Local_Subprograms --
    -----------------------
 
-   procedure Add_Attributes
-     (Project_Tree : Project_Tree_Ref;
-      Conf_Decl    : Declarations;
-      User_Decl    : in out Declarations);
-   --  Process the attributes in the config declarations.
-   --  For single string values, if the attribute is not declared in the user
-   --  declarations, declare it with the value in the config declarations.
-   --  For string list values, prepend the value in the user declarations with
-   --  the value in the config declarations.
-
    function Check_Target
      (Config_File        : Prj.Project_Id;
       Autoconf_Specified : Boolean;
@@ -108,219 +98,6 @@ package body Prj.Conf is
    --  Currently, this will add new attributes and packages in the various
    --  projects, so that when the second phase of the processing is performed
    --  these attributes are automatically taken into account.
-
-   --------------------
-   -- Add_Attributes --
-   --------------------
-
-   procedure Add_Attributes
-     (Project_Tree : Project_Tree_Ref;
-      Conf_Decl    : Declarations;
-      User_Decl    : in out Declarations)
-   is
-      Shared : constant Shared_Project_Tree_Data_Access := Project_Tree.Shared;
-      Conf_Attr_Id       : Variable_Id;
-      Conf_Attr          : Variable;
-      Conf_Array_Id      : Array_Id;
-      Conf_Array         : Array_Data;
-      Conf_Array_Elem_Id : Array_Element_Id;
-      Conf_Array_Elem    : Array_Element;
-      Conf_List          : String_List_Id;
-      Conf_List_Elem     : String_Element;
-
-      User_Attr_Id       : Variable_Id;
-      User_Attr          : Variable;
-      User_Array_Id      : Array_Id;
-      User_Array         : Array_Data;
-      User_Array_Elem_Id : Array_Element_Id;
-      User_Array_Elem    : Array_Element;
-
-   begin
-      Conf_Attr_Id := Conf_Decl.Attributes;
-      User_Attr_Id := User_Decl.Attributes;
-      while Conf_Attr_Id /= No_Variable loop
-         Conf_Attr := Shared.Variable_Elements.Table (Conf_Attr_Id);
-         User_Attr := Shared.Variable_Elements.Table (User_Attr_Id);
-
-         if not Conf_Attr.Value.Default then
-            if User_Attr.Value.Default then
-
-               --  No attribute declared in user project file: just copy the
-               --  value of the configuration attribute.
-
-               User_Attr.Value := Conf_Attr.Value;
-               Shared.Variable_Elements.Table (User_Attr_Id) := User_Attr;
-
-            elsif User_Attr.Value.Kind = List
-              and then Conf_Attr.Value.Values /= Nil_String
-            then
-               --  List attribute declared in both the user project and the
-               --  configuration project: prepend the user list with the
-               --  configuration list.
-
-               declare
-                  User_List : constant String_List_Id :=
-                                User_Attr.Value.Values;
-                  Conf_List : String_List_Id := Conf_Attr.Value.Values;
-                  Conf_Elem : String_Element;
-                  New_List  : String_List_Id;
-                  New_Elem  : String_Element;
-
-               begin
-                  --  Create new list
-
-                  String_Element_Table.Increment_Last
-                    (Shared.String_Elements);
-                  New_List :=
-                    String_Element_Table.Last (Shared.String_Elements);
-
-                  --  Value of attribute is new list
-
-                  User_Attr.Value.Values := New_List;
-                  Shared.Variable_Elements.Table (User_Attr_Id) := User_Attr;
-
-                  loop
-                     --  Get each element of configuration list
-
-                     Conf_Elem := Shared.String_Elements.Table (Conf_List);
-                     New_Elem  := Conf_Elem;
-                     Conf_List := Conf_Elem.Next;
-
-                     if Conf_List = Nil_String then
-
-                        --  If it is the last element in the list, connect to
-                        --  first element of user list, and we are done.
-
-                        New_Elem.Next := User_List;
-                        Shared.String_Elements.Table (New_List) := New_Elem;
-                        exit;
-
-                     else
-                        --  If it is not the last element in the list, add to
-                        --  new list.
-
-                        String_Element_Table.Increment_Last
-                          (Shared.String_Elements);
-                        New_Elem.Next :=
-                          String_Element_Table.Last (Shared.String_Elements);
-                        Shared.String_Elements.Table (New_List) := New_Elem;
-                        New_List := New_Elem.Next;
-                     end if;
-                  end loop;
-               end;
-            end if;
-         end if;
-
-         Conf_Attr_Id := Conf_Attr.Next;
-         User_Attr_Id := User_Attr.Next;
-      end loop;
-
-      Conf_Array_Id := Conf_Decl.Arrays;
-      while Conf_Array_Id /= No_Array loop
-         Conf_Array := Shared.Arrays.Table (Conf_Array_Id);
-
-         User_Array_Id := User_Decl.Arrays;
-         while User_Array_Id /= No_Array loop
-            User_Array := Shared.Arrays.Table (User_Array_Id);
-            exit when User_Array.Name = Conf_Array.Name;
-            User_Array_Id := User_Array.Next;
-         end loop;
-
-         --  If this associative array does not exist in the user project file,
-         --  do a shallow copy of the full associative array.
-
-         if User_Array_Id = No_Array then
-            Array_Table.Increment_Last (Shared.Arrays);
-            User_Array := Conf_Array;
-            User_Array.Next := User_Decl.Arrays;
-            User_Decl.Arrays := Array_Table.Last (Shared.Arrays);
-            Shared.Arrays.Table (User_Decl.Arrays) := User_Array;
-
-         --  Otherwise, check each array element
-
-         else
-            Conf_Array_Elem_Id := Conf_Array.Value;
-            while Conf_Array_Elem_Id /= No_Array_Element loop
-               Conf_Array_Elem :=
-                 Shared.Array_Elements.Table (Conf_Array_Elem_Id);
-
-               User_Array_Elem_Id := User_Array.Value;
-               while User_Array_Elem_Id /= No_Array_Element loop
-                  User_Array_Elem :=
-                    Shared.Array_Elements.Table (User_Array_Elem_Id);
-                  exit when User_Array_Elem.Index = Conf_Array_Elem.Index;
-                  User_Array_Elem_Id := User_Array_Elem.Next;
-               end loop;
-
-               --  If the array element doesn't exist in the user array, insert
-               --  a shallow copy of the conf array element in the user array.
-
-               if User_Array_Elem_Id = No_Array_Element then
-                  Array_Element_Table.Increment_Last (Shared.Array_Elements);
-                  User_Array_Elem := Conf_Array_Elem;
-                  User_Array_Elem.Next := User_Array.Value;
-                  User_Array.Value :=
-                    Array_Element_Table.Last (Shared.Array_Elements);
-                  Shared.Array_Elements.Table (User_Array.Value) :=
-                    User_Array_Elem;
-                  Shared.Arrays.Table (User_Array_Id) := User_Array;
-
-               --  Otherwise, if the value is a string list, prepend the conf
-               --  array element value to the array element.
-
-               elsif Conf_Array_Elem.Value.Kind = List then
-                  Conf_List := Conf_Array_Elem.Value.Values;
-
-                  if Conf_List /= Nil_String then
-                     declare
-                        Link     : constant String_List_Id :=
-                                     User_Array_Elem.Value.Values;
-                        Previous : String_List_Id := Nil_String;
-                        Next     : String_List_Id;
-
-                     begin
-                        loop
-                           Conf_List_Elem :=
-                             Shared.String_Elements.Table (Conf_List);
-                           String_Element_Table.Increment_Last
-                             (Shared.String_Elements);
-                           Next :=
-                             String_Element_Table.Last
-                               (Shared.String_Elements);
-                           Shared.String_Elements.Table (Next) :=
-                             Conf_List_Elem;
-
-                           if Previous = Nil_String then
-                              User_Array_Elem.Value.Values := Next;
-                              Shared.Array_Elements.Table
-                                (User_Array_Elem_Id) := User_Array_Elem;
-
-                           else
-                              Shared.String_Elements.Table
-                                (Previous).Next := Next;
-                           end if;
-
-                           Previous := Next;
-
-                           Conf_List := Conf_List_Elem.Next;
-
-                           if Conf_List = Nil_String then
-                              Shared.String_Elements.Table (Previous).Next :=
-                                Link;
-                              exit;
-                           end if;
-                        end loop;
-                     end;
-                  end if;
-               end if;
-
-               Conf_Array_Elem_Id := Conf_Array_Elem.Next;
-            end loop;
-         end if;
-
-         Conf_Array_Id := Conf_Array.Next;
-      end loop;
-   end Add_Attributes;
 
    ------------------------------------
    -- Add_Default_GNAT_Naming_Scheme --
@@ -464,6 +241,235 @@ package body Prj.Conf is
      (Config_File  : Prj.Project_Id;
       Project_Tree : Prj.Project_Tree_Ref)
    is
+      procedure Add_Attributes
+        (Project_Tree : Project_Tree_Ref;
+         Conf_Decl    : Declarations;
+         User_Decl    : in out Declarations);
+      --  Process the attributes in the config declarations.  For
+      --  single string values, if the attribute is not declared in
+      --  the user declarations, declare it with the value in the
+      --  config declarations.  For string list values, prepend the
+      --  value in the user declarations with the value in the config
+      --  declarations.
+
+      --------------------
+      -- Add_Attributes --
+      --------------------
+
+      procedure Add_Attributes
+        (Project_Tree : Project_Tree_Ref;
+         Conf_Decl    : Declarations;
+         User_Decl    : in out Declarations)
+      is
+         Shared             : constant Shared_Project_Tree_Data_Access :=
+                                Project_Tree.Shared;
+         Conf_Attr_Id       : Variable_Id;
+         Conf_Attr          : Variable;
+         Conf_Array_Id      : Array_Id;
+         Conf_Array         : Array_Data;
+         Conf_Array_Elem_Id : Array_Element_Id;
+         Conf_Array_Elem    : Array_Element;
+         Conf_List          : String_List_Id;
+         Conf_List_Elem     : String_Element;
+
+         User_Attr_Id       : Variable_Id;
+         User_Attr          : Variable;
+         User_Array_Id      : Array_Id;
+         User_Array         : Array_Data;
+         User_Array_Elem_Id : Array_Element_Id;
+         User_Array_Elem    : Array_Element;
+
+      begin
+         Conf_Attr_Id := Conf_Decl.Attributes;
+         User_Attr_Id := User_Decl.Attributes;
+
+         while Conf_Attr_Id /= No_Variable loop
+            Conf_Attr := Shared.Variable_Elements.Table (Conf_Attr_Id);
+            User_Attr := Shared.Variable_Elements.Table (User_Attr_Id);
+
+            if not Conf_Attr.Value.Default then
+               if User_Attr.Value.Default then
+
+                  --  No attribute declared in user project file: just copy
+                  --  the value of the configuration attribute.
+
+                  User_Attr.Value := Conf_Attr.Value;
+                  Shared.Variable_Elements.Table (User_Attr_Id) := User_Attr;
+
+               elsif User_Attr.Value.Kind = List
+                 and then Conf_Attr.Value.Values /= Nil_String
+               then
+                  --  List attribute declared in both the user project and the
+                  --  configuration project: prepend the user list with the
+                  --  configuration list.
+
+                  declare
+                     User_List : constant String_List_Id :=
+                                   User_Attr.Value.Values;
+                     Conf_List : String_List_Id := Conf_Attr.Value.Values;
+                     Conf_Elem : String_Element;
+                     New_List  : String_List_Id;
+                     New_Elem  : String_Element;
+
+                  begin
+                     --  Create new list
+
+                     String_Element_Table.Increment_Last
+                       (Shared.String_Elements);
+                     New_List :=
+                       String_Element_Table.Last (Shared.String_Elements);
+
+                     --  Value of attribute is new list
+
+                     User_Attr.Value.Values := New_List;
+                     Shared.Variable_Elements.Table (User_Attr_Id) :=
+                       User_Attr;
+
+                     loop
+                        --  Get each element of configuration list
+
+                        Conf_Elem := Shared.String_Elements.Table (Conf_List);
+                        New_Elem  := Conf_Elem;
+                        Conf_List := Conf_Elem.Next;
+
+                        if Conf_List = Nil_String then
+
+                           --  If it is the last element in the list, connect
+                           --  to first element of user list, and we are done.
+
+                           New_Elem.Next := User_List;
+                           Shared.String_Elements.Table (New_List) := New_Elem;
+                           exit;
+
+                        else
+                           --  If it is not the last element in the list, add
+                           --  to new list.
+
+                           String_Element_Table.Increment_Last
+                             (Shared.String_Elements);
+                           New_Elem.Next := String_Element_Table.Last
+                             (Shared.String_Elements);
+                           Shared.String_Elements.Table (New_List) := New_Elem;
+                           New_List := New_Elem.Next;
+                        end if;
+                     end loop;
+                  end;
+               end if;
+            end if;
+
+            Conf_Attr_Id := Conf_Attr.Next;
+            User_Attr_Id := User_Attr.Next;
+         end loop;
+
+         Conf_Array_Id := Conf_Decl.Arrays;
+         while Conf_Array_Id /= No_Array loop
+            Conf_Array := Shared.Arrays.Table (Conf_Array_Id);
+
+            User_Array_Id := User_Decl.Arrays;
+            while User_Array_Id /= No_Array loop
+               User_Array := Shared.Arrays.Table (User_Array_Id);
+               exit when User_Array.Name = Conf_Array.Name;
+               User_Array_Id := User_Array.Next;
+            end loop;
+
+            --  If this associative array does not exist in the user project
+            --  file, do a shallow copy of the full associative array.
+
+            if User_Array_Id = No_Array then
+               Array_Table.Increment_Last (Shared.Arrays);
+               User_Array := Conf_Array;
+               User_Array.Next := User_Decl.Arrays;
+               User_Decl.Arrays := Array_Table.Last (Shared.Arrays);
+               Shared.Arrays.Table (User_Decl.Arrays) := User_Array;
+
+            --  Otherwise, check each array element
+
+            else
+               Conf_Array_Elem_Id := Conf_Array.Value;
+               while Conf_Array_Elem_Id /= No_Array_Element loop
+                  Conf_Array_Elem :=
+                    Shared.Array_Elements.Table (Conf_Array_Elem_Id);
+
+                  User_Array_Elem_Id := User_Array.Value;
+                  while User_Array_Elem_Id /= No_Array_Element loop
+                     User_Array_Elem :=
+                       Shared.Array_Elements.Table (User_Array_Elem_Id);
+                     exit when User_Array_Elem.Index = Conf_Array_Elem.Index;
+                     User_Array_Elem_Id := User_Array_Elem.Next;
+                  end loop;
+
+                  --  If the array element doesn't exist in the user array,
+                  --  insert a shallow copy of the conf array element in the
+                  --  user array.
+
+                  if User_Array_Elem_Id = No_Array_Element then
+                     Array_Element_Table.Increment_Last
+                       (Shared.Array_Elements);
+                     User_Array_Elem := Conf_Array_Elem;
+                     User_Array_Elem.Next := User_Array.Value;
+                     User_Array.Value :=
+                       Array_Element_Table.Last (Shared.Array_Elements);
+                     Shared.Array_Elements.Table (User_Array.Value) :=
+                       User_Array_Elem;
+                     Shared.Arrays.Table (User_Array_Id) := User_Array;
+
+                  --  Otherwise, if the value is a string list, prepend the
+                  --  conf array element value to the array element.
+
+                  elsif Conf_Array_Elem.Value.Kind = List then
+                     Conf_List := Conf_Array_Elem.Value.Values;
+
+                     if Conf_List /= Nil_String then
+                        declare
+                           Link     : constant String_List_Id :=
+                                        User_Array_Elem.Value.Values;
+                           Previous : String_List_Id := Nil_String;
+                           Next     : String_List_Id;
+
+                        begin
+                           loop
+                              Conf_List_Elem :=
+                                Shared.String_Elements.Table (Conf_List);
+                              String_Element_Table.Increment_Last
+                                (Shared.String_Elements);
+                              Next :=
+                                String_Element_Table.Last
+                                (Shared.String_Elements);
+                              Shared.String_Elements.Table (Next) :=
+                                Conf_List_Elem;
+
+                              if Previous = Nil_String then
+                                 User_Array_Elem.Value.Values := Next;
+                                 Shared.Array_Elements.Table
+                                   (User_Array_Elem_Id) := User_Array_Elem;
+
+                              else
+                                 Shared.String_Elements.Table
+                                   (Previous).Next := Next;
+                              end if;
+
+                              Previous := Next;
+
+                              Conf_List := Conf_List_Elem.Next;
+
+                              if Conf_List = Nil_String then
+                                 Shared.String_Elements.Table
+                                   (Previous).Next := Link;
+                                 exit;
+                              end if;
+                           end loop;
+                        end;
+                     end if;
+                  end if;
+
+                  Conf_Array_Elem_Id := Conf_Array_Elem.Next;
+               end loop;
+            end if;
+
+            Conf_Array_Id := Conf_Array.Next;
+         end loop;
+      end Add_Attributes;
+
       Shared : constant Shared_Project_Tree_Data_Access := Project_Tree.Shared;
 
       Conf_Decl    : constant Declarations := Config_File.Decl;
@@ -483,9 +489,9 @@ package body Prj.Conf is
          if Proj.Project /= Config_File then
             User_Decl := Proj.Project.Decl;
             Add_Attributes
-              (Project_Tree      => Project_Tree,
-               Conf_Decl         => Conf_Decl,
-               User_Decl         => User_Decl);
+              (Project_Tree => Project_Tree,
+               Conf_Decl    => Conf_Decl,
+               User_Decl    => User_Decl);
 
             Conf_Pack_Id := Conf_Decl.Packages;
             while Conf_Pack_Id /= No_Package loop
