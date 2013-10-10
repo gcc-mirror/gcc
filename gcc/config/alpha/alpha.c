@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "opts.h"
 #include "params.h"
+#include "gimple-ssa.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
