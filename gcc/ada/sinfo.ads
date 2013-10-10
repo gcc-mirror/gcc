@@ -936,11 +936,12 @@ package Sinfo is
 
    --    A special case arises for the arguments of the Pred/Succ attributes.
    --    Here the range check needed is against First + 1 ..  Last (Pred) or
-   --    First .. Last - 1 (Succ). Essentially these checks are what would be
-   --    performed within the implicit body of the functions that correspond
-   --    to these attributes. In these cases, the Do_Range check flag is set
-   --    on the argument to the attribute function, and the back end must
-   --    special case the appropriate range to check against.
+   --    First .. Last - 1 (Succ) of the corresponding base type. Essentially
+   --    these checks are what would be performed within the implicit body of
+   --    the functions that correspond to these attributes. In these cases,
+   --    the Do_Range check flag is set on the argument to the attribute
+   --    function, and the back end must special case the appropriate range
+   --    to check against.
 
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
