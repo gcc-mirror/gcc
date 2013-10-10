@@ -643,8 +643,8 @@ package body Prj.Conf is
       --  Check for switches --config and --RTS in package Builder
 
       procedure Get_Project_Target;
-      --  Target_Name is empty, get the specifiedtarget in the project file,
-      --  if any.
+      --  If Target_Name is empty, get the specified target in the project
+      --  file, if any.
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
