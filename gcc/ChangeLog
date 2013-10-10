@@ -1,3 +1,7 @@
+2013-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* coverage.c (coverage_finish): Fix leak of da_file_name.
+
 2013-10-10  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/x86-tune.def: Enable X86_TUNE_SSE_TYPELESS_STORES
