@@ -15964,16 +15964,27 @@ package body Sem_Prag is
                      Error_Msg_N ("pragma % duplicates pragma declared #", N);
                   end if;
 
-               --  Skip internally generated code
-
-               elsif not Comes_From_Source (Stmt) then
-                  null;
-
                --  The pragma applies to a subprogram body stub
 
                elsif Nkind (Stmt) = N_Subprogram_Body_Stub then
                   Body_Decl := Stmt;
                   exit;
+
+               --  The pragma applies to an expression function that does not
+               --  act as a completion of a previous function declaration.
+
+               elsif Nkind (Stmt) = N_Subprogram_Declaration
+                 and then Nkind (Original_Node (Stmt)) = N_Expression_Function
+                 and then not
+                   Has_Completion (Defining_Unit_Name (Specification (Stmt)))
+               then
+                  Error_Pragma ("pragma % cannot apply to a stand alone body");
+                  return;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
 
                --  The pragma does not apply to a legal construct, issue an
                --  error and stop the analysis.

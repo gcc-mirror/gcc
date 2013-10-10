@@ -1,3 +1,17 @@
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Provide a
+	more precise error message when pragma Refined_Pre applies to
+	an expression function that is not a completion.
+
+2013-10-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb (Analyse_Attribute, case
+	Attribute_Scalar_Storage_Order): a 'Scalar_Storage_Order attribute
+	reference for a generic type is permitted in GNAT runtime mode.
+	* a-sequio.adb (Read, Write): Use the endianness of the actual
+	type to encode length information written to the file.
+
 2013-10-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch13.adb (Aspect_Specifications_Present)): In earlier than

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,13 +34,14 @@
 --  in System.File_IO (for common file functions), or in System.Sequential_IO
 --  (for specialized Sequential_IO functions)
 
-with Interfaces.C_Streams; use Interfaces.C_Streams;
+with Ada.Unchecked_Conversion;
 with System;
 with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
 with System.Storage_Elements;
-with Ada.Unchecked_Conversion;
+with Interfaces.C_Streams; use Interfaces.C_Streams;
+with GNAT.Byte_Swapping;
 
 package body Ada.Sequential_IO is
 
@@ -57,7 +58,25 @@ package body Ada.Sequential_IO is
    function To_FCB is new Ada.Unchecked_Conversion (File_Mode, FCB.File_Mode);
    function To_SIO is new Ada.Unchecked_Conversion (FCB.File_Mode, File_Mode);
 
+   use type System.Bit_Order;
    use type System.CRTL.size_t;
+
+   procedure Byte_Swap (Siz : in out size_t);
+   --  Byte swap Siz
+
+   ---------------
+   -- Byte_Swap --
+   ---------------
+
+   procedure Byte_Swap (Siz : in out size_t) is
+      use GNAT.Byte_Swapping;
+   begin
+      case Siz'Size is
+         when 32     => Swap4 (Siz'Address);
+         when 64     => Swap8 (Siz'Address);
+         when others => raise Program_Error;
+      end case;
+   end Byte_Swap;
 
    -----------
    -- Close --
@@ -170,6 +189,10 @@ package body Ada.Sequential_IO is
          FIO.Read_Buf
            (AP (File), Rsiz'Address, size_t'Size / System.Storage_Unit);
 
+         if Element_Type'Scalar_Storage_Order /= System.Default_Bit_Order then
+            Byte_Swap (Rsiz);
+         end if;
+
          --  For a type with discriminants, we have to read into a temporary
          --  buffer if Item is constrained, to check that the discriminants
          --  are correct.
@@ -252,6 +275,10 @@ package body Ada.Sequential_IO is
 
    procedure Write (File : File_Type; Item : Element_Type) is
       Siz : constant size_t := (Item'Size + SU - 1) / SU;
+      --  Size to be written, in native representation
+
+      Swapped_Siz : size_t := Siz;
+      --  Same, possibly byte swapped to account for Element_Type endianness
 
    begin
       FIO.Check_Write_Status (AP (File));
@@ -261,8 +288,12 @@ package body Ada.Sequential_IO is
       if not Element_Type'Definite
         or else Element_Type'Has_Discriminants
       then
+         if Element_Type'Scalar_Storage_Order /= System.Default_Bit_Order then
+            Byte_Swap (Swapped_Siz);
+         end if;
+
          FIO.Write_Buf
-           (AP (File), Siz'Address, size_t'Size / System.Storage_Unit);
+           (AP (File), Swapped_Siz'Address, size_t'Size / System.Storage_Unit);
       end if;
 
       FIO.Write_Buf (AP (File), Item'Address, Siz);
