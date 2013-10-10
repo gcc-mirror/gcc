@@ -1,3 +1,7 @@
+2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/aplha/alpha.c: Add gimple-ssa.h to include list.
+
 2013-10-09  Easwaran Raman <eraman@google.com>
 
 	* params.def (PARAM_MIN_SIZE_FOR_STACK_SHARING): New param...
