@@ -111,6 +111,7 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT
       Aspect_Priority,
       Aspect_Read,
+      Aspect_Refined_Post,                  -- GNAT
       Aspect_Refined_Pre,                   -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
@@ -320,6 +321,7 @@ package Aspects is
       Aspect_Predicate               => Expression,
       Aspect_Priority                => Expression,
       Aspect_Read                    => Name,
+      Aspect_Refined_Post            => Expression,
       Aspect_Refined_Pre             => Expression,
       Aspect_Relative_Deadline       => Expression,
       Aspect_Scalar_Storage_Order    => Expression,
@@ -417,6 +419,7 @@ package Aspects is
       Aspect_Pure_12                      => Name_Pure_12,
       Aspect_Pure_Function                => Name_Pure_Function,
       Aspect_Read                         => Name_Read,
+      Aspect_Refined_Post                 => Name_Refined_Post,
       Aspect_Refined_Pre                  => Name_Refined_Pre,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
@@ -639,6 +642,7 @@ package Aspects is
       Aspect_Convention                   => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
+      Aspect_Refined_Post                 => Never_Delay,
       Aspect_Refined_Pre                  => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
@@ -695,8 +699,12 @@ package Aspects is
    --    package P with SPARK_Mode ...;
    --    package body P with SPARK_Mode is ...;
 
+   --  The table should be synchronized with Pragma_On_Body_Or_Stub_OK in unit
+   --  Sem_Prag if the aspects below are implemented by a pragma.
+
    Aspect_On_Body_Or_Stub_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Refined_Pre                  => True,
+     (Aspect_Refined_Post                 => True,
+      Aspect_Refined_Pre                  => True,
       Aspect_SPARK_Mode                   => True,
       Aspect_Warnings                     => True,
       others                              => False);

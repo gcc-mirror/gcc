@@ -1,3 +1,52 @@
+2013-10-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry for Aspect_Refined_Post in table
+	Canonical_Aspect.
+	* aspects.ads: Add an entry for Aspect_Refined_Post in tables
+	Aspect_Id, Aspect_Argument, Aspect_Names, Aspect_Delay,
+	Aspect_On_Body_Or_Stub_OK. Update the comment on the use of
+	table Aspect_On_Body_Or_Stub_OK.
+	* par-prag.adb: Add pragma Refined_Post to the list of pragmas
+	that do not require special processing by the parser.
+	* sem_attr.adb (Analyze_Attribute): Add special analysis for
+	attributes 'Old and 'Result when code generation is disabled and
+	they appear in aspect/pragma Refined_Post.
+	(In_Refined_Post): New routine.
+	* sem_ch6.adb (Analyze_Expression_Function): Move various
+	aspects and/or pragmas that apply to an expression function to the
+	corresponding spec or body.
+	(Collect_Body_Postconditions): New routine.
+	(Process_PPCs): Use routine Collect_Body_Postconditions
+	to gather all postcondition pragmas.
+	* sem_ch10.adb (Analyze_Proper_Body): Use routine
+	Relocate_Pragmas_To_Body to move all source pragmas that follow
+	a body stub to the proper body.
+	(Move_Stub_Pragmas_To_Body): Removed.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Refined_Post.
+	(Check_Aspect_At_Freeze_Point): Aspect
+	Refined_Post does not need delayed processing at the freeze point.
+	* sem_prag.adb: Add an entry for pragma Refined_Post in
+	table Sig_Flags.
+	(Analyze_Pragma): Add processing for pragma
+	Refined_Post. Update the processing of pragma Refined_Pre
+	to use common routine Analyze_Refined_Pre_Post.
+	(Analyze_Refined_Pre_Post): New routine.
+	(Relocate_Pragmas_To_Body): New routine.
+	* sem_prag.ads: Table Pragma_On_Stub_OK is now known as
+	Pragma_On_Body_Or_Stub_OK. Update the comment on usage of
+	table Pragma_On_Body_Or_Stub_OK.
+	(Relocate_Pragmas_To_Body): New routine.
+	* snames.ads-tmpl: Add new predefined name for Refined_Post. Add
+	new Pragma_Id for Refined_Post.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Variant_Part): Now null, expansion of
+	last choice to others is moved to Freeze_Record_Type.
+	* freeze.adb (Freeze_Record_Type): Expand last variant to others
+	if necessary (moved here from Expand_N_Variant_Part
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* lib-xref-spark_specific.adb, par-ch13.adb, sem_prag.adb, sem_prag.ads,

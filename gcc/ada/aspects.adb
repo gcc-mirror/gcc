@@ -466,6 +466,7 @@ package body Aspects is
     Aspect_Pure_05                      => Aspect_Pure_05,
     Aspect_Pure_12                      => Aspect_Pure_12,
     Aspect_Pure_Function                => Aspect_Pure_Function,
+    Aspect_Refined_Post                 => Aspect_Refined_Post,
     Aspect_Refined_Pre                  => Aspect_Refined_Pre,
     Aspect_Remote_Access_Type           => Aspect_Remote_Access_Type,
     Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,

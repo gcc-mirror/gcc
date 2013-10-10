@@ -1596,84 +1596,11 @@ package body Sem_Ch10 is
       Subunit_Name : constant Unit_Name_Type := Get_Unit_Name (N);
       Unum         : Unit_Number_Type;
 
-      procedure Move_Stub_Pragmas_To_Body (Bod : Node_Id);
-      --  Relocate all pragmas that apply to a subprogram body stub to the
-      --  declarations of proper body Bod.
-      --  Should we do this for the reamining body stub kinds???
-
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
       --  present, which is user-friendly and in fact required for ASIS, but
       --  we don't complain if the subunit is missing.
-
-      -------------------------------
-      -- Move_Stub_Pragmas_To_Body --
-      -------------------------------
-
-      procedure Move_Stub_Pragmas_To_Body (Bod : Node_Id) is
-         procedure Move_Pragma (Prag : Node_Id);
-         --  Relocate one pragma to the declarations of Bod
-
-         -----------------
-         -- Move_Pragma --
-         -----------------
-
-         procedure Move_Pragma (Prag : Node_Id) is
-            Decls : List_Id := Declarations (Bod);
-
-         begin
-            if No (Decls) then
-               Decls := New_List;
-               Set_Declarations (Bod, Decls);
-            end if;
-
-            --  Unhook the pragma from its current list
-
-            Remove (Prag);
-            Prepend (Prag, Decls);
-         end Move_Pragma;
-
-         --  Local variables
-
-         Next_Stmt : Node_Id;
-         Stmt      : Node_Id;
-
-      --  Start of processing for Move_Stub_Pragmas_To_Body
-
-      begin
-         pragma Assert (Nkind (N) = N_Subprogram_Body_Stub);
-
-         --  Perform a bit of a lookahead - peek at any subsequent source
-         --  pragmas while skipping internally generated code.
-
-         Stmt := Next (N);
-         while Present (Stmt) loop
-            Next_Stmt := Next (Stmt);
-
-            --  Move a source pragma that applies to a subprogram stub to the
-            --  declarations of the proper body.
-
-            if Comes_From_Source (Stmt)
-              and then Nkind (Stmt) = N_Pragma
-              and then Pragma_On_Stub_OK (Get_Pragma_Id (Stmt))
-            then
-               Move_Pragma (Stmt);
-
-            --  Skip internally generated code
-
-            elsif not Comes_From_Source (Stmt) then
-               null;
-
-            --  No valid pragmas are available for relocation
-
-            else
-               exit;
-            end if;
-
-            Stmt := Next_Stmt;
-         end loop;
-      end Move_Stub_Pragmas_To_Body;
 
       ----------------------
       -- Optional_Subunit --
@@ -1932,11 +1859,11 @@ package body Sem_Ch10 is
 
                      Move_Or_Merge_Aspects (From => N, To => Prop_Body);
 
-                     --  Propagate all source pragmas associated with a
-                     --  subprogram body stub to the proper body.
+                     --  Move all source pragmas that follow the body stub and
+                     --  apply to it to the declarations of the proper body.
 
                      if Nkind (N) = N_Subprogram_Body_Stub then
-                        Move_Stub_Pragmas_To_Body (Prop_Body);
+                        Relocate_Pragmas_To_Body (N, Target_Body => Prop_Body);
                      end if;
 
                      --  Analyze the unit if semantics active

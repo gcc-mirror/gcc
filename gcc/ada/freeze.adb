@@ -2639,7 +2639,7 @@ package body Freeze is
             C : Node_Id;
             V : Node_Id;
 
-            Others_Present            : Boolean;
+            Others_Present : Boolean;
             pragma Warnings (Off, Others_Present);
             --  Indicates others present, not used in this case
 
@@ -2748,12 +2748,38 @@ package body Freeze is
                end if;
             end if;
 
-            --  If we have a variant part, check choices
+            --  Case of variant part present
 
             if Present (C) and then Present (Variant_Part (C)) then
                V := Variant_Part (C);
+
+               --  Check choices
+
                Check_Choices
                  (V, Variants (V), Etype (Name (V)), Others_Present);
+
+               --  If the last variant does not contain the Others choice,
+               --  replace it with an N_Others_Choice node since Gigi always
+               --  wants an Others. Note that we do not bother to call Analyze
+               --  on the modified variant part, since its only effect would be
+               --  to compute the Others_Discrete_Choices node laboriously, and
+               --  of course we already know the list of choices corresponding
+               --  to the others choice (it's the list we're replacing!)
+
+               declare
+                  Last_Var    : constant Node_Id :=
+                                  Last_Non_Pragma (Variants (V));
+                  Others_Node : Node_Id;
+               begin
+                  if Nkind (First (Discrete_Choices (Last_Var))) /=
+                                                            N_Others_Choice
+                  then
+                     Others_Node := Make_Others_Choice (Sloc (Last_Var));
+                     Set_Others_Discrete_Choices
+                       (Others_Node, Discrete_Choices (Last_Var));
+                     Set_Discrete_Choices (Last_Var, New_List (Others_Node));
+                  end if;
+               end;
             end if;
          end Check_Variant_Part;
       end Freeze_Record_Type;
