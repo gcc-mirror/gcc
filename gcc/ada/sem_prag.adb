@@ -1922,6 +1922,16 @@ package body Sem_Prag is
       --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
       --  should be caught by the No_Implementation_Pragmas restriction.
 
+      procedure Analyze_Refined_Pre_Post
+        (Body_Decl : out Node_Id;
+         Spec_Id   : out Entity_Id;
+         Legal     : out Boolean);
+      --  Subsidiary routine to the analysis of pragmas Refined_Pre and
+      --  Refined_Post. Body_Decl is the declaration of the subprogram body
+      --  [stub] subject to the pragma. Spec_Id is the corresponding spec of
+      --  the subprogram body [stub]. Flag Legal denotes whether the pragma
+      --  passes all legality rules.
+
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
       --  83 mode (used for language pragmas that are not a standard part of
@@ -2447,6 +2457,129 @@ package body Sem_Prag is
             Check_Restriction (No_Implementation_Pragmas, N);
          end if;
       end Ada_2012_Pragma;
+
+      ------------------------------
+      -- Analyze_Refined_Pre_Post --
+      ------------------------------
+
+      procedure Analyze_Refined_Pre_Post
+        (Body_Decl : out Node_Id;
+         Spec_Id   : out Entity_Id;
+         Legal     : out Boolean)
+      is
+         Pack_Spec : Node_Id;
+         Spec_Decl : Node_Id;
+         Stmt      : Node_Id;
+
+      begin
+         --  Assume that the pragma is illegal
+
+         Body_Decl := Parent (N);
+         Spec_Id   := Empty;
+         Legal     := False;
+
+         GNAT_Pragma;
+         Check_Arg_Count (1);
+         Check_No_Identifiers;
+
+         --  Verify the placement of the pragma and check for duplicates
+
+         Stmt := Prev (N);
+         while Present (Stmt) loop
+
+            --  Skip prior pragmas, but check for duplicates
+
+            if Nkind (Stmt) = N_Pragma then
+               if Pragma_Name (Stmt) = Pname then
+                  Error_Msg_Name_1 := Pname;
+                  Error_Msg_Sloc   := Sloc (Stmt);
+                  Error_Msg_N ("pragma % duplicates pragma declared #", N);
+               end if;
+
+            --  Emit an error when the pragma applies to an expression function
+            --  that does not act as a completion.
+
+            elsif Nkind (Stmt) = N_Subprogram_Declaration
+              and then Nkind (Original_Node (Stmt)) = N_Expression_Function
+              and then not
+                Has_Completion (Defining_Unit_Name (Specification (Stmt)))
+            then
+               Error_Pragma
+                 ("pragma % cannot apply to a stand alone expression "
+                  & "function");
+               return;
+
+            --  The pragma applies to a subprogram body stub
+
+            elsif Nkind (Stmt) = N_Subprogram_Body_Stub then
+               Body_Decl := Stmt;
+               exit;
+
+            --  Skip internally generated code
+
+            elsif not Comes_From_Source (Stmt) then
+               null;
+
+            --  The pragma does not apply to a legal construct, issue an error
+            --  and stop the analysis.
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Stmt := Prev (Stmt);
+         end loop;
+
+         --  Pragma Refined_Pre/Post must apply to a subprogram body [stub]
+
+         if not Nkind_In (Body_Decl, N_Subprogram_Body,
+                                     N_Subprogram_Body_Stub)
+         then
+            Pragma_Misplaced;
+            return;
+         end if;
+
+         --  The body [stub] must not act as a spec, in other words it has to
+         --  be paired with a corresponding spec.
+
+         if Nkind (Body_Decl) = N_Subprogram_Body then
+            Spec_Id := Corresponding_Spec (Body_Decl);
+         else
+            Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+         end if;
+
+         if No (Spec_Id) then
+            Error_Pragma ("pragma % cannot apply to a stand alone body");
+            return;
+         end if;
+
+         --  Refined_Pre/Post may only apply to the body [stub] of a subprogram
+         --  declared in the visible part of a package. Retrieve the context of
+         --  the subprogram declaration.
+
+         Spec_Decl := Parent (Parent (Spec_Id));
+
+         pragma Assert
+           (Nkind_In (Spec_Decl, N_Abstract_Subprogram_Declaration,
+                                 N_Generic_Subprogram_Declaration,
+                                 N_Subprogram_Declaration));
+
+         Pack_Spec := Parent (Spec_Decl);
+
+         if Nkind (Pack_Spec) /= N_Package_Specification
+           or else List_Containing (Spec_Decl) /=
+                     Visible_Declarations (Pack_Spec)
+         then
+            Error_Pragma
+              ("pragma % must apply to the body of a visible subprogram");
+            return;
+         end if;
+
+         --  If we get here, the placement and legality of the pragma is OK
+
+         Legal := True;
+      end Analyze_Refined_Pre_Post;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -15933,6 +16066,33 @@ package body Sem_Prag is
          when Pragma_Rational =>
             Set_Rational_Profile;
 
+         ------------------
+         -- Refined_Post --
+         ------------------
+
+         --  pragma Refined_Post (boolean_EXPRESSION);
+
+         when Pragma_Refined_Post => Refined_Post : declare
+            Body_Decl : Node_Id;
+            Legal     : Boolean;
+            Spec_Id   : Entity_Id;
+
+         begin
+            --  Verify the legal placement of the pragma. The pragma is left
+            --  intentionally semi-analyzed. Process_PPCs does the remaining
+            --  analysis of the expression when Refined_Post is converted into
+            --  pragma Check.
+
+            Analyze_Refined_Pre_Post (Body_Decl, Spec_Id, Legal);
+
+            --  Analyze the expression when code generation is disabled because
+            --  the contract of the related subprogram will never be processed.
+
+            if Legal and then not Expander_Active then
+               Analyze_And_Resolve (Get_Pragma_Arg (Arg1), Standard_Boolean);
+            end if;
+         end Refined_Post;
+
          -----------------
          -- Refined_Pre --
          -----------------
@@ -15940,138 +16100,45 @@ package body Sem_Prag is
          --  pragma Refined_Pre (boolean_EXPRESSION);
 
          when Pragma_Refined_Pre => Refined_Pre : declare
-            Body_Decl : Node_Id := Parent (N);
-            Pack_Spec : Node_Id;
+            Body_Decl : Node_Id;
+            Legal     : Boolean;
             Restore   : Boolean := False;
-            Spec_Decl : Node_Id;
             Spec_Id   : Entity_Id;
-            Stmt      : Node_Id;
 
          begin
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
+            Analyze_Refined_Pre_Post (Body_Decl, Spec_Id, Legal);
 
-            --  Verify the placement of the pragma and check for duplicates
+            if Legal then
+               pragma Assert (Present (Body_Decl));
+               pragma Assert (Present (Spec_Id));
 
-            Stmt := Prev (N);
-            while Present (Stmt) loop
-
-               --  Skip prior pragmas, but check for duplicates
-
-               if Nkind (Stmt) = N_Pragma then
-                  if Pragma_Name (Stmt) = Pname then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (Stmt);
-                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
-                  end if;
-
-               --  The pragma applies to a subprogram body stub
-
-               elsif Nkind (Stmt) = N_Subprogram_Body_Stub then
-                  Body_Decl := Stmt;
-                  exit;
-
-               --  The pragma applies to an expression function that does not
-               --  act as a completion of a previous function declaration.
-
-               elsif Nkind (Stmt) = N_Subprogram_Declaration
-                 and then Nkind (Original_Node (Stmt)) = N_Expression_Function
-                 and then not
-                   Has_Completion (Defining_Unit_Name (Specification (Stmt)))
+               if Nkind (Body_Decl) = N_Subprogram_Body_Stub
+                 and then No (Library_Unit (Body_Decl))
+                 and then Current_Scope /= Spec_Id
                then
-                  Error_Pragma ("pragma % cannot apply to a stand alone body");
-                  return;
-
-               --  Skip internally generated code
-
-               elsif not Comes_From_Source (Stmt) then
-                  null;
-
-               --  The pragma does not apply to a legal construct, issue an
-               --  error and stop the analysis.
-
-               else
-                  Pragma_Misplaced;
-                  return;
+                  Restore := True;
+                  Push_Scope (Spec_Id);
+                  Install_Formals (Spec_Id);
                end if;
 
-               Stmt := Prev (Stmt);
-            end loop;
+               --  Convert pragma Refined_Pre into pragma Check. The analysis
+               --  of the generated pragma will take care of the expression.
 
-            --  Pragma Refined_Pre must apply to a subprogram body [stub]
+               Rewrite (N,
+                 Make_Pragma (Loc,
+                   Chars                        => Name_Check,
+                   Pragma_Argument_Associations => New_List (
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression => Make_Identifier (Loc, Pname)),
 
-            if not Nkind_In (Body_Decl, N_Subprogram_Body,
-                                        N_Subprogram_Body_Stub)
-            then
-               Pragma_Misplaced;
-               return;
-            end if;
+                     Make_Pragma_Argument_Association (Sloc (Arg1),
+                       Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
 
-            --  The body [stub] must not act as a spec
+               Analyze (N);
 
-            if Nkind (Body_Decl) = N_Subprogram_Body then
-               Spec_Id := Corresponding_Spec (Body_Decl);
-            else
-               Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
-            end if;
-
-            if No (Spec_Id) then
-               Error_Pragma ("pragma % cannot apply to a stand alone body");
-               return;
-            end if;
-
-            --  Refined_Pre may only apply to the body [stub] of a subprogram
-            --  declared in the visible part of a package. Retrieve the context
-            --  of the subprogram declaration.
-
-            Spec_Decl := Parent (Parent (Spec_Id));
-
-            pragma Assert
-              (Nkind_In (Spec_Decl, N_Abstract_Subprogram_Declaration,
-                                    N_Generic_Subprogram_Declaration,
-                                    N_Subprogram_Declaration));
-
-            Pack_Spec := Parent (Spec_Decl);
-
-            if Nkind (Pack_Spec) /= N_Package_Specification
-              or else List_Containing (Spec_Decl) /=
-                        Visible_Declarations (Pack_Spec)
-            then
-               Error_Pragma
-                 ("pragma % must apply to the body of a visible subprogram");
-            end if;
-
-            --  When the pragma applies to a subprogram stub without a proper
-            --  body, we have to restore the visibility of the stub and its
-            --  formals to perform analysis.
-
-            if Nkind (Body_Decl) = N_Subprogram_Body_Stub
-              and then No (Library_Unit (Body_Decl))
-              and then Current_Scope /= Spec_Id
-            then
-               Restore := True;
-               Push_Scope (Spec_Id);
-               Install_Formals (Spec_Id);
-            end if;
-
-            --  Convert pragma Refined_Pre into pragma Check. The analysis of
-            --  the generated pragma will take care of the expression.
-
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Pname)),
-
-                  Make_Pragma_Argument_Association (Sloc (Arg1),
-                    Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
-
-            Analyze (N);
-
-            if Restore then
-               Pop_Scope;
+               if Restore then
+                  Pop_Scope;
+               end if;
             end if;
          end Refined_Pre;
 
@@ -19158,6 +19225,7 @@ package body Sem_Prag is
       Pragma_Queuing_Policy                 => -1,
       Pragma_Rational                       => -1,
       Pragma_Ravenscar                      => -1,
+      Pragma_Refined_Post                   => -1,
       Pragma_Refined_Pre                    => -1,
       Pragma_Relative_Deadline              => -1,
       Pragma_Remote_Access_Type             => -1,
@@ -19592,6 +19660,116 @@ package body Sem_Prag is
       --  Nothing else to do at the current time!
 
    end Process_Compilation_Unit_Pragmas;
+
+   ------------------------------
+   -- Relocate_Pragmas_To_Body --
+   ------------------------------
+
+   procedure Relocate_Pragmas_To_Body
+     (Subp_Body   : Node_Id;
+      Target_Body : Node_Id := Empty)
+   is
+      procedure Relocate_Pragma (Prag : Node_Id);
+      --  Remove a single pragma from its current list and add it to the
+      --  declarations of the proper body (either Subp_Body or Target_Body).
+
+      ---------------------
+      -- Relocate_Pragma --
+      ---------------------
+
+      procedure Relocate_Pragma (Prag : Node_Id) is
+         Decls  : List_Id;
+         Target : Node_Id;
+
+      begin
+         --  When subprogram stubs or expression functions are involves, the
+         --  destination declaration list belongs to the proper body.
+
+         if Present (Target_Body) then
+            Target := Target_Body;
+         else
+            Target := Subp_Body;
+         end if;
+
+         Decls := Declarations (Target);
+
+         if No (Decls) then
+            Decls := New_List;
+            Set_Declarations (Target, Decls);
+         end if;
+
+         --  Unhook the pragma from its current list
+
+         Remove  (Prag);
+         Prepend (Prag, Decls);
+      end Relocate_Pragma;
+
+      --  Local variables
+
+      Body_Id   : constant Entity_Id :=
+                    Defining_Unit_Name (Specification (Subp_Body));
+      Next_Stmt : Node_Id;
+      Stmt      : Node_Id;
+
+   --  Start of processing for Relocate_Pragmas_To_Body
+
+   begin
+      --  Do not process a body that comes from a separate unit as no construct
+      --  can possibly follow it.
+
+      if not Is_List_Member (Subp_Body) then
+         return;
+
+      --  Do not relocate pragmas that follow a stub if the stub does not have
+      --  a proper body.
+
+      elsif Nkind (Subp_Body) = N_Subprogram_Body_Stub
+        and then No (Target_Body)
+      then
+         return;
+
+      --  Do not process internally generated routine _Postconditions
+
+      elsif Ekind (Body_Id) = E_Procedure
+        and then Chars (Body_Id) = Name_uPostconditions
+      then
+         return;
+      end if;
+
+      --  Look at what is following the body. We are interested in certain kind
+      --  of pragmas (either from source or byproducts of expansion) that can
+      --  apply to a body [stub].
+
+      Stmt := Next (Subp_Body);
+      while Present (Stmt) loop
+
+         --  Preserve the following statement for iteration purposes due to a
+         --  possible relocation of a pragma.
+
+         Next_Stmt := Next (Stmt);
+
+         --  Move a candidate pragma following the body to the declarations of
+         --  the body.
+
+         if Nkind (Stmt) = N_Pragma
+           and then Pragma_On_Body_Or_Stub_OK (Get_Pragma_Id (Stmt))
+         then
+            Relocate_Pragma (Stmt);
+
+         --  Skip internally generated code
+
+         elsif not Comes_From_Source (Stmt) then
+            null;
+
+         --  No candidate pragmas are available for relocation
+
+         else
+            exit;
+         end if;
+
+         Stmt := Next_Stmt;
+      end loop;
+   end Relocate_Pragmas_To_Body;
 
    ----------------------------
    -- Rewrite_Assertion_Kind --

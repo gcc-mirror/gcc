@@ -303,10 +303,6 @@ package body Sem_Attr is
       --  Verify that prefix of attribute N is a float type and that
       --  two attribute expressions are present
 
-      procedure Legal_Formal_Attribute;
-      --  Common processing for attributes Definite and Has_Discriminants.
-      --  Checks that prefix is generic indefinite formal type.
-
       procedure Check_SPARK_Restriction_On_Attribute;
       --  Issue an error in formal mode because attribute N is allowed
 
@@ -376,6 +372,14 @@ package body Sem_Attr is
       procedure Error_Attr_P (Msg : String);
       pragma No_Return (Error_Attr);
       --  Like Error_Attr, but error is posted at the start of the prefix
+
+      function In_Refined_Post return Boolean;
+      --  Determine whether the current attribute appears in pragma
+      --  Refined_Post.
+
+      procedure Legal_Formal_Attribute;
+      --  Common processing for attributes Definite and Has_Discriminants.
+      --  Checks that prefix is generic indefinite formal type.
 
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
@@ -1926,6 +1930,60 @@ package body Sem_Attr is
          Error_Msg_F (Msg, P);
          Error_Attr;
       end Error_Attr_P;
+
+      ---------------------
+      -- In_Refined_Post --
+      ---------------------
+
+      function In_Refined_Post return Boolean is
+         function Is_Refined_Post (Prag : Node_Id) return Boolean;
+         --  Determine whether Prag denotes one of the incarnations of pragma
+         --  Refined_Post (either as is or pragma Check (Refined_Post, ...).
+
+         ---------------------
+         -- Is_Refined_Post --
+         ---------------------
+
+         function Is_Refined_Post (Prag : Node_Id) return Boolean is
+            Args : constant List_Id := Pragma_Argument_Associations (Prag);
+            Nam  : constant Name_Id := Pragma_Name (Prag);
+
+         begin
+            if Nam = Name_Refined_Post then
+               return True;
+
+            elsif Nam = Name_Check then
+               pragma Assert (Present (Args));
+
+               return Chars (Expression (First (Args))) = Name_Refined_Post;
+            end if;
+
+            return False;
+         end Is_Refined_Post;
+
+         --  Local variables
+
+         Stmt : Node_Id;
+
+      --  Start of processing for In_Refined_Post
+
+      begin
+         Stmt := Parent (N);
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Pragma and then Is_Refined_Post (Stmt) then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Stmt) then
+               exit;
+            end if;
+
+            Stmt := Parent (Stmt);
+         end loop;
+
+         return False;
+      end In_Refined_Post;
 
       ----------------------------
       -- Legal_Formal_Attribute --
@@ -4281,7 +4339,32 @@ package body Sem_Attr is
                Error_Attr ("% attribute can only appear in postcondition", P);
             end if;
 
-         --  Body case, where we must be inside a generated _Postcondition
+         --  Check the legality of attribute 'Old when it appears inside pragma
+         --  Refined_Post. These specialized checks are required only when code
+         --  generation is disabled. In the general case pragma Refined_Post is
+         --  transformed into pragma Check by Process_PPCs which in turn is
+         --  relocated to procedure _Postconditions. From then on the legality
+         --  of 'Old is determined as usual.
+
+         elsif not Expander_Active and then In_Refined_Post then
+            Preanalyze_And_Resolve (P);
+            P_Type := Etype (P);
+            Set_Etype (N, P_Type);
+
+            if Is_Limited_Type (P_Type) then
+               Error_Attr ("attribute % cannot apply to limited objects", P);
+            end if;
+
+            if Is_Entity_Name (P)
+              and then Is_Constant_Object (Entity (P))
+            then
+               Error_Msg_N
+                 ("??attribute Old applied to constant has no effect", P);
+            end if;
+
+            return;
+
+         --  Body case, where we must be inside a generated _Postconditions
          --  procedure, or else the attribute use is definitely misplaced. The
          --  postcondition itself may have generated transient scopes, and is
          --  not necessarily the current one.
@@ -4302,8 +4385,8 @@ package body Sem_Attr is
 
          --  If the attribute reference is generated for a Requires clause,
          --  then no expressions follow. Otherwise it is a primary, in which
-         --  case, if expressions follow, the attribute reference must be
-         --  an indexable object, so rewrite the node accordingly.
+         --  case, if expressions follow, the attribute reference must be an
+         --  indexable object, so rewrite the node accordingly.
 
          if Present (E1) then
             Rewrite (N,
@@ -4320,8 +4403,8 @@ package body Sem_Attr is
 
          Check_E0;
 
-         --  Prefix has not been analyzed yet, and its full analysis will
-         --  take place during expansion (see below).
+         --  Prefix has not been analyzed yet, and its full analysis will take
+         --  place during expansion (see below).
 
          Preanalyze_And_Resolve (P);
          P_Type := Etype (P);
@@ -4725,7 +4808,32 @@ package body Sem_Attr is
                Set_Is_Overloaded (P, False);
             end if;
 
-         --  Body case, where we must be inside a generated _Postcondition
+         --  Check the legality of attribute 'Result when it appears inside
+         --  pragma Refined_Post. These specialized checks are required only
+         --  when code generation is disabled. In the general case pragma
+         --  Refined_Post is transformed into pragma Check by Process_PPCs
+         --  which in turn is relocated to procedure _Postconditions. From
+         --  then on the legality of 'Result is determined as usual.
+
+         elsif not Expander_Active and then In_Refined_Post then
+            PS := Current_Scope;
+
+            --  The prefix denotes the proper related function
+
+            if Is_Entity_Name (P)
+              and then Ekind (Entity (P)) = E_Function
+              and then Entity (P) = PS
+            then
+               null;
+
+            else
+               Error_Msg_Name_2 := Chars (PS);
+               Error_Attr ("incorrect prefix for % attribute, expected %", P);
+            end if;
+
+            Set_Etype (N, Etype (PS));
+
+         --  Body case, where we must be inside a generated _Postconditions
          --  procedure, and the prefix must be on the scope stack, or else the
          --  attribute use is definitely misplaced. The postcondition itself
          --  may have generated transient scopes, and is not necessarily the
@@ -4763,9 +4871,9 @@ package body Sem_Attr is
                   null;
 
                else
-                  Error_Msg_NE
-                    ("incorrect prefix for % attribute, expected &", P, PS);
-                  Error_Attr;
+                  Error_Msg_Name_2 := Chars (PS);
+                  Error_Attr
+                    ("incorrect prefix for % attribute, expected %", P);
                end if;
 
                Rewrite (N, Make_Identifier (Sloc (N), Name_uResult));

@@ -349,15 +349,25 @@ package body Sem_Ch6 is
             Make_Handled_Sequence_Of_Statements (LocX,
               Statements => New_List (Ret)));
 
+      --  If the expression completes a generic subprogram, we must create a
+      --  separate node for the body, because at instantiation the original
+      --  node of the generic copy must be a generic subprogram body, and
+      --  cannot be a expression function. Otherwise we just rewrite the
+      --  expression with the non-generic body.
+
       if Present (Prev) and then Ekind (Prev) = E_Generic_Function then
-
-         --  If the expression completes a generic subprogram, we must create a
-         --  separate node for the body, because at instantiation the original
-         --  node of the generic copy must be a generic subprogram body, and
-         --  cannot be a expression function. Otherwise we just rewrite the
-         --  expression with the non-generic body.
-
          Insert_After (N, New_Body);
+
+         --  Propagate any aspects or pragmas that apply to the expression
+         --  function to the proper body when the expression function acts
+         --  as a completion.
+
+         if Has_Aspects (N) then
+            Move_Aspects (N, To => New_Body);
+         end if;
+
+         Relocate_Pragmas_To_Body (New_Body);
+
          Rewrite (N, Make_Null_Statement (Loc));
          Set_Has_Completion (Prev, False);
          Analyze (N);
@@ -371,6 +381,12 @@ package body Sem_Ch6 is
 
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
+
+         --  Propagate any pragmas that apply to the expression function to the
+         --  proper body when the expression function acts as a completion.
+         --  Aspects are automatically transfered because of node rewriting.
+
+         Relocate_Pragmas_To_Body (N);
          Analyze (N);
 
          --  Prev is the previous entity with the same name, but it is can
@@ -11274,6 +11290,11 @@ package body Sem_Ch6 is
       --  under the same visibility conditions as for other invariant checks,
       --  the type invariant must be applied to the returned value.
 
+      procedure Collect_Body_Postconditions (Post_Nam : Name_Id);
+      --  Examine the declarations of the body, looking for pragmas with name
+      --  Post_Nam. Parameter Post_Nam must denote either Name_Postcondition or
+      --  Name_Refined_Post. Chain any relevant postconditions to Plist.
+
       function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id;
       --  Prag contains an analyzed precondition or postcondition pragma. This
       --  function copies the pragma, changes it to the corresponding Check
@@ -11364,6 +11385,60 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Access_Invariants;
+
+      ---------------------------------
+      -- Collect_Body_Postconditions --
+      ---------------------------------
+
+      procedure Collect_Body_Postconditions (Post_Nam : Name_Id) is
+         Next_Prag : Node_Id;
+
+      begin
+         pragma Assert
+           (Nam_In (Post_Nam, Name_Postcondition, Name_Refined_Post));
+
+         Prag := First (Declarations (N));
+         while Present (Prag) loop
+            Next_Prag := Next (Prag);
+
+            if Nkind (Prag) = N_Pragma then
+
+               --  Capture postcondition pragmas
+
+               if Pragma_Name (Prag) = Post_Nam then
+                  Analyze (Prag);
+
+                  --  All Refined_Post pragmas must be relocated to the body
+                  --  of the generated _Postconditions routine, otherwise they
+                  --  will be duplicated twice - once in the declarations of
+                  --  the body and once in _Postconditions.
+
+                  if Pragma_Name (Prag) = Name_Refined_Post then
+                     Remove (Prag);
+                  end if;
+
+                  --  If expansion is disabled, as in a generic unit, save
+                  --  pragma for later expansion.
+
+                  if not Expander_Active then
+                     Prepend (Grab_PPC, Declarations (N));
+                  else
+                     Append_Enabled_Item (Grab_PPC, Plist);
+                  end if;
+               end if;
+
+            --  Skip internally generated code
+
+            elsif not Comes_From_Source (Prag) then
+               null;
+
+            else
+               exit;
+            end if;
+
+            Prag := Next_Prag;
+         end loop;
+      end Collect_Body_Postconditions;
 
       --------------
       -- Grab_PPC --
@@ -11791,6 +11866,8 @@ package body Sem_Ch6 is
 
       --     procedure _postconditions [(_Result : resulttype)] is
       --     begin
+      --        pragma Check (Refined_Post, condition);
+      --        pragma Check (Refined_Post, condition);
       --        pragma Check (Postcondition, condition [,message]);
       --        pragma Check (Postcondition, condition [,message]);
       --        ...
@@ -11801,43 +11878,8 @@ package body Sem_Ch6 is
 
       --  First we deal with the postconditions in the body
 
-      if Is_Non_Empty_List (Declarations (N)) then
-
-         --  Loop through declarations
-
-         Prag := First (Declarations (N));
-         while Present (Prag) loop
-            if Nkind (Prag) = N_Pragma then
-
-               --  Capture postcondition pragmas
-
-               if Pragma_Name (Prag) = Name_Postcondition then
-                  Analyze (Prag);
-
-                  --  If expansion is disabled, as in a generic unit, save
-                  --  pragma for later expansion.
-
-                  if not Expander_Active then
-                     Prepend (Grab_PPC, Declarations (N));
-                  else
-                     Append_Enabled_Item (Grab_PPC, Plist);
-                  end if;
-               end if;
-
-               Next (Prag);
-
-            --  Not a pragma, if comes from source, then end scan
-
-            elsif Comes_From_Source (Prag) then
-               exit;
-
-            --  Skip stuff not coming from source
-
-            else
-               Next (Prag);
-            end if;
-         end loop;
-      end if;
+      Collect_Body_Postconditions (Name_Refined_Post);
+      Collect_Body_Postconditions (Name_Postcondition);
 
       --  Now deal with any postconditions from the spec
 

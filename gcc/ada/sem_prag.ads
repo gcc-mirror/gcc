@@ -33,11 +33,15 @@ with Types;  use Types;
 package Sem_Prag is
 
    --  The following table lists all the implementation-defined pragmas that
-   --  may apply to a body stub (no language defined pragmas apply).
+   --  may apply to a body stub (no language defined pragmas apply). The table
+   --  should be synchronized with Aspect_On_Body_Or_Stub_OK in unit Aspects if
+   --  the pragmas below implement an aspect.
 
-   Pragma_On_Stub_OK : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Refined_Pre  => True,
+   Pragma_On_Body_Or_Stub_OK : constant array (Pragma_Id) of Boolean :=
+     (Pragma_Refined_Post => True,
+      Pragma_Refined_Pre  => True,
       Pragma_SPARK_Mode   => True,
+      Pragma_Warnings     => True,
       others              => False);
 
    -----------------
@@ -163,6 +167,15 @@ package Sem_Prag is
    --  special issues regarding pragmas. In particular, we have to deal with
    --  Suppress_All at this stage, since it can appear after the unit instead
    --  of before (actually we allow it to appear anywhere).
+
+   procedure Relocate_Pragmas_To_Body
+     (Subp_Body   : Node_Id;
+      Target_Body : Node_Id := Empty);
+   --  Resocate all pragmas that follow and apply to subprogram body Subp_Body
+   --  to its own declaration list. Candidate pragmas are classified in table
+   --  Pragma_On_Body_Or_Stub_OK. If Target_Body is set, the pragma are moved
+   --  to the declarations of Target_Body. This formal should be set when
+   --  dealing with subprogram body stubs or expression functions.
 
    procedure Set_Encoded_Interface_Name (E : Entity_Id; S : Node_Id);
    --  This routine is used to set an encoded interface name. The node S is an
