@@ -1185,9 +1185,9 @@ package body MLib.Prj is
 
                   Delete_File (Get_Name_String (Path), Succ);
 
-                  if not Succ then
-                     null;
-                  end if;
+                  --  We ignore a failure in this Delete_File operation.
+                  --  Is that OK??? If so, worth a comment as to why we
+                  --  are OK with the operation failing
                end;
             end if;
 

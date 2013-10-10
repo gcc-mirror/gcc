@@ -4931,7 +4931,6 @@ this warning option.
 This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
 
-@ifclear vms
 @item -gnatw.d
 @emph{Activate tagging of warning messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
@@ -4947,25 +4946,6 @@ affected by the use of @code{-gnatwa}.
 If this switch is set, then warning messages return to the default
 mode in which warnings are not tagged as described above for
 @code{-gnatw.d}.
-@end ifclear
-
-@ifset vms
-@item -gnatw.d
-@emph{Activate tagging of warning messages.}
-@cindex @option{-gnatw.d} (@command{gcc})
-If this switch is set, then warning messages are tagged, either with
-the appropriate WARNINGS qualifier string (e.g. [SUSPICIOUS_MODULUS]
-or with ``[enabled by default]'' if the warning is not under control of a
-specific WARNING qualifier switch. This mode is off by default, and is not
-affected by the use of @code{-gnatwa}.
-
-@item -gnatw.D
-@emph{Deactivate tagging of warning messages.}
-@cindex @option{-gnatw.d} (@command{gcc})
-If this switch is set, then warning messages return to the default
-mode in which warnings are not tagged as described above for
-@code{-gnatw.d}.
-@end ifset
 
 @item -gnatwe
 @emph{Treat warnings and style checks as errors.}

@@ -11948,7 +11948,10 @@ package body Exp_Ch9 is
    --       end if;
    --    end;
 
-   --  3) Ada 2005 (AI-345): When T.E is a dispatching procedure call;
+   --  3) Ada 2005 (AI-345): When T.E is a dispatching procedure call, there
+   --     is no delay and the triggering statements are executed. We first
+   --     determine the kind of of the triggering call and then execute a
+   --     synchronized operation or a direct call.
 
    --    declare
    --       B  : Boolean := False;
@@ -11965,7 +11968,7 @@ package body Exp_Ch9 is
    --         or else K = Ada.Tags.TK_Tagged
    --       then
    --          <dispatching-call>;
-   --          <triggering-statements>
+   --          B := True;
 
    --       else
    --          S :=
@@ -11989,20 +11992,19 @@ package body Exp_Ch9 is
    --             then
    --                <dispatching-call>;
    --             end if;
-
-   --             <triggering-statements>
-   --          else
-   --             <timed-statements>
-   --          end if;
+   --         end if;
    --       end if;
+
+   --      if B then
+   --          <triggering-statements>
+   --      else
+   --          <timed-statements>
+   --      end if;
    --    end;
 
    --  The triggering statement and the sequence of timed statements have not
    --  been analyzed yet (see Analyzed_Timed_Entry_Call), but they may contain
-   --  global references if within an instantiation. To prevent duplication
-   --  between various uses of those statements, they are encapsulated into a
-   --  local procedure which is invoked multiple time when the trigger is a
-   --  dispatching call.
+   --  global references if within an instantiation.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -12044,63 +12046,6 @@ package body Exp_Ch9 is
       M : Entity_Id;  --  Delay mode
       P : Entity_Id;  --  Parameter block
       S : Entity_Id;  --  Primitive operation slot
-
-      procedure Rewrite_Triggering_Statements;
-      --  If the trigger is a dispatching call, the expansion inserts multiple
-      --  copies of the abortable part. This is both inefficient, and may lead
-      --  to duplicate definitions that the back-end will reject, when the
-      --  abortable part includes loops. This procedure rewrites the abortable
-      --  part into a call to a generated procedure.
-
-      -----------------------------------
-      -- Rewrite_Triggering_Statements --
-      -----------------------------------
-
-      procedure Rewrite_Triggering_Statements is
-         Proc : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
-         Decl : Node_Id;
-         Stat : Node_Id;
-
-      begin
-         Decl :=
-           Make_Subprogram_Body (Loc,
-             Specification              =>
-               Make_Procedure_Specification (Loc, Defining_Unit_Name => Proc),
-             Declarations               => New_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, E_Stats));
-
-         Append_To (Decls, Decl);
-
-         --  Adjust the scope of blocks in the procedure. Needed because blocks
-         --  generate declarations that are processed before other analysis
-         --  takes place, and their scope is already set. The backend depends
-         --  on the scope chain to determine the legality of some anonymous
-         --  types, and thus we must indicate that the block is within the new
-         --  procedure.
-
-         Stat := First (E_Stats);
-         while Present (Stat) loop
-            if Nkind (Stat) = N_Block_Statement then
-               Insert_Before (Stat,
-                 Make_Implicit_Label_Declaration (Sloc (Stat),
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (
-                       Sloc (Stat), Chars (Identifier (Stat)))));
-            end if;
-
-            Next (Stat);
-         end loop;
-
-         --  Analyze (Decl);
-
-         --  Rewrite abortable part into a call to this procedure.
-
-         E_Stats :=
-           New_List
-             (Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (Proc, Loc)));
-      end Rewrite_Triggering_Statements;
 
    --  Start of processing for Expand_N_Timed_Entry_Call
 
@@ -12144,7 +12089,6 @@ package body Exp_Ch9 is
       if Is_Disp_Select then
          Extract_Dispatching_Call (E_Call, Call_Ent, Obj, Actuals, Formals);
          Decls := New_List;
-         Rewrite_Triggering_Statements;
 
          Stmts := New_List;
 
@@ -12349,20 +12293,10 @@ package body Exp_Ch9 is
          --       then
          --          <dispatching-call>
          --       end if;
-         --       <triggering-statements>
-         --    else
-         --       <timed-statements>
          --    end if;
 
-         --  Note: we used to do Copy_Separate_List here, but this was changed
-         --  to New_Copy_List_Tree with no explanation or RH note??? We should
-         --  explain the need for the change ???
-
-         N_Stats := New_Copy_List_Tree (E_Stats);
-
-         Prepend_To (N_Stats,
+         N_Stats := New_List (
            Make_Implicit_If_Statement (N,
-
              Condition =>
                Make_Or_Else (Loc,
                  Left_Opnd =>
@@ -12391,19 +12325,17 @@ package body Exp_Ch9 is
          Append_To (Conc_Typ_Stmts,
            Make_Implicit_If_Statement (N,
              Condition       => New_Reference_To (B, Loc),
-             Then_Statements => N_Stats,
-             Else_Statements => D_Stats));
+             Then_Statements => N_Stats));
 
          --  Generate:
          --    <dispatching-call>;
-         --    <triggering-statements>
+         --    B := True;
 
-         --  Note: the following was Copy_Separate_List but it was changed to
-         --  New_Copy_List_Tree without comments or RH documentation ??? We
-         --  should explain the need for the change ???
-
-         Lim_Typ_Stmts := New_Copy_List_Tree (E_Stats);
-         Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));
+         Lim_Typ_Stmts :=
+           New_List (New_Copy_Tree (E_Call),
+             Make_Assignment_Statement (Loc,
+               Name       => New_Occurrence_Of (B, Loc),
+               Expression => New_Occurrence_Of (Standard_True, Loc)));
 
          --  Generate:
          --    if K = Ada.Tags.TK_Limited_Tagged
@@ -12420,8 +12352,24 @@ package body Exp_Ch9 is
              Then_Statements => Lim_Typ_Stmts,
              Else_Statements => Conc_Typ_Stmts));
 
+         --    Generate:
+
+         --    if B then
+         --       <triggering-statements>
+         --    else
+         --       <timed-statements>
+         --    end if;
+
+         Append_To (Stmts,
+           Make_Implicit_If_Statement (N,
+             Condition       => New_Occurrence_Of (B, Loc),
+             Then_Statements => E_Stats,
+             Else_Statements => D_Stats));
+
       else
-         --  Skip assignments to temporaries created for in-out parameters.
+         --  Simple case of a non-dispatching trigger. Skip assignments to
+         --  temporaries created for in-out parameters.
+
          --  This makes unwarranted assumptions about the shape of the expanded
          --  tree for the call, and should be cleaned up ???
 

@@ -455,6 +455,7 @@ package body Sem_Attr is
                             Reason => PE_Address_Of_Intrinsic));
 
                      else
+                        Error_Msg_Name_1 := Aname;
                         Error_Msg_N
                          ("cannot take % of intrinsic subprogram", N);
                      end if;
