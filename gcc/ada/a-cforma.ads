@@ -53,7 +53,7 @@
 --      function Left  (Container : Map; Position : Cursor) return Map;
 --      function Right (Container : Map; Position : Cursor) return Map;
 
---    See detailed specifications for these subprograms.
+--    See detailed specifications for these subprograms
 
 private with Ada.Containers.Red_Black_Trees;
 

@@ -8863,10 +8863,12 @@ package body Sem_Util is
             when N_Function_Call =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes 'Input and 'Result produce objects
+            --  Attributes 'Input, 'Old and 'Result produce objects
 
             when N_Attribute_Reference =>
-               return Nam_In (Attribute_Name (N), Name_Input, Name_Result);
+               return
+                 Nam_In
+                   (Attribute_Name (N), Name_Input, Name_Old, Name_Result);
 
             when N_Selected_Component =>
                return

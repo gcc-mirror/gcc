@@ -4891,6 +4891,7 @@ package body Exp_Ch4 is
       Loc     : constant Source_Ptr := Sloc (N);
       Typ     : constant Entity_Id  := Etype (N);
       Cstmt   : Node_Id;
+      Decl    : Node_Id;
       Tnn     : Entity_Id;
       Pnn     : Entity_Id;
       Actions : List_Id;
@@ -4967,10 +4968,15 @@ package body Exp_Ch4 is
       end if;
 
       Tnn := Make_Temporary (Loc, 'T');
-      Append_To (Actions,
-        Make_Object_Declaration (Loc,
+
+      --  Create declaration for target of expression, and indicate that it
+      --  does not require initialization.
+
+      Decl :=  Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
-          Object_Definition   => New_Occurrence_Of (Ttyp, Loc)));
+          Object_Definition   => New_Occurrence_Of (Ttyp, Loc));
+      Set_No_Initialization (Decl);
+      Append_To (Actions, Decl);
 
       --  Now process the alternatives
 

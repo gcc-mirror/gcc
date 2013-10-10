@@ -51,7 +51,7 @@
 --      function Left  (Container : List; Position : Cursor) return List;
 --      function Right (Container : List; Position : Cursor) return List;
 
---    See subprogram specifications that follow for details.
+--    See subprogram specifications that follow for details
 
 generic
    type Element_Type is private;

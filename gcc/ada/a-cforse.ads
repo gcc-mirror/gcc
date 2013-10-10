@@ -52,7 +52,7 @@
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
 
---    See detailed specifications for these subprograms.
+--    See detailed specifications for these subprograms
 
 private with Ada.Containers.Red_Black_Trees;
 

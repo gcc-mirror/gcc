@@ -1593,6 +1593,18 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
+                  --  For case of address aspect, we don't consider that we
+                  --  know the entity is never set in the source, since it is
+                  --  is likely aliasing is occurring.
+
+                  --  Note: one might think that the analysis of the resulting
+                  --  attribute definition clause would take care of that, but
+                  --  that's not the case since it won't be from source.
+
+                  if A_Id = Aspect_Address then
+                     Set_Never_Set_In_Source (E, False);
+                  end if;
+
                   --  Construct the attribute definition clause
 
                   Aitem :=
@@ -3474,7 +3486,8 @@ package body Sem_Ch13 is
                   --  and alignment of the overlaying variable. We defer this
                   --  check till after code generation to take full advantage
                   --  of the annotation done by the back end. This entry is
-                  --  only made if the address clause comes from source.
+                  --  only made if the address clause comes from source or
+                  --  from an aspect clause (which is still from source).
 
                   --  If the entity has a generic type, the check will be
                   --  performed in the instance if the actual type justifies
@@ -3482,7 +3495,8 @@ package body Sem_Ch13 is
                   --  prevent spurious warnings.
 
                   if Address_Clause_Overlay_Warnings
-                    and then Comes_From_Source (N)
+                       and then (Comes_From_Source (N)
+                                  or else From_Aspect_Specification (N))
                     and then Present (O_Ent)
                     and then Is_Object (O_Ent)
                   then
