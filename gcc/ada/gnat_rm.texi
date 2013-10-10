@@ -1375,7 +1375,9 @@ ID_ASSERTION_KIND ::= Assertions           |
                       Loop_Variant         |
                       Postcondition        |
                       Precondition         |
-                      Predicate
+                      Predicate            |
+                      Refined_Post         |
+                      Refined_Pre          |
                       Statement_Assertions
 
 POLICY_IDENTIFIER ::= Check | Disable | Ignore

@@ -1383,9 +1383,8 @@ package body Sem_Ch13 is
 
                pragma Assert (not Is_Disabled (Aspect));
 
-               --  Certan aspects allow for an optional name or expression. Do
-               --  not generate a pragma with an empty argument association
-               --  list.
+               --  Certain aspects allow for an optional name or expression. Do
+               --  not generate a pragma with empty argument association list.
 
                if No (Args) or else No (Expression (First (Args))) then
                   Args := No_List;
