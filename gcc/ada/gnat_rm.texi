@@ -8665,12 +8665,15 @@ denotes a function identical to
 @code{System.Storage_Elements.To_Address} except that
 it is a static attribute.  This means that if its argument is
 a static expression, then the result of the attribute is a
-static expression.  The result is that such an expression can be
+static expression.  This means that such an expression can be
 used in contexts (e.g.@: preelaborable packages) which require a
 static expression and where the function call could not be used
 (since the function call is always non-static, even if its
-argument is static). The argument must be in the range 0 .. 2**m-1,
-where m is the memory size (typically 32 or 64).
+argument is static). The argument must be in the range
+-(2**(m-1) .. 2**m-1, where m is the memory size
+(typically 32 or 64). Negative values are intepreted in a
+modular manner (e.g. -1 means the same as 16#FFFF_FFFF# on
+a 32 bits machine).
 
 @node Attribute Type_Class
 @unnumberedsec Attribute Type_Class
