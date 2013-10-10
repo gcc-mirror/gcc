@@ -1,3 +1,14 @@
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component,
+	Has_Mode_Conformant_Spec): If selected component may be an
+	indexing of a parameterless call to a protected function, and
+	expansion is disabled, this is a valid candidate interpretation.
+
+2013-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* gnatlink.adb: Minor reformatting.
