@@ -1,5 +1,10 @@
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
+	* gimplify.c: Include expr.h and tm_p.h for targets with special va-arg
+	padding requirements.
+
+2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
+
 	* tree-flow.h: Move some prototypes to gimple.h.
 	(gimple_fold_indirect_ref): Move prototype to gimple-fold.h.
 	* gimple.h: Relocate some prototypes from tree-flow.h
