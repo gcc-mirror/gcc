@@ -1,5 +1,18 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb: Minor reformatting.
+	* sem_ch13.adb (Freeze_Entity_Checks): New procedure
+	(Analyze_Freeze_Entity): Call Freeze_Entity_Checks
+	(Analyze_Freeze_Generic_Entity): Call Freeze_Entity_Checks.
+	* sinfo.ads: Add syntax for sprint for Freeze_Generic_Entity.
+	* sprint.ads: Add syntax for freeze generic entity node.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, einfo.ads: Minor comment updates.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* lib-writ.adb (Write_Unit_Information): Fatal error if linker
 	options are detected in a predefined generic unit.
 
