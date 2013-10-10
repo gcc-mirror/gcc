@@ -1577,6 +1577,37 @@ package body Sem_Ch5 is
             Remove_Warning_Messages (Then_Statements (N));
          end if;
       end if;
+
+      --  Warn on redundant if statement that has no effect
+
+      if Warn_On_Redundant_Constructs
+
+        --  Condition must not have obvious side effect
+
+        and then Has_No_Obvious_Side_Effects (Condition (N))
+
+        --  No elsif parts of else part
+
+        and then No (Elsif_Parts (N))
+        and then No (Else_Statements (N))
+
+        --  Then must be a single null statement
+
+        and then List_Length (Then_Statements (N)) = 1
+      then
+         --  Go to original node, since we may have rewritten something as
+         --  a null statement (e.g. a case we could figure the outcome of).
+
+         declare
+            T : constant Node_Id := First (Then_Statements (N));
+            S : constant Node_Id := Original_Node (T);
+
+         begin
+            if Comes_From_Source (S) and then Nkind (S) = N_Null_Statement then
+               Error_Msg_N ("if statement has no effect?r?", N);
+            end if;
+         end;
+      end if;
    end Analyze_If_Statement;
 
    ----------------------------------------

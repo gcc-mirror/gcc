@@ -628,6 +628,7 @@ package body Lib.Writ is
             if Is_Generic_Unit (Cunit_Entity (Main_Unit))
               and then
                 Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+              and then Linker_Option_Lines.Table (J).Unit = Unit_Num
             then
                Set_Standard_Error;
                Write_Line

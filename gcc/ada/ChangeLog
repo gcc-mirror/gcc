@@ -1,5 +1,35 @@
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb (Resolve_Array_Aggregate): Redo duplicate/missing
+	choice circuit. Was not quite right in some cases, which showed
+	up in ACATS test B43201C.
+	* sem_attr.adb (Address_Checks): Make sure name is set right
+	for some messages issued.
+	* mlib-prj.adb: Minor code reorganization.
+	* gnat_ugn.texi: Remove special VMS doc for tagging of warning msgs.
+	* exp_ch9.adb: Minor reformatting.
+
+2013-10-10  Tristan Gingold  <gingold@adacore.com>
+
+	* lib-writ.adb (Write_Unit_Information): Adjust previous patch.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_If_Statement): Warn on redundant if
+	statement.
+	* sem_util.ads, sem_util.adb (Has_No_Obvious_Side_Effects): New
+	function.
+
+2013-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Simplify expansion
+	for the case of a dispatching trigger: there is no need to
+	duplicate the code or create a subprogram to encapsulate the
+	triggering statements. This allows exit statements in the
+	triggering statements, that refer to enclosing loops.
+
+2013-10-10  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb: Minor reformatting.
 	* sem_ch13.adb (Freeze_Entity_Checks): New procedure
 	(Analyze_Freeze_Entity): Call Freeze_Entity_Checks

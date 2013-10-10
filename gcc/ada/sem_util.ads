@@ -742,6 +742,17 @@ package Sem_Util is
    --  Use_Full_View controls if the check is done using its full view (if
    --  available).
 
+   function Has_No_Obvious_Side_Effects (N : Node_Id) return Boolean;
+   --  This is a simple minded function for determining whether an expression
+   --  has no obvious side effects. It is used only for determining whether
+   --  warnings are needed in certain situations, and is not guaranteed to
+   --  be accurate in either direction. Exceptions may mean an expression
+   --  does in fact have side effects, but this may be ignored and True is
+   --  returned, or a complex expression may in fact be side effect free
+   --  but we don't recognize it here and return False. The Side_Effect_Free
+   --  routine in Remove_Side_Effects is much more extensive and perhaps could
+   --  be shared, so that this routine would be more accurate.
+
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
 
