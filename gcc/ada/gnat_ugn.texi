@@ -241,7 +241,7 @@ By default, @value{EDITION} assumes Ada 2012, but you can override with a
 compiler switch (@pxref{Compiling Different Versions of Ada})
 to explicitly specify the language version.
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both all Ada 95/2005/2012 versions of the language.
+apply to all Ada 95/2005/2012 versions of the language.
 
 @ifclear FSFEDITION
 For ease of exposition, ``@value{EDITION}'' will be referred to simply as

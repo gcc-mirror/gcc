@@ -3962,10 +3962,25 @@ package body Sem_Ch4 is
             Next (Param);
          end loop;
 
-         --  One of the specs has additional formals
+         --  One of the specs has additional formals, there is no match,
+         --  unless this may be an indexing of a parameterless call.
+
+         --  Note that when expansion is disabled, the corresponding record
+         --  type of synchronized types is not constructed, so that there is
+         --  no point is attempting an interpretation as a prefixed call, as
+         --  this is bound to fail because the primitive operations will not
+         --  be properly located.
 
          if Present (Comp_Param) or else Present (Param) then
-            return False;
+            if Needs_No_Actuals (Comp)
+              and then Is_Array_Type (Etype (Comp))
+              and then not Expander_Active
+            then
+               return True;
+
+            else
+               return False;
+            end if;
          end if;
 
          return True;
