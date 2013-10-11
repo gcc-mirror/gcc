@@ -950,8 +950,15 @@
     emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
     	      				 operands[2], operands[3]));
   else
-    emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[2],
-    	      				 operands[1], operands[3]));
+    {
+      /* Avoid the "subtract from splat31" workaround for vperm since
+         we have changed lvsr to lvsl instead.  */
+      rtx unspec = gen_rtx_UNSPEC (<MODE>mode,
+                                   gen_rtvec (3, operands[2],
+                                              operands[1], operands[3]),
+                                   UNSPEC_VPERM);
+      emit_move_insn (operands[0], unspec);
+    }
   DONE;
 })
 

@@ -1,3 +1,20 @@
+2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_realign_load<mode>): Generate vperm
+	directly to circumvent subtract from splat{31} workaround.
+	* config/rs6000/rs6000-protos.h (altivec_expand_vec_perm_le): New
+	prototype.
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_le): New.
+	* config/rs6000/altivec.md (define_c_enum "unspec"): Add
+	UNSPEC_VPERM_X and UNSPEC_VPERM_UNS_X.
+	(altivec_vperm_<mode>): Convert to define_insn_and_split to
+	separate big and little endian logic.
+	(*altivec_vperm_<mode>_internal): New define_insn.
+	(altivec_vperm_<mode>_uns): Convert to define_insn_and_split to
+	separate big and little endian logic.
+	(*altivec_vperm_<mode>_uns_internal): New define_insn.
+	(vec_permv16qi): Add little endian logic.
+
 2013-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	* doc/extend.texi (returns_nonnull): Remove arguments.
