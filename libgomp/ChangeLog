@@ -1,5 +1,8 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.fortran/openmp_version-1.f: New file.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Likewise.
+
 	* omp.h.in: Don't touch the user's namespace.
 
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
