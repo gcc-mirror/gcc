@@ -236,6 +236,12 @@
   [(V16HI "TARGET_AVX2") V8HI
    (V8SI "TARGET_AVX2") V4SI])
 
+(define_mode_iterator VI124_AVX2_48_AVX512F
+  [(V32QI "TARGET_AVX2") V16QI
+   (V16HI "TARGET_AVX2") V8HI
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F")])
+
 (define_mode_iterator VI124_AVX512F
   [(V32QI "TARGET_AVX2") V16QI
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI
@@ -344,6 +350,8 @@
 (define_mode_iterator VI8F_128 [V2DI V2DF])
 (define_mode_iterator VI4F_256 [V8SI V8SF])
 (define_mode_iterator VI8F_256 [V4DI V4DF])
+(define_mode_iterator VI8F_256_512
+  [V4DI V4DF (V8DI "TARGET_AVX512F") (V8DF "TARGET_AVX512F")])
 
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse
@@ -8627,9 +8635,9 @@
    (set_attr "mode" "DI")])
 
 (define_insn "abs<mode>2"
-  [(set (match_operand:VI124_AVX2 0 "register_operand" "=v")
-	(abs:VI124_AVX2
-	  (match_operand:VI124_AVX2 1 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VI124_AVX2_48_AVX512F 0 "register_operand" "=v")
+	(abs:VI124_AVX2_48_AVX512F
+	  (match_operand:VI124_AVX2_48_AVX512F 1 "nonimmediate_operand" "vm")))]
   "TARGET_SSSE3"
   "%vpabs<ssemodesuffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog1")
@@ -10755,25 +10763,25 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_expand "avx2_perm<mode>"
-  [(match_operand:VI8F_256 0 "register_operand")
-   (match_operand:VI8F_256 1 "nonimmediate_operand")
+(define_expand "<avx2_avx512f>_perm<mode>"
+  [(match_operand:VI8F_256_512 0 "register_operand")
+   (match_operand:VI8F_256_512 1 "nonimmediate_operand")
    (match_operand:SI 2 "const_0_to_255_operand")]
   "TARGET_AVX2"
 {
   int mask = INTVAL (operands[2]);
-  emit_insn (gen_avx2_perm<mode>_1 (operands[0], operands[1],
-				    GEN_INT ((mask >> 0) & 3),
-				    GEN_INT ((mask >> 2) & 3),
-				    GEN_INT ((mask >> 4) & 3),
-				    GEN_INT ((mask >> 6) & 3)));
+  emit_insn (gen_<avx2_avx512f>_perm<mode>_1 (operands[0], operands[1],
+					    GEN_INT ((mask >> 0) & 3),
+					    GEN_INT ((mask >> 2) & 3),
+					    GEN_INT ((mask >> 4) & 3),
+					    GEN_INT ((mask >> 6) & 3)));
   DONE;
 })
 
-(define_insn "avx2_perm<mode>_1"
-  [(set (match_operand:VI8F_256 0 "register_operand" "=v")
-	(vec_select:VI8F_256
-	  (match_operand:VI8F_256 1 "nonimmediate_operand" "vm")
+(define_insn "<avx2_avx512f>_perm<mode>_1"
+  [(set (match_operand:VI8F_256_512 0 "register_operand" "=v")
+	(vec_select:VI8F_256_512
+	  (match_operand:VI8F_256_512 1 "nonimmediate_operand" "vm")
 	  (parallel [(match_operand 2 "const_0_to_3_operand")
 		     (match_operand 3 "const_0_to_3_operand")
 		     (match_operand 4 "const_0_to_3_operand")
