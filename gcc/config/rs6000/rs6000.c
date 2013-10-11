@@ -28608,6 +28608,54 @@ altivec_expand_vec_perm_const_le (rtx operands[4])
   emit_move_insn (target, unspec);
 }
 
+/* Similarly to altivec_expand_vec_perm_const_le, we must adjust the
+   permute control vector.  But here it's not a constant, so we must
+   generate a vector splat/subtract to do the adjustment.  */
+
+void
+altivec_expand_vec_perm_le (rtx operands[4])
+{
+  rtx splat, unspec;
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx sel = operands[3];
+  rtx tmp = target;
+
+  /* Get everything in regs so the pattern matches.  */
+  if (!REG_P (op0))
+    op0 = force_reg (V16QImode, op0);
+  if (!REG_P (op1))
+    op1 = force_reg (V16QImode, op1);
+  if (!REG_P (sel))
+    sel = force_reg (V16QImode, sel);
+  if (!REG_P (target))
+    tmp = gen_reg_rtx (V16QImode);
+
+  /* SEL = splat(31) - SEL.  */
+  /* We want to subtract from 31, but we can't vspltisb 31 since
+     it's out of range.  -1 works as well because only the low-order
+     five bits of the permute control vector elements are used.  */
+  splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+				 gen_rtx_CONST_INT (QImode, -1));
+  emit_move_insn (tmp, splat);
+  sel = gen_rtx_MINUS (V16QImode, tmp, sel);
+  emit_move_insn (tmp, sel);
+
+  /* Permute with operands reversed and adjusted selector.  */
+  unspec = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, op1, op0, tmp),
+			   UNSPEC_VPERM);
+
+  /* Copy into target, possibly by way of a register.  */
+  if (!REG_P (target))
+    {
+      emit_move_insn (tmp, unspec);
+      unspec = tmp;
+    }
+
+  emit_move_insn (target, unspec);
+}
+
 /* Expand an Altivec constant permutation.  Return true if we match
    an efficient implementation; false to fall back to VPERM.  */
 

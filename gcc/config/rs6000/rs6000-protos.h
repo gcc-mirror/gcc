@@ -56,6 +56,7 @@ extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
 extern void rs6000_expand_vector_extract (rtx, rtx, int);
 extern bool altivec_expand_vec_perm_const (rtx op[4]);
+extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern bool rs6000_expand_vec_perm_const (rtx op[4]);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
