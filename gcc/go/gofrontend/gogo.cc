@@ -5110,6 +5110,75 @@ Named_object::get_backend_variable(Gogo* gogo, Named_object* function)
     go_unreachable();
 }
 
+
+// Return the external identifier for this object.
+
+std::string
+Named_object::get_id(Gogo* gogo)
+{
+  go_assert(!this->is_variable() && !this->is_result_variable());
+  std::string decl_name;
+  if (this->is_function_declaration()
+      && !this->func_declaration_value()->asm_name().empty())
+    decl_name = this->func_declaration_value()->asm_name();
+  else if (this->is_type()
+	   && Linemap::is_predeclared_location(this->type_value()->location()))
+    {
+      // We don't need the package name for builtin types.
+      decl_name = Gogo::unpack_hidden_name(this->name_);
+    }
+  else
+    {
+      std::string package_name;
+      if (this->package_ == NULL)
+	package_name = gogo->package_name();
+      else
+	package_name = this->package_->package_name();
+
+      // Note that this will be misleading if this is an unexported
+      // method generated for an embedded imported type.  In that case
+      // the unexported method should have the package name of the
+      // package from which it is imported, but we are going to give
+      // it our package name.  Fixing this would require knowing the
+      // package name, but we only know the package path.  It might be
+      // better to use package paths here anyhow.  This doesn't affect
+      // the assembler code, because we always set that name in
+      // Function::get_or_make_decl anyhow.  FIXME.
+
+      decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
+
+      Function_type* fntype;
+      if (this->is_function())
+	fntype = this->func_value()->type();
+      else if (this->is_function_declaration())
+	fntype = this->func_declaration_value()->type();
+      else
+	fntype = NULL;
+      if (fntype != NULL && fntype->is_method())
+	{
+	  decl_name.push_back('.');
+	  decl_name.append(fntype->receiver()->type()->mangled_name(gogo));
+	}
+    }
+  if (this->is_type())
+    {
+      unsigned int index;
+      const Named_object* in_function = this->type_value()->in_function(&index);
+      if (in_function != NULL)
+	{
+	  decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      decl_name += '$';
+	      decl_name += buf;
+	    }
+	}
+    }
+  return decl_name;
+}
+
 // Class Bindings.
 
 Bindings::Bindings(Bindings* enclosing)

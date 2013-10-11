@@ -1,3 +1,10 @@
+2013-10-10  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Backend::error_function): New function.
+	(Backend::function): New function.
+	(Backend::make_function): New function.
+	(function_to_tree): New function.
+
 2013-10-04  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Backend::convert_expression): New function.
