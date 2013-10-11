@@ -924,6 +924,11 @@ structures, something like the following should be used
    (BASE_STRUCT_CHECK(NODE)->base_struct.fieldname
 @end smallexample
 
+Reading them from the generated @file{all-tree.def} file (which in
+turn includes all the @file{tree.def} files), @file{gencheck.c} is
+used during GCC's build to generate the @code{*_CHECK} macros for all
+tree codes.
+
 @end table
 
 
