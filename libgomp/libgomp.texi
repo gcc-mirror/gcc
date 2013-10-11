@@ -132,6 +132,8 @@ three parts:
 
 Control threads, processors and the parallel environment.
 
+They have C linkage, and don't throw exceptions.
+
 @menu
 * omp_get_active_level::        Number of active parallel regions
 * omp_get_ancestor_thread_num:: Ancestor thread ID
