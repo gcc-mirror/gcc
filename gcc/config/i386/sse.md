@@ -880,7 +880,7 @@
 
 (define_insn "<sse2>_movnt<mode>"
   [(set (match_operand:VI8 0 "memory_operand" "=m")
-	(unspec:VI8 [(match_operand:VI8 1 "register_operand" "x")]
+	(unspec:VI8 [(match_operand:VI8 1 "register_operand" "v")]
 		    UNSPEC_MOVNT))]
   "TARGET_SSE2"
   "%vmovntdq\t{%1, %0|%0, %1}"
@@ -1764,10 +1764,10 @@
   [(set (reg:CCFP FLAGS_REG)
 	(compare:CCFP
 	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 0 "register_operand" "x")
+	    (match_operand:<ssevecmode> 0 "register_operand" "v")
 	    (parallel [(const_int 0)]))
 	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 1 "nonimmediate_operand" "xm")
+	    (match_operand:<ssevecmode> 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
   "%vcomi<ssemodesuffix>\t{%1, %0|%0, %<iptr>1}"
@@ -1784,10 +1784,10 @@
   [(set (reg:CCFPU FLAGS_REG)
 	(compare:CCFPU
 	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 0 "register_operand" "x")
+	    (match_operand:<ssevecmode> 0 "register_operand" "v")
 	    (parallel [(const_int 0)]))
 	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 1 "nonimmediate_operand" "xm")
+	    (match_operand:<ssevecmode> 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
   "%vucomi<ssemodesuffix>\t{%1, %0|%0, %<iptr>1}"
@@ -2594,7 +2594,7 @@
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "btver2_decode" "double,double,double")
-   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "SF")])
 
 (define_insn "sse_cvtsi2ssq"
@@ -2617,7 +2617,7 @@
    (set_attr "btver2_decode" "double,double,double")
    (set_attr "length_vex" "*,*,4")
    (set_attr "prefix_rex" "1,1,*")
-   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "SF")])
 
 (define_insn "sse_cvtss2si"
@@ -2668,7 +2668,7 @@
 
 (define_insn "sse_cvtss2siq_2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(unspec:DI [(match_operand:SF 1 "nonimmediate_operand" "x,m")]
+	(unspec:DI [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
 		   UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE && TARGET_64BIT"
   "%vcvtss2si{q}\t{%1, %0|%0, %k1}"
@@ -2860,11 +2860,11 @@
    (set_attr "mode" "DF")])
 
 (define_insn "sse2_cvtsi2sdq"
-  [(set (match_operand:V2DF 0 "register_operand" "=x,x,x")
+  [(set (match_operand:V2DF 0 "register_operand" "=x,x,v")
 	(vec_merge:V2DF
 	  (vec_duplicate:V2DF
 	    (float:DF (match_operand:DI 2 "nonimmediate_operand" "r,m,rm")))
-	  (match_operand:V2DF 1 "register_operand" "0,0,x")
+	  (match_operand:V2DF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE2 && TARGET_64BIT"
   "@
@@ -2878,14 +2878,14 @@
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "length_vex" "*,*,4")
    (set_attr "prefix_rex" "1,1,*")
-   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "DF")])
 
 (define_insn "sse2_cvtsd2si"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI
 	  [(vec_select:DF
-	     (match_operand:V2DF 1 "nonimmediate_operand" "x,m")
+	     (match_operand:V2DF 1 "nonimmediate_operand" "v,m")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
@@ -2916,7 +2916,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(unspec:DI
 	  [(vec_select:DF
-	     (match_operand:V2DF 1 "nonimmediate_operand" "x,m")
+	     (match_operand:V2DF 1 "nonimmediate_operand" "v,m")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2 && TARGET_64BIT"
@@ -2946,7 +2946,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(fix:SI
 	  (vec_select:DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" "x,m")
+	    (match_operand:V2DF 1 "nonimmediate_operand" "v,m")
 	    (parallel [(const_int 0)]))))]
   "TARGET_SSE2"
   "%vcvttsd2si\t{%1, %0|%0, %q1}"
@@ -2963,7 +2963,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(fix:DI
 	  (vec_select:DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" "x,m")
+	    (match_operand:V2DF 1 "nonimmediate_operand" "v,m")
 	    (parallel [(const_int 0)]))))]
   "TARGET_SSE2 && TARGET_64BIT"
   "%vcvttsd2si{q}\t{%1, %0|%0, %q1}"
@@ -5913,9 +5913,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<shift_insn><mode>3"
-  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,v")
+  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
 	(any_lshift:VI248_AVX2
-	  (match_operand:VI248_AVX2 1 "register_operand" "0,v")
+	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
 	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
   "TARGET_SSE2"
   "@
