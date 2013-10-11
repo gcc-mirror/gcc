@@ -2395,6 +2395,8 @@ static void cp_parser_parse_tentatively
   (cp_parser *);
 static void cp_parser_commit_to_tentative_parse
   (cp_parser *);
+static void cp_parser_commit_to_topmost_tentative_parse
+  (cp_parser *);
 static void cp_parser_abort_tentative_parse
   (cp_parser *);
 static bool cp_parser_parse_definitely
@@ -6741,7 +6743,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 
   /* Once we see the ~, this has to be a pseudo-destructor.  */
   if (!processing_template_decl && !cp_parser_error_occurred (parser))
-    cp_parser_commit_to_tentative_parse (parser);
+    cp_parser_commit_to_topmost_tentative_parse (parser);
 
   /* Look for the type-name again.  We are not responsible for
      checking that it matches the first type-name.  */
@@ -24443,6 +24445,32 @@ cp_parser_commit_to_tentative_parse (cp_parser* parser)
       if (context->status == CP_PARSER_STATUS_KIND_COMMITTED)
 	break;
       context->status = CP_PARSER_STATUS_KIND_COMMITTED;
+      while (!cp_lexer_saving_tokens (lexer))
+	lexer = lexer->next;
+      cp_lexer_commit_tokens (lexer);
+    }
+}
+
+/* Commit to the topmost currently active tentative parse.
+
+   Note that this function shouldn't be called when there are
+   irreversible side-effects while in a tentative state.  For
+   example, we shouldn't create a permanent entry in the symbol
+   table, or issue an error message that might not apply if the
+   tentative parse is aborted.  */
+
+static void
+cp_parser_commit_to_topmost_tentative_parse (cp_parser* parser)
+{
+  cp_parser_context *context = parser->context;
+  cp_lexer *lexer = parser->lexer;
+
+  if (context)
+    {
+      if (context->status == CP_PARSER_STATUS_KIND_COMMITTED)
+	return;
+      context->status = CP_PARSER_STATUS_KIND_COMMITTED;
+
       while (!cp_lexer_saving_tokens (lexer))
 	lexer = lexer->next;
       cp_lexer_commit_tokens (lexer);
