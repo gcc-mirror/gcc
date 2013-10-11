@@ -711,6 +711,10 @@ Return true if g is a @code{GIMPLE_DEBUG} that binds the value of an
 expression to a variable.
 @end deftypefn
 
+@deftypefn {GIMPLE function} bool is_gimple_omp (gimple g)
+Return true if g is any of the OpenMP codes.
+@end deftypefn
+
 @node Manipulating GIMPLE statements
 @section Manipulating GIMPLE statements
 @cindex Manipulating GIMPLE statements
@@ -1844,11 +1848,6 @@ Return a pointer to the data argument for @code{OMP_PARALLEL} @code{G}.
 
 @deftypefn {GIMPLE function} void gimple_omp_parallel_set_data_arg (gimple g, tree data_arg)
 Set @code{DATA_ARG} to be the data argument for @code{OMP_PARALLEL} @code{G}.
-@end deftypefn
-
-@deftypefn {GIMPLE function} bool is_gimple_omp (gimple stmt)
-Returns true when the gimple statement @code{STMT} is any of the OpenMP
-types.
 @end deftypefn
 
 
