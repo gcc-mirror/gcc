@@ -210,6 +210,10 @@
 (define_mode_iterator VI4_AVX512F
   [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI])
 
+(define_mode_iterator VI48_AVX512F
+  [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F")])
+
 (define_mode_iterator VI8_AVX2
   [(V4DI "TARGET_AVX2") V2DI])
 
@@ -247,9 +251,9 @@
    (V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
-(define_mode_iterator VI48_AVX2
-  [(V8SI "TARGET_AVX2") V4SI
-   (V4DI "TARGET_AVX2") V2DI])
+(define_mode_iterator VI48_AVX2_48_AVX512F
+  [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
 (define_mode_iterator V48_AVX2
   [V4SF V2DF
@@ -11404,26 +11408,26 @@
   DONE;
 })
 
-(define_insn "avx2_ashrv<mode>"
-  [(set (match_operand:VI4_AVX2 0 "register_operand" "=v")
-	(ashiftrt:VI4_AVX2
-	  (match_operand:VI4_AVX2 1 "register_operand" "v")
-	  (match_operand:VI4_AVX2 2 "nonimmediate_operand" "vm")))]
+(define_insn "<avx2_avx512f>_ashrv<mode>"
+  [(set (match_operand:VI48_AVX512F 0 "register_operand" "=v")
+	(ashiftrt:VI48_AVX512F
+	  (match_operand:VI48_AVX512F 1 "register_operand" "v")
+	  (match_operand:VI48_AVX512F 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX2"
-  "vpsravd\t{%2, %1, %0|%0, %1, %2}"
+  "vpsrav<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseishft")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_<shift_insn>v<mode>"
-  [(set (match_operand:VI48_AVX2 0 "register_operand" "=v")
-	(any_lshift:VI48_AVX2
-	  (match_operand:VI48_AVX2 1 "register_operand" "v")
-	  (match_operand:VI48_AVX2 2 "nonimmediate_operand" "vm")))]
+(define_insn "<avx2_avx512f>_<shift_insn>v<mode>"
+  [(set (match_operand:VI48_AVX2_48_AVX512F 0 "register_operand" "=v")
+	(any_lshift:VI48_AVX2_48_AVX512F
+	  (match_operand:VI48_AVX2_48_AVX512F 1 "register_operand" "v")
+	  (match_operand:VI48_AVX2_48_AVX512F 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX2"
   "vp<vshift>v<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseishft")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 ;; For avx_vec_concat<mode> insn pattern
