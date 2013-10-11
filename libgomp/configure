@@ -15458,7 +15458,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
 
-# See what sort of export controls are availible.
+# See what sort of export controls are available.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports hidden visibility" >&5
 $as_echo_n "checking whether the target supports hidden visibility... " >&6; }

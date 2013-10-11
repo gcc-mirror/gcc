@@ -238,7 +238,7 @@ fi
 # See if we support thread-local storage.
 GCC_CHECK_TLS
 
-# See what sort of export controls are availible.
+# See what sort of export controls are available.
 LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY
 LIBGOMP_CHECK_ATTRIBUTE_DLLEXPORT
 LIBGOMP_CHECK_ATTRIBUTE_ALIAS
