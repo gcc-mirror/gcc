@@ -8,6 +8,22 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (V_512): New.
+	(VI_512): Ditto.
+	(vcond<V_512:mode><VF_512:mode>): Ditto.
+	(vcond<V_512:mode><VI_512:mode>): Ditto.
+	(vcondu<V_512:mode><VI_512:mode>): Ditto.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c (ix86_rtx_costs): Enable fma for TARGET_AVX512F.
 	* config/i386/sse.md (FMAMODEM): Changed modes and conditions.
 	(FMAMODE): Ditto.
