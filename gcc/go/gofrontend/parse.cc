@@ -744,6 +744,8 @@ Parse::signature(Typed_identifier* receiver, Location location)
     return NULL;
 
   Parse::Names names;
+  if (receiver != NULL)
+    names[receiver->name()] = receiver;
   if (params != NULL)
     this->check_signature_names(params, &names);
   if (results != NULL)
