@@ -257,6 +257,11 @@
    (V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
+(define_mode_iterator VI248_AVX2_8_AVX512F
+  [(V16HI "TARGET_AVX2") V8HI
+   (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
+
 (define_mode_iterator VI48_AVX2_48_AVX512F
   [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
@@ -341,8 +346,9 @@
 (define_mode_iterator VI248_128 [V8HI V4SI V2DI])
 (define_mode_iterator VI48_128 [V4SI V2DI])
 
-;; Random 256bit vector integer mode combinations
-(define_mode_iterator VI124_256 [V32QI V16HI V8SI])
+;; Various 256bit and 512 vector integer mode combinations
+(define_mode_iterator VI124_256_48_512
+  [V32QI V16HI V8SI (V8DI "TARGET_AVX512F") (V16SI "TARGET_AVX512F")])
 (define_mode_iterator VI48_256 [V8SI V4DI])
 
 ;; Int-float size matches
@@ -503,7 +509,8 @@
 
 (define_mode_attr ssepackmode
   [(V8HI "V16QI") (V4SI "V8HI") (V2DI "V4SI")
-   (V16HI "V32QI") (V8SI "V16HI") (V4DI "V8SI")])
+   (V16HI "V32QI") (V8SI "V16HI") (V4DI "V8SI")
+   (V32HI "V64QI") (V16SI "V32HI") (V8DI "V16SI")])
 
 ;; Mapping of the max integer size for xop rotate immediate constraint
 (define_mode_attr sserotatemax
@@ -6114,23 +6121,23 @@
 
 
 (define_expand "<code><mode>3"
-  [(set (match_operand:VI124_256 0 "register_operand")
-	(maxmin:VI124_256
-	  (match_operand:VI124_256 1 "nonimmediate_operand")
-	  (match_operand:VI124_256 2 "nonimmediate_operand")))]
+  [(set (match_operand:VI124_256_48_512 0 "register_operand")
+	(maxmin:VI124_256_48_512
+	  (match_operand:VI124_256_48_512 1 "nonimmediate_operand")
+	  (match_operand:VI124_256_48_512 2 "nonimmediate_operand")))]
   "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*avx2_<code><mode>3"
-  [(set (match_operand:VI124_256 0 "register_operand" "=v")
-	(maxmin:VI124_256
-	  (match_operand:VI124_256 1 "nonimmediate_operand" "%v")
-	  (match_operand:VI124_256 2 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VI124_256_48_512 0 "register_operand" "=v")
+	(maxmin:VI124_256_48_512
+	  (match_operand:VI124_256_48_512 1 "nonimmediate_operand" "%v")
+	  (match_operand:VI124_256_48_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
 (define_expand "<code><mode>3"
@@ -6777,8 +6784,8 @@
 
 (define_expand "vec_pack_trunc_<mode>"
   [(match_operand:<ssepackmode> 0 "register_operand")
-   (match_operand:VI248_AVX2 1 "register_operand")
-   (match_operand:VI248_AVX2 2 "register_operand")]
+   (match_operand:VI248_AVX2_8_AVX512F 1 "register_operand")
+   (match_operand:VI248_AVX2_8_AVX512F 2 "register_operand")]
   "TARGET_SSE2"
 {
   rtx op1 = gen_lowpart (<ssepackmode>mode, operands[1]);
