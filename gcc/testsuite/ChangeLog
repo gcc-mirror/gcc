@@ -1,5 +1,12 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/cpp/openmp-define-1.c: New file.
+	* c-c++-common/cpp/openmp-define-2.c: Likewise.
+	* c-c++-common/cpp/openmp-define-3.c: Likewise.
+	* gfortran.dg/openmp-define-1.f90: Likewise.
+	* gfortran.dg/openmp-define-2.f90: Likewise.
+	* gfortran.dg/openmp-define-3.f90: Likewise.
+
 	* g++.dg/gomp/gomp.exp: Recurse into subdirectories when looking
 	for test source files.
 	* gcc.dg/gomp/gomp.exp: Likewise.
