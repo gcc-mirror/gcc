@@ -21760,7 +21760,13 @@ if test "${gcc_cv_as_flags+set}" = set; then :
 else
    case "$target" in
   i[34567]86-*-linux*)
-        gcc_cv_as_flags="--32"
+        gcc_cv_as_flags=--32
+    ;;
+  x86_64-*-linux-gnux32)
+        gcc_cv_as_flags=--x32
+    ;;
+  x86_64-*-linux*)
+        gcc_cv_as_flags=--64
     ;;
   powerpc*-*-darwin*)
         gcc_cv_as_flags="-arch ppc"

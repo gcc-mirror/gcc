@@ -1,3 +1,9 @@
+2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* acinclude.m4 (gcc_GAS_FLAGS): Add more gcc_cv_as_flags
+	overrides.
+	* configure: Regenerate.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE__LOOPTEMP_
