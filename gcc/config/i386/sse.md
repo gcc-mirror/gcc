@@ -1061,21 +1061,22 @@
    (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vmmul<mode>3"
+(define_insn "<sse>_vm<multdiv_mnemonic><mode>3"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
-	  (mult:VF_128
+	  (multdiv:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,v")
 	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,vm"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   mul<ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   vmul<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
   [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "ssemul")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "type" "sse<multdiv_mnemonic>")
+   (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_expand "div<mode>3"
@@ -1117,24 +1118,6 @@
    (set_attr "type" "ssediv")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<MODE>")])
-
-(define_insn "<sse>_vmdiv<mode>3"
-  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
-	(vec_merge:VF_128
-	  (div:VF_128
-	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,vm"))
-	  (match_dup 1)
-	  (const_int 1)))]
-  "TARGET_SSE"
-  "@
-   div<ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   vdiv<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
-  [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "ssediv")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "btver2_decode" "direct,double")
-   (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_rcp<mode>2"
   [(set (match_operand:VF1_128_256 0 "register_operand" "=x")

@@ -8,6 +8,22 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.md (multdiv): New.
+	(multdiv_mnemonic): Ditto.
+	* config/i386/sse.md (<sse>_vmmul<mode>3): Changed to...
+	(<sse>_vm<multdiv_mnemonic><mode>3): This.
+	(<sse>_vmdiv<mode>3): Removed.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (V): Extended with wider modes.
 	(VF2): Ditto.
 	(ssehalfvecmode): Ditto.
