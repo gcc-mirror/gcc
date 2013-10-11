@@ -34,7 +34,10 @@ __go_make_slice2 (const struct __go_type_descriptor *td, uintptr_t len,
   std = (const struct __go_slice_type *) td;
 
   ilen = (intgo) len;
-  if (ilen < 0 || (uintptr_t) ilen != len)
+  if (ilen < 0
+      || (uintptr_t) ilen != len
+      || (std->__element_type->__size > 0
+	  && len > MaxMem / std->__element_type->__size))
     runtime_panicstring ("makeslice: len out of range");
 
   icap = (intgo) cap;
