@@ -4484,7 +4484,7 @@ infer_nonnull_range (gimple stmt, tree op)
   if (num_loads + num_stores > 0)
     return true;
 
-  if (gimple_code (stmt) == GIMPLE_CALL)
+  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
     {
       tree fntype = gimple_call_fntype (stmt);
       tree attrs = TYPE_ATTRIBUTES (fntype);

@@ -1,3 +1,8 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.c (infer_nonnull_range): Use is_gimple_call,
+	ignore internal calls.
+
 2013-10-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Allow to dump
