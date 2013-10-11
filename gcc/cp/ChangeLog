@@ -1,3 +1,9 @@
+2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31671
+	* pt.c (convert_nontype_argument): Set expr_type to
+	TREE_TYPE (probe_type).
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (duplicate_decls): Error out for redeclaration of UDRs.

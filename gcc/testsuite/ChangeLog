@@ -1,3 +1,8 @@
+2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31671
+	* g++.dg/template/nontype26.C: New.
+
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/cpp/openmp-define-1.c: New file.

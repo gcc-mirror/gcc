@@ -5611,7 +5611,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		   TREE_TYPE (TREE_TYPE (addr)))))
 	    {
 	      expr = TREE_OPERAND (addr, 0);
-	      expr_type = TREE_TYPE (expr);
+	      expr_type = TREE_TYPE (probe_type);
 	    }
 	}
     }
