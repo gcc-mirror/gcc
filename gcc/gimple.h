@@ -82,7 +82,7 @@ enum gimple_rhs_class
 
 /* Specific flags for individual GIMPLE statements.  These flags are
    always stored in gimple_statement_base.subcode and they may only be
-   defined for statement codes that do not use sub-codes.
+   defined for statement codes that do not use subcodes.
 
    Values for the masks can overlap as long as the overlapping values
    are never used in the same statement class.
