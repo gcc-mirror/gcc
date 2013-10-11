@@ -444,8 +444,16 @@ AC_DEFUN([gcc_GAS_FLAGS],
 [AC_CACHE_CHECK([assembler flags], gcc_cv_as_flags,
 [ case "$target" in
   i[[34567]]86-*-linux*)
-    dnl Always pass --32 to ia32 Linux assembler.
-    gcc_cv_as_flags="--32"
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--32
+    ;;
+  x86_64-*-linux-gnux32)
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--x32
+    ;;
+  x86_64-*-linux*)
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--64
     ;;
   powerpc*-*-darwin*)
     dnl Always pass -arch ppc to assembler.
