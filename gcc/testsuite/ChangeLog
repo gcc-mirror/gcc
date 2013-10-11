@@ -1,3 +1,14 @@
+2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/gomp.exp: Recurse into subdirectories when looking
+	for test source files.
+	* gcc.dg/gomp/gomp.exp: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.1.c: Expect error.
+	* gcc.dg/gomp/appendix-a/a.35.3.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.4.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.5.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.35.6.c: Likewise.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-15.c: Adjust for C diagnostics.
