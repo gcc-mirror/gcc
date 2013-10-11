@@ -10888,11 +10888,20 @@ String_index_expression::do_determine_type(const Type_context*)
 void
 String_index_expression::do_check_types(Gogo*)
 {
-  if (this->start_->type()->integer_type() == NULL)
+  Numeric_constant nc;
+  unsigned long v;
+  if (this->start_->type()->integer_type() == NULL
+      && !this->start_->type()->is_error()
+      && (!this->start_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
-      && !this->end_->is_nil_expression())
+      && !this->end_->type()->is_error()
+      && !this->end_->is_nil_expression()
+      && !this->end_->is_error_expression()
+      && (!this->end_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
 
   std::string sval;
