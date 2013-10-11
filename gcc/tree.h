@@ -1419,9 +1419,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_SET_CODE(NODE, CODE)				\
 	((OMP_CLAUSE_CHECK (NODE))->omp_clause.code = (CODE))
 
-#define OMP_CLAUSE_CODE(NODE)					\
-	(OMP_CLAUSE_CHECK (NODE))->omp_clause.code
-
 #define OMP_CLAUSE_OPERAND(NODE, I)				\
 	OMP_CLAUSE_ELT_CHECK (NODE, I)
 
