@@ -1,3 +1,9 @@
+2013-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Allow to dump
+	both (D) and (ab) for SSA_NAMEs.  Mark INTEGER_CSTs with
+	(OVF) if TREE_OVERFLOW is set.
+
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree.h (OMP_CLAUSE_CODE): Remove duplicate definition.

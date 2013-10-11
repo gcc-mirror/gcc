@@ -1233,6 +1233,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       else
 	pp_double_int (buffer, tree_to_double_int (node),
 		       TYPE_UNSIGNED (TREE_TYPE (node)));
+      if (TREE_OVERFLOW (node))
+	pp_string (buffer, "(OVF)");
       break;
 
     case REAL_CST:
@@ -2220,10 +2222,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 			   spc, flags, false);
       pp_underscore (buffer);
       pp_decimal_int (buffer, SSA_NAME_VERSION (node));
+      if (SSA_NAME_IS_DEFAULT_DEF (node))
+	pp_string (buffer, "(D)");
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (node))
 	pp_string (buffer, "(ab)");
-      else if (SSA_NAME_IS_DEFAULT_DEF (node))
-	pp_string (buffer, "(D)");
       break;
 
     case WITH_SIZE_EXPR:
