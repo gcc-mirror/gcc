@@ -122,6 +122,9 @@
 (define_mode_iterator V_256
   [V32QI V16HI V8SI V4DI V8SF V4DF])
 
+;; All 512bit vector modes
+(define_mode_iterator V_512 [V64QI V32HI V16SI V8DI V16SF V8DF])
+
 ;; All 256bit and 512bit vector modes
 (define_mode_iterator V_256_512
   [V32QI V16HI V8SI V4DI V8SF V4DF
@@ -337,7 +340,10 @@
 ;; All 256bit vector integer modes
 (define_mode_iterator VI_256 [V32QI V16HI V8SI V4DI])
 
-;; Random 128bit vector integer mode combinations
+;; All 512bit vector integer modes
+(define_mode_iterator VI_512 [V64QI V32HI V16SI V8DI])
+
+;; Various 128bit vector integer mode combinations
 (define_mode_iterator VI12_128 [V16QI V8HI])
 (define_mode_iterator VI14_128 [V16QI V4SI])
 (define_mode_iterator VI124_128 [V16QI V8HI V4SI])
@@ -1852,6 +1858,23 @@
 		      (const_string "1")
 		      (const_string "0")))
    (set_attr "mode" "<MODE>")])
+
+(define_expand "vcond<V_512:mode><VF_512:mode>"
+  [(set (match_operand:V_512 0 "register_operand")
+	(if_then_else:V_512
+	  (match_operator 3 ""
+	    [(match_operand:VF_512 4 "nonimmediate_operand")
+	     (match_operand:VF_512 5 "nonimmediate_operand")])
+	  (match_operand:V_512 1 "general_operand")
+	  (match_operand:V_512 2 "general_operand")))]
+  "TARGET_AVX512F
+   && (GET_MODE_NUNITS (<V_512:MODE>mode)
+       == GET_MODE_NUNITS (<VF_512:MODE>mode))"
+{
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
 
 (define_expand "vcond<V_256:mode><VF_256:mode>"
   [(set (match_operand:V_256 0 "register_operand")
@@ -6461,6 +6484,23 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_expand "vcond<V_512:mode><VI_512:mode>"
+  [(set (match_operand:V_512 0 "register_operand")
+	(if_then_else:V_512
+	  (match_operator 3 ""
+	    [(match_operand:VI_512 4 "nonimmediate_operand")
+	     (match_operand:VI_512 5 "general_operand")])
+	  (match_operand:V_512 1)
+	  (match_operand:V_512 2)))]
+  "TARGET_AVX512F
+   && (GET_MODE_NUNITS (<V_512:MODE>mode)
+       == GET_MODE_NUNITS (<VI_512:MODE>mode))"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "vcond<V_256:mode><VI_256:mode>"
   [(set (match_operand:V_256 0 "register_operand")
 	(if_then_else:V_256
@@ -6504,6 +6544,23 @@
 	  (match_operand:VI8F_128 1)
 	  (match_operand:VI8F_128 2)))]
   "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondu<V_512:mode><VI_512:mode>"
+  [(set (match_operand:V_512 0 "register_operand")
+	(if_then_else:V_512
+	  (match_operator 3 ""
+	    [(match_operand:VI_512 4 "nonimmediate_operand")
+	     (match_operand:VI_512 5 "nonimmediate_operand")])
+	  (match_operand:V_512 1 "general_operand")
+	  (match_operand:V_512 2 "general_operand")))]
+  "TARGET_AVX512F
+   && (GET_MODE_NUNITS (<V_512:MODE>mode)
+       == GET_MODE_NUNITS (<VI_512:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
