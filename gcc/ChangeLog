@@ -1,3 +1,26 @@
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (<sse2>_movnt<mode>): Update constraint to "v".
+	(<sse>_comi): Ditto.
+	(<sse>_ucomi): Ditto.
+	(sse_cvtss2siq_2): Ditto.
+	(sse2_cvtsd2si): Ditto.
+	(sse2_cvtsd2siq): Ditto.
+	(sse2_cvttsd2si): Ditto.
+	(sse2_cvttsd2siq): Ditto.
+	(<shift_insn><mode>3): Ditto.
+	(sse2_cvtsi2sdq): Update constraint and prefix.
+	(sse_cvtsi2ss): Update prefix.
+	(sse_cvtsi2ssq): Ditto.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vrp.c (infer_nonnull_range): Use is_gimple_call,
