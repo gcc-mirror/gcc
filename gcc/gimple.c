@@ -157,7 +157,7 @@ gimple_set_subcode (gimple g, unsigned subcode)
 
 
 /* Build a tuple with operands.  CODE is the statement to build (which
-   must be one of the GIMPLE_WITH_OPS tuples).  SUBCODE is the sub-code
+   must be one of the GIMPLE_WITH_OPS tuples).  SUBCODE is the subcode
    for the new tuple.  NUM_OPS is the number of operands to allocate.  */
 
 #define gimple_build_with_ops(c, s, n) \
@@ -429,7 +429,7 @@ gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
 }
 
 
-/* Build a GIMPLE_ASSIGN statement with sub-code SUBCODE and operands
+/* Build a GIMPLE_ASSIGN statement with subcode SUBCODE and operands
    OP1 and OP2.  If OP2 is NULL then SUBCODE must be of class
    GIMPLE_UNARY_RHS or GIMPLE_SINGLE_RHS.  */
 

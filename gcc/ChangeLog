@@ -1,5 +1,8 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gimple.c: GIMPLE statements have subcodes, not sub-codes.
+	* gimple.h: Likewise.
+
 	* doc/generic.texi (OpenMP): OMP_CLAUSE_* are subcodes, not
 	sub-codes.
 
