@@ -1,5 +1,10 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.c/lib-1.c (main): Add missing error check.
+	* testsuite/libgomp.fortran/lib1.f90: Likewise.
+	* testsuite/libgomp.fortran/lib2.f: Likewise.
+	* testsuite/libgomp.fortran/lib3.f: Likewise.
+
 	* configure.ac: Typo fix.
 	* configure: Regenerate.
 
