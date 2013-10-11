@@ -1,5 +1,11 @@
 2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58633
+	* parser.c (cp_parser_commit_to_topmost_tentative_parse): New.
+	(cp_parser_pseudo_destructor_name): Use it.
+
+2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/31671
 	* pt.c (convert_nontype_argument): Set expr_type to
 	TREE_TYPE (probe_type).
