@@ -207,6 +207,9 @@
 (define_mode_iterator VI2_AVX512F
   [(V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI])
 
+(define_mode_iterator VI4_AVX
+  [(V8SI "TARGET_AVX") V4SI])
+
 (define_mode_iterator VI4_AVX2
   [(V8SI "TARGET_AVX2") V4SI])
 
@@ -2827,20 +2830,16 @@
   DONE;
 })
 
-(define_insn "avx_cvtps2dq256"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
-	(unspec:V8SI [(match_operand:V8SF 1 "nonimmediate_operand" "xm")]
-		     UNSPEC_FIX_NOTRUNC))]
-  "TARGET_AVX"
-  "vcvtps2dq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
 
-(define_insn "sse2_cvtps2dq"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(unspec:V4SI [(match_operand:V4SF 1 "nonimmediate_operand" "xm")]
-		     UNSPEC_FIX_NOTRUNC))]
+;; For <sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode> insn pattern
+(define_mode_attr sf2simodelower
+  [(V16SI "v16sf") (V8SI "v8sf") (V4SI "v4sf")])
+
+(define_insn "<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode>"
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
+	(unspec:VI4_AVX
+	  [(match_operand:<ssePSmode> 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
   "%vcvtps2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
@@ -2850,7 +2849,7 @@
      (const_string "*")
      (const_string "1")))
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<fixsuffix>fix_truncv16sfv16si2"
   [(set (match_operand:V16SI 0 "register_operand" "=v")
