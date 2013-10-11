@@ -1,3 +1,9 @@
+2013-10-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/58640
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Truncate jump threading
+	paths that cross over two loop entry points.
+
 2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (*vsx_le_perm_load_v2di): Generalize to
