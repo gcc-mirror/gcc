@@ -8,6 +8,41 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.md (any_fix): New iterator.
+	(fixsuffix): New attribute.
+	* config/i386/sse.md (VF1): Extened with wider modes.
+	(VI): Ditto.
+	(VI_AVX2): Ditto.
+	(VI8): Ditto.
+	(sseintvecmodelower): Ditto.
+	(ssescalarmode): Ditto.
+	(ssescalarnum): Ditto.
+	(VF1_128_256): New.
+	(ssexmmmode): Ditto.
+	(<fixsuffix>fix_truncv16sfv16si2): Ditto.
+	(<sse>_rcp<mode>2): Change iterator.
+	(rsqrt<mode>2): Ditto.
+	(<sse>_rsqrt<mode>2): Ditto.
+	(avx2_vec_dup<mode>): Ditto.
+	(<sse4_1>_round<ssemodesuffix>_sfix<avxsizesuffix>): Ditto.
+	(round<mode>2_sfix): Ditto.
+	(avx2_pbroadcast<mode>): Ditto.
+	(*andnot<mode>3): Handle XI mode.
+	(*<code><mode>3): Ditto.
+	(AVXTOSSEMODE): Removed.
+	(avx_vpermil<mode>): Changed to ...
+	(<sse2_avx_avx512f>_vpermil<mode>): This.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (<sse2>_movnt<mode>): Update constraint to "v".
 	(<sse>_comi): Ditto.
 	(<sse>_ucomi): Ditto.
