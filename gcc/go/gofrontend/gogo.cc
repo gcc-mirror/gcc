@@ -3320,7 +3320,8 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), descriptor_(NULL), fndecl_(NULL), defer_stack_(NULL),
     is_sink_(false), results_are_named_(false), nointerface_(false),
-    calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
+    is_unnamed_type_stub_method_(false), calls_recover_(false),
+    is_recover_thunk_(false), has_recover_thunk_(false),
     in_unique_section_(false)
 {
 }
@@ -3844,7 +3845,8 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       else if (!Gogo::is_hidden_name(no->name())
                || this->type_->is_method())
         {
-          is_visible = true;
+	  if (!this->is_unnamed_type_stub_method_)
+	    is_visible = true;
           std::string pkgpath = gogo->pkgpath_symbol();
           if (this->type_->is_method()
               && Gogo::is_hidden_name(no->name())

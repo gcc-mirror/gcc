@@ -2154,10 +2154,11 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
   TREE_CONSTANT(decl) = 1;
   DECL_INITIAL(decl) = constructor;
 
-  // If the interface type has hidden methods, then this is the only
-  // definition of the table.  Otherwise it is a comdat table which
-  // may be defined in multiple packages.
-  if (has_hidden_methods)
+  // If the interface type has hidden methods, and the table is for a
+  // named type, then this is the only definition of the table.
+  // Otherwise it is a comdat table which may be defined in multiple
+  // packages.
+  if (has_hidden_methods && type->named_type() != NULL)
     TREE_PUBLIC(decl) = 1;
   else
     {

@@ -953,6 +953,15 @@ class Function
     this->nointerface_ = true;
   }
 
+  // Record that this function is a stub method created for an unnamed
+  // type.
+  void
+  set_is_unnamed_type_stub_method()
+  {
+    go_assert(this->is_method());
+    this->is_unnamed_type_stub_method_ = true;
+  }
+
   // Add a new field to the closure variable.
   void
   add_closure_field(Named_object* var, Location loc)
@@ -1178,6 +1187,9 @@ class Function
   bool results_are_named_ : 1;
   // True if this method should not be included in the type descriptor.
   bool nointerface_ : 1;
+  // True if this function is a stub method created for an unnamed
+  // type.
+  bool is_unnamed_type_stub_method_ : 1;
   // True if this function calls the predeclared recover function.
   bool calls_recover_ : 1;
   // True if this a thunk built for a function which calls recover.
