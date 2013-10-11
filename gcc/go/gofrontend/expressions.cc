@@ -7253,6 +7253,15 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
   if (this->code_ == BUILTIN_OFFSETOF)
     {
       Expression* arg = this->one_arg();
+
+      if (arg->bound_method_expression() != NULL
+	  || arg->interface_field_reference_expression() != NULL)
+	{
+	  this->report_error(_("invalid use of method value as argument "
+			       "of Offsetof"));
+	  return this;
+	}
+
       Field_reference_expression* farg = arg->field_reference_expression();
       while (farg != NULL)
 	{
@@ -7262,7 +7271,8 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  // it must not be reached through pointer indirections.
 	  if (farg->expr()->deref() != farg->expr())
 	    {
-	      this->report_error(_("argument of Offsetof implies indirection of an embedded field"));
+	      this->report_error(_("argument of Offsetof implies "
+				   "indirection of an embedded field"));
 	      return this;
 	    }
 	  // Go up until we reach the original base.
@@ -7672,6 +7682,8 @@ Find_call_expression::expression(Expression** pexpr)
 bool
 Builtin_call_expression::do_is_constant() const
 {
+  if (this->is_error_expression())
+    return true;
   switch (this->code_)
     {
     case BUILTIN_LEN:
