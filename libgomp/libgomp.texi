@@ -1083,12 +1083,9 @@ guaranteed not to change during the execution of the program.
 @node Environment Variables
 @chapter Environment Variables
 
-The variables @env{OMP_DYNAMIC}, @env{OMP_MAX_ACTIVE_LEVELS},
-@env{OMP_NESTED}, @env{OMP_NUM_THREADS}, @env{OMP_SCHEDULE},
-@env{OMP_STACKSIZE},@env{OMP_THREAD_LIMIT} and @env{OMP_WAIT_POLICY}
-are defined by section 4 of the OpenMP specifications in version 3.1,
-while @env{GOMP_CPU_AFFINITY} and @env{GOMP_STACKSIZE} are GNU 
-extensions.
+The environment variables which beginning with @env{OMP_} are defined by
+section 4 of the OpenMP specification in version 4.0, while those
+beginning with @env{GOMP_} are GNU extensions.
 
 @menu
 * OMP_DYNAMIC::           Dynamic adjustment of threads
@@ -1099,9 +1096,11 @@ extensions.
 * OMP_SCHEDULE::          How threads are scheduled
 * OMP_THREAD_LIMIT::      Set the maximum number of threads
 * OMP_WAIT_POLICY::       How waiting threads are handled
+* OMP_DISPLAY_ENV::       Show OpenMP version and environment variables
 * OMP_PROC_BIND::         Whether theads may be moved between CPUs
 * GOMP_CPU_AFFINITY::     Bind threads to specific CPUs
 * GOMP_STACKSIZE::        Set default thread stack size
+* GOMP_SPINCOUNT::        Set the busy-wait spin count
 @end menu
 
 
@@ -1119,7 +1118,7 @@ disabled by default.
 @ref{omp_set_dynamic}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 4.3
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.3
 @end table
 
 
@@ -1137,7 +1136,7 @@ If undefined, the number of active levels is unlimited.
 @ref{omp_set_max_active_levels}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 4.8
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.9
 @end table
 
 
@@ -1157,7 +1156,7 @@ regions are disabled by default.
 @ref{omp_set_nested}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 4.5
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.6
 @end table
 
 
@@ -1177,7 +1176,7 @@ level. If undefined one thread per CPU is used.
 @ref{omp_set_num_threads}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 4.2
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.2
 @end table
 
 
@@ -1198,7 +1197,7 @@ dynamic scheduling and a chunk size of 1 is used.
 @ref{omp_set_schedule}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, sections 2.5.1 and 4.1
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, sections 2.7.1 and 4.1
 @end table
 
 
@@ -1218,7 +1217,7 @@ stack size is left unchanged. If undefined, the stack size is system
 dependent.
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, sections 4.6
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.7
 @end table
 
 
@@ -1237,7 +1236,7 @@ the number of threads is not limited.
 @ref{omp_get_thread_limit}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 4.9
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.10
 @end table
 
 
@@ -1250,10 +1249,14 @@ the number of threads is not limited.
 Specifies whether waiting threads should be active or passive. If
 the value is @code{PASSIVE}, waiting threads should not consume CPU
 power while waiting; while the value is @code{ACTIVE} specifies that
-they should.
+they should. If undefined, threads wait actively for a short time
+before waiting passively.
+
+@item @emph{See also}:
+@ref{GOMP_SPINCOUNT}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, sections 4.7
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.8
 @end table
 
 
@@ -1264,14 +1267,32 @@ they should.
 @table @asis
 @item @emph{Description}:
 Specifies whether threads may be moved between processors. If set to
-@code{true}, OpenMP theads should not be moved, if set to @code{false}
-they may be moved.
+@code{TRUE}, OpenMP theads should not be moved, if set to @code{FALSE}
+they may be moved. If undefined, threads may move between processors.
 
 @item @emph{See also}:
 @ref{GOMP_CPU_AFFINITY}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, sections 4.4
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.4
+@end table
+
+
+
+@node OMP_DISPLAY_ENV
+@section @env{OMP_DISPLAY_ENV} -- Show OpenMP version and environment variables
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+If set to @code{TRUE}, the OpenMP version number and the values
+associated with the OpenMP environment variables are printed to @code{stderr}.
+If set to @code{VERBOSE}, it additionally shows the value of the environment
+variables which are GNU extensions. If undefined or set to @code{FALSE},
+this information will not be shown.
+
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.12
 @end table
 
 
@@ -1298,7 +1319,7 @@ Fortran, may be used to query the setting of the @code{GOMP_CPU_AFFINITY}
 environment variable. A defined CPU affinity on startup cannot be changed 
 or disabled during the runtime of the application.
 
-If this environment variable is omitted, the host system will handle the 
+If this environment variable is omitted, the host system will handle the
 assignment of threads to CPUs. 
 
 @item @emph{See also}:
@@ -1327,6 +1348,33 @@ the stack size is system dependent.
 GCC Patches Mailinglist}, 
 @uref{http://gcc.gnu.org/ml/gcc-patches/2006-06/msg00496.html,
 GCC Patches Mailinglist}
+@end table
+
+
+
+@node GOMP_SPINCOUNT
+@section @env{GOMP_SPINCOUNT} -- Set the busy-wait spin count
+@cindex Environment Variable
+@cindex Implementation specific setting
+@table @asis
+@item @emph{Description}:
+Determines how long a threads waits actively with consuming CPU power
+before waiting passively without consuming CPU power. The value may be
+either @code{INFINITE}, @code{INFINITY} to always wait actively or an
+integer which gives the number of spins of the busy-wait loop. The
+integer may optionally be followed by the following suffixes acting
+as multiplication factors: @code{k} (kilo, thousand), @code{M} (mega,
+million), @code{G} (giga, billion), or @code{T} (tera, trillion).
+If undefined, 0 is used when @env{OMP_WAIT_POLICY} is @code{PASSIVE},
+300,000 is used when @env{OMP_WAIT_POLICY} is undefined and
+30 billion is used when @env{OMP_WAIT_POLICY} is @code{ACTIVE}.
+If there are more OpenMP threads than available CPUs, 1000 and 100
+spins are used for @env{OMP_WAIT_POLICY} being @code{ACTIVE} or
+undefined, respectively; unless the @env{GOMP_SPINCOUNT} is lower
+or @env{OMP_WAIT_POLICY} is @code{PASSIVE}.
+
+@item @emph{See also}:
+@ref{OMP_WAIT_POLICY}
 @end table
 
 

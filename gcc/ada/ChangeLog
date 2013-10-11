@@ -1,3 +1,7 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_8): Define.
+
 2013-10-10  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch6.adb (Check_Junk_Semicolon_Before_Return): Remove

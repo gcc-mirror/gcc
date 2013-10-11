@@ -101,7 +101,6 @@ static GTY(()) vec<tree, va_gc> *no_linkage_decls;
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
-
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -1135,6 +1134,11 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("unused", name))
     return false;
 
+  /* #pragma omp declare simd attribute needs to be always deferred.  */
+  if (flag_openmp
+      && is_attribute_p ("omp declare simd", name))
+    return true;
+
   /* If any of the arguments are dependent expressions, we can't evaluate
      the attribute until instantiation time.  */
   for (arg = args; arg; arg = TREE_CHAIN (arg))
@@ -1336,6 +1340,34 @@ cp_check_const_attributes (tree attributes)
     }
 }
 
+/* Return true if TYPE is an OpenMP mappable type.  */
+bool
+cp_omp_mappable_type (tree type)
+{
+  /* Mappable type has to be complete.  */
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    return false;
+  /* Arrays have mappable type if the elements have mappable type.  */
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+  /* A mappable type cannot contain virtual members.  */
+  if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
+    return false;
+  /* All data members must be non-static.  */
+  if (CLASS_TYPE_P (type))
+    {
+      tree field;
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == VAR_DECL)
+	  return false;
+	/* All fields must have mappable types.  */
+	else if (TREE_CODE (field) == FIELD_DECL
+		 && !cp_omp_mappable_type (TREE_TYPE (field)))
+	  return false;
+    }
+  return true;
+}
+
 /* Like decl_attributes, but handle C++ complexity.  */
 
 void
@@ -1344,6 +1376,30 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
   if (*decl == NULL_TREE || *decl == void_type_node
       || *decl == error_mark_node)
     return;
+
+  /* Add implicit "omp declare target" attribute if requested.  */
+  if (scope_chain->omp_declare_target_attribute
+      && ((TREE_CODE (*decl) == VAR_DECL && TREE_STATIC (*decl))
+	  || TREE_CODE (*decl) == FUNCTION_DECL))
+    {
+      if (TREE_CODE (*decl) == VAR_DECL
+	  && DECL_CLASS_SCOPE_P (*decl))
+	error ("%q+D static data member inside of declare target directive",
+	       *decl);
+      else if (TREE_CODE (*decl) == VAR_DECL
+	       && (DECL_FUNCTION_SCOPE_P (*decl)
+		   || (current_function_decl && !DECL_EXTERNAL (*decl))))
+	error ("%q+D in block scope inside of declare target directive",
+	       *decl);
+      else if (!processing_template_decl
+	       && TREE_CODE (*decl) == VAR_DECL
+	       && !cp_omp_mappable_type (TREE_TYPE (*decl)))
+	error ("%q+D in declare target directive does not have mappable type",
+	       *decl);
+      else
+	attributes = tree_cons (get_identifier ("omp declare target"),
+				NULL_TREE, attributes);
+    }
 
   if (processing_template_decl)
     {
@@ -4623,13 +4679,16 @@ mark_used (tree decl, tsubst_flags_t complain)
      or a constexpr function, we need it right now because a reference to
      such a data member or a call to such function is not value-dependent.
      For a function that uses auto in the return type, we need to instantiate
-     it to find out its type.  */
-  if ((decl_maybe_constant_var_p (decl)
-       || (TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_DECLARED_CONSTEXPR_P (decl))
-       || undeduced_auto_decl (decl))
-      && DECL_LANG_SPECIFIC (decl)
+     it to find out its type.  For OpenMP user defined reductions, we need
+     them instantiated for reduction clauses which inline them by hand
+     directly.  */
+  if (DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
+      && (decl_maybe_constant_var_p (decl)
+	  || (TREE_CODE (decl) == FUNCTION_DECL
+	      && (DECL_DECLARED_CONSTEXPR_P (decl)
+		  || DECL_OMP_DECLARE_REDUCTION_P (decl)))
+	  || undeduced_auto_decl (decl))
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
       /* Instantiating a function will result in garbage collection.  We

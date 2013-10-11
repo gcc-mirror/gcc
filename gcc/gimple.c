@@ -1007,6 +1007,22 @@ gimple_build_omp_master (gimple_seq body)
 }
 
 
+/* Build a GIMPLE_OMP_TASKGROUP statement.
+
+   BODY is the sequence of statements to be executed by the taskgroup
+   construct.  */
+
+gimple
+gimple_build_omp_taskgroup (gimple_seq body)
+{
+  gimple p = gimple_alloc (GIMPLE_OMP_TASKGROUP, 0);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_CONTINUE statement.
 
    CONTROL_DEF is the definition of the control variable.
@@ -1091,6 +1107,41 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
   if (body)
     gimple_omp_set_body (p, body);
   gimple_omp_single_set_clauses (p, clauses);
+
+  return p;
+}
+
+
+/* Build a GIMPLE_OMP_TARGET statement.
+
+   BODY is the sequence of statements that will be executed.
+   CLAUSES are any of the OMP target construct's clauses.  */
+
+gimple
+gimple_build_omp_target (gimple_seq body, int kind, tree clauses)
+{
+  gimple p = gimple_alloc (GIMPLE_OMP_TARGET, 0);
+  if (body)
+    gimple_omp_set_body (p, body);
+  gimple_omp_target_set_clauses (p, clauses);
+  gimple_omp_target_set_kind (p, kind);
+
+  return p;
+}
+
+
+/* Build a GIMPLE_OMP_TEAMS statement.
+
+   BODY is the sequence of statements that will be executed.
+   CLAUSES are any of the OMP teams construct's clauses.  */
+
+gimple
+gimple_build_omp_teams (gimple_seq body, tree clauses)
+{
+  gimple p = gimple_alloc (GIMPLE_OMP_TEAMS, 0);
+  if (body)
+    gimple_omp_set_body (p, body);
+  gimple_omp_teams_set_clauses (p, clauses);
 
   return p;
 }
@@ -1612,6 +1663,20 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 	return ret;
       break;
 
+    case GIMPLE_OMP_TARGET:
+      ret = walk_tree (gimple_omp_target_clauses_ptr (stmt), callback_op, wi,
+		       pset);
+      if (ret)
+	return ret;
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      ret = walk_tree (gimple_omp_teams_clauses_ptr (stmt), callback_op, wi,
+		       pset);
+      if (ret)
+	return ret;
+      break;
+
     case GIMPLE_OMP_ATOMIC_LOAD:
       ret = walk_tree (gimple_omp_atomic_load_lhs_ptr (stmt), callback_op, wi,
 		       pset);
@@ -1638,10 +1703,16 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 	return ret;
       break;
 
+    case GIMPLE_OMP_RETURN:
+      ret = walk_tree (gimple_omp_return_lhs_ptr (stmt), callback_op, wi,
+		       pset);
+      if (ret)
+	return ret;
+      break;
+
       /* Tuples that do not have operands.  */
     case GIMPLE_NOP:
     case GIMPLE_RESX:
-    case GIMPLE_OMP_RETURN:
     case GIMPLE_PREDICT:
       break;
 
@@ -1782,12 +1853,15 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
       /* FALL THROUGH.  */
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
       ret = walk_gimple_seq_mod (gimple_omp_body_ptr (stmt), callback_stmt,
 			     callback_op, wi);
       if (ret)
@@ -2277,8 +2351,11 @@ gimple_copy (gimple stmt)
 	  /* FALLTHRU  */
 
 	case GIMPLE_OMP_SINGLE:
+	case GIMPLE_OMP_TARGET:
+	case GIMPLE_OMP_TEAMS:
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
+	case GIMPLE_OMP_TASKGROUP:
 	case GIMPLE_OMP_ORDERED:
 	copy_omp_body:
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));

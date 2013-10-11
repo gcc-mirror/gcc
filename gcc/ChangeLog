@@ -1,3 +1,245 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE__LOOPTEMP_
+	and new OpenMP 4.0 clauses, handle UDR OMP_CLAUSE_REDUCTION,
+	formatting fixes, use pp_colon instead of pp_character (..., ':'),
+	similarly pp_right_paren.
+	(dump_generic_node): Handle OMP_DISTRIBUTE, OMP_TEAMS,
+	OMP_TARGET_DATA, OMP_TARGET, OMP_TARGET_UPDATE, OMP_TASKGROUP,
+	allow OMP_FOR_INIT to be NULL, handle OMP_ATOMIC_SEQ_CST.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add OpenMP 4.0
+	clauses.
+	(omp_declare_simd_clauses_equal,
+	omp_remove_redundant_declare_simd_attrs): New functions.
+	(attribute_value_equal): Use omp_declare_simd_clauses_equal.
+	(walk_tree_1): Handle new OpenMP 4.0 clauses.
+	* tree.h (OMP_LOOP_CHECK): Define.
+	(OMP_FOR_BODY, OMP_FOR_CLAUSES, OMP_FOR_INIT, OMP_FOR_COND,
+	OMP_FOR_INCR, OMP_FOR_PRE_BODY): Use it.
+	(OMP_TASKGROUP_BODY, OMP_TEAMS_BODY, OMP_TEAMS_CLAUSES,
+	OMP_TARGET_DATA_BODY, OMP_TARGET_DATA_CLAUSES, OMP_TARGET_BODY,
+	OMP_TARGET_CLAUSES, OMP_TARGET_UPDATE_CLAUSES, OMP_CLAUSE_SIZE,
+	OMP_ATOMIC_SEQ_CST, OMP_CLAUSE_DEPEND_KIND, OMP_CLAUSE_MAP_KIND,
+	OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION, OMP_CLAUSE_PROC_BIND_KIND,
+	OMP_CLAUSE_REDUCTION_OMP_ORIG_REF, OMP_CLAUSE_ALIGNED_ALIGNMENT,
+	OMP_CLAUSE_NUM_TEAMS_EXPR, OMP_CLAUSE_THREAD_LIMIT_EXPR,
+	OMP_CLAUSE_DEVICE_ID, OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR,
+	OMP_CLAUSE_SIMDLEN_EXPR): Define.
+	(OMP_CLAUSE_DECL): Change range up to OMP_CLAUSE__LOOPTEMP_.
+	(omp_remove_redundant_declare_simd_attrs): New prototype.
+	* gimple.def (GIMPLE_OMP_TASKGROUP, GIMPLE_OMP_TARGET,
+	GIMPLE_OMP_TEAMS): New codes.
+	(GIMPLE_OMP_RETURN): Use GSS_OMP_ATOMIC_STORE instead of GSS_BASE.
+	* omp-low.c (struct omp_context): Add cancel_label and cancellable
+	fields.
+	(target_nesting_level): New variable.
+	(extract_omp_for_data): Handle GF_OMP_FOR_KIND_DISTRIBUTE and
+	OMP_CLAUSE_DIST_SCHEDULE.  Don't fallback to library implementation
+	for collapse > 1 static schedule unless ordered.
+	(get_ws_args_for): Add par_stmt argument.  Handle combined loops.
+	(determine_parallel_type): Adjust get_ws_args_for caller.
+	(install_var_field): Handle mask & 4 for double indirection.
+	(scan_sharing_clauses): Ignore shared clause on teams construct.
+	Handle OMP_CLAUSE__LOOPTEMP_ and new OpenMP 4.0 clauses.
+	(create_omp_child_function): If inside target or declare target
+	constructs, set "omp declare target" attribute on the child
+	function.
+	(find_combined_for): New function.
+	(scan_omp_parallel): Handle combined loops.
+	(scan_omp_target, scan_omp_teams): New functions.
+	(check_omp_nesting_restrictions): Check new OpenMP 4.0 nesting
+	restrictions and set ctx->cancellable for cancellable constructs.
+	(scan_omp_1_stmt): Call check_omp_nesting_restrictions also on
+	selected builtin calls.  Handle GIMPLE_OMP_TASKGROUP,
+	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS.
+	(build_omp_barrier): Add lhs argument, return gimple rather than
+	tree.
+	(omp_clause_aligned_alignment): New function.
+	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR
+	on decls.
+	(lower_rec_input_clauses): Add FD argument.  Ignore shared clauses
+	on teams constructs.  Handle user defined reductions and new
+	OpenMP 4.0 clauses.
+	(lower_reduction_clauses): Don't set placeholder to address of ref
+	if it has already the right type.
+	(lower_send_clauses): Handle OMP_CLAUSE__LOOPTEMP_.
+	(expand_parallel_call): Use the new non-_start suffixed builtins,
+	handle OMP_CLAUSE_PROC_BIND, don't call the outlined function
+	and GOMP_parallel_end after the call.
+	(expand_task_call): Handle OMP_CLAUSE_DEPEND.
+	(expand_omp_for_init_counts): Handle combined loops.
+	(expand_omp_for_init_vars): Add inner_stmt argument, handle combined
+	loops.
+	(expand_omp_for_generic): Likewise.  Use GOMP_loop_end_cancel at the
+	end of cancellable loops.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk):
+	Likewise.  Handle collapse > 1 loops.
+	(expand_omp_simd): Handle combined loops.
+	(expand_omp_for): Add inner_stmt argument, adjust callers of
+	expand_omp_for* functions, use expand_omp_for_static*chunk even
+	for collapse > 1 unless ordered.
+	(expand_omp_sections): Use GOMP_sections_end_cancel at the end
+	of cancellable sections.
+	(expand_omp_single): Remove need_barrier variable, just rely on
+	gimple_omp_return_nowait_p.  Adjust build_omp_barrier caller.
+	(expand_omp_synch): Allow GIMPLE_OMP_TASKGROUP and GIMPLE_OMP_TEAMS.
+	(expand_omp_atomic_load, expand_omp_atomic_store,
+	expand_omp_atomic_fetch_op): Handle gimple_omp_atomic_seq_cst_p.
+	(expand_omp_target): New function.
+	(expand_omp): Handle combined loops.  Handle GIMPLE_OMP_TASKGROUP,
+	GIMPLE_OMP_TEAMS, GIMPLE_OMP_TARGET.
+	(build_omp_regions_1): Immediately close region for
+	GF_OMP_TARGET_KIND_UPDATE.
+	(maybe_add_implicit_barrier_cancel): New function.
+	(lower_omp_sections): Adjust lower_rec_input_clauses caller.  Handle
+	cancellation.
+	(lower_omp_single): Likewise.  Add clobber after the barrier.
+	(lower_omp_taskgroup): New function.
+	(lower_omp_for): Handle combined loops.  Adjust
+	lower_rec_input_clauses caller.  Handle cancellation.
+	(lower_depend_clauses): New function.
+	(lower_omp_taskreg): Lower depend clauses.  Adjust
+	lower_rec_input_clauses caller.  Add clobber after the call.  Handle
+	cancellation.
+	(lower_omp_target, lower_omp_teams): New functions.
+	(lower_omp_1): Handle cancellation.  Handle GIMPLE_OMP_TASKGROUP,
+	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS and GOMP_barrier, GOMP_cancel
+	and GOMP_cancellation_point calls.
+	(lower_omp): Fold stmts inside of target region.
+	(diagnose_sb_1, diagnose_sb_2): Handle GIMPLE_OMP_TASKGROUP,
+	GIMPLE_OMP_TARGET and GIMPLE_OMP_TEAMS.
+	* builtin-types.def (DEF_FUNCTION_TYPE_8): Document.
+	(BT_FN_VOID_OMPFN_PTR_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT): Remove.
+	(BT_FN_VOID_OMPFN_PTR_UINT_UINT_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG_UINT,
+	BT_FN_BOOL_INT, BT_FN_BOOL_INT_BOOL, BT_FN_VOID_UINT_UINT,
+	BT_FN_VOID_INT_PTR_SIZE_PTR_PTR_PTR,
+	BT_FN_VOID_INT_OMPFN_PTR_SIZE_PTR_PTR_PTR,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR): New.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Handle BUILT_IN_GOMP_BARRIER_CANCEL,
+	BUILT_IN_GOMP_TASKGROUP_END, BUILT_IN_GOMP_LOOP_END_CANCEL,
+	BUILT_IN_GOMP_SECTIONS_END_CANCEL.  Don't handle
+	BUILT_IN_GOMP_PARALLEL_END.
+	* gimple-low.c (lower_stmt): Handle GIMPLE_OMP_TASKGROUP,
+	GIMPLE_OMP_TARGET and GIMPLE_OMP_TEAMS.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle
+	GF_OMP_FOR_KIND_DISTRIBUTE.
+	(dump_gimple_omp_target, dump_gimple_omp_teams): New functions.
+	(dump_gimple_omp_block): Handle GIMPLE_OMP_TASKGROUP.
+	(dump_gimple_omp_return): Print lhs if it has any.
+	(dump_gimple_omp_atomic_load, dump_gimple_omp_atomic_store): Handle
+	gimple_omp_atomic_seq_cst_p.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_TASKGROUP, GIMPLE_OMP_TARGET
+	and GIMPLE_OMP_TEAMS.
+	* langhooks.c (lhd_omp_mappable_type): New function.
+	* tree-vectorizer.c (struct simd_array_to_simduid): Fix up comment.
+	* langhooks.h (struct lang_hooks_for_types): Add omp_mappable_type
+	hook.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP,
+	GOVD_ALIGNED and GOVD_MAP_TO_ONLY.
+	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET_DATA and
+	ORT_TARGET.
+	(struct gimplify_omp_ctx): Add combined_loop field.
+	(gimplify_call_expr, gimplify_modify_expr): Don't call fold_stmt
+	on stmts inside of target region.
+	(is_gimple_stmt): Return true for OMP_DISTRIBUTE and OMP_TASKGROUP.
+	(omp_firstprivatize_variable): Handle GOVD_MAP, GOVD_ALIGNED,
+	ORT_TARGET and ORT_TARGET_DATA.
+	(omp_add_variable): Avoid checks on readding var for GOVD_ALIGNED.
+	Handle GOVD_MAP.
+	(omp_notice_threadprivate_variable): Complain about threadprivate
+	variables in target region.
+	(omp_notice_variable): Complain about vars with non-mappable type
+	in target region.  Handle ORT_TEAMS, ORT_TARGET and ORT_TARGET_DATA.
+	(omp_check_private): Ignore ORT_TARGET* regions.
+	(gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses_1,
+	gimplify_adjust_omp_clauses): Handle new OpenMP 4.0 clauses.
+	(find_combined_omp_for): New function.
+	(gimplify_omp_for): Handle gimplification of combined loops.
+	(gimplify_omp_workshare): Gimplify also OMP_TARGET, OMP_TARGET_DATA,
+	OMP_TEAMS.
+	(gimplify_omp_target_update): New function.
+	(gimplify_omp_atomic): Handle OMP_ATOMIC_SEQ_CST.
+	(gimplify_expr): Handle OMP_DISTRIBUTE, OMP_TARGET, OMP_TARGET_DATA,
+	OMP_TARGET_UPDATE, OMP_TEAMS, OMP_TASKGROUP.
+	(gimplify_body): If fndecl has "omp declare target" attribute, add
+	implicit ORT_TARGET context around it.
+	* tree.def (OMP_DISTRIBUTE, OMP_TEAMS, OMP_TARGET_DATA, OMP_TARGET,
+	OMP_TASKGROUP, OMP_TARGET_UPDATE): New tree codes.
+	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS and GIMPLE_OMP_TASKGROUP.
+	* omp-builtins.def (BUILT_IN_GOMP_TASK): Use
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR
+	instead of BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT.
+	(BUILT_IN_GOMP_TARGET, BUILT_IN_GOMP_TARGET_DATA,
+	BUILT_IN_GOMP_TARGET_END_DATA, BUILT_IN_GOMP_TARGET_UPDATE,
+	BUILT_IN_GOMP_TEAMS, BUILT_IN_BARRIER_CANCEL,
+	BUILT_IN_GOMP_LOOP_END_CANCEL,
+	BUILT_IN_GOMP_SECTIONS_END_CANCEL, BUILT_IN_OMP_GET_TEAM_NUM,
+	BUILT_IN_OMP_GET_NUM_TEAMS, BUILT_IN_GOMP_TASKGROUP_START,
+	BUILT_IN_GOMP_TASKGROUP_END, BUILT_IN_GOMP_PARALLEL_LOOP_STATIC,
+	BUILT_IN_GOMP_PARALLEL_LOOP_DYNAMIC,
+	BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED,
+	BUILT_IN_GOMP_PARALLEL_LOOP_RUNTIME, BUILT_IN_GOMP_PARALLEL,
+	BUILT_IN_GOMP_PARALLEL_SECTIONS, BUILT_IN_GOMP_CANCEL,
+	BUILT_IN_GOMP_CANCELLATION_POINT): New built-ins.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_DYNAMIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_RUNTIME_START,
+	BUILT_IN_GOMP_PARALLEL_START, BUILT_IN_GOMP_PARALLEL_END,
+	BUILT_IN_GOMP_PARALLEL_SECTIONS_START): Remove.
+	* tree-inline.c (remap_gimple_stmt, estimate_num_insns):
+	Handle GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS and GIMPLE_OMP_TASKGROUP.
+	* gimple.c (gimple_build_omp_taskgroup, gimple_build_omp_target,
+	gimple_build_omp_teams): New functions.
+	(walk_gimple_op): Handle GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS and
+	GIMPLE_OMP_TASKGROUP.  Walk optional lhs on GIMPLE_OMP_RETURN.
+	(walk_gimple_stmt, gimple_copy): Handle GIMPLE_OMP_TARGET,
+	GIMPLE_OMP_TEAMS and GIMPLE_OMP_TASKGROUP.
+	* gimple.h (enum gf_mask): GF_OMP_FOR_KIND_DISTRIBUTE,
+	GF_OMP_FOR_COMBINED, GF_OMP_FOR_COMBINED_INTO,
+	GF_OMP_TARGET_KIND_MASK, GF_OMP_TARGET_KIND_REGION,
+	GF_OMP_TARGET_KIND_DATA, GF_OMP_TARGET_KIND_UPDATE,
+	GF_OMP_ATOMIC_SEQ_CST): New.
+	(gimple_build_omp_taskgroup, gimple_build_omp_target,
+	gimple_build_omp_teams): New prototypes.
+	(gimple_has_substatements): Handle GIMPLE_OMP_TARGET,
+	GIMPLE_OMP_TEAMS and GIMPLE_OMP_TASKGROUP.
+	(gimple_omp_subcode): Use GIMPLE_OMP_TEAMS instead of
+	GIMPLE_OMP_SINGLE as end of range.
+	(gimple_omp_return_set_lhs, gimple_omp_return_lhs,
+	gimple_omp_return_lhs_ptr, gimple_omp_atomic_seq_cst_p,
+	gimple_omp_atomic_set_seq_cst, gimple_omp_for_combined_p,
+	gimple_omp_for_set_combined_p, gimple_omp_for_combined_into_p,
+	gimple_omp_for_set_combined_into_p, gimple_omp_target_clauses,
+	gimple_omp_target_clauses_ptr, gimple_omp_target_set_clauses,
+	gimple_omp_target_kind, gimple_omp_target_set_kind,
+	gimple_omp_target_child_fn, gimple_omp_target_child_fn_ptr,
+	gimple_omp_target_set_child_fn, gimple_omp_target_data_arg,
+	gimple_omp_target_data_arg_ptr, gimple_omp_target_set_data_arg,
+	gimple_omp_teams_clauses, gimple_omp_teams_clauses_ptr,
+	gimple_omp_teams_set_clauses): New inlines.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS
+	and GIMPLE_OMP_TASKGROUP.
+	* tree-core.h (enum omp_clause_code): Add new OpenMP 4.0 clause
+	codes.
+	(enum omp_clause_depend_kind, enum omp_clause_map_kind,
+	enum omp_clause_proc_bind_kind): New.
+	(union omp_clause_subcode): Add depend_kind, map_kind and
+	proc_bind_kind fields.
+	* tree-cfg.c (make_edges): Handle GIMPLE_OMP_TARGET,
+	GIMPLE_OMP_TEAMS and GIMPLE_OMP_TASKGROUP.
+	* langhooks-def.h (lhd_omp_mappable_type): New prototype.
+	(LANG_HOOKS_OMP_MAPPABLE_TYPE): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add it.
+
 2013-10-10  Teresa Johnson  <tejohnson@google.com>
 
 	* predict.c (tree_estimate_probability): Add new parameter

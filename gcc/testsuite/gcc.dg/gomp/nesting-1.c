@@ -28,17 +28,58 @@ f1 (void)
     #pragma omp for		/* { dg-error "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
+  }
+  #pragma omp sections
+  {
     #pragma omp sections	/* { dg-error "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
+  }
+  #pragma omp sections
+  {
     #pragma omp single		/* { dg-error "may not be closely nested" } */
       ;
+  }
+  #pragma omp sections
+  {
     #pragma omp master		/* { dg-error "may not be closely nested" } */
       ;
+  }
+  #pragma omp sections
+  {
     #pragma omp section
+      ;
+  }
+  #pragma omp sections
+  {
+    #pragma omp section
+    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    for (j = 0; j < 3; j++)
+      ;
+  }
+  #pragma omp sections
+  {
+    #pragma omp section
+    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    {
+      ;
+    #pragma omp section
+      ;
+    }
+  }
+  #pragma omp sections
+  {
+    #pragma omp section
+    #pragma omp single		/* { dg-error "may not be closely nested" } */
+      ;
+  }
+  #pragma omp sections
+  {
+    #pragma omp section
+    #pragma omp master		/* { dg-error "may not be closely nested" } */
       ;
   }
   #pragma omp single

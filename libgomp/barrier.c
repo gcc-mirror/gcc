@@ -39,3 +39,15 @@ GOMP_barrier (void)
 
   gomp_team_barrier_wait (&team->barrier);
 }
+
+bool
+GOMP_barrier_cancel (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+
+  /* The compiler transforms to barrier_cancel when it sees that the
+     barrier is within a construct that can cancel.  Thus we should
+     never have an orphaned cancellable barrier.  */
+  return gomp_team_barrier_wait_cancel (&team->barrier);
+}

@@ -113,6 +113,27 @@ OMP_3.1 {
 	omp_in_final_;
 } OMP_3.0;
 
+OMP_4.0 {
+  global:
+	omp_get_cancellation;
+	omp_get_cancellation_;
+	omp_get_proc_bind;
+	omp_get_proc_bind_;
+	omp_set_default_device;
+	omp_set_default_device_;
+	omp_set_default_device_8_;
+	omp_get_default_device;
+	omp_get_default_device_;
+	omp_get_num_devices;
+	omp_get_num_devices_;
+	omp_get_num_teams;
+	omp_get_num_teams_;
+	omp_get_team_num;
+	omp_get_team_num_;
+	omp_is_initial_device;
+	omp_is_initial_device_;
+} OMP_3.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -184,3 +205,25 @@ GOMP_3.0 {
   global:
 	GOMP_taskyield;
 } GOMP_2.0;
+
+GOMP_4.0 {
+  global:
+	GOMP_barrier_cancel;
+	GOMP_cancel;
+	GOMP_cancellation_point;
+	GOMP_loop_end_cancel;
+	GOMP_parallel_loop_dynamic;
+	GOMP_parallel_loop_guided;
+	GOMP_parallel_loop_runtime;
+	GOMP_parallel_loop_static;
+	GOMP_parallel_sections;
+	GOMP_parallel;
+	GOMP_sections_end_cancel;
+	GOMP_taskgroup_start;
+	GOMP_taskgroup_end;
+	GOMP_target;
+	GOMP_target_data;
+	GOMP_target_end_data;
+	GOMP_target_update;
+	GOMP_teams;
+} GOMP_3.0;

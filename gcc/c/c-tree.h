@@ -526,6 +526,8 @@ extern tree start_struct (location_t, enum tree_code, tree,
 			  struct c_struct_parse_info **);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
+extern void temp_store_parm_decls (tree, tree);
+extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
@@ -637,9 +639,12 @@ extern tree c_begin_omp_parallel (void);
 extern tree c_finish_omp_parallel (location_t, tree, tree);
 extern tree c_begin_omp_task (void);
 extern tree c_finish_omp_task (location_t, tree, tree);
+extern void c_finish_omp_cancel (location_t, tree);
+extern void c_finish_omp_cancellation_point (location_t, tree);
 extern tree c_finish_omp_clauses (tree);
 extern tree c_build_va_arg (location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
+extern bool c_tree_equal (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -663,6 +668,10 @@ extern enum machine_mode c_default_pointer_mode;
 /* In c-decl.c */
 extern void c_finish_incomplete_decl (tree);
 extern void c_write_global_declarations (void);
+extern tree c_omp_reduction_id (enum tree_code, tree);
+extern tree c_omp_reduction_decl (tree);
+extern tree c_omp_reduction_lookup (tree, tree);
+extern tree c_check_omp_declare_reduction_r (tree *, int *, void *);
 
 /* In c-errors.c */
 extern void pedwarn_c90 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);

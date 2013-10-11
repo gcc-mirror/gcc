@@ -1,3 +1,64 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-15.c: Adjust for C diagnostics.
+	Remove error test that is now valid in OpenMP 4.0.
+	* c-c++-common/gomp/atomic-16.c: New test.
+	* c-c++-common/gomp/cancel-1.c: New test.
+	* c-c++-common/gomp/depend-1.c: New test.
+	* c-c++-common/gomp/depend-2.c: New test.
+	* c-c++-common/gomp/map-1.c: New test.
+	* c-c++-common/gomp/pr58472.c: New test.
+	* c-c++-common/gomp/sections1.c: New test.
+	* c-c++-common/gomp/simd1.c: New test.
+	* c-c++-common/gomp/simd2.c: New test.
+	* c-c++-common/gomp/simd3.c: New test.
+	* c-c++-common/gomp/simd4.c: New test.
+	* c-c++-common/gomp/simd5.c: New test.
+	* c-c++-common/gomp/single1.c: New test.
+	* g++.dg/gomp/block-0.C: Adjust for stricter #pragma omp sections
+	parser.
+	* g++.dg/gomp/block-3.C: Likewise.
+	* g++.dg/gomp/clause-3.C: Adjust error messages.
+	* g++.dg/gomp/declare-simd-1.C: New test.
+	* g++.dg/gomp/declare-simd-2.C: New test.
+	* g++.dg/gomp/depend-1.C: New test.
+	* g++.dg/gomp/depend-2.C: New test.
+	* g++.dg/gomp/target-1.C: New test.
+	* g++.dg/gomp/target-2.C: New test.
+	* g++.dg/gomp/taskgroup-1.C: New test.
+	* g++.dg/gomp/teams-1.C: New test.
+	* g++.dg/gomp/udr-1.C: New test.
+	* g++.dg/gomp/udr-2.C: New test.
+	* g++.dg/gomp/udr-3.C: New test.
+	* g++.dg/gomp/udr-4.C: New test.
+	* g++.dg/gomp/udr-5.C: New test.
+	* g++.dg/gomp/udr-6.C: New test.
+	* gcc.dg/autopar/outer-1.c: Expect 4 instead of 5 loopfn matches.
+	* gcc.dg/autopar/outer-2.c: Likewise.
+	* gcc.dg/autopar/outer-3.c: Likewise.
+	* gcc.dg/autopar/outer-4.c: Likewise.
+	* gcc.dg/autopar/outer-5.c: Likewise.
+	* gcc.dg/autopar/outer-6.c: Likewise.
+	* gcc.dg/autopar/parallelization-1.c: Likewise.
+	* gcc.dg/gomp/block-3.c: Adjust for stricter #pragma omp sections
+	parser.
+	* gcc.dg/gomp/clause-1.c: Adjust error messages.
+	* gcc.dg/gomp/combined-1.c: Look for GOMP_parallel_loop_runtime
+	instead of GOMP_parallel_loop_runtime_start.
+	* gcc.dg/gomp/declare-simd-1.c: New test.
+	* gcc.dg/gomp/declare-simd-2.c: New test.
+	* gcc.dg/gomp/nesting-1.c: Adjust for stricter #pragma omp sections
+	parser.  Add further #pragma omp sections nesting tests.
+	* gcc.dg/gomp/target-1.c: New test.
+	* gcc.dg/gomp/target-2.c: New test.
+	* gcc.dg/gomp/taskgroup-1.c: New test.
+	* gcc.dg/gomp/teams-1.c: New test.
+	* gcc.dg/gomp/udr-1.c: New test.
+	* gcc.dg/gomp/udr-2.c: New test.
+	* gcc.dg/gomp/udr-3.c: New test.
+	* gcc.dg/gomp/udr-4.c: New test.
+	* gfortran.dg/gomp/appendix-a/a.35.5.f90: Add dg-error.
+
 2013-10-10  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/avx256-unaligned-store-3.c: Update template for

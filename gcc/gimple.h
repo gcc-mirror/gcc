@@ -105,6 +105,13 @@ enum gf_mask {
     GF_OMP_FOR_KIND_MASK	= 3 << 0,
     GF_OMP_FOR_KIND_FOR		= 0 << 0,
     GF_OMP_FOR_KIND_SIMD	= 1 << 0,
+    GF_OMP_FOR_KIND_DISTRIBUTE	= 2 << 0,
+    GF_OMP_FOR_COMBINED		= 1 << 2,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 3,
+    GF_OMP_TARGET_KIND_MASK	= 3 << 0,
+    GF_OMP_TARGET_KIND_REGION	= 0 << 0,
+    GF_OMP_TARGET_KIND_DATA	= 1 << 0,
+    GF_OMP_TARGET_KIND_UPDATE	= 2 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -114,6 +121,7 @@ enum gf_mask {
 
     GF_OMP_SECTION_LAST		= 1 << 0,
     GF_OMP_ATOMIC_NEED_VALUE	= 1 << 0,
+    GF_OMP_ATOMIC_SEQ_CST	= 1 << 1,
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
@@ -607,7 +615,7 @@ struct GTY(()) gimple_statement_omp_continue {
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS */
 
 struct GTY(()) gimple_statement_omp_single {
   /* [ WORD 1-7 ]  */
@@ -786,11 +794,14 @@ gimple gimple_build_omp_critical (gimple_seq, tree);
 gimple gimple_build_omp_section (gimple_seq);
 gimple gimple_build_omp_continue (tree, tree);
 gimple gimple_build_omp_master (gimple_seq);
+gimple gimple_build_omp_taskgroup (gimple_seq);
 gimple gimple_build_omp_return (bool);
 gimple gimple_build_omp_ordered (gimple_seq);
 gimple gimple_build_omp_sections (gimple_seq, tree);
 gimple gimple_build_omp_sections_switch (void);
 gimple gimple_build_omp_single (gimple_seq, tree);
+gimple gimple_build_omp_target (gimple_seq, int, tree);
+gimple gimple_build_omp_teams (gimple_seq, tree);
 gimple gimple_build_cdt (tree, tree);
 gimple gimple_build_omp_atomic_load (tree, tree);
 gimple gimple_build_omp_atomic_store (tree);
@@ -1250,12 +1261,15 @@ gimple_has_substatements (gimple g)
     case GIMPLE_TRY:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_WITH_CLEANUP_EXPR:
     case GIMPLE_TRANSACTION:
@@ -1634,7 +1648,7 @@ static inline unsigned
 gimple_omp_subcode (const_gimple s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-	      && gimple_code (s) <= GIMPLE_OMP_SINGLE);
+	      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
   return s->gsbase.subcode;
 }
 
@@ -1667,6 +1681,36 @@ gimple_omp_return_nowait_p (const_gimple g)
 {
   GIMPLE_CHECK (g, GIMPLE_OMP_RETURN);
   return (gimple_omp_subcode (g) & GF_OMP_RETURN_NOWAIT) != 0;
+}
+
+
+/* Set the LHS of OMP return.  */
+
+static inline void
+gimple_omp_return_set_lhs (gimple g, tree lhs)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_RETURN);
+  g->gimple_omp_atomic_store.val = lhs;
+}
+
+
+/* Get the LHS of OMP return.  */
+
+static inline tree
+gimple_omp_return_lhs (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_RETURN);
+  return g->gimple_omp_atomic_store.val;
+}
+
+
+/* Return a pointer to the LHS of OMP return.  */
+
+static inline tree *
+gimple_omp_return_lhs_ptr (gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_RETURN);
+  return &g->gimple_omp_atomic_store.val;
 }
 
 
@@ -1736,6 +1780,29 @@ gimple_omp_atomic_set_need_value (gimple g)
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
   g->gsbase.subcode |= GF_OMP_ATOMIC_NEED_VALUE;
+}
+
+
+/* Return true if OMP atomic load/store statement G has the
+   GF_OMP_ATOMIC_SEQ_CST flag set.  */
+
+static inline bool
+gimple_omp_atomic_seq_cst_p (const_gimple g)
+{
+  if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
+    GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
+  return (gimple_omp_subcode (g) & GF_OMP_ATOMIC_SEQ_CST) != 0;
+}
+
+
+/* Set the GF_OMP_ATOMIC_SEQ_CST flag on G.  */
+
+static inline void
+gimple_omp_atomic_set_seq_cst (gimple g)
+{
+  if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
+    GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
+  g->gsbase.subcode |= GF_OMP_ATOMIC_SEQ_CST;
 }
 
 
@@ -4022,6 +4089,56 @@ gimple_omp_for_set_kind (gimple g, int kind)
 }
 
 
+/* Return true if OMP for statement G has the
+   GF_OMP_FOR_COMBINED flag set.  */
+
+static inline bool
+gimple_omp_for_combined_p (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  return (gimple_omp_subcode (g) & GF_OMP_FOR_COMBINED) != 0;
+}
+
+
+/* Set the GF_OMP_FOR_COMBINED field in G depending on the boolean
+   value of COMBINED_P.  */
+
+static inline void
+gimple_omp_for_set_combined_p (gimple g, bool combined_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  if (combined_p)
+    g->gsbase.subcode |= GF_OMP_FOR_COMBINED;
+  else
+    g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED;
+}
+
+
+/* Return true if OMP for statement G has the
+   GF_OMP_FOR_COMBINED_INTO flag set.  */
+
+static inline bool
+gimple_omp_for_combined_into_p (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  return (gimple_omp_subcode (g) & GF_OMP_FOR_COMBINED_INTO) != 0;
+}
+
+
+/* Set the GF_OMP_FOR_COMBINED_INTO field in G depending on the boolean
+   value of COMBINED_P.  */
+
+static inline void
+gimple_omp_for_set_combined_into_p (gimple g, bool combined_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  if (combined_p)
+    g->gsbase.subcode |= GF_OMP_FOR_COMBINED_INTO;
+  else
+    g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED_INTO;
+}
+
+
 /* Return the clauses associated with OMP_FOR GS.  */
 
 static inline tree
@@ -4631,6 +4748,148 @@ gimple_omp_single_set_clauses (gimple gs, tree clauses)
 }
 
 
+/* Return the clauses associated with OMP_TARGET GS.  */
+
+static inline tree
+gimple_omp_target_clauses (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return gs->gimple_omp_parallel.clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP_TARGET GS.  */
+
+static inline tree *
+gimple_omp_target_clauses_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return &gs->gimple_omp_parallel.clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP_TARGET GS.  */
+
+static inline void
+gimple_omp_target_set_clauses (gimple gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  gs->gimple_omp_parallel.clauses = clauses;
+}
+
+
+/* Return the kind of OMP target statemement.  */
+
+static inline int
+gimple_omp_target_kind (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TARGET);
+  return (gimple_omp_subcode (g) & GF_OMP_TARGET_KIND_MASK);
+}
+
+
+/* Set the OMP target kind.  */
+
+static inline void
+gimple_omp_target_set_kind (gimple g, int kind)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TARGET);
+  g->gsbase.subcode = (g->gsbase.subcode & ~GF_OMP_TARGET_KIND_MASK)
+		      | (kind & GF_OMP_TARGET_KIND_MASK);
+}
+
+
+/* Return the child function used to hold the body of OMP_TARGET GS.  */
+
+static inline tree
+gimple_omp_target_child_fn (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return gs->gimple_omp_parallel.child_fn;
+}
+
+/* Return a pointer to the child function used to hold the body of
+   OMP_TARGET GS.  */
+
+static inline tree *
+gimple_omp_target_child_fn_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return &gs->gimple_omp_parallel.child_fn;
+}
+
+
+/* Set CHILD_FN to be the child function for OMP_TARGET GS.  */
+
+static inline void
+gimple_omp_target_set_child_fn (gimple gs, tree child_fn)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  gs->gimple_omp_parallel.child_fn = child_fn;
+}
+
+
+/* Return the artificial argument used to send variables and values
+   from the parent to the children threads in OMP_TARGET GS.  */
+
+static inline tree
+gimple_omp_target_data_arg (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return gs->gimple_omp_parallel.data_arg;
+}
+
+
+/* Return a pointer to the data argument for OMP_TARGET GS.  */
+
+static inline tree *
+gimple_omp_target_data_arg_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return &gs->gimple_omp_parallel.data_arg;
+}
+
+
+/* Set DATA_ARG to be the data argument for OMP_TARGET GS.  */
+
+static inline void
+gimple_omp_target_set_data_arg (gimple gs, tree data_arg)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  gs->gimple_omp_parallel.data_arg = data_arg;
+}
+
+
+/* Return the clauses associated with OMP_TEAMS GS.  */
+
+static inline tree
+gimple_omp_teams_clauses (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  return gs->gimple_omp_single.clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP_TEAMS GS.  */
+
+static inline tree *
+gimple_omp_teams_clauses_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  return &gs->gimple_omp_single.clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP_TEAMS GS.  */
+
+static inline void
+gimple_omp_teams_set_clauses (gimple gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  gs->gimple_omp_single.clauses = clauses;
+}
+
+
 /* Return the clauses associated with OMP_SECTIONS GS.  */
 
 static inline tree
@@ -4973,8 +5232,11 @@ gimple_return_set_retval (gimple gs, tree retval)
     case GIMPLE_OMP_SECTIONS:			\
     case GIMPLE_OMP_SECTIONS_SWITCH:		\
     case GIMPLE_OMP_SINGLE:			\
+    case GIMPLE_OMP_TARGET:			\
+    case GIMPLE_OMP_TEAMS:			\
     case GIMPLE_OMP_SECTION:			\
     case GIMPLE_OMP_MASTER:			\
+    case GIMPLE_OMP_TASKGROUP:			\
     case GIMPLE_OMP_ORDERED:			\
     case GIMPLE_OMP_CRITICAL:			\
     case GIMPLE_OMP_RETURN:			\

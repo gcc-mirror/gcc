@@ -523,6 +523,15 @@ lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *c ATTRIBUTE_UNUSED,
 {
 }
 
+/* Return true if TYPE is an OpenMP mappable type.  By default return true
+   if type is complete.  */
+
+bool
+lhd_omp_mappable_type (tree type)
+{
+  return COMPLETE_TYPE_P (type);
+}
+
 /* Common function for add_builtin_function and
    add_builtin_function_ext_scope.  */
 static tree

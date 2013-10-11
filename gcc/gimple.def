@@ -276,6 +276,10 @@ DEFGSCODE(GIMPLE_OMP_FOR, "gimple_omp_for", GSS_OMP_FOR)
    BODY is the sequence of statements to execute in the master section.  */
 DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", GSS_OMP)
 
+/* GIMPLE_OMP_TASKGROUP <BODY> represents #pragma omp taskgroup.
+   BODY is the sequence of statements to execute in the taskgroup section.  */
+DEFGSCODE(GIMPLE_OMP_TASKGROUP, "gimple_omp_taskgroup", GSS_OMP)
+
 /* GIMPLE_OMP_ORDERED <BODY> represents #pragma omp ordered.
    BODY is the sequence of statements to execute in the ordered section.  */
 DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP)
@@ -325,7 +329,7 @@ DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL)
 DEFGSCODE(GIMPLE_OMP_TASK, "gimple_omp_task", GSS_OMP_TASK)
 
 /* OMP_RETURN marks the end of an OpenMP directive.  */
-DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", GSS_BASE)
+DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", GSS_OMP_ATOMIC_STORE)
 
 /* OMP_SECTION <BODY> represents #pragma omp section.
    BODY is the sequence of statements in the section body.  */
@@ -348,6 +352,24 @@ DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", GSS_BASE)
    BODY is the sequence of statements inside the single section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE)
+
+/* GIMPLE_OMP_TARGET <BODY, CLAUSES, CHILD_FN> represents
+   #pragma omp target {,data,update}
+   BODY is the sequence of statements inside the target construct
+   (NULL for target update).
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.
+   CHILD_FN is set when outlining the body of the target region.
+   All the statements in BODY are moved into this newly created
+   function when converting OMP constructs into low-GIMPLE.
+   DATA_ARG is a vec of 3 local variables in the parent function
+   containing data to be mapped to CHILD_FN.  This is used to
+   implement the MAP clauses.  */
+DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL)
+
+/* GIMPLE_OMP_TEAMS <BODY, CLAUSES> represents #pragma omp teams
+   BODY is the sequence of statements inside the single section.
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
+DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 

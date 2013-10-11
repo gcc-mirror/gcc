@@ -611,12 +611,21 @@ make_edges (void)
 	    case GIMPLE_OMP_TASK:
 	    case GIMPLE_OMP_FOR:
 	    case GIMPLE_OMP_SINGLE:
+	    case GIMPLE_OMP_TEAMS:
 	    case GIMPLE_OMP_MASTER:
+	    case GIMPLE_OMP_TASKGROUP:
 	    case GIMPLE_OMP_ORDERED:
 	    case GIMPLE_OMP_CRITICAL:
 	    case GIMPLE_OMP_SECTION:
 	      cur_region = new_omp_region (bb, code, cur_region);
 	      fallthru = true;
+	      break;
+
+	    case GIMPLE_OMP_TARGET:
+	      cur_region = new_omp_region (bb, code, cur_region);
+	      fallthru = true;
+	      if (gimple_omp_target_kind (last) == GF_OMP_TARGET_KIND_UPDATE)
+		cur_region = cur_region->outer;
 	      break;
 
 	    case GIMPLE_OMP_SECTIONS:

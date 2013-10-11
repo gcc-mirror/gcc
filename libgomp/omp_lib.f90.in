@@ -27,16 +27,22 @@
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
+        integer, parameter :: omp_proc_bind_kind = 4
+        integer (omp_sched_kind), parameter :: omp_sched_static = 1
+        integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
+        integer (omp_sched_kind), parameter :: omp_sched_guided = 3
+        integer (omp_sched_kind), parameter :: omp_sched_auto = 4
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_false = 0
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_true = 1
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_master = 2
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_close = 3
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_spread = 4
       end module
 
       module omp_lib
         use omp_lib_kinds
         implicit none
         integer, parameter :: openmp_version = 201107
-        integer (omp_sched_kind), parameter :: omp_sched_static = 1
-        integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
-        integer (omp_sched_kind), parameter :: omp_sched_guided = 3
-        integer (omp_sched_kind), parameter :: omp_sched_auto = 4
 
         interface
           subroutine omp_init_lock (svar)
@@ -123,21 +129,18 @@
 
         interface
           function omp_get_dynamic ()
-            use omp_lib_kinds
             logical (4) :: omp_get_dynamic
           end function omp_get_dynamic
         end interface
 
         interface
           function omp_get_nested ()
-            use omp_lib_kinds
             logical (4) :: omp_get_nested
           end function omp_get_nested
         end interface
 
         interface
           function omp_in_parallel ()
-            use omp_lib_kinds
             logical (4) :: omp_in_parallel
           end function omp_in_parallel
         end interface
@@ -152,28 +155,24 @@
 
         interface
           function omp_get_max_threads ()
-            use omp_lib_kinds
             integer (4) :: omp_get_max_threads
           end function omp_get_max_threads
         end interface
 
         interface
           function omp_get_num_procs ()
-            use omp_lib_kinds
             integer (4) :: omp_get_num_procs
           end function omp_get_num_procs
         end interface
 
         interface
           function omp_get_num_threads ()
-            use omp_lib_kinds
             integer (4) :: omp_get_num_threads
           end function omp_get_num_threads
         end interface
 
         interface
           function omp_get_thread_num ()
-            use omp_lib_kinds
             integer (4) :: omp_get_thread_num
           end function omp_get_thread_num
         end interface
@@ -226,44 +225,37 @@
 
         interface
           function omp_get_thread_limit ()
-            use omp_lib_kinds
             integer (4) :: omp_get_thread_limit
           end function omp_get_thread_limit
         end interface
 
         interface omp_set_max_active_levels
           subroutine omp_set_max_active_levels (max_levels)
-            use omp_lib_kinds
             integer (4), intent (in) :: max_levels
           end subroutine omp_set_max_active_levels
           subroutine omp_set_max_active_levels_8 (max_levels)
-            use omp_lib_kinds
             integer (8), intent (in) :: max_levels
           end subroutine omp_set_max_active_levels_8
         end interface
 
         interface
           function omp_get_max_active_levels ()
-            use omp_lib_kinds
             integer (4) :: omp_get_max_active_levels
           end function omp_get_max_active_levels
         end interface
 
         interface
           function omp_get_level ()
-            use omp_lib_kinds
             integer (4) :: omp_get_level
           end function omp_get_level
         end interface
 
         interface omp_get_ancestor_thread_num
           function omp_get_ancestor_thread_num (level)
-            use omp_lib_kinds
             integer (4), intent (in) :: level
             integer (4) :: omp_get_ancestor_thread_num
           end function omp_get_ancestor_thread_num
           function omp_get_ancestor_thread_num_8 (level)
-            use omp_lib_kinds
             integer (8), intent (in) :: level
             integer (4) :: omp_get_ancestor_thread_num_8
           end function omp_get_ancestor_thread_num_8
@@ -271,12 +263,10 @@
 
         interface omp_get_team_size
           function omp_get_team_size (level)
-            use omp_lib_kinds
             integer (4), intent (in) :: level
             integer (4) :: omp_get_team_size
           end function omp_get_team_size
           function omp_get_team_size_8 (level)
-            use omp_lib_kinds
             integer (8), intent (in) :: level
             integer (4) :: omp_get_team_size_8
           end function omp_get_team_size_8
@@ -284,16 +274,66 @@
 
         interface
           function omp_get_active_level ()
-            use omp_lib_kinds
             integer (4) :: omp_get_active_level
           end function omp_get_active_level
         end interface
 
         interface
           function omp_in_final ()
-            use omp_lib_kinds
             logical (4) :: omp_in_final
           end function omp_in_final
+        end interface
+
+        interface
+          function omp_get_cancellation ()
+            logical (4) :: omp_get_cancellation
+          end function omp_get_cancellation
+        end interface
+
+        interface
+          function omp_get_proc_bind ()
+            use omp_lib_kinds
+            integer (omp_proc_bind_kind) :: omp_get_proc_bind
+          end function omp_get_proc_bind
+        end interface
+
+        interface omp_set_default_device
+          subroutine omp_set_default_device (device_num)
+            integer (4), intent (in) :: device_num
+          end subroutine omp_set_default_device
+          subroutine omp_set_default_device_8 (device_num)
+            integer (8), intent (in) :: device_num
+          end subroutine omp_set_default_device_8
+        end interface
+
+        interface
+          function omp_get_default_device ()
+            integer (4) :: omp_get_default_device
+          end function omp_get_default_device
+        end interface
+
+        interface
+          function omp_get_num_devices ()
+            integer (4) :: omp_get_num_devices
+          end function omp_get_num_devices
+        end interface
+
+        interface
+          function omp_get_num_teams ()
+            integer (4) :: omp_get_num_teams
+          end function omp_get_num_teams
+        end interface
+
+        interface
+          function omp_get_team_num ()
+            integer (4) :: omp_get_team_num
+          end function omp_get_team_num
+        end interface
+
+        interface
+          function omp_is_initial_device ()
+            logical (4) :: omp_is_initial_device
+          end function omp_is_initial_device
         end interface
 
       end module omp_lib

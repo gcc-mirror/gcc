@@ -1,3 +1,367 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+	    Richard Henderson  <rth@redhat.com>
+
+	* target.c: New file.
+	* Makefile.am (libgomp_la_SOURCES): Add target.c.
+	* Makefile.in: Regenerated.
+	* libgomp_g.h (GOMP_task): Add depend argument.
+	(GOMP_barrier_cancel, GOMP_loop_end_cancel,
+	GOMP_sections_end_cancel, GOMP_target, GOMP_target_data,
+	GOMP_target_end_data, GOMP_target_update, GOMP_teams,
+	GOMP_parallel_loop_static, GOMP_parallel_loop_dynamic,
+	GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime,
+	GOMP_parallel, GOMP_cancel, GOMP_cancellation_point,
+	GOMP_taskgroup_start, GOMP_taskgroup_end,
+	GOMP_parallel_sections): New prototypes.
+	* fortran.c (omp_is_initial_device): Add ialias_redirect.
+	(omp_is_initial_device_): New function.
+	(ULP, STR1, STR2, ialias_redirect): Removed.
+	(omp_get_cancellation_, omp_get_proc_bind_, omp_set_default_device_,
+	omp_set_default_device_8_, omp_get_default_device_,
+	omp_get_num_devices_, omp_get_num_teams_, omp_get_team_num_): New
+	functions.
+	* libgomp.map (GOMP_barrier_cancel, GOMP_loop_end_cancel,
+	GOMP_sections_end_cancel, GOMP_target, GOMP_target_data,
+	GOMP_target_end_data, GOMP_target_update, GOMP_teams): Export
+	@@GOMP_4.0.
+	(omp_is_initial_device, omp_is_initial_device_, omp_get_cancellation,
+	omp_get_cancellation_, omp_get_proc_bind, omp_get_proc_bind_,
+	omp_set_default_device, omp_set_default_device_,
+	omp_set_default_device_8_, omp_get_default_device,
+	omp_get_default_device_, omp_get_num_devices, omp_get_num_devices_,
+	omp_get_num_teams, omp_get_num_teams_, omp_get_team_num,
+	omp_get_team_num_): Export @@OMP_4.0.
+	* team.c (struct gomp_thread_start_data): Add place field.
+	(gomp_thread_start): Clear thr->thread_pool and
+	thr->task before returning.  Use gomp_team_barrier_wait_final
+	instead of gomp_team_barrier_wait.  Initialize thr->place.
+	(gomp_new_team): Initialize work_shares_to_free, work_share_cancelled,
+	team_cancelled and task_queued_count fields.
+	(gomp_free_pool_helper): Clear thr->thread_pool and thr->task
+	before calling pthread_exit.
+	(gomp_free_thread): No longer static.  Use
+	gomp_managed_threads_lock instead of gomp_remaining_threads_lock.
+	(gomp_team_start): Add flags argument.  Set
+	thr->thread_pool->threads_busy to nthreads immediately after creating
+	new pool.  Use gomp_managed_threads_lock instead of
+	gomp_remaining_threads_lock.  Handle OpenMP 4.0 affinity.
+	(gomp_team_end): Use gomp_managed_threads_lock instead of
+	gomp_remaining_threads_lock.  Use gomp_team_barrier_wait_final instead
+	of gomp_team_barrier_wait.  If team->team_cancelled, call
+	gomp_fini_worshare on ws chain starting at team->work_shares_to_free
+	rather than thr->ts.work_share.
+	(initialize_team): Don't call gomp_sem_init here.
+	* sections.c (GOMP_parallel_sections_start): Adjust gomp_team_start
+	caller.
+	(GOMP_parallel_sections, GOMP_sections_end_cancel): New functions.
+	* env.c (gomp_global_icv): Add default_device_var, target_data and
+	bind_var initializers.
+	(gomp_cpu_affinity, gomp_cpu_affinity_len): Remove.
+	(gomp_bind_var_list, gomp_bind_var_list_len, gomp_places_list,
+	gomp_places_list_len): New variables.
+	(parse_bind_var, parse_one_place, parse_places_var): New functions.
+	(parse_affinity): Rewritten to construct OMP_PLACES list with unit
+	sized places.
+	(gomp_cancel_var): New global variable.
+	(parse_int): New function.
+	(handle_omp_display_env): New function.
+	(initialize_env): Use it.  Initialize default_device_var.
+	Parse OMP_CANCELLATION env var.  Use parse_bind_var to parse
+	OMP_PROC_BIND instead of parse_boolean.  Use parse_places_var for
+	OMP_PLACES parsing.  Don't call parse_affinity if OMP_PLACES has
+	been successfully parsed (and call gomp_init_affinity in that case).
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num, omp_is_initial_device): New functions.
+	* libgomp.h: Include stdlib.h.
+	(ialias_ulp, ialias_str1, ialias_str2, ialias_redirect, ialias_call):
+	Define.
+	(struct target_mem_desc): Forward declare.
+	(struct gomp_task_icv): Add default_device_var, target_data, bind_var
+	and thread_limit_var fields.
+	(gomp_get_num_devices): New prototype.
+	(gomp_cancel_var): New extern decl.
+	(struct gomp_team): Add work_shares_to_free, work_share_cancelled,
+	team_cancelled and task_queued_count fields.  Add comments about
+	task_{,queued_,running_}count.
+	(gomp_cancel_kind): New enum.
+	(gomp_work_share_end_cancel): New prototype.
+	(struct gomp_task): Add next_taskgroup, prev_taskgroup, taskgroup,
+	copy_ctors_done, dependers, depend_hash, depend_count, num_dependees
+	and depend fields.
+	(struct gomp_taskgroup): New type.
+	(struct gomp_task_depend_entry,
+	struct gomp_dependers_vec): New types.
+	(gomp_finish_task): Free depend_hash if non-NULL.
+	(struct gomp_team_state): Add place_partition_off
+	and place_partition_len fields.
+	(gomp_bind_var_list, gomp_bind_var_list_len, gomp_places_list,
+	gomp_places_list_len): New extern decls.
+	(struct gomp_thread): Add place field.
+	(gomp_cpu_affinity, gomp_cpu_affinity_len): Remove.
+	(gomp_init_thread_affinity): Add place argument.
+	(gomp_affinity_alloc, gomp_affinity_init_place, gomp_affinity_add_cpus,
+	gomp_affinity_remove_cpu, gomp_affinity_copy_place,
+	gomp_affinity_same_place, gomp_affinity_finalize_place_list,
+	gomp_affinity_init_level, gomp_affinity_print_place): New
+	prototypes.
+	(gomp_team_start): Add flags argument.
+	(gomp_thread_limit_var, gomp_remaining_threads_count,
+	gomp_remaining_threads_lock): Remove.
+	(gomp_managed_threads_lock): New variable.
+	(struct gomp_thread_pool): Add threads_busy field.
+	(gomp_free_thread): New prototype.
+	* task.c: Include hashtab.h.
+	(hash_entry_type): New typedef.
+	(htab_alloc, htab_free, htab_hash, htab_eq): New inlines.
+	(gomp_init_task): Clear dependers, depend_hash, depend_count,
+	copy_ctors_done and taskgroup fields.
+	(GOMP_task): Add depend argument, handle depend clauses.  If
+	gomp_team_barrier_cancelled or if it's taskgroup has been
+	cancelled, don't queue or start new tasks.  Set copy_ctors_done
+	field if needed.  Initialize taskgroup field.  If copy_ctors_done
+	and already cancelled, don't discard the task.  If taskgroup is
+	non-NULL, enqueue the task into taskgroup queue.  Increment
+	num_children field in taskgroup.  Increment task_queued_count.
+	(gomp_task_run_pre, gomp_task_run_post_remove_parent,
+	gomp_task_run_post_remove_taskgroup): New inline functions.
+	(gomp_task_run_post_handle_depend_hash,
+	gomp_task_run_post_handle_dependers,
+	gomp_task_run_post_handle_depend): New functions.
+	(GOMP_taskwait): Use them.  If more than one new tasks
+	have been queued, wake other threads if needed.
+	(gomp_barrier_handle_tasks): Likewise.  If
+	gomp_team_barrier_cancelled, don't start any new tasks, just free
+	all tasks.
+	(GOMP_taskgroup_start, GOMP_taskgroup_end): New functions.
+	* omp_lib.f90.in
+	(omp_proc_bind_kind, omp_proc_bind_false,
+	omp_proc_bind_true, omp_proc_bind_master, omp_proc_bind_close,
+	omp_proc_bind_spread): New params.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num, omp_is_initial_device): New interfaces.
+	(omp_get_dynamic, omp_get_nested, omp_in_parallel,
+	omp_get_max_threads, omp_get_num_procs, omp_get_num_threads,
+	omp_get_thread_num, omp_get_thread_limit, omp_set_max_active_levels,
+	omp_get_max_active_levels, omp_get_level, omp_get_ancestor_thread_num,
+	omp_get_team_size, omp_get_active_level, omp_in_final): Remove
+	useless use omp_lib_kinds.
+	* omp.h.in (omp_proc_bind_t): New typedef.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num, omp_is_initial_device): New prototypes.
+	* loop.c (gomp_parallel_loop_start): Add flags argument, pass it
+	through to gomp_team_start.
+	(GOMP_parallel_loop_static_start, GOMP_parallel_loop_dynamic_start,
+	GOMP_parallel_loop_guided_start, GOMP_parallel_loop_runtime_start):
+	Adjust gomp_parallel_loop_start callers.
+	(GOMP_parallel_loop_static, GOMP_parallel_loop_dynamic,
+	GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime,
+	GOMP_loop_end_cancel): New functions.
+	(GOMP_parallel_end): Add ialias_redirect.
+	* hashtab.h: New file.
+	* libgomp.texi (Environment Variables): Minor cleanup,
+	update section refs to OpenMP 4.0rc2.
+	(OMP_DISPLAY_ENV, GOMP_SPINCOUNT): Document these
+	environment variables.
+	* work.c (gomp_work_share_end, gomp_work_share_end_nowait): Set
+	team->work_shares_to_free to thr->ts.work_share before calling
+	free_work_share.
+	(gomp_work_share_end_cancel): New function.
+	* config/linux/proc.c: Include errno.h.
+	(gomp_get_cpuset_size, gomp_cpuset_size, gomp_cpusetp): New variables.
+	(gomp_cpuset_popcount): Add cpusetsize argument, use it instead of
+	sizeof (cpu_set_t) to determine number of iterations.  Fix up check
+	extern decl.  Use CPU_COUNT_S if available, or CPU_COUNT if
+	gomp_cpuset_size is sizeof (cpu_set_t).
+	(gomp_init_num_threads): Initialize gomp_cpuset_size,
+	gomp_get_cpuset_size and gomp_cpusetp here, use gomp_cpusetp instead
+	of &cpuset and pass gomp_cpuset_size instead of sizeof (cpu_set_t)
+	to pthread_getaffinity_np.  Free and clear gomp_cpusetp if it didn't
+	contain any logical CPUs.
+	(get_num_procs): Don't call pthread_getaffinity_np if gomp_cpusetp
+	is NULL.  Use gomp_cpusetp instead of &cpuset and pass
+	gomp_get_cpuset_size instead of sizeof (cpu_set_t) to
+	pthread_getaffinity_np.  Check gomp_places_list instead of
+	gomp_cpu_affinity.  Adjust gomp_cpuset_popcount caller.
+	* config/linux/bar.c (gomp_barrier_wait_end,
+	gomp_barrier_wait_last): Use BAR_* defines.
+	(gomp_team_barrier_wait_end): Likewise.  Clear BAR_CANCELLED
+	from state where needed.  Set work_share_cancelled to 0 on last
+	thread.
+	(gomp_team_barrier_wait_final, gomp_team_barrier_wait_cancel_end,
+	gomp_team_barrier_wait_cancel, gomp_team_barrier_cancel): New
+	functions.
+	* config/linux/proc.h (gomp_cpuset_popcount): Add attribute_hidden.
+	Add cpusetsize argument.
+	(gomp_cpuset_size, gomp_cpusetp): Declare.
+	* config/linux/affinity.c: Include errno.h, stdio.h and string.h.
+	(affinity_counter): Remove.
+	(CPU_ISSET_S, CPU_ZERO_S, CPU_SET_S, CPU_CLR_S): Define
+	if CPU_ALLOC_SIZE isn't defined.
+	(gomp_init_affinity): Rewritten, if gomp_places_list is NULL, try
+	silently create OMP_PLACES=threads, if it is non-NULL afterwards,
+	bind current thread to the first place.
+	(gomp_init_thread_affinity): Rewritten.  Add place argument, just
+	pthread_setaffinity_np to gomp_places_list[place].
+	(gomp_affinity_alloc, gomp_affinity_init_place, gomp_affinity_add_cpus,
+	gomp_affinity_remove_cpu, gomp_affinity_copy_place,
+	gomp_affinity_same_place, gomp_affinity_finalize_place_list,
+	gomp_affinity_init_level, gomp_affinity_print_place): New functions.
+	* config/linux/bar.h (BAR_TASK_PENDING, BAR_WAS_LAST,
+	BAR_WAITING_FOR_TASK, BAR_INCR, BAR_CANCELLED): Define.
+	(gomp_barrier_t): Add awaited_final field.
+	(gomp_barrier_init): Initialize awaited_final field.
+	(gomp_team_barrier_wait_final, gomp_team_barrier_wait_cancel,
+	gomp_team_barrier_wait_cancel_end, gomp_team_barrier_cancel): New
+	prototypes.
+	(gomp_barrier_wait_start): Preserve BAR_CANCELLED bit.  Use BAR_*
+	defines.
+	(gomp_barrier_wait_cancel_start, gomp_team_barrier_wait_final_start,
+	gomp_team_barrier_cancelled): New inline functions.
+	(gomp_barrier_last_thread,
+	gomp_team_barrier_set_task_pending,
+	gomp_team_barrier_clear_task_pending,
+	gomp_team_barrier_set_waiting_for_tasks,
+	gomp_team_barrier_waiting_for_tasks,
+	gomp_team_barrier_done): Use BAR_* defines.
+	* config/posix/bar.c (gomp_barrier_init): Clear cancellable field.
+	(gomp_barrier_wait_end): Use BAR_* defines.
+	(gomp_team_barrier_wait_end): Clear BAR_CANCELLED from state.
+	Set work_share_cancelled to 0 on last thread, use __atomic_load_n.
+	Use BAR_* defines.
+	(gomp_team_barrier_wait_cancel_end, gomp_team_barrier_wait_cancel,
+	gomp_team_barrier_cancel): New functions.
+	* config/posix/affinity.c (gomp_init_thread_affinity): Add place
+	argument.
+	(gomp_affinity_alloc, gomp_affinity_init_place, gomp_affinity_add_cpus,
+	gomp_affinity_remove_cpu, gomp_affinity_copy_place,
+	gomp_affinity_same_place, gomp_affinity_finalize_place_list,
+	gomp_affinity_init_level, gomp_affinity_print_place): New stubs.
+	* config/posix/bar.h (BAR_TASK_PENDING, BAR_WAS_LAST,
+	BAR_WAITING_FOR_TASK, BAR_INCR, BAR_CANCELLED): Define.
+	(gomp_barrier_t): Add cancellable field.
+	(gomp_team_barrier_wait_cancel, gomp_team_barrier_wait_cancel_end,
+	gomp_team_barrier_cancel): New prototypes.
+	(gomp_barrier_wait_start): Preserve BAR_CANCELLED bit.
+	(gomp_barrier_wait_cancel_start, gomp_team_barrier_wait_final,
+	gomp_team_barrier_cancelled): New inline functions.
+	(gomp_barrier_wait_start, gomp_barrier_last_thread,
+	gomp_team_barrier_set_task_pending,
+	gomp_team_barrier_clear_task_pending,
+	gomp_team_barrier_set_waiting_for_tasks,
+	gomp_team_barrier_waiting_for_tasks,
+	gomp_team_barrier_done): Use BAR_* defines.
+	* barrier.c (GOMP_barrier_cancel): New function.
+	* omp_lib.h.in (omp_proc_bind_kind, omp_proc_bind_false,
+	omp_proc_bind_true, omp_proc_bind_master, omp_proc_bind_close,
+	omp_proc_bind_spread): New params.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num, omp_is_initial_device): New externals.
+	* parallel.c (GOMP_parallel, GOMP_cancel, GOMP_cancellation_point):
+	New functions.
+	(gomp_resolve_num_threads): Adjust for thread_limit now being in
+	icv->thread_limit_var.  Use UINT_MAX instead of ULONG_MAX as
+	infinity.  If not nested, just return minimum of max_num_threads
+	and icv->thread_limit_var and if thr->thread_pool, set threads_busy
+	to the returned value.  Otherwise, don't update atomically
+	gomp_remaining_threads_count, but instead thr->thread_pool->threads_busy.
+	(GOMP_parallel_end): Adjust for thread_limit now being in
+	icv->thread_limit_var.  Use UINT_MAX instead of ULONG_MAX as
+	infinity.  Adjust threads_busy in the pool rather than
+	gomp_remaining_threads_count.  Remember team->nthreads and call
+	gomp_team_end before adjusting threads_busy, if not nested
+	afterwards, just set it to 1 non-atomically.  Add ialias.
+	(GOMP_parallel_start): Adjust gomp_team_start caller.
+	* testsuite/libgomp.c/atomic-14.c: Add parens to make it valid.
+	* testsuite/libgomp.c/affinity-1.c: New test.
+	* testsuite/libgomp.c/atomic-15.c: New test.
+	* testsuite/libgomp.c/atomic-16.c: New test.
+	* testsuite/libgomp.c/atomic-17.c: New test.
+	* testsuite/libgomp.c/cancel-for-1.c: New test.
+	* testsuite/libgomp.c/cancel-for-2.c: New test.
+	* testsuite/libgomp.c/cancel-parallel-1.c: New test.
+	* testsuite/libgomp.c/cancel-parallel-2.c: New test.
+	* testsuite/libgomp.c/cancel-parallel-3.c: New test.
+	* testsuite/libgomp.c/cancel-sections-1.c: New test.
+	* testsuite/libgomp.c/cancel-taskgroup-1.c: New test.
+	* testsuite/libgomp.c/cancel-taskgroup-2.c: New test.
+	* testsuite/libgomp.c/depend-1.c: New test.
+	* testsuite/libgomp.c/depend-2.c: New test.
+	* testsuite/libgomp.c/depend-3.c: New test.
+	* testsuite/libgomp.c/depend-4.c: New test.
+	* testsuite/libgomp.c/for-1.c: New test.
+	* testsuite/libgomp.c/for-1.h: New file.
+	* testsuite/libgomp.c/for-2.c: New test.
+	* testsuite/libgomp.c/for-2.h: New file.
+	* testsuite/libgomp.c/for-3.c: New test.
+	* testsuite/libgomp.c/pr58392.c: New test.
+	* testsuite/libgomp.c/simd-1.c: New test.
+	* testsuite/libgomp.c/simd-2.c: New test.
+	* testsuite/libgomp.c/simd-3.c: New test.
+	* testsuite/libgomp.c/simd-4.c: New test.
+	* testsuite/libgomp.c/simd-5.c: New test.
+	* testsuite/libgomp.c/simd-6.c: New test.
+	* testsuite/libgomp.c/target-1.c: New test.
+	* testsuite/libgomp.c/target-2.c: New test.
+	* testsuite/libgomp.c/target-3.c: New test.
+	* testsuite/libgomp.c/target-4.c: New test.
+	* testsuite/libgomp.c/target-5.c: New test.
+	* testsuite/libgomp.c/target-6.c: New test.
+	* testsuite/libgomp.c/target-7.c: New test.
+	* testsuite/libgomp.c/taskgroup-1.c: New test.
+	* testsuite/libgomp.c/thread-limit-1.c: New test.
+	* testsuite/libgomp.c/thread-limit-2.c: New test.
+	* testsuite/libgomp.c/thread-limit-3.c: New test.
+	* testsuite/libgomp.c/udr-1.c: New test.
+	* testsuite/libgomp.c/udr-2.c: New test.
+	* testsuite/libgomp.c/udr-3.c: New test.
+	* testsuite/libgomp.c++/affinity-1.C: New test.
+	* testsuite/libgomp.c++/atomic-10.C: New test.
+	* testsuite/libgomp.c++/atomic-11.C: New test.
+	* testsuite/libgomp.c++/atomic-12.C: New test.
+	* testsuite/libgomp.c++/atomic-13.C: New test.
+	* testsuite/libgomp.c++/atomic-14.C: New test.
+	* testsuite/libgomp.c++/atomic-15.C: New test.
+	* testsuite/libgomp.c++/cancel-for-1.C: New test.
+	* testsuite/libgomp.c++/cancel-for-2.C: New test.
+	* testsuite/libgomp.c++/cancel-parallel-1.C: New test.
+	* testsuite/libgomp.c++/cancel-parallel-2.C: New test.
+	* testsuite/libgomp.c++/cancel-parallel-3.C: New test.
+	* testsuite/libgomp.c++/cancel-sections-1.C: New test.
+	* testsuite/libgomp.c++/cancel-taskgroup-1.C: New test.
+	* testsuite/libgomp.c++/cancel-taskgroup-2.C: New test.
+	* testsuite/libgomp.c++/cancel-taskgroup-3.C: New test.
+	* testsuite/libgomp.c++/cancel-test.h: New file.
+	* testsuite/libgomp.c++/for-9.C: New test.
+	* testsuite/libgomp.c++/for-10.C: New test.
+	* testsuite/libgomp.c++/for-11.C: New test.
+	* testsuite/libgomp.c++/simd-1.C: New test.
+	* testsuite/libgomp.c++/simd-2.C: New test.
+	* testsuite/libgomp.c++/simd-3.C: New test.
+	* testsuite/libgomp.c++/simd-4.C: New test.
+	* testsuite/libgomp.c++/simd-5.C: New test.
+	* testsuite/libgomp.c++/simd-6.C: New test.
+	* testsuite/libgomp.c++/simd-7.C: New test.
+	* testsuite/libgomp.c++/simd-8.C: New test.
+	* testsuite/libgomp.c++/target-1.C: New test.
+	* testsuite/libgomp.c++/target-2.C: New test.
+	* testsuite/libgomp.c++/target-2-aux.cc: New file.
+	* testsuite/libgomp.c++/target-3.C: New test.
+	* testsuite/libgomp.c++/taskgroup-1.C: New test.
+	* testsuite/libgomp.c++/udr-1.C: New test.
+	* testsuite/libgomp.c++/udr-2.C: New test.
+	* testsuite/libgomp.c++/udr-3.C: New test.
+	* testsuite/libgomp.c++/udr-4.C: New test.
+	* testsuite/libgomp.c++/udr-5.C: New test.
+	* testsuite/libgomp.c++/udr-6.C: New test.
+	* testsuite/libgomp.c++/udr-7.C: New test.
+	* testsuite/libgomp.c++/udr-8.C: New test.
+	* testsuite/libgomp.c++/udr-9.C: New test.
+
 2013-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/57605

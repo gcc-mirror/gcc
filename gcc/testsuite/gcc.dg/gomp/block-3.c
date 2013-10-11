@@ -35,9 +35,10 @@ void foo()
 
   #pragma omp sections
     {
-      goto ok1;
-      ok1:;
-
+      {
+	goto ok1;
+	ok1:;
+      }
     #pragma omp section
       for (i = 0; i < 10; ++i)
 	if (test(i))
