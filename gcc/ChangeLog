@@ -1,5 +1,13 @@
 2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/vsx.md (*vsx_le_perm_load_v2di): Generalize to
+	handle vector float as well.
+	(*vsx_le_perm_load_v4si): Likewise.
+	(*vsx_le_perm_store_v2di): Likewise.
+	(*vsx_le_perm_store_v4si): Likewise.
+
+2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/vector.md (vec_realign_load<mode>): Generate vperm
 	directly to circumvent subtract from splat{31} workaround.
 	* config/rs6000/rs6000-protos.h (altivec_expand_vec_perm_le): New

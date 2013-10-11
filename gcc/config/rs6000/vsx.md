@@ -219,18 +219,18 @@
 
 ;; The patterns for LE permuted loads and stores come before the general
 ;; VSX moves so they match first.
-(define_insn_and_split "*vsx_le_perm_load_v2di"
-  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
-        (match_operand:V2DI 1 "memory_operand" "Z"))]
+(define_insn_and_split "*vsx_le_perm_load_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
+        (match_operand:VSX_D 1 "memory_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   [(set (match_dup 2)
-        (vec_select:V2DI
+        (vec_select:<MODE>
           (match_dup 1)
           (parallel [(const_int 1) (const_int 0)])))
    (set (match_dup 0)
-        (vec_select:V2DI
+        (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
   "
@@ -242,19 +242,19 @@
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
-(define_insn_and_split "*vsx_le_perm_load_v4si"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
-        (match_operand:V4SI 1 "memory_operand" "Z"))]
+(define_insn_and_split "*vsx_le_perm_load_<mode>"
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
+        (match_operand:VSX_W 1 "memory_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   [(set (match_dup 2)
-        (vec_select:V4SI
+        (vec_select:<MODE>
           (match_dup 1)
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))
    (set (match_dup 0)
-        (vec_select:V4SI
+        (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
@@ -333,18 +333,18 @@
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
-(define_insn_and_split "*vsx_le_perm_store_v2di"
-  [(set (match_operand:V2DI 0 "memory_operand" "=Z")
-        (match_operand:V2DI 1 "vsx_register_operand" "+wa"))]
+(define_insn_and_split "*vsx_le_perm_store_<mode>"
+  [(set (match_operand:VSX_D 0 "memory_operand" "=Z")
+        (match_operand:VSX_D 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   [(set (match_dup 2)
-        (vec_select:V2DI
+        (vec_select:<MODE>
           (match_dup 1)
           (parallel [(const_int 1) (const_int 0)])))
    (set (match_dup 0)
-        (vec_select:V2DI
+        (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
   "
@@ -356,19 +356,19 @@
   [(set_attr "type" "vecstore")
    (set_attr "length" "8")])
 
-(define_insn_and_split "*vsx_le_perm_store_v4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=Z")
-        (match_operand:V4SI 1 "vsx_register_operand" "+wa"))]
+(define_insn_and_split "*vsx_le_perm_store_<mode>"
+  [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
+        (match_operand:VSX_W 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   [(set (match_dup 2)
-        (vec_select:V4SI
+        (vec_select:<MODE>
           (match_dup 1)
           (parallel [(const_int 2) (const_int 3)
 	             (const_int 0) (const_int 1)])))
    (set (match_dup 0)
-        (vec_select:V4SI
+        (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 2) (const_int 3)
 	             (const_int 0) (const_int 1)])))]
