@@ -8,6 +8,24 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (VI124_AVX2_48_AVX512F): New.
+	(VI8F_256_512): Ditto.
+	(abs<mode>2): Changed iterator.
+	(avx2_perm<mode>): Changed to ...
+	(<avx2_avx512f>_perm<mode>): This.
+	(avx2_perm<mode>_1): Changed to ...
+	(<avx2_avx512f>_perm<mode>_1): This.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (VI48_AVX512F): New.
 	(VI48_AVX2): Changed to ...
 	(VI48_AVX2_48_AVX512F): This.
