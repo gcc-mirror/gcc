@@ -207,8 +207,14 @@
 (define_mode_iterator VI4_AVX2
   [(V8SI "TARGET_AVX2") V4SI])
 
+(define_mode_iterator VI4_AVX512F
+  [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI])
+
 (define_mode_iterator VI8_AVX2
   [(V4DI "TARGET_AVX2") V2DI])
+
+(define_mode_iterator VI8_AVX2_AVX512F
+  [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
 ;; ??? We should probably use TImode instead.
 (define_mode_iterator VIMAX_AVX2
@@ -5854,10 +5860,10 @@
    (set_attr "mode" "TI")])
 
 (define_expand "mul<mode>3"
-  [(set (match_operand:VI4_AVX2 0 "register_operand")
-	(mult:VI4_AVX2
-	  (match_operand:VI4_AVX2 1 "general_vector_operand")
-	  (match_operand:VI4_AVX2 2 "general_vector_operand")))]
+  [(set (match_operand:VI4_AVX512F 0 "register_operand")
+	(mult:VI4_AVX512F
+	  (match_operand:VI4_AVX512F 1 "general_vector_operand")
+	  (match_operand:VI4_AVX512F 2 "general_vector_operand")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1)
@@ -5876,10 +5882,10 @@
 })
 
 (define_insn "*<sse4_1_avx2>_mul<mode>3"
-  [(set (match_operand:VI4_AVX2 0 "register_operand" "=x,v")
-	(mult:VI4_AVX2
-	  (match_operand:VI4_AVX2 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VI4_AVX2 2 "nonimmediate_operand" "xm,vm")))]
+  [(set (match_operand:VI4_AVX512F 0 "register_operand" "=x,v")
+	(mult:VI4_AVX512F
+	  (match_operand:VI4_AVX512F 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VI4_AVX512F 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_SSE4_1 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
   "@
    pmulld\t{%2, %0|%0, %2}
@@ -5892,9 +5898,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "mul<mode>3"
-  [(set (match_operand:VI8_AVX2 0 "register_operand")
-	(mult:VI8_AVX2 (match_operand:VI8_AVX2 1 "register_operand")
-		       (match_operand:VI8_AVX2 2 "register_operand")))]
+  [(set (match_operand:VI8_AVX2_AVX512F 0 "register_operand")
+	(mult:VI8_AVX2_AVX512F
+	  (match_operand:VI8_AVX2_AVX512F 1 "register_operand")
+	  (match_operand:VI8_AVX2_AVX512F 2 "register_operand")))]
   "TARGET_SSE2"
 {
   ix86_expand_sse2_mulvxdi3 (operands[0], operands[1], operands[2]);
@@ -5941,8 +5948,8 @@
 (define_expand "vec_widen_<s>mult_odd_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI4_AVX2 1 "general_vector_operand"))
-   (match_operand:VI4_AVX2 2 "general_vector_operand")]
+     (match_operand:VI4_AVX512F 1 "general_vector_operand"))
+   (match_operand:VI4_AVX512F 2 "general_vector_operand")]
   "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],

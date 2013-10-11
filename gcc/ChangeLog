@@ -8,6 +8,23 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (VI4_AVX512F): New.
+	(VI8_AVX2_AVX512F): Ditto.
+	(mul<mode>3): Extended with wider modes.
+	(*<sse4_1_avx2>_mul<mode>3): Ditto.
+	(mul<mode>3): Ditto.
+	(vec_widen_<s>mult_odd_<mode>): Ditto.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (VI2_AVX512F): New.
 	(VI124_AVX512F): Ditto.
 	(sseunpackmode): Extended with wider modes.
