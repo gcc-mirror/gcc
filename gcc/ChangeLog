@@ -1,5 +1,8 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* doc/generic.texi (OpenMP): OMP_CLAUSE_* are subcodes, not
+	sub-codes.
+
 	* doc/generic.texi (Adding new DECL node types): Explain *_CHECK
 	macros.
 
