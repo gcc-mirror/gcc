@@ -22,8 +22,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef OMP_H
-#define OMP_H 1
+#ifndef _OMP_H
+#define _OMP_H 1
 
 #ifndef _LIBGOMP_OMP_LOCK_DEFINED
 #define _LIBGOMP_OMP_LOCK_DEFINED 1
@@ -124,4 +124,4 @@ extern int omp_is_initial_device (void) __GOMP_NOTHROW;
 }
 #endif
 
-#endif /* OMP_H */
+#endif /* _OMP_H */
