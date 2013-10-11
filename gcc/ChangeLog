@@ -8,6 +8,23 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c (bdesc_args): Change corresponding pattern  for
+	__builtin_ia32_cvtps2dq, __builtin_ia32_cvtps2dq256.
+	* config/i386/sse.md (VI4_AVX): New.
+	(sf2simodelower): Ditto.
+	(sse2_cvtps2dq): Change to ...
+	(<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode>): This.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (V_512): New.
 	(VI_512): Ditto.
 	(vcond<V_512:mode><VF_512:mode>): Ditto.
