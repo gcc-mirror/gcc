@@ -4264,12 +4264,7 @@ Struct_type::do_verify()
        ++p)
     {
       Type* t = p->type();
-      if (t->is_undefined())
-	{
-	  error_at(p->location(), "struct field type is incomplete");
-	  p->set_type(Type::make_error_type());
-	}
-      else if (p->is_anonymous())
+      if (p->is_anonymous())
 	{
 	  if (t->named_type() != NULL && t->points_to() != NULL)
 	    {
