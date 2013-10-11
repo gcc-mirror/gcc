@@ -3310,7 +3310,7 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
-@item returns_nonnull (@var{arg-index}, @dots{})
+@item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
 The @code{returns_nonnull} attribute specifies that the function
 return value should be a non-null pointer.  For instance, the declaration:
