@@ -1,5 +1,9 @@
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-common.h (omp_clause_mask::operator !=): New method.
+	* c-omp.c (c_omp_split_clauses): Use if ((mask & something) != 0)
+	instead of if (mask & something) tests everywhere.
+
 	* c-cppbuiltin.c (c_cpp_builtins): Predefine _OPENMP to
 	201307 instead of 201107.
 	* c-common.c (DEF_FUNCTION_TYPE_8): Define.
