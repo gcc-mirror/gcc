@@ -2818,7 +2818,7 @@ const_hash_1 (const tree exp)
     {
     case INTEGER_CST:
       p = (char *) &TREE_INT_CST_ELT (exp, 0);
-      len = sizeof TREE_INT_CST_NUNITS (exp) * sizeof (HOST_WIDE_INT);
+      len = TREE_INT_CST_NUNITS (exp) * sizeof (HOST_WIDE_INT);
       break;
 
     case REAL_CST:
