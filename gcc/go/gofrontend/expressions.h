@@ -1514,8 +1514,8 @@ class Func_expression : public Expression
   closure()
   { return this->closure_; }
 
-  // Return a tree for the code for a function.
-  static tree
+  // Return a backend expression for the code of a function.
+  static Bexpression*
   get_code_pointer(Gogo*, Named_object* function, Location loc);
 
  protected:

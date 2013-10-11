@@ -1,26 +1,31 @@
+2013-10-11  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::function_code_expression): New
+	function.
+
 2013-10-10  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (Backend::error_function): New function.
-	(Backend::function): New function.
-	(Backend::make_function): New function.
+	* go-gcc.cc (Gcc_backend::error_function): New function.
+	(Gcc_backend::function): New function.
+	(Gcc_backend::make_function): New function.
 	(function_to_tree): New function.
 
 2013-10-04  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (Backend::convert_expression): New function.
+	* go-gcc.cc (Gcc_backend::convert_expression): New function.
 
 2013-10-02  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc: Include "real.h" and "realmpfr.h".
-	(Backend::integer_constant_expression): New function.
-	(Backend::float_constant_expression): New function.
-	(Backend::complex_constant_expression): New function.
+	(Gcc_backend::integer_constant_expression): New function.
+	(Gcc_backend::float_constant_expression): New function.
+	(Gcc_backend::complex_constant_expression): New function.
 
 2013-09-30  Chris Manghane  <cmang@google.com>
 
-	* go-gcc.cc (Backend::error_expression): New function.
-	(Backend::var_expression): New function.
-	(Backend::indirect_expression): New function.
+	* go-gcc.cc (Gcc_backend::error_expression): New function.
+	(Gcc_backend::var_expression): New function.
+	(Gcc_backend::indirect_expression): New function.
 
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
@@ -515,7 +520,7 @@
 
 2011-04-14  Ian Lance Taylor  <iant@google.com>
 
-	* go-gcc.cc (Backend::error_statement): New function.
+	* go-gcc.cc (Gcc_backend::error_statement): New function.
 
 2011-04-13  Ian Lance Taylor  <iant@google.com>
 
