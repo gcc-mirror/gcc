@@ -8,6 +8,42 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (V): Extended with wider modes.
+	(VF2): Ditto.
+	(ssehalfvecmode): Ditto.
+	(i128): Ditto.
+	(ssepackfltmode): Ditto.
+	(avx_vec_concat<mode>): Ditto.
+	(V_256_512): New iterator.
+	(VF2_512_256): Ditto.
+	(si2dfmode): New attribute.
+	(si2dfmodelower): Ditto.
+	(sf2dfmode): Ditto.
+	(concat_tg_mode): Ditto.
+	(floatv4siv4df2): Changed to ...
+	(float<si2dfmodelower><mode>2): This.
+	(avx_cvtps2pd256): Changed to ...
+	(<sse2_avx_avx512f>_cvtps2pd<avxsizesuffix>): This.
+	(vec_pack_trunc_v4df): Changed to ...
+	(vec_pack_trunc_<mode>): This.
+	(avx_vpermil<mode>): Changed to ...
+	(<sse2_avx_avx512f>_vpermil<mode>): This.
+	(<fixsuffix>fix_truncv8dfv8si2): New.
+	(vec_pack_sfix_trunc_v8df): Ditto.
+	(avx512f_rndscale<mode>): Ditto.
+	(avx512f_roundpd512): Ditto.
+	(vec_pack_ufix_trunc_<mode>): Updated iterator.
+
+2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.md (any_fix): New iterator.
 	(fixsuffix): New attribute.
 	* config/i386/sse.md (VF1): Extened with wider modes.
