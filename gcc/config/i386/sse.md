@@ -2254,9 +2254,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; The standard names for scalar FMA are only available with SSE math enabled.
-(define_mode_iterator FMAMODEM [(SF "TARGET_SSE_MATH")
-				(DF "TARGET_SSE_MATH")
-				V4SF V2DF V8SF V4DF])
+;; CPUID bit AVX512F enables evex encoded scalar and 512-bit fma.  It doesn't
+;; care about FMA bit, so we enable fma for TARGET_AVX512F even when TARGET_FMA
+;; and TARGET_FMA4 are both false.
+;; TODO: In theory AVX512F does not automatically imply FMA, and without FMA
+;; one must force the EVEX encoding of the fma insns.  Ideally we'd improve
+;; GAS to allow proper prefix selection.  However, for the moment all hardware
+;; that supports AVX512F also supports FMA so we can ignore this for now.
+(define_mode_iterator FMAMODEM
+  [(SF "TARGET_SSE_MATH && (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F)")
+   (DF "TARGET_SSE_MATH && (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F)")
+   (V4SF "TARGET_FMA || TARGET_FMA4")
+   (V2DF "TARGET_FMA || TARGET_FMA4")
+   (V8SF "TARGET_FMA || TARGET_FMA4")
+   (V4DF "TARGET_FMA || TARGET_FMA4")
+   (V16SF "TARGET_AVX512F")
+   (V8DF "TARGET_AVX512F")])
 
 (define_expand "fma<mode>4"
   [(set (match_operand:FMAMODEM 0 "register_operand")
@@ -2264,7 +2277,7 @@
 	  (match_operand:FMAMODEM 1 "nonimmediate_operand")
 	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
 	  (match_operand:FMAMODEM 3 "nonimmediate_operand")))]
-  "TARGET_FMA || TARGET_FMA4")
+  "")
 
 (define_expand "fms<mode>4"
   [(set (match_operand:FMAMODEM 0 "register_operand")
@@ -2272,7 +2285,7 @@
 	  (match_operand:FMAMODEM 1 "nonimmediate_operand")
 	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
 	  (neg:FMAMODEM (match_operand:FMAMODEM 3 "nonimmediate_operand"))))]
-  "TARGET_FMA || TARGET_FMA4")
+  "")
 
 (define_expand "fnma<mode>4"
   [(set (match_operand:FMAMODEM 0 "register_operand")
@@ -2280,7 +2293,7 @@
 	  (neg:FMAMODEM (match_operand:FMAMODEM 1 "nonimmediate_operand"))
 	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
 	  (match_operand:FMAMODEM 3 "nonimmediate_operand")))]
-  "TARGET_FMA || TARGET_FMA4")
+  "")
 
 (define_expand "fnms<mode>4"
   [(set (match_operand:FMAMODEM 0 "register_operand")
@@ -2288,10 +2301,17 @@
 	  (neg:FMAMODEM (match_operand:FMAMODEM 1 "nonimmediate_operand"))
 	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
 	  (neg:FMAMODEM (match_operand:FMAMODEM 3 "nonimmediate_operand"))))]
-  "TARGET_FMA || TARGET_FMA4")
+  "")
 
 ;; The builtins for intrinsics are not constrained by SSE math enabled.
-(define_mode_iterator FMAMODE [SF DF V4SF V2DF V8SF V4DF])
+(define_mode_iterator FMAMODE [(SF "TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F")
+			       (DF "TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F")
+			       (V4SF "TARGET_FMA || TARGET_FMA4")
+			       (V2DF "TARGET_FMA || TARGET_FMA4")
+			       (V8SF "TARGET_FMA || TARGET_FMA4")
+			       (V4DF "TARGET_FMA || TARGET_FMA4")
+			       (V16SF "TARGET_AVX512F")
+			       (V8DF "TARGET_AVX512F")])
 
 (define_expand "fma4i_fmadd_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand")
@@ -2299,7 +2319,7 @@
 	  (match_operand:FMAMODE 1 "nonimmediate_operand")
 	  (match_operand:FMAMODE 2 "nonimmediate_operand")
 	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
-  "TARGET_FMA || TARGET_FMA4")
+  "")
 
 (define_insn "*fma_fmadd_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand" "=v,v,v,x,x")
@@ -2307,7 +2327,7 @@
 	  (match_operand:FMAMODE 1 "nonimmediate_operand" "%0, 0, v, x,x")
 	  (match_operand:FMAMODE 2 "nonimmediate_operand" "vm, v,vm, x,m")
 	  (match_operand:FMAMODE 3 "nonimmediate_operand" " v,vm, 0,xm,x")))]
-  "TARGET_FMA || TARGET_FMA4"
+  ""
   "@
    vfmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfmadd213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2318,14 +2338,14 @@
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*fma_fmsub_<mode>"
+(define_insn "fma_fmsub_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand" "=v,v,v,x,x")
 	(fma:FMAMODE
 	  (match_operand:FMAMODE   1 "nonimmediate_operand" "%0, 0, v, x,x")
 	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm, v,vm, x,m")
 	  (neg:FMAMODE
 	    (match_operand:FMAMODE 3 "nonimmediate_operand" " v,vm, 0,xm,x"))))]
-  "TARGET_FMA || TARGET_FMA4"
+  ""
   "@
    vfmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfmsub213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2336,14 +2356,14 @@
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*fma_fnmadd_<mode>"
+(define_insn "fma_fnmadd_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand" "=v,v,v,x,x")
 	(fma:FMAMODE
 	  (neg:FMAMODE
 	    (match_operand:FMAMODE 1 "nonimmediate_operand" "%0, 0, v, x,x"))
 	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm, v,vm, x,m")
 	  (match_operand:FMAMODE   3 "nonimmediate_operand" " v,vm, 0,xm,x")))]
-  "TARGET_FMA || TARGET_FMA4"
+  ""
   "@
    vfnmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfnmadd213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2362,7 +2382,7 @@
 	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm, v,vm, x,m")
 	  (neg:FMAMODE
 	    (match_operand:FMAMODE 3 "nonimmediate_operand" " v,vm, 0,xm,x"))))]
-  "TARGET_FMA || TARGET_FMA4"
+  ""
   "@
    vfnmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfnmsub213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2391,7 +2411,7 @@
 	   (match_operand:VF 2 "nonimmediate_operand")
 	   (match_operand:VF 3 "nonimmediate_operand")]
 	  UNSPEC_FMADDSUB))]
-  "TARGET_FMA || TARGET_FMA4")
+  "TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F")
 
 (define_insn "*fma_fmaddsub_<mode>"
   [(set (match_operand:VF 0 "register_operand" "=v,v,v,x,x")
@@ -2400,7 +2420,7 @@
 	   (match_operand:VF 2 "nonimmediate_operand" "vm, v,vm, x,m")
 	   (match_operand:VF 3 "nonimmediate_operand" " v,vm, 0,xm,x")]
 	  UNSPEC_FMADDSUB))]
-  "TARGET_FMA || TARGET_FMA4"
+  "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F)"
   "@
    vfmaddsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfmaddsub213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2419,7 +2439,7 @@
 	   (neg:VF
 	     (match_operand:VF 3 "nonimmediate_operand" " v,vm, 0,xm,x"))]
 	  UNSPEC_FMADDSUB))]
-  "TARGET_FMA || TARGET_FMA4"
+  "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F)"
   "@
    vfmsubadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
    vfmsubadd213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -2453,7 +2473,7 @@
 	    (match_operand:VF_128 3 "nonimmediate_operand" " v,vm"))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_FMA"
+  "TARGET_FMA || TARGET_AVX512F"
   "@
    vfmadd132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %<iptr>3, %<iptr>2}
    vfmadd213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %<iptr>3}"
@@ -2470,7 +2490,7 @@
 	      (match_operand:VF_128 3 "nonimmediate_operand" " v,vm")))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_FMA"
+  "TARGET_FMA || TARGET_AVX512F"
   "@
    vfmsub132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %<iptr>3, %<iptr>2}
    vfmsub213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %<iptr>3}"
@@ -2487,7 +2507,7 @@
 	    (match_operand:VF_128   3 "nonimmediate_operand" " v,vm"))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_FMA"
+  "TARGET_FMA || TARGET_AVX512F"
   "@
    vfnmadd132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %<iptr>3, %<iptr>2}
    vfnmadd213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %<iptr>3}"
@@ -2505,7 +2525,7 @@
 	      (match_operand:VF_128 3 "nonimmediate_operand" " v,vm")))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_FMA"
+  "TARGET_FMA || TARGET_AVX512F"
   "@
    vfnmsub132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %<iptr>3, %<iptr>2}
    vfnmsub213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %<iptr>3}"
