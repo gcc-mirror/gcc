@@ -1,5 +1,8 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* doc/generic.texi (Adding new DECL node types): Explain *_CHECK
+	macros.
+
 	* doc/gimple.texi (is_gimple_omp): Move into the correct section.
 
 	* acinclude.m4 (gcc_GAS_FLAGS): Add more gcc_cv_as_flags
