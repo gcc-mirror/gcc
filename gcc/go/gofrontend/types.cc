@@ -9031,6 +9031,8 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 				      fntype->is_varargs(), location);
 	  gogo->finish_function(fntype->location());
 
+	  if (type->named_type() == NULL && stub->is_function())
+	    stub->func_value()->set_is_unnamed_type_stub_method();
 	  if (m->nointerface() && stub->is_function())
 	    stub->func_value()->set_nointerface();
 	}
