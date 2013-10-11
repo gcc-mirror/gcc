@@ -1052,6 +1052,7 @@ struct omp_clause_mask
   inline omp_clause_mask operator >> (int);
   inline omp_clause_mask operator << (int);
   inline bool operator == (omp_clause_mask) const;
+  inline bool operator != (omp_clause_mask) const;
   unsigned HOST_WIDE_INT low, high;
 };
 
@@ -1154,6 +1155,12 @@ inline bool
 omp_clause_mask::operator == (omp_clause_mask b) const
 {
   return low == b.low && high == b.high;
+}
+
+inline bool
+omp_clause_mask::operator != (omp_clause_mask b) const
+{
+  return low != b.low || high != b.high;
 }
 
 # define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
