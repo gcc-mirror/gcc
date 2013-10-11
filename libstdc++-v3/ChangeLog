@@ -1,3 +1,8 @@
+2013-10-10  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* testsuite/29_atomics/atomic/cons/49445.cc
+	(dg-require-atomic-builtins): Add.
+
 2013-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/shared_ptr/cons/58659.cc: Use VERIFY instead of
