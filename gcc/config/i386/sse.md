@@ -367,6 +367,10 @@
 (define_mode_iterator VI8F_256 [V4DI V4DF])
 (define_mode_iterator VI8F_256_512
   [V4DI V4DF (V8DI "TARGET_AVX512F") (V8DF "TARGET_AVX512F")])
+(define_mode_iterator VI48F_256_512
+  [V8SI V8SF
+  (V16SI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
+  (V8DI  "TARGET_AVX512F") (V8DF  "TARGET_AVX512F")])
 
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse
@@ -10834,17 +10838,17 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx2_permvar<mode>"
-  [(set (match_operand:VI4F_256 0 "register_operand" "=v")
-	(unspec:VI4F_256
-	  [(match_operand:VI4F_256 1 "nonimmediate_operand" "vm")
-	   (match_operand:V8SI 2 "register_operand" "v")]
+(define_insn "<avx2_avx512f>_permvar<mode>"
+  [(set (match_operand:VI48F_256_512 0 "register_operand" "=v")
+	(unspec:VI48F_256_512
+	  [(match_operand:VI48F_256_512 1 "nonimmediate_operand" "vm")
+	   (match_operand:<sseintvecmode> 2 "register_operand" "v")]
 	  UNSPEC_VPERMVAR))]
   "TARGET_AVX2"
   "vperm<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "<avx2_avx512f>_perm<mode>"
   [(match_operand:VI8F_256_512 0 "register_operand")
