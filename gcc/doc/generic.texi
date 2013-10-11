@@ -2204,7 +2204,7 @@ regular critical section around the expression is used.
 @item OMP_CLAUSE
 
 Represents clauses associated with one of the @code{OMP_} directives.
-Clauses are represented by separate sub-codes defined in
+Clauses are represented by separate subcodes defined in
 @file{tree.h}.  Clauses codes can be one of:
 @code{OMP_CLAUSE_PRIVATE}, @code{OMP_CLAUSE_SHARED},
 @code{OMP_CLAUSE_FIRSTPRIVATE},
