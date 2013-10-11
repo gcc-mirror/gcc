@@ -1,5 +1,7 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* tree.h (OMP_CLAUSE_CODE): Remove duplicate definition.
+
 	* gimple.c: GIMPLE statements have subcodes, not sub-codes.
 	* gimple.h: Likewise.
 
