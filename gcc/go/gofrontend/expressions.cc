@@ -1219,7 +1219,7 @@ Func_expression::do_type()
 
 // Get the tree for the code of a function expression.
 
-tree
+Bexpression*
 Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
 {
   Function_type* fntype;
@@ -1237,10 +1237,10 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
       error_at(loc,
 	       "invalid use of special builtin function %qs; must be called",
 	       no->message_name().c_str());
-      return error_mark_node;
+      return gogo->backend()->error_expression();
     }
 
-  tree fndecl;
+  Bfunction* fndecl;
   if (no->is_function())
     fndecl = no->func_value()->get_or_make_decl(gogo, no);
   else if (no->is_function_declaration())
@@ -1248,10 +1248,7 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
   else
     go_unreachable();
 
-  if (fndecl == error_mark_node)
-    return error_mark_node;
-
-  return build_fold_addr_expr_loc(loc.gcc_location(), fndecl);
+  return gogo->backend()->function_code_expression(fndecl, loc);
 }
 
 // Get the tree for a function expression.  This is used when we take
@@ -1488,8 +1485,10 @@ class Func_code_reference_expression : public Expression
 tree
 Func_code_reference_expression::do_get_tree(Translate_context* context)
 {
-  return Func_expression::get_code_pointer(context->gogo(), this->function_,
-					   this->location());
+  Bexpression* ret =
+      Func_expression::get_code_pointer(context->gogo(), this->function_,
+                                        this->location());
+  return expr_to_tree(ret);
 }
 
 // Make a reference to the code of a function.
@@ -9846,7 +9845,7 @@ Call_expression::do_get_tree(Translate_context* context)
   if (func != NULL)
     {
       Named_object* no = func->named_object();
-      fn = Func_expression::get_code_pointer(gogo, no, location);
+      fn = expr_to_tree(Func_expression::get_code_pointer(gogo, no, location));
       if (!has_closure)
 	closure_tree = NULL_TREE;
       else

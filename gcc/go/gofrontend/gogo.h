@@ -1090,8 +1090,8 @@ class Function
     this->descriptor_ = descriptor;
   }
 
-  // Return the function's decl given an identifier.
-  tree
+  // Return the backend representation.
+  Bfunction*
   get_or_make_decl(Gogo*, Named_object*);
 
   // Return the function's decl after it has been built.
@@ -1262,8 +1262,8 @@ class Function_declaration
   has_descriptor() const
   { return this->descriptor_ != NULL; }
 
-  // Return a decl for the function given an identifier.
-  tree
+  // Return a backend representation.
+  Bfunction*
   get_or_make_decl(Gogo*, Named_object*);
 
   // If there is a descriptor, build it into the backend
