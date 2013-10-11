@@ -134,6 +134,10 @@
 
 ;; All SFmode vector float modes
 (define_mode_iterator VF1
+  [(V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF])
+
+;; 128- and 256-bit SF vector modes
+(define_mode_iterator VF1_128_256
   [(V8SF "TARGET_AVX") V4SF])
 
 ;; All DFmode vector float modes
@@ -154,7 +158,8 @@
 
 ;; All vector integer modes
 (define_mode_iterator VI
-  [(V32QI "TARGET_AVX") V16QI
+  [(V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
+   (V32QI "TARGET_AVX") V16QI
    (V16HI "TARGET_AVX") V8HI
    (V8SI "TARGET_AVX") V4SI
    (V4DI "TARGET_AVX") V2DI])
@@ -162,8 +167,8 @@
 (define_mode_iterator VI_AVX2
   [(V32QI "TARGET_AVX2") V16QI
    (V16HI "TARGET_AVX2") V8HI
-   (V8SI "TARGET_AVX2") V4SI
-   (V4DI "TARGET_AVX2") V2DI])
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
 ;; All QImode vector integer modes
 (define_mode_iterator VI1
@@ -175,7 +180,7 @@
 
 ;; All DImode vector integer modes
 (define_mode_iterator VI8
-  [(V4DI "TARGET_AVX") V2DI])
+  [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI])
 
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
@@ -358,7 +363,8 @@
    (V32QI "V32QI") (V16QI "V16QI")])
 
 (define_mode_attr sseintvecmodelower
-  [(V8SF "v8si") (V4DF "v4di")
+  [(V16SF "v16si")
+   (V8SF "v8si") (V4DF "v4di")
    (V4SF "v4si") (V2DF "v2di")
    (V8SI "v8si") (V4DI "v4di")
    (V4SI "v4si") (V2DI "v2di")
@@ -393,10 +399,21 @@
 
 ;; Mapping of vector modes back to the scalar modes
 (define_mode_attr ssescalarmode
-  [(V32QI "QI") (V16HI "HI") (V8SI "SI") (V4DI "DI")
-   (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
-   (V8SF "SF") (V4DF "DF")
-   (V4SF "SF") (V2DF "DF")])
+  [(V64QI "QI") (V32QI "QI") (V16QI "QI")
+   (V32HI "HI") (V16HI "HI") (V8HI "HI")
+   (V16SI "SI") (V8SI "SI")  (V4SI "SI")
+   (V8DI "DI")  (V4DI "DI")  (V2DI "DI")
+   (V16SF "SF") (V8SF "SF")  (V4SF "SF")
+   (V8DF "DF")  (V4DF "DF")  (V2DF "DF")])
+
+;; Mapping of vector modes to the 128bit modes
+(define_mode_attr ssexmmmode
+  [(V64QI "V16QI") (V32QI "V16QI") (V16QI "V16QI")
+   (V32HI "V8HI")  (V16HI "V8HI") (V8HI "V8HI")
+   (V16SI "V4SI")  (V8SI "V4SI")  (V4SI "V4SI")
+   (V8DI "V2DI")   (V4DI "V2DI")  (V2DI "V2DI")
+   (V16SF "V4SF")  (V8SF "V4SF")  (V4SF "V4SF")
+   (V8DF "V2DF")   (V4DF "V2DF")  (V2DF "V2DF")])
 
 ;; Pointer size override for scalar modes (Intel asm dialect)
 (define_mode_attr iptr
@@ -408,8 +425,10 @@
 
 ;; Number of scalar elements in each vector type
 (define_mode_attr ssescalarnum
-  [(V32QI "32") (V16HI "16") (V8SI "8") (V4DI "4")
+  [(V64QI "64") (V16SI "16") (V8DI "8")
+   (V32QI "32") (V16HI "16") (V8SI "8") (V4DI "4")
    (V16QI "16") (V8HI "8") (V4SI "4") (V2DI "2")
+   (V16SF "16") (V8DF "8")
    (V8SF "8") (V4DF "4")
    (V4SF "4") (V2DF "2")])
 
@@ -1101,9 +1120,9 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_rcp<mode>2"
-  [(set (match_operand:VF1 0 "register_operand" "=x")
-	(unspec:VF1
-	  [(match_operand:VF1 1 "nonimmediate_operand" "xm")] UNSPEC_RCP))]
+  [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
+	(unspec:VF1_128_256
+	  [(match_operand:VF1_128_256 1 "nonimmediate_operand" "xm")] UNSPEC_RCP))]
   "TARGET_SSE"
   "%vrcpps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
@@ -1181,9 +1200,9 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_expand "rsqrt<mode>2"
-  [(set (match_operand:VF1 0 "register_operand")
-	(unspec:VF1
-	  [(match_operand:VF1 1 "nonimmediate_operand")] UNSPEC_RSQRT))]
+  [(set (match_operand:VF1_128_256 0 "register_operand")
+	(unspec:VF1_128_256
+	  [(match_operand:VF1_128_256 1 "nonimmediate_operand")] UNSPEC_RSQRT))]
   "TARGET_SSE_MATH"
 {
   ix86_emit_swsqrtsf (operands[0], operands[1], <MODE>mode, true);
@@ -1191,9 +1210,9 @@
 })
 
 (define_insn "<sse>_rsqrt<mode>2"
-  [(set (match_operand:VF1 0 "register_operand" "=x")
-	(unspec:VF1
-	  [(match_operand:VF1 1 "nonimmediate_operand" "xm")] UNSPEC_RSQRT))]
+  [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
+	(unspec:VF1_128_256
+	  [(match_operand:VF1_128_256 1 "nonimmediate_operand" "xm")] UNSPEC_RSQRT))]
   "TARGET_SSE"
   "%vrsqrtps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
@@ -2756,6 +2775,16 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
+(define_insn "<fixsuffix>fix_truncv16sfv16si2"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(any_fix:V16SI
+	  (match_operand:V16SF 1 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512F"
+  "vcvttps2<fixsuffix>dq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
 (define_insn "fix_truncv8sfv8si2"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
 	(fix:V8SI (match_operand:V8SF 1 "nonimmediate_operand" "xm")))]
@@ -4216,8 +4245,8 @@
    (set_attr "mode" "SF")])
 
 (define_insn "avx2_vec_dup<mode>"
-  [(set (match_operand:VF1 0 "register_operand" "=x")
-	(vec_duplicate:VF1
+  [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
+	(vec_duplicate:VF1_128_256
 	  (vec_select:SF
 	    (match_operand:V4SF 1 "register_operand" "x")
 	    (parallel [(const_int 0)]))))]
@@ -6499,12 +6528,18 @@
 	  (match_operand:VI 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_SSE"
 {
-  static char buf[32];
+  static char buf[64];
   const char *ops;
   const char *tmp;
 
   switch (get_attr_mode (insn))
     {
+    case MODE_XI:
+      gcc_assert (TARGET_AVX512F);
+
+      tmp = "pandn<ssemodesuffix>";
+      break;
+
     case MODE_OI:
       gcc_assert (TARGET_AVX2);
     case MODE_TI:
@@ -6584,12 +6619,17 @@
   "TARGET_SSE
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
-  static char buf[32];
+  static char buf[64];
   const char *ops;
   const char *tmp;
 
   switch (get_attr_mode (insn))
     {
+    case MODE_XI:
+      gcc_assert (TARGET_AVX512F);
+      tmp = "p<logic><ssemodesuffix>";
+      break;
+
     case MODE_OI:
       gcc_assert (TARGET_AVX2);
     case MODE_TI:
@@ -6598,6 +6638,8 @@
       tmp = "p<logic>";
       break;
 
+   case MODE_V16SF:
+      gcc_assert (TARGET_AVX512F);
    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
    case MODE_V4SF:
@@ -9055,7 +9097,7 @@
 
 (define_expand "<sse4_1>_round<ssemodesuffix>_sfix<avxsizesuffix>"
   [(match_operand:<sseintvecmode> 0 "register_operand")
-   (match_operand:VF1 1 "nonimmediate_operand")
+   (match_operand:VF1_128_256 1 "nonimmediate_operand")
    (match_operand:SI 2 "const_0_to_15_operand")]
   "TARGET_ROUND"
 {
@@ -9164,7 +9206,7 @@
 
 (define_expand "round<mode>2_sfix"
   [(match_operand:<sseintvecmode> 0 "register_operand")
-   (match_operand:VF1 1 "register_operand")]
+   (match_operand:VF1_128_256 1 "register_operand")]
   "TARGET_ROUND && !flag_trapping_math"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
@@ -10594,17 +10636,11 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
-(define_mode_attr AVXTOSSEMODE
-  [(V4DI "V2DI") (V2DI "V2DI")
-   (V8SI "V4SI") (V4SI "V4SI")
-   (V16HI "V8HI") (V8HI "V8HI")
-   (V32QI "V16QI") (V16QI "V16QI")])
-
 (define_insn "avx2_pbroadcast<mode>"
   [(set (match_operand:VI 0 "register_operand" "=x")
 	(vec_duplicate:VI
 	  (vec_select:<ssescalarmode>
-	    (match_operand:<AVXTOSSEMODE> 1 "nonimmediate_operand" "xm")
+	    (match_operand:<ssexmmmode> 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)]))))]
   "TARGET_AVX2"
   "vpbroadcast<ssemodesuffix>\t{%1, %0|%0, %<iptr>1}"
@@ -10856,7 +10892,7 @@
     = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (<ssescalarnum>, perm));
 })
 
-(define_expand "avx_vpermil<mode>"
+(define_expand "<sse2_avx_avx512f>_vpermil<mode>"
   [(set (match_operand:VF1 0 "register_operand")
 	(vec_select:VF1
 	  (match_operand:VF1 1 "nonimmediate_operand")
@@ -10866,16 +10902,13 @@
   int mask = INTVAL (operands[2]);
   rtx perm[<ssescalarnum>];
 
-  perm[0] = GEN_INT (mask & 3);
-  perm[1] = GEN_INT ((mask >> 2) & 3);
-  perm[2] = GEN_INT ((mask >> 4) & 3);
-  perm[3] = GEN_INT ((mask >> 6) & 3);
-  if (<MODE>mode == V8SFmode)
+  int i;
+  for (i = 0; i < <ssescalarnum>; i = i + 4)
     {
-      perm[4] = GEN_INT ((mask & 3) + 4);
-      perm[5] = GEN_INT (((mask >> 2) & 3) + 4);
-      perm[6] = GEN_INT (((mask >> 4) & 3) + 4);
-      perm[7] = GEN_INT (((mask >> 6) & 3) + 4);
+      perm[i]     = GEN_INT (((mask >> 0) & 3) + i);
+      perm[i + 1] = GEN_INT (((mask >> 2) & 3) + i);
+      perm[i + 2] = GEN_INT (((mask >> 4) & 3) + i);
+      perm[i + 3] = GEN_INT (((mask >> 6) & 3) + i);
     }
 
   operands[2]
