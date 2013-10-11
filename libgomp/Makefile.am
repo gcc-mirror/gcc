@@ -76,7 +76,7 @@ LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 omp_lib_kinds.mod: omp_lib.mod
 	:
 omp_lib.mod: omp_lib.f90
-	$(FC) $(FCFLAGS) -fsyntax-only omp_lib.f90
+	$(FC) $(FCFLAGS) -fsyntax-only $<
 fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h
 env.lo: libgomp_f.h

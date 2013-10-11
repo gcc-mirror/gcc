@@ -1,5 +1,8 @@
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* Makefile.am (omp_lib.mod): Streamline rule.
+	* Makefile.in: Regenerate.
+
 	* libgomp.texi (Runtime Library Routines): C linkage, don't throw
 	exceptions.
 
