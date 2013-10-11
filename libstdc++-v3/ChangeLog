@@ -1,3 +1,7 @@
+2013-10-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
+
 2013-10-10  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* testsuite/29_atomics/atomic/cons/49445.cc
