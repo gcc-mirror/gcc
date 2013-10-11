@@ -23,7 +23,7 @@ class Bexpression;
 // The backend representation of a statement.
 class Bstatement;
 
-// The backend representation of a function definition.
+// The backend representation of a function definition or declaration.
 class Bfunction;
 
 // The backend representation of a block.
@@ -498,6 +498,32 @@ class Backend
   // recover.
   virtual Bexpression*
   label_address(Blabel*, Location) = 0;
+
+  // Functions.
+
+  // Create an error function.  This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  virtual Bfunction*
+  error_function() = 0;
+
+  // Declare or define a function of FNTYPE.
+  // NAME is the Go name of the function. ASM_NAME, if not the empty string, is
+  // the name that should be used in the symbol table; this will be non-empty if
+  // a magic extern comment is used.
+  // IS_VISIBLE is true if this function should be visible outside of the
+  // current compilation unit. IS_DECLARATION is true if this is a function
+  // declaration rather than a definition; the function definition will be in
+  // another compilation unit.
+  // IS_INLINABLE is true if the function can be inlined.
+  // DISABLE_SPLIT_STACK is true if this function may not split the stack; this
+  // is used for the implementation of recover.
+  // IN_UNIQUE_SECTION is true if this function should be put into a unique
+  // location if possible; this is used for field tracking.
+  virtual Bfunction*
+  function(Btype* fntype, const std::string& name, const std::string& asm_name,
+           bool is_visible, bool is_declaration, bool is_inlinable,
+           bool disable_split_stack, bool in_unique_section, Location) = 0;
 };
 
 // The backend interface has to define this function.
@@ -517,5 +543,6 @@ extern tree expr_to_tree(Bexpression*);
 extern tree stat_to_tree(Bstatement*);
 extern tree block_to_tree(Bblock*);
 extern tree var_to_tree(Bvariable*);
+extern tree function_to_tree(Bfunction*);
 
 #endif // !defined(GO_BACKEND_H)

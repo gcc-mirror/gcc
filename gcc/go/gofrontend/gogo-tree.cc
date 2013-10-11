@@ -985,74 +985,6 @@ Gogo::write_globals()
   delete[] vec;
 }
 
-// Get a tree for the identifier for a named object.
-
-tree
-Named_object::get_id(Gogo* gogo)
-{
-  go_assert(!this->is_variable() && !this->is_result_variable());
-  std::string decl_name;
-  if (this->is_function_declaration()
-      && !this->func_declaration_value()->asm_name().empty())
-    decl_name = this->func_declaration_value()->asm_name();
-  else if (this->is_type()
-	   && Linemap::is_predeclared_location(this->type_value()->location()))
-    {
-      // We don't need the package name for builtin types.
-      decl_name = Gogo::unpack_hidden_name(this->name_);
-    }
-  else
-    {
-      std::string package_name;
-      if (this->package_ == NULL)
-	package_name = gogo->package_name();
-      else
-	package_name = this->package_->package_name();
-
-      // Note that this will be misleading if this is an unexported
-      // method generated for an embedded imported type.  In that case
-      // the unexported method should have the package name of the
-      // package from which it is imported, but we are going to give
-      // it our package name.  Fixing this would require knowing the
-      // package name, but we only know the package path.  It might be
-      // better to use package paths here anyhow.  This doesn't affect
-      // the assembler code, because we always set that name in
-      // Function::get_or_make_decl anyhow.  FIXME.
-
-      decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
-
-      Function_type* fntype;
-      if (this->is_function())
-	fntype = this->func_value()->type();
-      else if (this->is_function_declaration())
-	fntype = this->func_declaration_value()->type();
-      else
-	fntype = NULL;
-      if (fntype != NULL && fntype->is_method())
-	{
-	  decl_name.push_back('.');
-	  decl_name.append(fntype->receiver()->type()->mangled_name(gogo));
-	}
-    }
-  if (this->is_type())
-    {
-      unsigned int index;
-      const Named_object* in_function = this->type_value()->in_function(&index);
-      if (in_function != NULL)
-	{
-	  decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
-	  if (index > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", index);
-	      decl_name += '$';
-	      decl_name += buf;
-	    }
-	}
-    }
-  return get_identifier_from_string(decl_name);
-}
-
 // Get a tree for a named object.
 
 tree
@@ -1067,11 +999,6 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       return error_mark_node;
     }
 
-  tree name;
-  if (this->classification_ == NAMED_OBJECT_TYPE)
-    name = NULL_TREE;
-  else
-    name = this->get_id(gogo);
   tree decl;
   switch (this->classification_)
     {
@@ -1099,6 +1026,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 	      decl = error_mark_node;
 	    else if (INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
 	      {
+                tree name = get_identifier_from_string(this->get_id(gogo));
 		decl = build_decl(named_constant->location().gcc_location(),
                                   CONST_DECL, name, TREE_TYPE(expr_tree));
 		DECL_INITIAL(decl) = expr_tree;
@@ -1161,7 +1089,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
     case NAMED_OBJECT_FUNC:
       {
 	Function* func = this->u_.func_value;
-	decl = func->get_or_make_decl(gogo, this, name);
+	decl = func->get_or_make_decl(gogo, this);
 	if (decl != error_mark_node)
 	  {
 	    if (func->block() != NULL)
@@ -1289,120 +1217,83 @@ Variable::get_init_block(Gogo* gogo, Named_object* function, tree var_decl)
 // Get a tree for a function decl.
 
 tree
-Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
+Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
-  if (this->fndecl_ == NULL_TREE)
+  if (this->fndecl_ == NULL)
     {
-      tree functype = type_to_tree(this->type_->get_backend(gogo));
+      std::string asm_name;
+      bool is_visible = false;
+      if (no->package() != NULL)
+        ;
+      else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
+        ;
+      else if (Gogo::unpack_hidden_name(no->name()) == "init"
+               && !this->type_->is_method())
+        ;
+      else if (Gogo::unpack_hidden_name(no->name()) == "main"
+               && gogo->is_main_package())
+        is_visible = true;
+      // Methods have to be public even if they are hidden because
+      // they can be pulled into type descriptors when using
+      // anonymous fields.
+      else if (!Gogo::is_hidden_name(no->name())
+               || this->type_->is_method())
+        {
+          is_visible = true;
+          std::string pkgpath = gogo->pkgpath_symbol();
+          if (this->type_->is_method()
+              && Gogo::is_hidden_name(no->name())
+              && Gogo::hidden_name_pkgpath(no->name()) != gogo->pkgpath())
+            {
+              // This is a method we created for an unexported
+              // method of an imported embedded type.  We need to
+              // use the pkgpath of the imported package to avoid
+              // a possible name collision.  See bug478 for a test
+              // case.
+              pkgpath = Gogo::hidden_name_pkgpath(no->name());
+              pkgpath = Gogo::pkgpath_for_symbol(pkgpath);
+            }
 
-      if (functype != error_mark_node)
-	{
-	  // The type of a function comes back as a pointer to a
-	  // struct whose first field is the function, but we want the
-	  // real function type for a function declaration.
-	  go_assert(POINTER_TYPE_P(functype)
-		    && TREE_CODE(TREE_TYPE(functype)) == RECORD_TYPE);
-	  functype = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(functype)));
-	  go_assert(FUNCTION_POINTER_TYPE_P(functype));
-	  functype = TREE_TYPE(functype);
-	}
+          asm_name = pkgpath;
+          asm_name.append(1, '.');
+          asm_name.append(Gogo::unpack_hidden_name(no->name()));
+          if (this->type_->is_method())
+            {
+              asm_name.append(1, '.');
+              Type* rtype = this->type_->receiver()->type();
+              asm_name.append(rtype->mangled_name(gogo));
+            }
+        }
 
-      if (functype == error_mark_node)
-	this->fndecl_ = error_mark_node;
-      else
-	{
-	  tree decl = build_decl(this->location().gcc_location(), FUNCTION_DECL,
-                                 id, functype);
+      // If a function calls the predeclared recover function, we
+      // can't inline it, because recover behaves differently in a
+      // function passed directly to defer.  If this is a recover
+      // thunk that we built to test whether a function can be
+      // recovered, we can't inline it, because that will mess up
+      // our return address comparison.
+      bool is_inlinable = !(this->calls_recover_ || this->is_recover_thunk_);
 
-	  this->fndecl_ = decl;
+      // If this is a thunk created to call a function which calls
+      // the predeclared recover function, we need to disable
+      // stack splitting for the thunk.
+      bool disable_split_stack = this->is_recover_thunk_;
 
-	  if (no->package() != NULL)
-	    ;
-	  else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
-	    ;
-	  else if (Gogo::unpack_hidden_name(no->name()) == "init"
-		   && !this->type_->is_method())
-	    ;
-	  else if (Gogo::unpack_hidden_name(no->name()) == "main"
-		   && gogo->is_main_package())
-	    TREE_PUBLIC(decl) = 1;
-	  // Methods have to be public even if they are hidden because
-	  // they can be pulled into type descriptors when using
-	  // anonymous fields.
-	  else if (!Gogo::is_hidden_name(no->name())
-		   || this->type_->is_method())
-	    {
-	      TREE_PUBLIC(decl) = 1;
-	      std::string pkgpath = gogo->pkgpath_symbol();
-	      if (this->type_->is_method()
-		  && Gogo::is_hidden_name(no->name())
-		  && Gogo::hidden_name_pkgpath(no->name()) != gogo->pkgpath())
-		{
-		  // This is a method we created for an unexported
-		  // method of an imported embedded type.  We need to
-		  // use the pkgpath of the imported package to avoid
-		  // a possible name collision.  See bug478 for a test
-		  // case.
-		  pkgpath = Gogo::hidden_name_pkgpath(no->name());
-		  pkgpath = Gogo::pkgpath_for_symbol(pkgpath);
-		}
-
-	      std::string asm_name = pkgpath;
-	      asm_name.append(1, '.');
-	      asm_name.append(Gogo::unpack_hidden_name(no->name()));
-	      if (this->type_->is_method())
-		{
-		  asm_name.append(1, '.');
-		  Type* rtype = this->type_->receiver()->type();
-		  asm_name.append(rtype->mangled_name(gogo));
-		}
-	      SET_DECL_ASSEMBLER_NAME(decl,
-				      get_identifier_from_string(asm_name));
-	    }
-
-	  // Why do we have to do this in the frontend?
-	  tree restype = TREE_TYPE(functype);
-	  tree resdecl =
-            build_decl(this->location().gcc_location(), RESULT_DECL, NULL_TREE,
-                       restype);
-	  DECL_ARTIFICIAL(resdecl) = 1;
-	  DECL_IGNORED_P(resdecl) = 1;
-	  DECL_CONTEXT(resdecl) = decl;
-	  DECL_RESULT(decl) = resdecl;
-
-	  // If a function calls the predeclared recover function, we
-	  // can't inline it, because recover behaves differently in a
-	  // function passed directly to defer.  If this is a recover
-	  // thunk that we built to test whether a function can be
-	  // recovered, we can't inline it, because that will mess up
-	  // our return address comparison.
-	  if (this->calls_recover_ || this->is_recover_thunk_)
-	    DECL_UNINLINABLE(decl) = 1;
-
-	  // If this is a thunk created to call a function which calls
-	  // the predeclared recover function, we need to disable
-	  // stack splitting for the thunk.
-	  if (this->is_recover_thunk_)
-	    {
-	      tree attr = get_identifier("__no_split_stack__");
-	      DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
-	    }
-
-	  if (this->in_unique_section_)
-	    resolve_unique_section (decl, 0, 1);
-
-	  go_preserve_from_gc(decl);
-	}
+      Btype* functype = this->type_->get_backend_fntype(gogo);
+      this->fndecl_ =
+          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
+                                    is_visible, false, is_inlinable,
+                                    disable_split_stack,
+                                    this->in_unique_section_, this->location());
     }
-  return this->fndecl_;
+  return function_to_tree(this->fndecl_);
 }
 
 // Get a tree for a function declaration.
 
 tree
-Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
+Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
-  if (this->fndecl_ == NULL_TREE)
+  if (this->fndecl_ == NULL)
     {
       // Let Go code use an asm declaration to pick up a builtin
       // function.
@@ -1412,56 +1303,44 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	    builtin_functions.find(this->asm_name_);
 	  if (p != builtin_functions.end())
 	    {
-	      this->fndecl_ = p->second;
-	      return this->fndecl_;
+	      this->fndecl_ = tree_to_function(p->second);
+	      return p->second;
 	    }
 	}
 
-      tree functype = type_to_tree(this->fntype_->get_backend(gogo));
+      std::string asm_name;
+      if (this->asm_name_.empty())
+        {
+          asm_name = (no->package() == NULL
+                                  ? gogo->pkgpath_symbol()
+                                  : no->package()->pkgpath_symbol());
+          asm_name.append(1, '.');
+          asm_name.append(Gogo::unpack_hidden_name(no->name()));
+          if (this->fntype_->is_method())
+            {
+              asm_name.append(1, '.');
+              Type* rtype = this->fntype_->receiver()->type();
+              asm_name.append(rtype->mangled_name(gogo));
+            }
+        }
 
-      if (functype != error_mark_node)
-	{
-	  // The type of a function comes back as a pointer to a
-	  // struct whose first field is the function, but we want the
-	  // real function type for a function declaration.
-	  go_assert(POINTER_TYPE_P(functype)
-		    && TREE_CODE(TREE_TYPE(functype)) == RECORD_TYPE);
-	  functype = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(functype)));
-	  go_assert(FUNCTION_POINTER_TYPE_P(functype));
-	  functype = TREE_TYPE(functype);
-	}
-
-      tree decl;
-      if (functype == error_mark_node)
-	decl = error_mark_node;
-      else
-	{
-	  decl = build_decl(this->location().gcc_location(), FUNCTION_DECL, id,
-                            functype);
-	  TREE_PUBLIC(decl) = 1;
-	  DECL_EXTERNAL(decl) = 1;
-
-	  if (this->asm_name_.empty())
-	    {
-	      std::string asm_name = (no->package() == NULL
-				      ? gogo->pkgpath_symbol()
-				      : no->package()->pkgpath_symbol());
-	      asm_name.append(1, '.');
-	      asm_name.append(Gogo::unpack_hidden_name(no->name()));
-	      if (this->fntype_->is_method())
-		{
-		  asm_name.append(1, '.');
-		  Type* rtype = this->fntype_->receiver()->type();
-		  asm_name.append(rtype->mangled_name(gogo));
-		}
-	      SET_DECL_ASSEMBLER_NAME(decl,
-				      get_identifier_from_string(asm_name));
-	    }
-	}
-      this->fndecl_ = decl;
-      go_preserve_from_gc(decl);
+      Btype* functype = this->fntype_->get_backend_fntype(gogo);
+      this->fndecl_ =
+          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
+                                    true, true, true, false, false,
+                                    this->location());
     }
-  return this->fndecl_;
+
+  return function_to_tree(this->fndecl_);
+}
+
+// Return the function's decl after it has been built.
+
+tree
+Function::get_decl() const
+{
+  go_assert(this->fndecl_ != NULL);
+  return function_to_tree(this->fndecl_);
 }
 
 // We always pass the receiver to a method as a pointer.  If the
@@ -1558,7 +1437,7 @@ Function::copy_parm_to_heap(Gogo* gogo, Named_object* no, tree var_decl)
 void
 Function::build_tree(Gogo* gogo, Named_object* named_function)
 {
-  tree fndecl = this->fndecl_;
+  tree fndecl = this->get_decl();
   go_assert(fndecl != NULL_TREE);
 
   tree params = NULL_TREE;
@@ -1796,7 +1675,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
     set = NULL_TREE;
   else
     set = fold_build2_loc(end_loc.gcc_location(), MODIFY_EXPR, void_type_node,
-			  DECL_RESULT(this->fndecl_), retval);
+			  DECL_RESULT(this->get_decl()), retval);
   tree ret_stmt = fold_build1_loc(end_loc.gcc_location(), RETURN_EXPR,
                                   void_type_node, set);
   append_to_statement_list(ret_stmt, &stmt_list);
@@ -1851,7 +1730,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       retval = this->return_value(gogo, named_function, end_loc,
 				  &stmt_list);
       set = fold_build2_loc(end_loc.gcc_location(), MODIFY_EXPR, void_type_node,
-			    DECL_RESULT(this->fndecl_), retval);
+			    DECL_RESULT(this->get_decl()), retval);
       ret_stmt = fold_build1_loc(end_loc.gcc_location(), RETURN_EXPR,
                                  void_type_node, set);
 
@@ -1869,7 +1748,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   *fini = stmt_list;
 }
 
-// Return the value to assign to DECL_RESULT(this->fndecl_).  This may
+// Return the value to assign to DECL_RESULT(this->get_decl()).  This may
 // also add statements to STMT_LIST, which need to be executed before
 // the assignment.  This is used for a return statement with no
 // explicit values.
@@ -1902,7 +1781,7 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
     }
   else
     {
-      tree rettype = TREE_TYPE(DECL_RESULT(this->fndecl_));
+      tree rettype = TREE_TYPE(DECL_RESULT(this->get_decl()));
       retval = create_tmp_var(rettype, "RESULT");
       tree field = TYPE_FIELDS(rettype);
       int index = 0;
@@ -2323,15 +2202,11 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
       go_assert(m != NULL);
 
       Named_object* no = m->named_object();
-
-      tree fnid = no->get_id(this);
-
       tree fndecl;
       if (no->is_function())
-	fndecl = no->func_value()->get_or_make_decl(this, no, fnid);
+	fndecl = no->func_value()->get_or_make_decl(this, no);
       else if (no->is_function_declaration())
-	fndecl = no->func_declaration_value()->get_or_make_decl(this, no,
-								fnid);
+	fndecl = no->func_declaration_value()->get_or_make_decl(this, no);
       else
 	go_unreachable();
       fndecl = build_fold_addr_expr(fndecl);

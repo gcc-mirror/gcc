@@ -334,6 +334,17 @@ class Gcc_backend : public Backend
   Bexpression*
   label_address(Blabel*, Location);
 
+  // Functions.
+
+  Bfunction*
+  error_function()
+  { return this->make_function(error_mark_node); }
+
+  Bfunction*
+  function(Btype* fntype, const std::string& name, const std::string& asm_name,
+           bool is_visible, bool is_declaration, bool is_inlinable,
+           bool disable_split_stack, bool in_unique_section, Location);
+
  private:
   // Make a Bexpression from a tree.
   Bexpression*
@@ -349,6 +360,10 @@ class Gcc_backend : public Backend
   Btype*
   make_type(tree t)
   { return new Btype(t); }
+
+  Bfunction*
+  make_function(tree t)
+  { return new Bfunction(t); }
 
   Btype*
   fill_in_struct(Btype*, const std::vector<Btyped_identifier>&);
@@ -1724,6 +1739,56 @@ Gcc_backend::label_address(Blabel* label, Location location)
   return this->make_expression(ret);
 }
 
+// Declare or define a new function.
+
+Bfunction*
+Gcc_backend::function(Btype* fntype, const std::string& name,
+                      const std::string& asm_name, bool is_visible,
+                      bool is_declaration, bool is_inlinable,
+                      bool disable_split_stack, bool in_unique_section,
+                      Location location)
+{
+  tree functype = fntype->get_tree();
+  if (functype != error_mark_node)
+    {
+      gcc_assert(FUNCTION_POINTER_TYPE_P(functype));
+      functype = TREE_TYPE(functype);
+    }
+  tree id = get_identifier_from_string(name);
+  if (functype == error_mark_node || id == error_mark_node)
+    return this->error_function();
+
+  tree decl = build_decl(location.gcc_location(), FUNCTION_DECL, id, functype);
+  if (!asm_name.empty())
+    SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+  if (is_visible)
+    TREE_PUBLIC(decl) = 1;
+  if (is_declaration)
+    DECL_EXTERNAL(decl) = 1;
+  else
+    {
+      tree restype = TREE_TYPE(functype);
+      tree resdecl =
+          build_decl(location.gcc_location(), RESULT_DECL, NULL_TREE, restype);
+      DECL_ARTIFICIAL(resdecl) = 1;
+      DECL_IGNORED_P(resdecl) = 1;
+      DECL_CONTEXT(resdecl) = decl;
+      DECL_RESULT(decl) = resdecl;
+    }
+  if (!is_inlinable)
+    DECL_UNINLINABLE(decl) = 1;
+  if (disable_split_stack)
+    {
+      tree attr = get_identifier("__no_split_stack__");
+      DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
+    }
+  if (in_unique_section)
+    resolve_unique_section(decl, 0, 1);
+
+  go_preserve_from_gc(decl);
+  return new Bfunction(decl);
+}
+
 // The single backend.
 
 static Gcc_backend gcc_backend;
@@ -1798,4 +1863,10 @@ tree
 var_to_tree(Bvariable* bv)
 {
   return bv->get_tree();
+}
+
+tree
+function_to_tree(Bfunction* bf)
+{
+  return bf->get_tree();
 }

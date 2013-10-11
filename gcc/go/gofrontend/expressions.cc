@@ -1240,15 +1240,11 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
       return error_mark_node;
     }
 
-  tree id = no->get_id(gogo);
-  if (id == error_mark_node)
-    return error_mark_node;
-
   tree fndecl;
   if (no->is_function())
-    fndecl = no->func_value()->get_or_make_decl(gogo, no, id);
+    fndecl = no->func_value()->get_or_make_decl(gogo, no);
   else if (no->is_function_declaration())
-    fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no, id);
+    fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no);
   else
     go_unreachable();
 
@@ -9825,14 +9821,8 @@ Call_expression::do_get_tree(Translate_context* context)
     }
 
   tree fntype_tree = type_to_tree(fntype->get_backend(gogo));
-  if (fntype_tree == error_mark_node)
-    return error_mark_node;
-  go_assert(POINTER_TYPE_P(fntype_tree));
-  if (TREE_TYPE(fntype_tree) == error_mark_node)
-    return error_mark_node;
-  go_assert(TREE_CODE(TREE_TYPE(fntype_tree)) == RECORD_TYPE);
-  tree fnfield_type = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(fntype_tree)));
-  if (fnfield_type == error_mark_node)
+  tree fnfield_type = type_to_tree(fntype->get_backend_fntype(gogo));
+  if (fntype_tree == error_mark_node || fnfield_type == error_mark_node)
     return error_mark_node;
   go_assert(FUNCTION_POINTER_TYPE_P(fnfield_type));
   tree rettype = TREE_TYPE(TREE_TYPE(fnfield_type));

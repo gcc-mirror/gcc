@@ -48,6 +48,7 @@ class Bstatement;
 class Bblock;
 class Bvariable;
 class Blabel;
+class Bfunction;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -1091,15 +1092,11 @@ class Function
 
   // Return the function's decl given an identifier.
   tree
-  get_or_make_decl(Gogo*, Named_object*, tree id);
+  get_or_make_decl(Gogo*, Named_object*);
 
   // Return the function's decl after it has been built.
   tree
-  get_decl() const
-  {
-    go_assert(this->fndecl_ != NULL);
-    return this->fndecl_;
-  }
+  get_decl() const;
 
   // Set the function decl to hold a tree of the function code.
   void
@@ -1170,7 +1167,7 @@ class Function
   // The function descriptor, if any.
   Expression* descriptor_;
   // The function decl.
-  tree fndecl_;
+  Bfunction* fndecl_;
   // The defer stack variable.  A pointer to this variable is used to
   // distinguish the defer stack for one function from another.  This
   // is NULL unless we actually need a defer stack.
@@ -1267,7 +1264,7 @@ class Function_declaration
 
   // Return a decl for the function given an identifier.
   tree
-  get_or_make_decl(Gogo*, Named_object*, tree id);
+  get_or_make_decl(Gogo*, Named_object*);
 
   // If there is a descriptor, build it into the backend
   // representation.
@@ -1290,7 +1287,7 @@ class Function_declaration
   // The function descriptor, if any.
   Expression* descriptor_;
   // The function decl if needed.
-  tree fndecl_;
+  Bfunction* fndecl_;
 };
 
 // A variable.
@@ -2181,8 +2178,8 @@ class Named_object
   Bvariable*
   get_backend_variable(Gogo*, Named_object* function);
 
-  // Return a tree for the external identifier for this object.
-  tree
+  // Return the external identifier for this object.
+  std::string
   get_id(Gogo*);
 
   // Return a tree representing this object.
