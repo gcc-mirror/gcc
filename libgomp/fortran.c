@@ -31,11 +31,6 @@
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
 /* Use internal aliases if possible.  */
-# define ULP		STR1(__USER_LABEL_PREFIX__)
-# define STR1(x)	STR2(x)
-# define STR2(x)	#x
-# define ialias_redirect(fn) \
-  extern __typeof (fn) fn __asm__ (ULP "gomp_ialias_" #fn) attribute_hidden;
 # ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
 ialias_redirect (omp_init_lock)
 ialias_redirect (omp_init_nest_lock)
@@ -70,6 +65,14 @@ ialias_redirect (omp_get_ancestor_thread_num)
 ialias_redirect (omp_get_team_size)
 ialias_redirect (omp_get_active_level)
 ialias_redirect (omp_in_final)
+ialias_redirect (omp_get_cancellation)
+ialias_redirect (omp_get_proc_bind)
+ialias_redirect (omp_set_default_device)
+ialias_redirect (omp_get_default_device)
+ialias_redirect (omp_get_num_devices)
+ialias_redirect (omp_get_num_teams)
+ialias_redirect (omp_get_team_num)
+ialias_redirect (omp_is_initial_device)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -434,4 +437,58 @@ int32_t
 omp_in_final_ (void)
 {
   return omp_in_final ();
+}
+
+int32_t
+omp_get_cancellation_ (void)
+{
+  return omp_get_cancellation ();
+}
+
+int32_t
+omp_get_proc_bind_ (void)
+{
+  return omp_get_proc_bind ();
+}
+
+void
+omp_set_default_device_ (const int32_t *device_num)
+{
+  return omp_set_default_device (*device_num);
+}
+
+void
+omp_set_default_device_8_ (const int64_t *device_num)
+{
+  return omp_set_default_device (TO_INT (*device_num));
+}
+
+int32_t
+omp_get_default_device_ (void)
+{
+  return omp_get_default_device ();
+}
+
+int32_t
+omp_get_num_devices_ (void)
+{
+  return omp_get_num_devices ();
+}
+
+int32_t
+omp_get_num_teams_ (void)
+{
+  return omp_get_num_teams ();
+}
+
+int32_t
+omp_get_team_num_ (void)
+{
+  return omp_get_team_num ();
+}
+
+int32_t
+omp_is_initial_device_ (void)
+{
+  return omp_is_initial_device ();
 }

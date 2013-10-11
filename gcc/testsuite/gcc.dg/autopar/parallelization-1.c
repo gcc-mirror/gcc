@@ -28,6 +28,6 @@ int main(void)
 /* Check that the first loop in parloop got parallelized.  */
 
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "loopfn" 5 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "parloops" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

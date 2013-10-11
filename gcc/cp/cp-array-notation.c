@@ -1193,6 +1193,7 @@ expand_array_notation_exprs (tree t)
     case OMP_SECTION:
     case OMP_SECTIONS:
     case OMP_MASTER:
+    case OMP_TASKGROUP:
     case OMP_ORDERED:
     case OMP_CRITICAL:
     case OMP_ATOMIC:

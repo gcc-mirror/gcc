@@ -1,3 +1,55 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine _OPENMP to
+	201307 instead of 201107.
+	* c-common.c (DEF_FUNCTION_TYPE_8): Define.
+	(c_common_attribute_table): Add "omp declare target" and
+	"omp declare simd" attributes.
+	(handle_omp_declare_target_attribute,
+	handle_omp_declare_simd_attribute): New functions.
+	* c-omp.c: Include c-pragma.h.
+	(c_finish_omp_taskgroup): New function.
+	(c_finish_omp_atomic): Add swapped argument, if true,
+	build the operation first with rhs, lhs arguments and use NOP_EXPR
+	build_modify_expr.
+	(c_finish_omp_for): Add code argument, pass it down to make_code.
+	(c_omp_split_clauses): New function.
+	(c_split_parallel_clauses): Removed.
+	(c_omp_declare_simd_clause_cmp, c_omp_declare_simd_clauses_to_numbers,
+	c_omp_declare_simd_clauses_to_decls): New functions.
+	* c-common.h (omp_clause_mask): New type.
+	(OMP_CLAUSE_MASK_1): Define.
+	(omp_clause_mask::omp_clause_mask, omp_clause_mask::operator &=,
+	omp_clause_mask::operator |=, omp_clause_mask::operator ~,
+	omp_clause_mask::operator |, omp_clause_mask::operator &,
+	omp_clause_mask::operator <<, omp_clause_mask::operator >>,
+	omp_clause_mask::operator ==): New methods.
+	(enum c_omp_clause_split): New.
+	(c_finish_omp_taskgroup): New prototype.
+	(c_finish_omp_atomic): Add swapped argument.
+	(c_finish_omp_for): Add code argument.
+	(c_omp_split_clauses): New prototype.
+	(c_split_parallel_clauses): Removed.
+	(c_omp_declare_simd_clauses_to_numbers,
+	c_omp_declare_simd_clauses_to_decls): New prototypes.
+	* c-pragma.c (omp_pragmas): Add new OpenMP 4.0 constructs.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_CANCEL,
+	PRAGMA_OMP_CANCELLATION_POINT, PRAGMA_OMP_DECLARE_REDUCTION,
+	PRAGMA_OMP_DISTRIBUTE, PRAGMA_OMP_END_DECLARE_TARGET, PRAGMA_OMP_SIMD,
+	PRAGMA_OMP_TARGET, PRAGMA_OMP_TASKGROUP and PRAGMA_OMP_TEAMS.
+	Remove PRAGMA_OMP_PARALLEL_FOR and PRAGMA_OMP_PARALLEL_SECTIONS.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ALIGNED,
+	PRAGMA_OMP_CLAUSE_DEPEND, PRAGMA_OMP_CLAUSE_DEVICE,
+	PRAGMA_OMP_CLAUSE_DIST_SCHEDULE, PRAGMA_OMP_CLAUSE_FOR,
+	PRAGMA_OMP_CLAUSE_FROM, PRAGMA_OMP_CLAUSE_INBRANCH,
+	PRAGMA_OMP_CLAUSE_LINEAR, PRAGMA_OMP_CLAUSE_MAP,
+	PRAGMA_OMP_CLAUSE_NOTINBRANCH, PRAGMA_OMP_CLAUSE_NUM_TEAMS,
+	PRAGMA_OMP_CLAUSE_PARALLEL, PRAGMA_OMP_CLAUSE_PROC_BIND,
+	PRAGMA_OMP_CLAUSE_SAFELEN, PRAGMA_OMP_CLAUSE_SECTIONS,
+	PRAGMA_OMP_CLAUSE_SIMDLEN, PRAGMA_OMP_CLAUSE_TASKGROUP,
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT, PRAGMA_OMP_CLAUSE_TO and
+	PRAGMA_OMP_CLAUSE_UNIFORM.
+
 2013-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/20318

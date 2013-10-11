@@ -1,3 +1,172 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (duplicate_decls): Error out for redeclaration of UDRs.
+	(declare_simd_adjust_this): New function.
+	(grokfndecl): If "omp declare simd" attribute is present,
+	call declare_simd_adjust_this if needed and
+	c_omp_declare_simd_clauses_to_numbers.
+	* cp-array-notation.c (expand_array_notation_exprs): Handle
+	OMP_TASKGROUP.
+	* cp-gimplify.c (cp_gimplify_expr): Handle OMP_SIMD and
+	OMP_DISTRIBUTE.  Handle is_invisiref_parm decls in
+	OMP_CLAUSE_REDUCTION.
+	(cp_genericize_r): Handle OMP_SIMD and OMP_DISTRIBUTE like
+	OMP_FOR.
+	(cxx_omp_privatize_by_reference): Return true for
+	is_invisiref_parm decls.
+	(cxx_omp_finish_clause): Adjust cxx_omp_create_clause_info
+	caller.
+	* pt.c (apply_late_template_attributes): For "omp declare simd"
+	attribute call tsubst_omp_clauses,
+	c_omp_declare_simd_clauses_to_decls, finish_omp_clauses
+	and c_omp_declare_simd_clauses_to_numbers.
+	(instantiate_class_template_1): Call cp_check_omp_declare_reduction
+	for UDRs.
+	(tsubst_decl): Handle UDRs.
+	(tsubst_omp_clauses): Add declare_simd argument, if true don't
+	call finish_omp_clauses.  Handle new OpenMP 4.0 clauses.
+	Handle non-NULL OMP_CLAUSE_REDUCTION_PLACEHOLDER on
+	OMP_CLAUSE_REDUCTION.
+	(tsubst_expr): For UDRs call pushdecl and
+	cp_check_omp_declare_reduction.  Adjust tsubst_omp_clauses
+	callers.  Handle OMP_SIMD, OMP_DISTRIBUTE, OMP_TEAMS,
+	OMP_TARGET_DATA, OMP_TARGET_UPDATE, OMP_TARGET, OMP_TASKGROUP.
+	Adjust finish_omp_atomic caller.
+	(tsubst_omp_udr): New function.
+	(instantiate_decl): For UDRs at block scope, don't call
+	start_preparsed_function/finish_function.  Call tsubst_omp_udr.
+	* semantics.c (cxx_omp_create_clause_info): Add need_dtor argument,
+	use it instead of need_default_ctor || need_copy_ctor.
+	(struct cp_check_omp_declare_reduction_data): New type.
+	(handle_omp_array_sections_1, handle_omp_array_sections,
+	omp_reduction_id, omp_reduction_lookup,
+	cp_remove_omp_priv_cleanup_stmt, cp_check_omp_declare_reduction_r,
+	cp_check_omp_declare_reduction, clone_omp_udr,
+	find_omp_placeholder_r, finish_omp_reduction_clause): New functions.
+	(finish_omp_clauses): Handle new OpenMP 4.0 clauses and user defined
+	reductions.
+	(finish_omp_for): Add CODE argument, use it instead of hardcoded
+	OMP_FOR.  Adjust c_finish_omp_for caller.
+	(finish_omp_atomic): Add seq_cst argument, adjust
+	c_finish_omp_atomic callers, handle seq_cst and new OpenMP 4.0
+	atomic variants.
+	(finish_omp_cancel, finish_omp_cancellation_point): New functions.
+	* decl2.c (mark_used): Force immediate instantiation of
+	DECL_OMP_DECLARE_REDUCTION_P decls.
+	(is_late_template_attribute): Return true for "omp declare simd"
+	attribute.
+	(cp_omp_mappable_type): New function.
+	(cplus_decl_attributes): Add implicit "omp declare target" attribute
+	if requested.
+	* parser.c (cp_debug_parser): Print
+	parser->colon_doesnt_start_class_def_p.
+	(cp_ensure_no_omp_declare_simd, cp_finalize_omp_declare_simd): New
+	functions.
+	(enum pragma_context): Add pragma_member and pragma_objc_icode.
+	(cp_parser_binary_expression): Handle no_toplevel_fold_p
+	even for binary operations other than comparison.
+	(cp_parser_linkage_specification): Call
+	cp_ensure_no_omp_declare_simd if needed.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_init_declarator): Call cp_finalize_omp_declare_simd.
+	(cp_parser_direct_declarator): Pass declarator to
+	cp_parser_late_return_type_opt.
+	(cp_parser_late_return_type_opt): Add declarator argument,
+	call cp_parser_late_parsing_omp_declare_simd for declare simd.
+	(cp_parser_class_specifier_1): Call cp_ensure_no_omp_declare_simd.
+	Parse UDRs before all other methods.
+	(cp_parser_member_specification_opt): Use pragma_member instead of
+	pragma_external.
+	(cp_parser_member_declaration): Call cp_finalize_omp_declare_simd.
+	(cp_parser_function_definition_from_specifiers_and_declarator,
+	cp_parser_save_member_function_body): Likewise.
+	(cp_parser_late_parsing_for_member): Handle UDRs specially.
+	(cp_parser_next_token_starts_class_definition_p): Don't allow
+	CPP_COLON if colon_doesnt_start_class_def_p flag is true.
+	(cp_parser_objc_interstitial_code): Use pragma_objc_icode
+	instead of pragma_external.
+	(cp_parser_omp_clause_name): Parse new OpenMP 4.0 clause names.
+	(cp_parser_omp_var_list_no_open): Parse array sections for
+	OMP_CLAUSE_{DEPEND,MAP,TO,FROM} clauses.  Add COLON argument,
+	if non-NULL, allow parsing to end with a colon rather than close
+	paren.
+	(cp_parser_omp_var_list): Adjust cp_parser_omp_var_list_no_open
+	caller.
+	(cp_parser_omp_clause_reduction): Handle user defined reductions.
+	(cp_parser_omp_clause_branch, cp_parser_omp_clause_cancelkind,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_thread_limit,
+	cp_parser_omp_clause_aligned, cp_parser_omp_clause_linear,
+	cp_parser_omp_clause_safelen, cp_parser_omp_clause_simdlen,
+	cp_parser_omp_clause_depend, cp_parser_omp_clause_map,
+	cp_parser_omp_clause_device, cp_parser_omp_clause_dist_schedule,
+	cp_parser_omp_clause_proc_bind, cp_parser_omp_clause_to,
+	cp_parser_omp_clause_from, cp_parser_omp_clause_uniform): New
+	functions.
+	(cp_parser_omp_all_clauses): Add finish_p argument.  Don't call
+	finish_omp_clauses if it is false.  Handle new OpenMP 4.0 clauses.
+	(cp_parser_omp_atomic): Parse seq_cst clause, pass
+	true if it is present to finish_omp_atomic.  Handle new OpenMP 4.0
+	atomic forms.
+	(cp_parser_omp_for_loop): Add CODE argument, pass it through
+	to finish_omp_for.  Change last argument to cclauses,
+	and adjust uses to grab parallel clauses from the array of all
+	the split clauses.
+	(cp_omp_split_clauses): New function.
+	(cp_parser_omp_simd): New function.
+	(cp_parser_omp_for): Add p_name, mask and cclauses arguments.
+	Allow the function to be called also when parsing combined constructs,
+	and call c_parser_omp_simd when parsing for simd.
+	(cp_parser_omp_sections_scope): If section-sequence doesn't start with
+	#pragma omp section, require exactly one structured-block instead of
+	sequence of statements.
+	(cp_parser_omp_sections): Add p_name, mask and cclauses arguments.
+	Allow the function to be called also when parsing combined constructs.
+	(cp_parser_omp_parallel): Add p_name, mask and cclauses arguments.
+	Allow the function to be called also when parsing combined
+	constructs.
+	(cp_parser_omp_taskgroup, cp_parser_omp_cancel,
+	cp_parser_omp_cancellation_point, cp_parser_omp_distribute,
+	cp_parser_omp_teams, cp_parser_omp_target_data,
+	cp_parser_omp_target_update, cp_parser_omp_target,
+	cp_parser_omp_declare_simd, cp_parser_late_parsing_omp_declare_simd,
+	cp_parser_omp_declare_target, cp_parser_omp_end_declare_target,
+	cp_parser_omp_declare_reduction_exprs, cp_parser_omp_declare_reduction,
+	cp_parser_omp_declare): New functions.
+	(cp_parser_omp_construct): Add p_name and mask vars.  Handle
+	PRAGMA_OMP_DISTRIBUTE, PRAGMA_OMP_SIMD, PRAGMA_OMP_TASKGROUP,
+	PRAGMA_OMP_TEAMS.  Adjust cp_parser_omp_for, cp_parser_omp_parallel
+	and cp_parser_omp_sections callers.
+	(cp_parser_pragma): Handle PRAGMA_OMP_CANCEL,
+	PRAGMA_OMP_CANCELLATION_POINT, PRAGMA_OMP_DECLARE_REDUCTION,
+	PRAGMA_OMP_DISTRIBUTE, PRAGMA_OMP_SIMD, PRAGMA_OMP_TASKGROUP,
+	PRAGMA_OMP_TEAMS, PRAGMA_OMP_TARGET, PRAGMA_OMP_END_DECLARE_TARGET.
+	Handle pragma_member and pragma_objc_icode like pragma_external.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_SINGLE_CLAUSE_MASK): Use OMP_CLAUSE_MASK_1 instead of 1.
+	(OMP_PARALLEL_CLAUSE_MASK): Likewise.  Add OMP_CLAUSE_PROC_BIND.
+	(OMP_TASK_CLAUSE_MASK): Use OMP_CLAUSE_MASK_1 instead of 1.  Add
+	OMP_CLAUSE_DEPEND.
+	(OMP_SIMD_CLAUSE_MASK, OMP_CANCEL_CLAUSE_MASK,
+	OMP_CANCELLATION_POINT_CLAUSE_MASK, OMP_DISTRIBUTE_CLAUSE_MASK,
+	OMP_TEAMS_CLAUSE_MASK, OMP_TARGET_DATA_CLAUSE_MASK,
+	OMP_TARGET_UPDATE_CLAUSE_MASK, OMP_TARGET_CLAUSE_MASK,
+	OMP_DECLARE_SIMD_CLAUSE_MASK): Define.
+	* parser.h (struct cp_omp_declare_simd_data): New type.
+	(struct cp_parser): Add colon_doesnt_start_class_def_p and
+	omp_declare_simd fields.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_MAPPABLE_TYPE): Define.
+	* cp-tree.h (struct lang_decl_fn): Add omp_declare_reduction_p
+	bit.
+	(DECL_OMP_DECLARE_REDUCTION_P): Define.
+	(OMP_FOR_GIMPLIFYING_P): Use OMP_LOOP_CHECK macro.
+	(struct saved_scope): Add omp_declare_target_attribute field.
+	(cp_omp_mappable_type, omp_reduction_id,
+	cp_remove_omp_priv_cleanup_stmt, cp_check_omp_declare_reduction,
+	finish_omp_cancel, finish_omp_cancellation_point): New prototypes.
+	(finish_omp_for): Add CODE argument.
+	(finish_omp_atomic): Add seq_cst argument.
+	(cxx_omp_create_clause_info): Add need_dtor argument.
+
 2013-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58635

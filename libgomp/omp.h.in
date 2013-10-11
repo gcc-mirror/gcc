@@ -52,6 +52,15 @@ typedef enum omp_sched_t
   omp_sched_auto = 4
 } omp_sched_t;
 
+typedef enum omp_proc_bind_t
+{
+  omp_proc_bind_false = 0,
+  omp_proc_bind_true = 1,
+  omp_proc_bind_master = 2,
+  omp_proc_bind_close = 3,
+  omp_proc_bind_spread = 4
+} omp_proc_bind_t;
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()
@@ -88,17 +97,28 @@ extern int omp_test_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
 extern double omp_get_wtime (void) __GOMP_NOTHROW;
 extern double omp_get_wtick (void) __GOMP_NOTHROW;
 
-void omp_set_schedule (omp_sched_t, int) __GOMP_NOTHROW;
-void omp_get_schedule (omp_sched_t *, int *) __GOMP_NOTHROW;
-int omp_get_thread_limit (void) __GOMP_NOTHROW;
-void omp_set_max_active_levels (int) __GOMP_NOTHROW;
-int omp_get_max_active_levels (void) __GOMP_NOTHROW;
-int omp_get_level (void) __GOMP_NOTHROW;
-int omp_get_ancestor_thread_num (int) __GOMP_NOTHROW;
-int omp_get_team_size (int) __GOMP_NOTHROW;
-int omp_get_active_level (void) __GOMP_NOTHROW;
+extern void omp_set_schedule (omp_sched_t, int) __GOMP_NOTHROW;
+extern void omp_get_schedule (omp_sched_t *, int *) __GOMP_NOTHROW;
+extern int omp_get_thread_limit (void) __GOMP_NOTHROW;
+extern void omp_set_max_active_levels (int) __GOMP_NOTHROW;
+extern int omp_get_max_active_levels (void) __GOMP_NOTHROW;
+extern int omp_get_level (void) __GOMP_NOTHROW;
+extern int omp_get_ancestor_thread_num (int) __GOMP_NOTHROW;
+extern int omp_get_team_size (int) __GOMP_NOTHROW;
+extern int omp_get_active_level (void) __GOMP_NOTHROW;
 
-int omp_in_final (void) __GOMP_NOTHROW;
+extern int omp_in_final (void) __GOMP_NOTHROW;
+
+extern int omp_get_cancellation (void) __GOMP_NOTHROW;
+extern omp_proc_bind_t omp_get_proc_bind (void) __GOMP_NOTHROW;
+
+extern void omp_set_default_device (int) __GOMP_NOTHROW;
+extern int omp_get_default_device (void) __GOMP_NOTHROW;
+extern int omp_get_num_devices (void) __GOMP_NOTHROW;
+extern int omp_get_num_teams (void) __GOMP_NOTHROW;
+extern int omp_get_team_num (void) __GOMP_NOTHROW;
+
+extern int omp_is_initial_device (void) __GOMP_NOTHROW;
 
 #ifdef __cplusplus
 }

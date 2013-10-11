@@ -221,11 +221,40 @@ gomp_work_share_end (void)
   if (gomp_barrier_last_thread (bstate))
     {
       if (__builtin_expect (thr->ts.last_work_share != NULL, 1))
-	free_work_share (team, thr->ts.last_work_share);
+	{
+	  team->work_shares_to_free = thr->ts.work_share;
+	  free_work_share (team, thr->ts.last_work_share);
+	}
     }
 
   gomp_team_barrier_wait_end (&team->barrier, bstate);
   thr->ts.last_work_share = NULL;
+}
+
+/* The current thread is done with its current work sharing construct.
+   This version implies a cancellable barrier at the end of the work-share.  */
+
+bool
+gomp_work_share_end_cancel (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  gomp_barrier_state_t bstate;
+
+  /* Cancellable work sharing constructs cannot be orphaned.  */
+  bstate = gomp_barrier_wait_cancel_start (&team->barrier);
+
+  if (gomp_barrier_last_thread (bstate))
+    {
+      if (__builtin_expect (thr->ts.last_work_share != NULL, 1))
+	{
+	  team->work_shares_to_free = thr->ts.work_share;
+	  free_work_share (team, thr->ts.last_work_share);
+	}
+    }
+  thr->ts.last_work_share = NULL;
+
+  return gomp_team_barrier_wait_cancel_end (&team->barrier, bstate);
 }
 
 /* The current thread is done with its current work sharing construct.
@@ -259,6 +288,9 @@ gomp_work_share_end_nowait (void)
 #endif
 
   if (completed == team->nthreads)
-    free_work_share (team, thr->ts.last_work_share);
+    {
+      team->work_shares_to_free = thr->ts.work_share;
+      free_work_share (team, thr->ts.last_work_share);
+    }
   thr->ts.last_work_share = NULL;
 }

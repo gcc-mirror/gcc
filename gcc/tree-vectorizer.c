@@ -111,7 +111,8 @@ simduid_to_vf::equal (const value_type *p1, const value_type *p2)
         D.1737[_7] = stuff;
 
 
-   This hash maps from the simduid.0 to OMP simd array (D.1737[]).  */
+   This hash maps from the OMP simd array (D.1737[]) to DECL_UID of
+   simduid.0.  */
 
 struct simd_array_to_simduid : typed_free_remove<simd_array_to_simduid>
 {

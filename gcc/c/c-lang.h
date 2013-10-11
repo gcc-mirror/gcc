@@ -55,5 +55,8 @@ struct GTY(()) language_function {
   int warn_about_return_type;
 };
 
+/* If non-zero, implicit "omp declare target" attribute is added into the
+   attribute lists.  */
+extern GTY(()) int current_omp_declare_target_attribute;
 
 #endif /* ! GCC_C_LANG_H */

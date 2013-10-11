@@ -159,6 +159,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
       || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
     return NULL;
 
+  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
+    return NULL;
+
   gcc_assert (outer != NULL);
   gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_PRIVATE
 	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LASTPRIVATE);
@@ -321,6 +324,9 @@ gfc_omp_clause_dtor (tree clause ATTRIBUTE_UNUSED, tree decl)
 
   if (! GFC_DESCRIPTOR_TYPE_P (type)
       || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
+    return NULL;
+
+  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
     return NULL;
 
   /* Allocatable arrays in FIRSTPRIVATE/LASTPRIVATE etc. clauses need

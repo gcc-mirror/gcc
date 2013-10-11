@@ -1,3 +1,7 @@
+2013-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_8): Define.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (LTO_H, LINKER_PLUGIN_API_H, LTO_TREE_H)
