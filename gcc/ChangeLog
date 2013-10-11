@@ -1,3 +1,7 @@
+2013-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* doc/extend.texi (returns_nonnull): Remove arguments.
+
 2013-10-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
