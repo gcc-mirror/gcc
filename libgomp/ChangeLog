@@ -1,3 +1,7 @@
+2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp.h.in: Don't touch the user's namespace.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <burnus@net-b.de>
 	    Richard Henderson  <rth@redhat.com>
