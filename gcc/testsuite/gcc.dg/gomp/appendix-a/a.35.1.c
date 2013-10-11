@@ -15,7 +15,7 @@ wrong1 (int n)
     for (i = 0; i < n; i++)
       {
 	/* incorrect nesting of loop regions */
-#pragma omp for		/* { dg-warning "may not be closely nested" } */
+#pragma omp for		/* { dg-error "may not be closely nested" } */
 	for (j = 0; j < n; j++)
 	  work (i, j);
       }
