@@ -15636,7 +15636,7 @@ vtbx1_s8 (int8x8_t r, int8x8_t tab, int8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "w"(temp), "w"(idx), "w"(r)
            : /* No clobbers */);
   return result;
@@ -15652,7 +15652,7 @@ vtbx1_u8 (uint8x8_t r, uint8x8_t tab, uint8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "w"(temp), "w"(idx), "w"(r)
            : /* No clobbers */);
   return result;
@@ -15668,7 +15668,7 @@ vtbx1_p8 (poly8x8_t r, poly8x8_t tab, uint8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "w"(temp), "w"(idx), "w"(r)
            : /* No clobbers */);
   return result;
@@ -15723,7 +15723,7 @@ vtbx3_s8 (int8x8_t r, int8x8x3_t tab, int8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "Q"(temp), "w"(idx), "w"(r)
            : "v16", "v17", "memory");
   return result;
@@ -15742,7 +15742,7 @@ vtbx3_u8 (uint8x8_t r, uint8x8x3_t tab, uint8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "Q"(temp), "w"(idx), "w"(r)
            : "v16", "v17", "memory");
   return result;
@@ -15761,7 +15761,7 @@ vtbx3_p8 (poly8x8_t r, poly8x8x3_t tab, uint8x8_t idx)
 	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
 	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
 	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=w"(tmp1)
+           : "+w"(result), "=&w"(tmp1)
            : "Q"(temp), "w"(idx), "w"(r)
            : "v16", "v17", "memory");
   return result;
