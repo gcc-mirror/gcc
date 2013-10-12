@@ -1,3 +1,11 @@
+2013-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/58690
+	* config/i386/i386.c (ix86_copy_addr_to_reg): New function.
+	(ix86_expand_movmem): Replace copy_addr_to_reg with
+	ix86_copy_addr_to_reg.
+	(ix86_expand_setmem): Likewise.
+
 2013-10-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/i386/i386.c (ix86_expand_sse_compare_and_jump): Use mode
