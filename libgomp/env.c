@@ -548,7 +548,7 @@ parse_one_place (char **envp, bool *negatep, unsigned long *lenp,
 }
 
 static bool
-parse_places_var (const char *name)
+parse_places_var (const char *name, bool ignore)
 {
   char *env = getenv (name), *end;
   bool any_negate = false;
@@ -604,6 +604,10 @@ parse_places_var (const char *name)
 	  if (*env != '\0')
 	    goto invalid;
 	}
+
+      if (ignore)
+	return false;
+
       return gomp_affinity_init_level (level, count, false);
     }
 
@@ -634,7 +638,7 @@ parse_places_var (const char *name)
     }
   while (1);
 
-  if (gomp_global_icv.bind_var == omp_proc_bind_false)
+  if (ignore)
     return false;
 
   gomp_places_list_len = 0;
@@ -911,7 +915,7 @@ parse_wait_policy (void)
    present and it was successfully parsed.  */
 
 static bool
-parse_affinity (void)
+parse_affinity (bool ignore)
 {
   char *env, *end, *start;
   int pass;
@@ -928,6 +932,9 @@ parse_affinity (void)
       env = start;
       if (pass == 1)
 	{
+	  if (ignore)
+	    return false;
+
 	  gomp_places_list_len = 0;
 	  gomp_places_list = gomp_affinity_alloc (count, true);
 	  if (gomp_places_list == NULL)
@@ -995,6 +1002,7 @@ parse_affinity (void)
     {
       free (gomp_places_list);
       gomp_places_list = NULL;
+      return false;
     }
   return true;
 
@@ -1183,14 +1191,34 @@ initialize_env (void)
 				 &gomp_nthreads_var_list,
 				 &gomp_nthreads_var_list_len))
     gomp_global_icv.nthreads_var = gomp_available_cpus;
-  if (!parse_bind_var ("OMP_PROC_BIND",
-		       &gomp_global_icv.bind_var,
-		       &gomp_bind_var_list,
-		       &gomp_bind_var_list_len))
-    gomp_global_icv.bind_var = omp_proc_bind_false;
-  if (parse_places_var ("OMP_PLACES")
-      || parse_affinity ()
-      || gomp_global_icv.bind_var)
+  bool ignore = false;
+  if (parse_bind_var ("OMP_PROC_BIND",
+		      &gomp_global_icv.bind_var,
+		      &gomp_bind_var_list,
+		      &gomp_bind_var_list_len)
+      && gomp_global_icv.bind_var == omp_proc_bind_false)
+    ignore = true;
+  /* Make sure OMP_PLACES and GOMP_CPU_AFFINITY env vars are always
+     parsed if present in the environment.  If OMP_PROC_BIND was set
+     explictly to false, don't populate places list though.  If places
+     list was successfully set from OMP_PLACES, only parse but don't process
+     GOMP_CPU_AFFINITY.  If OMP_PROC_BIND was not set in the environment,
+     default to OMP_PROC_BIND=true if OMP_PLACES or GOMP_CPU_AFFINITY
+     was successfully parsed into a places list, otherwise to
+     OMP_PROC_BIND=false.  */
+  if (parse_places_var ("OMP_PLACES", ignore))
+    {
+      if (gomp_global_icv.bind_var == omp_proc_bind_false)
+	gomp_global_icv.bind_var = true;
+      ignore = true;
+    }
+  if (parse_affinity (ignore))
+    {
+      if (gomp_global_icv.bind_var == omp_proc_bind_false)
+	gomp_global_icv.bind_var = true;
+      ignore = true;
+    }
+  if (gomp_global_icv.bind_var != omp_proc_bind_false)
     gomp_init_affinity ();
   wait_policy = parse_wait_policy ();
   if (!parse_spincount ("GOMP_SPINCOUNT", &gomp_spin_count_var))
