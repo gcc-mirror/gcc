@@ -309,7 +309,7 @@ gomp_affinity_init_level (int level, unsigned long count, bool quiet)
 		fclose (f);
 	      }
 	  }
-      if (gomp_places_list == 0)
+      if (gomp_places_list_len == 0)
 	{
 	  if (!quiet)
 	    gomp_error ("Error reading %s topology",

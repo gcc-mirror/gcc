@@ -339,8 +339,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 
   if (__builtin_expect (gomp_places_list != NULL, 0))
     {
-      if (bind == omp_proc_bind_false)
-	bind = omp_proc_bind_true;
       /* Depending on chosen proc_bind model, set subpartition
 	 for the master thread and initialize helper variables
 	 P and optionally S, K and/or REST used by later place
@@ -348,9 +346,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       p = thr->place - 1;
       switch (bind)
 	{
-	case omp_proc_bind_false:
-	  bind = omp_proc_bind_true;
-	  /* FALLTHRU */
 	case omp_proc_bind_true:
 	case omp_proc_bind_close:
 	  if (nthreads > thr->ts.place_partition_len)

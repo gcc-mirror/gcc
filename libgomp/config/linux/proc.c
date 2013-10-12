@@ -59,7 +59,7 @@ gomp_cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
   size_t i;
   unsigned long ret = 0;
   extern int check[sizeof (cpusetp->__bits[0]) == sizeof (unsigned long int)
-		   ? 1 : -1];
+		   ? 1 : -1] __attribute__((unused));
 
   for (i = 0; i < cpusetsize / sizeof (cpusetp->__bits[0]); i++)
     {
@@ -94,7 +94,6 @@ gomp_init_num_threads (void)
 					gomp_cpusetp);
       if (ret == 0)
 	{
-	  unsigned long i;
 	  /* Count only the CPUs this process can use.  */
 	  gomp_global_icv.nthreads_var
 	    = gomp_cpuset_popcount (gomp_cpuset_size, gomp_cpusetp);
@@ -102,6 +101,7 @@ gomp_init_num_threads (void)
 	    break;
 	  gomp_get_cpuset_size = gomp_cpuset_size;
 #ifdef CPU_ALLOC_SIZE
+	  unsigned long i;
 	  for (i = gomp_cpuset_size * 8; i; i--)
 	    if (CPU_ISSET_S (i - 1, gomp_cpuset_size, gomp_cpusetp))
 	      break;

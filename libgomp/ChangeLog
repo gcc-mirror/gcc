@@ -1,3 +1,22 @@
+2013-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/58691
+	* config/linux/proc.c (gomp_cpuset_popcount): Add unused attribute
+	to check variable.
+	(gomp_init_num_threads): Move i variable declaration into
+	#ifdef CPU_ALLOC_SIZE block.
+	* config/linux/affinity.c (gomp_affinity_init_level): Test
+	gomp_places_list_len == 0 rather than gomp_places_list == 0
+	when checking for topology reading error.
+	* team.c (gomp_team_start): Don't handle bind == omp_proc_bind_false.
+	* env.c (parse_affinity): Add ignore argument, if true, don't populate
+	gomp_places_list, only parse env var and always return false.
+	(parse_places_var): Likewise.  Don't check gomp_global_icv.bind_var.
+	(initialize_env): Always parse OMP_PLACES and GOMP_CPU_AFFINITY env
+	vars, default to OMP_PROC_BIND=true if OMP_PROC_BIND wasn't specified
+	and either of these variables were parsed correctly into a places
+	list.
+
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
