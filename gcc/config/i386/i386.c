@@ -22076,6 +22076,21 @@ counter_mode (rtx count_exp)
   return SImode;
 }
 
+/* Copy the address to a Pmode register.  This is used for x32 to
+   truncate DImode TLS address to a SImode register. */
+
+static rtx
+ix86_copy_addr_to_reg (rtx addr)
+{
+  if (GET_MODE (addr) == Pmode)
+    return copy_addr_to_reg (addr);
+  else
+    {
+      gcc_assert (GET_MODE (addr) == DImode && Pmode == SImode);
+      return gen_rtx_SUBREG (SImode, copy_to_mode_reg (DImode, addr), 0);
+    }
+}
+
 /* When SRCPTR is non-NULL, output simple loop to move memory
    pointer to SRCPTR to DESTPTR via chunks of MODE unrolled UNROLL times,
    overall size is COUNT specified in bytes.  When SRCPTR is NULL, output the
@@ -23032,8 +23047,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   if (!count)
     count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
-  destreg = copy_addr_to_reg (XEXP (dst, 0));
-  srcreg = copy_addr_to_reg (XEXP (src, 0));
+  destreg = ix86_copy_addr_to_reg (XEXP (dst, 0));
+  srcreg = ix86_copy_addr_to_reg (XEXP (src, 0));
 
   unroll_factor = 1;
   move_mode = word_mode;
@@ -23436,7 +23451,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 
   if (!count)
     count_exp = copy_to_mode_reg (counter_mode (count_exp), count_exp);
-  destreg = copy_addr_to_reg (XEXP (dst, 0));
+  destreg = ix86_copy_addr_to_reg (XEXP (dst, 0));
 
   move_mode = word_mode;
   unroll_factor = 1;
