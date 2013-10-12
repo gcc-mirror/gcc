@@ -1,3 +1,7 @@
+2013-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/specs/linker_section.ads: Update test.
+
 2013-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/58690
