@@ -19,8 +19,8 @@
 2013-10-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/58640
-	* tree-ssa-threadupdate.c (mark_threaded_blocks): Truncate jump threading
-	paths that cross over two loop entry points.
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Truncate jump
+	threading paths that cross over two loop entry points.
 
 2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -350,16 +350,14 @@
 	* gimple.c: GIMPLE statements have subcodes, not sub-codes.
 	* gimple.h: Likewise.
 
-	* doc/generic.texi (OpenMP): OMP_CLAUSE_* are subcodes, not
-	sub-codes.
+	* doc/generic.texi (OpenMP): OMP_CLAUSE_* are subcodes, not sub-codes.
 
 	* doc/generic.texi (Adding new DECL node types): Explain *_CHECK
 	macros.
 
 	* doc/gimple.texi (is_gimple_omp): Move into the correct section.
 
-	* acinclude.m4 (gcc_GAS_FLAGS): Add more gcc_cv_as_flags
-	overrides.
+	* acinclude.m4 (gcc_GAS_FLAGS): Add more gcc_cv_as_flags overrides.
 	* configure: Regenerate.
 
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
@@ -406,8 +404,7 @@
 	(scan_sharing_clauses): Ignore shared clause on teams construct.
 	Handle OMP_CLAUSE__LOOPTEMP_ and new OpenMP 4.0 clauses.
 	(create_omp_child_function): If inside target or declare target
-	constructs, set "omp declare target" attribute on the child
-	function.
+	constructs, set "omp declare target" attribute on the child function.
 	(find_combined_for): New function.
 	(scan_omp_parallel): Handle combined loops.
 	(scan_omp_target, scan_omp_teams): New functions.
@@ -416,8 +413,7 @@
 	(scan_omp_1_stmt): Call check_omp_nesting_restrictions also on
 	selected builtin calls.  Handle GIMPLE_OMP_TASKGROUP,
 	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS.
-	(build_omp_barrier): Add lhs argument, return gimple rather than
-	tree.
+	(build_omp_barrier): Add lhs argument, return gimple rather than tree.
 	(omp_clause_aligned_alignment): New function.
 	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR
 	on decls.
@@ -592,8 +588,7 @@
 	gimple_omp_teams_set_clauses): New inlines.
 	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS
 	and GIMPLE_OMP_TASKGROUP.
-	* tree-core.h (enum omp_clause_code): Add new OpenMP 4.0 clause
-	codes.
+	* tree-core.h (enum omp_clause_code): Add new OpenMP 4.0 clause codes.
 	(enum omp_clause_depend_kind, enum omp_clause_map_kind,
 	enum omp_clause_proc_bind_kind): New.
 	(union omp_clause_subcode): Add depend_kind, map_kind and
@@ -648,8 +643,8 @@
 
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gimplify.c: Include expr.h and tm_p.h for targets with special va-arg
-	padding requirements.
+	* gimplify.c: Include expr.h and tm_p.h for targets with special
+	va-arg padding requirements.
 
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -694,7 +689,7 @@
 
 2013-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
-	* loop-doloop.c (doloop_modify, doloop_optimize): Use 
+	* loop-doloop.c (doloop_modify, doloop_optimize): Use
 	get_max_loop_iterations.
 
 2013-10-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
@@ -716,7 +711,7 @@
 	* gimple-pretty-print.h (gimple_dump_bb): Add prototype.
 	* graphite.c (graphite_transform_loops): Make static.
 	(graphite_transforms, gate_graphite_transforms, pass_data_graphite,
-	make_pass_graphite, pass_data_graphite_transforms, 
+	make_pass_graphite, pass_data_graphite_transforms,
 	make_pass_graphite_transforms): Relocate here from tree-ssa-loop.c.
 	* ipa-pure-const.c (warn_function_noreturn): Make static.
 	(execute_warn_function_noreturn, gate_warn_function_noreturn,
@@ -727,8 +722,8 @@
 	(execute_warn_function_noreturn, gate_warn_function_noreturn,
 	class pass_warn_function_noreturn, make_pass_warn_function_noreturn):
 	Move to ipa-pure-const.c.
-	(execute_fixup_cfg, class pass_fixup_cfg, make_pass_fixup_cfg): Relocate
-	from tree-optimize.c.
+	(execute_fixup_cfg, class pass_fixup_cfg, make_pass_fixup_cfg):
+	Relocate from tree-optimize.c.
 	* tree-optimize.c (execute_fixup_cfg, class pass_fixup_cfg,
 	make_pass_fixup_cfg): Move to tree-cfg.c.
 	* tree-chrec.h: (enum ev_direction): Relocate here from tree-flow.h.
@@ -744,7 +739,7 @@
 	* tree-predcom.c (run_tree_predictive_commoning,
 	gate_tree_predictive_commoning, pass_data_predcom, make_pass_predcom):
 	Relocate here from tree-ssa-loop.c.
-	* tree-ssa-dom.c (tree_ssa_dominator_optimize) Don't call 
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize) Don't call
 	ssa_name_values.release ().
 	* tree-ssa-threadedge.h: New File.  Relocate prototypes here.
 	(ssa_name_values): Relocate from tree-flow.h.
@@ -776,7 +771,8 @@
 	(struct int_tree_map): Relocate from tree-flow.h.
 	* tree-sra.c (contains_view_convert_expr_p): Relocate from
 	tree-flow-inline.h and make static.
-	* tree-ssa-alias.h (ranges_overlap_p): Relocate from tree-flow-inline.h.
+	* tree-ssa-alias.h (ranges_overlap_p): Relocate from
+	tree-flow-inline.h.
 	* tree-ssa-operands.c (gimple_ssa_operands): Relocate from
 	tree-flow-inline.h and make static.
 	* tree.h (is_global_var, may_be_aliased): Relocate from
@@ -802,9 +798,9 @@
 	(lsm_tmp_name_add, gen_lsm_tmp_name, get_lsm_tmp_name): Move to
 	tree-ssa-loop.c.
 	(execute_sm_if_changed_flag_set): Change get_lsm_tmp_name call.
-	(tree_ssa_loop_im, gate_tree_ssa_loop_im, pass_data_lim, make_pass_lim):
-	Relocate here from tree-ssa-loop.c.
-	* tree-ssa-loop-ivcanon.c (tree_num_loop_insns): Move to 
+	(tree_ssa_loop_im, gate_tree_ssa_loop_im, pass_data_lim,
+	make_pass_lim): Relocate here from tree-ssa-loop.c.
+	* tree-ssa-loop-ivcanon.c (tree_num_loop_insns): Move to
 	tree-ssa-loop.c.
 	(loop_edge_to_cancel, unloop_loops): Make static.
 	(tree_ssa_loop_ivcanon, gate_tree_ssa_loop_ivcanon, pass_data_iv_canon,
@@ -852,10 +848,10 @@
 	* tree-scalar-evolution.h (simple_iv): Don't use affive_iv typedef.
 	* cfgloop.c (record_niter_bound, estimated_loop_iterations_int,
 	max_stmt_executions_int): Move from tree-ssa-loop-niter.c.
-	(get_estimated_loop_iterations): Factor out accessor from 
+	(get_estimated_loop_iterations): Factor out accessor from
 	estimated_loop_iterations in tree-ssa-loop-niter.c.
-	(get_max_loop_iterations): Factor out accessor from _max_loop_iterations
-	in tree-ssa-niter.c.
+	(get_max_loop_iterations): Factor out accessor from
+	_max_loop_iterations in tree-ssa-niter.c.
 	* loop-unroll.c (decide_unroll_constant_iterations,
 	decide_unroll_runtime_iterations, decide_peel_simple,
 	decide_unroll_stupid): Use new get_* accessors.
@@ -930,9 +926,8 @@
 	(cfun_save_arg_fprs_p, cfun_gpr_save_slot): New macros.
 	(s390_reg_clobbered_rtx, s390_regs_ever_clobbered): Change type of
 	regs_ever_clobbered to char*.
-	(s390_regs_ever_clobbered): Check crtl->saves_all_registers
-	instead of cfun->has_nonlocal_label.  Ignore frame related restore
-	INSNs.
+	(s390_regs_ever_clobbered): Check crtl->saves_all_registers instead
+	of cfun->has_nonlocal_label.  Ignore frame related restore INSNs.
 	(s390_register_info): Enable FPR save slots.  Move/Copy some
 	functionality into ...
 	(s390_register_info_gprtofpr, s390_register_info_stdarg_fpr)
@@ -948,11 +943,9 @@
 	(TARGET_HARD_REGNO_SCRATCH_OK): Define target hook.
 	(s390_initial_elimination_offset): Change offset calculation of
 	the return address pointer.
-	(save_gprs): Deal with only r6 being saved from the call-saved
-	regs.
+	(save_gprs): Deal with only r6 being saved from the call-saved regs.
 	(restore_gprs): Set frame related flag.
-	(s390_save_gprs_to_fprs, s390_restore_gprs_from_fprs): New
-	functions.
+	(s390_save_gprs_to_fprs, s390_restore_gprs_from_fprs): New functions.
 	(s390_emit_prologue): Call s390_register_info instead of
 	s390_update_frame_layout.  Call s390_save_gprs_to_fprs.
 	(s390_emit_epilogue): Call s390_restore_gprs_from_fprs.
@@ -1068,13 +1061,14 @@
 
 	* tree-ssa-threadedge.c: Fix some trailing whitespace problems.
 
-	* tree-ssa-threadedge.c (thread_through_normal_block): Broken out of ...
+	* tree-ssa-threadedge.c (thread_through_normal_block): Broken
+	out of ...
 	(thread_across_edge): Here.  Call it.
 
 2013-10-04  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (dw_sra_loc_expr): Release addr_table entries when
-        discarding a location list expression (or a piece of one).
+	discarding a location list expression (or a piece of one).
 
 2013-10-03  Jan Hubicka  <jh@suse.cz>
 
