@@ -1,3 +1,7 @@
+2013-10-12  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.target/i386/builtin-ucmp.c: New test.
+
 2013-10-11  Brooks Moses  <bmoses@google.com>
 
 	* g++.dg/ext/altivec-7.C: Check for standard vector-type name

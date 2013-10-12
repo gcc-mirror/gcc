@@ -1,3 +1,8 @@
+2013-10-12  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/i386/i386.c (ix86_expand_sse_compare_and_jump): Use mode
+	provided by ix86_fp_compare_mode instead of CCFPUmode.
+
 2013-10-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h
