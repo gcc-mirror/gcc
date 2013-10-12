@@ -38289,6 +38289,7 @@ static rtx
 ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
                                   bool swap_operands)
 {
+  enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
   rtx label, tmp;
 
   if (swap_operands)
@@ -38299,9 +38300,9 @@ ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
     }
 
   label = gen_label_rtx ();
-  tmp = gen_rtx_REG (CCFPUmode, FLAGS_REG);
+  tmp = gen_rtx_REG (fpcmp_mode, FLAGS_REG);
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
-			  gen_rtx_COMPARE (CCFPUmode, op0, op1)));
+			  gen_rtx_COMPARE (fpcmp_mode, op0, op1)));
   tmp = gen_rtx_fmt_ee (code, VOIDmode, tmp, const0_rtx);
   tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 			      gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx);
