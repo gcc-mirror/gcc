@@ -1,3 +1,18 @@
+2013-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh_treg_combine.cc: New SH specific RTL pass.
+	* config.gcc (SH extra_objs): Add sh_ifcvt.o.
+	* config/sh/t-sh (sh_treg_combine.o): New entry.
+	* config/sh/sh.c (sh_fixed_condition_code_regs): New function that
+	implements the target hook TARGET_FIXED_CONDITION_CODE_REGS.
+	(register_sh_passes): New function.  Register sh_treg_combine pass.
+	(sh_option_override): Invoke it.
+	(sh_canonicalize_comparison): Handle op0_preserve_value.
+	* sh.md (*cbranch_t"): Do not try to optimize missed test and branch
+	opportunities.  Canonicalize branch condition.
+	(nott): Allow only if pseudos can be created for non-SH2A.
+
 2013-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/58690
