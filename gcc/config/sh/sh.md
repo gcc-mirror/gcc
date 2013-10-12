@@ -8419,89 +8419,32 @@ label:
   return output_branch (sh_eval_treg_value (operands[1]), insn, operands);
 }
   "&& 1"
-  [(set (pc) (if_then_else (eq (reg:SI T_REG) (match_dup 2))
-			   (label_ref (match_dup 0))
-			   (pc)))]
+  [(const_int 0)]
 {
-  /* Try to find missed test and branch combine opportunities which result
-     in redundant T bit tests before conditional branches.
-     This is done not only after combine (and before reload) but in every
-     split pass, because some opportunities are formed also after combine.
-     FIXME: Probably this would not be needed if CCmode was used
-     together with TARGET_FIXED_CONDITION_CODE_REGS.  */
+  /* Try to canonicalize the branch condition if it is not one of:
+	(ne (reg:SI T_REG) (const_int 0))
+	(eq (reg:SI T_REG) (const_int 0))
 
-  const int treg_value = sh_eval_treg_value (operands[1]);
-  operands[2] = NULL_RTX;
+     Instead of splitting out a new insn, we modify the current insn's
+     operands as needed.  This preserves things such as REG_DEAD notes.  */
 
-  /* Scan the insns backwards for an insn that sets the T bit by testing a
-     reg against zero like:
-	(set (reg T_REG) (eq (reg) (const_int 0)))  */
-  rtx testing_insn = NULL_RTX;
-  rtx tested_reg = NULL_RTX;
+  if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
+      && REG_P (XEXP (operands[1], 0)) && REGNO (XEXP (operands[1], 0)) == T_REG
+      && XEXP (operands[1], 1) == const0_rtx)
+    DONE;
 
-  set_of_reg s0 = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
-				      prev_nonnote_insn_bb);
-  if (s0.set_src != NULL_RTX
-      && GET_CODE (s0.set_src) == EQ
-      && REG_P (XEXP (s0.set_src, 0))
-      && satisfies_constraint_Z (XEXP (s0.set_src, 1)))
-    {
-      testing_insn = s0.insn;
-      tested_reg = XEXP (s0.set_src, 0);
-    }
-  else
-    FAIL;
+  int branch_cond = sh_eval_treg_value (operands[1]);
+  rtx new_cond_rtx = NULL_RTX;
 
-  /* Continue scanning the insns backwards and try to find the insn that
-     sets the tested reg which we found above.  If the reg is set by storing
-     the T bit or the negated T bit we can eliminate the test insn before
-     the branch.  Notice that the branch condition has to be inverted if the
-     test is eliminated.  */
+  if (branch_cond == 0)
+    new_cond_rtx = gen_rtx_EQ (VOIDmode, get_t_reg_rtx (), const0_rtx);
+  else if (branch_cond == 1)
+    new_cond_rtx = gen_rtx_NE (VOIDmode, get_t_reg_rtx (), const0_rtx);
 
-  /* If the T bit is used between the testing insn and the brach insn
-     leave it alone.  */
-  if (reg_used_between_p (get_t_reg_rtx (), testing_insn, curr_insn))
-    FAIL;
-
-  while (true)
-    {
-      /* It's not safe to go beyond the current basic block after reload.  */
-      set_of_reg s1 = sh_find_set_of_reg (tested_reg, s0.insn,
-					  reload_completed
-					  ? prev_nonnote_insn_bb
-					  : prev_nonnote_insn);
-      if (s1.set_src == NULL_RTX)
-	break;
-
-      if (t_reg_operand (s1.set_src, VOIDmode))
-	operands[2] = GEN_INT (treg_value ^ 1);
-      else if (negt_reg_operand (s1.set_src, VOIDmode))
-	operands[2] = GEN_INT (treg_value);
-      else if (REG_P (s1.set_src))
-	{
-	   /* If it's a reg-reg copy follow the copied reg.  This can
-	      happen e.g. when T bit store zero-extensions are
-	      eliminated.  */
-	  tested_reg = s1.set_src;
-	  s0.insn = s1.insn;
-	  continue;
-	}
-
-	/* It's only safe to remove the testing insn if the T bit is not
-	   modified between the testing insn and the insn that stores the
-	   T bit.  Notice that some T bit stores such as negc also modify
-	   the T bit.  */
-	if (modified_between_p (get_t_reg_rtx (), s1.insn, testing_insn)
-	    || modified_in_p (get_t_reg_rtx (), s1.insn))
-	  operands[2] = NULL_RTX;
-
-	break;
-    }
-
-  if (operands[2] == NULL_RTX)
-    FAIL;
-
-  set_insn_deleted (testing_insn);
+  if (new_cond_rtx != NULL_RTX)
+    validate_change (curr_insn, &XEXP (XEXP (PATTERN (curr_insn), 1), 0),
+		     new_cond_rtx, false);
+  DONE;
 }
   [(set_attr "type" "cbranch")])
 
@@ -11480,10 +11423,13 @@ label:
 ;; multiple insns like:
 ;;	movt	Rn
 ;;	tst	Rn,Rn
+;; This requires an additional pseudo.  The SH specific sh_treg_combine RTL
+;; pass will look for this insn.  Disallow using it if pseudos can't be
+;; created.
 (define_insn_and_split "nott"
   [(set (reg:SI T_REG)
-	(xor:SI (match_operand:SI 0 "t_reg_operand" "") (const_int 1)))]
-  "TARGET_SH1"
+	(xor:SI (match_operand:SI 0 "t_reg_operand") (const_int 1)))]
+  "TARGET_SH2A || (TARGET_SH1 && can_create_pseudo_p ())"
 {
   gcc_assert (TARGET_SH2A);
   return "nott";

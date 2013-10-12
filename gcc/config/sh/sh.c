@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "tm-constrs.h"
 #include "opts.h"
+#include "tree-pass.h"
+#include "pass_manager.h"
+#include "context.h"
 
 #include <sstream>
 #include <vector>
@@ -311,6 +314,7 @@ static bool sequence_insn_p (rtx);
 static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
 static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					enum machine_mode, bool);
+static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
@@ -587,6 +591,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON	sh_canonicalize_comparison
 
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS sh_fixed_condition_code_regs
+
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
 
@@ -708,6 +715,34 @@ got_mode_name:;
   return ret;
 
 #undef err_ret
+}
+
+/* Register SH specific RTL passes.  */
+extern opt_pass* make_pass_sh_treg_combine (gcc::context* ctx, bool split_insns,
+				     const char* name);
+static void
+register_sh_passes (void)
+{
+  if (!TARGET_SH1)
+    return;
+
+/* Running the sh_treg_combine pass after ce1 generates better code when
+   comparisons are combined and reg-reg moves are introduced, because
+   reg-reg moves will be eliminated afterwards.  However, there are quite
+   some cases where combine will be unable to fold comparison related insns,
+   thus for now don't do it.
+  register_pass (make_pass_sh_treg_combine (g, false, "sh_treg_combine1"),
+		 PASS_POS_INSERT_AFTER, "ce1", 1);
+*/
+
+  /* Run sh_treg_combine pass after combine but before register allocation.  */
+  register_pass (make_pass_sh_treg_combine (g, true, "sh_treg_combine2"),
+		 PASS_POS_INSERT_AFTER, "split1", 1);
+
+  /* Run sh_treg_combine pass after register allocation and basic block
+     reordering as this sometimes creates new opportunities.  */
+  register_pass (make_pass_sh_treg_combine (g, true, "sh_treg_combine3"),
+		 PASS_POS_INSERT_AFTER, "split4", 1);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
@@ -1022,6 +1057,8 @@ sh_option_override (void)
      target CPU.  */
   selected_atomic_model_
     = parse_validate_atomic_model_option (sh_atomic_model_str);
+
+  register_sh_passes ();
 }
 
 /* Print the operand address in x to the stream.  */
@@ -1908,7 +1945,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 static void
 sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
 			    enum machine_mode mode,
-			    bool op0_preserve_value ATTRIBUTE_UNUSED)
+			    bool op0_preserve_value)
 {
   /* When invoked from within the combine pass the mode is not specified,
      so try to get it from one of the operands.  */
@@ -1928,6 +1965,9 @@ sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
   // Make sure that the constant operand is the second operand.
   if (CONST_INT_P (op0) && !CONST_INT_P (op1))
     {
+      if (op0_preserve_value)
+	return;
+
       std::swap (op0, op1);
       cmp = swap_condition (cmp);
     }
@@ -2014,6 +2054,14 @@ sh_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
   sh_canonicalize_comparison (tmp_code, *op0, *op1,
 			      VOIDmode, op0_preserve_value);
   *code = (int)tmp_code;
+}
+
+bool
+sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2)
+{
+  *p1 = T_REG;
+  *p2 = INVALID_REGNUM;
+  return true;
 }
 
 enum rtx_code
