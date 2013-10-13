@@ -9432,6 +9432,17 @@ package body Sem_Ch3 is
             end if;
          end if;
 
+         --  If the operation is a wrapper for a synchronized primitive, it
+         --  may be called indirectly through a dispatching select. We assume
+         --  that it will be referenced elsewhere indirectly, and suppress
+         --  warnings about an unused entity.
+
+         if Is_Primitive_Wrapper (Subp)
+           and then Present (Wrapped_Entity (Subp))
+         then
+            Set_Referenced (Wrapped_Entity (Subp));
+         end if;
+
          Next_Elmt (Elmt);
       end loop;
    end Check_Abstract_Overriding;

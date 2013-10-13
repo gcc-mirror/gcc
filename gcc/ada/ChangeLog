@@ -1,3 +1,15 @@
+2013-10-13  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
+2013-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): If a synchronized
+	operation implements an interface primitive, mark the operation
+	as referenced, to prevent usually spurious messages about unused
+	entities: such operations are called in dispatching select
+	statements that are not visible to the compiler.
+
 2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Remove obsolete comment.
