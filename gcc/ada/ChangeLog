@@ -1,3 +1,21 @@
+2013-10-13  Nicolas Roche  <roche@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ada/%.o): Replace individual rules with
+	generic rule and add $(POSTCOMPILE).
+	(ADA_DEPS): New.
+	(.adb.o): Add @$(ADA_DEPS).
+	(.ads.o): Likewise.
+	(ada/a-except.o): Likewise.
+	(ada/s-excdeb.): Likewise.
+	(ada/s-assert.o): Likewise.
+	(ada/a-tags.o): Likewise.
+	(ada_generated_files): New variable.
+	Use them as dependency order for GNAT1_ADA_OBJS and GNATBIND_OBJS.
+	(ADA_DEPFILES): New variable.
+	Include them.
+	(ada_OBJS): Define.
+
 2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Force all local
