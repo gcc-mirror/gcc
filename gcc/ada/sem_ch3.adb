@@ -1236,12 +1236,14 @@ package body Sem_Ch3 is
       --  be updated when the full type declaration is seen. This only applies
       --  to incomplete types declared in some enclosing scope, not to limited
       --  views from other packages.
+      --  Prior to Ada 2012, access to functions can only have in_parameters.
 
       if Present (Formals) then
          Formal := First_Formal (Desig_Type);
          while Present (Formal) loop
             if Ekind (Formal) /= E_In_Parameter
               and then Nkind (T_Def) = N_Access_Function_Definition
+              and then Ada_Version < Ada_2012
             then
                Error_Msg_N ("functions can only have IN parameters", Formal);
             end if;
@@ -4050,12 +4052,22 @@ package body Sem_Ch3 is
       --  type with constraints. In this case the entity has been introduced
       --  in the private declaration.
 
+      --  Finally this happens in some complex cases  when validity checks are
+      --  enabled, where the same subtype declaration may be analyzed twice.
+      --  This can happen if the subtype is created by the pre-analysis of
+      --  an attribute tht gives the range of a loop statement, and the loop
+      --  itself appears within an if_statement that will be rewritten during
+      --  expansion.
+
       if Skip
         or else (Present (Etype (Id))
                   and then (Is_Private_Type (Etype (Id))
                              or else Is_Task_Type (Etype (Id))
                              or else Is_Rewrite_Substitution (N)))
       then
+         null;
+
+      elsif Current_Entity (Id) = Id then
          null;
 
       else
@@ -14804,7 +14816,8 @@ package body Sem_Ch3 is
       --  extensions of tagged record types.
 
       if No (Extension) then
-         Check_SPARK_Restriction ("derived type is not allowed", N);
+         Check_SPARK_Restriction
+           ("derived type is not allowed", Original_Node (N));
       end if;
    end Derived_Type_Declaration;
 

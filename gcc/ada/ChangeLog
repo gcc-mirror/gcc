@@ -1,3 +1,23 @@
+2013-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: in Ada 2012 access_to_function types can have
+	in-out parameters.
+	(Derived_Type_Declaration): SPARK restriction
+	must be flagged on the original node, since it may have been
+	written as a subtype declaration.
+	(Analyze_Subtype_Declaration): Do not enter name of
+	entity in declaration if it is the current entity, because it may
+	have been inserted in a previous analysis and it appears in the
+	else_part of an if-statement that is rewritten during expansion.
+
+2013-10-13  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Remove procedure.
+	(Expand_SPARK): Remove call to Expand_SPARK_N_Attribute_Reference and
+	Expand_SPARK_N_Simple_Return_Statement.
+	(Expand_SPARK_N_Simple_Return_Statement,
+ 	Expand_SPARK_Simple_Function_Return): Remove procedures.
+
 2013-10-13  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Minor editing.
