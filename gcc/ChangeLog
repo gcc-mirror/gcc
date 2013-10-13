@@ -1,3 +1,9 @@
+2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/58662
+	* combine.c (try_combine): Take into account death nodes on I2 when
+	splitting a PARALLEL of two independent SETs.  Fix dump message.
+
 2013-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
