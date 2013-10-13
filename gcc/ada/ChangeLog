@@ -1,3 +1,24 @@
+2013-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add documentation for pragmas Pre[_Class]
+	Post[_Class].
+	* par-ch2.adb (Skip_Pragma_Semicolon): Handle extra semicolon nicely.
+	* par-prag.adb: Add entries for pragmas Pre[_Class] and
+	Post[_Class].
+	* sem_prag.adb: Add handling of pragmas Pre[_Class] and
+	Post[_Class].
+	* sem_util.adb (Original_Aspect_Name): Moved here from
+	Sem_Prag.Original_Name, and modified to handle pragmas
+	Pre/Post/Pre_Class/Post_Class.
+	* sem_util.ads (Original_Aspect_Name): Moved here from
+	Sem_Prag.Original_Name.
+	* snames.ads-tmpl: Add entries for pragmas Pre[_Class] and
+	Post[_Class].
+
+2013-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, sem_ch6.adb: Minor reformatting.
+
 2013-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb: Add node/list usage for Refined_State

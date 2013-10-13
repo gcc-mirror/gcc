@@ -142,11 +142,10 @@ package Snames is
    Name_Dimension                      : constant Name_Id := N + $;
    Name_Dimension_System               : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
-   Name_Post                           : constant Name_Id := N + $;
-   Name_Pre                            : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
    Name_Type_Invariant                 : constant Name_Id := N + $;
+   Name_Type_Invariant_Class           : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
    --  at the start of these names get translated to extra underscores. These
@@ -562,12 +561,16 @@ package Snames is
    Name_Pack                           : constant Name_Id := N + $;
    Name_Page                           : constant Name_Id := N + $;
    Name_Passive                        : constant Name_Id := N + $; -- GNAT
+   Name_Post                           : constant Name_Id := N + $; -- GNAT
    Name_Postcondition                  : constant Name_Id := N + $; -- GNAT
+   Name_Post_Class                     : constant Name_Id := N + $; -- GNAT
+   Name_Pre                            : constant Name_Id := N + $; -- GNAT
    Name_Precondition                   : constant Name_Id := N + $; -- GNAT
    Name_Predicate                      : constant Name_Id := N + $; -- GNAT
    Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 05
    Name_Preelaborate                   : constant Name_Id := N + $;
    Name_Preelaborate_05                : constant Name_Id := N + $; -- GNAT
+   Name_Pre_Class                      : constant Name_Id := N + $; -- GNAT
 
    --  Note: Priority is not in this list because its name matches the name of
    --  the corresponding attribute. However, it is included in the definition
@@ -1860,12 +1863,16 @@ package Snames is
       Pragma_Pack,
       Pragma_Page,
       Pragma_Passive,
+      Pragma_Post,
       Pragma_Postcondition,
+      Pragma_Post_Class,
+      Pragma_Pre,
       Pragma_Precondition,
       Pragma_Predicate,
       Pragma_Preelaborable_Initialization,
       Pragma_Preelaborate,
       Pragma_Preelaborate_05,
+      Pragma_Pre_Class,
       Pragma_Psect_Object,
       Pragma_Pure,
       Pragma_Pure_05,

@@ -215,6 +215,7 @@ package body Sem_Util is
    procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id) is
       Items : constant Node_Id := Contract (Subp_Id);
       Nam   : Name_Id;
+      N     : Node_Id;
 
    begin
       --  The related subprogram [body] must have a contract and the item to be
@@ -223,7 +224,7 @@ package body Sem_Util is
       pragma Assert (Present (Items));
       pragma Assert (Nkind (Prag) = N_Pragma);
 
-      Nam := Pragma_Name (Prag);
+      Nam := Original_Aspect_Name (Prag);
 
       --  Contract items related to subprogram bodies
 
@@ -241,7 +242,41 @@ package body Sem_Util is
       --  Contract items related to subprogram declarations
 
       else
-         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+         if Nam_In (Nam, Name_Precondition,
+                         Name_Postcondition,
+                         Name_Pre,
+                         Name_Post,
+                         Name_uPre,
+                         Name_uPost)
+         then
+            --  Before we add a precondition or postcondition to the list,
+            --  make sure we do not have a disallowed duplicate, which can
+            --  happen if we use a pragma for Pre{_Class] or Post[_Class]
+            --  instead of the corresponding aspect.
+
+            if not From_Aspect_Specification (Prag)
+              and then Nam_In (Nam, Name_Pre_Class,
+                                    Name_Pre,
+                                    Name_uPre,
+                                    Name_Post_Class,
+                                    Name_Post,
+                                    Name_uPost)
+            then
+               N := Pre_Post_Conditions (Items);
+               while Present (N) loop
+                  if not Split_PPC (N)
+                    and then Original_Aspect_Name (N) = Nam
+                  then
+                     Error_Msg_Sloc := Sloc (N);
+                     Error_Msg_NE
+                       ("duplication of aspect for & given#", Prag, Subp_Id);
+                     return;
+                  else
+                     N := Next_Pragma (N);
+                  end if;
+               end loop;
+            end if;
+
             Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
             Set_Pre_Post_Conditions (Items, Prag);
 
@@ -4411,7 +4446,6 @@ package body Sem_Util is
 
    procedure Ensure_Freeze_Node (E : Entity_Id) is
       FN : Node_Id;
-
    begin
       if No (Freeze_Node (E)) then
          FN := Make_Freeze_Entity (Sloc (E));
@@ -4704,9 +4738,14 @@ package body Sem_Util is
       --  Inherited discriminants and components in derived record types are
       --  immediately visible. Itypes are not.
 
+      --  Unless the Itype is for a record type with a corresponding remote
+      --  type (what is that about, it was not commented ???)
+
       if Ekind_In (Def_Id, E_Discriminant, E_Component)
-        or else (No (Corresponding_Remote_Type (Def_Id))
-                 and then not Is_Itype (Def_Id))
+        or else
+          ((not Is_Record_Type (Def_Id)
+             or else No (Corresponding_Remote_Type (Def_Id)))
+            and then not Is_Itype (Def_Id))
       then
          Set_Is_Immediately_Visible (Def_Id);
          Set_Current_Entity         (Def_Id);
@@ -12833,6 +12872,71 @@ package body Sem_Util is
       end if;
    end Object_Access_Level;
 
+   --------------------------
+   -- Original_Aspect_Name --
+   --------------------------
+
+   function Original_Aspect_Name (N : Node_Id) return Name_Id is
+      Pras : Node_Id;
+      Name : Name_Id;
+
+   begin
+      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
+      Pras := N;
+
+      if Is_Rewrite_Substitution (Pras)
+        and then Nkind (Original_Node (Pras)) = N_Pragma
+      then
+         Pras := Original_Node (Pras);
+      end if;
+
+      --  Case where we came from aspect specication
+
+      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
+         Pras := Corresponding_Aspect (Pras);
+      end if;
+
+      --  Get name from aspect or pragma
+
+      if Nkind (Pras) = N_Pragma then
+         Name := Pragma_Name (Pras);
+      else
+         Name := Chars (Identifier (Pras));
+      end if;
+
+      --  Deal with 'Class
+
+      if Class_Present (Pras) then
+         case Name is
+
+         --  Names that need converting to special _xxx form
+
+            when Name_Pre                  |
+                 Name_Pre_Class            =>
+               Name := Name_uPre;
+
+            when Name_Post                 |
+                 Name_Post_Class           =>
+               Name := Name_uPost;
+
+            when Name_Invariant            =>
+               Name := Name_uInvariant;
+
+            when Name_Type_Invariant       |
+                 Name_Type_Invariant_Class =>
+               Name := Name_uType_Invariant;
+
+            --  Nothing to do for other cases (e.g. a Check that derived
+            --  from Pre_Class and has the flag set). Also we do nothing
+            --  if the name is already in special _xxx form.
+
+            when others                    =>
+               null;
+         end case;
+      end if;
+
+      return Name;
+   end Original_Aspect_Name;
    --------------------------------------
    -- Original_Corresponding_Operation --
    --------------------------------------

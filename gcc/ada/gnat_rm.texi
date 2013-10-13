@@ -206,11 +206,15 @@ Implementation Defined Pragmas
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Post::
 * Pragma Postcondition::
+* Pragma Post_Class::
+* Pragma Pre::
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
+* Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
@@ -1022,11 +1026,15 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Post::
 * Pragma Postcondition::
+* Pragma Post_Class::
+* Pragma Pre::
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
+* Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
@@ -1393,7 +1401,10 @@ are implementation defined additions recognized by the GNAT compiler.
 The pragma applies in both cases to pragmas and aspects with matching
 names, e.g. @code{Pre} applies to the Pre aspect, and @code{Precondition}
 applies to both the @code{Precondition} pragma
-and the aspect @code{Precondition}.
+and the aspect @code{Precondition}. Note that the identifiers for
+pragmas Pre_Class and Post_Class are Pre'Class and Post'Class (not
+Pre_Class and Post_Class), since these pragmas are intended to be
+identical to the corresponding aspects).
 
 If the policy is @code{CHECK}, then assertions are enabled, i.e.
 the corresponding pragma or aspect is activated.
@@ -5016,6 +5027,28 @@ Note that polling can also be enabled by use of the @option{-gnatP} switch.
 @xref{Switches for gcc,,, gnat_ugn, @value{EDITION} User's Guide}, for
 details.
 
+@node Pragma Post
+@unnumberedsec Pragma Post
+@cindex Post
+@cindex Checks, postconditions
+@findex Postconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Post (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Post} pragma is intended to be an exact replacement for
+the language-defined
+@code{Post} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
 @node Pragma Postcondition
 @unnumberedsec Pragma Postcondition
 @cindex Postcondition
@@ -5173,6 +5206,69 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
+Note that pragma @code{Postcondition} differs from the language-defined
+@code{Post} aspect (and corresponding @code{Post} pragma) in allowing
+multiple occurrences, allowing occurences in the body even if there
+is a separate spec, and allowing a second string parameter, and the
+use of the pragma identifier @code{Check}. Historically, pragma
+@code{Postcondition} was implemented prior to the development of
+Ada 2012, and has been retained in its original form for
+compatibility purposes.
+
+@node Pragma Post_Class
+@unnumberedsec Pragma Post_Class
+@cindex Post
+@cindex Checks, postconditions
+@findex Postconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Post_Class (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Post_Class} pragma is intended to be an exact replacement for
+the language-defined
+@code{Post'Class} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
+Note: This pragma is called @code{Post_Class} rather than
+@code{Post'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for provinding pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Post'Class}, not
+@code{Post_Class}.
+
+@node Pragma Pre
+@unnumberedsec Pragma Pre
+@cindex Pre
+@cindex Checks, preconditions
+@findex Preconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pre (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Pre} pragma is intended to be an exact replacement for
+the language-defined
+@code{Pre} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -5220,6 +5316,15 @@ marked as Inline_Always, or those marked as Inline with front-end
 inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if precondition
 checking is enabled.
+
+Note that pragma @code{Precondition} differs from the language-defined
+@code{Pre} aspect (and corresponding @code{Pre} pragma) in allowing
+multiple occurrences, allowing occurences in the body even if there
+is a separate spec, and allowing a second string parameter, and the
+use of the pragma identifier @code{Check}. Historically, pragma
+@code{Precondition} was implemented prior to the development of
+Ada 2012, and has been retained in its original form for
+compatibility purposes.
 
 @node Pragma Predicate
 @unnumberedsec Pragma Predicate
@@ -5294,6 +5399,38 @@ no effect in Ada 83 or Ada 95 mode, but is
 equivalent to @code{pragma Prelaborate} when operating in later
 Ada versions. This is used to handle some cases where packages
 not previously preelaborable became so in Ada 2005.
+
+@node Pragma Pre_Class
+@unnumberedsec Pragma Pre_Class
+@cindex Pre_Class
+@cindex Checks, preconditions
+@findex Preconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pre_Class (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Pre_Class} pragma is intended to be an exact replacement for
+the language-defined
+@code{Pre'Class} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
+Note: This pragma is called @code{Pre_Class} rather than
+@code{Pre'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for providing pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Pre'Class}, not
+@code{Pre_Class}.
 
 @node Pragma Priority_Specific_Dispatching
 @unnumberedsec Pragma Priority_Specific_Dispatching
