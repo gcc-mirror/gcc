@@ -137,11 +137,19 @@ package Elists is
    --  Add a new element (N) right after the pre-existing element Elmt
    --  It is invalid to call this subprogram with Elmt = No_Elmt.
 
+   function New_Copy_Elist (List : Elist_Id) return Elist_Id;
+   --  Replicate the contents of a list. Internal list nodes are not shared and
+   --  order of elements is preserved.
+
    procedure Replace_Elmt (Elmt : Elmt_Id; New_Node : Node_Or_Entity_Id);
    pragma Inline (Replace_Elmt);
    --  Causes the given element of the list to refer to New_Node, the node
    --  which was previously referred to by Elmt is effectively removed from
    --  the list and replaced by New_Node.
+
+   procedure Remove (List : Elist_Id; N : Node_Or_Entity_Id);
+   --  Remove a node or an entity from a list. If the list does not contain the
+   --  item in question, the routine has no effect.
 
    procedure Remove_Elmt (List : Elist_Id; Elmt : Elmt_Id);
    --  Removes Elmt from the given list. The node itself is not affected,
@@ -152,10 +160,6 @@ package Elists is
    --  Removes the last element of the given list. The node itself is not
    --  affected, but the space used by the list element may be (but is not
    --  required to be) freed for reuse in a subsequent Append_Elmt call.
-
-   function Clone (List : Elist_Id) return Elist_Id;
-   --  Create a copy of the input list. Internal list nodes are not shared and
-   --  order of elements is preserved.
 
    function Contains (List : Elist_Id; N : Node_Or_Entity_Id) return Boolean;
    --  Perform a sequential search to determine whether the given list contains

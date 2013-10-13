@@ -2233,12 +2233,10 @@ package body Sem_Ch3 is
       Decl := First (L);
       while Present (Decl) loop
          if Nkind (Decl) = N_Subprogram_Body then
-            Analyze_Subprogram_Body_Contract
-              (Defining_Unit_Name (Specification (Decl)));
+            Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
 
          elsif Nkind (Decl) = N_Subprogram_Declaration then
-            Analyze_Subprogram_Contract
-              (Defining_Unit_Name (Specification (Decl)));
+            Analyze_Subprogram_Contract (Defining_Entity (Decl));
          end if;
 
          Next (Decl);
@@ -3540,7 +3538,7 @@ package body Sem_Ch3 is
 
       if Constant_Present (N) then
          Set_Ekind            (Id, E_Constant);
-         Set_Is_True_Constant (Id, True);
+         Set_Is_True_Constant (Id);
 
       else
          Set_Ekind (Id, E_Variable);
@@ -3763,6 +3761,13 @@ package body Sem_Ch3 is
       end if;
 
    <<Leave>>
+      --  Initialize the refined state of a variable here because this is a
+      --  common destination for legal and illegal object declarations.
+
+      if Ekind (Id) = E_Variable then
+         Set_Refined_State (Id, Empty);
+      end if;
+
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;

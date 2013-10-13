@@ -27,8 +27,8 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Errout;   use Errout;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
@@ -3156,6 +3156,127 @@ package body Sem_Util is
          Set_Has_Delayed_Freeze (New_Ent);
       end if;
    end Conditional_Delay;
+
+   ----------------------------
+   -- Contains_Refined_State --
+   ----------------------------
+
+   function Contains_Refined_State (Prag : Node_Id) return Boolean is
+      function Has_Refined_State (List : Node_Id) return Boolean;
+      --  Determine whether a global list mentions a state with a visible
+      --  refinement.
+
+      -----------------------
+      -- Has_Refined_State --
+      -----------------------
+
+      function Has_Refined_State (List : Node_Id) return Boolean is
+         function Is_Refined_State (Item : Node_Id) return Boolean;
+         --  Determine whether Item is a reference to an abstract state with a
+         --  visible refinement.
+
+         ----------------------
+         -- Is_Refined_State --
+         ----------------------
+
+         function Is_Refined_State (Item : Node_Id) return Boolean is
+            Item_Id : Entity_Id;
+
+         begin
+            if Nkind (Item) = N_Null then
+               return False;
+
+            else
+               Item_Id := Entity_Of (Item);
+
+               return
+                 Ekind (Item_Id) = E_Abstract_State
+                   and then Present (Refinement_Constituents (Item_Id));
+            end if;
+         end Is_Refined_State;
+
+         --  Local variables
+
+         Item : Node_Id;
+
+      --  Start of processing for Has_Refined_State
+
+      begin
+         --  A null global list does not mention any states
+
+         if Nkind (List) = N_Null then
+            return False;
+
+         --  Single global item declaration
+
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
+         then
+            return Is_Refined_State (List);
+
+         --  Simple global list or moded global list declaration
+
+         elsif Nkind (List) = N_Aggregate then
+
+            --  The declaration of a simple global list appear as a collection
+            --  of expressions.
+
+            if Present (Expressions (List)) then
+               Item := First (Expressions (List));
+               while Present (Item) loop
+                  if Is_Refined_State (Item) then
+                     return True;
+                  end if;
+
+                  Next (Item);
+               end loop;
+
+            --  The declaration of a moded global list appears as a collection
+            --  of component associations where individual choices denote
+            --  modes.
+
+            else
+               Item := First (Component_Associations (List));
+               while Present (Item) loop
+                  if Has_Refined_State (Expression (Item)) then
+                     return True;
+                  end if;
+
+                  Next (Item);
+               end loop;
+            end if;
+
+            --  If we get here, then the simple/moded global list did not
+            --  mention any states with a visible refinement.
+
+            return False;
+
+         --  Something went horribly wrong, we have a malformed tree
+
+         else
+            raise Program_Error;
+         end if;
+      end Has_Refined_State;
+
+      --  Local variables
+
+      Arg : constant Node_Id :=
+              Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+      Nam : constant Name_Id := Pragma_Name (Prag);
+
+   --  Start of processing for Contains_Refined_State
+
+   begin
+      --  ??? To be implemented
+
+      if Nam = Name_Depends then
+         return False;
+
+      else pragma Assert (Nam = Name_Global);
+         return Has_Refined_State (Arg);
+      end if;
+   end Contains_Refined_State;
 
    -------------------------
    -- Copy_Component_List --

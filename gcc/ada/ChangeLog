@@ -1,3 +1,68 @@
+2013-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Add node/list usage for Refined_State
+	and Refinement_Constituents.
+	(Get_Pragma): Update the
+	initialization of Is_CDG to include Refined_Global and
+	Refined_Depends. Rename constant Delayed to In_Contract and update
+	all of its occurrences.
+	(Is_Non_Volatile_State): New routine.
+	(Is_Volatile_State): Removed.
+	(Refined_State): New routine.
+	(Refinement_Constituents): New routine.
+	(Set_Refined_State): New routine.
+	(Set_Refinement_Constituents): New routine.
+	(Write_Field8_Name): Add output for Refinement_Constituents.
+	(Write_Field10_Name): Add output for Refined_State.
+	* einfo.ads: Add new synthesized attribute Is_Non_Volatile_State.
+	Remove synthesized attribute Is_Volatile_State.  Add new
+	attributes Refined_State and Refinement_Constituents along with
+	usage in nodes.
+	(Get_Pragma): Update the comment on usage.
+	(Is_Non_Volatile_State): New routine.
+	(Is_Volatile_State): Removed.
+	(Refined_State): New routine and pragma Inline.
+	(Refinement_Constituents): New routine and pragma Inline.
+	(Set_Refined_State): New routine and pragma Inline.
+	(Set_Refinement_Constituents): New routine and pragma Inline.
+	* elists.ads, elists.adb (Clone): Removed.
+	(New_Copy_Elist): New routine.
+	(Remove): New routine.
+	* sem_ch3.adb (Analyze_Declarations): Use Defining_Entity
+	to get the entity of the subprogram [body].
+	(Analyze_Object_Declaration): Add initialization for
+	Refined_State.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Add processing
+	for Refined_Global and Refined_Depends. Emit an error when
+	the body requires Refined_Global, but the aspect/pragma is
+	not present.
+	* sem_ch6.ads (Analyze_Subprogram_Body_Contract): Change
+	procedure signature and add comment on usage.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Refined_Global.
+	* sem_prag.adb (Analyze_Abstract_State): Add initialization
+	of attributes Refined_State and Refinement_Constituents.
+	(Analyze_Depends_In_Decl_Part, Analyze_Global_In_Decl_Part,
+	Analyze_Contract_Cases_In_Decl_Part): Remove local
+	constant Arg1.
+	(Analyze_Pragma): Add processing for pragma
+	Refined_Global. The analysis of Refined_Post and Refined_Pre
+	has been merged. Update an error message in the processing of
+	pragma Refined_State.
+	(Analyze_Refined_Global_In_Decl_Part): Provide implementation.
+	(Analyze_Refined_Pragma): New routine.
+	(Analyze_Refined_Pre_Post_Condition): Removed.
+	(Analyze_Refined_State_In_Decl_Part): Update the call to Clone.
+	(Analyze_Refinement_Clause): Make State_Id visible to all
+	nested subprogram.
+	(Check_Matching_Constituent): Establish
+	a relation between a refined state and its constituent.
+	(Collect_Hidden_States_In_Decls): Remove ??? comment. Look at
+	the entity of the object declaration to establish its kind.
+	* sem_util.adb: Alphabetize with and use clauses.
+	(Contains_Refined_State): New routine.
+	* sem_util.ads (Contains_Refined_State): New routine.
+
 2013-10-13  Thomas Quinot  <quinot@adacore.com>
 
 	* scos.ads: Minor documentation clarification.

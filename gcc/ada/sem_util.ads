@@ -326,6 +326,13 @@ package Sem_Util is
    --  Sets the Has_Delayed_Freeze flag of New if the Delayed_Freeze flag of
    --  Old is set and Old has no yet been Frozen (i.e. Is_Frozen is false).
 
+   function Contains_Refined_State (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Prag contains a reference to the entity of an
+   --  abstract state with a visible refinement. Prag must denote one of the
+   --  following pragmas:
+   --    Depends
+   --    Global
+
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
    --  Utility to create a parameter profile for a new subprogram spec, when
    --  the subprogram has a body that acts as spec. This is done for some cases

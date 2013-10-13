@@ -401,7 +401,6 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Arg1      : constant Node_Id := First (Pragma_Argument_Associations (N));
       All_Cases : Node_Id;
       CCase     : Node_Id;
       Subp_Decl : Node_Id;
@@ -417,7 +416,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      All_Cases := Expression (Arg1);
+      All_Cases := Expression (First (Pragma_Argument_Associations (N)));
 
       --  Multiple contract cases appear in aggregate form
 
@@ -460,8 +459,7 @@ package body Sem_Prag is
    ----------------------------------
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id) is
-      Arg1 : constant Node_Id    := First (Pragma_Argument_Associations (N));
-      Loc  : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       All_Inputs_Seen : Elist_Id := No_Elist;
       --  A list containing the entities of all the inputs processed so far.
@@ -1248,7 +1246,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      Clause    := Expression (Arg1);
+      Clause    := Expression (First (Pragma_Argument_Associations (N)));
 
       --  Empty dependency list
 
@@ -1348,8 +1346,6 @@ package body Sem_Prag is
    ---------------------------------
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id) is
-      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
-
       Seen : Elist_Id := No_Elist;
       --  A list containing the entities of all the items processed so far. It
       --  plays a role in detecting distinct entities.
@@ -1680,7 +1676,7 @@ package body Sem_Prag is
                   Next (Assoc);
                end loop;
 
-            --  Something went horribly wrong, we have a malformed tree
+            --  Invalid tree
 
             else
                raise Program_Error;
@@ -1708,7 +1704,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      List      := Expression (Arg1);
+      List      := Expression (First (Pragma_Argument_Associations (N)));
 
       --  There is nothing to be done for a null global list
 
@@ -1781,9 +1777,15 @@ package body Sem_Prag is
       --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
       --  should be caught by the No_Implementation_Pragmas restriction.
 
-      procedure Analyze_Refined_Pre_Post_Condition;
-      --  Subsidiary routine to the analysis of pragmas Refined_Pre and
-      --  Refined_Post.
+      procedure Analyze_Refined_Pragma
+        (Spec_Id : out Entity_Id;
+         Body_Id : out Entity_Id;
+         Legal   : out Boolean);
+      --  Subsidiary routine to the analysis of body pragmas Refined_Depends,
+      --  Refined_Global, Refined_Post and Refined_Pre. Check the placement and
+      --  related context of the pragma. Spec_Id is the entity of the related
+      --  subprogram. Body_Id is the entity of the subprogram body. Flag Legal
+      --  is set when the pragma is properly placed.
 
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
@@ -2311,18 +2313,27 @@ package body Sem_Prag is
          end if;
       end Ada_2012_Pragma;
 
-      ----------------------------------------
-      -- Analyze_Refined_Pre_Post_Condition --
-      ----------------------------------------
+      ----------------------------
+      -- Analyze_Refined_Pragma --
+      ----------------------------
 
-      procedure Analyze_Refined_Pre_Post_Condition is
+      procedure Analyze_Refined_Pragma
+        (Spec_Id : out Entity_Id;
+         Body_Id : out Entity_Id;
+         Legal   : out Boolean)
+      is
          Body_Decl : Node_Id := Parent (N);
          Pack_Spec : Node_Id;
          Spec_Decl : Node_Id;
-         Spec_Id   : Entity_Id;
          Stmt      : Node_Id;
 
       begin
+         --  Assume that the pragma is illegal
+
+         Spec_Id := Empty;
+         Body_Id := Empty;
+         Legal   := False;
+
          GNAT_Pragma;
          Check_Arg_Count (1);
          Check_No_Identifiers;
@@ -2385,6 +2396,8 @@ package body Sem_Prag is
             return;
          end if;
 
+         Body_Id := Defining_Entity (Body_Decl);
+
          --  The body [stub] must not act as a spec, in other words it has to
          --  be paired with a corresponding spec.
 
@@ -2421,10 +2434,10 @@ package body Sem_Prag is
             return;
          end if;
 
-         --  Analyze the boolean expression as a "spec expression"
+         --  If we get here, then the pragma is legal
 
-         Analyze_Pre_Post_Condition_In_Decl_Part (N, Spec_Id);
-      end Analyze_Refined_Pre_Post_Condition;
+         Legal := True;
+      end Analyze_Refined_Pragma;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -8492,10 +8505,12 @@ package body Sem_Prag is
                --  from the original state declaration. Decorate the entity.
 
                Id := Make_Defining_Identifier (Loc, New_External_Name (Name));
-               Set_Comes_From_Source (Id, not Is_Null);
-               Set_Parent            (Id, State);
-               Set_Ekind             (Id, E_Abstract_State);
-               Set_Etype             (Id, Standard_Void_Type);
+               Set_Comes_From_Source       (Id, not Is_Null);
+               Set_Parent                  (Id, State);
+               Set_Ekind                   (Id, E_Abstract_State);
+               Set_Etype                   (Id, Standard_Void_Type);
+               Set_Refined_State           (Id, Empty);
+               Set_Refinement_Constituents (Id, New_Elmt_List);
 
                --  Every non-null state must be nameable and resolvable the
                --  same way a constant is.
@@ -11873,7 +11888,7 @@ package body Sem_Prag is
          -- Global --
          ------------
 
-         --  pragma Global (GLOBAL_SPECIFICATION)
+         --  pragma Global (GLOBAL_SPECIFICATION);
 
          --  GLOBAL_SPECIFICATION ::=
          --    null
@@ -15939,31 +15954,59 @@ package body Sem_Prag is
          -- Refined_Global --
          --------------------
 
-         --  ??? To be implemented
+         --  pragma Refined_Global (GLOBAL_SPECIFICATION);
 
-         --  Would be better if these generated an error message saying that
-         --  the feature was not yet implemented ???
+         --  GLOBAL_SPECIFICATION ::=
+         --    null
+         --  | GLOBAL_LIST
+         --  | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
 
-         when Pragma_Refined_Global =>
-            null;
+         --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
 
-         ------------------
-         -- Refined_Post --
-         ------------------
+         --  MODE_SELECTOR ::= Input | Output | In_Out | Contract_In
+         --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --  GLOBAL_ITEM   ::= NAME
+
+         when Pragma_Refined_Global => Refined_Global : declare
+            Body_Id : Entity_Id;
+            Legal   : Boolean;
+            Spec_Id : Entity_Id;
+
+         begin
+            Analyze_Refined_Pragma (Spec_Id, Body_Id, Legal);
+
+            --  Save the pragma in the contract of the subprogram body. The
+            --  remaining analysis is performed at the end of the enclosing
+            --  declarations.
+
+            if Legal then
+               Add_Contract_Item (N, Body_Id);
+            end if;
+         end Refined_Global;
+
+         ------------------------------
+         -- Refined_Post/Refined_Pre --
+         ------------------------------
 
          --  pragma Refined_Post (boolean_EXPRESSION);
+         --  pragma Refined_Pre  (boolean_EXPRESSION);
 
-         when Pragma_Refined_Post =>
-            Analyze_Refined_Pre_Post_Condition;
+         when Pragma_Refined_Post |
+              Pragma_Refined_Pre  => Refined_Pre_Post :
+         declare
+            Body_Id : Entity_Id;
+            Legal   : Boolean;
+            Spec_Id : Entity_Id;
 
-         -----------------
-         -- Refined_Pre --
-         -----------------
+         begin
+            Analyze_Refined_Pragma (Spec_Id, Body_Id, Legal);
 
-         --  pragma Refined_Pre (boolean_EXPRESSION);
+            --  Analyze the boolean expression as a "spec expression"
 
-         when Pragma_Refined_Pre =>
-            Analyze_Refined_Pre_Post_Condition;
+            if Legal then
+               Analyze_Pre_Post_Condition_In_Decl_Part (N, Spec_Id);
+            end if;
+         end Refined_Pre_Post;
 
          -------------------
          -- Refined_State --
@@ -16009,8 +16052,9 @@ package body Sem_Prag is
             if No (Abstract_States (Spec_Id))
               or else Has_Null_Abstract_State (Spec_Id)
             then
-               Error_Pragma
-                 ("useless pragma %, package does not define abstract states");
+               Error_Msg_NE
+                 ("useless refinement, package & does not define abstract "
+                  & "states", N, Spec_Id);
                return;
             end if;
 
@@ -18534,12 +18578,874 @@ package body Sem_Prag is
    -- Analyze_Refined_Global_In_Decl_Part --
    -----------------------------------------
 
-   --  ??? To be implemented
-
    procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id) is
-      pragma Unreferenced (N);
+      Global : Node_Id;
+      --  The corresponding Global aspect/pragma
+
+      Has_In_State     : Boolean := False;
+      Has_In_Out_State : Boolean := False;
+      Has_Out_State    : Boolean := False;
+      --  These flags are set when the corresponding Global aspect/pragma has
+      --  a state of mode Input, In_Out and Output respectively with a visible
+      --  refinement.
+
+      In_Constits     : Elist_Id := No_Elist;
+      In_Out_Constits : Elist_Id := No_Elist;
+      Out_Constits    : Elist_Id := No_Elist;
+      --  These lists contain the entities of all Input, In_Out and Output
+      --  constituents that appear in Refined_Global and participate in state
+      --  refinement.
+
+      In_Items     : Elist_Id := No_Elist;
+      In_Out_Items : Elist_Id := No_Elist;
+      Out_Items    : Elist_Id := No_Elist;
+      --  These list contain the entities of all Input, In_Out and Output items
+      --  defined in the corresponding Global aspect.
+
+      procedure Check_In_Out_States;
+      --  Determine whether the corresponding Global aspect/pragma mentions
+      --  In_Out states with visible refinement and if so, ensure that one of
+      --  the following completions apply to the constituents of the state:
+      --    1) there is at least one constituent of mode In_Out
+      --    2) there is at least one Input and one Output constituent
+      --    3) not all constituents are present and one of them is of mode
+      --       Output.
+      --  This routine may remove elements from In_Constits, In_Out_Constits
+      --  and Out_Constits.
+
+      procedure Check_Input_States;
+      --  Determine whether the corresponding Global aspect/pragma mentions
+      --  Input states with visible refinement and if so, ensure that at least
+      --  one of its constituents appears as an Input item in Refined_Global.
+      --  This routine may remove elements from In_Constits, In_Out_Constits
+      --  and Out_Constits.
+
+      procedure Check_Output_States;
+      --  Determine whether the corresponding Global aspect/pragma mentions
+      --  Output states with visible refinement and if so, ensure that all of
+      --  its constituents appear as Output items in Refined_Global. This
+      --  routine may remove elements from In_Constits, In_Out_Constits and
+      --  Out_Constits.
+
+      procedure Check_Refined_Global_List
+        (List        : Node_Id;
+         Global_Mode : Name_Id := Name_Input);
+      --  Verify the legality of a single global list declaration. Global_Mode
+      --  denotes the current mode in effect.
+
+      procedure Collect_Global_Items (Prag : Node_Id);
+      --  Collect the entities of all items of pragma Prag by populating lists
+      --  In_Items, In_Out_Items and Out_Items. The routine also sets flags
+      --  Has_In_State, Has_In_Out_State and Has_Out_State if there is a state
+      --  of a particular kind with visible refinement.
+
+      function Present_Then_Remove
+        (List : Elist_Id;
+         Item : Entity_Id) return Boolean;
+      --  Search List for a particular entity Item. If Item has been found,
+      --  remove it from List. This routine is used to strip lists In_Constits,
+      --  In_Out_Constits and Out_Constits of valid constituents.
+
+      procedure Report_Extra_Constituents;
+      --  Emit an error for each constituent found in lists In_Constits,
+      --  In_Out_Constits and Out_Constits.
+
+      -------------------------
+      -- Check_In_Out_States --
+      -------------------------
+
+      procedure Check_In_Out_States is
+         procedure Check_Constituent_Usage (State_Id : Entity_Id);
+         --  Determine whether one of the following coverage scenarios is in
+         --  effect:
+         --    1) there is at least one constituent of mode In_Out
+         --    2) there is at least one Input and one Output constituent
+         --    3) not all constituents are present and one of them is of mode
+         --       Output.
+         --  If this is not the case, emit an error.
+
+         -----------------------------
+         -- Check_Constituent_Usage --
+         -----------------------------
+
+         procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constit_Elmt : Elmt_Id;
+            Constit_Id   : Entity_Id;
+            Has_Missing  : Boolean := False;
+            In_Out_Seen  : Boolean := False;
+            In_Seen      : Boolean := False;
+            Out_Seen     : Boolean := False;
+
+         begin
+            --  Process all the constituents of the state and note their modes
+            --  within the global refinement.
+
+            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
+            while Present (Constit_Elmt) loop
+               Constit_Id := Node (Constit_Elmt);
+
+               if Present_Then_Remove (In_Constits, Constit_Id) then
+                  In_Seen := True;
+
+               elsif Present_Then_Remove (In_Out_Constits, Constit_Id) then
+                  In_Out_Seen := True;
+
+               elsif Present_Then_Remove (Out_Constits, Constit_Id) then
+                  Out_Seen := True;
+
+               else
+                  Has_Missing := True;
+               end if;
+
+               Next_Elmt (Constit_Elmt);
+            end loop;
+
+            --  A single In_Out constituent is a valid completion
+
+            if In_Out_Seen then
+               null;
+
+            --  A pair of one Input and one Output constituent is a valid
+            --  completion.
+
+            elsif In_Seen and then Out_Seen then
+               null;
+
+            --  A single Output constituent is a valid completion only when
+            --  some of the other constituents are missing.
+
+            elsif Has_Missing and then Out_Seen then
+               null;
+
+            else
+               Error_Msg_NE
+                 ("global refinement of state & redefines the mode of its "
+                  & "constituents", N, State_Id);
+            end if;
+         end Check_Constituent_Usage;
+
+         --  Local variables
+
+         Item_Elmt : Elmt_Id;
+         Item_Id   : Entity_Id;
+
+      --  Start of processing for Check_In_Out_States
+
+      begin
+         --  Inspect the In_Out items of the corresponding Global aspect/pragma
+         --  looking for a state with a visible refinement.
+
+         if Has_In_Out_State and then Present (In_Out_Items) then
+            Item_Elmt := First_Elmt (In_Out_Items);
+            while Present (Item_Elmt) loop
+               Item_Id := Node (Item_Elmt);
+
+               --  Ensure that one of the three coverage variants is satisfied
+
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Present (Refinement_Constituents (Item_Id))
+               then
+                  Check_Constituent_Usage (Item_Id);
+               end if;
+
+               Next_Elmt (Item_Elmt);
+            end loop;
+         end if;
+      end Check_In_Out_States;
+
+      ------------------------
+      -- Check_Input_States --
+      ------------------------
+
+      procedure Check_Input_States is
+         procedure Check_Constituent_Usage (State_Id : Entity_Id);
+         --  Determine whether at least one constituent of state State_Id with
+         --  visible refinement is used and has mode Input. Ensure that the
+         --  remaining constituents do not have In_Out or Output modes.
+
+         -----------------------------
+         -- Check_Constituent_Usage --
+         -----------------------------
+
+         procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constit_Elmt : Elmt_Id;
+            Constit_Id   : Entity_Id;
+            In_Seen      : Boolean := False;
+
+         begin
+            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
+            while Present (Constit_Elmt) loop
+               Constit_Id := Node (Constit_Elmt);
+
+               --  At least one of the constituents appears as an Input
+
+               if Present_Then_Remove (In_Constits, Constit_Id) then
+                  In_Seen := True;
+
+               --  The constituent appears in the global refinement, but has
+               --  mode In_Out or Output.
+
+               elsif Present_Then_Remove (In_Out_Constits, Constit_Id)
+                 or else Present_Then_Remove (Out_Constits, Constit_Id)
+               then
+                  Error_Msg_Name_1 := Chars (State_Id);
+                  Error_Msg_NE
+                    ("constituent & of state % must have mode Input in global "
+                     & "refinement", N, Constit_Id);
+               end if;
+
+               Next_Elmt (Constit_Elmt);
+            end loop;
+
+            --  Not one of the constituents appeared as Input
+
+            if not In_Seen then
+               Error_Msg_NE
+                 ("global refinement of state & must include at least one "
+                  & "constituent of mode Input", N, State_Id);
+            end if;
+         end Check_Constituent_Usage;
+
+         --  Local variables
+
+         Item_Elmt : Elmt_Id;
+         Item_Id   : Entity_Id;
+
+      --  Start of processing for Check_Input_States
+
+      begin
+         --  Inspect the Input items of the corresponding Global aspect/pragma
+         --  looking for a state with a visible refinement.
+
+         if Has_In_State and then Present (In_Items) then
+            Item_Elmt := First_Elmt (In_Items);
+            while Present (Item_Elmt) loop
+               Item_Id := Node (Item_Elmt);
+
+               --  Ensure that at least one of the constituents is utilized and
+               --  is of mode Input.
+
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Present (Refinement_Constituents (Item_Id))
+               then
+                  Check_Constituent_Usage (Item_Id);
+               end if;
+
+               Next_Elmt (Item_Elmt);
+            end loop;
+         end if;
+      end Check_Input_States;
+
+      -------------------------
+      -- Check_Output_States --
+      -------------------------
+
+      procedure Check_Output_States is
+         procedure Check_Constituent_Usage (State_Id : Entity_Id);
+         --  Determine whether all constituents of state State_Id with visible
+         --  refinement are used and have mode Output. Emit an error if this is
+         --  not the case.
+
+         -----------------------------
+         -- Check_Constituent_Usage --
+         -----------------------------
+
+         procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constit_Elmt : Elmt_Id;
+            Constit_Id   : Entity_Id;
+
+         begin
+            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
+            while Present (Constit_Elmt) loop
+               Constit_Id := Node (Constit_Elmt);
+
+               if Present_Then_Remove (Out_Constits, Constit_Id) then
+                  null;
+
+               else
+                  Remove (In_Constits, Constit_Id);
+                  Remove (In_Out_Constits, Constit_Id);
+
+                  Error_Msg_Name_1 := Chars (State_Id);
+                  Error_Msg_NE
+                    ("constituent & of state % must have mode Output in "
+                     & "global refinement", N, Constit_Id);
+               end if;
+
+               Next_Elmt (Constit_Elmt);
+            end loop;
+         end Check_Constituent_Usage;
+
+         --  Local variables
+
+         Item_Elmt : Elmt_Id;
+         Item_Id   : Entity_Id;
+
+      --  Start of processing for Check_Output_States
+
+      begin
+         --  Inspect the Output items of the corresponding Global aspect/pragma
+         --  looking for a state with a visible refinement.
+
+         if Has_Out_State and then Present (Out_Items) then
+            Item_Elmt := First_Elmt (Out_Items);
+            while Present (Item_Elmt) loop
+               Item_Id := Node (Item_Elmt);
+
+               --  Ensure that all of the constituents are utilized and they
+               --  have mode Output.
+
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Present (Refinement_Constituents (Item_Id))
+               then
+                  Check_Constituent_Usage (Item_Id);
+               end if;
+
+               Next_Elmt (Item_Elmt);
+            end loop;
+         end if;
+      end Check_Output_States;
+
+      -------------------------------
+      -- Check_Refined_Global_List --
+      -------------------------------
+
+      procedure Check_Refined_Global_List
+        (List        : Node_Id;
+         Global_Mode : Name_Id := Name_Input)
+      is
+         procedure Check_Refined_Global_Item
+           (Item        : Node_Id;
+            Global_Mode : Name_Id);
+         --  Verify the legality of a single global item declaration. Parameter
+         --  Global_Mode denotes the current mode in effect.
+
+         -------------------------------
+         -- Check_Refined_Global_Item --
+         -------------------------------
+
+         procedure Check_Refined_Global_Item
+           (Item        : Node_Id;
+            Global_Mode : Name_Id)
+         is
+            procedure Add_Constituent (Item_Id : Entity_Id);
+            --  Add a single constituent to one of the three constituent lists
+            --  depending on Global_Mode.
+
+            procedure Check_Matching_Modes (Item_Id : Entity_Id);
+            --  Verify that the global modes of item Item_Id are the same in
+            --  both aspects/pragmas Global and Refined_Global.
+
+            function Is_Part_Of
+              (State    : Entity_Id;
+               Ancestor : Entity_Id) return Boolean;
+            --  Determine whether abstract state State is part of an ancestor
+            --  abstract state Ancestor. For this relationship to hold, State
+            --  must have option Part_Of in its Abstract_State definition.
+
+            ---------------------
+            -- Add_Constituent --
+            ---------------------
+
+            procedure Add_Constituent (Item_Id : Entity_Id) is
+            begin
+               if Global_Mode = Name_Input then
+                  Add_Item (Item_Id, In_Constits);
+
+               elsif Global_Mode = Name_In_Out then
+                  Add_Item (Item_Id, In_Out_Constits);
+
+               elsif Global_Mode = Name_Output then
+                  Add_Item (Item_Id, Out_Constits);
+               end if;
+            end Add_Constituent;
+
+            --------------------------
+            -- Check_Matching_Modes --
+            --------------------------
+
+            procedure Check_Matching_Modes (Item_Id : Entity_Id) is
+               procedure Inconsistent_Mode_Error (Expect : Name_Id);
+               --  Issue a common error message for all mode mismatche. Expect
+               --  denotes the expected mode.
+
+               -----------------------------
+               -- Inconsistent_Mode_Error --
+               -----------------------------
+
+               procedure Inconsistent_Mode_Error (Expect : Name_Id) is
+               begin
+                  Error_Msg_NE
+                    ("global item & has inconsistent modes", Item, Item_Id);
+
+                  Error_Msg_Name_1 := Global_Mode;
+                  Error_Msg_N ("\  expected mode %", Item);
+
+                  Error_Msg_Name_1 := Expect;
+                  Error_Msg_N ("\  found mode %", Item);
+               end Inconsistent_Mode_Error;
+
+            --  Start processing for Check_Matching_Modes
+
+            begin
+               if Contains (In_Items, Item_Id) then
+                  if Global_Mode /= Name_Input then
+                     Inconsistent_Mode_Error (Name_Input);
+                  end if;
+
+               elsif Contains (In_Out_Items, Item_Id) then
+                  if Global_Mode /= Name_In_Out then
+                     Inconsistent_Mode_Error (Name_In_Out);
+                  end if;
+
+               elsif Contains (Out_Items, Item_Id) then
+                  if Global_Mode /= Name_Output then
+                     Inconsistent_Mode_Error (Name_Output);
+                  end if;
+
+               --  The item does not appear in the corresponding Global aspect,
+               --  it must be an extra.
+
+               else
+                  Error_Msg_NE ("extra global item &", Item, Item_Id);
+               end if;
+            end Check_Matching_Modes;
+
+            ----------------
+            -- Is_Part_Of --
+            ----------------
+
+            function Is_Part_Of
+              (State    : Entity_Id;
+               Ancestor : Entity_Id) return Boolean
+            is
+               Options : constant Node_Id := Parent (State);
+               Name    : Node_Id;
+               Option  : Node_Id;
+               Value   : Node_Id;
+
+            begin
+               --  A state declaration with option Part_Of appears as an
+               --  extension aggregate with component associations.
+
+               if Nkind (Options) = N_Extension_Aggregate then
+                  Option := First (Component_Associations (Options));
+                  while Present (Option) loop
+                     Name  := First (Choices (Option));
+                     Value := Expression (Option);
+
+                     if Chars (Name) = Name_Part_Of then
+                        return Entity (Value) = Ancestor;
+                     end if;
+
+                     Next (Option);
+                  end loop;
+               end if;
+
+               return False;
+            end Is_Part_Of;
+
+            --  Local variables
+
+            Item_Id : constant Entity_Id := Entity_Of (Item);
+
+         --  Start of processing for Check_Refined_Global_Item
+
+         begin
+            --  State checks
+
+            if Ekind (Item_Id) = E_Abstract_State then
+
+               --  The state acts as a constituent of some other state. Ensure
+               --  that the other state is a proper ancestor of the item.
+
+               if Present (Refined_State (Item_Id)) then
+                  if Is_Part_Of (Item_Id, Refined_State (Item_Id)) then
+                     Add_Constituent (Item_Id);
+                  else
+                     Error_Msg_Name_1 := Chars (Refined_State (Item_Id));
+                     Error_Msg_NE
+                       ("state & is not a valid constituent of ancestor "
+                        & "state %", Item, Item_Id);
+                  end if;
+
+               --  An abstract state with visible refinement cannot appear in a
+               --  global refinement as its place must be taken by some of its
+               --  constituents.
+
+               elsif Present (Refinement_Constituents (Item_Id)) then
+                  Error_Msg_NE
+                    ("cannot mention state & in global refinement, use its "
+                     & "constituents instead", Item, Item_Id);
+
+               --  The state is not refined nor is it a constituent. Ensure
+               --  that the modes of both its occurrences in Global and
+               --  Refined_Global match.
+
+               else
+                  Check_Matching_Modes (Item_Id);
+               end if;
+
+            --  Variable checks
+
+            else pragma Assert (Ekind (Item_Id) = E_Variable);
+
+               --  The variable acts as a constituent of a state, collect it
+               --  for the state completeness checks performed later on.
+
+               if Present (Refined_State (Item_Id)) then
+                  Add_Constituent (Item_Id);
+
+               --  The variable is not a constituent. Ensure that the modes of
+               --  both its occurrences in Global and Refined_Global match.
+
+               else
+                  Check_Matching_Modes (Item_Id);
+               end if;
+            end if;
+         end Check_Refined_Global_Item;
+
+         --  Local variables
+
+         Item : Node_Id;
+
+      --  Start of processing for Check_Refined_Global_List
+
+      begin
+         --  Single global item declaration
+
+         if Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+         then
+            Check_Refined_Global_Item (List, Global_Mode);
+
+         --  Simple global list or moded global list declaration
+
+         elsif Nkind (List) = N_Aggregate then
+
+            --  The declaration of a simple global list appear as a collection
+            --  of expressions.
+
+            if Present (Expressions (List)) then
+               Item := First (Expressions (List));
+               while Present (Item) loop
+                  Check_Refined_Global_Item (Item, Global_Mode);
+
+                  Next (Item);
+               end loop;
+
+            --  The declaration of a moded global list appears as a collection
+            --  of component associations where individual choices denote
+            --  modes.
+
+            elsif Present (Component_Associations (List)) then
+               Item := First (Component_Associations (List));
+               while Present (Item) loop
+                  Check_Refined_Global_List
+                    (List        => Expression (Item),
+                     Global_Mode => Chars (First (Choices (Item))));
+
+                  Next (Item);
+               end loop;
+
+            --  Invalid tree
+
+            else
+               raise Program_Error;
+            end if;
+
+         --  Invalid list
+
+         else
+            raise Program_Error;
+         end if;
+      end Check_Refined_Global_List;
+
+      --------------------------
+      -- Collect_Global_Items --
+      --------------------------
+
+      procedure Collect_Global_Items (Prag : Node_Id) is
+         procedure Process_Global_List
+           (List : Node_Id;
+            Mode : Name_Id := Name_Input);
+         --  Collect all items housed in a global list. Formal Mode denotes the
+         --  current mode in effect.
+
+         -------------------------
+         -- Process_Global_List --
+         -------------------------
+
+         procedure Process_Global_List
+           (List : Node_Id;
+            Mode : Name_Id := Name_Input)
+         is
+            procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id);
+            --  Add a single item to the appropriate list. Formal Mode denotes
+            --  the current mode in effect.
+
+            -------------------------
+            -- Process_Global_Item --
+            -------------------------
+
+            procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id) is
+               Item_Id : constant Entity_Id := Entity_Of (Item);
+
+            begin
+               --  Signal that the global list contains at least one abstract
+               --  state with a visible refinement.
+
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Present (Refinement_Constituents (Item_Id))
+               then
+                  if Mode = Name_Input then
+                     Has_In_State := True;
+                  elsif Mode = Name_In_Out then
+                     Has_In_Out_State := True;
+                  elsif Mode = Name_Output then
+                     Has_Out_State := True;
+                  end if;
+               end if;
+
+               --  Add the item to the proper list
+
+               if Mode = Name_Input then
+                  Add_Item (Item_Id, In_Items);
+               elsif Mode = Name_In_Out then
+                  Add_Item (Item_Id, In_Out_Items);
+               elsif Mode = Name_Output then
+                  Add_Item (Item_Id, Out_Items);
+               end if;
+            end Process_Global_Item;
+
+            --  Local variables
+
+            Item : Node_Id;
+
+         --  Start of processing for Process_Global_List
+
+         begin
+            --  Single global item declaration
+
+            if Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
+            then
+               Process_Global_Item (List, Mode);
+
+            --  Single global list or moded global list declaration
+
+            elsif Nkind (List) = N_Aggregate then
+
+               --  The declaration of a simple global list appear as a
+               --  collection of expressions.
+
+               if Present (Expressions (List)) then
+                  Item := First (Expressions (List));
+                  while Present (Item) loop
+                     Process_Global_Item (Item, Mode);
+
+                     Next (Item);
+                  end loop;
+
+               --  The declaration of a moded global list appears as a
+               --  collection of component associations where individual
+               --  choices denote modes.
+
+               elsif Present (Component_Associations (List)) then
+                  Item := First (Component_Associations (List));
+                  while Present (Item) loop
+                     Process_Global_List
+                       (List => Expression (Item),
+                        Mode => Chars (First (Choices (Item))));
+
+                     Next (Item);
+                  end loop;
+
+               --  Invalid tree
+
+               else
+                  raise Program_Error;
+               end if;
+
+            --  Invalid list
+
+            else
+               raise Program_Error;
+            end if;
+         end Process_Global_List;
+
+         --  Local variables
+
+         List : constant Node_Id :=
+                  Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+      --  Start of processing for Collect_Global_Items
+
+      begin
+         --  Do not process a null global list as it contains nothing
+
+         if Nkind (List) /= N_Null then
+            Process_Global_List (List);
+         end if;
+      end Collect_Global_Items;
+
+      -------------------------
+      -- Present_Then_Remove --
+      -------------------------
+
+      function Present_Then_Remove
+        (List : Elist_Id;
+         Item : Entity_Id) return Boolean
+      is
+         Elmt : Elmt_Id;
+
+      begin
+         if Present (List) then
+            Elmt := First_Elmt (List);
+            while Present (Elmt) loop
+               if Node (Elmt) = Item then
+                  Remove_Elmt (List, Elmt);
+                  return True;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         return False;
+      end Present_Then_Remove;
+
+      -------------------------------
+      -- Report_Extra_Constituents --
+      -------------------------------
+
+      procedure Report_Extra_Constituents is
+         procedure Report_Extra_Constituents_In_List (List : Elist_Id);
+         --  Emit an error for every element of List
+
+         ---------------------------------------
+         -- Report_Extra_Constituents_In_List --
+         ---------------------------------------
+
+         procedure Report_Extra_Constituents_In_List (List : Elist_Id) is
+            Constit_Elmt : Elmt_Id;
+
+         begin
+            if Present (List) then
+               Constit_Elmt := First_Elmt (List);
+               while Present (Constit_Elmt) loop
+                  Error_Msg_NE ("extra constituent &", N, Node (Constit_Elmt));
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
+         end Report_Extra_Constituents_In_List;
+
+      --  Start of processing for Report_Extra_Constituents
+
+      begin
+         Report_Extra_Constituents_In_List (In_Constits);
+         Report_Extra_Constituents_In_List (In_Out_Constits);
+         Report_Extra_Constituents_In_List (Out_Constits);
+      end Report_Extra_Constituents;
+
+      --  Local variables
+
+      Body_Decl : constant Node_Id := Parent (N);
+      Errors    : constant Nat     := Serious_Errors_Detected;
+      List      : constant Node_Id :=
+                    Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
+
+   --  Start of processing for Analyze_Refined_Global_In_Decl_Part
+
    begin
-      null;
+      Global := Get_Pragma (Spec_Id, Pragma_Global);
+
+      --  The subprogram declaration lacks aspect/pragma Global. This renders
+      --  Refined_Global useless as there is nothing to refine.
+
+      if No (Global) then
+         Error_Msg_NE
+           ("useless refinement, subprogram & lacks global items", N, Spec_Id);
+         return;
+      end if;
+
+      --  Extract all relevant items from the corresponding Global aspect or
+      --  pragma.
+
+      Collect_Global_Items (Global);
+
+      --  The corresponding Global aspect/pragma must mention at least one
+      --  state with a visible refinement at the point Refined_Global is
+      --  processed.
+
+      if not Has_In_State
+        and then not Has_In_Out_State
+        and then not Has_Out_State
+      then
+         Error_Msg_NE
+           ("useless refinement, subprogram & does not mention abstract state "
+            & "with visible refinement", N, Spec_Id);
+         return;
+      end if;
+
+      --  The global refinement of inputs and outputs cannot be null when the
+      --  corresponding Global aspect/pragma contains at least one item.
+
+      if Nkind (List) = N_Null
+        and then
+          (Present (In_Items)
+            or else Present (In_Out_Items)
+            or else Present (Out_Items))
+      then
+         Error_Msg_NE
+           ("refinement cannot be null, subprogram & has global items",
+            N, Spec_Id);
+         return;
+      end if;
+
+      --  Analyze Refined_Global as if it behaved as a regular aspect/pragma
+      --  Global. This ensures that the categorization of all refined global
+      --  items is consistent with their role.
+
+      Analyze_Global_In_Decl_Part (N);
+
+      --  Perform all refinement checks with respect to completeness and mode
+      --  matching.
+
+      if Serious_Errors_Detected = Errors then
+         Check_Refined_Global_List (List);
+      end if;
+
+      --  For Input states with visible refinement, at least one constituent
+      --  must be used as an Input in the global refinement.
+
+      if Serious_Errors_Detected = Errors then
+         Check_Input_States;
+      end if;
+
+      --  Verify all possible completion variants for In_Out states with
+      --  visible refinement.
+
+      if Serious_Errors_Detected = Errors then
+         Check_In_Out_States;
+      end if;
+
+      --  For Output states with visible refinement, all constituents must be
+      --  used as Outputs in the global refinement.
+
+      if Serious_Errors_Detected = Errors then
+         Check_Output_States;
+      end if;
+
+      --  Emit errors for all constituents that belong to other states with
+      --  visible refinement that do not appear in Global.
+
+      if Serious_Errors_Detected = Errors then
+         Report_Extra_Constituents;
+      end if;
    end Analyze_Refined_Global_In_Decl_Part;
 
    ----------------------------------------
@@ -18587,6 +19493,9 @@ package body Sem_Prag is
       -------------------------------
 
       procedure Analyze_Refinement_Clause (Clause : Node_Id) is
+         State_Id : Entity_Id := Empty;
+         --  The entity of the state being refined in the current clause
+
          Non_Null_Seen : Boolean := False;
          Null_Seen     : Boolean := False;
          --  Flags used to detect multiple uses of null in a single clause or a
@@ -18646,6 +19555,17 @@ package body Sem_Prag is
                   if Node (State_Elmt) = Constit_Id then
                      Add_Item (Constit_Id, Constituents_Seen);
                      Remove_Elmt (Hidden_States, State_Elmt);
+
+                     --  Establish a relation between the refined state and its
+                     --  constituent.
+
+                     if No (Refinement_Constituents (State_Id)) then
+                        Set_Refinement_Constituents (State_Id, New_Elmt_List);
+                     end if;
+
+                     Append_Elmt
+                       (Constit_Id, Refinement_Constituents (State_Id));
+                     Set_Refined_State (Constit_Id, State_Id);
 
                      return;
                   end if;
@@ -18771,9 +19691,8 @@ package body Sem_Prag is
 
          --  Local declarations
 
-         Constit  : Node_Id;
-         State    : Node_Id;
-         State_Id : Entity_Id := Empty;
+         Constit : Node_Id;
+         State   : Node_Id;
 
       --  Start of processing for Analyze_Refinement_Clause
 
@@ -18891,12 +19810,8 @@ package body Sem_Prag is
 
                --  Source objects (non-constants) are valid hidden states
 
-               --  This is a very odd test, it misses many cases, e.g.
-               --  renamings of objects, in-out parameters etc ???. Why
-               --  not test the Ekind ???
-
                if Nkind (Decl) = N_Object_Declaration
-                 and then not Constant_Present (Decl)
+                 and then Ekind (Defining_Entity (Decl)) = E_Variable
                  and then Comes_From_Source (Decl)
                then
                   Add_Item (Defining_Entity (Decl), Result);
@@ -19004,7 +19919,7 @@ package body Sem_Prag is
 
       --  Initialize the various lists used during analysis
 
-      Abstr_States  := Clone (Abstract_States (Spec_Id));
+      Abstr_States  := New_Copy_Elist (Abstract_States (Spec_Id));
       Hidden_States := Collect_Hidden_States;
 
       --  Multiple state refinements appear as an aggregate
