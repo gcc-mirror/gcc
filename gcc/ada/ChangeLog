@@ -1,3 +1,20 @@
+2013-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode): Do
+	not emit an error when we are looking at inputs and
+	the item is an unconstrained or tagged out parameter.
+	(Check_Mode_Restriction_In_Enclosing_Context): Use Get_Pragma
+	to find whether the context is subject to aspect/pragma Global.
+	(Collect_Subprogram_Inputs_Outputs): Unconstrained or tagged
+	out parameters are now considered inputs. Use Get_Pragma to
+	find wheher the subprogram is subject to aspect/pragma Global.
+	(Is_Unconstrained_Or_Tagged_Item): New routine.
+
+2013-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2013-10-13  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Add documentation for pragmas Pre[_Class]

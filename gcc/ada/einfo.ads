@@ -678,7 +678,7 @@ package Einfo is
 --    Corresponding_Remote_Type (Node22)
 --       Defined in record types that describe the fat pointer structure for
 --       Remote_Access_To_Subprogram types. References the original access
---       type.
+--       to subprogram type.
 
 --    CR_Discriminant (Node23)
 --       Defined in discriminants of concurrent types. Denotes the homologous
