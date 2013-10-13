@@ -25,19 +25,15 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
-with Exp_Attr; use Exp_Attr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
-with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 with Stand;    use Stand;
-with Tbuild;   use Tbuild;
 
 package body Exp_SPARK is
 
@@ -51,17 +47,8 @@ package body Exp_SPARK is
    --    * expansion of actuals to introduce necessary temporaries
    --    * replacement of renaming by subprogram renamed
 
-   procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
-   --  Expand attributes 'Old and 'Result only
-
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
-
-   procedure Expand_SPARK_N_Simple_Return_Statement (N : Node_Id);
-   --  Insert conversion on function return if necessary
-
-   procedure Expand_SPARK_Simple_Function_Return (N : Node_Id);
-   --  Expand simple return from function
 
    procedure Expand_Potential_Renaming (N : Node_Id);
    --  N denotes a N_Identifier or N_Expanded_Name. If N references a renaming,
@@ -74,8 +61,6 @@ package body Exp_SPARK is
    procedure Expand_SPARK (N : Node_Id) is
    begin
       case Nkind (N) is
-         when N_Attribute_Reference =>
-            Expand_SPARK_N_Attribute_Reference (N);
 
          --  Qualification of entity names in formal verification mode
          --  is limited to the addition of a suffix for homonyms (see
@@ -106,9 +91,6 @@ package body Exp_SPARK is
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
-
-         when N_Simple_Return_Statement =>
-            Expand_SPARK_N_Simple_Return_Statement (N);
 
          --  In SPARK mode, no other constructs require expansion
 
@@ -179,24 +161,6 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_Call;
 
-   ----------------------------------------
-   -- Expand_SPARK_N_Attribute_Reference --
-   ----------------------------------------
-
-   procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id) is
-      Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
-
-   begin
-      case Id is
-         when Attribute_Old    |
-              Attribute_Result =>
-            Expand_N_Attribute_Reference (N);
-
-         when others =>
-            null;
-      end case;
-   end Expand_SPARK_N_Attribute_Reference;
-
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --
    ------------------------------------------------
@@ -207,80 +171,6 @@ package body Exp_SPARK is
 
       Evaluate_Name (Name (N));
    end Expand_SPARK_N_Object_Renaming_Declaration;
-
-   --------------------------------------------
-   -- Expand_SPARK_N_Simple_Return_Statement --
-   --------------------------------------------
-
-   procedure Expand_SPARK_N_Simple_Return_Statement (N : Node_Id) is
-   begin
-      --  Defend against previous errors (i.e. the return statement calls a
-      --  function that is not available in configurable runtime).
-
-      if Present (Expression (N))
-        and then Nkind (Expression (N)) = N_Empty
-      then
-         return;
-      end if;
-
-      --  Distinguish the function and non-function cases:
-
-      case Ekind (Return_Applies_To (Return_Statement_Entity (N))) is
-
-         when E_Function          |
-              E_Generic_Function  =>
-            Expand_SPARK_Simple_Function_Return (N);
-
-         when E_Procedure         |
-              E_Generic_Procedure |
-              E_Entry             |
-              E_Entry_Family      |
-              E_Return_Statement =>
-            null;
-
-         when others =>
-            raise Program_Error;
-      end case;
-
-   exception
-      when RE_Not_Available =>
-         return;
-   end Expand_SPARK_N_Simple_Return_Statement;
-
-   -----------------------------------------
-   -- Expand_SPARK_Simple_Function_Return --
-   -----------------------------------------
-
-   procedure Expand_SPARK_Simple_Function_Return (N : Node_Id) is
-      Scope_Id : constant Entity_Id :=
-                   Return_Applies_To (Return_Statement_Entity (N));
-      --  The function we are returning from
-
-      R_Type : constant Entity_Id := Etype (Scope_Id);
-      --  The result type of the function
-
-      Exp : constant Node_Id := Expression (N);
-      pragma Assert (Present (Exp));
-
-      Exptyp : constant Entity_Id := Etype (Exp);
-      --  The type of the expression (not necessarily the same as R_Type)
-
-   begin
-      --  Check the result expression of a scalar function against the subtype
-      --  of the function by inserting a conversion. This conversion must
-      --  eventually be performed for other classes of types, but for now it's
-      --  only done for scalars.
-      --  ???
-
-      if Is_Scalar_Type (Exptyp) then
-         Rewrite (Exp, Convert_To (R_Type, Exp));
-
-         --  The expression is resolved to ensure that the conversion gets
-         --  expanded to generate a possible constraint check.
-
-         Analyze_And_Resolve (Exp, R_Type);
-      end if;
-   end Expand_SPARK_Simple_Function_Return;
 
    -------------------------------
    -- Expand_Potential_Renaming --
