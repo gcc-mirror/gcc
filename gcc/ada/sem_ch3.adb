@@ -4052,7 +4052,7 @@ package body Sem_Ch3 is
       --  type with constraints. In this case the entity has been introduced
       --  in the private declaration.
 
-      --  Finally this happens in some complex cases  when validity checks are
+      --  Finally this happens in some complex cases when validity checks are
       --  enabled, where the same subtype declaration may be analyzed twice.
       --  This can happen if the subtype is created by the pre-analysis of
       --  an attribute tht gives the range of a loop statement, and the loop
