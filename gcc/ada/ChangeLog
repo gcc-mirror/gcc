@@ -1,3 +1,7 @@
+2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Remove obsolete comment.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_8): Define.
