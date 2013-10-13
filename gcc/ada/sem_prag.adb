@@ -236,6 +236,12 @@ package body Sem_Prag is
    --  Get_SPARK_Mode_Id. Convert a name into a corresponding value of type
    --  SPARK_Mode_Id.
 
+   function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
+   --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
+   --  pragma Depends. Determine whether the type of dependency item Item is
+   --  tagged, unconstrained array, unconstrained record or a record with at
+   --  least one unconstrained component.
+
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
@@ -839,9 +845,10 @@ package body Sem_Prag is
          --  Input
 
          if Is_Input then
-            if Ekind (Item_Id) = E_Out_Parameter
-              or else (Global_Seen
-                         and then not Appears_In (Subp_Inputs, Item_Id))
+            if (Ekind (Item_Id) = E_Out_Parameter
+                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
+              or else
+               (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
             then
                Error_Msg_NE
                  ("item & must have mode in or in out", Item, Item_Id);
@@ -1538,7 +1545,7 @@ package body Sem_Prag is
             Context := Scope (Subp_Id);
             while Present (Context) and then Context /= Standard_Standard loop
                if Is_Subprogram (Context)
-                 and then Has_Aspect (Context, Aspect_Global)
+                 and then Present (Get_Pragma (Context, Pragma_Global))
                then
                   Collect_Subprogram_Inputs_Outputs
                     (Subp_Id      => Context,
@@ -20407,6 +20414,16 @@ package body Sem_Prag is
 
          if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
             Add_Item (Formal, Subp_Outputs);
+
+            --  Out parameters can act as inputs when the related type is
+            --  tagged, unconstrained array, unconstrained record or record
+            --  with unconstrained components.
+
+            if Ekind (Formal) = E_Out_Parameter
+              and then Is_Unconstrained_Or_Tagged_Item (Formal)
+            then
+               Add_Item (Formal, Subp_Inputs);
+            end if;
          end if;
 
          Next_Formal (Formal);
@@ -20415,14 +20432,10 @@ package body Sem_Prag is
       --  If the subprogram is subject to pragma Global, traverse all global
       --  lists and gather the relevant items.
 
-      Global := Find_Aspect (Subp_Id, Aspect_Global);
+      Global := Get_Pragma (Subp_Id, Pragma_Global);
       if Present (Global) then
          Global_Seen := True;
-
-         --  Retrieve the pragma as it contains the analyzed lists
-
-         Global := Aspect_Rep_Item (Global);
-         List   := Expression (First (Pragma_Argument_Associations (Global)));
+         List := Expression (First (Pragma_Argument_Associations (Global)));
 
          --  The pragma may not have been analyzed because of the arbitrary
          --  declaration order of aspects. Make sure that it is analyzed for
@@ -21073,6 +21086,62 @@ package body Sem_Prag is
           and then Nkind (Parent (N)) = N_Package_Specification
           and then List_Containing (N) = Private_Declarations (Parent (N));
    end Is_Private_SPARK_Mode;
+
+   -------------------------------------
+   -- Is_Unconstrained_Or_Tagged_Item --
+   -------------------------------------
+
+   function Is_Unconstrained_Or_Tagged_Item
+     (Item : Entity_Id) return Boolean
+   is
+      function Has_Unconstrained_Component (Typ : Entity_Id) return Boolean;
+      --  Determine whether record type Typ has at least one unconstrained
+      --  component.
+
+      ---------------------------------
+      -- Has_Unconstrained_Component --
+      ---------------------------------
+
+      function Has_Unconstrained_Component (Typ : Entity_Id) return Boolean is
+         Comp : Entity_Id;
+
+      begin
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            if Is_Unconstrained_Or_Tagged_Item (Comp) then
+               return True;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         return False;
+      end Has_Unconstrained_Component;
+
+      --  Local variables
+
+      Typ : constant Entity_Id := Etype (Item);
+
+   --  Start of processing for Is_Unconstrained_Or_Tagged_Item
+
+   begin
+      if Is_Tagged_Type (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ) and then not Is_Constrained (Typ) then
+         return True;
+
+      elsif Is_Record_Type (Typ) then
+         if Has_Discriminants (Typ) and then not Is_Constrained (Typ) then
+            return True;
+         else
+            return Has_Unconstrained_Component (Typ);
+         end if;
+
+      else
+         return False;
+      end if;
+   end Is_Unconstrained_Or_Tagged_Item;
 
    -----------------------------
    -- Is_Valid_Assertion_Kind --
