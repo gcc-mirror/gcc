@@ -2576,6 +2576,10 @@ package Einfo is
 --       set right, at which point, these comments can be removed, and the
 --       tests for static subtypes greatly simplified.
 
+--    Is_Non_Volatile_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       option Non_Volatile.
+
 --    Is_Null_Init_Proc (Flag178)
 --       Defined in procedure entities. Set for generated init proc procedures
 --       (used to initialize composite types), if the code for the procedure
@@ -2976,10 +2980,6 @@ package Einfo is
 --       Similarly, any front end test which is concerned with suppressing
 --       optimizations on volatile objects should test Treat_As_Volatile
 --       rather than testing this flag.
-
---    Is_Volatile_State (synthesized)
---       Applies to all entities, true for abstract states that are subject to
---       option Volatile.
 
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
@@ -3537,9 +3537,18 @@ package Einfo is
 --       we have a separate warning for variables that are only assigned and
 --       never read, and out parameters are a special case.
 
+--    Refined_State (Node10)
+--       Defined in abstract states and variables. Contains the entity of an
+--       ancestor state whose refinement mentions this item.
+
 --    Refined_State_Pragma (Node8)
 --       Defined in [generic] package bodies. Contains the pragma that refines
 --       all abstract states defined in the corresponding package declaration.
+
+--    Refinement_Constituents (Elist8)
+--       Present in abstract state entities. Contains all the constituents that
+--       refine the state, in other words, all the hidden states that appear in
+--       the constituent_list of aspect/pragma Refined_State.
 
 --    Register_Exception_Call (Node20)
 --       Defined in exception entities. When an exception is declared,
@@ -5096,11 +5105,13 @@ package Einfo is
    ------------------------------------------
 
    --  E_Abstract_State
+   --    Refinement_Constituents             (Elist8)
+   --    Refined_State                       (Node10)
    --    Is_External_State                   (synth)
    --    Is_Input_Only_State                 (synth)
    --    Is_Null_State                       (synth)
    --    Is_Output_Only_State                (synth)
-   --    Is_Volatile_State                   (synth)
+   --    Is_Non_Volatile_State               (synth)
 
    --  E_Access_Protected_Subprogram_Type
    --    Equivalent_Type                     (Node18)
@@ -5913,6 +5924,7 @@ package Einfo is
    --  E_Variable
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
+   --    Refined_State                       (Node10)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6540,7 +6552,9 @@ package Einfo is
    function Referenced                          (Id : E) return B;
    function Referenced_As_LHS                   (Id : E) return B;
    function Referenced_As_Out_Parameter         (Id : E) return B;
+   function Refined_State                       (Id : E) return E;
    function Refined_State_Pragma                (Id : E) return E;
+   function Refinement_Constituents             (Id : E) return L;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
    function Related_Expression                  (Id : E) return N;
@@ -6691,6 +6705,7 @@ package Einfo is
    function Is_Ghost_Entity                     (Id : E) return B;
    function Is_Ghost_Subprogram                 (Id : E) return B;
    function Is_Input_Only_State                 (Id : E) return B;
+   function Is_Non_Volatile_State               (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
    function Is_Output_Only_State                (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
@@ -6703,7 +6718,6 @@ package Einfo is
    function Is_Synchronized_Interface           (Id : E) return B;
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
-   function Is_Volatile_State                   (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
    function Last_Formal                         (Id : E) return E;
    function Machine_Emax_Value                  (Id : E) return U;
@@ -7158,7 +7172,9 @@ package Einfo is
    procedure Set_Referenced                      (Id : E; V : B := True);
    procedure Set_Referenced_As_LHS               (Id : E; V : B := True);
    procedure Set_Referenced_As_Out_Parameter     (Id : E; V : B := True);
+   procedure Set_Refined_State                   (Id : E; V : E);
    procedure Set_Refined_State_Pragma            (Id : E; V : N);
+   procedure Set_Refinement_Constituents         (Id : E; V : L);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
    procedure Set_Related_Expression              (Id : E; V : N);
@@ -7403,11 +7419,17 @@ package Einfo is
    --  Empty is returned.
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id;
-   --  Searches the Rep_Item chain for a given entity E, for an instance of
-   --  a pragma with the given pragma Id. If found, the value returned is the
-   --  N_Pragma node, otherwise Empty is returned. Delayed pragmas such as
-   --  Precondition, Postcondition, Contract_Cases, Depends and Global appear
-   --  in the N_Contract node of entity E and are also handled by this routine.
+   --  Searches the Rep_Item chain of entity E, for an instance of a pragma
+   --  with the given pragma Id. If found, the value returned is the N_Pragma
+   --  node, otherwise Empty is returned. The following contract pragmas that
+   --  appear in N_Contract nodes are also handled by this routine:
+   --    Contract_Cases
+   --    Depends
+   --    Global
+   --    Precondition
+   --    Postcondition
+   --    Refined_Depends
+   --    Refined_Global
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
@@ -7908,7 +7930,9 @@ package Einfo is
    pragma Inline (Referenced);
    pragma Inline (Referenced_As_LHS);
    pragma Inline (Referenced_As_Out_Parameter);
+   pragma Inline (Refined_State);
    pragma Inline (Refined_State_Pragma);
+   pragma Inline (Refinement_Constituents);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
    pragma Inline (Related_Expression);
@@ -8324,7 +8348,9 @@ package Einfo is
    pragma Inline (Set_Referenced);
    pragma Inline (Set_Referenced_As_LHS);
    pragma Inline (Set_Referenced_As_Out_Parameter);
+   pragma Inline (Set_Refined_State);
    pragma Inline (Set_Refined_State_Pragma);
+   pragma Inline (Set_Refinement_Constituents);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
    pragma Inline (Set_Related_Expression);

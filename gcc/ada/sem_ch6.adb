@@ -1975,12 +1975,47 @@ package body Sem_Ch6 is
    -- Analyze_Subprogram_Body_Contract --
    --------------------------------------
 
-   --  ??? To be implemented
+   procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
+      Body_Decl : constant Node_Id   := Parent (Parent (Body_Id));
+      Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Prag      : Node_Id;
 
-   procedure Analyze_Subprogram_Body_Contract (Subp : Entity_Id) is
-      pragma Unreferenced (Subp);
+      Has_Refined_Global : Boolean := False;
+
    begin
-      null;
+      --  When a subprogram body declaration is erroneous, its defining entity
+      --  is left unanalyzed. There is nothing left to do in this case because
+      --  the body lacks a contract.
+
+      if not Analyzed (Body_Id) then
+         return;
+      end if;
+
+      Prag := Classifications (Contract (Body_Id));
+      while Present (Prag) loop
+         if Pragma_Name (Prag) = Name_Refined_Depends then
+            Analyze_Refined_Depends_In_Decl_Part (Prag);
+
+         elsif Pragma_Name (Prag) = Name_Refined_Global then
+            Has_Refined_Global := True;
+            Analyze_Refined_Global_In_Decl_Part (Prag);
+         end if;
+
+         Prag := Next_Pragma (Prag);
+      end loop;
+
+      --  When the corresponding Global aspect/pragma references a state with
+      --  visible refinement, the body requires Refined_Global.
+
+      if not Has_Refined_Global and then Present (Spec_Id) then
+         Prag := Get_Pragma (Spec_Id, Pragma_Global);
+
+         if Present (Prag) and then Contains_Refined_State (Prag) then
+            Error_Msg_NE
+              ("body of subprogram & requires global refinement",
+               Body_Decl, Spec_Id);
+         end if;
+      end if;
    end Analyze_Subprogram_Body_Contract;
 
    ------------------------------------

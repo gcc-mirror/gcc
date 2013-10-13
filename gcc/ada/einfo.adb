@@ -81,6 +81,7 @@ package body Einfo is
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
    --    Refined_State_Pragma            Node8
+   --    Refinement_Constituents         Elist8
    --    Return_Applies_To               Node8
    --    First_Exit_Statement            Node8
 
@@ -93,6 +94,7 @@ package body Einfo is
    --    Float_Rep                       Uint10 (but returns Float_Rep_Kind)
    --    Handler_Records                 List10
    --    Normalized_Position_Max         Uint10
+   --    Refined_State                   Node10
 
    --    Component_Bit_Offset            Uint11
    --    Full_View                       Node11
@@ -2648,11 +2650,23 @@ package body Einfo is
       return Flag227 (Id);
    end Referenced_As_Out_Parameter;
 
+   function Refined_State (Id : E) return N is
+   begin
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+      return Node10 (Id);
+   end Refined_State;
+
    function Refined_State_Pragma (Id : E) return N is
    begin
       pragma Assert (Ekind (Id) = E_Package_Body);
       return Node8 (Id);
    end Refined_State_Pragma;
+
+   function Refinement_Constituents (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Elist8 (Id);
+   end Refinement_Constituents;
 
    function Register_Exception_Call (Id : E) return N is
    begin
@@ -5308,11 +5322,23 @@ package body Einfo is
       Set_Flag227 (Id, V);
    end Set_Referenced_As_Out_Parameter;
 
+   procedure Set_Refined_State (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+      Set_Node10 (Id, V);
+   end Set_Refined_State;
+
    procedure Set_Refined_State_Pragma (Id : E; V : N) is
    begin
       pragma Assert (Ekind (Id) = E_Package_Body);
       Set_Node8 (Id, V);
    end Set_Refined_State_Pragma;
+
+   procedure Set_Refinement_Constituents (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Elist8 (Id, V);
+   end Set_Refinement_Constituents;
 
    procedure Set_Register_Exception_Call (Id : E; V : N) is
    begin
@@ -6266,21 +6292,26 @@ package body Einfo is
    ----------------
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
-      Is_CDG  : constant Boolean :=
-                  Id = Pragma_Depends or else Id = Pragma_Global;
-      Is_CTC  : constant Boolean :=
-                  Id = Pragma_Contract_Cases or else Id = Pragma_Test_Case;
-      Is_PPC  : constant Boolean :=
-                  Id = Pragma_Precondition or else Id = Pragma_Postcondition;
-      Delayed : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
-      Item    : Node_Id;
-      Items   : Node_Id;
+      Is_CDG       : constant Boolean :=
+                       Id = Pragma_Depends
+                         or else Id = Pragma_Global
+                         or else Id = Pragma_Refined_Depends
+                         or else Id = Pragma_Refined_Global;
+      Is_CTC      : constant Boolean :=
+                      Id = Pragma_Contract_Cases or else Id = Pragma_Test_Case;
+      Is_PPC      : constant Boolean :=
+                      Id = Pragma_Precondition
+                        or else Id = Pragma_Postcondition;
+      In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
+
+      Item   : Node_Id;
+      Items  : Node_Id;
 
    begin
-      --  Handle delayed pragmas that appear in N_Contract nodes. Those have to
-      --  be extracted from their specialized list.
+      --  Handle pragmas that appear in N_Contract nodes. Those have to be
+      --  extracted from their specialized list.
 
-      if Delayed then
+      if In_Contract then
          Items := Contract (E);
 
          if No (Items) then
@@ -6310,7 +6341,7 @@ package body Einfo is
 
          --  All nodes in N_Contract are chained using Next_Pragma
 
-         elsif Delayed then
+         elsif In_Contract then
             Item := Next_Pragma (Item);
 
          --  Regular pragmas
@@ -6712,6 +6743,17 @@ package body Einfo is
           and then Has_Option (Id, Name_Input_Only);
    end Is_Input_Only_State;
 
+   ---------------------------
+   -- Is_Non_Volatile_State --
+   ---------------------------
+
+   function Is_Non_Volatile_State (Id : E) return B is
+   begin
+      return
+        Ekind (Id) = E_Abstract_State
+          and then Has_Option (Id, Name_Non_Volatile);
+   end Is_Non_Volatile_State;
+
    -------------------
    -- Is_Null_State --
    -------------------
@@ -6871,17 +6913,6 @@ package body Einfo is
         Is_Concurrent_Record_Type (Id)
           and then Is_Task_Type (Corresponding_Concurrent_Type (Id));
    end Is_Task_Record_Type;
-
-   -----------------------
-   -- Is_Volatile_State --
-   -----------------------
-
-   function Is_Volatile_State (Id : E) return B is
-   begin
-      return
-        Ekind (Id) = E_Abstract_State
-          and then Has_Option (Id, Name_Volatile);
-   end Is_Volatile_State;
 
    ------------------------
    -- Is_Wrapper_Package --
@@ -8309,6 +8340,9 @@ package body Einfo is
          when E_Package_Body                               =>
             Write_Str ("Refined_State_Pragma");
 
+         when E_Abstract_State                             =>
+            Write_Str ("Refinement_Constituents");
+
          when E_Return_Statement                           =>
             Write_Str ("Return_Applies_To");
 
@@ -8358,7 +8392,7 @@ package body Einfo is
               Concurrent_Kind                              =>
             Write_Str ("Direct_Primitive_Operations");
 
-         when Float_Kind                                 =>
+         when Float_Kind                                   =>
             Write_Str ("Float_Rep");
 
          when E_In_Parameter                               |
@@ -8374,6 +8408,10 @@ package body Einfo is
          when E_Component                                  |
               E_Discriminant                               =>
             Write_Str ("Normalized_Position_Max");
+
+         when E_Abstract_State                             |
+              E_Variable                                   =>
+            Write_Str ("Refined_State");
 
          when others                                       =>
             Write_Str ("Field10??");

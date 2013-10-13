@@ -1977,10 +1977,21 @@ package body Sem_Ch13 is
 
                --  Refined_Global
 
-               --  ??? To be implemented
+               --  Aspect Refined_Global must be delayed because it can mention
+               --  state refinements introduced by aspect Refined_State. Since
+               --  Refined_State is already delayed due to forward references,
+               --  so is Refined_Global.
 
                when Aspect_Refined_Global =>
-                  null;
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Refined_Global);
+
+                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_Post
 
