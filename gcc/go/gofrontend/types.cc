@@ -5258,6 +5258,19 @@ Struct_type::do_import(Import* imp)
 	    }
 	  Type* ftype = imp->read_type();
 
+	  // We don't pack the names of builtin types.  In
+	  // Struct_field::is_field_name we cope with a hack.  Now we
+	  // need another hack so that we don't accidentally think
+	  // that an embedded builtin type is accessible from another
+	  // package (we know that all the builtin types are not
+	  // exported).
+	  if (name.empty() && ftype->deref()->named_type() != NULL)
+	    {
+	      const std::string fn(ftype->deref()->named_type()->name());
+	      if (fn[0] >= 'a' && fn[0] <= 'z')
+		name = '.' + imp->package()->pkgpath() + '.' + fn;
+	    }
+
 	  Struct_field sf(Typed_identifier(name, ftype, imp->location()));
 
 	  if (imp->peek_char() == ' ')
