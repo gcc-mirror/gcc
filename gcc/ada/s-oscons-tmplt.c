@@ -1407,11 +1407,15 @@ CND(CLOCK_FASTEST, "Fastest clock")
 #endif
 CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
-
-#if defined(__FreeBSD__) || defined(_AIX)
+#if defined(__FreeBSD__) || (defined(_AIX) && defined(_AIXVERSION_530))
 /** On these platforms use system provided monotonic clock instead of
- ** the default CLOCK_REALTIME. Note: We then need to set up cond var
- ** attributes appropriately (see thread.c).
+ ** the default CLOCK_REALTIME. We then need to set up cond var attributes
+ ** appropriately (see thread.c).
+ **
+ ** Note that AIX 5.2 does not support CLOCK_MONOTONIC timestamps for
+ ** pthread_cond_timedwait (and does not have pthread_condattr_setclock),
+ ** hence the conditionalization on AIX version above). _AIXVERSION_530
+ ** is defined in AIX 5.3 and more recent versions.
  **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
 

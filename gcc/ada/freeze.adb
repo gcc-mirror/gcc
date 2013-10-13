@@ -2956,6 +2956,7 @@ package body Freeze is
 
                      if Is_Incomplete_Type (F_Type)
                        and then Present (Full_View (F_Type))
+                       and then not From_With_Type (F_Type)
                      then
                         F_Type := Full_View (F_Type);
                         Set_Etype (Formal, F_Type);
@@ -3134,10 +3135,15 @@ package body Freeze is
                      R_Type := Etype (E);
 
                      --  AI05-0151: the return type may have been incomplete
-                     --  at the point of declaration.
+                     --  at the point of declaration. Replace it with the full
+                     --  view, unless the current type is a limited view. In
+                     --  that case the full view is in a different unit, and
+                     --  gigi finds the non-limited view after the other unit
+                     --  is elaborated.
 
                      if Ekind (R_Type) = E_Incomplete_Type
                        and then Present (Full_View (R_Type))
+                       and then not From_With_Type (R_Type)
                      then
                         R_Type := Full_View (R_Type);
                         Set_Etype (E, R_Type);

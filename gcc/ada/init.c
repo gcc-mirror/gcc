@@ -226,19 +226,6 @@ nanosleep (struct timestruc_t *Rqtp, struct timestruc_t *Rmtp)
 
 #endif /* _AIXVERSION_430 */
 
-/* Version of AIX before 5.3 don't have pthread_condattr_setclock:
- * supply it as a weak symbol here so that if linking on a 5.3 or newer
- * machine, we get the real one.
- */
-
-#ifndef _AIXVERSION_530
-#pragma weak pthread_condattr_setclock
-int
-pthread_condattr_setclock (pthread_condattr_t *attr, clockid_t cl) {
-  return 0;
-}
-#endif
-
 static void
 __gnat_error_handler (int sig,
 		      siginfo_t *si ATTRIBUTE_UNUSED,

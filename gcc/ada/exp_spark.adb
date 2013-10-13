@@ -26,7 +26,6 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Ch4;  use Exp_Ch4;
-with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Sem_Aux;  use Sem_Aux;
@@ -43,9 +42,7 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_Call (N : Node_Id);
    --  This procedure contains common processing for function and procedure
-   --  calls:
-   --    * expansion of actuals to introduce necessary temporaries
-   --    * replacement of renaming by subprogram renamed
+   --  calls: replacement of renaming by subprogram renamed
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -106,7 +103,6 @@ package body Exp_SPARK is
    procedure Expand_SPARK_Call (N : Node_Id) is
       Call_Node   : constant Node_Id := N;
       Parent_Subp : Entity_Id;
-      Subp        : Entity_Id;
 
    begin
       --  Ignore if previous error
@@ -120,14 +116,12 @@ package body Exp_SPARK is
       --  Call using access to subprogram with explicit dereference
 
       if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
-         Subp        := Etype (Name (Call_Node));
          Parent_Subp := Empty;
 
       --  Case of call to simple entry, where the Name is a selected component
       --  whose prefix is the task, and whose selector name is the entry name
 
       elsif Nkind (Name (Call_Node)) = N_Selected_Component then
-         Subp        := Entity (Selector_Name (Name (Call_Node)));
          Parent_Subp := Empty;
 
       --  Case of call to member of entry family, where Name is an indexed
@@ -135,19 +129,13 @@ package body Exp_SPARK is
       --  task and entry family name, and the index being the entry index.
 
       elsif Nkind (Name (Call_Node)) = N_Indexed_Component then
-         Subp        := Entity (Selector_Name (Prefix (Name (Call_Node))));
          Parent_Subp := Empty;
 
       --  Normal case
 
       else
-         Subp        := Entity (Name (Call_Node));
-         Parent_Subp := Alias (Subp);
+         Parent_Subp := Alias (Entity (Name (Call_Node)));
       end if;
-
-      --  Various expansion activities for actuals are carried out
-
-      Expand_Actuals (N, Subp);
 
       --  If the subprogram is a renaming, replace it in the call with the name
       --  of the actual subprogram being called.

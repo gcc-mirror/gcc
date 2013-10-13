@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
+with Interfaces.C.Extensions;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -55,6 +56,7 @@ package System.OS_Interface is
    subtype int            is Interfaces.C.int;
    subtype short          is Interfaces.C.short;
    subtype long           is Interfaces.C.long;
+   subtype long_long      is Interfaces.C.Extensions.long_long;
    subtype unsigned       is Interfaces.C.unsigned;
    subtype unsigned_short is Interfaces.C.unsigned_short;
    subtype unsigned_long  is Interfaces.C.unsigned_long;
@@ -197,11 +199,12 @@ package System.OS_Interface is
 
    type timespec is private;
 
-   type clockid_t is new int;
+   type clockid_t is new long_long;
 
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec) return int;
+   pragma Import (C, clock_gettime, "clock_gettime");
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);

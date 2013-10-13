@@ -1,3 +1,39 @@
+2013-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Minor documentation clarification.
+
+2013-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c (CLOCK_RT_Ada): Set to CLOCK_MONOTONIC when
+	building on AIX 5.3 or later, and to CLOCK_REALTIME on older
+	versions of AIX.
+	* init.c (pthread_condattr_setclock): Remove now useless weak symbol.
+	* thread.c(__gnat_pthread_condattr_setup): Remove bogus AIX 5.2
+	compatibility shim.
+	* s-osinte-aix.ads(clock_id_t): Fix C mapping (this is a 64-bit
+	type).
+	(clock_gettime): Import from C runtime library.
+	* s-osinte-aix.adb (clock_gettime): Remove bogus emulation body,
+	this routine is provided by the system in current supported
+	versions of AIX.
+
+2013-10-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2013-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For a function whose return type
+	is incomplete, do not replace the type with the full view if the
+	type is a limited view.  In that case the full view appears in a
+	different unit, and the back-end will retrieve it at the proper
+	elaboration point.
+
+2013-10-13  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Call): Do not introduce temporaries for
+	actuals.
+
 2013-10-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb: in Ada 2012 access_to_function types can have
