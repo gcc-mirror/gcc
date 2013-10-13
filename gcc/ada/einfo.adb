@@ -6292,16 +6292,18 @@ package body Einfo is
    ----------------
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
-      Is_CDG       : constant Boolean :=
-                       Id = Pragma_Depends
-                         or else Id = Pragma_Global
-                         or else Id = Pragma_Refined_Depends
-                         or else Id = Pragma_Refined_Global;
-      Is_CTC      : constant Boolean :=
-                      Id = Pragma_Contract_Cases or else Id = Pragma_Test_Case;
-      Is_PPC      : constant Boolean :=
-                      Id = Pragma_Precondition
-                        or else Id = Pragma_Postcondition;
+      Is_CDG  : constant Boolean :=
+                  Id = Pragma_Depends         or else
+                  Id = Pragma_Global          or else
+                  Id = Pragma_Refined_Depends or else
+                  Id = Pragma_Refined_Global;
+      Is_CTC : constant Boolean :=
+                  Id = Pragma_Contract_Cases  or else
+                  Id = Pragma_Test_Case;
+      Is_PPC : constant Boolean :=
+                  Id = Pragma_Precondition     or else
+                  Id = Pragma_Postcondition;
+
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
 
       Item   : Node_Id;

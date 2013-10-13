@@ -236,16 +236,6 @@ package body Sem_Prag is
    --  Get_SPARK_Mode_Id. Convert a name into a corresponding value of type
    --  SPARK_Mode_Id.
 
-   function Original_Name (N : Node_Id) return Name_Id;
-   --  N is a pragma node or aspect specification node. This function returns
-   --  the name of the pragma or aspect in original source form, taking into
-   --  account possible rewrites, and also cases where a pragma comes from an
-   --  aspect (in such cases, the name can be different from the pragma name,
-   --  e.g. a Pre aspect generates a Precondition pragma). This also deals with
-   --  the presence of 'Class, which results in one of the special names
-   --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
-   --  returned to represent the corresponding aspects with x'Class names.
-
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
@@ -1979,6 +1969,13 @@ package body Sem_Prag is
       --  In this version of the procedure, the identifier name is given as
       --  a string with lower case letters.
 
+      procedure Check_Pre_Post;
+      --  Called to perform checks for Pre, Pre_Class, Post, Post_Class
+      --  pragmas. These are processed by transformation to equivalent
+      --  Precondition and Postcondition pragmas, but Pre and Post need an
+      --  additional check that they are not used in a subprogram body when
+      --  there is a separate spec present.
+
       procedure Check_Precondition_Postcondition (In_Body : out Boolean);
       --  Called to process a precondition or postcondition pragma. There are
       --  three cases:
@@ -3392,6 +3389,97 @@ package body Sem_Prag is
          Check_Optional_Identifier (Arg, Name_Find);
       end Check_Optional_Identifier;
 
+      --------------------
+      -- Check_Pre_Post --
+      --------------------
+
+      procedure Check_Pre_Post is
+         P  : Node_Id;
+         PO : Node_Id;
+
+      begin
+         if not Is_List_Member (N) then
+            Pragma_Misplaced;
+         end if;
+
+         --  If we are within an inlined body, the legality of the pragma
+         --  has been checked already.
+
+         if In_Inlined_Body then
+            return;
+         end if;
+
+         --  Search prior declarations
+
+         P := N;
+         while Present (Prev (P)) loop
+            P := Prev (P);
+
+            --  If the previous node is a generic subprogram, do not go to to
+            --  the original node, which is the unanalyzed tree: we need to
+            --  attach the pre/postconditions to the analyzed version at this
+            --  point. They get propagated to the original tree when analyzing
+            --  the corresponding body.
+
+            if Nkind (P) not in N_Generic_Declaration then
+               PO := Original_Node (P);
+            else
+               PO := P;
+            end if;
+
+            --  Skip past prior pragma
+
+            if Nkind (PO) = N_Pragma then
+               null;
+
+            --  Skip stuff not coming from source
+
+            elsif not Comes_From_Source (PO) then
+
+               --  The condition may apply to a subprogram instantiation
+
+               if Nkind (PO) = N_Subprogram_Declaration
+                 and then Present (Generic_Parent (Specification (PO)))
+               then
+                  return;
+
+               elsif Nkind (PO) = N_Subprogram_Declaration
+                 and then In_Instance
+               then
+                  return;
+
+               --  For all other cases of non source code, do nothing
+
+               else
+                  null;
+               end if;
+
+            --  Only remaining possibility is subprogram declaration
+
+            else
+               return;
+            end if;
+         end loop;
+
+         --  If we fall through loop, pragma is at start of list, so see if it
+         --  is at the start of declarations of a subprogram body.
+
+         PO := Parent (N);
+
+         if Nkind (PO) = N_Subprogram_Body
+           and then List_Containing (N) = Declarations (PO)
+         then
+            --  This is only allowed if there is no separate specification
+
+            if Present (Corresponding_Spec (PO)) then
+               Error_Pragma
+                 ("pragma% must apply to subprogram specification");
+            end if;
+
+            return;
+         end if;
+      end Check_Pre_Post;
+
       --------------------------------------
       -- Check_Precondition_Postcondition --
       --------------------------------------
@@ -3431,7 +3519,7 @@ package body Sem_Prag is
             --  compatibility with earlier uses of the Ada pragma, apply this
             --  rule only to aspect specifications.
 
-            --  The above discrpency needs documentation. Robert is dubious
+            --  The above discrepency needs documentation. Robert is dubious
             --  about whether it is a good idea ???
 
             elsif Nkind (PO) = N_Subprogram_Declaration
@@ -4286,7 +4374,7 @@ package body Sem_Prag is
 
             --  Get name from corresponding aspect
 
-            Error_Msg_Name_1 := Original_Name (N);
+            Error_Msg_Name_1 := Original_Aspect_Name (N);
          end if;
       end Fix_Error;
 
@@ -8180,7 +8268,7 @@ package body Sem_Prag is
       --  Here to start processing for recognized pragma
 
       Prag_Id := Get_Pragma_Id (Pname);
-      Pname := Original_Name (N);
+      Pname := Original_Aspect_Name (N);
 
       --  Check applicable policy. We skip this if Is_Checked or Is_Ignored
       --  is already set, indicating that we have already checked the policy
@@ -15056,6 +15144,32 @@ package body Sem_Prag is
             Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
             Polling_Required := (Chars (Get_Pragma_Arg (Arg1)) = Name_On);
 
+         ------------------
+         -- Post[_Class] --
+         ------------------
+
+         --  pragma Post (Boolean_EXPRESSION);
+         --  pragma Post_Class (Boolean_EXPRESSION);
+
+         when Pragma_Post | Pragma_Post_Class => Post : declare
+            PC_Pragma : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (1);
+            Check_No_Identifiers;
+            Check_Pre_Post;
+
+            Set_Class_Present (N, Prag_Id = Pragma_Pre_Class);
+            PC_Pragma := New_Copy (N);
+            Set_Pragma_Identifier
+              (PC_Pragma, Make_Identifier (Loc, Name_Postcondition));
+            Rewrite (N, PC_Pragma);
+            Set_Analyzed (N, False);
+            Analyze (N);
+         end Post;
+
          -------------------
          -- Postcondition --
          -------------------
@@ -15089,6 +15203,32 @@ package body Sem_Prag is
                Preanalyze_Spec_Expression (Expression (Arg1), Any_Boolean);
             end if;
          end Postcondition;
+
+         -----------------
+         -- Pre[_Class] --
+         -----------------
+
+         --  pragma Pre (Boolean_EXPRESSION);
+         --  pragma Pre_Class (Boolean_EXPRESSION);
+
+         when Pragma_Pre | Pragma_Pre_Class => Pre : declare
+            PC_Pragma : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (1);
+            Check_No_Identifiers;
+            Check_Pre_Post;
+
+            Set_Class_Present (N, Prag_Id = Pragma_Pre_Class);
+            PC_Pragma := New_Copy (N);
+            Set_Pragma_Identifier
+              (PC_Pragma, Make_Identifier (Loc, Name_Precondition));
+            Rewrite (N, PC_Pragma);
+            Set_Analyzed (N, False);
+            Analyze (N);
+         end Pre;
 
          ------------------
          -- Precondition --
@@ -18405,6 +18545,7 @@ package body Sem_Prag is
       Subp_Id : Entity_Id)
    is
       Arg1 : constant Node_Id := First (Pragma_Argument_Associations (Prag));
+      Nam  : constant Name_Id := Original_Aspect_Name (Prag);
       Expr : Node_Id;
 
       Restore_Scope : Boolean := False;
@@ -18540,14 +18681,37 @@ package body Sem_Prag is
 
          begin
             if not Present (T) then
-               Error_Msg_Name_1 :=
-                 Chars (Identifier (Corresponding_Aspect (Prag)));
 
-               Error_Msg_Name_2 := Name_Class;
+               --  Pre'Class/Post'Class aspect cases
 
-               Error_Msg_N
-                 ("aspect `%''%` can only be specified for a primitive "
-                  & "operation of a tagged type", Corresponding_Aspect (Prag));
+               if From_Aspect_Specification (Prag) then
+                  if Nam = Name_uPre then
+                     Error_Msg_Name_1 := Name_Pre;
+                  else
+                     Error_Msg_Name_1 := Name_Post;
+                  end if;
+
+                  Error_Msg_Name_2 := Name_Class;
+
+                  Error_Msg_N
+                    ("aspect `%''%` can only be specified for a primitive "
+                     & "operation of a tagged type",
+                     Corresponding_Aspect (Prag));
+
+               --  Pre_Class, Post_Class pragma cases
+
+               else
+                  if Nam = Name_uPre then
+                     Error_Msg_Name_1 := Name_Pre_Class;
+                  else
+                     Error_Msg_Name_1 := Name_Post_Class;
+                  end if;
+
+                  Error_Msg_N
+                    ("pragma% can only be specified for a primitive "
+                     & "operation of a tagged type",
+                     Corresponding_Aspect (Prag));
+               end if;
             end if;
 
             Replace_Type (Get_Pragma_Arg (Arg1));
@@ -20073,7 +20237,7 @@ package body Sem_Prag is
       PP     : Node_Id;
       Policy : Name_Id;
 
-      Ename : constant Name_Id := Original_Name (N);
+      Ename : constant Name_Id := Original_Aspect_Name (N);
 
    begin
       --  No effect if not valid assertion kind name
@@ -20686,12 +20850,16 @@ package body Sem_Prag is
       Pragma_Passive                        => -1,
       Pragma_Persistent_BSS                 =>  0,
       Pragma_Polling                        => -1,
+      Pragma_Post                           => -1,
       Pragma_Postcondition                  => -1,
+      Pragma_Post_Class                     => -1,
+      Pragma_Pre                            => -1,
       Pragma_Precondition                   => -1,
       Pragma_Predicate                      => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   => -1,
       Pragma_Preelaborate_05                => -1,
+      Pragma_Pre_Class                      => -1,
       Pragma_Priority                       => -1,
       Pragma_Priority_Specific_Dispatching  => -1,
       Pragma_Profile                        =>  0,
@@ -21022,66 +21190,6 @@ package body Sem_Prag is
          end if;
       end if;
    end Make_Aspect_For_PPC_In_Gen_Sub_Decl;
-
-   -------------------
-   -- Original_Name --
-   -------------------
-
-   function Original_Name (N : Node_Id) return Name_Id is
-      Pras : Node_Id;
-      Name : Name_Id;
-
-   begin
-      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
-      Pras := N;
-
-      if Is_Rewrite_Substitution (Pras)
-        and then Nkind (Original_Node (Pras)) = N_Pragma
-      then
-         Pras := Original_Node (Pras);
-      end if;
-
-      --  Case where we came from aspect specication
-
-      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
-         Pras := Corresponding_Aspect (Pras);
-      end if;
-
-      --  Get name from aspect or pragma
-
-      if Nkind (Pras) = N_Pragma then
-         Name := Pragma_Name (Pras);
-      else
-         Name := Chars (Identifier (Pras));
-      end if;
-
-      --  Deal with 'Class
-
-      if Class_Present (Pras) then
-         case Name is
-
-         --  Names that need converting to special _xxx form
-
-            when Name_Pre             => Name := Name_uPre;
-            when Name_Post            => Name := Name_uPost;
-            when Name_Invariant       => Name := Name_uInvariant;
-            when Name_Type_Invariant  => Name := Name_uType_Invariant;
-
-               --  Names already in special _xxx form (leave them alone)
-
-            when Name_uPre            => null;
-            when Name_uPost           => null;
-            when Name_uInvariant      => null;
-            when Name_uType_Invariant => null;
-
-               --  Anything else is impossible with Class_Present set True
-
-            when others               => raise Program_Error;
-         end case;
-      end if;
-
-      return Name;
-   end Original_Name;
 
    -------------------------
    -- Preanalyze_CTC_Args --

@@ -1995,7 +1995,6 @@ package body Sem_Ch6 is
       while Present (Prag) loop
          if Pragma_Name (Prag) = Name_Refined_Depends then
             Analyze_Refined_Depends_In_Decl_Part (Prag);
-
          elsif Pragma_Name (Prag) = Name_Refined_Global then
             Has_Refined_Global := True;
             Analyze_Refined_Global_In_Decl_Part (Prag);

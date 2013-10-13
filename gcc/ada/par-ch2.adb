@@ -250,23 +250,15 @@ package body Ch2 is
 
       procedure Skip_Pragma_Semicolon is
       begin
-         if Token /= Tok_Semicolon then
+         --  If skipping the pragma, ignore a missing semicolon
 
-            --  If skipping the pragma, ignore a missing semicolon
+         if Token /= Tok_Semicolon and then Skipping then
+            null;
 
-            if Skipping then
-               null;
-
-            --  Otherwise demand a semicolon
-
-            else
-               T_Semicolon;
-            end if;
-
-         --  Scan past semicolon if present
+         --  Otherwise demand a semicolon
 
          else
-            Scan;
+            T_Semicolon;
          end if;
       end Skip_Pragma_Semicolon;
 
