@@ -1,5 +1,48 @@
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb: Flag 263 is now known as Has_Visible_Refinement.
+	(Has_Non_Null_Refinement): New routine.
+	(Has_Null_Refinement): The routine is now synthesized.
+	(Has_Visible_Refinement): New routine.
+	(Set_Has_Visible_Refinement): New routine.
+	(Write_Entity_Flags): Remove the output for
+	Has_Null_Refinement. Add output for Has_Visible_Refinement.
+	* einfo.ads: Update the occurrences of Has_Non_Null_Refinement,
+	Has_Null_Refinement and Has_Visible_Refinement in entities.
+	(Has_Non_Null_Refinement): New synthesized attribute.
+	(Has_Null_Refinement): This attribute is now synthesized.
+	(Has_Visible_Refinement): New routine with corresponding
+	pragma Inline.
+	(Set_Has_Visible_Refinement): New routine with corresponding pragma
+	Inline.
+	* sem_ch3.adb (Analyze_Declarations): Add new local
+	variable In_Package_Body. Remove state refinements from
+	visibility at the end of the package body declarations.
+	(Remove_Visible_Refinements): New routine.
+	* sem_prag.adb (Analyze_Constituent): Collect a null
+	constituent and mark the state as having visible refinement.
+	(Analyze_Global_Item): Use attribute Has_Visible_Refinement to
+	detect a state with visible refinement.
+	(Analyze_Input_Output): Use attribute Has_Visible_Refinement to detect
+	a state with visible refinement.
+	(Check_Dependency_Clause): Use attribute Has_Non_Null_Refinement rather
+	than checking the contents of list Refinement_Constituents.
+	(Check_In_Out_States): Use attribute Has_Non_Null_Refinement rather
+	than checking the contents of list Refinement_Constituents.
+	(Check_Input_States): Use attribute Has_Non_Null_Refinement rather
+	than checking the contents of list Refinement_Constituents.
+	(Check_Matching_Constituent): Mark a state as having visible refinement.
+	(Check_Output_States): Use attribute Has_Non_Null_Refinement rather than
+	checking the contents of list Refinement_Constituents.
+	(Check_Refined_Global_Item): Use attribute Has_Visible_Refinement
+	to detect a state with visible refinement.
+	(Is_Matching_Input): Use attribute Has_Non_Null_Refinement rather than
+	checking the contents of list Refinement_Constituents.
+	* sem_util.adb (Is_Refined_State): Use attribute
+	Has_Visible_Refinement to detect a state with visible refinement.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Check_Mode): Do not emit an
 	error when inspecting a self referencial output item of an
 	unconstrained type.
