@@ -1625,15 +1625,18 @@ package body Errout is
             Set_Standard_Error;
          end if;
 
-         --  Message giving total number of lines
+         --  Message giving total number of lines, only when Main_Source_Line
+         --  is known.
 
-         Write_Str (" ");
-         Write_Int (Num_Source_Lines (Main_Source_File));
+         if Main_Source_File /= No_Source_File then
+            Write_Str (" ");
+            Write_Int (Num_Source_Lines (Main_Source_File));
 
-         if Num_Source_Lines (Main_Source_File) = 1 then
-            Write_Str (" line: ");
-         else
-            Write_Str (" lines: ");
+            if Num_Source_Lines (Main_Source_File) = 1 then
+               Write_Str (" line: ");
+            else
+               Write_Str (" lines: ");
+            end if;
          end if;
 
          if Total_Errors_Detected = 0 then
@@ -1831,8 +1834,13 @@ package body Errout is
 
                begin
                   Write_Eol;
-                  Write_Header (Sfile);
-                  Write_Eol;
+
+                  --  Only write the header if Sfile is known
+
+                  if Sfile /= No_Source_File then
+                     Write_Header (Sfile);
+                     Write_Eol;
+                  end if;
 
                   --  Normally, we don't want an "error messages from file"
                   --  message when listing the entire file, so we set the
@@ -1847,28 +1855,33 @@ package body Errout is
                      Current_Error_Source_File := Sfile;
                   end if;
 
-                  for N in 1 .. Last_Source_Line (Sfile) loop
-                     while E /= No_Error_Msg
-                       and then Errors.Table (E).Deleted
-                     loop
-                        E := Errors.Table (E).Next;
-                     end loop;
+                  --  Only output the listing if Sfile is known, to avoid
+                  --  crashing the compiler.
 
-                     Err_Flag :=
-                       E /= No_Error_Msg
-                         and then Errors.Table (E).Line = N
-                         and then Errors.Table (E).Sfile = Sfile;
+                  if Sfile /= No_Source_File then
+                     for N in 1 .. Last_Source_Line (Sfile) loop
+                        while E /= No_Error_Msg
+                          and then Errors.Table (E).Deleted
+                        loop
+                           E := Errors.Table (E).Next;
+                        end loop;
 
-                     Output_Source_Line (N, Sfile, Err_Flag);
+                        Err_Flag :=
+                          E /= No_Error_Msg
+                          and then Errors.Table (E).Line = N
+                          and then Errors.Table (E).Sfile = Sfile;
 
-                     if Err_Flag then
-                        Output_Error_Msgs (E);
+                        Output_Source_Line (N, Sfile, Err_Flag);
 
-                        if not Debug_Flag_2 then
-                           Write_Eol;
+                        if Err_Flag then
+                           Output_Error_Msgs (E);
+
+                           if not Debug_Flag_2 then
+                              Write_Eol;
+                           end if;
                         end if;
-                     end if;
-                  end loop;
+                     end loop;
+                  end if;
                end;
             end if;
          end loop;
@@ -1917,7 +1930,13 @@ package body Errout is
         and then (not Full_List or else Full_List_File_Name /= null)
       then
          Write_Eol;
-         Write_Header (Main_Source_File);
+
+         --  Output the header only when Main_Source_File is known
+
+         if Main_Source_File /= No_Source_File then
+            Write_Header (Main_Source_File);
+         end if;
+
          E := First_Error_Msg;
 
          --  Loop through error lines

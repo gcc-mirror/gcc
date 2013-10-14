@@ -1,3 +1,18 @@
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* errout.adb (Write_Error_Summary): Do not output the number
+	of lines when Main_Source_File is unknown.
+	(Output_Messages): Do not write the header when Main_Source_File is
+	unknown.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* prep.adb (Expression): Accept terms of the form 'symbol <relop>
+	integer", where relop is =, <, <=, > or >=.
+	(Parse_Def_File): Accept literal integer values.
+	* gcc-interface/Make-lang.in: Add s-valint.o, s-valuns.o and
+	s-valuti.o to the compiler object files.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb, exp_ch11.adb, s-exctab.adb: Minor reformatting.
