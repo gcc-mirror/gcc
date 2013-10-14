@@ -798,9 +798,7 @@ package body Sem_Prag is
                         --  appear in pragma [Refined_]Global as its place must
                         --  be taken by some of its constituents.
 
-                        elsif not Is_Empty_Elmt_List
-                                    (Refinement_Constituents (Item_Id))
-                        then
+                        elsif Has_Visible_Refinement (Item_Id) then
                            Error_Msg_NE
                              ("cannot mention state & in global refinement, "
                               & "use its constituents instead", Item, Item_Id);
@@ -1625,9 +1623,7 @@ package body Sem_Prag is
                   --  in pragma [Refined_]Global as its place must be taken by
                   --  some of its constituents.
 
-                  elsif not Is_Empty_Elmt_List
-                              (Refinement_Constituents (Item_Id))
-                  then
+                  elsif Has_Visible_Refinement (Item_Id) then
                      Error_Msg_NE
                        ("cannot mention state & in global refinement, use its "
                         & "constituents instead", Item, Item_Id);
@@ -19677,9 +19673,7 @@ package body Sem_Prag is
                         --    Depends         => (<output> =>  State)
                         --    Refined_Depends => (<output> => (C1, C2))
 
-                        elsif not Is_Empty_Elmt_List
-                                    (Refinement_Constituents (Dep_Id))
-                        then
+                        elsif Has_Non_Null_Refinement (Dep_Id) then
                            Has_Refined_State := True;
 
                            if Is_Entity_Name (Ref_Input) then
@@ -20033,9 +20027,7 @@ package body Sem_Prag is
                   --    Refined_Depends => (C1 => <input>,
                   --                        C2 => <input>)
 
-                  elsif not Is_Empty_Elmt_List
-                              (Refinement_Constituents (Dep_Id))
-                  then
+                  elsif Has_Non_Null_Refinement (Dep_Id) then
                      Has_Refined_State := True;
 
                      --  Store the entities of all output constituents of an
@@ -20452,8 +20444,7 @@ package body Sem_Prag is
                --  Ensure that one of the three coverage variants is satisfied
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Is_Empty_Elmt_List
-                                (Refinement_Constituents (Item_Id))
+                 and then Has_Non_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -20536,8 +20527,7 @@ package body Sem_Prag is
                --  is of mode Input.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Is_Empty_Elmt_List
-                                (Refinement_Constituents (Item_Id))
+                 and then Has_Non_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -20607,8 +20597,7 @@ package body Sem_Prag is
                --  have mode Output.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Is_Empty_Elmt_List
-                                (Refinement_Constituents (Item_Id))
+                 and then Has_Non_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -20730,8 +20719,7 @@ package body Sem_Prag is
                --  occurrences in Global and Refined_Global match.
 
                if No (Refined_State (Item_Id))
-                 and then Is_Empty_Elmt_List
-                            (Refinement_Constituents (Item_Id))
+                 and then not Has_Visible_Refinement (Item_Id)
                then
                   Check_Matching_Modes (Item_Id);
                end if;
@@ -21088,12 +21076,19 @@ package body Sem_Prag is
                      Add_Item (Constit_Id, Constituents_Seen);
                      Remove_Elmt (Hidden_States, State_Elmt);
 
-                     --  Establish a relation between the refined state and its
-                     --  constituent.
+                     --  Collect the constituent in the list of refinement
+                     --  items. Establish a relation between the refined state
+                     --  and its constituent.
 
                      Append_Elmt
                        (Constit_Id, Refinement_Constituents (State_Id));
                      Set_Refined_State (Constit_Id, State_Id);
+
+                     --  The state has at least one legal constituent, mark the
+                     --  start of the refinement region. The region ends when
+                     --  the body declarations end (see Analyze_Declarations).
+
+                     Set_Has_Visible_Refinement (State_Id);
 
                      return;
                   end if;
@@ -21129,11 +21124,18 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("cannot mix null and non-null constituents", Constit);
 
-               --  Mark the related state as having a null refinement
-
                else
                   Null_Seen := True;
-                  Set_Has_Null_Refinement (State_Id);
+
+                  --  Collect the constituent in the list of refinement items
+
+                  Append_Elmt (Constit, Refinement_Constituents (State_Id));
+
+                  --  The state has at least one legal constituent, mark the
+                  --  start of the refinement region. The region ends when the
+                  --  body declarations end (see Analyze_Declarations).
+
+                  Set_Has_Visible_Refinement (State_Id);
                end if;
 
             --  Non-null constituents
@@ -21717,12 +21719,15 @@ package body Sem_Prag is
             if Ekind (Item_Id) = E_Abstract_State then
                if Has_Null_Refinement (Item_Id) then
                   Has_Null_State := True;
-               elsif Mode = Name_Input then
-                  Has_In_State := True;
-               elsif Mode = Name_In_Out then
-                  Has_In_Out_State := True;
-               elsif Mode = Name_Output then
-                  Has_Out_State := True;
+
+               elsif Has_Non_Null_Refinement (Item_Id) then
+                  if Mode = Name_Input then
+                     Has_In_State := True;
+                  elsif Mode = Name_In_Out then
+                     Has_In_Out_State := True;
+                  elsif Mode = Name_Output then
+                     Has_Out_State := True;
+                  end if;
                end if;
             end if;
 

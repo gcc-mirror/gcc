@@ -3418,8 +3418,7 @@ package body Sem_Util is
 
             return
               Ekind (Item_Id) = E_Abstract_State
-                and then not Is_Empty_Elmt_List
-                               (Refinement_Constituents (Item_Id));
+                and then Has_Visible_Refinement (Item_Id);
          end if;
       end Is_Refined_State;
 

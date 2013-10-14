@@ -1636,6 +1636,10 @@ package Einfo is
 --       optimizations to ensure that they are consistent with exceptions.
 --       See documentation in Gigi for further details.
 
+--    Has_Non_Null_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has at least
+--       one variable or state constituent in aspect/pragma Refined_State.
+
 --    Has_Non_Standard_Rep (Flag75) [implementation base type only]
 --       Defined in all type entities. Set when some representation clause
 --       or pragma causes the representation of the item to be significantly
@@ -1650,8 +1654,8 @@ package Einfo is
 --       Defined in package entities. True if the package is subject to a null
 --       Abstract_State aspect/pragma.
 
---    Has_Null_Refinement (Flag263)
---       Defined in E_Abstract_State entities. Set if the state has a null
+--    Has_Null_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has a null
 --       refinement in aspect/pragma Refined_State.
 
 --    Has_Object_Size_Clause (Flag172)
@@ -1912,6 +1916,11 @@ package Einfo is
 --       a subprogram nested inside p. Currently this flag is only set when
 --       VM_Target /= No_VM, for efficiency, since only the .NET back-end
 --       makes use of it to generate proper code for up-level references.
+
+--    Has_Visible_Refinement (Flag263)
+--       Defined in E_Abstract_State entities. Set when a state has at least
+--       one refinement constituent and analysis is in the region between
+--       pragma Refined_State and the end of the package body declarations.
 
 --    Has_Volatile_Components (Flag87) [implementation base type only]
 --       Defined in all types and objects. Set only for an array type or array
@@ -5108,7 +5117,9 @@ package Einfo is
    --  E_Abstract_State
    --    Refinement_Constituents             (Elist8)
    --    Refined_State                       (Node10)
-   --    Has_Null_Refinement                 (Flag263)
+   --    Has_Visible_Refinement              (Flag263)
+   --    Has_Non_Null_Refinement             (synth)
+   --    Has_Null_Refinement                 (synth)
    --    Is_External_State                   (synth)
    --    Is_Input_Only_State                 (synth)
    --    Is_Null_State                       (synth)
@@ -6349,7 +6360,6 @@ package Einfo is
    function Has_Missing_Return                  (Id : E) return B;
    function Has_Nested_Block_With_Handler       (Id : E) return B;
    function Has_Non_Standard_Rep                (Id : E) return B;
-   function Has_Null_Refinement                 (Id : E) return B;
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
    function Has_Postconditions                  (Id : E) return B;
@@ -6391,6 +6401,7 @@ package Einfo is
    function Has_Unchecked_Union                 (Id : E) return B;
    function Has_Unknown_Discriminants           (Id : E) return B;
    function Has_Up_Level_Access                 (Id : E) return B;
+   function Has_Visible_Refinement              (Id : E) return B;
    function Has_Volatile_Components             (Id : E) return B;
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
@@ -6696,7 +6707,9 @@ package Einfo is
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
+   function Has_Non_Null_Refinement             (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
+   function Has_Null_Refinement                 (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
@@ -6963,7 +6976,6 @@ package Einfo is
    procedure Set_Has_Missing_Return              (Id : E; V : B := True);
    procedure Set_Has_Nested_Block_With_Handler   (Id : E; V : B := True);
    procedure Set_Has_Non_Standard_Rep            (Id : E; V : B := True);
-   procedure Set_Has_Null_Refinement             (Id : E; V : B := True);
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
    procedure Set_Has_Postconditions              (Id : E; V : B := True);
@@ -7005,6 +7017,7 @@ package Einfo is
    procedure Set_Has_Unchecked_Union             (Id : E; V : B := True);
    procedure Set_Has_Unknown_Discriminants       (Id : E; V : B := True);
    procedure Set_Has_Up_Level_Access             (Id : E; V : B := True);
+   procedure Set_Has_Visible_Refinement          (Id : E; V : B := True);
    procedure Set_Has_Volatile_Components         (Id : E; V : B := True);
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
@@ -7679,7 +7692,6 @@ package Einfo is
    pragma Inline (Has_Missing_Return);
    pragma Inline (Has_Nested_Block_With_Handler);
    pragma Inline (Has_Non_Standard_Rep);
-   pragma Inline (Has_Null_Refinement);
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Per_Object_Constraint);
    pragma Inline (Has_Postconditions);
@@ -7721,6 +7733,7 @@ package Einfo is
    pragma Inline (Has_Unchecked_Union);
    pragma Inline (Has_Unknown_Discriminants);
    pragma Inline (Has_Up_Level_Access);
+   pragma Inline (Has_Visible_Refinement);
    pragma Inline (Has_Volatile_Components);
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
@@ -8140,7 +8153,6 @@ package Einfo is
    pragma Inline (Set_Has_Missing_Return);
    pragma Inline (Set_Has_Nested_Block_With_Handler);
    pragma Inline (Set_Has_Non_Standard_Rep);
-   pragma Inline (Set_Has_Null_Refinement);
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Per_Object_Constraint);
    pragma Inline (Set_Has_Postconditions);
@@ -8182,6 +8194,7 @@ package Einfo is
    pragma Inline (Set_Has_Unchecked_Union);
    pragma Inline (Set_Has_Unknown_Discriminants);
    pragma Inline (Set_Has_Up_Level_Access);
+   pragma Inline (Set_Has_Visible_Refinement);
    pragma Inline (Set_Has_Volatile_Components);
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);

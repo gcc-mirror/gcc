@@ -2067,6 +2067,11 @@ package body Sem_Ch3 is
       --  (They have the sloc of the label as found in the source, and that
       --  is ahead of the current declarative part).
 
+      procedure Remove_Visible_Refinements (Spec_Id : Entity_Id);
+      --  Spec_Id is the entity of a package that may define abstract states.
+      --  If the states have visible refinement, remove the visibility of each
+      --  constituent at the end of the package body declarations.
+
       -----------------
       -- Adjust_Decl --
       -----------------
@@ -2080,6 +2085,24 @@ package body Sem_Ch3 is
          end loop;
       end Adjust_Decl;
 
+      --------------------------------
+      -- Remove_Visible_Refinements --
+      --------------------------------
+
+      procedure Remove_Visible_Refinements (Spec_Id : Entity_Id) is
+         State_Elmt : Elmt_Id;
+
+      begin
+         if Present (Abstract_States (Spec_Id)) then
+            State_Elmt := First_Elmt (Abstract_States (Spec_Id));
+            while Present (State_Elmt) loop
+               Set_Has_Visible_Refinement (Node (State_Elmt), False);
+
+               Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Remove_Visible_Refinements;
+
       --  Local variables
 
       Body_Id     : Entity_Id;
@@ -2088,6 +2111,9 @@ package body Sem_Ch3 is
       Next_Decl   : Node_Id;
       Prag        : Node_Id;
       Spec_Id     : Entity_Id;
+
+      In_Package_Body : Boolean := False;
+      --  Flag set when the current declaration list belongs to a package body
 
    --  Start of processing for Analyze_Declarations
 
@@ -2220,6 +2246,8 @@ package body Sem_Ch3 is
          --  Refined_Global because the last two may mention constituents.
 
          elsif Nkind (Context) = N_Package_Body then
+            In_Package_Body := True;
+
             Body_Id := Defining_Entity (Context);
             Spec_Id := Corresponding_Spec (Context);
             Prag    := Get_Pragma (Body_Id, Pragma_Refined_State);
@@ -2256,6 +2284,14 @@ package body Sem_Ch3 is
 
          Next (Decl);
       end loop;
+
+      --  State refinements are visible upto the end the of the package body
+      --  declarations. Hide the refinements from visibility to restore the
+      --  original state conditions.
+
+      if In_Package_Body then
+         Remove_Visible_Refinements (Spec_Id);
+      end if;
    end Analyze_Declarations;
 
    -----------------------------------

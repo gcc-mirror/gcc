@@ -551,7 +551,7 @@ package body Einfo is
 
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
-   --    Has_Null_Refinement             Flag263
+   --    Has_Visible_Refinement          Flag263
 
    --    (unused)                        Flag264
    --    (unused)                        Flag265
@@ -1483,12 +1483,6 @@ package body Einfo is
       return Flag75 (Implementation_Base_Type (Id));
    end Has_Non_Standard_Rep;
 
-   function Has_Null_Refinement (Id : E) return B is
-   begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      return Flag263 (Id);
-   end Has_Null_Refinement;
-
    function Has_Object_Size_Clause (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -1715,6 +1709,12 @@ package body Einfo is
         (Ekind_In (Id, E_Variable, E_Constant, E_Loop_Parameter));
       return Flag215 (Id);
    end Has_Up_Level_Access;
+
+   function Has_Visible_Refinement (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag263 (Id);
+   end Has_Visible_Refinement;
 
    function Has_Volatile_Components (Id : E) return B is
    begin
@@ -4110,12 +4110,6 @@ package body Einfo is
       Set_Flag75 (Id, V);
    end Set_Has_Non_Standard_Rep;
 
-   procedure Set_Has_Null_Refinement (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind (Id) = E_Abstract_State);
-      Set_Flag263 (Id, V);
-   end Set_Has_Null_Refinement;
-
    procedure Set_Has_Object_Size_Clause (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
@@ -4342,6 +4336,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag72 (Id, V);
    end Set_Has_Unknown_Discriminants;
+
+   procedure Set_Has_Visible_Refinement (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag263 (Id, V);
+   end Set_Has_Visible_Refinement;
 
    procedure Set_Has_Volatile_Components (Id : E; V : B := True) is
    begin
@@ -6472,6 +6472,29 @@ package body Einfo is
    end Has_Interrupt_Handler;
 
    -----------------------------
+   -- Has_Non_Null_Refinement --
+   -----------------------------
+
+   function Has_Non_Null_Refinement (Id : E) return B is
+   begin
+      --  "Refinement" is a concept applicable only to abstract states
+
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      if Has_Visible_Refinement (Id) then
+         pragma Assert (Present (Refinement_Constituents (Id)));
+
+         --  For a refinement to be non-null, the first constituent must be
+         --  anything other than null.
+
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
+      end if;
+
+      return False;
+   end Has_Non_Null_Refinement;
+
+   -----------------------------
    -- Has_Null_Abstract_State --
    -----------------------------
 
@@ -6483,6 +6506,29 @@ package body Einfo is
         Present (Abstract_States (Id))
           and then Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
    end Has_Null_Abstract_State;
+
+   -------------------------
+   -- Has_Null_Refinement --
+   -------------------------
+
+   function Has_Null_Refinement (Id : E) return B is
+   begin
+      --  "Refinement" is a concept applicable only to abstract states
+
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      if Has_Visible_Refinement (Id) then
+         pragma Assert (Present (Refinement_Constituents (Id)));
+
+         --  For a refinement to be null, the state's sole constituent must be
+         --  a null.
+
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
+      end if;
+
+      return False;
+   end Has_Null_Refinement;
 
    --------------------
    -- Has_Unmodified --
@@ -7969,7 +8015,6 @@ package body Einfo is
       W ("Has_Missing_Return",              Flag142 (Id));
       W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
-      W ("Has_Null_Refinement",             Flag263 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Postconditions",              Flag240 (Id));
@@ -8011,6 +8056,7 @@ package body Einfo is
       W ("Has_Unchecked_Union",             Flag123 (Id));
       W ("Has_Unknown_Discriminants",       Flag72  (Id));
       W ("Has_Up_Level_Access",             Flag215 (Id));
+      W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
