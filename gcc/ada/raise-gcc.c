@@ -1217,7 +1217,9 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
 
-  /* Write current exception, so that it can be retrieved from Ada.  */
+  /* Write current exception, so that it can be retrieved from Ada.  It was
+     already done during phase 1 (just above), but in between, one or several
+     exceptions may have been raised (in cleanup handlers).  */
   __gnat_setup_current_excep (uw_exception);
 
   return _URC_INSTALL_CONTEXT;
