@@ -807,19 +807,14 @@ package Snames is
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
    --  are attributes that are defined in Ada 83, but not in Ada 95. These
-   --  attributes are implemented in both Ada 83 and Ada 95 modes in GNAT.
+   --  attributes are implemented in all Ada modes in GNAT.
 
    --  The entries marked GNAT are attributes that are defined by GNAT and
-   --  implemented in both Ada 83 and Ada 95 modes. Full descriptions of these
-   --  implementation dependent attributes may be found in the appropriate
-   --  section in Sem_Attr.
+   --  implemented in all Ada modes. Full descriptions of these implementation
+   --  dependent attributes may be found in the appropriate Sem_Attr section.
 
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
-
-   --  The entries marked HiLite are attributes that are defined by Hi-Lite
-   --  and implemented in GNAT operating under formal verification mode. The
-   --  entries are treated as illegal in all other contexts.
 
    First_Attribute_Name                : constant Name_Id := N + $;
    Name_Abort_Signal                   : constant Name_Id := N + $; -- GNAT
@@ -881,8 +876,9 @@ package Snames is
    Name_Last_Valid                     : constant Name_Id := N + $; -- Ada 12
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
+   Name_Library_Level                  : constant Name_Id := N + $; -- GNAT
    Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
-   Name_Loop_Entry                     : constant Name_Id := N + $; -- HiLite
+   Name_Loop_Entry                     : constant Name_Id := N + $; -- GNAT
    Name_Machine_Emax                   : constant Name_Id := N + $;
    Name_Machine_Emin                   : constant Name_Id := N + $;
    Name_Machine_Mantissa               : constant Name_Id := N + $;
@@ -1498,6 +1494,7 @@ package Snames is
       Attribute_Last_Valid,
       Attribute_Leading_Part,
       Attribute_Length,
+      Attribute_Library_Level,
       Attribute_Lock_Free,
       Attribute_Loop_Entry,
       Attribute_Machine_Emax,

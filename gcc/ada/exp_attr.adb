@@ -6485,6 +6485,7 @@ package body Exp_Attr is
            Attribute_Has_Tagged_Values            |
            Attribute_Large                        |
            Attribute_Last_Valid                   |
+           Attribute_Library_Level                |
            Attribute_Lock_Free                    |
            Attribute_Machine_Emax                 |
            Attribute_Machine_Emin                 |

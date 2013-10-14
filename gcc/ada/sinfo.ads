@@ -7646,7 +7646,7 @@ package Sinfo is
       --  N_Subprogram_Info
       --  Sloc points to the entity for the procedure
       --  Identifier (Node1) identifier referencing the procedure
-      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc
+      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc)
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the quote in the Sprint file output.

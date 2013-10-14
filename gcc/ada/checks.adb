@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Casing;   use Casing;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -2189,7 +2190,9 @@ package body Checks is
          Formal_2 : Entity_Id;
          Check    : in out Node_Id)
       is
-         Cond : Node_Id;
+         Cond      : Node_Id;
+         ID_Casing : constant Casing_Type :=
+                       Identifier_Casing (Source_Index (Current_Sem_Unit));
 
       begin
          --  Generate:
@@ -2220,9 +2223,17 @@ package body Checks is
             end if;
 
             Store_String_Chars ("aliased parameters, actuals for """);
-            Store_String_Chars (Get_Name_String (Chars (Formal_1)));
+
+            Get_Name_String (Chars (Formal_1));
+            Set_Casing (ID_Casing);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
             Store_String_Chars (""" and """);
-            Store_String_Chars (Get_Name_String (Chars (Formal_2)));
+
+            Get_Name_String (Chars (Formal_2));
+            Set_Casing (ID_Casing);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
             Store_String_Chars (""" overlap");
 
             Insert_Action (Call,

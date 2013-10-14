@@ -337,6 +337,7 @@ Implementation Defined Attributes
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Large::
+* Attribute Library_Level::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -7842,6 +7843,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Large::
+* Attribute Library_Level::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -8340,6 +8342,31 @@ relevant environment variables at run time.
 The @code{Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
+
+@node Attribute Library_Level
+@unnumberedsec Attribute Library_Level
+@findex Library_Level
+@noindent
+@noindent
+@code{Standard'Library_Level} (@code{Standard} is the only allowed
+prefix) returns a Boolean value which is True if the attribute is
+evaluated at the library level (e.g. with a package declaration),
+and false if evaluated elsewhere (e.g. within a subprogram body).
+In the case of generics, the value indicates the placement of
+the instantiation, not the template, and indeed the use of this
+attribute within a generic is the intended common application
+as shown in this example:
+
+@smallexample @c ada
+generic
+  ...
+package Gen is
+  pragma Compile_Time_Error
+    (not Standard'Library_Level,
+     "Gen can only be instantiated at library level");
+  ...
+end Gen;
+@end smallexample
 
 @node Attribute Loop_Entry
 @unnumberedsec Attribute Loop_Entry
