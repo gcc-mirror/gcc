@@ -1,5 +1,22 @@
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb (Find_Stream_Subprogram): Optimize
+	Storage_Array stream handling.
+	(Find_Stream_Subprogram): Optimize Stream_Element_Array stream handling
+	* rtsfind.ads: Add entry for Stream_Element_Array Add
+	entries for RE_Storage_Array subprograms Add entries for
+	RE_Stream_Element_Array subprograms
+	* s-ststop.ads, s-ststop.adb: Add processing for System.Storage_Array.
+	Add processing for Ada.Stream_Element_Array.
+
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* a-except-2005.ads, a-except-2005.adb:
+	(Get_Exception_Machine_Occurrence): New function.
+	* raise-gcc.c (__gnat_unwind_exception_size): New constant.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
 	* sem_res.adb: Minor fix to error message text.
 	* errout.ads, erroutc.ads: Minor reformatting.
 	* s-ststop.ads, s-stratt.ads: Clean up documentation of block IO

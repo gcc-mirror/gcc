@@ -1463,3 +1463,10 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 				ms_disp, __gnat_personality_imp);
 }
 #endif /* SEH */
+
+#if !defined (__USING_SJLJ_EXCEPTIONS__)
+/* Size of the _Unwind_Exception structure.  This is used by g-cppexc to get
+   the offset to the C++ object.  */
+
+const int __gnat_unwind_exception_size = sizeof (_Unwind_Exception);
+#endif
