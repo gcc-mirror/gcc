@@ -565,6 +565,15 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
      NULL_TREE, is_disabled, true, true, true, NULL, Empty);
   DECL_IGNORED_P (get_excptr_decl) = 1;
 
+  set_exception_parameter_decl
+    = create_subprog_decl
+      (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
+       build_function_type_list (void_type_node,
+				 ptr_void_type_node,
+				 ptr_void_type_node,
+				 NULL_TREE),
+       NULL_TREE, is_disabled, true, true, true, NULL, Empty);
+
   raise_nodefer_decl
     = create_subprog_decl
       (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE,
