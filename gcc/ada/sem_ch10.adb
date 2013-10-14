@@ -4028,7 +4028,7 @@ package body Sem_Ch10 is
          Is_Private_Descendant (P_Name)
            or else Private_Present (Parent (Lib_Unit)));
 
-      P_Spec := Specification (Unit_Declaration_Node (P_Name));
+      P_Spec := Package_Specification (P_Name);
       Push_Scope (P_Name);
 
       --  Save current visibility of unit

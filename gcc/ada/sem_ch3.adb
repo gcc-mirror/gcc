@@ -10919,8 +10919,7 @@ package body Sem_Ch3 is
          elsif Ekind (Current_Scope) = E_Package
            and then
              List_Containing (Parent (Prev)) /=
-               Visible_Declarations
-                 (Specification (Unit_Declaration_Node (Current_Scope)))
+               Visible_Declarations (Package_Specification (Current_Scope))
          then
             Error_Msg_N
               ("deferred constant must be declared in visible part",

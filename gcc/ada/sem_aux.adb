@@ -1151,6 +1151,27 @@ package body Sem_Aux is
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
 
+   ---------------------------
+   -- Package_Specification --
+   ---------------------------
+
+   function Package_Specification (Pack_Id : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      N := Parent (Pack_Id);
+
+      while Nkind (N) /= N_Package_Specification loop
+         N := Parent (N);
+
+         if No (N) then
+            raise Program_Error;
+         end if;
+      end loop;
+
+      return N;
+   end Package_Specification;
+
    ---------------
    -- Tree_Read --
    ---------------

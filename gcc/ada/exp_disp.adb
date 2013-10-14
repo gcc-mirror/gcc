@@ -7645,7 +7645,7 @@ package body Exp_Disp is
       end if;
 
       return List_Containing (Parent (Typ)) =
-        Visible_Declarations (Specification (Unit_Declaration_Node (Scop)));
+        Visible_Declarations (Package_Specification (Scop));
    end Original_View_In_Visible_Part;
 
    ------------------
@@ -8446,8 +8446,7 @@ package body Exp_Disp is
            and then In_Private_Part (Current_Scope)
            and then
              List_Containing (Parent (Prim)) =
-               Private_Declarations
-                (Specification (Unit_Declaration_Node (Current_Scope)))
+               Private_Declarations (Package_Specification (Current_Scope))
            and then Original_View_In_Visible_Part (Typ)
          then
             --  We exclude Input and Output stream operations because

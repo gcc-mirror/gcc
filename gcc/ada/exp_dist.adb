@@ -2874,8 +2874,7 @@ package body Exp_Dist is
 
          if RCI_Locator = Empty then
             RCI_Locator_Decl :=
-              RCI_Package_Locator
-                (Loc, Specification (Unit_Declaration_Node (RCI_Package)));
+              RCI_Package_Locator (Loc, Package_Specification (RCI_Package));
             Prepend_To (Current_Sem_Unit_Declarations, RCI_Locator_Decl);
             Analyze (RCI_Locator_Decl);
             RCI_Locator := Defining_Unit_Name (RCI_Locator_Decl);

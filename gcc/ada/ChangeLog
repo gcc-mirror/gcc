@@ -1,3 +1,26 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record): Don't give warning about packed
+	and foreign convention.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads (Package_Specification): New function, to
+	replace the less efficient idiom Specification.
+	(Unit_Declaration_Node (Pack_Id)), which handles library units and
+	child units.
+	* sem_ch3.adb, sem_ch10.adb, sem_prag.adb, sem_ch12.adb, sem_ch6.adb,
+	exp_disp.adb, sem_cat.adb, exp_dist.adb: Use Package_Specification.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Update_Attribute): Update the call to
+	Process_Range_Update.
+	(Process_Range_Update): Add new formal parameter Typ and associated
+	comment on usage. Add local constant Index_Typ. Add a type conversion
+	as part of the indexed component to ensure that the loop variable
+	corresponds to the index type.
+
 2013-10-14  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr-gcc.adb: Adjust comment.

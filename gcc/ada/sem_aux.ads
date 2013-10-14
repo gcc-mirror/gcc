@@ -348,4 +348,8 @@ package Sem_Aux is
    --  it returns the subprogram, task or protected body node for it. The unit
    --  may be a child unit with any number of ancestors.
 
+   function Package_Specification (Pack_Id : Entity_Id) return Node_Id;
+   --  Given an entity for a package or generic package, return corresponding
+   --  package specification. Simplifies handling of child units, and better
+   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id).
 end Sem_Aux;
