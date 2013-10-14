@@ -1,5 +1,19 @@
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Global_Item): Allow
+	references to enclosing formal parameters.
+
+2013-10-14  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb (Equivalent_Type): Add missing case
+	E_Access_Subprogram_Type in guard (for remote access to
+	subprograms) * sem_ch8.adb (Find_Direct_Name, Find_Expanded_Name):
+	Add missing guards to account for the presence of RAS types
+	that have already been replaced with the corresponding fat
+	pointer type.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb: Add an entry in table Canonical_Aspect for
 	Initializes.
 	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,

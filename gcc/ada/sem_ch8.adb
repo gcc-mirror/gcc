@@ -4987,6 +4987,7 @@ package body Sem_Ch8 is
 
          if Comes_From_Source (N)
            and then Is_Remote_Access_To_Subprogram_Type (E)
+           and then Ekind (E) = E_Access_Subprogram_Type
            and then Expander_Active
            and then Get_PCS_Name /= Name_No_DSA
          then
@@ -5488,6 +5489,7 @@ package body Sem_Ch8 is
       <<Found>>
       if Comes_From_Source (N)
         and then Is_Remote_Access_To_Subprogram_Type (Id)
+        and then Ekind (Id) = E_Access_Subprogram_Type
         and then Present (Equivalent_Type (Id))
       then
          --  If we are not actually generating distribution code (i.e. the
