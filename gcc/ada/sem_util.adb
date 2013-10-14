@@ -27,8 +27,8 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Errout;   use Errout;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
@@ -212,25 +212,26 @@ package body Sem_Util is
    -- Add_Contract_Item --
    -----------------------
 
-   procedure Add_Contract_Item (Item : Node_Id; Subp_Id : Entity_Id) is
+   procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id) is
       Items : constant Node_Id := Contract (Subp_Id);
       Nam   : Name_Id;
+      N     : Node_Id;
 
    begin
-      if Present (Items) and then Nkind (Item) = N_Pragma then
-         Nam := Pragma_Name (Item);
+      --  The related subprogram [body] must have a contract and the item to be
+      --  added must be a pragma.
 
-         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
-            Set_Next_Pragma (Item, Pre_Post_Conditions (Items));
-            Set_Pre_Post_Conditions (Items, Item);
+      pragma Assert (Present (Items));
+      pragma Assert (Nkind (Prag) = N_Pragma);
 
-         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
-            Set_Next_Pragma (Item, Contract_Test_Cases (Items));
-            Set_Contract_Test_Cases (Items, Item);
+      Nam := Original_Aspect_Name (Prag);
 
-         elsif Nam_In (Nam, Name_Depends, Name_Global) then
-            Set_Next_Pragma (Item, Classifications (Items));
-            Set_Classifications (Items, Item);
+      --  Contract items related to subprogram bodies
+
+      if Ekind (Subp_Id) = E_Subprogram_Body then
+         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
 
          --  The pragma is not a proper contract item
 
@@ -238,10 +239,60 @@ package body Sem_Util is
             raise Program_Error;
          end if;
 
-      --  The subprogram has not been properly decorated or the item is illegal
+      --  Contract items related to subprogram declarations
 
       else
-         raise Program_Error;
+         if Nam_In (Nam, Name_Precondition,
+                         Name_Postcondition,
+                         Name_Pre,
+                         Name_Post,
+                         Name_uPre,
+                         Name_uPost)
+         then
+            --  Before we add a precondition or postcondition to the list,
+            --  make sure we do not have a disallowed duplicate, which can
+            --  happen if we use a pragma for Pre{_Class] or Post[_Class]
+            --  instead of the corresponding aspect.
+
+            if not From_Aspect_Specification (Prag)
+              and then Nam_In (Nam, Name_Pre_Class,
+                                    Name_Pre,
+                                    Name_uPre,
+                                    Name_Post_Class,
+                                    Name_Post,
+                                    Name_uPost)
+            then
+               N := Pre_Post_Conditions (Items);
+               while Present (N) loop
+                  if not Split_PPC (N)
+                    and then Original_Aspect_Name (N) = Nam
+                  then
+                     Error_Msg_Sloc := Sloc (N);
+                     Error_Msg_NE
+                       ("duplication of aspect for & given#", Prag, Subp_Id);
+                     return;
+                  else
+                     N := Next_Pragma (N);
+                  end if;
+               end loop;
+            end if;
+
+            Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
+            Set_Pre_Post_Conditions (Items, Prag);
+
+         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
+            Set_Next_Pragma (Prag, Contract_Test_Cases (Items));
+            Set_Contract_Test_Cases (Items, Prag);
+
+         elsif Nam_In (Nam, Name_Depends, Name_Global) then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
       end if;
    end Add_Contract_Item;
 
@@ -3141,6 +3192,127 @@ package body Sem_Util is
       end if;
    end Conditional_Delay;
 
+   ----------------------------
+   -- Contains_Refined_State --
+   ----------------------------
+
+   function Contains_Refined_State (Prag : Node_Id) return Boolean is
+      function Has_Refined_State (List : Node_Id) return Boolean;
+      --  Determine whether a global list mentions a state with a visible
+      --  refinement.
+
+      -----------------------
+      -- Has_Refined_State --
+      -----------------------
+
+      function Has_Refined_State (List : Node_Id) return Boolean is
+         function Is_Refined_State (Item : Node_Id) return Boolean;
+         --  Determine whether Item is a reference to an abstract state with a
+         --  visible refinement.
+
+         ----------------------
+         -- Is_Refined_State --
+         ----------------------
+
+         function Is_Refined_State (Item : Node_Id) return Boolean is
+            Item_Id : Entity_Id;
+
+         begin
+            if Nkind (Item) = N_Null then
+               return False;
+
+            else
+               Item_Id := Entity_Of (Item);
+
+               return
+                 Ekind (Item_Id) = E_Abstract_State
+                   and then Present (Refinement_Constituents (Item_Id));
+            end if;
+         end Is_Refined_State;
+
+         --  Local variables
+
+         Item : Node_Id;
+
+      --  Start of processing for Has_Refined_State
+
+      begin
+         --  A null global list does not mention any states
+
+         if Nkind (List) = N_Null then
+            return False;
+
+         --  Single global item declaration
+
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
+         then
+            return Is_Refined_State (List);
+
+         --  Simple global list or moded global list declaration
+
+         elsif Nkind (List) = N_Aggregate then
+
+            --  The declaration of a simple global list appear as a collection
+            --  of expressions.
+
+            if Present (Expressions (List)) then
+               Item := First (Expressions (List));
+               while Present (Item) loop
+                  if Is_Refined_State (Item) then
+                     return True;
+                  end if;
+
+                  Next (Item);
+               end loop;
+
+            --  The declaration of a moded global list appears as a collection
+            --  of component associations where individual choices denote
+            --  modes.
+
+            else
+               Item := First (Component_Associations (List));
+               while Present (Item) loop
+                  if Has_Refined_State (Expression (Item)) then
+                     return True;
+                  end if;
+
+                  Next (Item);
+               end loop;
+            end if;
+
+            --  If we get here, then the simple/moded global list did not
+            --  mention any states with a visible refinement.
+
+            return False;
+
+         --  Something went horribly wrong, we have a malformed tree
+
+         else
+            raise Program_Error;
+         end if;
+      end Has_Refined_State;
+
+      --  Local variables
+
+      Arg : constant Node_Id :=
+              Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+      Nam : constant Name_Id := Pragma_Name (Prag);
+
+   --  Start of processing for Contains_Refined_State
+
+   begin
+      --  ??? To be implemented
+
+      if Nam = Name_Depends then
+         return False;
+
+      else pragma Assert (Nam = Name_Global);
+         return Has_Refined_State (Arg);
+      end if;
+   end Contains_Refined_State;
+
    -------------------------
    -- Copy_Component_List --
    -------------------------
@@ -4274,7 +4446,6 @@ package body Sem_Util is
 
    procedure Ensure_Freeze_Node (E : Entity_Id) is
       FN : Node_Id;
-
    begin
       if No (Freeze_Node (E)) then
          FN := Make_Freeze_Entity (Sloc (E));
@@ -4567,9 +4738,14 @@ package body Sem_Util is
       --  Inherited discriminants and components in derived record types are
       --  immediately visible. Itypes are not.
 
+      --  Unless the Itype is for a record type with a corresponding remote
+      --  type (what is that about, it was not commented ???)
+
       if Ekind_In (Def_Id, E_Discriminant, E_Component)
-        or else (No (Corresponding_Remote_Type (Def_Id))
-                 and then not Is_Itype (Def_Id))
+        or else
+          ((not Is_Record_Type (Def_Id)
+             or else No (Corresponding_Remote_Type (Def_Id)))
+            and then not Is_Itype (Def_Id))
       then
          Set_Is_Immediately_Visible (Def_Id);
          Set_Current_Entity         (Def_Id);
@@ -5184,9 +5360,9 @@ package body Sem_Util is
          Discrim := First (Choices (Assoc));
          exit Find_Constraint when Chars (Discrim_Name) = Chars (Discrim)
            or else (Present (Corresponding_Discriminant (Entity (Discrim)))
-                      and then
-                    Chars (Corresponding_Discriminant (Entity (Discrim)))
-                         = Chars  (Discrim_Name))
+                     and then
+                       Chars (Corresponding_Discriminant (Entity (Discrim))) =
+                                                       Chars  (Discrim_Name))
            or else Chars (Original_Record_Component (Entity (Discrim)))
                          = Chars (Discrim_Name);
 
@@ -5274,7 +5450,6 @@ package body Sem_Util is
          Find_Discrete_Value : while Present (Variant) loop
             Discrete_Choice := First (Discrete_Choices (Variant));
             while Present (Discrete_Choice) loop
-
                exit Find_Discrete_Value when
                  Nkind (Discrete_Choice) = N_Others_Choice;
 
@@ -5305,8 +5480,8 @@ package body Sem_Util is
       --  If we have found the corresponding choice, recursively add its
       --  components to the Into list.
 
-      Gather_Components (Empty,
-        Component_List (Variant), Governed_By, Into, Report_Errors);
+      Gather_Components
+        (Empty, Component_List (Variant), Governed_By, Into, Report_Errors);
    end Gather_Components;
 
    ------------------------
@@ -6440,6 +6615,45 @@ package body Sem_Util is
 
       return False;
    end Has_Interfaces;
+
+   ---------------------------------
+   -- Has_No_Obvious_Side_Effects --
+   ---------------------------------
+
+   function Has_No_Obvious_Side_Effects (N : Node_Id) return Boolean is
+   begin
+      --  For now, just handle literals, constants, and non-volatile
+      --  variables and expressions combining these with operators or
+      --  short circuit forms.
+
+      if Nkind (N) in N_Numeric_Or_String_Literal then
+         return True;
+
+      elsif Nkind (N) = N_Character_Literal then
+         return True;
+
+      elsif Nkind (N) in N_Unary_Op then
+         return Has_No_Obvious_Side_Effects (Right_Opnd (N));
+
+      elsif Nkind (N) in N_Binary_Op or else Nkind (N) in N_Short_Circuit then
+         return Has_No_Obvious_Side_Effects (Left_Opnd (N))
+                   and then
+                Has_No_Obvious_Side_Effects (Right_Opnd (N));
+
+      elsif Nkind (N) in N_Has_Entity then
+         return Present (Entity (N))
+           and then Ekind_In (Entity (N), E_Variable,
+                                          E_Constant,
+                                          E_Enumeration_Literal,
+                                          E_In_Parameter,
+                                          E_Out_Parameter,
+                                          E_In_Out_Parameter)
+           and then not Is_Volatile (Entity (N));
+
+      else
+         return False;
+      end if;
+   end Has_No_Obvious_Side_Effects;
 
    ------------------------
    -- Has_Null_Exclusion --
@@ -8655,6 +8869,7 @@ package body Sem_Util is
                return Is_Fully_Initialized_Variant (U);
             end if;
          end;
+
       else
          return False;
       end if;
@@ -8863,10 +9078,12 @@ package body Sem_Util is
             when N_Function_Call =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes 'Input and 'Result produce objects
+            --  Attributes 'Input, 'Old and 'Result produce objects
 
             when N_Attribute_Reference =>
-               return Nam_In (Attribute_Name (N), Name_Input, Name_Result);
+               return
+                 Nam_In
+                   (Attribute_Name (N), Name_Input, Name_Old, Name_Result);
 
             when N_Selected_Component =>
                return
@@ -12215,8 +12432,8 @@ package body Sem_Util is
                end if;
 
                if Nkind (P) = N_Selected_Component
-                 and then Present (
-                   Entry_Formal (Entity (Selector_Name (P))))
+                 and then
+                   Present (Entry_Formal (Entity (Selector_Name (P))))
                then
                   --  Case of a reference to an entry formal
 
@@ -12240,15 +12457,15 @@ package body Sem_Util is
                end if;
             end;
 
-         elsif     Nkind (Exp) = N_Type_Conversion
-           or else Nkind (Exp) = N_Unchecked_Type_Conversion
+         elsif Nkind_In (Exp, N_Type_Conversion,
+                              N_Unchecked_Type_Conversion)
          then
             Exp := Expression (Exp);
             goto Continue;
 
-         elsif     Nkind (Exp) = N_Slice
-           or else Nkind (Exp) = N_Indexed_Component
-           or else Nkind (Exp) = N_Selected_Component
+         elsif Nkind_In (Exp, N_Slice,
+                              N_Indexed_Component,
+                              N_Selected_Component)
          then
             Exp := Prefix (Exp);
             goto Continue;
@@ -12307,7 +12524,9 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source or else SPARK_Mode then
+               --  Why is SPARK mode different here ???
+
+               if Modification_Comes_From_Source or SPARK_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable
@@ -12653,6 +12872,71 @@ package body Sem_Util is
       end if;
    end Object_Access_Level;
 
+   --------------------------
+   -- Original_Aspect_Name --
+   --------------------------
+
+   function Original_Aspect_Name (N : Node_Id) return Name_Id is
+      Pras : Node_Id;
+      Name : Name_Id;
+
+   begin
+      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
+      Pras := N;
+
+      if Is_Rewrite_Substitution (Pras)
+        and then Nkind (Original_Node (Pras)) = N_Pragma
+      then
+         Pras := Original_Node (Pras);
+      end if;
+
+      --  Case where we came from aspect specication
+
+      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
+         Pras := Corresponding_Aspect (Pras);
+      end if;
+
+      --  Get name from aspect or pragma
+
+      if Nkind (Pras) = N_Pragma then
+         Name := Pragma_Name (Pras);
+      else
+         Name := Chars (Identifier (Pras));
+      end if;
+
+      --  Deal with 'Class
+
+      if Class_Present (Pras) then
+         case Name is
+
+         --  Names that need converting to special _xxx form
+
+            when Name_Pre                  |
+                 Name_Pre_Class            =>
+               Name := Name_uPre;
+
+            when Name_Post                 |
+                 Name_Post_Class           =>
+               Name := Name_uPost;
+
+            when Name_Invariant            =>
+               Name := Name_uInvariant;
+
+            when Name_Type_Invariant       |
+                 Name_Type_Invariant_Class =>
+               Name := Name_uType_Invariant;
+
+            --  Nothing to do for other cases (e.g. a Check that derived
+            --  from Pre_Class and has the flag set). Also we do nothing
+            --  if the name is already in special _xxx form.
+
+            when others                    =>
+               null;
+         end case;
+      end if;
+
+      return Name;
+   end Original_Aspect_Name;
    --------------------------------------
    -- Original_Corresponding_Operation --
    --------------------------------------

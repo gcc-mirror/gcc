@@ -4291,3 +4291,6 @@ void m<void () &&>(void (A::*)() &&)
 --format=gnu-v3
 _Z1nIM1AKFvvREEvT_
 void n<void (A::*)() const &>(void (A::*)() const &)
+--format=gnu-v3
+_ZL1fIiEvv
+void f<int>()

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,11 +367,12 @@ package SCOs is
       Last : Boolean         := False;
 
       Pragma_Sloc : Source_Ptr := No_Location;
-      --  For the statement SCO for a pragma, or for any expression SCO nested
-      --  in a pragma Debug/Assert/PPC, location of PRAGMA token (used for
-      --  control of SCO output, value not recorded in ALI file). For the
-      --  decision SCO for an aspect, or for any expression SCO nested in an
-      --  aspect, location of aspect identifier token (likewise).
+      --  For the decision SCO of a pragma, or for the decision SCO of any
+      --  expression nested in a pragma Debug/Assert/PPC, location of PRAGMA
+      --  token (used for control of SCO output, value not recorded in ALI
+      --  file). Similarly, for the decision SCO of an aspect, or for the
+      --  decision SCO of any expression nested in an aspect, location of
+      --  aspect identifier token.
 
       Pragma_Aspect_Name : Name_Id := No_Name;
       --  For the SCO for a pragma/aspect, gives the pragma/apsect name

@@ -3479,8 +3479,8 @@ package body Sem_Ch12 is
             Error_Msg_N
               ("cannot instantiate a limited withed package", Gen_Id);
          else
-            Error_Msg_N
-              ("expect name of generic package in instantiation", Gen_Id);
+            Error_Msg_NE
+              ("& is not the name of a generic package", Gen_Id, Gen_Unit);
          end if;
 
          Restore_Env;
@@ -3717,8 +3717,7 @@ package body Sem_Ch12 is
               (Unit_Requires_Body (Gen_Unit)
                   or else Enclosing_Body_Present
                   or else Present (Corresponding_Body (Gen_Decl)))
-                and then (Is_In_Main_Unit (N)
-                           or else Might_Inline_Subp)
+                and then (Is_In_Main_Unit (N) or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
@@ -3728,8 +3727,7 @@ package body Sem_Ch12 is
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
 
-            if (Front_End_Inlining
-                 and then not Expander_Active)
+            if (Front_End_Inlining and then not Expander_Active)
               or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
             then
                Needs_Body := False;
@@ -4669,33 +4667,16 @@ package body Sem_Ch12 is
       --  Verify that it is a generic subprogram of the right kind, and that
       --  it does not lead to a circular instantiation.
 
-      if not Ekind_In (Gen_Unit, E_Generic_Procedure, E_Generic_Function) then
-         Error_Msg_N ("expect generic subprogram in instantiation", Gen_Id);
+      if K = E_Procedure and then Ekind (Gen_Unit) /= E_Generic_Procedure then
+         Error_Msg_NE
+           ("& is not the name of a generic procedure", Gen_Id, Gen_Unit);
+
+      elsif K = E_Function and then Ekind (Gen_Unit) /= E_Generic_Function then
+         Error_Msg_NE
+           ("& is not the name of a generic function", Gen_Id, Gen_Unit);
 
       elsif In_Open_Scopes (Gen_Unit) then
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
-
-      elsif K = E_Procedure
-        and then Ekind (Gen_Unit) /= E_Generic_Procedure
-      then
-         if Ekind (Gen_Unit) = E_Generic_Function then
-            Error_Msg_N
-              ("cannot instantiate generic function as procedure", Gen_Id);
-         else
-            Error_Msg_N
-              ("expect name of generic procedure in instantiation", Gen_Id);
-         end if;
-
-      elsif K = E_Function
-        and then Ekind (Gen_Unit) /= E_Generic_Function
-      then
-         if Ekind (Gen_Unit) = E_Generic_Procedure then
-            Error_Msg_N
-              ("cannot instantiate generic procedure as function", Gen_Id);
-         else
-            Error_Msg_N
-              ("expect name of generic function in instantiation", Gen_Id);
-         end if;
 
       else
          Set_Entity (Gen_Id, Gen_Unit);

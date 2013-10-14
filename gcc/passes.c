@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h" /* for dump_function_header */
 #include "context.h"
 #include "pass_manager.h"
+#include "tree-ssa-live.h"  /* For remove_unused_locals.  */
 
 using namespace gcc;
 

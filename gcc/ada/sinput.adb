@@ -434,44 +434,9 @@ package body Sinput is
    -- Get_Source_File_Index --
    ---------------------------
 
-   Source_Cache_First : Source_Ptr := 1;
-   Source_Cache_Last  : Source_Ptr := 0;
-   --  Records the First and Last subscript values for the most recently
-   --  referenced entry in the source table, to optimize the common case of
-   --  repeated references to the same entry. The initial values force an
-   --  initial search to set the cache value.
-
-   Source_Cache_Index : Source_File_Index := No_Source_File;
-   --  Contains the index of the entry corresponding to Source_Cache
-
    function Get_Source_File_Index (S : Source_Ptr) return Source_File_Index is
    begin
-      if S in Source_Cache_First .. Source_Cache_Last then
-         return Source_Cache_Index;
-
-      else
-         pragma Assert (Source_File_Index_Table (Int (S) / Chunk_Size)
-                          /=
-                        No_Source_File);
-         for J in Source_File_Index_Table (Int (S) / Chunk_Size)
-                                                    .. Source_File.Last
-         loop
-            if S in Source_File.Table (J).Source_First ..
-                    Source_File.Table (J).Source_Last
-            then
-               Source_Cache_Index := J;
-               Source_Cache_First :=
-                 Source_File.Table (Source_Cache_Index).Source_First;
-               Source_Cache_Last :=
-                 Source_File.Table (Source_Cache_Index).Source_Last;
-               return Source_Cache_Index;
-            end if;
-         end loop;
-      end if;
-
-      --  We must find a matching entry in the above loop!
-
-      raise Program_Error;
+      return Source_File_Index_Table (Int (S) / Source_Align);
    end Get_Source_File_Index;
 
    ----------------
@@ -480,9 +445,6 @@ package body Sinput is
 
    procedure Initialize is
    begin
-      Source_Cache_First := 1;
-      Source_Cache_Last  := 0;
-      Source_Cache_Index := No_Source_File;
       Source_gnat_adc    := No_Source_File;
       First_Time_Around  := True;
 
@@ -724,15 +686,13 @@ package body Sinput is
       Ind : Int;
       SP  : Source_Ptr;
       SL  : constant Source_Ptr := Source_File.Table (Xnew).Source_Last;
-
    begin
-      SP  := (Source_File.Table (Xnew).Source_First + Chunk_Size - 1)
-                                                    / Chunk_Size * Chunk_Size;
-      Ind := Int (SP) / Chunk_Size;
-
+      SP  := Source_File.Table (Xnew).Source_First;
+      pragma Assert (SP mod Source_Align = 0);
+      Ind := Int (SP) / Source_Align;
       while SP <= SL loop
          Source_File_Index_Table (Ind) := Xnew;
-         SP := SP + Chunk_Size;
+         SP := SP + Source_Align;
          Ind := Ind + 1;
       end loop;
    end Set_Source_File_Index_Table;
@@ -921,19 +881,14 @@ package body Sinput is
          end loop;
       end if;
 
-      --  Reset source cache pointers to force new read
-
-      Source_Cache_First := 1;
-      Source_Cache_Last  := 0;
-
       --  Read in source file table and instance table
 
       Source_File.Tree_Read;
       Instances.Tree_Read;
 
-      --  The pointers we read in there for the source buffer and lines
-      --  table pointers are junk. We now read in the actual data that
-      --  is referenced by these two fields.
+      --  The pointers we read in there for the source buffer and lines table
+      --  pointers are junk. We now read in the actual data that is referenced
+      --  by these two fields.
 
       for J in Source_File.First .. Source_File.Last loop
          declare

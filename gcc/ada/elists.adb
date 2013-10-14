@@ -287,6 +287,34 @@ package body Elists is
       Elmts.Release;
    end Lock;
 
+   --------------------
+   -- New_Copy_Elist --
+   --------------------
+
+   function New_Copy_Elist (List : Elist_Id) return Elist_Id is
+      Result : Elist_Id;
+      Elmt   : Elmt_Id;
+
+   begin
+      if List = No_Elist then
+         return No_Elist;
+
+      --  Replicate the contents of the input list while preserving the
+      --  original order.
+
+      else
+         Result := New_Elmt_List;
+
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            Append_Elmt (Node (Elmt), Result);
+            Next_Elmt (Elmt);
+         end loop;
+
+         return Result;
+      end if;
+   end New_Copy_Elist;
+
    -------------------
    -- New_Elmt_List --
    -------------------
@@ -396,6 +424,27 @@ package body Elists is
    begin
       return Elmt /= No_Elmt;
    end Present;
+
+   ------------
+   -- Remove --
+   ------------
+
+   procedure Remove (List : Elist_Id; N : Node_Or_Entity_Id) is
+      Elmt : Elmt_Id;
+
+   begin
+      if Present (List) then
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            if Node (Elmt) = N then
+               Remove_Elmt (List, Elmt);
+               exit;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+   end Remove;
 
    -----------------
    -- Remove_Elmt --

@@ -408,6 +408,8 @@ DUMMY_SOCKETS_TARGET_PAIRS = \
 # special version of Ada.Strings.Unbounded package can be used.
 
 ATOMICS_TARGET_PAIRS = \
+  a-coinho.adb<a-coinho-shared.adb \
+  a-coinho.ads<a-coinho-shared.ads \
   a-stunau.adb<a-stunau-shared.adb \
   a-suteio.adb<a-suteio-shared.adb \
   a-strunb.ads<a-strunb-shared.ads \
@@ -1579,6 +1581,13 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(target_
   GSMATCH_VERSION := $(shell grep "^ *Gnat_Static_Version_String" $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\).*/\2,\3/')
   TOOLS_LIBS_LO := --for-linker=sys\\$$\$$library:trace.exe
   LIBRARY_VERSION := $(subst .,_,$(LIB_VERSION))
+endif
+
+# PikeOS
+ifeq ($(strip $(filter-out powerpc% %86 sysgo pikeos,$(target_cpu) $(target_vendor) $(target_os)))),)
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
+  indepsw.adb<indepsw-gnu.adb
 endif
 
 # *-elf, *-eabi or *-eabispe

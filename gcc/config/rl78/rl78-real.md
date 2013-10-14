@@ -321,9 +321,9 @@
 	      (pc)))]
   "rl78_real_insns_ok ()"
   "@
-   cmp\t%1, %2 \;xor1 CY,%1.7\;not1 CY\;sk%c0 \;br\t!!%3
-   cmp\t%1, %2 \;xor1 CY,%1.7\;sk%c0 \;br\t!!%3
-   cmp\t%1, %2 \;xor1 CY,%1.7\;xor1 CY,%2.7\;sk%c0 \;br\t!!%3"
+   cmp\t%1, %2 \;xor1 CY,%1.7\;not1 CY\;sk%C0 \;br\t!!%3
+   cmp\t%1, %2 \;xor1 CY,%1.7\;sk%C0 \;br\t!!%3
+   cmp\t%1, %2 \;xor1 CY,%1.7\;xor1 CY,%2.7\;sk%C0 \;br\t!!%3"
   )
 
 (define_insn "*cbranchqi4_real"
@@ -335,10 +335,10 @@
 	      (pc)))]
   "rl78_real_insns_ok ()"
   "@
-   cmp0\t%1 \;sk%c0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%c0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%c0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%c0 \;br\t!!%3"
+   cmp0\t%1 \;sk%C0 \;br\t!!%3
+   cmp\t%1, %2 \;sk%C0 \;br\t!!%3
+   cmp\t%1, %2 \;sk%C0 \;br\t!!%3
+   cmp\t%1, %2 \;sk%C0 \;br\t!!%3"
   )
 
 (define_insn "*cbranchhi4_real_signed"
@@ -350,9 +350,9 @@
 	      (pc)))]
   "rl78_real_insns_ok ()"
   "@
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;not1 CY\;sk%c0 \;br\t!!%3
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;sk%c0 \;br\t!!%3
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;xor1 CY,%Q2.7\;sk%c0 \;br\t!!%3
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;not1 CY\;sk%C0 \;br\t!!%3
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;sk%C0 \;br\t!!%3
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;xor1 CY,%Q2.7\;sk%C0 \;br\t!!%3
    %z0\t!!%3"
   )
 
@@ -365,7 +365,7 @@
 	      (pc)))]
   "rl78_real_insns_ok ()"
   "@
-  cmpw\t%1, %2 \;sk%c0 \;br\t!!%3
+  cmpw\t%1, %2 \;sk%C0 \;br\t!!%3
   %z0\t!!%3"
   )
 
@@ -377,7 +377,7 @@
 	      (pc)
               (label_ref (match_operand          3 "" ""))))]
   "rl78_real_insns_ok ()"
-  "cmpw\t%1, %2 \;sk%c0 \;br\t!!%3"
+  "cmpw\t%1, %2 \;sk%C0 \;br\t!!%3"
   )
 
 (define_insn "*cbranchsi4_real_lt"
@@ -419,9 +419,9 @@
    ]
   "rl78_real_insns_ok ()"
   "@
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;not1 CY\;      movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;               movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3"
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;not1 CY\;      movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;               movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3"
   )
 
 (define_insn "*cbranchsi4_real"
@@ -434,7 +434,7 @@
    (clobber (reg:HI AX_REG))
    ]
   "rl78_real_insns_ok ()"
-  "movw ax,%H1 \;cmpw  ax, %H2 \;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3"
+  "movw ax,%H1 \;cmpw  ax, %H2 \;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3"
   )
 
 ;; Peephole to match:

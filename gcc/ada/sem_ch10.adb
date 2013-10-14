@@ -53,6 +53,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Dist; use Sem_Dist;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -329,9 +330,8 @@ package body Sem_Ch10 is
             function Same_Unit (N : Node_Id; P : Entity_Id) return Boolean is
             begin
                return Entity (N) = P
-                 or else
-                   (Present (Renamed_Object (P))
-                     and then Entity (N) = Renamed_Object (P));
+                 or else (Present (Renamed_Object (P))
+                           and then Entity (N) = Renamed_Object (P));
             end Same_Unit;
 
          --  Start of processing for Process_Body_Clauses
@@ -403,14 +403,12 @@ package body Sem_Ch10 is
                elsif Nkind (Cont_Item) = N_Pragma
                  and then
                    Nam_In (Pragma_Name (Cont_Item), Name_Elaborate,
-                                                     Name_Elaborate_All)
+                                                    Name_Elaborate_All)
                  and then not Used_Type_Or_Elab
                then
                   Prag_Unit :=
                     First (Pragma_Argument_Associations (Cont_Item));
-                  while Present (Prag_Unit)
-                    and then not Used_Type_Or_Elab
-                  loop
+                  while Present (Prag_Unit) and then not Used_Type_Or_Elab loop
                      if Entity (Expression (Prag_Unit)) = Nam_Ent then
                         Used_Type_Or_Elab := True;
                      end if;
@@ -477,7 +475,7 @@ package body Sem_Ch10 is
                --     with Pack;
                --     with Pack;
                --     pragma Elaborate (Pack);
-               --
+
                --  In this case, the second with clause is redundant since
                --  the pragma applies only to the first "with Pack;".
 
@@ -557,10 +555,8 @@ package body Sem_Ch10 is
                      if (Withed_In_Spec
                            and then not Used_Type_Or_Elab)
                              and then
-                               ((not Used_In_Spec
-                                   and then not Used_In_Body)
-                                     or else
-                                       Used_In_Spec)
+                               ((not Used_In_Spec and then not Used_In_Body)
+                                  or else Used_In_Spec)
                      then
                         Error_Msg_N -- CODEFIX
                           ("redundant with clause in body??", Clause);
@@ -1013,9 +1009,8 @@ package body Sem_Ch10 is
                               N_Package_Renaming_Declaration,
                               N_Subprogram_Declaration)
         or else Nkind (Unit_Node) in N_Generic_Declaration
-        or else
-          (Nkind (Unit_Node) = N_Subprogram_Body
-            and then Acts_As_Spec (Unit_Node))
+        or else (Nkind (Unit_Node) = N_Subprogram_Body
+                  and then Acts_As_Spec (Unit_Node))
       then
          Remove_Unit_From_Visibility (Defining_Entity (Unit_Node));
 
@@ -1581,6 +1576,7 @@ package body Sem_Ch10 is
 
          Set_Has_Completion (Nam);
          Set_Scope (Defining_Entity (N), Current_Scope);
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
       end if;
@@ -1663,6 +1659,10 @@ package body Sem_Ch10 is
             end if;
          end if;
       end Optional_Subunit;
+
+      --  Local variables
+
+      Stub_Id : Entity_Id;
 
    --  Start of processing for Analyze_Proper_Body
 
@@ -1818,6 +1818,7 @@ package body Sem_Ch10 is
 
                declare
                   Comp_Unit : constant Node_Id := Cunit (Unum);
+                  Prop_Body : Node_Id;
 
                begin
                   --  Check for child unit instead of subunit
@@ -1830,6 +1831,8 @@ package body Sem_Ch10 is
                   --  OK, we have a subunit
 
                   else
+                     Prop_Body := Proper_Body (Unit (Comp_Unit));
+
                      --  Set corresponding stub (even if errors)
 
                      Set_Corresponding_Stub (Unit (Comp_Unit), N);
@@ -1845,11 +1848,17 @@ package body Sem_Ch10 is
                         SCO_Record (Unum);
                      end if;
 
-                     --  Propagate any aspect specifications associated with
-                     --  with the stub to the proper body.
+                     --  Propagate all aspect specifications associated with
+                     --  the stub to the proper body.
 
-                     Move_Or_Merge_Aspects
-                       (From => N, To => Proper_Body (Unit (Comp_Unit)));
+                     Move_Or_Merge_Aspects (From => N, To => Prop_Body);
+
+                     --  Move all source pragmas that follow the body stub and
+                     --  apply to it to the declarations of the proper body.
+
+                     if Nkind (N) = N_Subprogram_Body_Stub then
+                        Relocate_Pragmas_To_Body (N, Target_Body => Prop_Body);
+                     end if;
 
                      --  Analyze the unit if semantics active
 
@@ -1869,6 +1878,24 @@ package body Sem_Ch10 is
                      Version_Update (Cunit (Main_Unit), Comp_Unit);
                   end if;
                end;
+
+            --  The unit which should contain the proper subprogram body does
+            --  not exist. Analyze the aspect specifications of the stub (if
+            --  any).
+
+            elsif Nkind (N) = N_Subprogram_Body_Stub
+              and then Has_Aspects (N)
+            then
+               Stub_Id := Defining_Unit_Name (Specification (N));
+
+               --  Restore the proper visibility of the stub and its formals
+
+               Push_Scope (Stub_Id);
+               Install_Formals (Stub_Id);
+
+               Analyze_Aspect_Specifications (N, Stub_Id);
+
+               Pop_Scope;
             end if;
          end if;
 
@@ -1899,13 +1926,13 @@ package body Sem_Ch10 is
          Nam := Full_View (Nam);
       end if;
 
-      if No (Nam)
-        or else not Is_Protected_Type (Etype (Nam))
-      then
+      if No (Nam) or else not Is_Protected_Type (Etype (Nam)) then
          Error_Msg_N ("missing specification for Protected body", N);
+
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Set_Has_Completion (Etype (Nam));
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
          Analyze_Proper_Body (N, Etype (Nam));
       end if;
@@ -1936,9 +1963,7 @@ package body Sem_Ch10 is
                                N_Subprogram_Body)
       then
          Decl := First (Declarations (Parent (N)));
-         while Present (Decl)
-           and then Decl /= N
-         loop
+         while Present (Decl) and then Decl /= N loop
             if Nkind (Decl) = N_Subprogram_Body_Stub
               and then (Chars (Defining_Unit_Name (Specification (Decl))) =
                         Chars (Defining_Unit_Name (Specification (N))))
@@ -2150,9 +2175,7 @@ package body Sem_Ch10 is
 
          E := First_Entity (Current_Scope);
          while Present (E) loop
-            if not Is_Child_Unit (E)
-              or else Is_Visible_Lib_Unit (E)
-            then
+            if not Is_Child_Unit (E) or else Is_Visible_Lib_Unit (E) then
                Set_Is_Immediately_Visible (E);
             end if;
 
@@ -2278,8 +2301,8 @@ package body Sem_Ch10 is
          if Is_Package_Or_Generic_Package (Par_Unit) then
             if not Is_Immediately_Visible (Par_Unit)
               or else (Present (First_Entity (Par_Unit))
-                        and then not Is_Immediately_Visible
-                                      (First_Entity (Par_Unit)))
+                        and then not
+                          Is_Immediately_Visible (First_Entity (Par_Unit)))
             then
                Set_Is_Immediately_Visible   (Par_Unit);
                Install_Visible_Declarations (Par_Unit);
@@ -2351,6 +2374,7 @@ package body Sem_Ch10 is
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Set_Corresponding_Spec_Of_Stub (N, Nam);
 
          --  Check for duplicate stub, if so give message and terminate
 
@@ -2888,7 +2912,7 @@ package body Sem_Ch10 is
                  or else Private_Present (Item)
                  or else Nkind_In (Lib_Unit, N_Package_Body, N_Subunit)
                  or else (Nkind (Lib_Unit) = N_Subprogram_Body
-                            and then not Acts_As_Spec (Parent (Lib_Unit)))
+                           and then not Acts_As_Spec (Parent (Lib_Unit)))
                then
                   null;
 
@@ -3429,7 +3453,7 @@ package body Sem_Ch10 is
 
       if Nkind (Lib_Unit) = N_Package_Body
         or else (Nkind (Lib_Unit) = N_Subprogram_Body
-                   and then not Acts_As_Spec (N))
+                  and then not Acts_As_Spec (N))
       then
          Install_Context (Library_Unit (N));
 
@@ -3601,9 +3625,7 @@ package body Sem_Ch10 is
                      --  Check all the enclosing scopes.
 
                      E2 := E;
-                     while E2 /= Standard_Standard
-                       and then E2 /= WEnt
-                     loop
+                     while E2 /= Standard_Standard and then E2 /= WEnt loop
                         E2 := Scope (E2);
                      end loop;
 
@@ -3821,9 +3843,7 @@ package body Sem_Ch10 is
 
             Check_Private_Limited_Withed_Unit (Item);
 
-            if not Implicit_With (Item)
-              and then Is_Child_Spec (Unit (N))
-            then
+            if not Implicit_With (Item) and then Is_Child_Spec (Unit (N)) then
                Check_Renamings (Parent_Spec (Unit (N)), Item);
             end if;
 
@@ -3963,7 +3983,7 @@ package body Sem_Ch10 is
            or else Nkind (Original_Node (Lib_Unit)) in N_Generic_Instantiation
            or else
              (Nkind (Lib_Unit) = N_Package_Declaration
-                and then Present (Generic_Parent (Specification (Lib_Unit))))
+               and then Present (Generic_Parent (Specification (Lib_Unit))))
          then
             null;
          else
@@ -4026,9 +4046,7 @@ package body Sem_Ch10 is
          Set_Use (Generic_Formal_Declarations (Parent (P_Spec)));
       end if;
 
-      if Is_Private
-        or else Private_Present (Parent (Lib_Unit))
-      then
+      if Is_Private or else Private_Present (Parent (Lib_Unit)) then
          Install_Private_Declarations (P_Name);
          Install_Private_With_Clauses (P_Name);
          Set_Use (Private_Declarations (P_Spec));
@@ -4957,7 +4975,18 @@ package body Sem_Ch10 is
                   --  Replace E in the homonyms list, so that the limited view
                   --  becomes available.
 
-                  if E = Non_Limited_View (Lim_Typ) then
+                  --  If the non-limited view is a record with an anonymous
+                  --  self-referential component, the analysis of the record
+                  --  declaration creates an incomplete type with the same name
+                  --  in order to define an internal access type. The visible
+                  --  entity is now the incomplete type, and that is the one to
+                  --  replace in the visibility structure.
+
+                  if E = Non_Limited_View (Lim_Typ)
+                    or else
+                      (Ekind (E) = E_Incomplete_Type
+                        and then Full_View (E) = Non_Limited_View (Lim_Typ))
+                  then
                      Set_Homonym (Lim_Typ, Homonym (Prev));
                      Set_Current_Entity (Lim_Typ);
 
@@ -4969,9 +4998,7 @@ package body Sem_Ch10 is
                         --  limited_with_clause.
 
                         exit when No (E);
-
                         exit when E = Non_Limited_View (Lim_Typ);
-
                         Prev := Homonym (Prev);
                      end loop;
 
@@ -5093,7 +5120,7 @@ package body Sem_Ch10 is
 
       if Sloc (Uname) /= No_Location
         and then (not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
-                    or else Current_Sem_Unit = Main_Unit)
+                   or else Current_Sem_Unit = Main_Unit)
       then
          Check_Restricted_Unit
            (Unit_Name (Get_Source_Unit (Uname)), With_Clause);
@@ -5189,9 +5216,7 @@ package body Sem_Ch10 is
 
          begin
             U2 := Homonym (Uname);
-            while Present (U2)
-              and then U2 /= Standard_Standard
-           loop
+            while Present (U2) and then U2 /= Standard_Standard loop
                P2 := Scope (U2);
                Decl2  := Unit_Declaration_Node (P2);
 
@@ -5801,9 +5826,7 @@ package body Sem_Ch10 is
          Ent : Entity_Id;
 
       begin
-         if Is_Subprogram (E)
-           and then Has_Pragma_Inline (E)
-         then
+         if Is_Subprogram (E) and then Has_Pragma_Inline (E) then
             return True;
 
          elsif Ekind_In (E, E_Generic_Function, E_Generic_Procedure) then
@@ -6190,9 +6213,8 @@ package body Sem_Ch10 is
    begin
       Item := First (Context_Items (Comp_Unit));
       while Present (Item) loop
-         if Nkind (Item) = N_With_Clause
-           and then Private_Present (Item)
-         then
+         if Nkind (Item) = N_With_Clause and then Private_Present (Item) then
+
             --  If private_with_clause is redundant, remove it from context,
             --  as a small optimization to subsequent handling of private_with
             --  clauses in other nested packages.
@@ -6275,9 +6297,7 @@ package body Sem_Ch10 is
          Set_Name_Entity_Id (Chars (E), Homonym (E));
 
       else
-         while Present (Prev)
-           and then Homonym (Prev) /= E
-         loop
+         while Present (Prev) and then Homonym (Prev) /= E loop
             Prev := Homonym (Prev);
          end loop;
 

@@ -53,6 +53,7 @@ struct gomp_thread_start_data
   struct gomp_team_state ts;
   struct gomp_task *task;
   struct gomp_thread_pool *thread_pool;
+  unsigned int place;
   bool nested;
 };
 
@@ -84,6 +85,7 @@ gomp_thread_start (void *xdata)
   thr->thread_pool = data->thread_pool;
   thr->ts = data->ts;
   thr->task = data->task;
+  thr->place = data->place;
 
   thr->ts.team->ordered_release[thr->ts.team_id] = &thr->release;
 
@@ -98,7 +100,7 @@ gomp_thread_start (void *xdata)
       gomp_barrier_wait (&team->barrier);
 
       local_fn (local_data);
-      gomp_team_barrier_wait (&team->barrier);
+      gomp_team_barrier_wait_final (&team->barrier);
       gomp_finish_task (task);
       gomp_barrier_wait_last (&team->barrier);
     }
@@ -113,7 +115,7 @@ gomp_thread_start (void *xdata)
 	  struct gomp_task *task = thr->task;
 
 	  local_fn (local_data);
-	  gomp_team_barrier_wait (&team->barrier);
+	  gomp_team_barrier_wait_final (&team->barrier);
 	  gomp_finish_task (task);
 
 	  gomp_barrier_wait (&pool->threads_dock);
@@ -126,6 +128,8 @@ gomp_thread_start (void *xdata)
     }
 
   gomp_sem_destroy (&thr->release);
+  thr->thread_pool = NULL;
+  thr->task = NULL;
   return NULL;
 }
 
@@ -149,6 +153,7 @@ gomp_new_team (unsigned nthreads)
 #else
   gomp_mutex_init (&team->work_share_list_free_lock);
 #endif
+  team->work_shares_to_free = &team->work_shares[0];
   gomp_init_work_share (&team->work_shares[0], false, nthreads);
   team->work_shares[0].next_alloc = NULL;
   team->work_share_list_free = NULL;
@@ -167,7 +172,10 @@ gomp_new_team (unsigned nthreads)
   gomp_mutex_init (&team->task_lock);
   team->task_queue = NULL;
   team->task_count = 0;
+  team->task_queued_count = 0;
   team->task_running_count = 0;
+  team->work_share_cancelled = 0;
+  team->team_cancelled = 0;
 
   return team;
 }
@@ -199,16 +207,19 @@ static struct gomp_thread_pool *gomp_new_thread_pool (void)
 static void
 gomp_free_pool_helper (void *thread_pool)
 {
+  struct gomp_thread *thr = gomp_thread ();
   struct gomp_thread_pool *pool
     = (struct gomp_thread_pool *) thread_pool;
   gomp_barrier_wait_last (&pool->threads_dock);
-  gomp_sem_destroy (&gomp_thread ()->release);
+  gomp_sem_destroy (&thr->release);
+  thr->thread_pool = NULL;
+  thr->task = NULL;
   pthread_exit (NULL);
 }
 
 /* Free a thread pool and release its threads. */
 
-static void
+void
 gomp_free_thread (void *arg __attribute__((unused)))
 {
   struct gomp_thread *thr = gomp_thread ();
@@ -236,9 +247,9 @@ gomp_free_thread (void *arg __attribute__((unused)))
 	  __sync_fetch_and_add (&gomp_managed_threads,
 				1L - pool->threads_used);
 #else
-	  gomp_mutex_lock (&gomp_remaining_threads_lock);
+	  gomp_mutex_lock (&gomp_managed_threads_lock);
 	  gomp_managed_threads -= pool->threads_used - 1L;
-	  gomp_mutex_unlock (&gomp_remaining_threads_lock);
+	  gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
 	}
       free (pool->threads);
@@ -259,7 +270,7 @@ gomp_free_thread (void *arg __attribute__((unused)))
 
 void
 gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
-		 struct gomp_team *team)
+		 unsigned flags, struct gomp_team *team)
 {
   struct gomp_thread_start_data *start_data;
   struct gomp_thread *thr, *nthr;
@@ -270,17 +281,24 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   unsigned i, n, old_threads_used = 0;
   pthread_attr_t thread_attr, *attr;
   unsigned long nthreads_var;
+  char bind, bind_var;
+  unsigned int s = 0, rest = 0, p = 0, k = 0;
+  unsigned int affinity_count = 0;
+  struct gomp_thread **affinity_thr = NULL;
 
   thr = gomp_thread ();
   nested = thr->ts.team != NULL;
   if (__builtin_expect (thr->thread_pool == NULL, 0))
     {
       thr->thread_pool = gomp_new_thread_pool ();
+      thr->thread_pool->threads_busy = nthreads;
       pthread_setspecific (gomp_thread_destructor, thr);
     }
   pool = thr->thread_pool;
   task = thr->task;
   icv = task ? &task->icv : &gomp_global_icv;
+  if (__builtin_expect (gomp_places_list != NULL, 0) && thr->place == 0)
+    gomp_init_affinity ();
 
   /* Always save the previous state, even if this isn't a nested team.
      In particular, we should save any work share state from an outer
@@ -303,13 +321,89 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   if (__builtin_expect (gomp_nthreads_var_list != NULL, 0)
       && thr->ts.level < gomp_nthreads_var_list_len)
     nthreads_var = gomp_nthreads_var_list[thr->ts.level];
+  bind_var = icv->bind_var;
+  if (bind_var != omp_proc_bind_false && (flags & 7) != omp_proc_bind_false)
+    bind_var = flags & 7;
+  bind = bind_var;
+  if (__builtin_expect (gomp_bind_var_list != NULL, 0)
+      && thr->ts.level < gomp_bind_var_list_len)
+    bind_var = gomp_bind_var_list[thr->ts.level];
   gomp_init_task (thr->task, task, icv);
   team->implicit_task[0].icv.nthreads_var = nthreads_var;
+  team->implicit_task[0].icv.bind_var = bind_var;
 
   if (nthreads == 1)
     return;
 
   i = 1;
+
+  if (__builtin_expect (gomp_places_list != NULL, 0))
+    {
+      /* Depending on chosen proc_bind model, set subpartition
+	 for the master thread and initialize helper variables
+	 P and optionally S, K and/or REST used by later place
+	 computation for each additional thread.  */
+      p = thr->place - 1;
+      switch (bind)
+	{
+	case omp_proc_bind_true:
+	case omp_proc_bind_close:
+	  if (nthreads > thr->ts.place_partition_len)
+	    {
+	      /* T > P.  S threads will be placed in each place,
+		 and the final REM threads placed one by one
+		 into the already occupied places.  */
+	      s = nthreads / thr->ts.place_partition_len;
+	      rest = nthreads % thr->ts.place_partition_len;
+	    }
+	  else
+	    s = 1;
+	  k = 1;
+	  break;
+	case omp_proc_bind_master:
+	  /* Each thread will be bound to master's place.  */
+	  break;
+	case omp_proc_bind_spread:
+	  if (nthreads <= thr->ts.place_partition_len)
+	    {
+	      /* T <= P.  Each subpartition will have in between s
+		 and s+1 places (subpartitions starting at or
+		 after rest will have s places, earlier s+1 places),
+		 each thread will be bound to the first place in
+		 its subpartition (except for the master thread
+		 that can be bound to another place in its
+		 subpartition).  */
+	      s = thr->ts.place_partition_len / nthreads;
+	      rest = thr->ts.place_partition_len % nthreads;
+	      rest = (s + 1) * rest + thr->ts.place_partition_off;
+	      if (p < rest)
+		{
+		  p -= (p - thr->ts.place_partition_off) % (s + 1);
+		  thr->ts.place_partition_len = s + 1;
+		}
+	      else
+		{
+		  p -= (p - rest) % s;
+		  thr->ts.place_partition_len = s;
+		}
+	      thr->ts.place_partition_off = p;
+	    }
+	  else
+	    {
+	      /* T > P.  Each subpartition will have just a single
+		 place and we'll place between s and s+1
+		 threads into each subpartition.  */
+	      s = nthreads / thr->ts.place_partition_len;
+	      rest = nthreads % thr->ts.place_partition_len;
+	      thr->ts.place_partition_off = p;
+	      thr->ts.place_partition_len = 1;
+	      k = 1;
+	    }
+	  break;
+	}
+    }
+  else
+    bind = omp_proc_bind_false;
 
   /* We only allow the reuse of idle threads for non-nested PARALLEL
      regions.  This appears to be implied by the semantics of
@@ -341,31 +435,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	 team will exit.  */
       pool->threads_used = nthreads;
 
-      /* Release existing idle threads.  */
-      for (; i < n; ++i)
-	{
-	  nthr = pool->threads[i];
-	  nthr->ts.team = team;
-	  nthr->ts.work_share = &team->work_shares[0];
-	  nthr->ts.last_work_share = NULL;
-	  nthr->ts.team_id = i;
-	  nthr->ts.level = team->prev_ts.level + 1;
-	  nthr->ts.active_level = thr->ts.active_level;
-#ifdef HAVE_SYNC_BUILTINS
-	  nthr->ts.single_count = 0;
-#endif
-	  nthr->ts.static_trip = 0;
-	  nthr->task = &team->implicit_task[i];
-	  gomp_init_task (nthr->task, task, icv);
-	  team->implicit_task[i].icv.nthreads_var = nthreads_var;
-	  nthr->fn = fn;
-	  nthr->data = data;
-	  team->ordered_release[i] = &nthr->release;
-	}
-
-      if (i == nthreads)
-	goto do_release;
-
       /* If necessary, expand the size of the gomp_threads array.  It is
 	 expected that changes in the number of threads are rare, thus we
 	 make no effort to expand gomp_threads_size geometrically.  */
@@ -377,11 +446,233 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 			    pool->threads_size
 			    * sizeof (struct gomp_thread_data *));
 	}
+
+      /* Release existing idle threads.  */
+      for (; i < n; ++i)
+	{
+	  unsigned int place_partition_off = thr->ts.place_partition_off;
+	  unsigned int place_partition_len = thr->ts.place_partition_len;
+	  unsigned int place = 0;
+	  if (__builtin_expect (gomp_places_list != NULL, 0))
+	    {
+	      switch (bind)
+		{
+		case omp_proc_bind_true:
+		case omp_proc_bind_close:
+		  if (k == s)
+		    {
+		      ++p;
+		      if (p == (team->prev_ts.place_partition_off
+				+ team->prev_ts.place_partition_len))
+			p = team->prev_ts.place_partition_off;
+		      k = 1;
+		      if (i == nthreads - rest)
+			s = 1;
+		    }
+		  else
+		    ++k;
+		  break;
+		case omp_proc_bind_master:
+		  break;
+		case omp_proc_bind_spread:
+		  if (k == 0)
+		    {
+		      /* T <= P.  */
+		      if (p < rest)
+			p += s + 1;
+		      else
+			p += s;
+		      if (p == (team->prev_ts.place_partition_off
+				+ team->prev_ts.place_partition_len))
+			p = team->prev_ts.place_partition_off;
+		      place_partition_off = p;
+		      if (p < rest)
+			place_partition_len = s + 1;
+		      else
+			place_partition_len = s;
+		    }
+		  else
+		    {
+		      /* T > P.  */
+		      if (k == s)
+			{
+			  ++p;
+			  if (p == (team->prev_ts.place_partition_off
+				    + team->prev_ts.place_partition_len))
+			    p = team->prev_ts.place_partition_off;
+			  k = 1;
+			  if (i == nthreads - rest)
+			    s = 1;
+			}
+		      else
+			++k;
+		      place_partition_off = p;
+		      place_partition_len = 1;
+		    }
+		  break;
+		}
+	      if (affinity_thr != NULL
+		  || (bind != omp_proc_bind_true
+		      && pool->threads[i]->place != p + 1)
+		  || pool->threads[i]->place <= place_partition_off
+		  || pool->threads[i]->place > (place_partition_off
+						+ place_partition_len))
+		{
+		  unsigned int l;
+		  if (affinity_thr == NULL)
+		    {
+		      unsigned int j;
+
+		      if (team->prev_ts.place_partition_len > 64)
+			affinity_thr
+			  = gomp_malloc (team->prev_ts.place_partition_len
+					 * sizeof (struct gomp_thread *));
+		      else
+			affinity_thr
+			  = gomp_alloca (team->prev_ts.place_partition_len
+					 * sizeof (struct gomp_thread *));
+		      memset (affinity_thr, '\0',
+			      team->prev_ts.place_partition_len
+			      * sizeof (struct gomp_thread *));
+		      for (j = i; j < old_threads_used; j++)
+			{
+			  if (pool->threads[j]->place
+			      > team->prev_ts.place_partition_off
+			      && (pool->threads[j]->place
+				  <= (team->prev_ts.place_partition_off
+				      + team->prev_ts.place_partition_len)))
+			    {
+			      l = pool->threads[j]->place - 1
+				  - team->prev_ts.place_partition_off;
+			      pool->threads[j]->data = affinity_thr[l];
+			      affinity_thr[l] = pool->threads[j];
+			    }
+			  pool->threads[j] = NULL;
+			}
+		      if (nthreads > old_threads_used)
+			memset (&pool->threads[old_threads_used],
+				'\0', ((nthreads - old_threads_used)
+				       * sizeof (struct gomp_thread *)));
+		      n = nthreads;
+		      affinity_count = old_threads_used - i;
+		    }
+		  if (affinity_count == 0)
+		    break;
+		  l = p;
+		  if (affinity_thr[l - team->prev_ts.place_partition_off]
+		      == NULL)
+		    {
+		      if (bind != omp_proc_bind_true)
+			continue;
+		      for (l = place_partition_off;
+			   l < place_partition_off + place_partition_len;
+			   l++)
+			if (affinity_thr[l - team->prev_ts.place_partition_off]
+			    != NULL)
+			  break;
+		      if (l == place_partition_off + place_partition_len)
+			continue;
+		    }
+		  nthr = affinity_thr[l - team->prev_ts.place_partition_off];
+		  affinity_thr[l - team->prev_ts.place_partition_off]
+		    = (struct gomp_thread *) nthr->data;
+		  affinity_count--;
+		  pool->threads[i] = nthr;
+		}
+	      else
+		nthr = pool->threads[i];
+	      place = p + 1;
+	    }
+	  else
+	    nthr = pool->threads[i];
+	  nthr->ts.team = team;
+	  nthr->ts.work_share = &team->work_shares[0];
+	  nthr->ts.last_work_share = NULL;
+	  nthr->ts.team_id = i;
+	  nthr->ts.level = team->prev_ts.level + 1;
+	  nthr->ts.active_level = thr->ts.active_level;
+	  nthr->ts.place_partition_off = place_partition_off;
+	  nthr->ts.place_partition_len = place_partition_len;
+#ifdef HAVE_SYNC_BUILTINS
+	  nthr->ts.single_count = 0;
+#endif
+	  nthr->ts.static_trip = 0;
+	  nthr->task = &team->implicit_task[i];
+	  nthr->place = place;
+	  gomp_init_task (nthr->task, task, icv);
+	  team->implicit_task[i].icv.nthreads_var = nthreads_var;
+	  team->implicit_task[i].icv.bind_var = bind_var;
+	  nthr->fn = fn;
+	  nthr->data = data;
+	  team->ordered_release[i] = &nthr->release;
+	}
+
+      if (__builtin_expect (affinity_thr != NULL, 0))
+	{
+	  /* If AFFINITY_THR is non-NULL just because we had to
+	     permute some threads in the pool, but we've managed
+	     to find exactly as many old threads as we'd find
+	     without affinity, we don't need to handle this
+	     specially anymore.  */
+	  if (nthreads <= old_threads_used
+	      ? (affinity_count == old_threads_used - nthreads)
+	      : (i == old_threads_used))
+	    {
+	      if (team->prev_ts.place_partition_len > 64)
+		free (affinity_thr);
+	      affinity_thr = NULL;
+	      affinity_count = 0;
+	    }
+	  else
+	    {
+	      i = 1;
+	      /* We are going to compute the places/subpartitions
+		 again from the beginning.  So, we need to reinitialize
+		 vars modified by the switch (bind) above inside
+		 of the loop, to the state they had after the initial
+		 switch (bind).  */
+	      switch (bind)
+		{
+		case omp_proc_bind_true:
+		case omp_proc_bind_close:
+		  if (nthreads > thr->ts.place_partition_len)
+		    /* T > P.  S has been changed, so needs
+		       to be recomputed.  */
+		    s = nthreads / thr->ts.place_partition_len;
+		  k = 1;
+		  p = thr->place - 1;
+		  break;
+		case omp_proc_bind_master:
+		  /* No vars have been changed.  */
+		  break;
+		case omp_proc_bind_spread:
+		  p = thr->ts.place_partition_off;
+		  if (k != 0)
+		    {
+		      /* T > P.  */
+		      s = nthreads / team->prev_ts.place_partition_len;
+		      k = 1;
+		    }
+		  break;
+		}
+
+	      /* Increase the barrier threshold to make sure all new
+		 threads and all the threads we're going to let die
+		 arrive before the team is released.  */
+	      if (affinity_count)
+		gomp_barrier_reinit (&pool->threads_dock,
+				     nthreads + affinity_count);
+	    }
+	}
+
+      if (i == nthreads)
+	goto do_release;
+
     }
 
-  if (__builtin_expect (nthreads > old_threads_used, 0))
+  if (__builtin_expect (nthreads + affinity_count > old_threads_used, 0))
     {
-      long diff = (long) nthreads - (long) old_threads_used;
+      long diff = (long) (nthreads + affinity_count) - (long) old_threads_used;
 
       if (old_threads_used == 0)
 	--diff;
@@ -389,14 +680,14 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 #ifdef HAVE_SYNC_BUILTINS
       __sync_fetch_and_add (&gomp_managed_threads, diff);
 #else
-      gomp_mutex_lock (&gomp_remaining_threads_lock);
+      gomp_mutex_lock (&gomp_managed_threads_lock);
       gomp_managed_threads += diff;
-      gomp_mutex_unlock (&gomp_remaining_threads_lock);
+      gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
     }
 
   attr = &gomp_thread_attr;
-  if (__builtin_expect (gomp_cpu_affinity != NULL, 0))
+  if (__builtin_expect (gomp_places_list != NULL, 0))
     {
       size_t stacksize;
       pthread_attr_init (&thread_attr);
@@ -410,10 +701,77 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 			    * (nthreads-i));
 
   /* Launch new threads.  */
-  for (; i < nthreads; ++i, ++start_data)
+  for (; i < nthreads; ++i)
     {
       pthread_t pt;
       int err;
+
+      start_data->ts.place_partition_off = thr->ts.place_partition_off;
+      start_data->ts.place_partition_len = thr->ts.place_partition_len;
+      start_data->place = 0;
+      if (__builtin_expect (gomp_places_list != NULL, 0))
+	{
+	  switch (bind)
+	    {
+	    case omp_proc_bind_true:
+	    case omp_proc_bind_close:
+	      if (k == s)
+		{
+		  ++p;
+		  if (p == (team->prev_ts.place_partition_off
+			    + team->prev_ts.place_partition_len))
+		    p = team->prev_ts.place_partition_off;
+		  k = 1;
+		  if (i == nthreads - rest)
+		    s = 1;
+		}
+	      else
+		++k;
+	      break;
+	    case omp_proc_bind_master:
+	      break;
+	    case omp_proc_bind_spread:
+	      if (k == 0)
+		{
+		  /* T <= P.  */
+		  if (p < rest)
+		    p += s + 1;
+		  else
+		    p += s;
+		  if (p == (team->prev_ts.place_partition_off
+			    + team->prev_ts.place_partition_len))
+		    p = team->prev_ts.place_partition_off;
+		  start_data->ts.place_partition_off = p;
+		  if (p < rest)
+		    start_data->ts.place_partition_len = s + 1;
+		  else
+		    start_data->ts.place_partition_len = s;
+		}
+	      else
+		{
+		  /* T > P.  */
+		  if (k == s)
+		    {
+		      ++p;
+		      if (p == (team->prev_ts.place_partition_off
+				+ team->prev_ts.place_partition_len))
+			p = team->prev_ts.place_partition_off;
+		      k = 1;
+		      if (i == nthreads - rest)
+			s = 1;
+		    }
+		  else
+		    ++k;
+		  start_data->ts.place_partition_off = p;
+		  start_data->ts.place_partition_len = 1;
+		}
+	      break;
+	    }
+	  start_data->place = p + 1;
+	  if (affinity_thr != NULL && pool->threads[i] != NULL)
+	    continue;
+	  gomp_init_thread_affinity (attr, p);
+	}
 
       start_data->fn = fn;
       start_data->fn_data = data;
@@ -430,18 +788,16 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->task = &team->implicit_task[i];
       gomp_init_task (start_data->task, task, icv);
       team->implicit_task[i].icv.nthreads_var = nthreads_var;
+      team->implicit_task[i].icv.bind_var = bind_var;
       start_data->thread_pool = pool;
       start_data->nested = nested;
 
-      if (gomp_cpu_affinity != NULL)
-	gomp_init_thread_affinity (attr);
-
-      err = pthread_create (&pt, attr, gomp_thread_start, start_data);
+      err = pthread_create (&pt, attr, gomp_thread_start, start_data++);
       if (err != 0)
 	gomp_fatal ("Thread creation failed: %s", strerror (err));
     }
 
-  if (__builtin_expect (gomp_cpu_affinity != NULL, 0))
+  if (__builtin_expect (gomp_places_list != NULL, 0))
     pthread_attr_destroy (&thread_attr);
 
  do_release:
@@ -450,21 +806,32 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   /* Decrease the barrier threshold to match the number of threads
      that should arrive back at the end of this team.  The extra
      threads should be exiting.  Note that we arrange for this test
-     to never be true for nested teams.  */
-  if (__builtin_expect (nthreads < old_threads_used, 0))
+     to never be true for nested teams.  If AFFINITY_COUNT is non-zero,
+     the barrier as well as gomp_managed_threads was temporarily
+     set to NTHREADS + AFFINITY_COUNT.  For NTHREADS < OLD_THREADS_COUNT,
+     AFFINITY_COUNT if non-zero will be always at least
+     OLD_THREADS_COUNT - NTHREADS.  */
+  if (__builtin_expect (nthreads < old_threads_used, 0)
+      || __builtin_expect (affinity_count, 0))
     {
       long diff = (long) nthreads - (long) old_threads_used;
+
+      if (affinity_count)
+	diff = -affinity_count;
 
       gomp_barrier_reinit (&pool->threads_dock, nthreads);
 
 #ifdef HAVE_SYNC_BUILTINS
       __sync_fetch_and_add (&gomp_managed_threads, diff);
 #else
-      gomp_mutex_lock (&gomp_remaining_threads_lock);
+      gomp_mutex_lock (&gomp_managed_threads_lock);
       gomp_managed_threads += diff;
-      gomp_mutex_unlock (&gomp_remaining_threads_lock);
+      gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
     }
+  if (__builtin_expect (affinity_thr != NULL, 0)
+      && team->prev_ts.place_partition_len > 64)
+    free (affinity_thr);
 }
 
 
@@ -477,9 +844,26 @@ gomp_team_end (void)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
 
-  /* This barrier handles all pending explicit threads.  */
-  gomp_team_barrier_wait (&team->barrier);
-  gomp_fini_work_share (thr->ts.work_share);
+  /* This barrier handles all pending explicit threads.
+     As #pragma omp cancel parallel might get awaited count in
+     team->barrier in a inconsistent state, we need to use a different
+     counter here.  */
+  gomp_team_barrier_wait_final (&team->barrier);
+  if (__builtin_expect (team->team_cancelled, 0))
+    {
+      struct gomp_work_share *ws = team->work_shares_to_free;
+      do
+	{
+	  struct gomp_work_share *next_ws = gomp_ptrlock_get (&ws->next_ws);
+	  if (next_ws == NULL)
+	    gomp_ptrlock_set (&ws->next_ws, ws);
+	  gomp_fini_work_share (ws);
+	  ws = next_ws;
+	}
+      while (ws != NULL);
+    }
+  else
+    gomp_fini_work_share (thr->ts.work_share);
 
   gomp_end_task ();
   thr->ts = team->prev_ts;
@@ -489,9 +873,9 @@ gomp_team_end (void)
 #ifdef HAVE_SYNC_BUILTINS
       __sync_fetch_and_add (&gomp_managed_threads, 1L - team->nthreads);
 #else
-      gomp_mutex_lock (&gomp_remaining_threads_lock);
+      gomp_mutex_lock (&gomp_managed_threads_lock);
       gomp_managed_threads -= team->nthreads - 1L;
-      gomp_mutex_unlock (&gomp_remaining_threads_lock);
+      gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
       /* This barrier has gomp_barrier_wait_last counterparts
 	 and ensures the team can be safely destroyed.  */
@@ -532,8 +916,6 @@ gomp_team_end (void)
 static void __attribute__((constructor))
 initialize_team (void)
 {
-  struct gomp_thread *thr;
-
 #ifndef HAVE_TLS
   static struct gomp_thread initial_thread_tls_data;
 
@@ -543,13 +925,6 @@ initialize_team (void)
 
   if (pthread_key_create (&gomp_thread_destructor, gomp_free_thread) != 0)
     gomp_fatal ("could not create thread pool destructor.");
-
-#ifdef HAVE_TLS
-  thr = &gomp_tls_data;
-#else
-  thr = &initial_thread_tls_data;
-#endif
-  gomp_sem_init (&thr->release, 0);
 }
 
 static void __attribute__((destructor))

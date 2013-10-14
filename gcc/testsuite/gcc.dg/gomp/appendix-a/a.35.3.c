@@ -12,7 +12,7 @@ wrong3 (int n)
     for (i = 0; i < n; i++)
       {
 /* incorrect nesting of regions */
-#pragma omp single	/* { dg-warning "may not be closely nested" } */
+#pragma omp single	/* { dg-error "may not be closely nested" } */
 	work (i, 0);
       }
   }

@@ -59,6 +59,8 @@
    UNSPEC_VSUMSWS
    UNSPEC_VPERM
    UNSPEC_VPERM_UNS
+   UNSPEC_VPERM_X
+   UNSPEC_VPERM_UNS_X
    UNSPEC_VRFIN
    UNSPEC_VCFUX
    UNSPEC_VCFSX
@@ -1279,21 +1281,91 @@
   "vrfiz %0,%1"
   [(set_attr "type" "vecfloat")])
 
-(define_insn "altivec_vperm_<mode>"
+(define_insn_and_split "altivec_vperm_<mode>"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
 		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM_X))]
+  "TARGET_ALTIVEC"
+  "#"
+  "!reload_in_progress && !reload_completed"
+  [(set (match_dup 0) (match_dup 4))]
+{
+  if (BYTES_BIG_ENDIAN)
+    operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                  gen_rtvec (3, operands[1],
+ 		                             operands[2], operands[3]),
+                                  UNSPEC_VPERM);
+  else
+    {
+      /* We want to subtract from 31, but we can't vspltisb 31 since
+         it's out of range.  -1 works as well because only the low-order
+         five bits of the permute control vector elements are used.  */
+      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+                                         gen_rtx_CONST_INT (QImode, -1));
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, splat);
+      rtx sel = gen_rtx_MINUS (V16QImode, tmp, operands[3]);
+      emit_move_insn (tmp, sel);
+      operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                    gen_rtvec (3, operands[2],
+		 		               operands[1], tmp),
+		                    UNSPEC_VPERM);
+    }
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vperm_<mode>_internal"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "+v")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
-(define_insn "altivec_vperm_<mode>_uns"
+(define_insn_and_split "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
 		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM_UNS_X))]
+  "TARGET_ALTIVEC"
+  "#"
+  "!reload_in_progress && !reload_completed"
+  [(set (match_dup 0) (match_dup 4))]
+{
+  if (BYTES_BIG_ENDIAN)
+    operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                  gen_rtvec (3, operands[1],
+				             operands[2], operands[3]),
+                                  UNSPEC_VPERM_UNS);
+  else
+    {
+      /* We want to subtract from 31, but we can't vspltisb 31 since
+         it's out of range.  -1 works as well because only the low-order
+         five bits of the permute control vector elements are used.  */
+      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+                                         gen_rtx_CONST_INT (QImode, -1));
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, splat);
+      rtx sel = gen_rtx_MINUS (V16QImode, tmp, operands[3]);
+      emit_move_insn (tmp, sel);
+      operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                    gen_rtvec (3, operands[2],
+				               operands[1], tmp),
+		                    UNSPEC_VPERM_UNS);
+    }
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vperm_<mode>_uns_internal"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "+v")]
 		   UNSPEC_VPERM_UNS))]
   "TARGET_ALTIVEC"
   "vperm %0,%1,%2,%3"
@@ -1306,7 +1378,12 @@
 		       (match_operand:V16QI 3 "register_operand" "")]
 		      UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
-  "")
+{
+  if (!BYTES_BIG_ENDIAN) {
+    altivec_expand_vec_perm_le (operands);
+    DONE;
+  }
+})
 
 (define_expand "vec_perm_constv16qi"
   [(match_operand:V16QI 0 "register_operand" "")

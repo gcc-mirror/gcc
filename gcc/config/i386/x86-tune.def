@@ -221,16 +221,14 @@ DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optim
    upper part undefined.  */
 DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
 
-/* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores. 
-   FIXME: Shall we enable it for generic?  */
+/* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores.   */
 DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
-	  m_AMD_MULTIPLE | m_CORE_ALL)
+	  m_AMD_MULTIPLE | m_CORE_ALL | m_GENERIC)
 
 /* X86_TUNE_SSE_LOAD0_BY_PXOR: Always use pxor to load0 as opposed to
-   xorps/xorpd and other variants.
-   FIXME: Shall we enable it buldozers and for generic?  */
+   xorps/xorpd and other variants.  */
 DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
-	  m_PPRO | m_P4_NOCONA | m_CORE_ALL)
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */

@@ -110,6 +110,26 @@ static bool gate_hoist_loads (void);
    This opportunity can sometimes occur as a result of other
    optimizations.
 
+
+   Another case caught by value replacement looks like this:
+
+     bb0:
+       t1 = a == CONST;
+       t2 = b > c;
+       t3 = t1 & t2;
+       if (t3 != 0) goto bb1; else goto bb2;
+     bb1:
+     bb2:
+       x = PHI (CONST, a)
+
+   Gets replaced with:
+     bb0:
+     bb2:
+       t1 = a == CONST;
+       t2 = b > c;
+       t3 = t1 & t2;
+       x = a;
+
    ABS Replacement
    ---------------
 
@@ -155,7 +175,7 @@ static bool gate_hoist_loads (void);
 
    Adjacent Load Hoisting
    ----------------------
-   
+
    This transformation replaces
 
      bb0:
@@ -286,7 +306,7 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
    phi optimizations.  Both share much of the infrastructure in how
    to match applicable basic block patterns.  DO_STORE_ELIM is true
    when we want to do conditional store replacement, false otherwise.
-   DO_HOIST_LOADS is true when we want to hoist adjacent loads out 
+   DO_HOIST_LOADS is true when we want to hoist adjacent loads out
    of diamond control flow patterns, false otherwise.  */
 static unsigned int
 tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
@@ -389,7 +409,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	  continue;
 	}
       else
-	continue;      
+	continue;
 
       e1 = EDGE_SUCC (bb1, 0);
 
@@ -437,7 +457,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 
 	  if (!candorest)
 	    continue;
-	  
+
 	  phi = single_non_singleton_phi_for_edges (phis, e1, e2);
 	  if (!phi)
 	    continue;
@@ -672,6 +692,93 @@ jump_function_from_stmt (tree *arg, gimple stmt)
   return false;
 }
 
+/* RHS is a source argument in a BIT_AND_EXPR which feeds a conditional
+   of the form SSA_NAME NE 0.
+
+   If RHS is fed by a simple EQ_EXPR comparison of two values, see if
+   the two input values of the EQ_EXPR match arg0 and arg1.
+
+   If so update *code and return TRUE.  Otherwise return FALSE.  */
+
+static bool
+rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
+				  enum tree_code *code, const_tree rhs)
+{
+  /* Obviously if RHS is not an SSA_NAME, we can't look at the defining
+     statement.  */
+  if (TREE_CODE (rhs) == SSA_NAME)
+    {
+      gimple def1 = SSA_NAME_DEF_STMT (rhs);
+
+      /* Verify the defining statement has an EQ_EXPR on the RHS.  */
+      if (is_gimple_assign (def1) && gimple_assign_rhs_code (def1) == EQ_EXPR)
+	{
+	  /* Finally verify the source operands of the EQ_EXPR are equal
+	     to arg0 and arg1.  */
+	  tree op0 = gimple_assign_rhs1 (def1);
+	  tree op1 = gimple_assign_rhs2 (def1);
+	  if ((operand_equal_for_phi_arg_p (arg0, op0)
+	       && operand_equal_for_phi_arg_p (arg1, op1))
+	      || (operand_equal_for_phi_arg_p (arg0, op1)
+               && operand_equal_for_phi_arg_p (arg1, op0)))
+	    {
+	      /* We will perform the optimization.  */
+	      *code = gimple_assign_rhs_code (def1);
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
+/* Return TRUE if arg0/arg1 are equal to the rhs/lhs or lhs/rhs of COND. 
+
+   Also return TRUE if arg0/arg1 are equal to the source arguments of a
+   an EQ comparison feeding a BIT_AND_EXPR which feeds COND. 
+
+   Return FALSE otherwise.  */
+
+static bool
+operand_equal_for_value_replacement (const_tree arg0, const_tree arg1,
+				     enum tree_code *code, gimple cond)
+{
+  gimple def;
+  tree lhs = gimple_cond_lhs (cond);
+  tree rhs = gimple_cond_rhs (cond);
+
+  if ((operand_equal_for_phi_arg_p (arg0, lhs)
+       && operand_equal_for_phi_arg_p (arg1, rhs))
+      || (operand_equal_for_phi_arg_p (arg1, lhs)
+	  && operand_equal_for_phi_arg_p (arg0, rhs)))
+    return true;
+
+  /* Now handle more complex case where we have an EQ comparison
+     which feeds a BIT_AND_EXPR which feeds COND.
+
+     First verify that COND is of the form SSA_NAME NE 0.  */
+  if (*code != NE_EXPR || !integer_zerop (rhs)
+      || TREE_CODE (lhs) != SSA_NAME)
+    return false;
+
+  /* Now ensure that SSA_NAME is set by a BIT_AND_EXPR.  */
+  def = SSA_NAME_DEF_STMT (lhs);
+  if (!is_gimple_assign (def) || gimple_assign_rhs_code (def) != BIT_AND_EXPR)
+    return false;
+
+  /* Now verify arg0/arg1 correspond to the source arguments of an 
+     EQ comparison feeding the BIT_AND_EXPR.  */
+     
+  tree tmp = gimple_assign_rhs1 (def);
+  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp))
+    return true;
+
+  tmp = gimple_assign_rhs2 (def);
+  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp))
+    return true;
+
+  return false;
+}
+
 /*  The function value_replacement does the main work of doing the value
     replacement.  Return non-zero if the replacement is done.  Otherwise return
     0.  If we remove the middle basic block, return 2.
@@ -741,10 +848,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
      We now need to verify that the two arguments in the PHI node match
      the two arguments to the equality comparison.  */
 
-  if ((operand_equal_for_phi_arg_p (arg0, gimple_cond_lhs (cond))
-       && operand_equal_for_phi_arg_p (arg1, gimple_cond_rhs (cond)))
-      || (operand_equal_for_phi_arg_p (arg1, gimple_cond_lhs (cond))
-	  && operand_equal_for_phi_arg_p (arg0, gimple_cond_rhs (cond))))
+  if (operand_equal_for_value_replacement (arg0, arg1, &code, cond))
     {
       edge e;
       tree arg;
@@ -1746,7 +1850,7 @@ local_mem_dependence (gimple stmt, basic_block bb)
 
 /* Given a "diamond" control-flow pattern where BB0 tests a condition,
    BB1 and BB2 are "then" and "else" blocks dependent on this test,
-   and BB3 rejoins control flow following BB1 and BB2, look for 
+   and BB3 rejoins control flow following BB1 and BB2, look for
    opportunities to hoist loads as follows.  If BB3 contains a PHI of
    two loads, one each occurring in BB1 and BB2, and the loads are
    provably of adjacent fields in the same structure, then move both
@@ -1796,7 +1900,7 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 
       arg1 = gimple_phi_arg_def (phi_stmt, 0);
       arg2 = gimple_phi_arg_def (phi_stmt, 1);
-      
+
       if (TREE_CODE (arg1) != SSA_NAME
 	  || TREE_CODE (arg2) != SSA_NAME
 	  || SSA_NAME_IS_DEFAULT_DEF (arg1)

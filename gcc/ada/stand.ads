@@ -451,12 +451,14 @@ package Stand is
    Standard_Integer_16 : Entity_Id;
    Standard_Integer_32 : Entity_Id;
    Standard_Integer_64 : Entity_Id;
-   --  These are signed integer types with the indicated sizes, They are used
-   --  for the underlying implementation types for fixed-point and enumeration
-   --  types.
+   --  These are signed integer types with the indicated sizes. Used for the
+   --  underlying implementation types for fixed-point and enumeration types.
 
    Standard_Unsigned : Entity_Id;
    --  An unsigned type of the same size as Standard_Integer
+
+   Standard_Unsigned_64 : Entity_Id;
+   --  An unsigned type, mod 2 ** 64, size of 64 bits.
 
    Abort_Signal : Entity_Id;
    --  Entity for abort signal exception

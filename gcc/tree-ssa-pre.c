@@ -1758,7 +1758,14 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
   phitrans = phi_translate_1 (expr, set1, set2, pred, phiblock);
 
   if (slot)
-    slot->v = phitrans;
+    {
+      if (phitrans)
+	slot->v = phitrans;
+      else
+	/* Remove failed translations again, they cause insert
+	   iteration to not pick up new opportunities reliably.  */
+	phi_translate_table.remove_elt_with_hash (slot, slot->hashcode);
+    }
 
   return phitrans;
 }

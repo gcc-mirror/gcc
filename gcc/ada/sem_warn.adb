@@ -1674,6 +1674,15 @@ package body Sem_Warn is
          return;
       end if;
 
+      --  Nothing to do for numeric or string literal. Do this test early to
+      --  save time in a common case (it does not matter that we do not include
+      --  character literal here, since that will be caught later on in the
+      --  when others branch of the case statement).
+
+      if Nkind (N) in N_Numeric_Or_String_Literal then
+         return;
+      end if;
+
       --  Ignore reference unless it comes from source. Almost always if we
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
@@ -1707,7 +1716,7 @@ package body Sem_Warn is
                  and then (No (Unset_Reference (E))
                             or else
                               Earlier_In_Extended_Unit
-                                (Sloc (N),  Sloc (Unset_Reference (E))))
+                                (Sloc (N), Sloc (Unset_Reference (E))))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
                then

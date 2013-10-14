@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1389,13 +1389,10 @@ CST(Inet_Pton_Linkname, "")
 
 /* Note: On HP-UX, CLOCK_REALTIME is an enum, not a macro. */
 
-#if defined(CLOCK_REALTIME) || defined (__hpux__)
-# define HAVE_CLOCK_REALTIME
+#if !(defined(CLOCK_REALTIME) || defined (__hpux__))
+# define CLOCK_REALTIME (-1)
 #endif
-
-#ifdef HAVE_CLOCK_REALTIME
 CND(CLOCK_REALTIME, "System realtime clock")
-#endif
 
 #ifdef CLOCK_MONOTONIC
 CND(CLOCK_MONOTONIC, "System monotonic clock")
@@ -1410,19 +1407,19 @@ CND(CLOCK_FASTEST, "Fastest clock")
 #endif
 CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
-#if defined(__APPLE__)
-/* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
-# define CLOCK_RT_Ada "-1"
-
-#elif defined(__FreeBSD__) || defined(_AIX)
+#if defined(__FreeBSD__) || (defined(_AIX) && defined(_AIXVERSION_530))
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).
+ **
+ ** Note that AIX 5.2 does not support CLOCK_MONOTONIC timestamps for
+ ** pthread_cond_timedwait (and does not have pthread_condattr_setclock),
+ ** hence the conditionalization on AIX version above). _AIXVERSION_530
+ ** is defined in AIX 5.3 and more recent versions.
  **/
 # define CLOCK_RT_Ada "CLOCK_MONOTONIC"
-# define NEED_PTHREAD_CONDATTR_SETCLOCK
 
-#elif defined(HAVE_CLOCK_REALTIME)
+#else
 /* By default use CLOCK_REALTIME */
 # define CLOCK_RT_Ada "CLOCK_REALTIME"
 #endif
@@ -1435,13 +1432,11 @@ CNS(CLOCK_RT_Ada, "")
 /*
 
    --  Sizes of pthread data types
-
 */
 
 #if defined (__APPLE__) || defined (DUMMY)
 /*
    --  (on Darwin, these are just placeholders)
-
 */
 #define PTHREAD_SIZE            __PTHREAD_SIZE__
 #define PTHREAD_ATTR_SIZE       __PTHREAD_ATTR_SIZE__
@@ -1463,7 +1458,9 @@ CNS(CLOCK_RT_Ada, "")
 #define PTHREAD_RWLOCK_SIZE     (sizeof (pthread_rwlock_t))
 #define PTHREAD_ONCE_SIZE       (sizeof (pthread_once_t))
 #endif
+/*
 
+*/
 CND(PTHREAD_SIZE,            "pthread_t")
 CND(PTHREAD_ATTR_SIZE,       "pthread_attr_t")
 CND(PTHREAD_MUTEXATTR_SIZE,  "pthread_mutexattr_t")

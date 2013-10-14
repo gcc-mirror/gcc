@@ -744,6 +744,8 @@ Parse::signature(Typed_identifier* receiver, Location location)
     return NULL;
 
   Parse::Names names;
+  if (receiver != NULL)
+    names[receiver->name()] = receiver;
   if (params != NULL)
     this->check_signature_names(params, &names);
   if (results != NULL)
@@ -2690,15 +2692,17 @@ Parse::composite_lit(Type* type, int depth, Location location)
     {
       this->advance_token();
       return Expression::make_composite_literal(type, depth, false, NULL,
-						location);
+						false, location);
     }
 
   bool has_keys = false;
+  bool all_are_names = true;
   Expression_list* vals = new Expression_list;
   while (true)
     {
       Expression* val;
       bool is_type_omitted = false;
+      bool is_name = false;
 
       const Token* token = this->peek_token();
 
@@ -2719,6 +2723,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
 								  is_exported),
 					   location);
+	      is_name = true;
 	    }
 	  else
 	    {
@@ -2744,6 +2749,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	{
 	  if (has_keys)
 	    vals->push_back(NULL);
+	  is_name = false;
 	}
       else
 	{
@@ -2790,6 +2796,9 @@ Parse::composite_lit(Type* type, int depth, Location location)
 
       vals->push_back(val);
 
+      if (!is_name)
+	all_are_names = false;
+
       if (token->is_op(OPERATOR_COMMA))
 	{
 	  if (this->advance_token()->is_op(OPERATOR_RCURLY))
@@ -2830,7 +2839,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
     }
 
   return Expression::make_composite_literal(type, depth, has_keys, vals,
-					    location);
+					    all_are_names, location);
 }
 
 // FunctionLit = "func" Signature Block .

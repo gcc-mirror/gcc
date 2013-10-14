@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-vectorizer.h"
 #include "tree-hasher.h"
+#include "tree-parloops.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -2239,5 +2240,63 @@ parallelize_loops (void)
 
   return changed;
 }
+
+/* Parallelization.  */
+
+static bool
+gate_tree_parallelize_loops (void)
+{
+  return flag_tree_parallelize_loops > 1;
+}
+
+static unsigned
+tree_parallelize_loops (void)
+{
+  if (number_of_loops (cfun) <= 1)
+    return 0;
+
+  if (parallelize_loops ())
+    return TODO_cleanup_cfg | TODO_rebuild_alias;
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_parallelize_loops =
+{
+  GIMPLE_PASS, /* type */
+  "parloops", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PARALLELIZE_LOOPS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
+};
+
+class pass_parallelize_loops : public gimple_opt_pass
+{
+public:
+  pass_parallelize_loops (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_parallelize_loops, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_parallelize_loops (); }
+  unsigned int execute () { return tree_parallelize_loops (); }
+
+}; // class pass_parallelize_loops
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_parallelize_loops (gcc::context *ctxt)
+{
+  return new pass_parallelize_loops (ctxt);
+}
+
 
 #include "gt-tree-parloops.h"

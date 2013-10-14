@@ -846,8 +846,9 @@ package body Freeze is
                  and then Nkind (Type_Definition (Parent (T))) =
                                                N_Record_Definition
                  and then not Null_Present (Type_Definition (Parent (T)))
-                 and then Present (Variant_Part
-                            (Component_List (Type_Definition (Parent (T)))))
+                 and then
+                   Present (Variant_Part
+                              (Component_List (Type_Definition (Parent (T)))))
                then
                   --  If variant part is present, and type is unconstrained,
                   --  then we must have defaulted discriminants, or a size
@@ -1068,13 +1069,14 @@ package body Freeze is
       Comp      : Entity_Id)
    is
       Comp_Type : Entity_Id;
-      Comp_Def  : Node_Id;
       Err_Node  : Node_Id;
       ADC       : Node_Id;
 
       Comp_Byte_Aligned : Boolean;
       --  Set True for the record case, when Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
+
+      Component_Aliased : Boolean;
 
    begin
       --  Record case
@@ -1084,15 +1086,15 @@ package body Freeze is
          Comp_Type := Etype (Comp);
 
          if Is_Tag (Comp) then
-            Comp_Def          := Empty;
             Comp_Byte_Aligned := True;
+            Component_Aliased := False;
 
          else
-            Comp_Def          := Component_Definition (Parent (Comp));
             Comp_Byte_Aligned :=
               Present (Component_Clause (Comp))
                 and then
                   Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            Component_Aliased := Is_Aliased (Comp);
          end if;
 
       --  Array case
@@ -1100,10 +1102,9 @@ package body Freeze is
       else
          Err_Node  := Encl_Type;
          Comp_Type := Component_Type (Encl_Type);
-         Comp_Def  := Component_Definition
-                        (Type_Definition (Declaration_Node (Encl_Type)));
 
          Comp_Byte_Aligned := False;
+         Component_Aliased := Has_Aliased_Components (Encl_Type);
       end if;
 
       --  Note: the Reverse_Storage_Order flag is set on the base type, but
@@ -1139,7 +1140,7 @@ package body Freeze is
                & "storage order as enclosing composite", Err_Node);
          end if;
 
-      elsif Present (Comp_Def) and then Aliased_Present (Comp_Def) then
+      elsif Component_Aliased then
          Error_Msg_N
            ("aliased component not permitted for type with "
             & "explicit Scalar_Storage_Order", Err_Node);
@@ -1697,6 +1698,10 @@ package body Freeze is
       --  integer literal without an explicit corresponding size clause. The
       --  caller has checked that Utype is a modular integer type.
 
+      function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id;
+      --  Create Freeze_Generic_Entity nodes for types declared in a generic
+      --  package. Recurse on inner generic packages.
+
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze each component, handle some representation clauses, and freeze
       --  primitive operations if this is a tagged type.
@@ -1943,6 +1948,34 @@ package body Freeze is
          end if;
       end Check_Suspicious_Modulus;
 
+      -----------------------------
+      -- Freeze_Generic_Entities --
+      -----------------------------
+
+      function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id is
+         E     : Entity_Id;
+         F     : Node_Id;
+         Flist : List_Id;
+
+      begin
+         Flist := New_List;
+         E := First_Entity (Pack);
+         while Present (E) loop
+            if Is_Type (E) and then not Is_Generic_Type (E) then
+               F := Make_Freeze_Generic_Entity (Sloc (Pack));
+               Set_Entity (F, E);
+               Append_To (Flist, F);
+
+            elsif Ekind (E) = E_Generic_Package then
+               Append_List_To (Flist, Freeze_Generic_Entities (E));
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return Flist;
+      end Freeze_Generic_Entities;
+
       ------------------------
       -- Freeze_Record_Type --
       ------------------------
@@ -1992,6 +2025,11 @@ package body Freeze is
          --  subprogram type to frozen as well, to prevent an out-of-scope
          --  freeze node at some eventual point of call. Protected operations
          --  are handled elsewhere.
+
+         procedure Freeze_Choices_In_Variant_Part (VP : Node_Id);
+         --  Make sure that all types mentioned in Discrete_Choices of the
+         --  variants referenceed by the Variant_Part VP are frozen. This is
+         --  a recursive routine to deal with nested variants.
 
          ---------------------
          -- Check_Allocator --
@@ -2044,6 +2082,50 @@ package body Freeze is
                Set_Is_Frozen (Desig);
             end if;
          end Check_Itype;
+
+         ------------------------------------
+         -- Freeze_Choices_In_Variant_Part --
+         ------------------------------------
+
+         procedure Freeze_Choices_In_Variant_Part (VP : Node_Id) is
+            pragma Assert (Nkind (VP) = N_Variant_Part);
+
+            Variant : Node_Id;
+            Choice  : Node_Id;
+            CL      : Node_Id;
+
+         begin
+            --  Loop through variants
+
+            Variant := First_Non_Pragma (Variants (VP));
+            while Present (Variant) loop
+
+               --  Loop through choices, checking that all types are frozen
+
+               Choice := First_Non_Pragma (Discrete_Choices (Variant));
+               while Present (Choice) loop
+                  if Nkind (Choice) in N_Has_Etype
+                    and then Present (Etype (Choice))
+                  then
+                     Freeze_And_Append (Etype (Choice), N, Result);
+                  end if;
+
+                  Next_Non_Pragma (Choice);
+               end loop;
+
+               --  Check for nested variant part to process
+
+               CL := Component_List (Variant);
+
+               if not Null_Present (CL) then
+                  if Present (Variant_Part (CL)) then
+                     Freeze_Choices_In_Variant_Part (Variant_Part (CL));
+                  end if;
+               end if;
+
+               Next_Non_Pragma (Variant);
+            end loop;
+         end Freeze_Choices_In_Variant_Part;
 
       --  Start of processing for Freeze_Record_Type
 
@@ -2272,7 +2354,7 @@ package body Freeze is
                begin
                   if Present (Alloc) then
 
-                     --  If component is pointer to a classwide type, freeze
+                     --  If component is pointer to a class-wide type, freeze
                      --  the specific type in the expression being allocated.
                      --  The expression may be a subtype indication, in which
                      --  case freeze the subtype mark.
@@ -2367,7 +2449,8 @@ package body Freeze is
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
             if not (Placed_Component or else Is_Packed (Rec)) then
-               Error_Msg_N ("??bit order specification has no effect", ADC);
+               Error_Msg_N
+                 ("??bit order specification has no effect", ADC);
                Error_Msg_N
                  ("\??since no component clauses were specified", ADC);
 
@@ -2443,14 +2526,12 @@ package body Freeze is
          --  remote type here since that is what we are semantically freezing.
          --  This prevents the freeze node for that type in an inner scope.
 
-         --  Also, Check for controlled components and unchecked unions.
-         --  Finally, enforce the restriction that access attributes with a
-         --  current instance prefix can only apply to limited types.
-
          if Ekind (Rec) = E_Record_Type then
             if Present (Corresponding_Remote_Type (Rec)) then
                Freeze_And_Append (Corresponding_Remote_Type (Rec), N, Result);
             end if;
+
+            --  Check for controlled components and unchecked unions.
 
             Comp := First_Component (Rec);
             while Present (Comp) loop
@@ -2459,18 +2540,18 @@ package body Freeze is
                --  equivalent type. See Make_CW_Equivalent_Type.
 
                if not Is_Class_Wide_Equivalent_Type (Rec)
-                 and then (Has_Controlled_Component (Etype (Comp))
-                            or else (Chars (Comp) /= Name_uParent
-                                      and then Is_Controlled (Etype (Comp)))
-                            or else (Is_Protected_Type (Etype (Comp))
-                                      and then
-                                        Present
-                                          (Corresponding_Record_Type
-                                             (Etype (Comp)))
-                                      and then
-                                        Has_Controlled_Component
-                                          (Corresponding_Record_Type
-                                             (Etype (Comp)))))
+                 and then
+                   (Has_Controlled_Component (Etype (Comp))
+                     or else
+                       (Chars (Comp) /= Name_uParent
+                         and then Is_Controlled (Etype (Comp)))
+                     or else
+                       (Is_Protected_Type (Etype (Comp))
+                         and then
+                           Present (Corresponding_Record_Type (Etype (Comp)))
+                         and then
+                           Has_Controlled_Component
+                             (Corresponding_Record_Type (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
                end if;
@@ -2490,11 +2571,17 @@ package body Freeze is
             end loop;
          end if;
 
+         --  Enforce the restriction that access attributes with a current
+         --  instance prefix can only apply to limited types. This comment
+         --  is floating here, but does not seem to belong here???
+
+         --  Set component alignment if not otherwise already set
+
          Set_Component_Alignment_If_Not_Set (Rec);
 
          --  For first subtypes, check if there are any fixed-point fields with
          --  component clauses, where we must check the size. This is not done
-         --  till the freeze point, since for fixed-point types, we do not know
+         --  till the freeze point since for fixed-point types, we do not know
          --  the size until the type is frozen. Similar processing applies to
          --  bit packed arrays.
 
@@ -2613,6 +2700,53 @@ package body Freeze is
                end;
             end if;
          end if;
+
+         --  All done if not a full record definition
+
+         if Ekind (Rec) /= E_Record_Type then
+            return;
+         end if;
+
+         --  Finally we need to check the variant part to make sure that
+         --  all types within choices are properly frozen as part of the
+         --  freezing of the record type.
+
+         Check_Variant_Part : declare
+            D : constant Node_Id := Declaration_Node (Rec);
+            T : Node_Id;
+            C : Node_Id;
+
+         begin
+            --  Find component list
+
+            C := Empty;
+
+            if Nkind (D) = N_Full_Type_Declaration then
+               T := Type_Definition (D);
+
+               if Nkind (T) = N_Record_Definition then
+                  C := Component_List (T);
+
+               elsif Nkind (T) = N_Derived_Type_Definition
+                 and then Present (Record_Extension_Part (T))
+               then
+                  C := Component_List (Record_Extension_Part (T));
+               end if;
+            end if;
+
+            --  Case of variant part present
+
+            if Present (C) and then Present (Variant_Part (C)) then
+               Freeze_Choices_In_Variant_Part (Variant_Part (C));
+            end if;
+
+            --  Note: we used to call Check_Choices here, but it is too early,
+            --  since predicated subtypes are frozen here, but their freezing
+            --  actions are in Analyze_Freeze_Entity, which has not been called
+            --  yet for entities frozen within this procedure, so we moved that
+            --  call to the Analyze_Freeze_Entity for the record type.
+
+         end Check_Variant_Part;
       end Freeze_Record_Type;
 
    --  Start of processing for Freeze_Entity
@@ -2657,6 +2791,12 @@ package body Freeze is
         and then No (Full_View (Base_Type (E)))
         and then Ada_Version >= Ada_2012
       then
+         return No_List;
+
+      --  Generic types need no freeze node and have no delayed semantic
+      --  checks.
+
+      elsif Is_Generic_Type (E) then
          return No_List;
 
       --  Do not freeze a global entity within an inner scope created during
@@ -2728,6 +2868,9 @@ package body Freeze is
                return No_List;
             end if;
          end;
+
+      elsif Ekind (E) = E_Generic_Package then
+         return Freeze_Generic_Entities (E);
       end if;
 
       --  Add checks to detect proper initialization of scalars that may appear
@@ -2813,6 +2956,7 @@ package body Freeze is
 
                      if Is_Incomplete_Type (F_Type)
                        and then Present (Full_View (F_Type))
+                       and then not From_With_Type (F_Type)
                      then
                         F_Type := Full_View (F_Type);
                         Set_Etype (Formal, F_Type);
@@ -2991,10 +3135,15 @@ package body Freeze is
                      R_Type := Etype (E);
 
                      --  AI05-0151: the return type may have been incomplete
-                     --  at the point of declaration.
+                     --  at the point of declaration. Replace it with the full
+                     --  view, unless the current type is a limited view. In
+                     --  that case the full view is in a different unit, and
+                     --  gigi finds the non-limited view after the other unit
+                     --  is elaborated.
 
                      if Ekind (R_Type) = E_Incomplete_Type
                        and then Present (Full_View (R_Type))
+                       and then not From_With_Type (R_Type)
                      then
                         R_Type := Full_View (R_Type);
                         Set_Etype (E, R_Type);
@@ -3399,7 +3548,9 @@ package body Freeze is
 
          if Present (Scope (E))
            and then Is_Generic_Unit (Scope (E))
-           and then not Has_Predicates (E)
+           and then
+             (not Has_Predicates (E)
+               and then not Has_Delayed_Freeze (E))
          then
             Check_Compile_Time_Size (E);
             return No_List;
@@ -4142,7 +4293,9 @@ package body Freeze is
          --  for the case of a private type with record extension (we will do
          --  that later when the full type is frozen).
 
-         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype) then
+         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype)
+           and then not Is_Generic_Unit (Scope (E))
+         then
             Freeze_Record_Type (E);
 
          --  For a concurrent type, freeze corresponding record type. This
@@ -4446,6 +4599,7 @@ package body Freeze is
             if Is_Pure_Unit_Access_Type (E)
               and then (Ada_Version < Ada_2005
                          or else not No_Pool_Assigned (E))
+              and then not Is_Generic_Unit (Scope (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
 

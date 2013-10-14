@@ -5578,7 +5578,7 @@ package body Sem_Eval is
                   then
                      Error_Msg_N ("\aggregate (#) is never static", N);
 
-                  elsif not Is_Static_Expression (CV) then
+                  elsif No (CV) or else not Is_Static_Expression (CV) then
                      Error_Msg_NE
                        ("\& is not a static constant (RM 4.9(5))", N, E);
                   end if;

@@ -1131,7 +1131,9 @@ defer_stack_allocation (tree var, bool toplevel)
      other hand, we don't want the function's stack frame size to
      get completely out of hand.  So we avoid adding scalars and
      "small" aggregates to the list at all.  */
-  if (optimize == 0 && tree_low_cst (DECL_SIZE_UNIT (var), 1) < 32)
+  if (optimize == 0
+      && (tree_low_cst (DECL_SIZE_UNIT (var), 1)
+          < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)))
     return false;
 
   return true;

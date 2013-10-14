@@ -1167,6 +1167,11 @@ package body Sem_Ch7 is
                --  then finish off by looping through the nongeneric parents
                --  and installing their private declarations.
 
+               --  If one of the non-generic parents is itself on the scope
+               --  stack, do not install its private declarations: they are
+               --  installed in due time when the private part of that parent
+               --  is analyzed. This is delicate ???
+
                else
                   while Present (Inst_Par)
                     and then Inst_Par /= Standard_Standard

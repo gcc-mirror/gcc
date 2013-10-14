@@ -41,15 +41,6 @@ along with GCC; see the file COPYING3.  If not see
    i.e. in hash tables. This is a structure to do this. */
 typedef union {tree *tp; tree t; gimple g;} treemple;
 
-/* Nonzero if we are using EH to handle cleanups.  */
-static int using_eh_for_cleanups_p = 0;
-
-void
-using_eh_for_cleanups (void)
-{
-  using_eh_for_cleanups_p = 1;
-}
-
 /* Misc functions used in this file.  */
 
 /* Remember and lookup EH landing pad data for arbitrary statements.
@@ -66,7 +57,7 @@ using_eh_for_cleanups (void)
 
 /* Add statement T in function IFUN to landing pad NUM.  */
 
-void
+static void
 add_stmt_to_eh_lp_fn (struct function *ifun, gimple t, int num)
 {
   struct throw_stmt_node *n;
@@ -1655,7 +1646,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
   this_tf.try_finally_expr = tp;
   this_tf.top_p = tp;
   this_tf.outer = state;
-  if (using_eh_for_cleanups_p && !cleanup_is_dead_in (state->cur_region))
+  if (using_eh_for_cleanups_p () && !cleanup_is_dead_in (state->cur_region))
     {
       this_tf.region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_tf.region;

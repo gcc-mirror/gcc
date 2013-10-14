@@ -66,6 +66,7 @@
 !$omp parallel reduction (.or.:l) if (.true.)
   l = .not. omp_in_parallel ()
 !$omp end parallel
+  if (l) call abort
 
   e = omp_get_wtime ()
   if (d .gt. e) call abort

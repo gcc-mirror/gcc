@@ -38,4 +38,4 @@ int main()
 
   unlink("tmp_perf_int.txt");
   return 0;
-};
+}

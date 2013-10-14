@@ -5846,23 +5846,18 @@ package body Exp_Ch3 is
    -- Expand_N_Variant_Part --
    ---------------------------
 
-   --  If the last variant does not contain the Others choice, replace it with
-   --  an N_Others_Choice node since Gigi always wants an Others. Note that we
-   --  do not bother to call Analyze on the modified variant part, since its
-   --  only effect would be to compute the Others_Discrete_Choices node
-   --  laboriously, and of course we already know the list of choices that
-   --  corresponds to the others choice (it's the list we are replacing!)
+   --  Note: this procedure no longer has any effect. It used to be that we
+   --  would replace the choices in the last variant by a when others, and
+   --  also expanded static predicates in variant choices here, but both of
+   --  those activities were being done too early, since we can't check the
+   --  choices until the statically predicated subtypes are frozen, which can
+   --  happen as late as the free point of the record, and we can't change the
+   --  last choice to an others before checking the choices, which is now done
+   --  at the freeze point of the record.
 
    procedure Expand_N_Variant_Part (N : Node_Id) is
-      Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
-      Others_Node : Node_Id;
    begin
-      if Nkind (First (Discrete_Choices (Last_Var))) /= N_Others_Choice then
-         Others_Node := Make_Others_Choice (Sloc (Last_Var));
-         Set_Others_Discrete_Choices
-           (Others_Node, Discrete_Choices (Last_Var));
-         Set_Discrete_Choices (Last_Var, New_List (Others_Node));
-      end if;
+      null;
    end Expand_N_Variant_Part;
 
    ---------------------------------

@@ -39,5 +39,6 @@ extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 extern tree fold_const_aggregate_ref (tree);
 extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
 extern bool gimple_val_nonnegative_real_p (tree);
+extern tree gimple_fold_indirect_ref (tree);
 
 #endif  /* GCC_GIMPLE_FOLD_H */

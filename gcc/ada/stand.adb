@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,2009  Free Software Foundation, Inc. --
+--          Copyright (C) 1992-2013,  Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,7 +76,6 @@ package body Stand is
       Tree_Read_Int (Int (Standard_Op_Shift_Left));
       Tree_Read_Int (Int (Standard_Op_Shift_Right));
       Tree_Read_Int (Int (Standard_Op_Shift_Right_Arithmetic));
-
    end Tree_Read;
 
    ----------------
@@ -121,7 +120,6 @@ package body Stand is
       Tree_Write_Int (Int (Standard_Op_Shift_Left));
       Tree_Write_Int (Int (Standard_Op_Shift_Right));
       Tree_Write_Int (Int (Standard_Op_Shift_Right_Arithmetic));
-
    end Tree_Write;
 
 end Stand;

@@ -1301,7 +1301,8 @@ rl78_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
    S - SADDR form of a real register
    v - real register corresponding to a virtual register
    m - minus - negative of CONST_INT value.
-   c - inverse of a conditional (NE vs EQ for example)
+   C - inverse of a conditional (NE vs EQ for example)
+   C - complement of an integer
    z - collapsed conditional
    s - shift count mod 8
    S - shift count mod 16
@@ -1555,37 +1556,37 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       if (letter == 'z')
 	fprintf (file, "#comparison eliminated");
       else
-	fprintf (file, letter == 'c' ? "nc" : "c");
+	fprintf (file, letter == 'C' ? "nc" : "c");
       break;
     case LEU:
       if (letter == 'z')
 	fprintf (file, "br");
       else
-	fprintf (file, letter == 'c' ? "h" : "nh");
+	fprintf (file, letter == 'C' ? "h" : "nh");
       break;
     case GEU:
       if (letter == 'z')
 	fprintf (file, "br");
       else
-	fprintf (file, letter == 'c' ? "c" : "nc");
+	fprintf (file, letter == 'C' ? "c" : "nc");
       break;
     case GTU:
       if (letter == 'z')
 	fprintf (file, "#comparison eliminated");
       else
-	fprintf (file, letter == 'c' ? "nh" : "h");
+	fprintf (file, letter == 'C' ? "nh" : "h");
       break;
     case EQ:
       if (letter == 'z')
 	fprintf (file, "br");
       else
-	fprintf (file, letter == 'c' ? "nz" : "z");
+	fprintf (file, letter == 'C' ? "nz" : "z");
       break;
     case NE:
       if (letter == 'z')
 	fprintf (file, "#comparison eliminated");
       else
-	fprintf (file, letter == 'c' ? "z" : "nz");
+	fprintf (file, letter == 'C' ? "z" : "nz");
       break;
 
     /* Note: these assume appropriate adjustments were made so that
@@ -1595,25 +1596,25 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       if (letter == 'z')
 	fprintf (file, "#comparison eliminated");
       else
-	fprintf (file, letter == 'c' ? "nc" : "c");
+	fprintf (file, letter == 'C' ? "nc" : "c");
       break;
     case LE:
       if (letter == 'z')
 	fprintf (file, "br");
       else
-        fprintf (file, letter == 'c' ? "h" : "nh");
+        fprintf (file, letter == 'C' ? "h" : "nh");
       break;
     case GE:
       if (letter == 'z')
 	fprintf (file, "br");
       else
-	fprintf (file, letter == 'c' ? "c" : "nc");
+	fprintf (file, letter == 'C' ? "c" : "nc");
       break;
     case GT:
       if (letter == 'z')
 	fprintf (file, "#comparison eliminated");
       else
-	fprintf (file, letter == 'c' ? "nh" : "h");
+	fprintf (file, letter == 'C' ? "nh" : "h");
       break;
 
     default:

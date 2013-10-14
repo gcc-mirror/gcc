@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,39 +42,15 @@ package body System.Img_Int is
    is
       pragma Assert (S'First = 1);
 
-      procedure Set_Digits (T : Integer);
-      --  Set digits of absolute value of T, which is zero or negative. We work
-      --  with the negative of the value so that the largest negative number is
-      --  not a special case.
-
-      ----------------
-      -- Set_Digits --
-      ----------------
-
-      procedure Set_Digits (T : Integer) is
-      begin
-         if T <= -10 then
-            Set_Digits (T / 10);
-            P := P + 1;
-            S (P) := Character'Val (48 - (T rem 10));
-         else
-            P := P + 1;
-            S (P) := Character'Val (48 - T);
-         end if;
-      end Set_Digits;
-
-   --  Start of processing for Image_Integer
-
    begin
-      P := 1;
-
       if V >= 0 then
-         S (P) := ' ';
-         Set_Digits (-V);
+         S (1) := ' ';
+         P := 1;
       else
-         S (P) := '-';
-         Set_Digits (V);
+         P := 0;
       end if;
+
+      Set_Image_Integer (V, S, P);
    end Image_Integer;
 
    -----------------------

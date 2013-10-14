@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "sese.h"
 #include "dbgcnt.h"
+#include "tree-parloops.h"
+#include "tree-pass.h"
 
 #ifdef HAVE_cloog
 
@@ -301,10 +303,115 @@ graphite_transform_loops (void)
 
 #else /* If Cloog is not available: #ifndef HAVE_cloog.  */
 
-void
+static void
 graphite_transform_loops (void)
 {
   sorry ("Graphite loop optimizations cannot be used");
 }
 
 #endif
+
+
+static unsigned int
+graphite_transforms (void)
+{
+  if (!current_loops)
+    return 0;
+
+  graphite_transform_loops ();
+
+  return 0;
+}
+
+static bool
+gate_graphite_transforms (void)
+{
+  /* Enable -fgraphite pass if any one of the graphite optimization flags
+     is turned on.  */
+  if (flag_loop_block
+      || flag_loop_interchange
+      || flag_loop_strip_mine
+      || flag_graphite_identity
+      || flag_loop_parallelize_all
+      || flag_loop_optimize_isl)
+    flag_graphite = 1;
+
+  return flag_graphite != 0;
+}
+
+namespace {
+
+const pass_data pass_data_graphite =
+{
+  GIMPLE_PASS, /* type */
+  "graphite0", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_GRAPHITE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_graphite : public gimple_opt_pass
+{
+public:
+  pass_graphite (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_graphite, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_graphite_transforms (); }
+
+}; // class pass_graphite
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_graphite (gcc::context *ctxt)
+{
+  return new pass_graphite (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_graphite_transforms =
+{
+  GIMPLE_PASS, /* type */
+  "graphite", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_GRAPHITE_TRANSFORMS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_graphite_transforms : public gimple_opt_pass
+{
+public:
+  pass_graphite_transforms (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_graphite_transforms, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_graphite_transforms (); }
+  unsigned int execute () { return graphite_transforms (); }
+
+}; // class pass_graphite_transforms
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_graphite_transforms (gcc::context *ctxt)
+{
+  return new pass_graphite_transforms (ctxt);
+}
+
+

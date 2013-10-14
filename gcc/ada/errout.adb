@@ -49,7 +49,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stylesw;  use Stylesw;
-with Targparm; use Targparm;
 with Uname;    use Uname;
 
 package body Errout is
@@ -234,6 +233,15 @@ package body Errout is
    begin
       if not Finalize_Called then
          raise Program_Error;
+
+      --  In formal verification mode, errors issued when generating Why code
+      --  are not compilation errors, and should not result in exiting with
+      --  an error status. These errors are handled in the driver of the
+      --  verification process instead.
+
+      elsif SPARK_Mode and not Frame_Condition_Mode then
+         return False;
+
       else
          return Erroutc.Compilation_Errors;
       end if;
@@ -2705,7 +2713,7 @@ package body Errout is
          Warning_Msg_Char := ' ';
 
          if P <= Text'Last and then Text (P) = '?' then
-            if Warning_Doc_Switch and not OpenVMS_On_Target then
+            if Warning_Doc_Switch then
                Warning_Msg_Char := '?';
             end if;
 
@@ -2717,7 +2725,7 @@ package body Errout is
                      Text (P) in 'A' .. 'Z')
            and then Text (P + 1) = '?'
          then
-            if Warning_Doc_Switch and not OpenVMS_On_Target then
+            if Warning_Doc_Switch then
                Warning_Msg_Char := Text (P);
             end if;
 
@@ -2805,7 +2813,6 @@ package body Errout is
 
                if Error_Msg_Warn
                  and Warning_Doc_Switch
-                 and not OpenVMS_On_Target
                then
                   Warning_Msg_Char := '?';
                end if;

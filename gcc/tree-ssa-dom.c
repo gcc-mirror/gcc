@@ -902,7 +902,6 @@ tree_ssa_dominator_optimize (void)
 
   /* Free the value-handle array.  */
   threadedge_finalize_values ();
-  ssa_name_values.release ();
 
   return 0;
 }

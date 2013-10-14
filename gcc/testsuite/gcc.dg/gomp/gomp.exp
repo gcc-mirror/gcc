@@ -29,7 +29,9 @@ if ![check_effective_target_fopenmp] {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c $srcdir/c-c++-common/gomp/*.c]] "" "-fopenmp"
+dg-runtest [lsort [concat \
+	[find $srcdir/$subdir *.c] \
+	[find $srcdir/c-c++-common/gomp *.c]]] "" "-fopenmp"
 
 # All done.
 dg-finish

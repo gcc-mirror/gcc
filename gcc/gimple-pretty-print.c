@@ -1097,6 +1097,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
 	  break;
+	case GF_OMP_FOR_KIND_DISTRIBUTE:
+	  kind = " distribute";
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1124,6 +1127,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	case GF_OMP_FOR_KIND_DISTRIBUTE:
+	  pp_string (buffer, "#pragma omp distribute");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1239,6 +1245,85 @@ dump_gimple_omp_single (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
 }
 
+/* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_target (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  const char *kind;
+  switch (gimple_omp_target_kind (gs))
+    {
+    case GF_OMP_TARGET_KIND_REGION:
+      kind = "";
+      break;
+    case GF_OMP_TARGET_KIND_DATA:
+      kind = " data";
+      break;
+    case GF_OMP_TARGET_KIND_UPDATE:
+      kind = " update";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
+		       kind, gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp target");
+      pp_string (buffer, kind);
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      if (gimple_omp_target_child_fn (gs))
+	{
+	  pp_string (buffer, " [child fn: ");
+	  dump_generic_node (buffer, gimple_omp_target_child_fn (gs),
+			     spc, flags, false);
+	  pp_right_bracket (buffer);
+	}
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
+/* Dump a GIMPLE_OMP_TEAMS tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_teams (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp teams");
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_SECTIONS tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -1275,8 +1360,8 @@ dump_gimple_omp_sections (pretty_printer *buffer, gimple gs, int spc,
     }
 }
 
-/* Dump a GIMPLE_OMP_{MASTER,ORDERED,SECTION} tuple on the pretty_printer
-   BUFFER.  */
+/* Dump a GIMPLE_OMP_{MASTER,TASKGROUP,ORDERED,SECTION} tuple on the
+   pretty_printer BUFFER.  */
 
 static void
 dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -1290,6 +1375,9 @@ dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
 	{
 	case GIMPLE_OMP_MASTER:
 	  pp_string (buffer, "#pragma omp master");
+	  break;
+	case GIMPLE_OMP_TASKGROUP:
+	  pp_string (buffer, "#pragma omp taskgroup");
 	  break;
 	case GIMPLE_OMP_ORDERED:
 	  pp_string (buffer, "#pragma omp ordered");
@@ -1350,14 +1438,26 @@ dump_gimple_omp_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     {
-      dump_gimple_fmt (buffer, spc, flags, "%G <nowait=%d>", gs,
+      dump_gimple_fmt (buffer, spc, flags, "%G <nowait=%d", gs,
                        (int) gimple_omp_return_nowait_p (gs));
+      if (gimple_omp_return_lhs (gs))
+	dump_gimple_fmt (buffer, spc, flags, ", lhs=%T>",
+			 gimple_omp_return_lhs (gs));
+      else
+	dump_gimple_fmt (buffer, spc, flags, ">");
     }
   else
     {
       pp_string (buffer, "#pragma omp return");
       if (gimple_omp_return_nowait_p (gs))
 	pp_string (buffer, "(nowait)");
+      if (gimple_omp_return_lhs (gs))
+	{
+	  pp_string (buffer, " (set ");
+	  dump_generic_node (buffer, gimple_omp_return_lhs (gs),
+			     spc, flags, false);
+	  pp_character (buffer, ')');
+	}
     }
 }
 
@@ -1826,6 +1926,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gimple gs, int spc,
   else
     {
       pp_string (buffer, "#pragma omp atomic_load");
+      if (gimple_omp_atomic_seq_cst_p (gs))
+	pp_string (buffer, " seq_cst");
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
       newline_and_indent (buffer, spc + 2);
@@ -1856,6 +1958,8 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer, gimple gs, int spc,
   else
     {
       pp_string (buffer, "#pragma omp atomic_store ");
+      if (gimple_omp_atomic_seq_cst_p (gs))
+	pp_string (buffer, "seq_cst ");
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
       pp_left_paren (buffer);
@@ -2023,6 +2127,14 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_gimple_omp_single (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_OMP_TARGET:
+      dump_gimple_omp_target (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      dump_gimple_omp_teams (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_OMP_RETURN:
       dump_gimple_omp_return (buffer, gs, spc, flags);
       break;
@@ -2036,6 +2148,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       break;
 
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
       dump_gimple_omp_block (buffer, gs, spc, flags);

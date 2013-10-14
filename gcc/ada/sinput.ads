@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,36 +342,17 @@ package Sinput is
 
    --  The Get_Source_File_Index function is called very frequently. Earlier
    --  versions cached a single entry, but then reverted to a serial search,
-   --  and this proved to be a significant source of inefficiency. To get
-   --  around this, we use the following directly indexed array. The space
-   --  of possible input values is a value of type Source_Ptr which is simply
-   --  an Int value. The values in this space are allocated sequentially as
-   --  new units are loaded.
-
-   --  The following table has an entry for each 4K range of possible
-   --  Source_Ptr values. The value in the table is the lowest value
-   --  Source_File_Index whose Source_Ptr range contains value in the
-   --  range.
-
-   --  For example, the entry with index 4 in this table represents Source_Ptr
-   --  values in the range 4*4096 .. 5*4096-1. The Source_File_Index value
-   --  stored would be the lowest numbered source file with at least one byte
-   --  in this range.
-
-   --  The algorithm used in Get_Source_File_Index is simply to access this
-   --  table and then do a serial search starting at the given position. This
-   --  will almost always terminate with one or two checks.
+   --  and this proved to be a significant source of inefficiency. We then
+   --  switched to using a table with a start point followed by a serial
+   --  search. Now we make sure source buffers are on a reasonable boundary
+   --  (see Types.Source_Align), and we can just use a direct look up in the
+   --  following table.
 
    --  Note that this array is pretty large, but in most operating systems
    --  it will not be allocated in physical memory unless it is actually used.
 
-   Chunk_Power : constant := 12;
-   Chunk_Size  : constant := 2 ** Chunk_Power;
-   --  Change comments above if value changed. Note that Chunk_Size must
-   --  be a power of 2 (to allow for efficient access to the table).
-
    Source_File_Index_Table :
-     array (Int range 0 .. Int'Last / Chunk_Size) of Source_File_Index;
+     array (Int range 0 .. 1 + (Int'Last / Source_Align)) of Source_File_Index;
 
    procedure Set_Source_File_Index_Table (Xnew : Source_File_Index);
    --  Sets entries in the Source_File_Index_Table for the newly created
@@ -605,6 +586,7 @@ package Sinput is
    --  value is the physical line number in the source being compiled.
 
    function Get_Source_File_Index (S : Source_Ptr) return Source_File_Index;
+   pragma Inline (Get_Source_File_Index);
    --  Return file table index of file identified by given source pointer
    --  value. This call must always succeed, since any valid source pointer
    --  value belongs to some previously loaded source file.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,6 +57,7 @@ package Sprint is
    --    Expression with range check         {expression}
    --    Free statement                      free expr [storage_pool = xxx]
    --    Freeze entity with freeze actions   freeze entityname [ actions ]
+   --    Freeze generic entity               freeze_generic entityname
    --    Implicit call to run time routine   $routine-name
    --    Implicit exportation                $pragma import (...)
    --    Implicit importation                $pragma export (...)

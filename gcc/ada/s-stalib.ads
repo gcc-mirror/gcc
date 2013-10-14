@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,26 +73,6 @@ package System.Standard_Library is
 
    function To_Ptr is
      new Ada.Unchecked_Conversion (System.Address, Big_String_Ptr);
-
-   ---------------------------------------------
-   -- Type For Enumeration Image Index Tables --
-   ---------------------------------------------
-
-   --  Note: these types are declared at the start of this unit, since
-   --  they must appear before any enumeration types declared in this
-   --  unit. Note that the spec of system is already elaborated at
-   --  this point (since we are a child of system), which means that
-   --  enumeration types in package System cannot use these types.
-
-   type Image_Index_Table_8 is
-     array (Integer range <>) of Short_Short_Integer;
-   type Image_Index_Table_16 is
-     array (Integer range <>) of Short_Integer;
-   type Image_Index_Table_32 is
-     array (Integer range <>) of Integer;
-   --  These types are used to generate the index vector used for enumeration
-   --  type image tables. See spec of Exp_Imgv in the main GNAT sources for a
-   --  full description of the data structures that are used here.
 
    -------------------------------------
    -- Exception Declarations and Data --

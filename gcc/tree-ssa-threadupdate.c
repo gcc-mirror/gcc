@@ -1354,6 +1354,68 @@ mark_threaded_blocks (bitmap threaded_blocks)
   else
     bitmap_copy (threaded_blocks, tmp);
 
+  /* Look for jump threading paths which cross multiple loop headers.
+
+     The code to thread through loop headers will change the CFG in ways
+     that break assumptions made by the loop optimization code.
+
+     We don't want to blindly cancel the requests.  We can instead do better
+     by trimming off the end of the jump thread path.  */
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->aux)
+	    {
+	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
+
+	      /* Basically we're looking for a situation where we can see
+	  	 3 or more loop structures on a jump threading path.  */
+
+	      struct loop *first_father = (*path)[0]->e->src->loop_father;
+	      struct loop *second_father = NULL;
+	      for (unsigned int i = 0; i < path->length (); i++)
+		{
+		  /* See if this is a loop father we have not seen before.  */
+		  if ((*path)[i]->e->dest->loop_father != first_father
+		      && (*path)[i]->e->dest->loop_father != second_father)
+		    {
+		      /* We've already seen two loop fathers, so we
+			 need to trim this jump threading path.  */
+		      if (second_father != NULL)
+			{
+			  /* Trim from entry I onwards.  */
+			  for (unsigned int j = i; j < path->length (); j++)
+			    delete (*path)[j];
+			  path->truncate (i);
+
+			  /* Now that we've truncated the path, make sure
+			     what's left is still valid.   We need at least
+			     two edges on the path and the last edge can not
+			     be a joiner.  This should never happen, but let's
+			     be safe.  */
+			  if (path->length () < 2
+			      || (path->last ()->type
+				  == EDGE_COPY_SRC_JOINER_BLOCK))
+			    {
+			      for (unsigned int i = 0; i < path->length (); i++)
+				delete (*path)[i];
+			      path->release ();
+			      e->aux = NULL;
+			    }
+			  break;
+			}
+		      else
+			{
+			  second_father = (*path)[i]->e->dest->loop_father;
+			}
+		    }
+		}
+	    }
+	}
+    }
+
   BITMAP_FREE (tmp);
 }
 

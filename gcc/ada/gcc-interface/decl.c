@@ -1497,7 +1497,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If we are defining an Out parameter and optimization isn't enabled,
 	   create a fake PARM_DECL for debugging purposes and make it point to
 	   the VAR_DECL.  Suppress debug info for the latter but make sure it
-	   will live on the stack so that it can be accessed from within the
+	   will live in memory so that it can be accessed from within the
 	   debugger through the PARM_DECL.  */
 	if (kind == E_Out_Parameter
 	    && definition
@@ -1520,7 +1520,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is a renaming pointer, attach the renamed object to it and
 	   register it if we are at the global level.  Note that an external
 	   constant is at the global level.  */
-	else if (TREE_CODE (gnu_decl) == VAR_DECL && renamed_obj)
+	if (TREE_CODE (gnu_decl) == VAR_DECL && renamed_obj)
 	  {
 	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
 	    if ((!definition && kind == E_Constant) || global_bindings_p ())
@@ -1577,6 +1577,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   optimization.  */
 	if (Exception_Mechanism != Back_End_Exceptions
 	    && Has_Nested_Block_With_Handler (Scope (gnat_entity)))
+	  TREE_ADDRESSABLE (gnu_decl) = 1;
+
+	/* If this is a local variable with non-BLKmode and aggregate type,
+	   and optimization isn't enabled, then force it in memory so that
+	   a register won't be allocated to it with possible subparts left
+	   uninitialized and reaching the register allocator.  */
+	else if (TREE_CODE (gnu_decl) == VAR_DECL
+		 && !DECL_EXTERNAL (gnu_decl)
+		 && !TREE_STATIC (gnu_decl)
+		 && DECL_MODE (gnu_decl) != BLKmode
+		 && AGGREGATE_TYPE_P (TREE_TYPE (gnu_decl))
+		 && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_decl))
+		 && !optimize)
 	  TREE_ADDRESSABLE (gnu_decl) = 1;
 
 	/* If we are defining an object with variable size or an object with
@@ -5824,12 +5837,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 				 ro_param || by_ref || by_component_ptr);
   DECL_BY_REF_P (gnu_param) = by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
-  DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor ||
-                                      mech == By_Short_Descriptor);
-  /* Note that, in case of a parameter passed by double reference, the
-     DECL_POINTS_TO_READONLY_P flag is meant for the second reference.
-     The first reference always points to read-only, as it points to
-     the second reference, i.e. the reference to the actual parameter.  */
+  DECL_BY_DESCRIPTOR_P (gnu_param)
+    = (mech == By_Descriptor || mech == By_Short_Descriptor);
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
   DECL_CAN_NEVER_BE_NULL_P (gnu_param) = Can_Never_Be_Null (gnat_param);

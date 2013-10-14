@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2011, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1185,9 +1185,9 @@ package body MLib.Prj is
 
                   Delete_File (Get_Name_String (Path), Succ);
 
-                  if not Succ then
-                     null;
-                  end if;
+                  --  We ignore a failure in this Delete_File operation.
+                  --  Is that OK??? If so, worth a comment as to why we
+                  --  are OK with the operation failing
                end;
             end if;
 
@@ -1651,7 +1651,7 @@ package body MLib.Prj is
          --  content of Rpath. As Rpath contains at least libgnat directory
          --  path name, it is guaranteed that it is not null.
 
-         if Path_Option /= null then
+         if Opt.Run_Path_Option and then Path_Option /= null then
             Opts.Increment_Last;
             Opts.Table (Opts.Last) :=
               new String'(Path_Option.all & Rpath (1 .. Rpath_Last));
