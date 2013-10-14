@@ -4292,6 +4292,16 @@ Index is a language names. Value is the list of extensions for file names
 derived from source file names that need to be cleaned in the object
 directory of the project.
 
+@item @b{Artifacts_In_Object_Dir}: single
+
+Value is a list of file names expressed as regular expressions that are to be
+deleted by gprclean in the object directory of the project.
+
+@item @b{Artifacts_In_Exec_Dir}: single
+
+Value is list of file names expressed as regular expressions that are to be
+deleted by gprclean in the exec directory of the main project.
+
 @end itemize
 
 @node Package Compiler Attributes

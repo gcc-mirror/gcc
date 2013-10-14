@@ -3830,8 +3830,8 @@ void GetTimeAsFileTime(LPFILETIME pTime)
 extern void __main (void);
 
 void __main (void) {}
-#endif
-#endif
+#endif /* RTSS */
+#endif /* RTX */
 
 #if defined (__ANDROID__)
 
@@ -3889,7 +3889,7 @@ void __gnat_cpu_set (int cpu, size_t count, cpu_set_t *set)
   CPU_SET_S (cpu - 1, count, set);
 }
 
-#else
+#else /* !CPU_ALLOC */
 
 /* Static cpu sets */
 
@@ -3919,8 +3919,59 @@ void __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
      CPU by a 0, so we need to adjust. */
   CPU_SET (cpu - 1, set);
 }
+#endif /* !CPU_ALLOC */
+#endif /* linux */
+
+/* Return the load address of the executable, or 0 if not known.  In the
+   specific case of error, (void *)-1 can be returned. Beware: this unit may
+   be in a shared library.  As low-level units are needed, we allow #include
+   here.  */
+
+#if defined (__APPLE__)
+#include <mach-o/dyld.h>
+#elif defined (__linux__)
+#include <link.h>
+#elif defined (__AIX__)
+#include <sys/ldr.h>
 #endif
+
+const void *
+__gnat_get_executable_load_address (void)
+{
+#if defined (__APPLE__)
+  return _dyld_get_image_header (0);
+
+#elif defined (__linux__)
+  struct link_map *map = _r_debug.r_map;
+
+  return (const void *)map->l_addr;
+
+#elif defined (__AIX__)
+  /* Unfortunately, AIX wants to return the info for all loaded objects,
+     so we need to increase the buffer if too small.  */
+  size_t blen = 4096;
+  int status;
+
+  while (1)
+    {
+      char buf[blen];
+
+      status = loadquery (L_GETINFO, buf, blen);
+      if (status == 0)
+        {
+          struct ldinfo *info = (struct ld_info *)buf;
+          return info->ldinfo_textorg;
+        }
+      blen = blen * 2;
+
+      /* Avoid stack overflow.  */
+      if (blen > 40 * 1024)
+        return (const void *)-1;
+    }
+#else
+  return NULL;
 #endif
+}
 
 #ifdef __cplusplus
 }
