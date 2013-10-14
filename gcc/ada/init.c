@@ -1663,6 +1663,10 @@ __gnat_install_handler ()
 #include <iv.h>
 #endif
 
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+#include <vmLib.h>
+#endif
+
 #ifdef VTHREADS
 #include "private/vThreadsP.h"
 #endif
@@ -1799,9 +1803,8 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
       msg = "unhandled signal";
     }
 
-  /* On ARM VxWorks 6.x, the guard page is left in a RWX state by the kernel
-     after being violated, so subsequent violations aren't detected.  Even if
-     this defect is fixed, it seems dubious to rely on the signal value alone,
+  /* On ARM VxWorks 6.x, the guard page is left un-armed by the kernel
+     after being violated, so subsequent violations aren't detected.
      so we retrieve the address of the guard page from the TCB and compare it
      with the page that is violated (pREG 12 in the context) and re-arm that
      page if there's a match.  Additionally we're are assured this is a
@@ -1809,28 +1812,22 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
      to that effect.  */
 #if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
 
-  /* We re-arm the guard page by re-setting it's attributes, however the
-     protection bits are just the low order seven (0x3f).
-     0x00040 is the Valid Mask
-     0x00f00 are Cache attributes
-     0xff000 are Special attributes
-     We don't meddle with the 0xfff40 attributes.  */
+  /* We re-arm the guard page by marking it invalid */
 
 #define PAGE_SIZE 4096
-#define MMU_ATTR_PROT_MSK 0x0000003f /* Protection Mask.  */
-#define GUARD_PAGE_PROT 0x8101       /* Found by experiment.  */
+#define REG_IP 12
 
   if (sig == SIGSEGV || sig == SIGBUS || sig == SIGILL)
     {
       TASK_ID tid = taskIdSelf ();
       WIND_TCB *pTcb = taskTcb (tid);
-      unsigned long Violated_Page
-          = ((struct sigcontext *) sc)->sc_pregs->r[12] & ~(PAGE_SIZE - 1);
+      unsigned long violated_page
+          = ((struct sigcontext *) sc)->sc_pregs->r[REG_IP] & ~(PAGE_SIZE - 1);
 
-      if ((unsigned long) (pTcb->pStackEnd - PAGE_SIZE) == Violated_Page)
+      if ((unsigned long) (pTcb->pStackEnd - PAGE_SIZE) == violated_page)
         {
-	  vmStateSet (NULL, Violated_Page,
-		      PAGE_SIZE, MMU_ATTR_PROT_MSK, GUARD_PAGE_PROT);
+	  vmStateSet (NULL, violated_page,
+		      PAGE_SIZE, VM_STATE_MASK_VALID, VM_STATE_VALID_NOT);
 	  exception = &storage_error;
 
 	  switch (sig)

@@ -3982,7 +3982,7 @@ __gnat_get_executable_load_address (void)
       status = loadquery (L_GETINFO, buf, blen);
       if (status == 0)
         {
-          struct ldinfo *info = (struct ld_info *)buf;
+          struct ld_info *info = (struct ld_info *)buf;
           return info->ldinfo_textorg;
         }
       blen = blen * 2;

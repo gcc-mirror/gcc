@@ -319,8 +319,16 @@ package body Sem_Case is
          --                       ^ illegal ^
 
          elsif Pred_Lo < Choice_Lo and then Pred_Hi < Choice_Lo then
-            Missing_Choice (Pred_Lo, Pred_Hi);
-            Error := True;
+            if Others_Present then
+
+               --  Current predicate set is covered by others clause.
+
+               null;
+
+            else
+               Missing_Choice (Pred_Lo, Pred_Hi);
+               Error := True;
+            end if;
 
             --  There may be several static predicate sets between the current
             --  one and the choice. Inspect the next static predicate set.
@@ -384,7 +392,12 @@ package body Sem_Case is
             if Others_Present then
                Prev_Lo := Choice_Lo;
                Prev_Hi := Choice_Hi;
-               Next (Pred);
+
+               --  Check whether  predicate set is fully covered by choice
+
+               if Pred_Hi = Choice_Hi then
+                  Next (Pred);
+               end if;
 
             --  Choice_Lo   Choice_Hi   Pred_Hi
             --  +===========+===========+

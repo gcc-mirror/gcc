@@ -10198,7 +10198,8 @@ package body Sem_Util is
       function In_Protected_Function (E : Entity_Id) return Boolean;
       --  Within a protected function, the private components of the enclosing
       --  protected type are constants. A function nested within a (protected)
-      --  procedure is not itself protected.
+      --  procedure is not itself protected. Within the body of a protected
+      --  function the current instance of the protected type is a constant.
 
       function Is_Variable_Prefix (P : Node_Id) return Boolean;
       --  Prefixes can involve implicit dereferences, in which case we must
@@ -10210,12 +10211,24 @@ package body Sem_Util is
       ---------------------------
 
       function In_Protected_Function (E : Entity_Id) return Boolean is
-         Prot : constant Entity_Id := Scope (E);
+         Prot : Entity_Id;
          S    : Entity_Id;
 
       begin
+         if Is_Type (E) then
+            --  E is the current instance of a type.
+
+            Prot := E;
+
+         else
+            --  E is an object.
+
+            Prot := Scope (E);
+         end if;
+
          if not Is_Protected_Type (Prot) then
             return False;
+
          else
             S := Current_Scope;
             while Present (S) and then S /= Prot loop
@@ -10336,9 +10349,14 @@ package body Sem_Util is
               or else  K = E_In_Out_Parameter
               or else  K = E_Generic_In_Out_Parameter
 
-               --  Current instance of type
+               --  Current instance of type. If this is a protected type, check
+               --  that we are not within the body of one of its protected
+               --  functions.
 
-              or else (Is_Type (E) and then In_Open_Scopes (E))
+              or else (Is_Type (E)
+                        and then In_Open_Scopes (E)
+                        and then not In_Protected_Function (E))
+
               or else (Is_Incomplete_Or_Private_Type (E)
                         and then In_Open_Scopes (Full_View (E)));
          end;

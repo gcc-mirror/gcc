@@ -1,3 +1,34 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb: Minor reformatting.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check_Against_Predicate): Handle properly an
+	others clause in various cases.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Matching_Constituent): Do
+	not inspect the hidden states if there are no hidden states. This
+	case arises when the constituents are states coming from a
+	private child.
+
+2013-10-14  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [ARMEL and VxWorks] (__gnat_map_signal): Re-arm guard
+	page by clearing VALID bit vice setting page protection.
+
+2013-10-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi, adaint.c: Fix typo.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Variable, In_Protected_Function):  In the
+	body of a protected function, the protected object itself is a
+	constant (not just its components).
+
 2013-10-14  Vincent Celier  <celier@adacore.com>
 
 	* snames.ads-tmpl: Add new standard name Library_Rpath_Options.
