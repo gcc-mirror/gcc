@@ -1166,18 +1166,17 @@ package body Exp_Ch11 is
 
    --  Generates:
    --     exceptE : constant String := "A.B.EXCEP";   -- static data
-   --     except : exception_data :=  (
-   --                    Handled_By_Other => False,
-   --                    Lang             => 'A',
-   --                    Name_Length      => exceptE'Length,
-   --                    Full_Name        => exceptE'Address,
-   --                    HTable_Ptr       => null,
-   --                    Foreign_Data     => null,
-   --                    Raise_Hook       => null,
-   --                    );
+   --     except : exception_data :=
+   --                (Handled_By_Other => False,
+   --                 Lang             => 'A',
+   --                 Name_Length      => exceptE'Length,
+   --                 Full_Name        => exceptE'Address,
+   --                 HTable_Ptr       => null,
+   --                 Foreign_Data     => null,
+   --                 Raise_Hook       => null);
 
    --  (protecting test only needed if not at library level)
-   --
+
    --     exceptF : Boolean := True --  static data
    --     if exceptF then
    --        exceptF := False;

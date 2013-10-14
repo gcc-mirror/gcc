@@ -777,6 +777,13 @@ package Lib.Writ is
 
    --    D source-name time-stamp checksum [subunit-name] line:file-name
 
+   --      source-name also includes preprocessing data file and preprocessing
+   --      definition file. These preprocessing files may be given as full
+   --      path names instead of simple file names. If a full path name
+   --      includes a directory with spaces, the path name is quoted (quote
+   --      characters (") added at start and end, and any internal quotes are
+   --      doubled).
+
    --      The time-stamp field contains the time stamp of the corresponding
    --      source file. See types.ads for details on time stamp representation.
 

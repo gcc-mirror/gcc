@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,7 +198,9 @@ package Sem_Warn is
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id);
    --  Called on a subprogram call. Checks whether an IN OUT actual that is
    --  not by-copy may overlap with another actual, thus leading to aliasing
-   --  in the body of the called subprogram.
+   --  in the body of the called subprogram. This is indeed a warning in Ada
+   --  versions prior to Ada 2012, but, unless Opt.Error_To_Warning is set by
+   --  use of debug flag -gnatd.E, this is illegal and generates an error.
 
    procedure Warn_On_Suspicious_Index (Name : Entity_Id; X : Node_Id);
    --  This is called after resolving an indexed component or a slice. Name

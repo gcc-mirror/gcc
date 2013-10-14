@@ -251,6 +251,11 @@ begin
    Write_Switch_Char ("eT=?");
    Write_Line ("Read target dependent information file ?, e.g. gnateT=tdf");
 
+   --  Line for -gnateu switch
+
+   Write_Switch_Char ("eu");
+   Write_Line ("Ignore unrecognized style/validity/warning switches");
+
    --  Line for -gnateV switch
 
    Write_Switch_Char ("eV");

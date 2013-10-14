@@ -516,6 +516,13 @@ package Opt is
    --  to make a single long message, and then this message is split up into
    --  multiple lines not exceeding the specified length. Set by -gnatj=nn.
 
+   Error_To_Warning : Boolean := False;
+   --  GNAT
+   --  If True, then certain error messages (e.g. parameter overlap messages
+   --  for procedure calls in Ada 2012 mode) are treated as warnings instead
+   --  of errors. Set by debug flag -gnatd.E. A search for Error_To_Warning
+   --  will identify affected messages.
+
    Exception_Handler_Encountered : Boolean := False;
    --  GNAT
    --  This flag is set true if the parser encounters an exception handler.
