@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Opt; use Opt;
+with Opt;    use Opt;
+with Output; use Output;
 
 package body Validsw is
 
@@ -229,9 +230,14 @@ package body Validsw is
                null;
 
             when others =>
-               OK      := False;
-               Err_Col := J - 1;
-               return;
+               if Ignore_Unrecognized_VWY_Switches then
+                  Write_Line ("unrecognized switch -gnatV" & C & " ignored");
+               else
+                  OK      := False;
+                  Err_Col := J - 1;
+                  return;
+               end if;
+
          end case;
       end loop;
 

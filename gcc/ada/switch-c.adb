@@ -717,6 +717,12 @@ package body Switch.C is
 
                      return;
 
+                  --  -gnateu (unrecognized y,V,w switches)
+
+                  when 'u' =>
+                     Ptr := Ptr + 1;
+                     Ignore_Unrecognized_VWY_Switches := True;
+
                   --  -gnateV (validity checks on parameters)
 
                   when 'V' =>
