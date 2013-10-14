@@ -1,3 +1,64 @@
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.h (gcc::dump_manager): New class, to hold state
+	relating to dumpfile management.
+	(get_dump_file_name): Remove in favor of method of dump_manager.
+	(dump_initialized_p): Likewise.
+	(dump_start): Likewise.
+	(dump_finish): Likewise.
+	(dump_switch_p): Likewise.
+	(dump_register): Likewise.
+	(get_dump_file_info): Likewise.
+	* context.c (gcc::context::context): Construct the dump_manager
+	instance.
+	* context.h (gcc::context::get_dumps): New.
+	(gcc::context::m_dumps): New.
+	* coverage.c (coverage_init): Port to dump_manager API.
+	* dumpfile.c (extra_dump_files): Convert to field of
+	gcc::dump_manager.
+	(extra_dump_files_in_use): Likewise.
+	(extra_dump_files_alloced): Likewise.
+	(gcc::dump_manager::dump_manager): New.
+	(dump_register): Convert to...
+	(gcc::dump_manager::dump_register): ...method, replacing
+	function-static next_dump with m_next_dump field.
+	(get_dump_file_info): Convert to...
+	(gcc::dump_manager::get_dump_file_info): ...method.
+	(get_dump_file_name): Convert to...
+	(gcc::dump_manager::get_dump_file_name): ...method.
+	(dump_start): Convert to...
+	(gcc::dump_manager::dump_start): ...method.
+	(dump_finish): Convert to...
+	(gcc::dump_manager::dump_finish): ...method.
+	(dump_begin): Replace body with...
+	(gcc::dump_manager::dump_begin): ...new method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_initialized_p):  Convert to...
+	(gcc::dump_manager::dump_initialized_p): ...method.
+	(dump_flag_name): Replace body with...
+	(gcc::dump_manager::dump_flag_name): ...new method.
+	(dump_enable_all): Convert to...
+	(gcc::dump_manager::dump_enable_all): ...new method.
+	(opt_info_enable_passes): Convert to...
+	(gcc::dump_manager::opt_info_enable_passes): ...new method.
+	(dump_switch_p_1): Convert to...
+	(gcc::dump_manager::dump_switch_p_1): ...new method.
+	(dump_switch_p):  Convert to...
+	(gcc::dump_manager::dump_switch_p): ...new method.
+	(opt_info_switch_p): Port to dump_manager API.
+	(enable_rtl_dump_file): Likewise.
+	* opts-global.c (handle_common_deferred_options): Port to new
+	dump_manager API.
+	* passes.c (pass_manager::finish_optimization_passes): Likewise.
+	(pass_manager::register_one_dump_file): Likewise.
+	(pass_manager::register_pass): Likewise.
+	(pass_init_dump_file): Likewise.
+	(pass_fini_dump_file): Likewise.
+	* statistics.c (statistics_early_init): Likewise.
+
 2013-10-14  Richard Biener  <rguenther@suse.de>
 
 	* gimple.c (gimple_canonical_types, canonical_type_hash_cache,
