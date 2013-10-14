@@ -351,5 +351,5 @@ package Sem_Aux is
    function Package_Specification (Pack_Id : Entity_Id) return Node_Id;
    --  Given an entity for a package or generic package, return corresponding
    --  package specification. Simplifies handling of child units, and better
-   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id).
+   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
 end Sem_Aux;

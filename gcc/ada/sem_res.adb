@@ -3933,6 +3933,15 @@ package body Sem_Res is
                  and then not Is_Init_Proc (Nam)
                then
                   Error_Msg_NE ("actual for& must be a variable", A, F);
+
+                  if Is_Subprogram (Current_Scope)
+                    and then
+                      (Is_Invariant_Procedure (Current_Scope)
+                         or else Is_Predicate_Function (Current_Scope))
+                  then
+                     Error_Msg_N ("function used in predicate cannot " &
+                       "modify its argument", F);
+                  end if;
                end if;
 
                --  What's the following about???

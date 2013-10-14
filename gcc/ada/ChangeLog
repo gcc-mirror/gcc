@@ -1,3 +1,13 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads, sem_prag.adb: Minor reformatting.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Add error message for a
+	subprogram with an in-out parameter when used in a predicate,
+	to clarify subsequent error at the point of call.
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Is_Matching_Input): Consume a matching null input.
