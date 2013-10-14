@@ -10318,8 +10318,7 @@ package body Sem_Ch6 is
            and then In_Private_Part (Current_Scope)
          then
             Priv_Decls :=
-              Private_Declarations
-                (Specification (Unit_Declaration_Node (Current_Scope)));
+              Private_Declarations (Package_Specification (Current_Scope));
 
             return In_Package_Body (Current_Scope)
               or else

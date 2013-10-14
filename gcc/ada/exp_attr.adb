@@ -6609,12 +6609,14 @@ package body Exp_Attr is
       procedure Process_Range_Update
         (Temp : Entity_Id;
          Comp : Node_Id;
-         Expr : Node_Id);
+         Expr : Node_Id;
+         Typ  : Entity_Id);
       --  Generate the statements necessary to update a slice of the prefix.
       --  The code is inserted before the attribute N. Temp denotes the entity
       --  of the anonymous object created to reflect the changes in values.
       --  Comp is range of the slice to be updated. Expr is an expression
-      --  yielding the new value of Comp.
+      --  yielding the new value of Comp. Typ is the type of the prefix of
+      --  attribute Update.
 
       -----------------------------------------
       -- Process_Component_Or_Element_Update --
@@ -6688,10 +6690,12 @@ package body Exp_Attr is
       procedure Process_Range_Update
         (Temp : Entity_Id;
          Comp : Node_Id;
-         Expr : Node_Id)
+         Expr : Node_Id;
+         Typ  : Entity_Id)
       is
-         Loc   : constant Source_Ptr := Sloc (Comp);
-         Index : Entity_Id;
+         Index_Typ : constant Entity_Id  := Etype (First_Index (Typ));
+         Loc       : constant Source_Ptr := Sloc (Comp);
+         Index     : Entity_Id;
 
       begin
          --  A range update appears as
@@ -6703,7 +6707,7 @@ package body Exp_Attr is
          --  value of Expr:
 
          --    for Index in Low .. High loop
-         --       Temp (Index) := Expr;
+         --       Temp (<Index_Typ> (Index)) := Expr;
          --    end loop;
 
          Index := Make_Temporary (Loc, 'I');
@@ -6722,7 +6726,8 @@ package body Exp_Attr is
                  Name       =>
                    Make_Indexed_Component (Loc,
                      Prefix      => New_Reference_To (Temp, Loc),
-                     Expressions => New_List (New_Reference_To (Index, Loc))),
+                     Expressions => New_List (
+                       Convert_To (Index_Typ, New_Reference_To (Index, Loc)))),
                  Expression => Relocate_Node (Expr))),
 
              End_Label        => Empty));
@@ -6730,10 +6735,10 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Aggr  : constant Node_Id := First (Expressions (N));
+      Aggr  : constant Node_Id    := First (Expressions (N));
       Loc   : constant Source_Ptr := Sloc (N);
-      Pref  : constant Node_Id := Prefix (N);
-      Typ   : constant Entity_Id := Etype (Pref);
+      Pref  : constant Node_Id    := Prefix (N);
+      Typ   : constant Entity_Id  := Etype (Pref);
       Assoc : Node_Id;
       Comp  : Node_Id;
       Expr  : Node_Id;
@@ -6763,7 +6768,7 @@ package body Exp_Attr is
          Expr := Expression (Assoc);
          while Present (Comp) loop
             if Nkind (Comp) = N_Range then
-               Process_Range_Update (Temp, Comp, Expr);
+               Process_Range_Update (Temp, Comp, Expr, Typ);
             else
                Process_Component_Or_Element_Update (Temp, Comp, Expr, Typ);
             end if;

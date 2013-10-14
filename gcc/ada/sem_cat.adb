@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -561,8 +561,7 @@ package body Sem_Cat is
         and then Is_Package_Or_Generic_Package (Unit_Entity)
         and then Unit_Kind /= N_Package_Body
         and then List_Containing (N) =
-                   Visible_Declarations
-                     (Specification (Unit_Declaration_Node (Unit_Entity)))
+                   Visible_Declarations (Package_Specification (Unit_Entity))
         and then not In_Package_Body (Unit_Entity)
         and then not In_Instance;
 

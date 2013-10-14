@@ -2741,6 +2741,11 @@ package body Freeze is
 
                   if Has_Foreign_Convention (Etype (Comp))
                     and then Has_Pragma_Pack (Rec)
+
+                    --  Don't warn for aliased components, since override
+                    --  cannot happen in that case.
+
+                    and then not Is_Aliased (Comp)
                   then
                      declare
                         CN : constant Name_Id :=

@@ -21725,7 +21725,7 @@ package body Sem_Prag is
 
          --  Local variables
 
-         Pack_Spec : constant Node_Id := Parent (Spec_Id);
+         Pack_Spec : constant Node_Id := Package_Specification (Spec_Id);
 
       --  Start of processing for Collect_Hidden_States
 
