@@ -204,27 +204,49 @@ package body Sem_Prag is
    --  _Post, _Invariant, or _Type_Invariant, which are special names used
    --  in identifiers to represent these attribute references.
 
+   procedure Collect_Global_Items
+     (Prag             : Node_Id;
+      In_Items         : in out Elist_Id;
+      In_Out_Items     : in out Elist_Id;
+      Out_Items        : in out Elist_Id;
+      Has_In_State     : out Boolean;
+      Has_In_Out_State : out Boolean;
+      Has_Out_State    : out Boolean;
+      Has_Null_State   : out Boolean);
+   --  Subsidiary to the analysis of pragma Refined_Depends and pragma
+   --  Refined_Global. Prag denotes pragma [Refined_]Global. Gather all input,
+   --  in out and output items of Prag in lists In_Items, In_Out_Items and
+   --  Out_Items. Flags Has_In_State, Has_In_Out_State and Has_Out_State are
+   --  set when there is at least one abstract state with visible refinement
+   --  available in the corresponding mode. Flag Has_Null_State is set when at
+   --  least state has a null refinement.
+
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;
       Subp_Inputs  : in out Elist_Id;
       Subp_Outputs : in out Elist_Id;
       Global_Seen  : out Boolean);
-   --  Subsidiary to the analysis of pragma Global and pragma Depends. Gather
-   --  all inputs and outputs of subprogram Subp_Id in lists Subp_Inputs and
-   --  Subp_Outputs. If the case where the subprogram has no inputs and/or
-   --  outputs, the corresponding returned list is No_Elist. Flag Global_Seen
-   --  is set when the related subprogram has aspect/pragma Global.
+   --  Subsidiary to the analysis of pragma Depends, Global, Refined_Depends
+   --  and Refined_Global. Gather all inputs and outputs of subprogram Subp_Id
+   --  in lists Subp_Inputs and Subp_Outputs. If the case where the subprogram
+   --  has no inputs and/oroutputs, the returned list is No_Elist. Global_Seen
+   --  is set when the related subprogram has pragma [Refined_]Global.
 
-   function Find_Related_Subprogram
-     (Prag             : Node_Id;
-      Check_Duplicates : Boolean := False) return Node_Id;
-   --  Find the declaration of the related subprogram subject to pragma Prag.
-   --  If flag Check_Duplicates is set, the routine emits errors concerning
-   --  duplicate pragmas. If a related subprogram is found, then either the
-   --  corresponding N_Subprogram_Declaration node is returned, or, if the
-   --  pragma applies to a subprogram body, then the N_Subprogram_Body node
-   --  is returned. Note that in the latter case, no check is made to ensure
-   --  that there is no separate declaration of the subprogram.
+   function Find_Related_Subprogram_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiary to the analysis of pragmas Contract_Cases, Depends, Global,
+   --  Refined_Depends, Refined_Global, Refined_Post and Refined_Pre. Find the
+   --  declaration of the related subprogram [body or stub] subject to pragma
+   --  Prag. If flag Do_Checks is set, the routine reports duplicate pragmas
+   --  and detects improper use of refinement pragmas in stand alone expression
+   --  functions. The returned value depends on the related pragma as follows:
+   --    1) Pragmas Contract_Cases, Depends and Global yield the corresponding
+   --       N_Subprogram_Declaration node or if the pragma applies to a stand
+   --       alone body, the N_Subprogram_Body node or Empty if illegal.
+   --    2) Pragmas Refined_Depends, Refined_Global, Refined_Post and
+   --       Refined_Pre yield N_Subprogram_Body or N_Subprogram_Body_Stub nodes
+   --       or Empty if illegal.
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
@@ -235,6 +257,14 @@ package body Sem_Prag is
    --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
    --  Get_SPARK_Mode_Id. Convert a name into a corresponding value of type
    --  SPARK_Mode_Id.
+
+   function Is_Part_Of
+     (State    : Entity_Id;
+      Ancestor : Entity_Id) return Boolean;
+   --  Subsidiary to the processing of pragma Refined_Depends and pragma
+   --  Refined_Global. Determine whether abstract state State is part of an
+   --  ancestor abstract state Ancestor. For this relationship to hold, State
+   --  must have option Part_Of in its Abstract_State definition.
 
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
@@ -258,13 +288,6 @@ package body Sem_Prag is
    --  It is there for assisting front end debugging. By placing a Reviewable
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
-
-   function Requires_Profile_Installation
-     (Prag : Node_Id;
-      Subp : Node_Id) return Boolean;
-   --  Subsidiary routine to the analysis of pragma Depends and pragma Global.
-   --  Determine whether the profile of subprogram Subp must be installed into
-   --  visibility to access its formals from pragma Prag.
 
    procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
@@ -410,8 +433,8 @@ package body Sem_Prag is
    begin
       Set_Analyzed (N);
 
-      Subp_Decl := Find_Related_Subprogram (N);
-      Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
+      Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+      Subp_Id   := Defining_Entity (Subp_Decl);
       All_Cases := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  Multiple contract cases appear in aggregate form
@@ -428,7 +451,7 @@ package body Sem_Prag is
             --  pertaining to subprogram declarations. Skip the installation
             --  for subprogram bodies because the formals are already visible.
 
-            if Requires_Profile_Installation (N, Subp_Decl) then
+            if Current_Scope /= Subp_Id then
                Restore_Scope := True;
                Push_Scope (Subp_Id);
                Install_Formals (Subp_Id);
@@ -475,8 +498,12 @@ package body Sem_Prag is
       Result_Seen : Boolean := False;
       --  A flag set when Subp_Id'Result is processed
 
+      Spec_Id : Entity_Id;
+      --  The entity of the subprogram subject to pragma [Refined_]Depends
+
       Subp_Id : Entity_Id;
-      --  The entity of the subprogram subject to pragma Depends
+      --  The entity of the subprogram [body or stub] subject to pragma
+      --  [Refined_]Depends.
 
       Subp_Inputs  : Elist_Id := No_Elist;
       Subp_Outputs : Elist_Id := No_Elist;
@@ -512,10 +539,9 @@ package body Sem_Prag is
       --  error if this is not the case.
 
       procedure Normalize_Clause (Clause : Node_Id);
-      --  Remove a self-dependency "+" from the input list of a clause.
-      --  Depending on the contents of the relation, either split the the
-      --  clause into multiple smaller clauses or perform the normalization in
-      --  place.
+      --  Remove a self-dependency "+" from the input list of a clause. Split
+      --  a clause with multiple outputs into multiple clauses with a single
+      --  output.
 
       -------------------------------
       -- Analyze_Dependency_Clause --
@@ -656,20 +682,19 @@ package body Sem_Prag is
 
             --  Process Function'Result in the context of a dependency clause
 
-            elsif Nkind (Item) = N_Attribute_Reference
-              and then Attribute_Name (Item) = Name_Result
-            then
+            elsif Is_Attribute_Result (Item) then
+
                --  It is sufficent to analyze the prefix of 'Result in order to
                --  establish legality of the attribute.
 
                Analyze (Prefix (Item));
 
                --  The prefix of 'Result must denote the function for which
-               --  aspect/pragma Depends applies.
+               --  pragma Depends applies.
 
                if not Is_Entity_Name (Prefix (Item))
-                 or else Ekind (Subp_Id) /= E_Function
-                 or else Entity (Prefix (Item)) /= Subp_Id
+                 or else Ekind (Spec_Id) /= E_Function
+                 or else Entity (Prefix (Item)) /= Spec_Id
                then
                   Error_Msg_Name_1 := Name_Result;
                   Error_Msg_N
@@ -751,6 +776,38 @@ package body Sem_Prag is
                         Add_Item (Item_Id, All_Inputs_Seen);
                      end if;
 
+                     if Ekind (Item_Id) = E_Abstract_State then
+
+                        --  The state acts as a constituent of some other
+                        --  state. Ensure that the other state is a proper
+                        --  ancestor of the item.
+
+                        if Present (Refined_State (Item_Id)) then
+                           if not Is_Part_Of
+                                    (Item_Id, Refined_State (Item_Id))
+                           then
+                              Error_Msg_Name_1 :=
+                                Chars (Refined_State (Item_Id));
+                              Error_Msg_NE
+                                ("state & is not a valid constituent of "
+                                 & "ancestor state %", Item, Item_Id);
+                              return;
+                           end if;
+
+                        --  An abstract state with visible refinement cannot
+                        --  appear in pragma [Refined_]Global as its place must
+                        --  be taken by some of its constituents.
+
+                        elsif not Is_Empty_Elmt_List
+                                    (Refinement_Constituents (Item_Id))
+                        then
+                           Error_Msg_NE
+                             ("cannot mention state & in global refinement, "
+                              & "use its constituents instead", Item, Item_Id);
+                           return;
+                        end if;
+                     end if;
+
                      --  When the item renames an entire object, replace the
                      --  item with a reference to the object.
 
@@ -824,10 +881,10 @@ package body Sem_Prag is
 
       procedure Check_Function_Return is
       begin
-         if Ekind (Subp_Id) = E_Function and then not Result_Seen then
+         if Ekind (Spec_Id) = E_Function and then not Result_Seen then
             Error_Msg_NE
               ("result of & must appear in exactly one output list",
-               N, Subp_Id);
+               N, Spec_Id);
          end if;
       end Check_Function_Return;
 
@@ -982,6 +1039,11 @@ package body Sem_Prag is
          --  Flag Multiple should be set when Output comes from a list with
          --  multiple items.
 
+         procedure Split_Multiple_Outputs;
+         --  If Clause contains more than one output, split the clause into
+         --  multiple clauses with a single output. All new clauses are added
+         --  after Clause.
+
          -----------------------------
          -- Create_Or_Modify_Clause --
          -----------------------------
@@ -1097,25 +1159,23 @@ package body Sem_Prag is
 
             --  Local variables
 
-            Loc    : constant Source_Ptr := Sloc (Output);
-            Clause : Node_Id;
+            Loc        : constant Source_Ptr := Sloc (Clause);
+            New_Clause : Node_Id;
 
          --  Start of processing for Create_Or_Modify_Clause
 
          begin
-            --  A function result cannot depend on itself because it cannot
-            --  appear in the input list of a relation.
-
-            if Nkind (Output) = N_Attribute_Reference
-              and then Attribute_Name (Output) = Name_Result
-            then
-               Error_Msg_N ("function result cannot depend on itself", Output);
-               return;
-
             --  A null output depending on itself does not require any
             --  normalization.
 
-            elsif Nkind (Output) = N_Null then
+            if Nkind (Output) = N_Null then
+               return;
+
+            --  A function result cannot depend on itself because it cannot
+            --  appear in the input list of a relation.
+
+            elsif Is_Attribute_Result (Output) then
+               Error_Msg_N ("function result cannot depend on itself", Output);
                return;
             end if;
 
@@ -1142,16 +1202,15 @@ package body Sem_Prag is
             else
                --  Unchain the output from its output list as it will appear in
                --  a new clause. Note that we cannot simply rewrite the output
-               --  as null because this will violate the semantics of aspect or
-               --  pragma Depends.
+               --  as null because this will violate the semantics of pragma
+               --  Depends.
 
                Remove (Output);
 
-               --  Create a new clause of the form:
-
+               --  Generate a new clause of the form:
                --    (Output => Inputs)
 
-               Clause :=
+               New_Clause :=
                  Make_Component_Association (Loc,
                    Choices    => New_List (Output),
                    Expression => New_Copy_Tree (Inputs));
@@ -1160,15 +1219,79 @@ package body Sem_Prag is
                --  been analyzed. There is not need to reanalyze it or
                --  renormalize it again.
 
-               Set_Analyzed (Clause);
+               Set_Analyzed (New_Clause);
 
                Propagate_Output
-                 (Output => First (Choices (Clause)),
-                  Inputs => Expression (Clause));
+                 (Output => First (Choices (New_Clause)),
+                  Inputs => Expression (New_Clause));
 
-               Insert_After (After, Clause);
+               Insert_After (After, New_Clause);
             end if;
          end Create_Or_Modify_Clause;
+
+         ----------------------------
+         -- Split_Multiple_Outputs --
+         ----------------------------
+
+         procedure Split_Multiple_Outputs is
+            Inputs      : constant Node_Id    := Expression (Clause);
+            Loc         : constant Source_Ptr := Sloc (Clause);
+            Outputs     : constant Node_Id    := First (Choices (Clause));
+            Last_Output : Node_Id;
+            Next_Output : Node_Id;
+            Output      : Node_Id;
+            Split       : Node_Id;
+
+         --  Start of processing for Split_Multiple_Outputs
+
+         begin
+            --  Multiple outputs appear as an aggregate. Nothing to do when
+            --  the clause has exactly one output.
+
+            if Nkind (Outputs) = N_Aggregate then
+               Last_Output := Last (Expressions (Outputs));
+
+               --  Create a clause for each output. Note that each time a new
+               --  clause is created, the original output list slowly shrinks
+               --  until there is one item left.
+
+               Output := First (Expressions (Outputs));
+               while Present (Output) loop
+                  Next_Output := Next (Output);
+
+                  --  Unhook the output from the original output list as it
+                  --  will be relocated to a new clause.
+
+                  Remove (Output);
+
+                  --  Special processing for the last output. At this point
+                  --  the original aggregate has been stripped down to one
+                  --  element. Replace the aggregate by the element itself.
+
+                  if Output = Last_Output then
+                     Rewrite (Outputs, Output);
+
+                  else
+                     --  Generate a clause of the form:
+                     --    (Output => Inputs)
+
+                     Split :=
+                       Make_Component_Association (Loc,
+                         Choices    => New_List (Output),
+                         Expression => New_Copy_Tree (Inputs));
+
+                     --  The new clause contains replicated content that has
+                     --  already been analyzed. There is not need to reanalyze
+                     --  them.
+
+                     Set_Analyzed (Split);
+                     Insert_After (Clause, Split);
+                  end if;
+
+                  Output := Next_Output;
+               end loop;
+            end if;
+         end Split_Multiple_Outputs;
 
          --  Local variables
 
@@ -1224,6 +1347,11 @@ package body Sem_Prag is
                   Multiple => False);
             end if;
          end if;
+
+         --  Split a clause with multiple outputs into multiple clauses with a
+         --  single output.
+
+         Split_Multiple_Outputs;
       end Normalize_Clause;
 
       --  Local variables
@@ -1241,9 +1369,27 @@ package body Sem_Prag is
    begin
       Set_Analyzed (N);
 
-      Subp_Decl := Find_Related_Subprogram (N);
-      Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      Clause    := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+      Subp_Id   := Defining_Entity (Subp_Decl);
+
+      --  The logic in this routine is used to analyze both pragma Depends and
+      --  pragma Refined_Depends since they have the same syntax and base
+      --  semantics. Find the entity of the corresponding spec when analyzing
+      --  Refined_Depends.
+
+      if Nkind (Subp_Decl) = N_Subprogram_Body
+        and then not Acts_As_Spec (Subp_Decl)
+      then
+         Spec_Id := Corresponding_Spec (Subp_Decl);
+
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
+
+      else
+         Spec_Id := Subp_Id;
+      end if;
+
+      Clause := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  Empty dependency list
 
@@ -1251,7 +1397,7 @@ package body Sem_Prag is
 
          --  Gather all states, variables and formal parameters that the
          --  subprogram may depend on. These items are obtained from the
-         --  parameter profile or pragma Global (if available).
+         --  parameter profile or pragma [Refined_]Global (if available).
 
          Collect_Subprogram_Inputs_Outputs
            (Subp_Id      => Subp_Id,
@@ -1275,7 +1421,7 @@ package body Sem_Prag is
 
          --  Gather all states, variables and formal parameters that the
          --  subprogram may depend on. These items are obtained from the
-         --  parameter profile or pragma Global (if available).
+         --  parameter profile or pragma [Refined_]Global (if available).
 
          Collect_Subprogram_Inputs_Outputs
            (Subp_Id      => Subp_Id,
@@ -1288,10 +1434,10 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if Requires_Profile_Installation (N, Subp_Decl) then
+         if Current_Scope /= Spec_Id then
             Restore_Scope := True;
-            Push_Scope (Subp_Id);
-            Install_Formals (Subp_Id);
+            Push_Scope (Spec_Id);
+            Install_Formals (Spec_Id);
          end if;
 
          Clause := First (Component_Associations (Clause));
@@ -1299,8 +1445,7 @@ package body Sem_Prag is
             Errors := Serious_Errors_Detected;
 
             --  Normalization may create extra clauses that contain replicated
-            --  input and output names. There is no need to reanalyze or
-            --  renormalize these extra clauses.
+            --  input and output names. There is no need to reanalyze them.
 
             if not Analyzed (Clause) then
                Set_Analyzed (Clause);
@@ -1308,13 +1453,13 @@ package body Sem_Prag is
                Analyze_Dependency_Clause
                  (Clause  => Clause,
                   Is_Last => Clause = Last_Clause);
+            end if;
 
-               --  Do not normalize an erroneous clause because the inputs or
-               --  outputs may denote illegal items.
+            --  Do not normalize an erroneous clause because the inputs and/or
+            --  outputs may denote illegal items.
 
-               if Errors = Serious_Errors_Detected then
-                  Normalize_Clause (Clause);
-               end if;
+            if Serious_Errors_Detected = Errors then
+               Normalize_Clause (Clause);
             end if;
 
             Next (Clause);
@@ -1347,8 +1492,12 @@ package body Sem_Prag is
       --  A list containing the entities of all the items processed so far. It
       --  plays a role in detecting distinct entities.
 
+      Spec_Id : Entity_Id;
+      --  The entity of the subprogram subject to pragma [Refined_]Global
+
       Subp_Id : Entity_Id;
-      --  The entity of the subprogram subject to pragma Global
+      --  The entity of the subprogram [body or stub] subject to pragma
+      --  [Refined_]Global.
 
       In_Out_Seen : Boolean := False;
       Input_Seen  : Boolean := False;
@@ -1433,7 +1582,7 @@ package body Sem_Prag is
                --  diagnostic.
 
                if Is_Formal (Item_Id) then
-                  if Scope (Item_Id) = Subp_Id then
+                  if Scope (Item_Id) = Spec_Id then
                      Error_Msg_N
                        ("global item cannot reference formal parameter", Item);
                      return;
@@ -1446,6 +1595,35 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("global item must denote variable or state", Item);
                   return;
+               end if;
+
+               if Ekind (Item_Id) = E_Abstract_State then
+
+                  --  The state acts as a constituent of some other state.
+                  --  Ensure that the other state is a proper ancestor of the
+                  --  item.
+
+                  if Present (Refined_State (Item_Id)) then
+                     if not Is_Part_Of (Item_Id, Refined_State (Item_Id)) then
+                        Error_Msg_Name_1 := Chars (Refined_State (Item_Id));
+                        Error_Msg_NE
+                          ("state & is not a valid constituent of ancestor "
+                           & "state %", Item, Item_Id);
+                        return;
+                     end if;
+
+                  --  An abstract state with visible refinement cannot appear
+                  --  in pragma [Refined_]Global as its place must be taken by
+                  --  some of its constituents.
+
+                  elsif not Is_Empty_Elmt_List
+                              (Refinement_Constituents (Item_Id))
+                  then
+                     Error_Msg_NE
+                       ("cannot mention state & in global refinement, use its "
+                        & "constituents instead", Item, Item_Id);
+                     return;
+                  end if;
                end if;
 
                --  When the item renames an entire object, replace the item
@@ -1543,7 +1721,7 @@ package body Sem_Prag is
 
          begin
             --  Traverse the scope stack looking for enclosing subprograms
-            --  subject to aspect/pragma Global.
+            --  subject to pragma [Refined_]Global.
 
             Context := Scope (Subp_Id);
             while Present (Context) and then Context /= Standard_Standard loop
@@ -1585,7 +1763,7 @@ package body Sem_Prag is
 
          procedure Check_Mode_Restriction_In_Function (Mode : Node_Id) is
          begin
-            if Ekind (Subp_Id) = E_Function then
+            if Ekind (Spec_Id) = E_Function then
                Error_Msg_N
                  ("global mode & not applicable to functions", Mode);
             end if;
@@ -1705,9 +1883,27 @@ package body Sem_Prag is
    begin
       Set_Analyzed (N);
 
-      Subp_Decl := Find_Related_Subprogram (N);
-      Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      Items     := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+      Subp_Id   := Defining_Entity (Subp_Decl);
+
+      --  The logic in this routine is used to analyze both pragma Global and
+      --  pragma Refined_Global since they have the same syntax and base
+      --  semantics. Find the entity of the corresponding spec when analyzing
+      --  Refined_Global.
+
+      if Nkind (Subp_Decl) = N_Subprogram_Body
+        and then not Acts_As_Spec (Subp_Decl)
+      then
+         Spec_Id := Corresponding_Spec (Subp_Decl);
+
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
+
+      else
+         Spec_Id := Subp_Id;
+      end if;
+
+      Items := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  There is nothing to be done for a null global list
 
@@ -1723,10 +1919,10 @@ package body Sem_Prag is
          --  item. This falls out of the general rule of aspects pertaining to
          --  subprogram declarations.
 
-         if Requires_Profile_Installation (N, Subp_Decl) then
+         if Current_Scope /= Spec_Id then
             Restore_Scope := True;
-            Push_Scope (Subp_Id);
-            Install_Formals (Subp_Id);
+            Push_Scope (Spec_Id);
+            Install_Formals (Spec_Id);
          end if;
 
          Analyze_Global_List (Items);
@@ -2226,9 +2422,8 @@ package body Sem_Prag is
 
       procedure Check_Declaration_Order (States : Node_Id; Inits : Node_Id);
       --  Subsidiary routine to the analysis of pragmas Abstract_State and
-      --  Initializes. Determine whether aspect/pragma Abstract_State denoted
-      --  by States is defined earlier than aspect/pragma Initializes denoted
-      --  by Inits.
+      --  Initializes. Determine whether pragma Abstract_State denoted by
+      --  States is defined earlier than pragma Initializes denoted by Inits.
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
       --  Check if a rep item of the same name as the current pragma is already
@@ -2669,10 +2864,9 @@ package body Sem_Prag is
          Body_Id : out Entity_Id;
          Legal   : out Boolean)
       is
-         Body_Decl : Node_Id := Parent (N);
+         Body_Decl : Node_Id;
          Pack_Spec : Node_Id;
          Spec_Decl : Node_Id;
-         Stmt      : Node_Id;
 
       begin
          --  Assume that the pragma is illegal
@@ -2685,56 +2879,10 @@ package body Sem_Prag is
          Check_Arg_Count (1);
          Check_No_Identifiers;
 
-         --  Verify the placement of the pragma and check for duplicates
+         --  Verify the placement of the pragma and check for duplicates. The
+         --  pragma must apply to a subprogram body [stub].
 
-         Stmt := Prev (N);
-         while Present (Stmt) loop
-
-            --  Skip prior pragmas, but check for duplicates
-
-            if Nkind (Stmt) = N_Pragma then
-               if Pragma_Name (Stmt) = Pname then
-                  Error_Msg_Name_1 := Pname;
-                  Error_Msg_Sloc   := Sloc (Stmt);
-                  Error_Msg_N ("pragma % duplicates pragma declared #", N);
-               end if;
-
-            --  Emit an error when the pragma applies to an expression function
-            --  that does not act as a completion.
-
-            elsif Nkind (Stmt) = N_Subprogram_Declaration
-              and then Nkind (Original_Node (Stmt)) = N_Expression_Function
-              and then not
-                Has_Completion (Defining_Unit_Name (Specification (Stmt)))
-            then
-               Error_Pragma
-                 ("pragma % cannot apply to a stand alone expression "
-                  & "function");
-               return;
-
-            --  The pragma applies to a subprogram body stub
-
-            elsif Nkind (Stmt) = N_Subprogram_Body_Stub then
-               Body_Decl := Stmt;
-               exit;
-
-            --  Skip internally generated code
-
-            elsif not Comes_From_Source (Stmt) then
-               null;
-
-            --  The pragma does not apply to a legal construct, issue an error
-            --  and stop the analysis.
-
-            else
-               Pragma_Misplaced;
-               return;
-            end if;
-
-            Stmt := Prev (Stmt);
-         end loop;
-
-         --  Pragma Refined_Pre/Post must apply to a subprogram body [stub]
+         Body_Decl := Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
          if not Nkind_In (Body_Decl, N_Subprogram_Body,
                                      N_Subprogram_Body_Stub)
@@ -2759,7 +2907,7 @@ package body Sem_Prag is
             return;
          end if;
 
-         --  Refined_Pre/Post may only apply to the body [stub] of a subprogram
+         --  The pragma may only apply to the body [stub] of a subprogram
          --  declared in the visible part of a package. Retrieve the context of
          --  the subprogram declaration.
 
@@ -9103,8 +9251,8 @@ package body Sem_Prag is
             Pack_Id := Defining_Entity (Context);
             Add_Contract_Item (N, Pack_Id);
 
-            --  Verify the declaration order of aspects/pragmas Abstract_State
-            --  and Initializes.
+            --  Verify the declaration order of pragmas Abstract_State and
+            --  Initializes.
 
             Check_Declaration_Order
               (States => N,
@@ -10195,7 +10343,7 @@ package body Sem_Prag is
 
                   if Is_Checked (N) and then not Split_PPC (N) then
 
-                     --  Mark pragma/aspect SCO as enabled
+                     --  Mark aspect/pragma SCO as enabled
 
                      Set_SCO_Pragma_Enabled (Loc);
                   end if;
@@ -10681,7 +10829,6 @@ package body Sem_Prag is
 
          when Pragma_Contract_Cases => Contract_Cases : declare
             Subp_Decl : Node_Id;
-            Subp_Id   : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -10691,7 +10838,8 @@ package body Sem_Prag is
             --  be associated with a subprogram declaration or a body that acts
             --  as a spec.
 
-            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
+            Subp_Decl :=
+              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
             if Nkind (Subp_Decl) /= N_Subprogram_Declaration
               and then (Nkind (Subp_Decl) /= N_Subprogram_Body
@@ -10701,15 +10849,13 @@ package body Sem_Prag is
                return;
             end if;
 
-            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
-
             --  The pragma is analyzed at the end of the declarative part which
             --  contains the related subprogram. Reset the analyzed flag.
 
             Set_Analyzed (N, False);
 
-            --  When the aspect/pragma appears on a subprogram body, perform
-            --  the full analysis now.
+            --  When the pragma appears on a subprogram body, perform the full
+            --  analysis now.
 
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Contract_Cases_In_Decl_Part (N);
@@ -10726,7 +10872,7 @@ package body Sem_Prag is
 
             --  Chain the pragma on the contract for further processing
 
-            Add_Contract_Item (N, Subp_Id);
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
          end Contract_Cases;
 
          ----------------
@@ -11201,7 +11347,6 @@ package body Sem_Prag is
 
          when Pragma_Depends => Depends : declare
             Subp_Decl : Node_Id;
-            Subp_Id   : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -11212,7 +11357,8 @@ package body Sem_Prag is
             --  associated with a subprogram declaration or a body that acts
             --  as a spec.
 
-            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
+            Subp_Decl :=
+              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
             if Nkind (Subp_Decl) /= N_Subprogram_Declaration
               and then (Nkind (Subp_Decl) /= N_Subprogram_Body
@@ -11222,10 +11368,8 @@ package body Sem_Prag is
                return;
             end if;
 
-            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
-
-            --  When the aspect/pragma appears on a subprogram body, perform
-            --  the full analysis now.
+            --  When the pragma appears on a subprogram body, perform the full
+            --  analysis now.
 
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Depends_In_Decl_Part (N);
@@ -11242,7 +11386,7 @@ package body Sem_Prag is
 
             --  Chain the pragma on the contract for further processing
 
-            Add_Contract_Item (N, Subp_Id);
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
          end Depends;
 
          ---------------------
@@ -12452,7 +12596,6 @@ package body Sem_Prag is
 
          when Pragma_Global => Global : declare
             Subp_Decl : Node_Id;
-            Subp_Id   : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -12463,7 +12606,8 @@ package body Sem_Prag is
             --  associated with a subprogram declaration or a body that acts
             --  as a spec.
 
-            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
+            Subp_Decl :=
+              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
             if Nkind (Subp_Decl) /= N_Subprogram_Declaration
               and then (Nkind (Subp_Decl) /= N_Subprogram_Body
@@ -12473,10 +12617,8 @@ package body Sem_Prag is
                return;
             end if;
 
-            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
-
-            --  When the aspect/pragma appears on a subprogram body, perform
-            --  the full analysis now.
+            --  When the pragma appears on a subprogram body, perform the full
+            --  analysis now.
 
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Global_In_Decl_Part (N);
@@ -12493,7 +12635,7 @@ package body Sem_Prag is
 
             --  Chain the pragma on the contract for further processing
 
-            Add_Contract_Item (N, Subp_Id);
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
          end Global;
 
          -----------
@@ -13275,8 +13417,8 @@ package body Sem_Prag is
             Pack_Id := Defining_Entity (Context);
             Add_Contract_Item (N, Pack_Id);
 
-            --  Verify the declaration order of aspects/pragmas Abstract_State
-            --  and Initializes.
+            --  Verify the declaration order of pragmas Abstract_State and
+            --  Initializes.
 
             Check_Declaration_Order
               (States => Get_Pragma (Pack_Id, Pragma_Abstract_State),
@@ -16631,18 +16773,30 @@ package body Sem_Prag is
          when Pragma_Rational =>
             Set_Rational_Profile;
 
-         ---------------------
-         -- Refined_Depends --
-         ---------------------
+         ------------------------------------
+         -- Refined_Depends/Refined_Global --
+         ------------------------------------
 
-         --  ??? To be implemented
+         --  pragma Refined_Depends (DEPENDENCY_RELATION);
 
-         when Pragma_Refined_Depends =>
-            null;
+         --  DEPENDENCY_RELATION ::=
+         --    null
+         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
 
-         --------------------
-         -- Refined_Global --
-         --------------------
+         --  DEPENDENCY_CLAUSE ::=
+         --    OUTPUT_LIST =>[+] INPUT_LIST
+         --  | NULL_DEPENDENCY_CLAUSE
+
+         --  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+         --  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
+
+         --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+         --  OUTPUT ::= NAME | FUNCTION_RESULT
+         --  INPUT  ::= NAME
+
+         --  where FUNCTION_RESULT is a function Result attribute_reference
 
          --  pragma Refined_Global (GLOBAL_SPECIFICATION);
 
@@ -16657,7 +16811,9 @@ package body Sem_Prag is
          --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
          --  GLOBAL_ITEM   ::= NAME
 
-         when Pragma_Refined_Global => Refined_Global : declare
+         when Pragma_Refined_Depends |
+              Pragma_Refined_Global  => Refined_Depends_Global :
+         declare
             Body_Id : Entity_Id;
             Legal   : Boolean;
             Spec_Id : Entity_Id;
@@ -16672,7 +16828,7 @@ package body Sem_Prag is
             if Legal then
                Add_Contract_Item (N, Body_Id);
             end if;
-         end Refined_Global;
+         end Refined_Depends_Global;
 
          ------------------------------
          -- Refined_Post/Refined_Pre --
@@ -16764,7 +16920,7 @@ package body Sem_Prag is
             end loop;
 
             --  State refinement is allowed only when the corresponding package
-            --  declaration has a non-null aspect/pragma Abstract_State.
+            --  declaration has a non-null pragma Abstract_State.
 
             Spec_Id := Corresponding_Spec (Context);
 
@@ -19338,12 +19494,778 @@ package body Sem_Prag is
    -- Analyze_Refined_Depends_In_Decl_Part --
    ------------------------------------------
 
-   --  ??? To be implemented
-
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id) is
-      pragma Unreferenced (N);
+      Dependencies : List_Id := No_List;
+      Depends      : Node_Id;
+      --  The corresponding Depends pragma along with its clauses
+
+      Global : Node_Id := Empty;
+      --  The corresponding Refined_Global pragma (if any)
+
+      Out_Items : Elist_Id := No_Elist;
+      --  All output items as defined in pragma Refined_Global (if any)
+
+      Refinements : List_Id := No_List;
+      --  The clauses of pragma Refined_Depends
+
+      Spec_Id : Entity_Id;
+      --  The entity of the subprogram subject to pragma Refined_Depends
+
+      procedure Check_Dependency_Clause (Dep_Clause : Node_Id);
+      --  Verify the legality of a single clause
+
+      procedure Report_Extra_Clauses;
+      --  Emit an error for each extra clause the appears in Refined_Depends
+
+      -----------------------------
+      -- Check_Dependency_Clause --
+      -----------------------------
+
+      procedure Check_Dependency_Clause (Dep_Clause : Node_Id) is
+         function Inputs_Match
+           (Ref_Clause : Node_Id;
+            Do_Checks  : Boolean) return Boolean;
+         --  Determine whether the inputs of clause Dep_Clause match those of
+         --  clause Ref_Clause. If flag Do_Checks is set, the routine reports
+         --  missed or extra input items.
+
+         function Output_Constituents (State_Id : Entity_Id) return Elist_Id;
+         --  Given a state denoted by State_Id, return a list of all output
+         --  constituents that may be referenced within Refined_Depends. The
+         --  contents of the list depend on whethe Refined_Global is present.
+
+         procedure Report_Unused_Constituents (Constits : Elist_Id);
+         --  Emit errors for all constituents found in list Constits
+
+         ------------------
+         -- Inputs_Match --
+         ------------------
+
+         function Inputs_Match
+           (Ref_Clause : Node_Id;
+            Do_Checks  : Boolean) return Boolean
+         is
+            Ref_Inputs : List_Id;
+            --  The input list of the refinement clause
+
+            function Is_Matching_Input (Dep_Input : Node_Id) return Boolean;
+            --  Determine whether input Dep_Input matches one of the inputs of
+            --  clause Ref_Clause.
+
+            procedure Report_Extra_Inputs;
+            --  Emit errors for all extra inputs that appear in Ref_Clause
+
+            -----------------------
+            -- Is_Matching_Input --
+            -----------------------
+
+            function Is_Matching_Input (Dep_Input : Node_Id) return Boolean is
+               procedure Match_Error (Msg : String; N : Node_Id);
+               --  Emit a matching error if flag Do_Checks is set
+
+               -----------------
+               -- Match_Error --
+               -----------------
+
+               procedure Match_Error (Msg : String; N : Node_Id) is
+               begin
+                  if Do_Checks then
+                     Error_Msg_N (Msg, N);
+                  end if;
+               end Match_Error;
+
+               --  Local variables
+
+               Dep_Id         : Node_Id;
+               Next_Ref_Input : Node_Id;
+               Ref_Id         : Entity_Id;
+               Ref_Input      : Node_Id;
+
+               Has_Constituent : Boolean := False;
+               --  Flag set when the refinement input list contains at least
+               --  one constituent of the state denoted by Dep_Id.
+
+               Has_Null_State : Boolean := False;
+               --  Flag set when the dependency input is a state with a null
+               --  refinement.
+
+               Has_Refined_State : Boolean := False;
+               --  Flag set when the dependency input is a state with visible
+               --  refinement.
+
+            --  Start of processing for Is_Matching_Input
+
+            begin
+               --  Match a null input with another null input
+
+               if Nkind (Dep_Input) = N_Null then
+                  if Nkind (Expression (Ref_Clause)) = N_Null then
+                     return True;
+                  else
+                     Match_Error
+                       ("null input cannot be matched in corresponding "
+                        & "refinement clause", Dep_Input);
+                  end if;
+
+               --  The remaining cases are formal parameters, variables and
+               --  states.
+
+               else
+                  Dep_Id := Entity_Of (Dep_Input);
+
+                  --  Inspect all inputs of the refinement clause and attempt
+                  --  to match against the inputs of the dependance clause.
+
+                  Ref_Input := First (Ref_Inputs);
+                  while Present (Ref_Input) loop
+
+                     --  Store the next input now because a match will remove
+                     --  it from the list.
+
+                     Next_Ref_Input := Next (Ref_Input);
+
+                     if Ekind (Dep_Id) = E_Abstract_State then
+
+                        --  A state with a null refinement matches either a
+                        --  null input list or nothing at all (no input):
+
+                        --    Refined_State (State => null)
+
+                        --  No input
+
+                        --    Depends         => (<output> => (State, Input))
+                        --    Refined_Depends => (<output> => Input  --  OK
+
+                        --  Null input list
+
+                        --    Depends         => (<output> => State)
+                        --    Refined_Depends => (<output> => null)  --  OK
+
+                        if Has_Null_Refinement (Dep_Id) then
+                           Has_Null_State := True;
+
+                           --  Remove the matching null from the pool of
+                           --  candidates.
+
+                           if Nkind (Ref_Input) = N_Null then
+                              Remove (Ref_Input);
+                           end if;
+
+                           return True;
+
+                        --  The state has a non-null refinement in which case
+                        --  remove all the matching constituents of the state:
+
+                        --    Refined_State   => (State    => (C1, C2))
+                        --    Depends         => (<output> =>  State)
+                        --    Refined_Depends => (<output> => (C1, C2))
+
+                        elsif not Is_Empty_Elmt_List
+                                    (Refinement_Constituents (Dep_Id))
+                        then
+                           Has_Refined_State := True;
+
+                           if Is_Entity_Name (Ref_Input) then
+                              Ref_Id := Entity_Of (Ref_Input);
+
+                              --  The input of the refinement clause is a valid
+                              --  constituent of the state. Remove the input
+                              --  from the pool of candidates. Note that the
+                              --  search continues because the state may be
+                              --  represented by multiple constituents.
+
+                              if Ekind_In (Ref_Id, E_Abstract_State,
+                                                   E_Variable)
+                                and then Present (Refined_State (Ref_Id))
+                                and then Refined_State (Ref_Id) = Dep_Id
+                              then
+                                 Has_Constituent := True;
+                                 Remove (Ref_Input);
+                              end if;
+                           end if;
+                        end if;
+
+                     --  Formal parameters and variables are matched on
+                     --  entities. If this is the case, remove the input from
+                     --  the candidate list.
+
+                     elsif Is_Entity_Name (Ref_Input)
+                       and then Entity_Of (Ref_Input) = Dep_Id
+                     then
+                        Remove (Ref_Input);
+                        return True;
+                     end if;
+
+                     Ref_Input := Next_Ref_Input;
+                  end loop;
+               end if;
+
+               --  A state with visible refinement was matched against one or
+               --  more of its constituents.
+
+               if Has_Constituent then
+                  return True;
+
+               --  A state with a null refinement matched null or nothing
+
+               elsif Has_Null_State then
+                  return True;
+
+               --  The input of a dependence clause does not have a matching
+               --  input in the refinement clause, emit an error.
+
+               else
+                  Match_Error
+                    ("input cannot be matched in corresponding refinement "
+                     & "clause", Dep_Input);
+
+                  if Has_Refined_State then
+                     Match_Error
+                       ("\check the use of constituents in dependence "
+                        & "refinement", Dep_Input);
+                  end if;
+
+                  return False;
+               end if;
+            end Is_Matching_Input;
+
+            -------------------------
+            -- Report_Extra_Inputs --
+            -------------------------
+
+            procedure Report_Extra_Inputs is
+               Input : Node_Id;
+
+            begin
+               if Present (Ref_Inputs) and then Do_Checks then
+                  Input := First (Ref_Inputs);
+                  while Present (Input) loop
+                     Error_Msg_N
+                       ("unmatched or extra input in refinement clause",
+                        Input);
+
+                     Next (Input);
+                  end loop;
+               end if;
+            end Report_Extra_Inputs;
+
+            --  Local variables
+
+            Dep_Inputs : constant Node_Id := Expression (Dep_Clause);
+            Inputs     : constant Node_Id := Expression (Ref_Clause);
+            Dep_Input  : Node_Id;
+            Result     : Boolean;
+
+         --  Start of processing for Inputs_Match
+
+         begin
+            --  Construct a list of all refinement inputs. Note that the input
+            --  list is copied because the algorithm modifies its contents and
+            --  this should not be visible in Refined_Depends.
+
+            if Nkind (Inputs) = N_Aggregate then
+               Ref_Inputs := New_Copy_List (Expressions (Inputs));
+            else
+               Ref_Inputs := New_List (Inputs);
+            end if;
+
+            --  Depending on whether the original dependency clause mentions
+            --  states with visible refinement, the corresponding refinement
+            --  clause may differ greatly in structure and contents:
+
+            --  State with null refinement
+
+            --    Refined_State   => (State    => null)
+            --    Depends         => (<output> => State)
+            --    Refined_Depends => (<output> => null)
+
+            --    Depends         => (<output> => (State, Input))
+            --    Refined_Depends => (<output> => Input)
+
+            --    Depends         => (<output> => (Input_1, State, Input_2))
+            --    Refined_Depends => (<output> => (Input_1, Input_2))
+
+            --  State with non-null refinement
+
+            --    Refined_State   => (State_1 => (C1, C2))
+            --    Depends         => (<output> => State)
+            --    Refined_Depends => (<output> => C1)
+            --  or
+            --    Refined_Depends => (<output> => (C1, C2))
+
+            if Nkind (Dep_Inputs) = N_Aggregate then
+               Dep_Input := First (Expressions (Dep_Inputs));
+               while Present (Dep_Input) loop
+                  if not Is_Matching_Input (Dep_Input) then
+                     Result := False;
+                  end if;
+
+                  Next (Dep_Input);
+               end loop;
+
+               Result := True;
+
+            --  Solitary input
+
+            else
+               Result := Is_Matching_Input (Dep_Inputs);
+            end if;
+
+            Report_Extra_Inputs;
+            return Result;
+         end Inputs_Match;
+
+         -------------------------
+         -- Output_Constituents --
+         -------------------------
+
+         function Output_Constituents (State_Id : Entity_Id) return Elist_Id is
+            Item_Elmt : Elmt_Id;
+            Item_Id   : Entity_Id;
+            Result    : Elist_Id := No_Elist;
+
+         begin
+            --  The related subprogram is subject to pragma Refined_Global. All
+            --  usable output constituents are defined in its output item list.
+
+            if Present (Global) then
+               Item_Elmt := First_Elmt (Out_Items);
+               while Present (Item_Elmt) loop
+                  Item_Id := Node (Item_Elmt);
+
+                  --  The constituent is part of the refinement of the input
+                  --  state, add it to the result list.
+
+                  if Refined_State (Item_Id) = State_Id then
+                     Add_Item (Item_Id, Result);
+                  end if;
+
+                  Next_Elmt (Item_Elmt);
+               end loop;
+
+            --  When pragma Refined_Global is not present, the usable output
+            --  constituents are all the constituents as defined in pragma
+            --  Refined_State. Note that the elements are copied because the
+            --  algorithm trims the list and this should not be reflected in
+            --  the state itself.
+
+            else
+               Result := New_Copy_Elist (Refinement_Constituents (State_Id));
+            end if;
+
+            return Result;
+         end Output_Constituents;
+
+         --------------------------------
+         -- Report_Unused_Constituents --
+         --------------------------------
+
+         procedure Report_Unused_Constituents (Constits : Elist_Id) is
+            Constit : Entity_Id;
+            Elmt    : Elmt_Id;
+            Posted  : Boolean := False;
+
+         begin
+            if Present (Constits) then
+               Elmt := First_Elmt (Constits);
+               while Present (Elmt) loop
+                  Constit := Node (Elmt);
+
+                  --  A constituent must always refine a state
+
+                  pragma Assert (Present (Refined_State (Constit)));
+
+                  --  When a state has a visible refinement and its mode is
+                  --  Output_Only, all its constituents must be used as
+                  --  outputs.
+
+                  if not Posted then
+                     Posted := True;
+                     Error_Msg_NE
+                       ("output only state & must be replaced by all its "
+                        & "constituents in dependence refinement",
+                        N, Refined_State (Constit));
+                  end if;
+
+                  Error_Msg_NE
+                    ("\  constituent & is missing in output list", N, Constit);
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end if;
+         end Report_Unused_Constituents;
+
+         --  Local variables
+
+         Dep_Output      : constant Node_Id := First (Choices (Dep_Clause));
+         Dep_Id          : Entity_Id;
+         Matching_Clause : Node_Id := Empty;
+         Next_Ref_Clause : Node_Id;
+         Ref_Clause      : Node_Id;
+         Ref_Id          : Entity_Id;
+         Ref_Output      : Node_Id;
+
+         Has_Constituent : Boolean := False;
+         --  Flag set when the refinement output list contains at least one
+         --  constituent of the state denoted by Dep_Id.
+
+         Has_Null_State : Boolean := False;
+         --  Flag set when the output of clause Dep_Clause is a state with a
+         --  null refinement.
+
+         Has_Refined_State : Boolean := False;
+         --  Flag set when the output of clause Dep_Clause is a state with
+         --  visible refinement.
+
+         Out_Constits : Elist_Id := No_Elist;
+         --  This list contains the entities all output constituents of state
+         --  Dep_Id as defined in pragma Refined_State.
+
+      --  Start of processing for Check_Dependency_Clause
+
+      begin
+         --  The analysis of pragma Depends should produce normalized clauses
+         --  with exactly one output. This is important because output items
+         --  are unique in the whole dependance relation and can be used as
+         --  keys.
+
+         pragma Assert (No (Next (Dep_Output)));
+
+         --  Inspect all clauses of Refined_Depends and attempt to match the
+         --  output of Dep_Clause against an output from the refinement clauses
+         --  set.
+
+         Ref_Clause := First (Refinements);
+         while Present (Ref_Clause) loop
+            Matching_Clause := Empty;
+
+            --  Store the next clause now because a match will trim the list of
+            --  refinement clauses and this side effect should not be visible
+            --  in pragma Refined_Depends.
+
+            Next_Ref_Clause := Next (Ref_Clause);
+
+            --  The analysis of pragma Refined_Depends should produce
+            --  normalized clauses with exactly one output.
+
+            Ref_Output := First (Choices (Ref_Clause));
+            pragma Assert (No (Next (Ref_Output)));
+
+            --  Two null output lists match if their inputs match
+
+            if Nkind (Dep_Output) = N_Null
+              and then Nkind (Ref_Output) = N_Null
+            then
+               Matching_Clause := Ref_Clause;
+               exit;
+
+            --  Two function 'Result attributes match if their inputs match.
+            --  Note that there is no need to compare the two prefixes because
+            --  the attributes cannot denote anything but the related function.
+
+            elsif Is_Attribute_Result (Dep_Output)
+              and then Is_Attribute_Result (Ref_Output)
+            then
+               Matching_Clause := Ref_Clause;
+               exit;
+
+            --  The remaining cases are formal parameters, variables and states
+
+            elsif Is_Entity_Name (Dep_Output) then
+               Dep_Id := Entity_Of (Dep_Output);
+
+               if Ekind (Dep_Id) = E_Abstract_State then
+
+                  --  A state with a null refinement matches either a null
+                  --  output list or nothing at all (no clause):
+
+                  --    Refined_State => (State => null)
+
+                  --  No clause
+
+                  --    Depends         => (State => null)
+                  --    Refined_Depends =>  null               --  OK
+
+                  --  Null output list
+
+                  --    Depends         => (State => <input>)
+                  --    Refined_Depends => (null  => <input>)  --  OK
+
+                  if Has_Null_Refinement (Dep_Id) then
+                     Has_Null_State := True;
+
+                     --  When a state with null refinement matches a null
+                     --  output, compare their inputs.
+
+                     if Nkind (Ref_Output) = N_Null then
+                        Matching_Clause := Ref_Clause;
+                     end if;
+
+                     exit;
+
+                  --  The state has a non-null refinement in which case the
+                  --  match is based on constituents and inputs. A state with
+                  --  multiple output constituents may match multiple clauses:
+
+                  --    Refined_State   => (State => (C1, C2))
+                  --    Depends         => (State => <input>)
+                  --    Refined_Depends => ((C1, C2) => <input>)
+
+                  --  When normalized, the above becomes:
+
+                  --    Refined_Depends => (C1 => <input>,
+                  --                        C2 => <input>)
+
+                  elsif not Is_Empty_Elmt_List
+                              (Refinement_Constituents (Dep_Id))
+                  then
+                     Has_Refined_State := True;
+
+                     --  Store the entities of all output constituents of an
+                     --  Output_Only state with visible refinement.
+
+                     if No (Out_Constits)
+                       and then Is_Output_Only_State (Dep_Id)
+                     then
+                        Out_Constits := Output_Constituents (Dep_Id);
+                     end if;
+
+                     if Is_Entity_Name (Ref_Output) then
+                        Ref_Id := Entity_Of (Ref_Output);
+
+                        --  The output of the refinement clause is a valid
+                        --  constituent of the state. Remove the clause from
+                        --  the pool of candidates if both input lists match.
+                        --  Note that the search continues because one clause
+                        --  may have been normalized into multiple clauses as
+                        --  per the example above.
+
+                        if Ekind_In (Ref_Id, E_Abstract_State, E_Variable)
+                          and then Present (Refined_State (Ref_Id))
+                          and then Refined_State (Ref_Id) = Dep_Id
+                          and then Inputs_Match
+                                     (Ref_Clause, Do_Checks => False)
+                        then
+                           Has_Constituent := True;
+                           Remove (Ref_Clause);
+
+                           --  The matching constituent may act as an output
+                           --  for an Output_Only state. Remove the item from
+                           --  the available output constituents.
+
+                           Remove (Out_Constits, Ref_Id);
+                        end if;
+                     end if;
+                  end if;
+
+               --  Formal parameters and variables match when their inputs
+               --  match.
+
+               elsif Is_Entity_Name (Ref_Output)
+                 and then Entity_Of (Ref_Output) = Dep_Id
+               then
+                  Matching_Clause := Ref_Clause;
+                  exit;
+               end if;
+            end if;
+
+            Ref_Clause := Next_Ref_Clause;
+         end loop;
+
+         --  Handle the case where pragma Depends contains one or more clauses
+         --  that only mention states with null refinements. In that case the
+         --  corresponding pragma Refined_Depends may have a null relation.
+
+         --    Refined_State   => (State => null)
+         --    Depends         => (State => null)
+         --    Refined_Depends =>  null            --  OK
+
+         if No (Refinements) and then Is_Entity_Name (Dep_Output) then
+            Dep_Id := Entity_Of (Dep_Output);
+
+            if Ekind (Dep_Id) = E_Abstract_State
+              and then Has_Null_Refinement (Dep_Id)
+            then
+               Has_Null_State := True;
+            end if;
+         end if;
+
+         --  The above search produced a match based on unique output. Ensure
+         --  that the inputs match as well and if they do, remove the clause
+         --  from the pool of candidates.
+
+         if Present (Matching_Clause) then
+            if Inputs_Match (Matching_Clause, Do_Checks => True) then
+               Remove (Matching_Clause);
+            end if;
+
+         --  A state with a visible refinement was matched against one or
+         --  more clauses containing appropriate constituents.
+
+         elsif Has_Constituent then
+            null;
+
+         --  A state with a null refinement did not warrant a clause
+
+         elsif Has_Null_State then
+            null;
+
+         --  The dependence relation of pragma Refined_Depends does not contain
+         --  a matching clause, emit an error.
+
+         else
+            Error_Msg_NE
+              ("dependence clause of subprogram & has no matching refinement "
+               & "in body", Ref_Clause, Spec_Id);
+
+            if Has_Refined_State then
+               Error_Msg_N
+                 ("\check the use of constituents in dependence refinement",
+                  Ref_Clause);
+            end if;
+         end if;
+
+         --  Emit errors for all unused constituents of an Output_Only state
+         --  with visible refinement.
+
+         Report_Unused_Constituents (Out_Constits);
+      end Check_Dependency_Clause;
+
+      --------------------------
+      -- Report_Extra_Clauses --
+      --------------------------
+
+      procedure Report_Extra_Clauses is
+         Clause : Node_Id;
+
+      begin
+         if Present (Refinements) then
+            Clause := First (Refinements);
+            while Present (Clause) loop
+               Error_Msg_N
+                 ("unmatched or extra clause in dependence refinement",
+                  Clause);
+
+               Next (Clause);
+            end loop;
+         end if;
+      end Report_Extra_Clauses;
+
+      --  Local variables
+
+      Body_Decl : constant Node_Id   := Parent (N);
+      Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
+      Errors    : constant Nat       := Serious_Errors_Detected;
+      Clause    : Node_Id;
+      Deps      : Node_Id;
+      Refs      : Node_Id;
+
+      --  The following are dummy variables that capture unused output of
+      --  routine Collect_Global_Items.
+
+      D1, D2         : Elist_Id := No_Elist;
+      D3, D4, D5, D6 : Boolean;
+
+   --  Start of processing for Analyze_Refined_Depends_In_Decl_Part
+
    begin
-      null;
+      Spec_Id := Corresponding_Spec (Body_Decl);
+      Depends := Get_Pragma (Spec_Id, Pragma_Depends);
+
+      --  The subprogram declarations lacks pragma Depends. This renders
+      --  Refined_Depends useless as there is nothing to refine.
+
+      if No (Depends) then
+         Error_Msg_NE
+           ("useless refinement, subprogram & lacks dependence clauses",
+            N, Spec_Id);
+         return;
+      end if;
+
+      Deps := Get_Pragma_Arg (First (Pragma_Argument_Associations (Depends)));
+
+      --  A null dependency relation renders the refinement useless because it
+      --  cannot possibly mention abstract states with visible refinement. Note
+      --  that the inverse is not true as states may be refined to null.
+
+      if Nkind (Deps) = N_Null then
+         Error_Msg_NE
+           ("useless refinement, subprogram & does not depend on abstract "
+            & "state with visible refinement", N, Spec_Id);
+         return;
+      end if;
+
+      --  Multiple dependency clauses appear as component associations of an
+      --  aggregate.
+
+      pragma Assert (Nkind (Deps) = N_Aggregate);
+      Dependencies := Component_Associations (Deps);
+
+      --  Analyze Refined_Depends as if it behaved as a regular pragma Depends.
+      --  This ensures that the categorization of all refined dependency items
+      --  is consistent with their role.
+
+      Analyze_Depends_In_Decl_Part (N);
+      Refs := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+
+      if Serious_Errors_Detected = Errors then
+
+         --  The related subprogram may be subject to pragma Refined_Global. If
+         --  this is the case, gather all output items. These are needed when
+         --  verifying the use of constituents that apply to output states with
+         --  visible refinement.
+
+         Global := Get_Pragma (Body_Id, Pragma_Refined_Global);
+
+         if Present (Global) then
+            Collect_Global_Items
+              (Prag             => Global,
+               In_Items         => D1,
+               In_Out_Items     => D2,
+               Out_Items        => Out_Items,
+               Has_In_State     => D3,
+               Has_In_Out_State => D4,
+               Has_Out_State    => D5,
+               Has_Null_State   => D6);
+         end if;
+
+         if Nkind (Refs) = N_Null then
+            Refinements := No_List;
+
+         --  Multiple dependeny clauses appear as component associations of an
+         --  aggregate. Note that the clauses are copied because the algorithm
+         --  modifies them and this should not be visible in Refined_Depends.
+
+         else pragma Assert (Nkind (Refs) = N_Aggregate);
+            Refinements := New_Copy_List (Component_Associations (Refs));
+         end if;
+
+         --  Inspect all the clauses of pragma Depends trying to find a
+         --  matching clause in pragma Refined_Depends. The approach is to use
+         --  the sole output of a clause as a key. Output items are unique in a
+         --  dependence relation. Clause normalization also ensured that all
+         --  clauses have exactly on output. Depending on what the key is, one
+         --  or more refinement clauses may satisfy the dependency clause. Each
+         --  time a dependency clause is matched, its related refinement clause
+         --  is consumed. In the end, two things may happen:
+
+         --    1) A clause of pragma Depends was not matched in which case
+         --       Check_Dependency_Clause reports the error.
+
+         --    2) Refined_Depends has an extra clause in which case the error
+         --       is reported by Report_Extra_Clauses.
+
+         Clause := First (Dependencies);
+         while Present (Clause) loop
+            Check_Dependency_Clause (Clause);
+
+            Next (Clause);
+         end loop;
+      end if;
+
+      if Serious_Errors_Detected = Errors then
+         Report_Extra_Clauses;
+      end if;
    end Analyze_Refined_Depends_In_Decl_Part;
 
    -----------------------------------------
@@ -19352,18 +20274,18 @@ package body Sem_Prag is
 
    procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id) is
       Global : Node_Id;
-      --  The corresponding Global aspect/pragma
+      --  The corresponding Global pragma
 
       Has_In_State     : Boolean := False;
       Has_In_Out_State : Boolean := False;
       Has_Out_State    : Boolean := False;
-      --  These flags are set when the corresponding Global aspect/pragma has
-      --  a state of mode Input, In_Out and Output respectively with a visible
+      --  These flags are set when the corresponding Global pragma has a state
+      --  of mode Input, In_Out and Output respectively with a visible
       --  refinement.
 
       Has_Null_State : Boolean := False;
-      --  This flag is set when the corresponding Global aspect/pragma has at
-      --  least one state with a null refinement.
+      --  This flag is set when the corresponding Global pragma has at least
+      --  one state with a null refinement.
 
       In_Constits     : Elist_Id := No_Elist;
       In_Out_Constits : Elist_Id := No_Elist;
@@ -19376,12 +20298,12 @@ package body Sem_Prag is
       In_Out_Items : Elist_Id := No_Elist;
       Out_Items    : Elist_Id := No_Elist;
       --  These list contain the entities of all Input, In_Out and Output items
-      --  defined in the corresponding Global aspect.
+      --  defined in the corresponding Global pragma.
 
       procedure Check_In_Out_States;
-      --  Determine whether the corresponding Global aspect/pragma mentions
-      --  In_Out states with visible refinement and if so, ensure that one of
-      --  the following completions apply to the constituents of the state:
+      --  Determine whether the corresponding Global pragma mentions In_Out
+      --  states with visible refinement and if so, ensure that one of the
+      --  following completions apply to the constituents of the state:
       --    1) there is at least one constituent of mode In_Out
       --    2) there is at least one Input and one Output constituent
       --    3) not all constituents are present and one of them is of mode
@@ -19390,17 +20312,17 @@ package body Sem_Prag is
       --  and Out_Constits.
 
       procedure Check_Input_States;
-      --  Determine whether the corresponding Global aspect/pragma mentions
-      --  Input states with visible refinement and if so, ensure that at least
-      --  one of its constituents appears as an Input item in Refined_Global.
+      --  Determine whether the corresponding Global pragma mentions Input
+      --  states with visible refinement and if so, ensure that at least one of
+      --  its constituents appears as an Input item in Refined_Global.
       --  This routine may remove elements from In_Constits, In_Out_Constits
       --  and Out_Constits.
 
       procedure Check_Output_States;
-      --  Determine whether the corresponding Global aspect/pragma mentions
-      --  Output states with visible refinement and if so, ensure that all of
-      --  its constituents appear as Output items in Refined_Global. This
-      --  routine may remove elements from In_Constits, In_Out_Constits and
+      --  Determine whether the corresponding Global pragma mentions Output
+      --  states with visible refinement and if so, ensure that all of its
+      --  constituents appear as Output items in Refined_Global. This routine
+      --  may remove elements from In_Constits, In_Out_Constits and
       --  Out_Constits.
 
       procedure Check_Refined_Global_List
@@ -19408,12 +20330,6 @@ package body Sem_Prag is
          Global_Mode : Name_Id := Name_Input);
       --  Verify the legality of a single global list declaration. Global_Mode
       --  denotes the current mode in effect.
-
-      procedure Collect_Global_Items (Prag : Node_Id);
-      --  Collect the entities of all items of pragma Prag by populating lists
-      --  In_Items, In_Out_Items and Out_Items. The routine also sets flags
-      --  Has_In_State, Has_In_Out_State and Has_Out_State if there is a state
-      --  of a particular kind with visible refinement.
 
       function Present_Then_Remove
         (List : Elist_Id;
@@ -19508,7 +20424,7 @@ package body Sem_Prag is
       --  Start of processing for Check_In_Out_States
 
       begin
-         --  Inspect the In_Out items of the corresponding Global aspect/pragma
+         --  Inspect the In_Out items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
          if Has_In_Out_State and then Present (In_Out_Items) then
@@ -19519,7 +20435,8 @@ package body Sem_Prag is
                --  Ensure that one of the three coverage variants is satisfied
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Has_Null_Refinement (Item_Id)
+                 and then not Is_Empty_Elmt_List
+                                (Refinement_Constituents (Item_Id))
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19590,7 +20507,7 @@ package body Sem_Prag is
       --  Start of processing for Check_Input_States
 
       begin
-         --  Inspect the Input items of the corresponding Global aspect/pragma
+         --  Inspect the Input items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
          if Has_In_State and then Present (In_Items) then
@@ -19602,7 +20519,8 @@ package body Sem_Prag is
                --  is of mode Input.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Has_Null_Refinement (Item_Id)
+                 and then not Is_Empty_Elmt_List
+                                (Refinement_Constituents (Item_Id))
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19660,7 +20578,7 @@ package body Sem_Prag is
       --  Start of processing for Check_Output_States
 
       begin
-         --  Inspect the Output items of the corresponding Global aspect/pragma
+         --  Inspect the Output items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
          if Has_Out_State and then Present (Out_Items) then
@@ -19672,7 +20590,8 @@ package body Sem_Prag is
                --  have mode Output.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then not Has_Null_Refinement (Item_Id)
+                 and then not Is_Empty_Elmt_List
+                                (Refinement_Constituents (Item_Id))
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19710,14 +20629,7 @@ package body Sem_Prag is
 
             procedure Check_Matching_Modes (Item_Id : Entity_Id);
             --  Verify that the global modes of item Item_Id are the same in
-            --  both aspects/pragmas Global and Refined_Global.
-
-            function Is_Part_Of
-              (State    : Entity_Id;
-               Ancestor : Entity_Id) return Boolean;
-            --  Determine whether abstract state State is part of an ancestor
-            --  abstract state Ancestor. For this relationship to hold, State
-            --  must have option Part_Of in its Abstract_State definition.
+            --  both pragmas Global and Refined_Global.
 
             ---------------------
             -- Add_Constituent --
@@ -19787,40 +20699,6 @@ package body Sem_Prag is
                end if;
             end Check_Matching_Modes;
 
-            ----------------
-            -- Is_Part_Of --
-            ----------------
-
-            function Is_Part_Of
-              (State    : Entity_Id;
-               Ancestor : Entity_Id) return Boolean
-            is
-               Options : constant Node_Id := Parent (State);
-               Name    : Node_Id;
-               Option  : Node_Id;
-               Value   : Node_Id;
-
-            begin
-               --  A state declaration with option Part_Of appears as an
-               --  extension aggregate with component associations.
-
-               if Nkind (Options) = N_Extension_Aggregate then
-                  Option := First (Component_Associations (Options));
-                  while Present (Option) loop
-                     Name  := First (Choices (Option));
-                     Value := Expression (Option);
-
-                     if Chars (Name) = Name_Part_Of then
-                        return Entity (Value) = Ancestor;
-                     end if;
-
-                     Next (Option);
-                  end loop;
-               end if;
-
-               return False;
-            end Is_Part_Of;
-
             --  Local variables
 
             Item_Id : constant Entity_Id := Entity_Of (Item);
@@ -19828,41 +20706,18 @@ package body Sem_Prag is
          --  Start of processing for Check_Refined_Global_Item
 
          begin
-            --  State checks
-
             if Ekind (Item_Id) = E_Abstract_State then
 
-               --  The state acts as a constituent of some other state. Ensure
-               --  that the other state is a proper ancestor of the item.
+               --  The state is neither a constituent of an ancestor state nor
+               --  has a visible refinement. Ensure that the modes of both its
+               --  occurrences in Global and Refined_Global match.
 
-               if Present (Refined_State (Item_Id)) then
-                  if Is_Part_Of (Item_Id, Refined_State (Item_Id)) then
-                     Add_Constituent (Item_Id);
-                  else
-                     Error_Msg_Name_1 := Chars (Refined_State (Item_Id));
-                     Error_Msg_NE
-                       ("state & is not a valid constituent of ancestor "
-                        & "state %", Item, Item_Id);
-                  end if;
-
-               --  An abstract state with visible refinement cannot appear in a
-               --  global refinement as its place must be taken by some of its
-               --  constituents.
-
-               elsif Present (Refinement_Constituents (Item_Id)) then
-                  Error_Msg_NE
-                    ("cannot mention state & in global refinement, use its "
-                     & "constituents instead", Item, Item_Id);
-
-               --  The state is not refined nor is it a constituent. Ensure
-               --  that the modes of both its occurrences in Global and
-               --  Refined_Global match.
-
-               else
+               if No (Refined_State (Item_Id))
+                 and then Is_Empty_Elmt_List
+                            (Refinement_Constituents (Item_Id))
+               then
                   Check_Matching_Modes (Item_Id);
                end if;
-
-            --  Variable checks
 
             else pragma Assert (Ekind (Item_Id) = E_Variable);
 
@@ -19941,141 +20796,6 @@ package body Sem_Prag is
          end if;
       end Check_Refined_Global_List;
 
-      --------------------------
-      -- Collect_Global_Items --
-      --------------------------
-
-      procedure Collect_Global_Items (Prag : Node_Id) is
-         procedure Process_Global_List
-           (List : Node_Id;
-            Mode : Name_Id := Name_Input);
-         --  Collect all items housed in a global list. Formal Mode denotes the
-         --  current mode in effect.
-
-         -------------------------
-         -- Process_Global_List --
-         -------------------------
-
-         procedure Process_Global_List
-           (List : Node_Id;
-            Mode : Name_Id := Name_Input)
-         is
-            procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id);
-            --  Add a single item to the appropriate list. Formal Mode denotes
-            --  the current mode in effect.
-
-            -------------------------
-            -- Process_Global_Item --
-            -------------------------
-
-            procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id) is
-               Item_Id : constant Entity_Id := Entity_Of (Item);
-
-            begin
-               --  Signal that the global list contains at least one abstract
-               --  state with a visible refinement. Note that the refinement
-               --  may be null in which case there are no constituents.
-
-               if Ekind (Item_Id) = E_Abstract_State then
-                  if Has_Null_Refinement (Item_Id) then
-                     Has_Null_State := True;
-                  else
-                     if Mode = Name_Input then
-                        Has_In_State := True;
-                     elsif Mode = Name_In_Out then
-                        Has_In_Out_State := True;
-                     elsif Mode = Name_Output then
-                        Has_Out_State := True;
-                     end if;
-                  end if;
-               end if;
-
-               --  Add the item to the proper list
-
-               if Mode = Name_Input then
-                  Add_Item (Item_Id, In_Items);
-               elsif Mode = Name_In_Out then
-                  Add_Item (Item_Id, In_Out_Items);
-               elsif Mode = Name_Output then
-                  Add_Item (Item_Id, Out_Items);
-               end if;
-            end Process_Global_Item;
-
-            --  Local variables
-
-            Item : Node_Id;
-
-         --  Start of processing for Process_Global_List
-
-         begin
-            if Nkind (List) = N_Null then
-               null;
-
-            --  Single global item declaration
-
-            elsif Nkind_In (List, N_Expanded_Name,
-                                  N_Identifier,
-                                  N_Selected_Component)
-            then
-               Process_Global_Item (List, Mode);
-
-            --  Single global list or moded global list declaration
-
-            elsif Nkind (List) = N_Aggregate then
-
-               --  The declaration of a simple global list appear as a
-               --  collection of expressions.
-
-               if Present (Expressions (List)) then
-                  Item := First (Expressions (List));
-                  while Present (Item) loop
-                     Process_Global_Item (Item, Mode);
-
-                     Next (Item);
-                  end loop;
-
-               --  The declaration of a moded global list appears as a
-               --  collection of component associations where individual
-               --  choices denote modes.
-
-               elsif Present (Component_Associations (List)) then
-                  Item := First (Component_Associations (List));
-                  while Present (Item) loop
-                     Process_Global_List
-                       (List => Expression (Item),
-                        Mode => Chars (First (Choices (Item))));
-
-                     Next (Item);
-                  end loop;
-
-               --  Invalid tree
-
-               else
-                  raise Program_Error;
-               end if;
-
-            --  Invalid list
-
-            else
-               raise Program_Error;
-            end if;
-         end Process_Global_List;
-
-         --  Local variables
-
-         List : constant Node_Id :=
-                  Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
-
-      --  Start of processing for Collect_Global_Items
-
-      begin
-         --  Do not process a null global list as it contains nothing
-
-         if Nkind (List) /= N_Null then
-            Process_Global_List (List);
-         end if;
-      end Collect_Global_Items;
-
       -------------------------
       -- Present_Then_Remove --
       -------------------------
@@ -20139,7 +20859,7 @@ package body Sem_Prag is
 
       Body_Decl : constant Node_Id := Parent (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
-      List      : constant Node_Id :=
+      Items     : constant Node_Id :=
                     Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
       Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
 
@@ -20148,7 +20868,7 @@ package body Sem_Prag is
    begin
       Global := Get_Pragma (Spec_Id, Pragma_Global);
 
-      --  The subprogram declaration lacks aspect/pragma Global. This renders
+      --  The subprogram declaration lacks pragma Global. This renders
       --  Refined_Global useless as there is nothing to refine.
 
       if No (Global) then
@@ -20157,15 +20877,21 @@ package body Sem_Prag is
          return;
       end if;
 
-      --  Extract all relevant items from the corresponding Global aspect or
-      --  pragma.
+      --  Extract all relevant items from the corresponding Global pragma
 
-      Collect_Global_Items (Global);
+      Collect_Global_Items
+        (Prag             => Global,
+         In_Items         => In_Items,
+         In_Out_Items     => In_Out_Items,
+         Out_Items        => Out_Items,
+         Has_In_State     => Has_In_State,
+         Has_In_Out_State => Has_In_Out_State,
+         Has_Out_State    => Has_Out_State,
+         Has_Null_State   => Has_Null_State);
 
-      --  The corresponding Global aspect/pragma must mention at least one
-      --  state with a visible refinement at the point Refined_Global is
-      --  processed. States with null refinements warrant a Refined_Global
-      --  aspect/pragma.
+      --  The corresponding Global pragma must mention at least one state with
+      --  a visible refinement at the point Refined_Global is processed. States
+      --  with null refinements warrant a Refined_Global pragma.
 
       if not Has_In_State
         and then not Has_In_Out_State
@@ -20179,15 +20905,15 @@ package body Sem_Prag is
       end if;
 
       --  The global refinement of inputs and outputs cannot be null when the
-      --  corresponding Global aspect/pragma contains at least one item except
-      --  in the case where we have states with null refinements.
+      --  corresponding Global pragma contains at least one item except in the
+      --  case where we have states with null refinements.
 
-      if Nkind (List) = N_Null
+      if Nkind (Items) = N_Null
         and then
           (Present (In_Items)
             or else Present (In_Out_Items)
             or else Present (Out_Items))
-         and then not Has_Null_State
+        and then not Has_Null_State
       then
          Error_Msg_NE
            ("refinement cannot be null, subprogram & has global items",
@@ -20195,9 +20921,9 @@ package body Sem_Prag is
          return;
       end if;
 
-      --  Analyze Refined_Global as if it behaved as a regular aspect/pragma
-      --  Global. This ensures that the categorization of all refined global
-      --  items is consistent with their role.
+      --  Analyze Refined_Global as if it behaved as a regular pragma Global.
+      --  This ensures that the categorization of all refined global items is
+      --  consistent with their role.
 
       Analyze_Global_In_Decl_Part (N);
 
@@ -20205,7 +20931,7 @@ package body Sem_Prag is
       --  matching.
 
       if Serious_Errors_Detected = Errors then
-         Check_Refined_Global_List (List);
+         Check_Refined_Global_List (Items);
       end if;
 
       --  For Input states with visible refinement, at least one constituent
@@ -20347,10 +21073,6 @@ package body Sem_Prag is
 
                      --  Establish a relation between the refined state and its
                      --  constituent.
-
-                     if No (Refinement_Constituents (State_Id)) then
-                        Set_Refinement_Constituents (State_Id, New_Elmt_List);
-                     end if;
 
                      Append_Elmt
                        (Constit_Id, Refinement_Constituents (State_Id));
@@ -20931,6 +21653,150 @@ package body Sem_Prag is
       end if;
    end Check_Applicable_Policy;
 
+   --------------------------
+   -- Collect_Global_Items --
+   --------------------------
+
+   procedure Collect_Global_Items
+     (Prag             : Node_Id;
+      In_Items         : in out Elist_Id;
+      In_Out_Items     : in out Elist_Id;
+      Out_Items        : in out Elist_Id;
+      Has_In_State     : out Boolean;
+      Has_In_Out_State : out Boolean;
+      Has_Out_State    : out Boolean;
+      Has_Null_State   : out Boolean)
+   is
+      procedure Process_Global_List
+        (List : Node_Id;
+         Mode : Name_Id := Name_Input);
+      --  Collect all items housed in a global list. Formal Mode denotes the
+      --  current mode in effect.
+
+      -------------------------
+      -- Process_Global_List --
+      -------------------------
+
+      procedure Process_Global_List
+        (List : Node_Id;
+         Mode : Name_Id := Name_Input)
+      is
+         procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id);
+         --  Add a single item to the appropriate list. Formal Mode denotes the
+         --  current mode in effect.
+
+         -------------------------
+         -- Process_Global_Item --
+         -------------------------
+
+         procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id) is
+            Item_Id : constant Entity_Id := Entity_Of (Item);
+
+         begin
+            --  Signal that the global list contains at least one abstract
+            --  state with a visible refinement. Note that the refinement may
+            --  be null in which case there are no constituents.
+
+            if Ekind (Item_Id) = E_Abstract_State then
+               if Has_Null_Refinement (Item_Id) then
+                  Has_Null_State := True;
+               elsif Mode = Name_Input then
+                  Has_In_State := True;
+               elsif Mode = Name_In_Out then
+                  Has_In_Out_State := True;
+               elsif Mode = Name_Output then
+                  Has_Out_State := True;
+               end if;
+            end if;
+
+            --  Add the item to the proper list
+
+            if Mode = Name_Input then
+               Add_Item (Item_Id, In_Items);
+            elsif Mode = Name_In_Out then
+               Add_Item (Item_Id, In_Out_Items);
+            elsif Mode = Name_Output then
+               Add_Item (Item_Id, Out_Items);
+            end if;
+         end Process_Global_Item;
+
+         --  Local variables
+
+         Item : Node_Id;
+
+      --  Start of processing for Process_Global_List
+
+      begin
+         if Nkind (List) = N_Null then
+            null;
+
+         --  Single global item declaration
+
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
+         then
+            Process_Global_Item (List, Mode);
+
+         --  Single global list or moded global list declaration
+
+         elsif Nkind (List) = N_Aggregate then
+
+            --  The declaration of a simple global list appear as a collection
+            --  of expressions.
+
+            if Present (Expressions (List)) then
+               Item := First (Expressions (List));
+               while Present (Item) loop
+                  Process_Global_Item (Item, Mode);
+
+                  Next (Item);
+               end loop;
+
+            --  The declaration of a moded global list appears as a collection
+            --  of component associations where individual choices denote mode.
+
+            elsif Present (Component_Associations (List)) then
+               Item := First (Component_Associations (List));
+               while Present (Item) loop
+                  Process_Global_List
+                    (List => Expression (Item),
+                     Mode => Chars (First (Choices (Item))));
+
+                  Next (Item);
+               end loop;
+
+            --  Invalid tree
+
+            else
+               raise Program_Error;
+            end if;
+
+         --  Invalid list
+
+         else
+            raise Program_Error;
+         end if;
+      end Process_Global_List;
+
+      --  Local variables
+
+      Items : constant Node_Id :=
+                Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+   --  Start of processing for Collect_Global_Items
+
+   begin
+      --  Assume that no states have been encountered
+
+      Has_In_State     := False;
+      Has_In_Out_State := False;
+      Has_Out_State    := False;
+      Has_Null_State   := False;
+
+      Process_Global_List (Items);
+   end Collect_Global_Items;
+
    ---------------------------------------
    -- Collect_Subprogram_Inputs_Outputs --
    ---------------------------------------
@@ -20980,17 +21846,20 @@ package body Sem_Prag is
       --  Start of processing for Collect_Global_List
 
       begin
+         if Nkind (List) = N_Null then
+            null;
+
          --  Single global item declaration
 
-         if Nkind_In (List, N_Expanded_Name,
-                            N_Identifier,
-                            N_Selected_Component)
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
          then
             Collect_Global_Item (List, Mode);
 
          --  Simple global list or moded global list declaration
 
-         else
+         elsif Nkind (List) = N_Aggregate then
             if Present (Expressions (List)) then
                Item := First (Expressions (List));
                while Present (Item) loop
@@ -21007,23 +21876,37 @@ package body Sem_Prag is
                   Next (Assoc);
                end loop;
             end if;
+
+         --  Invalid list
+
+         else
+            raise Program_Error;
          end if;
       end Collect_Global_List;
 
       --  Local variables
 
-      Formal : Entity_Id;
-      Global : Node_Id;
-      List   : Node_Id;
+      Formal  : Entity_Id;
+      Global  : Node_Id;
+      List    : Node_Id;
+      Spec_Id : Entity_Id;
 
    --  Start of processing for Collect_Subprogram_Inputs_Outputs
 
    begin
       Global_Seen := False;
 
+      --  Find the entity of the corresponding spec when processing a body
+
+      if Ekind (Subp_Id) = E_Subprogram_Body then
+         Spec_Id := Corresponding_Spec (Parent (Parent (Subp_Id)));
+      else
+         Spec_Id := Subp_Id;
+      end if;
+
       --  Process all formal parameters
 
-      Formal := First_Formal (Subp_Id);
+      Formal := First_Formal (Spec_Id);
       while Present (Formal) loop
          if Ekind_In (Formal, E_In_Out_Parameter, E_In_Parameter) then
             Add_Item (Formal, Subp_Inputs);
@@ -21046,10 +21929,18 @@ package body Sem_Prag is
          Next_Formal (Formal);
       end loop;
 
-      --  If the subprogram is subject to pragma Global, traverse all global
-      --  lists and gather the relevant items.
+      --  When processing a subprogram body, look for pragma Refined_Global as
+      --  it provides finer granularity of inputs and outputs.
 
-      Global := Get_Pragma (Subp_Id, Pragma_Global);
+      if Ekind (Subp_Id) = E_Subprogram_Body then
+         Global := Get_Pragma (Subp_Id, Pragma_Refined_Global);
+
+      --  Subprogram declaration case, look for pragma Global
+
+      else
+         Global := Get_Pragma (Spec_Id, Pragma_Global);
+      end if;
+
       if Present (Global) then
          Global_Seen := True;
          List := Expression (First (Pragma_Argument_Associations (Global)));
@@ -21059,7 +21950,11 @@ package body Sem_Prag is
          --  the purposes of item extraction.
 
          if not Analyzed (List) then
-            Analyze_Global_In_Decl_Part (Global);
+            if Pragma_Name (Global) = Name_Refined_Global then
+               Analyze_Refined_Global_In_Decl_Part (Global);
+            else
+               Analyze_Global_In_Decl_Part (Global);
+            end if;
          end if;
 
          --  Nothing to be done for a null global list
@@ -21080,77 +21975,93 @@ package body Sem_Prag is
                                       Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
 
-   -----------------------------
-   -- Find_Related_Subprogram --
-   -----------------------------
+   -------------------------------------
+   -- Find_Related_Subprogram_Or_Body --
+   -------------------------------------
 
-   function Find_Related_Subprogram
-     (Prag             : Node_Id;
-      Check_Duplicates : Boolean := False) return Node_Id
+   function Find_Related_Subprogram_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id
    is
-      Context   : constant Node_Id := Parent (Prag);
-      Nam       : constant Name_Id := Pragma_Name (Prag);
-      Elmt      : Node_Id;
-      Subp_Decl : Node_Id;
+      Context : constant Node_Id := Parent (Prag);
+      Nam     : constant Name_Id := Pragma_Name (Prag);
+      Stmt    : Node_Id;
+
+      Look_For_Body : constant Boolean :=
+                        Nam_In (Nam, Name_Refined_Depends,
+                                     Name_Refined_Global,
+                                     Name_Refined_Post,
+                                     Name_Refined_Pre);
+      --  Refinement pragmas must be associated with a subprogram body [stub]
 
    begin
       pragma Assert (Nkind (Prag) = N_Pragma);
 
-      --  If the pragma comes from an aspect, then what we want is the
-      --  declaration to which the aspect is attached, i.e. its parent.
+      --  If the pragma is a byproduct of aspect expansion, return the related
+      --  context of the original aspect.
 
       if Present (Corresponding_Aspect (Prag)) then
          return Parent (Corresponding_Aspect (Prag));
       end if;
 
-      --  Otherwise the pragma must be a list element, and the first thing to
-      --  do is to position past any previous pragmas or generated code. What
-      --  we are doing here is looking for the preceding declaration. This is
-      --  also where we will check for a duplicate pragma.
+      --  Otherwise the pragma is a source construct, most likely part of a
+      --  declarative list. Skip preceding declarations while looking for a
+      --  proper subprogram declaration.
 
       pragma Assert (Is_List_Member (Prag));
 
-      Elmt := Prag;
-      loop
-         Elmt := Prev (Elmt);
-         exit when No (Elmt);
+      Stmt := Prev (Prag);
+      while Present (Stmt) loop
 
-         --  Typically want we will want is the declaration original node. But
-         --  for the generic subprogram case, don't go to to the original node,
-         --  which is the unanalyzed tree: we need to attach the pre- and post-
-         --  conditions to the analyzed version at this point. They propagate
-         --  to the original tree when analyzing the corresponding body.
+         --  Skip prior pragmas, but check for duplicates
 
-         if Nkind (Elmt) not in N_Generic_Declaration then
-            Subp_Decl := Original_Node (Elmt);
-         else
-            Subp_Decl := Elmt;
-         end if;
-
-         --  Skip prior pragmas
-
-         if Nkind (Subp_Decl) = N_Pragma then
-            if Check_Duplicates and then Pragma_Name (Subp_Decl) = Nam then
+         if Nkind (Stmt) = N_Pragma then
+            if Do_Checks and then Pragma_Name (Stmt) = Nam then
                Error_Msg_Name_1 := Nam;
-               Error_Msg_Sloc   := Sloc (Subp_Decl);
+               Error_Msg_Sloc   := Sloc (Stmt);
                Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
             end if;
 
+         --  Emit an error when a refinement pragma appears on an expression
+         --  function without a completion.
+
+         elsif Do_Checks
+           and then Look_For_Body
+           and then Nkind (Stmt) = N_Subprogram_Declaration
+           and then Nkind (Original_Node (Stmt)) = N_Expression_Function
+           and then not Has_Completion (Defining_Entity (Stmt))
+         then
+            Error_Msg_Name_1 := Nam;
+            Error_Msg_N
+              ("pragma % cannot apply to a stand alone expression function",
+               Prag);
+
+            return Empty;
+
+         --  The refinement pragma applies to a subprogram body stub
+
+         elsif Look_For_Body
+           and then Nkind (Stmt) = N_Subprogram_Body_Stub
+         then
+            return Stmt;
+
          --  Skip internally generated code
 
-         elsif not Comes_From_Source (Subp_Decl) then
+         elsif not Comes_From_Source (Stmt) then
             null;
 
-         --  Otherwise we have a declaration to return
+         --  Return the current construct which is either a subprogram body,
+         --  a subprogram declaration or is illegal.
 
          else
-            return Subp_Decl;
+            return Stmt;
          end if;
+
+         Prev (Stmt);
       end loop;
 
-      --  We fell through, which means there was no declaration preceding the
-      --  pragma (either it was the first element of the list, or we only had
-      --  other pragmas and generated code before it).
+      --  If we fall through, then the pragma was either the first declaration
+      --  or it was preceded by other pragmas and no source constructs.
 
       --  The pragma is associated with a library-level subprogram
 
@@ -21162,12 +22073,12 @@ package body Sem_Prag is
       elsif Nkind (Context) = N_Subprogram_Body then
          return Context;
 
-      --  Otherwise no subprogram found, return original pragma
+      --  No candidate subprogram [body] found
 
       else
-         return Prag;
+         return Empty;
       end if;
-   end Find_Related_Subprogram;
+   end Find_Related_Subprogram_Or_Body;
 
    -------------------------
    -- Get_Base_Subprogram --
@@ -21619,6 +22530,40 @@ package body Sem_Prag is
          end case;
       end if;
    end Is_Non_Significant_Pragma_Reference;
+
+   ----------------
+   -- Is_Part_Of --
+   ----------------
+
+   function Is_Part_Of
+     (State    : Entity_Id;
+      Ancestor : Entity_Id) return Boolean
+   is
+      Options : constant Node_Id := Parent (State);
+      Name    : Node_Id;
+      Option  : Node_Id;
+      Value   : Node_Id;
+
+   begin
+      --  A state declaration with option Part_Of appears as an extension
+      --  aggregate with component associations.
+
+      if Nkind (Options) = N_Extension_Aggregate then
+         Option := First (Component_Associations (Options));
+         while Present (Option) loop
+            Name  := First (Choices (Option));
+            Value := Expression (Option);
+
+            if Chars (Name) = Name_Part_Of then
+               return Entity (Value) = Ancestor;
+            end if;
+
+            Next (Option);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Part_Of;
 
    ------------------------------
    -- Is_Pragma_String_Literal --
@@ -22090,44 +23035,6 @@ package body Sem_Prag is
    begin
       null;
    end rv;
-
-   -----------------------------------
-   -- Requires_Profile_Installation --
-   -----------------------------------
-
-   function Requires_Profile_Installation
-     (Prag : Node_Id;
-      Subp : Node_Id) return Boolean
-   is
-   begin
-      --  When aspects Depends and Global are associated with a subprogram
-      --  declaration, their corresponding pragmas are analyzed at the end of
-      --  the declarative part. This is done out of context, therefore the
-      --  formals must be installed in visibility.
-
-      if Nkind (Subp) = N_Subprogram_Declaration then
-         return True;
-
-      --  When aspects Depends and Global are associated with a subprogram body
-      --  which is also a compilation unit, their corresponding pragmas appear
-      --  in the Pragmas_After list. The Pragmas_After collection is analyzed
-      --  out of context and the formals must be installed in visibility. This
-      --  does not apply when the pragma is a source construct.
-
-      elsif Nkind (Subp) = N_Subprogram_Body then
-         if Nkind (Parent (Subp)) = N_Compilation_Unit then
-            return Present (Corresponding_Aspect (Prag));
-         else
-            return False;
-         end if;
-
-      --  In all other cases the two corresponding pragmas are analyzed in
-      --  context and the formals are already visibile.
-
-      else
-         return False;
-      end if;
-   end Requires_Profile_Installation;
 
    --------------------------------
    -- Set_Encoded_Interface_Name --

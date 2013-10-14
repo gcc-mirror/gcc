@@ -3242,58 +3242,85 @@ package body Sem_Util is
    ----------------------------
 
    function Contains_Refined_State (Prag : Node_Id) return Boolean is
-      function Has_Refined_State (List : Node_Id) return Boolean;
+      function Has_State_In_Dependency (List : Node_Id) return Boolean;
+      --  Determine whether a dependency list mentions a state with a visible
+      --  refinement.
+
+      function Has_State_In_Global (List : Node_Id) return Boolean;
       --  Determine whether a global list mentions a state with a visible
       --  refinement.
 
-      -----------------------
-      -- Has_Refined_State --
-      -----------------------
+      function Is_Refined_State (Item : Node_Id) return Boolean;
+      --  Determine whether Item is a reference to an abstract state with a
+      --  visible refinement.
 
-      function Has_Refined_State (List : Node_Id) return Boolean is
-         function Is_Refined_State (Item : Node_Id) return Boolean;
-         --  Determine whether Item is a reference to an abstract state with a
-         --  visible refinement.
+      -----------------------------
+      -- Has_State_In_Dependency --
+      -----------------------------
 
-         ----------------------
-         -- Is_Refined_State --
-         ----------------------
+      function Has_State_In_Dependency (List : Node_Id) return Boolean is
+         Clause : Node_Id;
+         Output : Node_Id;
 
-         function Is_Refined_State (Item : Node_Id) return Boolean is
-            Item_Id : Entity_Id;
+      begin
+         --  A null dependency list does not mention any states
 
-         begin
-            if Nkind (Item) = N_Null then
-               return False;
+         if Nkind (List) = N_Null then
+            return False;
 
-            else
-               Item_Id := Entity_Of (Item);
+         --  Dependency clauses appear as component associations of an
+         --  aggregate.
 
-               return
-                 Ekind (Item_Id) = E_Abstract_State
-                   and then Present (Refinement_Constituents (Item_Id));
-            end if;
-         end Is_Refined_State;
+         elsif Nkind (List) = N_Aggregate
+           and then Present (Component_Associations (List))
+         then
+            Clause := First (Component_Associations (List));
+            while Present (Clause) loop
 
-         --  Local variables
+               --  Inspect the outputs of a dependency clause
 
+               Output := First (Choices (Clause));
+               while Present (Output) loop
+                  if Is_Refined_State (Output) then
+                     return True;
+                  end if;
+
+                  Next (Output);
+               end loop;
+
+               --  Inspect the outputs of a dependency clause
+
+               if Is_Refined_State (Expression (Clause)) then
+                  return True;
+               end if;
+
+               Next (Clause);
+            end loop;
+
+            --  If we get here, then none of the dependency clauses mention a
+            --  state with visible refinement.
+
+            return False;
+
+         --  An illegal pragma managed to sneak in
+
+         else
+            raise Program_Error;
+         end if;
+      end Has_State_In_Dependency;
+
+      -------------------------
+      -- Has_State_In_Global --
+      -------------------------
+
+      function Has_State_In_Global (List : Node_Id) return Boolean is
          Item : Node_Id;
-
-      --  Start of processing for Has_Refined_State
 
       begin
          --  A null global list does not mention any states
 
          if Nkind (List) = N_Null then
             return False;
-
-         --  Single global item declaration
-
-         elsif Nkind_In (List, N_Expanded_Name,
-                               N_Identifier,
-                               N_Selected_Component)
-         then
-            return Is_Refined_State (List);
 
          --  Simple global list or moded global list declaration
 
@@ -3319,7 +3346,7 @@ package body Sem_Util is
             else
                Item := First (Component_Associations (List));
                while Present (Item) loop
-                  if Has_Refined_State (Expression (Item)) then
+                  if Has_State_In_Global (Expression (Item)) then
                      return True;
                   end if;
 
@@ -3332,12 +3359,68 @@ package body Sem_Util is
 
             return False;
 
-         --  Something went horribly wrong, we have a malformed tree
+         --  Single global item declaration
+
+         elsif Is_Entity_Name (List) then
+            return Is_Refined_State (List);
+
+         --  An illegal pragma managed to sneak in
 
          else
             raise Program_Error;
          end if;
-      end Has_Refined_State;
+      end Has_State_In_Global;
+
+      ----------------------
+      -- Is_Refined_State --
+      ----------------------
+
+      function Is_Refined_State (Item : Node_Id) return Boolean is
+         Elmt    : Node_Id;
+         Item_Id : Entity_Id;
+
+      begin
+         if Nkind (Item) = N_Null then
+            return False;
+
+         --  States cannot be subject to attribute 'Result. This case arises
+         --  in dependency relations.
+
+         elsif Nkind (Item) = N_Attribute_Reference
+           and then Attribute_Name (Item) = Name_Result
+         then
+            return False;
+
+         --  Multiple items appear as an aggregate. This case arises in
+         --  dependency relations.
+
+         elsif Nkind (Item) = N_Aggregate
+           and then Present (Expressions (Item))
+         then
+            Elmt := First (Expressions (Item));
+            while Present (Elmt) loop
+               if Is_Refined_State (Elmt) then
+                  return True;
+               end if;
+
+               Next (Elmt);
+            end loop;
+
+            --  If we get here, then none of the inputs or outputs reference a
+            --  state with visible refinement.
+
+            return False;
+
+         --  Single item
+
+         else
+            Item_Id := Entity_Of (Item);
+
+            return
+              Ekind (Item_Id) = E_Abstract_State
+                and then Present (Refinement_Constituents (Item_Id));
+         end if;
+      end Is_Refined_State;
 
       --  Local variables
 
@@ -3348,13 +3431,11 @@ package body Sem_Util is
    --  Start of processing for Contains_Refined_State
 
    begin
-      --  ??? To be implemented
-
       if Nam = Name_Depends then
-         return False;
+         return Has_State_In_Dependency (Arg);
 
       else pragma Assert (Nam = Name_Global);
-         return Has_Refined_State (Arg);
+         return Has_State_In_Global (Arg);
       end if;
    end Contains_Refined_State;
 
@@ -8187,6 +8268,17 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Atomic_Object;
+
+   -------------------------
+   -- Is_Attribute_Result --
+   -------------------------
+
+   function Is_Attribute_Result (N : Node_Id) return Boolean is
+   begin
+      return
+         Nkind (N) = N_Attribute_Reference
+           and then Attribute_Name (N) = Name_Result;
+   end Is_Attribute_Result;
 
    ------------------------------------
    -- Is_Body_Or_Package_Declaration --

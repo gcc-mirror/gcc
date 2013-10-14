@@ -1998,10 +1998,21 @@ package body Sem_Ch13 is
 
                --  Refined_Depends
 
-               --  ??? To be implemented
+               --  Aspect Refined_Depends must be delayed because it can
+               --  mention state refinements introduced by aspect Refined_State
+               --  and further classified by aspect Refined_Global. Since both
+               --  those aspects are delayed, so is Refined_Depends.
 
                when Aspect_Refined_Depends =>
-                  null;
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Refined_Depends);
+
+                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_Global
 

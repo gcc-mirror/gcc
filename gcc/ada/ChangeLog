@@ -1,3 +1,92 @@
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* s-vmexta.ads: Add comments.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Add processing
+	for pragma Refined_State.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Refined_Depends.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Use Find_Related_Subprogram_Or_Body to find the related
+	context. Use the current scope when determining whether to
+	ensure proper visibility.
+	(Analyze_Depends_In_Decl_Part):
+	Add local variable Spec_Id. Update the comment on usage of
+	Subp_Id. Use Find_Related_Subprogram_Or_Body to find the
+	related context. Extract the corresponding spec of the body
+	(if any). Use the current scope when determining when to
+	ensure proper visibility.
+	(Analyze_Global_In_Decl_Part):
+	Add local variable Spec_Id. Update the comment on usage of
+	Subp_Id. Use Find_Related_Subprogram_Or_Body to find the
+	related context. Extract the corresponding spec of the body
+	(if any). Use the current scope when determining when to
+	ensure proper visibility.
+	(Analyze_Global_Item): Use the
+	entity of the subprogram spec when performing formal parameter
+	checks. Perform state-related checks.
+	(Analyze_Input_Output):
+	Use Is_Attribute_Result to detect 'Result. Query the
+	entity of a subprogram spec when verifying the prefix of
+	'Result. Perform state-related checks.	(Analyze_Pragma):
+	Merge the analysis of Refined_Depends and Refined_Global.
+	(Analyze_Refined_Depends_In_Decl_Part): Provide implemenation.
+	(Analyze_Refined_Global_In_Decl_Part): Move state-related checks
+	to the body of Analyze_Global_In_Decl_Part. Rename local constant
+	List to Items.	(Analyze_Refined_Pragma): Remove circuitry to
+	find the proper context, use Find_Related_Subprogram_Or_Body
+	instead.
+	(Check_Function_Return): Query the entity of
+	the subprogram spec when verifying the use of 'Result.
+	(Check_In_Out_States, Check_Input_States, Check_Output_States):
+	Avoid using Has_Null_Refinement to detect a state with
+	a non-null refinement, use the Refinement_Constituents
+	list instead.
+	(Check_Matching_Constituent): Remove initialization code.
+	(Check_Mode_Restriction_In_Function): Use the entity of the subprogram
+	spec when verifying mode usage in functions.
+	(Collect_Global_Items): New routine.
+	(Collect_Subprogram_Inputs_Outputs): Add local
+	variable Spec_Id. Add circuitry for bodies-as-specs. Use
+	pragma Refined_Global when collecting for a body.
+	(Create_Or_Modify_Clause): Use the location of the
+	clause. Rename local variable Clause to New_Clause to avoid
+	confusion and update all occurrences.  Use Is_Attribute_Result
+	to detect 'Result.
+	(Find_Related_Subprogram): Removed.
+	(Find_Related_Subprogram_Or_Body): New routine.
+	(Is_Part_Of): Move routine to top level.
+	(Normalize_Clause): Update the
+	comment on usage. The routine can now normalize a clause with
+	multiple outputs by splitting it.
+	(Collect_Global_Items):
+	Rename local constant List to Items. Remove the check for
+	a null list.
+	(Requires_Profile_Installation): Removed.
+	(Split_Multiple_Outputs): New routine.
+	* sem_prag.ads: Update the comments on usage of various
+	pragma-related analysis routines.
+	* sem_util.adb (Contains_Refined_State): The routine can now
+	process pragma [Refined_]Depends.
+	(Has_Refined_State): Removed.
+	(Has_State_In_Dependency): New routine.
+	(Has_State_In_Global): New routine.
+	(Is_Attribute_Result): New routine.
+	* sem_util.ads (Is_Attribute_Result): New routine.
+
+2013-10-14  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Compile): Fix finalization of the automaton
+	when its size was automatically computed to be exactly 1000 bytes.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): If the full view of
+	the base type is constrained, the full view of the subtype is
+	known to be constrained as well.
+
 2013-10-14  Vincent Celier  <celier@adacore.com>
 
 	* projects.texi: Add documentation for new attributes of package
