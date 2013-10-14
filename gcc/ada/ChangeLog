@@ -1,3 +1,9 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode): Do not emit an
+	error when inspecting a self referencial output item of an
+	unconstrained type.
+
 2013-10-14  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): Fix

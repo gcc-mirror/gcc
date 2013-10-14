@@ -928,6 +928,15 @@ package body Sem_Prag is
                   Error_Msg_NE ("item & must have mode in out", Item, Item_Id);
                end if;
 
+            --  A self-referential out parameter of an unconstrained or tagged
+            --  type acts as an input because the discriminants, array bounds
+            --  or the tag may be read.
+
+            elsif Ekind (Item_Id) = E_Out_Parameter
+              and then Is_Unconstrained_Or_Tagged_Item (Item_Id)
+            then
+               null;
+
             --  Self-referential parameter
 
             elsif Ekind (Item_Id) /= E_In_Out_Parameter then
