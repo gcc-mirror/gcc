@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,12 +51,8 @@ with System.Standard_Library;
 with System.Traceback_Entries;
 
 package Ada.Exceptions is
-   pragma Warnings (Off);
    pragma Preelaborate_05;
-   pragma Warnings (On);
-   --  In accordance with Ada 2005 AI-362. The warnings pragmas are so that we
-   --  can compile this using older compiler versions, which will ignore the
-   --  pragma, which is fine for the bootstrap.
+   --  In accordance with Ada 2005 AI-362.
 
    type Exception_Id is private;
    pragma Preelaborable_Initialization (Exception_Id);
@@ -336,6 +332,15 @@ private
    --  Don't allow comparison on exception occurrences, we should not need
    --  this, and it would not work right, because of the Msg and Tracebacks
    --  fields which have unused entries not copied by Save_Occurrence.
+
+   function Get_Exception_Machine_Occurrence (X : Exception_Occurrence)
+                                             return System.Address;
+   pragma Export (Ada, Get_Exception_Machine_Occurrence,
+                    "__gnat_get_exception_machine_occurrence");
+   --  Get the machine occurrence corresponding to an exception occurrence.
+   --  It is Null_Address if there is no machine occurrence (in runtimes that
+   --  doesn't use GCC mechanism) or if it has been lost (Save_Occurrence
+   --  doesn't save the machine occurrence).
 
    function EO_To_String (X : Exception_Occurrence) return String;
    function String_To_EO (S : String) return Exception_Occurrence;
