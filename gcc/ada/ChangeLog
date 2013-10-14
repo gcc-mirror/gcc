@@ -1,5 +1,64 @@
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb: Flag263 is now known as Has_Null_Refinement.
+	(Has_Null_Refinement): New routine.
+	(Set_Has_Null_Refinement): New routine.
+	(Write_Entity_Flags): Output the status of flag
+	Has_Null_Refinement.
+	* einfo.ads: Add new flag Has_Null_Refinement along with
+	comment on usage and update all nodes subject to the flag.
+	(Has_Null_Refinement): New routine along with pragma Inline.
+	(Set_Has_Null_Refinement): New rouitine along with pragma Inline.
+	* sem_prag.adb (Analyze_Constituent): Mark a state as having
+	a null refinement when the sole constituent is "null".
+	(Analyze_Global_List): Handle null input/output items.
+	(Analyze_Refined_Global_In_Decl_Part): Add local variable
+	Has_Null_State. Add logic to handle combinations of states
+	with null refinements and null global lists and/or items.
+	(Check_In_Out_States, Check_Input_States, Check_Output_States):
+	Use attribute Has_Null_Refinement to detect states with
+	constituents.
+	(Check_Refined_Global_List): Handle null input/output items.
+	(Process_Global_Item): Handle states with null refinements.
+	(Process_Global_List): Handle null input/output items.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Reset Is_True_Constant for
+	aliased object
+	* gnat_ugn.texi: Update doc on aliased variables and constants.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Element_Reference): If the
+	reference is an actual in a call, the prefix has not been fully
+	expanded, to account for the additional expansion for parameter
+	passing. the prefix itself is a packed reference as well,
+	recurse to complete the transformation of the prefix.
+
+2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Do not
+	materialize the entity when the renamed object contains an
+	N_Explicit_Dereference.
+	* sem_ch8.adb (Analyze_Object_Renaming):
+	If the renaming comes from source and the renamed object is a
+	dereference, mark the prefix as needing debug information.
+
+2013-10-14  Doug Rupp  <rupp@adacore.com>
+
+	* system-vxworks-arm.ads (Stack_Check_Probes, Stack_Check_Limits):
+	Enable Stack Probes, Disable Stack Limit Checking.
+	* init.c [VxWorks] (__gnat_inum_to_ivec): Caste return value.
+	(__gnat_map_signal): Fix signature.
+	(__gnat_error_handler): Make
+	static, fix signature, remove prototype, fix prototype warning.
+	[ARMEL and VxWorks6] (__gnat_map_signal): Check and re-arm guard
+	page for storage_error.
+	* exp_pakd.adb: Minor reformatting.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Analyze_Global_In_Decl_Part): Remove local
 	variable Contract_Seen. Add local variable Proof_Seen.
 	(Analyze_Global_List): Remove the processing for mode
