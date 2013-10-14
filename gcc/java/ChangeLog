@@ -1,3 +1,8 @@
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* lang.c (java_handle_option): Update for introduction of
+	gcc::dump_manager.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (jvspec.o): Remove.

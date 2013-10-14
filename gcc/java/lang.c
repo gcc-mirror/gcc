@@ -42,6 +42,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "opts.h"
 #include "options.h"
 #include "target.h"
+#include "context.h"
 
 static bool java_init (void);
 static void java_finish (void);
@@ -271,7 +272,7 @@ java_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fdump_:
-      if (!dump_switch_p (arg))
+      if (!g->get_dumps ()->dump_switch_p (arg))
 	return false;
       break;
 
