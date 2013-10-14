@@ -1,5 +1,18 @@
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Library_Level attribute now applies to an
+	entity name.
+	* sem_attr.adb (Analyze_Attribute, case Library_Level): Prefix
+	is now an entity name.
+
+2013-10-14  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): For
+	Priority and CPU aspects in subprograms, the expression in the
+	aspect is analyzed and exported.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
 	* s-valuti.adb, prep.adb, scng.adb, errout.adb: Minor reformatting.
 
 2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
