@@ -1,5 +1,22 @@
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add error
+	entry for Library_Level attribute (which should not survive
+	to expansion)
+	* gnat_rm.texi: Document attribute Library_Level
+	* sem_attr.adb (Analyze_Attribute, case Library_Level): Implement
+	this new attribute (Set_Boolean_Result): Replaces Set_Result
+	(Check_Standard_Prefix): Document that Check_E0 is called
+	(Check_System_Prefix): New procedure
+	* snames.ads-tmpl: Add entry for Library_Level attribute
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb, sinfo.ads: Minor reformatting.
+	* checks.adb (Overlap_Check): Use identifier casing in messages.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb (Default_Aspect_Component_Value): Is on base type
 	only.
 	* exp_aggr.adb (Expand_Array_Aggregate): Handle proper
