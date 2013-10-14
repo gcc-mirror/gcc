@@ -1,3 +1,36 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, exp_ch11.adb, s-exctab.adb: Minor reformatting.
+	* usage.adb: Add line for -gnateu switch.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* lib-writ.ads: Add comments to indicate that a path name in
+	D lines may be quoted if the path name includes directories
+	with spaces.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document -gnatd.E.
+	* gnat1drv.adb (Adjust_Global_Switches): Set Error_To_Warning
+	if -gnatd.E set.
+	* opt.ads (Error_To_Warning): New switch.
+	* osint.adb: Minor reformatting.
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Overlap is error
+	in some cases in Ada 2012 mode (unless Error_To_Warning) is set.
+	* sem_warn.ads (Warn_On_Overlapping_Actuals): Document error
+	in Ada 2012 mode.
+
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* cstand.adb: Add a comment for Standard_Exception_Type.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): If a transient scope
+	has already been created, use the corresponding Node_To_Be_Wrapped
+	as the insertion point for the controlled actions.
+
 2013-10-14  Tristan Gingold  <gingold@adacore.com>
 
 	* cstand.adb (Create_Standard): Change Import_Code component

@@ -122,7 +122,7 @@ package body Debug is
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  SPARK strict mode
-   --  d.E
+   --  d.E  Turn selected errors into warnings
    --  d.F  SPARK mode
    --  d.G  Frame condition mode for gnat2why
    --  d.H
@@ -581,22 +581,26 @@ package body Debug is
    --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.
 
-   --  d.A  There seems to be a problem with ASIS if we activate the circuit
-   --       for reading and writing the aspect specification hash table, so
-   --       for now, this is controlled by the debug flag d.A. The hash table
-   --       is only written and read if this flag is set.
-
    --  d.x  No exception handlers in generated code. This causes exception
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
+
+   --  d.A  There seems to be a problem with ASIS if we activate the circuit
+   --       for reading and writing the aspect specification hash table, so
+   --       for now, this is controlled by the debug flag d.A. The hash table
+   --       is only written and read if this flag is set.
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
    --  d.D  SPARK strict mode. Interpret compiler permissions as strictly as
    --       possible in SPARK mode.
-   --
+
+   --  d.E  Turn selected errors into warnings. This debug switch causes a
+   --       specific set of error messages into warnings. Setting this switch
+   --       causes Opt.Error_To_Warning to be set to True.
+
    --  d.F  SPARK mode. Generate AST in a form suitable for formal
    --       verification, as well as additional cross reference information in
    --       ALI files to compute effects of subprograms. Note that ALI files

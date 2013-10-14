@@ -12159,11 +12159,22 @@ package body Exp_Ch4 is
          Top : Node_Id;
 
       begin
+         --  In most cases an expression that creates a controlled object
+         --  generates a transient scope around it. If this is the case then
+         --  other controlled values can reuse it.
+
+         if Scope_Is_Transient then
+            return Node_To_Be_Wrapped;
+
+         --  In some cases, such as return statements, no transient scope is
+         --  generated, in which case we have to look up in the tree to find
+         --  the proper list on which to place the transient.
+
          --  When the node is inside a case/if expression, the lifetime of any
          --  temporary controlled object is extended. Find a suitable insertion
          --  node by locating the topmost case or if expressions.
 
-         if Within_Case_Or_If_Expression (N) then
+         elsif Within_Case_Or_If_Expression (N) then
             Par := N;
             Top := N;
             while Present (Par) loop

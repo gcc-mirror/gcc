@@ -117,6 +117,13 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
+      --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
+      --  to be treated as warnings instead of errors.
+
+      if Debug_Flag_Dot_EE then
+         Error_To_Warning := True;
+      end if;
+
       --  Disable CodePeer_Mode in Check_Syntax, since we need front-end
       --  expansion.
 

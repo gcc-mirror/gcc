@@ -67,15 +67,12 @@ package body System.Exception_Table is
       S1 : constant Big_String_Ptr := To_Ptr (A);
       S2 : constant Big_String_Ptr := To_Ptr (B);
       J : Integer := 1;
-
    begin
       loop
          if S1 (J) /= S2 (J) then
             return False;
-
          elsif S1 (J) = ASCII.NUL then
             return True;
-
          else
             J := J + 1;
          end if;

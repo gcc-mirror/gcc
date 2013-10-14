@@ -713,7 +713,7 @@ package body Exp_Prag is
                   else
                      Code :=
                         Make_Function_Call (Loc,
-                          Name =>
+                          Name                   =>
                             New_Reference_To (RTE (RE_Import_Address), Loc),
                           Parameter_Associations => New_List
                             (Make_String_Literal (Loc,

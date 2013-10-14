@@ -1448,9 +1448,9 @@ package body CStand is
                                (Type_Definition (Parent (Standard_Duration))));
 
          --  Normally it does not matter that nodes in package Standard are
-         --  not marked as analyzed. The Scalar_Range of the fixed-point
-         --  type Standard_Duration is an exception, because of the special
-         --  test made in Freeze.Freeze_Fixed_Point_Type.
+         --  not marked as analyzed. The Scalar_Range of the fixed-point type
+         --  Standard_Duration is an exception, because of the special test
+         --  made in Freeze.Freeze_Fixed_Point_Type.
 
          Set_Analyzed (Scalar_Range (Standard_Duration));
 
@@ -1471,6 +1471,10 @@ package body CStand is
 
       --  Build standard exception type. Note that the type name here is
       --  actually used in the generated code, so it must be set correctly.
+      --  The type Standard_Exception_Type must be consistent with the type
+      --  System.Standard_Library.Exception_Data, as the latter is what is
+      --  known by the run-time. Components of the record are documented in
+      --  the declaration in System.Standard_Library.
 
       Standard_Exception_Type := New_Standard_Entity;
       Set_Ekind       (Standard_Exception_Type, E_Record_Type);
