@@ -5961,7 +5961,6 @@ package body Sem_Ch13 is
 
       if Present (SId) then
          PDecl := Unit_Declaration_Node (SId);
-
       else
          PDecl := Build_Invariant_Procedure_Declaration (Typ);
       end if;

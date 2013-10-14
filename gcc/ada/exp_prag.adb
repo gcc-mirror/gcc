@@ -311,6 +311,10 @@ package body Exp_Prag is
       --  at" is omitted for name = Assertion, since it is redundant, given
       --  that the name of the exception is Assert_Failure.)
 
+      --  Also, instead of "XXX failed at", we generate slightly
+      --  different messages for some of the contract assertions (see
+      --  code below for details).
+
       --  An alternative expansion is used when the No_Exception_Propagation
       --  restriction is active and there is a local Assert_Failure handler.
       --  This is not a common combination of circumstances, but it occurs in
@@ -399,6 +403,15 @@ package body Exp_Prag is
                   Get_Name_String (Nam);
                   Insert_Str_In_Name_Buffer ("failed ", 1);
                   Add_Str_To_Name_Buffer (" from ");
+
+               --  For special case of Invariant, the string is "failed
+               --  invariant from yy", to be consistent with the string that is
+               --  generated for the aspect case (the code later on checks for
+               --  this specific string to modify it in some cases, so this is
+               --  functionally important).
+
+               elsif Nam = Name_Invariant then
+                  Add_Str_To_Name_Buffer ("failed invariant from ");
 
                --  For all other checks, the string is "xxx failed at yyy"
                --  where xxx is the check name with current source file casing.
