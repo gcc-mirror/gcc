@@ -1,5 +1,18 @@
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Document -gnateu switch.
+	* opt.ads (Ignore_Unrecognized_VWY_Switches): New switch.
+	* stylesw.adb: Ignore unrecognized switch if
+	Ignore_Unrecognized_VWY_Switches set.
+	* switch-c.adb: Implement -gnateu (sets
+	Ignore_Unrecognized_VWY_Switches).
+	* validsw.adb: Ignore unrecognized switch if
+	Ignore_Unrecognized_VWY_Switches set.
+	* warnsw.adb: Ignore unrecognized switch if
+	Ignore_Unrecognized_VWY_Switches set.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
 	* exp_prag.adb, sem_prag.adb, a-exexda.adb, s-vmexta.ads: Minor
 	reformatting.
 

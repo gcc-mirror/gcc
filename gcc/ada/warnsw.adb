@@ -25,6 +25,7 @@
 
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
+with Output;   use Output;
 
 package body Warnsw is
 
@@ -386,7 +387,11 @@ package body Warnsw is
             No_Warn_On_Non_Local_Exception      := True;
 
          when others =>
-            return False;
+            if Ignore_Unrecognized_VWY_Switches then
+               Write_Line ("unrecognized switch -gnatw." & C & " ignored");
+            else
+               return False;
+            end if;
       end case;
 
       return True;
@@ -672,6 +677,11 @@ package body Warnsw is
             Warn_On_Unchecked_Conversion        := False;
 
          when others =>
+            if Ignore_Unrecognized_VWY_Switches then
+               Write_Line ("unrecognized switch -gnatw" & C & " ignored");
+            else
+               return False;
+            end if;
             return False;
       end case;
 

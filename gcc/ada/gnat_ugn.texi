@@ -3829,6 +3829,14 @@ Synonym of @option{-fdump-scos}, kept for backards compatibility.
 @cindex @option{-gnatet} (@command{gcc})
 Generate target dependent information.
 
+@item -gnateu
+@cindex @option{-gnateu} (@command{gcc})
+Ignore unrecognized validity, warning, and style switches that
+apppear after this switch is given. This may be useful when
+compiling sources developed on a later version of the compiler
+with an earlier version. Of course the earlier version must
+support this switch.
+
 @item ^-gnateV^/PARAMETER_VALIDITY_CHECK^
 @cindex @option{-gnateV} (@command{gcc})
 Check validity of subprogram parameters.

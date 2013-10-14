@@ -25,6 +25,7 @@
 
 with Hostparm; use Hostparm;
 with Opt;      use Opt;
+with Output;   use Output;
 
 package body Stylesw is
 
@@ -466,9 +467,13 @@ package body Stylesw is
                null;
 
             when others =>
-               Err_Col := Err_Col - 1;
-               Bad_Style_Switch ("invalid style switch: " & C);
-               return;
+               if Ignore_Unrecognized_VWY_Switches then
+                  Write_Line ("unrecognized switch -gnaty" & C & " ignored");
+               else
+                  Err_Col := Err_Col - 1;
+                  Bad_Style_Switch ("invalid style switch: " & C);
+                  return;
+               end if;
             end case;
 
          --  Turning switches off
@@ -571,9 +576,13 @@ package body Stylesw is
                null;
 
             when others =>
-               Err_Col := Err_Col - 1;
-               Bad_Style_Switch ("invalid style switch: " & C);
-               return;
+               if Ignore_Unrecognized_VWY_Switches then
+                  Write_Line ("unrecognized switch -gnaty-" & C & " ignored");
+               else
+                  Err_Col := Err_Col - 1;
+                  Bad_Style_Switch ("invalid style switch: " & C);
+                  return;
+               end if;
             end case;
          end if;
       end loop;
