@@ -4940,7 +4940,7 @@ package body Exp_Ch3 is
                Next_Elmt (Discr);
             end loop;
 
-            --  Now collect values of initialized components.
+            --  Now collect values of initialized components
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
@@ -4957,11 +4957,11 @@ package body Exp_Ch3 is
                Next_Component (Comp);
             end loop;
 
-            --  Finally, box-initialize remaining components.
+            --  Finally, box-initialize remaining components
 
             Append_To (Component_Associations (Aggr),
               Make_Component_Association (Loc,
-                Choices => New_List (Make_Others_Choice (Loc)),
+                Choices    => New_List (Make_Others_Choice (Loc)),
                 Expression => Empty));
             Set_Box_Present (Last (Component_Associations (Aggr)));
             Set_Expression (N, Aggr);

@@ -853,13 +853,13 @@ package body Einfo is
    function Default_Aspect_Component_Value (Id : E) return N is
    begin
       pragma Assert (Is_Array_Type (Id));
-      return Node19 (Id);
+      return Node19 (Base_Type (Id));
    end Default_Aspect_Component_Value;
 
    function Default_Aspect_Value (Id : E) return N is
    begin
       pragma Assert (Is_Scalar_Type (Id));
-      return Node19 (Id);
+      return Node19 (Base_Type (Id));
    end Default_Aspect_Value;
 
    function Default_Expr_Function (Id : E) return E is
@@ -3456,13 +3456,13 @@ package body Einfo is
 
    procedure Set_Default_Aspect_Component_Value (Id : E; V : E) is
    begin
-      pragma Assert (Is_Array_Type (Id));
+      pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
       Set_Node19 (Id, V);
    end Set_Default_Aspect_Component_Value;
 
    procedure Set_Default_Aspect_Value (Id : E; V : E) is
    begin
-      pragma Assert (Is_Scalar_Type (Id));
+      pragma Assert (Is_Scalar_Type (Id) and then Is_Base_Type (Id));
       Set_Node19 (Id, V);
    end Set_Default_Aspect_Value;
 

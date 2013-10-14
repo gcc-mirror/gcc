@@ -770,17 +770,9 @@ package body Sem_Ch13 is
          Set_Has_Default_Aspect (Base_Type (Ent));
 
          if Is_Scalar_Type (Ent) then
-            Set_Default_Aspect_Value (Ent, Expr);
-
-            --  Place default value of base type as well, because that is
-            --  the semantics of the aspect. It is convenient to link the
-            --  aspect to both the (possibly anonymous) base type and to
-            --  the given first subtype.
-
             Set_Default_Aspect_Value (Base_Type (Ent), Expr);
-
          else
-            Set_Default_Aspect_Component_Value (Ent, Expr);
+            Set_Default_Aspect_Component_Value (Base_Type (Ent), Expr);
          end if;
       end Analyze_Aspect_Default_Value;
 
@@ -9457,6 +9449,7 @@ package body Sem_Ch13 is
       --  Default_Component_Value
 
       if Is_Array_Type (Typ)
+        and then Is_Base_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value)
       then
@@ -9468,6 +9461,7 @@ package body Sem_Ch13 is
       --  Default_Value
 
       if Is_Scalar_Type (Typ)
+        and then Is_Base_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Value)
       then

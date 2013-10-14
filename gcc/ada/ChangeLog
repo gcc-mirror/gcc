@@ -1,3 +1,39 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Default_Aspect_Component_Value): Is on base type
+	only.
+	* exp_aggr.adb (Expand_Array_Aggregate): Handle proper
+	initialization of <> component.
+	* exp_ch3.adb, exp_tss.adb: Minor reformatting
+	* sem_ch13.adb (Default_Aspect_Component_Value, Default_Aspect_Value):
+	Is on base type only.
+	* sinfo.ads: Minor comment revision.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* g-decstr.adb (Decode_Wide_Wide_Character): Fix failure
+	to detect invalid sequences where longer than necessary
+	sequences are used for encoding.
+	(Validate_Wide_Character):
+	Call Decode_Wide_Character to get the above validations.
+	(Validate_Wide_Wide_Character): Same fix
+	* g-decstr.ads: Add documentation making it clear that the UTF-8
+	implementation here recognizes all valid UTF-8 sequences, rather
+	than the well-formed subset corresponding to characters defined
+	in Unicode.
+	(Next_Wide_Character): Remove comment about this
+	being more efficient than Decode_Wide_Character (because this
+	no longer the case).
+	(Prev_Wide_Character): Add note that valid encoding is assumed.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichha.adb (Character_Set_Version): New function.
+	* a-wichha.ads: Remove comments for pragma Pure (final RM has
+	this).
+	(Character_Set_Version): New function.
+	* gnat_rm.texi: Update doc.
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb: Flag263 is now known as Has_Null_Refinement.

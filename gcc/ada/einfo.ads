@@ -738,13 +738,13 @@ package Einfo is
 --       subprograms, this returns the {function,procedure}_specification, not
 --       the subprogram_declaration.
 
---    Default_Aspect_Component_Value (Node19)
+--    Default_Aspect_Component_Value (Node19) [base type only]
 --       Defined in array types. Holds the static value specified in a
---       default_component_value aspect specification for the array type.
+--       Default_Component_Value aspect specification for the array type.
 
---    Default_Aspect_Value (Node19)
+--    Default_Aspect_Value (Node19) [base type only]
 --       Defined in scalar types. Holds the static value specified in a
---       default_value aspect specification for the type.
+--       Default_Value aspect specification for the type.
 
 --    Default_Expr_Function (Node21)
 --       Defined in parameters. It holds the entity of the parameterless
@@ -5171,7 +5171,7 @@ package Einfo is
    --  E_Array_Type
    --  E_Array_Subtype
    --    First_Index                         (Node17)
-   --    Default_Aspect_Component_Value      (Node19)
+   --    Default_Aspect_Component_Value      (Node19)   (base type only)
    --    Component_Type                      (Node20)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Component_Size                      (Uint22)   (base type only)
@@ -5354,7 +5354,7 @@ package Einfo is
    --    Lit_Indexes                         (Node15)   (root type only)
    --    Lit_Strings                         (Node16)   (root type only)
    --    First_Literal                       (Node17)
-   --    Default_Aspect_Value                (Node19)
+   --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
    --    Static_Predicate                    (List25)
@@ -5386,7 +5386,7 @@ package Einfo is
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
-   --    Default_Aspect_Value                (Node19)
+   --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
@@ -5564,7 +5564,7 @@ package Einfo is
    --  E_Modular_Integer_Type
    --  E_Modular_Integer_Subtype
    --    Modulus                             (Uint17)   (base type only)
-   --    Default_Aspect_Value                (Node19)
+   --    Default_Aspect_Value                (Node19)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
@@ -5599,7 +5599,7 @@ package Einfo is
    --  E_Ordinary_Fixed_Point_Type
    --  E_Ordinary_Fixed_Point_Subtype
    --    Delta_Value                         (Ureal18)
-   --    Default_Aspect_Value                (Node19)
+   --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
    --    Has_Small_Clause                    (Flag67)
@@ -5853,7 +5853,7 @@ package Einfo is
 
    --  E_Signed_Integer_Type
    --  E_Signed_Integer_Subtype
-   --    Default_Aspect_Value                (Node19)
+   --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
