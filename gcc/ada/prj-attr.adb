@@ -288,6 +288,8 @@ package body Prj.Attr is
    "LVswitches#" &
    "Lasource_artifact_extensions#" &
    "Laobject_artifact_extensions#" &
+   "LVartifacts_in_exec_dir#" &
+   "LVartifacts_in_object_dir#" &
 
    --  package Cross_Reference
 

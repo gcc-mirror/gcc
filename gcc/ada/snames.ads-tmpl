@@ -1221,7 +1221,7 @@ package Snames is
    --  Additional reserved words and identifiers used in GNAT Project Files
    --  Note that Name_External is already previously declared.
 
-   --  The names with the -- GB annotation are only used in gprbuild.
+   --  Names with a -- GB annotation are only used in gprbuild or gprclean
 
    Name_Active                             : constant Name_Id := N + $;
    Name_Aggregate                          : constant Name_Id := N + $;
@@ -1229,6 +1229,8 @@ package Snames is
    Name_Archive_Builder_Append_Option      : constant Name_Id := N + $;
    Name_Archive_Indexer                    : constant Name_Id := N + $;
    Name_Archive_Suffix                     : constant Name_Id := N + $;
+   Name_Artifacts_In_Exec_Dir              : constant Name_Id := N + $; -- GB
+   Name_Artifacts_In_Object_Dir            : constant Name_Id := N + $; -- GB
    Name_Binder                             : constant Name_Id := N + $;
    Name_Body_Suffix                        : constant Name_Id := N + $;
    Name_Builder                            : constant Name_Id := N + $;
