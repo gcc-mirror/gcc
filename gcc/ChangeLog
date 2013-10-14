@@ -1,3 +1,10 @@
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58712
+	PR middle-end/55358
+	* gimple.c (iterative_hash_canonical_type): Make sure to
+	record the hash into the correct hashtable slot.
+
 2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/58662

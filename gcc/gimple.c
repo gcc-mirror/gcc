@@ -3112,8 +3112,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
   struct tree_int_map *mp, m;
 
   m.base.from = type;
-  if ((slot = htab_find_slot (canonical_type_hash_cache, &m, INSERT))
-      && *slot)
+  if ((slot = htab_find_slot (canonical_type_hash_cache, &m, NO_INSERT)))
     return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, val);
 
   /* Combine a few common features of types so that types are grouped into
@@ -3217,6 +3216,10 @@ iterative_hash_canonical_type (tree type, hashval_t val)
   mp = ggc_alloc_cleared_tree_int_map ();
   mp->base.from = type;
   mp->to = v;
+  /* As we recurse the hashtable may expand between looking up the
+     cached value (and not finding one) and here, so we have to
+     re-lookup the slot.  */
+  slot = htab_find_slot (canonical_type_hash_cache, &m, INSERT);
   *slot = (void *) mp;
 
   return iterative_hash_hashval_t (v, val);
