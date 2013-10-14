@@ -1,3 +1,29 @@
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* cstand.adb (Create_Standard): Change Import_Code component
+	of Standard_Exception_Type to Foreign_Data. Its type is now
+	Standard_A_Char (access to character).
+	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): Adjust
+	definition of Code to match the type of Foreign_Data.
+	* s-stalib.ads (Exception_Data): Replace Import_Code by Foreign_Data
+	Change the definition of standard predefined exceptions.
+	(Exception_Code): Remove.
+	* raise.h (Exception_Code): Remove (Exception_Data): Replace
+	Import_Code field by Foreign_Data.
+	* rtsfind.ads (RE_Exception_Code): Remove
+	(RE_Import_Address): Add.
+	* a-exexpr-gcc.adb (Import_Code_For): Replaced by Foreign_Data_For.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Associate null
+	to Foreign_Data component.
+	* raise-gcc.c (Import_Code_For): Replaced by Foreign_Data_For.
+	(is_handled_by): Add comments. Use replaced function. Change
+	condition so that an Ada occurrence is never handled by
+	Foreign_Exception.
+	* s-exctab.adb (Internal_Exception): Associate Null_Address to
+	Foreign_Data component.
+	* s-vmexta.adb, s-vmexta.ads (Exception_Code): Declare Replace
+	SSL.Exception_Code by Exception_Code.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Document -gnateu switch.

@@ -1172,7 +1172,7 @@ package body Exp_Ch11 is
    --                    Name_Length      => exceptE'Length,
    --                    Full_Name        => exceptE'Address,
    --                    HTable_Ptr       => null,
-   --                    Import_Code      => 0,
+   --                    Foreign_Data     => null,
    --                    Raise_Hook       => null,
    --                    );
 
@@ -1319,9 +1319,9 @@ package body Exp_Ch11 is
 
       Append_To (L, Make_Null (Loc));
 
-      --  Import_Code component: 0
+      --  Foreign_Data component: null
 
-      Append_To (L, Make_Integer_Literal (Loc, 0));
+      Append_To (L, Make_Null (Loc));
 
       --  Raise_Hook component: null
 

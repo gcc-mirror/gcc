@@ -1470,14 +1470,7 @@ package body CStand is
       end Build_Duration;
 
       --  Build standard exception type. Note that the type name here is
-      --  actually used in the generated code, so it must be set correctly
-
-      --  ??? Also note that the Import_Code component is now declared
-      --  as a System.Standard_Library.Exception_Code to enforce run-time
-      --  library implementation consistency. It's too early here to resort
-      --  to rtsfind to get the proper node for that type, so we use the
-      --  closest possible available type node at hand instead. We should
-      --  probably be fixing this up at some point.
+      --  actually used in the generated code, so it must be set correctly.
 
       Standard_Exception_Type := New_Standard_Entity;
       Set_Ekind       (Standard_Exception_Type, E_Record_Type);
@@ -1501,7 +1494,7 @@ package body CStand is
       Make_Component
         (Standard_Exception_Type, Standard_A_Char,    "HTable_Ptr");
       Make_Component
-        (Standard_Exception_Type, Standard_Unsigned,  "Import_Code");
+        (Standard_Exception_Type, Standard_A_Char,    "Foreign_Data");
       Make_Component
         (Standard_Exception_Type, Standard_A_Char,    "Raise_Hook");
 
