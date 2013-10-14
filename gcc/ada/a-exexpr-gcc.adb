@@ -206,7 +206,7 @@ package body Exception_Propagation is
      (GCC_Exception : not null GCC_Exception_Access) return EOA;
    pragma Export (C, Setup_Current_Excep, "__gnat_setup_current_excep");
    --  Write Get_Current_Excep.all from GCC_Exception. Called by the
-   --  personnality routine.
+   --  personality routine.
 
    procedure Unhandled_Except_Handler
      (GCC_Exception : not null GCC_Exception_Access);
@@ -245,15 +245,16 @@ package body Exception_Propagation is
    pragma Import (C, Unwind_ForcedUnwind, "__gnat_Unwind_ForcedUnwind");
 
    procedure Set_Exception_Parameter
-     (Excep : EOA;
+     (Excep         : EOA;
       GCC_Exception : not null GCC_Exception_Access);
-   pragma Export (C, Set_Exception_Parameter,
-                    "__gnat_set_exception_parameter");
+   pragma Export
+     (C, Set_Exception_Parameter, "__gnat_set_exception_parameter");
    --  Called inserted by gigi to initialize the exception parameter
 
    procedure Set_Foreign_Occurrence (Excep : EOA; Mo : System.Address);
-   --  Utility routine to initialize occurrence Excep for a foreign exception
-   --  whose machine occurrence is Mo.
+   --  Utility routine to initialize occurrence Excep from a foreign exception
+   --  whose machine occurrence is Mo. The message is empty, the backtrace
+   --  is empty too and the exception identity is Foreign_Exception.
 
    --  Hooks called when entering/leaving an exception handler for a given
    --  occurrence, aimed at handling the stack of active occurrences. The
@@ -356,12 +357,12 @@ package body Exception_Propagation is
 
    procedure Set_Foreign_Occurrence (Excep : EOA; Mo : System.Address) is
    begin
-      Excep.Id := Foreign_Exception'Access;
+      Excep.Id                 := Foreign_Exception'Access;
       Excep.Machine_Occurrence := Mo;
-      Excep.Msg_Length := 0;
-      Excep.Exception_Raised := True;
-      Excep.Pid := Local_Partition_ID;
-      Excep.Num_Tracebacks := 0;
+      Excep.Msg_Length         := 0;
+      Excep.Exception_Raised   := True;
+      Excep.Pid                := Local_Partition_ID;
+      Excep.Num_Tracebacks     := 0;
    end Set_Foreign_Occurrence;
 
    -------------------------
@@ -382,14 +383,13 @@ package body Exception_Propagation is
 
          declare
             GNAT_Occurrence : constant GNAT_GCC_Exception_Access :=
-              To_GNAT_GCC_Exception (GCC_Exception);
+                                To_GNAT_GCC_Exception (GCC_Exception);
          begin
             Excep.all := GNAT_Occurrence.Occurrence;
-
             return GNAT_Occurrence.Occurrence'Access;
          end;
-      else
 
+      else
          --  A default one
 
          Set_Foreign_Occurrence (Excep, GCC_Exception.all'Address);
@@ -491,8 +491,9 @@ package body Exception_Propagation is
    -----------------------------
 
    procedure Set_Exception_Parameter
-     (Excep : EOA;
-      GCC_Exception : not null GCC_Exception_Access) is
+     (Excep         : EOA;
+      GCC_Exception : not null GCC_Exception_Access)
+   is
    begin
       --  Setup the exception occurrence
 
@@ -506,8 +507,8 @@ package body Exception_Propagation is
          begin
             Save_Occurrence (Excep.all, GNAT_Occurrence.Occurrence);
          end;
-      else
 
+      else
          --  A default one
 
          Set_Foreign_Occurrence (Excep, GCC_Exception.all'Address);

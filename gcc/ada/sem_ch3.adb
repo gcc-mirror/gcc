@@ -982,7 +982,6 @@ package body Sem_Ch3 is
      (T_Name : Entity_Id;
       T_Def  : Node_Id)
    is
-
       procedure Check_For_Premature_Usage (Def : Node_Id);
       --  Check that type T_Name is not used, directly or recursively, as a
       --  parameter or a return type in Def. Def is either a subtype, an
@@ -1001,7 +1000,7 @@ package body Sem_Ch3 is
          if Nkind (Def) in N_Has_Etype then
             if Etype (Def) = T_Name then
                Error_Msg_N
-                 ("typer cannot be used before end of its declaration", Def);
+                 ("type& cannot be used before end of its declaration", Def);
             end if;
 
          --  If this is not a subtype, then this is an access_definition
@@ -7341,8 +7340,7 @@ package body Sem_Ch3 is
          --  declaration.
 
          if Constraint_Present then
-            New_Discrs :=
-              Build_Discriminant_Constraints (Parent_Type, Indic);
+            New_Discrs := Build_Discriminant_Constraints (Parent_Type, Indic);
 
          --  If there is no explicit constraint, there might be one that is
          --  inherited from a constrained parent type. In that case verify that
@@ -7366,8 +7364,7 @@ package body Sem_Ch3 is
             --  those given in the partial view.
 
             declare
-               C1, C2     : Elmt_Id;
-               Error_Node : Node_Id;
+               C1, C2 : Elmt_Id;
 
             begin
                C1 := First_Elmt (New_Discrs);
@@ -7376,22 +7373,21 @@ package body Sem_Ch3 is
                   if Fully_Conformant_Expressions (Node (C1), Node (C2))
                     or else
                       (Is_OK_Static_Expression (Node (C1))
-                         and then
-                       Is_OK_Static_Expression (Node (C2))
-                         and then
-                       Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
+                        and then Is_OK_Static_Expression (Node (C2))
+                        and then
+                          Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
                   then
                      null;
 
                   else
                      if Constraint_Present then
-                        Error_Msg_N (
-                          "constraint not conformant to previous declaration",
-                             Node (C1));
+                        Error_Msg_N
+                          ("constraint not conformant to previous declaration",
+                           Node (C1));
                      else
-                        Error_Msg_N (
-                          "constraint of full view is incompatible " &
-                           "with partial view", N);
+                        Error_Msg_N
+                          ("constraint of full view is incompatible "
+                           & "with partial view", N);
                      end if;
                   end if;
 
