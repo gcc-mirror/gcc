@@ -254,6 +254,427 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
 }
 
 
+/* Global canonical type table.  */
+static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+  htab_t gimple_canonical_types;
+static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+  htab_t canonical_type_hash_cache;
+
+/* Returning a hash value for gimple type TYPE combined with VAL.
+
+   The hash value returned is equal for types considered compatible
+   by gimple_canonical_types_compatible_p.  */
+
+static hashval_t
+iterative_hash_canonical_type (tree type, hashval_t val)
+{
+  hashval_t v;
+  void **slot;
+  struct tree_int_map *mp, m;
+
+  m.base.from = type;
+  if ((slot = htab_find_slot (canonical_type_hash_cache, &m, NO_INSERT)))
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, val);
+
+  /* Combine a few common features of types so that types are grouped into
+     smaller sets; when searching for existing matching types to merge,
+     only existing types having the same features as the new type will be
+     checked.  */
+  v = iterative_hash_hashval_t (TREE_CODE (type), 0);
+  v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
+  v = iterative_hash_hashval_t (TYPE_ALIGN (type), v);
+  v = iterative_hash_hashval_t (TYPE_MODE (type), v);
+
+  /* Incorporate common features of numerical types.  */
+  if (INTEGRAL_TYPE_P (type)
+      || SCALAR_FLOAT_TYPE_P (type)
+      || FIXED_POINT_TYPE_P (type)
+      || TREE_CODE (type) == OFFSET_TYPE
+      || POINTER_TYPE_P (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_PRECISION (type), v);
+      v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+    }
+
+  if (VECTOR_TYPE_P (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_VECTOR_SUBPARTS (type), v);
+      v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+    }
+
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+
+  /* For pointer and reference types, fold in information about the type
+     pointed to but do not recurse to the pointed-to type.  */
+  if (POINTER_TYPE_P (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_REF_CAN_ALIAS_ALL (type), v);
+      v = iterative_hash_hashval_t (TYPE_ADDR_SPACE (TREE_TYPE (type)), v);
+      v = iterative_hash_hashval_t (TYPE_RESTRICT (type), v);
+      v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
+    }
+
+  /* For integer types hash only the string flag.  */
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+
+  /* For array types hash the domain bounds and the string flag.  */
+  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+      /* OMP lowering can introduce error_mark_node in place of
+	 random local decls in types.  */
+      if (TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
+	v = iterative_hash_expr (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), v);
+      if (TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
+	v = iterative_hash_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), v);
+    }
+
+  /* Recurse for aggregates with a single element type.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    v = iterative_hash_canonical_type (TREE_TYPE (type), v);
+
+  /* Incorporate function return and argument types.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+    {
+      unsigned na;
+      tree p;
+
+      /* For method types also incorporate their parent class.  */
+      if (TREE_CODE (type) == METHOD_TYPE)
+	v = iterative_hash_canonical_type (TYPE_METHOD_BASETYPE (type), v);
+
+      v = iterative_hash_canonical_type (TREE_TYPE (type), v);
+
+      for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
+	{
+	  v = iterative_hash_canonical_type (TREE_VALUE (p), v);
+	  na++;
+	}
+
+      v = iterative_hash_hashval_t (na, v);
+    }
+
+  if (RECORD_OR_UNION_TYPE_P (type))
+    {
+      unsigned nf;
+      tree f;
+
+      for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
+	if (TREE_CODE (f) == FIELD_DECL)
+	  {
+	    v = iterative_hash_canonical_type (TREE_TYPE (f), v);
+	    nf++;
+	  }
+
+      v = iterative_hash_hashval_t (nf, v);
+    }
+
+  /* Cache the just computed hash value.  */
+  mp = ggc_alloc_cleared_tree_int_map ();
+  mp->base.from = type;
+  mp->to = v;
+  /* As we recurse the hashtable may expand between looking up the
+     cached value (and not finding one) and here, so we have to
+     re-lookup the slot.  */
+  slot = htab_find_slot (canonical_type_hash_cache, &m, INSERT);
+  *slot = (void *) mp;
+
+  return iterative_hash_hashval_t (v, val);
+}
+
+static hashval_t
+gimple_canonical_type_hash (const void *p)
+{
+  return iterative_hash_canonical_type (CONST_CAST_TREE ((const_tree) p), 0);
+}
+
+
+/* The TYPE_CANONICAL merging machinery.  It should closely resemble
+   the middle-end types_compatible_p function.  It needs to avoid
+   claiming types are different for types that should be treated
+   the same with respect to TBAA.  Canonical types are also used
+   for IL consistency checks via the useless_type_conversion_p
+   predicate which does not handle all type kinds itself but falls
+   back to pointer-comparison of TYPE_CANONICAL for aggregates
+   for example.  */
+
+/* Return true iff T1 and T2 are structurally identical for what
+   TBAA is concerned.  */
+
+static bool
+gimple_canonical_types_compatible_p (tree t1, tree t2)
+{
+  /* Before starting to set up the SCC machinery handle simple cases.  */
+
+  /* Check first for the obvious case of pointer identity.  */
+  if (t1 == t2)
+    return true;
+
+  /* Check that we have two types to compare.  */
+  if (t1 == NULL_TREE || t2 == NULL_TREE)
+    return false;
+
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  if (TYPE_CANONICAL (t1)
+      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+    return true;
+
+  /* Can't be the same type if the types don't have the same code.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2))
+    return false;
+
+  /* Qualifiers do not matter for canonical type comparison purposes.  */
+
+  /* Void types and nullptr types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE
+      || TREE_CODE (t1) == NULLPTR_TYPE)
+    return true;
+
+  /* Can't be the same type if they have different alignment, or mode.  */
+  if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+      || TYPE_MODE (t1) != TYPE_MODE (t2))
+    return false;
+
+  /* Non-aggregate types can be handled cheaply.  */
+  if (INTEGRAL_TYPE_P (t1)
+      || SCALAR_FLOAT_TYPE_P (t1)
+      || FIXED_POINT_TYPE_P (t1)
+      || TREE_CODE (t1) == VECTOR_TYPE
+      || TREE_CODE (t1) == COMPLEX_TYPE
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
+    {
+      /* Can't be the same type if they have different sign or precision.  */
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
+	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
+	return false;
+
+      if (TREE_CODE (t1) == INTEGER_TYPE
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
+	return false;
+
+      /* For canonical type comparisons we do not want to build SCCs
+	 so we cannot compare pointed-to types.  But we can, for now,
+	 require the same pointed-to type kind and match what
+	 useless_type_conversion_p would do.  */
+      if (POINTER_TYPE_P (t1))
+	{
+	  /* If the two pointers have different ref-all attributes,
+	     they can't be the same type.  */
+	  if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
+	    return false;
+
+	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
+	    return false;
+
+	  if (TYPE_RESTRICT (t1) != TYPE_RESTRICT (t2))
+	    return false;
+
+	  if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
+	    return false;
+	}
+
+      /* Tail-recurse to components.  */
+      if (TREE_CODE (t1) == VECTOR_TYPE
+	  || TREE_CODE (t1) == COMPLEX_TYPE)
+	return gimple_canonical_types_compatible_p (TREE_TYPE (t1),
+						    TREE_TYPE (t2));
+
+      return true;
+    }
+
+  /* Do type-specific comparisons.  */
+  switch (TREE_CODE (t1))
+    {
+    case ARRAY_TYPE:
+      /* Array types are the same if the element types are the same and
+	 the number of elements are the same.  */
+      if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
+	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
+	return false;
+      else
+	{
+	  tree i1 = TYPE_DOMAIN (t1);
+	  tree i2 = TYPE_DOMAIN (t2);
+
+	  /* For an incomplete external array, the type domain can be
+ 	     NULL_TREE.  Check this condition also.  */
+	  if (i1 == NULL_TREE && i2 == NULL_TREE)
+	    return true;
+	  else if (i1 == NULL_TREE || i2 == NULL_TREE)
+	    return false;
+	  else
+	    {
+	      tree min1 = TYPE_MIN_VALUE (i1);
+	      tree min2 = TYPE_MIN_VALUE (i2);
+	      tree max1 = TYPE_MAX_VALUE (i1);
+	      tree max2 = TYPE_MAX_VALUE (i2);
+
+	      /* The minimum/maximum values have to be the same.  */
+	      if ((min1 == min2
+		   || (min1 && min2
+		       && ((TREE_CODE (min1) == PLACEHOLDER_EXPR
+			    && TREE_CODE (min2) == PLACEHOLDER_EXPR)
+		           || operand_equal_p (min1, min2, 0))))
+		  && (max1 == max2
+		      || (max1 && max2
+			  && ((TREE_CODE (max1) == PLACEHOLDER_EXPR
+			       && TREE_CODE (max2) == PLACEHOLDER_EXPR)
+			      || operand_equal_p (max1, max2, 0)))))
+		return true;
+	      else
+		return false;
+	    }
+	}
+
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+      /* Function types are the same if the return type and arguments types
+	 are the same.  */
+      if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+
+      if (!comp_type_attributes (t1, t2))
+	return false;
+
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+	return true;
+      else
+	{
+	  tree parms1, parms2;
+
+	  for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
+	       parms1 && parms2;
+	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
+	    {
+	      if (!gimple_canonical_types_compatible_p
+		     (TREE_VALUE (parms1), TREE_VALUE (parms2)))
+		return false;
+	    }
+
+	  if (parms1 || parms2)
+	    return false;
+
+	  return true;
+	}
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree f1, f2;
+
+	/* For aggregate types, all the fields must be the same.  */
+	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
+	     f1 || f2;
+	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+	  {
+	    /* Skip non-fields.  */
+	    while (f1 && TREE_CODE (f1) != FIELD_DECL)
+	      f1 = TREE_CHAIN (f1);
+	    while (f2 && TREE_CODE (f2) != FIELD_DECL)
+	      f2 = TREE_CHAIN (f2);
+	    if (!f1 || !f2)
+	      break;
+	    /* The fields must have the same name, offset and type.  */
+	    if (DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
+		|| !gimple_compare_field_offset (f1, f2)
+		|| !gimple_canonical_types_compatible_p
+		      (TREE_TYPE (f1), TREE_TYPE (f2)))
+	      return false;
+	  }
+
+	/* If one aggregate has more fields than the other, they
+	   are not the same.  */
+	if (f1 || f2)
+	  return false;
+
+	return true;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+/* Returns nonzero if P1 and P2 are equal.  */
+
+static int
+gimple_canonical_type_eq (const void *p1, const void *p2)
+{
+  const_tree t1 = (const_tree) p1;
+  const_tree t2 = (const_tree) p2;
+  return gimple_canonical_types_compatible_p (CONST_CAST_TREE (t1),
+					      CONST_CAST_TREE (t2));
+}
+
+/* Register type T in the global type table gimple_types.
+   If another type T', compatible with T, already existed in
+   gimple_types then return T', otherwise return T.  This is used by
+   LTO to merge identical types read from different TUs.
+
+   ???  This merging does not exactly match how the tree.c middle-end
+   functions will assign TYPE_CANONICAL when new types are created
+   during optimization (which at least happens for pointer and array
+   types).  */
+
+static tree
+gimple_register_canonical_type (tree t)
+{
+  void **slot;
+
+  gcc_assert (TYPE_P (t));
+
+  if (TYPE_CANONICAL (t))
+    return TYPE_CANONICAL (t);
+
+  slot = htab_find_slot (gimple_canonical_types, t, INSERT);
+  if (*slot
+      && *(tree *)slot != t)
+    {
+      tree new_type = (tree) *((tree *) slot);
+
+      TYPE_CANONICAL (t) = new_type;
+      t = new_type;
+    }
+  else
+    {
+      TYPE_CANONICAL (t) = t;
+      *slot = (void *) t;
+    }
+
+  return t;
+}
+
+/* Re-compute TYPE_CANONICAL for NODE and related types.  */
+
+static void
+lto_register_canonical_types (tree node)
+{
+  if (!node
+      || !TYPE_P (node))
+    return;
+
+  TYPE_CANONICAL (node) = NULL_TREE;
+  TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
+
+  if (POINTER_TYPE_P (node)
+      || TREE_CODE (node) == COMPLEX_TYPE
+      || TREE_CODE (node) == ARRAY_TYPE)
+    lto_register_canonical_types (TREE_TYPE (node));
+}
+
 
 /* ???  Old hashing and merging code follows, we keep it for statistics
    purposes for now.  */
@@ -3398,12 +3819,27 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   cgraph_state = CGRAPH_LTO_STREAMING;
 
+  canonical_type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
+					       tree_int_map_eq, NULL);
+  gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
+					    gimple_canonical_type_eq, 0);
   type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
 				     tree_int_map_eq, NULL);
   type_pair_cache = XCNEWVEC (struct type_pair_d, GIMPLE_TYPE_PAIR_SIZE);
   gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
   gcc_obstack_init (&tree_scc_hash_obstack);
   tree_scc_hash.create (4096);
+
+  /* Register the common node types with the canonical type machinery so
+     we properly share alias-sets across languages and TUs.  Do not
+     expose the common nodes as type merge target - those that should be
+     are already exposed so by pre-loading the LTO streamer caches.  */
+  for (i = 0; i < itk_none; ++i)
+    lto_register_canonical_types (integer_types[i]);
+  /* The sizetypes are not used to access data so we do not need to
+     do anything about them.  */
+  for (i = 0; i < TI_MAX; ++i)
+    lto_register_canonical_types (global_trees[i]);
 
   if (!quiet_flag)
     fprintf (stderr, "Reading object files:");
@@ -3459,7 +3895,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   type_pair_cache = NULL;
   tree_scc_hash.dispose ();
   obstack_free (&tree_scc_hash_obstack, NULL);
-  free_gimple_type_tables ();
+  htab_delete (gimple_canonical_types);
+  gimple_canonical_types = NULL;
+  htab_delete (canonical_type_hash_cache);
+  canonical_type_hash_cache = NULL;
   ggc_collect ();
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
@@ -3663,9 +4102,22 @@ print_lto_report_1 (void)
 	       pfx, num_not_merged_types, num_not_merged_types_in_same_scc,
 	       num_not_merged_types_trees,
 	       num_not_merged_types_in_same_scc_trees);
+      fprintf (stderr, "[%s] GIMPLE canonical type table: size %ld, "
+	       "%ld elements, %ld searches, %ld collisions (ratio: %f)\n", pfx,
+	       (long) htab_size (gimple_canonical_types),
+	       (long) htab_elements (gimple_canonical_types),
+	       (long) gimple_canonical_types->searches,
+	       (long) gimple_canonical_types->collisions,
+	       htab_collisions (gimple_canonical_types));
+      fprintf (stderr, "[%s] GIMPLE canonical type hash table: size %ld, "
+	       "%ld elements, %ld searches, %ld collisions (ratio: %f)\n", pfx,
+	       (long) htab_size (canonical_type_hash_cache),
+	       (long) htab_elements (canonical_type_hash_cache),
+	       (long) canonical_type_hash_cache->searches,
+	       (long) canonical_type_hash_cache->collisions,
+	       htab_collisions (canonical_type_hash_cache));
     }
 
-  print_gimple_types_stats (pfx);
   print_lto_report (pfx);
 }
 

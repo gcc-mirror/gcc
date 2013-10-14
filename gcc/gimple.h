@@ -891,9 +891,6 @@ extern bool is_gimple_builtin_call (gimple stmt);
 
 extern void recalculate_side_effects (tree);
 extern bool gimple_compare_field_offset (tree, tree);
-extern tree gimple_register_canonical_type (tree);
-extern void print_gimple_types_stats (const char *);
-extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);

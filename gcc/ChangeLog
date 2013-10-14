@@ -1,3 +1,15 @@
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (gimple_canonical_types, canonical_type_hash_cache,
+	iterative_hash_canonical_type, gimple_canonical_type_hash,
+	gimple_canonical_types_compatible_p, gimple_canonical_type_eq,
+	gimple_register_canonical_type, print_gimple_types_stats,
+	free_gimple_type_tables): Move to lto/lto.c
+	(gt-gimple.h): Do not include.
+	* gimple.h (gimple_register_canonical_type,
+	print_gimple_types_stats, free_gimple_type_tables): Remove.
+	* Makefile.in (GTFILES): Remove gimple.c.
+
 2013-10-14  Travis Snoozy  <quandary@remstate.com>
 
 	PR target/58716

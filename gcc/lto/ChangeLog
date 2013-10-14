@@ -1,3 +1,17 @@
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init): Do not re-init canonical types here.
+	(lto_register_canonical_types): Move to ...
+	* lto.c (lto_register_canonical_types): ... here.
+	(gimple_canonical_types, canonical_type_hash_cache,
+	iterative_hash_canonical_type, gimple_canonical_type_hash,
+	gimple_canonical_types_compatible_p, gimple_canonical_type_eq,
+	gimple_register_canonical_type): Add canonical type merging machinery
+	moved from gimple.c.
+	(read_cgraph_and_symbols): Init and free canonical type tables
+	here.
+	(print_lto_report_1): Report canonical type table stats here.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-lang.c (DEF_FUNCTION_TYPE_8): Define.
