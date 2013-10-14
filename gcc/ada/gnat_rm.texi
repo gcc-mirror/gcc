@@ -11963,6 +11963,7 @@ where @var{nnn} is an integer.
 @emph{Exception_Name:} nnnnn
 @emph{Message:} mmmmm
 @emph{PID:} ppp
+@emph{Load address:} 0xhhhh
 @emph{Call stack traceback locations:}
 0xhhhh 0xhhhh 0xhhhh ... 0xhhh
 @end smallexample
@@ -11984,10 +11985,12 @@ present only if the Process Id is nonzero). Currently we are
 not making use of this field.
 
 @item
-The Call stack traceback locations line and the following values
-are present only if at least one traceback location was recorded.
-The values are given in C style format, with lower case letters
-for a-f, and only as many digits present as are necessary.
+The Load address line, the Call stack traceback locations line and the
+following values are present only if at least one traceback location was
+recorded. The Load address indicates the address at which the main executable
+was loaded; this line may not be present if operating system hasn't relocated
+the main executable. The values are given in C style format, with lower case
+letters for a-f, and only as many digits present as are necessary.
 @end itemize
 
 @noindent
@@ -18873,6 +18876,19 @@ In addition, C++ exceptions are propagated and can be handled in an
 occurrence has no message, and the simple name of the exception identity
 contains @samp{Foreign_Exception}. Finalization and awaiting dependent
 tasks works properly when such foreign exceptions are propagated.
+
+It is also possible to import a C++ exception using the following syntax:
+
+@smallexample @c ada
+LOCAL_NAME : exception;
+pragma Import (Cpp,
+  [Entity =>] LOCAL_NAME,
+  [External_Name =>] static_string_EXPRESSION);
+@end smallexample
+
+@noident
+The @code{External_Name} is the name of the C++ RTTI symbol. You can then
+cover a specific C++ exception in an exception handler.
 
 @node Interfacing to COBOL
 @section Interfacing to COBOL

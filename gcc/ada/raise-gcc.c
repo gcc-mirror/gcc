@@ -87,6 +87,36 @@ extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 #define CXX_EXCEPTION_CLASS 0x474e5543432b2b00ULL
 #define GNAT_EXCEPTION_CLASS 0x474e552d41646100ULL
 
+/* Structure of a C++ exception, represented as a C structure...  See
+   unwind-cxx.h for the full definition.  */
+
+struct __cxa_exception
+{
+  void *exceptionType;
+  void (*exceptionDestructor)(void *);
+
+  void (*unexpectedHandler)();
+  void (*terminateHandler)();
+
+  struct __cxa_exception *nextException;
+
+  int handlerCount;
+
+#ifdef __ARM_EABI_UNWINDER__
+  struct __cxa_exception* nextPropagatingException;
+
+  int propagationCount;
+#else
+  int handlerSwitchValue;
+  const unsigned char *actionRecord;
+  const unsigned char *languageSpecificData;
+  _Unwind_Ptr catchTemp;
+  void *adjustedPtr;
+#endif
+
+  _Unwind_Exception unwindHeader;
+};
+
 /* --------------------------------------------------------------
    -- The DB stuff below is there for debugging purposes only. --
    -------------------------------------------------------------- */
@@ -881,6 +911,22 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
       || choice == GNAT_OTHERS
       || choice == (_Unwind_Ptr) &Foreign_Exception)
     return handler;
+
+  /* C++ exception occurrences.  */
+  if (propagated_exception->common.exception_class == CXX_EXCEPTION_CLASS
+      && Language_For (choice) == 'C')
+    {
+      void *choice_typeinfo = Foreign_Data_For (choice);
+      void *except_typeinfo =
+	(((struct __cxa_exception *)
+	  ((_Unwind_Exception *)propagated_exception + 1)) - 1)->exceptionType;
+
+      /* Typeinfo are directly compared, which might not be correct if they
+	 aren't merged.  ??? We should call the == operator if this module is
+	 compiled in C++.  */
+      if (choice_typeinfo == except_typeinfo)
+	return handler;
+    }
 
   return nothing;
 }

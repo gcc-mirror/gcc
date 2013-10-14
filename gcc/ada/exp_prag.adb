@@ -575,6 +575,64 @@ package body Exp_Prag is
          if No (Init_Call) and then Present (Expression (Parent (Def_Id))) then
             Set_Expression (Parent (Def_Id), Empty);
          end if;
+      elsif Ekind (Def_Id) = E_Exception
+        and then Convention (Def_Id) = Convention_CPP
+      then
+
+         --  Import a C++ convention
+
+         declare
+            Loc            : constant Source_Ptr := Sloc (N);
+            Exdata         : List_Id;
+            Lang_Char      : Node_Id;
+            Foreign_Data   : Node_Id;
+            Rtti_Name      : constant Node_Id := Arg3 (N);
+            Dum            : constant Entity_Id  := Make_Temporary (Loc, 'D');
+
+         begin
+            Exdata := Component_Associations (Expression (Parent (Def_Id)));
+
+            Lang_Char := Next (First (Exdata));
+
+            --  Change the one-character language designator to 'C'
+
+            Rewrite (Expression (Lang_Char),
+              Make_Character_Literal (Loc,
+                Chars => Name_uC,
+                Char_Literal_Value =>
+                  UI_From_Int (Character'Pos ('C'))));
+            Analyze (Expression (Lang_Char));
+
+            --  Change the value of Foreign_Data
+
+            Foreign_Data := Next (Next (Next (Next (Lang_Char))));
+
+            Insert_Actions (Def_Id, New_List (
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Dum,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Character, Loc)),
+
+              Make_Pragma (Loc,
+                Chars                        => Name_Import,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Ada)),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Chars (Dum))),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Chars => Name_Link_Name,
+                    Expression => Relocate_Node (Rtti_Name))))));
+
+            Rewrite (Expression (Foreign_Data),
+              Unchecked_Convert_To (Standard_A_Char,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => Make_Identifier (Loc, Chars (Dum)),
+                  Attribute_Name => Name_Address)));
+            Analyze (Expression (Foreign_Data));
+         end;
       end if;
    end Expand_Pragma_Import_Or_Interface;
 

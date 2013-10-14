@@ -1302,6 +1302,7 @@ package Snames is
    Name_Library_Options                    : constant Name_Id := N + $;
    Name_Library_Partial_Linker             : constant Name_Id := N + $;
    Name_Library_Reference_Symbol_File      : constant Name_Id := N + $;
+   Name_Library_Rpath_Options              : constant Name_Id := N + $; -- GB
    Name_Library_Standalone                 : constant Name_Id := N + $;
    Name_Library_Encapsulated_Options       : constant Name_Id := N + $; -- GB
    Name_Library_Encapsulated_Supported     : constant Name_Id := N + $; -- GB
