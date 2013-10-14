@@ -21118,6 +21118,14 @@ package body Sem_Prag is
                   return;
                end if;
 
+               --  The related package has no hidden states, nothing to match.
+               --  This case arises when the constituents are states coming
+               --  from a private child.
+
+               if No (Hidden_States) then
+                  return;
+               end if;
+
                --  Inspect the hidden states of the related package looking for
                --  a match.
 

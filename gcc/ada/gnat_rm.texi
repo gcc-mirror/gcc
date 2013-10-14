@@ -18886,7 +18886,7 @@ pragma Import (Cpp,
   [External_Name =>] static_string_EXPRESSION);
 @end smallexample
 
-@noident
+@noindent
 The @code{External_Name} is the name of the C++ RTTI symbol. You can then
 cover a specific C++ exception in an exception handler.
 
