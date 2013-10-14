@@ -50,6 +50,7 @@ package Sem_Util is
    --    Contract_Cases
    --    Depends
    --    Global
+   --    Initial_Condition
    --    Initializes
    --    Postcondition
    --    Precondition

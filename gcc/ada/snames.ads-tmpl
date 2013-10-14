@@ -509,6 +509,7 @@ package Snames is
    Name_Import_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_Independent                    : constant Name_Id := N + $; -- Ada 12
    Name_Independent_Components         : constant Name_Id := N + $; -- Ada 12
+   Name_Initial_Condition              : constant Name_Id := N + $; -- GNAT
    Name_Initializes                    : constant Name_Id := N + $; -- GNAT
    Name_Inline                         : constant Name_Id := N + $;
    Name_Inline_Always                  : constant Name_Id := N + $; -- GNAT
@@ -1829,6 +1830,7 @@ package Snames is
       Pragma_Import_Valued_Procedure,
       Pragma_Independent,
       Pragma_Independent_Components,
+      Pragma_Initial_Condition,
       Pragma_Initializes,
       Pragma_Inline,
       Pragma_Inline_Always,

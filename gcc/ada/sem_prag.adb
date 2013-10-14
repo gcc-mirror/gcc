@@ -911,9 +911,9 @@ package body Sem_Prag is
             --  as input. OUT parameters are valid inputs only when their type
             --  is unconstrained or tagged as their discriminants, array bouns
             --  or tags can be read. In general, states and variables are
-            --  considered to have mode IN OUT unless they are moded by pragma
-            --  [Refined_]Global. In that case, the item must appear in an
-            --  input global list.
+            --  considered to have mode IN OUT unless they are classified by
+            --  pragma [Refined_]Global. In that case, the item must appear in
+            --  an input global list.
 
             if (Ekind (Item_Id) = E_Out_Parameter
                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
@@ -1964,6 +1964,194 @@ package body Sem_Prag is
       end if;
    end Analyze_Global_In_Decl_Part;
 
+   --------------------------------------------
+   -- Analyze_Initial_Condition_In_Decl_Part --
+   --------------------------------------------
+
+   procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id) is
+      Pack_Id   : constant Entity_Id := Defining_Entity (Parent (Parent (N)));
+      Prag_Init : constant Node_Id   :=
+                    Get_Pragma (Pack_Id, Pragma_Initializes);
+      --  The related pragma Initializes
+
+      Vars : Elist_Id := No_Elist;
+      --  A list of all variables declared in pragma Initializes
+
+      procedure Collect_Variables;
+      --  Inspect the initialization list of pragma Initializes and collect the
+      --  entities of all variables declared within the related package.
+
+      function Match_Variable (N : Node_Id) return Traverse_Result;
+      --  Determine whether arbitrary node N denotes a variable declared in the
+      --  visible declarations of the related package.
+
+      procedure Report_Unused_Variables;
+      --  Emit errors for all variables found in list Vars
+
+      -----------------------
+      -- Collect_Variables --
+      -----------------------
+
+      procedure Collect_Variables is
+         procedure Collect_Variable (Item : Node_Id);
+         --  Determine whether Item denotes a variable that appears in the
+         --  related package and if it does, add it to list Vars.
+
+         ----------------------
+         -- Collect_Variable --
+         ----------------------
+
+         procedure Collect_Variable (Item : Node_Id) is
+            Item_Id : Entity_Id;
+
+         begin
+            if Is_Entity_Name (Item) and then Present (Entity (Item)) then
+               Item_Id := Entity (Item);
+
+               --  The item is a variable declared in the related package
+
+               if Ekind (Item_Id) = E_Variable
+                 and then Scope (Item_Id) = Pack_Id
+               then
+                  Add_Item (Item_Id, Vars);
+               end if;
+            end if;
+         end Collect_Variable;
+
+         --  Local variables
+
+         Inits : constant Node_Id :=
+                   Get_Pragma_Arg
+                     (First (Pragma_Argument_Associations (Prag_Init)));
+         Init  : Node_Id;
+
+      --  Start of processing for Collect_Variables
+
+      begin
+         --  Multiple initialization items appear as an aggregate
+
+         if Nkind (Inits) = N_Aggregate
+           and then Present (Expressions (Inits))
+         then
+            Init := First (Expressions (Inits));
+            while Present (Init) loop
+               Collect_Variable (Init);
+
+               Next (Init);
+            end loop;
+
+         --  Single initialization item
+
+         else
+            Collect_Variable (Inits);
+         end if;
+      end Collect_Variables;
+
+      --------------------
+      -- Match_Variable --
+      --------------------
+
+      function Match_Variable (N : Node_Id) return Traverse_Result is
+         Var_Id : Entity_Id;
+
+      begin
+         --  Find a variable declared within the related package and try to
+         --  remove it from the list of collected variables found in pragma
+         --  Initializes.
+
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+         then
+            Var_Id := Entity (N);
+
+            if Ekind (Var_Id) = E_Variable
+              and then Scope (Var_Id) = Pack_Id
+            then
+               Remove (Vars, Var_Id);
+            end if;
+         end if;
+
+         return OK;
+      end Match_Variable;
+
+      procedure Match_Variables is new Traverse_Proc (Match_Variable);
+
+      -----------------------------
+      -- Report_Unused_Variables --
+      -----------------------------
+
+      procedure Report_Unused_Variables is
+         Posted   : Boolean := False;
+         Var_Elmt : Elmt_Id;
+         Var_Id   : Entity_Id;
+
+      begin
+         if Present (Vars) then
+            Var_Elmt := First_Elmt (Vars);
+            while Present (Var_Elmt) loop
+               Var_Id := Node (Var_Elmt);
+
+               if not Posted then
+                  Posted := True;
+                  Error_Msg_Name_1 := Name_Initial_Condition;
+                  Error_Msg_N
+                    ("expression of % must mention the following variables",
+                     N);
+               end if;
+
+               Error_Msg_Sloc := Sloc (Var_Id);
+               Error_Msg_NE ("\  & declared #", N, Var_Id);
+
+               Next_Elmt (Var_Elmt);
+            end loop;
+         end if;
+      end Report_Unused_Variables;
+
+      Expr   : constant Node_Id :=
+                 Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Errors : constant Nat     := Serious_Errors_Detected;
+
+   --  Start of processing for Analyze_Initial_Condition_In_Decl_Part
+
+   begin
+      Set_Analyzed (N);
+
+      --  Pragma Initial_Condition depends on the names enumerated in pragma
+      --  Initializes. Without those, the analysis cannot take place.
+
+      if No (Prag_Init) then
+         Error_Msg_Name_1 := Name_Initial_Condition;
+         Error_Msg_Name_2 := Name_Initializes;
+
+         Error_Msg_N ("% requires the presence of aspect or pragma %", N);
+         return;
+      end if;
+
+      --  The expression is preanalyzed because it has not been moved to its
+      --  final place yet. A direct analysis may generate sife effects and this
+      --  is not desired at this point.
+
+      Preanalyze_And_Resolve (Expr, Standard_Boolean);
+
+      --  Perform variable matching only when the expression is legal
+
+      if Serious_Errors_Detected = Errors then
+         Collect_Variables;
+
+         --  Verify that all variables mentioned in pragma Initializes are used
+         --  in the expression of pragma Initial_Condition.
+
+         Match_Variables (Expr);
+      end if;
+
+      --  Emit errors for all variables that should participate in the
+      --  expression of pragma Initial_Condition.
+
+      if Serious_Errors_Detected = Errors then
+         Report_Unused_Variables;
+      end if;
+   end Analyze_Initial_Condition_In_Decl_Part;
+
    --------------------------------------
    -- Analyze_Initializes_In_Decl_Part --
    --------------------------------------
@@ -2451,10 +2639,10 @@ package body Sem_Prag is
       --  UU_Typ is the related Unchecked_Union type. Flag In_Variant_Part
       --  should be set when Comp comes from a record variant.
 
-      procedure Check_Declaration_Order (States : Node_Id; Inits : Node_Id);
-      --  Subsidiary routine to the analysis of pragmas Abstract_State and
-      --  Initializes. Determine whether pragma Abstract_State denoted by
-      --  States is defined earlier than pragma Initializes denoted by Inits.
+      procedure Check_Declaration_Order (First : Node_Id; Second : Node_Id);
+      --  Subsidiary routine to the analysis of pragmas Abstract_State,
+      --  Initial_Condition and Initializes. Determine whether pragma First
+      --  appears before pragma Second. If this is not the case, emit an error.
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
       --  Check if a rep item of the same name as the current pragma is already
@@ -3433,7 +3621,7 @@ package body Sem_Prag is
       -- Check_Declaration_Order --
       -----------------------------
 
-      procedure Check_Declaration_Order (States : Node_Id; Inits : Node_Id) is
+      procedure Check_Declaration_Order (First : Node_Id; Second : Node_Id) is
          procedure Check_Aspect_Specification_Order;
          --  Inspect the aspect specifications of the context to determine the
          --  proper order.
@@ -3443,33 +3631,34 @@ package body Sem_Prag is
          --------------------------------------
 
          procedure Check_Aspect_Specification_Order is
-            Asp_I : constant Node_Id := Corresponding_Aspect (Inits);
-            Asp_S : constant Node_Id := Corresponding_Aspect (States);
-            Asp   : Node_Id;
-
-            States_Seen : Boolean := False;
+            Asp_First  : constant Node_Id := Corresponding_Aspect (First);
+            Asp_Second : constant Node_Id := Corresponding_Aspect (Second);
+            Asp        : Node_Id;
 
          begin
             --  Both aspects must be part of the same aspect specification list
 
-            pragma Assert (List_Containing (Asp_I) = List_Containing (Asp_S));
+            pragma Assert
+              (List_Containing (Asp_First) = List_Containing (Asp_Second));
 
-            Asp := First (List_Containing (Asp_I));
+            --  Try to reach Second starting from First in a left to right
+            --  traversal of the aspect specifications.
+
+            Asp := Next (Asp_First);
             while Present (Asp) loop
-               if Get_Aspect_Id (Asp) = Aspect_Abstract_State then
-                  States_Seen := True;
 
-               elsif Get_Aspect_Id (Asp) = Aspect_Initializes then
-                  if not States_Seen then
-                     Error_Msg_N
-                       ("aspect % must come before aspect %", States);
-                  end if;
+               --  The order is ok, First is followed by Second
 
-                  exit;
+               if Asp = Asp_Second then
+                  return;
                end if;
 
                Next (Asp);
             end loop;
+
+            --  If we get here, then the aspects are out of order
+
+            Error_Msg_N ("aspect % cannot come after aspect %", First);
          end Check_Aspect_Specification_Order;
 
          --  Local variables
@@ -3481,44 +3670,41 @@ package body Sem_Prag is
       begin
          --  Cannot check the order if one of the pragmas is missing
 
-         if No (States) or else No (Inits) then
+         if No (First) or else No (Second) then
             return;
          end if;
 
          --  Set up the error names in case the order is incorrect
 
-         Error_Msg_Name_1 := Name_Abstract_State;
-         Error_Msg_Name_2 := Name_Initializes;
+         Error_Msg_Name_1 := Pragma_Name (First);
+         Error_Msg_Name_2 := Pragma_Name (Second);
 
-         if From_Aspect_Specification (States) then
+         if From_Aspect_Specification (First) then
 
             --  Both pragmas are actually aspects, check their declaration
             --  order in the associated aspect specification list. Otherwise
-            --  States is an aspect and Inits a source pragma.
+            --  First is an aspect and Second a source pragma.
 
-            if From_Aspect_Specification (Inits) then
+            if From_Aspect_Specification (Second) then
                Check_Aspect_Specification_Order;
             end if;
 
          --  Abstract_States is a source pragma
 
          else
-            if From_Aspect_Specification (Inits) then
-               Error_Msg_N ("pragma % cannot come after aspect %", States);
+            if From_Aspect_Specification (Second) then
+               Error_Msg_N ("pragma % cannot come after aspect %", First);
 
-            --  Both pragmas are source constructs. Try to reach States from
-            --  Inits by traversing the declarations backwards.
+            --  Both pragmas are source constructs. Try to reach First from
+            --  Second by traversing the declarations backwards.
 
             else
-               Stmt := Prev (Inits);
+               Stmt := Prev (Second);
                while Present (Stmt) loop
 
-                  --  The order is ok, Abstract_States is first followed by
-                  --  Initializes.
+                  --  The order is ok, First is followed by Second
 
-                  if Nkind (Stmt) = N_Pragma
-                    and then Pragma_Name (Stmt) = Name_Abstract_State
-                  then
+                  if Stmt = First then
                      return;
                   end if;
 
@@ -3527,7 +3713,7 @@ package body Sem_Prag is
 
                --  If we get here, then the pragmas are out of order
 
-               Error_Msg_N ("pragma % cannot come after pragma %", States);
+               Error_Msg_N ("pragma % cannot come after pragma %", First);
             end if;
          end if;
       end Check_Declaration_Order;
@@ -9318,8 +9504,8 @@ package body Sem_Prag is
             --  Initializes.
 
             Check_Declaration_Order
-              (States => N,
-               Inits  => Get_Pragma (Pack_Id, Pragma_Initializes));
+              (First  => N,
+               Second => Get_Pragma (Pack_Id, Pragma_Initializes));
 
             State := Expression (Arg1);
 
@@ -9732,6 +9918,7 @@ package body Sem_Prag is
          --                        Assume               |
          --                        Contract_Cases       |
          --                        Debug                |
+         --                        Initial_Condition    |
          --                        Loop_Invariant       |
          --                        Loop_Variant         |
          --                        Postcondition        |
@@ -13380,6 +13567,80 @@ package body Sem_Prag is
             end if;
          end Independent_Components;
 
+         -----------------------
+         -- Initial_Condition --
+         -----------------------
+
+         --  pragma Initial_Condition (boolean_EXPRESSION);
+
+         when Pragma_Initial_Condition => Initial_Condition : declare
+            Context : constant Node_Id := Parent (Parent (N));
+            Pack_Id : Entity_Id;
+            Stmt    : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Initial_Condition
+            --  must be associated with a package declaration.
+
+            if not Nkind_In (Context, N_Generic_Package_Declaration,
+                                      N_Package_Declaration)
+            then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Skip prior pragmas, but check for duplicates
+
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
+
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
+
+               else
+                  Pragma_Misplaced;
+                  return;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            --  The pragma must be analyzed at the end of the visible
+            --  declarations of the related package. Save the pragma for later
+            --  (see Analyze_Initial_Condition_In_Decl_Part) by adding it to
+            --  the contract of the package.
+
+            Pack_Id := Defining_Entity (Context);
+            Add_Contract_Item (N, Pack_Id);
+
+            --  Verify the declaration order of pragma Initial_Condition with
+            --  respect to pragmas Abstract_State and Initializes.
+
+            Check_Declaration_Order
+              (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
+               Second => N);
+
+            Check_Declaration_Order
+              (First  => Get_Pragma (Pack_Id, Pragma_Initializes),
+               Second => N);
+         end Initial_Condition;
+
          ------------------------
          -- Initialize_Scalars --
          ------------------------
@@ -13461,8 +13722,8 @@ package body Sem_Prag is
                elsif not Comes_From_Source (Stmt) then
                   null;
 
-                  --  The pragma does not apply to a legal construct, issue an
-                  --  error and stop the analysis.
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
 
                else
                   Pragma_Misplaced;
@@ -13484,8 +13745,8 @@ package body Sem_Prag is
             --  Initializes.
 
             Check_Declaration_Order
-              (States => Get_Pragma (Pack_Id, Pragma_Abstract_State),
-               Inits  => N);
+              (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
+               Second => N);
          end Initializes;
 
          ------------
@@ -16979,8 +17240,8 @@ package body Sem_Prag is
                elsif not Comes_From_Source (Stmt) then
                   null;
 
-                  --  The pragma does not apply to a legal construct, issue an
-                  --  error and stop the analysis.
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
 
                else
                   Pragma_Misplaced;
@@ -22429,6 +22690,7 @@ package body Sem_Prag is
       Pragma_Import_Valued_Procedure        =>  0,
       Pragma_Independent                    =>  0,
       Pragma_Independent_Components         =>  0,
+      Pragma_Initial_Condition              => -1,
       Pragma_Initialize_Scalars             => -1,
       Pragma_Initializes                    => -1,
       Pragma_Inline                         =>  0,
@@ -22822,6 +23084,7 @@ package body Sem_Prag is
             Name_Assume               |
             Name_Contract_Cases       |
             Name_Debug                |
+            Name_Initial_Condition    |
             Name_Invariant            |
             Name_uInvariant           |
             Name_Loop_Invariant       |

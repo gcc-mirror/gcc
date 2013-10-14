@@ -7442,6 +7442,8 @@ package Einfo is
    --    Contract_Cases
    --    Depends
    --    Global
+   --    Initial_Condition
+   --    Initializes
    --    Precondition
    --    Postcondition
    --    Refined_Depends

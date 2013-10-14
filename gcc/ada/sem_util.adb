@@ -229,10 +229,14 @@ package body Sem_Util is
       --  Contract items related to [generic] packages. The applicable pragmas
       --  are:
       --    Abstract_States
+      --    Initial_Condition
       --    Initializes
 
       if Ekind_In (Id, E_Generic_Package, E_Package) then
-         if Nam_In (Nam, Name_Abstract_State, Name_Initializes) then
+         if Nam_In (Nam, Name_Abstract_State,
+                         Name_Initial_Condition,
+                         Name_Initializes)
+         then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
 
