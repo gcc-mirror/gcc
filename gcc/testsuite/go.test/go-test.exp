@@ -242,6 +242,42 @@ proc go-set-goarch { } {
     setenv GOARCH $goarch
 }
 
+# Take a list of files and return a lists of lists, where each list is
+# the set of files in the same package.
+proc go-find-packages { test name files } {
+    set packages [list]
+    foreach f $files {
+	set fd [open $f r]
+	while 1 {
+	    if { [gets $fd line] < 0 } {
+		close $fd
+		clone_output "$test: could not read $f"
+		unresolved $name
+		return [list]
+	    }
+
+	    if { [regexp "^package (\\w+)" $line match package] } {
+		set len [llength $packages]
+		for { set i 0 } { $i < $len } { incr i } {
+		    set p [lindex $packages $i]
+		    if { [lindex $p 0] == $package } {
+			lappend p $f
+			lset packages $i $p
+			break
+		    }
+		}
+		if { $i >= $len } {
+		    lappend packages [list $package $f]
+		}
+
+		close $fd
+		break
+	    }
+	}
+    }
+    return $packages
+}
+
 proc go-gc-tests { } {
     global srcdir subdir
     global runtests
@@ -286,9 +322,25 @@ proc go-gc-tests { } {
 	    continue
 	}
 
+	# Skip the files in stress; they are not tests.
+	if [string match "*go.test/test/stress/*" $test] {
+	    continue
+	}
+
+	# Skip the files in safe; gccgo does not support safe mode.
+	if [string match "*go.test/test/safe/*" $test] {
+	    continue
+	}
+
 	# Skip files in sub-subdirectories: they are components of
 	# other tests.
 	if [string match "*go.test/test/*/*/*" $test] {
+	    continue
+	}
+
+	# Skip files in *.dir subdirectories: they are components of
+	# other tests.
+	if [string match "*go.test/test/*.dir/*" $test] {
 	    continue
 	}
 
@@ -379,6 +431,21 @@ proc go-gc-tests { } {
 		continue
 	    }
 
+	    if { [ string match "// +build *" $test_line ] } {
+		if { [ string match "*[getenv GOARCH]*" $test_line ] } {
+		    continue
+		}
+		if { [ string match "*linux*" $test_line ] } {
+		    continue
+		}
+		if { [ string match "*!windows*" $test_line ] } {
+		    continue
+		}
+		close $fd
+		unsupported $name
+		set lines_ok 0
+	    }
+
 	    break
 	}
 
@@ -407,7 +474,8 @@ proc go-gc-tests { } {
 
 	set go_compile_args ""
 	set go_execute_args ""
-	if { [regexp ".*\\\$A.out (\[^|&>2\].*)\$" $test_line match progargs] } {
+	if { [regexp "// run (\[^|&>2\].*)\$" $test_line match progargs] \
+		 && ! [string match "*.go*" "$progargs"] } {
 	    set go_execute_args $progargs
 	    verbose -log "$test: go_execute_args is $go_execute_args"
 	    set index [string last " $progargs" $test_line]
@@ -515,6 +583,27 @@ proc go-gc-tests { } {
 	    go-execute-xfail $test
 	} elseif { $test_line == "// errorcheck" } {
 	    errchk $test ""
+	} elseif { $test_line == "// errorcheckdir" } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dir "[file rootname $test].dir"
+	    set files [lsort [glob "$dir/*.go"]]
+	    set packages [go-find-packages $test $name $files]
+	    if { [llength $packages] > 0 } {
+		set dg-do-what-default "assemble"
+		set del [list]
+		set last [lindex $packages end]
+		set packages [lreplace $packages end end]
+		foreach p $packages {
+		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
+		}
+		errchk [lindex $last 1] "[lrange $last 2 end]"
+		foreach f $del {
+		    file delete $f
+		}
+	    }
+	    set runtests $hold_runtests
 	} elseif { [string match "// errorcheckoutput*" $test_line] } {
 	    # Run the test to get a .go program to error check.
 	    set go_execute_args ""
@@ -557,21 +646,62 @@ proc go-gc-tests { } {
 	} elseif { $test_line == "// rundir" } {
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
-	    set dg-do-what-default "assemble"
 	    set dir "[file rootname $test].dir"
-	    set del {}
 	    set files [lsort [glob "$dir/*.go"]]
-	    set last [lindex $files end]
-	    set files [lreplace $files end end]
-	    foreach f $files {
-		dg-test -keep-output $f "-O" "-w $DEFAULT_GOCFLAGS"
-		lappend del "[file rootname [file tail $f]].o"
+	    set packages [go-find-packages $test $name $files]
+	    if { [llength $packages] > 0 } {
+		set dg-do-what-default "assemble"
+		set del [list]
+		set last [lindex $packages end]
+		set packages [lreplace $packages end end]
+		foreach p $packages {
+		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
+		}
+		set dg-do-what-default "link"
+		set go_compile_args $del
+		go-torture-execute [lrange $last 1 end]
+		foreach f $del {
+		    file delete $f
+		}
 	    }
-	    set dg-do-what-default "link"
-	    set go_compile_args $del
-	    go-torture-execute $last
-	    foreach f $del {
-		file delete $f
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// rundircmpout" } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dir "[file rootname $test].dir"
+	    set files [lsort [glob "$dir/*.go"]]
+	    set packages [go-find-packages $test $name $files]
+	    if { [llength $packages] > 0 } {
+		set dg-do-what-default "assemble"
+		set del [list]
+		set last [lindex $packages end]
+		set packages [lreplace $packages end end]
+		foreach p $packages {
+		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
+		}
+		set dg-do-what-default "link"
+		dg-test -keep-output [lrange $last 1 end] "$del -O" "-w $DEFAULT_GOCFLAGS"
+		set base "[file rootname [file tail [lindex $last 1]]]"
+		set output_file "./$base.exe"
+		lappend del $output_file
+		if [isnative] {
+		    verbose -log "$output_file >$base.p 2>&1"
+		    if { [catch "exec $output_file 2>$base.p" catcherr] != 0 } {
+			verbose -log $catcherr
+			fail "$name execution"
+			untested "$name compare"
+		    } else {
+			pass "$name execution"
+			regsub "\\.go$" "$test" ".out" expect
+			filecmp $expect $base.p "$name compare"
+		    }
+		    lappend del $base.p
+		}
+		foreach f $del {
+		    file delete $f
+		}
 	    }
 	    set runtests $hold_runtests
 	} elseif { "$test_line" == ""
@@ -706,33 +836,6 @@ proc go-gc-tests { } {
 	    set result [go_load "$output_file" "" ""]
 	    set status [lindex $result 0]
 	    $status $name
-	    file delete $ofile1 $ofile2 $ofile3 $output_file
-	    set runtests $hold_runtests
-	} elseif { [string match \
-			"// \$G \$D/bug191.dir/a.go && \$G \$D/bug191.dir/b.go && \$G \$D/\$F.go && \$L \$F.\$A" \
-			$test_line] } {
-	    set hold_runtests $runtests
-	    set runtests "go-test.exp"
-	    set dg-do-what-default "assemble"
-	    regsub "\\.go$" $test ".dir/a.go" file1
-	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
-	    set ofile1 "[file rootname [file tail $file1]].o"
-	    regsub "\\.go$" $test ".dir/b.go" file2
-	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
-	    set ofile2 "[file rootname [file tail $file2]].o"
-	    dg-test -keep-output "$test" "-O" "-w $DEFAULT_GOCFLAGS"
-	    set ofile3 "[file rootname [file tail $test]].o"
-	    set dg-do-what-default "link"
-	    set output_file "./[file rootname [file tail $test]].exe"
-	    set comp_output [go_target_compile "$ofile1 $ofile2 $ofile3" \
-				 $output_file "executable" "$options"]
-	    set comp_output [go-dg-prune $target_triplet $comp_output]
-	    if [string match "" $comp_output] {
-		pass $name
-	    } else {
-		verbose -log $comp_output
-		fail $name
-	    }
 	    file delete $ofile1 $ofile2 $ofile3 $output_file
 	    set runtests $hold_runtests
 	} elseif { [string match \
@@ -949,10 +1052,6 @@ proc go-gc-tests { } {
 	    regsub "\\.go$" $test ".dir/a.go" file1
 	    regsub "\\.go$" $test ".dir/b.go" file2
 	    errchk "$file1" "$file2"
-	} elseif { $test_line == "// \$G \$D/\$F.go \$D/z*.go && \$L \$F.\$A && ./\$A.out" } {
-	    set dir [file dirname $test]
-	    set go_compile_args [glob $dir/z*.go]
-	    go-torture-execute $test
 	} elseif { $test_line == "// \$G -N -o slow.\$A \$D/bug369.dir/pkg.go &&" \
 		       && $test_line2 == "// \$G -o fast.\$A \$D/bug369.dir/pkg.go &&" \
 		       && $test_line3 == "// run" } {

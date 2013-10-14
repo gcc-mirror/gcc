@@ -1,3 +1,11 @@
+2013-10-14  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-find-packages): New proc.
+	(go-gc-tests): Skip stress and safe tests.  Skip *.dir
+	subdirectories.  Do simple +build line matching.  Handle run with
+	arguments.  Handle errorcheckdir and rundircmpout.  Use packages
+	for rundir.  Remove special handling for bug191 and dwarf.
+
 2013-10-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58658
