@@ -1133,6 +1133,17 @@ package Prj is
       Auto_Init_Supported : Boolean := False;
       --  True if automatic initialisation is supported for shared stand-alone
       --  libraries.
+
+      --  Cleaning
+
+      Artifacts_In_Exec_Dir : Name_List_Index := No_Name_List;
+      --  List of regexp file names to be cleaned in the exec directory of the
+      --  main project.
+
+      Artifacts_In_Object_Dir : Name_List_Index := No_Name_List;
+      --  List of regexp file names to be cleaned in the object directory of
+      --  all projects.
+
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
@@ -1167,7 +1178,9 @@ package Prj is
                                Lib_Version_Options            => No_Name_List,
                                Symbolic_Link_Supported        => False,
                                Lib_Maj_Min_Id_Supported       => False,
-                               Auto_Init_Supported            => False);
+                               Auto_Init_Supported            => False,
+                               Artifacts_In_Exec_Dir          => No_Name_List,
+                               Artifacts_In_Object_Dir        => No_Name_List);
 
    -------------------------
    -- Aggregated projects --

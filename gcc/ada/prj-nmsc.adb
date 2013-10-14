@@ -1127,6 +1127,9 @@ package body Prj.Nmsc is
          procedure Process_Builder (Attributes : Variable_Id);
          --  Process the simple attributes of package Builder
 
+         procedure Process_Clean (Attributes : Variable_Id);
+         --  Process the simple attributes of package Clean
+
          procedure Process_Clean  (Arrays : Array_Id);
          --  Process the associated array attributes of package Clean
 
@@ -1255,6 +1258,55 @@ package body Prj.Nmsc is
          -------------------
          -- Process_Clean --
          -------------------
+
+         procedure Process_Clean (Attributes : Variable_Id) is
+            Attribute_Id : Variable_Id;
+            Attribute    : Variable;
+            List         : String_List_Id;
+
+         begin
+            --  Process non associated array attributes from package Clean
+
+            Attribute_Id := Attributes;
+            while Attribute_Id /= No_Variable loop
+               Attribute := Shared.Variable_Elements.Table (Attribute_Id);
+
+               if not Attribute.Value.Default then
+                  if Attribute.Name = Name_Artifacts_In_Exec_Dir then
+
+                     --  Attribute Artifacts_In_Exec_Dir: the list of file
+                     --  names to be cleaned in the exec dir of the main
+                     --  project.
+
+                     List := Attribute.Value.Values;
+
+                     if List /= Nil_String then
+                        Put (Into_List =>
+                               Project.Config.Artifacts_In_Exec_Dir,
+                             From_List => List,
+                             In_Tree   => Data.Tree);
+                     end if;
+
+                  elsif Attribute.Name = Name_Artifacts_In_Object_Dir then
+
+                     --  Attribute Artifacts_In_Exec_Dir: the list of file
+                     --  names to be cleaned in the object dir of every
+                     --  project.
+
+                     List := Attribute.Value.Values;
+
+                     if List /= Nil_String then
+                        Put (Into_List =>
+                               Project.Config.Artifacts_In_Object_Dir,
+                             From_List => List,
+                             In_Tree   => Data.Tree);
+                     end if;
+                  end if;
+               end if;
+
+               Attribute_Id := Attribute.Next;
+            end loop;
+         end Process_Clean;
 
          procedure Process_Clean  (Arrays : Array_Id) is
             Current_Array_Id : Array_Id;
@@ -1932,6 +1984,7 @@ package body Prj.Nmsc is
 
                   --  Process attributes of package Clean
 
+                  Process_Clean (Element.Decl.Attributes);
                   Process_Clean (Element.Decl.Arrays);
 
                when Name_Compiler =>
