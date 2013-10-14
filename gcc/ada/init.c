@@ -430,19 +430,22 @@ __gnat_install_handler (void)
 
 #pragma weak linux_sigaction
 int linux_sigaction (int signum, const struct sigaction *act,
-		     struct sigaction *oldact) {
+		     struct sigaction *oldact)
+{
   return sigaction (signum, act, oldact);
 }
 #define sigaction(signum, act, oldact) linux_sigaction (signum, act, oldact)
 
 #pragma weak fake_linux_sigfillset
-void fake_linux_sigfillset (sigset_t *set) {
+void fake_linux_sigfillset (sigset_t *set)
+{
   sigfillset (set);
 }
 #define sigfillset(set) fake_linux_sigfillset (set)
 
 #pragma weak fake_linux_sigemptyset
-void fake_linux_sigemptyset (sigset_t *set) {
+void fake_linux_sigemptyset (sigset_t *set)
+{
   sigemptyset (set);
 }
 #define sigemptyset(set) fake_linux_sigemptyset (set)
@@ -580,7 +583,7 @@ __gnat_install_handler (void)
 
   /* Turn the current Linux task into a native Xenomai task */
 
-  rt_task_shadow(&main_task, "environment_task", prio, T_FPU);
+  rt_task_shadow (&main_task, "environment_task", prio, T_FPU);
 #endif
 
   /* Set up signal handler to map synchronous signals to appropriate
@@ -897,10 +900,10 @@ extern struct Exception_Data Layout_Error;
 extern struct Exception_Data Non_Ada_Error;
 
 #define Coded_Exception system__vms_exception_table__coded_exception
-extern struct Exception_Data *Coded_Exception (Exception_Code);
+extern struct Exception_Data *Coded_Exception (void *);
 
 #define Base_Code_In system__vms_exception_table__base_code_in
-extern Exception_Code Base_Code_In (Exception_Code);
+extern void *Base_Code_In (void *);
 
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared.  */
@@ -1033,8 +1036,7 @@ static const struct cond_except system_cond_except_table [] =
    should be use with caution since the implementation has been kept
    very simple.  */
 
-typedef int
-resignal_predicate (int code);
+typedef int resignal_predicate (int code);
 
 static const int * const cond_resignal_table [] =
 {
@@ -1123,7 +1125,7 @@ copy_msg (struct descriptor_s *msgdesc, char *message)
 /* Scan TABLE for a match for the condition contained in SIGARGS,
    and return the entry, or the empty entry if no match found.  */
 static const struct cond_except *
-  scan_conditions ( int *sigargs, const struct cond_except *table [])
+scan_conditions ( int *sigargs, const struct cond_except *table [])
 {
   int i;
   struct cond_except entry;
@@ -1177,7 +1179,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
   unsigned int needs_adjust = 0;
-  Exception_Code base_code;
+  void *base_code;
   struct descriptor_s gnat_facility = {4, 0, "GNAT"};
   char message [Default_Exception_Msg_Max_Length];
 
@@ -1196,7 +1198,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #ifdef IN_RTS
   /* See if it's an imported exception.  Beware that registered exceptions
      are bound to their base code, with the severity bits masked off.  */
-  base_code = Base_Code_In ((Exception_Code) sigargs[1]);
+  base_code = Base_Code_In ((void *) sigargs[1]);
   exception = Coded_Exception (base_code);
 #endif
 
