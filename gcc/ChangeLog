@@ -1,3 +1,9 @@
+2013-10-14  Travis Snoozy  <quandary@remstate.com>
+
+	PR target/58716
+	* config/msp430/msp430.c (msp430_option_override): Correct thinko
+	scanning for msp430x targets.
+
 2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/58509
