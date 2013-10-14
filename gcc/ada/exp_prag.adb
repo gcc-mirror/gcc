@@ -616,6 +616,8 @@ package body Exp_Prag is
                Code           : Node_Id;
 
             begin
+               --  Compute the symbol for the code of the condition
+
                if Present (Interface_Name (Id)) then
                   Excep_Image := Strval (Interface_Name (Id));
                else
@@ -639,9 +641,15 @@ package body Exp_Prag is
                   Analyze (Expression (Lang_Char));
 
                   if Exception_Code (Id) /= No_Uint then
+
+                     --  The code for the exception is present.Create a
+                     --  linker alias to define the symbol.
+
                      Code :=
                        Make_Integer_Literal (Loc,
                          Intval => Exception_Code (Id));
+
+                     --  Declare a dummy object
 
                      Excep_Object :=
                        Make_Object_Declaration (Loc,
@@ -652,9 +660,14 @@ package body Exp_Prag is
                      Insert_Action (N, Excep_Object);
                      Analyze (Excep_Object);
 
+                     --  Clear severity bits
+
                      Start_String;
                      Store_String_Int
                        (UI_To_Int (Exception_Code (Id)) / 8 * 8);
+
+                     --  Insert a pragma Linker_Alias to set the value of
+                     --  the dummy object symbol.
 
                      Excep_Alias :=
                        Make_Pragma (Loc,
@@ -670,6 +683,9 @@ package body Exp_Prag is
 
                      Insert_Action (N, Excep_Alias);
                      Analyze (Excep_Alias);
+
+                     --  Insert a pragma Export to give a Linker_Name to the
+                     --  dummy object.
 
                      Export_Pragma :=
                        Make_Pragma (Loc,
@@ -703,6 +719,8 @@ package body Exp_Prag is
                               (Make_String_Literal (Loc,
                                 Strval => Excep_Image))));
                   end if;
+
+                  --  Generate the call to Register_VMS_Exception
 
                   Rewrite (Call,
                     Make_Procedure_Call_Statement (Loc,

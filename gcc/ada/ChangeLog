@@ -1,3 +1,17 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part,
+	Analyze_Global_In_Decl_Part,
+	Analyze_Pre_Post_Condition_In_Decl_Part): Install the subprogram
+	and its formals only when it is not already installed.
+	* sem_util.adb (Is_Refined_State): A state is refined when it
+	has a non-empty list of constituents.
+
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c: Disable __gnat_get_executable_load_address for linux.
+	* exp_prag.adb: Add comment in Expand_Pragma_Import_Export_Exception.
+
 2013-10-14  Tristan Gingold  <gingold@adacore.com>
 
 	* s-vmexta.ads: Add comments.

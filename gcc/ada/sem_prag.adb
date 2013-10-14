@@ -451,7 +451,7 @@ package body Sem_Prag is
             --  pertaining to subprogram declarations. Skip the installation
             --  for subprogram bodies because the formals are already visible.
 
-            if Current_Scope /= Subp_Id then
+            if not In_Open_Scopes (Subp_Id) then
                Restore_Scope := True;
                Push_Scope (Subp_Id);
                Install_Formals (Subp_Id);
@@ -1434,7 +1434,7 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if Current_Scope /= Spec_Id then
+         if not In_Open_Scopes (Spec_Id) then
             Restore_Scope := True;
             Push_Scope (Spec_Id);
             Install_Formals (Spec_Id);
@@ -1919,7 +1919,7 @@ package body Sem_Prag is
          --  item. This falls out of the general rule of aspects pertaining to
          --  subprogram declarations.
 
-         if Current_Scope /= Spec_Id then
+         if not In_Open_Scopes (Spec_Id) then
             Restore_Scope := True;
             Push_Scope (Spec_Id);
             Install_Formals (Spec_Id);
@@ -19319,7 +19319,7 @@ package body Sem_Prag is
       --  Ensure that the subprogram and its formals are visible when analyzing
       --  the expression of the pragma.
 
-      if Current_Scope /= Subp_Id then
+      if not In_Open_Scopes (Subp_Id) then
          Restore_Scope := True;
          Push_Scope (Subp_Id);
          Install_Formals (Subp_Id);
