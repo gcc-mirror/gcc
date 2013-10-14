@@ -592,14 +592,12 @@ package body Scng is
          --  which the digit was expected on input, and is unchanged on return.
 
          procedure Scan_Integer;
-         --  Procedure to scan integer literal. On entry, Scan_Ptr points to a
-         --  digit, on exit Scan_Ptr points past the last character of the
-         --  integer.
+         --  Scan integer literal. On entry, Scan_Ptr points to a digit, on
+         --  exit Scan_Ptr points past the last character of the integer.
          --
          --  For each digit encountered, UI_Int_Value is multiplied by 10, and
-         --  the value of the digit added to the result. In addition, the
-         --  value in Scale is decremented by one for each actual digit
-         --  scanned.
+         --  the value of the digit added to the result. In addition, the value
+         --  in Scale is decremented by one for each actual digit scanned.
 
          --------------------------
          -- Error_Digit_Expected --

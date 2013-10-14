@@ -1,3 +1,33 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* s-valuti.adb, prep.adb, scng.adb, errout.adb: Minor reformatting.
+
+2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c: Further disable __gnat_get_executable_load_address
+	for Linux.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for comparing symbols to
+	integers in preprocessing expressions.
+
+2013-10-14  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_prag.adb (Analyze_Aspect_Specification): For
+	Priority and CPU aspects in subprograms, the expression in the
+	aspect is analyzed and exported.
+	(Analyze_Pragma): When having a Priority pragma in the
+	main subprogram, load a unit that will force the initialization
+	of the tasking run time, which is needed for setting the required
+	priority.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Interfaces): Put in Other_Interfaces all
+	non Ada interface files.
+	* prj.ads (Project_Data): New component Other_Interfaces.
+
 2013-10-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Target pairs clean ups.

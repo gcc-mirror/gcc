@@ -1625,8 +1625,9 @@ package body Errout is
             Set_Standard_Error;
          end if;
 
-         --  Message giving total number of lines, only when Main_Source_Line
-         --  is known.
+         --  Message giving total number of lines. Don't give this message if
+         --  the Main_Source line is unknown (this happens in error situations,
+         --  e.g. when integrated preprocessing fails).
 
          if Main_Source_File /= No_Source_File then
             Write_Str (" ");

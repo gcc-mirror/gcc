@@ -3929,7 +3929,7 @@ void __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
 
 #if defined (__APPLE__)
 #include <mach-o/dyld.h>
-#elif defined (__linux__)
+#elif 0 && defined (__linux__)
 #include <link.h>
 #elif defined (__AIX__)
 #include <sys/ldr.h>
