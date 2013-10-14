@@ -495,6 +495,13 @@ endif
 
 # PowerPC and e500v2 VxWorks
 ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  ifeq ($(strip $(filter-out e500%, $(arch))),)
+     ARCH_STR=e500
+  else
+     ARCH_STR=ppc
+  endif
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -547,7 +554,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
     s-vxwext.ads<s-vxwext-rtp.ads \
     s-vxwext.adb<s-vxwext-rtp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
-    system.ads<system-vxworks-ppc-rtp.ads
+    system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
 
     EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
   else
@@ -557,7 +564,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-      system.ads<system-vxworks-ppc-rtp.ads
+      system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
 
       EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
       EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -569,7 +576,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
-        system.ads<system-vxworks-ppc-kernel.ads
+        system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
 
         EH_MECHANISM=-gcc
         EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -583,7 +590,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<s-vxwext-kernel.ads \
           s-vxwext.adb<s-vxwext-kernel.adb \
-          system.ads<system-vxworks-ppc-kernel.ads
+          system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
         else
           LIBGNAT_TARGET_PAIRS += \
           system.ads<system-vxworks-ppc.ads
