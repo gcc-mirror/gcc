@@ -2,7 +2,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 
 #if defined (__i386__) || defined (__x86_64__)
-#define ASM_STR "bts $1, %0; jc %l[lab]"
+#define ASM_STR "btsl $1, %0; jc %l[lab]"
 #endif
 
 __attribute__((noinline, noclone)) int

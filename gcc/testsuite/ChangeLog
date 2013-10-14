@@ -1,3 +1,8 @@
+2013-10-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/pr58670.c (ASM_STR) [__i386__ || __x86_64__]: Use
+	btsl.
+
 2013-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58670
