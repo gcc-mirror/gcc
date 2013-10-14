@@ -8348,21 +8348,20 @@ this attribute.
 @findex Library_Level
 @noindent
 @noindent
-@code{Standard'Library_Level} (@code{Standard} is the only allowed
-prefix) returns a Boolean value which is True if the attribute is
-evaluated at the library level (e.g. with a package declaration),
-and false if evaluated elsewhere (e.g. within a subprogram body).
-In the case of generics, the value indicates the placement of
-the instantiation, not the template, and indeed the use of this
-attribute within a generic is the intended common application
-as shown in this example:
+@code{P'Library_Level}, where P is an entity name,
+returns a Boolean value which is True if the entity is declared
+at the library level, and False otherwise. Note that within a
+generic instantition, the name of the generic unit denotes the
+instance, which means that this attribute can be used to test
+if a generic is instantiated at the library level, as shown
+in this example:
 
 @smallexample @c ada
 generic
   ...
 package Gen is
   pragma Compile_Time_Error
-    (not Standard'Library_Level,
+    (not Gen'Library_Level,
      "Gen can only be instantiated at library level");
   ...
 end Gen;

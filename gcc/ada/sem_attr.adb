@@ -3689,11 +3689,14 @@ package body Sem_Attr is
 
       when Attribute_Library_Level =>
          Check_E0;
-         Check_Standard_Prefix;
+
+         if not Is_Entity_Name (P) then
+            Error_Attr_P ("prefix of % attribute must be an entity name");
+         end if;
 
          if not Inside_A_Generic then
             Set_Boolean_Result (N,
-              Nearest_Dynamic_Scope (Current_Scope) = Standard_Standard);
+              Is_Library_Level_Entity (Entity (P)));
          end if;
 
          Set_Etype (N, Standard_Boolean);

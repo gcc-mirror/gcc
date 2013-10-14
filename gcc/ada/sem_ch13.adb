@@ -1794,22 +1794,123 @@ package body Sem_Ch13 is
 
                --  CPU, Interrupt_Priority, Priority
 
-               --  These three aspects can be specified for a subprogram body,
-               --  in which case we generate pragmas for them and insert them
-               --  ahead of local declarations, rather than after the body.
+               --  These three aspects can be specified for a subprogram spec
+               --  or body, in which case we analyze the expression and export
+               --  the value of the aspect.
+
+               --  Previously, we generated an equivalent pragma for bodies
+               --  (note that the specs cannot contain these pragmas). The
+               --  pragma was inserted ahead of local declarations, rather than
+               --  after the body. This leads to a certain duplication between
+               --  the processing performed for the aspect and the pragma, but
+               --  given the straightforward handling required it is simpler
+               --  to duplicate than to translate the aspect in the spec into
+               --  a pragma in the declarative part of the body.
 
                when Aspect_CPU                |
                     Aspect_Interrupt_Priority |
                     Aspect_Priority           =>
 
-                  if Nkind (N) = N_Subprogram_Body then
-                     Make_Aitem_Pragma
-                       (Pragma_Argument_Associations => New_List (
-                          Make_Pragma_Argument_Association (Sloc (Expr),
-                            Expression => Relocate_Node (Expr))),
-                        Pragma_Name                  => Chars (Id));
+                  if Nkind_In (N, N_Subprogram_Body,
+                                  N_Subprogram_Declaration)
+                  then
+                     --  Analyze the aspect expression
+
+                     Analyze_And_Resolve (Expr, Standard_Integer);
+
+                     --  Interrupt_Priority aspect not allowed for main
+                     --  subprograms. ARM D.1 does not forbid this explicitly,
+                     --  but ARM J.15.11 (6/3) does not permit pragma
+                     --  Interrupt_Priority for subprograms.
+
+                     if A_Id = Aspect_Interrupt_Priority then
+                        Error_Msg_N
+                          ("Interrupt_Priority aspect cannot apply to "
+                           & "subprogram", Expr);
+
+                     --  The expression must be static
+
+                     elsif not Is_Static_Expression (Expr) then
+                        Flag_Non_Static_Expr
+                          ("aspect requires static expression!", Expr);
+
+                     --  Check whether this is the main subprogram
+
+                     elsif Current_Sem_Unit /= Main_Unit
+                       and then
+                         Cunit_Entity (Current_Sem_Unit) /= Main_Unit_Entity
+                     then
+                        --  See ARM D.1 (14/3) and D.16 (12/3)
+
+                        Error_Msg_N
+                          ("aspect applied to subprogram other than the "
+                           & "main subprogram has no effect??", Expr);
+
+                     --  Otherwise check in range and export the value
+
+                     --  For the CPU aspect
+
+                     elsif A_Id = Aspect_CPU then
+                        if Is_In_Range (Expr, RTE (RE_CPU_Range)) then
+
+                           --  Value is correct so we export the value to make
+                           --  it available at execution time.
+
+                           Set_Main_CPU
+                             (Main_Unit, UI_To_Int (Expr_Value (Expr)));
+
+                        else
+                           Error_Msg_N
+                             ("main subprogram CPU is out of range", Expr);
+                        end if;
+
+                     --  For the Priority aspect
+
+                     elsif A_Id = Aspect_Priority then
+                        if Is_In_Range (Expr, RTE (RE_Priority)) then
+
+                           --  Value is correct so we export the value to make
+                           --  it available at execution time.
+
+                           Set_Main_Priority
+                             (Main_Unit, UI_To_Int (Expr_Value (Expr)));
+
+                        else
+                           Error_Msg_N
+                             ("main subprogram priority is out of range",
+                              Expr);
+                        end if;
+                     end if;
+
+                     --  Load an arbitrary entity from System.Tasking.Stages
+                     --  or System.Tasking.Restricted.Stages (depending on
+                     --  the supported profile) to make sure that one of these
+                     --  packages is implicitly with'ed, since we need to have
+                     --  the tasking run time active for the pragma Priority to
+                     --  have any effect. Previously with with'ed the package
+                     --  System.Tasking, but this package does not trigger the
+                     --  required initialization of the run-time library.
+
+                     declare
+                        Discard : Entity_Id;
+                        pragma Warnings (Off, Discard);
+                     begin
+                        if Restricted_Profile then
+                           Discard := RTE (RE_Activate_Restricted_Tasks);
+                        else
+                           Discard := RTE (RE_Activate_Tasks);
+                        end if;
+                     end;
+
+                     --  Handling for these Aspects in subprograms is complete
+
+                     goto Continue;
+
+                  --  For tasks
 
                   else
+                     --  Pass the aspect as an attribute
+
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
@@ -2566,9 +2667,8 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  If the aspect is on a subprogram body (relevant aspects
-                  --  are Inline and Priority), add the pragma in front of
-                  --  the declarations.
+                  --  If the aspect is on a subprogram body (relevant aspect
+                  --  is Inline), add the pragma in front of the declarations.
 
                   if Nkind (N) = N_Subprogram_Body then
                      if No (Declarations (N)) then
