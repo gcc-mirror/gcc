@@ -224,15 +224,10 @@ package body Sem_Ch7 is
 
       Body_Id := Defining_Entity (N);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Body_Id);
-      end if;
+      --  Body is body of package instantiation. Corresponding spec has already
+      --  been set.
 
       if Present (Corresponding_Spec (N)) then
-
-         --  Body is body of package instantiation. Corresponding spec has
-         --  already been set.
-
          Spec_Id := Corresponding_Spec (N);
          Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
@@ -315,6 +310,7 @@ package body Sem_Ch7 is
       Set_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);
+      Set_Contract    (Body_Id, Make_Contract (Sloc (Body_Id)));
 
       --  Defining name for the package body is not a visible entity: Only the
       --  defining name for the declaration is visible.
@@ -337,6 +333,10 @@ package body Sem_Ch7 is
       Set_In_Package_Body (Spec_Id);
       Set_Has_Completion (Spec_Id);
       Last_Spec_Entity := Last_Entity (Spec_Id);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
 
       Push_Scope (Spec_Id);
 
@@ -770,6 +770,21 @@ package body Sem_Ch7 is
       --  True when this package declaration is not a nested declaration
 
    begin
+      if Debug_Flag_C then
+         Write_Str ("==> package spec ");
+         Write_Name (Chars (Id));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
+         Indent;
+      end if;
+
+      Generate_Definition (Id);
+      Enter_Name (Id);
+      Set_Ekind    (Id, E_Package);
+      Set_Etype    (Id, Standard_Void_Type);
+      Set_Contract (Id, Make_Contract (Sloc (Id)));
+
       --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
@@ -787,20 +802,6 @@ package body Sem_Ch7 is
       if From_With_Type (Id) then
          return;
       end if;
-
-      if Debug_Flag_C then
-         Write_Str ("==> package spec ");
-         Write_Name (Chars (Id));
-         Write_Str (" from ");
-         Write_Location (Sloc (N));
-         Write_Eol;
-         Indent;
-      end if;
-
-      Generate_Definition (Id);
-      Enter_Name (Id);
-      Set_Ekind (Id, E_Package);
-      Set_Etype (Id, Standard_Void_Type);
 
       Push_Scope (Id);
 

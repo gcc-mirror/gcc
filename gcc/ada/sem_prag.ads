@@ -62,6 +62,9 @@ package Sem_Prag is
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global
 
+   procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Initializes
+
    procedure Analyze_Pre_Post_Condition_In_Decl_Part
      (Prag    : Node_Id;
       Subp_Id : Entity_Id);

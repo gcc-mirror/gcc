@@ -1186,6 +1186,7 @@ begin
            Pragma_Independent                    |
            Pragma_Independent_Components         |
            Pragma_Initialize_Scalars             |
+           Pragma_Initializes                    |
            Pragma_Inline                         |
            Pragma_Inline_Always                  |
            Pragma_Inline_Generic                 |

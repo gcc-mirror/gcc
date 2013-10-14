@@ -80,7 +80,6 @@ package body Einfo is
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
-   --    Refined_State_Pragma            Node8
    --    Refinement_Constituents         Elist8
    --    Return_Applies_To               Node8
    --    First_Exit_Statement            Node8
@@ -213,7 +212,6 @@ package body Einfo is
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
-   --    Finalizer                       Node24
    --    Related_Expression              Node24
    --    Contract                        Node24
 
@@ -238,6 +236,7 @@ package body Einfo is
    --    Wrapped_Entity                  Node27
 
    --    Extra_Formals                   Node28
+   --    Finalizer                       Node28
    --    Initialization_Statements       Node28
    --    Underlying_Record_View          Node28
 
@@ -1068,9 +1067,14 @@ package body Einfo is
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
+        (Ekind_In (Id, E_Entry,
+                       E_Entry_Family,
+                       E_Generic_Package,
+                       E_Package,
+                       E_Package_Body,
+                       E_Subprogram_Body)
+          or else Is_Generic_Subprogram (Id)
+          or else Is_Subprogram (Id));
       return Node24 (Id);
    end Contract;
 
@@ -1180,10 +1184,8 @@ package body Einfo is
 
    function Finalizer (Id : E) return E is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Package
-          or else Ekind (Id) = E_Package_Body);
-      return Node24 (Id);
+      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      return Node28 (Id);
    end Finalizer;
 
    function First_Entity (Id : E) return E is
@@ -2656,12 +2658,6 @@ package body Einfo is
       return Node10 (Id);
    end Refined_State;
 
-   function Refined_State_Pragma (Id : E) return N is
-   begin
-      pragma Assert (Ekind (Id) = E_Package_Body);
-      return Node8 (Id);
-   end Refined_State_Pragma;
-
    function Refinement_Constituents (Id : E) return L is
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
@@ -3666,9 +3662,15 @@ package body Einfo is
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body, E_Void)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
+        (Ekind_In (Id, E_Entry,
+                       E_Entry_Family,
+                       E_Generic_Package,
+                       E_Package,
+                       E_Package_Body,
+                       E_Subprogram_Body,
+                       E_Void)
+          or else Is_Generic_Subprogram (Id)
+          or else Is_Subprogram (Id));
       Set_Node24 (Id, V);
    end Set_Contract;
 
@@ -3779,10 +3781,8 @@ package body Einfo is
 
    procedure Set_Finalizer (Id : E; V : E) is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Package
-          or else Ekind (Id) = E_Package_Body);
-      Set_Node24 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      Set_Node28 (Id, V);
    end Set_Finalizer;
 
    procedure Set_First_Entity (Id : E; V : E) is
@@ -5328,12 +5328,6 @@ package body Einfo is
       Set_Node10 (Id, V);
    end Set_Refined_State;
 
-   procedure Set_Refined_State_Pragma (Id : E; V : N) is
-   begin
-      pragma Assert (Ekind (Id) = E_Package_Body);
-      Set_Node8 (Id, V);
-   end Set_Refined_State_Pragma;
-
    procedure Set_Refinement_Constituents (Id : E; V : L) is
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
@@ -6293,15 +6287,18 @@ package body Einfo is
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
       Is_CDG  : constant Boolean :=
+                  Id = Pragma_Abstract_State  or else
                   Id = Pragma_Depends         or else
                   Id = Pragma_Global          or else
+                  Id = Pragma_Initializes     or else
                   Id = Pragma_Refined_Depends or else
-                  Id = Pragma_Refined_Global;
+                  Id = Pragma_Refined_Global  or else
+                  Id = Pragma_Refined_State;
       Is_CTC : constant Boolean :=
                   Id = Pragma_Contract_Cases  or else
                   Id = Pragma_Test_Case;
       Is_PPC : constant Boolean :=
-                  Id = Pragma_Precondition     or else
+                  Id = Pragma_Precondition    or else
                   Id = Pragma_Postcondition;
 
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
@@ -8339,9 +8336,6 @@ package body Einfo is
          when E_Procedure                                  =>
             Write_Str ("Postcondition_Proc");
 
-         when E_Package_Body                               =>
-            Write_Str ("Refined_State_Pragma");
-
          when E_Abstract_State                             =>
             Write_Str ("Refinement_Constituents");
 
@@ -9055,10 +9049,6 @@ package body Einfo is
    procedure Write_Field24_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Package                                    |
-              E_Package_Body                               =>
-            Write_Str ("Finalizer");
-
          when E_Constant                                   |
               E_Variable                                   |
               Type_Kind                                    =>
@@ -9066,9 +9056,12 @@ package body Einfo is
 
          when E_Entry                                      |
               E_Entry_Family                               |
+              E_Generic_Package                            |
+              E_Package                                    |
+              E_Package_Body                               |
               E_Subprogram_Body                            |
-              Subprogram_Kind                              |
-              Generic_Subprogram_Kind                      =>
+              Generic_Subprogram_Kind                      |
+              Subprogram_Kind                              =>
             Write_Str ("Contract");
 
          when others                                       =>
@@ -9202,7 +9195,12 @@ package body Einfo is
               E_Subprogram_Type                            =>
             Write_Str ("Extra_Formals");
 
-         when E_Constant | E_Variable =>
+         when E_Package                                    |
+              E_Package_Body                               =>
+            Write_Str ("Finalizer");
+
+         when E_Constant                                   |
+              E_Variable                                   =>
             Write_Str ("Initialization_Statements");
 
          when E_Record_Type =>

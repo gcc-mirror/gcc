@@ -1022,9 +1022,10 @@ package Einfo is
 --       'COUNT when it applies to a family member.
 
 --    Contract (Node24)
---       Defined in entry and entry family entities, subprogram body entities,
---       subprograms, and generic subprograms. Points to the contract of the
---       entity, holding both preconditions, postconditions, and test cases.
+--       Defined in entry, entry family, package, package body, subprogram and
+--       subprogram body entities as well as their respective generic forms.
+--       Points to the contract of the entity, holding various assertion items
+--       and data classifiers.
 
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
@@ -1181,7 +1182,7 @@ package Einfo is
 --       the Finalize_Storage_Only pragma is required at each level of
 --       derivation.
 
---    Finalizer (Node24)
+--    Finalizer (Node28)
 --       Applies to package declarations and bodies. Contains the entity of the
 --       library-level program which finalizes all package-level controlled
 --       objects.
@@ -3541,10 +3542,6 @@ package Einfo is
 --       Defined in abstract states and variables. Contains the entity of an
 --       ancestor state whose refinement mentions this item.
 
---    Refined_State_Pragma (Node8)
---       Defined in [generic] package bodies. Contains the pragma that refines
---       all abstract states defined in the corresponding package declaration.
-
 --    Refinement_Constituents (Elist8)
 --       Present in abstract state entities. Contains all the constituents that
 --       refine the state, in other words, all the hidden states that appear in
@@ -5626,10 +5623,11 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Limited_View                        (Node23)   (non-generic/instance)
-   --    Finalizer                           (Node24)   (non-generic case only)
+   --    Contract                            (Node24)
    --    Abstract_States                     (Elist25)
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
+   --    Finalizer                           (Node28)   (non-generic case only)
    --    SPARK_Mode_Pragmas                  (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
@@ -5655,14 +5653,14 @@ package Einfo is
    --    Scope_Depth                         (synth)
 
    --  E_Package_Body
-   --    Refined_State_Pragma                (Node8)
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Related_Instance                    (Node15)   (non-generic case only)
    --    First_Entity                        (Node17)
    --    Spec_Entity                         (Node19)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
-   --    Finalizer                           (Node24)   (non-generic case only)
+   --    Contract                            (Node24)
+   --    Finalizer                           (Node28)   (non-generic case only)
    --    SPARK_Mode_Pragmas                  (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
@@ -6553,7 +6551,6 @@ package Einfo is
    function Referenced_As_LHS                   (Id : E) return B;
    function Referenced_As_Out_Parameter         (Id : E) return B;
    function Refined_State                       (Id : E) return E;
-   function Refined_State_Pragma                (Id : E) return E;
    function Refinement_Constituents             (Id : E) return L;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
@@ -7173,7 +7170,6 @@ package Einfo is
    procedure Set_Referenced_As_LHS               (Id : E; V : B := True);
    procedure Set_Referenced_As_Out_Parameter     (Id : E; V : B := True);
    procedure Set_Refined_State                   (Id : E; V : E);
-   procedure Set_Refined_State_Pragma            (Id : E; V : N);
    procedure Set_Refinement_Constituents         (Id : E; V : L);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
@@ -7931,7 +7927,6 @@ package Einfo is
    pragma Inline (Referenced_As_LHS);
    pragma Inline (Referenced_As_Out_Parameter);
    pragma Inline (Refined_State);
-   pragma Inline (Refined_State_Pragma);
    pragma Inline (Refinement_Constituents);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
@@ -8349,7 +8344,6 @@ package Einfo is
    pragma Inline (Set_Referenced_As_LHS);
    pragma Inline (Set_Referenced_As_Out_Parameter);
    pragma Inline (Set_Refined_State);
-   pragma Inline (Set_Refined_State_Pragma);
    pragma Inline (Set_Refinement_Constituents);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
