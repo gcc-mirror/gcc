@@ -212,24 +212,27 @@ package body Sem_Util is
    -- Add_Contract_Item --
    -----------------------
 
-   procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id) is
-      Items : constant Node_Id := Contract (Subp_Id);
+   procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id) is
+      Items : constant Node_Id := Contract (Id);
       Nam   : Name_Id;
       N     : Node_Id;
 
    begin
-      --  The related subprogram [body] must have a contract and the item to be
-      --  added must be a pragma.
+      --  The related context must have a contract and the item to be added
+      --  must be a pragma.
 
       pragma Assert (Present (Items));
       pragma Assert (Nkind (Prag) = N_Pragma);
 
       Nam := Original_Aspect_Name (Prag);
 
-      --  Contract items related to subprogram bodies
+      --  Contract items related to [generic] packages. The applicable pragmas
+      --  are:
+      --    Abstract_States
+      --    Initializes
 
-      if Ekind (Subp_Id) = E_Subprogram_Body then
-         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
+      if Ekind_In (Id, E_Generic_Package, E_Package) then
+         if Nam_In (Nam, Name_Abstract_State, Name_Initializes) then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
 
@@ -239,9 +242,35 @@ package body Sem_Util is
             raise Program_Error;
          end if;
 
-      --  Contract items related to subprogram declarations
+      --  Contract items related to package bodies. The applicable pragmas are:
+      --    Refined_States
 
-      else
+      elsif Ekind (Id) = E_Package_Body then
+         if Nam = Name_Refined_State then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Contract items related to subprogram or entry declarations. The
+      --  applicable pragmas are:
+      --    Contract_Cases
+      --    Depends
+      --    Global
+      --    Post
+      --    Postcondition
+      --    Pre
+      --    Precondition
+      --    Test_Case
+
+      elsif Ekind_In (Id, E_Entry, E_Entry_Family)
+        or else Is_Generic_Subprogram (Id)
+        or else Is_Subprogram (Id)
+      then
          if Nam_In (Nam, Name_Precondition,
                          Name_Postcondition,
                          Name_Pre,
@@ -251,7 +280,7 @@ package body Sem_Util is
          then
             --  Before we add a precondition or postcondition to the list,
             --  make sure we do not have a disallowed duplicate, which can
-            --  happen if we use a pragma for Pre{_Class] or Post[_Class]
+            --  happen if we use a pragma for Pre[_Class] or Post[_Class]
             --  instead of the corresponding aspect.
 
             if not From_Aspect_Specification (Prag)
@@ -269,7 +298,7 @@ package body Sem_Util is
                   then
                      Error_Msg_Sloc := Sloc (N);
                      Error_Msg_NE
-                       ("duplication of aspect for & given#", Prag, Subp_Id);
+                       ("duplication of aspect for & given#", Prag, Id);
                      return;
                   else
                      N := Next_Pragma (N);
@@ -285,6 +314,22 @@ package body Sem_Util is
             Set_Contract_Test_Cases (Items, Prag);
 
          elsif Nam_In (Nam, Name_Depends, Name_Global) then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  Contract items related to subprogram bodies. The applicable pragmas
+      --  are:
+      --    Refined_Depends
+      --    Refined_Global
+
+      elsif Ekind (Id) = E_Subprogram_Body then
+         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
 

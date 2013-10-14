@@ -412,7 +412,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      All_Cases := Expression (First (Pragma_Argument_Associations (N)));
+      All_Cases := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  Multiple contract cases appear in aggregate form
 
@@ -1243,7 +1243,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      Clause    := Expression (First (Pragma_Argument_Associations (N)));
+      Clause    := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  Empty dependency list
 
@@ -1701,7 +1701,7 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      List      := Expression (First (Pragma_Argument_Associations (N)));
+      List      := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  There is nothing to be done for a null global list
 
@@ -1730,6 +1730,337 @@ package body Sem_Prag is
          end if;
       end if;
    end Analyze_Global_In_Decl_Part;
+
+   --------------------------------------
+   -- Analyze_Initializes_In_Decl_Part --
+   --------------------------------------
+
+   procedure Analyze_Initializes_In_Decl_Part (N : Node_Id) is
+      Pack_Spec : constant Node_Id   := Parent (N);
+      Pack_Id   : constant Entity_Id := Defining_Entity (Parent (Pack_Spec));
+
+      Items_Seen : Elist_Id := No_Elist;
+      --  A list of all initialization items processed so far. This list is
+      --  used to detect duplicate items.
+
+      Non_Null_Seen : Boolean := False;
+      Null_Seen     : Boolean := False;
+      --  Flags used to check the legality of a null initialization list
+
+      States_And_Vars : Elist_Id := No_Elist;
+      --  A list of all abstract states and variables declared in the visible
+      --  declarations of the related package. This list is used to detect the
+      --  legality of initialization items.
+
+      procedure Analyze_Initialization_Item (Item : Node_Id);
+      --  Verify the legality of a single initialization item
+
+      procedure Analyze_Initialization_Item_With_Inputs (Item : Node_Id);
+      --  Verify the legality of a single initialization item followed by a
+      --  list of input items.
+
+      procedure Collect_States_And_Variables;
+      --  Inspect the visible declarations of the related package and gather
+      --  the entities of all abstract states and variables in States_And_Vars.
+
+      ---------------------------------
+      -- Analyze_Initialization_Item --
+      ---------------------------------
+
+      procedure Analyze_Initialization_Item (Item : Node_Id) is
+         Item_Id : Entity_Id;
+
+      begin
+         --  A package with null initialization list is not allowed to have
+         --  additional initializations.
+
+         if Null_Seen then
+            Error_Msg_NE ("package & has null initialization", Item, Pack_Id);
+
+         --  Null initialization list
+
+         elsif Nkind (Item) = N_Null then
+
+            --  Catch a case where a null initialization item appears in a list
+            --  of non-null items.
+
+            if Non_Null_Seen then
+               Error_Msg_NE
+                 ("package & has non-null initialization", Item, Pack_Id);
+            else
+               Null_Seen := True;
+            end if;
+
+         --  Initialization item
+
+         else
+            Non_Null_Seen := True;
+
+            Analyze (Item);
+
+            if Is_Entity_Name (Item) then
+               Item_Id := Entity (Item);
+
+               if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+
+                  --  The state or variable must be declared in the visible
+                  --  declarations of the package.
+
+                  if not Contains (States_And_Vars, Item_Id) then
+                     Error_Msg_Name_1 := Chars (Pack_Id);
+                     Error_Msg_NE
+                       ("initialization item & must appear in the visible "
+                        & "declarations of package %", Item, Item_Id);
+
+                  --  Detect a duplicate use of the same initialization item
+
+                  elsif Contains (Items_Seen, Item_Id) then
+                     Error_Msg_N ("duplicate initialization item", Item);
+
+                  --  The item is legal, add it to the list of processed states
+                  --  and variables.
+
+                  else
+                     Add_Item (Item_Id, Items_Seen);
+                  end if;
+
+               --  The item references something that is not a state or a
+               --  variable.
+
+               else
+                  Error_Msg_N
+                    ("initialization item must denote variable or state",
+                     Item);
+               end if;
+
+            --  Some form of illegal construct masquerading as a name
+
+            else
+               Error_Msg_N
+                 ("initialization item must denote variable or state", Item);
+            end if;
+         end if;
+      end Analyze_Initialization_Item;
+
+      ---------------------------------------------
+      -- Analyze_Initialization_Item_With_Inputs --
+      ---------------------------------------------
+
+      procedure Analyze_Initialization_Item_With_Inputs (Item : Node_Id) is
+         Inputs_Seen : Elist_Id := No_Elist;
+         --  A list of all inputs processed so far. This list is used to detect
+         --  duplicate uses of an input.
+
+         Non_Null_Seen : Boolean := False;
+         Null_Seen     : Boolean := False;
+         --  Flags used to check the legality of an input list
+
+         procedure Analyze_Input_Item (Input : Node_Id);
+         --  Verify the legality of a single input item
+
+         ------------------------
+         -- Analyze_Input_Item --
+         ------------------------
+
+         procedure Analyze_Input_Item (Input : Node_Id) is
+            Input_Id : Entity_Id;
+
+         begin
+            --  An initialization item with null inputs is not allowed to have
+            --  assitional inputs.
+
+            if Null_Seen then
+               Error_Msg_N ("item has null input list", Item);
+
+            --  Null input list
+
+            elsif Nkind (Input) = N_Null then
+
+               --  Catch a case where a null input appears in a list of non-
+               --  null inpits.
+
+               if Non_Null_Seen then
+                  Error_Msg_N ("item has non-null input list", Item);
+               else
+                  Null_Seen := True;
+               end if;
+
+            --  Input item
+
+            else
+               Non_Null_Seen := True;
+
+               Analyze (Input);
+
+               if Is_Entity_Name (Input) then
+                  Input_Id := Entity (Input);
+
+                  if Ekind_In (Input_Id, E_Abstract_State, E_Variable) then
+
+                     --  The input cannot denote states or variables declared
+                     --  within the visible declarations of the package.
+
+                     if Contains (States_And_Vars, Input_Id) then
+                        Error_Msg_Name_1 := Chars (Pack_Id);
+                        Error_Msg_NE
+                          ("input item & cannot denote a visible variable or "
+                           & "state of package %", Input, Input_Id);
+
+                     --  Detect a duplicate use of the same input item
+
+                     elsif Contains (Inputs_Seen, Input_Id) then
+                        Error_Msg_N ("duplicate input item", Input);
+
+                     --  The input is legal, add it to the list of processed
+                     --  inputs.
+
+                     else
+                        Add_Item (Input_Id, Inputs_Seen);
+                     end if;
+
+                  --  The input references something that is not a state or a
+                  --  variable.
+
+                  else
+                     Error_Msg_N
+                       ("input item must denote variable or state", Input);
+                  end if;
+
+               --  Some form of illegal construct masquerading as a name
+
+               else
+                  Error_Msg_N
+                    ("input item must denote variable or state", Input);
+               end if;
+            end if;
+         end Analyze_Input_Item;
+
+         --  Local variables
+
+         Inputs : constant Node_Id := Expression (Item);
+         Elmt   : Node_Id;
+         Input  : Node_Id;
+
+         Name_Seen : Boolean := False;
+         --  A flag used to detect multiple item names
+
+      --  Start of processing for Analyze_Initialization_Item_With_Inputs
+
+      begin
+         --  Inspect the name of an item with inputs
+
+         Elmt := First (Choices (Item));
+         while Present (Elmt) loop
+            if Name_Seen then
+               Error_Msg_N ("only one item allowed in initialization", Elmt);
+
+            else
+               Name_Seen := True;
+               Analyze_Initialization_Item (Elmt);
+            end if;
+
+            Next (Elmt);
+         end loop;
+
+         --  Multiple input items appear as an aggregate
+
+         if Nkind (Inputs) = N_Aggregate then
+            if Present (Expressions (Inputs)) then
+               Input := First (Expressions (Inputs));
+               while Present (Input) loop
+                  Analyze_Input_Item (Input);
+
+                  Next (Input);
+               end loop;
+            end if;
+
+            if Present (Component_Associations (Inputs)) then
+               Error_Msg_N
+                 ("inputs must appear in named association form", Inputs);
+            end if;
+
+         --  Single input item
+
+         else
+            Analyze_Input_Item (Inputs);
+         end if;
+      end Analyze_Initialization_Item_With_Inputs;
+
+      ----------------------------------
+      -- Collect_States_And_Variables --
+      ----------------------------------
+
+      procedure Collect_States_And_Variables is
+         Decl : Node_Id;
+
+      begin
+         --  Collect the abstract states defined in the package (if any)
+
+         if Present (Abstract_States (Pack_Id)) then
+            States_And_Vars := New_Copy_Elist (Abstract_States (Pack_Id));
+         end if;
+
+         --  Collect all variables the appear in the visible declarations of
+         --  the related package.
+
+         if Present (Visible_Declarations (Pack_Spec)) then
+            Decl := First (Visible_Declarations (Pack_Spec));
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Object_Declaration
+                 and then Ekind (Defining_Entity (Decl)) = E_Variable
+                 and then Comes_From_Source (Decl)
+               then
+                  Add_Item (Defining_Entity (Decl), States_And_Vars);
+               end if;
+
+               Next (Decl);
+            end loop;
+         end if;
+      end Collect_States_And_Variables;
+
+      --  Local variables
+
+      Inits : constant Node_Id :=
+                Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Init  : Node_Id;
+
+   --  Start of processing for Analyze_Initializes_In_Decl_Part
+
+   begin
+      Set_Analyzed (N);
+
+      --  Initialize the various lists used during analysis
+
+      Collect_States_And_Variables;
+
+      --  Multiple initialization clauses appear as an aggregate
+
+      if Nkind (Inits) = N_Aggregate then
+         if Present (Expressions (Inits)) then
+            Init := First (Expressions (Inits));
+            while Present (Init) loop
+               Analyze_Initialization_Item (Init);
+
+               Next (Init);
+            end loop;
+         end if;
+
+         if Present (Component_Associations (Inits)) then
+            Init := First (Component_Associations (Inits));
+            while Present (Init) loop
+               Analyze_Initialization_Item_With_Inputs (Init);
+
+               Next (Init);
+            end loop;
+         end if;
+
+      --  Various forms of a single initialization clause. Note that these may
+      --  include malformed initializations.
+
+      else
+         Analyze_Initialization_Item (Inits);
+      end if;
+   end Analyze_Initializes_In_Decl_Part;
 
    --------------------
    -- Analyze_Pragma --
@@ -1887,16 +2218,11 @@ package body Sem_Prag is
       --  UU_Typ is the related Unchecked_Union type. Flag In_Variant_Part
       --  should be set when Comp comes from a record variant.
 
-      procedure Check_Test_Case;
-      --  Called to process a test-case pragma. It starts with checking pragma
-      --  arguments, and the rest of the treatment is similar to the one for
-      --  pre- and postcondition in Check_Precondition_Postcondition, except
-      --  the placement rules for the test-case pragma are stricter. These
-      --  pragmas may only occur after a subprogram spec declared directly
-      --  in a package spec unit. In this case, the pragma is chained to the
-      --  subprogram in question (using Contract_Test_Cases and Next_Pragma)
-      --  and analysis of the pragma is delayed till the end of the spec. In
-      --  all other cases, an error message for bad placement is given.
+      procedure Check_Declaration_Order (States : Node_Id; Inits : Node_Id);
+      --  Subsidiary routine to the analysis of pragmas Abstract_State and
+      --  Initializes. Determine whether aspect/pragma Abstract_State denoted
+      --  by States is defined earlier than aspect/pragma Initializes denoted
+      --  by Inits.
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
       --  Check if a rep item of the same name as the current pragma is already
@@ -2012,6 +2338,17 @@ package body Sem_Prag is
       --  component constraint in an Unchecked_Union type. This routine checks
       --  that the constraint is static as required by the restrictions for
       --  Unchecked_Union.
+
+      procedure Check_Test_Case;
+      --  Called to process a test-case pragma. It starts with checking pragma
+      --  arguments, and the rest of the treatment is similar to the one for
+      --  pre- and postcondition in Check_Precondition_Postcondition, except
+      --  the placement rules for the test-case pragma are stricter. These
+      --  pragmas may only occur after a subprogram spec declared directly
+      --  in a package spec unit. In this case, the pragma is chained to the
+      --  subprogram in question (using Contract_Test_Cases and Next_Pragma)
+      --  and analysis of the pragma is delayed till the end of the spec. In
+      --  all other cases, an error message for bad placement is given.
 
       procedure Check_Valid_Configuration_Pragma;
       --  Legality checks for placement of a configuration pragma
@@ -2906,6 +3243,109 @@ package body Sem_Prag is
               ("component of unchecked union cannot have tasks", Comp);
          end if;
       end Check_Component;
+
+      -----------------------------
+      -- Check_Declaration_Order --
+      -----------------------------
+
+      procedure Check_Declaration_Order (States : Node_Id; Inits : Node_Id) is
+         procedure Check_Aspect_Specification_Order;
+         --  Inspect the aspect specifications of the context to determine the
+         --  proper order.
+
+         --------------------------------------
+         -- Check_Aspect_Specification_Order --
+         --------------------------------------
+
+         procedure Check_Aspect_Specification_Order is
+            Asp_I : constant Node_Id := Corresponding_Aspect (Inits);
+            Asp_S : constant Node_Id := Corresponding_Aspect (States);
+            Asp   : Node_Id;
+
+            States_Seen : Boolean := False;
+
+         begin
+            --  Both aspects must be part of the same aspect specification list
+
+            pragma Assert (List_Containing (Asp_I) = List_Containing (Asp_S));
+
+            Asp := First (List_Containing (Asp_I));
+            while Present (Asp) loop
+               if Get_Aspect_Id (Asp) = Aspect_Abstract_State then
+                  States_Seen := True;
+
+               elsif Get_Aspect_Id (Asp) = Aspect_Initializes then
+                  if not States_Seen then
+                     Error_Msg_N
+                       ("aspect % must come before aspect %", States);
+                  end if;
+
+                  exit;
+               end if;
+
+               Next (Asp);
+            end loop;
+         end Check_Aspect_Specification_Order;
+
+         --  Local variables
+
+         Stmt : Node_Id;
+
+      --  Start of processing for Check_Declaration_Order
+
+      begin
+         --  Cannot check the order if one of the pragmas is missing
+
+         if No (States) or else No (Inits) then
+            return;
+         end if;
+
+         --  Set up the error names in case the order is incorrect
+
+         Error_Msg_Name_1 := Name_Abstract_State;
+         Error_Msg_Name_2 := Name_Initializes;
+
+         if From_Aspect_Specification (States) then
+
+            --  Both pragmas are actually aspects, check their declaration
+            --  order in the associated aspect specification list. Otherwise
+            --  States is an aspect and Inits a source pragma.
+
+            if From_Aspect_Specification (Inits) then
+               Check_Aspect_Specification_Order;
+            end if;
+
+         --  Abstract_States is a source pragma
+
+         else
+            if From_Aspect_Specification (Inits) then
+               Error_Msg_N ("pragma % cannot come after aspect %", States);
+
+            --  Both pragmas are source constructs. Try to reach States from
+            --  Inits by traversing the declarations backwards.
+
+            else
+               Stmt := Prev (Inits);
+               while Present (Stmt) loop
+
+                  --  The order is ok, Abstract_States is first followed by
+                  --  Initializes.
+
+                  if Nkind (Stmt) = N_Pragma
+                    and then Pragma_Name (Stmt) = Name_Abstract_State
+                  then
+                     return;
+                  end if;
+
+                  Prev (Stmt);
+               end loop;
+
+               --  If we get here, then the pragmas are out of order
+
+               Error_Msg_N ("pragma % cannot come after pragma %", States);
+            end if;
+         end if;
+      end Check_Declaration_Order;
 
       ----------------------------
       -- Check_Duplicate_Pragma --
@@ -8655,7 +9095,16 @@ package body Sem_Prag is
             end if;
 
             Pack_Id := Defining_Entity (Context);
-            State   := Expression (Arg1);
+            Add_Contract_Item (N, Pack_Id);
+
+            --  Verify the declaration order of aspects/pragmas Abstract_State
+            --  and Initializes.
+
+            Check_Declaration_Order
+              (States => N,
+               Inits  => Get_Pragma (Pack_Id, Pragma_Initializes));
+
+            State := Expression (Arg1);
 
             --  Multiple abstract states appear as an aggregate
 
@@ -12744,6 +13193,91 @@ package body Sem_Prag is
                Initialize_Scalars := True;
             end if;
 
+         -----------------
+         -- Initializes --
+         -----------------
+
+         --  pragma Initializes (INITIALIZATION_SPEC);
+
+         --  INITIALIZATION_SPEC ::= null | INITIALIZATION_LIST
+
+         --  INITIALIZATION_LIST ::=
+         --    INITIALIZATION_ITEM
+         --    | (INITIALIZATION_ITEM {, INITIALIZATION_ITEM})
+
+         --  INITIALIZATION_ITEM ::= name [=> INPUT_LIST]
+
+         --  INPUT_LIST ::=
+         --    null
+         --    | INPUT
+         --    | (INPUT {, INPUT})
+
+         --  INPUT ::= name
+
+         when Pragma_Initializes => Initializes : declare
+            Context : constant Node_Id := Parent (Parent (N));
+            Pack_Id : Entity_Id;
+            Stmt    : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Initializes must be
+            --  associated with a package declaration.
+
+            if not Nkind_In (Context, N_Generic_Package_Declaration,
+                                      N_Package_Declaration)
+            then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Skip prior pragmas, but check for duplicates
+
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
+
+                  --  The pragma does not apply to a legal construct, issue an
+                  --  error and stop the analysis.
+
+               else
+                  Pragma_Misplaced;
+                  return;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            --  The pragma must be analyzed at the end of the visible
+            --  declarations of the related package. Save the pragma for later
+            --  (see Analyze_Initializes_In_Decl_Part) by adding it to the
+            --  contract of the package.
+
+            Pack_Id := Defining_Entity (Context);
+            Add_Contract_Item (N, Pack_Id);
+
+            --  Verify the declaration order of aspects/pragmas Abstract_State
+            --  and Initializes.
+
+            Check_Declaration_Order
+              (States => Get_Pragma (Pack_Id, Pragma_Abstract_State),
+               Inits  => N);
+         end Initializes;
+
          ------------
          -- Inline --
          ------------
@@ -16177,6 +16711,7 @@ package body Sem_Prag is
          when Pragma_Refined_State => Refined_State : declare
             Context : constant Node_Id := Parent (N);
             Spec_Id : Entity_Id;
+            Stmt    : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -16190,6 +16725,34 @@ package body Sem_Prag is
                Pragma_Misplaced;
                return;
             end if;
+
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Skip prior pragmas, but check for duplicates
+
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Stmt) then
+                  null;
+
+                  --  The pragma does not apply to a legal construct, issue an
+                  --  error and stop the analysis.
+
+               else
+                  Pragma_Misplaced;
+                  return;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
 
             --  State refinement is allowed only when the corresponding package
             --  declaration has a non-null aspect/pragma Abstract_State.
@@ -16207,9 +16770,10 @@ package body Sem_Prag is
 
             --  The pragma must be analyzed at the end of the declarations as
             --  it has visibility over the whole declarative region. Save the
-            --  pragma for later (see Analyze_Refined_Depends_In_Decl_Part).
+            --  pragma for later (see Analyze_Refined_Depends_In_Decl_Part) by
+            --  adding it to the contract of the package body.
 
-            Set_Refined_State_Pragma (Defining_Entity (Context), N);
+            Add_Contract_Item (N, Defining_Entity (Context));
          end Refined_State;
 
          -----------------------
@@ -19647,9 +20211,9 @@ package body Sem_Prag is
       procedure Analyze_Refinement_Clause (Clause : Node_Id);
       --  Perform full analysis of a single refinement clause
 
-      function Collect_Hidden_States return Elist_Id;
+      procedure Collect_Hidden_States;
       --  Gather the entities of all hidden states that appear in the spec and
-      --  body of the related package.
+      --  body of the related package in Hidden_States.
 
       procedure Report_Unrefined_States;
       --  Emit errors for all abstract states that have not been refined by
@@ -19938,9 +20502,7 @@ package body Sem_Prag is
       -- Collect_Hidden_States --
       ---------------------------
 
-      function Collect_Hidden_States return Elist_Id is
-         Result : Elist_Id := No_Elist;
-
+      procedure Collect_Hidden_States is
          procedure Collect_Hidden_States_In_Decls (Decls : List_Id);
          --  Find all hidden states that appear in declarative list Decls and
          --  append their entities to Result.
@@ -19963,7 +20525,7 @@ package body Sem_Prag is
             begin
                State_Elmt := First_Elmt (States);
                while Present (State_Elmt) loop
-                  Add_Item (Node (State_Elmt), Result);
+                  Add_Item (Node (State_Elmt), Hidden_States);
 
                   Next_Elmt (State_Elmt);
                end loop;
@@ -19985,7 +20547,7 @@ package body Sem_Prag is
                  and then Ekind (Defining_Entity (Decl)) = E_Variable
                  and then Comes_From_Source (Decl)
                then
-                  Add_Item (Defining_Entity (Decl), Result);
+                  Add_Item (Defining_Entity (Decl), Hidden_States);
 
                --  Gather the abstract states of a package along with all
                --  hidden states in its visible declarations.
@@ -20014,8 +20576,6 @@ package body Sem_Prag is
 
          Collect_Hidden_States_In_Decls (Private_Declarations (Pack_Spec));
          Collect_Hidden_States_In_Decls (Declarations (Pack_Body));
-
-         return Result;
       end Collect_Hidden_States;
 
       -----------------------------
@@ -20080,7 +20640,7 @@ package body Sem_Prag is
       --  Local declarations
 
       Clauses : constant Node_Id :=
-                  Expression (First (Pragma_Argument_Associations (N)));
+                  Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
       Clause  : Node_Id;
 
    --  Start of processing for Analyze_Refined_State_In_Decl_Part
@@ -20090,8 +20650,8 @@ package body Sem_Prag is
 
       --  Initialize the various lists used during analysis
 
-      Abstr_States  := New_Copy_Elist (Abstract_States (Spec_Id));
-      Hidden_States := Collect_Hidden_States;
+      Abstr_States := New_Copy_Elist (Abstract_States (Spec_Id));
+      Collect_Hidden_States;
 
       --  Multiple state refinements appear as an aggregate
 
@@ -20814,6 +21374,7 @@ package body Sem_Prag is
       Pragma_Independent                    =>  0,
       Pragma_Independent_Components         =>  0,
       Pragma_Initialize_Scalars             => -1,
+      Pragma_Initializes                    => -1,
       Pragma_Inline                         =>  0,
       Pragma_Inline_Always                  =>  0,
       Pragma_Inline_Generic                 =>  0,

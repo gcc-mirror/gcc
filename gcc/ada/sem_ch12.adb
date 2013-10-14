@@ -3022,6 +3022,15 @@ package body Sem_Ch12 is
       Id := Defining_Entity (N);
       Generate_Definition (Id);
 
+      --  Expansion is not applied to generic units
+
+      Start_Generic;
+
+      Enter_Name (Id);
+      Set_Ekind    (Id, E_Generic_Package);
+      Set_Etype    (Id, Standard_Void_Type);
+      Set_Contract (Id, Make_Contract (Sloc (Id)));
+
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
@@ -3029,13 +3038,6 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Id);
       end if;
 
-      --  Expansion is not applied to generic units
-
-      Start_Generic;
-
-      Enter_Name (Id);
-      Set_Ekind (Id, E_Generic_Package);
-      Set_Etype (Id, Standard_Void_Type);
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
@@ -3124,7 +3126,7 @@ package body Sem_Ch12 is
             Aspects : constant List_Id := Aspect_Specifications (N);
          begin
             Set_Has_Aspects (N, False);
-            Move_Aspects (New_N, N);
+            Move_Aspects (New_N, To => N);
             Set_Has_Aspects (Original_Node (N), False);
             Set_Aspect_Specifications (Original_Node (N), Aspects);
          end;
@@ -4756,7 +4758,7 @@ package body Sem_Ch12 is
          --  pre/postconditions on the instance are analyzed below, in a
          --  separate step.
 
-         Move_Aspects (Act_Tree, Act_Decl);
+         Move_Aspects (Act_Tree, To => Act_Decl);
          Set_Categorization_From_Pragmas (Act_Decl);
 
          if Parent_Installed then

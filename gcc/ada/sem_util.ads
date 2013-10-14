@@ -43,16 +43,19 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
-   procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id);
-   --  Add one of the following contract item to the contract of a subprogram.
-   --  Prag denotes a pragma and Subp_Id is the related subprogram [body].
+   procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
+   --  Add pragma Prag to the contract of an entry, a package [body] or a
+   --  subprogram [body] denoted by Id. The following are valid pragmas:
+   --    Abstract_States
    --    Contract_Cases
    --    Depends
    --    Global
+   --    Initializes
    --    Postcondition
    --    Precondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_States
    --    Test_Case
 
    procedure Add_Global_Declaration (N : Node_Id);

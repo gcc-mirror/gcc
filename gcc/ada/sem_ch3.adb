@@ -2086,6 +2086,7 @@ package body Sem_Ch3 is
       Context     : Node_Id;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
+      Prag        : Node_Id;
       Spec_Id     : Entity_Id;
 
    --  Start of processing for Analyze_Declarations
@@ -2196,24 +2197,38 @@ package body Sem_Ch3 is
          Decl := Next_Decl;
       end loop;
 
-      --  Analyze the state refinements within a package body now, after all
-      --  hidden states have been encountered and freely visible. Refinements
-      --  must be processed before pragmas Refined_Depends and Refined_Global
-      --  because the last two may mention constituents.
-
       if Present (L) then
          Context := Parent (L);
 
-         if Nkind (Context) = N_Package_Body then
+         --  Analyze aspect/pragma Initializes of a package at the end of the
+         --  visible declarations as the aspect/pragma has visibility over the
+         --  said region.
+
+         if Nkind (Context) = N_Package_Specification
+           and then L = Visible_Declarations (Context)
+         then
+            Spec_Id := Defining_Entity (Parent (Context));
+            Prag    := Get_Pragma (Spec_Id, Pragma_Initializes);
+
+            if Present (Prag) then
+               Analyze_Initializes_In_Decl_Part (Prag);
+            end if;
+
+         --  Analyze the state refinements within a package body now, after
+         --  all hidden states have been encountered and freely visible.
+         --  Refinements must be processed before pragmas Refined_Depends and
+         --  Refined_Global because the last two may mention constituents.
+
+         elsif Nkind (Context) = N_Package_Body then
             Body_Id := Defining_Entity (Context);
             Spec_Id := Corresponding_Spec (Context);
+            Prag    := Get_Pragma (Body_Id, Pragma_Refined_State);
 
             --  The analysis of pragma Refined_State detects whether the spec
             --  has abstract states available for refinement.
 
-            if Present (Refined_State_Pragma (Body_Id)) then
-               Analyze_Refined_State_In_Decl_Part
-                 (Refined_State_Pragma (Body_Id));
+            if Present (Prag) then
+               Analyze_Refined_State_In_Decl_Part (Prag);
 
             --  State refinement is required when the package declaration has
             --  abstract states. Null states are not considered.

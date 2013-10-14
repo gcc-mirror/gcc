@@ -1,3 +1,79 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry in table Canonical_Aspect for
+	Initializes.
+	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,
+	Aspect_Names and Aspect_Delay for Initializes.
+	* atree.ads, atree.adb (Ekind_In): New seven argument versions of the
+	routines.
+	* einfo.adb: Remove Refined_State_Pragma from the list of node
+	usage. Finalizer is now at position 28.
+	(Contract): Package
+	and package bodies now have a contract.
+	(Finalizer): Update
+	the assertion and node usage.
+	(Get_Pragma): Update the Is_CDG
+	flag to include Abstract_State, Initializes and Refined_State.
+	(Refined_State_Pragma): Removed.
+	(Set_Contract): Package and
+	package bodies now have a contract.
+	(Set_Finalizer): Update the
+	assertion and node usage.
+	(Set_Refined_State_Pragma): Removed.
+	(Write_Field8_Name): Remove the output for Refined_State_Pragma.
+	(Write_Field24_Name): Remove the output for Finalizer. Package
+	and package bodies now have a contract.
+	(Write_Field28_Name):
+	Add output for Finalizer.
+	* einfo.ads: Update the documentation and usage in entities
+	of attribute Contract. Update the node position and usage in
+	entities of attribute Finalizer. Remove the documentation
+	and usage in entities for attribute Refined_State_Pragma.
+	(Refined_State_Pragma): Removed along with pragma Inline.
+	(Set_Refined_State_Pragma): Removed along with pragma Inline.
+	* par-prag.adb: Add Initializes to the pragmas that do not
+	require special processing by the parser.
+	* sem_ch3.adb (Analyze_Declarations): Add local variable
+	Prag. Update the retrieval of pragma Refined_State. Analyze
+	aspect/pragma Initializes at the end of the visible declarations
+	of the related package.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract):
+	Add local variables Ref_Depends and Ref_Global. Analyze
+	pragmas Refined_Global and Refined_Depends in that order.
+	(Analyze_Subprogram_Contract): Add local variables Depends and
+	Global. Analyze pragmas Global and Depends in that order.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Package
+	bodies now have a contract. Move the analysis of the aspect
+	specifications after the defining entity has been decorated.
+	(Analyze_Package_Declaration): Packages now have a contract. Move
+	the analysis of the aspect specifications after the defining
+	entity has been decorated.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Packages
+	now have contracts.
+	* sem_ch13.adb (Analyze_Pragma): Code cleanup for aspect
+	Abstract_State. Add processing for aspect Initializes.
+	(Check_Aspect_At_Freeze_Point): Add an entry for Initializes.
+	* sem_prag.adb: Use Get_Pragma_Arg to extract the expression
+	of a pragma argument. Add an entry in table Sig_Flags for
+	Initializes.
+	(Analyze_Initializes_In_Decl_Part): New routine.
+	(Analyze_Pragma): Check the declaration order of pragmas
+	Abstract_State and Initializes. Abstract_State is now part of
+	the package contract. Analyze pragma Initializes. Check for
+	duplicate Refined_State pragma. Refined_State is now part of
+	the package contract.
+	(Check_Declaration_Order): New routine.
+	(Check_Test_Case): Alphabetized.
+	* sem_prag.ads (Analyze_Initializes_In_Decl_Part): New routine.
+	* sem_util.adb (Add_Contract_Item): Rename formal Subp_Id
+	to Id. This routine can now support contracts on packages and
+	package bodies.
+	* sem_util.ads (Add_Contract_Item): Rename formal Subp_Id to
+	Id. Update comment on usage.
+	* sinfo.ads: Update the usage of N_Contract nodes.
+	* snames.ads-tmpl: Add predefined name Initializes. Add new
+	pragma id for Initializes.
+
 2013-10-13  Nicolas Roche  <roche@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 

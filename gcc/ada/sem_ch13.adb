@@ -1883,22 +1883,20 @@ package body Sem_Ch13 is
 
                --  Abstract_State
 
+               --  Aspect Abstract_State introduces implicit declarations for
+               --  all state abstraction entities it defines. To emulate this
+               --  behavior, insert the pragma at the beginning of the visible
+               --  declarations of the related package so that it is analyzed
+               --  immediately.
+
                when Aspect_Abstract_State => Abstract_State : declare
                   Decls : List_Id;
-                  Spec  : Node_Id;
 
                begin
-                  --  Aspect Abstract_State introduces implicit declarations
-                  --  for all state abstraction entities it defines. To emulate
-                  --  this behavior, insert the pragma at the beginning of the
-                  --  visible declarations of the related package so that it is
-                  --  analyzed immediately.
-
                   if Nkind_In (N, N_Generic_Package_Declaration,
                                   N_Package_Declaration)
                   then
-                     Spec  := Specification (N);
-                     Decls := Visible_Declarations (Spec);
+                     Decls := Visible_Declarations (Specification (N));
 
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -1958,6 +1956,44 @@ package body Sem_Ch13 is
                   Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
+
+               --  Initializes
+
+               --  Aspect Initializes coverts the visible declarations of a
+               --  package. As such, it must be evaluated at the end of the
+               --  said declarations.
+
+               when Aspect_Initializes => Initializes : declare
+                  Decls : List_Id;
+
+               begin
+                  if Nkind_In (N, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+                  then
+                     Decls := Visible_Declarations (Specification (N));
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Initializes);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package declaration",
+                        Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Initializes;
 
                --  SPARK_Mode
 
@@ -7708,6 +7744,7 @@ package body Sem_Ch13 is
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |
+              Aspect_Initializes          |
               Aspect_Post                 |
               Aspect_Postcondition        |
               Aspect_Pre                  |
