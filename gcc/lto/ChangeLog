@@ -1,5 +1,15 @@
 2013-10-14  Richard Biener  <rguenther@suse.de>
 
+	* lto.c (gimple_canonical_types): Move out-of GC space.
+	(canonical_type_hash_cache): Make a pointer-map.
+	(num_canonical_type_hash_entries, num_canonical_type_hash_queries):
+	New counters.
+	(iterative_hash_canonical_type): Adjust.
+	(read_cgraph_and_symbols): Likewise.
+	(print_lto_report_1): Likewise.
+
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
 	* lto.c (gimple_types, type_hash_cache, struct type_pair_d,
 	type_pair_cache, lookup_type_pair, struct sccs, next_dfs_num,
 	gtc_next_dfs_num, compare_type_names_p, gtc_visit,

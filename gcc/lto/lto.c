@@ -255,10 +255,10 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
 
 
 /* Global canonical type table.  */
-static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-  htab_t gimple_canonical_types;
-static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
-  htab_t canonical_type_hash_cache;
+static htab_t gimple_canonical_types;
+static pointer_map <hashval_t> *canonical_type_hash_cache;
+static unsigned long num_canonical_type_hash_entries;
+static unsigned long num_canonical_type_hash_queries;
 
 /* Returning a hash value for gimple type TYPE combined with VAL.
 
@@ -269,12 +269,12 @@ static hashval_t
 iterative_hash_canonical_type (tree type, hashval_t val)
 {
   hashval_t v;
-  void **slot;
-  struct tree_int_map *mp, m;
+  hashval_t *slot;
 
-  m.base.from = type;
-  if ((slot = htab_find_slot (canonical_type_hash_cache, &m, NO_INSERT)))
-    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, val);
+  num_canonical_type_hash_queries++;
+  slot = canonical_type_hash_cache->contains (type);
+  if (slot)
+    return iterative_hash_hashval_t (*slot, val);
 
   /* Combine a few common features of types so that types are grouped into
      smaller sets; when searching for existing matching types to merge,
@@ -374,14 +374,9 @@ iterative_hash_canonical_type (tree type, hashval_t val)
     }
 
   /* Cache the just computed hash value.  */
-  mp = ggc_alloc_cleared_tree_int_map ();
-  mp->base.from = type;
-  mp->to = v;
-  /* As we recurse the hashtable may expand between looking up the
-     cached value (and not finding one) and here, so we have to
-     re-lookup the slot.  */
-  slot = htab_find_slot (canonical_type_hash_cache, &m, INSERT);
-  *slot = (void *) mp;
+  num_canonical_type_hash_entries++;
+  slot = canonical_type_hash_cache->insert (type);
+  *slot = v;
 
   return iterative_hash_hashval_t (v, val);
 }
@@ -2749,8 +2744,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   cgraph_state = CGRAPH_LTO_STREAMING;
 
-  canonical_type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
-					       tree_int_map_eq, NULL);
+  canonical_type_hash_cache = new pointer_map <hashval_t>;
   gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
 					    gimple_canonical_type_eq, 0);
   gcc_obstack_init (&tree_scc_hash_obstack);
@@ -2817,7 +2811,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   obstack_free (&tree_scc_hash_obstack, NULL);
   htab_delete (gimple_canonical_types);
   gimple_canonical_types = NULL;
-  htab_delete (canonical_type_hash_cache);
+  delete canonical_type_hash_cache;
   canonical_type_hash_cache = NULL;
   ggc_collect ();
 
@@ -3023,13 +3017,10 @@ print_lto_report_1 (void)
 	       (long) gimple_canonical_types->searches,
 	       (long) gimple_canonical_types->collisions,
 	       htab_collisions (gimple_canonical_types));
-      fprintf (stderr, "[%s] GIMPLE canonical type hash table: size %ld, "
-	       "%ld elements, %ld searches, %ld collisions (ratio: %f)\n", pfx,
-	       (long) htab_size (canonical_type_hash_cache),
-	       (long) htab_elements (canonical_type_hash_cache),
-	       (long) canonical_type_hash_cache->searches,
-	       (long) canonical_type_hash_cache->collisions,
-	       htab_collisions (canonical_type_hash_cache));
+      fprintf (stderr, "[%s] GIMPLE canonical type pointer-map: "
+	       "%lu elements, %ld searches\n", pfx,
+	       num_canonical_type_hash_entries,
+	       num_canonical_type_hash_queries);
     }
 
   print_lto_report (pfx);
