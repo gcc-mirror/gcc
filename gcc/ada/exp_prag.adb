@@ -646,8 +646,9 @@ package body Exp_Prag is
                      --  alias to define the symbol.
 
                      Code :=
-                       Make_Integer_Literal (Loc,
-                         Intval => Exception_Code (Id));
+                       Unchecked_Convert_To (Standard_A_Char,
+                         Make_Integer_Literal (Loc,
+                           Intval => Exception_Code (Id)));
 
                      --  Declare a dummy object
 
@@ -655,7 +656,7 @@ package body Exp_Prag is
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Excep_Internal,
                          Object_Definition   =>
-                           New_Reference_To (RTE (RE_Exception_Code), Loc));
+                           New_Reference_To (RTE (RE_Address), Loc));
 
                      Insert_Action (N, Excep_Object);
                      Analyze (Excep_Object);
@@ -711,13 +712,12 @@ package body Exp_Prag is
 
                   else
                      Code :=
-                        Unchecked_Convert_To (RTE (RE_Exception_Code),
-                          Make_Function_Call (Loc,
-                            Name =>
-                              New_Reference_To (RTE (RE_Import_Value), Loc),
-                            Parameter_Associations => New_List
-                              (Make_String_Literal (Loc,
-                                Strval => Excep_Image))));
+                        Make_Function_Call (Loc,
+                          Name =>
+                            New_Reference_To (RTE (RE_Import_Address), Loc),
+                          Parameter_Associations => New_List
+                            (Make_String_Literal (Loc,
+                              Strval => Excep_Image)));
                   end if;
 
                   --  Generate the call to Register_VMS_Exception
@@ -733,7 +733,7 @@ package body Exp_Prag is
                             Prefix         => New_Occurrence_Of (Id, Loc),
                             Attribute_Name => Name_Unrestricted_Access)))));
 
-                  Analyze_And_Resolve (Code, RTE (RE_Exception_Code));
+                  Analyze_And_Resolve (Code, RTE (RE_Address));
                   Analyze (Call);
                end if;
 

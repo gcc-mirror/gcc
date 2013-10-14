@@ -748,6 +748,7 @@ package Rtsfind is
      RE_Uint64,                          -- System.Atomic_Primitives
 
      RE_AST_Handler,                     -- System.Aux_DEC
+     RE_Import_Address,                  -- System.Aux_DEC
      RE_Import_Value,                    -- System.Aux_DEC
      RE_No_AST_Handler,                  -- System.Aux_DEC
      RE_Type_Class,                      -- System.Aux_DEC
@@ -1413,7 +1414,6 @@ package Rtsfind is
      RE_Shared_Var_Procs,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
-     RE_Exception_Code,                  -- System.Standard_Library
      RE_Exception_Data_Ptr,              -- System.Standard_Library
 
      RE_Integer_Address,                 -- System.Storage_Elements
@@ -2001,6 +2001,7 @@ package Rtsfind is
      RE_Uint64                           => System_Atomic_Primitives,
 
      RE_AST_Handler                      => System_Aux_DEC,
+     RE_Import_Address                   => System_Aux_DEC,
      RE_Import_Value                     => System_Aux_DEC,
      RE_No_AST_Handler                   => System_Aux_DEC,
      RE_Type_Class                       => System_Aux_DEC,
@@ -2670,7 +2671,6 @@ package Rtsfind is
      RE_Shared_Var_Procs                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,
-     RE_Exception_Code                   => System_Standard_Library,
      RE_Exception_Data_Ptr               => System_Standard_Library,
 
      RE_Integer_Address                  => System_Storage_Elements,

@@ -812,22 +812,32 @@ get_call_site_action_for (_Unwind_Ptr ip,
 
 #define Is_Handled_By_Others  __gnat_is_handled_by_others
 #define Language_For          __gnat_language_for
-#define Import_Code_For       __gnat_import_code_for
+#define Foreign_Data_For      __gnat_foreign_data_for
 #define EID_For               __gnat_eid_for
 
 extern bool Is_Handled_By_Others (_Unwind_Ptr eid);
 extern char Language_For (_Unwind_Ptr eid);
 
-extern Exception_Code Import_Code_For (_Unwind_Ptr eid);
+extern void *Foreign_Data_For (_Unwind_Ptr eid);
 
 extern Exception_Id EID_For (_GNAT_Exception * e);
+
+#define Foreign_Exception system__exceptions__foreign_exception
+extern struct Exception_Data Foreign_Exception;
+
+#ifdef VMS
+#define Non_Ada_Error system__aux_dec__non_ada_error
+extern struct Exception_Data Non_Ada_Error;
+#endif
 
 static enum action_kind
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 {
+  /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
     return handler;
 
+  /* GNAT exception occurrence.  */
   if (propagated_exception->common.exception_class == GNAT_EXCEPTION_CLASS)
     {
       /* Pointer to the GNAT exception data corresponding to the propagated
@@ -845,6 +855,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
       if (choice == E || (choice == GNAT_OTHERS && Is_Handled_By_Others (E)))
 	return handler;
 
+#ifdef VMS
       /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
          may have different exception data pointers that should match for the
          same condition code, if both an export and an import have been
@@ -852,29 +863,25 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
          occurrence are expected to have been masked off regarding severity
          bits already (at registration time for the former and from within the
          low level exception vector for the latter).  */
-#ifdef VMS
-#     define Non_Ada_Error system__aux_dec__non_ada_error
-      extern struct Exception_Data Non_Ada_Error;
-
       if ((Language_For (E) == 'V'
 	   && choice != GNAT_OTHERS
 	   && ((Language_For (choice) == 'V'
-		&& Import_Code_For (choice) != 0
-		&& Import_Code_For (choice) == Import_Code_For (E))
+		&& Foreign_Data_For (choice) != 0
+		&& Foreign_Data_For (choice) == Foreign_Data_For (E))
 	       || choice == (_Unwind_Ptr)&Non_Ada_Error)))
 	return handler;
 #endif
-    }
-  else
-    {
-#     define Foreign_Exception system__exceptions__foreign_exception
-      extern struct Exception_Data Foreign_Exception;
 
-      if (choice == GNAT_ALL_OTHERS
-	  || choice == GNAT_OTHERS
-	  || choice == (_Unwind_Ptr) &Foreign_Exception)
-	return handler;
+      /* Otherwise, it doesn't match an Ada choice.  */
+      return nothing;
     }
+
+  /* All others and others choice match any foreign exception.  */
+  if (choice == GNAT_ALL_OTHERS
+      || choice == GNAT_OTHERS
+      || choice == (_Unwind_Ptr) &Foreign_Exception)
+    return handler;
+
   return nothing;
 }
 

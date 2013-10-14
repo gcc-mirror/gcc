@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -270,8 +270,8 @@ package body Exception_Propagation is
    function Language_For (E : Exception_Data_Ptr) return Character;
    pragma Export (C, Language_For, "__gnat_language_for");
 
-   function Import_Code_For (E : Exception_Data_Ptr) return Exception_Code;
-   pragma Export (C, Import_Code_For, "__gnat_import_code_for");
+   function Foreign_Data_For (E : Exception_Data_Ptr) return Address;
+   pragma Export (C, Foreign_Data_For, "__gnat_foreign_data_for");
 
    function EID_For (GNAT_Exception : not null GNAT_GCC_Exception_Access)
      return Exception_Id;
@@ -489,16 +489,16 @@ package body Exception_Propagation is
       return GNAT_Exception.Occurrence.Id;
    end EID_For;
 
-   ---------------------
-   -- Import_Code_For --
-   ---------------------
+   ----------------------
+   -- Foreign_Data_For --
+   ----------------------
 
-   function Import_Code_For
-     (E : SSL.Exception_Data_Ptr) return Exception_Code
+   function Foreign_Data_For
+     (E : SSL.Exception_Data_Ptr) return Address
    is
    begin
-      return E.all.Import_Code;
-   end Import_Code_For;
+      return E.Foreign_Data;
+   end Foreign_Data_For;
 
    --------------------------
    -- Is_Handled_By_Others --
