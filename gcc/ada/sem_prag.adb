@@ -525,12 +525,11 @@ package body Sem_Prag is
          Item_Id  : Entity_Id;
          Is_Input : Boolean;
          Self_Ref : Boolean);
-      --  Ensure that an item has a proper "in", "in out" or "out" mode
-      --  depending on its function. If this is not the case, emit an error.
-      --  Item and Item_Id denote the attributes of an item. Flag Is_Input
-      --  should be set when item comes from an input list. Flag Self_Ref
-      --  should be set when the item is an output and the dependency clause
-      --  has operator "+".
+      --  Ensure that an item has a proper IN, IN OUT, or OUT mode depending
+      --  on its function. If this is not the case, emit an error. Item and
+      --  Item_Id denote the attributes of an item. Flag Is_Input should be set
+      --  when item comes from an input list. Flag Self_Ref should be set when
+      --  the item is an output and the dependency clause has operator "+".
 
       procedure Check_Usage
         (Subp_Items : Elist_Id;
@@ -763,9 +762,9 @@ package body Sem_Prag is
                         Add_Item (Item_Id, Seen);
                      end if;
 
-                     --  Detect an illegal use of an input related to a null
-                     --  output. Such input items cannot appear in other input
-                     --  lists.
+                     --  Detect illegal use of an input related to a null
+                     --  output. Such input items cannot appear in other
+                     --  input lists.
 
                      if Is_Input
                        and then Null_Output_Seen
@@ -908,21 +907,21 @@ package body Sem_Prag is
 
          if Is_Input then
 
-            --  "In" and "in out" parameters already have the proper mode to
-            --  act as input. "Out" parameters are valid inputs only when their
-            --  type is unconstrained or tagged as their discriminants, array
-            --  bouns or tags can be read. In general, states and variables
-            --  are considered to have mode "in out" unless they are moded by
-            --  pragma [Refined_]Global. In that case, the item must appear in
-            --  an input global list.
+            --  IN and IN OUT parameters already have the proper mode to act
+            --  as input. OUT parameters are valid inputs only when their type
+            --  is unconstrained or tagged as their discriminants, array bouns
+            --  or tags can be read. In general, states and variables are
+            --  considered to have mode IN OUT unless they are moded by pragma
+            --  [Refined_]Global. In that case, the item must appear in an
+            --  input global list.
 
             if (Ekind (Item_Id) = E_Out_Parameter
                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
               or else
-               (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
+                (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
             then
                Error_Msg_NE
-                 ("item & must have mode in or in out", Item, Item_Id);
+                 ("item & must have mode IN or `IN OUT`", Item, Item_Id);
             end if;
 
          --  Self-referential output
@@ -930,7 +929,7 @@ package body Sem_Prag is
          elsif Self_Ref then
 
             --  In general, states and variables are considered to have mode
-            --  "in out" unless they are explicitly moded by pragma [Refined_]
+            --  IN OUT unless they are explicitly moded by pragma [Refined_]
             --  Global. If this is the case, then the item must appear in both
             --  an input and output global list.
 
@@ -941,10 +940,11 @@ package body Sem_Prag is
                       and then
                     Appears_In (Subp_Outputs, Item_Id))
                then
-                  Error_Msg_NE ("item & must have mode in out", Item, Item_Id);
+                  Error_Msg_NE
+                    ("item & must have mode `IN OUT`", Item, Item_Id);
                end if;
 
-            --  A self-referential out parameter of an unconstrained or tagged
+            --  A self-referential OUT parameter of an unconstrained or tagged
             --  type acts as an input because the discriminants, array bounds
             --  or the tag may be read. Note that the presence of [Refined_]
             --  Global is not significant here because the item is a parameter.
@@ -954,27 +954,27 @@ package body Sem_Prag is
             then
                null;
 
-            --  The remaining cases are "in", "in out" and "out" parameters. To
-            --  qualify as self-referential item, the parameter must be of mode
-            --  "in out".
+            --  The remaining cases are IN, IN OUT, and OUT parameters. To
+            --  qualify as self-referential item, the parameter must be of
+            --  mode IN OUT.
 
             elsif Ekind (Item_Id) /= E_In_Out_Parameter then
-               Error_Msg_NE ("item & must have mode in out", Item, Item_Id);
+               Error_Msg_NE ("item & must have mode `IN OUT`", Item, Item_Id);
             end if;
 
          --  Output
 
-         --  "In out" and "ou" parameters already have the proper mode to act
-         --  as output. In general, states and variables are considered to have
-         --  mode "in out" unless they are moded by pragma [Refined_]Global.
-         --  In that case, the item must appear in an output global list.
+         --  IN OUT and OUT parameters already have the proper mode to act as
+         --  output. In general, states and variables are considered to have
+         --  mode IN OUT unless they are moded by pragma [Refined_]Global. In
+         --  that case, the item must appear in an output global list.
 
          elsif Ekind (Item_Id) = E_In_Parameter
            or else
              (Global_Seen and then not Appears_In (Subp_Outputs, Item_Id))
          then
             Error_Msg_NE
-              ("item & must have mode out or in out", Item, Item_Id);
+              ("item & must have mode OUT or `IN OUT`", Item, Item_Id);
          end if;
       end Check_Mode;
 

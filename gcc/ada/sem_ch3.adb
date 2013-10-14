@@ -2091,13 +2091,11 @@ package body Sem_Ch3 is
 
       procedure Remove_Visible_Refinements (Spec_Id : Entity_Id) is
          State_Elmt : Elmt_Id;
-
       begin
          if Present (Abstract_States (Spec_Id)) then
             State_Elmt := First_Elmt (Abstract_States (Spec_Id));
             while Present (State_Elmt) loop
                Set_Has_Visible_Refinement (Node (State_Elmt), False);
-
                Next_Elmt (State_Elmt);
             end loop;
          end if;
