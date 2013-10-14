@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,10 @@ package Lib.Util is
    --  Adds characters of Name to Info_Buffer. Note that in all cases, the
    --  name is written literally from the names table entry without modifying
    --  the case, using simply Get_Name_String.
+
+   procedure Write_Info_Name_May_Be_Quoted (Name : File_Name_Type);
+   --  Similar to Write_Info_Name, but if Name includes spaces, then it is
+   --  quoted and the '"' are doubled.
 
    procedure Write_Info_Slit (S : String_Id);
    --  Write string literal value in format required for L/N lines in ali file

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,6 +175,51 @@ package body Lib.Util is
    begin
       Write_Info_Name (Name_Id (Name));
    end Write_Info_Name;
+
+   -----------------------------------
+   -- Write_Info_Name_May_Be_Quoted --
+   -----------------------------------
+
+   procedure Write_Info_Name_May_Be_Quoted (Name : File_Name_Type) is
+      Quoted : Boolean := False;
+      Cur    : Positive;
+
+   begin
+      Get_Name_String (Name);
+
+      --  The file/path name is quoted only if it includes spaces
+
+      for J in 1 .. Name_Len loop
+         if Name_Buffer (J) = ' ' then
+            Quoted := True;
+            exit;
+         end if;
+      end loop;
+
+      --  Deal with quoting string if needed
+
+      if Quoted then
+         Insert_Str_In_Name_Buffer ("""", 1);
+         Add_Char_To_Name_Buffer ('"');
+
+         --  Any character '"' is doubled
+
+         Cur := 2;
+         while Cur < Name_Len loop
+            if Name_Buffer (Cur) = '"' then
+               Insert_Str_In_Name_Buffer ("""", Cur);
+               Cur := Cur + 2;
+            else
+               Cur := Cur + 1;
+            end if;
+         end loop;
+      end if;
+
+      Info_Buffer (Info_Buffer_Len + 1 .. Info_Buffer_Len + Name_Len) :=
+        Name_Buffer (1 .. Name_Len);
+      Info_Buffer_Len := Info_Buffer_Len + Name_Len;
+      Info_Buffer_Col := Info_Buffer_Col + Name_Len;
+   end Write_Info_Name_May_Be_Quoted;
 
    --------------------
    -- Write_Info_Nat --

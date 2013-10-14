@@ -1,3 +1,23 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, sem_prag.adb, a-exexda.adb, s-vmexta.ads: Minor
+	reformatting.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* ali.adb (Get_File_Name): New Boolean parameter May_Be_Quoted,
+	defaulted to False.  Calls Get_Name with May_Be_Quoted.
+	(Get_Name): New Boolean parameter May_Be_Quoted, defaulted to
+	False. If May_Be_Quoted is True and first non blank charater is
+	'"', unquote the name.
+	(Scan_ALI): For the file/path name on the D line, call Get_File_Name
+	with May_Be_Quoted = True, as it may have been quoted.
+	* lib-util.adb, lib-util.ads (Write_Info_Name_May_Be_Quoted): New
+	procedure to write file/path names that may contain spaces and if they
+	do are quoted.
+	* lib-writ.adb (Write_ALI): Use new procedure
+	Write_Info_Name_May_Be_Quoted to write file/path names on D lines.
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part,

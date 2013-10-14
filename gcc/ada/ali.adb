@@ -186,9 +186,13 @@ package body ALI is
       function Getc return Character;
       --  Get next character, bumping P past the character obtained
 
-      function Get_File_Name (Lower : Boolean := False) return File_Name_Type;
+      function Get_File_Name
+        (Lower         : Boolean := False;
+         May_Be_Quoted : Boolean := False) return File_Name_Type;
       --  Skip blanks, then scan out a file name (name is left in Name_Buffer
       --  with length in Name_Len, as well as returning a File_Name_Type value.
+      --  If May_Be_Quoted is True and the first non blank character is '"',
+      --  then remove starting and ending quotes and undoubled internal quotes.
       --  If lower is false, the case is unchanged, if Lower is True then the
       --  result is forced to all lower case for systems where file names are
       --  not case sensitive. This ensures that gnatbind works correctly
@@ -198,7 +202,8 @@ package body ALI is
 
       function Get_Name
         (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False) return Name_Id;
+         Ignore_Special : Boolean := False;
+         May_Be_Quoted  : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
@@ -214,6 +219,10 @@ package body ALI is
       --    a typeref bracket or an equal sign except for the special case of
       --    an operator name starting with a double quote which is terminated
       --    by another double quote.
+      --
+      --    If May_Be_Quoted is True and the first non blank character is '"'
+      --    the name is 'unquoted'. In this case Ignore_Special is ignored and
+      --    assumed to be True.
       --
       --  It is an error to set both Ignore_Spaces and Ignore_Special to True.
       --  This function handles wide characters properly.
@@ -450,12 +459,14 @@ package body ALI is
       -------------------
 
       function Get_File_Name
-        (Lower : Boolean := False) return File_Name_Type
+        (Lower         : Boolean := False;
+         May_Be_Quoted : Boolean := False) return File_Name_Type
       is
          F : Name_Id;
 
       begin
-         F := Get_Name (Ignore_Special => True);
+         F := Get_Name (Ignore_Special => True,
+                        May_Be_Quoted  => May_Be_Quoted);
 
          --  Convert file name to all lower case if file names are not case
          --  sensitive. This ensures that we handle names in the canonical
@@ -475,8 +486,11 @@ package body ALI is
 
       function Get_Name
         (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False) return Name_Id
+         Ignore_Special : Boolean := False;
+         May_Be_Quoted  : Boolean := False) return Name_Id
       is
+         Char : Character;
+
       begin
          Name_Len := 0;
          Skip_Space;
@@ -489,38 +503,79 @@ package body ALI is
             end if;
          end if;
 
-         loop
-            Add_Char_To_Name_Buffer (Getc);
+         Char := Getc;
 
-            exit when At_End_Of_Field and then not Ignore_Spaces;
+         --  Deal with quoted characters
 
-            if not Ignore_Special then
-               if Name_Buffer (1) = '"' then
-                  exit when Name_Len > 1 and then Name_Buffer (Name_Len) = '"';
-
-               else
-                  --  Terminate on parens or angle brackets or equal sign
-
-                  exit when Nextc = '(' or else Nextc = ')'
-                    or else Nextc = '{' or else Nextc = '}'
-                    or else Nextc = '<' or else Nextc = '>'
-                    or else Nextc = '=';
-
-                  --  Terminate on comma
-
-                  exit when Nextc = ',';
-
-                  --  Terminate if left bracket not part of wide char sequence
-                  --  Note that we only recognize brackets notation so far ???
-
-                  exit when Nextc = '[' and then T (P + 1) /= '"';
-
-                  --  Terminate if right bracket not part of wide char sequence
-
-                  exit when Nextc = ']' and then T (P - 1) /= '"';
+         if May_Be_Quoted and then Char = '"' then
+            loop
+               if At_Eol then
+                  if Ignore_Errors then
+                     return Error_Name;
+                  else
+                     Fatal_Error;
+                  end if;
                end if;
-            end if;
-         end loop;
+
+               Char := Getc;
+
+               if Char = '"' then
+                  if At_Eol then
+                     exit;
+
+                  else
+                     Char := Getc;
+
+                     if Char /= '"' then
+                        P := P - 1;
+                        exit;
+                     end if;
+                  end if;
+               end if;
+
+               Add_Char_To_Name_Buffer (Char);
+            end loop;
+
+         --  Other than case of quoted character
+
+         else
+            P := P - 1;
+            loop
+               Add_Char_To_Name_Buffer (Getc);
+
+               exit when At_End_Of_Field and then not Ignore_Spaces;
+
+               if not Ignore_Special then
+                  if Name_Buffer (1) = '"' then
+                     exit when Name_Len > 1
+                               and then Name_Buffer (Name_Len) = '"';
+
+                  else
+                     --  Terminate on parens or angle brackets or equal sign
+
+                     exit when Nextc = '(' or else Nextc = ')'
+                       or else Nextc = '{' or else Nextc = '}'
+                       or else Nextc = '<' or else Nextc = '>'
+                       or else Nextc = '=';
+
+                     --  Terminate on comma
+
+                     exit when Nextc = ',';
+
+                     --  Terminate if left bracket not part of wide char
+                     --  sequence Note that we only recognize brackets
+                     --  notation so far ???
+
+                     exit when Nextc = '[' and then T (P + 1) /= '"';
+
+                     --  Terminate if right bracket not part of wide char
+                     --  sequence.
+
+                     exit when Nextc = ']' and then T (P - 1) /= '"';
+                  end if;
+               end if;
+            end loop;
+         end if;
 
          return Name_Find;
       end Get_Name;
@@ -2224,7 +2279,10 @@ package body ALI is
             --  In the following call, Lower is not set to True, this is either
             --  a bug, or it deserves a special comment as to why this is so???
 
-            Sdep.Table (Sdep.Last).Sfile := Get_File_Name;
+            --  The file/path name may be quoted
+
+            Sdep.Table (Sdep.Last).Sfile :=
+              Get_File_Name (May_Be_Quoted =>  True);
 
             Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
             Sdep.Table (Sdep.Last).Dummy_Entry :=

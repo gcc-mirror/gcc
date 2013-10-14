@@ -1428,7 +1428,7 @@ package body Lib.Writ is
                   Fname := Name_Find;
                end if;
 
-               Write_Info_Name (Fname);
+               Write_Info_Name_May_Be_Quoted (Fname);
                Write_Info_Tab (25);
                Write_Info_Str (String (Time_Stamp (Sind)));
                Write_Info_Char (' ');
