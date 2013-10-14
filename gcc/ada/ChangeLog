@@ -1,3 +1,25 @@
+2013-10-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch11.adb: Fix typo.
+
+2013-10-14  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.ads: Minor reformatting.
+
+2013-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Reject full views
+	with no explicit discriminant constraints, when the parents of
+	the partial view and the full view are constrained subtypes with
+	different constraints.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): New procedure, abstracts out
+	this code from Freeze.
+	(Freeze_Array_Type): Detect pragma Pack overriding foreign convention
+	(Freeze_Record_Type): Ditto.
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Dependency_Clause): Add new local variable

@@ -1001,7 +1001,7 @@ package body Sem_Ch3 is
          if Nkind (Def) in N_Has_Etype then
             if Etype (Def) = T_Name then
                Error_Msg_N
-                 ("type& cannot be used before end of its declaration", Def);
+                 ("typer cannot be used before end of its declaration", Def);
             end if;
 
          --  If this is not a subtype, then this is an access_definition
@@ -7337,45 +7337,68 @@ package body Sem_Ch3 is
         and then (Is_Constrained (Parent_Type) or else Constraint_Present)
       then
          --  First, we must analyze the constraint (see comment in point 5.)
+         --  The constraint may come from the subtype indication of the full
+         --  declaration.
 
          if Constraint_Present then
-            New_Discrs := Build_Discriminant_Constraints (Parent_Type, Indic);
+            New_Discrs :=
+              Build_Discriminant_Constraints (Parent_Type, Indic);
 
-            if Has_Discriminants (Derived_Type)
-              and then Has_Private_Declaration (Derived_Type)
-              and then Present (Discriminant_Constraint (Derived_Type))
-            then
-               --  Verify that constraints of the full view statically match
-               --  those given in the partial view.
+         --  If there is no explicit constraint, there might be one that is
+         --  inherited from a constrained parent type. In that case verify that
+         --  it conforms to the constraint in the partial view. In perverse
+         --  cases the parent subtypes of the partial and full view can have
+         --  different constraints.
 
-               declare
-                  C1, C2 : Elmt_Id;
+         elsif Present (Stored_Constraint (Parent_Type)) then
+            New_Discrs := Stored_Constraint (Parent_Type);
 
-               begin
-                  C1 := First_Elmt (New_Discrs);
-                  C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
-                  while Present (C1) and then Present (C2) loop
-                     if Fully_Conformant_Expressions (Node (C1), Node (C2))
-                       or else
-                         (Is_OK_Static_Expression (Node (C1))
-                            and then
-                          Is_OK_Static_Expression (Node (C2))
-                            and then
-                          Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
-                     then
-                        null;
+         else
+            New_Discrs := No_Elist;
+         end if;
 
-                     else
+         if Has_Discriminants (Derived_Type)
+           and then Has_Private_Declaration (Derived_Type)
+           and then Present (Discriminant_Constraint (Derived_Type))
+           and then Present (New_Discrs)
+         then
+            --  Verify that constraints of the full view statically match
+            --  those given in the partial view.
+
+            declare
+               C1, C2     : Elmt_Id;
+               Error_Node : Node_Id;
+
+            begin
+               C1 := First_Elmt (New_Discrs);
+               C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
+               while Present (C1) and then Present (C2) loop
+                  if Fully_Conformant_Expressions (Node (C1), Node (C2))
+                    or else
+                      (Is_OK_Static_Expression (Node (C1))
+                         and then
+                       Is_OK_Static_Expression (Node (C2))
+                         and then
+                       Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
+                  then
+                     null;
+
+                  else
+                     if Constraint_Present then
                         Error_Msg_N (
                           "constraint not conformant to previous declaration",
                              Node (C1));
+                     else
+                        Error_Msg_N (
+                          "constraint of full view is incompatible " &
+                           "with partial view", N);
                      end if;
+                  end if;
 
-                     Next_Elmt (C1);
-                     Next_Elmt (C2);
-                  end loop;
-               end;
-            end if;
+                  Next_Elmt (C1);
+                  Next_Elmt (C2);
+               end loop;
+            end;
          end if;
 
          --  Insert and analyze the declaration for the unconstrained base type
