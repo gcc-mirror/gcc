@@ -1,3 +1,7 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_prag.adb, prj.ads: Minor reformatting.
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part):
