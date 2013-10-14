@@ -7126,6 +7126,34 @@ package body Sem_Prag is
                Check_CPP_Type_Has_No_Defaults (Def_Id);
             end if;
 
+         --  Import a CPP exception
+
+         elsif C = Convention_CPP
+           and then Ekind (Def_Id) = E_Exception
+         then
+            if No (Arg3) then
+               Error_Pragma_Arg
+                 ("'External_'Name arguments is required for 'Cpp exception",
+                  Arg3);
+            else
+               --  As only a string is allowed, Check_Arg_Is_External_Name
+               --  isn't called.
+               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+            end if;
+
+            if Present (Arg4) then
+               Error_Pragma_Arg
+                 ("Link_Name argument not allowed for imported Cpp exception",
+                  Arg4);
+            end if;
+
+            --  Do not call Set_Interface_Name as the name of the exception
+            --  shouldn't be modified (and in particular it shouldn't be
+            --  the External_Name). For exceptions, the External_Name is the
+            --  name of the RTTI structure.
+
+            --  ??? Emit an error if pragma Import/Export_Exception is present
+
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
             Check_No_Link_Name;
             Check_Arg_Count (3);

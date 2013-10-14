@@ -1834,11 +1834,14 @@ package body Sem_Ch13 is
                         Flag_Non_Static_Expr
                           ("aspect requires static expression!", Expr);
 
-                     --  Check whether this is the main subprogram
+                     --  Check whether this is the main subprogram. Issue a
+                     --  warning only if it is obviously not a main program
+                     --  (when it has parameters or when the subprogram is
+                     --  within a package).
 
-                     elsif Current_Sem_Unit /= Main_Unit
-                       and then
-                         Cunit_Entity (Current_Sem_Unit) /= Main_Unit_Entity
+                     elsif Present (Parameter_Specifications
+                                      (Specification (N)))
+                       or else not Is_Compilation_Unit (Defining_Entity (N))
                      then
                         --  See ARM D.1 (14/3) and D.16 (12/3)
 
