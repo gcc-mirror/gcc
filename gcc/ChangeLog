@@ -1,3 +1,11 @@
+2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/58509
+	* config/sparc/sparc-protos.h (widen_mem_for_ldd_peep): Declare.
+	(registers_ok_for_ldd_peep): Move around.
+	* config/sparc/sparc.c (widen_mem_for_ldd_peep): New.
+	* config/sparc/sparc.md (widening peepholes): Use it.
+
 2013-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58712
