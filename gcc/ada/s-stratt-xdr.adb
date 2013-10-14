@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2012, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GARLIC is free software;  you can redistribute it and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,6 +282,10 @@ package body System.Stream_Attributes is
    -----------------
    -- Block_IO_OK --
    -----------------
+
+   --  We must inhibit Block_IO, because in XDR mode, each element is output
+   --  according to XDR requirements, which is not at all the same as writing
+   --  the whole array in one block.
 
    function Block_IO_OK return Boolean is
    begin

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,6 @@ package System.Stream_Attributes is
    --  the first subtype is specified, or where an enumeration representation
    --  clause is given, these three types are treated like any other cases
    --  of enumeration types, as described above.
-   --  for
 
    ---------------------
    -- Input Functions --
@@ -114,8 +113,8 @@ package System.Stream_Attributes is
    function I_SF  (Stream : not null access RST) return Short_Float;
    function I_SI  (Stream : not null access RST) return Short_Integer;
    function I_SSI (Stream : not null access RST) return Short_Short_Integer;
-   function I_SSU (Stream : not null access RST)
-     return UST.Short_Short_Unsigned;
+   function I_SSU (Stream : not null access RST) return
+                                                   UST.Short_Short_Unsigned;
    function I_SU  (Stream : not null access RST) return UST.Short_Unsigned;
    function I_U   (Stream : not null access RST) return UST.Unsigned;
    function I_WC  (Stream : not null access RST) return Wide_Character;
@@ -125,10 +124,10 @@ package System.Stream_Attributes is
    -- Output Procedures --
    -----------------------
 
-   --  Procedures for S'Write attribute. These procedures are also used
-   --  for 'Output, since for elementary types there is no difference
-   --  between 'Write and 'Output because there are no discriminants
-   --  or bounds to be written.
+   --  Procedures for S'Write attribute. These procedures are also used for
+   --  'Output, since for elementary types there is no difference between
+   --  'Write and 'Output because there are no discriminants or bounds to
+   --  be written.
 
    procedure W_AD  (Stream : not null access RST; Item : Fat_Pointer);
    procedure W_AS  (Stream : not null access RST; Item : Thin_Pointer);
@@ -140,17 +139,15 @@ package System.Stream_Attributes is
    procedure W_LI  (Stream : not null access RST; Item : Long_Integer);
    procedure W_LLF (Stream : not null access RST; Item : Long_Long_Float);
    procedure W_LLI (Stream : not null access RST; Item : Long_Long_Integer);
-   procedure W_LLU (Stream : not null access RST;
-                    Item   : UST.Long_Long_Unsigned);
+   procedure W_LLU (Stream : not null access RST; Item :
+                                                    UST.Long_Long_Unsigned);
    procedure W_LU  (Stream : not null access RST; Item : UST.Long_Unsigned);
    procedure W_SF  (Stream : not null access RST; Item : Short_Float);
    procedure W_SI  (Stream : not null access RST; Item : Short_Integer);
-   procedure W_SSI (Stream : not null access RST;
-                    Item   : Short_Short_Integer);
-   procedure W_SSU (Stream : not null access RST;
-                    Item   : UST.Short_Short_Unsigned);
-   procedure W_SU  (Stream : not null access RST;
-                    Item   : UST.Short_Unsigned);
+   procedure W_SSI (Stream : not null access RST; Item : Short_Short_Integer);
+   procedure W_SSU (Stream : not null access RST; Item :
+                                                    UST.Short_Short_Unsigned);
+   procedure W_SU  (Stream : not null access RST; Item : UST.Short_Unsigned);
    procedure W_U   (Stream : not null access RST; Item : UST.Unsigned);
    procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
    procedure W_WWC (Stream : not null access RST; Item : Wide_Wide_Character);
@@ -160,7 +157,7 @@ package System.Stream_Attributes is
    --  distributed with GNAT, and s-stratt-xdr.adb, which is based on the XDR
    --  standard. Both bodies share the same spec. The role of this function is
    --  to indicate whether the current version of System.Stream_Attributes
-   --  supports block IO.
+   --  supports block IO. See System.Strings.Stream_Ops (s-ststop) for details.
 
 private
    pragma Inline (I_AD);

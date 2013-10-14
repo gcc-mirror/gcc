@@ -3634,7 +3634,7 @@ package body Sem_Res is
                then
                   Error_Msg_N
                     ("conversion between unrelated limited array types "
-                     & "not allowed (\A\I-00246)", A);
+                     & "not allowed ('A'I-00246)", A);
 
                   if Is_Limited_Type (Etype (F)) then
                      Explain_Limited_Type (Etype (F), A);
@@ -3666,8 +3666,8 @@ package body Sem_Res is
                      then
                         New_Itype := Create_Itype (E_Anonymous_Access_Type, A);
                         Set_Etype (New_Itype, Etype (A));
-                        Set_Directly_Designated_Type (New_Itype,
-                          Directly_Designated_Type (Etype (A)));
+                        Set_Directly_Designated_Type
+                          (New_Itype, Directly_Designated_Type (Etype (A)));
                         Set_Etype (A, New_Itype);
                      end if;
 
@@ -3701,7 +3701,7 @@ package body Sem_Res is
 
                if Is_Tagged_Type (F_Typ)
                  and then (Is_Concurrent_Type (F_Typ)
-                             or else Is_Concurrent_Record_Type (F_Typ))
+                            or else Is_Concurrent_Record_Type (F_Typ))
                then
                   --  If the actual is overloaded, look for an interpretation
                   --  that has a synchronized type.
@@ -3768,10 +3768,10 @@ package body Sem_Res is
                         Resolve (A, Etype (F));
                      end if;
                   end;
+
+               --  Not a synchronized operation
+
                else
-
-                  --  not a synchronized operation.
-
                   Resolve (A, Etype (F));
                end if;
             end if;
@@ -3937,10 +3937,11 @@ package body Sem_Res is
                   if Is_Subprogram (Current_Scope)
                     and then
                       (Is_Invariant_Procedure (Current_Scope)
-                         or else Is_Predicate_Function (Current_Scope))
+                        or else Is_Predicate_Function (Current_Scope))
                   then
-                     Error_Msg_N ("function used in predicate cannot " &
-                       "modify its argument", F);
+                     Error_Msg_N
+                       ("function used in predicate cannot "
+                        & "modify its argument", F);
                   end if;
                end if;
 
@@ -4164,7 +4165,7 @@ package body Sem_Res is
               and then (Is_Class_Wide_Type (Designated_Type (A_Typ))
                          or else (Nkind (A) = N_Attribute_Reference
                                    and then
-                                  Is_Class_Wide_Type (Etype (Prefix (A)))))
+                                     Is_Class_Wide_Type (Etype (Prefix (A)))))
               and then not Is_Class_Wide_Type (Designated_Type (F_Typ))
               and then not Is_Controlling_Formal (F)
 
@@ -4188,12 +4189,14 @@ package body Sem_Res is
             Eval_Actual (A);
 
             --  If it is a named association, treat the selector_name as a
-            --  proper identifier, and mark the corresponding entity. Ignore
-            --  this reference in SPARK mode, as it refers to an entity not in
-            --  scope at the point of reference, so the reference should be
-            --  ignored for computing effects of subprograms.
+            --  proper identifier, and mark the corresponding entity.
 
             if Nkind (Parent (A)) = N_Parameter_Association
+
+              --  Ignore reference in SPARK mode, as it refers to an entity not
+              --  in scope at the point of reference, so the reference should
+              --  be ignored for computing effects of subprograms.
+
               and then not SPARK_Mode
             then
                Set_Entity (Selector_Name (Parent (A)), F);
