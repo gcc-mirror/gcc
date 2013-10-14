@@ -305,11 +305,40 @@ func main() {
 		assert(false, "i should be true")
 	}
 
+	// switch on interface with constant cases differing by type.
+	// was rejected by compiler: see issue 4781
+	type T int
+	type B bool
+	type F float64
+	type S string
+	switch i := interface{}(float64(1.0)); i {
+	case nil:
+		assert(false, "i should be float64(1.0)")
+	case (*int)(nil):
+		assert(false, "i should be float64(1.0)")
+	case 1:
+		assert(false, "i should be float64(1.0)")
+	case T(1):
+		assert(false, "i should be float64(1.0)")
+	case F(1.0):
+		assert(false, "i should be float64(1.0)")
+	case 1.0:
+		assert(true, "true")
+	case "hello":
+		assert(false, "i should be float64(1.0)")
+	case S("hello"):
+		assert(false, "i should be float64(1.0)")
+	case true, B(false):
+		assert(false, "i should be float64(1.0)")
+	case false, B(true):
+		assert(false, "i should be float64(1.0)")
+	}
+
 	// switch on array.
 	switch ar := [3]int{1, 2, 3}; ar {
-	case [3]int{1,2,3}:
+	case [3]int{1, 2, 3}:
 		assert(true, "[1 2 3]")
-	case [3]int{4,5,6}:
+	case [3]int{4, 5, 6}:
 		assert(false, "ar should be [1 2 3]")
 	default:
 		assert(false, "ar should be [1 2 3]")
@@ -327,12 +356,48 @@ func main() {
 		assert(false, "c1 did not match itself")
 	}
 
+	// empty switch
+	switch {
+	}
+
+	// empty switch with default case.
+	fired = false
+	switch {
+	default:
+		fired = true
+	}
+	assert(fired, "fail")
+
+	// Default and fallthrough.
+	count = 0
+	switch {
+	default:
+		count++
+		fallthrough
+	case false:
+		count++
+	}
+	assert(count == 2, "fail")
+
+	// fallthrough to default, which is not at end.
+	count = 0
+	switch i5 {
+	case 5:
+		count++
+		fallthrough
+	default:
+		count++
+	case 6:
+		count++
+	}
+	assert(count == 2, "fail")
+
 	i := 0
 	switch x := 5; {
-		case i < x:
-			os.Exit(0)
-		case i == x:
-		case i > x:
-			os.Exit(1)
+	case i < x:
+		os.Exit(0)
+	case i == x:
+	case i > x:
+		os.Exit(1)
 	}
 }
