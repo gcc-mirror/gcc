@@ -33,6 +33,7 @@
 
 with System.HTable;
 pragma Elaborate_All (System.HTable);
+with System.Storage_Elements; use System.Storage_Elements;
 
 package body System.VMS_Exception_Table is
 
@@ -80,7 +81,7 @@ package body System.VMS_Exception_Table is
      (Code : Exception_Code) return Exception_Code
    is
    begin
-      return Code and not 2#0111#;
+      return To_Address (To_Integer (Code) and not 2#0111#);
    end Base_Code_In;
 
    ---------------------
@@ -136,7 +137,8 @@ package body System.VMS_Exception_Table is
         Exception_Code (HTable_Headers'Last - HTable_Headers'First + 1);
 
    begin
-      return HTable_Headers (F mod Headers_Magnitude + 1);
+      return HTable_Headers
+        (To_Address ((To_Integer (F) mod To_Integer (Headers_Magnitude)) + 1));
    end Hash;
 
    ----------------------------

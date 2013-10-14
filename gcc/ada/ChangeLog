@@ -1,3 +1,16 @@
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): Fix
+	target type for code of VMS imported exception.
+	* init.c: Replace Exception_Code by void *.
+	* s-vmexta.adb (Hash, Base_Code_In): Adjust code after changing
+	the type of Exception_Code.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: Minor comment updates.
+	* prj-attr.adb: New attribute Library_Rpath_Options.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Library_Level attribute now applies to an

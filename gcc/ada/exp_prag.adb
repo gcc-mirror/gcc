@@ -646,7 +646,7 @@ package body Exp_Prag is
                      --  alias to define the symbol.
 
                      Code :=
-                       Unchecked_Convert_To (Standard_A_Char,
+                       Unchecked_Convert_To (RTE (RE_Address),
                          Make_Integer_Literal (Loc,
                            Intval => Exception_Code (Id)));
 

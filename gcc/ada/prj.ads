@@ -675,16 +675,26 @@ package Prj is
                            Clean_Object_Artifacts       => No_Name_List,
                            Clean_Source_Artifacts       => No_Name_List);
 
-   --  The following record ???
-
    type Language_Data is record
       Name          : Name_Id         := No_Name;
+      --  The name of the language in lower case
+
       Display_Name  : Name_Id         := No_Name;
+      --  The name of the language, as found in attribute Languages
+
       Config        : Language_Config := No_Language_Config;
+      --  Configuration of the language
+
       First_Source  : Source_Id       := No_Source;
+      --  Head of the list of sources of the language in the project
+
       Mapping_Files : Mapping_Files_Htable.Instance :=
                         Mapping_Files_Htable.Nil;
+      --  Hash table containing the mapping of the sources to their path names
+
       Next          : Language_Ptr  := No_Language_Index;
+      --  Next language of the project
+
    end record;
 
    No_Language_Data : constant Language_Data :=
@@ -755,8 +765,7 @@ package Prj is
       --  recursive notation <dir>/** is used in attribute Source_Dirs.
 
       Language : Language_Ptr := No_Language_Index;
-      --  Index of the language. This is an index into
-      --  Project_Tree.Languages_Data.
+      --  Language of the source
 
       In_Interfaces : Boolean := True;
       --  False when the source is not included in interfaces, when attribute
@@ -1259,7 +1268,6 @@ package Prj is
 
       Languages : Language_Ptr := No_Language_Index;
       --  First index of the language data in the project.
-      --  This is an index into the project_tree_data.languages_data.
       --  Traversing the list gives access to all the languages supported by
       --  the project.
 

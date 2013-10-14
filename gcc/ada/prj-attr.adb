@@ -111,6 +111,7 @@ package body Prj.Attr is
    "SVlibrary_auto_init#" &
    "LVleading_library_options#" &
    "LVlibrary_options#" &
+   "Lalibrary_rpath_options#" &
    "SVlibrary_src_dir#" &
    "SVlibrary_ali_dir#" &
    "SVlibrary_gcc#" &
