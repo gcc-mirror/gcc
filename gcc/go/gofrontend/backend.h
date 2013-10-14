@@ -271,6 +271,10 @@ class Backend
   virtual Bexpression*
   function_code_expression(Bfunction*, Location) = 0;
 
+  // Create an expression that takes the address of an expression.
+  virtual Bexpression*
+  address_expression(Bexpression*, Location) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should

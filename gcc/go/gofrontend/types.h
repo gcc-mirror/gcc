@@ -901,7 +901,7 @@ class Type
   // Build a type descriptor entry for this type.  Return a pointer to
   // it.  The location is the location which causes us to need the
   // entry.
-  tree
+  Bexpression*
   type_descriptor_pointer(Gogo* gogo, Location);
 
   // Return the type reflection string for this type.
@@ -2401,7 +2401,7 @@ class Map_type : public Type
   // Build a map descriptor for this type.  Return a pointer to it.
   // The location is the location which causes us to need the
   // descriptor.
-  tree
+  Bexpression*
   map_descriptor_pointer(Gogo* gogo, Location);
 
  protected:

@@ -2107,8 +2107,10 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
     td_type = type;
   else
     td_type = Type::make_pointer_type(type);
-  tree tdp = td_type->type_descriptor_pointer(this,
-                                              Linemap::predeclared_location());
+
+  Location loc = Linemap::predeclared_location();
+  Bexpression* tdp_bexpr = td_type->type_descriptor_pointer(this, loc);
+  tree tdp = expr_to_tree(tdp_bexpr);
   elt->value = fold_convert(const_ptr_type_node, tdp);
 
   Named_type* nt = type->named_type();
