@@ -1,3 +1,8 @@
+2013-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58658
+	* gfortran.dg/unlimited_polymorphic_10.f90: New.
+
 2013-10-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/torture/pr58670.c (ASM_STR) [__i386__ || __x86_64__]: Use

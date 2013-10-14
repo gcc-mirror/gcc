@@ -1,3 +1,9 @@
+2013-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58658
+	* expr.c (gfc_check_vardef_context): Fix pointer diagnostic
+	for CLASS(*).
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c (gfc_omp_clause_default_ctor,
