@@ -309,7 +309,7 @@ parse_bind_var (const char *name, char *p1stvalue,
 		char **pvalues, unsigned long *pnvalues)
 {
   char *env;
-  char value, *values = NULL;
+  char value = omp_proc_bind_false, *values = NULL;
   int i;
   static struct proc_bind_kinds
   {
