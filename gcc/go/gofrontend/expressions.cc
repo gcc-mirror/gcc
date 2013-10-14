@@ -286,7 +286,11 @@ Expression::convert_type_to_interface(Translate_context* context,
   // Otherwise it is the interface method table for RHS_TYPE.
   tree first_field_value;
   if (lhs_is_empty)
-    first_field_value = rhs_type->type_descriptor_pointer(gogo, location);
+    {
+      Bexpression* rhs_bexpr =
+          rhs_type->type_descriptor_pointer(gogo, location);
+      first_field_value = expr_to_tree(rhs_bexpr);
+    }
   else
     {
       // Build the interface method table for this interface and this
@@ -457,8 +461,9 @@ Expression::convert_interface_to_interface(Translate_context* context,
   if (for_type_guard)
     {
       // A type assertion fails when converting a nil interface.
-      tree lhs_type_descriptor = lhs_type->type_descriptor_pointer(gogo,
-								   location);
+      Bexpression* lhs_type_expr = lhs_type->type_descriptor_pointer(gogo,
+                                                                     location);
+      tree lhs_type_descriptor = expr_to_tree(lhs_type_expr);
       static tree assert_interface_decl;
       tree call = Gogo::call_builtin(&assert_interface_decl,
 				     location,
@@ -491,8 +496,10 @@ Expression::convert_interface_to_interface(Translate_context* context,
       // type assertion converting nil will always succeed.
       go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__methods")
 		 == 0);
-      tree lhs_type_descriptor = lhs_type->type_descriptor_pointer(gogo,
-								   location);
+      Bexpression* lhs_type_expr = lhs_type->type_descriptor_pointer(gogo,
+                                                                     location);
+      tree lhs_type_descriptor = expr_to_tree(lhs_type_expr);
+
       static tree convert_interface_decl;
       tree call = Gogo::call_builtin(&convert_interface_decl,
 				     location,
@@ -546,8 +553,9 @@ Expression::convert_interface_to_type(Translate_context* context,
   // Call a function to check that the type is valid.  The function
   // will panic with an appropriate runtime type error if the type is
   // not valid.
-
-  tree lhs_type_descriptor = lhs_type->type_descriptor_pointer(gogo, location);
+  Bexpression* lhs_type_expr = lhs_type->type_descriptor_pointer(gogo,
+                                                                 location);
+  tree lhs_type_descriptor = expr_to_tree(lhs_type_expr);
 
   if (!DECL_P(rhs_tree))
     rhs_tree = save_expr(rhs_tree);
@@ -556,8 +564,9 @@ Expression::convert_interface_to_type(Translate_context* context,
     Expression::get_interface_type_descriptor(context, rhs_type, rhs_tree,
 					      location);
 
-  tree rhs_inter_descriptor = rhs_type->type_descriptor_pointer(gogo,
-								location);
+  Bexpression* rhs_inter_expr = rhs_type->type_descriptor_pointer(gogo,
+                                                                  location);
+  tree rhs_inter_descriptor = expr_to_tree(rhs_inter_expr);
 
   static tree check_interface_type_decl;
   tree call = Gogo::call_builtin(&check_interface_type_decl,
@@ -6500,8 +6509,9 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 	}
       arg = fold_convert_loc(location.gcc_location(), ptr_type_node, arg);
 
-      tree descriptor = right_type->type_descriptor_pointer(context->gogo(),
-							    location);
+      Bexpression* descriptor_bexpr =
+          right_type->type_descriptor_pointer(context->gogo(), location);
+      tree descriptor = expr_to_tree(descriptor_bexpr);
 
       if (left_type->interface_type()->is_empty())
 	{
@@ -13256,7 +13266,8 @@ Map_construction_expression::do_get_tree(Translate_context* context)
       valaddr = build_fold_addr_expr(tmp);
     }
 
-  tree descriptor = mt->map_descriptor_pointer(gogo, loc);
+  Bexpression* bdescriptor = mt->map_descriptor_pointer(gogo, loc);
+  tree descriptor = expr_to_tree(bdescriptor);
 
   tree type_tree = type_to_tree(this->type_->get_backend(gogo));
   if (type_tree == error_mark_node)
@@ -14312,8 +14323,9 @@ class Type_descriptor_expression : public Expression
   tree
   do_get_tree(Translate_context* context)
   {
-    return this->type_->type_descriptor_pointer(context->gogo(),
-						this->location());
+    Bexpression* ret = this->type_->type_descriptor_pointer(context->gogo(),
+                                                            this->location());
+    return expr_to_tree(ret);
   }
 
   void
@@ -14568,8 +14580,9 @@ class Map_descriptor_expression : public Expression
   tree
   do_get_tree(Translate_context* context)
   {
-    return this->type_->map_descriptor_pointer(context->gogo(),
-					       this->location());
+    Bexpression* ret = this->type_->map_descriptor_pointer(context->gogo(),
+                                                           this->location());
+    return expr_to_tree(ret);
   }
 
   void
