@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -206,6 +206,11 @@ package body Exception_Data is
    pragma Export
      (Ada, Exception_Message_Length, "__gnat_exception_msg_len");
 
+   function Get_Executable_Load_Address return System.Address;
+   pragma Import (C, Get_Executable_Load_Address,
+                  "__gnat_get_executable_load_address");
+   --  Get the load address of the executable, or Null_Address if not known
+
    -------------------------
    -- Append_Info_Address --
    -------------------------
@@ -377,17 +382,29 @@ package body Exception_Data is
    --  As for Basic_Exception_Information:
 
    BETB_Header : constant String := "Call stack traceback locations:";
+   LDAD_Header : constant String := "Load address: ";
 
    procedure Append_Info_Basic_Exception_Traceback
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural)
    is
+      Load_Address : Address;
    begin
       if X.Num_Tracebacks = 0 then
          return;
       end if;
 
+      --  The executable load address line
+
+      Load_Address := Get_Executable_Load_Address;
+      if Load_Address /= Null_Address then
+         Append_Info_String (LDAD_Header, Info, Ptr);
+         Append_Info_Address (Load_Address, Info, Ptr);
+         Append_Info_NL (Info, Ptr);
+      end if;
+
+      --  The traceback lines
       Append_Info_String (BETB_Header, Info, Ptr);
       Append_Info_NL (Info, Ptr);
 
@@ -407,11 +424,12 @@ package body Exception_Data is
    function Basic_Exception_Tback_Maxlength
      (X : Exception_Occurrence) return Natural
    is
-      Space_Per_Traceback : constant := 2 + 16 + 1;
+      Space_Per_Address : constant := 2 + 16 + 1;
       --  Space for "0x" + HHHHHHHHHHHHHHHH + " "
    begin
-      return BETB_Header'Length + 1 +
-               X.Num_Tracebacks * Space_Per_Traceback + 1;
+      return LDAD_Header'Length + Space_Per_Address +
+               BETB_Header'Length + 1 +
+               X.Num_Tracebacks * Space_Per_Address + 1;
    end Basic_Exception_Tback_Maxlength;
 
    ---------------------------------------

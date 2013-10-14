@@ -1,5 +1,17 @@
 2013-10-14  Vincent Celier  <celier@adacore.com>
 
+	* projects.texi: Add documentation for new attributes of package
+	Clean: Artifacts_In_Object_Dir and Artifacts_In_Exec_Dir.
+
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c, adaint.h (__gnat_get_executable_load_address):
+	New function.
+	* a-exexda.adb (Append_Info_Basic_Exception_Traceback): Add
+	executable load address (Basic_Exception_Tback_Maxlength): Adjust.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
 	* prj-attr.adb: New attributes in package Clean:
 	Artifacts_In_Exec_Dir, Artifacts_In_Object_Dir.
 	* prj-nmsc.adb (Process_Clean (Attributes)): New

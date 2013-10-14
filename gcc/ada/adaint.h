@@ -287,6 +287,8 @@ extern int    get_gcc_version                      (void);
 extern int    __gnat_binder_supports_auto_init     (void);
 extern int    __gnat_sals_init_using_constructors  (void);
 
+extern const void * __gnat_get_executable_load_address  (void);
+
 #ifdef __cplusplus
 }
 #endif
