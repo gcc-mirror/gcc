@@ -4894,6 +4894,19 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
   add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
 					 gnu_incoming_exc_ptr),
 		      gnat_node);
+
+  /* Declare and initialize the choice parameter, if present.  */
+  if (Present (Choice_Parameter (gnat_node)))
+    {
+      tree gnu_param = gnat_to_gnu_entity
+	(Choice_Parameter (gnat_node), NULL_TREE, 1);
+
+      add_stmt (build_call_n_expr
+		(set_exception_parameter_decl, 2,
+		 build_unary_op (ADDR_EXPR, NULL_TREE, gnu_param),
+		 gnu_incoming_exc_ptr));
+    }
+
   /* We don't have an End_Label at hand to set the location of the cleanup
      actions, so we use that of the exception handler itself instead.  */
   add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
