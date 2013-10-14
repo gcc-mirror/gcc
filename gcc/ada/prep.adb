@@ -147,21 +147,19 @@ package body Prep is
 
    type Pp_State is record
       If_Ptr : Source_Ptr;
-      --  The location of the #if statement.
-      --  Used to flag #if with no corresponding #end if, at the end.
+      --  The location of the #if statement (used to flag #if with no
+      --  corresponding #end if, at the end).
 
       Else_Ptr : Source_Ptr;
-      --  The location of the #else statement.
-      --  Used to detect multiple #else.
+      --  The location of the #else statement (used to detect multiple #else's)
 
       Deleting : Boolean;
       --  Set to True when the code should be deleted or commented out
 
       Match_Seen : Boolean;
-      --  Set to True when a condition in an #if or an #elsif is True.
-      --  Also set to True if Deleting at the previous level is True.
-      --  Used to decide if Deleting should be set to True in a following
-      --  #elsif or #else.
+      --  Set to True when a condition in an #if or an #elsif is True. Also set
+      --  to True if Deleting at the previous level is True. Used to decide if
+      --  Deleting should be set to True in a following #elsif or #else.
 
    end record;
 
@@ -190,13 +188,13 @@ package body Prep is
    function Expression
      (Evaluate_It  : Boolean;
       Complemented : Boolean := False) return Boolean;
-   --  Evaluate a condition in an #if or an #elsif statement.
-   --  If Evaluate_It is False, the condition is effectively evaluated,
-   --  otherwise, only the syntax is checked.
+   --  Evaluate a condition in an #if or an #elsif statement. If Evaluate_It
+   --  is False, the condition is effectively evaluated, otherwise, only the
+   --  syntax is checked.
 
    procedure Go_To_End_Of_Line;
-   --  Advance the scan pointer until we reach an end of line or the end
-   --  of the buffer.
+   --  Advance the scan pointer until we reach an end of line or the end of the
+   --  buffer.
 
    function Matching_Strings (S1, S2 : String_Id) return Boolean;
    --  Returns True if the two string parameters are equal (case insensitive)
@@ -251,6 +249,7 @@ package body Prep is
       --  If no character '=', then the value is True
 
       if Index = 0 then
+
          --  Put the symbol in the name buffer
 
          Name_Len := Definition'Length;
@@ -377,8 +376,8 @@ package body Prep is
       Complemented : Boolean := False) return Boolean
    is
       Evaluation : Boolean := Evaluate_It;
-      --  Is set to False after an "or else" when left term is True and
-      --  after an "and then" when left term is False.
+      --  Is set to False after an "or else" when left term is True and after
+      --  an "and then" when left term is False.
 
       Final_Result : Boolean := False;
 
@@ -405,12 +404,13 @@ package body Prep is
 
          Current_Result := False;
 
+         --  Scan current term, starting with Token
+
          case Token is
 
+            --  Handle parenthesized expression
+
             when Tok_Left_Paren =>
-
-               --  ( expression )
-
                Scan.all;
                Current_Result := Expression (Evaluation);
 
@@ -422,13 +422,14 @@ package body Prep is
                     ("`)` expected", Token_Ptr);
                end if;
 
+            --  Handle not expression
+
             when Tok_Not =>
-
-               --  not expression
-
                Scan.all;
                Current_Result :=
                  not Expression (Evaluation, Complemented => True);
+
+            --  Handle sequence starting with identifier
 
             when Tok_Identifier =>
                Symbol_Name1 := Token_Name;
@@ -454,11 +455,13 @@ package body Prep is
                      Current_Result := Index_Of (Symbol_Name1) /= No_Symbol;
                   end if;
 
+               --  Handle relational operator
+
                elsif
-                 Token = Tok_Equal or else
-                 Token = Tok_Less or else
+                 Token = Tok_Equal      or else
+                 Token = Tok_Less       or else
                  Token = Tok_Less_Equal or else
-                 Token = Tok_Greater or else
+                 Token = Tok_Greater    or else
                  Token = Tok_Greater_Equal
                then
                   Relop := Token;
@@ -476,7 +479,10 @@ package body Prep is
                      declare
                         Value : constant Int := UI_To_Int (Int_Literal_Value);
                         Data  : Symbol_Data;
+
                         Symbol_Value : Int;
+                        --  Value of symbol as Int
+
                      begin
                         if Evaluation then
                            Symbol1 := Index_Of (Symbol_Name1);
@@ -530,7 +536,7 @@ package body Prep is
                                     when Constraint_Error =>
                                        Error_Msg_Name_1 := Symbol_Name1;
                                        Error_Msg
-                                         ("symbol % value is not integer",
+                                         ("symbol % value is not an integer",
                                           Symbol_Pos1);
                                  end;
                               end if;
@@ -540,8 +546,12 @@ package body Prep is
                         Scan.all;
                      end;
 
+                  --  Error if relational operator other than = if not numbers
+
                   elsif Relop /= Tok_Equal then
                      Error_Msg ("number expected", Token_Ptr);
+
+                  --  Equality comparison of two strings
 
                   elsif Token = Tok_Identifier then
 
@@ -586,10 +596,11 @@ package body Prep is
                         end if;
 
                         if Symbol_Value1 /= No_String
-                          and then Symbol_Value2 /= No_String
+                             and then
+                           Symbol_Value2 /= No_String
                         then
-                           Current_Result := Matching_Strings
-                                               (Symbol_Value1, Symbol_Value2);
+                           Current_Result :=
+                             Matching_Strings (Symbol_Value1, Symbol_Value2);
                         end if;
                      end if;
 
@@ -630,9 +641,9 @@ package body Prep is
                         Token_Ptr);
                   end if;
 
-               else
-                  --  symbol (True or False)
+               --  Handle True or False
 
+               else
                   if Evaluation then
                      Symbol1 := Index_Of (Symbol_Name1);
 
@@ -674,6 +685,8 @@ package body Prep is
                   end if;
                end if;
 
+            --  Unrecognized sequence
+
             when others =>
                Error_Msg ("`(`, NOT or symbol expected", Token_Ptr);
          end case;
@@ -691,7 +704,7 @@ package body Prep is
                Final_Result := Final_Result and Current_Result;
          end case;
 
-         --  Check the next operator
+         --  Handle AND
 
          if Token = Tok_And then
             if Complemented then
@@ -714,6 +727,8 @@ package body Prep is
                end if;
             end if;
 
+         --  Handle OR
+
          elsif Token = Tok_Or then
             if Complemented then
                Error_Msg
@@ -735,9 +750,9 @@ package body Prep is
                end if;
             end if;
 
-         else
-            --  No operator: exit the term loop
+         --  No AND/OR operator, so exit from the loop through terms
 
+         else
             exit;
          end if;
       end loop;
@@ -824,7 +839,6 @@ package body Prep is
                 Get_Name_String (Mapping.Table (Order (Op1)).Symbol);
          S2 : constant String :=
                 Get_Name_String (Mapping.Table (Order (Op2)).Symbol);
-
       begin
          return S1 < S2;
       end Lt;
@@ -961,6 +975,8 @@ package body Prep is
    -- Parse_Def_File --
    --------------------
 
+   --  This procedure REALLY needs some more comments ???
+
    procedure Parse_Def_File is
       Symbol        : Symbol_Id;
       Symbol_Name   : Name_Id;
@@ -1012,7 +1028,6 @@ package body Prep is
 
                begin
                   Start_String;
-
                   while Ptr < Scan_Ptr loop
                      Store_String_Char (Sinput.Source (Ptr));
                      Ptr := Ptr + 1;
@@ -1102,9 +1117,10 @@ package body Prep is
             Symbol := Index_Of (Symbol_Name);
 
             if Symbol /= No_Symbol then
+
                --  If we already have an entry for this symbol, replace it
-               --  with the new value, except if the symbol was declared
-               --  on the command line.
+               --  with the new value, except if the symbol was declared on
+               --  the command line.
 
                if Mapping.Table (Symbol).On_The_Command_Line then
                   goto Continue;
@@ -1299,8 +1315,8 @@ package body Prep is
                         Scan.all;
                      end if;
 
-                     --  It is an error to have trailing characters after
-                     --  the condition or "then".
+                     --  It is an error to have trailing characters after the
+                     --  condition or "then".
 
                      if Token /= Tok_End_Of_Line
                        and then Token /= Tok_EOF
@@ -1313,8 +1329,9 @@ package body Prep is
                         Go_To_End_Of_Line;
                      end if;
 
-                     --  Depending on the value of the condition, set the
-                     --  new values of Deleting and Match_Seen.
+                     --  Depending on the value of the condition, set the new
+                     --  values of Deleting and Match_Seen.
+
                      if Pp_States.Last > 0 then
                         if Pp_States.Table (Pp_States.Last).Match_Seen then
                            Pp_States.Table (Pp_States.Last).Deleting := True;
@@ -1343,8 +1360,7 @@ package body Prep is
                         No_Error_Found := False;
                      end if;
 
-                     --  Set the possibly new values of Deleting and
-                     --  Match_Seen.
+                     --  Set the possibly new values of Deleting and Match_Seen
 
                      if Pp_States.Last > 0 then
                         if Pp_States.Table (Pp_States.Last).Match_Seen then
@@ -1358,8 +1374,7 @@ package body Prep is
                              False;
                         end if;
 
-                        --  Set the Else_Ptr to check for illegal #elsif
-                        --  later.
+                        --  Set the Else_Ptr to check for illegal #elsif later
 
                         Pp_States.Table (Pp_States.Last).Else_Ptr :=
                           Token_Ptr;
@@ -1367,7 +1382,8 @@ package body Prep is
 
                      Scan.all;
 
-                     --  It is an error to have characters after "#else"
+                     --  Error of character present after "#else"
+
                      if Token /= Tok_End_Of_Line
                        and then Token /= Tok_EOF
                      then
@@ -1404,8 +1420,8 @@ package body Prep is
                         else
                            Scan.all;
 
-                           --  It is an error to have character after
-                           --  "#end if;".
+                           --  Error of character present after "#end if;"
+
                            if Token /= Tok_End_Of_Line
                              and then Token /= Tok_EOF
                            then
@@ -1535,15 +1551,14 @@ package body Prep is
 
          pragma Assert (Token = Tok_End_Of_Line or else Token = Tok_EOF);
 
-         --  At this point, the token is either end of line or EOF.
-         --  The line to possibly output stops just before the token.
+         --  At this point, the token is either end of line or EOF. The line to
+         --  possibly output stops just before the token.
 
          Output_Line (Start_Of_Processing, Token_Ptr - 1);
 
          --  If we are at the end of a line, the scan pointer is at the first
-         --  non blank character, not necessarily the first character of the
-         --  line; so, we have to deduct Start_Of_Processing from the token
-         --  pointer.
+         --  non-blank character (may not be the first character of the line),
+         --  so we have to deduct Start_Of_Processing from the token pointer.
 
          if Token = Tok_End_Of_Line then
             if (Sinput.Source (Token_Ptr) = ASCII.CR

@@ -2716,7 +2716,8 @@ package body Prj.Nmsc is
       Other      : Source_Id;
       Unit_Found : Boolean;
 
-      Interface_ALIs : String_List_Id := Nil_String;
+      Interface_ALIs   : String_List_Id := Nil_String;
+      Other_Interfaces : String_List_Id := Nil_String;
 
    begin
       if not Interfaces.Default then
@@ -2771,6 +2772,8 @@ package body Prj.Nmsc is
                            Other.Declared_In_Interfaces := True;
                         end if;
 
+                        --  Unit based case
+
                         if Source.Language.Config.Kind = Unit_Based then
                            if Source.Kind = Spec
                              and then Other_Part (Source) /= No_Source
@@ -2792,6 +2795,26 @@ package body Prj.Nmsc is
                               Next          => Interface_ALIs);
 
                            Interface_ALIs :=
+                             String_Element_Table.Last
+                               (Shared.String_Elements);
+
+                        --  File based case
+
+                        else
+                           String_Element_Table.Increment_Last
+                             (Shared.String_Elements);
+
+                           Shared.String_Elements.Table
+                             (String_Element_Table.Last
+                                (Shared.String_Elements)) :=
+                             (Value         => Name_Id (Source.File),
+                              Index         => 0,
+                              Display_Value => Name_Id (Source.Display_File),
+                              Location      => No_Location,
+                              Flag          => False,
+                              Next          => Other_Interfaces);
+
+                           Other_Interfaces :=
                              String_Element_Table.Last
                                (Shared.String_Elements);
                         end if;
@@ -2825,6 +2848,7 @@ package body Prj.Nmsc is
 
          Project.Interfaces_Defined := True;
          Project.Lib_Interface_ALIs := Interface_ALIs;
+         Project.Other_Interfaces   := Other_Interfaces;
 
       elsif Project.Library and then not Library_Interface.Default then
 

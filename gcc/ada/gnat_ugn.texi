@@ -16682,6 +16682,11 @@ In this example, @i{expression} is defined by the following grammar:
 @i{expression} ::=  <symbol>
 @i{expression} ::=  <symbol> = "<value>"
 @i{expression} ::=  <symbol> = <symbol>
+@i{expression} ::=  <symbol> = <integer>
+@i{expression} ::=  <symbol> > <integer>
+@i{expression} ::=  <symbol> >= <integer>
+@i{expression} ::=  <symbol> < <integer>
+@i{expression} ::=  <symbol> <= <integer>
 @i{expression} ::=  <symbol> 'Defined
 @i{expression} ::=  not @i{expression}
 @i{expression} ::=  @i{expression} and @i{expression}
@@ -16713,6 +16718,11 @@ symbol definition must be one of the (case-insensitive) literals
 @code{True} or @code{False}. If the value is true, then the
 corresponding lines are included, and if the value is false, they are
 excluded.
+
+When comparing a symbol to an integer, the integer is any non negative
+literal integer as defined in the Ada Reference Manual, such as 3, 16#FF# or
+2#11#. The symbol value must also be a non negative integer. Integer values
+in the range 0 .. 2**31-1 are supported.
 
 The test (@i{expression} ::= <symbol> @code{'Defined}) is true only if
 the symbol has been defined in the definition file or by a @option{-D}
@@ -27447,7 +27457,7 @@ The preprocessing language allows such constructs as
 
 @smallexample
 @group
-#if DEBUG or PRIORITY > 4 then
+#if DEBUG or else (PRIORITY > 4) then
    bunch of declarations
 #else
    completely different bunch of declarations

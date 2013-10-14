@@ -165,8 +165,8 @@ package Prj is
    --  The defined kinds of variables
 
    Ignored : constant Variable_Kind;
-   --  Used to indicate that a package declaration must be ignored
-   --  while processing the project tree (unknown package name).
+   --  Used to indicate that a package declaration must be ignored while
+   --  processing the project tree (unknown package name).
 
    type Variable_Value (Kind : Variable_Kind := Undefined) is record
       Project  : Project_Id := No_Project;
@@ -262,7 +262,7 @@ package Prj is
                         Attributes => No_Variable,
                         Arrays     => No_Array,
                         Packages   => No_Package);
-   --  Default value of Declarations: indicates that there is no declarations
+   --  Default value of Declarations: used if there are no declarations
 
    type Package_Element is record
       Name   : Name_Id      := No_Name;
@@ -435,8 +435,8 @@ package Prj is
 
    function Other_Part (Source : Source_Id) return Source_Id;
    pragma Inline (Other_Part);
-   --  Source ID for the other part, if any: for a spec, indicates its body;
-   --  for a body, indicates its spec.
+   --  Source ID for the other part, if any: for a spec, returns its body;
+   --  for a body, returns its spec.
 
    No_Source : constant Source_Id := null;
 
@@ -595,9 +595,9 @@ package Prj is
       --  spec pattern.
 
       Config_File_Unique : Boolean := False;
-      --  Indicate if the config file specified to the compiler needs to be
-      --  unique. If it is unique, then all config files are concatenated into
-      --  a temp config file.
+      --  True if the config file specified to the compiler needs to be unique.
+      --  If it is unique, then all config files are concatenated into a temp
+      --  config file.
 
       Binder_Driver : File_Name_Type := No_File;
       --  The name of the binder driver for the language, if any
@@ -1345,19 +1345,20 @@ package Prj is
       --  Indicate that this is a Standalone Library Project File
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
-      --  For Standalone Library Project Files, indicate the list of Interface
-      --  ALI files.
+      --  For Standalone Library Project Files, list of Interface ALI files.
+
+      Other_Interfaces : String_List_Id := Nil_String;
+      --  List of non unit based sources in attribute Interfaces
 
       Lib_Auto_Init : Boolean := False;
-      --  For non static Stand-Alone Library Project Files, indicate if
-      --  the library initialisation should be automatic.
+      --  For non static Stand-Alone Library Project Files, True if the library
+      --  initialisation should be automatic.
 
       Symbol_Data : Symbol_Record := No_Symbols;
       --  Symbol file name, reference symbol file name, symbol policy
 
       Need_To_Build_Lib : Boolean := False;
-      --  Indicates that the library of a Library Project needs to be built or
-      --  rebuilt.
+      --  True if the library of a Library Project needs to be built or rebuilt
 
       -------------
       -- Sources --
@@ -1415,8 +1416,8 @@ package Prj is
       --  The path name of the configuration pragmas file, if any
 
       Config_File_Temp : Boolean := False;
-      --  An indication that the configuration pragmas file is a temporary file
-      --  that must be deleted at the end.
+      --  True if the configuration pragmas file is a temporary file that must
+      --  be deleted at the end.
 
       Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file
@@ -1972,8 +1973,7 @@ private
       --  setting the env var to the same value. When different from No_Path,
       --  this indicates that logical names (VMS) or environment variables were
       --  created and should be deassigned to avoid polluting the environment
-      --  on VMS.
-      --  gnatmake only
+      --  on VMS. This is for gnatmake only.
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid
