@@ -835,7 +835,7 @@ package body Freeze is
                    and then not Has_Independent_Components (T);
 
                Packed_Size : Uint := Uint_0;
-               --  SIze in bis so far
+               --  Size in bits so far
 
             begin
                --  Test for variant part present
@@ -881,11 +881,13 @@ package body Freeze is
                   end if;
 
                   --  We do not know the packed size if we have a by reference
-                  --  type, or an atomic type or an atomic component.
+                  --  type, or an atomic type or an atomic component, or an
+                  --  aliased component (because packing does not touch these).
 
                   if Is_Atomic (Ctyp)
                     or else Is_Atomic (Comp)
                     or else Is_By_Reference_Type (Ctyp)
+                    or else Is_Aliased (Comp)
                   then
                      Packed_Size_Known := False;
                   end if;
@@ -2529,6 +2531,11 @@ package body Freeze is
          --  clause (used to warn about useless Bit_Order pragmas, and also
          --  to detect cases where Implicit_Packing may have an effect).
 
+         Aliased_Component : Boolean := False;
+         --  Set True if we find at least one component which is aliased. This
+         --  is used to prevent Implicit_Packing of the record, since packing
+         --  cannot modify the size of alignment of an aliased component.
+
          All_Scalar_Components : Boolean := True;
          --  Set False if we encounter a component of a non-scalar type
 
@@ -2702,6 +2709,9 @@ package body Freeze is
          Comp := First_Entity (Rec);
          Prev := Empty;
          while Present (Comp) loop
+            if Is_Aliased (Comp) then
+               Aliased_Component := True;
+            end if;
 
             --  Handle the component and discriminant case
 
@@ -3202,6 +3212,10 @@ package body Freeze is
            --  No implicit packing if even one component is explicitly placed
 
            and then not Placed_Component
+
+           --  Or even one component is aliased
+
+           and then not Aliased_Component
 
            --  Must have size clause and all scalar components
 
