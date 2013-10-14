@@ -1,5 +1,36 @@
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Dependency_Clause): Add new local variable
+	Non_Null_Output_Seen.  Update the call to Analyze_Input_Output.
+	(Analyze_Input_Item): Streamline the detection mechanism of null and
+	non-null items.
+	(Analyze_Input_List): Add new local variable
+	Non_Null_Input_Seen. Update all calls to Analyze_Input_Output.
+	(Analyze_Input_Output): Add new formal parameter Non_Null_Seen
+	and update the related comment on usage. Update the
+	recursive call to itself. Attribute 'Result is now treated
+	as a non-null item. Detect mixes of null and non-null items.
+	(Analyze_Initialization_Item): Streamline the detection mechanism
+	of null and non-null items.
+
+2013-10-14  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add documentation for the new project level
+	attribute Library_Rpath_Options.
+
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Set_Exception_Parameter): New procedure.
+	(Set_Foreign_Occurrence): New procedure, extracted from
+	Setup_Current_Excep.
+	* exp_ch11.adb (Expand_Exception_Handlers): Do not expand choice
+	parameter in case of zcx.
+	* sem_ch11.adb (Analyze_Exception_Handlers): Need debug info
+	for the choice parameter.
+	* raise-gcc.c: Add comments.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb: Add an entry in table Canonical_Aspect for
 	Initial_Condition.
 	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,

@@ -1025,7 +1025,12 @@ package body Exp_Ch11 is
                --        ...
                --     end;
 
-               if Present (Choice_Parameter (Handler)) then
+               --  This expansion is not performed when using GCC ZCX. Gigi
+               --  will insert a call to intialize the choice parameter.
+
+               if Present (Choice_Parameter (Handler))
+                 and then Exception_Mechanism /= Back_End_Exceptions
+               then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
                      Cloc  : constant Source_Ptr := Sloc (Cparm);

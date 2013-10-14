@@ -555,12 +555,13 @@ package body Sem_Prag is
          --  Verify the legality of a single input list
 
          procedure Analyze_Input_Output
-           (Item      : Node_Id;
-            Is_Input  : Boolean;
-            Self_Ref  : Boolean;
-            Top_Level : Boolean;
-            Seen      : in out Elist_Id;
-            Null_Seen : in out Boolean);
+           (Item          : Node_Id;
+            Is_Input      : Boolean;
+            Self_Ref      : Boolean;
+            Top_Level     : Boolean;
+            Seen          : in out Elist_Id;
+            Null_Seen     : in out Boolean;
+            Non_Null_Seen : in out Boolean);
          --  Verify the legality of a single input or output item. Flag
          --  Is_Input should be set whenever Item is an input, False when it
          --  denotes an output. Flag Self_Ref should be set when the item is an
@@ -568,7 +569,8 @@ package body Sem_Prag is
          --  be set whenever Item appears immediately within an input or output
          --  list. Seen is a collection of all abstract states, variables and
          --  formals processed so far. Flag Null_Seen denotes whether a null
-         --  input or output has been encountered.
+         --  input or output has been encountered. Flag Non_Null_Seen denotes
+         --  whether a non-null input or output has been encountered.
 
          ------------------------
          -- Analyze_Input_List --
@@ -579,8 +581,9 @@ package body Sem_Prag is
             --  A list containing the entities of all inputs that appear in the
             --  current input list.
 
-            Null_Input_Seen : Boolean := False;
-            --  A flag used to track the legality of a null input
+            Non_Null_Input_Seen : Boolean := False;
+            Null_Input_Seen     : Boolean := False;
+            --  Flags used to check the legality of an input list
 
             Input : Node_Id;
 
@@ -596,12 +599,13 @@ package body Sem_Prag is
                   Input := First (Expressions (Inputs));
                   while Present (Input) loop
                      Analyze_Input_Output
-                       (Item      => Input,
-                        Is_Input  => True,
-                        Self_Ref  => False,
-                        Top_Level => False,
-                        Seen      => Inputs_Seen,
-                        Null_Seen => Null_Input_Seen);
+                       (Item          => Input,
+                        Is_Input      => True,
+                        Self_Ref      => False,
+                        Top_Level     => False,
+                        Seen          => Inputs_Seen,
+                        Null_Seen     => Null_Input_Seen,
+                        Non_Null_Seen => Non_Null_Input_Seen);
 
                      Next (Input);
                   end loop;
@@ -614,12 +618,13 @@ package body Sem_Prag is
 
             else
                Analyze_Input_Output
-                 (Item      => Inputs,
-                  Is_Input  => True,
-                  Self_Ref  => False,
-                  Top_Level => False,
-                  Seen      => Inputs_Seen,
-                  Null_Seen => Null_Input_Seen);
+                 (Item          => Inputs,
+                  Is_Input      => True,
+                  Self_Ref      => False,
+                  Top_Level     => False,
+                  Seen          => Inputs_Seen,
+                  Null_Seen     => Null_Input_Seen,
+                  Non_Null_Seen => Non_Null_Input_Seen);
             end if;
 
             --  Detect an illegal dependency clause of the form
@@ -638,12 +643,13 @@ package body Sem_Prag is
          --------------------------
 
          procedure Analyze_Input_Output
-           (Item      : Node_Id;
-            Is_Input  : Boolean;
-            Self_Ref  : Boolean;
-            Top_Level : Boolean;
-            Seen      : in out Elist_Id;
-            Null_Seen : in out Boolean)
+           (Item          : Node_Id;
+            Is_Input      : Boolean;
+            Self_Ref      : Boolean;
+            Top_Level     : Boolean;
+            Seen          : in out Elist_Id;
+            Null_Seen     : in out Boolean;
+            Non_Null_Seen : in out Boolean)
          is
             Is_Output : constant Boolean := not Is_Input;
             Grouped   : Node_Id;
@@ -666,12 +672,13 @@ package body Sem_Prag is
                   Grouped := First (Expressions (Item));
                   while Present (Grouped) loop
                      Analyze_Input_Output
-                       (Item      => Grouped,
-                        Is_Input  => Is_Input,
-                        Self_Ref  => Self_Ref,
-                        Top_Level => False,
-                        Seen      => Seen,
-                        Null_Seen => Null_Seen);
+                       (Item          => Grouped,
+                        Is_Input      => Is_Input,
+                        Self_Ref      => Self_Ref,
+                        Top_Level     => False,
+                        Seen          => Seen,
+                        Null_Seen     => Null_Seen,
+                        Non_Null_Seen => Non_Null_Seen);
 
                      Next (Grouped);
                   end loop;
@@ -683,6 +690,7 @@ package body Sem_Prag is
             --  Process Function'Result in the context of a dependency clause
 
             elsif Is_Attribute_Result (Item) then
+               Non_Null_Seen := True;
 
                --  It is sufficent to analyze the prefix of 'Result in order to
                --  establish legality of the attribute.
@@ -707,6 +715,10 @@ package body Sem_Prag is
                elsif Is_Input then
                   Error_Msg_N ("function result cannot act as input", Item);
 
+               elsif Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null dependency items", Item);
+
                else
                   Result_Seen := True;
                end if;
@@ -719,19 +731,39 @@ package body Sem_Prag is
                if Null_Seen then
                   Error_Msg_N
                     ("multiple null dependency relations not allowed", Item);
+
+               elsif Non_Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null dependency items", Item);
+
                else
                   Null_Seen := True;
 
-                  if Is_Output and then not Is_Last then
-                     Error_Msg_N
-                       ("null output list must be the last clause in a "
-                        & "dependency relation", Item);
+                  if Is_Output then
+                     if not Is_Last then
+                        Error_Msg_N
+                          ("null output list must be the last clause in a "
+                           & "dependency relation", Item);
+
+                     --  Catch a useless dependence of the form:
+                     --    null =>+ ...
+
+                     elsif Self_Ref then
+                        Error_Msg_N
+                          ("useless dependence, null depends on itself", Item);
+                     end if;
                   end if;
                end if;
 
             --  Default case
 
             else
+               Non_Null_Seen := True;
+
+               if Null_Seen then
+                  Error_Msg_N ("cannot mix null and non-null items", Item);
+               end if;
+
                Analyze (Item);
 
                --  Find the entity of the item. If this is a renaming, climb
@@ -845,6 +877,9 @@ package body Sem_Prag is
          Output   : Node_Id;
          Self_Ref : Boolean;
 
+         Non_Null_Output_Seen : Boolean := False;
+         --  Flag used to check the legality of an output list
+
       --  Start of processing for Analyze_Dependency_Clause
 
       begin
@@ -864,12 +899,13 @@ package body Sem_Prag is
          Output := First (Choices (Clause));
          while Present (Output) loop
             Analyze_Input_Output
-              (Item      => Output,
-               Is_Input  => False,
-               Self_Ref  => Self_Ref,
-               Top_Level => True,
-               Seen      => All_Outputs_Seen,
-               Null_Seen => Null_Output_Seen);
+              (Item          => Output,
+               Is_Input      => False,
+               Self_Ref      => Self_Ref,
+               Top_Level     => True,
+               Seen          => All_Outputs_Seen,
+               Null_Seen     => Null_Output_Seen,
+               Non_Null_Seen => Non_Null_Output_Seen);
 
             Next (Output);
          end loop;
@@ -2192,22 +2228,15 @@ package body Sem_Prag is
          Item_Id : Entity_Id;
 
       begin
-         --  A package with null initialization list is not allowed to have
-         --  additional initializations.
-
-         if Null_Seen then
-            Error_Msg_NE ("package & has null initialization", Item, Pack_Id);
-
          --  Null initialization list
 
-         elsif Nkind (Item) = N_Null then
+         if Nkind (Item) = N_Null then
+            if Null_Seen then
+               Error_Msg_N ("multiple null initializations not allowed", Item);
 
-            --  Catch a case where a null initialization item appears in a list
-            --  of non-null items.
-
-            if Non_Null_Seen then
-               Error_Msg_NE
-                 ("package & has non-null initialization", Item, Pack_Id);
+            elsif Non_Null_Seen then
+               Error_Msg_N
+                 ("cannot mix null and non-null initialization items", Item);
             else
                Null_Seen := True;
             end if;
@@ -2216,6 +2245,11 @@ package body Sem_Prag is
 
          else
             Non_Null_Seen := True;
+
+            if Null_Seen then
+               Error_Msg_N
+                 ("cannot mix null and non-null initialization items", Item);
+            end if;
 
             Analyze (Item);
 
@@ -2287,21 +2321,16 @@ package body Sem_Prag is
             Input_Id : Entity_Id;
 
          begin
-            --  An initialization item with null inputs is not allowed to have
-            --  assitional inputs.
-
-            if Null_Seen then
-               Error_Msg_N ("item has null input list", Item);
-
             --  Null input list
 
-            elsif Nkind (Input) = N_Null then
+            if Nkind (Input) = N_Null then
+               if Null_Seen then
+                  Error_Msg_N
+                    ("multiple null initializations not allowed", Item);
 
-               --  Catch a case where a null input appears in a list of non-
-               --  null inpits.
-
-               if Non_Null_Seen then
-                  Error_Msg_N ("item has non-null input list", Item);
+               elsif Non_Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null initialization item", Item);
                else
                   Null_Seen := True;
                end if;
@@ -2310,6 +2339,11 @@ package body Sem_Prag is
 
             else
                Non_Null_Seen := True;
+
+               if Null_Seen then
+                  Error_Msg_N
+                    ("cannot mix null and non-null initialization item", Item);
+               end if;
 
                Analyze (Input);
 
@@ -9299,7 +9333,7 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Null then
                   Name := New_Internal_Name ('S');
-                  Is_Null := True;
+                  Is_Null   := True;
                   Null_Seen := True;
 
                   --  Catch a case where a null state appears in a list of
@@ -19946,7 +19980,7 @@ package body Sem_Prag is
                   Dep_Id := Entity_Of (Dep_Input);
 
                   --  Inspect all inputs of the refinement clause and attempt
-                  --  to match against the inputs of the dependance clause.
+                  --  to match against the inputs of the dependence clause.
 
                   Ref_Input := First (Ref_Inputs);
                   while Present (Ref_Input) loop
@@ -20256,7 +20290,7 @@ package body Sem_Prag is
       begin
          --  The analysis of pragma Depends should produce normalized clauses
          --  with exactly one output. This is important because output items
-         --  are unique in the whole dependance relation and can be used as
+         --  are unique in the whole dependence relation and can be used as
          --  keys.
 
          pragma Assert (No (Next (Dep_Output)));
