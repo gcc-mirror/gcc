@@ -390,6 +390,7 @@ package body Exception_Data is
       Ptr  : in out Natural)
    is
       Load_Address : Address;
+
    begin
       if X.Num_Tracebacks = 0 then
          return;
@@ -398,6 +399,7 @@ package body Exception_Data is
       --  The executable load address line
 
       Load_Address := Get_Executable_Load_Address;
+
       if Load_Address /= Null_Address then
          Append_Info_String (LDAD_Header, Info, Ptr);
          Append_Info_Address (Load_Address, Info, Ptr);
@@ -427,9 +429,9 @@ package body Exception_Data is
       Space_Per_Address : constant := 2 + 16 + 1;
       --  Space for "0x" + HHHHHHHHHHHHHHHH + " "
    begin
-      return LDAD_Header'Length + Space_Per_Address +
-               BETB_Header'Length + 1 +
-               X.Num_Tracebacks * Space_Per_Address + 1;
+      return
+        LDAD_Header'Length + Space_Per_Address + BETB_Header'Length + 1 +
+          X.Num_Tracebacks * Space_Per_Address + 1;
    end Basic_Exception_Tback_Maxlength;
 
    ---------------------------------------

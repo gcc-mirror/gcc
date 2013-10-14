@@ -41,13 +41,12 @@ package System.VMS_Exception_Table is
    procedure Register_VMS_Exception
      (Code : SSL.Exception_Code;
       E    : SSL.Exception_Data_Ptr);
-   --  Register an exception in the hash table mapping with a VMS
-   --  condition code.
-
-   --  The table is used by exception code (the personnality routine) to
-   --  detect wether a VMS exception (aka condition) is known by the Ada code.
-   --  In that case, the identity of the imported or exported exception is
-   --  used to create the occurrence.
+   --  Register an exception in hash table mapping with a VMS condition code.
+   --
+   --  The table is used by exception code (the personnality routine) to detect
+   --  wether a VMS exception (aka condition) is known by the Ada code. In
+   --  that case, the identity of the imported or exported exception is used
+   --  to create the occurrence.
 
    --  LOTS more comments needed here regarding the entire scheme ???
 
@@ -61,6 +60,6 @@ private
 
    function Coded_Exception (X : SSL.Exception_Code)
      return SSL.Exception_Data_Ptr;
-   --  Given a VMS condition, find and return it's allocated Ada exception
+   --  Given a VMS condition, find and return its allocated Ada exception
 
 end System.VMS_Exception_Table;

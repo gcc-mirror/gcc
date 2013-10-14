@@ -213,13 +213,13 @@ package body Sem_Prag is
       Has_In_Out_State : out Boolean;
       Has_Out_State    : out Boolean;
       Has_Null_State   : out Boolean);
-   --  Subsidiary to the analysis of pragma Refined_Depends and pragma
-   --  Refined_Global. Prag denotes pragma [Refined_]Global. Gather all input,
-   --  in out and output items of Prag in lists In_Items, In_Out_Items and
-   --  Out_Items. Flags Has_In_State, Has_In_Out_State and Has_Out_State are
-   --  set when there is at least one abstract state with visible refinement
-   --  available in the corresponding mode. Flag Has_Null_State is set when at
-   --  least state has a null refinement.
+   --  Subsidiary to the analysis of pragma Refined_Depends/Refined_Global.
+   --  Prag denotes pragma [Refined_]Global. Gather all input, in out and
+   --  output items of Prag in lists In_Items, In_Out_Items and Out_Items.
+   --  Flags Has_In_State, Has_In_Out_State and Has_Out_State are set when
+   --  there is at least one abstract state with visible refinement available
+   --  in the corresponding mode. Flag Has_Null_State is set when at least
+   --  state has a null refinement.
 
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;

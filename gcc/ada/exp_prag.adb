@@ -642,8 +642,8 @@ package body Exp_Prag is
 
                   if Exception_Code (Id) /= No_Uint then
 
-                     --  The code for the exception is present.Create a
-                     --  linker alias to define the symbol.
+                     --  The code for the exception is present. Create a linker
+                     --  alias to define the symbol.
 
                      Code :=
                        Make_Integer_Literal (Loc,
@@ -666,8 +666,8 @@ package body Exp_Prag is
                      Store_String_Int
                        (UI_To_Int (Exception_Code (Id)) / 8 * 8);
 
-                     --  Insert a pragma Linker_Alias to set the value of
-                     --  the dummy object symbol.
+                     --  Insert a pragma Linker_Alias to set the value of the
+                     --  dummy object symbol.
 
                      Excep_Alias :=
                        Make_Pragma (Loc,
