@@ -10219,14 +10219,14 @@ package body Sem_Util is
          S    : Entity_Id;
 
       begin
-         if Is_Type (E) then
-            --  E is the current instance of a type.
+         --  E is the current instance of a type
 
+         if Is_Type (E) then
             Prot := E;
 
-         else
-            --  E is an object.
+         --  E is an object
 
+         else
             Prot := Scope (E);
          end if;
 
@@ -10353,9 +10353,8 @@ package body Sem_Util is
               or else  K = E_In_Out_Parameter
               or else  K = E_Generic_In_Out_Parameter
 
-               --  Current instance of type. If this is a protected type, check
-               --  that we are not within the body of one of its protected
-               --  functions.
+              --  Current instance of type. If this is a protected type, check
+              --  we are not within the body of one of its protected functions.
 
               or else (Is_Type (E)
                         and then In_Open_Scopes (E)

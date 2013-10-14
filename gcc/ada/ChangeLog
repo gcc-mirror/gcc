@@ -1,3 +1,9 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor fix to error message.
+	* a-exexpr-gcc.adb, sem_util.adb, sem_case.adb, exp_ch11.adb: Minor
+	reformatting.
+
 2013-10-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch11.adb: Fix typo.

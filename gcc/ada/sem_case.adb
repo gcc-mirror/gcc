@@ -393,7 +393,7 @@ package body Sem_Case is
                Prev_Lo := Choice_Lo;
                Prev_Hi := Choice_Hi;
 
-               --  Check whether  predicate set is fully covered by choice
+               --  Check whether predicate set is fully covered by choice
 
                if Pred_Hi = Choice_Hi then
                   Next (Pred);

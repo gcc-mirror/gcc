@@ -1044,7 +1044,7 @@ package body Exp_Ch11 is
 
                      Save :=
                        Make_Procedure_Call_Statement (No_Location,
-                         Name =>
+                         Name                   =>
                            New_Occurrence_Of
                              (RTE (RE_Save_Occurrence), No_Location),
                          Parameter_Associations => New_List (
@@ -1061,20 +1061,18 @@ package body Exp_Ch11 is
                      Prepend (Save, Statements (Handler));
 
                      Obj_Decl :=
-                       Make_Object_Declaration
-                         (Cloc,
-                          Defining_Identifier => Cparm,
-                          Object_Definition   =>
-                            New_Occurrence_Of
-                              (RTE (RE_Exception_Occurrence), Cloc));
+                       Make_Object_Declaration (Cloc,
+                         Defining_Identifier => Cparm,
+                         Object_Definition   =>
+                           New_Occurrence_Of
+                             (RTE (RE_Exception_Occurrence), Cloc));
                      Set_No_Initialization (Obj_Decl, True);
 
                      Rewrite (Handler,
                        Make_Exception_Handler (Hloc,
                          Choice_Parameter  => Empty,
                          Exception_Choices => Exception_Choices (Handler),
-
-                         Statements => New_List (
+                         Statements        => New_List (
                            Make_Block_Statement (Hloc,
                              Declarations => New_List (Obj_Decl),
                              Handled_Statement_Sequence =>
