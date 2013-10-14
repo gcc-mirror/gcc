@@ -902,6 +902,9 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
 
+   function Is_Attribute_Result (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Result
+
    function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a body or a package declaration
 

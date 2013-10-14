@@ -10393,6 +10393,14 @@ package body Sem_Ch3 is
             Set_First_Entity (Full, First_Entity (Full_Base));
             Set_Last_Entity  (Full, Last_Entity (Full_Base));
 
+            --  If the underlying base type is constrained, we know that the
+            --  full view of the subtype is constrained as well (the converse
+            --  is not necessarily true).
+
+            if Is_Constrained (Full_Base) then
+               Set_Is_Constrained (Full);
+            end if;
+
          when others =>
             Copy_Node (Full_Base, Full);
 
