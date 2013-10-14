@@ -4878,6 +4878,43 @@ package body Exp_Aggr is
          Check_Same_Aggr_Bounds (N, 1);
       end if;
 
+      --  STEP 1d
+
+      --  If we have a default component value, or simple initialization is
+      --  required for the component type, then we replace <> in component
+      --  associations by the required default value.
+
+      declare
+         Default_Val : Node_Id;
+         Assoc       : Node_Id;
+
+      begin
+         if (Present (Default_Aspect_Component_Value (Typ))
+              or else Needs_Simple_Initialization (Ctyp))
+           and then Present (Component_Associations (N))
+         then
+            Assoc := First (Component_Associations (N));
+            while Present (Assoc) loop
+               if Nkind (Assoc) = N_Component_Association
+                 and then Box_Present (Assoc)
+               then
+                  Set_Box_Present (Assoc, False);
+
+                  if Present (Default_Aspect_Component_Value (Typ)) then
+                     Default_Val := Default_Aspect_Component_Value (Typ);
+                  else
+                     Default_Val := Get_Simple_Init_Val (Ctyp, N);
+                  end if;
+
+                  Set_Expression (Assoc, New_Copy_Tree (Default_Val));
+                  Analyze_And_Resolve (Expression (Assoc), Ctyp);
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end if;
+      end;
+
       --  STEP 2
 
       --  Here we test for is packed array aggregate that we can handle at

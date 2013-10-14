@@ -3596,7 +3596,7 @@ package Sinfo is
       --  Sloc points to first selector name
       --  Choices (List1)
       --  Loop_Actions (List2-Sem)
-      --  Expression (Node3)
+      --  Expression (Node3) (empty if Box_Present)
       --  Box_Present (Flag15)
       --  Inherited_Discriminant (Flag13)
 
