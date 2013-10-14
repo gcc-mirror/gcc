@@ -641,20 +641,20 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   others_decl
     = create_var_decl (get_identifier ("OTHERS"),
 		       get_identifier ("__gnat_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   unhandled_others_decl
     = create_var_decl (get_identifier ("UNHANDLED_OTHERS"),
 		       get_identifier ("__gnat_unhandled_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   main_identifier_node = get_identifier ("main");
 
