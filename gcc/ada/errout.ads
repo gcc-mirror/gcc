@@ -313,6 +313,8 @@ package Errout is
    --      taken as an Ada reserved word, and are converted to the default
    --      case for reserved words (see Scans package spec). Surrounding
    --      quotes are added unless manual quotation mode is currently set.
+   --      RM and SPARK are special exceptions, they are never treated as
+   --      keywords, and just appear verbatim, with no surrounding quotes.
 
    --    Insertion character ` (Backquote: set manual quotation mode)
    --      The backquote character always appears in pairs. Each backquote of

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,21 +30,32 @@
 ------------------------------------------------------------------------------
 
 --  This package provides subprogram implementations of stream attributes for
---  the following types:
+--  the following types using a "block IO" approach in which the entire data
+--  item is written in one operation, instead of writing individual characters.
+
 --     Ada.String
 --     Ada.Wide_String
 --     Ada.Wide_Wide_String
---
+
 --  The compiler will generate references to the subprograms in this package
 --  when expanding stream attributes for the above mentioned types. Example:
---
+
 --     String'Output (Some_Stream, Some_String);
---
+
 --  will be expanded into:
---
+
 --     String_Output (Some_Stream, Some_String);
 --       or
 --     String_Output_Blk_IO (Some_Stream, Some_String);
+
+--  This expansion occurs only if System.Stream_Attributes.Block_IO_OK returns
+--  True, indicating that this approach is compatible with the expectations of
+--  System.Stream_Attributes. For the default implementation of this package,
+--  there is no difference between writing the elements one by one using the
+--  default output routine for the element type and writing the whole array
+--  using block IO.
+
+--  In addition,
 
 pragma Compiler_Unit;
 

@@ -1,5 +1,13 @@
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
+	* sem_res.adb: Minor fix to error message text.
+	* errout.ads, erroutc.ads: Minor reformatting.
+	* s-ststop.ads, s-stratt.ads: Clean up documentation of block IO
+	mode for streams.
+	* s-stratt-xdr.adb: Minor comment update.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aux.adb, sem_aux.ads, sem_prag.adb: Minor reformatting.
 
 2013-10-14  Ed Schonberg  <schonberg@adacore.com>
