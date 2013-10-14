@@ -3941,7 +3941,8 @@ __gnat_get_executable_load_address (void)
 #if defined (__APPLE__)
   return _dyld_get_image_header (0);
 
-#elif defined (__linux__)
+#elif 0 && defined (__linux__)
+  /* Currently disabled as it needs at least -ldl.  */
   struct link_map *map = _r_debug.r_map;
 
   return (const void *)map->l_addr;
