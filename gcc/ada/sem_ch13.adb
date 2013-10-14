@@ -2053,6 +2053,45 @@ package body Sem_Ch13 is
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
+               --  Initial_Condition
+
+               --  Aspect Initial_Condition covers the visible declarations of
+               --  a package and all hidden states through functions. As such,
+               --  it must be evaluated at the end of the said declarations.
+
+               when Aspect_Initial_Condition => Initial_Condition : declare
+                  Decls : List_Id;
+
+               begin
+                  if Nkind_In (N, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+                  then
+                     Decls := Visible_Declarations (Specification (N));
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  =>
+                          Name_Initial_Condition);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package declaration",
+                        Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Initial_Condition;
+
                --  Initializes
 
                --  Aspect Initializes coverts the visible declarations of a
@@ -7849,6 +7888,7 @@ package body Sem_Ch13 is
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |
+              Aspect_Initial_Condition    |
               Aspect_Initializes          |
               Aspect_Post                 |
               Aspect_Postcondition        |

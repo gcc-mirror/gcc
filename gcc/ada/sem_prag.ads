@@ -64,6 +64,9 @@ package Sem_Prag is
    --  Perform full analysis of delayed pragma Global. This routine is also
    --  capable of performing basic analysis of pragma Refind_Global.
 
+   procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Initial_Condition
+
    procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initializes
 

@@ -7198,6 +7198,7 @@ package Sinfo is
       --    Abstract_States
       --    Depends
       --    Global
+      --    Initial_Condition
       --    Initializes
       --    Refined_Depends
       --    Refined_Global

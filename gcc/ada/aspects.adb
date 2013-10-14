@@ -440,6 +440,7 @@ package body Aspects is
     Aspect_Independent_Components       => Aspect_Independent_Components,
     Aspect_Inline                       => Aspect_Inline,
     Aspect_Inline_Always                => Aspect_Inline,
+    Aspect_Initial_Condition            => Aspect_Initial_Condition,
     Aspect_Initializes                  => Aspect_Initializes,
     Aspect_Input                        => Aspect_Input,
     Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,

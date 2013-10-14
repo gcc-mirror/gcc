@@ -1326,8 +1326,8 @@ package body Exp_Pakd is
       --  The expression for the shift value that is required
 
       Shift_Used : Boolean := False;
-      --  Set True if Shift has been used in the generated code at least
-      --  once, so that it must be duplicated if used again
+      --  Set True if Shift has been used in the generated code at least once,
+      --  so that it must be duplicated if used again.
 
       New_Lhs : Node_Id;
       New_Rhs : Node_Id;

@@ -1,3 +1,48 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry in table Canonical_Aspect for
+	Initial_Condition.
+	* aspects.ads: Add entries in tables Aspect_Id, Aspect_Argument,
+	Aspect_Names and Aspect_Delay for Initial_Condition.
+	* einfo.adb (Get_Pragma): Include pragma Initial_Condition to
+	categorization pragmas.
+	* einfo.ads (Get_Pragma): Update comment on usage.
+	* exp_ch7.adb (Expand_N_Package_Body): Add a runtime check to
+	verify the assertion introduced by pragma Initial_Condition.
+	(Expand_N_Package_Declaration): Add a runtime check to
+	verify the assertion introduced by pragma Initial_Condition.
+	(Expand_Pragma_Initial_Condition): New routine.
+	* par-prag: Include pragma Initial_Condition to the list of
+	pragmas that do not require special processing by the parser.
+	* sem_ch3.adb (Analyze_Declarations): Analyze pragma
+	Initial_Condition at the end of the visible declarations.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for aspect Initial_Condition.
+	(Check_Aspect_At_Freeze_Point):
+	Aspect Initial_Condition does not need inspection at freezing.
+	* sem_prag.adb (Analyze_Initial_Condition_In_Decl_Part):
+	New routine.
+	(Analyze_Pragma): Update all calls
+	to Check_Declaration_Order. Add processing for pragma
+	Initial_Condition. Initial_Condition is now a valid assertion
+	kind.  Add an entry in table Sig_Flags for Initial_Condition.
+	(Check_Declaration_Order): Reimplemented to handle arbitrary
+	pragmas.
+	(Is_Valid_Assertion_Kind): Add an entry for
+	Initial_Condition.
+	* sem_pag.ads (Analyze_Initial_Condition_In_Decl_Part):
+	New routine.
+	* sem_util.adb (Add_Contract_Item): Pragma Initial_Condition
+	can now be associated with a package spec.
+	* sem_util.ads (Add_Contract_Item): Update comment on usage.
+	* sinfo.ads: Update the documentation of node N_Contract
+	* snames.ads-tmpl: Add new predefined name Initial_Condition. Add
+	new pragma id for Initial_Condition.
+
+2013-10-14  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Minor reformatting.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb: Minor reformatting.

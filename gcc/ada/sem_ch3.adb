@@ -2224,9 +2224,9 @@ package body Sem_Ch3 is
       if Present (L) then
          Context := Parent (L);
 
-         --  Analyze aspect/pragma Initializes of a package at the end of the
-         --  visible declarations as the aspect/pragma has visibility over the
-         --  said region.
+         --  Analyze pragmas Initializes and Initial_Condition of a package at
+         --  the end of the visible declarations as the pragmas have visibility
+         --  over the said region.
 
          if Nkind (Context) = N_Package_Specification
            and then L = Visible_Declarations (Context)
@@ -2236,6 +2236,12 @@ package body Sem_Ch3 is
 
             if Present (Prag) then
                Analyze_Initializes_In_Decl_Part (Prag);
+            end if;
+
+            Prag := Get_Pragma (Spec_Id, Pragma_Initial_Condition);
+
+            if Present (Prag) then
+               Analyze_Initial_Condition_In_Decl_Part (Prag);
             end if;
 
          --  Analyze the state refinements within a package body now, after
