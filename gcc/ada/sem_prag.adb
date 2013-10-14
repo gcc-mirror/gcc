@@ -1350,10 +1350,10 @@ package body Sem_Prag is
       Subp_Id : Entity_Id;
       --  The entity of the subprogram subject to pragma Global
 
-      Contract_Seen : Boolean := False;
-      In_Out_Seen   : Boolean := False;
-      Input_Seen    : Boolean := False;
-      Output_Seen   : Boolean := False;
+      In_Out_Seen : Boolean := False;
+      Input_Seen  : Boolean := False;
+      Output_Seen : Boolean := False;
+      Proof_Seen  : Boolean := False;
       --  Flags used to verify the consistency of modes
 
       procedure Analyze_Global_List
@@ -1643,10 +1643,7 @@ package body Sem_Prag is
                   Mode := First (Choices (Assoc));
 
                   if Nkind (Mode) = N_Identifier then
-                     if Chars (Mode) = Name_Contract_In then
-                        Check_Duplicate_Mode (Mode, Contract_Seen);
-
-                     elsif Chars (Mode) = Name_In_Out then
+                     if Chars (Mode) = Name_In_Out then
                         Check_Duplicate_Mode (Mode, In_Out_Seen);
                         Check_Mode_Restriction_In_Function (Mode);
 
@@ -1656,6 +1653,9 @@ package body Sem_Prag is
                      elsif Chars (Mode) = Name_Output then
                         Check_Duplicate_Mode (Mode, Output_Seen);
                         Check_Mode_Restriction_In_Function (Mode);
+
+                     elsif Chars (Mode) = Name_Proof_In then
+                        Check_Duplicate_Mode (Mode, Proof_Seen);
 
                      else
                         Error_Msg_N ("invalid mode selector", Mode);
@@ -12443,7 +12443,7 @@ package body Sem_Prag is
 
          --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
 
-         --  MODE_SELECTOR ::= Input | Output | In_Out | Contract_In
+         --  MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
          --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
          --  GLOBAL_ITEM   ::= NAME
 
@@ -16650,7 +16650,7 @@ package body Sem_Prag is
 
          --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
 
-         --  MODE_SELECTOR ::= Input | Output | In_Out | Contract_In
+         --  MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
          --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
          --  GLOBAL_ITEM   ::= NAME
 

@@ -1,3 +1,14 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Remove local
+	variable Contract_Seen. Add local variable Proof_Seen.
+	(Analyze_Global_List): Remove the processing for mode
+	Contract_In. Add support for mode Proof_In.
+	(Analyze_Pragma): Update the grammar of pragmas Global and
+	Refined_Global.
+	* snames.ads-tmpl: Remove predefined name Contract_In. Add
+	predefined name Proof_In.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Check): Generate proper string
