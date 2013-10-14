@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Snames;   use Snames;
 with Sinput;
 with Stringt;  use Stringt;
 with Table;
+with Uintp;    use Uintp;
 
 with GNAT.Heap_Sort_G;
 
@@ -268,9 +269,14 @@ package body Prep is
 
          --  Check the syntax of the value
 
-         if Definition (Index + 1) /= '"'
-           or else Definition (Definition'Last) /= '"'
+         if Definition (Index + 1) = '"'
+           and then Definition (Definition'Last) = '"'
          then
+            Result.Is_A_String := True;
+
+         else
+            Result.Is_A_String := False;
+
             for J in Index + 1 .. Definition'Last loop
                case Definition (J) is
                   when '_' | '.' | '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' =>
@@ -286,7 +292,6 @@ package body Prep is
 
          --  And put the value in the result
 
-         Result.Is_A_String := False;
          Start_String;
          Store_String_Chars (Definition (Index + 1 .. Definition'Last));
          Result.Value := End_String;
@@ -390,6 +395,8 @@ package body Prep is
       Symbol_Value1    : String_Id;
       Symbol_Value2    : String_Id;
 
+      Relop : Token_Type;
+
    begin
       --  Loop for each term
 
@@ -447,12 +454,96 @@ package body Prep is
                      Current_Result := Index_Of (Symbol_Name1) /= No_Symbol;
                   end if;
 
-               elsif Token = Tok_Equal then
+               elsif
+                 Token = Tok_Equal or else
+                 Token = Tok_Less or else
+                 Token = Tok_Less_Equal or else
+                 Token = Tok_Greater or else
+                 Token = Tok_Greater_Equal
+               then
+                  Relop := Token;
                   Scan.all;
-
                   Change_Reserved_Keyword_To_Symbol;
 
-                  if Token = Tok_Identifier then
+                  if Token = Tok_Integer_Literal then
+
+                     --  symbol =  integer
+                     --  symbol <  integer
+                     --  symbol <= integer
+                     --  symbol >  integer
+                     --  symbol >= integer
+
+                     declare
+                        Value : constant Int := UI_To_Int (Int_Literal_Value);
+                        Data  : Symbol_Data;
+                        Symbol_Value : Int;
+                     begin
+                        if Evaluation then
+                           Symbol1 := Index_Of (Symbol_Name1);
+
+                           if Symbol1 = No_Symbol then
+                              Error_Msg_Name_1 := Symbol_Name1;
+                              Error_Msg ("unknown symbol %", Symbol_Pos1);
+                              Symbol_Value1 := No_String;
+
+                           else
+                              Data := Mapping.Table (Symbol1);
+
+                              if Data.Is_A_String then
+                                 Error_Msg_Name_1 := Symbol_Name1;
+                                 Error_Msg
+                                   ("symbol % value is not integer",
+                                    Symbol_Pos1);
+
+                              else
+                                 begin
+                                    String_To_Name_Buffer (Data.Value);
+                                    Symbol_Value :=
+                                      Int'Value (Name_Buffer (1 .. Name_Len));
+
+                                    case Relop is
+                                       when Tok_Equal =>
+                                          Current_Result :=
+                                            Symbol_Value = Value;
+
+                                       when Tok_Less =>
+                                          Current_Result :=
+                                            Symbol_Value < Value;
+
+                                       when Tok_Less_Equal =>
+                                          Current_Result :=
+                                            Symbol_Value <= Value;
+
+                                       when Tok_Greater =>
+                                          Current_Result :=
+                                            Symbol_Value > Value;
+
+                                       when Tok_Greater_Equal =>
+                                          Current_Result :=
+                                            Symbol_Value >= Value;
+
+                                       when others =>
+                                          null;
+                                    end case;
+
+                                 exception
+                                    when Constraint_Error =>
+                                       Error_Msg_Name_1 := Symbol_Name1;
+                                       Error_Msg
+                                         ("symbol % value is not integer",
+                                          Symbol_Pos1);
+                                 end;
+                              end if;
+                           end if;
+                        end if;
+
+                        Scan.all;
+                     end;
+
+                  elsif Relop /= Tok_Equal then
+                     Error_Msg ("number expected", Token_Ptr);
+
+                  elsif Token = Tok_Identifier then
 
                      --  symbol = symbol
 
@@ -535,7 +626,8 @@ package body Prep is
 
                   else
                      Error_Msg
-                       ("symbol or literal string expected", Token_Ptr);
+                       ("literal integer, symbol or literal string expected",
+                        Token_Ptr);
                   end if;
 
                else
@@ -914,7 +1006,33 @@ package body Prep is
 
             Scan.all;
 
-            if Token = Tok_String_Literal then
+            if Token = Tok_Integer_Literal then
+               declare
+                  Ptr : Source_Ptr := Token_Ptr;
+
+               begin
+                  Start_String;
+
+                  while Ptr < Scan_Ptr loop
+                     Store_String_Char (Sinput.Source (Ptr));
+                     Ptr := Ptr + 1;
+                  end loop;
+
+                  Data := (Symbol              => Symbol_Name,
+                           Original            => Original_Name,
+                           On_The_Command_Line => False,
+                           Is_A_String         => False,
+                           Value               => End_String);
+               end;
+
+               Scan.all;
+
+               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+                  Error_Msg ("extraneous text in definition", Token_Ptr);
+                  goto Cleanup;
+               end if;
+
+            elsif Token = Tok_String_Literal then
                Data := (Symbol              => Symbol_Name,
                         Original            => Original_Name,
                         On_The_Command_Line => False,
@@ -1088,8 +1206,7 @@ package body Prep is
    begin
       Start_Of_Processing := Scan_Ptr;
 
-      --  We need to call Scan for the first time, because Initialize_Scanner
-      --  is no longer doing it.
+      --  First a call to Scan, because Initialize_Scanner is not doing it
 
       Scan.all;
 
