@@ -10004,6 +10004,7 @@ some guidelines on debugging optimized code.
 * Vectorization of loops::
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
+* Aliased Variables and Optimization::
 
 @ifset vms
 * Coverage Analysis::
@@ -10801,6 +10802,58 @@ has on size and speed of the code. If you really need to use
 @option{-O2} with strict aliasing in effect, then you should
 review any uses of unchecked conversion of access types,
 particularly if you are getting the warnings described above.
+
+@node Aliased Variables and Optimization
+@subsection Aliased Variables and Optimization
+@cindex Aliasing
+There are scenarios in which programs may
+use low level techniques to modify variables
+that otherwise might be considered to be unassigned. For example,
+a variable can be passed to a procedure by reference, which takes
+the address of the parameter and uses the address to modify the
+variable's value, even though it is passed as an IN parameter.
+Consider the following example:
+
+@smallexample @c ada
+procedure P is
+   Max_Length : constant Natural := 16;
+   type Char_Ptr is access all Character;
+
+   procedure Get_String(Buffer: Char_Ptr; Size : Integer);
+   pragma Import (C, Get_String, "get_string");
+
+   Name : aliased String (1 .. Max_Length) := (others => ' ');
+   Temp : Char_Ptr;
+
+   function Addr (S : String) return Char_Ptr is
+      function To_Char_Ptr is
+        new Ada.Unchecked_Conversion (System.Address, Char_Ptr);
+   begin
+      return To_Char_Ptr (S (S'First)'Address);
+   end;
+
+begin
+   Temp := Addr (Name);
+   Get_String (Temp, Max_Length);
+end;
+@end smallexample
+
+@noindent
+where Get_String is a C function that uses the address in Temp to
+modify the variable @code{Name}. This code is dubious, and arguably
+erroneous, and the compiler would be entitled to assume that
+@code{Name} is never modified, and generate code accordingly.
+
+However, in practice, this would cause some existing code that
+seems to work with no optimization to start failing at high
+levels of optimzization.
+
+What the compiler does for such cases is to assume that marking
+a variable as aliased indicates that some "funny business" may
+be going on. The optimizer recognizes the aliased keyword and
+inhibits optimizations that assume the value cannot be assigned.
+This means that the above example will in fact "work" reliably,
+that is, it will produce the expected results.
 
 @ifset vms
 @node Coverage Analysis

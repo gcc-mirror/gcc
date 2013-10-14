@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1992,6 +1992,19 @@ package body Exp_Pakd is
       Arg   : Node_Id;
 
    begin
+      --  If the node is an actual in a call, the prefix has not been fully
+      --  expanded, to account for the additional expansion for in-out actuals
+      --  (see expand_actuals for details). If the prefix itself is a packed
+      --  reference as well, we have to recurse to complete the transformation
+      --  of the prefix.
+
+      if Nkind (Prefix (N)) = N_Indexed_Component
+        and then not Analyzed (Prefix (N))
+        and then Is_Bit_Packed_Array (Etype (Prefix (Prefix (N))))
+      then
+         Expand_Packed_Element_Reference (Prefix (N));
+      end if;
+
       --  If not bit packed, we have the enumeration case, which is easily
       --  dealt with (just adjust the subscripts of the indexed component)
 

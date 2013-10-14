@@ -505,10 +505,10 @@ package Einfo is
 
 --    Can_Never_Be_Null (Flag38)
 --       This flag is defined in all entities, but can only be set in an object
---       which can never have a null value. This is set True for constant
---       access values initialized to a non-null value. This is also True for
---       all access parameters in Ada 83 and Ada 95 modes, and for access
---       parameters that explicitly exclude null in Ada 2005.
+--       which can never have a null value. Set for constant access values
+--       initialized to a non-null value. This is also set for all access
+--       parameters in Ada 83 and Ada 95 modes, and for access parameters
+--       that explicitly exclude null in Ada 2005.
 --
 --       This is used to avoid unnecessary resetting of the Is_Known_Non_Null
 --       flag for such entities. In Ada 2005 mode, this is also used when
@@ -651,7 +651,7 @@ package Einfo is
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
 --       represent task and protected types (Is_Concurrent_Record_Type flag
---       set True). Points to the entity for the corresponding task type or
+--       set). Points to the entity for the corresponding task type or the
 --       protected type.
 
 --    Corresponding_Discriminant (Node19)
@@ -1361,14 +1361,14 @@ package Einfo is
 --       of derived type declarations).
 
 --    Has_All_Calls_Remote (Flag79)
---       Defined in all library unit entities. Set true if the library unit
---       has an All_Calls_Remote pragma. Note that such entities must also
---       be RCI entities, so the flag Is_Remote_Call_Interface will always
---       be set if this flag is set.
+--       Defined in all library unit entities. Set if the library unit has an
+--       All_Calls_Remote pragma. Note that such entities must also be RCI
+--       entities, so the flag Is_Remote_Call_Interface will always be set if
+--       this flag is set.
 
 --    Has_Anonymous_Master (Flag253)
 --       Defined in units (top-level functions and procedures, library-level
---       packages). Set to True if the associated unit contains a heterogeneous
+--       packages). Set if the associated unit contains a heterogeneous
 --       finalization master. The master's name is of the form <unit>AM and it
 --       services anonymous access-to-controlled types with an undetermined
 --       lifetime.
@@ -1438,11 +1438,11 @@ package Einfo is
 --       in sem_aux is used to test for this case.
 
 --    Has_Contiguous_Rep (Flag181)
---       Defined in enumeration types. True if the type as a representation
+--       Defined in enumeration types. Set if the type as a representation
 --       clause whose entries are successive integers.
 
 --    Has_Controlling_Result (Flag98)
---       Defined in E_Function entities. True if the function is a primitive
+--       Defined in E_Function entities. Set if the function is a primitive
 --       function of a tagged type which can dispatch on result.
 
 --    Has_Controlled_Component (Flag43) [base type only]
@@ -1452,13 +1452,13 @@ package Einfo is
 --       Has_Controlled_Component is set for at least one component).
 
 --    Has_Convention_Pragma (Flag119)
---       Defined in all entities. Set true for an entity for which a valid
---       Convention, Import, or Export pragma has been given. Used to prevent
---       more than one such pragma appearing for a given entity (RM B.1(45)).
+--       Defined in all entities. Set for an entity for which a valid pragma
+--       Convention, Import, or Export has been given. Used to prevent more
+--       than one such pragma appearing for a given entity (RM B.1(45)).
 
 --    Has_Delayed_Aspects (Flag200)
---      Defined in all entities. Set true if the Rep_Item chain for the entity
---      has one or more N_Aspect_Definition nodes chained which are not to be
+--      Defined in all entities. Set if the Rep_Item chain for the entity has
+--      one or more N_Aspect_Definition nodes chained which are not to be
 --      evaluated till the freeze point. The aspect definition expression
 --      clause has been preanalyzed to get visibility at the point of use,
 --      but no other action has been taken.
@@ -1531,18 +1531,18 @@ package Einfo is
 --       Convention_Intrinsic, Convention_Entry or Convention_Protected).
 
 --    Has_Forward_Instantiation (Flag175)
---       Defined in package entities. Set true for packages that contain
---       instantiations of local generic entities, before the corresponding
---       generic body has been seen. If a package has a forward instantiation,
---       we cannot inline subprograms appearing in the same package because
---       the placement requirements of the instance will conflict with the
---       linear elaboration of front-end inlining.
+--       Defined in package entities. Set for packages that instantiate local
+--       generic entities before the corresponding generic body has been seen.
+--       If a package has a forward instantiation, we cannot inline subprograms
+--       appearing in the same package because the placement requirements of
+--       the instance will conflict with the  linear elaboration of front-end
+--       inlining.
 
 --    Has_Fully_Qualified_Name (Flag173)
---       Defined in all entities. Set True if the name in the Chars field has
---       been replaced by the fully qualified name, as used for debug output.
---       See Exp_Dbug for a full description of the use of this flag and also
---       the related flag Has_Qualified_Name.
+--       Defined in all entities. Set if the name in the Chars field has been
+--       replaced by the fully qualified name, as used for debug output. See
+--       Exp_Dbug for a full description of the use of this flag and also the
+--       related flag Has_Qualified_Name.
 
 --    Has_Gigi_Rep_Item (Flag82)
 --       Defined in all entities. Set if the rep item chain (referenced by
@@ -1576,7 +1576,7 @@ package Einfo is
 --       applies (as set by coresponding pragma or aspect specification).
 
 --    Has_Inheritable_Invariants (Flag248)
---       Defined in all type entities. Set True in private types from which one
+--       Defined in all type entities. Set in private types from which one
 --       or more Invariant'Class aspects will be inherited if a another type is
 --       derived from the type (i.e. those types which have an Invariant'Class
 --       aspect, or which inherit one or more Invariant'Class aspects). Also
@@ -1599,7 +1599,7 @@ package Einfo is
 --       Interrupt_Handler applies.
 
 --    Has_Invariants (Flag232)
---       Defined in all type entities and in subprogram entities. Set True in
+--       Defined in all type entities and in subprogram entities. Set in
 --       private types if an Invariant or Invariant'Class aspect applies to the
 --       type, or if the type inherits one or more Invariant'Class aspects.
 --       Also set in the corresponding full type. Note: if this flag is set
@@ -1650,15 +1650,19 @@ package Einfo is
 --       Defined in package entities. True if the package is subject to a null
 --       Abstract_State aspect/pragma.
 
+--    Has_Null_Refinement (Flag263)
+--       Defined in E_Abstract_State entities. Set if the state has a null
+--       refinement in aspect/pragma Refined_State.
+
 --    Has_Object_Size_Clause (Flag172)
 --       Defined in entities for types and subtypes. Set if an Object_Size
 --       clause has been processed for the type Used to prevent multiple
 --       Object_Size clauses for a given entity.
 
 --    Has_Per_Object_Constraint (Flag154)
---       Defined in E_Component entities, true if the subtype of the
---       component has a per object constraint. Per object constraints result
---       from the following situations:
+--       Defined in E_Component entities. Set if the subtype of the component
+--       has a per object constraint. Per object constraints result from the
+--       following situations :
 --
 --       1. N_Attribute_Reference - when the prefix is the enclosing type and
 --          the attribute is Access.
@@ -1770,27 +1774,27 @@ package Einfo is
 --       some ancestor is derived from a private type, making some components
 --       invisible and aggregates illegal. Used to check the legality of
 --       selected components and aggregates. The flag is set at the point of
---       derivation.
---       The legality of an aggregate of a type with a private ancestor  must
---       be checked because it also depends on the visibility at the point the
---       aggregate is resolved. See sem_aggr.adb. This is part of AI05-0115.
+--       derivation. The legality of an aggregate of a type with a private
+--       ancestor must be checked because it also depends on the visibility
+--       at the point the aggregate is resolved. See sem_aggr.adb. This is
+--       part of AI05-0115.
 
 --    Has_Private_Declaration (Flag155)
---       Defined in all entities. Returns True if it is the defining entity
---       of a private type declaration or its corresponding full declaration.
---       This flag is thus preserved when the full and the partial views are
---       exchanged, to indicate if a full type declaration is a completion.
---       Used for semantic checks in E.4(18) and elsewhere.
+--       Defined in all entities. Set if it is the defining entity of a private
+--       type declaration or its corresponding full declaration. This flag is
+--       thus preserved when the full and the partial views are exchanged, to
+--       indicate if a full type declaration is a completion. Used for semantic
+--       checks in E.4(18) and elsewhere.
 
 --    Has_Qualified_Name (Flag161)
---       Defined in all entities. Set True if the name in the Chars field
---       has been replaced by its qualified name, as used for debug output.
---       See Exp_Dbug for a full description of qualification requirements.
---       For some entities, the name is the fully qualified name, but there
---       are exceptions. In particular, for local variables in procedures,
---       we do not include the procedure itself or higher scopes. See also
---       the flag Has_Fully_Qualified_Name, which is set if the name does
---       indeed include the fully qualified name.
+--       Defined in all entities. Set if the name in the Chars field has
+--       been replaced by its qualified name, as used for debug output. See
+--       Exp_Dbug for a full description of qualification requirements. For
+--       some entities, the name is the fully qualified name, but there are
+--       exceptions. In particular, for local variables in procedures, we
+--       do not include the procedure itself or higher scopes. See also the
+--       flag Has_Fully_Qualified_Name, which is set if the name does indeed
+--       include the fully qualified name.
 
 --    Has_RACW (Flag214)
 --       Defined in package spec entities. Set if the spec contains the
@@ -2168,7 +2172,7 @@ package Einfo is
 --       Set if the type or subtype is constrained.
 
 --    Is_Constr_Subt_For_U_Nominal (Flag80)
---       Defined in all types and subtypes. Set true only for the constructed
+--       Defined in all types and subtypes. Set only for the constructed
 --       subtype of an object whose nominal subtype is unconstrained. Note
 --       that the constructed subtype itself will be constrained.
 
@@ -2225,9 +2229,9 @@ package Einfo is
 --       entity is associated with a dispatch table.
 
 --    Is_Dispatching_Operation (Flag6)
---       Defined in all entities. Set true for procedures, functions,
---       generic procedures and generic functions if the corresponding
---       operation is dispatching.
+--       Defined in all entities. Set for procedures, functions, generic
+--       procedures, and generic functions if the corresponding operation
+--       is dispatching.
 
 --    Is_Dynamic_Scope (synthesized)
 --       Applies to all Entities. Returns True if the entity is a dynamic
@@ -2253,9 +2257,9 @@ package Einfo is
 --       entities and False for all other entity kinds.
 
 --    Is_Entry_Formal (Flag52)
---       Defined in all entities. Set only for entry formals (which can
---       only be in, in-out or out parameters). This flag is used to speed
---       up the test for the need to replace references in Exp_Ch2.
+--       Defined in all entities. Set only for entry formals (which can only
+--       be in, in-out or out parameters). This flag is used to speed up the
+--       test for the need to replace references in Exp_Ch2.
 
 --    Is_Exported (Flag99)
 --       Defined in all entities. Set if the entity is exported. For now we
@@ -2338,7 +2342,7 @@ package Einfo is
 --       convention.
 
 --    Is_Hidden (Flag57)
---       Defined in all entities. Set true for all entities declared in the
+--       Defined in all entities. Set for all entities declared in the
 --       private part or body of a package. Also marks generic formals of a
 --       formal package declared without a box. For library level entities,
 --       this flag is set if the entity is not publicly visible. This flag
@@ -2348,7 +2352,7 @@ package Einfo is
 --       Private_Declaration in sem_ch7).
 
 --    Is_Hidden_Open_Scope (Flag171)
---       Defined in all entities. Set true for a scope that contains the
+--       Defined in all entities. Set for a scope that contains the
 --       instantiation of a child unit, and whose entities are not visible
 --       during analysis of the instance.
 
@@ -2462,20 +2466,20 @@ package Einfo is
 --       to be defined) must be in the same scope as the type.
 
 --    Is_Known_Non_Null (Flag37)
---       Defined in all entities. Relevant (and can be set True) only for
+--       Defined in all entities. Relevant (and can be set) only for
 --       objects of an access type. It is set if the object is currently
 --       known to have a non-null value (meaning that no access checks
 --       are needed). The indication can for example come from assignment
 --       of an access parameter or an allocator whose value is known non-null.
 --
 --       Note: this flag is set according to the sequential flow of the
---       program, watching the current value of the variable. However,
---       this processing can miss cases of changing the value of an aliased
---       or constant object, so even if this flag is set, it should not
---       be believed if the variable is aliased or volatile. It would
---       be a little neater to avoid the flag being set in the first
---       place in such cases, but that's trickier, and there is only
---       one place that tests the value anyway.
+--       program, watching the current value of the variable. However, this
+--       processing can miss cases of changing the value of an aliased or
+--       constant object, so even if this flag is set, it should not be
+--       believed if the variable is aliased or volatile. It would be a
+--       little neater to avoid the flag being set in the first place in
+--       such cases, but that's trickier, and there is only one place that
+--       tests the value anyway.
 --
 --       The flag is dynamically set and reset as semantic analysis and
 --       expansion proceeds. Its value is meaningless once the tree is
@@ -2483,7 +2487,7 @@ package Einfo is
 --       Thus this flag has no meaning to the back end.
 
 --    Is_Known_Null (Flag204)
---       Defined in all entities. Relevant (and can be set True) only for
+--       Defined in all entities. Relevant (and can be set ) only for
 --       objects of an access type. It is set if the object is currently known
 --       to have a null value (meaning that a dereference will surely raise
 --       constraint error exception). The indication can come from an
@@ -2841,7 +2845,7 @@ package Einfo is
 --       Wide_Wide_Character).
 
 --    Is_Statically_Allocated (Flag28)
---       Defined in all entities. This can only be set True for exception,
+--       Defined in all entities. This can only be set for exception,
 --       variable, constant, and type/subtype entities. If the flag is set,
 --       then the variable or constant must be allocated statically rather
 --       than on the local stack frame. For exceptions, the meaning is that
@@ -2951,7 +2955,7 @@ package Einfo is
 --       or Export_Valued_Procedure pragma applies to the procedure entity.
 
 --    Is_Visible_Formal (Flag206)
---       Defined in all entities. Set True for instances of the formals of a
+--       Defined in all entities. Set for instances of the formals of a
 --       formal package. Indicates that the entity must be made visible in the
 --       body of the instance, to reproduce the visibility of the generic.
 --       This simplifies visibility settings in instance bodies.
@@ -3058,10 +3062,10 @@ package Einfo is
 --       Value attributes for the enumeration type in question.
 
 --    Low_Bound_Tested (Flag205)
---       Defined in all entities. Currently this can only be set True for
---       formal parameter entries of a standard unconstrained one-dimensional
---       array or string type. Indicates that an explicit test of the low bound
---       of the formal appeared in the code, e.g. in a pragma Assert. If this
+--       Defined in all entities. Currently this can only be set for formal
+--       parameter entries of a standard unconstrained one-dimensional array
+--       or string type. Indicates that an explicit test of the low bound of
+--       the formal appeared in the code, e.g. in a pragma Assert. If this
 --       flag is set, warnings about assuming the index low bound to be one
 --       are suppressed.
 
@@ -3252,8 +3256,8 @@ package Einfo is
 --       the defining entity in the original declaration.
 
 --    Nonzero_Is_True (Flag162) [base type only]
---       Defined in enumeration types. True if any non-zero value is to be
---       interpreted as true. Currently this is set true for derived Boolean
+--       Defined in enumeration types. Set if any non-zero value is to be
+--       interpreted as true. Currently this is set for derived Boolean
 --       types which have a convention of C, C++ or Fortran.
 
 --    No_Pool_Assigned (Flag131) [root type only]
@@ -3796,8 +3800,8 @@ package Einfo is
 
 --    Static_Predicate (List25)
 --       Defined in discrete types/subtypes with predicates (Has_Predicates
---       set True). Set if the type/subtype has a static predicate. Points to
---       a list of expression and N_Range nodes that represent the predicate
+--       set). Set if the type/subtype has a static predicate. Points to a
+--       list of expression and N_Range nodes that represent the predicate
 --       in canonical form. The canonical form has entries sorted in ascending
 --       order, with duplicates eliminated, and adjacent ranges coalesced, so
 --       that there is always a gap in the values between successive entries.
@@ -5104,6 +5108,7 @@ package Einfo is
    --  E_Abstract_State
    --    Refinement_Constituents             (Elist8)
    --    Refined_State                       (Node10)
+   --    Has_Null_Refinement                 (Flag263)
    --    Is_External_State                   (synth)
    --    Is_Input_Only_State                 (synth)
    --    Is_Null_State                       (synth)
@@ -6344,6 +6349,7 @@ package Einfo is
    function Has_Missing_Return                  (Id : E) return B;
    function Has_Nested_Block_With_Handler       (Id : E) return B;
    function Has_Non_Standard_Rep                (Id : E) return B;
+   function Has_Null_Refinement                 (Id : E) return B;
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
    function Has_Postconditions                  (Id : E) return B;
@@ -6957,6 +6963,7 @@ package Einfo is
    procedure Set_Has_Missing_Return              (Id : E; V : B := True);
    procedure Set_Has_Nested_Block_With_Handler   (Id : E; V : B := True);
    procedure Set_Has_Non_Standard_Rep            (Id : E; V : B := True);
+   procedure Set_Has_Null_Refinement             (Id : E; V : B := True);
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
    procedure Set_Has_Postconditions              (Id : E; V : B := True);
@@ -7672,6 +7679,7 @@ package Einfo is
    pragma Inline (Has_Missing_Return);
    pragma Inline (Has_Nested_Block_With_Handler);
    pragma Inline (Has_Non_Standard_Rep);
+   pragma Inline (Has_Null_Refinement);
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Per_Object_Constraint);
    pragma Inline (Has_Postconditions);
@@ -8132,6 +8140,7 @@ package Einfo is
    pragma Inline (Set_Has_Missing_Return);
    pragma Inline (Set_Has_Nested_Block_With_Handler);
    pragma Inline (Set_Has_Non_Standard_Rep);
+   pragma Inline (Set_Has_Null_Refinement);
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Per_Object_Constraint);
    pragma Inline (Set_Has_Postconditions);

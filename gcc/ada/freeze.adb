@@ -3345,6 +3345,24 @@ package body Freeze is
 
                Check_Address_Clause (E);
 
+               --  Reset Is_True_Constant for aliased object. We consider that
+               --  the fact that something is aliased may indicate that some
+               --  funny business is going on, e.g. an aliased object is passed
+               --  by reference to a procedure which captures the address of
+               --  the object, which is later used to assign a new value. Such
+               --  code is highly dubious, but we choose to make it "work" for
+               --  aliased objects.
+
+               --  However, we don't do that for internal entities. We figure
+               --  that if we deliberately set Is_True_Constant for an internal
+               --  entity, e.g. a dispatch table entry, then we mean it!
+
+               if (Is_Aliased (E) or else Is_Aliased (Etype (E)))
+                 and then not Is_Internal_Name (Chars (E))
+               then
+                  Set_Is_True_Constant (E, False);
+               end if;
+
                --  If the object needs any kind of default initialization, an
                --  error must be issued if No_Default_Initialization applies.
                --  The check doesn't apply to imported objects, which are not
@@ -3521,7 +3539,6 @@ package body Freeze is
                   end if;
                end;
             end if;
-
          end if;
 
       --  Case of a type or subtype being frozen

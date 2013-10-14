@@ -1665,8 +1665,6 @@ __gnat_install_handler ()
 #include "private/vThreadsP.h"
 #endif
 
-void __gnat_error_handler (int, void *, struct sigcontext *);
-
 #ifndef __RTP__
 
 /* Directly vectored Interrupt routines are not supported when using RTPs.  */
@@ -1677,7 +1675,7 @@ extern int __gnat_inum_to_ivec (int);
 int
 __gnat_inum_to_ivec (int num)
 {
-  return INUM_TO_IVEC (num);
+  return (int) INUM_TO_IVEC (num);
 }
 #endif
 
@@ -1711,8 +1709,8 @@ __gnat_clear_exception_count (void)
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.   */
 static void
-__gnat_map_signal (int sig, void *si ATTRIBUTE_UNUSED,
-		   struct sigcontext *sc ATTRIBUTE_UNUSED)
+__gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
+		   void *sc ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1799,6 +1797,56 @@ __gnat_map_signal (int sig, void *si ATTRIBUTE_UNUSED,
       msg = "unhandled signal";
     }
 
+  /* On ARM VxWorks 6.x, the guard page is left in a RWX state by the kernel
+     after being violated, so subsequent violations aren't detected.  Even if
+     this defect is fixed, it seems dubious to rely on the signal value alone,
+     so we retrieve the address of the guard page from the TCB and compare it
+     with the page that is violated (pREG 12 in the context) and re-arm that
+     page if there's a match.  Additionally we're are assured this is a
+     genuine stack overflow condition and and set the message and exception
+     to that effect.  */
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)
+
+  /* We re-arm the guard page by re-setting it's attributes, however the
+     protection bits are just the low order seven (0x3f).
+     0x00040 is the Valid Mask
+     0x00f00 are Cache attributes
+     0xff000 are Special attributes
+     We don't meddle with the 0xfff40 attributes.  */
+
+#define PAGE_SIZE 4096
+#define MMU_ATTR_PROT_MSK 0x0000003f /* Protection Mask.  */
+#define GUARD_PAGE_PROT 0x8101       /* Found by experiment.  */
+
+  if (sig == SIGSEGV || sig == SIGBUS || sig == SIGILL)
+    {
+      TASK_ID tid = taskIdSelf ();
+      WIND_TCB *pTcb = taskTcb (tid);
+      unsigned long Violated_Page
+          = ((struct sigcontext *) sc)->sc_pregs->r[12] & ~(PAGE_SIZE - 1);
+
+      if ((unsigned long) (pTcb->pStackEnd - PAGE_SIZE) == Violated_Page)
+        {
+	  vmStateSet (NULL, Violated_Page,
+		      PAGE_SIZE, MMU_ATTR_PROT_MSK, GUARD_PAGE_PROT);
+	  exception = &storage_error;
+
+	  switch (sig)
+	  {
+            case SIGSEGV:
+	      msg = "SIGSEGV: stack overflow";
+	      break;
+            case SIGBUS:
+	      msg = "SIGBUS: stack overflow";
+	      break;
+            case SIGILL:
+	      msg = "SIGILL: stack overflow";
+	      break;
+	  }
+       }
+    }
+#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) */
+
   __gnat_clear_exception_count ();
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -1806,8 +1854,8 @@ __gnat_map_signal (int sig, void *si ATTRIBUTE_UNUSED,
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
-void
-__gnat_error_handler (int sig, void *si, struct sigcontext *sc)
+static void
+__gnat_error_handler (int sig, siginfo_t *si, void *sc)
 {
   sigset_t mask;
 
@@ -1865,7 +1913,7 @@ __gnat_install_handler (void)
      exceptions.  Make sure that the handler isn't interrupted by another
      signal that might cause a scheduling event!  */
 
-  act.sa_handler = __gnat_error_handler;
+  act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_SIGINFO | SA_ONSTACK;
   sigemptyset (&act.sa_mask);
 

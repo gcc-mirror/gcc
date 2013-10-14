@@ -1600,11 +1600,14 @@ package body Sem_Prag is
       --  Start of processing for Analyze_Global_List
 
       begin
+         if Nkind (List) = N_Null then
+            null;
+
          --  Single global item declaration
 
-         if Nkind_In (List, N_Expanded_Name,
-                            N_Identifier,
-                            N_Selected_Component)
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
          then
             Analyze_Global_Item (List, Global_Mode);
 
@@ -1691,7 +1694,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      List      : Node_Id;
+      Items     : Node_Id;
       Subp_Decl : Node_Id;
 
       Restore_Scope : Boolean := False;
@@ -1704,11 +1707,11 @@ package body Sem_Prag is
 
       Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
-      List      := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
+      Items     := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  There is nothing to be done for a null global list
 
-      if Nkind (List) = N_Null then
+      if Nkind (Items) = N_Null then
          null;
 
       --  Analyze the various forms of global lists and items. Note that some
@@ -1726,7 +1729,7 @@ package body Sem_Prag is
             Install_Formals (Subp_Id);
          end if;
 
-         Analyze_Global_List (List);
+         Analyze_Global_List (Items);
 
          if Restore_Scope then
             End_Scope;
@@ -19358,6 +19361,10 @@ package body Sem_Prag is
       --  a state of mode Input, In_Out and Output respectively with a visible
       --  refinement.
 
+      Has_Null_State : Boolean := False;
+      --  This flag is set when the corresponding Global aspect/pragma has at
+      --  least one state with a null refinement.
+
       In_Constits     : Elist_Id := No_Elist;
       In_Out_Constits : Elist_Id := No_Elist;
       Out_Constits    : Elist_Id := No_Elist;
@@ -19512,7 +19519,7 @@ package body Sem_Prag is
                --  Ensure that one of the three coverage variants is satisfied
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Present (Refinement_Constituents (Item_Id))
+                 and then not Has_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19595,7 +19602,7 @@ package body Sem_Prag is
                --  is of mode Input.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Present (Refinement_Constituents (Item_Id))
+                 and then not Has_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19665,7 +19672,7 @@ package body Sem_Prag is
                --  have mode Output.
 
                if Ekind (Item_Id) = E_Abstract_State
-                 and then Present (Refinement_Constituents (Item_Id))
+                 and then not Has_Null_Refinement (Item_Id)
                then
                   Check_Constituent_Usage (Item_Id);
                end if;
@@ -19881,11 +19888,14 @@ package body Sem_Prag is
       --  Start of processing for Check_Refined_Global_List
 
       begin
+         if Nkind (List) = N_Null then
+            null;
+
          --  Single global item declaration
 
-         if Nkind_In (List, N_Expanded_Name,
-                            N_Identifier,
-                            N_Selected_Component)
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
          then
             Check_Refined_Global_Item (List, Global_Mode);
 
@@ -19963,17 +19973,20 @@ package body Sem_Prag is
 
             begin
                --  Signal that the global list contains at least one abstract
-               --  state with a visible refinement.
+               --  state with a visible refinement. Note that the refinement
+               --  may be null in which case there are no constituents.
 
-               if Ekind (Item_Id) = E_Abstract_State
-                 and then Present (Refinement_Constituents (Item_Id))
-               then
-                  if Mode = Name_Input then
-                     Has_In_State := True;
-                  elsif Mode = Name_In_Out then
-                     Has_In_Out_State := True;
-                  elsif Mode = Name_Output then
-                     Has_Out_State := True;
+               if Ekind (Item_Id) = E_Abstract_State then
+                  if Has_Null_Refinement (Item_Id) then
+                     Has_Null_State := True;
+                  else
+                     if Mode = Name_Input then
+                        Has_In_State := True;
+                     elsif Mode = Name_In_Out then
+                        Has_In_Out_State := True;
+                     elsif Mode = Name_Output then
+                        Has_Out_State := True;
+                     end if;
                   end if;
                end if;
 
@@ -19995,11 +20008,14 @@ package body Sem_Prag is
          --  Start of processing for Process_Global_List
 
          begin
+            if Nkind (List) = N_Null then
+               null;
+
             --  Single global item declaration
 
-            if Nkind_In (List, N_Expanded_Name,
-                               N_Identifier,
-                               N_Selected_Component)
+            elsif Nkind_In (List, N_Expanded_Name,
+                                  N_Identifier,
+                                  N_Selected_Component)
             then
                Process_Global_Item (List, Mode);
 
@@ -20148,11 +20164,13 @@ package body Sem_Prag is
 
       --  The corresponding Global aspect/pragma must mention at least one
       --  state with a visible refinement at the point Refined_Global is
-      --  processed.
+      --  processed. States with null refinements warrant a Refined_Global
+      --  aspect/pragma.
 
       if not Has_In_State
         and then not Has_In_Out_State
         and then not Has_Out_State
+        and then not Has_Null_State
       then
          Error_Msg_NE
            ("useless refinement, subprogram & does not mention abstract state "
@@ -20161,13 +20179,15 @@ package body Sem_Prag is
       end if;
 
       --  The global refinement of inputs and outputs cannot be null when the
-      --  corresponding Global aspect/pragma contains at least one item.
+      --  corresponding Global aspect/pragma contains at least one item except
+      --  in the case where we have states with null refinements.
 
       if Nkind (List) = N_Null
         and then
           (Present (In_Items)
             or else Present (In_Out_Items)
             or else Present (Out_Items))
+         and then not Has_Null_State
       then
          Error_Msg_NE
            ("refinement cannot be null, subprogram & has global items",
@@ -20370,8 +20390,11 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("cannot mix null and non-null constituents", Constit);
 
+               --  Mark the related state as having a null refinement
+
                else
                   Null_Seen := True;
+                  Set_Has_Null_Refinement (State_Id);
                end if;
 
             --  Non-null constituents

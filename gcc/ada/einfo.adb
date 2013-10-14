@@ -551,8 +551,8 @@ package body Einfo is
 
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
+   --    Has_Null_Refinement             Flag263
 
-   --    (unused)                        Flag263
    --    (unused)                        Flag264
    --    (unused)                        Flag265
    --    (unused)                        Flag266
@@ -1482,6 +1482,12 @@ package body Einfo is
    begin
       return Flag75 (Implementation_Base_Type (Id));
    end Has_Non_Standard_Rep;
+
+   function Has_Null_Refinement (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag263 (Id);
+   end Has_Null_Refinement;
 
    function Has_Object_Size_Clause (Id : E) return B is
    begin
@@ -4103,6 +4109,12 @@ package body Einfo is
       pragma Assert (Id = Base_Type (Id));
       Set_Flag75 (Id, V);
    end Set_Has_Non_Standard_Rep;
+
+   procedure Set_Has_Null_Refinement (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag263 (Id, V);
+   end Set_Has_Null_Refinement;
 
    procedure Set_Has_Object_Size_Clause (Id : E; V : B := True) is
    begin
@@ -7957,6 +7969,7 @@ package body Einfo is
       W ("Has_Missing_Return",              Flag142 (Id));
       W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
+      W ("Has_Null_Refinement",             Flag263 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Postconditions",              Flag240 (Id));

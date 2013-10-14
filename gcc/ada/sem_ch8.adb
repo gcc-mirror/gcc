@@ -1208,11 +1208,22 @@ package body Sem_Ch8 is
       --  may have been rewritten in several ways.
 
       elsif Is_Object_Reference (Nam) then
-         if Comes_From_Source (N)
-           and then Is_Dependent_Component_Of_Mutable_Object (Nam)
-         then
-            Error_Msg_N
-              ("illegal renaming of discriminant-dependent component", Nam);
+         if Comes_From_Source (N) then
+            if Is_Dependent_Component_Of_Mutable_Object (Nam) then
+               Error_Msg_N
+                 ("illegal renaming of discriminant-dependent component", Nam);
+            end if;
+
+            --  If the renaming comes from source and the renamed object is a
+            --  dereference, then mark the prefix as needing debug information,
+            --  since it might have been rewritten hence internally generated
+            --  and Debug_Renaming_Declaration will link the renaming to it.
+
+            if Nkind (Nam) = N_Explicit_Dereference
+              and then Is_Entity_Name (Prefix (Nam))
+            then
+               Set_Debug_Info_Needed (Entity (Prefix (Nam)));
+            end if;
          end if;
 
       --  A static function call may have been folded into a literal
