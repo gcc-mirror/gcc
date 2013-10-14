@@ -1160,7 +1160,6 @@ package body Sem_Aux is
 
    begin
       N := Parent (Pack_Id);
-
       while Nkind (N) /= N_Package_Specification loop
          N := Parent (N);
 

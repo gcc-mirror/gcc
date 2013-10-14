@@ -19971,16 +19971,15 @@ package body Sem_Prag is
 
                   if Nkind (Ref_Input) = N_Null then
                      Remove (Ref_Input);
-
                      return True;
+
                   else
                      Match_Error
                        ("null input cannot be matched in corresponding "
                         & "refinement clause", Dep_Input);
                   end if;
 
-               --  The remaining cases are formal parameters, variables and
-               --  states.
+               --  Remaining cases are formal parameters, variables, and states
 
                else
                   Dep_Id := Entity_Of (Dep_Input);
