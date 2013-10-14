@@ -1,3 +1,15 @@
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Adjust comment.
+	(Others_Value, All_Others_Value,
+	Unhandled_Others_Value): Declare as Character to slightly reduce
+	memory footprint.
+
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Size_Known): Size is not known for packed record
+	with aliased components
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor fix to error message.

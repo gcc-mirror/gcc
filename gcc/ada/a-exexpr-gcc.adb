@@ -295,18 +295,15 @@ package body Exception_Propagation is
    ---------------------------------------------------------------------------
 
    --  Currently, these only have their address taken and compared so there is
-   --  no real point having whole exception data blocks allocated. In any case
-   --  the types should match what gigi and the personality routine expect.
-   --  The initial value is an arbitrary value that will not exceed the range
-   --  of Integer on 16-bit targets (such as AAMP).
+   --  no real point having whole exception data blocks allocated.
 
-   Others_Value : constant Integer := 16#7FFF#;
+   Others_Value : constant Character := 'O';
    pragma Export (C, Others_Value, "__gnat_others_value");
 
-   All_Others_Value : constant Integer := 16#7FFF#;
+   All_Others_Value : constant Character := 'A';
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
 
-   Unhandled_Others_Value : constant Integer := 16#7FFF#;
+   Unhandled_Others_Value : constant Character := 'U';
    pragma Export (C, Unhandled_Others_Value, "__gnat_unhandled_others_value");
    --  Special choice (emitted by gigi) to catch and notify unhandled
    --  exceptions on targets which always handle exceptions (such as SEH).
@@ -357,12 +354,15 @@ package body Exception_Propagation is
 
    procedure Set_Foreign_Occurrence (Excep : EOA; Mo : System.Address) is
    begin
-      Excep.Id                 := Foreign_Exception'Access;
-      Excep.Machine_Occurrence := Mo;
-      Excep.Msg_Length         := 0;
-      Excep.Exception_Raised   := True;
-      Excep.Pid                := Local_Partition_ID;
-      Excep.Num_Tracebacks     := 0;
+      Excep.all := (
+        Id                 => Foreign_Exception'Access,
+        Machine_Occurrence => Mo,
+        Msg                => <>,
+        Msg_Length         => 0,
+        Exception_Raised   => True,
+        Pid                => Local_Partition_ID,
+        Num_Tracebacks     => 0,
+        Tracebacks         => <>);
    end Set_Foreign_Occurrence;
 
    -------------------------
