@@ -19965,7 +19965,13 @@ package body Sem_Prag is
                --  Match a null input with another null input
 
                if Nkind (Dep_Input) = N_Null then
-                  if Nkind (Expression (Ref_Clause)) = N_Null then
+                  Ref_Input := First (Ref_Inputs);
+
+                  --  Remove the matching null from the pool of candidates
+
+                  if Nkind (Ref_Input) = N_Null then
+                     Remove (Ref_Input);
+
                      return True;
                   else
                      Match_Error

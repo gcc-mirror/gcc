@@ -1,3 +1,7 @@
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Is_Matching_Input): Consume a matching null input.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb (Freeze_Record): Don't give warning about packed
