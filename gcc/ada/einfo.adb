@@ -1112,6 +1112,7 @@ package body Einfo is
       pragma Assert
         (Ekind_In (Id, E_Class_Wide_Type,
                        E_Class_Wide_Subtype,
+                       E_Access_Subprogram_Type,
                        E_Access_Protected_Subprogram_Type,
                        E_Anonymous_Access_Protected_Subprogram_Type,
                        E_Access_Subprogram_Type,

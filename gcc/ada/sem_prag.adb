@@ -1428,13 +1428,16 @@ package body Sem_Prag is
 
             if Present (Item_Id) then
 
-               --  A global item cannot reference a formal parameter. Do this
-               --  check first to provide a better error diagnostic.
+               --  A global item may denote a formal parameter of an enclosing
+               --  subprogram. Do this check first to provide a better error
+               --  diagnostic.
 
                if Is_Formal (Item_Id) then
-                  Error_Msg_N
-                    ("global item cannot reference formal parameter", Item);
-                  return;
+                  if Scope (Item_Id) = Subp_Id then
+                     Error_Msg_N
+                       ("global item cannot reference formal parameter", Item);
+                     return;
+                  end if;
 
                --  The only legal references are those to abstract states and
                --  variables.
