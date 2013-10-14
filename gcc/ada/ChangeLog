@@ -1,3 +1,11 @@
+2013-10-14  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/gigi.h (standard_datatypes): Add
+	ADT_set_exception_parameter_decl
+	(set_exception_parameter_decl): New macro.
+	* gcc-interface/trans.c (gigi): Initialize set_exception_parameter_decl.
+	(Exception_Handler_to_gnu_zcx): Initialize the choice parameter.
+
 2013-10-14  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb (Find_Stream_Subprogram): Optimize
