@@ -1,3 +1,8 @@
+2013-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_bind_var): Initialize value to avoid
+	(false positive) warning.
+
 2013-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/58691
