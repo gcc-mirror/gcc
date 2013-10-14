@@ -482,15 +482,16 @@ package body Sem_Prag is
 
       All_Inputs_Seen : Elist_Id := No_Elist;
       --  A list containing the entities of all the inputs processed so far.
-      --  This Elist is populated with unique entities because the same input
+      --  The list is populated with unique entities because the same input
       --  may appear in multiple input lists.
+
+      All_Outputs_Seen : Elist_Id := No_Elist;
+      --  A list containing the entities of all the outputs processed so far.
+      --  The list is populated with unique entities because output items are
+      --  unique in a dependence relation.
 
       Global_Seen : Boolean := False;
       --  A flag set when pragma Global has been processed
-
-      Outputs_Seen : Elist_Id := No_Elist;
-      --  A list containing the entities of all the outputs processed so far.
-      --  The elements of this list may come from different output lists.
 
       Null_Output_Seen : Boolean := False;
       --  A flag used to track the legality of a null output
@@ -766,13 +767,19 @@ package body Sem_Prag is
                      --  output. Such input items cannot appear in other input
                      --  lists.
 
-                     if Null_Output_Seen
+                     if Is_Input
+                       and then Null_Output_Seen
                        and then Contains (All_Inputs_Seen, Item_Id)
                      then
                         Error_Msg_N
                           ("input of a null output list appears in multiple "
                            & "input lists", Item);
-                     else
+                     end if;
+
+                     --  Add an input or a self-referential output to the list
+                     --  of all processed inputs.
+
+                     if Is_Input or else Self_Ref then
                         Add_Item (Item_Id, All_Inputs_Seen);
                      end if;
 
@@ -862,7 +869,7 @@ package body Sem_Prag is
                Is_Input  => False,
                Self_Ref  => Self_Ref,
                Top_Level => True,
-               Seen      => Outputs_Seen,
+               Seen      => All_Outputs_Seen,
                Null_Seen => Null_Output_Seen);
 
             Next (Output);
@@ -900,6 +907,15 @@ package body Sem_Prag is
          --  Input
 
          if Is_Input then
+
+            --  "In" and "in out" parameters already have the proper mode to
+            --  act as input. "Out" parameters are valid inputs only when their
+            --  type is unconstrained or tagged as their discriminants, array
+            --  bouns or tags can be read. In general, states and variables
+            --  are considered to have mode "in out" unless they are moded by
+            --  pragma [Refined_]Global. In that case, the item must appear in
+            --  an input global list.
+
             if (Ekind (Item_Id) = E_Out_Parameter
                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
               or else
@@ -913,8 +929,10 @@ package body Sem_Prag is
 
          elsif Self_Ref then
 
-            --  A self-referential state or variable must appear in both input
-            --  and output lists of a subprogram.
+            --  In general, states and variables are considered to have mode
+            --  "in out" unless they are explicitly moded by pragma [Refined_]
+            --  Global. If this is the case, then the item must appear in both
+            --  an input and output global list.
 
             if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                if Global_Seen
@@ -928,20 +946,28 @@ package body Sem_Prag is
 
             --  A self-referential out parameter of an unconstrained or tagged
             --  type acts as an input because the discriminants, array bounds
-            --  or the tag may be read.
+            --  or the tag may be read. Note that the presence of [Refined_]
+            --  Global is not significant here because the item is a parameter.
 
             elsif Ekind (Item_Id) = E_Out_Parameter
               and then Is_Unconstrained_Or_Tagged_Item (Item_Id)
             then
                null;
 
-            --  Self-referential parameter
+            --  The remaining cases are "in", "in out" and "out" parameters. To
+            --  qualify as self-referential item, the parameter must be of mode
+            --  "in out".
 
             elsif Ekind (Item_Id) /= E_In_Out_Parameter then
                Error_Msg_NE ("item & must have mode in out", Item, Item_Id);
             end if;
 
-         --  Regular output
+         --  Output
+
+         --  "In out" and "ou" parameters already have the proper mode to act
+         --  as output. In general, states and variables are considered to have
+         --  mode "in out" unless they are moded by pragma [Refined_]Global.
+         --  In that case, the item must appear in an output global list.
 
          elsif Ekind (Item_Id) = E_In_Parameter
            or else
@@ -1416,7 +1442,7 @@ package body Sem_Prag is
          --  dependency.
 
          Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
-         Check_Usage (Subp_Outputs, Outputs_Seen, False);
+         Check_Usage (Subp_Outputs, All_Outputs_Seen, False);
          Check_Function_Return;
 
       --  Dependency clauses appear as component associations of an aggregate
@@ -1480,7 +1506,7 @@ package body Sem_Prag is
          --  dependency.
 
          Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
-         Check_Usage (Subp_Outputs, Outputs_Seen, False);
+         Check_Usage (Subp_Outputs, All_Outputs_Seen, False);
          Check_Function_Return;
 
       --  The top level dependency relation is malformed
@@ -9122,9 +9148,13 @@ package body Sem_Prag is
                      Next (Opt);
                   end loop;
 
-                  --  External requires exactly one Input_Only or Output_Only
+                  --  External may appear on its own or with exactly one option
+                  --  Input_Only or Output_Only, but not both.
 
-                  if External_Seen and then Input_Seen = Output_Seen then
+                  if External_Seen
+                    and then Input_Seen
+                    and then Output_Seen
+                  then
                      Error_Msg_N
                        ("option External requires exactly one option "
                         & "Input_Only or Output_Only", State);
