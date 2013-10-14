@@ -1,5 +1,16 @@
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part):
+	Rename Outputs_Seen to All_Outputs_Seen and update all occurrences
+	of the variable.
+	(Analyze_Input_Output): Add an item to
+	All_Inputs_Seen when it is an input or a self-referential output.
+	(Check_Mode): Comment reformatting.
+	(Analyze_Abstract_State): Remove the restriction that an Export state
+	must also have mode Input_Only or Output_Only.
+
+2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb: Flag 263 is now known as Has_Visible_Refinement.
 	(Has_Non_Null_Refinement): New routine.
 	(Has_Null_Refinement): The routine is now synthesized.
