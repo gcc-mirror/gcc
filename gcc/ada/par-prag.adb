@@ -1293,6 +1293,8 @@ begin
            Pragma_Thread_Local_Storage           |
            Pragma_Time_Slice                     |
            Pragma_Title                          |
+           Pragma_Type_Invariant                 |
+           Pragma_Type_Invariant_Class           |
            Pragma_Unchecked_Union                |
            Pragma_Unimplemented_Unit             |
            Pragma_Universal_Aliasing             |

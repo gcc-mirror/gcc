@@ -253,6 +253,8 @@ Implementation Defined Pragmas
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
+* Pragma Type_Invariant::
+* Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
@@ -1073,6 +1075,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
+* Pragma Type_Invariant::
+* Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
@@ -5367,6 +5371,21 @@ subtype Q is R with
   Dynamic_Predicate => F(Q) or G(Q);
 @end smallexample
 
+Note that there is are no pragmas @code{Dynamic_Predicate}
+or @code{Static_Predicate}. That is
+because these pragmas would affect legality and semantics of
+the program and thus do not have a neutral effect if ignored.
+The motivation behind providing pragmas equivalent to
+corresponding aspects is to allow a program to be written
+using the pragmas, and then compiled with a compiler that
+will ignore the pragmas. That doesn't work in the case of
+static and dynamic predicates, since if the corresponding
+pragmas are ignored, then the behavior of the program is
+fundamentally changed (for example a membership test
+@code{A in B} would not take into account a predicate
+defined for subtype B). When following this approach, the
+use of predicates should be avoided.
+
 @node Pragma Preelaborable_Initialization
 @unnumberedsec Pragma Preelaborable_Initialization
 @findex Preelaborable_Initialization
@@ -6785,6 +6804,56 @@ Unlike other pragmas, the full flexibility of named notation is allowed
 for this pragma, i.e.@: the parameters may be given in any order if named
 notation is used, and named and positional notation can be mixed
 following the normal rules for procedure calls in Ada.
+
+@node Pragma Type_Invariant
+@unnumberedsec Pragma Type_Invariant
+@findex Invariant
+@findex Type_Invariant pragma
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Type_Invariant
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+The @code{Type_Invariant} pragma is intended to be an exact
+replacement for the language-defined @code{Type_Invariant}
+aspect, and shares its restrictions and semantics. It differs
+from the language defined @code{Invariant} pragma in that it
+does not permit a string parameter, and it is
+controlled by the assertion identifier @code{Type_Invariant}
+rather than @code{Invariant}.
+
+@node Pragma Type_Invariant_Class
+@unnumberedsec Pragma Type_Invariant_Class
+@findex Invariant
+@findex Type_Invariant_Class pragma
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Type_Invariant_Class
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+The @code{Type_Invariant_Class} pragma is intended to be an exact
+replacement for the language-defined @code{Type_Invariant'Class}
+aspect, and shares its restrictions and semantics.
+
+Note: This pragma is called @code{Type_Invariant_Class} rather than
+@code{Type_Invariant'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for providing pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Type_Invariant'Class},
+not @code{Type_Invariant_Class}.
 
 @node Pragma Unchecked_Union
 @unnumberedsec Pragma Unchecked_Union

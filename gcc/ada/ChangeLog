@@ -1,3 +1,21 @@
+2013-10-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Generate proper string
+	for invariant
+	* gnat_rm.texi: Add documentation for pragmas
+	Type_Invariant[_Class]
+	* par-prag.adb: Add entries for pragmas Type_Invariant[_Class]
+	* sem_ch13.adb: Minor reformatting
+	* sem_prag.adb: Implement pragmas Type_Invariant[_Class]
+	* snames.ads-tmpl: Add entries for pragmas Type_Invariant[_Class]
+
+2013-10-14  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Release now unused debug switches that were only
+	relevant for gnat2why backend, not the frontend
+	* frontend.adb (Frontend) Do not stop when -gnatd.H is present,
+	was unused
+
 2013-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Global_Item): Allow

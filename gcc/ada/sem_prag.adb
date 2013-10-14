@@ -846,7 +846,7 @@ package body Sem_Prag is
 
          if Is_Input then
             if (Ekind (Item_Id) = E_Out_Parameter
-                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
+                 and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
               or else
                (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
             then
@@ -11772,7 +11772,6 @@ package body Sem_Prag is
                 Name_Link_Name));
 
             Check_At_Least_N_Arguments (2);
-
             Check_At_Most_N_Arguments  (4);
             Process_Convention (C, Def_Id);
 
@@ -13716,7 +13715,7 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
-            Check_At_Most_N_Arguments (3);
+            Check_At_Most_N_Arguments  (3);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Check);
 
@@ -15316,7 +15315,7 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (2);
+            Check_At_Most_N_Arguments  (2);
 
             --  Process first argument
 
@@ -15700,10 +15699,12 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (1);
+            Check_Arg_Count (1);
             Check_No_Identifiers;
             Check_Pre_Post;
+
+            --  Rewrite Post[_Class] pragma as Precondition pragma setting the
+            --  flag Class_Present to True for the Post_Class case.
 
             Set_Class_Present (N, Prag_Id = Pragma_Pre_Class);
             PC_Pragma := New_Copy (N);
@@ -15760,10 +15761,12 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (1);
+            Check_Arg_Count (1);
             Check_No_Identifiers;
             Check_Pre_Post;
+
+            --  Rewrite Pre[_Class] pragma as Precondition pragma setting the
+            --  flag Class_Present to True for the Pre_Class case.
 
             Set_Class_Present (N, Prag_Id = Pragma_Pre_Class);
             PC_Pragma := New_Copy (N);
@@ -15787,7 +15790,7 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (2);
+            Check_At_Most_N_Arguments  (2);
             Check_Optional_Identifier (Arg1, Name_Check);
             Check_Precondition_Postcondition (In_Body);
 
@@ -18316,6 +18319,34 @@ package body Sem_Prag is
                end if;
             end loop;
          end Title;
+
+         ----------------------------
+         -- Type_Invariant[_Class] --
+         ----------------------------
+
+         --  pragma Type_Invariant[_Class]
+         --    ([Entity =>] type_LOCAL_NAME,
+         --     [Check  =>] EXPRESSION);
+
+         when Pragma_Type_Invariant       |
+              Pragma_Type_Invariant_Class =>
+         Type_Invariant : declare
+            I_Pragma : Node_Id;
+
+         begin
+            Check_Arg_Count (2);
+
+            --  Rewrite Type_Invariant[_Class] pragma as an Invariant pragma,
+            --  setting Class_Present for the Type_Invariant_Class case.
+
+            Set_Class_Present (N, Prag_Id = Pragma_Type_Invariant_Class);
+            I_Pragma := New_Copy (N);
+            Set_Pragma_Identifier
+              (I_Pragma, Make_Identifier (Loc, Name_Invariant));
+            Rewrite (N, I_Pragma);
+            Set_Analyzed (N, False);
+            Analyze (N);
+         end Type_Invariant;
 
          ---------------------
          -- Unchecked_Union --
@@ -21493,6 +21524,8 @@ package body Sem_Prag is
       Pragma_Thread_Local_Storage           =>  0,
       Pragma_Time_Slice                     => -1,
       Pragma_Title                          => -1,
+      Pragma_Type_Invariant                 => -1,
+      Pragma_Type_Invariant_Class           => -1,
       Pragma_Unchecked_Union                =>  0,
       Pragma_Unimplemented_Unit             => -1,
       Pragma_Universal_Aliasing             => -1,

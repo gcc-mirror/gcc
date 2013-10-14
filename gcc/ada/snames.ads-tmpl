@@ -144,8 +144,6 @@ package Snames is
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
-   Name_Type_Invariant                 : constant Name_Id := N + $;
-   Name_Type_Invariant_Class           : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
    --  at the start of these names get translated to extra underscores. These
@@ -448,7 +446,7 @@ package Snames is
    Name_Wide_Character_Encoding        : constant Name_Id := N + $; -- GNAT
    Last_Configuration_Pragma_Name      : constant Name_Id := N + $;
 
-   --  Remaining pragma names
+   --  Remaining pragma names (non-configuration pragmas)
 
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
@@ -621,6 +619,8 @@ package Snames is
    Name_Thread_Local_Storage           : constant Name_Id := N + $; -- GNAT
    Name_Time_Slice                     : constant Name_Id := N + $; -- GNAT
    Name_Title                          : constant Name_Id := N + $; -- GNAT
+   Name_Type_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Type_Invariant_Class           : constant Name_Id := N + $; -- GNAT
    Name_Unchecked_Union                : constant Name_Id := N + $; -- Ada 05
    Name_Unimplemented_Unit             : constant Name_Id := N + $; -- GNAT
    Name_Universal_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -1905,6 +1905,8 @@ package Snames is
       Pragma_Thread_Local_Storage,
       Pragma_Time_Slice,
       Pragma_Title,
+      Pragma_Type_Invariant,
+      Pragma_Type_Invariant_Class,
       Pragma_Unchecked_Union,
       Pragma_Unimplemented_Unit,
       Pragma_Universal_Aliasing,
