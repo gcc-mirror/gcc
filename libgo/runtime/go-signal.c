@@ -399,6 +399,7 @@ sig_tramp_info (int sig, Siginfo *info, void *context)
 {
   G *gp;
   M *mp;
+  void *stack_context[10];
 
   /* We are now running on the stack registered via sigaltstack.
      (Actually there is a small span of time between runtime_siginit
@@ -409,7 +410,7 @@ sig_tramp_info (int sig, Siginfo *info, void *context)
   if (gp != NULL)
     {
 #ifdef USING_SPLIT_STACK
-      __splitstack_getcontext (&gp->stack_context[0]);
+      __splitstack_getcontext (&stack_context[0]);
 #endif
     }
 
@@ -432,7 +433,7 @@ sig_tramp_info (int sig, Siginfo *info, void *context)
   if (gp != NULL)
     {
 #ifdef USING_SPLIT_STACK
-      __splitstack_setcontext (&gp->stack_context[0]);
+      __splitstack_setcontext (&stack_context[0]);
 #endif
     }
 }
