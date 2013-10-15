@@ -17,6 +17,199 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_attr "cortex_a15_neon_type"
+  "neon_abd, neon_abd_q, neon_arith_acc, neon_arith_acc_q,
+   neon_arith_basic, neon_arith_complex,
+   neon_reduc_add_acc, neon_multiply, neon_multiply_q,
+   neon_multiply_long, neon_mla, neon_mla_q, neon_mla_long,
+   neon_sat_mla_long, neon_shift_acc, neon_shift_imm_basic,\
+   neon_shift_imm_complex,
+   neon_shift_reg_basic, neon_shift_reg_basic_q, neon_shift_reg_complex,
+   neon_shift_reg_complex_q, neon_fp_negabs, neon_fp_arith,
+   neon_fp_arith_q, neon_fp_cvt_int,
+   neon_fp_cvt_int_q, neon_fp_cvt16, neon_fp_minmax, neon_fp_mul,
+   neon_fp_mul_q, neon_fp_mla, neon_fp_mla_q, neon_fp_recpe_rsqrte,
+   neon_fp_recpe_rsqrte_q, neon_bitops, neon_bitops_q, neon_from_gp,
+   neon_from_gp_q, neon_move, neon_tbl3_tbl4, neon_zip_q, neon_to_gp,
+   neon_load_a, neon_load_b, neon_load_c, neon_load_d, neon_load_e,
+   neon_load_f, neon_store_a, neon_store_b, neon_store_c, neon_store_d,
+   neon_store_e, neon_store_f, neon_store_g, neon_store_h,
+   unknown"
+  (cond [
+          (eq_attr "type" "neon_abd, neon_abd_long")
+            (const_string "neon_abd")
+          (eq_attr "type" "neon_abd_q")
+            (const_string "neon_abd_q")
+          (eq_attr "type" "neon_arith_acc, neon_reduc_add_acc,\
+                           neon_reduc_add_acc_q")
+            (const_string "neon_arith_acc")
+          (eq_attr "type" "neon_arith_acc_q")
+            (const_string "neon_arith_acc_q")
+          (eq_attr "type" "neon_add, neon_add_q, neon_add_long,\
+                           neon_add_widen, neon_neg, neon_neg_q,\
+                           neon_reduc_add, neon_reduc_add_q,\
+                           neon_reduc_add_long, neon_sub, neon_sub_q,\
+                           neon_sub_long, neon_sub_widen, neon_logic,\
+                           neon_logic_q, neon_tst, neon_tst_q")
+            (const_string "neon_arith_basic")
+          (eq_attr "type" "neon_abs, neon_abs_q, neon_add_halve_narrow_q,\
+                           neon_add_halve, neon_add_halve_q,\
+                           neon_sub_halve, neon_sub_halve_q, neon_qabs,\
+                           neon_qabs_q, neon_qadd, neon_qadd_q, neon_qneg,\
+                           neon_qneg_q, neon_qsub, neon_qsub_q,\
+                           neon_sub_halve_narrow_q,\
+                           neon_compare, neon_compare_q,\
+                           neon_compare_zero, neon_compare_zero_q,\
+                           neon_minmax, neon_minmax_q, neon_reduc_minmax,\
+                           neon_reduc_minmax_q")
+            (const_string "neon_arith_complex")
+
+          (eq_attr "type" "neon_mul_b, neon_mul_h, neon_mul_s,\
+                           neon_mul_h_scalar, neon_mul_s_scalar,\
+                           neon_sat_mul_b, neon_sat_mul_h,\
+                           neon_sat_mul_s, neon_sat_mul_h_scalar,\
+                           neon_sat_mul_s_scalar,\
+                           neon_mul_b_long, neon_mul_h_long,\
+                           neon_mul_s_long,\
+                           neon_mul_h_scalar_long, neon_mul_s_scalar_long,\
+                           neon_sat_mul_b_long, neon_sat_mul_h_long,\
+                           neon_sat_mul_s_long, neon_sat_mul_h_scalar_long,\
+                           neon_sat_mul_s_scalar_long")
+            (const_string "neon_multiply")
+          (eq_attr "type" "neon_mul_b_q, neon_mul_h_q, neon_mul_s_q,\
+                           neon_mul_h_scalar_q, neon_mul_s_scalar_q,\
+                           neon_sat_mul_b_q, neon_sat_mul_h_q,\
+                           neon_sat_mul_s_q, neon_sat_mul_h_scalar_q,\
+                           neon_sat_mul_s_scalar_q")
+            (const_string "neon_multiply_q")
+          (eq_attr "type" "neon_mla_b, neon_mla_h, neon_mla_s,\
+                           neon_mla_h_scalar, neon_mla_s_scalar,\
+                           neon_mla_b_long, neon_mla_h_long,\
+                           neon_mla_s_long,\
+                           neon_mla_h_scalar_long, neon_mla_s_scalar_long")
+            (const_string "neon_mla")
+          (eq_attr "type" "neon_mla_b_q, neon_mla_h_q, neon_mla_s_q,\
+                           neon_mla_h_scalar_q, neon_mla_s_scalar_q")
+            (const_string "neon_mla_q")
+          (eq_attr "type" "neon_sat_mla_b_long, neon_sat_mla_h_long,\
+                           neon_sat_mla_s_long, neon_sat_mla_h_scalar_long,\
+                           neon_sat_mla_s_scalar_long")
+            (const_string "neon_sat_mla_long")
+
+          (eq_attr "type" "neon_shift_acc, neon_shift_acc_q")
+            (const_string "neon_shift_acc")
+          (eq_attr "type" "neon_shift_imm, neon_shift_imm_q,\
+                           neon_shift_imm_narrow_q, neon_shift_imm_long")
+            (const_string "neon_shift_imm_basic")
+          (eq_attr "type" "neon_sat_shift_imm, neon_sat_shift_imm_q,\
+                           neon_sat_shift_imm_narrow_q")
+            (const_string "neon_shift_imm_complex")
+          (eq_attr "type" "neon_shift_reg")
+            (const_string "neon_shift_reg_basic")
+          (eq_attr "type" "neon_shift_reg_q")
+            (const_string "neon_shift_reg_basic_q")
+          (eq_attr "type" "neon_sat_shift_reg")
+            (const_string "neon_shift_reg_complex")
+          (eq_attr "type" "neon_sat_shift_reg_q")
+            (const_string "neon_shift_reg_complex_q")
+
+          (eq_attr "type" "neon_fp_neg_s, neon_fp_neg_s_q,\
+                           neon_fp_abs_s, neon_fp_abs_s_q")
+            (const_string "neon_fp_negabs")
+          (eq_attr "type" "neon_fp_addsub_s, neon_fp_abd_s,\
+                           neon_fp_reduc_add_s, neon_fp_compare_s,\
+                           neon_fp_minmax_s, neon_fp_minmax_s_q,\
+                           neon_fp_reduc_minmax_s, neon_fp_reduc_minmax_s_q")
+            (const_string "neon_fp_arith")
+          (eq_attr "type" "neon_fp_addsub_s_q, neon_fp_abd_s_q,\
+                           neon_fp_reduc_add_s_q, neon_fp_compare_s_q")
+            (const_string "neon_fp_arith_q")
+          (eq_attr "type" "neon_fp_to_int_s, neon_int_to_fp_s")
+            (const_string "neon_fp_cvt_int")
+          (eq_attr "type" "neon_fp_to_int_s_q, neon_int_to_fp_s_q")
+            (const_string "neon_fp_cvt_int_q")
+          (eq_attr "type" "neon_fp_cvt_narrow_s_q, neon_fp_cvt_widen_h")
+            (const_string "neon_fp_cvt16")
+          (eq_attr "type" "neon_fp_mul_s, neon_fp_mul_s_scalar")
+            (const_string "neon_fp_mul")
+          (eq_attr "type" "neon_fp_mul_s_q, neon_fp_mul_s_scalar_q")
+            (const_string "neon_fp_mul_q")
+          (eq_attr "type" "neon_fp_mla_s, neon_fp_mla_s_scalar")
+            (const_string "neon_fp_mla")
+          (eq_attr "type" "neon_fp_mla_s_q, neon_fp_mla_s_scalar_q")
+            (const_string "neon_fp_mla_q")
+          (eq_attr "type" "neon_fp_recpe_s, neon_fp_rsqrte_s")
+            (const_string "neon_fp_recpe_rsqrte")
+          (eq_attr "type" "neon_fp_recpe_s_q, neon_fp_rsqrte_s_q")
+            (const_string "neon_fp_recpe_rsqrte_q")
+
+          (eq_attr "type" "neon_bsl, neon_cls, neon_cnt,\
+                           neon_rev, neon_permute,\
+                           neon_tbl1, neon_tbl2, neon_zip,\
+                           neon_dup, neon_dup_q, neon_ext, neon_ext_q,\
+                           neon_move, neon_move_q, neon_move_narrow_q")
+            (const_string "neon_bitops")
+          (eq_attr "type" "neon_bsl_q, neon_cls_q, neon_cnt_q,\
+                           neon_rev_q, neon_permute_q")
+            (const_string "neon_bitops_q")
+          (eq_attr "type" "neon_from_gp")
+            (const_string "neon_from_gp")
+          (eq_attr "type" "neon_from_gp_q")
+            (const_string "neon_from_gp_q")
+          (eq_attr "type" "neon_tbl3, neon_tbl4")
+            (const_string "neon_tbl3_tbl4")
+          (eq_attr "type" "neon_zip_q")
+            (const_string "neon_zip_q")
+          (eq_attr "type" "neon_to_gp, neon_to_gp_q")
+            (const_string "neon_to_gp")
+
+          (eq_attr "type" "f_loads, f_loadd,\
+                           neon_load1_1reg, neon_load1_1reg_q,\
+                           neon_load1_2reg, neon_load1_2reg_q")
+            (const_string "neon_load_a")
+          (eq_attr "type" "neon_load1_3reg, neon_load1_3reg_q,\
+                           neon_load1_4reg, neon_load1_4reg_q")
+            (const_string "neon_load_b")
+          (eq_attr "type" "neon_load1_one_lane, neon_load1_one_lane_q,\
+                           neon_load1_all_lanes, neon_load1_all_lanes_q,\
+                           neon_load2_2reg, neon_load2_2reg_q,\
+                           neon_load2_all_lanes, neon_load2_all_lanes_q")
+            (const_string "neon_load_c")
+          (eq_attr "type" "neon_load2_4reg, neon_load2_4reg_q,\
+                           neon_load3_3reg, neon_load3_3reg_q,\
+                           neon_load3_one_lane, neon_load3_one_lane_q,\
+                           neon_load4_4reg, neon_load4_4reg_q")
+            (const_string "neon_load_d")
+          (eq_attr "type" "neon_load2_one_lane, neon_load2_one_lane_q,\
+                           neon_load3_all_lanes, neon_load3_all_lanes_q,\
+                           neon_load4_all_lanes, neon_load4_all_lanes_q")
+            (const_string "neon_load_e")
+          (eq_attr "type" "neon_load4_one_lane, neon_load4_one_lane_q")
+            (const_string "neon_load_f")
+
+          (eq_attr "type" "f_stores, f_stored,\
+                           neon_store1_1reg, neon_store1_1reg_q")
+            (const_string "neon_store_a")
+          (eq_attr "type" "neon_store1_2reg, neon_store1_2reg_q")
+            (const_string "neon_store_b")
+          (eq_attr "type" "neon_store1_3reg, neon_store1_3reg_q")
+            (const_string "neon_store_c")
+          (eq_attr "type" "neon_store1_4reg, neon_store1_4reg_q")
+            (const_string "neon_store_d")
+          (eq_attr "type" "neon_store1_one_lane, neon_store1_one_lane_q,\
+                           neon_store2_one_lane, neon_store2_one_lane_q")
+            (const_string "neon_store_e")
+          (eq_attr "type" "neon_store2_2reg, neon_store2_2reg_q,\
+                           neon_store3_one_lane, neon_store3_one_lane_q,\
+                           neon_store4_one_lane, neon_store4_one_lane_q")
+            (const_string "neon_store_f")
+          (eq_attr "type" "neon_store2_4reg, neon_store2_4reg_q,\
+                           neon_store4_4reg, neon_store4_4reg_q")
+            (const_string "neon_store_g")
+          (eq_attr "type" "neon_store3_3reg, neon_store3_3reg_q")
+            (const_string "neon_store_h")]
+          (const_string "unknown")))
+
 (define_automaton "cortex_a15_neon")
 
 ;; Dispatch unit.
@@ -91,348 +284,316 @@
 (define_reservation "ca15_cx_perm" "ca15_cx_ij|ca15_cx_ik")
 (define_reservation "ca15_cx_perm_2" "ca15_cx_ij+ca15_cx_ik")
 
-(define_insn_reservation  "cortex_a15_neon_int_1" 5
+;; Integer Arithmetic Instructions.
+
+(define_insn_reservation  "cortex_a15_neon_abd" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_int_1"))
+       (eq_attr "cortex_a15_neon_type" "neon_abd"))
   "ca15_issue1,ca15_cx_ialu")
 
-(define_insn_reservation  "cortex_a15_neon_int_2" 5
+(define_insn_reservation  "cortex_a15_neon_abd_q" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_int_2"))
-  "ca15_issue1,ca15_cx_ialu")
+       (eq_attr "cortex_a15_neon_type" "neon_abd_q"))
+  "ca15_issue2,ca15_cx_ialu*2")
 
-(define_insn_reservation  "cortex_a15_neon_int_3" 5
+(define_insn_reservation  "cortex_a15_neon_aba" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_int_3"))
-  "ca15_issue1,ca15_cx_ialu")
-
-(define_insn_reservation  "cortex_a15_neon_int_4" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_int_4"))
-  "ca15_issue1,ca15_cx_ialu")
-
-(define_insn_reservation  "cortex_a15_neon_int_5" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_int_5"))
-  "ca15_issue1,ca15_cx_ialu")
-
-(define_insn_reservation  "cortex_a15_neon_vqneg_vqabs" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vqneg_vqabs"))
-  "ca15_issue1,ca15_cx_ialu")
-
-(define_insn_reservation  "cortex_a15_neon_vmov" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vmov"))
-  "ca15_issue1,ca15_cx_ialu")
-
-(define_insn_reservation  "cortex_a15_neon_vaba" 7
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vaba"))
+       (eq_attr "cortex_a15_neon_type" "neon_arith_acc"))
   "ca15_issue1,ca15_cx_ialu_with_acc")
 
-(define_insn_reservation  "cortex_a15_neon_vaba_qqq" 8
+(define_insn_reservation  "cortex_a15_neon_aba_q" 8
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vaba_qqq"))
+       (eq_attr "cortex_a15_neon_type" "neon_arith_acc_q"))
   "ca15_issue2,ca15_cx_ialu_with_acc*2")
 
-(define_insn_reservation
-  "cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long" 6
+(define_insn_reservation  "cortex_a15_neon_arith_basic" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long"))
+       (eq_attr "cortex_a15_neon_type" "neon_arith_basic"))
+  "ca15_issue1,ca15_cx_ialu")
+
+(define_insn_reservation  "cortex_a15_neon_arith_complex" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_arith_complex"))
+  "ca15_issue1,ca15_cx_ialu")
+
+;; Integer Multiply Instructions.
+
+(define_insn_reservation "cortex_a15_neon_multiply" 6
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_multiply"))
   "ca15_issue1,ca15_cx_imac")
 
-(define_insn_reservation "cortex_a15_neon_mul_qqq_8_16_32_ddd_32" 7
+(define_insn_reservation "cortex_a15_neon_multiply_q" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mul_qqq_8_16_32_ddd_32"))
-  "ca15_issue1,ca15_cx_imac*2")
+       (eq_attr "cortex_a15_neon_type" "neon_multiply_q"))
+  "ca15_issue2,ca15_cx_imac*2")
 
-(define_insn_reservation
-  "cortex_a15_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar" 7
+(define_insn_reservation "cortex_a15_neon_mla" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type"
-              "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar"))
-  "ca15_issue1,ca15_cx_imac*2")
-
-(define_insn_reservation
-  "cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type"
-              "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long"))
+       (eq_attr "cortex_a15_neon_type" "neon_mla"))
   "ca15_issue1,ca15_cx_imac")
 
-(define_insn_reservation
-  "cortex_a15_neon_mla_qqq_8_16" 7
+(define_insn_reservation "cortex_a15_neon_mla_q" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type"
-              "neon_mla_qqq_8_16"))
+       (eq_attr "cortex_a15_neon_type" "neon_mla_q"))
   "ca15_issue1,ca15_cx_imac*2")
 
-(define_insn_reservation
-  "cortex_a15_neon_mla_ddd_32_qqd_16_ddd_32_scalar_\
-     qdd_64_32_lotype_qdd_64_32_long" 7
+(define_insn_reservation "cortex_a15_neon_sat_mla_long" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type"  "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
+       (eq_attr "cortex_a15_neon_type" "neon_sat_mla_long"))
   "ca15_issue1,ca15_cx_imac")
 
-(define_insn_reservation
-  "cortex_a15_neon_mla_qqq_32_qqd_32_scalar" 7
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mla_qqq_32_qqd_32_scalar"))
-  "ca15_issue1,ca15_cx_imac*2")
+;; Integer Shift Instructions.
 
 (define_insn_reservation
-  "cortex_a15_neon_mul_ddd_16_scalar_32_16_long_scalar" 6
+  "cortex_a15_neon_shift_acc" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mul_ddd_16_scalar_32_16_long_scalar"))
-  "ca15_issue1,ca15_cx_imac")
-
-(define_insn_reservation
-  "cortex_a15_neon_mul_qqd_32_scalar" 7
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mul_qqd_32_scalar"))
-  "ca15_issue1,ca15_cx_imac*2")
-
-(define_insn_reservation
-  "cortex_a15_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar"))
-  "ca15_issue1,ca15_cx_imac")
-
-(define_insn_reservation
-  "cortex_a15_neon_shift_1" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_shift_1"))
-  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
-
-(define_insn_reservation
-  "cortex_a15_neon_shift_2" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_shift_2"))
-  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
-
-(define_insn_reservation
-  "cortex_a15_neon_shift_3" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_shift_3"))
-  "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf)*2")
-
-(define_insn_reservation
-  "cortex_a15_neon_vshl_ddd" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vshl_ddd"))
-  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
-
-(define_insn_reservation
-  "cortex_a15_neon_vqshl_vrshl_vqrshl_qqq" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vqshl_vrshl_vqrshl_qqq"))
-  "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf)*2")
-
-(define_insn_reservation
-  "cortex_a15_neon_vsra_vrsra" 7
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vsra_vrsra"))
+       (eq_attr "cortex_a15_neon_type" "neon_shift_acc"))
   "ca15_issue1,ca15_cx_ishf_with_acc")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vadd_ddd_vabs_dd" 6
+  "cortex_a15_neon_shift_imm_basic" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vadd_ddd_vabs_dd"))
+       (eq_attr "cortex_a15_neon_type" "neon_shift_imm_basic"))
+  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
+
+(define_insn_reservation
+  "cortex_a15_neon_shift_imm_complex" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_shift_imm_complex"))
+  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
+
+(define_insn_reservation
+  "cortex_a15_neon_shift_reg_basic" 4
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_shift_reg_basic"))
+  "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
+
+(define_insn_reservation
+  "cortex_a15_neon_shift_reg_basic_q" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_shift_reg_basic_q"))
+  "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf*2)")
+
+(define_insn_reservation
+  "cortex_a15_neon_shift_reg_complex" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_shift_reg_complex"))
+  "ca15_issue2,ca15_cx_ik+ca15_cx_ishf")
+
+(define_insn_reservation
+  "cortex_a15_neon_shift_reg_complex_q" 6
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_shift_reg_complex_q"))
+  "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf)*2")
+
+;; Floating Point Instructions.
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_negabs" 4
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_negabs"))
   "ca15_issue1,ca15_cx_falu")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vadd_qqq_vabs_qq" 7
+  "cortex_a15_neon_fp_arith" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vadd_qqq_vabs_qq"))
+       (eq_attr "cortex_a15_neon_type" "neon_fp_arith"))
+  "ca15_issue1,ca15_cx_falu")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_arith_q" 6
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_arith_q"))
   "ca15_issue2,ca15_cx_falu_2")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vmul_ddd" 5
+  "cortex_a15_neon_fp_cvt_int" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmul_ddd"))
+       (eq_attr "cortex_a15_neon_type" "neon_fp_cvt_int"))
+  "ca15_issue1,ca15_cx_falu+ca15_cx_ishf")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_cvt_int_q" 6
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_cvt_int_q"))
+  "ca15_issue2,(ca15_cx_falu+ca15_cx_ishf)*2")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_cvt16" 10
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_cvt16"))
+  "ca15_issue3,(ca15_cx_falu+ca15_cx_ishf)*2+ca15_cx_falu")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_mul" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_mul"))
   "ca15_issue1,ca15_cx_fmul")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vmul_qqd" 6
+  "cortex_a15_neon_fp_mul_q" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmul_qqd"))
+       (eq_attr "cortex_a15_neon_type" "neon_fp_mul_q"))
   "ca15_issue2,ca15_cx_fmul_2")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vmla_ddd" 9
+  "cortex_a15_neon_fp_mla" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmla_ddd"))
+       (eq_attr "cortex_a15_neon_type" "neon_fp_mla"))
+  "ca15_issue1,ca15_cx_fmul")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_mla_q" 9
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_mla_q"))
+  "ca15_issue2,ca15_cx_fmul_2")
+
+(define_insn_reservation
+  "cortex_a15_neon_fp_recps_rsqrte" 9
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_fp_recpe_rsqrte"))
   "ca15_issue1,ca15_cx_fmac")
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vmla_qqq" 11
+  "cortex_a15_neon_fp_recps_rsqrte_q" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmla_qqq"))
+       (eq_attr "cortex_a15_neon_type" "neon_fp_recpe_rsqrte_q"))
   "ca15_issue2,ca15_cx_fmac_2")
 
-(define_insn_reservation
-  "cortex_a15_neon_fp_vmla_ddd_scalar" 9
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmla_ddd_scalar"))
-  "ca15_issue1,ca15_cx_fmac")
+;; Miscelaaneous Instructions.
 
 (define_insn_reservation
-  "cortex_a15_neon_fp_vmla_qqq_scalar" 11
+  "cortex_a15_neon_bitops" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vmla_qqq_scalar"))
-  "ca15_issue2,ca15_cx_fmac_2")
-
-(define_insn_reservation
-  "cortex_a15_neon_fp_vrecps_vrsqrts_ddd" 9
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vrecps_vrsqrts_ddd"))
-  "ca15_issue1,ca15_cx_fmac")
-
-(define_insn_reservation
-  "cortex_a15_neon_fp_vrecps_vrsqrts_qqq" 11
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_fp_vrecps_vrsqrts_qqq"))
-  "ca15_issue2,ca15_cx_fmac_2")
-
-(define_insn_reservation
-  "cortex_a15_neon_bp_simple" 4
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_bp_simple"))
-  "ca15_issue3,ca15_ls+ca15_cx_perm_2,ca15_cx_perm")
-
-(define_insn_reservation
-  "cortex_a15_neon_bp_2cycle" 4
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_bp_2cycle"))
+       (eq_attr "cortex_a15_neon_type" "neon_bitops"))
   "ca15_issue1,ca15_cx_perm")
 
 (define_insn_reservation
-  "cortex_a15_neon_bp_3cycle" 7
+  "cortex_a15_neon_bitops_q" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_bp_3cycle"))
-  "ca15_issue3,ca15_cx_ialu+ca15_cx_perm_2,ca15_cx_perm")
+       (eq_attr "cortex_a15_neon_type" "neon_bitops_q"))
+  "ca15_issue2,ca15_cx_perm_2")
 
 (define_insn_reservation
-  "cortex_a15_neon_vld1_1_2_regs" 7
+  "cortex_a15_neon_from_gp" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld1_1_2_regs"))
-  "ca15_issue2,ca15_ls,ca15_ldr")
+       (eq_attr "cortex_a15_neon_type" "neon_from_gp"))
+  "ca15_issue2,ca15_ls1+ca15_ls2+ca15_cx_perm")
 
 (define_insn_reservation
-  "cortex_a15_neon_vld1_3_4_regs" 8
+  "cortex_a15_neon_from_gp_q" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld1_3_4_regs"))
-  "ca15_issue3,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr")
+       (eq_attr "cortex_a15_neon_type" "neon_from_gp_q"))
+  "ca15_issue2,ca15_ls1+ca15_ls2+ca15_cx_perm_2")
 
 (define_insn_reservation
-  "cortex_a15_neon_vld2_2_regs_vld1_vld2_all_lanes" 9
+  "cortex_a15_neon_tbl3_tbl4" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes"))
-  "ca15_issue3,ca15_ls,ca15_ldr")
+       (eq_attr "cortex_a15_neon_type" "neon_tbl3_tbl4"))
+  "ca15_issue2,ca15_cx_perm_2")
 
 (define_insn_reservation
-  "cortex_a15_neon_vld2_4_regs" 12
+  "cortex_a15_neon_zip_q" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld2_4_regs"))
+       (eq_attr "cortex_a15_neon_type" "neon_zip_q"))
+  "ca15_issue3,ca15_cx_perm*3")
+
+(define_insn_reservation
+  "cortex_a15_neon_to_gp" 7
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_to_gp"))
+  "ca15_issue2,ca15_ls1+ca15_ls2")
+
+;; Load Instructions.
+
+(define_insn_reservation
+  "cortex_a15_neon_load_a" 6
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_a"))
+  "ca15_issue1,ca15_ls,ca15_ldr")
+
+(define_insn_reservation
+  "cortex_a15_neon_load_b" 7
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_b"))
+  "ca15_issue2,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr")
+
+(define_insn_reservation
+  "cortex_a15_neon_load_c" 9
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_c"))
+  "ca15_issue2,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr")
+
+(define_insn_reservation
+  "cortex_a15_neon_load_d" 11
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_d"))
+  "ca15_issue1,ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
+
+(define_insn_reservation
+  "cortex_a15_neon_load_e" 9
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_e"))
+  "ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
+
+(define_insn_reservation
+  "cortex_a15_neon_load_f" 11
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_load_f"))
   "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
 
-(define_insn_reservation
-  "cortex_a15_neon_vld3_vld4" 12
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld3_vld4"))
-  "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
+;; Store Instructions.
 
 (define_insn_reservation
-  "cortex_a15_neon_vst1_1_2_regs_vst2_2_regs" 0
+  "cortex_a15_neon_store_a" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst1_1_2_regs_vst2_2_regs"))
+       (eq_attr "cortex_a15_neon_type" "neon_store_a"))
+  "ca15_issue1,ca15_ls1+ca15_ls2,ca15_str")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_b" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_b"))
+  "ca15_issue2,ca15_ls1+ca15_ls2,ca15_str*2")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_c" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_c"))
+  "ca15_issue3,ca15_ls1+ca15_ls2,ca15_str*3")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_d" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_d"))
+  "ca15_issue3,ca15_issue1,ca15_ls1+ca15_ls2,ca15_str*4")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_e" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_e"))
+  "ca15_issue2,ca15_ls1+ca15_ls2,ca15_str+ca15_cx_perm")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_f" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_f"))
+  "ca15_issue3,ca15_ls1+ca15_ls2,ca15_str*2+ca15_cx_perm")
+
+(define_insn_reservation
+  "cortex_a15_neon_store_g" 0
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "cortex_a15_neon_type" "neon_store_g"))
   "ca15_issue3,ca15_issue3+ca15_cx_perm+ca15_ls1+ca15_ls2,ca15_str*2")
 
 (define_insn_reservation
-  "cortex_a15_neon_vst1_3_4_regs" 0
+  "cortex_a15_neon_store_h" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst1_3_4_regs"))
-  "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_str*3")
+       (eq_attr "cortex_a15_neon_type" "neon_store_h"))
+  "ca15_issue3,ca15_issue2+ca15_cx_perm+ca15_ls1+ca15_ls2,ca15_str*2")
 
-(define_insn_reservation
-  "cortex_a15_neon_vst2_4_regs_vst3_vst4" 0
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst2_4_regs_vst3_vst4"))
-  "ca15_issue3,ca15_issue3+ca15_cx_perm_2+ca15_ls1+ca15_ls2,\
-   ca15_issue3+ca15_str,ca15_str*3")
-
-(define_insn_reservation
-  "cortex_a15_neon_vst3_vst4" 0
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst3_vst4"))
-  "ca15_issue3,ca15_issue3+ca15_cx_perm_2+ca15_ls1+ca15_ls2,ca15_str*4")
-
-(define_insn_reservation
-  "cortex_a15_neon_vld1_vld2_lane" 9
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld1_vld2_lane"))
-  "ca15_issue3,ca15_ls,ca15_ldr")
-
-(define_insn_reservation
-  "cortex_a15_neon_vld3_vld4_lane" 10
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld3_vld4_lane"))
-  "ca15_issue3,ca15_issue3+ca15_ls,ca15_issue3+ca15_ldr")
-
-(define_insn_reservation
-  "cortex_a15_neon_vst1_vst2_lane" 0
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst1_vst2_lane"))
-  "ca15_issue3,ca15_cx_perm+ca15_ls,ca15_str")
-
-(define_insn_reservation
-  "cortex_a15_neon_vst3_vst4_lane" 0
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vst3_vst4_lane"))
-  "ca15_issue3,ca15_issue3+ca15_cx_perm+ca15_ls1+ca15_ls2,ca15_str*2")
-
-(define_insn_reservation
-  "cortex_a15_neon_vld3_vld4_all_lanes" 11
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_vld3_vld4_all_lanes"))
-  "ca15_issue3,ca15_issue3+ca15_ls,ca15_ldr")
-
-(define_insn_reservation
-  "cortex_a15_neon_ldm_2" 20
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_ldm_2"))
-  "ca15_issue3*6")
-
-(define_insn_reservation
-  "cortex_a15_neon_stm_2" 0
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_stm_2"))
-  "ca15_issue3*6")
-
-(define_insn_reservation
-  "cortex_a15_neon_mcr" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mcr"))
-  "ca15_issue2,ca15_ls,ca15_cx_perm")
-
-(define_insn_reservation
-  "cortex_a15_neon_mcr_2_mcrr" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mcr_2_mcrr"))
-  "ca15_issue2,ca15_ls1+ca15_ls2")
-
-(define_insn_reservation
-  "cortex_a15_neon_mrc" 5
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mrc"))
-  "ca15_issue1,ca15_ls")
-
-(define_insn_reservation
-  "cortex_a15_neon_mrrc" 6
-  (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "neon_mrrc"))
-  "ca15_issue2,ca15_ls1+ca15_ls2")
+;; VFP Operations.
 
 (define_insn_reservation "cortex_a15_vfp_const" 4
   (and (eq_attr "tune" "cortexa15")
@@ -494,6 +655,11 @@
        (eq_attr "type" "fmov"))
   "ca15_issue1,ca15_cx_perm")
 
+(define_insn_reservation "cortex_a15_vfp_to_from_gp" 5
+  (and (eq_attr "tune" "cortexa15")
+       (eq_attr "type" "f_mcr, f_mcrr, f_mrc, f_mrrc"))
+  "ca15_issue1,ca15_ls1+ca15_ls2")
+
 (define_insn_reservation "cortex_a15_vfp_ariths" 7
   (and (eq_attr "tune" "cortexa15")
        (eq_attr "type" "ffariths"))
@@ -508,664 +674,4 @@
   (and (eq_attr "tune" "cortexa15")
        (eq_attr "type" "fdivd, fsqrtd"))
   "ca15_issue1,ca15_cx_ik")
-
-;; Define bypasses.
-(define_bypass 5 "cortex_a15_neon_mcr_2_mcrr"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_mcr"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 10 "cortex_a15_neon_vld3_vld4_all_lanes"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 9 "cortex_a15_neon_vld3_vld4_lane"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 8 "cortex_a15_neon_vld1_vld2_lane"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 11 "cortex_a15_neon_vld3_vld4"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 11 "cortex_a15_neon_vld2_4_regs"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 8 "cortex_a15_neon_vld2_2_regs_vld1_vld2_all_lanes"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 7 "cortex_a15_neon_vld1_3_4_regs"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_vld1_1_2_regs"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_bp_3cycle"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 3 "cortex_a15_neon_bp_2cycle"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 3 "cortex_a15_neon_bp_simple"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 10 "cortex_a15_neon_fp_vrecps_vrsqrts_qqq"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 8 "cortex_a15_neon_fp_vrecps_vrsqrts_ddd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 10 "cortex_a15_neon_fp_vmla_qqq_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 8 "cortex_a15_neon_fp_vmla_ddd_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 10 "cortex_a15_neon_fp_vmla_qqq"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 8 "cortex_a15_neon_fp_vmla_ddd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_fp_vmul_qqd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_fp_vmul_ddd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_fp_vadd_qqq_vabs_qq"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_fp_vadd_ddd_vabs_dd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_vsra_vrsra"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_vqshl_vrshl_vqrshl_qqq"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_vshl_ddd"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_shift_3"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_shift_2"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_shift_1"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_mul_qqd_32_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_mul_ddd_16_scalar_32_16_long_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_mla_qqq_32_qqd_32_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_mla_qqq_8_16"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6
-     "cortex_a15_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_mul_qqq_8_16_32_ddd_32"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 5 "cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 7 "cortex_a15_neon_vaba_qqq"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 6 "cortex_a15_neon_vaba"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_vmov"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_vqneg_vqabs"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_int_5"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_int_4"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_int_3"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_int_2"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
-
-(define_bypass 4 "cortex_a15_neon_int_1"
-               "cortex_a15_neon_int_1,\
-               cortex_a15_neon_int_4,\
-               cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mul_qqq_8_16_32_ddd_32,\
-               cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-               cortex_a15_neon_mla_qqq_8_16,\
-               cortex_a15_neon_fp_vadd_ddd_vabs_dd,\
-               cortex_a15_neon_fp_vadd_qqq_vabs_qq,\
-               cortex_a15_neon_fp_vmla_ddd,\
-               cortex_a15_neon_fp_vmla_qqq,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_ddd,\
-               cortex_a15_neon_fp_vrecps_vrsqrts_qqq")
 

@@ -1,5 +1,134 @@
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/cortex-a15-neon.md
+	(cortex_a15_neon_type): New,
+
+	(cortex_a15_neon_int_1): Remove.
+	(cortex_a15_neon_int_2): Likewise.
+	(cortex_a15_neon_int_3): Likewise.
+	(cortex_a15_neon_int_4): Likewise.
+	(cortex_a15_neon_int_5): Likewise.
+	(cortex_a15_neon_vqneg_vqabs): Likewise.
+	(cortex_a15_neon_vmov): Likewise.
+	(cortex_a15_neon_vaba): Likewise.
+	(cortex_a15_neon_vaba_qqq): Likewise.
+	(cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a15_neon_mul_qqq_8_16_32_ddd_32): Likewise.
+	(cortex_a15_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
+	Likewise.
+	(cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a15_neon_mla_qqq_8_16): Likewise.
+	(cortex_a15_neon_mla_ddd_32_qqd_16_ddd_32_scalar): Likewise.
+	(cortex_a15_neon_mla_qqq_32_qqd_32_scalar): Likewise.
+	(cortex_a15_neon_mul_ddd_16_scalar_32_16_long_scalar): Likewise.
+	(cortex_a15_neon_mul_qqd_32_scalar): Likewise.
+	(cortex_a15_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar): Likewise.
+	(cortex_a15_neon_shift_1): Likewise.
+	(cortex_a15_neon_shift_2): Likewise.
+	(cortex_a15_neon_shift_3): Likewise.
+	(cortex_a15_neon_vshl_ddd): Likewise.
+	(cortex_a15_neon_vqshl_vrshl_vqrshl_qqq): Likewise.
+	(cortex_a15_neon_vsra_vrsra): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a15_neon_bp_3cycle): Likewise.
+	(cortex_a15_neon_ldm_2): Likewise.
+	(cortex_a15_neon_stm_2): Likewise.
+	(cortex_a15_neon_mcr): Likewise.
+	(cortex_a15_neon_mrc): Likewise.
+	(cortex_a15_neon_fp_vadd_ddd_vabs_dd): Likewise.
+	(cortex_a15_neon_fp_vadd_qqq_vabs_qq): Likewise.
+	(cortex_a15_neon_fp_vmul_ddd): Likewise.
+	(cortex_a15_neon_fp_vmul_qqd): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a15_neon_fp_vrecps_vrsqrts_ddd): Likewise.
+	(cortex_a15_neon_fp_vrecps_vrsqrts_qqq): Likewise.
+	(cortex_a15_neon_bp_simple): Likewise.
+	(cortex_a15_neon_bp_2cycle): Likewise.
+	(cortex_a15_neon_bp_3cycle): Likewise.
+	(cortex_a15_neon_vld1_1_2_regs): Likewise.
+	(cortex_a15_neon_vld1_3_4_regs): Likewise.
+	(cortex_a15_neon_vld2_2_regs_vld1_vld2_all_lanes): Likewise.
+	(cortex_a15_neon_vld2_4_regs): Likewise.
+	(cortex_a15_neon_vld3_vld4): Likewise.
+	(cortex_a15_neon_vst1_1_2_regs_vst2_2_regs): Likewise.
+	(cortex_a15_neon_vst1_3_4_regs): Likewise.
+	(cortex_a15_neon_vst2_4_regs_vst3_vst4): Rename to...
+	(cortex_a15_neon_vst2_4_regs_vst3): ...This, update for new attributes.
+	(cortex_a15_neon_vst3_vst4): Rename to...
+	(cortex_a15_neon_vst4): This, update for new attributes.
+	(cortex_a15_neon_vld1_vld2_lane): Update for new attributes.
+	(cortex_a15_neon_vld3_vld4_lane): Likewise.
+	(cortex_a15_neon_vst1_vst2_lane): Likewise.
+	(cortex_a15_neon_vst3_vst4_lane): Likewise.
+	(cortex_a15_neon_vld3_vld4_all_lanes): Likewise.
+	(cortex_a15_neon_ldm_2): Likewise.
+	(cortex_a15_neon_stm_2): Likewise.
+	(cortex_a15_neon_mcr): Likewise.
+	(cortex_a15_neon_mcr_2_mcrr): Likewise.
+	(cortex_a15_neon_mrc): Likewise.
+	(cortex_a15_neon_mrrc): Likewise.
+
+	(cortex_a15_neon_abd): New.
+	(cortex_a15_neon_abd_q): Likewise.
+	(cortex_a15_neon_aba): Likewise.
+	(cortex_a15_neon_aba_q): Likewise.
+	(cortex_a15_neon_acc): Likewise.
+	(cortex_a15_neon_acc_q): Likewise.
+	(cortex_a15_neon_arith_basic): Likewise.
+	(cortex_a15_neon_arith_complex): Likewise.
+	(cortex_a15_neon_multiply): Likewise.
+	(cortex_a15_neon_multiply_q): Likewise.
+	(cortex_a15_neon_mla): Likewise.
+	(cortex_a15_neon_mla_q): Likewise.
+	(cortex_a15_neon_sat_mla_long): Likewise.
+	(cortex_a15_neon_shift_acc): Likewise.
+	(cortex_a15_neon_shift_imm_basic): Likewise.
+	(cortex_a15_neon_shift_imm_complex): Likewise.
+	(cortex_a15_neon_shift_reg_basic): Likewise.
+	(cortex_a15_neon_shift_reg_basic_q): Likewise.
+	(cortex_a15_neon_shift_reg_complex): Likewise.
+	(cortex_a15_neon_shift_reg_complex_q): Likewise.
+	(cortex_a15_neon_fp_negabs): Likewise
+	(cortex_a15_neon_fp_arith): Likewise
+	(cortex_a15_neon_fp_arith_q): Likewise
+	(cortex_a15_neon_fp_cvt_int): Likewise
+	(cortex_a15_neon_fp_cvt_int_q): Likewise
+	(cortex_a15_neon_fp_cvt_16): Likewise
+	(cortex_a15_neon_fp_mul): Likewise
+	(cortex_a15_neon_fp_mul_q): Likewise
+	(cortex_a15_neon_fp_mla): Likewise
+	(cortex_a15_neon_fp_mla_q): Likewise
+	(cortex_a15_neon_fp_recps_rsqrte): Likewise.
+	(cortex_a15_neon_fp_recps_rsqrte_q): Likewise.
+	(cortex_a15_neon_bitops): Likewise.
+	(cortex_a15_neon_bitops_q): Likewise.
+	(cortex_a15_neon_from_gp): Likewise.
+	(cortex_a15_neon_from_gp_q): Likewise.
+	(cortex_a15_neon_tbl3_tbl4): Likewise.
+	(cortex_a15_neon_zip_q): Likewise.
+	(cortex_a15_neon_to_gp): Likewise.
+	(cortex_a15_neon_load_a): Likewise.
+	(cortex_a15_neon_load_b): Likewise.
+	(cortex_a15_neon_load_c): Likewise.
+	(cortex_a15_neon_load_d): Likewise.
+	(cortex_a15_neon_load_e): Likewise.
+	(cortex_a15_neon_load_f): Likewise.
+	(cortex_a15_neon_store_a): Likewise.
+	(cortex_a15_neon_store_b): Likewise.
+	(cortex_a15_neon_store_c): Likewise.
+	(cortex_a15_neon_store_d): Likewise.
+	(cortex_a15_neon_store_e): Likewise.
+	(cortex_a15_neon_store_f): Likewise.
+	(cortex_a15_neon_store_g): Likewise.
+	(cortex_a15_neon_store_h): Likewise.
+	(cortex_a15_vfp_to_from_gp): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/cortex-a9-neon.md (cortex_a9_neon_type): New.
 
 	(cortex_a9_neon_vshl_ddd): Remove.
