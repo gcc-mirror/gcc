@@ -1,3 +1,20 @@
+2013-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, exp_ch11.adb, a-except-2005.adb, a-except-2005.ads:
+	Minor reformatting.
+
+2013-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* targparm.ads: Fix minor typo in comment.
+
+2013-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb: handle full views that are derived from private
+	types.
+	* sem_util.adb (Build_Elaboration_Entity): Do nothing in ASIS
+	mode: the elaboration entity is not in the source, and plays no
+	role in semantic analysis.  Minor reformatting.
+
 2013-10-15  Tristan Gingold  <gingold@adacore.com>
 
 	* adaint.c (__gnat_get_executable_load_address): Remove AIX

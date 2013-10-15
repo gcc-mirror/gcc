@@ -333,10 +333,10 @@ private
    --  this, and it would not work right, because of the Msg and Tracebacks
    --  fields which have unused entries not copied by Save_Occurrence.
 
-   function Get_Exception_Machine_Occurrence (X : Exception_Occurrence)
-                                             return System.Address;
+   function Get_Exception_Machine_Occurrence
+     (X : Exception_Occurrence) return System.Address;
    pragma Export (Ada, Get_Exception_Machine_Occurrence,
-                    "__gnat_get_exception_machine_occurrence");
+                  "__gnat_get_exception_machine_occurrence");
    --  Get the machine occurrence corresponding to an exception occurrence.
    --  It is Null_Address if there is no machine occurrence (in runtimes that
    --  doesn't use GCC mechanism) or if it has been lost (Save_Occurrence

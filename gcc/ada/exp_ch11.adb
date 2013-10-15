@@ -1030,7 +1030,7 @@ package body Exp_Ch11 is
 
                if Present (Choice_Parameter (Handler))
                  and then (Exception_Mechanism /= Back_End_Exceptions
-                           or else CodePeer_Mode)
+                            or else CodePeer_Mode)
                then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
@@ -1039,9 +1039,8 @@ package body Exp_Ch11 is
                      Save  : Node_Id;
 
                   begin
-                     --  Note use of No_Location to hide this code from the
-                     --  debugger, so single stepping doesn't jump back and
-                     --  forth.
+                     --  Note: No_Location used to hide code from the debugger,
+                     --  so single stepping doesn't jump back and forth.
 
                      Save :=
                        Make_Procedure_Call_Statement (No_Location,
@@ -1051,12 +1050,14 @@ package body Exp_Ch11 is
                          Parameter_Associations => New_List (
                            New_Occurrence_Of (Cparm, No_Location),
                            Make_Explicit_Dereference (No_Location,
-                             Make_Function_Call (No_Location,
-                               Name =>
-                                 Make_Explicit_Dereference (No_Location,
-                                   New_Occurrence_Of
-                                     (RTE (RE_Get_Current_Excep),
-                                      No_Location))))));
+                             Prefix =>
+                               Make_Function_Call (No_Location,
+                                 Name =>
+                                   Make_Explicit_Dereference (No_Location,
+                                     Prefix =>
+                                       New_Occurrence_Of
+                                         (RTE (RE_Get_Current_Excep),
+                                          No_Location))))));
 
                      Mark_Rewrite_Insertion (Save);
                      Prepend (Save, Statements (Handler));

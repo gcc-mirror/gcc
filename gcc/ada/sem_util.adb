@@ -423,7 +423,7 @@ package body Sem_Util is
 
          Decl := First
                    (Visible_Declarations
-                     (Specification (Unit_Declaration_Node (Current_Scope))));
+                     (Package_Specification (Current_Scope)));
          while Present (Decl) loop
             if Nkind (Decl) = N_Private_Extension_Declaration
               and then Defining_Entity (Decl) = Typ
@@ -1166,6 +1166,13 @@ package body Sem_Util is
       --  Ignore if already constructed
 
       if Present (Elaboration_Entity (Spec_Id)) then
+         return;
+      end if;
+
+      --  Ignore in ASIS mode, elaboration entity is not in source and plays
+      --  no role in analysis.
+
+      if ASIS_Mode then
          return;
       end if;
 
