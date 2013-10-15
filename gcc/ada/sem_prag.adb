@@ -4960,7 +4960,7 @@ package body Sem_Prag is
                      Pragma_Misplaced;
 
                   elsif (Nkind (Parent_Node) = N_Generic_Package_Declaration
-                           or else Nkind (Parent_Node) =
+                          or else Nkind (Parent_Node) =
                                              N_Generic_Subprogram_Declaration)
                     and then Plist = Generic_Formal_Declarations (Parent_Node)
                   then
