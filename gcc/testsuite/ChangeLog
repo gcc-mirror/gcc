@@ -1,3 +1,8 @@
+2013-10-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/cpp/openmp-define-3.c: Move effective target check
+	after other directives.
+
 2013-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58652
