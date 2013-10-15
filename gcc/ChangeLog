@@ -753,6 +753,11 @@
 	(avx512f_getmant<mode>): Ditto.
 	(avx512f_rndscale<mode>): Fix formatting.
 
+2013-10-15  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-utils.h (ipa_edge_within_scc): Declare.
+	* ipa-cp.c (edge_within_scc): Moved...
+	* ipa-utils.c (ipa_edge_within_scc): ...here.  Updated all callers.
 
 2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
