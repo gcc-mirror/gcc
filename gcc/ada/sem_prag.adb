@@ -21521,6 +21521,20 @@ package body Sem_Prag is
 
                   if Ekind_In (Constit_Id, E_Abstract_State, E_Variable) then
                      Check_Matching_Constituent (Constit_Id);
+
+                     --  A state can act as a constituent only when it is part
+                     --  of another state. This relation is expressed by option
+                     --  "Part_Of" of pragma Abstract_State.
+
+                     if Ekind (Constit_Id) = E_Abstract_State
+                       and then not Is_Part_Of (Constit_Id, State_Id)
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        Error_Msg_NE
+                          ("state & is not a valid constituent of ancestor "
+                           & "state %", Constit, Constit_Id);
+                     end if;
+
                   else
                      Error_Msg_NE
                        ("constituent & must denote a variable or state",

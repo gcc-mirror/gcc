@@ -3554,6 +3554,32 @@ package body Checks is
       L : Node_Id;
       R : Node_Id;
 
+      function Left_Expression (Op : Node_Id) return Node_Id;
+      --  Return the relevant expression from the left operand of the given
+      --  short circuit form: this is LO itself, except if LO is a qualified
+      --  expression, a type conversion, or an expression with actions, in
+      --  which case this is Left_Expression (Expression (LO)).
+
+      ---------------------
+      -- Left_Expression --
+      ---------------------
+
+      function Left_Expression (Op : Node_Id) return Node_Id is
+         LE : Node_Id := Left_Opnd (Op);
+      begin
+         while Nkind_In (LE,
+                 N_Qualified_Expression,
+                 N_Type_Conversion,
+                 N_Expression_With_Actions)
+         loop
+            LE := Expression (LE);
+         end loop;
+
+         return LE;
+      end Left_Expression;
+
+   --  Start of processing for Check_Needed
+
    begin
       --  Always check if not simple entity
 
@@ -3587,37 +3613,40 @@ package body Checks is
 
          elsif K = N_Op_Or then
             exit when N = Right_Opnd (P)
-              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
+              and then Nkind (Left_Expression (P)) = N_Op_Eq;
 
          elsif K = N_Or_Else then
             exit when (N = Right_Opnd (P)
                         or else
                           (Is_List_Member (N)
                              and then List_Containing (N) = Actions (P)))
-              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
+              and then Nkind (Left_Expression (P)) = N_Op_Eq;
 
          --  Similar test for the And/And then case, where the left operand
          --  is an inequality test.
 
          elsif K = N_Op_And then
             exit when N = Right_Opnd (P)
-              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
+              and then Nkind (Left_Expression (P)) = N_Op_Ne;
 
          elsif K = N_And_Then then
             exit when (N = Right_Opnd (P)
                         or else
                           (Is_List_Member (N)
                              and then List_Containing (N) = Actions (P)))
-              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
+              and then Nkind (Left_Expression (P)) = N_Op_Ne;
          end if;
 
          N := P;
       end loop;
 
       --  If we fall through the loop, then we have a conditional with an
-      --  appropriate test as its left operand. So test further.
+      --  appropriate test as its left operand, so look further.
 
-      L := Left_Opnd (P);
+      L := Left_Expression (P);
+
+      --  L is an "=" or "/=" operator: extract its operands
+
       R := Right_Opnd (L);
       L := Left_Opnd (L);
 
