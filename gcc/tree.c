@@ -1187,10 +1187,10 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
   tree t;
   int ix = -1;
   int limit = 0;
-  int i;
+  unsigned int i;
 
   gcc_assert (type);
-  int prec = TYPE_PRECISION (type);
+  unsigned int prec = TYPE_PRECISION (type);
   signop sgn = TYPE_SIGN (type);
 
   /* Verify that everything is canonical.  */
@@ -1204,11 +1204,11 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
     }
 
   wide_int cst = wide_int::from (pcst, prec, sgn);
-  int len = int (cst.get_len ());
-  int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int len = int (cst.get_len ());
+  unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
   bool recanonize = sgn == UNSIGNED
-    && (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT == len
-    && small_prec;
+    && small_prec
+    && (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT == len;
 
   switch (TREE_CODE (type))
     {
@@ -1235,7 +1235,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 
     case INTEGER_TYPE:
     case OFFSET_TYPE:
-      if (TYPE_UNSIGNED (type))
+      if (TYPE_SIGN (type) == UNSIGNED)
 	{
 	  /* Cache 0..N */
 	  limit = INTEGER_SHARE_LIMIT;
@@ -1294,7 +1294,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	     must be careful here because tree-csts and wide-ints are
 	     not canonicalized in the same way.  */
 	  gcc_assert (TREE_TYPE (t) == type);
-	  gcc_assert (TREE_INT_CST_NUNITS (t) == len);
+	  gcc_assert (TREE_INT_CST_NUNITS (t) == (int)len);
 	  if (recanonize)
 	    {
 	      len--;
@@ -1321,7 +1321,10 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	  TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
 	}
     }
-  else if (cst.get_len () == 1)
+  else if (cst.get_len () == 1
+	   && (TYPE_SIGN (type) == SIGNED
+	       || recanonize
+	       || cst.elt (0) >= 0))
     {
       /* 99.99% of all int csts will fit in a single HWI.  Do that one
 	 efficiently.  */
@@ -1351,14 +1354,29 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	 for the gc to take care of.  There will not be enough of them
 	 to worry about.  */
       void **slot;
-      tree nt = make_int_cst (len);
-      TREE_INT_CST_NUNITS (nt) = len;
+      tree nt;
+      if (!recanonize
+	  && TYPE_SIGN (type) == UNSIGNED 
+	  && cst.elt (len - 1) < 0)
+	{
+	  unsigned int blocks_needed 
+	    = (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+
+	  nt = make_int_cst (blocks_needed + 1);
+	  for (i = len; i < blocks_needed; i++)
+	    TREE_INT_CST_ELT (nt, i) = (HOST_WIDE_INT)-1;
+    
+	  TREE_INT_CST_ELT (nt, blocks_needed) = 0;
+	}
+      else
+	nt = make_int_cst (len);
       if (recanonize)
 	{
 	  len--;
 	  TREE_INT_CST_ELT (nt, len) = zext_hwi (cst.elt (len), small_prec);
 	}
-      for (int i = 0; i < len; i++)
+	
+      for (i = 0; i < len; i++)
 	TREE_INT_CST_ELT (nt, i) = cst.elt (i);
       TREE_TYPE (nt) = type;
 
@@ -10556,7 +10574,8 @@ widest_int_cst_value (const_tree x)
 
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
-  gcc_assert (TREE_INT_CST_NUNITS (x) <= 2);
+  gcc_assert (TREE_INT_CST_NUNITS (x) <= 2
+	      || (TREE_INT_CST_NUNITS (x) == 3 && TREE_INT_CST_ELT (x, 2) == 0));
   
   if (TREE_INT_CST_NUNITS (x) == 1)
     val = ((HOST_WIDEST_INT)val << HOST_BITS_PER_WIDE_INT) >> HOST_BITS_PER_WIDE_INT;
@@ -10565,7 +10584,8 @@ widest_int_cst_value (const_tree x)
 	    << HOST_BITS_PER_WIDE_INT);
 #else
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 1);
+  gcc_assert (TREE_INT_CST_NUNITS (x) == 1
+	      || (TREE_INT_CST_NUNITS (x) == 2 && TREE_INT_CST_ELT (x, 1) == 0));
 #endif
 
   if (bits < HOST_BITS_PER_WIDEST_INT)

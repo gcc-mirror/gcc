@@ -342,9 +342,7 @@ wi::force_to_size (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 	    }
 	}
     }
-  else if (precision < xprecision)
-    /* Contracting.  */
-    len = canonize (val, len, precision);
+  len = canonize (val, len, precision);
 
   return len;
 }

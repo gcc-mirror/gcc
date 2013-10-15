@@ -3050,7 +3050,8 @@ cst_fits_shwi_p (const_tree x)
   if (TREE_CODE (x) != INTEGER_CST)
     return false;
 
-  return TREE_INT_CST_NUNITS (x) == 1;
+  return TREE_INT_CST_NUNITS (x) == 1
+    || (TREE_INT_CST_NUNITS (x) == 2 && TREE_INT_CST_ELT (x, 1) == 0);
 }
 
 /* Checks that X is integer constant that can be expressed in signed
@@ -3093,7 +3094,7 @@ tree_fits_uhwi_p (const_tree cst)
       /* For numbers of unsigned type that are longer than a HWI, if
 	 the top bit of the bottom word is set, and there is not
 	 another element, then this is too large to fit in a single
-	 hwi.  */
+	 hwi.  For signed numbers, negative values are not allowed. */
       if (TREE_INT_CST_ELT (cst, 0) >= 0)
 	return true;
     }
@@ -5172,39 +5173,48 @@ wi::int_traits <const_tree>::get_precision (const_tree tcst)
   return TYPE_PRECISION (TREE_TYPE (tcst));
 }
 
-/* Convert the tree_cst X into a wide_int.  */
+/* Convert the tree_cst X into a wide_int of PRECISION.  */
 inline wi::storage_ref
 wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
 					unsigned int precision, const_tree x)
 {
-  unsigned int xprecision = get_precision (x);
   unsigned int len = TREE_INT_CST_NUNITS (x);
   const HOST_WIDE_INT *val = (const HOST_WIDE_INT *) &TREE_INT_CST_ELT (x, 0);
   unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
 			  / HOST_BITS_PER_WIDE_INT);
-  /* Truncate the constant if necessary.  */
-  if (len > max_len)
-    return wi::storage_ref (val, max_len, precision);
+  unsigned int xprecision = get_precision (x);
 
-  if (precision <= xprecision)
+  gcc_assert (precision >= xprecision);
+
+  /* Got to be careful of precision 0 values.  */
+  if (precision)
+    len = MIN (len, max_len);
+  if (TYPE_SIGN (TREE_TYPE (x)) == UNSIGNED)
     {
-      if (precision < HOST_BITS_PER_WIDE_INT 
-	  && TYPE_SIGN (TREE_TYPE (x)) == UNSIGNED)
+      unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
+      if (small_prec)
 	{
-	  /* The rep of wide-int is signed, so if the value comes from
-	     an unsigned int_cst, we have to sign extend it to make it
-	     correct.  */
-	  scratch[0] = sext_hwi (val[0], precision);
-	  return wi::storage_ref (scratch, 1, precision);
+	  /* We have to futz with this because the canonization for
+	     short unsigned numbers in wide-int is different from the
+	     canonized short unsigned numbers in the tree-cst.  */
+	  if (len == max_len) 
+	    {
+	      for (unsigned int i = 0; i < len - 1; i++)
+		scratch[i] = val[i];
+	      scratch[len - 1] = sext_hwi (val[len - 1], precision);
+	      return wi::storage_ref (scratch, len, precision);
+	    }
 	}
-      /* Otherwise we can use the constant as-is when not extending.  */
-      return wi::storage_ref (val, len, precision);
+
+      if (precision < xprecision + HOST_BITS_PER_WIDE_INT)
+	{
+	  len = wi::force_to_size (scratch, val, len, xprecision, precision, UNSIGNED);
+	  return wi::storage_ref (scratch, len, precision);
+	}
     }
 
-  /* Widen the constant according to its sign.  */
-  len = wi::force_to_size (scratch, val, len, xprecision, precision,
-			   TYPE_SIGN (TREE_TYPE (x)));
-  return wi::storage_ref (scratch, len, precision);
+  /* Signed and the rest of the unsigned cases are easy.  */
+  return wi::storage_ref (val, len, precision);
 }
 
 namespace wi
