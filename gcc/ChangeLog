@@ -1,5 +1,12 @@
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md (movtf_aarch64): Update type attribute.
+	(load_pair): Update type attribute.
+	(store_pair): Update type attribute.
+	* config/aarch64/iterators.md (q): New.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md: Add new types for Neon insns.
 
 2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
