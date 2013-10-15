@@ -252,6 +252,103 @@
 ; initialized by arm_option_override()
 (define_attr "ldsched" "no,yes" (const (symbol_ref "arm_ld_sched")))
 
+; YES if the "type" attribute assigned to the insn denotes an
+; Advanced SIMD instruction, NO otherwise.
+(define_attr "is_neon_type" "yes,no"
+	 (if_then_else (eq_attr "type"
+	 "neon_add, neon_add_q, neon_add_widen, neon_add_long,\
+          neon_qadd, neon_qadd_q, neon_add_halve, neon_add_halve_q,\
+          neon_add_halve_narrow_q,\
+          neon_sub, neon_sub_q, neon_sub_widen, neon_sub_long, neon_qsub,\
+          neon_qsub_q, neon_sub_halve, neon_sub_halve_q,\
+          neon_sub_halve_narrow_q,\
+          neon_abs, neon_abs_q, neon_neg, neon_neg_q, neon_qneg,\
+          neon_qneg_q, neon_qabs, neon_qabs_q, neon_abd, neon_abd_q,\
+          neon_abd_long, neon_minmax, neon_minmax_q, neon_compare,\
+          neon_compare_q, neon_compare_zero, neon_compare_zero_q,\
+          neon_arith_acc, neon_arith_acc_q, neon_reduc_add,\
+          neon_reduc_add_q, neon_reduc_add_long, neon_reduc_add_acc,\
+          neon_reduc_add_acc_q, neon_reduc_minmax, neon_reduc_minmax_q,\
+          neon_logic, neon_logic_q, neon_tst, neon_tst_q,\
+          neon_shift_imm, neon_shift_imm_q, neon_shift_imm_narrow_q,\
+          neon_shift_imm_long, neon_shift_reg, neon_shift_reg_q,\
+          neon_shift_acc, neon_shift_acc_q, neon_sat_shift_imm,\
+          neon_sat_shift_imm_q, neon_sat_shift_imm_narrow_q,\
+          neon_sat_shift_reg, neon_sat_shift_reg_q,\
+          neon_ins, neon_ins_q, neon_move, neon_move_q, neon_move_narrow_q,\
+          neon_permute, neon_permute_q, neon_zip, neon_zip_q, neon_tbl1,\
+          neon_tbl1_q, neon_tbl2, neon_tbl2_q, neon_tbl3, neon_tbl3_q,\
+          neon_tbl4, neon_tbl4_q, neon_bsl, neon_bsl_q, neon_cls,\
+          neon_cls_q, neon_cnt, neon_cnt_q, neon_dup, neon_dup_q,\
+          neon_ext, neon_ext_q, neon_rbit, neon_rbit_q,\
+          neon_rev, neon_rev_q, neon_mul_b, neon_mul_b_q, neon_mul_h,\
+          neon_mul_h_q, neon_mul_s, neon_mul_s_q, neon_mul_b_long,\
+          neon_mul_h_long, neon_mul_s_long, neon_mul_h_scalar,\
+          neon_mul_h_scalar_q, neon_mul_s_scalar, neon_mul_s_scalar_q,\
+          neon_mul_h_scalar_long, neon_mul_s_scalar_long, neon_sat_mul_b,\
+          neon_sat_mul_b_q, neon_sat_mul_h, neon_sat_mul_h_q,\
+          neon_sat_mul_s, neon_sat_mul_s_q, neon_sat_mul_b_long,\
+          neon_sat_mul_h_long, neon_sat_mul_s_long, neon_sat_mul_h_scalar,\
+          neon_sat_mul_h_scalar_q, neon_sat_mul_s_scalar,\
+          neon_sat_mul_s_scalar_q, neon_sat_mul_h_scalar_long,\
+          neon_sat_mul_s_scalar_long, neon_mla_b, neon_mla_b_q, neon_mla_h,\
+          neon_mla_h_q, neon_mla_s, neon_mla_s_q, neon_mla_b_long,\
+          neon_mla_h_long, neon_mla_s_long, neon_mla_h_scalar,\
+          neon_mla_h_scalar_q, neon_mla_s_scalar, neon_mla_s_scalar_q,\
+          neon_mla_h_scalar_long, neon_mla_s_scalar_long,\
+          neon_sat_mla_b_long, neon_sat_mla_h_long,\
+          neon_sat_mla_s_long, neon_sat_mla_h_scalar_long,\
+          neon_sat_mla_s_scalar_long,\
+          neon_to_gp, neon_to_gp_q, neon_from_gp, neon_from_gp_q,\
+          neon_ldr, neon_load1_1reg, neon_load1_1reg_q, neon_load1_2reg,\
+          neon_load1_2reg_q, neon_load1_3reg, neon_load1_3reg_q,\
+          neon_load1_4reg, neon_load1_4reg_q, neon_load1_all_lanes,\
+          neon_load1_all_lanes_q, neon_load1_one_lane, neon_load1_one_lane_q,\
+          neon_load2_2reg, neon_load2_2reg_q, neon_load2_4reg,\
+          neon_load2_4reg_q, neon_load2_all_lanes, neon_load2_all_lanes_q,\
+          neon_load2_one_lane, neon_load2_one_lane_q,\
+          neon_load3_3reg, neon_load3_3reg_q, neon_load3_all_lanes,\
+          neon_load3_all_lanes_q, neon_load3_one_lane, neon_load3_one_lane_q,\
+          neon_load4_4reg, neon_load4_4reg_q, neon_load4_all_lanes,\
+          neon_load4_all_lanes_q, neon_load4_one_lane, neon_load4_one_lane_q,\
+          neon_str, neon_store1_1reg, neon_store1_1reg_q, neon_store1_2reg,\
+          neon_store1_2reg_q, neon_store1_3reg, neon_store1_3reg_q,\
+          neon_store1_4reg, neon_store1_4reg_q, neon_store1_one_lane,\
+          neon_store1_one_lane_q, neon_store2_2reg, neon_store2_2reg_q,\
+          neon_store2_4reg, neon_store2_4reg_q, neon_store2_one_lane,\
+          neon_store2_one_lane_q, neon_store3_3reg, neon_store3_3reg_q,\
+          neon_store3_one_lane, neon_store3_one_lane_q, neon_store4_4reg,\
+          neon_store4_4reg_q, neon_store4_one_lane, neon_store4_one_lane_q,\
+          neon_fp_abd_s, neon_fp_abd_s_q, neon_fp_abd_d, neon_fp_abd_d_q,\
+          neon_fp_addsub_s, neon_fp_addsub_s_q, neon_fp_addsub_d,\
+          neon_fp_addsub_d_q, neon_fp_compare_s, neon_fp_compare_s_q,\
+          neon_fp_compare_d, neon_fp_compare_d_q, neon_fp_minmax_s,\
+          neon_fp_minmax_s_q, neon_fp_minmax_d, neon_fp_minmax_d_q,\
+          neon_fp_reduc_add_s, neon_fp_reduc_add_s_q, neon_fp_reduc_add_d,\
+          neon_fp_reduc_add_d_q, neon_fp_reduc_minmax_s,
+          neon_fp_reduc_minmax_s_q, neon_fp_reduc_minmax_d,\
+          neon_fp_reduc_minmax_d_q,\
+          neon_fp_cvt_narrow_s_q, neon_fp_cvt_narrow_d_q,\
+          neon_fp_cvt_widen_h, neon_fp_cvt_widen_s, neon_fp_to_int_s,\
+          neon_fp_to_int_s_q, neon_int_to_fp_s, neon_int_to_fp_s_q,\
+          neon_fp_round_s, neon_fp_round_s_q, neon_fp_recpe_s,\
+          neon_fp_recpe_s_q,\
+          neon_fp_recpe_d, neon_fp_recpe_d_q, neon_fp_recps_s,\
+          neon_fp_recps_s_q, neon_fp_recps_d, neon_fp_recps_d_q,\
+          neon_fp_recpx_s, neon_fp_recpx_s_q, neon_fp_recpx_d,\
+          neon_fp_recpx_d_q, neon_fp_rsqrte_s, neon_fp_rsqrte_s_q,\
+          neon_fp_rsqrte_d, neon_fp_rsqrte_d_q, neon_fp_rsqrts_s,\
+          neon_fp_rsqrts_s_q, neon_fp_rsqrts_d, neon_fp_rsqrts_d_q,\
+          neon_fp_mul_s, neon_fp_mul_s_q, neon_fp_mul_s_scalar,\
+          neon_fp_mul_s_scalar_q, neon_fp_mul_d, neon_fp_mul_d_q,\
+          neon_fp_mul_d_scalar_q, neon_fp_mla_s, neon_fp_mla_s_q,\
+          neon_fp_mla_s_scalar, neon_fp_mla_s_scalar_q, neon_fp_mla_d,\
+          neon_fp_mla_d_q, neon_fp_mla_d_scalar_q, neon_fp_sqrt_s,\
+          neon_fp_sqrt_s_q, neon_fp_sqrt_d, neon_fp_sqrt_d_q,\
+          neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q")
+        (const_string "yes")
+        (const_string "no")))
+
 ; condition codes: this one is used by final_prescan_insn to speed up
 ; conditionalizing instructions.  It saves having to scan the rtl to see if
 ; it uses or alters the condition codes.
@@ -277,32 +374,7 @@
 	 (ior (eq_attr "is_thumb1" "yes")
 	      (eq_attr "type" "call"))
 	 (const_string "clob")
-	 (if_then_else (eq_attr "type" 
-	 "!neon_int_1, neon_int_2, neon_int_3, neon_int_4, neon_int_5,\
-	  neon_vqneg_vqabs, neon_vmov, neon_vaba, neon_vsma, neon_vaba_qqq,\
-	  neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-	  neon_mul_qqq_8_16_32_ddd_32,\
-	  neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
-	  neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-	  neon_mla_qqq_8_16,\
-	  neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
-	  neon_mla_qqq_32_qqd_32_scalar,\
-	  neon_mul_ddd_16_scalar_32_16_long_scalar, neon_mul_qqd_32_scalar,\
-	  neon_mla_ddd_16_scalar_qdd_32_16_long_scalar, neon_shift_1,\
-	  neon_shift_2, neon_shift_3, neon_vshl_ddd,\
-	  neon_vqshl_vrshl_vqrshl_qqq, neon_vsra_vrsra,\
-	  neon_fp_vadd_ddd_vabs_dd, neon_fp_vadd_qqq_vabs_qq, neon_fp_vsum,\
-	  neon_fp_vmul_ddd, neon_fp_vmul_qqd, neon_fp_vmla_ddd,\
-	  neon_fp_vmla_qqq, neon_fp_vmla_ddd_scalar, neon_fp_vmla_qqq_scalar,\
-	  neon_fp_vrecps_vrsqrts_ddd, neon_fp_vrecps_vrsqrts_qqq,\
-	  neon_bp_simple, neon_bp_2cycle, neon_bp_3cycle, neon_ldr, neon_str,\
-	  neon_vld1_1_2_regs, neon_vld1_3_4_regs,\
-	  neon_vld2_2_regs_vld1_vld2_all_lanes, neon_vld2_4_regs,\
-	  neon_vld3_vld4, neon_vst1_1_2_regs_vst2_2_regs, neon_vst1_3_4_regs,\
-	  neon_vst2_4_regs_vst3_vst4, neon_vst3_vst4, neon_vld1_vld2_lane,\
-	  neon_vld3_vld4_lane, neon_vst1_vst2_lane, neon_vst3_vst4_lane,\
-	  neon_vld3_vld4_all_lanes, neon_mcr, neon_mcr_2_mcrr, neon_mrc,\
-	  neon_mrrc, neon_ldm_2, neon_stm_2")
+	 (if_then_else (eq_attr "is_neon_type" "no")
 	 (const_string "nocond")
 	 (const_string "unconditional"))))
 
@@ -2162,7 +2234,8 @@
                                            gen_highpart_mode (SImode, DImode, operands[2]));
 
   }"
-  [(set_attr "type" "neon_int_1,neon_int_1,multiple,multiple,multiple,multiple,neon_int_1,neon_int_1")
+  [(set_attr "type" "neon_logic,neon_logic,multiple,multiple,\
+                     multiple,multiple,neon_logic,neon_logic")
    (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,
                      avoid_neon_for_64bits,avoid_neon_for_64bits")
    (set_attr "length" "*,*,8,8,8,8,*,*")
@@ -3012,7 +3085,8 @@
                                            gen_highpart_mode (SImode, DImode, operands[2]));
 
   }"
-  [(set_attr "type" "neon_int_1,neon_int_1,multiple,multiple,multiple,multiple,neon_int_1,neon_int_1")
+  [(set_attr "type" "neon_logic,neon_logic,multiple,multiple,multiple,\
+                     multiple,neon_logic,neon_logic")
    (set_attr "length" "*,*,8,8,8,8,*,*")
    (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
 )
@@ -3194,7 +3268,7 @@
 
   }"
   [(set_attr "length" "*,8,8,8,8,*")
-   (set_attr "type" "neon_int_1,multiple,multiple,multiple,multiple,neon_int_1")
+   (set_attr "type" "neon_logic,multiple,multiple,multiple,multiple,neon_logic")
    (set_attr "arch" "neon_for_64bits,*,*,*,*,avoid_neon_for_64bits")]
 )
 
@@ -4922,7 +4996,7 @@
   }"
   [(set_attr "length" "*,8,8,*")
    (set_attr "predicable" "no,yes,yes,no")
-   (set_attr "type" "neon_int_1,multiple,multiple,neon_int_1")
+   (set_attr "type" "neon_move,multiple,multiple,neon_move")
    (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")]
 )
 
