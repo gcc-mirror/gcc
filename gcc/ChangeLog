@@ -8,6 +8,38 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (unspec): Add UNSPEC_RCP14, UNSPEC_RSQRT14,
+	UNSPEC_FIXUPIMM, UNSPEC_SCALEF, UNSPEC_GETEXP, UNSPEC_GETMANT,
+	UNSPEC_EXP2, UNSPEC_RCP28, UNSPEC_RSQRT28.
+	(rcp14<mode>): New.
+	(srcp14<mode>): Ditto.
+	(rsqrt14<mode>): Ditto.
+	(rsqrt14<mode>): Ditto.
+	(avx512f_vmscalef<mode>): Ditto.
+	(avx512f_scalef<mode>): Ditto.
+	(avx512f_getexp<mode>): Ditto.
+	(avx512f_sgetexp<mode>): Ditto.
+	(avx512f_fixupimm<mode>): Ditto.
+	(avx512f_sfixupimm<mode>): Ditto.
+	(avx512f_rndscale<mode>): Ditto.
+	(*avx512er_exp2<mode>): Ditto.
+	(*avx512er_rcp28<mode>): Ditto.
+	(avx512er_rsqrt28<mode>): Ditto.
+	(avx512f_getmant<mode>): Ditto.
+	(avx512f_getmant<mode>): Ditto.
+	(avx512f_rndscale<mode>): Fix formatting.
+
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/predicates.md (const_8_to_15_operand): New.
 	(const_16_to_31_operand): Ditto.
 	* config/i386/sse.md (V8FI): New.
