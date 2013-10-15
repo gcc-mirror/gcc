@@ -1,3 +1,13 @@
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
+	Restructure forwarding through conversions and copies to
+	avoid performing copy-propagation the wrong way.  Adjust
+	recursion invocations.
+	(forward_propagate_addr_expr): Add argument stating if we
+	are recursing from a single-use.
+	(ssa_forward_propagate_and_combine): Adjust.
+
 2013-10-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.h (gcc::dump_manager): New class, to hold state
