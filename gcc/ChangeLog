@@ -8,6 +8,37 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/predicates.md (const_8_to_15_operand): New.
+	(const_16_to_31_operand): Ditto.
+	* config/i386/sse.md (V8FI): New.
+	(V16FI): Ditto.
+	(reduc_splus_v8df): Ditto.
+	(reduc_splus_v16sf): Ditto.
+	(avx512f_vextract<shuffletype>32x4_1): Ditto.
+	(vec_extract_hi_<mode>): Ditto.
+	(avx512f_vinsert<shuffletype>32x4_1): Ditto.
+	(vec_set_lo_<mode>): Ditto.
+	(vec_set_hi_<mode>): Ditto.
+	(avx512f_shuf_<shuffletype>64x2_1): Ditto.
+	(avx512f_shuf_<shuffletype>32x4_1): Ditto.
+	(avx512f_pshufd_1): Ditto.
+	(avx512f_broadcast<mode>): Ditto.
+	(avx512f_broadcast<mode>): Ditto.
+	(define_split): Split vec_extract_lo into move.
+	(ssequartermode): Ditto.
+	(ssedoublemode): Extened with wider modes.
+	(vec_extract_lo_<mode>): Ditto.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/predicates.md (register_or_constm1_operand): New.
 	* config/i386/sse.md (unspec): Add UNSPEC_UNSIGNED_PCMP, UNSPEC_TESTM,
 	UNSPEC_TESTNM, UNSPEC_VTERNLOG, UNSPEC_ALIGN, UNSPEC_CONFLICT,
