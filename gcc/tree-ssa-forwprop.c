@@ -161,7 +161,7 @@ along with GCC; see the file COPYING3.  If not see
 
    This will (of course) be extended as other needs arise.  */
 
-static bool forward_propagate_addr_expr (tree name, tree rhs);
+static bool forward_propagate_addr_expr (tree, tree, bool);
 
 /* Set to true if we delete dead edges during the optimization.  */
 static bool cfg_changed;
@@ -714,35 +714,44 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   rhs_code = gimple_assign_rhs_code (use_stmt);
   rhs = gimple_assign_rhs1 (use_stmt);
 
-  /* Trivial cases.  The use statement could be a trivial copy or a
-     useless conversion.  Recurse to the uses of the lhs as copyprop does
-     not copy through different variant pointers and FRE does not catch
-     all useless conversions.  Treat the case of a single-use name and
+  /* Do not perform copy-propagation but recurse through copy chains.  */
+  if (TREE_CODE (lhs) == SSA_NAME
+      && rhs_code == SSA_NAME)
+    return forward_propagate_addr_expr (lhs, def_rhs, single_use_p);
+
+  /* The use statement could be a conversion.  Recurse to the uses of the
+     lhs as copyprop does not copy through pointer to integer to pointer
+     conversions and FRE does not catch all cases either.
+     Treat the case of a single-use name and
      a conversion to def_rhs type separate, though.  */
   if (TREE_CODE (lhs) == SSA_NAME
-      && ((rhs_code == SSA_NAME && rhs == name)
-	  || CONVERT_EXPR_CODE_P (rhs_code)))
+      && CONVERT_EXPR_CODE_P (rhs_code))
     {
-      /* Only recurse if we don't deal with a single use or we cannot
-	 do the propagation to the current statement.  In particular
-	 we can end up with a conversion needed for a non-invariant
-	 address which we cannot do in a single statement.  */
-      if (!single_use_p
-	  || (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs))
-	      && (!is_gimple_min_invariant (def_rhs)
-		  || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-		      && POINTER_TYPE_P (TREE_TYPE (def_rhs))
-		      && (TYPE_PRECISION (TREE_TYPE (lhs))
-			  > TYPE_PRECISION (TREE_TYPE (def_rhs)))))))
-	return forward_propagate_addr_expr (lhs, def_rhs);
+      /* If there is a point in a conversion chain where the types match
+         so we can remove a conversion re-materialize the address here
+	 and stop.  */
+      if (single_use_p
+	  && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
+	{
+	  gimple_assign_set_rhs1 (use_stmt, unshare_expr (def_rhs));
+	  gimple_assign_set_rhs_code (use_stmt, TREE_CODE (def_rhs));
+	  return true;
+	}
 
-      gimple_assign_set_rhs1 (use_stmt, unshare_expr (def_rhs));
-      if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
-	gimple_assign_set_rhs_code (use_stmt, TREE_CODE (def_rhs));
-      else
-	gimple_assign_set_rhs_code (use_stmt, NOP_EXPR);
-      return true;
+      /* Else recurse if the conversion preserves the address value.  */
+      if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	   || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && (TYPE_PRECISION (TREE_TYPE (lhs))
+	      >= TYPE_PRECISION (TREE_TYPE (def_rhs))))
+	return forward_propagate_addr_expr (lhs, def_rhs, single_use_p);
+
+      return false;
     }
+
+  /* If this isn't a conversion chain from this on we only can propagate
+     into compatible pointer contexts.  */
+  if (!types_compatible_p (TREE_TYPE (name), TREE_TYPE (def_rhs)))
+    return false;
 
   /* Propagate through constant pointer adjustments.  */
   if (TREE_CODE (lhs) == SSA_NAME
@@ -768,7 +777,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       /* Recurse.  If we could propagate into all uses of lhs do not
 	 bother to replace into the current use but just pretend we did.  */
       if (TREE_CODE (new_def_rhs) == ADDR_EXPR
-	  && forward_propagate_addr_expr (lhs, new_def_rhs))
+	  && forward_propagate_addr_expr (lhs, new_def_rhs, single_use_p))
 	return true;
 
       if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_def_rhs)))
@@ -996,15 +1005,20 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
    Try to forward propagate the ADDR_EXPR into all uses of the SSA_NAME.
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
    node or for recovery of array indexing from pointer arithmetic.
+
+   PARENT_SINGLE_USE_P tells if, when in a recursive invocation, NAME was
+   the single use in the previous invocation.  Pass true when calling
+   this as toplevel.
+
    Returns true, if all uses have been propagated into.  */
 
 static bool
-forward_propagate_addr_expr (tree name, tree rhs)
+forward_propagate_addr_expr (tree name, tree rhs, bool parent_single_use_p)
 {
   imm_use_iterator iter;
   gimple use_stmt;
   bool all = true;
-  bool single_use_p = has_single_use (name);
+  bool single_use_p = parent_single_use_p && has_single_use (name);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, name)
     {
@@ -3336,7 +3350,7 @@ ssa_forward_propagate_and_combine (void)
 		   || !DECL_P (base)
 		   || decl_address_invariant_p (base))
 		  && !stmt_references_abnormal_ssa_name (stmt)
-		  && forward_propagate_addr_expr (lhs, rhs))
+		  && forward_propagate_addr_expr (lhs, rhs, true))
 		{
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
@@ -3360,7 +3374,7 @@ ssa_forward_propagate_and_combine (void)
 						 TREE_TYPE (TREE_TYPE (rhs)),
 						 rhs,
 						 fold_convert (ptr_type_node,
-							       off)))))
+							       off))), true))
 		{
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
