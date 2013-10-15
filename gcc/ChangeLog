@@ -1,3 +1,9 @@
+2013-10-15  Cong Hou  <congh@google.com>
+
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Relax the 
+	requirement of the reduction pattern so that one operand of the 
+	reduction operation can come from outside of the loop.
+
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/neon-schedgen.ml: Remove.
