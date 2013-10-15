@@ -1,3 +1,26 @@
+2013-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c (__gnat_get_executable_load_address): Remove AIX
+	specific code.
+
+2013-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Aggr_Size_OK): Refine criteria to better handle
+	large static aggregates with static record components, to avoid
+	generating a large number of asignments.  Conversely, improve
+	handling of aggregates initialized by a single association,
+	which are most efficiently implemented with a loop.
+
+2013-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Item): Emit an
+	error when the input item comes from the related package.
+
+2013-10-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch11.adb (Expand_Exception_Handlers): Restrict previous
+	change.
+
 2013-10-14  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/gigi.h (standard_datatypes): Add

@@ -1029,7 +1029,8 @@ package body Exp_Ch11 is
                --  will insert a call to initialize the choice parameter.
 
                if Present (Choice_Parameter (Handler))
-                 and then Exception_Mechanism /= Back_End_Exceptions
+                 and then (Exception_Mechanism /= Back_End_Exceptions
+                           or else CodePeer_Mode)
                then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
