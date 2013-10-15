@@ -1,5 +1,11 @@
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/neon-schedgen.ml: Remove.
+	* config/arm/cortex-a9-neon.md: Remove comment regarding
+	neon-schedgen.ml.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types: Remove old neon types.
 
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
