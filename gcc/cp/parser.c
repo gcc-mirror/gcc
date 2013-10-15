@@ -6231,9 +6231,13 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 {
   tree index = NULL_TREE;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  bool saved_greater_than_is_operator_p;
 
   /* Consume the `[' token.  */
   cp_lexer_consume_token (parser->lexer);
+
+  saved_greater_than_is_operator_p = parser->greater_than_is_operator_p;
+  parser->greater_than_is_operator_p = true;
 
   /* Parse the index expression.  */
   /* ??? For offsetof, there is a question of what to allow here.  If
@@ -6277,6 +6281,8 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
       else
 	index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
     }
+
+  parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
 
   /* Look for the closing `]'.  */
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);

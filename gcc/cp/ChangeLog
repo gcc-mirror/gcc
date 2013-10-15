@@ -1,3 +1,9 @@
+2013-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58707
+	* parser.c (cp_parser_postfix_open_square_expression): Set
+	parser->greater_than_is_operator_p for the argument.
+
 2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58633

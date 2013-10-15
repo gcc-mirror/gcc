@@ -1,3 +1,8 @@
+2013-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58707
+	* g++.dg/cpp0x/pr58707.C: New.
+
 2013-10-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* c-c++-common/cpp/openmp-define-3.c: Move effective target check
