@@ -1,3 +1,29 @@
+2013-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Element_Set,
+	Expand_Packed_Element_Reference): Adjust for the case of packed
+	arrays of reverse-storage-order types.
+
+2013-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2013-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Specification, case
+	To_Address): If the expression is an identifier, do not modify
+	its type; it will be converted when necessary, and the type of
+	the expression must remain consistent with that of the entity
+	for back-end consistency.
+
+2013-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb (Unit_Requires_Body): Add flag
+	Ignore_Abstract_State (Analyze_Package_Specification): Enforce
+	rule requiring Elaborate_Body if a non-null abstract state is
+	specified for a library-level package.
+	* sem_ch7.ads (Unit_Requires_Body): Add flag Ignore_Abstract_State.
+
 2013-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Constituent): When

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,9 +52,15 @@ package Sem_Ch7 is
    --  but is deferred until the compilation of the  private part of the
    --  child for public child packages.
 
-   function Unit_Requires_Body (P : Entity_Id) return Boolean;
-   --  Check if a unit requires a body. A specification requires a body
-   --  if it contains declarations that require completion in a body.
+   function Unit_Requires_Body
+     (P                     : Entity_Id;
+      Ignore_Abstract_State : Boolean := False) return Boolean;
+   --  Check if a unit requires a body. A specification requires a body if it
+   --  contains declarations that require completion in a body. If the flag
+   --  Ignore_Abstract_State is set True, then the test for a non-null abstract
+   --  state (which normally requires a body) is not carried out. This allows
+   --  the use of this routine to tell if there is some other reason that a
+   --  body is required (as is required for analyzing Abstract_State).
 
    procedure May_Need_Implicit_Body (E : Entity_Id);
    --  If a package declaration contains tasks or RACWs and does not require

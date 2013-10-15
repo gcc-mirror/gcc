@@ -5627,9 +5627,16 @@ package body Sem_Attr is
                Error_Attr ("address value out of range for % attribute", E1);
             end if;
 
+            --  In most cases the expression is a numeric literal or some other
+            --  address expression, but if it is a declared constant it may be
+            --  of a compatible type that must be left on the node.
+
+            if Is_Entity_Name (E1) then
+               null;
+
             --  Set type to universal integer if negative
 
-            if Val < 0 then
+            elsif Val < 0 then
                Set_Etype (E1, Universal_Integer);
 
             --  Otherwise set type to Unsigned_64 to accomodate max values
