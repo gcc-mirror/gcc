@@ -260,21 +260,19 @@ static pointer_map <hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
-/* Returning a hash value for gimple type TYPE combined with VAL.
+static hashval_t iterative_hash_canonical_type (tree type, hashval_t val);
+static hashval_t gimple_canonical_type_hash (const void *p);
+static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
+
+/* Returning a hash value for gimple type TYPE.
 
    The hash value returned is equal for types considered compatible
    by gimple_canonical_types_compatible_p.  */
 
 static hashval_t
-iterative_hash_canonical_type (tree type, hashval_t val)
+hash_canonical_type (tree type)
 {
   hashval_t v;
-  hashval_t *slot;
-
-  num_canonical_type_hash_queries++;
-  slot = canonical_type_hash_cache->contains (type);
-  if (slot)
-    return iterative_hash_hashval_t (*slot, val);
 
   /* Combine a few common features of types so that types are grouped into
      smaller sets; when searching for existing matching types to merge,
@@ -373,18 +371,43 @@ iterative_hash_canonical_type (tree type, hashval_t val)
       v = iterative_hash_hashval_t (nf, v);
     }
 
-  /* Cache the just computed hash value.  */
-  num_canonical_type_hash_entries++;
-  slot = canonical_type_hash_cache->insert (type);
-  *slot = v;
+  return v;
+}
 
+/* Returning a hash value for gimple type TYPE combined with VAL.  */
+
+static hashval_t
+iterative_hash_canonical_type (tree type, hashval_t val)
+{
+  hashval_t v;
+  /* An already processed type.  */
+  if (TYPE_CANONICAL (type))
+    {
+      type = TYPE_CANONICAL (type);
+      v = gimple_canonical_type_hash (type);
+    }
+  else
+    {
+      /* Canonical types should not be able to form SCCs by design, this
+	 recursion is just because we do not register canonical types in
+	 optimal order.  To avoid quadratic behavior also register the
+	 type here.  */
+      v = hash_canonical_type (type);
+      gimple_register_canonical_type_1 (type, v);
+    }
   return iterative_hash_hashval_t (v, val);
 }
+
+/* Returns the hash for a canonical type P.  */
 
 static hashval_t
 gimple_canonical_type_hash (const void *p)
 {
-  return iterative_hash_canonical_type (CONST_CAST_TREE ((const_tree) p), 0);
+  num_canonical_type_hash_queries++;
+  hashval_t *slot
+    = canonical_type_hash_cache->contains (CONST_CAST_TREE ((const_tree) p));
+  gcc_assert (slot != NULL);
+  return *slot;
 }
 
 
@@ -614,60 +637,73 @@ gimple_canonical_type_eq (const void *p1, const void *p2)
 					      CONST_CAST_TREE (t2));
 }
 
-/* Register type T in the global type table gimple_types.
-   If another type T', compatible with T, already existed in
-   gimple_types then return T', otherwise return T.  This is used by
-   LTO to merge identical types read from different TUs.
+/* Main worker for gimple_register_canonical_type.  */
+
+static void
+gimple_register_canonical_type_1 (tree t, hashval_t hash)
+{
+  void **slot;
+
+  gcc_checking_assert (TYPE_P (t) && !TYPE_CANONICAL (t));
+
+  slot = htab_find_slot_with_hash (gimple_canonical_types, t, hash, INSERT);
+  if (*slot)
+    {
+      tree new_type = (tree)(*slot);
+      gcc_checking_assert (new_type != t);
+      TYPE_CANONICAL (t) = new_type;
+    }
+  else
+    {
+      TYPE_CANONICAL (t) = t;
+      *slot = (void *) t;
+      /* Cache the just computed hash value.  */
+      num_canonical_type_hash_entries++;
+      bool existed_p;
+      hashval_t *hslot = canonical_type_hash_cache->insert (t, &existed_p);
+      gcc_assert (!existed_p);
+      *hslot = hash;
+    }
+}
+
+/* Register type T in the global type table gimple_types and set
+   TYPE_CANONICAL of T accordingly.
+   This is used by LTO to merge structurally equivalent types for
+   type-based aliasing purposes across different TUs and languages.
 
    ???  This merging does not exactly match how the tree.c middle-end
    functions will assign TYPE_CANONICAL when new types are created
    during optimization (which at least happens for pointer and array
    types).  */
 
-static tree
+static void
 gimple_register_canonical_type (tree t)
 {
-  void **slot;
-
-  gcc_assert (TYPE_P (t));
-
   if (TYPE_CANONICAL (t))
-    return TYPE_CANONICAL (t);
+    return;
 
-  slot = htab_find_slot (gimple_canonical_types, t, INSERT);
-  if (*slot
-      && *(tree *)slot != t)
-    {
-      tree new_type = (tree) *((tree *) slot);
-
-      TYPE_CANONICAL (t) = new_type;
-      t = new_type;
-    }
-  else
-    {
-      TYPE_CANONICAL (t) = t;
-      *slot = (void *) t;
-    }
-
-  return t;
+  gimple_register_canonical_type_1 (t, hash_canonical_type (t));
 }
 
 /* Re-compute TYPE_CANONICAL for NODE and related types.  */
 
 static void
-lto_register_canonical_types (tree node)
+lto_register_canonical_types (tree node, bool first_p)
 {
   if (!node
       || !TYPE_P (node))
     return;
 
-  TYPE_CANONICAL (node) = NULL_TREE;
-  TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
+  if (first_p)
+    TYPE_CANONICAL (node) = NULL_TREE;
 
   if (POINTER_TYPE_P (node)
       || TREE_CODE (node) == COMPLEX_TYPE
       || TREE_CODE (node) == ARRAY_TYPE)
-    lto_register_canonical_types (TREE_TYPE (node));
+    lto_register_canonical_types (TREE_TYPE (node), first_p);
+
+ if (!first_p) 
+    gimple_register_canonical_type (node);
 }
 
 
@@ -1845,7 +1881,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      /* Compute the canonical type of all types.
 		 ???  Should be able to assert that !TYPE_CANONICAL.  */
 	      if (TYPE_P (t) && !TYPE_CANONICAL (t))
-		TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
+		gimple_register_canonical_type (t);
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
 		 type which is also member of this SCC.  */
 	      if (TREE_CODE (t) == INTEGER_CST
@@ -2753,13 +2789,20 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Register the common node types with the canonical type machinery so
      we properly share alias-sets across languages and TUs.  Do not
      expose the common nodes as type merge target - those that should be
-     are already exposed so by pre-loading the LTO streamer caches.  */
+     are already exposed so by pre-loading the LTO streamer caches.
+     Do two passes - first clear TYPE_CANONICAL and then re-compute it.  */
   for (i = 0; i < itk_none; ++i)
-    lto_register_canonical_types (integer_types[i]);
-  /* The sizetypes are not used to access data so we do not need to
-     do anything about them.  */
+    lto_register_canonical_types (integer_types[i], true);
+  for (i = 0; i < stk_type_kind_last; ++i)
+    lto_register_canonical_types (sizetype_tab[i], true);
   for (i = 0; i < TI_MAX; ++i)
-    lto_register_canonical_types (global_trees[i]);
+    lto_register_canonical_types (global_trees[i], true);
+  for (i = 0; i < itk_none; ++i)
+    lto_register_canonical_types (integer_types[i], false);
+  for (i = 0; i < stk_type_kind_last; ++i)
+    lto_register_canonical_types (sizetype_tab[i], false);
+  for (i = 0; i < TI_MAX; ++i)
+    lto_register_canonical_types (global_trees[i], false);
 
   if (!quiet_flag)
     fprintf (stderr, "Reading object files:");

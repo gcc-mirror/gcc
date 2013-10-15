@@ -1,3 +1,18 @@
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (hash_canonical_type): Split out from ...
+	(iterative_hash_canonical_type): ... here.  Register types
+	we recurse to.
+	(gimple_canonical_type_hash): Adjust.
+	(gimple_register_canonical_type_1): Split out from ...
+	(gimple_register_canonical_type): ... here.  Cache computed
+	hash value.
+	(lto_register_canonical_types): Split into two modes,
+	clearing and computing TYPE_CANONICAL.
+	(lto_read_decls): Adjust.
+	(read_cgraph_and_symbols): Do two passes over global trees,
+	first clearing then computing TYPE_CANONICAL.
+
 2013-10-14  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (gimple_canonical_types): Move out-of GC space.
