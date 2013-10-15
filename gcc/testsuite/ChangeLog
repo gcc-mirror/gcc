@@ -1,3 +1,7 @@
+2013-10-15  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-reduc-pattern-3.c: New test.
+
 2013-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58707
