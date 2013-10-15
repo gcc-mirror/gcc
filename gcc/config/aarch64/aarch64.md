@@ -1033,7 +1033,7 @@
    stp\\t%1, %H1, %0"
   [(set_attr "v8type" "logic,move2,fmovi2f,fmovf2i,fconst,fconst,fpsimd_load,fpsimd_store,fpsimd_load2,fpsimd_store2")
    (set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
-                     f_loadd,f_stored,neon_ldm_2,neon_stm_2")
+                     f_loadd,f_stored,neon_load1_2reg,neon_store1_2reg")
    (set_attr "mode" "DF,DF,DF,DF,DF,DF,TF,TF,DF,DF")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
@@ -1098,7 +1098,7 @@
 			       GET_MODE_SIZE (<MODE>mode)))"
   "ldp\\t%<w>0, %<w>2, %1"
   [(set_attr "v8type" "fpsimd_load2")
-   (set_attr "type" "neon_ldm_2")
+   (set_attr "type" "neon_load1_2reg<q>")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -1115,7 +1115,7 @@
 			       GET_MODE_SIZE (<MODE>mode)))"
   "stp\\t%<w>1, %<w>3, %0"
   [(set_attr "v8type" "fpsimd_store2")
-   (set_attr "type" "neon_stm_2")
+   (set_attr "type" "neon_store1_2reg<q>")
    (set_attr "mode" "<MODE>")]
 )
 
