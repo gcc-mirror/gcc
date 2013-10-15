@@ -13177,7 +13177,7 @@ Both are equivalent to the value @code{NULL} in C.
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v3.1
+OpenMP Application Program Interface v4.0
 @end table
 
 
@@ -13190,8 +13190,8 @@ the named constants defined in the modules are listed
 below.
 
 For details refer to the actual
-@uref{http://www.openmp.org/mp-documents/spec31.pdf,
-OpenMP Application Program Interface v3.1}.
+@uref{http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf,
+OpenMP Application Program Interface v4.0}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
@@ -13199,15 +13199,17 @@ named constants:
 @table @asis
 @item @code{omp_lock_kind}
 @item @code{omp_nest_lock_kind}
+@item @code{omp_proc_bind_kind}
 @item @code{omp_sched_kind}
 @end table
 
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenMP version; for OpenMP v3.1 the value is @code{201107}.
+of the OpenMP version; for OpenMP v3.1 the value is @code{201107}
+and for OpenMP v4.0 the value is @code{201307}.
 
-And the following scalar integer named constants of the
+The following scalar integer named constants of the
 kind @code{omp_sched_kind}:
 
 @table @asis
@@ -13215,4 +13217,15 @@ kind @code{omp_sched_kind}:
 @item @code{omp_sched_dynamic}
 @item @code{omp_sched_guided}
 @item @code{omp_sched_auto}
+@end table
+
+And the following scalar integer named constants of the 
+kind @code{omp_proc_bind_kind}:
+
+@table @asis
+@item @code{omp_proc_bind_false}
+@item @code{omp_proc_bind_true}
+@item @code{omp_proc_bind_master}
+@item @code{omp_proc_bind_close}
+@item @code{omp_proc_bind_spread}
 @end table
