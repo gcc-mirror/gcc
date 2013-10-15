@@ -1,3 +1,9 @@
+2013-10-15  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/t-aprofile: New file.
+	* config.gcc: Handle --with-multilib-list option.
+
 2013-10-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reload1.c (reloads_unique_chain_p): Ensure that r1 is the input for
