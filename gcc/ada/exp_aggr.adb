@@ -376,7 +376,7 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
-      --  The normal aggregate limit is 5000, but we increase this limit to
+      --  The normal aggregate limit is 50000, but we increase this limit to
       --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
       --  Restrictions (No_Implicit_Loops) is specified, since in either case
       --  we are at risk of declaring the program illegal because of this
@@ -389,10 +389,14 @@ package body Exp_Aggr is
       --  efficient to construct a one-dimensional equivalent array with static
       --  components.
 
+      --  Conversely, we decrease the maximum size if none of the above
+      --  requirements apply, and if the aggregate has a single component
+      --  association, which will be more efficient if implemented with a loop.
+
       --  Finally, we use a small limit in CodePeer mode where we favor loops
       --  instead of thousands of single assignments (from large aggregates).
 
-      Max_Aggr_Size := 5000;
+      Max_Aggr_Size := 50000;
 
       if CodePeer_Mode then
          Max_Aggr_Size := 100;
@@ -404,6 +408,11 @@ package body Exp_Aggr is
                  and then Static_Elaboration_Desired (Current_Scope)))
       then
          Max_Aggr_Size := 2 ** 24;
+
+      elsif No (Expressions (N))
+        and then No (Next (First (Component_Associations (N))))
+      then
+         Max_Aggr_Size := 5000;
       end if;
 
       Siz  := Component_Count (Component_Type (Typ));

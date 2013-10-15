@@ -2353,9 +2353,9 @@ package body Sem_Prag is
                   if Ekind_In (Input_Id, E_Abstract_State, E_Variable) then
 
                      --  The input cannot denote states or variables declared
-                     --  within the visible declarations of the package.
+                     --  within the related package.
 
-                     if Contains (States_And_Vars, Input_Id) then
+                     if In_Same_Code_Unit (Item, Input) then
                         Error_Msg_Name_1 := Chars (Pack_Id);
                         Error_Msg_NE
                           ("input item & cannot denote a visible variable or "

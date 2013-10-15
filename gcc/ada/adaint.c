@@ -3953,8 +3953,6 @@ __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
 #include <mach-o/dyld.h>
 #elif 0 && defined (__linux__)
 #include <link.h>
-#elif defined (_AIX)
-#include <sys/ldr.h>
 #endif
 
 const void *
@@ -3969,28 +3967,6 @@ __gnat_get_executable_load_address (void)
 
   return (const void *)map->l_addr;
 
-#elif defined (_AIX)
-  /* Unfortunately, AIX wants to return the info for all loaded objects,
-     so we need to increase the buffer if too small.  */
-  size_t blen = 4096;
-  int status;
-
-  while (1)
-    {
-      char buf[blen];
-
-      status = loadquery (L_GETINFO, buf, blen);
-      if (status == 0)
-        {
-          struct ld_info *info = (struct ld_info *)buf;
-          return info->ldinfo_textorg;
-        }
-      blen = blen * 2;
-
-      /* Avoid stack overflow.  */
-      if (blen > 40 * 1024)
-        return (const void *)-1;
-    }
 #else
   return NULL;
 #endif
