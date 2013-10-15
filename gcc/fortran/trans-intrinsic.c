@@ -7639,7 +7639,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
 				  from_se.expr));
 
               /* Reset _vptr component to declared type.  */
-	      if (UNLIMITED_POLY (from_expr))
+	      if (vtab == NULL)
+		/* Unlimited polymorphic.  */
 		gfc_add_modify_loc (input_location, &block, from_se.expr,
 				    fold_convert (TREE_TYPE (from_se.expr),
 						  null_pointer_node));
@@ -7695,7 +7696,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
 			      from_se.expr));
 
 	  /* Reset _vptr component to declared type.  */
-	  if (UNLIMITED_POLY (from_expr))
+	  if (vtab == NULL)
+	    /* Unlimited polymorphic.  */
 	    gfc_add_modify_loc (input_location, &block, from_se.expr,
 				fold_convert (TREE_TYPE (from_se.expr),
 					      null_pointer_node));
