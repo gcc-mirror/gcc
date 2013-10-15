@@ -1,3 +1,8 @@
+2013-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58652
+	* gfortran.dg/unlimited_polymorphic_11.f90: New.
+
 2013-10-14  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-find-packages): New proc.
