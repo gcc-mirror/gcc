@@ -20,6 +20,45 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_attr "cortex_a7_neon_type"
+  "neon_mul, neon_mla, neon_other"
+  (cond [
+          (eq_attr "type" "neon_mul_b, neon_mul_b_q,\
+	                   neon_mul_h, neon_mul_h_q,\
+			   neon_mul_s, neon_mul_s_q,\
+			   neon_mul_b_long, neon_mul_h_long,\
+			   neon_mul_s_long, neon_mul_h_scalar,\
+			   neon_mul_h_scalar_q, neon_mul_s_scalar,\
+			   neon_mul_s_scalar_q, neon_mul_h_scalar_long,\
+			   neon_mul_s_scalar_long,\
+			   neon_sat_mul_b, neon_sat_mul_b_q,\
+			   neon_sat_mul_h, neon_sat_mul_h_q,\
+			   neon_sat_mul_s, neon_sat_mul_s_q,\
+			   neon_sat_mul_b_long, neon_sat_mul_h_long,\
+			   neon_sat_mul_s_long,\
+			   neon_sat_mul_h_scalar, neon_sat_mul_h_scalar_q,\
+			   neon_sat_mul_s_scalar, neon_sat_mul_s_scalar_q,\
+			   neon_sat_mul_h_scalar_long,\
+			   neon_sat_mul_s_scalar_long,\
+			   neon_fp_mul_s, neon_fp_mul_s_q,\
+			   neon_fp_mul_s_scalar, neon_fp_mul_s_scalar_q")
+             (const_string "neon_mul")
+          (eq_attr "type" "neon_mla_b, neon_mla_b_q, neon_mla_h,\
+	                   neon_mla_h_q, neon_mla_s, neon_mla_s_q,\
+			   neon_mla_b_long, neon_mla_h_long,\
+                           neon_mla_s_long,\
+			   neon_mla_h_scalar, neon_mla_h_scalar_q,\
+			   neon_mla_s_scalar, neon_mla_s_scalar_q,\
+			   neon_mla_h_scalar_long, neon_mla_s_scalar_long,\
+			   neon_sat_mla_b_long, neon_sat_mla_h_long,\
+			   neon_sat_mla_s_long,\
+			   neon_sat_mla_h_scalar_long,\
+                           neon_sat_mla_s_scalar_long,\
+			   neon_fp_mla_s, neon_fp_mla_s_q,\
+			   neon_fp_mla_s_scalar, neon_fp_mla_s_scalar_q")
+             (const_string "neon_mla")]
+           (const_string "neon_other")))
+
 (define_automaton "cortex_a7")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,14 +266,7 @@
 
 (define_insn_reservation "cortex_a7_neon_mul" 4
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type"
-                "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-                 neon_mul_qqq_8_16_32_ddd_32,\
-                 neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
-                 neon_mul_ddd_16_scalar_32_16_long_scalar,\
-                 neon_mul_qqd_32_scalar,\
-                 neon_fp_vmul_ddd,\
-                 neon_fp_vmul_qqd"))
+       (eq_attr "cortex_a7_neon_type" "neon_mul"))
   "(cortex_a7_both+cortex_a7_fpmul_pipe)*2")
 
 (define_insn_reservation "cortex_a7_fpmacs" 8
@@ -244,16 +276,7 @@
 
 (define_insn_reservation "cortex_a7_neon_mla" 8
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type"
-                "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-                 neon_mla_qqq_8_16,\
-                 neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
-                 neon_mla_qqq_32_qqd_32_scalar,\
-                 neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,\
-                 neon_fp_vmla_ddd,\
-                 neon_fp_vmla_qqq,\
-                 neon_fp_vmla_ddd_scalar,\
-                 neon_fp_vmla_qqq_scalar"))
+       (eq_attr "cortex_a7_neon_type" "neon_mla"))
   "cortex_a7_both+cortex_a7_fpmul_pipe")
 
 (define_bypass 4 "cortex_a7_fpmacs,cortex_a7_neon_mla"
@@ -366,21 +389,6 @@
 
 (define_insn_reservation "cortex_a7_neon" 4
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type"
-                "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
-                 neon_mul_qqq_8_16_32_ddd_32,\
-                 neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
-                 neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
-                 neon_mla_qqq_8_16,\
-                 neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
-                 neon_mla_qqq_32_qqd_32_scalar,\
-                 neon_mul_ddd_16_scalar_32_16_long_scalar,\
-                 neon_mul_qqd_32_scalar,\
-                 neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,\
-                 neon_fp_vmul_ddd,\
-                 neon_fp_vmul_qqd,\
-                 neon_fp_vmla_ddd,\
-                 neon_fp_vmla_qqq,\
-                 neon_fp_vmla_ddd_scalar,\
-                 neon_fp_vmla_qqq_scalar"))
+       (and (eq_attr "is_neon_type" "yes")
+            (eq_attr "cortex_a7_neon_type" "neon_other")))
   "cortex_a7_both*2")
