@@ -1,3 +1,10 @@
+2013-10-15  Tim Shen  <timshen91@gmail.com>
+
+	PR libstdc++/58737
+	* include/bits/regex_automaton.h (_Automaton<>::~_Automaton): Fix memory
+	leak by adding it.
+	* include/bits/regex_executor.h (_Executor<>::~_Executor): Likewise.
+
 2013-10-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.

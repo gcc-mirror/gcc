@@ -112,6 +112,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef size_t _SizeT;
 
     public:
+      virtual
+      ~_Automaton()
+      { }
+
       virtual _SizeT
       _M_sub_count() const = 0;
 
