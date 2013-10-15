@@ -1,5 +1,73 @@
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/cortex-a8-neon.md (cortex_a8_neon_type): New.
+
+	(cortex_a8_neon_vshl_ddd): Remove.
+	(cortex_a8_neon_vst3_vst4): Likewise.
+	(cortex_a8_neon_vld3_vld4_all_lanes): Likewise.
+
+	(cortex_a8_neon_bit_ops_q): New.
+
+	(cortex_a8_neon_int_1): Use cortex_a8_neon_type.
+	(cortex_a8_neon_int_2): Likewise..
+	(cortex_a8_neon_int_3): Likewise.
+	(cortex_a8_neon_int_5): Likewise.
+	(cortex_a8_neon_vqneg_vqabs): Likewise.
+	(cortex_a8_neon_int_4): Likewise.
+	(cortex_a8_neon_vaba): Likewise.
+	(cortex_a8_neon_vaba_qqq): Likewise.
+	(cortex_a8_neon_shift_1): Likewise.
+	(cortex_a8_neon_shift_2): Likewise.
+	(cortex_a8_neon_shift_3): Likewise.
+	(cortex_a8_neon_vqshl_vrshl_vqrshl_qqq): Likewise.
+	(cortex_a8_neon_vsra_vrsra): Likewise.
+	(cortex_a8_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a8_neon_mul_qqq_8_16_32_ddd_32): Likewise.
+	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
+	Likewise.
+	(cortex_a8_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a8_neon_mla_qqq_8_16): Likewise.
+	(cortex_a8_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long):
+	Likewise.
+	(cortex_a8_neon_mla_qqq_32_qqd_32_scalar): Likewise.
+	(cortex_a8_neon_mul_ddd_16_scalar_32_16_long_scalar): Likewise.
+	(cortex_a8_neon_mul_qqd_32_scalar): Likewise.
+	(cortex_a8_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar): Likewise.
+	(cortex_a8_neon_fp_vadd_ddd_vabs_dd): Likewise.
+	(cortex_a8_neon_fp_vadd_qqq_vabs_qq): Likewise.
+	(cortex_a8_neon_fp_vsum): Likewise.
+	(cortex_a8_neon_fp_vmul_ddd): Likewise.
+	(cortex_a8_neon_fp_vmul_qqd): Likewise.
+	(cortex_a8_neon_fp_vmla_ddd): Likewise.
+	(cortex_a8_neon_fp_vmla_qqq): Likewise.
+	(cortex_a8_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a8_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a8_neon_fp_vrecps_vrsqrts_ddd): Likewise.
+	(cortex_a8_neon_fp_vrecps_vrsqrts_qqq): Likewise.
+	(cortex_a8_neon_bp_simple): Likewise.
+	(cortex_a8_neon_bp_2cycle): Likewise.
+	(cortex_a8_neon_bp_3cycle): Likewise.
+	(cortex_a8_neon_ldr): Likewise.
+	(cortex_a8_neon_str): Likewise.
+	(cortex_a8_neon_vld1_1_2_regs): Likewise.
+	(cortex_a8_neon_vld1_3_4_regs): Likewise.
+	(cortex_a8_neon_vld2_2_regs_vld1_vld2_all_lanes): Likewise.
+	(cortex_a8_neon_vld2_4_regs): Likewise.
+	(cortex_a8_neon_vld3_vld4): Likewise.
+	(cortex_a8_neon_vld1_vld2_lane): Likewise.
+	(cortex_a8_neon_vld3_vld4_lane): Likewise.
+	(cortex_a8_neon_vst1_1_2_regs_vst2_2_regs): Likewise.
+	(cortex_a8_neon_vst1_3_4_regs): Likewise.
+	(cortex_a8_neon_vst2_4_regs_vst3_vst4): Likewise.
+	(cortex_a8_neon_vst1_vst2_lane): Likewise.
+	(cortex_a8_neon_vst3_vst4_lane): Likewise.
+	(cortex_a8_neon_mcr): Likewise.
+	(cortex_a8_neon_mcr_2_mcrr): Likewise.
+	(cortex_a8_neon_mrc): Likewise.
+	(cortex_a8_neon_mrrc): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/iterators.md (Vetype): Add SF and DF modes.
 	(fp): New.
 	* config/aarch64/aarch64-simd.md (neon_type): Remove.
