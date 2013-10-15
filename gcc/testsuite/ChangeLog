@@ -1,3 +1,7 @@
+2013-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/torture/builtin-self.c: New file.
+
 2013-10-15  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.dg/tree-ssa/reassoc-32.c: New test case.

@@ -1,3 +1,8 @@
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-tailcall.c (find_tail_calls): Don't use tail-call recursion
+	for built-in functions.
+
 2013-10-15  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* tree-ssa-reassoc.c: Include rtl.h and tm_p.h.
