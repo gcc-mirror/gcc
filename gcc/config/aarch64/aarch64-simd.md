@@ -238,80 +238,6 @@
    none"
   (const_string "none"))
 
-
-; The "neon_type" attribute is used by the AArch32 backend.  Below is a mapping
-; from "simd_type" to "neon_type".
-
-(define_attr "neon_type"
-   "neon_int_1,neon_int_2,neon_int_3,neon_int_4,neon_int_5,neon_vqneg_vqabs,
-   neon_vmov,neon_vaba,neon_vsma,neon_vaba_qqq,
-   neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,neon_mul_qqq_8_16_32_ddd_32,
-   neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,
-   neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,neon_mla_qqq_8_16,
-   neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,
-   neon_mla_qqq_32_qqd_32_scalar,neon_mul_ddd_16_scalar_32_16_long_scalar,
-   neon_mul_qqd_32_scalar,neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,
-   neon_shift_1,neon_shift_2,neon_shift_3,neon_vshl_ddd,
-   neon_vqshl_vrshl_vqrshl_qqq,neon_vsra_vrsra,neon_fp_vadd_ddd_vabs_dd,
-   neon_fp_vadd_qqq_vabs_qq,neon_fp_vsum,neon_fp_vmul_ddd,neon_fp_vmul_qqd,
-   neon_fp_vmla_ddd,neon_fp_vmla_qqq,neon_fp_vmla_ddd_scalar,
-   neon_fp_vmla_qqq_scalar,neon_fp_vrecps_vrsqrts_ddd,
-   neon_fp_vrecps_vrsqrts_qqq,neon_bp_simple,neon_bp_2cycle,neon_bp_3cycle,
-   neon_ldr,neon_str,neon_vld1_1_2_regs,neon_vld1_3_4_regs,
-   neon_vld2_2_regs_vld1_vld2_all_lanes,neon_vld2_4_regs,neon_vld3_vld4,
-   neon_vst1_1_2_regs_vst2_2_regs,neon_vst1_3_4_regs,
-   neon_vst2_4_regs_vst3_vst4,neon_vst3_vst4,neon_vld1_vld2_lane,
-   neon_vld3_vld4_lane,neon_vst1_vst2_lane,neon_vst3_vst4_lane,
-   neon_vld3_vld4_all_lanes,neon_mcr,neon_mcr_2_mcrr,neon_mrc,neon_mrrc,
-   neon_ldm_2,neon_stm_2,none,unknown"
-  (cond [
-	  (eq_attr "simd_type" "simd_dup") (const_string "neon_bp_simple")
-	  (eq_attr "simd_type" "simd_movgp") (const_string "neon_bp_simple")
-	  (eq_attr "simd_type" "simd_add,simd_logic,simd_logic_imm") (const_string "neon_int_1")
-	  (eq_attr "simd_type" "simd_negabs,simd_addlv") (const_string "neon_int_3")
-	  (eq_attr "simd_type" "simd_addn,simd_addn2,simd_addl,simd_sat_add,simd_sat_negabs") (const_string "neon_int_4")
-	  (eq_attr "simd_type" "simd_move") (const_string "neon_vmov")
-	  (eq_attr "simd_type" "simd_ins") (const_string "neon_mcr")
-	  (and (eq_attr "simd_type" "simd_mul,simd_sat_mul") (eq_attr "simd_mode" "V8QI,V4HI")) (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-	  (and (eq_attr "simd_type" "simd_mul,simd_sat_mul") (eq_attr "simd_mode" "V2SI,V8QI,V16QI,V2SI")) (const_string "neon_mul_qqq_8_16_32_ddd_32")
-	  (and (eq_attr "simd_type" "simd_mull,simd_sat_mull") (eq_attr "simd_mode" "V8QI,V16QI,V4HI,V8HI")) (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-	  (and (eq_attr "simd_type" "simd_mull,simd_sat_mull") (eq_attr "simd_mode" "V2SI,V4SI,V2DI")) (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
-	  (and (eq_attr "simd_type" "simd_mla,simd_sat_mlal") (eq_attr "simd_mode" "V8QI,V4HI")) (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-	  (and (eq_attr "simd_type" "simd_mla,simd_sat_mlal") (eq_attr "simd_mode" "V2SI")) (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
-	  (and (eq_attr "simd_type" "simd_mla,simd_sat_mlal") (eq_attr "simd_mode" "V16QI,V8HI")) (const_string "neon_mla_qqq_8_16")
-	  (and (eq_attr "simd_type" "simd_mla,simd_sat_mlal") (eq_attr "simd_mode" "V4SI")) (const_string "neon_mla_qqq_32_qqd_32_scalar")
-	  (and (eq_attr "simd_type" "simd_mlal") (eq_attr "simd_mode" "V8QI,V16QI,V4HI,V8HI")) (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-	  (and (eq_attr "simd_type" "simd_mlal") (eq_attr "simd_mode" "V2SI,V4SI,V2DI")) (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
-	  (and (eq_attr "simd_type" "simd_fmla") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vmla_ddd")
-	  (and (eq_attr "simd_type" "simd_fmla") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vmla_qqq")
-	  (and (eq_attr "simd_type" "simd_fmla_elt") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vmla_ddd_scalar")
-	  (and (eq_attr "simd_type" "simd_fmla_elt") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vmla_qqq_scalar")
-	  (and (eq_attr "simd_type" "simd_fmul,simd_fmul_elt,simd_fdiv,simd_fsqrt") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vmul_ddd")
-	  (and (eq_attr "simd_type" "simd_fmul,simd_fmul_elt,simd_fdiv,simd_fsqrt") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vmul_qqd")
-	  (and (eq_attr "simd_type" "simd_fadd") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vadd_ddd_vabs_dd")
-	  (and (eq_attr "simd_type" "simd_fadd") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vadd_qqq_vabs_qq")
-	  (and (eq_attr "simd_type" "simd_fnegabs,simd_fminmax,simd_fminmaxv") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vadd_ddd_vabs_dd")
-	  (and (eq_attr "simd_type" "simd_fnegabs,simd_fminmax,simd_fminmaxv") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vadd_qqq_vabs_qq")
-	  (and (eq_attr "simd_type" "simd_shift,simd_shift_acc") (eq_attr "simd_mode" "V8QI,V4HI,V2SI")) (const_string "neon_vshl_ddd")
-	  (and (eq_attr "simd_type" "simd_shift,simd_shift_acc") (eq_attr "simd_mode" "V16QI,V8HI,V4SI,V2DI")) (const_string "neon_shift_3")
-	  (eq_attr "simd_type" "simd_minmax,simd_minmaxv") (const_string "neon_int_5")
-	  (eq_attr "simd_type" "simd_shiftn_imm,simd_shiftn2_imm,simd_shiftl_imm,") (const_string "neon_shift_1")
-	  (eq_attr "simd_type" "simd_load1,simd_load2") (const_string "neon_vld1_1_2_regs")
-	  (eq_attr "simd_type" "simd_load3,simd_load3") (const_string "neon_vld1_3_4_regs")
-	  (eq_attr "simd_type" "simd_load1r,simd_load2r,simd_load3r,simd_load4r") (const_string "neon_vld2_2_regs_vld1_vld2_all_lanes")
-	  (eq_attr "simd_type" "simd_load1s,simd_load2s") (const_string "neon_vld1_vld2_lane")
-	  (eq_attr "simd_type" "simd_load3s,simd_load4s") (const_string "neon_vld3_vld4_lane")
-	  (eq_attr "simd_type" "simd_store1,simd_store2") (const_string "neon_vst1_1_2_regs_vst2_2_regs")
-	  (eq_attr "simd_type" "simd_store3,simd_store4") (const_string "neon_vst1_3_4_regs")
-	  (eq_attr "simd_type" "simd_store1s,simd_store2s") (const_string "neon_vst1_vst2_lane")
-	  (eq_attr "simd_type" "simd_store3s,simd_store4s") (const_string "neon_vst3_vst4_lane")
-	  (and (eq_attr "simd_type" "simd_frecpe,simd_frecps") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vrecps_vrsqrts_ddd")
-	  (and (eq_attr "simd_type" "simd_frecpe,simd_frecps") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vrecps_vrsqrts_qqq")
-	  (eq_attr "simd_type" "none") (const_string "none")
-  ]
-  (const_string "unknown")))
-
-
 (define_expand "mov<mode>"
   [(set (match_operand:VALL 0 "aarch64_simd_nonimmediate_operand" "")
 	(match_operand:VALL 1 "aarch64_simd_general_operand" ""))]
@@ -343,6 +269,7 @@
    dup\\t%0.<Vtype>, %<vw>1
    dup\\t%0.<Vtype>, %1.<Vetype>[0]"
   [(set_attr "simd_type" "simd_dupgp, simd_dup")
+   (set_attr "type" "neon_from_gp<q>, neon_dup<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -352,6 +279,7 @@
   "TARGET_SIMD"
   "dup\\t%0.<Vtype>, %1.<Vetype>[0]"
   [(set_attr "simd_type" "simd_dup")
+   (set_attr "type" "neon_dup<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -365,6 +293,7 @@
   "TARGET_SIMD"
   "dup\\t%0.<Vtype>, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_dup")
+   (set_attr "type" "neon_dup<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -378,6 +307,7 @@
   "TARGET_SIMD"
   "dup\\t%0.<Vtype>, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_dup")
+   (set_attr "type" "neon_dup<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -405,6 +335,9 @@
      }
 }
   [(set_attr "simd_type" "simd_load1,simd_store1,simd_move,simd_movgp,simd_insgp,simd_move,simd_move_imm")
+   (set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
+                     neon_logic<q>, neon_to_gp<q>, neon_from_gp<q>,\
+                     mov_reg, neon_move<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -436,6 +369,9 @@
     }
 }
   [(set_attr "simd_type" "simd_load1,simd_store1,simd_move,simd_movgp,simd_insgp,simd_move,simd_move_imm")
+   (set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
+                     neon_logic<q>, multiple, multiple, multiple,\
+                     neon_move<q>")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4,4,4,8,8,8,4")]
 )
@@ -516,6 +452,7 @@
   "TARGET_SIMD && reload_completed"
   "umov\t%0, %1.d[0]"
   [(set_attr "simd_type" "simd_movgp")
+   (set_attr "type" "neon_to_gp<q>")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4")
   ])
@@ -528,6 +465,7 @@
   "TARGET_SIMD && reload_completed"
   "umov\t%0, %1.d[1]"
   [(set_attr "simd_type" "simd_movgp")
+   (set_attr "type" "neon_to_gp<q>")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4")
   ])
@@ -539,6 +477,7 @@
  "TARGET_SIMD"
  "orn\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -549,6 +488,7 @@
  "TARGET_SIMD"
  "bic\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -559,6 +499,7 @@
   "TARGET_SIMD"
   "add\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_add<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -569,6 +510,7 @@
   "TARGET_SIMD"
   "sub\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_sub<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -579,6 +521,7 @@
   "TARGET_SIMD"
   "mul\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mul")
+   (set_attr "type" "neon_mul_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -593,6 +536,7 @@
   "TARGET_SIMD"
   "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -607,6 +551,7 @@
   "TARGET_SIMD"
   "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -619,6 +564,7 @@
   "TARGET_SIMD"
   "fmul\\t%0.2d, %1.2d, %2.d[0]"
   [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "type" "neon_fp_mul_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -632,6 +578,7 @@
   "TARGET_SIMD"
   "fmul\\t%0.2d, %3.2d, %1.d[%2]"
   [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "type" "neon_fp_mul_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -641,6 +588,7 @@
   "TARGET_SIMD"
   "neg\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_negabs")
+   (set_attr "type" "neon_neg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -650,6 +598,7 @@
   "TARGET_SIMD"
   "abs\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_negabs")
+   (set_attr "type" "neon_abs<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -661,6 +610,7 @@
   "TARGET_SIMD"
   "sabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_abd")
+   (set_attr "type" "neon_abd<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -673,6 +623,7 @@
   "TARGET_SIMD"
   "saba\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_abd")
+   (set_attr "type" "neon_arith_acc<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -684,6 +635,7 @@
   "TARGET_SIMD"
   "fabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fabd")
+   (set_attr "type" "neon_fp_abd_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -695,6 +647,7 @@
   "TARGET_SIMD"
   "fabd\t%<s>0, %<s>1, %<s>2"
   [(set_attr "simd_type" "simd_fabd")
+   (set_attr "type" "neon_fp_abd_<Vetype><q>")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -705,6 +658,7 @@
   "TARGET_SIMD"
   "and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -715,6 +669,7 @@
   "TARGET_SIMD"
   "orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -725,6 +680,7 @@
   "TARGET_SIMD"
   "eor\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -734,6 +690,7 @@
   "TARGET_SIMD"
   "not\t%0.<Vbtype>, %1.<Vbtype>"
   [(set_attr "simd_type" "simd_logic")
+   (set_attr "type" "neon_logic<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -747,6 +704,7 @@
   "TARGET_SIMD"
   "ins\t%0.<Vetype>[%p2], %w1";
   [(set_attr "simd_type" "simd_insgp")
+   (set_attr "type" "neon_from_gp<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -757,6 +715,7 @@
  "TARGET_SIMD"
  "ushr\t%0.<Vtype>, %1.<Vtype>, %2"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -767,6 +726,7 @@
  "TARGET_SIMD"
  "sshr\t%0.<Vtype>, %1.<Vtype>, %2"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -777,6 +737,7 @@
  "TARGET_SIMD"
   "shl\t%0.<Vtype>, %1.<Vtype>, %2"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -787,6 +748,7 @@
  "TARGET_SIMD"
  "sshl\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_shift")
+   (set_attr "type" "neon_shift_reg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -798,6 +760,7 @@
  "TARGET_SIMD"
  "ushl\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_shift")
+   (set_attr "type" "neon_shift_reg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -809,6 +772,7 @@
  "TARGET_SIMD"
  "sshl\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_shift")
+   (set_attr "type" "neon_shift_reg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1016,6 +980,7 @@
   "TARGET_SIMD"
   "ins\t%0.d[%p2], %1";
   [(set_attr "simd_type" "simd_insgp")
+   (set_attr "type" "neon_from_gp")
    (set_attr "simd_mode" "V2DI")]
 )
 
@@ -1042,6 +1007,7 @@
   "TARGET_SIMD"
   "ins\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
   [(set_attr "simd_type" "simd_ins")
+   (set_attr "type" "neon_ins<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1067,6 +1033,7 @@
  "TARGET_SIMD"
  "mla\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1083,6 +1050,7 @@
  "TARGET_SIMD"
  "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1099,6 +1067,7 @@
  "TARGET_SIMD"
  "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1110,6 +1079,7 @@
  "TARGET_SIMD"
  "mls\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1126,6 +1096,7 @@
  "TARGET_SIMD"
  "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1142,6 +1113,7 @@
  "TARGET_SIMD"
  "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_mla")
+   (set_attr "type" "neon_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1153,6 +1125,7 @@
  "TARGET_SIMD"
  "<su><maxmin>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_minmax")
+   (set_attr "type" "neon_minmax<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1169,7 +1142,7 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "v8type" "*,fmov,*")
-   (set_attr "type" "*,fmov,*")
+   (set_attr "type" "neon_dup<q>,fmov,neon_dup<q>")
    (set_attr "simd_type" "simd_dup,*,simd_dup")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "simd" "yes,*,yes")
@@ -1191,6 +1164,7 @@
    ins\\t%0.d[1], %1.d[0]
    ins\\t%0.d[1], %1"
   [(set_attr "simd_type" "simd_ins,simd_ins")
+   (set_attr "type" "neon_ins")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4")]
 )
@@ -1215,6 +1189,7 @@
  "TARGET_SIMD"
  "xtn\\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_shiftn_imm")
+   (set_attr "type" "neon_shift_imm_narrow_q")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1242,6 +1217,7 @@
  "TARGET_SIMD"
  "xtn\\t%0.<Vntype>, %1.<Vtype>\;xtn2\\t%0.<V2ntype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_shiftn2_imm")
+   (set_attr "type" "multiple")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "8")]
 )
@@ -1257,6 +1233,7 @@
   "TARGET_SIMD"
   "<su>shll %0.<Vwtype>, %1.<Vhalftype>, 0"
   [(set_attr "simd_type" "simd_shiftl_imm")
+   (set_attr "type" "neon_shift_imm_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1269,6 +1246,7 @@
   "TARGET_SIMD"
   "<su>shll2 %0.<Vwtype>, %1.<Vtype>, 0"
   [(set_attr "simd_type" "simd_shiftl_imm")
+   (set_attr "type" "neon_shift_imm_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1312,6 +1290,7 @@
   "TARGET_SIMD"
   "<su>mlal\t%0.<Vwtype>, %2.<Vhalftype>, %4.<Vhalftype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1329,6 +1308,7 @@
   "TARGET_SIMD"
   "<su>mlal2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vtype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1346,6 +1326,7 @@
   "TARGET_SIMD"
   "<su>mlsl\t%0.<Vwtype>, %2.<Vhalftype>, %4.<Vhalftype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1363,6 +1344,7 @@
   "TARGET_SIMD"
   "<su>mlsl2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vtype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1378,6 +1360,7 @@
   "TARGET_SIMD"
   "<su>mlal\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1393,6 +1376,7 @@
   "TARGET_SIMD"
   "<su>mlsl\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "simd_type" "simd_mlal")
+   (set_attr "type" "neon_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1407,6 +1391,7 @@
   "TARGET_SIMD"
   "<su>mull\\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
   [(set_attr "simd_type" "simd_mull")
+   (set_attr "type" "neon_mul_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1435,6 +1420,7 @@
   "TARGET_SIMD"
   "<su>mull2\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mull")
+   (set_attr "type" "neon_mul_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1485,6 +1471,7 @@
  "TARGET_SIMD"
  "fadd\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fadd")
+   (set_attr "type" "neon_fp_addsub_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1495,6 +1482,7 @@
  "TARGET_SIMD"
  "fsub\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fadd")
+   (set_attr "type" "neon_fp_addsub_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1505,6 +1493,7 @@
  "TARGET_SIMD"
  "fmul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fmul")
+   (set_attr "type" "neon_fp_mul_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1515,6 +1504,7 @@
  "TARGET_SIMD"
  "fdiv\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fdiv")
+   (set_attr "type" "neon_fp_div_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1524,6 +1514,7 @@
  "TARGET_SIMD"
  "fneg\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fnegabs")
+   (set_attr "type" "neon_fp_neg_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1533,6 +1524,7 @@
  "TARGET_SIMD"
  "fabs\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fnegabs")
+   (set_attr "type" "neon_fp_abs_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1544,6 +1536,7 @@
   "TARGET_SIMD"
  "fmla\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fmla")
+   (set_attr "type" "neon_fp_mla_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1559,6 +1552,7 @@
   "TARGET_SIMD"
   "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1574,6 +1568,7 @@
   "TARGET_SIMD"
   "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1587,6 +1582,7 @@
   "TARGET_SIMD"
   "fmla\\t%0.2d, %2.2d, %1.2d[0]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1601,6 +1597,7 @@
   "TARGET_SIMD"
   "fmla\\t%0.2d, %3.2d, %1.2d[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1614,6 +1611,7 @@
   "TARGET_SIMD"
  "fmls\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fmla")
+   (set_attr "type" "neon_fp_mla_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1630,6 +1628,7 @@
   "TARGET_SIMD"
   "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1646,6 +1645,7 @@
   "TARGET_SIMD"
   "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1660,6 +1660,7 @@
   "TARGET_SIMD"
   "fmls\\t%0.2d, %2.2d, %1.2d[0]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1675,6 +1676,7 @@
   "TARGET_SIMD"
   "fmls\\t%0.2d, %3.2d, %1.2d[%2]"
   [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "type" "neon_fp_mla_d_scalar_q")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1687,6 +1689,7 @@
   "TARGET_SIMD"
   "frint<frint_suffix>\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_frint")
+   (set_attr "type" "neon_fp_round_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1700,6 +1703,7 @@
   "TARGET_SIMD"
   "fcvt<frint_suffix><su>\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fcvti")
+   (set_attr "type" "neon_fp_to_int_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1733,6 +1737,7 @@
   "TARGET_SIMD"
   "<su_optab>cvtf\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_icvtf")
+   (set_attr "type" "neon_int_to_fp_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1752,6 +1757,7 @@
   "TARGET_SIMD"
   "fcvtl\\t%0.2d, %1.2s"
   [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "type" "neon_fp_cvt_widen_s")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1762,6 +1768,7 @@
   "TARGET_SIMD"
   "fcvtl\\t%0.2d, %1.2s"
   [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "type" "neon_fp_cvt_widen_s")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1775,6 +1782,7 @@
   "TARGET_SIMD"
   "fcvtl2\\t%0.2d, %1.4s"
   [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "type" "neon_fp_cvt_widen_s")
    (set_attr "simd_mode" "V2DF")]
 )
 
@@ -1787,6 +1795,7 @@
   "TARGET_SIMD"
   "fcvtn\\t%0.2s, %1.2d"
   [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "type" "neon_fp_cvt_narrow_d_q")
    (set_attr "simd_mode" "V2SF")]
 )
 
@@ -1799,6 +1808,7 @@
   "TARGET_SIMD"
   "fcvtn2\\t%0.4s, %2.2d"
   [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "type" "neon_fp_cvt_narrow_d_q")
    (set_attr "simd_mode" "V4SF")]
 )
 
@@ -1846,6 +1856,7 @@
   "TARGET_SIMD"
  "fmls\\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "simd_type" "simd_fmla")
+   (set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1870,6 +1881,7 @@
   "TARGET_SIMD"
   "f<maxmin>nm\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fminmax")
+   (set_attr "type" "neon_fp_minmax_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1881,6 +1893,7 @@
   "TARGET_SIMD"
   "<maxmin_uns_op>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fminmax")
+   (set_attr "type" "neon_fp_minmax_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1893,6 +1906,7 @@
  "TARGET_SIMD"
  "addv\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "simd_type" "simd_addv")
+   (set_attr "type" "neon_reduc_add<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1903,6 +1917,7 @@
  "TARGET_SIMD"
  "addp\\t%d0, %1.2d"
   [(set_attr "simd_type" "simd_addv")
+   (set_attr "type" "neon_reduc_add_q")
    (set_attr "simd_mode" "V2DI")]
 )
 
@@ -1913,6 +1928,7 @@
  "TARGET_SIMD"
  "addp\\t%0.2s, %1.2s, %1.2s"
   [(set_attr "simd_type" "simd_addv")
+   (set_attr "type" "neon_reduc_add")
    (set_attr "simd_mode" "V2SI")]
 )
 
@@ -1923,6 +1939,7 @@
  "TARGET_SIMD"
  "faddp\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fadd")
+   (set_attr "type" "neon_fp_reduc_add_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1933,6 +1950,7 @@
  "TARGET_SIMD"
  "faddp\\t%0.4s, %1.4s, %1.4s"
   [(set_attr "simd_type" "simd_fadd")
+   (set_attr "type" "neon_fp_reduc_add_s_q")
    (set_attr "simd_mode" "V4SF")]
 )
 
@@ -1954,6 +1972,7 @@
  "TARGET_SIMD"
  "clz\\t%0.<Vtype>, %1.<Vtype>"
  [(set_attr "simd_type" "simd_cls")
+  (set_attr "type" "neon_cls<q>")
   (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1966,6 +1985,7 @@
  "TARGET_SIMD"
  "<maxmin_uns_op>v\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "simd_type" "simd_minmaxv")
+   (set_attr "type" "neon_reduc_minmax<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -1976,6 +1996,7 @@
  "TARGET_SIMD"
  "<maxmin_uns_op>p\\t%d0, %1.2d"
   [(set_attr "simd_type" "simd_minmaxv")
+   (set_attr "type" "neon_reduc_minmax_q")
    (set_attr "simd_mode" "V2DI")]
 )
 
@@ -1986,6 +2007,7 @@
  "TARGET_SIMD"
  "<maxmin_uns_op>p\\t%0.2s, %1.2s, %1.2s"
   [(set_attr "simd_type" "simd_minmaxv")
+   (set_attr "type" "neon_reduc_minmax")
    (set_attr "simd_mode" "V2SI")]
 )
 
@@ -1996,6 +2018,7 @@
  "TARGET_SIMD"
  "<maxmin_uns_op>p\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fminmaxv")
+   (set_attr "type" "neon_fp_reduc_minmax_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2006,6 +2029,7 @@
  "TARGET_SIMD"
  "<maxmin_uns_op>v\\t%s0, %1.4s"
   [(set_attr "simd_type" "simd_fminmaxv")
+   (set_attr "type" "neon_fp_reduc_minmax_s_q")
    (set_attr "simd_mode" "V4SF")]
 )
 
@@ -2041,6 +2065,8 @@
   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
   bit\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
   bif\\t%0.<Vbtype>, %3.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "simd_mode" "<MODE>")
+   (set_attr "type" "neon_bsl<q>")]
 )
 
 (define_expand "aarch64_simd_bsl<mode>"
@@ -2406,6 +2432,7 @@
   "TARGET_SIMD"
   "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]"
   [(set_attr "simd_type" "simd_movgp")
+   (set_attr "type" "neon_to_gp<q>")
    (set_attr "simd_mode" "<VDQQH:MODE>")]
 )
 
@@ -2418,6 +2445,7 @@
   "TARGET_SIMD"
   "umov\\t%w0, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_movgp")
+   (set_attr "type" "neon_to_gp<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2433,6 +2461,7 @@
    umov\\t%<vwcore>0, %1.<Vetype>[%2]
    dup\\t%<Vetype>0, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_movgp, simd_dup")
+   (set_attr "type" "neon_to_gp<q>, neon_dup<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2557,6 +2586,7 @@
   "TARGET_SIMD"
   "mov\\t%0.8b, %1.8b"
   [(set_attr "simd_type" "simd_move")
+   (set_attr "type" "neon_move<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2571,7 +2601,9 @@
 {
   aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
   DONE;
-})
+}
+[(set_attr "type" "multiple")]
+)
 
 (define_expand "aarch64_simd_combine<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
@@ -2582,7 +2614,9 @@
     emit_insn (gen_move_lo_quad_<Vdbl> (operands[0], operands[1]));
     emit_insn (gen_move_hi_quad_<Vdbl> (operands[0], operands[2]));
     DONE;
-  })
+  }
+[(set_attr "type" "multiple")]
+)
 
 ;; <su><addsub>l<q>.
 
@@ -2597,6 +2631,7 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>l2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_addl")
+   (set_attr "type" "neon_<ADDSUB:optab>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2611,6 +2646,7 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>l\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
   [(set_attr "simd_type" "simd_addl")
+   (set_attr "type" "neon_<ADDSUB:optab>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2672,6 +2708,7 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>l %0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_addl")
+   (set_attr "type" "neon_<ADDSUB:optab>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2685,6 +2722,7 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>w\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_addl")
+   (set_attr "type" "neon_<ADDSUB:optab>_widen")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2698,6 +2736,7 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>w2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_addl")
+   (set_attr "type" "neon_<ADDSUB:optab>_widen")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2760,6 +2799,7 @@
   "TARGET_SIMD"
   "<sur>h<addsub>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_<addsub>_halve<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2773,6 +2813,7 @@
   "TARGET_SIMD"
   "<sur><addsub>hn\\t%0.<Vntype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_addn")
+   (set_attr "type" "neon_<addsub>_halve_narrow_q")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2785,6 +2826,7 @@
   "TARGET_SIMD"
   "<sur><addsub>hn2\\t%0.<V2ntype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "simd_type" "simd_addn2")
+   (set_attr "type" "neon_<addsub>_halve_narrow_q")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2798,6 +2840,7 @@
  "TARGET_SIMD"
  "pmul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mul")
+   (set_attr "type" "neon_mul_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2810,6 +2853,7 @@
   "TARGET_SIMD"
   "<su_optab><optab>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_<optab><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2823,6 +2867,7 @@
   "TARGET_SIMD"
   "<sur>qadd\\t%<v>0<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_sat_add")
+   (set_attr "type" "neon_qadd<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2835,6 +2880,7 @@
    "TARGET_SIMD"
    "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
    [(set_attr "simd_type" "simd_sat_shiftn_imm")
+    (set_attr "type" "neon_sat_shift_imm_narrow_q")
     (set_attr "simd_mode" "<MODE>")]
  )
 
@@ -2847,6 +2893,7 @@
   "TARGET_SIMD"
   "<sur>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
    [(set_attr "simd_type" "simd_sat_shiftn_imm")
+    (set_attr "type" "neon_sat_shift_imm_narrow_q")
     (set_attr "simd_mode" "<MODE>")]
  )
 
@@ -2859,6 +2906,7 @@
   "TARGET_SIMD"
   "s<optab>\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "simd_type" "simd_sat_negabs")
+   (set_attr "type" "neon_<optab><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2873,6 +2921,7 @@
   "TARGET_SIMD"
   "sq<r>dmulh\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2891,6 +2940,7 @@
    aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCOND>mode));
    return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2907,6 +2957,7 @@
    aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
    return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2923,6 +2974,7 @@
    aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
    return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2942,6 +2994,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %<v>3<Vmtype>"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2965,6 +3018,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[%4]"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -2985,6 +3039,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[%4]"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3065,6 +3120,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[0]"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3088,6 +3144,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l2\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %<v>3<Vmtype>"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3139,6 +3196,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l2\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[%4]"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3223,6 +3281,7 @@
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l2\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[0]"
   [(set_attr "simd_type" "simd_sat_mlal")
+   (set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3268,6 +3327,7 @@
   "TARGET_SIMD"
   "sqdmull\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3289,6 +3349,7 @@
   "TARGET_SIMD"
   "sqdmull\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3307,6 +3368,7 @@
   "TARGET_SIMD"
   "sqdmull\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3352,6 +3414,7 @@
   "TARGET_SIMD"
   "sqdmull\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %2.<Vetype>[0]"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3376,6 +3439,7 @@
   "TARGET_SIMD"
   "sqdmull2\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3411,6 +3475,7 @@
   "TARGET_SIMD"
   "sqdmull2\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3462,6 +3527,7 @@
   "TARGET_SIMD"
   "sqdmull2\\t%<vw2>0<Vmwtype>, %<v>1<Vmtype>, %2.<Vetype>[0]"
   [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "type" "neon_sat_mul_<Vetype>_scalar_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3488,6 +3554,7 @@
   "TARGET_SIMD"
   "<sur>shl\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
   [(set_attr "simd_type" "simd_shift")
+   (set_attr "type" "neon_shift_reg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3503,6 +3570,7 @@
   "TARGET_SIMD"
   "<sur>q<r>shl\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
   [(set_attr "simd_type" "simd_sat_shift")
+   (set_attr "type" "neon_sat_shift_reg<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3525,6 +3593,7 @@
     return \"<sur>shll\\t%0.<Vwtype>, %1.<Vtype>, %2\";
   }"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3547,6 +3616,7 @@
     return \"<sur>shll2\\t%0.<Vwtype>, %1.<Vtype>, %2\";
   }"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm_long")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3563,6 +3633,7 @@
   aarch64_simd_const_bounds (operands[2], 1, bit_width + 1);
   return \"<sur>shr\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2\";"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_sat_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3580,6 +3651,7 @@
   aarch64_simd_const_bounds (operands[3], 1, bit_width + 1);
   return \"<sur>sra\\t%<v>0<Vmtype>, %<v>2<Vmtype>, %3\";"
   [(set_attr "simd_type" "simd_shift_imm_acc")
+   (set_attr "type" "neon_shift_acc<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3598,6 +3670,7 @@
                              bit_width - <VSLRI:offsetlr> + 1);
   return \"s<lr>i\\t%<v>0<Vmtype>, %<v>2<Vmtype>, %3\";"
   [(set_attr "simd_type" "simd_shift_imm")
+   (set_attr "type" "neon_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3614,6 +3687,7 @@
   aarch64_simd_const_bounds (operands[2], 0, bit_width);
   return \"<sur>qshl<u>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2\";"
   [(set_attr "simd_type" "simd_sat_shift_imm")
+   (set_attr "type" "neon_sat_shift_imm<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3631,6 +3705,7 @@
   aarch64_simd_const_bounds (operands[2], 1, bit_width + 1);
   return \"<sur>q<r>shr<u>n\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2\";"
   [(set_attr "simd_type" "simd_sat_shiftn_imm")
+   (set_attr "type" "neon_sat_shift_imm_narrow_q")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3651,6 +3726,7 @@
   cm<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>
   cm<optab>\t%<v>0<Vmtype>, %<v>1<Vmtype>, #0"
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_compare<q>, neon_compare_zero<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3681,6 +3757,7 @@
     DONE;
   }
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_compare, neon_compare_zero, multiple")
    (set_attr "simd_mode" "DI")]
 )
 
@@ -3696,6 +3773,7 @@
   "TARGET_SIMD"
   "cm<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_compare<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3725,6 +3803,7 @@
     DONE;
   }
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_compare, neon_compare_zero")
    (set_attr "simd_mode" "DI")]
 )
 
@@ -3741,6 +3820,7 @@
   "TARGET_SIMD"
   "cmtst\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_tst<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3772,6 +3852,7 @@
     DONE;
   }
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "type" "neon_tst")
    (set_attr "simd_mode" "DI")]
 )
 
@@ -3789,6 +3870,7 @@
   fcm<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>
   fcm<optab>\t%<v>0<Vmtype>, %<v>1<Vmtype>, 0"
   [(set_attr "simd_type" "simd_fcmp")
+   (set_attr "type" "neon_fp_compare_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3806,6 +3888,7 @@
   "TARGET_SIMD"
   "fac<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
   [(set_attr "simd_type" "simd_fcmp")
+   (set_attr "type" "neon_fp_compare_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3820,6 +3903,7 @@
   "TARGET_SIMD"
   "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_reduc_add<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3831,6 +3915,7 @@
   "TARGET_SIMD"
   "addp\t%d0, %1.2d"
   [(set_attr "simd_type" "simd_add")
+   (set_attr "type" "neon_reduc_add")
    (set_attr "simd_mode" "DI")]
 )
 
@@ -3842,6 +3927,7 @@
   "TARGET_SIMD"
   "fsqrt\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_fsqrt")
+   (set_attr "type" "neon_fp_sqrt_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -3855,6 +3941,7 @@
   "TARGET_SIMD"
   "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load2")
+   (set_attr "type" "neon_load2_2reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "vec_store_lanesoi<mode>"
@@ -3865,6 +3952,7 @@
   "TARGET_SIMD"
   "st2\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store2")
+   (set_attr "type" "neon_store2_2reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "vec_load_lanesci<mode>"
@@ -3875,6 +3963,7 @@
   "TARGET_SIMD"
   "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load3")
+   (set_attr "type" "neon_load3_3reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "vec_store_lanesci<mode>"
@@ -3885,6 +3974,7 @@
   "TARGET_SIMD"
   "st3\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store3")
+   (set_attr "type" "neon_store3_3reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "vec_load_lanesxi<mode>"
@@ -3895,6 +3985,7 @@
   "TARGET_SIMD"
   "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load4")
+   (set_attr "type" "neon_load4_4reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "vec_store_lanesxi<mode>"
@@ -3905,6 +3996,7 @@
   "TARGET_SIMD"
   "st4\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store4")
+   (set_attr "type" "neon_store4_4reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 ;; Reload patterns for AdvSIMD register list operands.
@@ -3938,6 +4030,8 @@
     }
 }
   [(set_attr "simd_type" "simd_move,simd_store<nregs>,simd_load<nregs>")
+   (set_attr "type" "neon_move,neon_store<nregs>_<nregs>reg_q,\
+                     neon_load<nregs>_<nregs>reg_q")
    (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))
    (set_attr "simd_mode" "<MODE>")])
 
@@ -4022,6 +4116,7 @@
   "TARGET_SIMD"
   "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load2")
+   (set_attr "type" "neon_load2_2reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_ld2<mode>_dreg"
@@ -4039,6 +4134,7 @@
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %T0.1d}, %1"
   [(set_attr "simd_type" "simd_load2")
+   (set_attr "type" "neon_load1_2reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_ld3<mode>_dreg"
@@ -4061,6 +4157,7 @@
   "TARGET_SIMD"
   "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load3")
+   (set_attr "type" "neon_load3_3reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_ld3<mode>_dreg"
@@ -4083,6 +4180,7 @@
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %U0.1d}, %1"
   [(set_attr "simd_type" "simd_load3")
+   (set_attr "type" "neon_load1_3reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_ld4<mode>_dreg"
@@ -4110,6 +4208,7 @@
   "TARGET_SIMD"
   "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load4")
+   (set_attr "type" "neon_load4_4reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_ld4<mode>_dreg"
@@ -4137,6 +4236,7 @@
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %V0.1d}, %1"
   [(set_attr "simd_type" "simd_load4")
+   (set_attr "type" "neon_load1_4reg<q>")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_expand "aarch64_ld<VSTRUCT:nregs><VDC:mode>"
@@ -4252,6 +4352,7 @@
   "TARGET_SIMD"
   "tbl\\t%0.<Vtype>, {%1.16b}, %2.<Vtype>"
   [(set_attr "simd_type" "simd_tbl")
+   (set_attr "type" "neon_tbl1<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -4265,6 +4366,7 @@
   "TARGET_SIMD"
   "tbl\\t%0.16b, {%S1.16b - %T1.16b}, %2.16b"
   [(set_attr "simd_type" "simd_tbl")
+   (set_attr "type" "neon_tbl2_q")
    (set_attr "simd_mode" "V16QI")]
 )
 
@@ -4280,7 +4382,9 @@
 {
   aarch64_split_combinev16qi (operands);
   DONE;
-})
+}
+[(set_attr "type" "multiple")]
+)
 
 (define_insn "aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>"
   [(set (match_operand:VALL 0 "register_operand" "=w")
@@ -4290,6 +4394,7 @@
   "TARGET_SIMD"
   "<PERMUTE:perm_insn><PERMUTE:perm_hilo>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_<PERMUTE:perm_insn>")
+   (set_attr "type" "neon_permute<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -4301,6 +4406,7 @@
   "TARGET_SIMD"
   "st2\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store2")
+   (set_attr "type" "neon_store2_2reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_st2<mode>_dreg"
@@ -4311,6 +4417,7 @@
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %T1.1d}, %0"
   [(set_attr "simd_type" "simd_store2")
+   (set_attr "type" "neon_store1_2reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_st3<mode>_dreg"
@@ -4321,6 +4428,7 @@
   "TARGET_SIMD"
   "st3\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store3")
+   (set_attr "type" "neon_store3_3reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_st3<mode>_dreg"
@@ -4331,6 +4439,7 @@
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %U1.1d}, %0"
   [(set_attr "simd_type" "simd_store3")
+   (set_attr "type" "neon_store1_3reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_st4<mode>_dreg"
@@ -4341,6 +4450,7 @@
   "TARGET_SIMD"
   "st4\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "simd_type" "simd_store4")
+   (set_attr "type" "neon_store4_4reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_st4<mode>_dreg"
@@ -4351,6 +4461,7 @@
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %V1.1d}, %0"
   [(set_attr "simd_type" "simd_store4")
+   (set_attr "type" "neon_store1_4reg")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_expand "aarch64_st<VSTRUCT:nregs><VDC:mode>"
@@ -4430,6 +4541,7 @@
   "TARGET_SIMD"
   "ld1r\\t{%0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load1r")
+   (set_attr "type" "neon_load1_all_lanes")
    (set_attr "simd_mode" "<MODE>")])
 
 (define_insn "aarch64_frecpe<mode>"
@@ -4439,6 +4551,7 @@
   "TARGET_SIMD"
   "frecpe\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_frecpe")
+   (set_attr "type" "neon_fp_recpe_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -4449,6 +4562,7 @@
   "TARGET_SIMD"
   "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
   [(set_attr "simd_type" "simd_frecp<FRECP:frecp_suffix>")
+   (set_attr "type" "neon_fp_recp<FRECP:frecp_suffix>_<GPF:Vetype><GPF:q>")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -4460,6 +4574,7 @@
   "TARGET_SIMD"
   "frecps\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_frecps")
+   (set_attr "type" "neon_fp_recps_<Vetype><q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
