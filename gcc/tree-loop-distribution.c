@@ -471,17 +471,6 @@ stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
   free (bbs);
 }
 
-/* Build the Reduced Dependence Graph (RDG) with one vertex per
-   statement of the loop nest, and one edge per data dependence or
-   scalar dependence.  */
-
-struct graph *
-build_empty_rdg (int n_stmts)
-{
-  struct graph *rdg = new_graph (n_stmts);
-  return rdg;
-}
-
 /* Free the reduced dependence graph RDG.  */
 
 static void
@@ -526,7 +515,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
   /* Create the RDG vertices from the stmts of the loop nest.  */
   stmts.create (10);
   stmts_from_loop (loop_nest[0], &stmts);
-  rdg = build_empty_rdg (stmts.length ());
+  rdg = new_graph (stmts.length ());
   datarefs.create (10);
   if (!create_rdg_vertices (rdg, stmts, loop_nest[0], &datarefs))
     {
@@ -1037,42 +1026,6 @@ generate_code_for_partition (struct loop *loop,
 }
 
 
-/* Flag V from RDG as part of PARTITION, and also flag its loop number
-   in LOOPS.  */
-
-static void
-rdg_flag_vertex (struct graph *rdg, int v, partition_t partition)
-{
-  struct loop *loop;
-
-  if (!bitmap_set_bit (partition->stmts, v))
-    return;
-
-  loop = loop_containing_stmt (RDG_STMT (rdg, v));
-  bitmap_set_bit (partition->loops, loop->num);
-}
-
-/* Flag in the bitmap PARTITION the vertex V and all its predecessors.
-   Also flag their loop number in LOOPS.  */
-
-static void
-rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
-			       bitmap processed)
-{
-  unsigned i;
-  vec<int> nodes;
-  nodes.create (3);
-  int x;
-
-  graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
-
-  FOR_EACH_VEC_ELT (nodes, i, x)
-    if (bitmap_set_bit (processed, x))
-      rdg_flag_vertex (rdg, x, partition);
-
-  nodes.release ();
-}
-
 /* Returns a partition with all the statements needed for computing
    the vertex V of the RDG, also including the loop exit conditions.  */
 
@@ -1080,9 +1033,21 @@ static partition_t
 build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
   partition_t partition = partition_alloc (NULL, NULL);
-  bitmap processed = BITMAP_ALLOC (NULL);
-  rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
-  BITMAP_FREE (processed);
+  vec<int> nodes;
+  unsigned i;
+  int x;
+
+  nodes.create (3);
+  graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
+
+  FOR_EACH_VEC_ELT (nodes, i, x)
+    {
+      bitmap_set_bit (partition->stmts, x);
+      bitmap_set_bit (partition->loops,
+		      loop_containing_stmt (RDG_STMT (rdg, x))->num);
+    }
+
+  nodes.release ();
   return partition;
 }
 
@@ -1318,24 +1283,22 @@ rdg_build_partitions (struct graph *rdg,
   bitmap processed = BITMAP_ALLOC (NULL);
   int i;
   gimple stmt;
-  partition_t partition = partition_alloc (NULL, NULL);
 
   FOR_EACH_VEC_ELT (starting_stmts, i, stmt)
     {
-      partition_t np;
       int v = rdg_vertex_for_stmt (rdg, stmt);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "ldist asked to generate code for vertex %d\n", v);
 
+      /* If the vertex is already contained in another partition so
+         is the partition rooted at it.  */
       if (bitmap_bit_p (processed, v))
 	continue;
 
-      np = build_rdg_partition_for_vertex (rdg, v);
-      bitmap_ior_into (partition->stmts, np->stmts);
-      bitmap_ior_into (processed, np->stmts);
-      partition_free (np);
+      partition_t partition = build_rdg_partition_for_vertex (rdg, v);
+      bitmap_ior_into (processed, partition->stmts);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1344,24 +1307,10 @@ rdg_build_partitions (struct graph *rdg,
 	}
 
       partitions->safe_push (partition);
-      partition = partition_alloc (NULL, NULL);
     }
 
   /* All vertices should have been assigned to at least one partition now,
      other than vertices belonging to dead code.  */
-
-  if (!bitmap_empty_p (partition->stmts))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "remaining partition:\n");
-	  dump_bitmap (dump_file, partition->stmts);
-	}
-
-      partitions->safe_push (partition);
-    }
-  else
-    partition_free (partition);
 
   BITMAP_FREE (processed);
 }

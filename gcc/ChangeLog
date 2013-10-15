@@ -1,5 +1,14 @@
 2013-10-15  Richard Biener  <rguenther@suse.de>
 
+	* tree-loop-distribution.c (build_empty_rdg): Inline into
+	single user.
+	(rdg_flag_vertex): Inline into single user.
+	(rdg_flag_vertex_and_dependent): Likewise.
+	(build_rdg_partition_for_vertex): Remove processed bitmap.
+	(rdg_build_partitions): Simplify.
+
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
 	Restructure forwarding through conversions and copies to
 	avoid performing copy-propagation the wrong way.  Adjust
