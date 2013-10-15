@@ -757,10 +757,20 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 8, 11)")))
 
+;; Match 8 to 15.
+(define_predicate "const_8_to_15_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 8, 15)")))
+
 ;; Match 12 to 15.
 (define_predicate "const_12_to_15_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 12, 15)")))
+
+;; Match 16 to 31.
+(define_predicate "const_16_to_31_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 16, 31)")))
 
 ;; True if this is a constant appropriate for an increment or decrement.
 (define_predicate "incdec_operand"
