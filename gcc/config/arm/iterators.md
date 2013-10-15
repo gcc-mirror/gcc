@@ -355,6 +355,12 @@
                              (DI   "64") (V2DI  "64")
                  (V2SF "32") (V4SF  "32")])
 
+(define_mode_attr V_elem_ch [(V8QI "b")  (V16QI "b")
+                             (V4HI "h") (V8HI  "h")
+                             (V2SI "s") (V4SI  "s")
+                             (DI   "d") (V2DI  "d")
+                             (V2SF "s") (V4SF  "s")])
+
 ;; Element sizes for duplicating ARM registers to all elements of a vector.
 (define_mode_attr VD_dup [(V8QI "8") (V4HI "16") (V2SI "32") (V2SF "32")])
 
@@ -452,6 +458,14 @@
 (define_mode_attr vfp_type [(SF "s") (DF "d")])
 (define_mode_attr vfp_double_cond [(SF "") (DF "&& TARGET_VFP_DOUBLE")])
 
+;; Mode attribute used to build the "type" attribute.
+(define_mode_attr q [(V8QI "") (V16QI "_q")
+                     (V4HI "") (V8HI "_q")
+                     (V2SI "") (V4SI "_q")
+                     (V2SF "") (V4SF "_q")
+                     (DI "")   (V2DI "_q")
+                     (DF "")   (V2DF "_q")])
+
 ;;----------------------------------------------------------------------------
 ;; Code attributes
 ;;----------------------------------------------------------------------------
@@ -459,6 +473,10 @@
 ;; Assembler mnemonics for vqh_ops and vqhs_ops iterators.
 (define_code_attr VQH_mnem [(plus "vadd") (smin "vmin") (smax "vmax")
                 (umin "vmin") (umax "vmax")])
+
+;; Type attributes for vqh_ops and vqhs_ops iterators.
+(define_code_attr VQH_type [(plus "add") (smin "minmax") (smax "minmax")
+                (umin "minmax") (umax "minmax")])
 
 ;; Signs of above, where relevant.
 (define_code_attr VQH_sign [(plus "i") (smin "s") (smax "s") (umin "u")
