@@ -351,6 +351,7 @@
                           (V2SI "s") (V4SI  "s")
 			  (V2DI "d") (V2SF  "s")
 			  (V4SF "s") (V2DF  "d")
+			  (SF   "s") (DF  "d")
 			  (QI "b")   (HI "h")
 			  (SI "s")   (DI "d")])
 
@@ -566,14 +567,23 @@
 		     (V2SF "f") (V4SF  "f")
 		     (V2DF "f") (DF    "f")])
 
+;; Defined to '_fp' for types whose element type is a float type.
+(define_mode_attr fp [(V8QI "")  (V16QI "")
+		      (V4HI "")  (V8HI  "")
+		      (V2SI "")  (V4SI  "")
+		      (DI   "")  (V2DI  "")
+		      (V2SF "_fp") (V4SF  "_fp")
+		      (V2DF "_fp") (DF    "_fp")
+		      (SF "_fp")])
+
 ;; Defined to '_q' for 128-bit types.
 (define_mode_attr q [(V8QI "") (V16QI "_q")
-                    (V4HI "") (V8HI  "_q")
-                    (V2SI "") (V4SI  "_q")
-                    (DI   "") (V2DI  "_q")
-                    (V2SF "") (V4SF  "_q")
-                              (V2DF  "_q")
-                    (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])
+		     (V4HI "") (V8HI  "_q")
+		     (V2SI "") (V4SI  "_q")
+		     (DI   "") (V2DI  "_q")
+		     (V2SF "") (V4SF  "_q")
+			       (V2DF  "_q")
+		     (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
