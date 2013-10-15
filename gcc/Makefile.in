@@ -135,6 +135,9 @@ CFLAGS = @CFLAGS@
 CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@
 
+# Should we build position-independent host code?
+PICFLAG = @PICFLAG@
+
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
 # without optimization.
@@ -345,6 +348,8 @@ PLUGINCFLAGS = @CXXFLAGS@
 PLUGINLIBS = @pluginlibs@
 
 enable_plugin = @enable_plugin@
+
+enable_host_shared = @enable_host_shared@
 
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
@@ -955,7 +960,7 @@ CONTEXT_H = context.h
 # programs built during a bootstrap.
 # autoconf inserts -DCROSS_DIRECTORY_STRUCTURE if we are building a
 # cross compiler which does not use the native headers and libraries.
-INTERNAL_CFLAGS = -DIN_GCC @CROSS@
+INTERNAL_CFLAGS = -DIN_GCC $(PICFLAG) @CROSS@
 
 # This is the variable actually used when we compile. If you change this,
 # you probably want to update BUILD_CFLAGS in configure.ac
@@ -978,8 +983,15 @@ ALL_COMPILERFLAGS = $(ALL_CXXFLAGS)
 ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
 
 # Build and host support libraries.
+
+# Use the "pic" build of libiberty if --enable-host-shared.
+ifeq ($(enable_host_shared),yes)
+LIBIBERTY = ../libiberty/pic/libiberty.a
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/pic/libiberty.a
+else
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
+endif
 
 # Dependencies on the intl and portability libraries.
 LIBDEPS= libcommon.a $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) \

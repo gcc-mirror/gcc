@@ -1,3 +1,11 @@
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PICFLAG): New.
+	(ALL_CFLAGS): Add PICFLAG.
+	* configure.ac: Add --enable-host-shared, setting up new
+	PICFLAG variable.
+	* configure: Regenerate.
+
 2013-07-09  Simon Baldwin  <simonb@google.com>
 
 	* configure.ac: Add AC_CONFIG_AUX_DIR.

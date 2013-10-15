@@ -600,6 +600,8 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PICFLAG
+enable_host_shared
 enable_plugin
 pluginlibs
 CLOOGINC
@@ -921,6 +923,7 @@ enable_maintainer_mode
 enable_link_mutex
 enable_version_specific_runtime_libs
 enable_plugin
+enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
 '
@@ -1636,6 +1639,7 @@ Optional Features:
                           specify that runtime libraries should be installed
                           in a compiler-specific directory
   --enable-plugin         enable plugin support
+  --enable-host-shared    build host code as shared libraries
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
 
@@ -17893,7 +17897,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17896 "configure"
+#line 17900 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17999,7 +18003,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18002 "configure"
+#line 18006 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -27698,6 +27702,18 @@ if test x"$enable_plugin" = x"yes"; then
 $as_echo "#define ENABLE_PLUGIN 1" >>confdefs.h
 
 fi
+
+
+# Enable --enable-host-shared
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PICFLAG=-fPIC
+else
+  PICFLAG=
+fi
+
+
+
 
 
 # Check whether --enable-libquadmath-support was given.

@@ -731,6 +731,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_multilib
 with_system_libunwind
+enable_host_shared
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1369,6 +1370,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-multilib       build many library versions (default)
+  --enable-host-shared    build host code as shared libraries
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11087,7 +11089,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11090 "configure"
+#line 11092 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11193,7 +11195,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11196 "configure"
+#line 11198 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11696,6 +11698,12 @@ PIC_FLAG=
 if test -n "${with_target_subdir}"; then
   PIC_FLAG=-fPIC
 fi
+# Similarly, use -fPIC with --enable-host-shared:
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PIC_FLAG=-fPIC
+fi
+
 
 
 # Test for __sync support.
