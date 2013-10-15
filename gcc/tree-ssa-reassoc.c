@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "hash-table.h"
 #include "tm.h"
+#include "rtl.h"
+#include "tm_p.h"
 #include "tree.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
@@ -2131,6 +2133,152 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
   return true;
 }
 
+/* Optimize X == CST1 || X == CST2
+   if popcount (CST1 ^ CST2) == 1 into
+   (X & ~(CST1 ^ CST2)) == (CST1 & ~(CST1 ^ CST2)).
+   Similarly for ranges.  E.g.
+   X != 2 && X != 3 && X != 10 && X != 11
+   will be transformed by the previous optimization into
+   !((X - 2U) <= 1U || (X - 10U) <= 1U)
+   and this loop can transform that into
+   !(((X & ~8) - 2U) <= 1U).  */
+
+static bool
+optimize_range_tests_xor (enum tree_code opcode, tree type,
+			  tree lowi, tree lowj, tree highi, tree highj,
+			  vec<operand_entry_t> *ops,
+			  struct range_entry *rangei,
+			  struct range_entry *rangej)
+{
+  tree lowxor, highxor, tem, exp;
+  /* Check highi ^ lowi == highj ^ lowj and
+     popcount (highi ^ lowi) == 1.  */
+  lowxor = fold_binary (BIT_XOR_EXPR, type, lowi, lowj);
+  if (lowxor == NULL_TREE || TREE_CODE (lowxor) != INTEGER_CST)
+    return false;
+  if (tree_log2 (lowxor) < 0)
+    return false;
+  highxor = fold_binary (BIT_XOR_EXPR, type, highi, highj);
+  if (!tree_int_cst_equal (lowxor, highxor))
+    return false;
+
+  tem = fold_build1 (BIT_NOT_EXPR, type, lowxor);
+  exp = fold_build2 (BIT_AND_EXPR, type, rangei->exp, tem);
+  lowj = fold_build2 (BIT_AND_EXPR, type, lowi, tem);
+  highj = fold_build2 (BIT_AND_EXPR, type, highi, tem);
+  if (update_range_test (rangei, rangej, 1, opcode, ops, exp,
+			 rangei->in_p, lowj, highj,
+			 rangei->strict_overflow_p
+			 || rangej->strict_overflow_p))
+    return true;
+  return false;
+}
+
+/* Optimize X == CST1 || X == CST2
+   if popcount (CST2 - CST1) == 1 into
+   ((X - CST1) & ~(CST2 - CST1)) == 0.
+   Similarly for ranges.  E.g.
+   X == 43 || X == 76 || X == 44 || X == 78 || X == 77 || X == 46
+   || X == 75 || X == 45
+   will be transformed by the previous optimization into
+   (X - 43U) <= 3U || (X - 75U) <= 3U
+   and this loop can transform that into
+   ((X - 43U) & ~(75U - 43U)) <= 3U.  */
+static bool
+optimize_range_tests_diff (enum tree_code opcode, tree type,
+			    tree lowi, tree lowj, tree highi, tree highj,
+			    vec<operand_entry_t> *ops,
+			    struct range_entry *rangei,
+			    struct range_entry *rangej)
+{
+  tree tem1, tem2, mask;
+  /* Check highi - lowi == highj - lowj.  */
+  tem1 = fold_binary (MINUS_EXPR, type, highi, lowi);
+  if (tem1 == NULL_TREE || TREE_CODE (tem1) != INTEGER_CST)
+    return false;
+  tem2 = fold_binary (MINUS_EXPR, type, highj, lowj);
+  if (!tree_int_cst_equal (tem1, tem2))
+    return false;
+  /* Check popcount (lowj - lowi) == 1.  */
+  tem1 = fold_binary (MINUS_EXPR, type, lowj, lowi);
+  if (tem1 == NULL_TREE || TREE_CODE (tem1) != INTEGER_CST)
+    return false;
+  if (tree_log2 (tem1) < 0)
+    return false;
+
+  mask = fold_build1 (BIT_NOT_EXPR, type, tem1);
+  tem1 = fold_binary (MINUS_EXPR, type, rangei->exp, lowi);
+  tem1 = fold_build2 (BIT_AND_EXPR, type, tem1, mask);
+  lowj = build_int_cst (type, 0);
+  if (update_range_test (rangei, rangej, 1, opcode, ops, tem1,
+			 rangei->in_p, lowj, tem2,
+			 rangei->strict_overflow_p
+			 || rangej->strict_overflow_p))
+    return true;
+  return false;
+}
+
+/* It does some common checks for function optimize_range_tests_xor and
+   optimize_range_tests_diff.
+   If OPTIMIZE_XOR is TRUE, it calls optimize_range_tests_xor.
+   Else it calls optimize_range_tests_diff.  */
+
+static bool
+optimize_range_tests_1 (enum tree_code opcode, int first, int length,
+			bool optimize_xor, vec<operand_entry_t> *ops,
+			struct range_entry *ranges)
+{
+  int i, j;
+  bool any_changes = false;
+  for (i = first; i < length; i++)
+    {
+      tree lowi, highi, lowj, highj, type, tem;
+
+      if (ranges[i].exp == NULL_TREE || ranges[i].in_p)
+	continue;
+      type = TREE_TYPE (ranges[i].exp);
+      if (!INTEGRAL_TYPE_P (type))
+	continue;
+      lowi = ranges[i].low;
+      if (lowi == NULL_TREE)
+	lowi = TYPE_MIN_VALUE (type);
+      highi = ranges[i].high;
+      if (highi == NULL_TREE)
+	continue;
+      for (j = i + 1; j < length && j < i + 64; j++)
+	{
+	  bool changes;
+	  if (ranges[i].exp != ranges[j].exp || ranges[j].in_p)
+	    continue;
+	  lowj = ranges[j].low;
+	  if (lowj == NULL_TREE)
+	    continue;
+	  highj = ranges[j].high;
+	  if (highj == NULL_TREE)
+	    highj = TYPE_MAX_VALUE (type);
+	  /* Check lowj > highi.  */
+	  tem = fold_binary (GT_EXPR, boolean_type_node,
+			     lowj, highi);
+	  if (tem == NULL_TREE || !integer_onep (tem))
+	    continue;
+	  if (optimize_xor)
+	    changes = optimize_range_tests_xor (opcode, type, lowi, lowj,
+						highi, highj, ops,
+						ranges + i, ranges + j);
+	  else
+	    changes = optimize_range_tests_diff (opcode, type, lowi, lowj,
+						 highi, highj, ops,
+						 ranges + i, ranges + j);
+	  if (changes)
+	    {
+	      any_changes = true;
+	      break;
+	    }
+	}
+    }
+  return any_changes;
+}
+
 /* Optimize range tests, similarly how fold_range_test optimizes
    it on trees.  The tree code for the binary
    operation between all the operands is OPCODE.
@@ -2208,76 +2356,12 @@ optimize_range_tests (enum tree_code opcode,
 	++update_fail_count;
     }
 
-  /* Optimize X == CST1 || X == CST2
-     if popcount (CST1 ^ CST2) == 1 into
-     (X & ~(CST1 ^ CST2)) == (CST1 & ~(CST1 ^ CST2)).
-     Similarly for ranges.  E.g.
-     X != 2 && X != 3 && X != 10 && X != 11
-     will be transformed by the above loop into
-     (X - 2U) <= 1U && (X - 10U) <= 1U
-     and this loop can transform that into
-     ((X & ~8) - 2U) <= 1U.  */
-  for (i = first; i < length; i++)
-    {
-      tree lowi, highi, lowj, highj, type, lowxor, highxor, tem, exp;
+  any_changes |= optimize_range_tests_1 (opcode, first, length, true,
+					 ops, ranges);
 
-      if (ranges[i].exp == NULL_TREE || ranges[i].in_p)
-	continue;
-      type = TREE_TYPE (ranges[i].exp);
-      if (!INTEGRAL_TYPE_P (type))
-	continue;
-      lowi = ranges[i].low;
-      if (lowi == NULL_TREE)
-	lowi = TYPE_MIN_VALUE (type);
-      highi = ranges[i].high;
-      if (highi == NULL_TREE)
-	continue;
-      for (j = i + 1; j < length && j < i + 64; j++)
-	{
-	  if (ranges[j].exp == NULL_TREE)
-	    continue;
-	  if (ranges[i].exp != ranges[j].exp)
-	    break;
-	  if (ranges[j].in_p)
-	    continue;
-	  lowj = ranges[j].low;
-	  if (lowj == NULL_TREE)
-	    continue;
-	  highj = ranges[j].high;
-	  if (highj == NULL_TREE)
-	    highj = TYPE_MAX_VALUE (type);
-	  tem = fold_binary (GT_EXPR, boolean_type_node,
-			     lowj, highi);
-	  if (tem == NULL_TREE || !integer_onep (tem))
-	    continue;
-	  lowxor = fold_binary (BIT_XOR_EXPR, type, lowi, lowj);
-	  if (lowxor == NULL_TREE || TREE_CODE (lowxor) != INTEGER_CST)
-	    continue;
-	  gcc_checking_assert (!integer_zerop (lowxor));
-	  tem = fold_binary (MINUS_EXPR, type, lowxor,
-			     build_int_cst (type, 1));
-	  if (tem == NULL_TREE)
-	    continue;
-	  tem = fold_binary (BIT_AND_EXPR, type, lowxor, tem);
-	  if (tem == NULL_TREE || !integer_zerop (tem))
-	    continue;
-	  highxor = fold_binary (BIT_XOR_EXPR, type, highi, highj);
-	  if (!tree_int_cst_equal (lowxor, highxor))
-	    continue;
-	  tem = fold_build1 (BIT_NOT_EXPR, type, lowxor);
-	  exp = fold_build2 (BIT_AND_EXPR, type, ranges[i].exp, tem);
-	  lowj = fold_build2 (BIT_AND_EXPR, type, lowi, tem);
-	  highj = fold_build2 (BIT_AND_EXPR, type, highi, tem);
-	  if (update_range_test (ranges + i, ranges + j, 1, opcode, ops, exp,
-				 ranges[i].in_p, lowj, highj,
-				 ranges[i].strict_overflow_p
-				 || ranges[j].strict_overflow_p))
-	    {
-	      any_changes = true;
-	      break;
-	    }
-	}
-    }
+  if (BRANCH_COST (optimize_function_for_speed_p (cfun), false) >= 2)
+    any_changes |= optimize_range_tests_1 (opcode, first, length, false,
+					   ops, ranges);
 
   if (any_changes && opcode != ERROR_MARK)
     {
