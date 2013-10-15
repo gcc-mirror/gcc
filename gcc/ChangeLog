@@ -1,3 +1,17 @@
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PICFLAG): New.
+	(enable_host_shared): New.
+	(INTERNAL_CFLAGS): Use PICFLAG.
+	(LIBIBERTY): Use pic build of libiberty.a if configured with
+	--enable-host-shared.
+	* configure.ac: Add --enable-host-shared, setting up new
+	PICFLAG variable.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-shared): Add note contrasting it
+	with...
+	(--enable-host-shared): New option.
+
 2013-10-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-tailcall.c (find_tail_calls): Don't use tail-call recursion

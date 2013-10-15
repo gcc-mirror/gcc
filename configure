@@ -556,6 +556,7 @@ enable_option_checking=no
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 compare_exclusions
+host_shared
 stage2_werror_flag
 stage1_checking
 stage1_cflags
@@ -787,6 +788,7 @@ with_build_time_tools
 enable_maintainer_mode
 enable_stage1_checking
 enable_werror
+enable_host_shared
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1490,6 +1492,7 @@ Optional Features:
                           choose additional checking for stage1 of the
                           compiler
   --enable-werror         enable -Werror in bootstrap stage2 and later
+  --enable-host-shared    build host code as shared libraries
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -14568,6 +14571,16 @@ case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
 esac
+
+
+# Enable --enable-host-shared.
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; host_shared=$enableval
+else
+  host_shared=no
+fi
+
 
 
 # Specify what files to not compare during bootstrap.

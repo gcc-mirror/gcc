@@ -925,6 +925,19 @@ Use @option{--disable-shared} to build only static libraries.  Note that
 @option{--disable-shared} does not accept a list of package names as
 argument, only @option{--enable-shared} does.
 
+Contrast with @option{--enable-host-shared}, which affects @emph{host}
+code.
+
+@item --enable-host-shared
+Specify that the @emph{host} code should be built into position-independent
+machine code (with -fPIC), allowing it to be used within shared libraries,
+but yielding a slightly slower compiler.
+
+Currently this option is only of use to people developing GCC itself.
+
+Contrast with @option{--enable-shared}, which affects @emph{target}
+libraries.
+
 @item @anchor{with-gnu-as}--with-gnu-as
 Specify that the compiler should assume that the
 assembler it finds is the GNU assembler.  However, this does not modify

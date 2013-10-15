@@ -1,3 +1,8 @@
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Add --enable-host-shared
+	* configure: Regenerate.
+
 2013-01-10  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	Import from savannah.gnu.org:

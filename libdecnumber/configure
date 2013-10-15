@@ -593,6 +593,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PICFLAG
 ADDITIONAL_OBJS
 enable_decimal_float
 target_os
@@ -670,6 +671,7 @@ enable_option_checking
 enable_werror_always
 enable_maintainer_mode
 enable_decimal_float
+enable_host_shared
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1301,6 +1303,7 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
+  --enable-host-shared    build host code as shared libraries
 
 Some influential environment variables:
   CC          C compiler command
@@ -4887,6 +4890,16 @@ $as_echo "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
      as_fn_error "unknown endianness
  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
  esac
+
+
+# Enable --enable-host-shared.
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PICFLAG=-fPIC
+else
+  PICFLAG=
+fi
+
 
 
 # Output.
