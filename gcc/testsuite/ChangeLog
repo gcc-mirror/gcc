@@ -479,6 +479,11 @@
 	* gcc.target/powerpc/p8vector-ldst.c: New test for -mupper-regs-sf
 	and -mupper-regs-df.
 
+2013-09-27  Paulo Matos  <pmatos@broadcom.com>
+
+	PR middle-end/58463
+	* gcc.dg/pr58463.c: New test.
+
 2013-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58551
