@@ -2366,8 +2366,7 @@ package body Sem_Prag is
                      elsif Contains (Inputs_Seen, Input_Id) then
                         Error_Msg_N ("duplicate input item", Input);
 
-                     --  The input is legal, add it to the list of processed
-                     --  inputs.
+                     --  Input is legal, add it to the list of processed inputs
 
                      else
                         Add_Item (Input_Id, Inputs_Seen);
@@ -2408,7 +2407,6 @@ package body Sem_Prag is
          while Present (Elmt) loop
             if Name_Seen then
                Error_Msg_N ("only one item allowed in initialization", Elmt);
-
             else
                Name_Seen := True;
                Analyze_Initialization_Item (Elmt);
@@ -2424,7 +2422,6 @@ package body Sem_Prag is
                Input := First (Expressions (Inputs));
                while Present (Input) loop
                   Analyze_Input_Item (Input);
-
                   Next (Input);
                end loop;
             end if;

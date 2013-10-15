@@ -865,8 +865,9 @@ package body Ada.Exceptions is
    -- Get_Exception_Machine_Occurrence --
    --------------------------------------
 
-   function Get_Exception_Machine_Occurrence (X : Exception_Occurrence)
-                                             return System.Address is
+   function Get_Exception_Machine_Occurrence
+     (X : Exception_Occurrence) return System.Address
+   is
    begin
       return X.Machine_Occurrence;
    end Get_Exception_Machine_Occurrence;
