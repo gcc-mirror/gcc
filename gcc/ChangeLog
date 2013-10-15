@@ -8,6 +8,47 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/predicates.md (register_or_constm1_operand): New.
+	* config/i386/sse.md (unspec): Add UNSPEC_UNSIGNED_PCMP, UNSPEC_TESTM,
+	UNSPEC_TESTNM, UNSPEC_VTERNLOG, UNSPEC_ALIGN, UNSPEC_CONFLICT,
+	UNSPEC_MASKED_EQ, UNSPEC_MASKED_GT, UNSPEC_GATHER_PREFETCH,
+	UNSPEC_SCATTER_PREFETCH
+	(VI48_512): New.
+	(avx512f_ucmp<mode>3): Ditto.
+	(avx512f_vternlog<mode>): Ditto.
+	(avx512f_align<mode>): Ditto.
+	(<shift_insn><mode>3): Ditto.
+	(avx512f_<rotate>v<mode>): Ditto.
+	(avx512f_<rotate><mode>): Ditto.
+	(avx512f_eq<mode>3): Ditto.
+	(avx512f_eq<mode>3_1): Ditto.
+	(avx512f_gt<mode>3): Ditto.
+	(avx512f_testm<mode>3): Ditto.
+	(avx512f_testnm<mode>3): Ditto.
+	(avx512pf_gatherpf<mode>): Ditto.
+	(*avx512pf_gatherpf<mode>_mask): Ditto.
+	(*avx512pf_gatherpf<mode>): Ditto.
+	(avx512pf_scatterpf<mode>): Ditto.
+	(*avx512pf_scatterpf<mode>_mask): Ditto.
+	(*avx512pf_scatterpf<mode>): Ditto.
+	(avx512f_vec_dup_gpr<mode>): Ditto.
+	(clz<mode>2): Ditto.
+	(conflict<mode>): Ditto.
+	(REDUC_SMINMAX_MODE): Extened with wider modes.
+	(reduc_<code>_<mode>): Ditto.
+	(vlshr<mode>3): Ditto.
+	(vashl<mode>3): Ditto.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md (unspec): Added UNSPEC_VPERMI2, UNSPEC_VPERMT2,
 	UNSPEC_SCATTER.
 	(VI48F_512): New.

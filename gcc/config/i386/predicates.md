@@ -1332,3 +1332,9 @@
 (define_predicate "general_vector_operand"
   (ior (match_operand 0 "nonimmediate_operand")
        (match_code "const_vector")))
+
+;; Return true if OP is either -1 constant or stored in register.
+(define_predicate "register_or_constm1_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "op == constm1_rtx"))))
