@@ -1,5 +1,9 @@
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types: Remove old neon types.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/cortex-a7.md
 	(cortex_a7_neon_type): New.
 	(cortex_a7_neon_mul): Update for new types.
