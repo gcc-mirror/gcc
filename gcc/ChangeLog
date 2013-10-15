@@ -1,3 +1,41 @@
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (unspec): Added UNSPEC_VPERMI2, UNSPEC_VPERMT2,
+	UNSPEC_SCATTER.
+	(VI48F_512): New.
+	(avx512fmaskmode): Ditto.
+	(bcstscalarsuff): Ditto.
+	(avx512f_blendm<mode>): Ditto.
+	(cmp_imm_predicate): Ditto.
+	(avx512f_cmp<mode>3): Ditto.
+	(avx512f_vec_dup<mode>): Ditto.
+	(avx512f_vec_dup_mem<mode>): Ditto.
+	(avx512f_vpermi2var<mode>3): Ditto.
+	(avx512f_vpermt2var<mode>3): Ditto.
+	(vec_init<mode>): Ditto.
+	(avx512f_gathersi<mode>): Ditto.
+	(*avx512f_gathersi<mode>): Ditto.
+	(*avx512f_gathersi<mode>_2): Ditto.
+	(avx512f_gatherdi<mode>): Ditto.
+	(*avx512f_gatherdi<mode>): Ditto.
+	(*avx512f_gatherdi<mode>_2): Ditto.
+	(avx512f_scattersi<mode>): Ditto.
+	(*avx512f_scattersi<mode>): Ditto.
+	(avx512f_scatterdi<mode>): Ditto.
+	(*avx512f_scatterdi<mode>): Ditto.
+	(sseintprefix): Extened with wider modes.
+	(VEC_GATHER_IDXSI): Ditto.
+	(VEC_GATHER_IDXDI): Ditto.
+	(VEC_GATHER_SRCDI): Ditto.
+
 2013-10-15  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
