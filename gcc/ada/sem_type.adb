@@ -3209,6 +3209,8 @@ package body Sem_Type is
 
    begin
       if Is_Overloaded (Old_N) then
+         Set_Is_Overloaded (New_N);
+
          if Nkind (Old_N) = N_Selected_Component
            and then Is_Overloaded (Selector_Name (Old_N))
          then

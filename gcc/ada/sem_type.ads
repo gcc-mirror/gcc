@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,7 +124,7 @@ package Sem_Type is
    --  denotes whether an interpretation has been disabled by an abstract
    --  operator. Add_One_Interp includes semantic processing to deal with
    --  adding entries that hide one another etc.
-
+   --
    --  For operators, the legality of the operation depends on the visibility
    --  of T and its scope. If the operator is an equality or comparison, T is
    --  always Boolean, and we use Opnd_Type, which is a candidate type for one
@@ -158,8 +158,9 @@ package Sem_Type is
    procedure Save_Interps (Old_N : Node_Id; New_N : Node_Id);
    --  If an overloaded node is rewritten during semantic analysis, its
    --  possible interpretations must be linked to the copy. This procedure
-   --  transfers the overload information from Old_N, the old node, to
-   --  New_N, its new copy. It has no effect in the non-overloaded case.
+   --  transfers the overload information (Is_Overloaded flag, and list of
+   --  interpretations) from Old_N, the old node, to New_N, its new copy.
+   --  It has no effect in the non-overloaded case.
 
    function Covers (T1, T2 : Entity_Id) return Boolean;
    --  This is the basic type compatibility routine. T1 is the expected type,

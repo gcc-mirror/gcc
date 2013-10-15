@@ -3120,6 +3120,14 @@ package body Ch4 is
          Scan; -- Past ELSE
          Append_To (Exprs, P_Expression);
 
+         --  Skip redundant ELSE parts
+
+         while Token = Tok_Else loop
+            Error_Msg_SC ("only one ELSE part is allowed");
+            Scan; -- past ELSE
+            Discard_Junk_Node (P_Expression);
+         end loop;
+
       --  Two expression case (implied True, filled in during semantics)
 
       else

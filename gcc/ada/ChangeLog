@@ -1,3 +1,35 @@
+2013-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Constituent): When
+	a state acts as a constituent of another state, ensure that
+	the said state has a Part_Of dependency in its corresponding
+	aspect/pragma Abstract_State.
+
+2013-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_If_expression): Handle redundant ELSE cleanly.
+
+2013-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.ads (New_Copy, Relocate_Node): Improve documentation
+	(note that these subprograms reset Is_Overloaded).
+
+2013-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* checks.adb (Check_Needed): Handle the case where the test in
+	the left operand of the short circuit is wrapped in a qualified
+	expression, type conversion, or expression with actions.
+
+2013-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_type.adb, sem_type.ads (Save_Interps): Also propagate
+	Is_Overloaded to New_N, for consistency.
+
+2013-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-tienau.adb (Put): Use file parameter to query values of
+	current column and line length.
+
 2013-10-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, exp_ch11.adb, a-except-2005.adb, a-except-2005.ads:
