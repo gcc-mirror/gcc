@@ -287,22 +287,6 @@ ipa_lat_is_single_const (struct ipcp_lattice *lat)
     return true;
 }
 
-/* Return true iff the CS is an edge within a strongly connected component as
-   computed by ipa_reduced_postorder.  */
-
-static inline bool
-edge_within_scc (struct cgraph_edge *cs)
-{
-  struct ipa_dfs_info *caller_dfs = (struct ipa_dfs_info *) cs->caller->symbol.aux;
-  struct ipa_dfs_info *callee_dfs;
-  struct cgraph_node *callee = cgraph_function_node (cs->callee, NULL);
-
-  callee_dfs = (struct ipa_dfs_info *) callee->symbol.aux;
-  return (caller_dfs
-	  && callee_dfs
-	  && caller_dfs->scc_no == callee_dfs->scc_no);
-}
-
 /* Print V which is extracted from a value in a lattice to F.  */
 
 static void
@@ -957,7 +941,7 @@ add_value_to_lattice (struct ipcp_lattice *lat, tree newval,
   for (val = lat->values; val; val = val->next)
     if (values_equal_for_ipcp_p (val->value, newval))
       {
-	if (edge_within_scc (cs))
+	if (ipa_edge_within_scc (cs))
 	  {
 	    struct ipcp_value_source *s;
 	    for (s = val->sources; s ; s = s->next)
@@ -1030,7 +1014,7 @@ propagate_vals_accross_pass_through (struct cgraph_edge *cs,
      are arithmetic functions with circular dependencies, there is infinite
      number of them and we would just make lattices bottom.  */
   if ((ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR)
-      and edge_within_scc (cs))
+      && ipa_edge_within_scc (cs))
     ret = set_lattice_contains_variable (dest_lat);
   else
     for (src_val = src_lat->values; src_val; src_val = src_val->next)
@@ -1061,7 +1045,7 @@ propagate_vals_accross_ancestor (struct cgraph_edge *cs,
   struct ipcp_value *src_val;
   bool ret = false;
 
-  if (edge_within_scc (cs))
+  if (ipa_edge_within_scc (cs))
     return set_lattice_contains_variable (dest_lat);
 
   for (src_val = src_lat->values; src_val; src_val = src_val->next)
@@ -2137,7 +2121,7 @@ propagate_constants_topo (struct topo_info *topo)
 	  struct cgraph_edge *cs;
 
 	  for (cs = v->callees; cs; cs = cs->next_callee)
-	    if (edge_within_scc (cs)
+	    if (ipa_edge_within_scc (cs)
 		&& propagate_constants_accross_call (cs))
 	      push_node_to_stack (topo, cs->callee);
 	  v = pop_node_from_stack (topo);
@@ -2154,7 +2138,7 @@ propagate_constants_topo (struct topo_info *topo)
 	    estimate_local_effects (v);
 	    add_all_node_vals_to_toposort (v);
 	    for (cs = v->callees; cs; cs = cs->next_callee)
-	      if (!edge_within_scc (cs))
+	      if (!ipa_edge_within_scc (cs))
 		propagate_constants_accross_call (cs);
 	  }
       cycle_nodes.release ();
@@ -3470,7 +3454,7 @@ spread_undeadness (struct cgraph_node *node)
   struct cgraph_edge *cs;
 
   for (cs = node->callees; cs; cs = cs->next_callee)
-    if (edge_within_scc (cs))
+    if (ipa_edge_within_scc (cs))
       {
 	struct cgraph_node *callee;
 	struct ipa_node_params *info;
@@ -3501,7 +3485,7 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
 					has_undead_caller_from_outside_scc_p,
 					NULL, true))
       return true;
-    else if (!edge_within_scc (cs)
+    else if (!ipa_edge_within_scc (cs)
 	     && !IPA_NODE_REF (cs->caller)->node_dead)
       return true;
   return false;
