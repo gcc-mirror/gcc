@@ -1,3 +1,8 @@
+2013-10-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* reload1.c (reloads_unique_chain_p): Ensure that r1 is the input for
+	r2.
+
 2013-10-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (build_empty_rdg): Inline into
