@@ -83,6 +83,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       : __flags)
       { }
 
+      virtual
+      ~_Executor()
+      { }
+
       // Set matched when string exactly match the pattern.
       bool
       _M_match()
