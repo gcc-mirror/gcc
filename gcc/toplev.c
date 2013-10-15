@@ -1575,7 +1575,7 @@ process_options (void)
                                     DK_ERROR, UNKNOWN_LOCATION);
 
   /* Save the current optimization options.  */
-  optimization_default_node = build_optimization_node ();
+  optimization_default_node = build_optimization_node (&global_options);
   optimization_current_node = optimization_default_node;
 }
 

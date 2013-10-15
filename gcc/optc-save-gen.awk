@@ -284,7 +284,7 @@ if (have_assert)
 	print "";
 
 print "  if (targetm.target_option.save)";
-print "    targetm.target_option.save (ptr);";
+print "    targetm.target_option.save (ptr, opts);";
 print "";
 
 for (i = 0; i < n_extra_target_vars; i++) {
@@ -347,7 +347,7 @@ for (i = 0; i < n_target_char; i++) {
 # variables.
 print "";
 print "  if (targetm.target_option.restore)";
-print "    targetm.target_option.restore (ptr);";
+print "    targetm.target_option.restore (opts, ptr);";
 
 print "}";
 

@@ -9049,7 +9049,7 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       /* Parse options, and update the vector.  */
       parse_optimize_options (args, true);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
-	= build_optimization_node ();
+	= build_optimization_node (&global_options);
 
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &cur_opts);

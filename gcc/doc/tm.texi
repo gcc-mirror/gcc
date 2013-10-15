@@ -9853,17 +9853,17 @@ the function declaration to hold a pointer to a target-specific
 @code{struct cl_target_option} structure.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_OPTION_SAVE (struct cl_target_option *@var{ptr})
+@deftypefn {Target Hook} void TARGET_OPTION_SAVE (struct cl_target_option *@var{ptr}, struct gcc_options *@var{opts})
 This hook is called to save any additional target-specific information
 in the @code{struct cl_target_option} structure for function-specific
-options.
+options from the @code{struct gcc_options} structure.
 @xref{Option file format}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_OPTION_RESTORE (struct cl_target_option *@var{ptr})
+@deftypefn {Target Hook} void TARGET_OPTION_RESTORE (struct gcc_options *@var{opts}, struct cl_target_option *@var{ptr})
 This hook is called to restore any additional target-specific
 information in the @code{struct cl_target_option} structure for
-function-specific options.
+function-specific options to the @code{struct gcc_options} structure.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_OPTION_PRINT (FILE *@var{file}, int @var{indent}, struct cl_target_option *@var{ptr})

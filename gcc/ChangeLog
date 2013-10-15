@@ -1,3 +1,187 @@
+2013-10-15 Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/57756
+	* optc-save-gen.awk: Add extra parameter to the save and restore
+	target calls.
+	* opth-gen.awk: Generate new TARGET_* macros  to accept a parameter.
+	* tree.c (build_optimization_node): New parameter.  Add extra parameter
+	to call to cl_optimization_save.
+	(build_target_option_node): New parameter. Add extra parameter
+	to call to cl_target_option_save.
+	* tree.h (build_optimization_node): New parameter.
+	(build_target_option_node): New parameter.
+	* c-family/c-common.c (handle_optimize_attribute): Fix calls to
+	build_optimization_node and build_target_option_node.
+	* c-family/c-pragma.c (handle_pragma_optimize): Ditto.
+	(handle_pragma_push_options): Ditto.
+	* toplev.c (process_options): Ditto.
+	* opts.c (init_options_struct): Check for opts_set non-null.
+	* target.def (target_option.save): New parameter.
+	(target_option.restore): New parameter.
+	* tm.texi: Generate.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Ditto.
+	(ix86_pragma_target_parse): Ditto.
+	* config/i386/i386-protos.h (ix86_valid_target_attribute_tree): New
+	parameters.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Fix calls
+	to  build_optimization_node and build_target_option_node.
+	(rs6000_valid_attribute_p): Ditto.
+	(rs6000_pragma_target_parse): Ditto.
+	* config/i386/i386.opt (x_ix86_target_flags_explicit): New TargetSave
+	data.
+	* config/i386/i386.h:
+	TARGET_64BIT_P: New Macro
+	TARGET_MMX_P: New Macro.
+	TARGET_3DNOW_P: New Macro.
+	TARGET_3DNOW_A_P: New Macro.
+	TARGET_SSE_P: New Macro.
+	TARGET_SSE2_P: New Macro.
+	TARGET_SSE3_P: New Macro.
+	TARGET_SSSE3_P: New Macro.
+	TARGET_SSE4_1_P: New Macro.
+	TARGET_SSE4_2_P: New Macro.
+	TARGET_AVX_P: New Macro.
+	TARGET_AVX2_P: New Macro.
+	TARGET_AVX512F_P: New Macro.
+	TARGET_AVX512PF_P: New Macro.
+	TARGET_AVX512ER_P: New Macro.
+	TARGET_AVX512CD_P: New Macro.
+	TARGET_FMA_P: New Macro.
+	TARGET_SSE4A_P: New Macro.
+	TARGET_FMA4_P: New Macro.
+	TARGET_XOP_P: New Macro.
+	TARGET_LWP_P: New Macro.
+	TARGET_ABM_P: New Macro.
+	TARGET_BMI_P: New Macro.
+	TARGET_BMI2_P: New Macro.
+	TARGET_LZCNT_P: New Macro.
+	TARGET_TBM_P: New Macro.
+	TARGET_POPCNT_P: New Macro.
+	TARGET_SAHF_P: New Macro.
+	TARGET_MOVBE_P: New Macro.
+	TARGET_CRC32_P: New Macro.
+	TARGET_AES_P: New Macro.
+	TARGET_PCLMUL_P: New Macro.
+	TARGET_CMPXCHG16B_P: New Macro.
+	TARGET_FSGSBASE_P: New Macro.
+	TARGET_RDRND_P: New Macro.
+	TARGET_F16C_P: New Macro.
+	TARGET_RTM_P: New Macro.
+	TARGET_HLE_P: New Macro.
+	TARGET_RDSEED_P: New Macro.
+	TARGET_PRFCHW_P: New Macro.
+	TARGET_ADX_P: New Macro.
+	TARGET_FXSR_P: New Macro.
+	TARGET_XSAVE_P: New Macro.
+	TARGET_XSAVEOPT_P: New Macro.
+	TARGET_LP64_P: New Macro.
+	TARGET_X32_P: New Macro.
+	TARGET_FPMATH_DEFAULT_P: New Macro.
+	TARGET_FLOAT_RETURNS_IN_80387_P: New Macro.
+	* config/i386/i386.c (ix86_option_override_internal): New parameters.
+	opts and opts_set.
+	Change ix86_tune_string to access opts->x_ix86_tune_string.
+	Change ix86_isa_flags to access opts->x_ix86_isa_flags.
+	Change ix86_arch_string to access opts->x_ix86_arch_string.
+	Change ix86_stringop_alg to access opts->x_ix86_stringop_alg.
+	Change ix86_pmode to access opts->x_ix86_pmode.
+	Change ix86_abi to access opts->x_ix86_abi.
+	Change ix86_cmodel to access opts->x_ix86_cmodel.
+	Change ix86_asm_dialect to access opts->x_ix86_asm_dialect.
+	Change ix86_isa_flags_explicit to access
+	opts->x_ix86_isa_flags_explicit.
+	Change ix86_dump_tunes to access opts->x_ix86_dump_tunes.
+	Change ix86_regparm to access opts->x_ix86_regparm.
+	Change ix86_branch_cost to access opts->x_ix86_branch_cost.
+	Change ix86_preferred_stack_boundary_arg to access
+	opts->x_ix86_preferred_stack_boundary_arg.
+	Change ix86_force_align_arg_pointer to access
+	opts->x_ix86_force_align_arg_pointer.
+	Change ix86_incoming_stack_boundar_arg to access
+	opts->x_ix86_incoming_stack_boundar_arg.
+	Change ix86_fpmath to access opts->x_ix86_fpmath.
+	Change ix86_veclibabi_type to access opts->x_ix86_veclibabi_type.
+	Change ix86_recip_name to access opts->x_ix86_recip_name.
+	Change ix86_stack_protector_guard to access
+	opts->x_ix86_stack_protector_guard.
+	Change ix86_tune_memcpy_strategy to access
+	opts->x_ix86_tune_memcpy_strategy.
+	Change ix86_tune_memset_strategy to access
+	opts->x_ix86_tune_memset_strategy.
+	Change global_options to access opts.
+	Change global_options_set to access opts_set.
+        Change TARGET_64BIT to TARGET_64BIT_P (opts->...)
+        Change TARGET_MMX to TARGET_MMX_P (opts->...)
+        Change TARGET_3DNOW to TARGET_3DNOW_P (opts->...)
+        Change TARGET_3DNOW_A to TARGET_3DNOW_A_P (opts->...)
+        Change TARGET_SSE to TARGET_SSE_P (opts->...)
+        Change TARGET_SSE2 to TARGET_SSE2_P (opts->...)
+        Change TARGET_SSE3 to TARGET_SSE3_P (opts->...)
+        Change TARGET_SSSE3 to TARGET_SSSE3_P (opts->...)
+        Change TARGET_SSE4_1 to TARGET_SSE4_1_P (opts->...)
+        Change TARGET_SSE4_2 to TARGET_SSE4_2_P (opts->...)
+        Change TARGET_AVX to TARGET_AVX_P (opts->...)
+        Change TARGET_AVX2 to TARGET_AVX2_P (opts->...)
+        Change TARGET_AVX512F to TARGET_AVX512F_P (opts->...)
+        Change TARGET_AVX512PF to TARGET_AVX512PF_P (opts->...)
+        Change TARGET_AVX512ER to TARGET_AVX512ER_P (opts->...)
+        Change TARGET_AVX512CD to TARGET_AVX512CD_P (opts->...)
+        Change TARGET_FMA to TARGET_FMA_P (opts->...)
+        Change TARGET_SSE4A to TARGET_SSE4A_P (opts->...)
+        Change TARGET_FMA4 to TARGET_FMA4_P (opts->...)
+        Change TARGET_XOP to TARGET_XOP_P (opts->...)
+        Change TARGET_LWP to TARGET_LWP_P (opts->...)
+        Change TARGET_ABM to TARGET_ABM_P (opts->...)
+        Change TARGET_BMI to TARGET_BMI_P (opts->...)
+        Change TARGET_BMI2 to TARGET_BMI2_P (opts->...)
+        Change TARGET_LZCNT to TARGET_LZCNT_P (opts->...)
+        Change TARGET_TBM to TARGET_TBM_P (opts->...)
+        Change TARGET_POPCNT to TARGET_POPCNT_P (opts->...)
+        Change TARGET_SAHF to TARGET_SAHF_P (opts->...)
+        Change TARGET_MOVBE to TARGET_MOVBE_P (opts->...)
+        Change TARGET_CRC32 to TARGET_CRC32_P (opts->...)
+        Change TARGET_AES to TARGET_AES_P (opts->...)
+        Change TARGET_PCLMUL to TARGET_PCLMUL_P (opts->...)
+        Change TARGET_CMPXCHG16B to TARGET_CMPXCHG16B_P (opts->...)
+        Change TARGET_FSGSBASE to TARGET_FSGSBASE_P (opts->...)
+        Change TARGET_RDRND to TARGET_RDRND_P (opts->...)
+        Change TARGET_F16C to TARGET_F16C_P (opts->...)
+        Change TARGET_RTM to TARGET_RTM_P (opts->...)
+        Change TARGET_HLE to TARGET_HLE_P (opts->...)
+        Change TARGET_RDSEED to TARGET_RDSEED_P (opts->...)
+        Change TARGET_PRFCHW to TARGET_PRFCHW_P (opts->...)
+        Change TARGET_ADX to TARGET_ADX_P (opts->...)
+        Change TARGET_FXSR to TARGET_FXSR_P (opts->...)
+        Change TARGET_XSAVE to TARGET_XSAVE_P (opts->...)
+        Change TARGET_XSAVEOPT to TARGET_XSAVEOPT_P (opts->...)
+        Change TARGET_LP64 to TARGET_LP64_P (opts->...)
+        Change TARGET_X32 to TARGET_X32_P (opts->...)
+        Change TARGET_FPMATH_DEFAULT to TARGET_FPMATH_DEFAULT_P (opts->...)
+        Change TARGET_FLOAT_RETURNS_IN_80387 to
+	 TARGET_FLOAT_RETURNS_IN_80387_P (opts->...)
+	(ix86_function_specific_save): New parameter. Use opts-> fields
+	to replace global fields.
+	(ix86_function_specific_restore): Ditto.
+	(ix86_valid_target_attribute_inner_p): New parameters.
+	Fix recursive call.
+	Fix call to ix86_handle_option and set_option.
+	(ix86_valid_target_attribute_tree): New parameters.
+	Change global_options to access opts.
+	Change global_options_set to access opts_set.
+	Fix call to ix86_valid_target_attribute_inner_p.
+	Change ix86_tune_string to access opts->x_ix86_tune_string.
+	Change ix86_arch_string to access opts->x_ix86_arch_string.
+	Change ix86_fpmath to access opts->x_ix86_fpmath
+	Fix call to ix86_option_override_internal.
+	Fix call to ix86_add_new_builtins.
+	Fix calls to build_optimization_node and build_target_option_node.
+	(ix86_valid_target_attribute_p): Remove access to global_options.
+	Use new gcc_options structure func_options.
+	Fix call to ix86_valid_target_attribute_tree.
+	Fix call to  build_optimization_node.
+	(get_builtin_code_for_version):	Fix call to
+	ix86_valid_target_attribute_tree.
+
 2013-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (PICFLAG): New.

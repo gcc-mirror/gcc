@@ -279,10 +279,15 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
   gcc_obstack_init (&opts_obstack);
 
   *opts = global_options_init;
-  memset (opts_set, 0, sizeof (*opts_set));
+
+  if (opts_set)
+    memset (opts_set, 0, sizeof (*opts_set));
 
   opts->x_param_values = XNEWVEC (int, num_params);
-  opts_set->x_param_values = XCNEWVEC (int, num_params);
+
+  if (opts_set)
+    opts_set->x_param_values = XCNEWVEC (int, num_params);
+
   init_param_values (opts->x_param_values);
 
   /* Initialize whether `char' is signed.  */
