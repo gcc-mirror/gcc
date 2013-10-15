@@ -11598,10 +11598,10 @@ cl_option_hash_eq (const void *x, const void *y)
   return (memcmp (xp, yp, len) == 0);
 }
 
-/* Build an OPTIMIZATION_NODE based on the current options.  */
+/* Build an OPTIMIZATION_NODE based on the options in OPTS.  */
 
 tree
-build_optimization_node (void)
+build_optimization_node (struct gcc_options *opts)
 {
   tree t;
   void **slot;
@@ -11609,7 +11609,7 @@ build_optimization_node (void)
   /* Use the cache of optimization nodes.  */
 
   cl_optimization_save (TREE_OPTIMIZATION (cl_optimization_node),
-			&global_options);
+			opts);
 
   slot = htab_find_slot (cl_option_hash_table, cl_optimization_node, INSERT);
   t = (tree) *slot;
@@ -11626,10 +11626,10 @@ build_optimization_node (void)
   return t;
 }
 
-/* Build a TARGET_OPTION_NODE based on the current options.  */
+/* Build a TARGET_OPTION_NODE based on the options in OPTS.  */
 
 tree
-build_target_option_node (void)
+build_target_option_node (struct gcc_options *opts)
 {
   tree t;
   void **slot;
@@ -11637,7 +11637,7 @@ build_target_option_node (void)
   /* Use the cache of optimization nodes.  */
 
   cl_target_option_save (TREE_TARGET_OPTION (cl_target_option_node),
-			 &global_options);
+			 opts);
 
   slot = htab_find_slot (cl_option_hash_table, cl_target_option_node, INSERT);
   t = (tree) *slot;

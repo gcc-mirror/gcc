@@ -872,7 +872,7 @@ handle_pragma_optimize (cpp_reader *ARG_UNUSED(dummy))
 
       parse_optimize_options (args, false);
       current_optimize_pragma = chainon (current_optimize_pragma, args);
-      optimization_current_node = build_optimization_node ();
+      optimization_current_node = build_optimization_node (&global_options);
       c_cpp_builtins_optimize_pragma (parse_in,
 				      optimization_previous_node,
 				      optimization_current_node);
@@ -914,8 +914,8 @@ handle_pragma_push_options (cpp_reader *ARG_UNUSED(dummy))
   options_stack = p;
 
   /* Save optimization and target flags in binary format.  */
-  p->optimize_binary = build_optimization_node ();
-  p->target_binary = build_target_option_node ();
+  p->optimize_binary = build_optimization_node (&global_options);
+  p->target_binary = build_target_option_node (&global_options);
 
   /* Save optimization and target flags in string list format.  */
   p->optimize_strings = copy_list (current_optimize_pragma);

@@ -114,7 +114,6 @@ print "};"
 print "extern struct gcc_options global_options;"
 print "extern const struct gcc_options global_options_init;"
 print "extern struct gcc_options global_options_set;"
-print "#define target_flags_explicit global_options_set.x_target_flags"
 print "#endif"
 print "#endif"
 print ""
@@ -381,6 +380,8 @@ for (i = 0; i < n_opts; i++) {
 			extra_mask_macros[name] = 1
 		}
 		print "#define TARGET_" name \
+		      " ((" vname " & " mask name ") != 0)"
+		print "#define TARGET_" name "_P(" vname ")" \
 		      " ((" vname " & " mask name ") != 0)"
 	}
 }
