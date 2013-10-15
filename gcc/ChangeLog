@@ -1,3 +1,12 @@
+2013-10-15  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* tree-ssa-reassoc.c: Include rtl.h and tm_p.h.
+	(optimize_range_tests_1): New function,
+	extracted from optimize_range_tests.
+	(optimize_range_tests_xor): Similarly.
+	(optimize_range_tests_diff): New function.
+	(optimize_range_tests): Use optimize_range_tests_1.
+
 2013-10-15  Cong Hou  <congh@google.com>
 
 	* tree-vect-loop.c (vect_is_simple_reduction_1): Relax the 

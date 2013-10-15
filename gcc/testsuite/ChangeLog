@@ -1,3 +1,11 @@
+2013-10-15  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.dg/tree-ssa/reassoc-32.c: New test case.
+	* gcc.dg/tree-ssa/reassoc-33.c: New test case.
+	* gcc.dg/tree-ssa/reassoc-34.c: New test case.
+	* gcc.dg/tree-ssa/reassoc-35.c: New test case.
+	* gcc.dg/tree-ssa/reassoc-36.c: New test case.
+
 2013-10-15  Cong Hou  <congh@google.com>
 
 	* gcc.dg/vect/vect-reduc-pattern-3.c: New test.
