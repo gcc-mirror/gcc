@@ -15,7 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Test the functionality of programs compiled with profile-directed block
-# ordering using -fprofile-generate followed by -fbranch-use.
+# ordering using -fprofile-generate followed by -fprofile-use.
 
 load_lib target-supports.exp
 
