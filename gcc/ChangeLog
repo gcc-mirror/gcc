@@ -1,3 +1,8 @@
+2013-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (struct_field_seq): Ignore access-control
+	keywords ("public:" etc).
+
 2013-10-16  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_regno_regclass): Classify
