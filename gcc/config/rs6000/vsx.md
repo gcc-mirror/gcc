@@ -1194,7 +1194,12 @@
 	 (match_operand:<VS_scalar> 1 "vsx_register_operand" "ws,wa")
 	 (match_operand:<VS_scalar> 2 "vsx_register_operand" "ws,wa")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxpermdi %x0,%x1,%x2,0"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "xxpermdi %x0,%x1,%x2,0";
+  else
+    return "xxpermdi %x0,%x2,%x1,0";
+}
   [(set_attr "type" "vecperm")])
 
 ;; Special purpose concat using xxpermdi to glue two single precision values
@@ -1207,7 +1212,12 @@
 	  (match_operand:SF 2 "vsx_register_operand" "f,f")]
 	 UNSPEC_VSX_CONCAT))]
   "VECTOR_MEM_VSX_P (V2DFmode)"
-  "xxpermdi %x0,%x1,%x2,0"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "xxpermdi %x0,%x1,%x2,0";
+  else
+    return "xxpermdi %x0,%x2,%x1,0";
+}
   [(set_attr "type" "vecperm")])
 
 ;; xxpermdi for little endian loads and stores.  We need several of
