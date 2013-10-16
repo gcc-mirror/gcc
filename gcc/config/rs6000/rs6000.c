@@ -2796,6 +2796,10 @@ rs6000_option_override_internal (bool global_init_p)
     = ((global_init_p || target_option_default_node == NULL)
        ? NULL : TREE_TARGET_OPTION (target_option_default_node));
 
+  /* Remember the explicit arguments.  */
+  if (global_init_p)
+    rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
+
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it
@@ -29995,19 +29999,22 @@ rs6000_set_current_function (tree fndecl)
 /* Save the current options */
 
 static void
-rs6000_function_specific_save (struct cl_target_option *ptr)
+rs6000_function_specific_save (struct cl_target_option *ptr,
+			       struct gcc_options *opts)
 {
-  ptr->x_rs6000_isa_flags = rs6000_isa_flags;
-  ptr->x_rs6000_isa_flags_explicit = rs6000_isa_flags_explicit;
+  ptr->x_rs6000_isa_flags = opts->x_rs6000_isa_flags;
+  ptr->x_rs6000_isa_flags_explicit = opts->x_rs6000_isa_flags_explicit;
 }
 
 /* Restore the current options */
 
 static void
-rs6000_function_specific_restore (struct cl_target_option *ptr)
+rs6000_function_specific_restore (struct gcc_options *opts,
+				  struct cl_target_option *ptr)
+				  
 {
-  rs6000_isa_flags = ptr->x_rs6000_isa_flags;
-  rs6000_isa_flags_explicit = ptr->x_rs6000_isa_flags_explicit;
+  opts->x_rs6000_isa_flags = ptr->x_rs6000_isa_flags;
+  opts->x_rs6000_isa_flags_explicit = ptr->x_rs6000_isa_flags_explicit;
   (void) rs6000_option_override_internal (false);
 }
 

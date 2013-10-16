@@ -1,3 +1,17 @@
+2013-10-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57756
+	* config/rs6000/rs6000.opt (rs6000_isa_flags_explicit): Move the
+	explicit isa flag to be an options variable, instead of using
+	global_options_set.  Remove define from rs6000.h.
+	* config/rs6000/rs6000.h (rs6000_isa_flags_explicit): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Initialize rs6000_isa_flags_explicit.
+	(rs6000_function_specific_save): Add gcc_options* parameter, so
+	that the powerpc builds after the 2013-10-15 changes.
+	(rs6000_function_specific_restore): Likewise.
+
 2013-10-16  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (rl78_alloc_address_registers_macax): Verify
