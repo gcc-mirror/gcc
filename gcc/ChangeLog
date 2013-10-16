@@ -1,3 +1,10 @@
+2013-10-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_alloc_address_registers_macax): Verify
+	op is a REG before checking REGNO.
+	(rl78_alloc_physical_registers): Verify pattern is a SET before
+	checking SET_SRC.
+
 2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc/config/rs6000/vector.md (vec_unpacks_hi_v4sf): Correct for
