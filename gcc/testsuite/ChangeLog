@@ -1,3 +1,9 @@
+2013-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58633
+	* g++.dg/cpp0x/decltype57.C: New.
+	* g++.dg/cpp0x/enum18.C: Revert r174385 changes.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt28.ad[sb]: New test.
