@@ -639,18 +639,18 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         break;
 
       case EXPR_UNARY:
-        fprintf (stream, "%s ", tree_code_name[element->expr.ops.unary.op]);
+	fprintf (stream, "%s ", get_tree_code_name (element->expr.ops.unary.op));
         print_generic_expr (stream, element->expr.ops.unary.opnd, 0);
         break;
 
       case EXPR_BINARY:
         print_generic_expr (stream, element->expr.ops.binary.opnd0, 0);
-        fprintf (stream, " %s ", tree_code_name[element->expr.ops.binary.op]);
+	fprintf (stream, " %s ", get_tree_code_name (element->expr.ops.binary.op));
         print_generic_expr (stream, element->expr.ops.binary.opnd1, 0);
         break;
 
       case EXPR_TERNARY:
-        fprintf (stream, " %s <", tree_code_name[element->expr.ops.ternary.op]);
+	fprintf (stream, " %s <", get_tree_code_name (element->expr.ops.ternary.op));
         print_generic_expr (stream, element->expr.ops.ternary.opnd0, 0);
 	fputs (", ", stream);
         print_generic_expr (stream, element->expr.ops.ternary.opnd1, 0);

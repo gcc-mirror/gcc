@@ -1,3 +1,13 @@
+2013-10-16  Paulo Matos  <pmatos@broadcom.com>
+
+	* error.c (code_to_string): Use new wrapper get_tree_code_name.
+	* cxx-pretty-print.c (pp_cxx_assignment_operator): Likewise.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (cxx_eval_constant_expression,
+	potential_constant_expression_1): Likewise.
+	* mangle.c (MANGLE_TRACE_TREE, dump_substitution_candidates,
+	add_substitution, find_substitution): Likewise.
+
 2013-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58707

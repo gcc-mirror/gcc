@@ -12102,7 +12102,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       gcc_unreachable ();
 
     default:
-      sorry ("use of %qs in template", tree_code_name [(int) code]);
+      sorry ("use of %qs in template", get_tree_code_name ((int) code));
       return error_mark_node;
     }
 }

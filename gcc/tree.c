@@ -91,7 +91,7 @@ const unsigned char tree_code_length[] = {
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 #define END_OF_BASE_TREE_CODES "@dummy",
 
-const char *const tree_code_name[] = {
+static const char *const tree_code_name[] = {
 #include "all-tree.def"
 };
 
@@ -9098,7 +9098,8 @@ dump_tree_statistics (void)
       fprintf (stderr, "Code                   Nodes\n");
       fprintf (stderr, "----------------------------\n");
       for (i = 0; i < (int) MAX_TREE_CODES; i++)
-	fprintf (stderr, "%-20s %7d\n", tree_code_name[i], tree_code_counts[i]);
+	fprintf (stderr, "%-20s %7d\n", get_tree_code_name ((enum tree_code) i),
+                 tree_code_counts[i]);
       fprintf (stderr, "----------------------------\n");
       ssanames_print_statistics ();
       phinodes_print_statistics ();
@@ -9268,11 +9269,11 @@ tree_check_failed (const_tree node, const char *file,
   va_list args;
   const char *buffer;
   unsigned length = 0;
-  int code;
+  enum tree_code code;
 
   va_start (args, function);
-  while ((code = va_arg (args, int)))
-    length += 4 + strlen (tree_code_name[code]);
+  while ((code = (enum tree_code) va_arg (args, int)))
+    length += 4 + strlen (get_tree_code_name (code));
   va_end (args);
   if (length)
     {
@@ -9281,14 +9282,14 @@ tree_check_failed (const_tree node, const char *file,
       length += strlen ("expected ");
       buffer = tmp = (char *) alloca (length);
       length = 0;
-      while ((code = va_arg (args, int)))
+      while ((code = (enum tree_code) va_arg (args, int)))
 	{
 	  const char *prefix = length ? " or " : "expected ";
 
 	  strcpy (tmp + length, prefix);
 	  length += strlen (prefix);
-	  strcpy (tmp + length, tree_code_name[code]);
-	  length += strlen (tree_code_name[code]);
+	  strcpy (tmp + length, get_tree_code_name (code));
+	  length += strlen (get_tree_code_name (code));
 	}
       va_end (args);
     }
@@ -9296,7 +9297,7 @@ tree_check_failed (const_tree node, const char *file,
     buffer = "unexpected node";
 
   internal_error ("tree check: %s, have %s in %s, at %s:%d",
-		  buffer, tree_code_name[TREE_CODE (node)],
+		  buffer, get_tree_code_name (TREE_CODE (node)),
 		  function, trim_filename (file), line);
 }
 
@@ -9311,29 +9312,29 @@ tree_not_check_failed (const_tree node, const char *file,
   va_list args;
   char *buffer;
   unsigned length = 0;
-  int code;
+  enum tree_code code;
 
   va_start (args, function);
-  while ((code = va_arg (args, int)))
-    length += 4 + strlen (tree_code_name[code]);
+  while ((code = (enum tree_code) va_arg (args, int)))
+    length += 4 + strlen (get_tree_code_name (code));
   va_end (args);
   va_start (args, function);
   buffer = (char *) alloca (length);
   length = 0;
-  while ((code = va_arg (args, int)))
+  while ((code = (enum tree_code) va_arg (args, int)))
     {
       if (length)
 	{
 	  strcpy (buffer + length, " or ");
 	  length += 4;
 	}
-      strcpy (buffer + length, tree_code_name[code]);
-      length += strlen (tree_code_name[code]);
+      strcpy (buffer + length, get_tree_code_name (code));
+      length += strlen (get_tree_code_name (code));
     }
   va_end (args);
 
   internal_error ("tree check: expected none of %s, have %s in %s, at %s:%d",
-		  buffer, tree_code_name[TREE_CODE (node)],
+		  buffer, get_tree_code_name (TREE_CODE (node)),
 		  function, trim_filename (file), line);
 }
 
@@ -9348,7 +9349,7 @@ tree_class_check_failed (const_tree node, const enum tree_code_class cl,
     ("tree check: expected class %qs, have %qs (%s) in %s, at %s:%d",
      TREE_CODE_CLASS_STRING (cl),
      TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
-     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+     get_tree_code_name (TREE_CODE (node)), function, trim_filename (file), line);
 }
 
 /* Similar to tree_check_failed, except that instead of specifying a
@@ -9364,7 +9365,7 @@ tree_range_check_failed (const_tree node, const char *file, int line,
   unsigned int c;
 
   for (c = c1; c <= c2; ++c)
-    length += 4 + strlen (tree_code_name[c]);
+    length += 4 + strlen (get_tree_code_name ((enum tree_code) c));
 
   length += strlen ("expected ");
   buffer = (char *) alloca (length);
@@ -9376,12 +9377,12 @@ tree_range_check_failed (const_tree node, const char *file, int line,
 
       strcpy (buffer + length, prefix);
       length += strlen (prefix);
-      strcpy (buffer + length, tree_code_name[c]);
-      length += strlen (tree_code_name[c]);
+      strcpy (buffer + length, get_tree_code_name ((enum tree_code) c));
+      length += strlen (get_tree_code_name ((enum tree_code) c));
     }
 
   internal_error ("tree check: %s, have %s in %s, at %s:%d",
-		  buffer, tree_code_name[TREE_CODE (node)],
+		  buffer, get_tree_code_name (TREE_CODE (node)),
 		  function, trim_filename (file), line);
 }
 
@@ -9397,7 +9398,7 @@ tree_not_class_check_failed (const_tree node, const enum tree_code_class cl,
     ("tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d",
      TREE_CODE_CLASS_STRING (cl),
      TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
-     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+     get_tree_code_name (TREE_CODE (node)), function, trim_filename (file), line);
 }
 
 
@@ -9408,7 +9409,7 @@ omp_clause_check_failed (const_tree node, const char *file, int line,
                          const char *function, enum omp_clause_code code)
 {
   internal_error ("tree check: expected omp_clause %s, have %s in %s, at %s:%d",
-		  omp_clause_code_name[code], tree_code_name[TREE_CODE (node)],
+		  omp_clause_code_name[code], get_tree_code_name (TREE_CODE (node)),
 		  function, trim_filename (file), line);
 }
 
@@ -9469,7 +9470,7 @@ tree_contains_struct_check_failed (const_tree node,
   internal_error
     ("tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d",
      TS_ENUM_NAME (en),
-     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+     get_tree_code_name (TREE_CODE (node)), function, trim_filename (file), line);
 }
 
 
@@ -9492,10 +9493,10 @@ void
 tree_operand_check_failed (int idx, const_tree exp, const char *file,
 			   int line, const char *function)
 {
-  int code = TREE_CODE (exp);
+  enum tree_code code = TREE_CODE (exp);
   internal_error
     ("tree check: accessed operand %d of %s with %d operands in %s, at %s:%d",
-     idx + 1, tree_code_name[code], TREE_OPERAND_LENGTH (exp),
+     idx + 1, get_tree_code_name (code), TREE_OPERAND_LENGTH (exp),
      function, trim_filename (file), line);
 }
 
@@ -12405,6 +12406,18 @@ bool
 using_eh_for_cleanups_p (void)
 {
   return using_eh_for_cleanups_flag;
+}
+
+/* Wrapper for tree_code_name to ensure that tree code is valid */
+const char *
+get_tree_code_name (enum tree_code code)
+{
+  const char *invalid = "<invalid tree code>";
+
+  if (code >= MAX_TREE_CODES)
+    return invalid;
+
+  return tree_code_name[code];
 }
 
 #include "gt-tree.h"

@@ -9656,7 +9656,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 
     default:
       internal_error ("unexpected expression %qE of kind %s", t,
-		      tree_code_name[TREE_CODE (t)]);
+		      get_tree_code_name (TREE_CODE (t)));
       *non_constant_p = true;
       break;
     }
@@ -10417,7 +10417,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       if (objc_is_property_ref (t))
 	return false;
 
-      sorry ("unexpected AST of kind %s", tree_code_name[TREE_CODE (t)]);
+      sorry ("unexpected AST of kind %s", get_tree_code_name (TREE_CODE (t)));
       gcc_unreachable();
       return false;
     }

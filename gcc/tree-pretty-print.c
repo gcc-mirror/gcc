@@ -59,7 +59,7 @@ do_niy (pretty_printer *buffer, const_tree node)
   int i, len;
 
   pp_string (buffer, "<<< Unknown tree: ");
-  pp_string (buffer, tree_code_name[(int) TREE_CODE (node)]);
+  pp_string (buffer, get_tree_code_name (TREE_CODE (node)));
 
   if (EXPR_P (node))
     {
@@ -2569,7 +2569,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
       pp_space (buffer);
-      for (str = tree_code_name [code]; *str; str++)
+      for (str = get_tree_code_name (code); *str; str++)
 	pp_character (buffer, TOUPPER (*str));
       pp_string (buffer, " < ");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);

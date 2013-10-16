@@ -4593,6 +4593,8 @@ extern bool block_may_fallthru (const_tree);
 extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);
 
+extern const char *get_tree_code_name (enum tree_code);
+
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);
 
