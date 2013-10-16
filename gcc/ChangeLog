@@ -1,3 +1,8 @@
+2013-10-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Enable FMA4
+	for AMD bdver3.
+
 2013-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/t-elfmulti (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
