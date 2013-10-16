@@ -1,3 +1,8 @@
+2013-10-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-elfmulti (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES): Add multilib for -march=v8.
+
 2013-10-15 Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/57756
