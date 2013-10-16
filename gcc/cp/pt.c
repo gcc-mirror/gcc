@@ -17007,6 +17007,72 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
   return unify_success (explain_p);
 }
 
+/* Handle unification of the domain of an array.  PARM_DOM and ARG_DOM are
+   INTEGER_TYPEs representing the TYPE_DOMAIN of ARRAY_TYPEs.  The other
+   parameters and return value are as for unify.  */
+
+static int
+unify_array_domain (tree tparms, tree targs,
+		    tree parm_dom, tree arg_dom,
+		    bool explain_p)
+{
+  tree parm_max;
+  tree arg_max;
+  bool parm_cst;
+  bool arg_cst;
+
+  /* Our representation of array types uses "N - 1" as the
+     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
+     not an integer constant.  We cannot unify arbitrarily
+     complex expressions, so we eliminate the MINUS_EXPRs
+     here.  */
+  parm_max = TYPE_MAX_VALUE (parm_dom);
+  parm_cst = TREE_CODE (parm_max) == INTEGER_CST;
+  if (!parm_cst)
+    {
+      gcc_assert (TREE_CODE (parm_max) == MINUS_EXPR);
+      parm_max = TREE_OPERAND (parm_max, 0);
+    }
+  arg_max = TYPE_MAX_VALUE (arg_dom);
+  arg_cst = TREE_CODE (arg_max) == INTEGER_CST;
+  if (!arg_cst)
+    {
+      /* The ARG_MAX may not be a simple MINUS_EXPR, if we are
+	 trying to unify the type of a variable with the type
+	 of a template parameter.  For example:
+
+	   template <unsigned int N>
+	   void f (char (&) [N]);
+	   int g();
+	   void h(int i) {
+	     char a[g(i)];
+	     f(a);
+	   }
+
+	 Here, the type of the ARG will be "int [g(i)]", and
+	 may be a SAVE_EXPR, etc.  */
+      if (TREE_CODE (arg_max) != MINUS_EXPR)
+	return unify_vla_arg (explain_p, arg_dom);
+      arg_max = TREE_OPERAND (arg_max, 0);
+    }
+
+  /* If only one of the bounds used a MINUS_EXPR, compensate
+     by adding one to the other bound.  */
+  if (parm_cst && !arg_cst)
+    parm_max = fold_build2_loc (input_location, PLUS_EXPR,
+				integer_type_node,
+				parm_max,
+				integer_one_node);
+  else if (arg_cst && !parm_cst)
+    arg_max = fold_build2_loc (input_location, PLUS_EXPR,
+			       integer_type_node,
+			       arg_max,
+			       integer_one_node);
+
+  return unify (tparms, targs, parm_max, arg_max,
+		UNIFY_ALLOW_INTEGER, explain_p);
+}
+
 /* Deduce the value of template parameters.  TPARMS is the (innermost)
    set of template parameters to a template.  TARGS is the bindings
    for those template parameters, as determined thus far; TARGS may
@@ -17092,13 +17158,17 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  && flag_deduce_init_list)
 	parm = listify (parm);
 
-      if (!is_std_init_list (parm))
+      if (!is_std_init_list (parm)
+	  && TREE_CODE (parm) != ARRAY_TYPE)
 	/* We can only deduce from an initializer list argument if the
-	   parameter is std::initializer_list; otherwise this is a
-	   non-deduced context. */
+	   parameter is std::initializer_list or an array; otherwise this
+	   is a non-deduced context. */
 	return unify_success (explain_p);
 
-      elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
+      if (TREE_CODE (parm) == ARRAY_TYPE)
+	elttype = TREE_TYPE (parm);
+      else
+	elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
 
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
 	{
@@ -17119,6 +17189,15 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
 	  RECUR_AND_CHECK_FAILURE (tparms, targs, elttype, elt, elt_strict,
 				   explain_p);
+	}
+
+      if (TREE_CODE (parm) == ARRAY_TYPE)
+	{
+	  /* Also deduce from the length of the initializer list.  */
+	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
+	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
+	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				     idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the
@@ -17494,63 +17573,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       RECUR_AND_CHECK_FAILURE (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 			       strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
       if (TYPE_DOMAIN (parm) != NULL_TREE)
-	{
-	  tree parm_max;
-	  tree arg_max;
-	  bool parm_cst;
-	  bool arg_cst;
-
-	  /* Our representation of array types uses "N - 1" as the
-	     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
-	     not an integer constant.  We cannot unify arbitrarily
-	     complex expressions, so we eliminate the MINUS_EXPRs
-	     here.  */
-	  parm_max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm));
-	  parm_cst = TREE_CODE (parm_max) == INTEGER_CST;
-	  if (!parm_cst)
-	    {
-	      gcc_assert (TREE_CODE (parm_max) == MINUS_EXPR);
-	      parm_max = TREE_OPERAND (parm_max, 0);
-	    }
-	  arg_max = TYPE_MAX_VALUE (TYPE_DOMAIN (arg));
-	  arg_cst = TREE_CODE (arg_max) == INTEGER_CST;
-	  if (!arg_cst)
-	    {
-	      /* The ARG_MAX may not be a simple MINUS_EXPR, if we are
-		 trying to unify the type of a variable with the type
-		 of a template parameter.  For example:
-
-                   template <unsigned int N>
-		   void f (char (&) [N]);
-		   int g(); 
-		   void h(int i) {
-                     char a[g(i)];
-		     f(a); 
-                   }
-
-                Here, the type of the ARG will be "int [g(i)]", and
-                may be a SAVE_EXPR, etc.  */
-	      if (TREE_CODE (arg_max) != MINUS_EXPR)
-		return unify_vla_arg (explain_p, arg);
-	      arg_max = TREE_OPERAND (arg_max, 0);
-	    }
-
-	  /* If only one of the bounds used a MINUS_EXPR, compensate
-	     by adding one to the other bound.  */
-	  if (parm_cst && !arg_cst)
-	    parm_max = fold_build2_loc (input_location, PLUS_EXPR,
-				    integer_type_node,
-				    parm_max,
-				    integer_one_node);
-	  else if (arg_cst && !parm_cst)
-	    arg_max = fold_build2_loc (input_location, PLUS_EXPR,
-				   integer_type_node,
-				   arg_max,
-				   integer_one_node);
-
-	  RECUR_AND_CHECK_FAILURE (tparms, targs, parm_max, arg_max,
-				   UNIFY_ALLOW_INTEGER, explain_p);
-	}
+	return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				   TYPE_DOMAIN (arg), explain_p);
       return unify_success (explain_p);
 
     case REAL_TYPE:
