@@ -19,16 +19,16 @@
 	(*mov<mode>_aarch64): Fix output template for DUP (element) Scalar.
 
 2013-10-16  Andrew MacLeod  <amacleod@redhat.com>
-	
+
 	PR tree-optimization/58697
-	* cfgloop.c (get_estimated_loop_iterations_int): Rename from 
+	* cfgloop.c (get_estimated_loop_iterations_int): Rename from
 	estimated_loop_iterations_int.
 	(max_stmt_executions_int): Call get_max_loop_iterations_int.
-	(get_max_loop_iterations_int): New.  HWINT version of 
+	(get_max_loop_iterations_int): New.  HWINT version of
 	get_max_loop_iterations.
 	* cfgloop.h: Add prototypes.
 	* loop-iv.c (find_simple_exit): call get_estimated_loop_iterations_int.
-	* loop-unroll.c (decide_peel_once_rolling): Call 
+	* loop-unroll.c (decide_peel_once_rolling): Call
 	get_estimated_loop_iterations_int.
 	* tree-ssa-loop-niter.c (estimated_loop_iterations_int): Add back.
 	* tree-ssa-loop-niter.h: Tweak prototypes.
@@ -304,8 +304,8 @@
 
 2013-10-15  Cong Hou  <congh@google.com>
 
-	* tree-vect-loop.c (vect_is_simple_reduction_1): Relax the 
-	requirement of the reduction pattern so that one operand of the 
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Relax the
+	requirement of the reduction pattern so that one operand of the
 	reduction operation can come from outside of the loop.
 
 2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
@@ -2946,7 +2946,7 @@
 	next_readonly_imm_use, has_zero_uses, has_single_use, single_imm_use,
 	num_imm_uses): Move to ssa-iterators.h.
 	(get_use_from_ptr, get_def_from_ptr): Move to tree-ssa-operands.h
-	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Move to 
+	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Move to
 	tree-phinodes.h.
 	(op_iter_done, op_iter_next_def, op_iter_next_tree,
 	clear_and_done_ssa_iter, op_iter_init, op_iter_init_use,
