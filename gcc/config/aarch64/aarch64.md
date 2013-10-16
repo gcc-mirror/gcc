@@ -789,7 +789,7 @@
      case 8:
        return "dup\t%0.<Vallxd>, %w1";
      case 9:
-       return "dup\t%0, %1.<v>[0]";
+       return "dup\t%<Vetype>0, %1.<v>[0]";
      default:
        gcc_unreachable ();
      }
