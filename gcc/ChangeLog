@@ -1,3 +1,68 @@
+2013-10-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+        Backport from mainline
+        2013-10-16  Ganesh Gopalasubramanian
+                    <Ganesh.Gopalasubramanian@amd.com>
+
+        * config/i386/i386.c (ix86_option_override_internal): Enable FMA4
+        for AMD bdver3.
+
+2013-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 4.8.3.
+	* DEV-PHASE: Set to prerelease.
+
+2013-10-16  Release Manager
+
+	* GCC 4.8.2 released.
+
+2013-10-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline.
+	2013-10-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vtbx<1,3>_<psu>8): Fix register constriants.
+
+2013-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58670
+	* stmt.c (expand_asm_operands): Add FALLTHRU_BB argument,
+	if any labels are in FALLTHRU_BB, use a special label emitted
+	immediately after the asm goto insn rather than label_rtx
+	of the LABEL_DECL.
+	(expand_asm_stmt): Adjust caller.
+	* cfgrtl.c (commit_one_edge_insertion): Force splitting of
+	edge if the last insn in predecessor is a jump with single successor,
+	but it isn't simplejump_p.
+
+2013-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2013-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58539
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Honor
+	the fact that debug statements are not taking part in loop-closed
+	SSA construction.
+
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_register_info): Make the call-saved FPR
+	loop to work also for 31bit ABI.
+	Save the stack pointer for frame_size > 0.
+
+2013-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("tbegin", "tbegin_nofloat", "tbegin_retry")
+	("tbegin_retry_nofloat", "tend", "tabort", "tx_assist"): Remove
+	constraint letters from expanders.
+	("tbegin_retry", "tbegin_retry_nofloat"): Change predicate of the
+	retry count to general_operand.
+	("tabort"): Give operand 0 a mode.
+	("tabort_1"): Add mode and constraint letter for operand 0.
+	* doc/extend.texi: Fix protoype of __builtin_non_tx_store.
+
 2013-10-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	Backport from mainline.

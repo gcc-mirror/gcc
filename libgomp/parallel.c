@@ -115,19 +115,22 @@ GOMP_parallel_end (void)
     {
       struct gomp_thread *thr = gomp_thread ();
       struct gomp_team *team = thr->ts.team;
-      if (team && team->nthreads > 1)
+      unsigned int nthreads = team ? team->nthreads : 1;
+      gomp_team_end ();
+      if (nthreads > 1)
 	{
 #ifdef HAVE_SYNC_BUILTINS
 	  __sync_fetch_and_add (&gomp_remaining_threads_count,
-				1UL - team->nthreads);
+				nthreads - 1);
 #else
 	  gomp_mutex_lock (&gomp_remaining_threads_lock);
-	  gomp_remaining_threads_count -= team->nthreads - 1;
+	  gomp_remaining_threads_count += nthreads - 1;
 	  gomp_mutex_unlock (&gomp_remaining_threads_lock);
 #endif
 	}
     }
-  gomp_team_end ();
+  else
+    gomp_team_end ();
 }
 
 

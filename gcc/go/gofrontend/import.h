@@ -149,6 +149,11 @@ class Import
   location() const
   { return this->location_; }
 
+  // Return the package we are importing.
+  Package*
+  package() const
+  { return this->package_; }
+
   // Return the next character.
   int
   peek_char()

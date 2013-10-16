@@ -42,6 +42,8 @@ enum Runtime_function_type
   RFT_RUNE,
   // Go type float64, C type double.
   RFT_FLOAT64,
+  // Go type complex64, C type __complex float.
+  RFT_COMPLEX64,
   // Go type complex128, C type __complex double.
   RFT_COMPLEX128,
   // Go type string, C type struct __go_string.
@@ -124,6 +126,10 @@ runtime_function_type(Runtime_function_type bft)
 
 	case RFT_FLOAT64:
 	  t = Type::lookup_float_type("float64");
+	  break;
+
+	case RFT_COMPLEX64:
+	  t = Type::lookup_complex_type("complex64");
 	  break;
 
 	case RFT_COMPLEX128:
@@ -216,6 +222,7 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_UINTPTR:
     case RFT_RUNE:
     case RFT_FLOAT64:
+    case RFT_COMPLEX64:
     case RFT_COMPLEX128:
     case RFT_STRING:
     case RFT_POINTER:
