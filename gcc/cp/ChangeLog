@@ -1,3 +1,9 @@
+2013-10-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57850
+	* decl2.c (dump_tu): Split out from...
+	(cp_write_global_declarations): ...here.  Call it in PCH mode.
+
 2013-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (tsubst): Fix typo in last commit.
