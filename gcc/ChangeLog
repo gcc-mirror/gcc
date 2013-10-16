@@ -1,3 +1,9 @@
+2013-10-16  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/arm/arm.opt (mlra): New option.
+	* config/arm/arm.c (arm_lra_p): New function.
+	(TARGET_LRA_P): Define.
+
 2013-10-16  Paulo Matos  <pmatos@broadcom.com>
 
 	* tree-core.h (tree_code_name): Remove.
