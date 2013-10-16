@@ -1,3 +1,7 @@
+2013-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst): Fix typo in last commit.
+
 2013-10-16  Paulo Matos  <pmatos@broadcom.com>
 
 	* error.c (code_to_string): Use new wrapper get_tree_code_name.
