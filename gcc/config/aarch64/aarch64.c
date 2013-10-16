@@ -3904,7 +3904,7 @@ aarch64_regno_regclass (unsigned regno)
 
   if (regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)
-    return CORE_REGS;
+    return POINTER_REGS;
 
   if (FP_REGNUM_P (regno))
     return FP_LO_REGNUM_P (regno) ?  FP_LO_REGS : FP_REGS;

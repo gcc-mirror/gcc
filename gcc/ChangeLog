@@ -1,3 +1,8 @@
+2013-10-16  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_regno_regclass): Classify
+	FRAME_POINTER_REGNUM and ARG_POINTER_REGNUM as POINTER_REGS.
+
 2013-10-16  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm.opt (mlra): New option.
