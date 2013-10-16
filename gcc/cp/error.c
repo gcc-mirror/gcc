@@ -1595,13 +1595,16 @@ dump_exception_spec (cxx_pretty_printer *pp, tree t, int flags)
   if (t && TREE_PURPOSE (t))
     {
       pp_cxx_ws_string (pp, "noexcept");
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_paren (pp);
-      if (DEFERRED_NOEXCEPT_SPEC_P (t))
-	pp_cxx_ws_string (pp, "<uninstantiated>");
-      else
-	dump_expr (pp, TREE_PURPOSE (t), flags);
-      pp_cxx_right_paren (pp);
+      if (!integer_onep (TREE_PURPOSE (t)))
+	{
+	  pp_cxx_whitespace (pp);
+	  pp_cxx_left_paren (pp);
+	  if (DEFERRED_NOEXCEPT_SPEC_P (t))
+	    pp_cxx_ws_string (pp, "<uninstantiated>");
+	  else
+	    dump_expr (pp, TREE_PURPOSE (t), flags);
+	  pp_cxx_right_paren (pp);
+	}
     }
   else if (t)
     {
