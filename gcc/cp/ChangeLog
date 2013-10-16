@@ -1,5 +1,8 @@
 2013-10-16  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (apply_late_template_attributes): Use
+	attribute_takes_identifier_p.
+
 	* error.c (dump_exception_spec): Print "noexcept" rather than
 	"noexcept (true)".
 
