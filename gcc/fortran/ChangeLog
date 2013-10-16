@@ -1,5 +1,11 @@
 2013-10-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/58652
+	* interface.c (compare_parameter): Accept passing CLASS(*)
+	to CLASS(*).
+
+2013-10-16  Tobias Burnus  <burnus@net-b.de>
+
 	* intrinsic.texi (OpenMP Modules): Update to OpenMPv4.
 	Document omp_proc_bind_kind.
 
