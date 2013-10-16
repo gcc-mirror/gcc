@@ -1,3 +1,7 @@
+2013-10-16  Release Manager
+
+	* GCC 4.8.2 released.
+
 2013-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/shared_ptr/cons/58659.cc: Use VERIFY instead of
