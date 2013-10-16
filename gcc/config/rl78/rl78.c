@@ -3050,7 +3050,8 @@ rl78_alloc_address_registers_macax (rtx insn)
 	      OP (op) = transcode_memory_rtx (OP (op), HL, insn);
 	      if (op == 2
 		  && MEM_P (OP (op))
-		  && (REGNO (XEXP (OP (op), 0)) == SP_REG
+		  && ((GET_CODE (XEXP (OP (op), 0)) == REG
+		       && REGNO (XEXP (OP (op), 0)) == SP_REG)
 		      || (GET_CODE (XEXP (OP (op), 0)) == PLUS
 			  && REGNO (XEXP (XEXP (OP (op), 0), 0)) == SP_REG)))
 		{
@@ -3140,7 +3141,8 @@ rl78_alloc_physical_registers (void)
       if (GET_CODE (pattern) != SET
 	  && GET_CODE (pattern) != CALL)
 	continue;
-      if (GET_CODE (SET_SRC (pattern)) == ASM_OPERANDS)
+      if (GET_CODE (pattern) == SET
+	  && GET_CODE (SET_SRC (pattern)) == ASM_OPERANDS)
 	continue;
 
       valloc_method = get_attr_valloc (insn);
