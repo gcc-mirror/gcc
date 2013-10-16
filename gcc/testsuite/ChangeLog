@@ -1,3 +1,7 @@
+2013-10-16  Paulo Matos  <pmatos@broadcom.com>
+
+	* gcc.dg/tree-prof/tree-prof.exp: Fix comment.
+
 2013-10-15 Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/57756
