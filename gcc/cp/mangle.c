@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
   fprintf (stderr, "  %-24s: %-24s\n", (FN), (INPUT))
 # define MANGLE_TRACE_TREE(FN, NODE) \
   fprintf (stderr, "  %-24s: %-24s (%p)\n", \
-	   (FN), tree_code_name[TREE_CODE (NODE)], (void *) (NODE))
+	   (FN), get_tree_code_name (TREE_CODE (NODE)), (void *) (NODE))
 #else
 # define MANGLE_TRACE(FN, INPUT)
 # define MANGLE_TRACE_TREE(FN, NODE)
@@ -329,7 +329,7 @@ dump_substitution_candidates (void)
 	   || CP_TYPE_CONST_P (el)))
 	fprintf (stderr, "CV-");
       fprintf (stderr, "%s (%s at %p)\n",
-	       name, tree_code_name[TREE_CODE (el)], (void *) el);
+	       name, get_tree_code_name (TREE_CODE (el)), (void *) el);
     }
 }
 
@@ -379,13 +379,13 @@ add_substitution (tree node)
 
   if (DEBUG_MANGLE)
     fprintf (stderr, "  ++ add_substitution (%s at %10p)\n",
-	     tree_code_name[TREE_CODE (node)], (void *) node);
+	     get_tree_code_name (TREE_CODE (node)), (void *) node);
 
   /* Get the canonicalized substitution candidate for NODE.  */
   c = canonicalize_for_substitution (node);
   if (DEBUG_MANGLE && c != node)
     fprintf (stderr, "  ++ using candidate (%s at %10p)\n",
-	     tree_code_name[TREE_CODE (node)], (void *) node);
+	     get_tree_code_name (TREE_CODE (node)), (void *) node);
   node = c;
 
 #if ENABLE_CHECKING
@@ -513,7 +513,7 @@ find_substitution (tree node)
 
   if (DEBUG_MANGLE)
     fprintf (stderr, "  ++ find_substitution (%s at %p)\n",
-	     tree_code_name[TREE_CODE (node)], (void *) node);
+	     get_tree_code_name (TREE_CODE (node)), (void *) node);
 
   /* Obtain the canonicalized substitution representation for NODE.
      This is what we'll compare against.  */

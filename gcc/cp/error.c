@@ -2852,7 +2852,7 @@ fndecl_to_string (tree fndecl, int verbose)
 static const char *
 code_to_string (enum tree_code c)
 {
-  return tree_code_name [c];
+  return get_tree_code_name (c);
 }
 
 const char *

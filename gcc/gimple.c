@@ -1200,10 +1200,10 @@ gimple_check_failed (const_gimple gs, const char *file, int line,
 {
   internal_error ("gimple check: expected %s(%s), have %s(%s) in %s, at %s:%d",
       		  gimple_code_name[code],
-		  tree_code_name[subcode],
+		  get_tree_code_name (subcode),
 		  gimple_code_name[gimple_code (gs)],
 		  gs->gsbase.subcode > 0
-		    ? tree_code_name[gs->gsbase.subcode]
+		    ? get_tree_code_name ((enum tree_code) gs->gsbase.subcode)
 		    : "",
 		  function, trim_filename (file), line);
 }

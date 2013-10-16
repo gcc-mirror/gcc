@@ -312,7 +312,7 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       else
 	{
 	  pp_left_bracket (buffer);
-	  pp_string (buffer, tree_code_name [rhs_code]);
+	  pp_string (buffer, get_tree_code_name (rhs_code));
 	  pp_string (buffer, "] ");
 	}
 
@@ -351,7 +351,7 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
-      for (p = tree_code_name [(int) code]; *p; p++)
+      for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -397,7 +397,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     {
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
-      for (p = tree_code_name [(int) code]; *p; p++)
+      for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -495,7 +495,7 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 	}
 
       dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T, %T>", gs,
-                       tree_code_name[gimple_assign_rhs_code (gs)],
+		       get_tree_code_name (gimple_assign_rhs_code (gs)),
                        gimple_assign_lhs (gs), arg1, arg2, arg3);
     }
   else
@@ -790,9 +790,9 @@ dump_gimple_cond (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T, %T>", gs,
-                   tree_code_name [gimple_cond_code (gs)],
-                   gimple_cond_lhs (gs), gimple_cond_rhs (gs),
-                   gimple_cond_true_label (gs), gimple_cond_false_label (gs));
+		     get_tree_code_name (gimple_cond_code (gs)),
+		     gimple_cond_lhs (gs), gimple_cond_rhs (gs),
+		     gimple_cond_true_label (gs), gimple_cond_false_label (gs));
   else
     {
       if (!(flags & TDF_RHS_ONLY))
@@ -1113,7 +1113,7 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 			 gimple_omp_for_index (gs, i),
 			 gimple_omp_for_initial (gs, i),
 			 gimple_omp_for_final (gs, i),
-			 tree_code_name[gimple_omp_for_cond (gs, i)],
+			 get_tree_code_name (gimple_omp_for_cond (gs, i)),
 			 gimple_omp_for_incr (gs, i));
       dump_gimple_fmt (buffer, spc, flags, "PRE_BODY <%S>%->",
 		       gimple_omp_for_pre_body (gs));

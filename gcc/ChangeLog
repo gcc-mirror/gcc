@@ -1,3 +1,34 @@
+2013-10-16  Paulo Matos  <pmatos@broadcom.com>
+
+	* tree-core.h (tree_code_name): Remove.
+	* tree.h (get_tree_code_name): New prototype.
+	* tree.c (tree_code_name): Make static.
+	(get_tree_code_name): New function.
+	(dump_tree_statistics, tree_check_failed, tree_not_check_failed,
+	tree_class_check_failed, tree_range_check_failed,
+	tree_not_class_check_failed, omp_clause_check_failed,
+	tree_contains_struct_check_failed, tree_operand_check_failed): Use new
+	wrapper get_tree_code_name instead of calling tree_code_name directly.
+	* tree-vrp.c (dump_asserts_for): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-pretty-print.c (do_niy, dump_generic_node): Likewise.
+	* tree-pretty-print.h (pp_unsupported_tree): Likewise.
+	* lto-streamer-out.c (lto_write_tree, DFS_write_tree): Likewise.
+	* tree-ssa-dom.c (print_expr_hash_elt): Likewise.
+	* gimple-pretty-print.c (dump_unary_rhs, dump_binary_rhs,
+	dump_ternary_rhs, dump_gimple_assign, dump_gimple_cond,
+	dump_gimple_omp_for): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Likewise.
+	* tree-ssa-pre.c (print_pre_expr): Likewise.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* gimple.c (gimple_check_failed): Likewise.
+	* lto-streamer.c (lto_tag_name, print_lto_report): Likewise.
+	* config/frv/frv.c (frv_init_cumulative_args): Likewise.
+	* config/mep/mep.c (mep_validate_vliw): Likewise.
+	* config/iq2000/iq2000.c (init_cumulative_args): Likewise.
+	* config/rs6000/rs6000.c (init_cumulative_args): Likewise.
+
 2013-10-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Enable FMA4

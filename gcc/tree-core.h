@@ -1753,9 +1753,6 @@ extern const char *const tree_code_class_strings[];
 /* Number of argument-words in each kind of tree-node.  */
 extern const unsigned char tree_code_length[];
 
-/* Names of tree components.  */
-extern const char *const tree_code_name[];
-
 /* Vector of all alias pairs for global symbols.  */
 extern GTY(()) vec<alias_pair, va_gc> *alias_pairs;
 

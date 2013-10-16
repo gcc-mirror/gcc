@@ -3094,7 +3094,7 @@ frv_init_cumulative_args (CUMULATIVE_ARGS *cum,
 	{
 	  tree ret_type = TREE_TYPE (fntype);
 	  fprintf (stderr, " return=%s,",
-		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
+		   get_tree_code_name ((int)TREE_CODE (ret_type)));
 	}
 
       if (libname && GET_CODE (libname) == SYMBOL_REF)

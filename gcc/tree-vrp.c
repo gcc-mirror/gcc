@@ -4585,7 +4585,7 @@ dump_asserts_for (FILE *file, tree name)
 	}
       fprintf (file, "\n\tPREDICATE: ");
       print_generic_expr (file, name, 0);
-      fprintf (file, " %s ", tree_code_name[(int)loc->comp_code]);
+      fprintf (file, " %s ", get_tree_code_name (loc->comp_code));
       print_generic_expr (file, loc->val, 0);
       fprintf (file, "\n\n");
       loc = loc->next;
