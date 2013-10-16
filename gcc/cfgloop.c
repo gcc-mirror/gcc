@@ -1815,12 +1815,12 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
-/* Similar to estimated_loop_iterations, but returns the estimate only
+/* Similar to get_estimated_loop_iterations, but returns the estimate only
    if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-estimated_loop_iterations_int (struct loop *loop)
+get_estimated_loop_iterations_int (struct loop *loop)
 {
   double_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -1842,7 +1842,7 @@ estimated_loop_iterations_int (struct loop *loop)
 HOST_WIDE_INT
 max_stmt_executions_int (struct loop *loop)
 {
-  HOST_WIDE_INT nit = max_loop_iterations_int (loop);
+  HOST_WIDE_INT nit = get_max_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
 
   if (nit == -1)
@@ -1891,3 +1891,25 @@ get_max_loop_iterations (struct loop *loop, double_int *nit)
   *nit = loop->nb_iterations_upper_bound;
   return true;
 }
+
+/* Similar to get_max_loop_iterations, but returns the estimate only
+   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
+   on the number of iterations of LOOP could not be derived, returns -1.  */
+
+HOST_WIDE_INT
+get_max_loop_iterations_int (struct loop *loop)
+{
+  double_int nit;
+  HOST_WIDE_INT hwi_nit;
+
+  if (!get_max_loop_iterations (loop, &nit))
+    return -1;
+
+  if (!nit.fits_shwi ())
+    return -1;
+  hwi_nit = nit.to_shwi ();
+
+  return hwi_nit < 0 ? -1 : hwi_nit;
+}
+
+

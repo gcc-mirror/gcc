@@ -1,3 +1,18 @@
+2013-10-16  Andrew MacLeod  <amacleod@redhat.com>
+	
+	PR tree-optimization/58697
+	* cfgloop.c (get_estimated_loop_iterations_int): Rename from 
+	estimated_loop_iterations_int.
+	(max_stmt_executions_int): Call get_max_loop_iterations_int.
+	(get_max_loop_iterations_int): New.  HWINT version of 
+	get_max_loop_iterations.
+	* cfgloop.h: Add prototypes.
+	* loop-iv.c (find_simple_exit): call get_estimated_loop_iterations_int.
+	* loop-unroll.c (decide_peel_once_rolling): Call 
+	get_estimated_loop_iterations_int.
+	* tree-ssa-loop-niter.c (estimated_loop_iterations_int): Add back.
+	* tree-ssa-loop-niter.h: Tweak prototypes.
+
 2013-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype-parse.c (struct_field_seq): Ignore access-control

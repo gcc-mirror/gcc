@@ -740,8 +740,8 @@ loop_outermost (struct loop *loop)
 }
 
 extern void record_niter_bound (struct loop *, double_int, bool, bool);
-extern HOST_WIDE_INT estimated_loop_iterations_int (struct loop *);
-extern HOST_WIDE_INT max_loop_iterations_int (struct loop *);
+extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
+extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
 extern bool get_estimated_loop_iterations (struct loop *loop, double_int *nit);
 extern bool get_max_loop_iterations (struct loop *loop, double_int *nit);
 

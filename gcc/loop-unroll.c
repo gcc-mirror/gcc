@@ -469,7 +469,7 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
       || desc->infinite
       || !desc->const_iter
       || (desc->niter != 0
-	  && max_loop_iterations_int (loop) != 0))
+	  && get_max_loop_iterations_int (loop) != 0))
     {
       if (dump_file)
 	fprintf (dump_file,
