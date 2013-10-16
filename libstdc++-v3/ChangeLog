@@ -1,3 +1,10 @@
+2013-10-16  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):
+	Add initialization for _M_has_m1.
+	* include/bits/regex.tcc (regex_token_iterator<>::operator=): Add return
+	statment.
+
 2013-10-15  Diego Novillo  <dnovillo@google.com>
 
 	* testsuite/20_util/exchange/1.cc: Add missing function
