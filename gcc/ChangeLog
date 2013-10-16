@@ -1,3 +1,8 @@
+2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_concat_<mode>): Adjust output for LE.
+	(vsx_concat_v2sf): Likewise.
+
 2013-10-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md
