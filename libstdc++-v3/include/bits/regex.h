@@ -2514,7 +2514,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
        * iterator of the same type.
        */
       regex_token_iterator()
-      : _M_position(), _M_result(nullptr), _M_suffix(), _M_n(0), _M_subs()
+      : _M_position(), _M_result(nullptr), _M_suffix(), _M_n(0), _M_subs(),
+      _M_has_m1(false)
       { }
 
       /**

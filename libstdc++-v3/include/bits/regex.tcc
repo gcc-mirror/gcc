@@ -589,6 +589,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       _M_has_m1 = __rhs._M_has_m1;
       if (__rhs._M_result == &__rhs._M_suffix)
 	_M_result = &_M_suffix;
+      return *this;
     }
 
   template<typename _Bi_iter,
