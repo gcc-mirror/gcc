@@ -1,3 +1,8 @@
+2013-10-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md
+	(*mov<mode>_aarch64): Fix output template for DUP (element) Scalar.
+
 2013-10-16  Andrew MacLeod  <amacleod@redhat.com>
 	
 	PR tree-optimization/58697
