@@ -1,3 +1,16 @@
+2013-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/58191
+	* include/debug/macros.h (__glibcxx_check_partitioned_lower): Add
+	__gnu_debug::__base calls on iterators passed to internal debug
+	check.
+	(__glibcxx_check_partitioned_lower_pred): Likewise.
+	(__glibcxx_check_partitioned_upper): Likewise.
+	(__glibcxx_check_partitioned_upper_pred): Likewise.
+	* include/debug/functions.h (__check_partitioned_lower):
+	Remove code to detect safe iterators.
+	(__check_partitioned_upper): Likewise.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
