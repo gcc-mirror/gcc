@@ -3320,7 +3320,8 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), descriptor_(NULL), fndecl_(NULL), defer_stack_(NULL),
     is_sink_(false), results_are_named_(false), nointerface_(false),
-    calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
+    is_unnamed_type_stub_method_(false), calls_recover_(false),
+    is_recover_thunk_(false), has_recover_thunk_(false),
     in_unique_section_(false)
 {
 }
@@ -3817,6 +3818,81 @@ Function::import_func(Import* imp, std::string* pname,
     }
   imp->require_c_string(";\n");
   *presults = results;
+}
+
+// Get the backend representation.
+
+Bfunction*
+Function::get_or_make_decl(Gogo* gogo, Named_object* no)
+{
+  if (this->fndecl_ == NULL)
+    {
+      std::string asm_name;
+      bool is_visible = false;
+      if (no->package() != NULL)
+        ;
+      else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
+        ;
+      else if (Gogo::unpack_hidden_name(no->name()) == "init"
+               && !this->type_->is_method())
+        ;
+      else if (Gogo::unpack_hidden_name(no->name()) == "main"
+               && gogo->is_main_package())
+        is_visible = true;
+      // Methods have to be public even if they are hidden because
+      // they can be pulled into type descriptors when using
+      // anonymous fields.
+      else if (!Gogo::is_hidden_name(no->name())
+               || this->type_->is_method())
+        {
+	  if (!this->is_unnamed_type_stub_method_)
+	    is_visible = true;
+          std::string pkgpath = gogo->pkgpath_symbol();
+          if (this->type_->is_method()
+              && Gogo::is_hidden_name(no->name())
+              && Gogo::hidden_name_pkgpath(no->name()) != gogo->pkgpath())
+            {
+              // This is a method we created for an unexported
+              // method of an imported embedded type.  We need to
+              // use the pkgpath of the imported package to avoid
+              // a possible name collision.  See bug478 for a test
+              // case.
+              pkgpath = Gogo::hidden_name_pkgpath(no->name());
+              pkgpath = Gogo::pkgpath_for_symbol(pkgpath);
+            }
+
+          asm_name = pkgpath;
+          asm_name.append(1, '.');
+          asm_name.append(Gogo::unpack_hidden_name(no->name()));
+          if (this->type_->is_method())
+            {
+              asm_name.append(1, '.');
+              Type* rtype = this->type_->receiver()->type();
+              asm_name.append(rtype->mangled_name(gogo));
+            }
+        }
+
+      // If a function calls the predeclared recover function, we
+      // can't inline it, because recover behaves differently in a
+      // function passed directly to defer.  If this is a recover
+      // thunk that we built to test whether a function can be
+      // recovered, we can't inline it, because that will mess up
+      // our return address comparison.
+      bool is_inlinable = !(this->calls_recover_ || this->is_recover_thunk_);
+
+      // If this is a thunk created to call a function which calls
+      // the predeclared recover function, we need to disable
+      // stack splitting for the thunk.
+      bool disable_split_stack = this->is_recover_thunk_;
+
+      Btype* functype = this->type_->get_backend_fntype(gogo);
+      this->fndecl_ =
+          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
+                                    is_visible, false, is_inlinable,
+                                    disable_split_stack,
+                                    this->in_unique_section_, this->location());
+    }
+  return this->fndecl_;
 }
 
 // Class Block.
@@ -5108,6 +5184,75 @@ Named_object::get_backend_variable(Gogo* gogo, Named_object* function)
 							  this->name_);
   else
     go_unreachable();
+}
+
+
+// Return the external identifier for this object.
+
+std::string
+Named_object::get_id(Gogo* gogo)
+{
+  go_assert(!this->is_variable() && !this->is_result_variable());
+  std::string decl_name;
+  if (this->is_function_declaration()
+      && !this->func_declaration_value()->asm_name().empty())
+    decl_name = this->func_declaration_value()->asm_name();
+  else if (this->is_type()
+	   && Linemap::is_predeclared_location(this->type_value()->location()))
+    {
+      // We don't need the package name for builtin types.
+      decl_name = Gogo::unpack_hidden_name(this->name_);
+    }
+  else
+    {
+      std::string package_name;
+      if (this->package_ == NULL)
+	package_name = gogo->package_name();
+      else
+	package_name = this->package_->package_name();
+
+      // Note that this will be misleading if this is an unexported
+      // method generated for an embedded imported type.  In that case
+      // the unexported method should have the package name of the
+      // package from which it is imported, but we are going to give
+      // it our package name.  Fixing this would require knowing the
+      // package name, but we only know the package path.  It might be
+      // better to use package paths here anyhow.  This doesn't affect
+      // the assembler code, because we always set that name in
+      // Function::get_or_make_decl anyhow.  FIXME.
+
+      decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
+
+      Function_type* fntype;
+      if (this->is_function())
+	fntype = this->func_value()->type();
+      else if (this->is_function_declaration())
+	fntype = this->func_declaration_value()->type();
+      else
+	fntype = NULL;
+      if (fntype != NULL && fntype->is_method())
+	{
+	  decl_name.push_back('.');
+	  decl_name.append(fntype->receiver()->type()->mangled_name(gogo));
+	}
+    }
+  if (this->is_type())
+    {
+      unsigned int index;
+      const Named_object* in_function = this->type_value()->in_function(&index);
+      if (in_function != NULL)
+	{
+	  decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      decl_name += '$';
+	      decl_name += buf;
+	    }
+	}
+    }
+  return decl_name;
 }
 
 // Class Bindings.

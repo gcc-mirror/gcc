@@ -1219,7 +1219,7 @@ Func_expression::do_type()
 
 // Get the tree for the code of a function expression.
 
-tree
+Bexpression*
 Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
 {
   Function_type* fntype;
@@ -1237,25 +1237,18 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
       error_at(loc,
 	       "invalid use of special builtin function %qs; must be called",
 	       no->message_name().c_str());
-      return error_mark_node;
+      return gogo->backend()->error_expression();
     }
 
-  tree id = no->get_id(gogo);
-  if (id == error_mark_node)
-    return error_mark_node;
-
-  tree fndecl;
+  Bfunction* fndecl;
   if (no->is_function())
-    fndecl = no->func_value()->get_or_make_decl(gogo, no, id);
+    fndecl = no->func_value()->get_or_make_decl(gogo, no);
   else if (no->is_function_declaration())
-    fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no, id);
+    fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no);
   else
     go_unreachable();
 
-  if (fndecl == error_mark_node)
-    return error_mark_node;
-
-  return build_fold_addr_expr_loc(loc.gcc_location(), fndecl);
+  return gogo->backend()->function_code_expression(fndecl, loc);
 }
 
 // Get the tree for a function expression.  This is used when we take
@@ -1492,8 +1485,10 @@ class Func_code_reference_expression : public Expression
 tree
 Func_code_reference_expression::do_get_tree(Translate_context* context)
 {
-  return Func_expression::get_code_pointer(context->gogo(), this->function_,
-					   this->location());
+  Bexpression* ret =
+      Func_expression::get_code_pointer(context->gogo(), this->function_,
+                                        this->location());
+  return expr_to_tree(ret);
 }
 
 // Make a reference to the code of a function.
@@ -3055,8 +3050,7 @@ class Type_conversion_expression : public Expression
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
-  do_is_constant() const
-  { return this->expr_->is_constant(); }
+  do_is_constant() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -3196,6 +3190,27 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
     }
 
   return this;
+}
+
+// Return whether a type conversion is a constant.
+
+bool
+Type_conversion_expression::do_is_constant() const
+{
+  if (!this->expr_->is_constant())
+    return false;
+
+  // A conversion to a type that may not be used as a constant is not
+  // a constant.  For example, []byte(nil).
+  Type* type = this->type_;
+  if (type->integer_type() == NULL
+      && type->float_type() == NULL
+      && type->complex_type() == NULL
+      && !type->is_boolean_type()
+      && !type->is_string_type())
+    return false;
+
+  return true;
 }
 
 // Return the constant numeric value if there is one.
@@ -5586,6 +5601,15 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.type = NULL;
     }
 
+  if (this->op_ == OPERATOR_ANDAND || this->op_ == OPERATOR_OROR)
+    {
+      // For a logical operation, the context does not determine the
+      // types of the operands.  The operands must be some boolean
+      // type but if the context has a boolean type they do not
+      // inherit it.  See http://golang.org/issue/3924.
+      subcontext.type = NULL;
+    }
+
   // Set the context for the left hand operand.
   if (is_shift_op)
     {
@@ -5965,6 +5989,43 @@ Binary_expression::do_get_tree(Translate_context* context)
 				left,
 				string_type,
 				right);
+    }
+
+  // For complex division Go wants slightly different results than the
+  // GCC library provides, so we have our own runtime routine.
+  if (this->op_ == OPERATOR_DIV && this->left_->type()->complex_type() != NULL)
+    {
+      const char *name;
+      tree *pdecl;
+      Type* ctype;
+      static tree complex64_div_decl;
+      static tree complex128_div_decl;
+      switch (this->left_->type()->complex_type()->bits())
+	{
+	case 64:
+	  name = "__go_complex64_div";
+	  pdecl = &complex64_div_decl;
+	  ctype = Type::lookup_complex_type("complex64");
+	  break;
+	case 128:
+	  name = "__go_complex128_div";
+	  pdecl = &complex128_div_decl;
+	  ctype = Type::lookup_complex_type("complex128");
+	  break;
+	default:
+	  go_unreachable();
+	}
+      Btype* cbtype = ctype->get_backend(gogo);
+      tree ctype_tree = type_to_tree(cbtype);
+      return Gogo::call_builtin(pdecl,
+				this->location(),
+				name,
+				2,
+				ctype_tree,
+				ctype_tree,
+				fold_convert_loc(gccloc, ctype_tree, left),
+				type,
+				fold_convert_loc(gccloc, ctype_tree, right));
     }
 
   tree compute_type = excess_precision_type(type);
@@ -7191,6 +7252,15 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
   if (this->code_ == BUILTIN_OFFSETOF)
     {
       Expression* arg = this->one_arg();
+
+      if (arg->bound_method_expression() != NULL
+	  || arg->interface_field_reference_expression() != NULL)
+	{
+	  this->report_error(_("invalid use of method value as argument "
+			       "of Offsetof"));
+	  return this;
+	}
+
       Field_reference_expression* farg = arg->field_reference_expression();
       while (farg != NULL)
 	{
@@ -7200,7 +7270,8 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  // it must not be reached through pointer indirections.
 	  if (farg->expr()->deref() != farg->expr())
 	    {
-	      this->report_error(_("argument of Offsetof implies indirection of an embedded field"));
+	      this->report_error(_("argument of Offsetof implies "
+				   "indirection of an embedded field"));
 	      return this;
 	    }
 	  // Go up until we reach the original base.
@@ -7476,7 +7547,7 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
       switch (nc.to_unsigned_long(&v))
 	{
 	case Numeric_constant::NC_UL_VALID:
-	  return true;
+	  break;
 	case Numeric_constant::NC_UL_NOTINT:
 	  error_at(e->location(), "non-integer %s argument to make",
 		   is_length ? "len" : "cap");
@@ -7488,8 +7559,23 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 	case Numeric_constant::NC_UL_BIG:
 	  // We don't want to give a compile-time error for a 64-bit
 	  // value on a 32-bit target.
-	  return true;
+	  break;
 	}
+
+      mpz_t val;
+      if (!nc.to_int(&val))
+	go_unreachable();
+      int bits = mpz_sizeinbase(val, 2);
+      mpz_clear(val);
+      Type* int_type = Type::lookup_integer_type("int");
+      if (bits >= int_type->integer_type()->bits())
+	{
+	  error_at(e->location(), "%s argument too large for make",
+		   is_length ? "len" : "cap");
+	  return false;
+	}
+
+      return true;
     }
 
   if (e->type()->integer_type() != NULL)
@@ -7595,6 +7681,8 @@ Find_call_expression::expression(Expression** pexpr)
 bool
 Builtin_call_expression::do_is_constant() const
 {
+  if (this->is_error_expression())
+    return true;
   switch (this->code_)
     {
     case BUILTIN_LEN:
@@ -9744,14 +9832,8 @@ Call_expression::do_get_tree(Translate_context* context)
     }
 
   tree fntype_tree = type_to_tree(fntype->get_backend(gogo));
-  if (fntype_tree == error_mark_node)
-    return error_mark_node;
-  go_assert(POINTER_TYPE_P(fntype_tree));
-  if (TREE_TYPE(fntype_tree) == error_mark_node)
-    return error_mark_node;
-  go_assert(TREE_CODE(TREE_TYPE(fntype_tree)) == RECORD_TYPE);
-  tree fnfield_type = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(fntype_tree)));
-  if (fnfield_type == error_mark_node)
+  tree fnfield_type = type_to_tree(fntype->get_backend_fntype(gogo));
+  if (fntype_tree == error_mark_node || fnfield_type == error_mark_node)
     return error_mark_node;
   go_assert(FUNCTION_POINTER_TYPE_P(fnfield_type));
   tree rettype = TREE_TYPE(TREE_TYPE(fnfield_type));
@@ -9763,7 +9845,7 @@ Call_expression::do_get_tree(Translate_context* context)
   if (func != NULL)
     {
       Named_object* no = func->named_object();
-      fn = Func_expression::get_code_pointer(gogo, no, location);
+      fn = expr_to_tree(Func_expression::get_code_pointer(gogo, no, location));
       if (!has_closure)
 	closure_tree = NULL_TREE;
       else
@@ -10817,11 +10899,20 @@ String_index_expression::do_determine_type(const Type_context*)
 void
 String_index_expression::do_check_types(Gogo*)
 {
-  if (this->start_->type()->integer_type() == NULL)
+  Numeric_constant nc;
+  unsigned long v;
+  if (this->start_->type()->integer_type() == NULL
+      && !this->start_->type()->is_error()
+      && (!this->start_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
-      && !this->end_->is_nil_expression())
+      && !this->end_->type()->is_error()
+      && !this->end_->is_nil_expression()
+      && !this->end_->is_error_expression()
+      && (!this->end_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
 
   std::string sval;

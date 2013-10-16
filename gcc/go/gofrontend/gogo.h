@@ -48,6 +48,7 @@ class Bstatement;
 class Bblock;
 class Bvariable;
 class Blabel;
+class Bfunction;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -952,6 +953,15 @@ class Function
     this->nointerface_ = true;
   }
 
+  // Record that this function is a stub method created for an unnamed
+  // type.
+  void
+  set_is_unnamed_type_stub_method()
+  {
+    go_assert(this->is_method());
+    this->is_unnamed_type_stub_method_ = true;
+  }
+
   // Add a new field to the closure variable.
   void
   add_closure_field(Named_object* var, Location loc)
@@ -1089,17 +1099,13 @@ class Function
     this->descriptor_ = descriptor;
   }
 
-  // Return the function's decl given an identifier.
-  tree
-  get_or_make_decl(Gogo*, Named_object*, tree id);
+  // Return the backend representation.
+  Bfunction*
+  get_or_make_decl(Gogo*, Named_object*);
 
   // Return the function's decl after it has been built.
   tree
-  get_decl() const
-  {
-    go_assert(this->fndecl_ != NULL);
-    return this->fndecl_;
-  }
+  get_decl() const;
 
   // Set the function decl to hold a tree of the function code.
   void
@@ -1170,7 +1176,7 @@ class Function
   // The function descriptor, if any.
   Expression* descriptor_;
   // The function decl.
-  tree fndecl_;
+  Bfunction* fndecl_;
   // The defer stack variable.  A pointer to this variable is used to
   // distinguish the defer stack for one function from another.  This
   // is NULL unless we actually need a defer stack.
@@ -1181,6 +1187,9 @@ class Function
   bool results_are_named_ : 1;
   // True if this method should not be included in the type descriptor.
   bool nointerface_ : 1;
+  // True if this function is a stub method created for an unnamed
+  // type.
+  bool is_unnamed_type_stub_method_ : 1;
   // True if this function calls the predeclared recover function.
   bool calls_recover_ : 1;
   // True if this a thunk built for a function which calls recover.
@@ -1265,9 +1274,9 @@ class Function_declaration
   has_descriptor() const
   { return this->descriptor_ != NULL; }
 
-  // Return a decl for the function given an identifier.
-  tree
-  get_or_make_decl(Gogo*, Named_object*, tree id);
+  // Return a backend representation.
+  Bfunction*
+  get_or_make_decl(Gogo*, Named_object*);
 
   // If there is a descriptor, build it into the backend
   // representation.
@@ -1290,7 +1299,7 @@ class Function_declaration
   // The function descriptor, if any.
   Expression* descriptor_;
   // The function decl if needed.
-  tree fndecl_;
+  Bfunction* fndecl_;
 };
 
 // A variable.
@@ -2181,8 +2190,8 @@ class Named_object
   Bvariable*
   get_backend_variable(Gogo*, Named_object* function);
 
-  // Return a tree for the external identifier for this object.
-  tree
+  // Return the external identifier for this object.
+  std::string
   get_id(Gogo*);
 
   // Return a tree representing this object.

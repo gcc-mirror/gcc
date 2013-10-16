@@ -195,7 +195,7 @@ libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 @LIBGO_IS_LINUX_TRUE@am__objects_5 = getncpu-linux.lo
 am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
-	go-callers.lo go-can-convert-interface.lo go-cgo.lo \
+	go-callers.lo go-can-convert-interface.lo go-cdiv.lo go-cgo.lo \
 	go-check-interface.lo go-construct-map.lo \
 	go-convert-interface.lo go-copy.lo go-defer.lo \
 	go-deferred-recover.lo go-eface-compare.lo \
@@ -757,6 +757,7 @@ runtime_files = \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-can-convert-interface.c \
+	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-check-interface.c \
 	runtime/go-construct-map.c \
@@ -2368,6 +2369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-callers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-can-convert-interface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-check-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-construct-map.Plo@am__quote@
@@ -2553,6 +2555,13 @@ go-can-convert-interface.lo: runtime/go-can-convert-interface.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-can-convert-interface.c' object='go-can-convert-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-can-convert-interface.lo `test -f 'runtime/go-can-convert-interface.c' || echo '$(srcdir)/'`runtime/go-can-convert-interface.c
+
+go-cdiv.lo: runtime/go-cdiv.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-cdiv.lo -MD -MP -MF $(DEPDIR)/go-cdiv.Tpo -c -o go-cdiv.lo `test -f 'runtime/go-cdiv.c' || echo '$(srcdir)/'`runtime/go-cdiv.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-cdiv.Tpo $(DEPDIR)/go-cdiv.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-cdiv.c' object='go-cdiv.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-cdiv.lo `test -f 'runtime/go-cdiv.c' || echo '$(srcdir)/'`runtime/go-cdiv.c
 
 go-cgo.lo: runtime/go-cgo.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-cgo.lo -MD -MP -MF $(DEPDIR)/go-cgo.Tpo -c -o go-cgo.lo `test -f 'runtime/go-cgo.c' || echo '$(srcdir)/'`runtime/go-cgo.c
