@@ -1,3 +1,12 @@
+2013-10-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/cpp/openmp-define-1.c: Move
+	dg-require-effective-target fopenmp after dg-do directive.
+	* c-c++-common/cpp/openmp-define-2.c: Likewise.
+	* gfortran.dg/openmp-define-1.f90: Likewise.
+	* gfortran.dg/openmp-define-2.f90: Likewise.
+	* gfortran.dg/openmp-define-3.f90: Likewise.
+
 2013-10-16  Paulo Matos  <pmatos@broadcom.com>
 
 	* gcc.dg/tree-prof/tree-prof.exp: Fix comment.
