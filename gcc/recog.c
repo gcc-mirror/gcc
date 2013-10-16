@@ -1198,7 +1198,8 @@ const_scalar_int_operand (rtx op, enum machine_mode mode)
 
 /* Returns 1 if OP is an operand that is a CONST_WIDE_INT of mode
    MODE.  This most likely is not as useful as
-   const_scalar_int_operand, but is here for consistancy.  */
+   const_scalar_int_operand since it does not accept CONST_INTs, but
+   is here for consistancy.  */
 int
 const_wide_int_operand (rtx op, enum machine_mode mode)
 {
