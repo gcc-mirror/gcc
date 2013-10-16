@@ -3001,9 +3001,9 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
       	  fprintf (dump_file, "\n");
 
 	  fprintf (dump_file, "  upper bound: %li\n",
-		   (long)max_loop_iterations_int (loop));
+		   (long)get_max_loop_iterations_int (loop));
 	  fprintf (dump_file, "  realistic bound: %li\n",
-		   (long)estimated_loop_iterations_int (loop));
+		   (long)get_estimated_loop_iterations_int (loop));
 	}
       else
 	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);
