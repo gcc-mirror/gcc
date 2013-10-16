@@ -872,7 +872,7 @@
 {
   rtx reg = gen_reg_rtx (V4SFmode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
   DONE;
 })
@@ -884,7 +884,7 @@
 {
   rtx reg = gen_reg_rtx (V4SFmode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
   DONE;
 })
@@ -896,7 +896,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
   DONE;
 })
@@ -908,7 +908,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
   DONE;
 })
@@ -920,7 +920,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
   DONE;
 })
@@ -932,7 +932,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
   DONE;
 })
