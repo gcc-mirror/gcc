@@ -6421,10 +6421,6 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
   /* Look for the `~'.  */
   cp_parser_require (parser, CPP_COMPL, RT_COMPL);
 
-  /* Once we see the ~, this has to be a pseudo-destructor.  */
-  if (!processing_template_decl && !cp_parser_error_occurred (parser))
-    cp_parser_commit_to_tentative_parse (parser);
-
   /* Look for the type-name again.  We are not responsible for
      checking that it matches the first type-name.  */
   *type = cp_parser_nonclass_name (parser);
