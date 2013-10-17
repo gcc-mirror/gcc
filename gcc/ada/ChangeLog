@@ -1,5 +1,15 @@
 2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Is_Matching_Input): Account
+	for the case where a state with a null refinement appears as
+	the last input of a refinement clause.
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.ads, sem_aux.adb: Minor reformatting.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb, aspects.ads, sem_prag.ads: Remove all entries
 	for Refined_Pre from the various tables.
 	* par-prag.adb: Remove the entry for Refined_Pre from the list

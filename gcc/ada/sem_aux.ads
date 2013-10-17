@@ -283,7 +283,7 @@ package Sem_Aux is
    function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Implements definition in Ada 2012 RM-7.5 (8.1/3). This differs from the
    --  following predicate in that an untagged record with immutably limited
-   --  components is NOT by itself immutably limited. This matters, eg. when
+   --  components is NOT by itself immutably limited. This matters, e.g. when
    --  checking the legality of an access to the current instance.
 
    function Is_Limited_View (Ent : Entity_Id) return Boolean;
@@ -301,7 +301,7 @@ package Sem_Aux is
    --  private type, limited interface type, task type, protected type,
    --  composite containing a limited component, or a subtype of any of
    --  these types). This older routine overlaps with the previous one, this
-   --  should be cleaned up?
+   --  should be cleaned up???
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from
