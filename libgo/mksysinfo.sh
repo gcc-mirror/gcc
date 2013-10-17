@@ -1035,6 +1035,10 @@ grep '^type _utimbuf ' gen-sysinfo.go | \
 grep '^const _LOCK_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(LOCK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
+# The PRIO constants.
+grep '^const _PRIO_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(PRIO_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
 # The GNU/Linux LINUX_REBOOT flags.
 grep '^const _LINUX_REBOOT_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(LINUX_REBOOT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
