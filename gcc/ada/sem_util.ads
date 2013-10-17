@@ -945,6 +945,16 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
+   function Is_Child_Or_Sibling
+     (Pack_1        : Entity_Id;
+      Pack_2        : Entity_Id;
+      Private_Child : Boolean) return Boolean;
+   --  Determine the following relations between two arbitrary packages:
+   --    1) One package is the parent of a child package
+   --    2) Both packages are siblings and share a common parent
+   --  If flag Private_Child is set, then the child in case 1) or both siblings
+   --  in case 2) must be private.
+
    function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
    --  First determine whether type T is an interface and then check whether
    --  it is of protected, synchronized or task kind.

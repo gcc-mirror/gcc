@@ -1802,6 +1802,13 @@ package VMS_Data is
    --   otherwise ignored. Allows style checks to be fully controlled by
    --   command line qualifiers.
 
+   S_GCC_IgnoreU : aliased constant S := "/IGNORE_UNRECOGNIZED "           &
+                                             "-gnateu";
+   --        /IGNORE_UNRECOGNIZED
+   --
+   --   Causes unrecognized style switches, validity switches, and warning
+   --   switches to be ignored rather than generating an error message.
+
    S_GCC_Immed   : aliased constant S := "/IMMEDIATE_ERRORS "              &
                                              "-gnatdO";
    --        /NOIMMEDIATE_ERRORS (D)
@@ -3706,6 +3713,7 @@ package VMS_Data is
                      S_GCC_IdentX  'Access,
                      S_GCC_IgnoreR 'Access,
                      S_GCC_IgnoreS 'Access,
+                     S_GCC_IgnoreU 'Access,
                      S_GCC_Immed   'Access,
                      S_GCC_Inline  'Access,
                      S_GCC_InlineX 'Access,

@@ -74,6 +74,7 @@ gcc -c          ^ GNAT COMPILE
 -gnateS         ^ /SCO_OUTPUT
 -gnatet         ^ /WRITE_TARGET_DEPENDENT_INFO
 -gnateT         ^ /READ_TARGET_DEPENDENT_INFO
+-gnateu         ^ /IGNORE_UNRECOGNIZED
 -gnateV         ^ /PARAMETER_VALIDITY_CHECK
 -gnateY         ^ /IGNORE_STYLE_CHECKS_PRAGMAS
 -gnatE          ^ /CHECKS=ELABORATION

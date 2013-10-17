@@ -21439,51 +21439,74 @@ package body Sem_Prag is
                   Error_Msg_NE
                     ("duplicate use of constituent &", Constit, Constit_Id);
                   return;
-               end if;
 
-               --  The related package has no hidden states, nothing to match.
-               --  This case arises when the constituents are states coming
-               --  from a private child.
+               --  A state can act as a constituent only when it is part of
+               --  another state. This relation is expressed by option Part_Of
+               --  of pragma Abstract_State.
 
-               if No (Hidden_States) then
-                  return;
+               elsif Ekind (Constit_Id) = E_Abstract_State then
+                  if not Is_Part_Of (Constit_Id, State_Id) then
+                     Error_Msg_Name_1 := Chars (State_Id);
+                     Error_Msg_NE
+                       ("state & is not a valid constituent of ancestor "
+                        & "state %", Constit, Constit_Id);
+                     return;
+
+                  --  The constituent has the proper Part_Of option, but may
+                  --  not appear in the immediate hidden state of the related
+                  --  package. This case arises when the constituent comes from
+                  --  a private child or a private sibling. Recognize these
+                  --  scenarios to avoid generating a bogus error message.
+
+                  elsif Is_Child_Or_Sibling
+                          (Pack_1        => Scope (State_Id),
+                           Pack_2        => Scope (Constit_Id),
+                           Private_Child => True)
+                  then
+                     return;
+                  end if;
                end if;
 
                --  Inspect the hidden states of the related package looking for
                --  a match.
 
-               State_Elmt := First_Elmt (Hidden_States);
-               while Present (State_Elmt) loop
+               if Present (Hidden_States) then
+                  State_Elmt := First_Elmt (Hidden_States);
+                  while Present (State_Elmt) loop
 
-                  --  A valid hidden state or variable participates in a
-                  --  refinement. Add the constituent to the list of processed
-                  --  items to aid with the detection of duplicate constituent
-                  --  use. Remove the constituent from Hidden_States to signal
-                  --  that it has already been used.
+                     --  A valid hidden state or variable acts as a constituent
 
-                  if Node (State_Elmt) = Constit_Id then
-                     Add_Item (Constit_Id, Constituents_Seen);
-                     Remove_Elmt (Hidden_States, State_Elmt);
+                     if Node (State_Elmt) = Constit_Id then
 
-                     --  Collect the constituent in the list of refinement
-                     --  items. Establish a relation between the refined state
-                     --  and its constituent.
+                        --  Add the constituent to the lis of processed items
+                        --  to aid with the detection of duplicates. Remove the
+                        --  constituent from Hidden_States to signal that it
+                        --  has already been matched.
 
-                     Append_Elmt
-                       (Constit_Id, Refinement_Constituents (State_Id));
-                     Set_Refined_State (Constit_Id, State_Id);
+                        Add_Item (Constit_Id, Constituents_Seen);
+                        Remove_Elmt (Hidden_States, State_Elmt);
 
-                     --  The state has at least one legal constituent, mark the
-                     --  start of the refinement region. The region ends when
-                     --  the body declarations end (see Analyze_Declarations).
+                        --  Collect the constituent in the list of refinement
+                        --  items. Establish a relation between the refined
+                        --  state and its constituent.
 
-                     Set_Has_Visible_Refinement (State_Id);
+                        Append_Elmt
+                          (Constit_Id, Refinement_Constituents (State_Id));
+                        Set_Refined_State (Constit_Id, State_Id);
 
-                     return;
-                  end if;
+                        --  The state has at least one legal constituent, mark
+                        --  the start of the refinement region. The region ends
+                        --  when the body declarations end (see routine
+                        --  Analyze_Declarations).
 
-                  Next_Elmt (State_Elmt);
-               end loop;
+                        Set_Has_Visible_Refinement (State_Id);
+
+                        return;
+                     end if;
+
+                     Next_Elmt (State_Elmt);
+                  end loop;
+               end if;
 
                --  If we get here, we are refining a state that is not hidden
                --  with respect to the related package.
@@ -21547,19 +21570,6 @@ package body Sem_Prag is
 
                   if Ekind_In (Constit_Id, E_Abstract_State, E_Variable) then
                      Check_Matching_Constituent (Constit_Id);
-
-                     --  A state can act as a constituent only when it is part
-                     --  of another state. This relation is expressed by option
-                     --  "Part_Of" of pragma Abstract_State.
-
-                     if Ekind (Constit_Id) = E_Abstract_State
-                       and then not Is_Part_Of (Constit_Id, State_Id)
-                     then
-                        Error_Msg_Name_1 := Chars (State_Id);
-                        Error_Msg_NE
-                          ("state & is not a valid constituent of ancestor "
-                           & "state %", Constit, Constit_Id);
-                     end if;
 
                   else
                      Error_Msg_NE
