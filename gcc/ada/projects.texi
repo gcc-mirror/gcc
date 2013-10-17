@@ -41,7 +41,7 @@ project files allow you to specify:
 @item The directory in which the compiler's output
   (@file{ALI} files, object files, tree files, etc.) is to be placed
 @item The directory in which the executable programs are to be placed
-@item Switch settings for any of the project-enabled tools;
+@item ^Switch^Switch^ settings for any of the project-enabled tools;
   you can apply these settings either globally or to individual compilation units.
 @item The source files containing the main subprogram(s) to be built
 @item The source programming language(s)
@@ -68,7 +68,7 @@ Subsystems}).
   More generally, the Project Manager lets you structure large development
   efforts into hierarchical subsystems, where build decisions are delegated
   to the subsystem level, and thus different compilation environments
-  (switch settings) used for different subsystems.
+  (^switch^switch^ settings) used for different subsystems.
 @item You can organize GNAT projects in a hierarchy: a child project
   can extend a parent project, inheriting the parent's source files and
   optionally overriding any of them with alternative versions
@@ -89,7 +89,7 @@ easily handled:
 
 @itemize @bullet
 @item Using a common set of source files and generating object files in different
-  directories via different switch settings. It can be used for instance, for
+  directories via different ^switch^switch^ settings. It can be used for instance, for
   generating separate sets of object files for debugging and for production.
 @item Using a mostly-shared set of source files with different versions of
   some units or subunits. It can be used for instance, for grouping and hiding
@@ -174,6 +174,7 @@ detailed later in this documentation. They are summarized here as a reference.
   @b{Object_Dir} attribute. In order to store objects in
   two or more object directories, the system must be split into
   distinct subsystems with their own project file.
+/first exam
 
 @end table
 
@@ -184,7 +185,8 @@ following examples.
 The Ada source files @file{pack.ads}, @file{pack.adb}, and @file{proc.adb} are in
 the @file{common/} directory. The file @file{proc.adb} contains an Ada main
 subprogram @code{Proc} that @code{with}s package @code{Pack}. We want to compile
-these source files with the switch @option{-O2}, and put the resulting files in
+these source files with the ^switch^switch^
+@option{^-O2^-O2^}, and put the resulting files in
 the directory @file{obj/}.
 
 @smallexample
@@ -448,7 +450,8 @@ Its value is the path to the object directory, either absolute or
 relative to the directory containing the project file. This
 directory must already exist and be readable and writable, although
 some tools have a switch to create the directory if needed (See
-the switch @code{-p} for @command{gnatmake} and @command{gprbuild}).
+the switch @code{^-p^/CREATE_MISSING_DIRS^} for @command{gnatmake}
+and @command{gprbuild}).
 
 If the attribute @code{Object_Dir} is not specified, it defaults to
 the project directory, that is the directory containing the project file.
@@ -614,13 +617,13 @@ packages would be involved in the build process.
 
 @noindent
 Let's first examine the compiler switches. As stated in the initial description
-of the example, we want to compile all files with @option{-O2}. This is a
+of the example, we want to compile all files with @option{^-O2^-O2^}. This is a
 compiler switch, although it is usual, on the command line, to pass it to the
 builder which then passes it to the compiler. It is recommended to use directly
 the right package, which will make the setup easier to understand for other
 people.
 
-Several attributes can be used to specify the switches:
+Several attributes can be used to specify the ^switches^switches^:
 
 @table @asis
 @item @b{Default_Switches}:
@@ -633,49 +636,53 @@ Several attributes can be used to specify the switches:
   likely be used for each language, and each compiler has its own set of
   switches). The value of the attribute is a list of switches.
 
-  In this example, we want to compile all Ada source files with the
-  @option{-O2} switch, and the resulting project file is as follows
+  In this example, we want to compile all Ada source files with the ^switch^switch^
+  @option{^-O2^-O2^}, and the resulting project file is as follows
   (only the @code{Compiler} package is shown):
 
   @smallexample
   @b{package} Compiler @b{is}
-    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
+    @b{for} Default_Switches ("Ada") @b{use} ("^-O2^-O2^");
   @b{end} Compiler;
   @end smallexample
 
-@item @b{Switches}:
-@cindex @code{Switches}
-  in some cases, we might want to use specific switches
+@item @b{^Switches^Switches^}:
+@cindex @code{^Switches^Switches^}
+  in some cases, we might want to use specific ^switches^switches^
   for one or more files. For instance, compiling @file{proc.adb} might not be
   possible at high level of optimization because of a compiler issue.
-  In such a case, the @emph{Switches}
+  In such a case, the @emph{^Switches^Switches^}
   attribute (indexed on the file name) can be used and will override the
   switches defined by @emph{Default_Switches}. Our project file would
   become:
 
   @smallexample
-  @b{package} Compiler @b{is}
-    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
-    @b{for} Switches ("proc.adb") @b{use} ("-O0");
-  @b{end} Compiler;
+  package Compiler is
+     for Default_Switches ("Ada")
+         use ("^-O2^-O2^");
+     for ^Switches^Switches^ ("proc.adb")
+         use ("^-O0^-O0^");
+  end Compiler;
   @end smallexample
 
   @noindent
-  @code{Switches} may take a pattern as an index, such as in:
+  @code{^Switches^Switches^} may take a pattern as an index, such as in:
 
   @smallexample
-  @b{package} Compiler @b{is}
-    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
-    @b{for} Switches ("pkg*") @b{use} ("-O0");
-  @b{end} Compiler;
+  package Compiler is
+    for Default_Switches ("Ada")
+        use ("^-O2^-O2^");
+    for ^Switches^Switches^ ("pkg*")
+        use ("^-O0^-O0^");
+  end Compiler;
   @end smallexample
 
   @noindent
-  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with -O0,
-  not -O2.
+  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with ^-O0^-O0^,
+  not ^-O2^-O2^.
 
   @noindent
-  @code{Switches} can also be given a language name as index instead of a file
+  @code{^Switches^Switches^} can also be given a language name as index instead of a file
   name in which case it has the same semantics as @emph{Default_Switches}.
   However, indexes with wild cards are never valid for language name.
 
@@ -689,7 +696,7 @@ Several attributes can be used to specify the switches:
 @end table
 
 The switches for the other tools are defined in a similar manner through the
-@b{Default_Switches} and @b{Switches} attributes, respectively in the
+@b{Default_Switches} and @b{^Switches^Switches^} attributes, respectively in the
 @emph{Builder} package (for @command{gnatmake} and @command{gprbuild}),
 the @emph{Binder} package (binding Ada executables) and the @emph{Linker}
 package (for linking executables).
@@ -816,8 +823,8 @@ project C_Main is
    package Compiler is
       C_Switches := ("-pedantic");
       for Default_Switches ("C")   use C_Switches;
-      for Default_Switches ("Ada") use ("-gnaty");
-      for Switches ("main.c") use C_Switches & ("-g");
+      for Default_Switches ("Ada") use ("^-gnaty^-gnaty^");
+      for ^Switches^Switches^ ("main.c") use C_Switches & ("-g");
    end Compiler;
 end C_Main;
 @end smallexample
@@ -841,7 +848,7 @@ In this specific situation the use of a variable could have been
 replaced by a reference to the @code{Default_Switches} attribute:
 
 @smallexample @c projectfile
-   for Switches ("c_main.c") use Compiler'Default_Switches ("C") & ("-g");
+   for ^Switches^Switches^ ("c_main.c") use Compiler'Default_Switches ("C") & ("-g");
 @end smallexample
 
 @noindent
@@ -1353,10 +1360,12 @@ There are two main approaches to avoiding this duplication:
   @smallexample @c projectfile
   project Logging is
      package Compiler is
-        for Switches ("Ada") use ("-O2");
+        for ^Switches^Switches^ ("Ada")
+            use ("^-O2^-O2^");
      end Compiler;
      package Binder is
-        for Switches ("Ada") use ("-E");
+        for ^Switches^Switches^ ("Ada")
+            use ("-E");
      end Binder;
   end Logging;
 
@@ -1364,7 +1373,7 @@ There are two main approaches to avoiding this duplication:
   project Build is
      package Compiler renames Logging.Compiler;
      package Binder is
-        for Switches ("Ada") use Logging.Binder'Switches ("Ada");
+        for ^Switches^Switches^ ("Ada") use Logging.Binder'Switches ("Ada");
      end Binder;
   end Build;
   @end smallexample
@@ -1394,9 +1403,10 @@ There are two main approaches to avoiding this duplication:
 
   @smallexample @c projectfile
   abstract project Shared is
-     for Source_Files use ();   --  no project
+     for Source_Files use ();   --  no sources
      package Compiler is
-        for Switches ("Ada") use ("-O2");
+        for ^Switches^Switches^ ("Ada")
+            use ("^-O2^-O2^");
      end Compiler;
   end Shared;
 
@@ -1482,7 +1492,7 @@ information, when the second will focus on improving code optimization).
 
 Let's enhance our example to support a debug and a release modes.The issue is to
 let the user choose what kind of system he is building:
-use @option{-g} as compiler switches in debug mode and @option{-O2}
+use @option{-g} as compiler switches in debug mode and @option{^-O2^-O2^}
 in release mode. We will also setup the projects so that we do not share the
 same object directory in both modes, otherwise switching from one to the other
 might trigger more recompilations than needed or mix objects from the 2 modes.
@@ -1556,9 +1566,11 @@ sections in the project. The following example shows how this can be done:
       package Compiler is
          case Mode is
             when "debug" =>
-               for Switches ("Ada") use ("-g");
+               for ^Switches^Switches^ ("Ada")
+                   use ("-g");
             when "release" =>
-               for Switches ("Ada") use ("-O2");
+               for ^Switches^Switches^ ("Ada")
+                   use ("^-O2^-O2^");
          end case;
       end Compiler;
    end Build;
@@ -2414,7 +2426,7 @@ building. The syntax looks like
       for External ("BUILD") use "PRODUCTION";
 
       package Builder is
-         for Switches ("Ada") use ("-q");
+         for ^Switches^Switches^ ("Ada") use ("-q");
       end Builder;
    end Agg;
 @end smallexample
@@ -2681,15 +2693,15 @@ an aggregate project. In this package, only the following attributes
 are valid:
 
 @table @asis
-@item @b{Switches}:
-@cindex @code{Switches}
+@item @b{^Switches^Switches^}:
+@cindex @code{^Switches^Switches^}
 This attribute gives the list of switches to use for the builder
 (@command{gprbuild} or @command{gnatmake}), depending on the language of the
 main file. For instance,
 
 @smallexample @c projectfile
-for Switches ("Ada") use ("-d", "-p");
-for Switches ("C")   use ("-p");
+for ^Switches^Switches^ ("Ada") use ("-d", "-p");
+for ^Switches^Switches^ ("C")   use ("-p");
 @end smallexample
 
 These switches are only read from the main aggregate project (the
@@ -2705,8 +2717,8 @@ This attribute gives the list of compiler switches for the various
 languages. For instance,
 
 @smallexample @c projectfile
-for Global_Compilation_Switches ("Ada") use ("-O1", "-g");
-for Global_Compilation_Switches ("C")   use ("-O2");
+for Global_Compilation_Switches ("Ada") use ("^O1^-O1^", "-g");
+for Global_Compilation_Switches ("C")   use ("^-O2^-O2^");
 @end smallexample
 
 This attribute is only taken into account in the aggregate project
@@ -2728,34 +2740,39 @@ both depend on C. Here is an extra for all of these projects:
       aggregate project Agg is
           for Project_Files use ("a.gpr", "b.gpr");
           package Builder is
-             for Global_Compilation_Switches ("Ada") use ("-O2");
+             for Global_Compilation_Switches ("Ada") use ("^-O2^-O2^");
           end Builder;
       end Agg;
 
       with "c.gpr";
       project A is
           package Builder is
-             for Global_Compilation_Switches ("Ada") use ("-O1");
+             for Global_Compilation_Switches ("Ada") use ("^-O1^-O1^");
              --  ignored
           end Builder;
 
           package Compiler is
-             for Default_Switches ("Ada") use ("-O1", "-g");
-             for Switches ("a_file1.adb") use ("-O0");
+             for Default_Switches ("Ada")
+                 use ("^-O1^-O1^", "-g");
+             for ^Switches^Switches^ ("a_file1.adb")
+                 use ("^-O0^-O0^");
           end Compiler;
       end A;
 
       with "c.gpr";
       project B is
           package Compiler is
-             for Default_Switches ("Ada") use ("-O0");
+             for Default_Switches ("Ada") use ("^-O0^-O0^");
           end Compiler;
       end B;
 
       project C is
           package Compiler is
-             for Default_Switches ("Ada") use ("-O3", "-gnatn");
-             for Switches ("c_file1.adb") use ("-O0", "-g");
+             for Default_Switches ("Ada")
+                 use ("^-O3^-O3^",
+                      "^-gnatn^-gnatn^");
+             for ^Switches^Switches^ ("c_file1.adb")
+                 use ("^-O0^-O0^", "-g");
           end Compiler;
       end C;
 @end smallexample
@@ -2764,13 +2781,13 @@ then the following switches are used:
 
 @itemize @bullet
 @item all files from project A except a_file1.adb are compiled
-      with "-O2 -g", since the aggregate project has priority.
+      with "^-O2^-O2^ -g", since the aggregate project has priority.
 @item the file a_file1.adb is compiled with
-      "-O0", since the Compiler.Switches has priority
+      "^-O0^-O0^", since the Compiler.Switches has priority
 @item all files from project B are compiled with
-      "-O2", since the aggregate project has priority
-@item all files from C are compiled with "-O2 -gnatn", except for
-      c_file1.adb which is compiled with "-O0 -g"
+      "^-O2^-O2^", since the aggregate project has priority
+@item all files from C are compiled with "^-O2^-O2^ -gnatn", except for
+      c_file1.adb which is compiled with "^-O0^-O0^ -g"
 @end itemize
 
 Even though C is seen through two paths (through A and through
@@ -3141,17 +3158,17 @@ The following packages are currently supported in project files
 @item Cross_Reference
   This package specifies the options used when calling the library tool
   @command{gnatxref} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Eliminate
   This package specifies the options used when calling the tool
   @command{gnatelim} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Finder
   This package specifies the options used when calling the search tool
   @command{gnatfind} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Gnatls
   This package the options to use when invoking @command{gnatls} via the
@@ -3159,7 +3176,7 @@ The following packages are currently supported in project files
 @item Gnatstub
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item IDE
   This package specifies the options used when starting an integrated
@@ -3173,7 +3190,7 @@ The following packages are currently supported in project files
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Naming
   This package specifies the naming conventions that apply
@@ -3184,7 +3201,7 @@ The following packages are currently supported in project files
 @item Pretty_Printer
   This package specifies the options used when calling the formatting tool
   @command{gnatpp} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Remote
   This package is used by @command{gprbuild} to describe how distributed
@@ -3192,7 +3209,7 @@ The following packages are currently supported in project files
 @item Stack
   This package specifies the options used when calling the tool
   @command{gnatstack} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{Switches} have the same semantics as for the
+  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item Synchronize
   This package specifies the options used when calling the tool
@@ -3401,11 +3418,14 @@ last separator and the end are components of the string list.
 @end smallexample
 
 @noindent
-If the external value is "-O2,-g", the result is ("-O2", "-g").
+If the external value is "^-O2^-O2^,-g",
+the result is ("^-O2^-O2^", "-g").
 
-If the external value is ",-O2,-g,", the result is also ("-O2", "-g").
+If the external value is ",^-O2^-O2^,-g,",
+the result is also ("^-O2^-O2^", "-g").
 
-if the external value is "-gnav", the result is ("-gnatv").
+if the external value is "^-gnatv^-gnatv^",
+the result is ("^-gnatv^-gnatv^").
 
 If the external value is ",,", the result is ("").
 
@@ -3582,9 +3602,11 @@ project MyProj is
    package Compiler is
      case OS is
        when "GNU/Linux" | "Unix" =>
-         for Switches ("Ada") use ("-gnath");
+         for ^Switches^Switches^ ("Ada")
+             use ("-gnath");
        when "NT" =>
-         for Switches ("Ada") use ("-gnatP");
+         for ^Switches^Switches^ ("Ada")
+             use ("^-gnatP^-gnatP^");
        when others =>
          null;
      end case;
@@ -3663,8 +3685,9 @@ Here are some examples of attribute declarations:
 
    --  indexed attributes
    for Body ("main") use "Main.ada";
-   for Switches ("main.ada") use ("-v", "-gnatv");
-   for Switches ("main.ada") use Builder'Switches ("main.ada") & "-g";
+   for ^Switches^Switches^ ("main.ada")
+       use ("-v", "^-gnatv^-gnatv^");
+   for ^Switches^Switches^ ("main.ada") use Builder'Switches ("main.ada") & "-g";
 
    --  indexed attributes copy (from package Builder in project Default)
    --  The package name must always be specified, even if it is the current
@@ -4166,10 +4189,10 @@ sources of runtime libraries are located.
 @item @b{Default_Switches}: list, indexed, case-insensitive index
 
 Index is a language name. Value is the list of switches to be used when binding
-code of the language, if there is no applicable attribute Switches.
+code of the language, if there is no applicable attribute ^Switches^Switches^.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
-                    others allowed
+@item @b{^Switches^Switches^}: list, optional index, indexed,
+                    case-insensitive index, others allowed
 
 Index is either a language name or a source file name. Value is the list of
 switches to be used when binding code. Index is either the source file name
@@ -4223,7 +4246,7 @@ Index is a language name. Value is the list of builder switches to be used when
 building an executable of the language, if there is no applicable attribute
 Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is either a language name or a source file name. Value is the list of
@@ -4269,9 +4292,9 @@ project tree.
 
 Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatcheck} for a source of the language, if there is no applicable
-attribute Switches.
+attribute ^Switches^Switches^.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4284,7 +4307,7 @@ invoking @code{gnatcheck} for the source.
 
 @itemize @bullet
 
-@item @b{Switches}: list
+@item @b{^Switches^Switches^}: list
 
 Value is a list of switches to be used by the cleaning application.
 
@@ -4327,7 +4350,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 the compiler for the language for a source of the project, if there is no
 applicable attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name or a language name. Value is the list of switches
@@ -4561,7 +4584,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatxref} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4580,7 +4603,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatelim} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4599,7 +4622,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatfind} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4612,7 +4635,7 @@ invoking @code{gnatfind} for the source.
 
 @itemize @bullet
 
-@item @b{Switches}: list
+@item @b{^Switches^Switches^}: list
 
 Value is a list of switches to be used when invoking @code{gnatls}.
 
@@ -4629,7 +4652,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatstub} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4764,7 +4787,7 @@ Index is a source file name or a language name. Value is the list of switches
 to be used at the beginning of the command line when invoking the linker to
 build an executable for the source or for its language.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name or a language name. Value is the list of switches
@@ -4837,7 +4860,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatmetric} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4925,7 +4948,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatpp} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4954,7 +4977,7 @@ Value is the root directory used by the slave machines.
 
 @itemize @bullet
 
-@item @b{Switches}: list
+@item @b{^Switches^Switches^}: list
 
 Value is the list of switches to be used when invoking @code{gnatstack}.
 
@@ -4971,7 +4994,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatsync} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when

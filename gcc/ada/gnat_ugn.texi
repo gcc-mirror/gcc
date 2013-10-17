@@ -7724,10 +7724,22 @@ Examples of valid lines in a preprocessor data file:
 Define or redefine a preprocessing symbol, associated with value. If no value
 is given on the command line, then the value of the symbol is @code{True}.
 A symbol is an identifier, following normal Ada (case-insensitive)
-rules for its syntax, and value is any sequence (including an empty sequence)
-of characters from the set (letters, digits, period, underline).
+rules for its syntax, and value is either an arbitrary string between double
+quotes or any sequence (including an empty sequence) of characters from the
+set (letters, digits, period, underline).
 Ada reserved words may be used as symbols, with the exceptions of @code{if},
 @code{else}, @code{elsif}, @code{end}, @code{and}, @code{or} and @code{then}.
+
+@ifclear vms
+@noindent
+Examples:
+
+@smallexample
+   -gnateDToto=Titi
+   -gnateDFoo
+   -gnateDFoo=\"Foo-Bar\"
+@end smallexample
+@end ifclear
 
 @noindent
 A symbol declared with this ^switch^switch^ on the command line replaces a
