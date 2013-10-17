@@ -1,3 +1,65 @@
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+
+2013-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Process_Minus, Process_Divide): Label dimension
+	expression with standard operator and type, for pretty-printing
+	use.
+
+2013-10-17  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document --pp-new and --pp-old switches.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag 159 is now known as From_Limited_With. Replace
+	all references to attribute From_With_Type with From_Limited_With.
+	(From_With_Type): Renamed to From_Limited_With.
+	(Set_From_With_Type): Renamd to Set_From_Limited_With.
+	* einfo.ads: Remove attribute From_With_Type and occurrences in
+	nodes.	Add attribute From_Limited_With along with occurrences
+	in nodes.
+	(From_With_Type): Renamed to From_Limited_With along with pragma Inline.
+	(Set_From_With_Type): Renamed to
+	Set_From_Limited_With along with pragma Inline.
+	* sem_ch7.adb, sem_ch8.adb, sem_ch12.adb, sem_ch13.adb, sem_disp.adb,
+	sem_res.adb, sem_type.adb, sem_util.adb, sem_warn.adb,
+	exp_attr.adb, exp_disp.adb, freeze.adb, itypes.adb, layout.adb,
+	lib-writ.adb, rtsfind.adb, sem_attr.adb, sem_aux.adb, sem_ch3.adb,
+	sem_ch4.adb: Replace all references to attribute From_With_Type
+	with From_Limited_With.
+	* sem_ch6.adb: Replace all references to attribute From_With_Type
+	with From_Limited_With.
+	(Designates_From_With_Type): Renamed to Designates_From_Limited_With.
+	(Process_Formals): Update the call to Designates_From_With_Type.
+	* sem_ch10.adb: Replace all references to attribute From_With_Type
+	with From_Limited_With.
+	(Build_Limited_Views): Reimplemented.
+	* gcc-interface/decl.c Replace all references to attribute
+	From_With_Type with From_Limited_With.
+	(finalize_from_with_types): Renamed to finalize_from_limited_with.
+	* gcc-interface/gigi.h (finalize_from_with_types): Renamed to
+	finalize_from_limited_with.
+	* gcc-interface/trans.c: Replace all references to attribute
+	From_With_Type with From_Limited_With.
+	(Compilation_Unit_to_gnu): Update the call to finalize_from_with_types.
+
+2013-10-17  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Update VCS_Kind documentation.
+
+2013-10-17  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb, a-cobove.adb (Insert, Insert_Space):
+	Inspect value range before converting type.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Flag the use of pragma Refined_Pre as
+	illegal.
+
 2013-10-17  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Remove VMS conversion of -gnatet and -gnateT,

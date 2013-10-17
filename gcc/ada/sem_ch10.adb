@@ -3897,7 +3897,7 @@ package body Sem_Ch10 is
                  and then
                    Ekind (Defining_Identifier (Decl)) = E_Incomplete_Subtype
                  and then
-                   From_With_Type (Defining_Identifier (Decl))
+                   From_Limited_With (Defining_Identifier (Decl))
                then
                   Def_Id := Defining_Identifier (Decl);
                   Non_Lim_View := Non_Limited_View (Def_Id);
@@ -5076,7 +5076,7 @@ package body Sem_Ch10 is
       end if;
 
       Set_Entity (Name (N), P);
-      Set_From_With_Type (P);
+      Set_From_Limited_With (P);
    end Install_Limited_Withed_Unit;
 
    -------------------------
@@ -5192,7 +5192,7 @@ package body Sem_Ch10 is
       --   tions on the use of package entities.
 
       if Ekind (Uname) = E_Package then
-         Set_From_With_Type (Uname, False);
+         Set_From_Limited_With (Uname, False);
       end if;
 
       --  Ada 2005 (AI-377): it is illegal for a with_clause to name a child
@@ -5379,328 +5379,262 @@ package body Sem_Ch10 is
    -------------------------
 
    procedure Build_Limited_Views (N : Node_Id) is
+      Nam  : constant Node_Id          := Name (N);
       Unum : constant Unit_Number_Type := Get_Source_Unit (Library_Unit (N));
-      P    : constant Entity_Id        := Cunit_Entity (Unum);
+      Pack : constant Entity_Id        := Cunit_Entity (Unum);
 
-      Spec     : Node_Id;            --  To denote a package specification
-      Lim_Typ  : Entity_Id;          --  To denote shadow entities
-      Comp_Typ : Entity_Id;          --  To denote real entities
+      Shadow_Pack : Entity_Id;
+      --  The corresponding shadow entity of the withed package. This entity
+      --  offers incomplete views of all types and visible packages declared
+      --  within.
 
-      Lim_Header     : Entity_Id;          --  Package entity
-      Last_Lim_E     : Entity_Id := Empty; --  Last limited entity built
-      Last_Pub_Lim_E : Entity_Id;          --  To set the first private entity
+      Last_Shadow : Entity_Id := Empty;
+      --  The last shadow entity created by routine Build_Shadow_Entity
 
-      procedure Decorate_Incomplete_Type (E : Entity_Id; Scop : Entity_Id);
-      --  Add attributes of an incomplete type to a shadow entity. The same
-      --  attributes are placed on the real entity, so that gigi receives
-      --  a consistent view.
+      function Build_Shadow_Entity
+        (Ent       : Entity_Id;
+         Scop      : Entity_Id;
+         Is_Tagged : Boolean := False) return Entity_Id;
+      --  Create a shadow entity that hides Ent and offers an incomplete view
+      --  of Ent. Scop is the proper scope. Flag Is_Tagged should be set when
+      --  Ent is a tagged type. The generated entity is added to Lim_Header.
+      --  This routine updates the value of Last_Shadow.
 
-      procedure Decorate_Package_Specification (P : Entity_Id);
-      --  Add attributes of a package entity to the entity in a package
-      --  declaration
+      procedure Decorate_Package (Ent : Entity_Id; Scop : Entity_Id);
+      --  Perform minimal decoration of a package or its corresponding shadow
+      --  entity denoted by Ent. Scop is the proper scope.
 
-      procedure Decorate_Tagged_Type
-        (Loc  : Source_Ptr;
-         T    : Entity_Id;
-         Scop : Entity_Id;
-         Mark : Boolean := False);
-      --  Set basic attributes of tagged type T, including its class-wide type.
-      --  The parameters Loc, Scope are used to decorate the class-wide type.
-      --  Use flag Mark to label the class-wide type as Materialize_Entity.
+      procedure Decorate_Type
+        (Ent         : Entity_Id;
+         Scop        : Entity_Id;
+         Is_Tagged   : Boolean := False;
+         Materialize : Boolean := False);
+      --  Perform minimal decoration of a type or its corresponding shadow
+      --  entity denoted by Ent. Scop is the proper scope. Flag Is_Tagged
+      --  should be set when Ent is a tagged type. Flag Materialize should be
+      --  set when Ent is a tagged type and its class-wide type needs to appear
+      --  in the tree.
 
-      procedure Build_Chain (Scope : Entity_Id; First_Decl : Node_Id);
-      --  Construct list of shadow entities and attach it to entity of
-      --  package that is mentioned in a limited_with clause.
+      procedure Process_Declarations (Decls : List_Id; Scop : Entity_Id);
+      --  Inspect declarative list Decls and create shadow entities for all
+      --  types and packages encountered. Scop is the proper scope.
 
-      function New_Internal_Shadow_Entity
-        (Kind       : Entity_Kind;
-         Sloc_Value : Source_Ptr;
-         Id_Char    : Character) return Entity_Id;
-      --  Build a new internal entity and append it to the list of shadow
-      --  entities available through the limited-header
+      -------------------------
+      -- Build_Shadow_Entity --
+      -------------------------
 
-      -----------------
-      -- Build_Chain --
-      -----------------
-
-      procedure Build_Chain (Scope : Entity_Id; First_Decl : Node_Id) is
-         Analyzed_Unit : constant Boolean := Analyzed (Cunit (Unum));
-         Is_Tagged     : Boolean;
-         Decl          : Node_Id;
+      function Build_Shadow_Entity
+        (Ent       : Entity_Id;
+         Scop      : Entity_Id;
+         Is_Tagged : Boolean := False) return Entity_Id
+      is
+         Shadow : constant Entity_Id := Make_Temporary (Sloc (Ent), 'Z');
 
       begin
-         Decl := First_Decl;
+         --  The shadow entity must share the same name and parent as the
+         --  entity it hides.
+
+         Set_Chars             (Shadow, Chars (Ent));
+         Set_Parent            (Shadow, Parent (Ent));
+         Set_Ekind             (Shadow, Ekind (Ent));
+         Set_Is_Internal       (Shadow);
+         Set_From_Limited_With (Shadow);
+
+         --  Add the new shadow entity to the limited view of the package
+
+         Last_Shadow := Shadow;
+         Append_Entity (Shadow, Shadow_Pack);
+
+         if Is_Type (Ent) then
+            Decorate_Type (Shadow, Scop, Is_Tagged);
+
+            if Is_Incomplete_Or_Private_Type (Ent) then
+               Set_Private_Dependents (Shadow, New_Elmt_List);
+            end if;
+
+            Set_Non_Limited_View (Shadow, Ent);
+
+         elsif Ekind (Ent) = E_Package then
+            Decorate_Package (Shadow, Scop);
+         end if;
+
+         return Shadow;
+      end Build_Shadow_Entity;
+
+      ----------------------
+      -- Decorate_Package --
+      ----------------------
+
+      procedure Decorate_Package (Ent : Entity_Id; Scop : Entity_Id) is
+      begin
+         Set_Ekind (Ent, E_Package);
+         Set_Etype (Ent, Standard_Void_Type);
+         Set_Scope (Ent, Scop);
+      end Decorate_Package;
+
+      -------------------
+      -- Decorate_Type --
+      -------------------
+
+      procedure Decorate_Type
+        (Ent         : Entity_Id;
+         Scop        : Entity_Id;
+         Is_Tagged   : Boolean := False;
+         Materialize : Boolean := False)
+      is
+         CW_Typ : Entity_Id;
+
+      begin
+         --  An unanalyzed type or a shadow entity of a type is treated as an
+         --  incomplete type.
+
+         Set_Ekind             (Ent, E_Incomplete_Type);
+         Set_Etype             (Ent, Ent);
+         Set_Scope             (Ent, Scop);
+         Set_Is_First_Subtype  (Ent);
+         Set_Stored_Constraint (Ent, No_Elist);
+         Set_Full_View         (Ent, Empty);
+         Init_Size_Align       (Ent);
+
+         --  A tagged type and its corresponding shadow entity share one common
+         --  class-wide type.
+
+         if Is_Tagged then
+            Set_Is_Tagged_Type (Ent);
+
+            if No (Class_Wide_Type (Ent)) then
+               CW_Typ :=
+                 New_External_Entity
+                   (E_Void, Scope (Ent), Sloc (Ent), Ent, 'C', 0, 'T');
+
+               Set_Class_Wide_Type (Ent, CW_Typ);
+
+               --  Set parent to be the same as the parent of the tagged type.
+               --  We need a parent field set, and it is supposed to point to
+               --  the declaration of the type. The tagged type declaration
+               --  essentially declares two separate types, the tagged type
+               --  itself and the corresponding class-wide type, so it is
+               --  reasonable for the parent fields to point to the declaration
+               --  in both cases.
+
+               Set_Parent (CW_Typ, Parent (Ent));
+
+               Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
+               Set_Etype                     (CW_Typ, Ent);
+               Set_Scope                     (CW_Typ, Scop);
+               Set_Is_Tagged_Type            (CW_Typ);
+               Set_Is_First_Subtype          (CW_Typ);
+               Init_Size_Align               (CW_Typ);
+               Set_Has_Unknown_Discriminants (CW_Typ);
+               Set_Class_Wide_Type           (CW_Typ, CW_Typ);
+               Set_Equivalent_Type           (CW_Typ, Empty);
+               Set_From_Limited_With         (CW_Typ, From_Limited_With (Ent));
+               Set_Materialize_Entity        (CW_Typ, Materialize);
+            end if;
+         end if;
+      end Decorate_Type;
+
+      --------------------------
+      -- Process_Declarations --
+      --------------------------
+
+      procedure Process_Declarations (Decls : List_Id; Scop : Entity_Id) is
+         Is_Analyzed : constant Boolean := Analyzed (Cunit (Unum));
+         Is_Tagged   : Boolean;
+         Decl        : Node_Id;
+         Def         : Node_Id;
+         Pack        : Entity_Id;
+         Shadow      : Entity_Id;
+         Typ         : Entity_Id;
+
+      begin
+         --  Inspect the declarative list, looking for type declarations and
+         --  nested packages.
+
+         Decl := First (Decls);
          while Present (Decl) loop
 
-            --  For each library_package_declaration in the environment, there
-            --  is an implicit declaration of a *limited view* of that library
-            --  package. The limited view of a package contains:
+            --  Types
 
-            --   * For each nested package_declaration, a declaration of the
-            --     limited view of that package, with the same defining-
-            --     program-unit name.
-
-            --   * For each type_declaration in the visible part, an incomplete
-            --     type-declaration with the same defining_identifier, whose
-            --     completion is the type_declaration. If the type_declaration
-            --     is tagged, then the incomplete_type_declaration is tagged
-            --     incomplete.
-
-            --     The partial view is tagged if the declaration has the
-            --     explicit keyword, or else if it is a type extension, both
-            --     of which can be ascertained syntactically.
-
-            if Nkind (Decl) = N_Full_Type_Declaration then
-               Is_Tagged :=
-                  (Nkind (Type_Definition (Decl)) = N_Record_Definition
-                    and then Tagged_Present (Type_Definition (Decl)))
-                 or else
-                   (Nkind (Type_Definition (Decl)) = N_Derived_Type_Definition
-                     and then
-                       Present
-                         (Record_Extension_Part (Type_Definition (Decl))));
-
-               Comp_Typ := Defining_Identifier (Decl);
-
-               if not Analyzed_Unit then
-                  if Is_Tagged then
-                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
-                  else
-                     Decorate_Incomplete_Type (Comp_Typ, Scope);
-                  end if;
-               end if;
-
-               --  Create shadow entity for type
-
-               Lim_Typ :=
-                 New_Internal_Shadow_Entity
-                   (Kind       => Ekind (Comp_Typ),
-                    Sloc_Value => Sloc (Comp_Typ),
-                    Id_Char    => 'Z');
-
-               Set_Chars  (Lim_Typ, Chars (Comp_Typ));
-               Set_Parent (Lim_Typ, Parent (Comp_Typ));
-               Set_From_With_Type (Lim_Typ);
-
-               if Is_Tagged then
-                  Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
-               else
-                  Decorate_Incomplete_Type (Lim_Typ, Scope);
-               end if;
-
-               Set_Non_Limited_View (Lim_Typ, Comp_Typ);
-               Set_Private_Dependents (Lim_Typ, New_Elmt_List);
-
-            elsif Nkind_In (Decl, N_Private_Type_Declaration,
-                                  N_Incomplete_Type_Declaration,
-                                  N_Task_Type_Declaration,
-                                  N_Protected_Type_Declaration)
+            if Nkind_In (Decl, N_Full_Type_Declaration,
+                               N_Incomplete_Type_Declaration,
+                               N_Private_Extension_Declaration,
+                               N_Private_Type_Declaration,
+                               N_Protected_Type_Declaration,
+                               N_Task_Type_Declaration)
             then
-               Comp_Typ := Defining_Identifier (Decl);
+               Typ := Defining_Entity (Decl);
 
-               Is_Tagged :=
-                 Nkind_In (Decl, N_Private_Type_Declaration,
-                                 N_Incomplete_Type_Declaration)
-                 and then Tagged_Present (Decl);
+               --  Determine whether the type is tagged. Note that packages
+               --  included via a limited with clause are not always analyzed,
+               --  hence the tree lookup rather than the use of attribute
+               --  Is_Tagged_Type.
 
-               if not Analyzed_Unit then
-                  if Is_Tagged then
-                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
-                  else
-                     Decorate_Incomplete_Type (Comp_Typ, Scope);
-                  end if;
-               end if;
+               if Nkind (Decl) = N_Full_Type_Declaration then
+                  Def := Type_Definition (Decl);
 
-               Lim_Typ :=
-                 New_Internal_Shadow_Entity
-                   (Kind       => Ekind (Comp_Typ),
-                    Sloc_Value => Sloc (Comp_Typ),
-                    Id_Char    => 'Z');
+                  Is_Tagged :=
+                     (Nkind (Def) = N_Record_Definition
+                        and then Tagged_Present (Def))
+                    or else
+                     (Nkind (Def) = N_Derived_Type_Definition
+                        and then Present (Record_Extension_Part (Def)));
 
-               Set_Chars  (Lim_Typ, Chars (Comp_Typ));
-               Set_Parent (Lim_Typ, Parent (Comp_Typ));
-               Set_From_With_Type (Lim_Typ);
+               elsif Nkind_In (Decl, N_Incomplete_Type_Declaration,
+                                     N_Private_Type_Declaration)
+               then
+                  Is_Tagged := Tagged_Present (Decl);
 
-               if Is_Tagged then
-                  Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
+               elsif Nkind (Decl) = N_Private_Extension_Declaration then
+                  Is_Tagged := True;
+
                else
-                  Decorate_Incomplete_Type (Lim_Typ, Scope);
+                  Is_Tagged := False;
                end if;
 
-               Set_Non_Limited_View (Lim_Typ, Comp_Typ);
+               --  Perform minor decoration when the withed package has not
+               --  been analyzed.
 
-               --  Initialize Private_Depedents, so the field has the proper
-               --  type, even though the list will remain empty.
-
-               Set_Private_Dependents (Lim_Typ, New_Elmt_List);
-
-            elsif Nkind (Decl) = N_Private_Extension_Declaration then
-               Comp_Typ := Defining_Identifier (Decl);
-
-               if not Analyzed_Unit then
-                  Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
+               if not Is_Analyzed then
+                  Decorate_Type (Typ, Scop, Is_Tagged, True);
                end if;
 
-               --  Create shadow entity for type
+               --  Create a shadow entity that hides the type and offers an
+               --  incomplete view of the said type.
 
-               Lim_Typ :=
-                 New_Internal_Shadow_Entity
-                   (Kind       => Ekind (Comp_Typ),
-                    Sloc_Value => Sloc (Comp_Typ),
-                    Id_Char    => 'Z');
+               Shadow := Build_Shadow_Entity (Typ, Scop, Is_Tagged);
 
-               Set_Chars  (Lim_Typ, Chars (Comp_Typ));
-               Set_Parent (Lim_Typ, Parent (Comp_Typ));
-               Set_From_With_Type (Lim_Typ);
-
-               Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
-               Set_Non_Limited_View (Lim_Typ, Comp_Typ);
+            --  Packages
 
             elsif Nkind (Decl) = N_Package_Declaration then
+               Pack := Defining_Entity (Decl);
 
-               --  Local package
+               --  Perform minor decoration when the withed package has not
+               --  been analyzed.
 
-               declare
-                  Spec : constant Node_Id := Specification (Decl);
+               if not Is_Analyzed then
+                  Decorate_Package (Pack, Scop);
+               end if;
 
-               begin
-                  Comp_Typ := Defining_Unit_Name (Spec);
+               --  Create a shadow entity that offers a limited view of all
+               --  visible types declared within.
 
-                  if not Analyzed (Cunit (Unum)) then
-                     Decorate_Package_Specification (Comp_Typ);
-                     Set_Scope (Comp_Typ, Scope);
-                  end if;
+               Shadow := Build_Shadow_Entity (Pack, Scop);
 
-                  Lim_Typ :=
-                    New_Internal_Shadow_Entity
-                      (Kind       => Ekind (Comp_Typ),
-                       Sloc_Value => Sloc (Comp_Typ),
-                       Id_Char    => 'Z');
-
-                  Decorate_Package_Specification (Lim_Typ);
-                  Set_Scope (Lim_Typ, Scope);
-
-                  Set_Chars  (Lim_Typ, Chars (Comp_Typ));
-                  Set_Parent (Lim_Typ, Parent (Comp_Typ));
-                  Set_From_With_Type (Lim_Typ);
-
-                  --  Note: The non_limited_view attribute is not used
-                  --  for local packages.
-
-                  Build_Chain
-                    (Scope      => Lim_Typ,
-                     First_Decl => First (Visible_Declarations (Spec)));
-               end;
+               Process_Declarations
+                 (Decls => Visible_Declarations (Specification (Decl)),
+                  Scop  => Shadow);
             end if;
 
             Next (Decl);
          end loop;
-      end Build_Chain;
+      end Process_Declarations;
 
-      ------------------------------
-      -- Decorate_Incomplete_Type --
-      ------------------------------
+      --  Local variables
 
-      procedure Decorate_Incomplete_Type (E : Entity_Id; Scop : Entity_Id) is
-      begin
-         Set_Ekind             (E, E_Incomplete_Type);
-         Set_Scope             (E, Scop);
-         Set_Etype             (E, E);
-         Set_Is_First_Subtype  (E, True);
-         Set_Stored_Constraint (E, No_Elist);
-         Set_Full_View         (E, Empty);
-         Init_Size_Align       (E);
-      end Decorate_Incomplete_Type;
-
-      --------------------------
-      -- Decorate_Tagged_Type --
-      --------------------------
-
-      procedure Decorate_Tagged_Type
-        (Loc  : Source_Ptr;
-         T    : Entity_Id;
-         Scop : Entity_Id;
-         Mark : Boolean := False)
-      is
-         CW : Entity_Id;
-
-      begin
-         Decorate_Incomplete_Type (T, Scop);
-         Set_Is_Tagged_Type (T);
-
-         --  Build corresponding class_wide type, if not previously done
-
-         --  Note: The class-wide entity is shared by the limited-view
-         --  and the full-view.
-
-         if No (Class_Wide_Type (T)) then
-            CW := New_External_Entity (E_Void, Scope (T), Loc, T, 'C', 0, 'T');
-
-            --  Set parent to be the same as the parent of the tagged type.
-            --  We need a parent field set, and it is supposed to point to
-            --  the declaration of the type. The tagged type declaration
-            --  essentially declares two separate types, the tagged type
-            --  itself and the corresponding class-wide type, so it is
-            --  reasonable for the parent fields to point to the declaration
-            --  in both cases.
-
-            Set_Parent (CW, Parent (T));
-
-            --  Set remaining fields of classwide type
-
-            Set_Ekind                     (CW, E_Class_Wide_Type);
-            Set_Etype                     (CW, T);
-            Set_Scope                     (CW, Scop);
-            Set_Is_Tagged_Type            (CW);
-            Set_Is_First_Subtype          (CW, True);
-            Init_Size_Align               (CW);
-            Set_Has_Unknown_Discriminants (CW, True);
-            Set_Class_Wide_Type           (CW, CW);
-            Set_Equivalent_Type           (CW, Empty);
-            Set_From_With_Type            (CW, From_With_Type (T));
-            Set_Materialize_Entity        (CW, Mark);
-
-            --  Link type to its class-wide type
-
-            Set_Class_Wide_Type           (T, CW);
-         end if;
-      end Decorate_Tagged_Type;
-
-      ------------------------------------
-      -- Decorate_Package_Specification --
-      ------------------------------------
-
-      procedure Decorate_Package_Specification (P : Entity_Id) is
-      begin
-         --  Place only the most basic attributes
-
-         Set_Ekind (P, E_Package);
-         Set_Etype (P, Standard_Void_Type);
-      end Decorate_Package_Specification;
-
-      --------------------------------
-      -- New_Internal_Shadow_Entity --
-      --------------------------------
-
-      function New_Internal_Shadow_Entity
-        (Kind       : Entity_Kind;
-         Sloc_Value : Source_Ptr;
-         Id_Char    : Character) return Entity_Id
-      is
-         E : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
-
-      begin
-         Set_Ekind       (E, Kind);
-         Set_Is_Internal (E, True);
-
-         if Kind in Type_Kind then
-            Init_Size_Align (E);
-         end if;
-
-         Append_Entity (E, Lim_Header);
-         Last_Lim_E := E;
-         return E;
-      end New_Internal_Shadow_Entity;
+      Last_Public_Shadow : Entity_Id := Empty;
+      Private_Shadow     : Entity_Id;
+      Spec               : Node_Id;
 
    --  Start of processing for Build_Limited_Views
 
@@ -5716,49 +5650,51 @@ package body Sem_Ch10 is
             null;
 
          when N_Subprogram_Declaration =>
-            Error_Msg_N ("subprograms not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N ("subprograms not allowed in limited with_clauses", N);
             return;
 
          when N_Generic_Package_Declaration |
               N_Generic_Subprogram_Declaration =>
-            Error_Msg_N ("generics not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N ("generics not allowed in limited with_clauses", N);
             return;
 
          when N_Generic_Instantiation =>
-            Error_Msg_N ("generic instantiations not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N
+              ("generic instantiations not allowed in limited with_clauses",
+               N);
             return;
 
          when N_Generic_Renaming_Declaration =>
-            Error_Msg_N ("generic renamings not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N
+              ("generic renamings not allowed in limited with_clauses", N);
             return;
 
          when N_Subprogram_Renaming_Declaration =>
-            Error_Msg_N ("renamed subprograms not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N
+              ("renamed subprograms not allowed in limited with_clauses", N);
             return;
 
          when N_Package_Renaming_Declaration =>
-            Error_Msg_N ("renamed packages not allowed in "
-                         & "limited with_clauses", N);
+            Error_Msg_N
+              ("renamed packages not allowed in limited with_clauses", N);
             return;
 
          when others =>
             raise Program_Error;
       end case;
 
-      --  The limited unit is not analyzed but the with clause must be
-      --  minimally decorated so that checks on unused with clause also work
-      --  with limited with clauses.
+      --  The withed unit may not be analyzed, but the with calause itself
+      --  must be minimally decorated. This ensures that the checks on unused
+      --  with clauses also process limieted withs.
 
-      if Is_Entity_Name (Name (N)) then
-         Set_Entity (Name (N), P);
+      Set_Ekind (Pack, E_Package);
+      Set_Etype (Pack, Standard_Void_Type);
 
-      elsif Nkind (Name (N)) = N_Selected_Component then
-         Set_Entity (Selector_Name (Name (N)), P);
+      if Is_Entity_Name (Nam) then
+         Set_Entity (Nam, Pack);
+
+      elsif Nkind (Nam) = N_Selected_Component then
+         Set_Entity (Selector_Name (Nam), Pack);
       end if;
 
       --  Check if the chain is already built
@@ -5769,41 +5705,37 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      Set_Ekind (P, E_Package);
+      --  Create the shadow package wich hides the withed unit and provides
+      --  incomplete view of all types and packages declared within.
 
-      --  Build the header of the limited_view
+      Shadow_Pack := Make_Temporary (Sloc (N), 'Z');
+      Set_Ekind        (Shadow_Pack, E_Package);
+      Set_Is_Internal  (Shadow_Pack);
+      Set_Limited_View (Pack, Shadow_Pack);
 
-      Lim_Header := Make_Temporary (Sloc (N), 'Z');
-      Set_Ekind (Lim_Header, E_Package);
-      Set_Is_Internal (Lim_Header);
-      Set_Limited_View (P, Lim_Header);
+      --  Inspect the visible declarations of the withed unit and create shadow
+      --  entities that hide existing types and packages.
 
-      --  Create the auxiliary chain. All the shadow entities are appended to
-      --  the list of entities of the limited-view header
+      Process_Declarations
+        (Decls => Visible_Declarations (Spec),
+         Scop  => Pack);
 
-      Build_Chain
-        (Scope      => P,
-         First_Decl => First (Visible_Declarations (Spec)));
+      Last_Public_Shadow := Last_Shadow;
 
-      --  Save the last built shadow entity. It is needed later to set the
-      --  reference to the first shadow entity in the private part
+      --  Ada 2005 (AI-262): Build the limited view of the private declarations
+      --  to accomodate limited private with clauses.
 
-      Last_Pub_Lim_E := Last_Lim_E;
+      Process_Declarations
+        (Decls => Private_Declarations (Spec),
+         Scop  => Pack);
 
-      --  Ada 2005 (AI-262): Add the limited view of the private declarations
-      --  Required to give support to limited-private-with clauses
-
-      Build_Chain (Scope      => P,
-                   First_Decl => First (Private_Declarations (Spec)));
-
-      if Last_Pub_Lim_E /= Empty then
-         Set_First_Private_Entity
-           (Lim_Header, Next_Entity (Last_Pub_Lim_E));
+      if Present (Last_Public_Shadow) then
+         Private_Shadow := Next_Entity (Last_Public_Shadow);
       else
-         Set_First_Private_Entity
-           (Lim_Header, First_Entity (P));
+         Private_Shadow := First_Entity (Shadow_Pack);
       end if;
 
+      Set_First_Private_Entity (Shadow_Pack, Private_Shadow);
       Set_Limited_View_Installed (Spec);
    end Build_Limited_Views;
 
@@ -6118,7 +6050,7 @@ package body Sem_Ch10 is
 
       --  Indicate that the limited view of the package is not installed
 
-      Set_From_With_Type         (P, False);
+      Set_From_Limited_With      (P, False);
       Set_Limited_View_Installed (N, False);
    end Remove_Limited_With_Clause;
 

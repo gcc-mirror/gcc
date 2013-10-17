@@ -1296,14 +1296,14 @@ package body Exp_Attr is
             --  Handle designated types that come from the limited view
 
             if Ekind (Btyp_DDT) = E_Incomplete_Type
-              and then From_With_Type (Btyp_DDT)
+              and then From_Limited_With (Btyp_DDT)
               and then Present (Non_Limited_View (Btyp_DDT))
             then
                Btyp_DDT := Non_Limited_View (Btyp_DDT);
 
             elsif Is_Class_Wide_Type (Btyp_DDT)
                and then Ekind (Etype (Btyp_DDT)) = E_Incomplete_Type
-               and then From_With_Type (Etype (Btyp_DDT))
+               and then From_Limited_With (Etype (Btyp_DDT))
                and then Present (Non_Limited_View (Etype (Btyp_DDT)))
                and then Present (Class_Wide_Type
                                   (Non_Limited_View (Etype (Btyp_DDT))))

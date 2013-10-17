@@ -1445,7 +1445,7 @@ package body Sem_Util is
          --  Ada 2005 (AI-50217): If the type is available through a limited
          --  with_clause, verify that its full view has been analyzed.
 
-         if From_With_Type (T)
+         if From_Limited_With (T)
            and then Present (Non_Limited_View (T))
            and then Ekind (Non_Limited_View (T)) /= E_Incomplete_Type
          then
@@ -9150,7 +9150,7 @@ package body Sem_Util is
    begin
       return
         Is_Class_Wide_Type (Typ)
-          and then (Is_Limited_Type (Typ) or else From_With_Type (Typ));
+          and then (Is_Limited_Type (Typ) or else From_Limited_With (Typ));
    end Is_Limited_Class_Wide_Type;
 
    ---------------------------------
@@ -15419,7 +15419,7 @@ package body Sem_Util is
               ("\\found an access type with designated}!",
                 Expr, Designated_Type (Found_Type));
          else
-            if From_With_Type (Found_Type) then
+            if From_Limited_With (Found_Type) then
                Error_Msg_NE ("\\found incomplete}!", Expr, Found_Type);
                Error_Msg_Qual_Level := 99;
                Error_Msg_NE -- CODEFIX

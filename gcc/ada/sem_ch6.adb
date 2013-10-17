@@ -2500,7 +2500,7 @@ package body Sem_Ch6 is
 
          begin
             if Ekind (Typ) = E_Incomplete_Type
-              and then From_With_Type (Typ)
+              and then From_Limited_With (Typ)
               and then Present (Non_Limited_View (Typ))
             then
                Set_Etype (Id, Non_Limited_View (Typ));
@@ -3058,7 +3058,9 @@ package body Sem_Ch6 is
             if Ekind (Rtyp) = E_Anonymous_Access_Type then
                Etyp := Directly_Designated_Type (Rtyp);
 
-               if Is_Class_Wide_Type (Etyp) and then From_With_Type (Etyp) then
+               if Is_Class_Wide_Type (Etyp)
+                 and then From_Limited_With (Etyp)
+               then
                   Set_Directly_Designated_Type
                     (Etype (Current_Scope), Available_View (Etyp));
                end if;
@@ -6547,7 +6549,9 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
 
-         elsif Ekind (T) = E_Incomplete_Type and then From_With_Type (T) then
+         elsif Ekind (T) = E_Incomplete_Type
+           and then From_Limited_With (T)
+         then
             Set_Has_Delayed_Freeze (Designator);
 
          --  AI05-0151: In Ada 2012, Incomplete types can appear in the profile
@@ -7711,14 +7715,14 @@ package body Sem_Ch6 is
          --  access-to-class-wide type in a formal. Both entities designate the
          --  same type.
 
-         if From_With_Type (T1) and then T2 = Available_View (T1) then
+         if From_Limited_With (T1) and then T2 = Available_View (T1) then
             return True;
 
-         elsif From_With_Type (T2) and then T1 = Available_View (T2) then
+         elsif From_Limited_With (T2) and then T1 = Available_View (T2) then
             return True;
 
-         elsif From_With_Type (T1)
-           and then From_With_Type (T2)
+         elsif From_Limited_With (T1)
+           and then From_Limited_With (T2)
            and then Available_View (T1) = Available_View (T2)
          then
             return True;
@@ -8212,7 +8216,8 @@ package body Sem_Ch6 is
             --  the designated type comes from the limited view (for back-end
             --  purposes).
 
-            Set_From_With_Type (Formal_Typ, From_With_Type (Result_Subt));
+            Set_From_Limited_With
+              (Formal_Typ, From_Limited_With (Result_Subt));
 
             Layout_Type (Formal_Typ);
 
@@ -10946,7 +10951,7 @@ package body Sem_Ch6 is
       First_Out_Param : Entity_Id := Empty;
       --  Used for setting Is_Only_Out_Parameter
 
-      function Designates_From_With_Type (Typ : Entity_Id) return Boolean;
+      function Designates_From_Limited_With (Typ : Entity_Id) return Boolean;
       --  Determine whether an access type designates a type coming from a
       --  limited view.
 
@@ -10955,11 +10960,11 @@ package body Sem_Ch6 is
       --  default has the type of the formal, so we must also check explicitly
       --  for an access attribute.
 
-      -------------------------------
-      -- Designates_From_With_Type --
-      -------------------------------
+      ----------------------------------
+      -- Designates_From_Limited_With --
+      ----------------------------------
 
-      function Designates_From_With_Type (Typ : Entity_Id) return Boolean is
+      function Designates_From_Limited_With (Typ : Entity_Id) return Boolean is
          Desig : Entity_Id := Typ;
 
       begin
@@ -10972,8 +10977,9 @@ package body Sem_Ch6 is
          end if;
 
          return
-           Ekind (Desig) = E_Incomplete_Type and then From_With_Type (Desig);
-      end Designates_From_With_Type;
+           Ekind (Desig) = E_Incomplete_Type
+             and then From_Limited_With (Desig);
+      end Designates_From_Limited_With;
 
       ---------------------------
       -- Is_Class_Wide_Default --
@@ -11031,7 +11037,7 @@ package body Sem_Ch6 is
 
                if Is_Tagged_Type (Formal_Type) then
                   if Ekind (Scope (Current_Scope)) = E_Package
-                    and then not From_With_Type (Formal_Type)
+                    and then not From_Limited_With (Formal_Type)
                     and then not Is_Generic_Type (Formal_Type)
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
@@ -11214,7 +11220,7 @@ package body Sem_Ch6 is
             --  is also class-wide.
 
             if Ekind (Formal_Type) = E_Anonymous_Access_Type
-              and then not Designates_From_With_Type (Formal_Type)
+              and then not Designates_From_Limited_With (Formal_Type)
               and then Is_Class_Wide_Default (Default)
               and then not Is_Class_Wide_Type (Designated_Type (Formal_Type))
             then

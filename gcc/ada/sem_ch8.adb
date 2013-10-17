@@ -4104,7 +4104,7 @@ package body Sem_Ch8 is
 
          T := Entity (Id);
 
-         if T = Any_Type or else From_With_Type (T) then
+         if T = Any_Type or else From_Limited_With (T) then
             null;
 
          --  Note that the use_type clause may mention a subtype of the type
@@ -5221,7 +5221,7 @@ package body Sem_Ch8 is
             --  The non-limited view may itself be incomplete, in which case
             --  get the full view if available.
 
-            elsif From_With_Type (Id)
+            elsif From_Limited_With (Id)
               and then Is_Type (Id)
               and then Ekind (Id) = E_Incomplete_Type
               and then Present (Non_Limited_View (Id))
@@ -5519,8 +5519,8 @@ package body Sem_Ch8 is
 
       --  Ada 2005 (AI-50217): Check usage of entities in limited withed units
 
-      if Ekind (P_Name) = E_Package and then From_With_Type (P_Name) then
-         if From_With_Type (Id)
+      if Ekind (P_Name) = E_Package and then From_Limited_With (P_Name) then
+         if From_Limited_With (Id)
            or else Is_Type (Id)
            or else Ekind (Id) = E_Package
          then
@@ -6328,7 +6328,7 @@ package body Sem_Ch8 is
                      --  tagged if the type itself has an untagged incomplete
                      --  type view in its package.
 
-                     if From_With_Type (T)
+                     if From_Limited_With (T)
                        and then not Is_Tagged_Type (Available_View (T))
                      then
                         Error_Msg_N
@@ -6519,7 +6519,7 @@ package body Sem_Ch8 is
             --  Ada 2005 (AI-251, AI-50217): Handle interfaces visible through
             --  limited-with clauses
 
-            if From_With_Type (T_Name)
+            if From_Limited_With (T_Name)
               and then Ekind (T_Name) in Incomplete_Kind
               and then Present (Non_Limited_View (T_Name))
               and then Is_Interface (Non_Limited_View (T_Name))
@@ -7097,7 +7097,7 @@ package body Sem_Ch8 is
            or else (Is_Private_Type (T1) and then Has_Discriminants (T1))
            or else (Is_Task_Type (T1) and then Has_Discriminants (T1))
            or else (Is_Incomplete_Type (T1)
-                     and then From_With_Type (T1)
+                     and then From_Limited_With (T1)
                      and then Present (Non_Limited_View (T1))
                      and then Is_Record_Type
                                 (Get_Full_View (Non_Limited_View (T1))));
@@ -7878,7 +7878,7 @@ package body Sem_Ch8 is
 
       --  Ada 2005 (AI-50217): Check restriction
 
-      if From_With_Type (P) then
+      if From_Limited_With (P) then
          Error_Msg_N ("limited withed package cannot appear in use clause", N);
       end if;
 
@@ -8201,7 +8201,7 @@ package body Sem_Ch8 is
       --  a limited view unless we only have a limited view of its enclosing
       --  package.
 
-      elsif From_With_Type (T) and then From_With_Type (Scope (T)) then
+      elsif From_Limited_With (T) and then From_Limited_With (Scope (T)) then
          Error_Msg_N
            ("incomplete type from limited view "
             & "cannot appear in use clause", Id);

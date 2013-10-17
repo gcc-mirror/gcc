@@ -17218,6 +17218,14 @@ package body Sem_Prag is
             Spec_Id : Entity_Id;
 
          begin
+            --  Disable the support for pragma Refined_Pre as its static and
+            --  runtime semantics are still under heavy design.
+
+            if Pname = Name_Refined_Pre then
+               Error_Pragma ("pragma % is not supported");
+               return;
+            end if;
+
             Analyze_Refined_Pragma (Spec_Id, Body_Id, Legal);
 
             --  Analyze the boolean expression as a "spec expression"

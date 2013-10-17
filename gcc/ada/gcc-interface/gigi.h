@@ -93,8 +93,8 @@ do {					\
     mark_visited (EXP);			\
 } while (0)
 
-/* Finalize the processing of From_With_Type incomplete types.  */
-extern void finalize_from_with_types (void);
+/* Finalize the processing of From_Limited_With incomplete types.  */
+extern void finalize_from_limited_with (void);
 
 /* Return the equivalent type to be used for GNAT_ENTITY, if it's a
    kind of type (such E_Task_Type) that has a different type which Gigi

@@ -437,7 +437,7 @@ package body Einfo is
    --    Referenced                      Flag156
    --    Has_Pragma_Inline               Flag157
    --    Finalize_Storage_Only           Flag158
-   --    From_With_Type                  Flag159
+   --    From_Limited_With               Flag159
    --    Is_Package_Body_Entity          Flag160
 
    --    Has_Qualified_Name              Flag161
@@ -1242,10 +1242,10 @@ package body Einfo is
       return Node7 (Id);
    end Freeze_Node;
 
-   function From_With_Type (Id : E) return B is
+   function From_Limited_With (Id : E) return B is
    begin
       return Flag159 (Id);
-   end From_With_Type;
+   end From_Limited_With;
 
    function Full_View (Id : E) return E is
    begin
@@ -3863,13 +3863,11 @@ package body Einfo is
       Set_Node7 (Id, V);
    end Set_Freeze_Node;
 
-   procedure Set_From_With_Type (Id : E; V : B := True) is
+   procedure Set_From_Limited_With (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Is_Type (Id)
-           or else Ekind (Id) = E_Package);
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Package);
       Set_Flag159 (Id, V);
-   end Set_From_With_Type;
+   end Set_From_Limited_With;
 
    procedure Set_Full_View (Id : E; V : E) is
    begin
@@ -7899,7 +7897,7 @@ package body Einfo is
          --  view then we return the Underlying_Type of its non-limited
          --  view.
 
-         elsif From_With_Type (Id)
+         elsif From_Limited_With (Id)
            and then Present (Non_Limited_View (Id))
          then
             return Underlying_Type (Non_Limited_View (Id));
@@ -8002,7 +8000,7 @@ package body Einfo is
       W ("Entry_Accepted",                  Flag152 (Id));
       W ("Can_Use_Internal_Rep",            Flag229 (Id));
       W ("Finalize_Storage_Only",           Flag158 (Id));
-      W ("From_With_Type",                  Flag159 (Id));
+      W ("From_Limited_With",               Flag159 (Id));
       W ("Has_Aliased_Components",          Flag135 (Id));
       W ("Has_Alignment_Clause",            Flag46  (Id));
       W ("Has_All_Calls_Remote",            Flag79  (Id));
@@ -8698,13 +8696,12 @@ package body Einfo is
    procedure Write_Field16_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-
-         when E_Abstract_State                             =>
-            Write_Str ("Body_References");
-
          when E_Record_Type                                |
               E_Record_Type_With_Private                   =>
             Write_Str ("Access_Disp_Table");
+
+         when E_Abstract_State                             =>
+            Write_Str ("Body_References");
 
          when E_Record_Subtype                             |
               E_Class_Wide_Subtype                         =>
@@ -8794,7 +8791,7 @@ package body Einfo is
             Write_Str ("Non_Limited_View");
 
          when E_Incomplete_Subtype                         =>
-            if From_With_Type (Id) then
+            if From_Limited_With (Id) then
                Write_Str ("Non_Limited_View");
             end if;
 

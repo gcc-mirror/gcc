@@ -804,7 +804,7 @@ package body Sem_Ch7 is
       --     limited with Pkg; -- ERROR
       --     package Pkg is ...
 
-      if From_With_Type (Id) then
+      if From_Limited_With (Id) then
          return;
       end if;
 
@@ -1580,7 +1580,7 @@ package body Sem_Ch7 is
       E := First_Entity (Spec_Id);
       while Present (E) loop
          if Ekind (E) = E_Anonymous_Access_Type
-           and then From_With_Type (E)
+           and then From_Limited_With (E)
          then
             IR := Make_Itype_Reference (Sloc (P_Body));
             Set_Itype (IR, E);

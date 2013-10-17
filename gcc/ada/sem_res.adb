@@ -9858,7 +9858,7 @@ package body Sem_Res is
 
                --  Ada 2005 (AI-217): Handle entities from limited views
 
-               if From_With_Type (Opnd) then
+               if From_Limited_With (Opnd) then
                   Error_Msg_Qual_Level := 99;
                   Error_Msg_NE -- CODEFIX
                     ("missing WITH clause on package &", N,
@@ -9867,7 +9867,7 @@ package body Sem_Res is
                     ("type conversions require visibility of the full view",
                      N);
 
-               elsif From_With_Type (Target)
+               elsif From_Limited_With (Target)
                  and then not
                    (Is_Access_Type (Target_Typ)
                       and then Present (Non_Limited_View (Etype (Target))))
@@ -10871,7 +10871,7 @@ package body Sem_Res is
          --  it to determine whether the conversion is legal.
 
          elsif Is_Class_Wide_Type (Opnd_Type)
-           and then From_With_Type (Opnd_Type)
+           and then From_Limited_With (Opnd_Type)
            and then Present (Non_Limited_View (Etype (Opnd_Type)))
            and then Is_Interface (Non_Limited_View (Etype (Opnd_Type)))
          then
@@ -11346,7 +11346,7 @@ package body Sem_Res is
                --  Handle the limited view of a type
 
                if Is_Incomplete_Type (Desig)
-                 and then From_With_Type (Desig)
+                 and then From_Limited_With (Desig)
                  and then Present (Non_Limited_View (Desig))
                then
                   return Available_View (Desig);

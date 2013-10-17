@@ -1636,7 +1636,7 @@ package body Sem_Attr is
 
             Typ := Etype (E);
 
-            if From_With_Type (Typ) then
+            if From_Limited_With (Typ) then
                Error_Attr_P
                  ("prefix of % attribute cannot be an incomplete type");
 
@@ -1655,7 +1655,7 @@ package body Sem_Attr is
                --  entities may occur in subprogram formals.
 
                if Is_Incomplete_Type (Typ)
-                 and then From_With_Type (Typ)
+                 and then From_Limited_With (Typ)
                  and then Present (Non_Limited_View (Typ))
                  and then Is_Legal_Shadow_Entity_In_Body (Typ)
                then
@@ -9705,7 +9705,7 @@ package body Sem_Attr is
                --  use of it. If it is an incomplete subtype, use the base type
                --  in any case.
 
-               if From_With_Type (Des_Btyp)
+               if From_Limited_With (Des_Btyp)
                  and then Present (Non_Limited_View (Des_Btyp))
                then
                   Des_Btyp := Non_Limited_View (Des_Btyp);

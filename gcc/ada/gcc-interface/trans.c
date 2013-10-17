@@ -5009,7 +5009,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   /* Process any pragmas and actions following the unit.  */
   add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
   add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
-  finalize_from_with_types ();
+  finalize_from_limited_with ();
 
   /* Save away what we've made so far and record this potential elaboration
      procedure.  */
@@ -6629,7 +6629,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   Present (gnat_temp);
 	   gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	if (Is_Itype (Etype (gnat_temp))
-	    && !From_With_Type (Etype (gnat_temp)))
+	    && !From_Limited_With (Etype (gnat_temp)))
 	  gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
 
       /* Then the result type, set to Standard_Void_Type for procedures.  */
@@ -6637,7 +6637,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	Entity_Id gnat_temp_type
 	  = Etype (Defining_Entity (Specification (gnat_node)));
 
-	if (Is_Itype (gnat_temp_type) && !From_With_Type (gnat_temp_type))
+	if (Is_Itype (gnat_temp_type) && !From_Limited_With (gnat_temp_type))
 	  gnat_to_gnu_entity (Etype (gnat_temp_type), NULL_TREE, 0);
       }
 

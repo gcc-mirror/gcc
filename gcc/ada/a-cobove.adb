@@ -1227,7 +1227,22 @@ package body Ada.Containers.Bounded_Vectors is
             --  worry about if No_Index were less than 0, but that case is
             --  handled above).
 
-            Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            if Index_Type'Last - No_Index >=
+                 Count_Type'Pos (Count_Type'Last)
+            then
+               --  We have determined that range of Index_Type has at least as
+               --  many values as in Count_Type, so Count_Type'Last is the
+               --  maximum number of items that are allowed.
+
+               Max_Length := Count_Type'Last;
+
+            else
+               --  The range of Index_Type has fewer values than in Count_Type,
+               --  so the maximum number of items is computed from the range of
+               --  the Index_Type.
+
+               Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            end if;
          end if;
 
       elsif Index_Type'First <= 0 then
@@ -1685,7 +1700,22 @@ package body Ada.Containers.Bounded_Vectors is
             --  worry about if No_Index were less than 0, but that case is
             --  handled above).
 
-            Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            if Index_Type'Last - No_Index >=
+                 Count_Type'Pos (Count_Type'Last)
+            then
+               --  We have determined that range of Index_Type has at least as
+               --  many values as in Count_Type, so Count_Type'Last is the
+               --  maximum number of items that are allowed.
+
+               Max_Length := Count_Type'Last;
+
+            else
+               --  The range of Index_Type has fewer values than in Count_Type,
+               --  so the maximum number of items is computed from the range of
+               --  the Index_Type.
+
+               Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            end if;
          end if;
 
       elsif Index_Type'First <= 0 then

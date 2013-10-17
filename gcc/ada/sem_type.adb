@@ -1127,7 +1127,7 @@ package body Sem_Type is
       then
          return Covers (Designated_Type (T1), Designated_Type (T2))
           or else
-            (From_With_Type (Designated_Type (T1))
+            (From_Limited_With (Designated_Type (T1))
               and then Covers (Designated_Type (T2), Designated_Type (T1)));
 
       --  A boolean operation on integer literals is compatible with modular
@@ -1205,7 +1205,7 @@ package body Sem_Type is
       --  Ada 2005 (AI-50217): Additional branches to make the shadow entity
       --  obtained through a limited_with compatible with its real entity.
 
-      elsif From_With_Type (T1) then
+      elsif From_Limited_With (T1) then
 
          --  If the expected type is the non-limited view of a type, the
          --  expression may have the limited view. If that one in turn is
@@ -1221,7 +1221,7 @@ package body Sem_Type is
             return False;
          end if;
 
-      elsif From_With_Type (T2) then
+      elsif From_Limited_With (T2) then
 
          --  If units in the context have Limited_With clauses on each other,
          --  either type might have a limited view. Checks performed elsewhere

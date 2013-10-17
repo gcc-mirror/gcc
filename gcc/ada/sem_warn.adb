@@ -2434,7 +2434,7 @@ package body Sem_Warn is
                           or else Referenced_As_LHS_Check_Spec (Ent)
                           or else Referenced_As_Out_Parameter_Check_Spec (Ent)
                           or else
-                            (From_With_Type (Ent)
+                            (From_Limited_With (Ent)
                               and then Is_Incomplete_Type (Ent)
                               and then Present (Non_Limited_View (Ent))
                               and then Referenced (Non_Limited_View (Ent)))
