@@ -1,3 +1,9 @@
+2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_fixup_binary_operands): When both source
+	operands are in memory, prefer to force non-matched operand 1 to
+	the register.
+
 2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/58673
@@ -257,55 +263,55 @@
 	opts->x_ix86_tune_memset_strategy.
 	Change global_options to access opts.
 	Change global_options_set to access opts_set.
-        Change TARGET_64BIT to TARGET_64BIT_P (opts->...)
-        Change TARGET_MMX to TARGET_MMX_P (opts->...)
-        Change TARGET_3DNOW to TARGET_3DNOW_P (opts->...)
-        Change TARGET_3DNOW_A to TARGET_3DNOW_A_P (opts->...)
-        Change TARGET_SSE to TARGET_SSE_P (opts->...)
-        Change TARGET_SSE2 to TARGET_SSE2_P (opts->...)
-        Change TARGET_SSE3 to TARGET_SSE3_P (opts->...)
-        Change TARGET_SSSE3 to TARGET_SSSE3_P (opts->...)
-        Change TARGET_SSE4_1 to TARGET_SSE4_1_P (opts->...)
-        Change TARGET_SSE4_2 to TARGET_SSE4_2_P (opts->...)
-        Change TARGET_AVX to TARGET_AVX_P (opts->...)
-        Change TARGET_AVX2 to TARGET_AVX2_P (opts->...)
-        Change TARGET_AVX512F to TARGET_AVX512F_P (opts->...)
-        Change TARGET_AVX512PF to TARGET_AVX512PF_P (opts->...)
-        Change TARGET_AVX512ER to TARGET_AVX512ER_P (opts->...)
-        Change TARGET_AVX512CD to TARGET_AVX512CD_P (opts->...)
-        Change TARGET_FMA to TARGET_FMA_P (opts->...)
-        Change TARGET_SSE4A to TARGET_SSE4A_P (opts->...)
-        Change TARGET_FMA4 to TARGET_FMA4_P (opts->...)
-        Change TARGET_XOP to TARGET_XOP_P (opts->...)
-        Change TARGET_LWP to TARGET_LWP_P (opts->...)
-        Change TARGET_ABM to TARGET_ABM_P (opts->...)
-        Change TARGET_BMI to TARGET_BMI_P (opts->...)
-        Change TARGET_BMI2 to TARGET_BMI2_P (opts->...)
-        Change TARGET_LZCNT to TARGET_LZCNT_P (opts->...)
-        Change TARGET_TBM to TARGET_TBM_P (opts->...)
-        Change TARGET_POPCNT to TARGET_POPCNT_P (opts->...)
-        Change TARGET_SAHF to TARGET_SAHF_P (opts->...)
-        Change TARGET_MOVBE to TARGET_MOVBE_P (opts->...)
-        Change TARGET_CRC32 to TARGET_CRC32_P (opts->...)
-        Change TARGET_AES to TARGET_AES_P (opts->...)
-        Change TARGET_PCLMUL to TARGET_PCLMUL_P (opts->...)
-        Change TARGET_CMPXCHG16B to TARGET_CMPXCHG16B_P (opts->...)
-        Change TARGET_FSGSBASE to TARGET_FSGSBASE_P (opts->...)
-        Change TARGET_RDRND to TARGET_RDRND_P (opts->...)
-        Change TARGET_F16C to TARGET_F16C_P (opts->...)
-        Change TARGET_RTM to TARGET_RTM_P (opts->...)
-        Change TARGET_HLE to TARGET_HLE_P (opts->...)
-        Change TARGET_RDSEED to TARGET_RDSEED_P (opts->...)
-        Change TARGET_PRFCHW to TARGET_PRFCHW_P (opts->...)
-        Change TARGET_ADX to TARGET_ADX_P (opts->...)
-        Change TARGET_FXSR to TARGET_FXSR_P (opts->...)
-        Change TARGET_XSAVE to TARGET_XSAVE_P (opts->...)
-        Change TARGET_XSAVEOPT to TARGET_XSAVEOPT_P (opts->...)
-        Change TARGET_LP64 to TARGET_LP64_P (opts->...)
-        Change TARGET_X32 to TARGET_X32_P (opts->...)
-        Change TARGET_FPMATH_DEFAULT to TARGET_FPMATH_DEFAULT_P (opts->...)
-        Change TARGET_FLOAT_RETURNS_IN_80387 to
-	 TARGET_FLOAT_RETURNS_IN_80387_P (opts->...)
+	Change TARGET_64BIT to TARGET_64BIT_P (opts->...).
+	Change TARGET_MMX to TARGET_MMX_P (opts->...).
+	Change TARGET_3DNOW to TARGET_3DNOW_P (opts->...).
+	Change TARGET_3DNOW_A to TARGET_3DNOW_A_P (opts->...).
+	Change TARGET_SSE to TARGET_SSE_P (opts->...).
+	Change TARGET_SSE2 to TARGET_SSE2_P (opts->...).
+	Change TARGET_SSE3 to TARGET_SSE3_P (opts->...).
+	Change TARGET_SSSE3 to TARGET_SSSE3_P (opts->...).
+	Change TARGET_SSE4_1 to TARGET_SSE4_1_P (opts->...).
+	Change TARGET_SSE4_2 to TARGET_SSE4_2_P (opts->...).
+	Change TARGET_AVX to TARGET_AVX_P (opts->...).
+	Change TARGET_AVX2 to TARGET_AVX2_P (opts->...).
+	Change TARGET_AVX512F to TARGET_AVX512F_P (opts->...).
+	Change TARGET_AVX512PF to TARGET_AVX512PF_P (opts->...).
+	Change TARGET_AVX512ER to TARGET_AVX512ER_P (opts->...).
+	Change TARGET_AVX512CD to TARGET_AVX512CD_P (opts->...).
+	Change TARGET_FMA to TARGET_FMA_P (opts->...).
+	Change TARGET_SSE4A to TARGET_SSE4A_P (opts->...).
+	Change TARGET_FMA4 to TARGET_FMA4_P (opts->...).
+	Change TARGET_XOP to TARGET_XOP_P (opts->...).
+	Change TARGET_LWP to TARGET_LWP_P (opts->...).
+	Change TARGET_ABM to TARGET_ABM_P (opts->...).
+	Change TARGET_BMI to TARGET_BMI_P (opts->...).
+	Change TARGET_BMI2 to TARGET_BMI2_P (opts->...).
+	Change TARGET_LZCNT to TARGET_LZCNT_P (opts->...).
+	Change TARGET_TBM to TARGET_TBM_P (opts->...).
+	Change TARGET_POPCNT to TARGET_POPCNT_P (opts->...).
+	Change TARGET_SAHF to TARGET_SAHF_P (opts->...).
+	Change TARGET_MOVBE to TARGET_MOVBE_P (opts->...).
+	Change TARGET_CRC32 to TARGET_CRC32_P (opts->...).
+	Change TARGET_AES to TARGET_AES_P (opts->...).
+	Change TARGET_PCLMUL to TARGET_PCLMUL_P (opts->...).
+	Change TARGET_CMPXCHG16B to TARGET_CMPXCHG16B_P (opts->...).
+	Change TARGET_FSGSBASE to TARGET_FSGSBASE_P (opts->...).
+	Change TARGET_RDRND to TARGET_RDRND_P (opts->...).
+	Change TARGET_F16C to TARGET_F16C_P (opts->...).
+	Change TARGET_RTM to TARGET_RTM_P (opts->...).
+	Change TARGET_HLE to TARGET_HLE_P (opts->...).
+	Change TARGET_RDSEED to TARGET_RDSEED_P (opts->...).
+	Change TARGET_PRFCHW to TARGET_PRFCHW_P (opts->...).
+	Change TARGET_ADX to TARGET_ADX_P (opts->...).
+	Change TARGET_FXSR to TARGET_FXSR_P (opts->...).
+	Change TARGET_XSAVE to TARGET_XSAVE_P (opts->...).
+	Change TARGET_XSAVEOPT to TARGET_XSAVEOPT_P (opts->...).
+	Change TARGET_LP64 to TARGET_LP64_P (opts->...).
+	Change TARGET_X32 to TARGET_X32_P (opts->...).
+	Change TARGET_FPMATH_DEFAULT to TARGET_FPMATH_DEFAULT_P (opts->...).
+	Change TARGET_FLOAT_RETURNS_IN_80387 to
+	TARGET_FLOAT_RETURNS_IN_80387_P (opts->...).
 	(ix86_function_specific_save): New parameter. Use opts-> fields
 	to replace global fields.
 	(ix86_function_specific_restore): Ditto.
@@ -339,8 +345,7 @@
 	* configure.ac: Add --enable-host-shared, setting up new
 	PICFLAG variable.
 	* configure: Regenerate.
-	* doc/install.texi (--enable-shared): Add note contrasting it
-	with...
+	* doc/install.texi (--enable-shared): Add note contrasting it with ...
 	(--enable-host-shared): New option.
 
 2013-10-15  Richard Biener  <rguenther@suse.de>
@@ -1242,8 +1247,8 @@
 
 2013-10-15  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* reload1.c (reloads_unique_chain_p): Ensure that r1 is the input for
-	r2.
+	* reload1.c (reloads_unique_chain_p): Ensure that r1 is
+	the input for r2.
 
 2013-10-15  Richard Biener  <rguenther@suse.de>
 
@@ -1280,8 +1285,7 @@
 	* context.h (gcc::context::get_dumps): New.
 	(gcc::context::m_dumps): New.
 	* coverage.c (coverage_init): Port to dump_manager API.
-	* dumpfile.c (extra_dump_files): Convert to field of
-	gcc::dump_manager.
+	* dumpfile.c (extra_dump_files): Convert to field of gcc::dump_manager.
 	(extra_dump_files_in_use): Likewise.
 	(extra_dump_files_alloced): Likewise.
 	(gcc::dump_manager::dump_manager): New.
@@ -1456,7 +1460,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-	* config/i386/i386.c (bdesc_args): Change corresponding pattern  for
+	* config/i386/i386.c (bdesc_args): Change corresponding pattern for
 	__builtin_ia32_cvtps2dq, __builtin_ia32_cvtps2dq256.
 	* config/i386/sse.md (VI4_AVX): New.
 	(sf2simodelower): Ditto.
@@ -1720,9 +1724,9 @@
 
 2013-10-11  Richard Biener  <rguenther@suse.de>
 
-	* tree-pretty-print.c (dump_generic_node): Allow to dump
-	both (D) and (ab) for SSA_NAMEs.  Mark INTEGER_CSTs with
-	(OVF) if TREE_OVERFLOW is set.
+	* tree-pretty-print.c (dump_generic_node): Allow to dump both (D)
+	and (ab) for SSA_NAMEs.  Mark INTEGER_CSTs with (OVF) if
+	TREE_OVERFLOW is set.
 
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -1796,8 +1800,7 @@
 	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS.
 	(build_omp_barrier): Add lhs argument, return gimple rather than tree.
 	(omp_clause_aligned_alignment): New function.
-	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR
-	on decls.
+	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR on decls.
 	(lower_rec_input_clauses): Add FD argument.  Ignore shared clauses
 	on teams constructs.  Handle user defined reductions and new
 	OpenMP 4.0 clauses.
@@ -1883,8 +1886,7 @@
 	hook.
 	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP,
 	GOVD_ALIGNED and GOVD_MAP_TO_ONLY.
-	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET_DATA and
-	ORT_TARGET.
+	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET_DATA and ORT_TARGET.
 	(struct gimplify_omp_ctx): Add combined_loop field.
 	(gimplify_call_expr, gimplify_modify_expr): Don't call fold_stmt
 	on stmts inside of target region.
@@ -2019,8 +2021,7 @@
 2013-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58656
-	* tree-ssa-pre.c (phi_translate): Do not cache failed
-	translations.
+	* tree-ssa-pre.c (phi_translate): Do not cache failed translations.
 
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
