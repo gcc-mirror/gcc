@@ -2095,10 +2095,19 @@ package body Sem_Res is
 
       Check_Parameterless_Call (N);
 
+      --  The resolution of an Expression_With_Actions is determined by
+      --  its Expression.
+
+      if Nkind (N) = N_Expression_With_Actions then
+         Resolve (Expression (N), Typ);
+
+         Found := True;
+         Expr_Type := Etype (Expression (N));
+
       --  If not overloaded, then we know the type, and all that needs doing
       --  is to check that this type is compatible with the context.
 
-      if not Is_Overloaded (N) then
+      elsif not Is_Overloaded (N) then
          Found := Covers (Typ, Etype (N));
          Expr_Type := Etype (N);
 
@@ -7274,6 +7283,17 @@ package body Sem_Res is
    procedure Resolve_Expression_With_Actions (N : Node_Id; Typ : Entity_Id) is
    begin
       Set_Etype (N, Typ);
+
+      --  If N has no actions, and its expression has been constant folded,
+      --  then rewrite N as just its expression. Note, we can't do this in
+      --  the general case of Is_Empty_List (Actions (N)) as this would cause
+      --  Expression (N) to be expanded again.
+
+      if Is_Empty_List (Actions (N))
+        and then Compile_Time_Known_Value (Expression (N))
+      then
+         Rewrite (N, Expression (N));
+      end if;
    end Resolve_Expression_With_Actions;
 
    ---------------------------
@@ -8996,6 +9016,30 @@ package body Sem_Res is
       R     : constant Node_Id   := Right_Opnd (N);
 
    begin
+      --  Ensure all actions associated with the left operand (e.g.
+      --  finalization of transient controlled objects) are fully evaluated
+      --  locally within an expression with actions. This is particularly
+      --  helpful for coverage analysis. However this should not happen in
+      --  generics.
+
+      if Expander_Active then
+         declare
+            Reloc_L : constant Node_Id := Relocate_Node (L);
+         begin
+            Save_Interps (Old_N => L, New_N => Reloc_L);
+
+            Rewrite (L,
+              Make_Expression_With_Actions (Sloc (L),
+                Actions    => New_List,
+                Expression => Reloc_L));
+
+            --  Set Comes_From_Source on L to preserve warnings for unset
+            --  reference.
+
+            Set_Comes_From_Source (L, Comes_From_Source (Reloc_L));
+         end;
+      end if;
+
       Resolve (L, B_Typ);
       Resolve (R, B_Typ);
 

@@ -7279,6 +7279,16 @@ package body Sem_Ch13 is
             when N_Qualified_Expression =>
                return Get_RList (Expression (Exp));
 
+            --  Expression with actions: if no actions, dig out expression
+
+            when N_Expression_With_Actions =>
+               if Is_Empty_List (Actions (Exp)) then
+                  return Get_RList (Expression (Exp));
+
+               else
+                  raise Non_Static;
+               end if;
+
             --  Xor operator
 
             when N_Op_Xor =>

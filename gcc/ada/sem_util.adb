@@ -6777,6 +6777,12 @@ package body Sem_Util is
                    and then
                 Has_No_Obvious_Side_Effects (Right_Opnd (N));
 
+      elsif Nkind (N) = N_Expression_With_Actions
+              and then
+            Is_Empty_List (Actions (N))
+      then
+         return Has_No_Obvious_Side_Effects (Expression (N));
+
       elsif Nkind (N) in N_Has_Entity then
          return Present (Entity (N))
            and then Ekind_In (Entity (N), E_Variable,

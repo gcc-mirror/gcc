@@ -1,3 +1,39 @@
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb (Get_Current_Value_Condition,
+	Set_Current_Value_Condition): Handle the case of expressions
+	with actions * exp_util.adb (Insert_Actions): Handle the case
+	of an expression with actions whose Actions list is empty.
+	* exp_util.adb (Remove_Side_Effects.Side_Effect_Free): An
+	expression with actions that has no Actions and whose Expression
+	is side effect free is itself side effect free.
+	* exp_util.adb (Remove_Side_Effects): Do not set an incorrect etype on
+	temporary 'R' (Def_Id), which is in general an access to Exp_Type, not
+	an Exp_Type.
+	* sem_res.adb (Resolve): For an expression with
+	actions, resolve the expression early.	* sem_res.adb
+	(Resolve_Expression_With_Actions): Rewrite an expression with
+	actions whose value is compile time known and which has no
+	actions into just its expression, so that its constant value is
+	available downstream.
+	* sem_res.adb (Resolve_Short_Circuit):
+	Wrap the left operand in an expression with actions to contain
+	any required finalization actions.
+	* exp_ch4.adb (Expand_Expression_With_Actions): For an
+	expression with actions returning a Boolean expression, ensure
+	any finalization action is kept within the Actions list.
+	* sem_warn.adb (Check_References, Check_Unset_Reference): add
+	missing circuitry to handle expressions with actions.
+	* checks.adb (Ensure_Valid): For an expression with actions,
+	insert the validity check on the Expression.
+	* sem_ch13.adb (Build_Static_Predicate.Get_RList): An expression
+	with actions that has a non-empty Actions list is not static. An
+	expression with actions that has an empty Actions list has the
+	static ranges of its Expression.
+	* sem_util.adb (Has_No_Obvious_Side_Effects): An expression with
+	actions with an empty Actions list has no obvious side effects
+	if its Expression itsekf has no obvious side effects.
+
 2013-10-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aux.ads, sem_aux.adb (Is_Immutably_Limited_Type): Make

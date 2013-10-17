@@ -2706,18 +2706,36 @@ package body Exp_Util is
         (N : Node_Id;
          S : Boolean)
       is
-         Cond : Node_Id;
-         Sens : Boolean;
+         Cond      : Node_Id;
+         Prev_Cond : Node_Id;
+         Sens      : Boolean;
 
       begin
          Cond := N;
          Sens := S;
 
-         --  Deal with NOT operators, inverting sense
+         loop
+            Prev_Cond := Cond;
 
-         while Nkind (Cond) = N_Op_Not loop
-            Cond := Right_Opnd (Cond);
-            Sens := not Sens;
+            --  Deal with NOT operators, inverting sense
+
+            while Nkind (Cond) = N_Op_Not loop
+               Cond := Right_Opnd (Cond);
+               Sens := not Sens;
+            end loop;
+
+            --  Deal with conversions, qualifications, and expressions with
+            --  actions.
+
+            while Nkind_In (Cond,
+                    N_Type_Conversion,
+                    N_Qualified_Expression,
+                    N_Expression_With_Actions)
+            loop
+               Cond := Expression (Cond);
+            end loop;
+
+            exit when Cond = Prev_Cond;
          end loop;
 
          --  Deal with AND THEN and AND cases
@@ -2798,8 +2816,15 @@ package body Exp_Util is
 
             return;
 
-            --  Case of Boolean variable reference, return as though the
-            --  reference had said var = True.
+         elsif Nkind_In (Cond,
+                 N_Type_Conversion,
+                 N_Qualified_Expression,
+                 N_Expression_With_Actions)
+         then
+            Cond := Expression (Cond);
+
+         --  Case of Boolean variable reference, return as though the
+         --  reference had said var = True.
 
          else
             if Is_Entity_Name (Cond) and then Ent = Entity (Cond) then
@@ -3406,8 +3431,13 @@ package body Exp_Util is
 
             when N_Expression_With_Actions =>
                if N = Expression (P) then
-                  Insert_List_After_And_Analyze
-                    (Last (Actions (P)), Ins_Actions);
+                  if Is_Empty_List (Actions (P)) then
+                     Append_List_To (Actions (P), Ins_Actions);
+                     Analyze_List (Actions (P));
+                  else
+                     Insert_List_After_And_Analyze
+                       (Last (Actions (P)), Ins_Actions);
+                  end if;
                   return;
                end if;
 
@@ -6702,6 +6732,14 @@ package body Exp_Util is
             when N_Explicit_Dereference =>
                return Safe_Prefixed_Reference (N);
 
+            --  An expression with action is side effect free if its expression
+            --  is side effect free and it has no actions.
+
+            when N_Expression_With_Actions =>
+               return Is_Empty_List (Actions (N))
+                        and then
+                      Side_Effect_Free (Expression (N));
+
             --  A call to _rep_to_pos is side effect free, since we generate
             --  this pure function call ourselves. Moreover it is critically
             --  important to make this exception, since otherwise we can have
@@ -7103,7 +7141,6 @@ package body Exp_Util is
          end if;
 
          Def_Id := Make_Temporary (Loc, 'R', Exp);
-         Set_Etype (Def_Id, Exp_Type);
 
          --  The regular expansion of functions with side effects involves the
          --  generation of an access type to capture the return value found on
@@ -7780,7 +7817,14 @@ package body Exp_Util is
                Set_Entity_Current_Value (Right_Opnd (Cond));
             end if;
 
-            --  Check possible boolean variable reference
+         elsif Nkind_In (Cond,
+                 N_Type_Conversion,
+                 N_Qualified_Expression,
+                 N_Expression_With_Actions)
+         then
+            Set_Expression_Current_Value (Expression (Cond));
+
+         --  Check possible boolean variable reference
 
          else
             Set_Entity_Current_Value (Cond);

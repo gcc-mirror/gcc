@@ -1310,6 +1310,7 @@ package body Sem_Warn is
                   UR := Original_Node (UR);
                   while Nkind (UR) = N_Type_Conversion
                     or else Nkind (UR) = N_Qualified_Expression
+                    or else Nkind (UR) = N_Expression_With_Actions
                   loop
                      UR := Expression (UR);
                   end loop;
@@ -2034,9 +2035,12 @@ package body Sem_Warn is
                Check_Unset_Reference (Pref);
             end;
 
-         --  For type conversions or qualifications examine the expression
+         --  For type conversions, qualifications, or expressions with actions,
+         --  examine the expression.
 
-         when N_Type_Conversion | N_Qualified_Expression =>
+         when N_Type_Conversion         |
+              N_Qualified_Expression    |
+              N_Expression_With_Actions =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
