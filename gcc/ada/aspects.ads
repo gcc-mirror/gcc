@@ -116,7 +116,6 @@ package Aspects is
       Aspect_Refined_Depends,               -- GNAT
       Aspect_Refined_Global,                -- GNAT
       Aspect_Refined_Post,                  -- GNAT
-      Aspect_Refined_Pre,                   -- GNAT
       Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
@@ -331,7 +330,6 @@ package Aspects is
       Aspect_Refined_Depends         => Expression,
       Aspect_Refined_Global          => Expression,
       Aspect_Refined_Post            => Expression,
-      Aspect_Refined_Pre             => Expression,
       Aspect_Refined_State           => Expression,
       Aspect_Relative_Deadline       => Expression,
       Aspect_Scalar_Storage_Order    => Expression,
@@ -434,7 +432,6 @@ package Aspects is
       Aspect_Refined_Depends              => Name_Refined_Depends,
       Aspect_Refined_Global               => Name_Refined_Global,
       Aspect_Refined_Post                 => Name_Refined_Post,
-      Aspect_Refined_Pre                  => Name_Refined_Pre,
       Aspect_Refined_State                => Name_Refined_State,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
@@ -663,7 +660,6 @@ package Aspects is
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
       Aspect_Refined_Post                 => Never_Delay,
-      Aspect_Refined_Pre                  => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
@@ -726,7 +722,6 @@ package Aspects is
      (Aspect_Refined_Depends              => True,
       Aspect_Refined_Global               => True,
       Aspect_Refined_Post                 => True,
-      Aspect_Refined_Pre                  => True,
       Aspect_SPARK_Mode                   => True,
       Aspect_Warnings                     => True,
       others                              => False);

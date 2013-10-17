@@ -1259,7 +1259,6 @@ begin
            Pragma_Refined_Depends                |
            Pragma_Refined_Global                 |
            Pragma_Refined_Post                   |
-           Pragma_Refined_Pre                    |
            Pragma_Refined_State                  |
            Pragma_Relative_Deadline              |
            Pragma_Remote_Access_Type             |

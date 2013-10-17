@@ -2184,15 +2184,6 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Post);
 
-               --  Refined_Pre
-
-               --  Disable the support for aspect Refined_Pre as its static and
-               --  runtime semantics are still under heavy design.
-
-               when Aspect_Refined_Pre =>
-                  Error_Msg_NE ("aspect & is not supported", Aspect, Id);
-                  goto Continue;
-
                --  Refined_State
 
                when Aspect_Refined_State => Refined_State : declare
@@ -7907,7 +7898,6 @@ package body Sem_Ch13 is
               Aspect_Refined_Depends      |
               Aspect_Refined_Global       |
               Aspect_Refined_Post         |
-              Aspect_Refined_Pre          |
               Aspect_Refined_State        |
               Aspect_SPARK_Mode           |
               Aspect_Test_Case            =>

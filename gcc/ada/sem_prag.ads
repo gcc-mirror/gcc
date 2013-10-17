@@ -41,7 +41,6 @@ package Sem_Prag is
      (Pragma_Refined_Depends => True,
       Pragma_Refined_Global  => True,
       Pragma_Refined_Post    => True,
-      Pragma_Refined_Pre     => True,
       Pragma_SPARK_Mode      => True,
       Pragma_Warnings        => True,
       others                 => False);
