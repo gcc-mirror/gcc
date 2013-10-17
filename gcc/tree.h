@@ -5204,13 +5204,13 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
 	      scratch[len - 1] = sext_hwi (val[len - 1], precision);
 	      return wi::storage_ref (scratch, len, precision);
 	    }
-	}
-
-      if (precision < xprecision + HOST_BITS_PER_WIDE_INT)
-	{
-	  len = wi::force_to_size (scratch, val, len, xprecision, precision, UNSIGNED);
-	  return wi::storage_ref (scratch, len, precision);
-	}
+	} 
+      /* We have to futz here because a large unsigned int with
+	 precision 128 may look (0x0 0xFFFFFFFFFFFFFFFF 0xF...) as a
+	 tree-cst and as (0xF...) as a wide-int.  */
+      else if (precision == xprecision && len == max_len)
+        while (len > 1 && val[len - 1] == (HOST_WIDE_INT)-1)
+          len--;
     }
 
   /* Signed and the rest of the unsigned cases are easy.  */

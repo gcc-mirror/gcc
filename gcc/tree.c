@@ -1204,7 +1204,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
     }
 
   wide_int cst = wide_int::from (pcst, prec, sgn);
-  unsigned int len = int (cst.get_len ());
+  unsigned int len = cst.get_len ();
   unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
   bool recanonize = sgn == UNSIGNED
     && small_prec
