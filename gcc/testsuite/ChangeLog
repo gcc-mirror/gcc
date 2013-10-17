@@ -1,3 +1,9 @@
+2013-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/c-output-template.c: New testcase.
+	* gcc.target/aarch64/c-output-template-2.c: Likewise.
+	* gcc.target/aarch64/c-output-template-3.c: Likewise.
+
 2013-10-17  Michael Hudson-Doyle  <michael.hudson@linaro.org>
 
 	* gcc/testsuite/lib/target-supports.exp

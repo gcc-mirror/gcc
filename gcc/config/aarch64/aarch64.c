@@ -3440,6 +3440,32 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 {
   switch (code)
     {
+    /* An integer or symbol address without a preceding # sign.  */
+    case 'c':
+      switch (GET_CODE (x))
+	{
+	case CONST_INT:
+	  fprintf (f, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  break;
+
+	case SYMBOL_REF:
+	  output_addr_const (f, x);
+	  break;
+
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+	    {
+	      output_addr_const (f, x);
+	      break;
+	    }
+	  /* Fall through.  */
+
+	default:
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	}
+      break;
+
     case 'e':
       /* Print the sign/zero-extend size as a character 8->b, 16->h, 32->w.  */
       {
