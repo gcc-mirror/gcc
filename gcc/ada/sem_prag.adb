@@ -20467,7 +20467,12 @@ package body Sem_Prag is
          --    Depends         => (State => null)
          --    Refined_Depends =>  null            --  OK
 
-         if No (Refinements) and then Is_Entity_Name (Dep_Output) then
+         --  Another instance of the same scenario occurs when the list of
+         --  refinements has been depleted while processing previous clauses.
+
+         if Is_Entity_Name (Dep_Output)
+           and then (No (Refinements) or else Is_Empty_List (Refinements))
+         then
             Dep_Id := Entity_Of (Dep_Output);
 
             if Ekind (Dep_Id) = E_Abstract_State
