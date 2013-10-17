@@ -1,3 +1,9 @@
+2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58596
+	* semantics.c (lambda_expr_this_capture): Handle NSDMIs in the
+	cp_unevaluated_operand case.
+
 2013-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58633
