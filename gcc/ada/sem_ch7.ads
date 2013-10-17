@@ -60,7 +60,10 @@ package Sem_Ch7 is
    --  Ignore_Abstract_State is set True, then the test for a non-null abstract
    --  state (which normally requires a body) is not carried out. This allows
    --  the use of this routine to tell if there is some other reason that a
-   --  body is required (as is required for analyzing Abstract_State).
+   --  body is required (as is required for analyzing Abstract_State). This
+   --  is not currently used, but may be useful in future if we implement a
+   --  compatibility mode which warns about possible incompatibilities if a
+   --  SPARK 2014 program is compiled with a SPARK-unaware compiler.
 
    procedure May_Need_Implicit_Body (E : Entity_Id);
    --  If a package declaration contains tasks or RACWs and does not require

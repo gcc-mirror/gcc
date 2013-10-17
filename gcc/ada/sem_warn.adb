@@ -2545,13 +2545,16 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  Flag any unused with clauses, but skip this step if we are compiling
-      --  a subunit on its own, since we do not have enough information to
-      --  determine whether with's are used. We will get the relevant warnings
-      --  when we compile the parent. This is the normal style of GNAT
-      --  compilation in any case.
+      --  Flag any unused with clauses. For a subunit, check only the units
+      --  in its context, not those of the parent, which may be needed by other
+      --  subunits.  We will get the full warnings when we compile the parent,
+      --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then
+         if Current_Sem_Unit = Main_Unit then
+            Check_One_Unit (Main_Unit);
+         end if;
+
          return;
       end if;
 

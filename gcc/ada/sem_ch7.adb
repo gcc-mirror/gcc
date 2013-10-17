@@ -1493,34 +1493,6 @@ package body Sem_Ch7 is
 
       Check_One_Tagged_Type_Or_Extension_At_Most;
 
-      --  Issue an error if a package that is a library unit does not require a
-      --  body, and we have a non-null abstract state (SPARK LRM 7.1.5(4)).
-
-      if not Unit_Requires_Body (Id, Ignore_Abstract_State => True)
-        and then Present (Abstract_States (Id))
-
-        --  We use Scope_Depth of 1 to identify library units, which seems a
-        --  bit ugly, but there doesn't seem to be an easier way.
-
-        and then Scope_Depth (Id) = 1
-
-        --  A null abstract state always appears as the sole element of the
-        --  state list.
-
-        and then not Is_Null_State (Node (First_Elmt (Abstract_States (Id))))
-      then
-         declare
-            P : constant Node_Id := Get_Pragma (Id, Pragma_Abstract_State);
-         begin
-            Error_Msg_NE
-              ("package & specifies a non-null abstract state", P, Id);
-            Error_Msg_N
-              ("\but package does not otherwise require a body", P);
-            Error_Msg_N
-              ("\pragma Elaborate_Body is required in this case", P);
-         end;
-      end if;
-
       --  If switch set, output information on why body required
 
       if List_Body_Required_Info
