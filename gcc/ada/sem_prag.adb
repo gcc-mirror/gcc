@@ -1856,7 +1856,7 @@ package body Sem_Prag is
 
       begin
          if Nkind (List) = N_Null then
-            null;
+            Set_Analyzed (List);
 
          --  Single global item declaration
 
@@ -1869,6 +1869,7 @@ package body Sem_Prag is
          --  Simple global list or moded global list declaration
 
          elsif Nkind (List) = N_Aggregate then
+            Set_Analyzed (List);
 
             --  The declaration of a simple global list appear as a collection
             --  of expressions.
@@ -1985,7 +1986,7 @@ package body Sem_Prag is
       --  There is nothing to be done for a null global list
 
       if Nkind (Items) = N_Null then
-         null;
+         Set_Analyzed (Items);
 
       --  Analyze the various forms of global lists and items. Note that some
       --  of these may be malformed in which case the analysis emits error
@@ -2365,7 +2366,7 @@ package body Sem_Prag is
                      --  The input cannot denote states or variables declared
                      --  within the related package.
 
-                     if In_Same_Code_Unit (Item, Input) then
+                     if In_Same_Code_Unit (Item, Input_Id) then
                         Error_Msg_Name_1 := Chars (Pack_Id);
                         Error_Msg_NE
                           ("input item & cannot denote a visible variable or "
@@ -11125,6 +11126,11 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
 
+            --  The pragma is analyzed at the end of the declarative part which
+            --  contains the related subprogram. Reset the analyzed flag.
+
+            Set_Analyzed (N, False);
+
             --  Ensure the proper placement of the pragma. Contract_Cases must
             --  be associated with a subprogram declaration or a body that acts
             --  as a spec.
@@ -11139,11 +11145,6 @@ package body Sem_Prag is
                Pragma_Misplaced;
                return;
             end if;
-
-            --  The pragma is analyzed at the end of the declarative part which
-            --  contains the related subprogram. Reset the analyzed flag.
-
-            Set_Analyzed (N, False);
 
             --  When the pragma appears on a subprogram body, perform the full
             --  analysis now.

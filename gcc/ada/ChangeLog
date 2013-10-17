@@ -1,3 +1,15 @@
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb, exp_util.ads (Entity_Of): Moved to Sem_Util.
+	* sem_prag.adb (Analyze_Global_In_Decl_List): Mark a null
+	item list as being analyzed.
+	(Analyze_Global_List): Mark a
+	null global list and multiple global items as being analyzed.
+	(Analyze_Input_Item): Check the unit that defines the input
+	variable or state, not the reference to it.
+	* sem_util.ads, sem_util.adb (Entity_Of): Moved from Exp_Util. Ensure
+	that the input has an entity.
+
 2013-10-17  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_util.adb (Get_Current_Value_Condition,

@@ -481,6 +481,10 @@ package Sem_Util is
    --  Note: Enter_Name is not used for overloadable entities, instead these
    --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
 
+   function Entity_Of (N : Node_Id) return Entity_Id;
+   --  Return the entity of N or Empty. If N is a renaming, return the entity
+   --  of the root renamed object.
+
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
    --  inappropriate use of limited type T. If useful, it adds additional

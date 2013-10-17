@@ -349,10 +349,6 @@ package Exp_Util is
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 
-   function Entity_Of (N : Node_Id) return Entity_Id;
-   --  Return the entity of N or Empty. If N is a renaming, return the entity
-   --  of the root renamed object.
-
    function Entry_Names_OK return Boolean;
    --  Determine whether it is appropriate to dynamically allocate strings
    --  which represent entry [family member] names. These strings are created
