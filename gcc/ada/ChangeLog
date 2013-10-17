@@ -1,3 +1,15 @@
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Dependency_Clause):
+	Recognize the scenario where successful clause matching has
+	depleted the available refinement items and the clause to match
+	technically refines to null => null.
+
+2013-10-17  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): Specify
+	External_Name instead of Link_Name for the RTTI declaration.
+
 2013-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Record_Possible_Body_Reference): Fix test for
