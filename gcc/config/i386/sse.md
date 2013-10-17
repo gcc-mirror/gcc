@@ -6168,8 +6168,7 @@
 			 (const_int 4) (const_int 6)])))))]
   "TARGET_AVX2 && ix86_binary_operator_ok (MULT, V8SImode, operands)"
   "vpmuldq\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "avx")
-   (set_attr "type" "sseimul")
+  [(set_attr "type" "sseimul")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])

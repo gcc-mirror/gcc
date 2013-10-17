@@ -1,3 +1,8 @@
+2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_widen_smult_even_v8si): Remove
+	isa attribute.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h (struct omp_region): Move to omp-low.c.
@@ -16,6 +21,11 @@
 	(make_edges): Factor out OMP specific bits to make_gimple_omp_edges.
 	* gimplify.c: Include omp-low.h.
 	* tree-parloops.c: Likewise.
+
+2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_widen_smult_even_v8si): Remove
+	isa attribute.
 
 2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
