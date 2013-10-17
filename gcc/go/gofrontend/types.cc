@@ -5263,11 +5263,25 @@ Struct_type::do_import(Import* imp)
 	  // that an embedded builtin type is accessible from another
 	  // package (we know that all the builtin types are not
 	  // exported).
-	  if (name.empty() && ftype->deref()->named_type() != NULL)
+	  // This is called during parsing, before anything is
+	  // lowered, so we have to be careful to avoid dereferencing
+	  // an unknown type name.
+	  if (name.empty())
 	    {
-	      const std::string fn(ftype->deref()->named_type()->name());
-	      if (fn[0] >= 'a' && fn[0] <= 'z')
-		name = '.' + imp->package()->pkgpath() + '.' + fn;
+	      Type *t = ftype;
+	      if (t->classification() == Type::TYPE_POINTER)
+		{
+		  // Very ugly.
+		  Pointer_type* ptype = static_cast<Pointer_type*>(t);
+		  t = ptype->points_to();
+		}
+	      std::string tname;
+	      if (t->forward_declaration_type() != NULL)
+		tname = t->forward_declaration_type()->name();
+	      else if (t->named_type() != NULL)
+		tname = t->named_type()->name();
+	      if (!tname.empty() && tname[0] >= 'a' && tname[0] <= 'z')
+		name = '.' + imp->package()->pkgpath() + '.' + tname;
 	    }
 
 	  Struct_field sf(Typed_identifier(name, ftype, imp->location()));
