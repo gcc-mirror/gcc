@@ -20031,6 +20031,8 @@ package body Sem_Prag is
                         elsif Has_Non_Null_Refinement (Dep_Id) then
                            Has_Refined_State := True;
 
+                           --  Ref_Input is an entity name
+
                            if Is_Entity_Name (Ref_Input) then
                               Ref_Id := Entity_Of (Ref_Input);
 
@@ -20422,8 +20424,7 @@ package body Sem_Prag is
                      end if;
                   end if;
 
-               --  Formal parameters and variables match when their inputs
-               --  match.
+               --  Formal parameters and variables match if their inputs match
 
                elsif Is_Entity_Name (Ref_Output)
                  and then Entity_Of (Ref_Output) = Dep_Id
@@ -20506,9 +20507,17 @@ package body Sem_Prag is
          if Present (Refinements) then
             Clause := First (Refinements);
             while Present (Clause) loop
-               Error_Msg_N
-                 ("unmatched or extra clause in dependence refinement",
-                  Clause);
+
+               --  Do not complain about a null input refinement, since a null
+               --  input legitimately matches anything.
+
+               if Nkind (Clause) /= N_Component_Association
+                 or else Nkind (Expression (Clause)) /= N_Null
+               then
+                  Error_Msg_N
+                    ("unmatched or extra clause in dependence refinement",
+                     Clause);
+               end if;
 
                Next (Clause);
             end loop;
@@ -20596,7 +20605,7 @@ package body Sem_Prag is
          if Nkind (Refs) = N_Null then
             Refinements := No_List;
 
-         --  Multiple dependeny clauses appear as component associations of an
+         --  Multiple dependency clauses appear as component associations of an
          --  aggregate. Note that the clauses are copied because the algorithm
          --  modifies them and this should not be visible in Refined_Depends.
 
@@ -20604,11 +20613,11 @@ package body Sem_Prag is
             Refinements := New_Copy_List (Component_Associations (Refs));
          end if;
 
-         --  Inspect all the clauses of pragma Depends trying to find a
-         --  matching clause in pragma Refined_Depends. The approach is to use
-         --  the sole output of a clause as a key. Output items are unique in a
+         --  Inspect all the clauses of pragma Depends looking for a matching
+         --  clause in pragma Refined_Depends. The approach is to use the
+         --  sole output of a clause as a key. Output items are unique in a
          --  dependence relation. Clause normalization also ensured that all
-         --  clauses have exactly on output. Depending on what the key is, one
+         --  clauses have exactly one output. Depending on what the key is, one
          --  or more refinement clauses may satisfy the dependency clause. Each
          --  time a dependency clause is matched, its related refinement clause
          --  is consumed. In the end, two things may happen:
@@ -20622,7 +20631,6 @@ package body Sem_Prag is
          Clause := First (Dependencies);
          while Present (Clause) loop
             Check_Dependency_Clause (Clause);
-
             Next (Clause);
          end loop;
       end if;
@@ -21583,7 +21591,6 @@ package body Sem_Prag is
                if Node (State_Elmt) = State_Id then
                   Add_Item (State_Id, Refined_States_Seen);
                   Remove_Elmt (Abstr_States, State_Elmt);
-
                   return;
                end if;
 

@@ -1,3 +1,16 @@
+2013-10-17  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Add examples of switches -gnateD, including
+	one where the value is a string.
+	* projects.texi: Do not convert switches in project files to
+	VMS qualifiers.
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Report_Extra_Clauses): Don't complain about
+	refinements with null input since null should be considered to
+	always match.
+
 2013-10-17  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Document -gnatw.y/-gnatw.Y.
