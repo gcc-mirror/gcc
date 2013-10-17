@@ -284,12 +284,13 @@ package body Prep is
             end loop;
          end if;
 
-         --  And put the value in the result
-
-         Result.Is_A_String := False;
          --  Even if the value is a string, we still set Is_A_String to False,
          --  to avoid adding additional quotes in the preprocessed sources when
          --  replacing $<symbol>.
+
+         Result.Is_A_String := False;
+
+         --  Put the value in the result
 
          Start_String;
          Store_String_Chars (Definition (Index + 1 .. Definition'Last));

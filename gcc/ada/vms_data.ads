@@ -3222,6 +3222,10 @@ package VMS_Data is
                                                "-gnatwy "                  &
                                             "NOADA_2005_COMPATIBILITY "    &
                                                "-gnatwY "                  &
+                                            "WHY_SPEC_NEEDS_BODY "         &
+                                               "-gnatw.y "                 &
+                                            "NO_WHY_SPEC_NEEDS_BODY "      &
+                                               "-gnatw.Y "                 &
                                             "UNCHECKED_CONVERSIONS "       &
                                                "-gnatwz "                  &
                                             "NOUNCHECKED_CONVERSIONS "     &
@@ -3487,12 +3491,11 @@ package VMS_Data is
    --   VARIABLES_UNINITIALIZED Activates warnings on unassigned variables.
    --                           Causes warnings to be generated when a variable
    --                           is accessed which may not be properly
-   --                           uninitialized.
-   --                           The default is that such warnings are
-   --                           generated.
+   --                           uninitialized. The default is that such
+   --                           warnings are generated.
    --
-   --   NOVARIABLES_UNINITIALIZED       Suppress warnings for uninitialized
-   --                                   variables.
+   --   NOVARIABLES_UNINITIALIZED
+   --                           Suppress warnings for uninitialized variables.
    --
    --   TAG_WARNINGS            Causes the string [xxx] to be added to warnings
    --                           that are controlled by the warning string xxx,
@@ -3500,6 +3503,12 @@ package VMS_Data is
    --                           by default, the tag is [enabled by default].
    --
    --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
+   --
+   --   WHY_SPEC_NEEDS_BODY     Generates information messages showing why a
+   --                           package specification requires a body.
+   --
+   --   NO_WHY_SPEC_NEEDS_BODY  Turns off information messages showing why a
+   --                           package specification requires a body.
 
    S_GCC_WarnX   : aliased constant S := "/NOWARNINGS "                    &
                                             "-gnatws";

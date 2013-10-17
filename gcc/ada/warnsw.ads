@@ -68,6 +68,7 @@ package Warnsw is
       Elab_Warnings                       : Boolean;
       Implementation_Unit_Warnings        : Boolean;
       Ineffective_Inline_Warnings         : Boolean;
+      List_Body_Required_Info             : Boolean;
       List_Inherited_Aspects              : Boolean;
       Warning_Doc_Switch                  : Boolean;
       Warn_On_Ada_2005_Compatibility      : Boolean;

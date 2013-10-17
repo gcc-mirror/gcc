@@ -5738,6 +5738,25 @@ This warning can also be turned on using @option{-gnatwa}.
 This switch suppresses the warnings intended to help in identifying
 incompatibilities between Ada language versions.
 
+@item -gnatw.y
+@emph{Activate information messages for why package spec needs body}
+@cindex @option{-gnatw.y} (@command{gcc})
+@cindex Package spec needing body
+There are a number of cases in which a package spec needs a body.
+For example, the use of pragma Elaborate_Body, or the declaration
+of a procedure specification requiring a completion. This switch
+causes information messages to be output showing why a package
+specification requires a body. This can be useful in the case of
+a large package specification which is unexpectedly requiring a
+body. The default is that such information messages are not output.
+
+@item -gnatw.Y
+@emph{Disable information messages for why package spec needs body}
+@cindex @option{-gnatw.Y} (@command{gcc})
+@cindex No information messages for why package spec needs body
+This switch suppresses the output of information messages showing why
+a package specification needs a body.
+
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
 @cindex @option{-gnatwz} (@command{gcc})

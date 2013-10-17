@@ -136,6 +136,11 @@ package body Sem_Ch7 is
    --  inherited private operation has been overridden, then it's replaced by
    --  the overriding operation.
 
+   procedure Unit_Requires_Body_Info (P : Entity_Id);
+   --  Outputs info messages showing why package specification P requires a
+   --  body. Caller has checked that the switch requesting this information
+   --  is set, and that the package does indeed require a body.
+
    --------------------------
    -- Analyze_Package_Body --
    --------------------------
@@ -1515,6 +1520,15 @@ package body Sem_Ch7 is
               ("\pragma Elaborate_Body is required in this case", P);
          end;
       end if;
+
+      --  If switch set, output information on why body required
+
+      if List_Body_Required_Info
+        and then In_Extended_Main_Source_Unit (Id)
+        and then Unit_Requires_Body (Id)
+      then
+         Unit_Requires_Body_Info (Id);
+      end if;
    end Analyze_Package_Specification;
 
    --------------------------------------
@@ -1686,8 +1700,8 @@ package body Sem_Ch7 is
                           and then No (Interface_Alias (Node (Op_Elmt_2)))
                         then
                            --  The private inherited operation has been
-                           --  overridden by an explicit subprogram: replace
-                           --  the former by the latter.
+                           --  overridden by an explicit subprogram:
+                           --  replace the former by the latter.
 
                            New_Op := Node (Op_Elmt_2);
                            Replace_Elmt (Op_Elmt, New_Op);
@@ -2748,4 +2762,135 @@ package body Sem_Ch7 is
       return False;
    end Unit_Requires_Body;
 
+   -----------------------------
+   -- Unit_Requires_Body_Info --
+   -----------------------------
+
+   procedure Unit_Requires_Body_Info (P : Entity_Id) is
+      E : Entity_Id;
+
+   begin
+      --  Imported entity never requires body. Right now, only subprograms can
+      --  be imported, but perhaps in the future we will allow import of
+      --  packages.
+
+      if Is_Imported (P) then
+         return;
+
+      --  Body required if library package with pragma Elaborate_Body
+
+      elsif Has_Pragma_Elaborate_Body (P) then
+         Error_Msg_N
+           ("?Y?info: & requires body (Elaborate_Body)", P);
+
+      --  Body required if subprogram
+
+      elsif Is_Subprogram (P) or else Is_Generic_Subprogram (P) then
+         Error_Msg_N ("?Y?info: & requires body (subprogram case)", P);
+
+      --  Body required if generic parent has Elaborate_Body
+
+      elsif Ekind (P) = E_Package
+        and then Nkind (Parent (P)) = N_Package_Specification
+        and then Present (Generic_Parent (Parent (P)))
+      then
+         declare
+            G_P : constant Entity_Id := Generic_Parent (Parent (P));
+         begin
+            if Has_Pragma_Elaborate_Body (G_P) then
+               Error_Msg_N
+                 ("?Y?info: & requires body (generic parent Elaborate_Body)",
+                  P);
+            end if;
+         end;
+
+      --  A [generic] package that introduces at least one non-null abstract
+      --  state requires completion. However, there is a separate rule that
+      --  requires that such a package have a reason other than this for a
+      --  body being required (if necessary a pragma Elaborate_Body must be
+      --  provided). If Ignore_Abstract_State is True, we don't do this check
+      --  (so we can use Unit_Requires_Body to check for some other reason).
+
+      elsif Ekind_In (P, E_Generic_Package, E_Package)
+        and then Present (Abstract_States (P))
+        and then
+          not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+      then
+         Error_Msg_N
+           ("?Y?info: & requires body (non-null abstract state aspect)",
+            P);
+      end if;
+
+      --  Otherwise search entity chain for entity requiring completion
+
+      E := First_Entity (P);
+      while Present (E) loop
+
+         --  Always ignore child units. Child units get added to the entity
+         --  list of a parent unit, but are not original entities of the
+         --  parent, and so do not affect whether the parent needs a body.
+
+         if Is_Child_Unit (E) then
+            null;
+
+         --  Ignore formal packages and their renamings
+
+         elsif Ekind (E) = E_Package
+           and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                                                N_Formal_Package_Declaration
+         then
+            null;
+
+         --  Otherwise test to see if entity requires a completion.
+         --  Note that subprogram entities whose declaration does not come
+         --  from source are ignored here on the basis that we assume the
+         --  expander will provide an implicit completion at some point.
+
+         elsif (Is_Overloadable (E)
+                 and then Ekind (E) /= E_Enumeration_Literal
+                 and then Ekind (E) /= E_Operator
+                 and then not Is_Abstract_Subprogram (E)
+                 and then not Has_Completion (E)
+                 and then Comes_From_Source (Parent (E)))
+
+           or else
+             (Ekind (E) = E_Package
+               and then E /= P
+               and then not Has_Completion (E)
+               and then Unit_Requires_Body (E))
+
+           or else
+             (Ekind (E) = E_Incomplete_Type
+               and then No (Full_View (E))
+               and then not Is_Generic_Type (E))
+
+           or else
+             (Ekind_In (E, E_Task_Type, E_Protected_Type)
+               and then not Has_Completion (E))
+
+           or else
+             (Ekind (E) = E_Generic_Package
+               and then E /= P
+               and then not Has_Completion (E)
+               and then Unit_Requires_Body (E))
+
+           or else
+             (Is_Generic_Subprogram (E)
+               and then not Has_Completion (E))
+
+         then
+            Error_Msg_Node_2 := E;
+            Error_Msg_NE
+              ("?Y?info: & requires body (& requires completion)",
+               E, P);
+
+         --  Entity that does not require completion
+
+         else
+            null;
+         end if;
+
+         Next_Entity (E);
+      end loop;
+   end Unit_Requires_Body_Info;
 end Sem_Ch7;

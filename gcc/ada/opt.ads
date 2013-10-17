@@ -841,6 +841,11 @@ package Opt is
    --  Set to True to skip compile and bind steps (except when Bind_Only is
    --  set to True).
 
+   List_Body_Required_Info : Boolean := False;
+   --  GNATMAKE
+   --  List info messages about why a package requires a body. Modified by use
+   --  of -gnatw.y/.Y.
+
    List_Inherited_Aspects : Boolean := False;
    --  GNAT
    --  List inherited invariants, preconditions, and postconditions from
