@@ -3893,7 +3893,7 @@ package body Sem_Attr is
          --  Loop_Entry must create a constant initialized by the evaluated
          --  prefix.
 
-         if Is_Immutably_Limited_Type (Etype (P)) then
+         if Is_Limited_View (Etype (P)) then
             Error_Attr_P ("prefix of attribute % cannot be limited");
          end if;
 
@@ -5994,7 +5994,7 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of attribute % must be a record or array");
 
-         elsif Is_Immutably_Limited_Type (P_Type) then
+         elsif Is_Limited_View (P_Type) then
             Error_Attr ("prefix of attribute % cannot be limited", N);
 
          elsif Nkind (E1) /= N_Aggregate then

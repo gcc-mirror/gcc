@@ -3947,7 +3947,7 @@ package body Exp_Ch6 is
       --  result from the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
-         if not Is_Immutably_Limited_Type (Etype (Subp))
+         if not Is_Limited_View (Etype (Subp))
            and then
              (No (First_Formal (Subp))
                 or else
@@ -7100,7 +7100,7 @@ package body Exp_Ch6 is
          then
             null;
 
-         elsif Is_Immutably_Limited_Type (Typ) then
+         elsif Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Spec_Id);
 
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
@@ -7702,7 +7702,7 @@ package body Exp_Ch6 is
       --  the type of the expression may be.
 
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Immutably_Limited_Type (Etype (Expression (N)))
+        and then Is_Limited_View (Etype (Expression (N)))
         and then Ada_Version >= Ada_2005
         and then not Debug_Flag_Dot_L
 
@@ -7781,7 +7781,7 @@ package body Exp_Ch6 is
       --  type that requires special processing (indicated by the fact that
       --  it requires a cleanup scope for the secondary stack case).
 
-      if Is_Immutably_Limited_Type (Exptyp)
+      if Is_Limited_View (Exptyp)
         or else Is_Limited_Interface (Exptyp)
       then
          null;
@@ -9572,7 +9572,7 @@ package body Exp_Ch6 is
          --  may return objects of nonlimited descendants.
 
          else
-            return Is_Immutably_Limited_Type (Etype (E))
+            return Is_Limited_View (Etype (E))
               and then Ada_Version >= Ada_2005
               and then not Debug_Flag_Dot_L;
          end if;
@@ -9813,7 +9813,7 @@ package body Exp_Ch6 is
          Typ  : constant Entity_Id := Etype (Subp);
          Utyp : constant Entity_Id := Underlying_Type (Typ);
       begin
-         if Is_Immutably_Limited_Type (Typ) then
+         if Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Subp);
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Subp);

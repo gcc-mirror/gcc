@@ -17678,7 +17678,7 @@ package body Sem_Prag is
             --  in Freeze_Entity).
 
             if Is_Record_Type (Typ)
-              and then not Is_Immutably_Limited_Type (Typ)
+              and then not Is_Limited_View (Typ)
             then
                Error_Pragma
                  ("pragma% can only apply to explicitly limited record type");

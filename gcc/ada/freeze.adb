@@ -4786,7 +4786,7 @@ package body Freeze is
 
                if Has_Private_Declaration (E) then
                   if (not Is_Record_Type (E)
-                       or else not Is_Immutably_Limited_Type (E))
+                       or else not Is_Limited_View (E))
                     and then not Is_Private_Type (E)
                   then
                      Error_Msg_Name_1 := Name_Simple_Storage_Pool_Type;
