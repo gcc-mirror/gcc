@@ -1,3 +1,18 @@
+2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58673
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Only
+	restrict TImode addresses to single indirect registers if both
+	-mquad-memory and -mvsx-timode are used.
+	(rs6000_output_move_128bit): Use quad_load_store_p to determine if
+	we should emit load/store quad.  Remove using %y for quad memory
+	addresses.
+
+	* config/rs6000/rs6000.md (mov<mode>_ppc64, TI/PTImode): Add
+	constraints to allow load/store quad on machines where TImode is
+	not allowed in VSX registers.  Use 'n' instead of 'F' constraint
+	for TImode to load integer constants.
+
 2013-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Handle 'c'.

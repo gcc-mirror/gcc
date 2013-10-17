@@ -7186,12 +7186,12 @@ rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
   if (reg_offset_p
       && legitimate_constant_pool_address_p (x, mode, reg_ok_strict))
     return 1;
-  /* For TImode, if we have load/store quad, only allow register indirect
-     addresses.  This will allow the values to go in either GPRs or VSX
-     registers without reloading.  The vector types would tend to go into VSX
-     registers, so we allow REG+REG, while TImode seems somewhat split, in that
-     some uses are GPR based, and some VSX based.  */
-  if (mode == TImode && TARGET_QUAD_MEMORY)
+  /* For TImode, if we have load/store quad and TImode in VSX registers, only
+     allow register indirect addresses.  This will allow the values to go in
+     either GPRs or VSX registers without reloading.  The vector types would
+     tend to go into VSX registers, so we allow REG+REG, while TImode seems
+     somewhat split, in that some uses are GPR based, and some VSX based.  */
+  if (mode == TImode && TARGET_QUAD_MEMORY && TARGET_VSX_TIMODE)
     return 0;
   /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
   if (! reg_ok_strict
@@ -16064,13 +16064,8 @@ rs6000_output_move_128bit (rtx operands[])
     {
       if (dest_gpr_p)
 	{
-	  if (TARGET_QUAD_MEMORY && (dest_regno & 1) == 0
-	      && quad_memory_operand (src, mode)
-	      && !reg_overlap_mentioned_p (dest, src))
-	    {
-	      /* lq/stq only has DQ-form, so avoid X-form that %y produces.  */
-	      return REG_P (XEXP (src, 0)) ? "lq %0,%1" : "lq %0,%y1";
-	    }
+	  if (TARGET_QUAD_MEMORY && quad_load_store_p (dest, src))
+	    return "lq %0,%1";
 	  else
 	    return "#";
 	}
@@ -16099,12 +16094,8 @@ rs6000_output_move_128bit (rtx operands[])
     {
       if (src_gpr_p)
 	{
-	  if (TARGET_QUAD_MEMORY && (src_regno & 1) == 0
-	      && quad_memory_operand (dest, mode))
-	    {
-	      /* lq/stq only has DQ-form, so avoid X-form that %y produces.  */
-	      return REG_P (XEXP (dest, 0)) ? "stq %1,%0" : "stq %1,%y0";
-	    }
+ 	  if (TARGET_QUAD_MEMORY && quad_load_store_p (dest, src))
+	    return "stq %1,%0";
 	  else
 	    return "#";
 	}
