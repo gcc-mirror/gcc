@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "bitmap.h"
 #include "hash-table.h"
+#include "omp-low.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\

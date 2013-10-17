@@ -1,3 +1,8 @@
+2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* parser.c: Include omp-low.h.
+	* semantics.c: Likewise.
+
 2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58596

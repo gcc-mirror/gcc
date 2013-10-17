@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "gimple.h"
 #include "tree-inline.h"
+#include "omp-low.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"

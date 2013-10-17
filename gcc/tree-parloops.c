@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-hasher.h"
 #include "tree-parloops.h"
+#include "omp-low.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its

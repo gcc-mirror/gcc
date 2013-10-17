@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "cfgloop.h"
 #include "target.h"
+#include "omp-low.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two
@@ -55,6 +56,45 @@ along with GCC; see the file COPYING3.  If not see
    Final code generation is done by pass_expand_omp.  The flowgraph is
    scanned for parallel regions which are then moved to a new
    function, to be invoked by the thread library.  */
+
+/* Parallel region information.  Every parallel and workshare
+   directive is enclosed between two markers, the OMP_* directive
+   and a corresponding OMP_RETURN statement.  */
+
+struct omp_region
+{
+  /* The enclosing region.  */
+  struct omp_region *outer;
+
+  /* First child region.  */
+  struct omp_region *inner;
+
+  /* Next peer region.  */
+  struct omp_region *next;
+
+  /* Block containing the omp directive as its last stmt.  */
+  basic_block entry;
+
+  /* Block containing the OMP_RETURN as its last stmt.  */
+  basic_block exit;
+
+  /* Block containing the OMP_CONTINUE as its last stmt.  */
+  basic_block cont;
+
+  /* If this is a combined parallel+workshare region, this is a list
+     of additional arguments needed by the combined parallel+workshare
+     library call.  */
+  vec<tree, va_gc> *ws_args;
+
+  /* The code for the omp directive of this region.  */
+  enum gimple_code type;
+
+  /* Schedule kind, only used for OMP_FOR type regions.  */
+  enum omp_clause_schedule_kind sched_kind;
+
+  /* True if this is a combined parallel+workshare region.  */
+  bool is_combined_parallel;
+};
 
 /* Context structure.  Used to store information about each parallel
    directive in the code.  */
@@ -135,7 +175,7 @@ struct omp_for_data
 static splay_tree all_contexts;
 static int taskreg_nesting_level;
 static int target_nesting_level;
-struct omp_region *root_omp_region;
+static struct omp_region *root_omp_region;
 static bitmap task_shared_vars;
 
 static void scan_omp (gimple_seq *, omp_context *);
@@ -872,27 +912,6 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
   return false;
 }
 
-/* Create a new VAR_DECL and copy information from VAR to it.  */
-
-tree
-copy_var_decl (tree var, tree name, tree type)
-{
-  tree copy = build_decl (DECL_SOURCE_LOCATION (var), VAR_DECL, name, type);
-
-  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (var);
-  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (var);
-  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (var);
-  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (var);
-  DECL_IGNORED_P (copy) = DECL_IGNORED_P (var);
-  DECL_CONTEXT (copy) = DECL_CONTEXT (var);
-  TREE_NO_WARNING (copy) = TREE_NO_WARNING (var);
-  TREE_USED (copy) = 1;
-  DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
-  DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
-
-  return copy;
-}
-
 /* Construct a new automatic decl similar to VAR.  */
 
 static tree
@@ -1219,7 +1238,7 @@ debug_all_omp_regions (void)
 
 /* Create a new parallel region starting at STMT inside region PARENT.  */
 
-struct omp_region *
+static struct omp_region *
 new_omp_region (basic_block bb, enum gimple_code type,
 		struct omp_region *parent)
 {
@@ -10310,6 +10329,121 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     }
 
   return NULL_TREE;
+}
+
+/* Called from tree-cfg.c::make_edges to create cfg edges for all GIMPLE_OMP
+   codes.  */
+bool
+make_gimple_omp_edges (basic_block bb, struct omp_region **region)
+{
+  gimple last = last_stmt (bb);
+  enum gimple_code code = gimple_code (last);
+  struct omp_region *cur_region = *region;
+  bool fallthru = false;
+
+  switch (code)
+    {
+    case GIMPLE_OMP_PARALLEL:
+    case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_FOR:
+    case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_TEAMS:
+    case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
+    case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_CRITICAL:
+    case GIMPLE_OMP_SECTION:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      break;
+
+    case GIMPLE_OMP_TARGET:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      if (gimple_omp_target_kind (last) == GF_OMP_TARGET_KIND_UPDATE)
+	cur_region = cur_region->outer;
+      break;
+
+    case GIMPLE_OMP_SECTIONS:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      break;
+
+    case GIMPLE_OMP_SECTIONS_SWITCH:
+      fallthru = false;
+      break;
+
+    case GIMPLE_OMP_ATOMIC_LOAD:
+    case GIMPLE_OMP_ATOMIC_STORE:
+       fallthru = true;
+       break;
+
+    case GIMPLE_OMP_RETURN:
+      /* In the case of a GIMPLE_OMP_SECTION, the edge will go
+	 somewhere other than the next block.  This will be
+	 created later.  */
+      cur_region->exit = bb;
+      fallthru = cur_region->type != GIMPLE_OMP_SECTION;
+      cur_region = cur_region->outer;
+      break;
+
+    case GIMPLE_OMP_CONTINUE:
+      cur_region->cont = bb;
+      switch (cur_region->type)
+	{
+	case GIMPLE_OMP_FOR:
+	  /* Mark all GIMPLE_OMP_FOR and GIMPLE_OMP_CONTINUE
+	     succs edges as abnormal to prevent splitting
+	     them.  */
+	  single_succ_edge (cur_region->entry)->flags |= EDGE_ABNORMAL;
+	  /* Make the loopback edge.  */
+	  make_edge (bb, single_succ (cur_region->entry),
+		     EDGE_ABNORMAL);
+
+	  /* Create an edge from GIMPLE_OMP_FOR to exit, which
+	     corresponds to the case that the body of the loop
+	     is not executed at all.  */
+	  make_edge (cur_region->entry, bb->next_bb, EDGE_ABNORMAL);
+	  make_edge (bb, bb->next_bb, EDGE_FALLTHRU | EDGE_ABNORMAL);
+	  fallthru = false;
+	  break;
+
+	case GIMPLE_OMP_SECTIONS:
+	  /* Wire up the edges into and out of the nested sections.  */
+	  {
+	    basic_block switch_bb = single_succ (cur_region->entry);
+
+	    struct omp_region *i;
+	    for (i = cur_region->inner; i ; i = i->next)
+	      {
+		gcc_assert (i->type == GIMPLE_OMP_SECTION);
+		make_edge (switch_bb, i->entry, 0);
+		make_edge (i->exit, bb, EDGE_FALLTHRU);
+	      }
+
+	    /* Make the loopback edge to the block with
+	       GIMPLE_OMP_SECTIONS_SWITCH.  */
+	    make_edge (bb, switch_bb, 0);
+
+	    /* Make the edge from the switch to exit.  */
+	    make_edge (switch_bb, bb->next_bb, 0);
+	    fallthru = false;
+	  }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (*region != cur_region)
+    *region = cur_region;
+
+  return fallthru;
 }
 
 static unsigned int

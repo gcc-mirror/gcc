@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "parser.h"
 #include "type-utils.h"
+#include "omp-low.h"
 
 
 /* The lexer.  */
