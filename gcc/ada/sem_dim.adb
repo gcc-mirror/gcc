@@ -2277,6 +2277,12 @@ package body Sem_Dim is
             Result := No_Rational;
          end if;
 
+         --  Provide minimal semantic information on dimension expressions,
+         --  even though they have no run-time existence. This is for use by
+         --  ASIS tools, in particular pretty-printing.
+
+         Set_Entity (N, Standard_Op_Minus);
+         Set_Etype  (N, Standard_Integer);
          return Result;
       end Process_Minus;
 
@@ -2302,6 +2308,12 @@ package body Sem_Dim is
             Result := Left_Rat / Right_Rat;
          end if;
 
+         --  Provide minimal semantic information on dimension expressions,
+         --  even though they have no run-time existence. This is for use by
+         --  ASIS tools, in particular pretty-printing.
+
+         Set_Entity (N, Standard_Op_Divide);
+         Set_Etype  (N, Standard_Integer);
          return Result;
       end Process_Divide;
 

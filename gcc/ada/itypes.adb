@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,7 @@ package body Itypes is
       Set_Etype                    (I_Typ, Base_Type (T));
       Set_Depends_On_Private       (I_Typ, Depends_On_Private (T));
       Set_Is_Public                (I_Typ, Is_Public          (T));
-      Set_From_With_Type           (I_Typ, From_With_Type     (T));
+      Set_From_Limited_With        (I_Typ, From_Limited_With  (T));
       Set_Is_Access_Constant       (I_Typ, Is_Access_Constant (T));
       Set_Is_Generic_Type          (I_Typ, Is_Generic_Type    (T));
       Set_Is_Volatile              (I_Typ, Is_Volatile        (T));

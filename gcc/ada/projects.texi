@@ -4708,7 +4708,9 @@ to be used to retrieve information about the predefined path; for example,
 @item @b{VCS_Kind}: single
 
 Value is a string used to specify the Version Control System (VCS) to be used
-for this project, for example CVS, RCS, ClearCase or Perforce.
+for this project, for example "Subversion", "ClearCase". If the
+value is set to "Auto", the IDE will try to detect the actual VCS used
+on the list of supported ones.
 
 @item @b{VCS_File_Check}: single
 

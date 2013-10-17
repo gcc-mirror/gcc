@@ -896,7 +896,7 @@ package body Sem_Ch3 is
       --  (which is declared elsewhere in some other scope).
 
       if Ekind (Desig_Type) = E_Incomplete_Type
-        and then not From_With_Type (Desig_Type)
+        and then not From_Limited_With (Desig_Type)
         and then Is_Overloadable (Current_Scope)
       then
          Append_Elmt (Current_Scope, Private_Dependents (Desig_Type));
@@ -950,7 +950,7 @@ package body Sem_Ch3 is
       --  generic formal, because no use of it will reach the backend.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
-        and then not From_With_Type (Desig_Type)
+        and then not From_Limited_With (Desig_Type)
         and then not Is_Generic_Type (Desig_Type)
       then
          if Present (Enclosing_Prot_Type) then
@@ -1131,7 +1131,7 @@ package body Sem_Ch3 is
                        Scope_Id    => Current_Scope));
 
                else
-                  if From_With_Type (Typ) then
+                  if From_Limited_With (Typ) then
 
                      --  AI05-151: Incomplete types are allowed in all basic
                      --  declarations, including access to subprograms.
@@ -1360,7 +1360,7 @@ package body Sem_Ch3 is
       --  If the type has appeared already in a with_type clause, it is frozen
       --  and the pointer size is already set. Else, initialize.
 
-      if not From_With_Type (T) then
+      if not From_Limited_With (T) then
          Init_Size_Align (T);
       end if;
 
@@ -2546,7 +2546,7 @@ package body Sem_Ch3 is
          --  finalization list at the point the access type is frozen, to
          --  prevent unsatisfied references at link time.
 
-         if not From_With_Type (T) or else Is_Access_Type (T) then
+         if not From_Limited_With (T) or else Is_Access_Type (T) then
             Set_Has_Delayed_Freeze (T);
          end if;
       end;
@@ -4466,11 +4466,11 @@ package body Sem_Ch3 is
                   --  Ada 2005 (AI-412): Decorate an incomplete subtype of an
                   --  incomplete type visible through a limited with clause.
 
-                  if From_With_Type (T)
+                  if From_Limited_With (T)
                     and then Present (Non_Limited_View (T))
                   then
-                     Set_From_With_Type   (Id);
-                     Set_Non_Limited_View (Id, Non_Limited_View (T));
+                     Set_From_Limited_With (Id);
+                     Set_Non_Limited_View  (Id, Non_Limited_View (T));
 
                   --  Ada 2005 (AI-412): Add the regular incomplete subtype
                   --  to the private dependents of the original incomplete
@@ -11933,13 +11933,12 @@ package body Sem_Ch3 is
          --  incomplete type or imported via a limited with clause.
 
          if Has_Discriminants (T)
-           or else
-             (From_With_Type (T)
-                and then Present (Non_Limited_View (T))
-                and then Nkind (Parent (Non_Limited_View (T))) =
-                           N_Full_Type_Declaration
-                and then Present (Discriminant_Specifications
-                          (Parent (Non_Limited_View (T)))))
+           or else (From_Limited_With (T)
+                     and then Present (Non_Limited_View (T))
+                     and then Nkind (Parent (Non_Limited_View (T))) =
+                                               N_Full_Type_Declaration
+                     and then Present (Discriminant_Specifications
+                                         (Parent (Non_Limited_View (T)))))
          then
             Error_Msg_N
               ("(Ada 2005) incomplete subtype may not be constrained", C);

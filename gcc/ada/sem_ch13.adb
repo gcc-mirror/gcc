@@ -10208,7 +10208,7 @@ package body Sem_Ch13 is
         --  Exclude imported types, which may be frozen if they appear in a
         --  representation clause for a local type.
 
-        and then not From_With_Type (T)
+        and then not From_Limited_With (T)
 
         --  Exclude generated entities (not coming from source). The common
         --  case is when we generate a renaming which prematurely freezes the

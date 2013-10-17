@@ -1568,7 +1568,7 @@ package body Exp_Disp is
             else
                Actual_Dup := Relocate_Node (Actual);
 
-               if From_With_Type (Actual_Typ) then
+               if From_Limited_With (Actual_Typ) then
 
                   --  If the type of the actual parameter comes from a limited
                   --  with-clause and the non-limited view is already available
@@ -1983,7 +1983,7 @@ package body Exp_Disp is
 
    begin
       if Ekind (Typ) = E_Incomplete_Type then
-         if From_With_Type (Typ) then
+         if From_Limited_With (Typ) then
             Typ := Non_Limited_View (Typ);
          else
             Typ := Full_View (Typ);

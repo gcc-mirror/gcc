@@ -3549,7 +3549,7 @@ package body Freeze is
 
                      if Is_Incomplete_Type (F_Type)
                        and then Present (Full_View (F_Type))
-                       and then not From_With_Type (F_Type)
+                       and then not From_Limited_With (F_Type)
                      then
                         F_Type := Full_View (F_Type);
                         Set_Etype (Formal, F_Type);
@@ -3699,7 +3699,7 @@ package body Freeze is
                         Error_Msg_Qual_Level := 0;
                      end if;
 
-                     if not From_With_Type (F_Type) then
+                     if not From_Limited_With (F_Type) then
                         if Is_Access_Type (F_Type) then
                            F_Type := Designated_Type (F_Type);
                         end if;
@@ -3736,7 +3736,7 @@ package body Freeze is
 
                      if Ekind (R_Type) = E_Incomplete_Type
                        and then Present (Full_View (R_Type))
-                       and then not From_With_Type (R_Type)
+                       and then not From_Limited_With (R_Type)
                      then
                         R_Type := Full_View (R_Type);
                         Set_Etype (E, R_Type);

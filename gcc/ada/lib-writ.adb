@@ -282,7 +282,7 @@ package body Lib.Writ is
                   end if;
 
                else
-                  Set_From_With_Type (Cunit_Entity (Unum));
+                  Set_From_Limited_With (Cunit_Entity (Unum));
                end if;
 
                if Implicit_With (Unum) /= Yes then
@@ -810,7 +810,7 @@ package body Lib.Writ is
                Write_Info_Initiate ('Z');
 
             elsif Ekind (Cunit_Entity (Unum)) = E_Package
-              and then From_With_Type (Cunit_Entity (Unum))
+              and then From_Limited_With (Cunit_Entity (Unum))
             then
                Write_Info_Initiate ('Y');
 
@@ -878,7 +878,7 @@ package body Lib.Writ is
                end if;
 
                if Ekind (Cunit_Entity (Unum)) = E_Package
-                  and then From_With_Type (Cunit_Entity (Unum))
+                  and then From_Limited_With (Cunit_Entity (Unum))
                then
                   null;
                else
@@ -960,7 +960,7 @@ package body Lib.Writ is
 
       for Unum in Units.First .. Last_Unit loop
          if Cunit_Entity (Unum) = Empty
-           or else not From_With_Type (Cunit_Entity (Unum))
+           or else not From_Limited_With (Cunit_Entity (Unum))
          then
             Num_Sdep := Num_Sdep + 1;
             Sdep_Table (Num_Sdep) := Unum;

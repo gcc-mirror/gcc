@@ -310,11 +310,11 @@ package body Exp_Ch7 is
       Defer_Abort : Boolean;
       Fin_Id      : out Entity_Id);
    --  N may denote an accept statement, block, entry body, package body,
-   --  package spec, protected body, subprogram body, and a task body. Create
+   --  package spec, protected body, subprogram body, or a task body. Create
    --  a procedure which contains finalization calls for all controlled objects
    --  declared in the declarative or statement region of N. The calls are
    --  built in reverse order relative to the original declarations. In the
-   --  case of a tack body, the routine delays the creation of the finalizer
+   --  case of a task body, the routine delays the creation of the finalizer
    --  until all statements have been moved to the task body procedure.
    --  Clean_Stmts may contain additional context-dependent code used to abort
    --  asynchronous calls or complete tasks (see Build_Cleanup_Statements).

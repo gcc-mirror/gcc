@@ -1861,8 +1861,8 @@ package body Sem_Ch4 is
                --  incomplete type imported through a limited_with clause,
                --  if the full view is visible.
 
-               if From_With_Type (DT)
-                 and then not From_With_Type (Scope (DT))
+               if From_Limited_With (DT)
+                 and then not From_Limited_With (Scope (DT))
                  and then
                    (Is_Immediately_Visible (Scope (DT))
                      or else
@@ -4073,7 +4073,7 @@ package body Sem_Ch4 is
       --  full view if available.
 
       if Is_Incomplete_Type (Prefix_Type)
-        and then From_With_Type (Prefix_Type)
+        and then From_Limited_With (Prefix_Type)
         and then Present (Non_Limited_View (Prefix_Type))
       then
          Prefix_Type := Get_Full_View (Non_Limited_View (Prefix_Type));
@@ -4083,7 +4083,7 @@ package body Sem_Ch4 is
          end if;
 
       elsif Ekind (Prefix_Type) = E_Class_Wide_Type
-        and then From_With_Type (Prefix_Type)
+        and then From_Limited_With (Prefix_Type)
         and then Present (Non_Limited_View (Etype (Prefix_Type)))
       then
          Prefix_Type :=
@@ -4191,7 +4191,7 @@ package body Sem_Ch4 is
                --    end Pkg;                       --  Comp is not visible
 
                if Nkind (Name) = N_Explicit_Dereference
-                 and then From_With_Type (Etype (Prefix (Name)))
+                 and then From_Limited_With (Etype (Prefix (Name)))
                  and then not Is_Potentially_Use_Visible (Etype (Name))
                  and then Nkind (Parent (Cunit_Entity (Current_Sem_Unit))) =
                             N_Package_Specification
@@ -4644,7 +4644,7 @@ package body Sem_Ch4 is
                   Inc : constant Entity_Id := First_Subtype (Type_To_Use);
 
                begin
-                  if From_With_Type (Scope (Type_To_Use)) then
+                  if From_Limited_With (Scope (Type_To_Use)) then
                      Error_Msg_NE
                        ("\limited view of& has no components", N, Inc);
 
@@ -5364,7 +5364,7 @@ package body Sem_Ch4 is
             --  usage of an entity from the limited view.
 
             if not Analyzed (Etype (Actual))
-             and then From_With_Type (Etype (Actual))
+             and then From_Limited_With (Etype (Actual))
             then
                Error_Msg_Qual_Level := 1;
                Error_Msg_NE
@@ -6525,8 +6525,8 @@ package body Sem_Ch4 is
       --  incomplete type imported through a limited_with clause,
       --  if the full view is visible.
 
-      if From_With_Type (Typ)
-        and then not From_With_Type (Scope (Typ))
+      if From_Limited_With (Typ)
+        and then not From_Limited_With (Scope (Typ))
         and then
           (Is_Immediately_Visible (Scope (Typ))
             or else
@@ -7753,7 +7753,7 @@ package body Sem_Ch4 is
          --  non-limited view. If still incomplete, retrieve full view.
 
          if Ekind (Obj_Type) = E_Incomplete_Type
-           and then From_With_Type (Obj_Type)
+           and then From_Limited_With (Obj_Type)
          then
             Obj_Type := Get_Full_View (Non_Limited_View (Obj_Type));
          end if;

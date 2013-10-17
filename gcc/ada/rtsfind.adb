@@ -760,7 +760,7 @@ package body Rtsfind is
             --  a real semantic dependence when the purpose of the limited_with
             --  is precisely to avoid such.
 
-            if From_With_Type (Cunit_Entity (U.Unum)) then
+            if From_Limited_With (Cunit_Entity (U.Unum)) then
                null;
 
             else
@@ -1120,7 +1120,7 @@ package body Rtsfind is
             --  only has a limited view, scan the corresponding list of
             --  incomplete types.
 
-            if From_With_Type (U.Entity) then
+            if From_Limited_With (U.Entity) then
                Pkg_Ent := First_Entity (Limited_View (U.Entity));
             else
                Pkg_Ent := First_Entity (U.Entity);

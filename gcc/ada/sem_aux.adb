@@ -91,7 +91,7 @@ package body Sem_Aux is
 
       elsif Is_Class_Wide_Type (Typ)
         and then Is_Incomplete_Type (Etype (Typ))
-        and then From_With_Type (Etype (Typ))
+        and then From_Limited_With (Etype (Typ))
         and then Present (Non_Limited_View (Etype (Typ)))
       then
          return Class_Wide_Type (Non_Limited_View (Etype (Typ)));
