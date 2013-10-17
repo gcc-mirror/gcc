@@ -9022,7 +9022,7 @@ package body Sem_Res is
       --  helpful for coverage analysis. However this should not happen in
       --  generics.
 
-      if Expander_Active then
+      if Full_Expander_Active then
          declare
             Reloc_L : constant Node_Id := Relocate_Node (L);
          begin

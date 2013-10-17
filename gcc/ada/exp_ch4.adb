@@ -12158,23 +12158,21 @@ package body Exp_Ch4 is
          Par : Node_Id;
          Top : Node_Id;
 
+         Wrapped_Node : Node_Id;
+         --  Note: if we are in a transient scope, we want to reuse it as
+         --  the context for actions insertion, if possible. But if N is itself
+         --  part of the stored actions for the current transient scope,
+         --  then we need to insert at the appropriate (inner) location in
+         --  the not as an action on Node_To_Be_Wrapped.
+
+         In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
+
       begin
-         --  In most cases an expression that creates a controlled object
-         --  generates a transient scope around it. If this is the case then
-         --  other controlled values can reuse it.
-
-         if Scope_Is_Transient then
-            Hook_Context := Node_To_Be_Wrapped;
-
-         --  In some cases, such as return statements, no transient scope is
-         --  generated, in which case we have to look up in the tree to find
-         --  the proper list on which to place the transient.
-
          --  When the node is inside a case/if expression, the lifetime of any
          --  temporary controlled object is extended. Find a suitable insertion
          --  node by locating the topmost case or if expressions.
 
-         elsif Within_Case_Or_If_Expression (N) then
+         if In_Cond_Expr then
             Par := N;
             Top := N;
             while Present (Par) loop
@@ -12256,8 +12254,16 @@ package body Exp_Ch4 is
 
             --    Proc (... and then Ctrl_Func_Call ...);
 
+            if Scope_Is_Transient then
+               Wrapped_Node := Node_To_Be_Wrapped;
+            else
+               Wrapped_Node := Empty;
+            end if;
+
             while Present (Par) loop
-               if Nkind_In (Par, N_Assignment_Statement,
+               if Par = Wrapped_Node
+                    or else
+                  Nkind_In (Par, N_Assignment_Statement,
                                  N_Object_Declaration,
                                  N_Pragma,
                                  N_Procedure_Call_Statement,
@@ -12292,9 +12298,14 @@ package body Exp_Ch4 is
             --  In this case, the finalization context is chosen so that
             --  we know at finalization point that the hook pointer is
             --  never null, so no need for a test, we can call the finalizer
-            --  unconditionally.
+            --  unconditionally, except in the case where the object is
+            --  created in a specific branch of a conditional expression.
 
-            Finalize_Always := True;
+            Finalize_Always :=
+               not (In_Cond_Expr
+                      or else
+                    Nkind_In (Original_Node (N), N_Case_Expression,
+                                                 N_If_Expression));
 
             declare
                Loc  : constant Source_Ptr := Sloc (N);
@@ -12382,6 +12393,13 @@ package body Exp_Ch4 is
 
       --  Step 3: Hook the transient object to the temporary
 
+      --  This must be inserted right after the object declaration, so that
+      --  the assignment is executed if, and only if, the object is actually
+      --  created (whereas the declaration of the hook pointer, and the
+      --  finalization call, may be inserted at an outer level, and may
+      --  remain unused for some executions, if the actual creation of
+      --  the object is conditional).
+
       --  The use of unchecked conversion / unrestricted access is needed to
       --  avoid an accessibility violation. Note that the finalization code is
       --  structured in such a way that the "hook" is processed only when it
@@ -12401,18 +12419,10 @@ package body Exp_Ch4 is
       --      <or>
       --    Temp := Obj_Id'Unrestricted_Access;
 
-      if Finalization_Context /= Hook_Context then
-         Insert_Action (Finalization_Context,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Temp_Id, Loc),
-             Expression => Expr));
-
-      else
-         Insert_After_And_Analyze (Decl,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Temp_Id, Loc),
-             Expression => Expr));
-      end if;
+      Insert_After_And_Analyze (Decl,
+        Make_Assignment_Statement (Loc,
+          Name       => New_Reference_To (Temp_Id, Loc),
+          Expression => Expr));
 
       --  Step 4: Finalize the transient controlled object after the context
       --  has been evaluated/elaborated. Generate:
