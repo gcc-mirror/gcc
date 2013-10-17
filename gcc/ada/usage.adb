@@ -576,6 +576,8 @@ begin
    Write_Line ("        .X*  turn off warnings for non-local exception");
    Write_Line ("        y*+  turn on warnings for Ada compatibility issues");
    Write_Line ("        Y    turn off warnings for Ada compatibility issues");
+   Write_Line ("        .y   turn on info messages for why pkg body needed");
+   Write_Line ("        .Y*  turn off info messages for why pkg body needed");
    Write_Line ("        z*+  turn on warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &

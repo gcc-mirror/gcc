@@ -1,3 +1,17 @@
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document -gnatw.y/-gnatw.Y.
+	* opt.ads (List_Body_Required_Info): New flag.
+	* prep.adb: Minor reformatting.
+	* sem_ch7.adb (Unit_Requires_Body_Info): New
+	procedure (Analyze_Package_Specification): Add call to
+	Unit_Requires_Body_Info.
+	* ug_words: Add entries for -gnatw.y and -gnatw.Y.
+	* usage.adb: Add line for new warning switch -gnatw.y/.Y.
+	* vms_data.ads: Add entry for [NO_]WHY_SPEC_NEEDS_BODY warning
+	qualifier.
+	* warnsw.ads, warnsw.adb: Implement new warning switch -gnatw.y/.Y.
+
 2013-10-17  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch8.adb (Find_Direct_Name): Keep track of assignments for
