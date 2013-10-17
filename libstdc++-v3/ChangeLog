@@ -1,3 +1,22 @@
+2013-10-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):
+	Fix initialization orders in initialization list and add explicit braces
+	for potentially ambiguous(actually not) `else` branch to eliminate
+	warnings.
+	* include/bits/regex_automaton.h (_NFA<>::_NFA): Likewise.
+	* include/bits/regex_compiler.h (_CharMatcher<>::_CharMatcher,
+	_BracketMatcher<>::_BracketMatcher): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_Compiler,
+	_Compiler<>::_M_atom): Likewise.
+	* include/bits/regex_executor.h (_Executor<>::_Executor): Likewise.
+	* include/bits/regex_executor.tcc (_DFSExecutor<>::_M_dfs,
+	_Executor<>::_M_word_boundry): Likewise.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_Scanner,
+	_Scanner<>::_M_eat_class): Likewise.
+	* include/bits/regex.tcc (__regex_algo_impl<>,
+	regex_iterator<>::operator++): Likewise, and remove unused typedef.
+
 2013-10-16  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):

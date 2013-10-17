@@ -145,15 +145,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (this->_M_re._M_traits.transform(__submatch.first,
 						__submatch.second)
 		== this->_M_re._M_traits.transform(__current, __last))
-	      if (__last != __current)
-		{
-		  auto __backup = __current;
-		  __current = __last;
+	      {
+		if (__last != __current)
+		  {
+		    auto __backup = __current;
+		    __current = __last;
+		    __ret = _M_dfs(__state._M_next);
+		    __current = __backup;
+		  }
+		else
 		  __ret = _M_dfs(__state._M_next);
-		  __current = __backup;
-		}
-	      else
-		__ret = _M_dfs(__state._M_next);
+	      }
 	  }
 	  break;
 	case _S_opcode_accept:
@@ -353,15 +355,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __pre = _M_current;
       --__pre;
       if (!(_M_at_begin() && _M_at_end()))
-	if (_M_at_begin())
-	  __ans = _M_is_word(*_M_current)
-	    && !(_M_flags & regex_constants::match_not_bow);
-	else if (_M_at_end())
-	  __ans = _M_is_word(*__pre)
-	    && !(_M_flags & regex_constants::match_not_eow);
-	else
-	  __ans = _M_is_word(*_M_current)
-	    != _M_is_word(*__pre);
+	{
+	  if (_M_at_begin())
+	    __ans = _M_is_word(*_M_current)
+	      && !(_M_flags & regex_constants::match_not_bow);
+	  else if (_M_at_end())
+	    __ans = _M_is_word(*__pre)
+	      && !(_M_flags & regex_constants::match_not_eow);
+	  else
+	    __ans = _M_is_word(*_M_current)
+	      != _M_is_word(*__pre);
+	}
       return __ans;
     }
 

@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       _CharMatcher(_CharT __ch, const _TraitsT& __traits, _FlagT __flags)
-      : _M_ch(_M_translate(__ch)), _M_traits(__traits), _M_flags(__flags)
+      : _M_traits(__traits), _M_flags(__flags), _M_ch(_M_translate(__ch))
       { }
 
       bool
@@ -189,8 +189,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _BracketMatcher(bool __is_non_matching,
 		      const _TraitsT& __traits,
 		      _FlagT __flags)
-      : _M_is_non_matching(__is_non_matching), _M_traits(__traits),
-	_M_flags(__flags), _M_class_set(0)
+      : _M_traits(__traits), _M_class_set(0), _M_flags(__flags),
+      _M_is_non_matching(__is_non_matching)
       { }
 
       bool

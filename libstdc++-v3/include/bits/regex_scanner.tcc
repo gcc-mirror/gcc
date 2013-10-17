@@ -56,8 +56,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Scanner<_FwdIter>::
     _Scanner(_FwdIter __begin, _FwdIter __end,
 	     _FlagT __flags, std::locale __loc)
-    : _M_current(__begin) , _M_end(__end) , _M_flags(__flags),
-      _M_ctype(std::use_facet<_CtypeT>(__loc)), _M_state(_S_state_normal),
+    : _M_state(_S_state_normal), _M_current(__begin), _M_end(__end),
+      _M_flags(__flags),
+      _M_ctype(std::use_facet<_CtypeT>(__loc)),
       _M_at_bracket_start(false),
       _M_token_map
 	{
@@ -94,9 +95,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {'t', '\t'},
 	  {'v', '\v'},
 	},
-      _M_escape_map(_M_is_ecma()
-		    ? _M_ecma_escape_map
-		    : _M_awk_escape_map),
       _M_ecma_spec_char
 	{
 	  '^',
@@ -138,14 +136,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  '^',
 	  '$',
 	},
-      _M_eat_escape(_M_is_ecma()
-		    ? &_Scanner::_M_eat_escape_ecma
-		    : &_Scanner::_M_eat_escape_posix),
+      _M_escape_map(_M_is_ecma()
+		    ? _M_ecma_escape_map
+		    : _M_awk_escape_map),
       _M_spec_char(_M_is_ecma()
 		   ? _M_ecma_spec_char
 		   : _M_is_basic()
 		   ? _M_basic_spec_char
-		   : _M_extended_spec_char)
+		   : _M_extended_spec_char),
+      _M_eat_escape(_M_is_ecma()
+		    ? &_Scanner::_M_eat_escape_ecma
+		    : &_Scanner::_M_eat_escape_posix)
     { _M_advance(); }
 
   template<typename _FwdIter>
@@ -243,9 +244,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_state = _S_state_in_brace;
 	  _M_token = _S_token_interval_begin;
 	}
-      else if (_M_spec_char.count(__c)
-	       && __c != ']'
-	       && __c != '}'
+      else if ((_M_spec_char.count(__c)
+		&& __c != ']'
+		&& __c != '}')
 	       || (_M_is_grep() && __c == '\n'))
 	_M_token = _M_token_map.at(__c);
       else
@@ -515,10 +516,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  || *_M_current++ != __ch
 	  || _M_current == _M_end // skip __ch
 	  || *_M_current++ != ']') // skip ']'
-	if (__ch == ':')
-	  __throw_regex_error(regex_constants::error_ctype);
-	else
-	  __throw_regex_error(regex_constants::error_collate);
+	{
+	  if (__ch == ':')
+	    __throw_regex_error(regex_constants::error_ctype);
+	  else
+	    __throw_regex_error(regex_constants::error_collate);
+	}
     }
 
 #ifdef _GLIBCXX_DEBUG

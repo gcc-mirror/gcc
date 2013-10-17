@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _NFA(_FlagT __f)
       : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-      _M_has_backref(false), _M_quant_count(0)
+      _M_quant_count(0), _M_has_backref(false)
       { }
 
       _FlagT
