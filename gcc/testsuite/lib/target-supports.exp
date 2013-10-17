@@ -2467,6 +2467,11 @@ proc check_effective_target_arm_fp16_ok_nocache { } {
 	# Must generate floating-point instructions.
 	return 0
     }
+    if [check_effective_target_arm_hf_eabi] {
+	# Use existing float-abi and force an fpu which supports fp16
+	set et_arm_fp16_flags "-mfpu=vfpv4"
+	return 1;
+    }
     if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "" } ]] {
         # The existing -mfpu value is OK; use it, but add softfp.
 	set et_arm_fp16_flags "-mfloat-abi=softfp"
