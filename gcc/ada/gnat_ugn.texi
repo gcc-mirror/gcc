@@ -3935,7 +3935,7 @@ TF            33  I 128 128
 @item -gnateu
 @cindex @option{-gnateu} (@command{gcc})
 Ignore unrecognized validity, warning, and style switches that
-apppear after this switch is given. This may be useful when
+appear after this switch is given. This may be useful when
 compiling sources developed on a later version of the compiler
 with an earlier version. Of course the earlier version must
 support this switch.

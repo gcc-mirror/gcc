@@ -1,3 +1,31 @@
+2013-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validated_Access_Subprogram_Instance): According
+	to AI05-288, actuals for access_to_subprograms must be subtype
+	conformant with the generic formal.  Previous to AI05-288
+	only mode conformance was required, but the AI is a binding
+	interpretation that applies to previous versions of the language,
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor text correction.
+	* ug_words: Add entry for -gnateu /IGNORE_UNRECOGNIZED.
+	* vms_data.ads: Add /IGNORE_UNRECOGNIZED for -gnateu.
+
+2013-10-17  Tristan Gingold  <gingold@adacore.com>
+
+	* impunit.adb (Non_Imp_File_Names_95): Add g-cppexc.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Constituent): Move the check
+	concerning option Part_Of to routine Check_Matching_Constituent.
+	(Check_Matching_Constituent): Verify that an abstract state
+	that acts as a constituent has the prope Part_Op option in
+	its aspect/pragma Abstract_State.  Account for the case when a
+	constituent comes from a private child or private sibling.
+	* sem_util.ads, sem_util.adb (Is_Child_Or_Sibling): New routine.
+
 2013-10-17  Tristan Gingold  <gingold@adacore.com>
 
 	* g-cppexc.adb, g-cppexc.ads: New files.
