@@ -1,3 +1,15 @@
+2013-10-17  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Synchronize declarations of other/all others.
+
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Add missing guard protecting Reverse_Storage_Order
+	call.
+	* sem_res.adb: Minor code cleanup: use named parameter association
+	(not positional) for Boolean parameter Sec_Stack in calls to
+	Establish_Transient_Scope.
+
 2013-10-15  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_pakd.adb (Expand_Packed_Element_Set,

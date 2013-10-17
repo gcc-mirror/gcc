@@ -2135,10 +2135,16 @@ package body Exp_Pakd is
          --  Swap back if necessary
 
          Set_Etype (Arg, Ctyp);
-         if Byte_Swapped and then Reverse_Storage_Order (Ctyp) then
-            Arg := Byte_Swap (Arg,
-                     Left_Justify  => not Bytes_Big_Endian,
-                     Right_Justify => False);
+
+         if Byte_Swapped
+           and then (Is_Record_Type (Ctyp) or else Is_Array_Type (Ctyp))
+           and then Reverse_Storage_Order (Ctyp)
+         then
+            Arg :=
+              Byte_Swap
+                (Arg,
+                 Left_Justify  => not Bytes_Big_Endian,
+                 Right_Justify => False);
          end if;
 
          --  We needed to analyze this before we do the unchecked convert
