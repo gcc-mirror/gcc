@@ -1,3 +1,8 @@
+2013-10-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libmudflap/58230
+	* testsuite/lib/mfdg.exp: Use C locale.
+
 2013-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/57605
