@@ -1244,7 +1244,7 @@ package body Exp_Ch4 is
             --  want to Adjust.
 
             if not Aggr_In_Place
-              and then not Is_Immutably_Limited_Type (T)
+              and then not Is_Limited_View (T)
             then
                Insert_Action (N,
 

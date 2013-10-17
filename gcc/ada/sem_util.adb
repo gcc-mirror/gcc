@@ -8145,7 +8145,7 @@ package body Sem_Util is
            --  statement is aliased if its type is immutably limited.
 
            or else (Is_Return_Object (E)
-                     and then Is_Immutably_Limited_Type (Etype (E)));
+                     and then Is_Limited_View (Etype (E)));
 
       elsif Nkind (Obj) = N_Selected_Component then
          return Is_Aliased (Entity (Selector_Name (Obj)));

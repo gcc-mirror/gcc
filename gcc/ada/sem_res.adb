@@ -4356,7 +4356,7 @@ package body Sem_Res is
          --  of the current b-i-p implementation to unify the handling for
          --  multiple kinds of storage pools). ???
 
-         if Is_Immutably_Limited_Type (Desig_T)
+         if Is_Limited_View (Desig_T)
            and then Nkind (Expression (E)) = N_Function_Call
          then
             declare
@@ -4595,7 +4595,7 @@ package body Sem_Res is
 
                if Ada_Version >= Ada_2012
                  and then Is_Limited_Type (Desig_T)
-                 and then not Is_Immutably_Limited_Type (Scope (Discr))
+                 and then not Is_Limited_View (Scope (Discr))
                then
                   Error_Msg_N
                     ("only immutably limited types can have anonymous "

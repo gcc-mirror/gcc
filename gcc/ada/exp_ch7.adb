@@ -432,7 +432,7 @@ package body Exp_Ch7 is
            Typ   => Typ,
            Stmts => Make_Deep_Array_Body (Initialize_Case, Typ)));
 
-      if not Is_Immutably_Limited_Type (Typ) then
+      if not Is_Limited_View (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc
              (Prim  => Adjust_Case,
@@ -3227,7 +3227,7 @@ package body Exp_Ch7 is
            Typ   => Typ,
            Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
 
-      if not Is_Immutably_Limited_Type (Typ) then
+      if not Is_Limited_View (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc
              (Prim  => Adjust_Case,

@@ -628,7 +628,7 @@ package body Exp_Aggr is
       --  If component is limited, aggregate must be expanded because each
       --  component assignment must be built in place.
 
-      if Is_Immutably_Limited_Type (Component_Type (Typ)) then
+      if Is_Limited_View (Component_Type (Typ)) then
          return False;
       end if;
 
@@ -3347,7 +3347,7 @@ package body Exp_Aggr is
          --  in place within the caller's scope).
 
          or else
-           (Is_Immutably_Limited_Type (Typ)
+           (Is_Limited_View (Typ)
              and then
                (Nkind (Parent (Parent_Node)) = N_Extended_Return_Statement
                  or else Nkind (Parent_Node) = N_Simple_Return_Statement))
@@ -5668,7 +5668,7 @@ package body Exp_Aggr is
       --  Extension aggregates, aggregates in extended return statements, and
       --  aggregates for C++ imported types must be expanded.
 
-      if Ada_Version >= Ada_2005 and then Is_Immutably_Limited_Type (Typ) then
+      if Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
          if not Nkind_In (Parent (N), N_Object_Declaration,
                                       N_Component_Association)
          then

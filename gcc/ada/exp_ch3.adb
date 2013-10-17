@@ -1893,7 +1893,7 @@ package body Exp_Ch3 is
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Immutably_Limited_Type (Typ)
+           and then not Is_Limited_View (Typ)
          then
             Append_To (Res,
               Make_Adjust_Call
@@ -5310,7 +5310,7 @@ package body Exp_Ch3 is
             --  creating the object (via allocator) and initializing it.
 
             if Is_Return_Object (Def_Id)
-              and then Is_Immutably_Limited_Type (Typ)
+              and then Is_Limited_View (Typ)
             then
                null;
 
@@ -5578,7 +5578,7 @@ package body Exp_Ch3 is
             --  renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Immutably_Limited_Type (Typ)
+              and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
                Insert_Action_After (Init_After,
