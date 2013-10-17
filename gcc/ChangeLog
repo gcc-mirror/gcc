@@ -1,4 +1,4 @@
-2013-10-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (enum rs6000_reload_reg_type): Add new
 	fields to the reg_addr array that describes the valid addressing
@@ -29,6 +29,8 @@
 	(rs6000_legitimate_address_p): Use mode_supports_pre_incdec_p and
 	mode_supports_pre_modify_p to determine if PRE_INC, PRE_DEC, and
 	PRE_MODIFY are supported.
+	(rs6000_output_move_128bit): Change to use {src,dest}_vmx_p for altivec
+	registers, instead of {src,dest}_av_p.
 	(rs6000_print_options_internal): Tweak the debug output slightly.
 
 2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
