@@ -665,10 +665,6 @@ package body Debug is
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
 
-   --  d.Y  Prevents the use of the N_Expression_With_Actions node even in the
-   --       case of the gcc back end. Provided as a back up in case the new
-   --       scheme has problems.
-
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
    --       debugging errors caused by expanded code, where the source location
