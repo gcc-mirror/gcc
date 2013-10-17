@@ -4208,13 +4208,44 @@ Struct_field::is_field_name(const std::string& name) const
 
       // This is a horrible hack caused by the fact that we don't pack
       // the names of builtin types.  FIXME.
-      if (nt != NULL
+      if (!this->is_imported_
+	  && nt != NULL
 	  && nt->is_builtin()
 	  && nt->name() == Gogo::unpack_hidden_name(name))
 	return true;
 
       return false;
     }
+}
+
+// Return whether this field is an unexported field named NAME.
+
+bool
+Struct_field::is_unexported_field_name(Gogo* gogo,
+				       const std::string& name) const
+{
+  const std::string& field_name(this->field_name());
+  if (Gogo::is_hidden_name(field_name)
+      && name == Gogo::unpack_hidden_name(field_name)
+      && gogo->pack_hidden_name(name, false) != field_name)
+    return true;
+
+  // Check for the name of a builtin type.  This is like the test in
+  // is_field_name, only there we return false if this->is_imported_,
+  // and here we return true.
+  if (this->is_imported_ && this->is_anonymous())
+    {
+      Type* t = this->typed_identifier_.type();
+      if (t->points_to() != NULL)
+	t = t->points_to();
+      Named_type* nt = t->named_type();
+      if (nt != NULL
+	  && nt->is_builtin()
+	  && nt->name() == Gogo::unpack_hidden_name(name))
+	return true;
+    }
+
+  return false;
 }
 
 // Return whether this field is an embedded built-in type.
@@ -4649,13 +4680,8 @@ Struct_type::is_unexported_local_field(Gogo* gogo,
       for (Struct_field_list::const_iterator pf = fields->begin();
 	   pf != fields->end();
 	   ++pf)
-	{
-	  const std::string& field_name(pf->field_name());
-	  if (Gogo::is_hidden_name(field_name)
-	      && name == Gogo::unpack_hidden_name(field_name)
-	      && gogo->pack_hidden_name(name, false) != field_name)
-	    return true;
-	}
+	if (pf->is_unexported_field_name(gogo, name))
+	  return true;
     }
   return false;
 }
@@ -5257,34 +5283,8 @@ Struct_type::do_import(Import* imp)
 	    }
 	  Type* ftype = imp->read_type();
 
-	  // We don't pack the names of builtin types.  In
-	  // Struct_field::is_field_name we cope with a hack.  Now we
-	  // need another hack so that we don't accidentally think
-	  // that an embedded builtin type is accessible from another
-	  // package (we know that all the builtin types are not
-	  // exported).
-	  // This is called during parsing, before anything is
-	  // lowered, so we have to be careful to avoid dereferencing
-	  // an unknown type name.
-	  if (name.empty())
-	    {
-	      Type *t = ftype;
-	      if (t->classification() == Type::TYPE_POINTER)
-		{
-		  // Very ugly.
-		  Pointer_type* ptype = static_cast<Pointer_type*>(t);
-		  t = ptype->points_to();
-		}
-	      std::string tname;
-	      if (t->forward_declaration_type() != NULL)
-		tname = t->forward_declaration_type()->name();
-	      else if (t->named_type() != NULL)
-		tname = t->named_type()->name();
-	      if (!tname.empty() && tname[0] >= 'a' && tname[0] <= 'z')
-		name = '.' + imp->package()->pkgpath() + '.' + tname;
-	    }
-
 	  Struct_field sf(Typed_identifier(name, ftype, imp->location()));
+	  sf.set_is_imported();
 
 	  if (imp->peek_char() == ' ')
 	    {
@@ -9324,7 +9324,9 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
       else
 	{
 	  bool is_unexported;
-	  if (!Gogo::is_hidden_name(name))
+	  // The test for 'a' and 'z' is to handle builtin names,
+	  // which are not hidden.
+	  if (!Gogo::is_hidden_name(name) && (name[0] < 'a' || name[0] > 'z'))
 	    is_unexported = false;
 	  else
 	    {
