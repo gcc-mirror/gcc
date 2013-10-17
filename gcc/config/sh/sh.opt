@@ -21,7 +21,7 @@
 ;; Used for various architecture options.
 Mask(SH_E)
 
-;; Set if the default precision of th FPU is single.
+;; Set if the default precision of the FPU is single.
 Mask(FPU_SINGLE)
 
 ;; Set if the a double-precision FPU is present but is restricted to
