@@ -1,3 +1,8 @@
+2013-10-17  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_reload_class): Adjust
+	handling of STACK_REG.
+
 2013-10-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58143

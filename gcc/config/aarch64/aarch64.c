@@ -4219,8 +4219,17 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 static reg_class_t
 aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
 {
-  if (regclass == POINTER_REGS || regclass == STACK_REG)
+  if (regclass == POINTER_REGS)
     return GENERAL_REGS;
+
+  if (regclass == STACK_REG)
+    {
+      if (REG_P(x)
+	  && reg_class_subset_p (REGNO_REG_CLASS (REGNO (x)), POINTER_REGS))
+	  return regclass;
+
+      return NO_REGS;
+    }
 
   /* If it's an integer immediate that MOVI can't handle, then
      FP_REGS is not an option, so we return NO_REGS instead.  */
