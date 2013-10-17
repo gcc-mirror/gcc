@@ -3602,7 +3602,7 @@ package body Sem_Res is
               and then Full_Expander_Active
               and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
-               Establish_Transient_Scope (A, False);
+               Establish_Transient_Scope (A, Sec_Stack => False);
                Resolve (A, Etype (F));
 
             --  A small optimization: if one of the actuals is a concatenation
@@ -3621,7 +3621,7 @@ package body Sem_Res is
                       and then Chars (Nam) = Name_Asm)
               and then not Static_Concatenation (A)
             then
-               Establish_Transient_Scope (A, False);
+               Establish_Transient_Scope (A, Sec_Stack => False);
                Resolve (A, Etype (F));
 
             else
@@ -3680,7 +3680,7 @@ package body Sem_Res is
                      if (Is_Controlled (DDT) or else Has_Task (DDT))
                        and then Full_Expander_Active
                      then
-                        Establish_Transient_Scope (A, False);
+                        Establish_Transient_Scope (A, Sec_Stack => False);
                      end if;
                   end;
 

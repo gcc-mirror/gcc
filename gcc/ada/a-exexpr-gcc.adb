@@ -45,11 +45,10 @@ package body Exception_Propagation is
    -- Entities to interface with the GCC runtime --
    ------------------------------------------------
 
-   --  These come from "C++ ABI for Itanium: Exception handling", which is
-   --  the reference for GCC.
+   --  These come from "C++ ABI for Itanium: Exception handling", which is the
+   --  reference for GCC.
 
-   --  Return codes from the GCC runtime functions used to propagate
-   --  an exception.
+   --  Return codes from GCC runtime functions used to propagate an exception
 
    type Unwind_Reason_Code is
      (URC_NO_REASON,
@@ -226,9 +225,8 @@ package body Exception_Propagation is
       UW_Argument  : System.Address) return Unwind_Reason_Code;
    pragma Import (C, CleanupUnwind_Handler,
                   "__gnat_cleanupunwind_handler");
-   --  Hook called at each step of the forced unwinding we perform to
-   --  trigger cleanups found during the propagation of an unhandled
-   --  exception.
+   --  Hook called at each step of the forced unwinding we perform to trigger
+   --  cleanups found during the propagation of an unhandled exception.
 
    --  GCC runtime functions used. These are C non-void functions, actually,
    --  but we ignore the return values. See raise.c as to why we are using
@@ -295,7 +293,9 @@ package body Exception_Propagation is
    ---------------------------------------------------------------------------
 
    --  Currently, these only have their address taken and compared so there is
-   --  no real point having whole exception data blocks allocated.
+   --  no real point having whole exception data blocks allocated. Note that
+   --  there are corresponding declarations in gigi (trans.c) which must be
+   --  kept properly synchronized.
 
    Others_Value : constant Character := 'O';
    pragma Export (C, Others_Value, "__gnat_others_value");
@@ -315,6 +315,7 @@ package body Exception_Propagation is
 
    function Allocate_Occurrence return EOA is
       Res : GNAT_GCC_Exception_Access;
+
    begin
       Res :=
         new GNAT_GCC_Exception'
@@ -432,6 +433,7 @@ package body Exception_Propagation is
    is
    begin
       --  Simply propagate it
+
       Propagate_GCC_Exception (GCC_Exception);
    end Reraise_GCC_Exception;
 
@@ -467,9 +469,10 @@ package body Exception_Propagation is
       --  unwinding hook calls Unhandled_Exception_Terminate when end of
       --  stack is reached.
 
-      Unwind_ForcedUnwind (GCC_Exception,
-                           CleanupUnwind_Handler'Address,
-                           System.Null_Address);
+      Unwind_ForcedUnwind
+        (GCC_Exception,
+         CleanupUnwind_Handler'Address,
+         System.Null_Address);
 
       --  We get here in case of error. The debugger has been notified before
       --  the second step above.
@@ -503,7 +506,7 @@ package body Exception_Propagation is
 
          declare
             GNAT_Occurrence : constant GNAT_GCC_Exception_Access :=
-              To_GNAT_GCC_Exception (GCC_Exception);
+                                To_GNAT_GCC_Exception (GCC_Exception);
          begin
             Save_Occurrence (Excep.all, GNAT_Occurrence.Occurrence);
          end;
