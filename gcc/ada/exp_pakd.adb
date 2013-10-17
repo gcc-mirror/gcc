@@ -1703,11 +1703,17 @@ package body Exp_Pakd is
                   Set_Etype (New_Rhs, Etype (Left_Opnd (New_Rhs)));
                end if;
 
+               --  If New_Rhs has been byte swapped, need to convert Or_Rhs
+               --  to the return type of the byte swapping function now.
+
+               if Require_Byte_Swapping then
+                  Or_Rhs := Unchecked_Convert_To (Etype (New_Rhs), Or_Rhs);
+               end if;
+
                New_Rhs :=
                  Make_Op_Or (Loc,
                    Left_Opnd  => New_Rhs,
-                   Right_Opnd => Unchecked_Convert_To
-                                   (Etype (New_Rhs), Or_Rhs));
+                   Right_Opnd => Or_Rhs);
             end;
          end if;
 

@@ -1872,8 +1872,16 @@ package body Freeze is
                     and then Is_Type (Entity (Prefix (N)))
                     and then Entity (Prefix (N)) = E
                   then
-                     Error_Msg_N
-                       ("current instance must be a limited type", Prefix (N));
+                     if Ada_Version < Ada_2012 then
+                        Error_Msg_N
+                          ("current instance must be a limited type",
+                             Prefix (N));
+                     else
+                        Error_Msg_N
+                          ("current instance must be an immutably limited " &
+                            "type (RM-2012, 7.5 (8.1/3))",
+                             Prefix (N));
+                     end if;
                      return Abandon;
                   else
                      return OK;

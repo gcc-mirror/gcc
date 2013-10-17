@@ -2071,6 +2071,12 @@ package body Sem_Ch3 is
       --  If the states have visible refinement, remove the visibility of each
       --  constituent at the end of the package body declarations.
 
+      function Requires_State_Refinement
+        (Spec_Id : Entity_Id;
+         Body_Id : Entity_Id) return Boolean;
+      --  Determine whether a package denoted by its spec and body entities
+      --  requires refinement of abstract states.
+
       -----------------
       -- Adjust_Decl --
       -----------------
@@ -2099,6 +2105,82 @@ package body Sem_Ch3 is
             end loop;
          end if;
       end Remove_Visible_Refinements;
+
+      -------------------------------
+      -- Requires_State_Refinement --
+      -------------------------------
+
+      function Requires_State_Refinement
+        (Spec_Id : Entity_Id;
+         Body_Id : Entity_Id) return Boolean
+      is
+         function Mode_Is_Off (Prag : Node_Id) return Boolean;
+         --  Given pragma SPARK_Mode, determine whether the mode is Off
+
+         -----------------
+         -- Mode_Is_Off --
+         -----------------
+
+         function Mode_Is_Off (Prag : Node_Id) return Boolean is
+            Mode : Node_Id;
+
+         begin
+            --  The default SPARK mode is On
+
+            if No (Prag) then
+               return False;
+            end if;
+
+            Mode :=
+              Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+            --  Then the pragma lacks an argument, the default mode is On
+
+            if No (Mode) then
+               return False;
+            else
+               return Chars (Mode) = Name_Off;
+            end if;
+         end Mode_Is_Off;
+
+      --  Start of processing for Requires_State_Refinement
+
+      begin
+         --  A package that does not define at least one abstract state cannot
+         --  possibly require refinement.
+
+         if No (Abstract_States (Spec_Id)) then
+            return False;
+
+         --  The package instroduces a single null state which does not merit
+         --  refinement.
+
+         elsif Has_Null_Abstract_State (Spec_Id) then
+            return False;
+
+         --  Check whether the package body is subject to pragma SPARK_Mode. If
+         --  it is and the mode is Off, the package body is considered to be in
+         --  regular Ada and does not require refinement.
+
+         elsif Mode_Is_Off (SPARK_Mode_Pragmas (Body_Id)) then
+            return False;
+
+         --  The body's SPARK_Mode may be inherited from a similar pragma that
+         --  appears in the private declarations of the spec. The pragma we are
+         --  interested appears as the second entry in SPARK_Mode_Pragmas.
+
+         elsif Present (SPARK_Mode_Pragmas (Spec_Id))
+           and then Mode_Is_Off (Next_Pragma (SPARK_Mode_Pragmas (Spec_Id)))
+         then
+            return False;
+
+         --  The spec defines at least one abstract state and the body has no
+         --  way of circumventing the refinement.
+
+         else
+            return True;
+         end if;
+      end Requires_State_Refinement;
 
       --  Local variables
 
@@ -2264,9 +2346,7 @@ package body Sem_Ch3 is
             --  State refinement is required when the package declaration has
             --  abstract states. Null states are not considered.
 
-            elsif Present (Abstract_States (Spec_Id))
-              and then not Has_Null_Abstract_State (Spec_Id)
-            then
+            elsif Requires_State_Refinement (Spec_Id, Body_Id) then
                Error_Msg_NE
                  ("package & requires state refinement", Context, Spec_Id);
             end if;

@@ -1,3 +1,84 @@
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Record_Possible_Body_Reference): Fix test for
+	being in body.
+	(Add_Constituent): Merged into Check_Refined_Global_Item.
+	(Check_Matching_Constituent): A constituent that has the proper Part_Of
+	option and comes from a private child or a sibling is now collected.
+	(Check_Matching_Modes): Merged into Check_Refined_Global_Item.
+	(Check_Refined_Global_Item): Code cleanup.
+	(Collect_Constituent): New routine.
+	(Inconsistent_Mode_Error): Moved out from Check_Matching_Modes.
+
+2013-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Check_Current_Instance, Process): Add RM reference
+	and mention immutably limited types, when the current instance
+	is illegal in Ada 2012.
+
+2013-10-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_Unused_Withs): If the main unit is a
+	subunit, apply the check to the units mentioned in its context
+	only. This provides additional warnings on with_clauses that
+	are superfluous.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Emit an
+	error message concerning state refinement when the spec defines at
+	least one non-null abstract state and the body's SPARK mode is On.
+	(Requires_State_Refinement): New routine.
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.ads: Comment fixes.
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Specification): Remove circuit
+	for ensuring that a package spec requires a body for some other
+	reason than that it contains the declaration of an abstract state.
+
+2013-10-17  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Expression): Fix call of
+	Possible_Local_Raise.
+
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Unchecked
+	conversion of Or_Rhs to Etype of New_Rhs is required only when
+	the latter is the result of a byte swap operation.
+
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_To_Any_Function): For a type with opaque
+	representation that is not transmitted as an unconstrained value,
+	use 'Write, not 'Output, to generate the opaque representation.
+
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Short_Circuit): Only
+	generate expression-with-action when full expansion is set.
+
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb Remove obsolete comment.
+
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object.Find_Enclosing_Contexts):
+	Avoid late insertion when expanding an expression with action
+	nested within a transient block; Do not inconditionally generate
+	a finalization call if the generated object is from a specific
+	branch of a conditional expression.
+
+2013-10-17  Pascal Obry  <obry@adacore.com>
+
+	* g-arrspl.adb: Ensure Finalize call is idempotent.
+	* g-arrspl.adb (Finalize): Makes the call idempotent.
+
 2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Is_Matching_Input): Account

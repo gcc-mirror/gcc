@@ -9452,7 +9452,8 @@ package body Sem_Prag is
 
                      Analyze (Par_State);
 
-                     --  Part_Of specified a legal state
+                     --  Part_Of specified a legal state, this automatically
+                     --  makes the state a constituent.
 
                      if Is_Entity_Name (Par_State)
                        and then Present (Entity (Par_State))
@@ -21013,20 +21014,35 @@ package body Sem_Prag is
            (Item        : Node_Id;
             Global_Mode : Name_Id)
          is
-            procedure Add_Constituent (Item_Id : Entity_Id);
-            --  Add a single constituent to one of the three constituent lists
-            --  depending on Global_Mode.
+            Item_Id : constant Entity_Id := Entity_Of (Item);
 
-            procedure Check_Matching_Modes (Item_Id : Entity_Id);
-            --  Verify that the global modes of item Item_Id are the same in
-            --  both pragmas Global and Refined_Global.
+            procedure Inconsistent_Mode_Error (Expect : Name_Id);
+            --  Issue a common error message for all mode mismatches. Expect
+            --  denotes the expected mode.
 
-            ---------------------
-            -- Add_Constituent --
-            ---------------------
+            -----------------------------
+            -- Inconsistent_Mode_Error --
+            -----------------------------
 
-            procedure Add_Constituent (Item_Id : Entity_Id) is
+            procedure Inconsistent_Mode_Error (Expect : Name_Id) is
             begin
+               Error_Msg_NE
+                 ("global item & has inconsistent modes", Item, Item_Id);
+
+               Error_Msg_Name_1 := Global_Mode;
+               Error_Msg_N ("\  expected mode %", Item);
+
+               Error_Msg_Name_1 := Expect;
+               Error_Msg_N ("\  found mode %", Item);
+            end Inconsistent_Mode_Error;
+
+         --  Start of processing for Check_Refined_Global_Item
+
+         begin
+            --  The state or variable acts as a constituent of a state, collect
+            --  it for the state completeness checks performed later on.
+
+            if Present (Refined_State (Item_Id)) then
                if Global_Mode = Name_Input then
                   Add_Item (Item_Id, In_Constits);
 
@@ -21036,92 +21052,30 @@ package body Sem_Prag is
                elsif Global_Mode = Name_Output then
                   Add_Item (Item_Id, Out_Constits);
                end if;
-            end Add_Constituent;
 
-            --------------------------
-            -- Check_Matching_Modes --
-            --------------------------
+            --  When not a constituent, ensure that both occurrences of the
+            --  item in pragmas Global and Refined_Global match.
 
-            procedure Check_Matching_Modes (Item_Id : Entity_Id) is
-               procedure Inconsistent_Mode_Error (Expect : Name_Id);
-               --  Issue a common error message for all mode mismatche. Expect
-               --  denotes the expected mode.
-
-               -----------------------------
-               -- Inconsistent_Mode_Error --
-               -----------------------------
-
-               procedure Inconsistent_Mode_Error (Expect : Name_Id) is
-               begin
-                  Error_Msg_NE
-                    ("global item & has inconsistent modes", Item, Item_Id);
-
-                  Error_Msg_Name_1 := Global_Mode;
-                  Error_Msg_N ("\  expected mode %", Item);
-
-                  Error_Msg_Name_1 := Expect;
-                  Error_Msg_N ("\  found mode %", Item);
-               end Inconsistent_Mode_Error;
-
-            --  Start processing for Check_Matching_Modes
-
-            begin
-               if Contains (In_Items, Item_Id) then
-                  if Global_Mode /= Name_Input then
-                     Inconsistent_Mode_Error (Name_Input);
-                  end if;
-
-               elsif Contains (In_Out_Items, Item_Id) then
-                  if Global_Mode /= Name_In_Out then
-                     Inconsistent_Mode_Error (Name_In_Out);
-                  end if;
-
-               elsif Contains (Out_Items, Item_Id) then
-                  if Global_Mode /= Name_Output then
-                     Inconsistent_Mode_Error (Name_Output);
-                  end if;
-
-               --  The item does not appear in the corresponding Global aspect,
-               --  it must be an extra.
-
-               else
-                  Error_Msg_NE ("extra global item &", Item, Item_Id);
-               end if;
-            end Check_Matching_Modes;
-
-            --  Local variables
-
-            Item_Id : constant Entity_Id := Entity_Of (Item);
-
-         --  Start of processing for Check_Refined_Global_Item
-
-         begin
-            if Ekind (Item_Id) = E_Abstract_State then
-
-               --  The state is neither a constituent of an ancestor state nor
-               --  has a visible refinement. Ensure that the modes of both its
-               --  occurrences in Global and Refined_Global match.
-
-               if No (Refined_State (Item_Id))
-                 and then not Has_Visible_Refinement (Item_Id)
-               then
-                  Check_Matching_Modes (Item_Id);
+            elsif Contains (In_Items, Item_Id) then
+               if Global_Mode /= Name_Input then
+                  Inconsistent_Mode_Error (Name_Input);
                end if;
 
-            else pragma Assert (Ekind (Item_Id) = E_Variable);
-
-               --  The variable acts as a constituent of a state, collect it
-               --  for the state completeness checks performed later on.
-
-               if Present (Refined_State (Item_Id)) then
-                  Add_Constituent (Item_Id);
-
-               --  The variable is not a constituent. Ensure that the modes of
-               --  both its occurrences in Global and Refined_Global match.
-
-               else
-                  Check_Matching_Modes (Item_Id);
+            elsif Contains (In_Out_Items, Item_Id) then
+               if Global_Mode /= Name_In_Out then
+                  Inconsistent_Mode_Error (Name_In_Out);
                end if;
+
+            elsif Contains (Out_Items, Item_Id) then
+               if Global_Mode /= Name_Output then
+                  Inconsistent_Mode_Error (Name_Output);
+               end if;
+
+            --  The item does not appear in the corresponding Global pragma, it
+            --  must be an extra.
+
+            else
+               Error_Msg_NE ("extra global item &", Item, Item_Id);
             end if;
          end Check_Refined_Global_Item;
 
@@ -21433,7 +21387,39 @@ package body Sem_Prag is
             --------------------------------
 
             procedure Check_Matching_Constituent (Constit_Id : Entity_Id) is
+               procedure Collect_Constituent;
+               --  Add constituent Constit_Id to the refinements of State_Id
+
+               -------------------------
+               -- Collect_Constituent --
+               -------------------------
+
+               procedure Collect_Constituent is
+               begin
+                  --  Add the constituent to the lis of processed items to aid
+                  --  with the detection of duplicates.
+
+                  Add_Item (Constit_Id, Constituents_Seen);
+
+                  --  Collect the constituent in the list of refinement items.
+                  --  Establish a relation between the refined state and its
+                  --  constituent.
+
+                  Append_Elmt (Constit_Id, Refinement_Constituents (State_Id));
+                  Set_Refined_State (Constit_Id, State_Id);
+
+                  --  The state has at least one legal constituent, mark the
+                  --  start of the refinement region. The region ends when the
+                  --  body declarations end (see routine Analyze_Declarations).
+
+                  Set_Has_Visible_Refinement (State_Id);
+               end Collect_Constituent;
+
+               --  Local variables
+
                State_Elmt : Elmt_Id;
+
+            --  Start of processing for Check_Matching_Constituent
 
             begin
                --  Detect a duplicate use of a constituent
@@ -21457,15 +21443,16 @@ package body Sem_Prag is
 
                   --  The constituent has the proper Part_Of option, but may
                   --  not appear in the immediate hidden state of the related
-                  --  package. This case arises when the constituent comes from
-                  --  a private child or a private sibling. Recognize these
-                  --  scenarios to avoid generating a bogus error message.
+                  --  package. This case arises when the constituent appears
+                  --  in a private child or a private sibling. Recognize these
+                  --  scenarios and collect the constituent.
 
                   elsif Is_Child_Or_Sibling
                           (Pack_1        => Scope (State_Id),
                            Pack_2        => Scope (Constit_Id),
                            Private_Child => True)
                   then
+                     Collect_Constituent;
                      return;
                   end if;
                end if;
@@ -21489,21 +21476,7 @@ package body Sem_Prag is
                         Add_Item (Constit_Id, Constituents_Seen);
                         Remove_Elmt (Hidden_States, State_Elmt);
 
-                        --  Collect the constituent in the list of refinement
-                        --  items. Establish a relation between the refined
-                        --  state and its constituent.
-
-                        Append_Elmt
-                          (Constit_Id, Refinement_Constituents (State_Id));
-                        Set_Refined_State (Constit_Id, State_Id);
-
-                        --  The state has at least one legal constituent, mark
-                        --  the start of the refinement region. The region ends
-                        --  when the body declarations end (see routine
-                        --  Analyze_Declarations).
-
-                        Set_Has_Visible_Refinement (State_Id);
-
+                        Collect_Constituent;
                         return;
                      end if;
 
@@ -23356,7 +23329,7 @@ package body Sem_Prag is
       Item_Id : Entity_Id)
    is
    begin
-      if In_Package_Body
+      if Is_Body_Name (Unit_Name (Get_Source_Unit (Item)))
         and then Ekind (Item_Id) = E_Abstract_State
       then
          if not Has_Body_References (Item_Id) then

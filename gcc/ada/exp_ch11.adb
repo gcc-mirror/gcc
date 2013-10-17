@@ -1450,7 +1450,7 @@ package body Exp_Ch11 is
       RCE : Node_Id;
 
    begin
-      Possible_Local_Raise (N, Name (N));
+      Possible_Local_Raise (N, Entity (Name (N)));
 
       --  Later we must teach the back end/gigi how to deal with this, but
       --  for now we will assume the type is Standard_Boolean and transform
