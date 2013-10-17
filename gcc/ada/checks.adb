@@ -5092,6 +5092,13 @@ package body Checks is
       then
          return;
 
+      --  For an expression with actions, we want to insert the validity check
+      --  on the final Expression.
+
+      elsif Nkind (Expr) = N_Expression_With_Actions then
+         Ensure_Valid (Expression (Expr));
+         return;
+
       --  An annoying special case. If this is an out parameter of a scalar
       --  type, then the value is not going to be accessed, therefore it is
       --  inappropriate to do any validity check at the call site.

@@ -12135,15 +12135,26 @@ package body Exp_Ch4 is
      (Decl     : Node_Id;
       Rel_Node : Node_Id)
    is
-      function Find_Enclosing_Context (N : Node_Id) return Node_Id;
-      --  Find the logical context where N appears. The context is chosen such
-      --  that it is possible to insert before and after it.
+      Hook_Context         : Node_Id;
+      --  Node on which to insert the hook pointer (as an action)
 
-      ----------------------------
-      -- Find_Enclosing_Context --
-      ----------------------------
+      Finalization_Context : Node_Id;
+      --  Node after which to insert finalization actions
 
-      function Find_Enclosing_Context (N : Node_Id) return Node_Id is
+      Finalize_Always : Boolean;
+      --  If False, call to finalizer includes a test of whether the
+      --  hook pointer is null.
+
+      procedure Find_Enclosing_Contexts (N : Node_Id);
+      --  Find the logical context where N appears, and initializae
+      --  Hook_Context and Finalization_Context accordingly. Also
+      --  sets Finalize_Always.
+
+      -----------------------------
+      -- Find_Enclosing_Contexts --
+      -----------------------------
+
+      procedure Find_Enclosing_Contexts (N : Node_Id) is
          Par : Node_Id;
          Top : Node_Id;
 
@@ -12153,7 +12164,7 @@ package body Exp_Ch4 is
          --  other controlled values can reuse it.
 
          if Scope_Is_Transient then
-            return Node_To_Be_Wrapped;
+            Hook_Context := Node_To_Be_Wrapped;
 
          --  In some cases, such as return statements, no transient scope is
          --  generated, in which case we have to look up in the tree to find
@@ -12193,7 +12204,8 @@ package body Exp_Ch4 is
                                              N_Parameter_Association,
                                              N_Pragma_Argument_Association)
                then
-                  return Par;
+                  Hook_Context := Par;
+                  goto Hook_Context_Found;
 
                --  Prevent the search from going too far
 
@@ -12204,26 +12216,10 @@ package body Exp_Ch4 is
                Par := Parent (Par);
             end loop;
 
-            return Par;
-
-         --  Short circuit operators in complex expressions are converted into
-         --  expression_with_actions.
+            Hook_Context := Par;
+            goto Hook_Context_Found;
 
          else
-            --  Handle the case where the node is buried deep inside an if
-            --  statement. The temporary controlled object must be finalized
-            --  before the then, elsif or else statements are evaluated.
-
-            --    if Something
-            --      and then Ctrl_Func_Call
-            --    then
-            --       <result must be finalized at this point>
-            --       <statements>
-            --    end if;
-
-            --  To achieve this, find the topmost logical operator. Generated
-            --  actions are then inserted before/after it.
-
             Par := N;
             while Present (Par) loop
 
@@ -12267,7 +12263,8 @@ package body Exp_Ch4 is
                                  N_Procedure_Call_Statement,
                                  N_Simple_Return_Statement)
                then
-                  return Par;
+                  Hook_Context := Par;
+                  goto Hook_Context_Found;
 
                --  Prevent the search from going too far
 
@@ -12280,25 +12277,66 @@ package body Exp_Ch4 is
 
             --  Return the topmost short circuit operator
 
-            return Top;
+            Hook_Context := Top;
          end if;
-      end Find_Enclosing_Context;
+
+      <<Hook_Context_Found>>
+
+         --  Special case for Boolean EWAs: capture expression in a temporary,
+         --  whose declaration will serve as the context around which to insert
+         --  finalization code. The finalization thus remains local to the
+         --  specific condition being evaluated.
+
+         if Is_Boolean_Type (Etype (N)) then
+
+            --  In this case, the finalization context is chosen so that
+            --  we know at finalization point that the hook pointer is
+            --  never null, so no need for a test, we can call the finalizer
+            --  unconditionally.
+
+            Finalize_Always := True;
+
+            declare
+               Loc  : constant Source_Ptr := Sloc (N);
+               Temp : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+            begin
+               Append_To (Actions (N),
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Etype (N), Loc),
+                   Expression          => Expression (N)));
+               Finalization_Context := Last (Actions (N));
+
+               Analyze (Last (Actions (N)));
+
+               Set_Expression (N, New_Occurrence_Of (Temp, Loc));
+               Analyze (Expression (N));
+            end;
+
+         else
+            Finalize_Always := False;
+            Finalization_Context := Hook_Context;
+         end if;
+      end Find_Enclosing_Contexts;
 
       --  Local variables
 
-      Context   : constant Node_Id    := Find_Enclosing_Context (Rel_Node);
       Loc       : constant Source_Ptr := Sloc (Decl);
       Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
       Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
       Desig_Typ : Entity_Id;
       Expr      : Node_Id;
-      Fin_Call  : Node_Id;
+      Fin_Stmts : List_Id;
       Ptr_Id    : Entity_Id;
       Temp_Id   : Entity_Id;
 
    --  Start of processing for Process_Transient_Object
 
    begin
+      Find_Enclosing_Contexts (Rel_Node);
+
       --  Step 1: Create the access type which provides a reference to the
       --  transient controlled object.
 
@@ -12315,7 +12353,7 @@ package body Exp_Ch4 is
 
       Ptr_Id := Make_Temporary (Loc, 'A');
 
-      Insert_Action (Context,
+      Insert_Action (Hook_Context,
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Ptr_Id,
           Type_Definition     =>
@@ -12330,7 +12368,7 @@ package body Exp_Ch4 is
 
       Temp_Id := Make_Temporary (Loc, 'T');
 
-      Insert_Action (Context,
+      Insert_Action (Hook_Context,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp_Id,
           Object_Definition   => New_Reference_To (Ptr_Id, Loc)));
@@ -12363,10 +12401,18 @@ package body Exp_Ch4 is
       --      <or>
       --    Temp := Obj_Id'Unrestricted_Access;
 
-      Insert_After_And_Analyze (Decl,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Reference_To (Temp_Id, Loc),
-          Expression => Expr));
+      if Finalization_Context /= Hook_Context then
+         Insert_Action (Finalization_Context,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression => Expr));
+
+      else
+         Insert_After_And_Analyze (Decl,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression => Expr));
+      end if;
 
       --  Step 4: Finalize the transient controlled object after the context
       --  has been evaluated/elaborated. Generate:
@@ -12383,26 +12429,29 @@ package body Exp_Ch4 is
       --  insert the finalization code after the return statement as this will
       --  render it unreachable.
 
-      if Nkind (Context) /= N_Simple_Return_Statement then
-         Fin_Call :=
-           Make_Implicit_If_Statement (Decl,
-             Condition =>
-               Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Reference_To (Temp_Id, Loc),
-                 Right_Opnd => Make_Null (Loc)),
+      if Nkind (Finalization_Context) /= N_Simple_Return_Statement then
+         Fin_Stmts := New_List (
+           Make_Final_Call
+             (Obj_Ref =>
+                Make_Explicit_Dereference (Loc,
+                  Prefix => New_Reference_To (Temp_Id, Loc)),
+              Typ     => Desig_Typ),
 
-             Then_Statements => New_List (
-               Make_Final_Call
-                 (Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => New_Reference_To (Temp_Id, Loc)),
-                  Typ     => Desig_Typ),
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression => Make_Null (Loc)));
 
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Reference_To (Temp_Id, Loc),
-                 Expression => Make_Null (Loc))));
+         if not Finalize_Always then
+            Fin_Stmts := New_List (
+              Make_Implicit_If_Statement (Decl,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd  => New_Reference_To (Temp_Id, Loc),
+                    Right_Opnd => Make_Null (Loc)),
+                Then_Statements => Fin_Stmts));
+         end if;
 
-         Insert_Action_After (Context, Fin_Call);
+         Insert_Actions_After (Finalization_Context, Fin_Stmts);
       end if;
    end Process_Transient_Object;
 
