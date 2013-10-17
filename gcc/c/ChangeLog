@@ -1,3 +1,17 @@
+2013-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58267
+	* c-parser.c (c_parser_declspecs): Add alignspec_ok parameter.
+	Document syntax of the array-declarator.
+	(c_parser_declspecs) <RID_ALIGNAS>: Bail out if alignment specs
+	are not permitted.
+	(c_parser_declaration_or_fndef): Adjust c_parser_declspecs call.
+	(c_parser_struct_declaration): Likewise.
+	(c_parser_declarator): Likewise.
+	(c_parser_direct_declarator_inner): Likewise.
+	(c_parser_parameter_declaration): Likewise.
+	(c_parser_type_name): Likewise.
+
 2013-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lang.h (current_omp_declare_target_attribute): New extern
