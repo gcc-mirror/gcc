@@ -1,5 +1,25 @@
 2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* aspects.adb, aspects.ads, sem_prag.ads: Remove all entries
+	for Refined_Pre from the various tables.
+	* par-prag.adb: Remove the entry for Refined_Pre from the list
+	of pragmas not needing special processing by the parser.
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Remove the processing for aspect Refined_Pre.
+	(Check_Aspect_At_Freeze_Point): Remove the entry for aspect
+	Refined_Pre.
+	* sem_prag.adb (Analyze_Pragma): Refined_Pre is no longer a
+	valid assertion kind. Remove the analysis of pragma Refined_Pre.
+	(Analyze_Refined_Pragma): Update the comment on usage.
+	(Find_Related_Subprogram_Or_Body): Update the comment on
+	usage. Pragma Refined_Pre is no longer processed by this routine.
+	(Is_Valid_Assertion_Kind): Refined_Pre is no longer a valid
+	assertion kind.
+	* snames.ads-tmpl: Remove predefined name Refined_Pre. Remove
+	the pragma id for Refined_Pre.
+
+2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_util.adb, exp_util.ads (Entity_Of): Moved to Sem_Util.
 	* sem_prag.adb (Analyze_Global_In_Decl_List): Mark a null
 	item list as being analyzed.

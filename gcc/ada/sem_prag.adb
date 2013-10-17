@@ -236,17 +236,17 @@ package body Sem_Prag is
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
    --  Subsidiary to the analysis of pragmas Contract_Cases, Depends, Global,
-   --  Refined_Depends, Refined_Global, Refined_Post and Refined_Pre. Find the
-   --  declaration of the related subprogram [body or stub] subject to pragma
-   --  Prag. If flag Do_Checks is set, the routine reports duplicate pragmas
-   --  and detects improper use of refinement pragmas in stand alone expression
-   --  functions. The returned value depends on the related pragma as follows:
+   --  Refined_Depends, Refined_Global and Refined_Post. Find the declaration
+   --  of the related subprogram [body or stub] subject to pragma Prag. If flag
+   --  Do_Checks is set, the routine reports duplicate pragmas and detects
+   --  improper use of refinement pragmas in stand alone expression functions.
+   --  The returned value depends on the related pragma as follows:
    --    1) Pragmas Contract_Cases, Depends and Global yield the corresponding
    --       N_Subprogram_Declaration node or if the pragma applies to a stand
    --       alone body, the N_Subprogram_Body node or Empty if illegal.
-   --    2) Pragmas Refined_Depends, Refined_Global, Refined_Post and
-   --       Refined_Pre yield N_Subprogram_Body or N_Subprogram_Body_Stub nodes
-   --       or Empty if illegal.
+   --    2) Pragmas Refined_Depends, Refined_Global and Refined_Post yield
+   --       N_Subprogram_Body or N_Subprogram_Body_Stub nodes or Empty if
+   --       illegal.
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
@@ -2573,8 +2573,8 @@ package body Sem_Prag is
          Body_Id : out Entity_Id;
          Legal   : out Boolean);
       --  Subsidiary routine to the analysis of body pragmas Refined_Depends,
-      --  Refined_Global, Refined_Post and Refined_Pre. Check the placement and
-      --  related context of the pragma. Spec_Id is the entity of the related
+      --  Refined_Global and Refined_Post. Check the placement and related
+      --  context of the pragma. Spec_Id is the entity of the related
       --  subprogram. Body_Id is the entity of the subprogram body. Flag Legal
       --  is set when the pragma is properly placed.
 
@@ -9967,7 +9967,6 @@ package body Sem_Prag is
          --                        Precondition         |
          --                        Predicate            |
          --                        Refined_Post         |
-         --                        Refined_Pre          |
          --                        Statement_Assertions
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
@@ -17204,29 +17203,18 @@ package body Sem_Prag is
             end if;
          end Refined_Depends_Global;
 
-         ------------------------------
-         -- Refined_Post/Refined_Pre --
-         ------------------------------
+         ------------------
+         -- Refined_Post --
+         ------------------
 
          --  pragma Refined_Post (boolean_EXPRESSION);
-         --  pragma Refined_Pre  (boolean_EXPRESSION);
 
-         when Pragma_Refined_Post |
-              Pragma_Refined_Pre  => Refined_Pre_Post :
-         declare
+         when Pragma_Refined_Post => Refined_Post : declare
             Body_Id : Entity_Id;
             Legal   : Boolean;
             Spec_Id : Entity_Id;
 
          begin
-            --  Disable the support for pragma Refined_Pre as its static and
-            --  runtime semantics are still under heavy design. The pragma is
-            --  silently ignored.
-
-            if Pname = Name_Refined_Pre then
-               Set_Is_Ignored (N);
-            end if;
-
             Analyze_Refined_Pragma (Spec_Id, Body_Id, Legal);
 
             --  Analyze the boolean expression as a "spec expression"
@@ -17234,7 +17222,7 @@ package body Sem_Prag is
             if Legal then
                Analyze_Pre_Post_Condition_In_Decl_Part (N, Spec_Id);
             end if;
-         end Refined_Pre_Post;
+         end Refined_Post;
 
          -------------------
          -- Refined_State --
@@ -22448,8 +22436,7 @@ package body Sem_Prag is
       Look_For_Body : constant Boolean :=
                         Nam_In (Nam, Name_Refined_Depends,
                                      Name_Refined_Global,
-                                     Name_Refined_Post,
-                                     Name_Refined_Pre);
+                                     Name_Refined_Post);
       --  Refinement pragmas must be associated with a subprogram body [stub]
 
    begin
@@ -22877,7 +22864,6 @@ package body Sem_Prag is
       Pragma_Refined_Depends                => -1,
       Pragma_Refined_Global                 => -1,
       Pragma_Refined_Post                   => -1,
-      Pragma_Refined_Pre                    => -1,
       Pragma_Refined_State                  => -1,
       Pragma_Relative_Deadline              => -1,
       Pragma_Remote_Access_Type             => -1,
@@ -23202,7 +23188,6 @@ package body Sem_Prag is
             Name_Precondition         |
             Name_Predicate            |
             Name_Refined_Post         |
-            Name_Refined_Pre          |
             Name_Statement_Assertions => return True;
 
          when others                  => return False;

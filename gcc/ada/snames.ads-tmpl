@@ -586,7 +586,6 @@ package Snames is
    Name_Refined_Depends                : constant Name_Id := N + $; -- GNAT
    Name_Refined_Global                 : constant Name_Id := N + $; -- GNAT
    Name_Refined_Post                   : constant Name_Id := N + $; -- GNAT
-   Name_Refined_Pre                    : constant Name_Id := N + $; -- GNAT
    Name_Refined_State                  : constant Name_Id := N + $; -- GNAT
    Name_Relative_Deadline              : constant Name_Id := N + $; -- Ada 05
    Name_Remote_Access_Type             : constant Name_Id := N + $; -- GNAT
@@ -1882,7 +1881,6 @@ package Snames is
       Pragma_Refined_Depends,
       Pragma_Refined_Global,
       Pragma_Refined_Post,
-      Pragma_Refined_Pre,
       Pragma_Refined_State,
       Pragma_Relative_Deadline,
       Pragma_Remote_Access_Type,
