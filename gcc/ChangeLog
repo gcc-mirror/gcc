@@ -4084,8 +4084,8 @@
 	instructions.
 	(ww constraint): Likewise.
 	(wy constraint): Likewise.
-	(wv constraint): Repurpose ISA 2.07 constraint that we not used in
-	the previous submissions.
+	(wv constraint): Repurpose ISA 2.07 constraint that we did not use
+	in the previous submissions.
 	* doc/md.texi (PowerPC and IBM RS6000): Likewise.
 
 2013-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
