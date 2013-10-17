@@ -2514,7 +2514,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
        * iterator of the same type.
        */
       regex_token_iterator()
-      : _M_position(), _M_result(nullptr), _M_suffix(), _M_n(0), _M_subs(),
+      : _M_position(), _M_subs(), _M_suffix(), _M_n(0), _M_result(nullptr),
       _M_has_m1(false)
       { }
 
@@ -2601,7 +2601,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
        */
       regex_token_iterator(const regex_token_iterator& __rhs)
       : _M_position(__rhs._M_position), _M_subs(__rhs._M_subs),
-      _M_n(__rhs._M_n), _M_result(__rhs._M_result), _M_suffix(__rhs._M_suffix),
+      _M_suffix(__rhs._M_suffix), _M_n(__rhs._M_n), _M_result(__rhs._M_result),
       _M_has_m1(__rhs._M_has_m1)
       {
 	if (__rhs._M_result == &__rhs._M_suffix)
@@ -2679,10 +2679,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
       { return _M_result == nullptr; }
 
       _Position         _M_position;
-      const value_type* _M_result;
+      std::vector<int>  _M_subs;
       value_type        _M_suffix;
       std::size_t       _M_n;
-      std::vector<int>  _M_subs;
+      const value_type* _M_result;
 
       // Show whether _M_subs contains -1
       bool              _M_has_m1;

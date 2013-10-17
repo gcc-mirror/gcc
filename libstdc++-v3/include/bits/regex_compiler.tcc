@@ -73,8 +73,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       ? __flags
 	       : __flags | regex_constants::ECMAScript),
     _M_traits(__traits),
-    _M_scanner(__b, __e, _M_flags, _M_traits.getloc()),
     _M_ctype(std::use_facet<std::ctype<_CharT>>(_M_traits.getloc())),
+    _M_scanner(__b, __e, _M_flags, _M_traits.getloc()),
     _M_nfa(_M_flags)
     {
       _StateSeqT __r(_M_nfa, _M_nfa._M_start());
@@ -318,7 +318,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
 	{
-	  auto __mark = _M_nfa._M_sub_count();
 	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_subexpr_begin());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))

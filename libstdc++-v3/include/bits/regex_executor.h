@@ -74,8 +74,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_FlagT          __flags)
       : _M_begin(__begin),
       _M_end(__end),
-      _M_results(__results),
       _M_re(__re),
+      _M_results(__results),
       _M_flags((__flags & regex_constants::match_prev_avail)
 	       ? (__flags
 		  & ~regex_constants::match_not_bol

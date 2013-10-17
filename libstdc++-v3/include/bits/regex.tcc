@@ -61,14 +61,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto& __it : __res)
 	__it.matched = false;
 
-      typedef std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
-	_ExecutorPtr;
-      typedef _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _DFSExecutorT;
-      typedef _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _BFSExecutorT;
-
-      _ExecutorPtr __executor =
-	__get_executor<_BiIter, _Alloc, _CharT, _TraitsT,
-	  __policy>(__s, __e, __res, __re, __flags);
+      auto __executor = __get_executor<_BiIter, _Alloc, _CharT, _TraitsT,
+	   __policy>(__s, __e, __res, __re, __flags);
 
       bool __ret;
       if (__match_mode)
@@ -540,26 +534,29 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	  auto __start = _M_match[0].second;
 	  auto __prefix_first = _M_match[0].second;
 	  if (_M_match[0].first == _M_match[0].second)
-	    if (__start == _M_end)
-	      {
-		_M_match = value_type();
-		return *this;
-	      }
-	    else
-	      {
-		if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags
-				 | regex_constants::match_not_null
-				 | regex_constants::match_continuous))
-		  {
-		    _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-		    _M_match.at(_M_match.size()).first = __prefix_first;
-		    _M_match._M_in_iterator = true;
-		    _M_match._M_begin = _M_begin;
-		    return *this;
-		  }
-		else
-		  ++__start;
-	      }
+	    {
+	      if (__start == _M_end)
+		{
+		  _M_match = value_type();
+		  return *this;
+		}
+	      else
+		{
+		  if (regex_search(__start, _M_end, _M_match, *_M_pregex,
+				   _M_flags
+				   | regex_constants::match_not_null
+				   | regex_constants::match_continuous))
+		    {
+		      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
+		      _M_match.at(_M_match.size()).first = __prefix_first;
+		      _M_match._M_in_iterator = true;
+		      _M_match._M_begin = _M_begin;
+		      return *this;
+		    }
+		  else
+		    ++__start;
+		}
+	    }
 	  _M_flags |= regex_constants::match_prev_avail;
 	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
 	    {
