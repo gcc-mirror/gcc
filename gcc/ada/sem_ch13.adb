@@ -2186,12 +2186,12 @@ package body Sem_Ch13 is
 
                --  Refined_Pre
 
+               --  Disable the support for aspect Refined_Pre as its static and
+               --  runtime semantics are still under heavy design.
+
                when Aspect_Refined_Pre =>
-                  Make_Aitem_Pragma
-                    (Pragma_Argument_Associations => New_List (
-                       Make_Pragma_Argument_Association (Loc,
-                         Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Name_Refined_Pre);
+                  Error_Msg_NE ("aspect & is not supported", Aspect, Id);
+                  goto Continue;
 
                --  Refined_State
 
