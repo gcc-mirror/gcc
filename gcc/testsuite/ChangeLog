@@ -1,3 +1,11 @@
+2013-10-17  Michael Hudson-Doyle  <michael.hudson@linaro.org>
+
+	* gcc/testsuite/lib/target-supports.exp
+	(check_effective_target_sync_long_long): AArch64 supports
+	atomic operations on "long long".
+	(check_effective_target_sync_long_long_runtime): AArch64 can
+	execute atomic operations on "long long".
+
 2013-10-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58143
