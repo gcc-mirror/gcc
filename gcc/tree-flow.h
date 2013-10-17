@@ -37,56 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-ssa-loop.h"
 
-/*---------------------------------------------------------------------------
-			      OpenMP Region Tree
----------------------------------------------------------------------------*/
-
-/* Parallel region information.  Every parallel and workshare
-   directive is enclosed between two markers, the OMP_* directive
-   and a corresponding OMP_RETURN statement.  */
-
-struct omp_region
-{
-  /* The enclosing region.  */
-  struct omp_region *outer;
-
-  /* First child region.  */
-  struct omp_region *inner;
-
-  /* Next peer region.  */
-  struct omp_region *next;
-
-  /* Block containing the omp directive as its last stmt.  */
-  basic_block entry;
-
-  /* Block containing the OMP_RETURN as its last stmt.  */
-  basic_block exit;
-
-  /* Block containing the OMP_CONTINUE as its last stmt.  */
-  basic_block cont;
-
-  /* If this is a combined parallel+workshare region, this is a list
-     of additional arguments needed by the combined parallel+workshare
-     library call.  */
-  vec<tree, va_gc> *ws_args;
-
-  /* The code for the omp directive of this region.  */
-  enum gimple_code type;
-
-  /* Schedule kind, only used for OMP_FOR type regions.  */
-  enum omp_clause_schedule_kind sched_kind;
-
-  /* True if this is a combined parallel+workshare region.  */
-  bool is_combined_parallel;
-};
-
-extern struct omp_region *root_omp_region;
-extern struct omp_region *new_omp_region (basic_block, enum gimple_code,
-					  struct omp_region *);
-extern void free_omp_regions (void);
-void omp_expand_local (basic_block);
-tree copy_var_decl (tree, tree, tree);
-
 /* Location to track pending stmt for edge insertion.  */
 #define PENDING_STMT(e)	((e)->insns.g)
 

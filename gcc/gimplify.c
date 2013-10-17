@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "splay-tree.h"
 #include "vec.h"
+#include "omp-low.h"
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */

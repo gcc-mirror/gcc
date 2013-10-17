@@ -1,3 +1,8 @@
+2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-parser.c: Include omp-low.h.
+	* c-typeck.c: Likewise.
+
 2013-10-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/58267

@@ -1,3 +1,22 @@
+2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h (struct omp_region): Move to omp-low.c.
+	Remove omp_ prototypes and variables.
+	* gimple.h (omp_reduction_init): Move prototype to omp-low.h.
+	(copy_var_decl): Relocate prototype from tree-flow.h.
+	* gimple.c (copy_var_decl): Relocate from omp-low.c.
+	* tree.h: Move prototype to omp-low.h.
+	* omp-low.h: New File.  Relocate prototypes here.
+	* omp-low.c (struct omp_region): Make local here.
+	(root_omp_region): Make static.
+	(copy_var_decl) Move to gimple.c.
+	(new_omp_region): Make static.
+	(make_gimple_omp_edges): New.  Refactored from tree-cfg.c make_edges.
+	* tree-cfg.c: Include omp-low.h.
+	(make_edges): Factor out OMP specific bits to make_gimple_omp_edges.
+	* gimplify.c: Include omp-low.h.
+	* tree-parloops.c: Likewise.
+
 2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_fixup_binary_operands): When both source

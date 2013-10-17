@@ -1086,9 +1086,7 @@ extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool gimple_can_coalesce_p (tree, tree);
 extern bool nonfreeing_call_p (gimple);
-
-/* In omp-low.c.  */
-extern tree omp_reduction_init (tree, tree);
+extern tree copy_var_decl (tree, tree, tree);
 
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);
