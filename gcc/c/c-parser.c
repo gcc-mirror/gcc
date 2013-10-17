@@ -1124,7 +1124,7 @@ static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
-				bool, enum c_lookahead_kind);
+				bool, bool, enum c_lookahead_kind);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
 static tree c_parser_struct_declaration (c_parser *);
@@ -1494,7 +1494,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       fndef_ok = !nested;
     }
 
-  c_parser_declspecs (parser, specs, true, true, start_attr_ok, cla_nonabstract_decl);
+  c_parser_declspecs (parser, specs, true, true, start_attr_ok,
+		      true, cla_nonabstract_decl);
   if (parser->error)
     {
       c_parser_skip_to_end_of_block_or_statement (parser);
@@ -1942,8 +1943,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 /* Parse some declaration specifiers (possibly none) (C90 6.5, C99
    6.7), adding them to SPECS (which may already include some).
    Storage class specifiers are accepted iff SCSPEC_OK; type
-   specifiers are accepted iff TYPESPEC_OK; attributes are accepted at
-   the start iff START_ATTR_OK.
+   specifiers are accepted iff TYPESPEC_OK; alignment specifiers are
+   accepted iff ALIGNSPEC_OK; attributes are accepted at the start
+   iff START_ATTR_OK.
 
    declaration-specifiers:
      storage-class-specifier declaration-specifiers[opt]
@@ -2039,7 +2041,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 static void
 c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 		    bool scspec_ok, bool typespec_ok, bool start_attr_ok,
-		    enum c_lookahead_kind la)
+		    bool alignspec_ok, enum c_lookahead_kind la)
 {
   bool attrs_ok = start_attr_ok;
   bool seen_type = specs->typespec_kind != ctsk_none;
@@ -2235,6 +2237,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  declspecs_add_attrs (loc, specs, attrs);
 	  break;
 	case RID_ALIGNAS:
+	  if (!alignspec_ok)
+	    goto out;
 	  align = c_parser_alignas_specifier (parser);
 	  declspecs_add_alignas (loc, specs, align);
 	  break;
@@ -2640,7 +2644,8 @@ c_parser_struct_declaration (c_parser *parser)
     }
   specs = build_null_declspecs ();
   decl_loc = c_parser_peek_token (parser)->location;
-  c_parser_declspecs (parser, specs, false, true, true, cla_nonabstract_decl);
+  c_parser_declspecs (parser, specs, false, true, true,
+		      true, cla_nonabstract_decl);
   if (parser->error)
     return NULL_TREE;
   if (!specs->declspecs_seen_p)
@@ -2888,6 +2893,12 @@ c_parser_alignas_specifier (c_parser * parser)
      type-qualifier-list type-qualifier
      type-qualifier-list attributes
 
+   array-declarator:
+     [ type-qualifier-list[opt] assignment-expression[opt] ]
+     [ static type-qualifier-list[opt] assignment-expression ]
+     [ type-qualifier-list static assignment-expression ]
+     [ type-qualifier-list[opt] * ]
+
    parameter-type-list:
      parameter-list
      parameter-list , ...
@@ -2946,7 +2957,8 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declspecs *quals_attrs = build_null_declspecs ();
       struct c_declarator *inner;
       c_parser_consume_token (parser);
-      c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
+      c_parser_declspecs (parser, quals_attrs, false, false, true,
+			  true, cla_prefer_id);
       inner = c_parser_declarator (parser, type_seen_p, kind, seen_id);
       if (inner == NULL)
 	return NULL;
@@ -3098,12 +3110,14 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       bool star_seen;
       tree dimen;
       c_parser_consume_token (parser);
-      c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
+      c_parser_declspecs (parser, quals_attrs, false, false, true,
+			  false, cla_prefer_id);
       static_seen = c_parser_next_token_is_keyword (parser, RID_STATIC);
       if (static_seen)
 	c_parser_consume_token (parser);
       if (static_seen && !quals_attrs->declspecs_seen_p)
-	c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
+	c_parser_declspecs (parser, quals_attrs, false, false, true,
+			    false, cla_prefer_id);
       if (!quals_attrs->declspecs_seen_p)
 	quals_attrs = NULL;
       /* If "static" is present, there must be an array dimension.
@@ -3406,7 +3420,8 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       declspecs_add_attrs (input_location, specs, attrs);
       attrs = NULL_TREE;
     }
-  c_parser_declspecs (parser, specs, true, true, true, cla_nonabstract_decl);
+  c_parser_declspecs (parser, specs, true, true, true, true,
+		      cla_nonabstract_decl);
   finish_declspecs (specs);
   pending_xref_error ();
   prefix_attrs = specs->attrs;
@@ -3715,7 +3730,8 @@ c_parser_type_name (c_parser *parser)
   struct c_declarator *declarator;
   struct c_type_name *ret;
   bool dummy = false;
-  c_parser_declspecs (parser, specs, false, true, true, cla_prefer_type);
+  c_parser_declspecs (parser, specs, false, true, true, false,
+		      cla_prefer_type);
   if (!specs->declspecs_seen_p)
     {
       c_parser_error (parser, "expected specifier-qualifier-list");
