@@ -2307,9 +2307,10 @@ ifeq ($(strip $(filter-out arm nucleus%,$(target_cpu) $(target_os))),)
   GNATRTL_SOCKETS_OBJS =
 endif
 
-ifneq ($(EH_MECHANISM),)
-  LIBGNAT_TARGET_PAIRS += a-exexpr.adb<a-exexpr$(EH_MECHANISM).adb
-  EXTRA_LIBGNAT_OBJS+=raise$(EH_MECHANISM).o
+ifeq ($(EH_MECHANISM),-gcc)
+  LIBGNAT_TARGET_PAIRS += a-exexpr.adb<a-exexpr-gcc.adb
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o
 endif
 
 # Use the Ada 2005 version of Ada.Exceptions by default, unless specified
