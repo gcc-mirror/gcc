@@ -20004,17 +20004,17 @@ package body Sem_Prag is
                         --  A state with a null refinement matches either a
                         --  null input list or nothing at all (no input):
 
-                        --    Refined_State (State => null)
+                        --    Refined_State   => (State => null)
 
                         --  No input
 
                         --    Depends         => (<output> => (State, Input))
-                        --    Refined_Depends => (<output> => Input  --  OK
+                        --    Refined_Depends => (<output> => Input)  --  OK
 
                         --  Null input list
 
                         --    Depends         => (<output> => State)
-                        --    Refined_Depends => (<output> => null)  --  OK
+                        --    Refined_Depends => (<output> => null)   --  OK
 
                         if Has_Null_Refinement (Dep_Id) then
                            Has_Null_State := True;
@@ -20073,6 +20073,20 @@ package body Sem_Prag is
 
                      Ref_Input := Next_Ref_Input;
                   end loop;
+
+                  --  When a state with a null refinement appears as the last
+                  --  input, it matches nothing:
+
+                  --    Refined_State   => (State => null)
+                  --    Depends         => (<output> => (Input, State))
+                  --    Refined_Depends => (<output> => Input)  --  OK
+
+                  if Ekind (Dep_Id) = E_Abstract_State
+                    and then Has_Null_Refinement (Dep_Id)
+                    and then No (Ref_Input)
+                  then
+                     Has_Null_State := True;
+                  end if;
                end if;
 
                --  A state with visible refinement was matched against one or
