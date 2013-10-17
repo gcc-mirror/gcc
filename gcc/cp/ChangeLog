@@ -1,3 +1,9 @@
+2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58596
+	* lambda.c (lambda_expr_this_capture): Handle NSDMIs in the
+	cp_unevaluated_operand case.
+
 2013-10-16  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (apply_late_template_attributes): Use

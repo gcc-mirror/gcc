@@ -1,3 +1,8 @@
+2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58596
+	* g++.dg/cpp0x/lambda/lambda-nsdmi5.C: New
+
 2013-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/c-output-template.c: New testcase.
