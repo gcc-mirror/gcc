@@ -3170,10 +3170,10 @@ The following packages are currently supported in project files
   @command{gnatfind} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
-@item Gnatls
+@item ^Gnatls^Gnatls^
   This package the options to use when invoking @command{gnatls} via the
   @command{gnat} driver.
-@item Gnatstub
+@item ^Gnatstub^Gnatstub^
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
@@ -3630,8 +3630,8 @@ end MyProj;
 * Package Cross_Reference Attributes::
 * Package Eliminate Attributes::
 * Package Finder Attributes::
-* Package gnatls Attributes::
-* Package gnatstub Attributes::
+* Package ^gnatls^gnatls^ Attributes::
+* Package ^gnatstub^gnatstub^ Attributes::
 * Package IDE Attributes::
 * Package Install Attributes::
 * Package Linker Attributes::
@@ -4630,8 +4630,8 @@ invoking @code{gnatfind} for the source.
 
 @end itemize
 
-@node Package gnatls Attributes
-@subsubsection Package gnatls Attributes
+@node Package ^gnatls^gnatls^ Attributes
+@subsubsection Package ^gnatls^gnatls^ Attributes
 
 @itemize @bullet
 
@@ -4641,8 +4641,8 @@ Value is a list of switches to be used when invoking @code{gnatls}.
 
 @end itemize
 
-@node Package gnatstub Attributes
-@subsubsection Package gnatstub Attributes
+@node Package ^gnatstub^gnatstub^ Attributes
+@subsubsection Package ^gnatstub^gnatstub^ Attributes
 
 @itemize @bullet
 
@@ -4650,7 +4650,7 @@ Value is a list of switches to be used when invoking @code{gnatls}.
 
 Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatstub} for a source of the language, if there is no applicable
-attribute Switches.
+attribute ^Switches^Switches^.
 
 @item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
                     others allowed
@@ -4699,11 +4699,11 @@ the handling of switches.
 Value is a string that specifies the name of the debugger to be used, such as
 gdb, powerpc-wrs-vxworks-gdb or gdb-4.
 
-@item @b{gnatlist}: single
+@item @b{^gnatlist^gnatlist^}: single
 
-Value is a string that specifies the name of the @command{gnatls} utility
+Value is a string that specifies the name of the @command{^gnatls^gnatls^} utility
 to be used to retrieve information about the predefined path; for example,
-@code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+@code{"^gnatls^gnatls^"}, @code{"powerpc-wrs-vxworks-gnatls"}.
 
 @item @b{VCS_Kind}: single
 

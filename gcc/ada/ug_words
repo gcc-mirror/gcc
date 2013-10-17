@@ -72,7 +72,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatep         ^ /DATA_PREPROCESSING
 -gnateP         ^ /CATEGORIZATION_WARNINGS
 -gnateS         ^ /SCO_OUTPUT
--gnatet         ^ /TARGET_DEPENDENT_INFO
+-gnatet         ^ /WRITE_TARGET_DEPENDENT_INFO
+-gnateT         ^ /READ_TARGET_DEPENDENT_INFO
 -gnateV         ^ /PARAMETER_VALIDITY_CHECK
 -gnateY         ^ /IGNORE_STYLE_CHECKS_PRAGMAS
 -gnatE          ^ /CHECKS=ELABORATION

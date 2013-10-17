@@ -2885,12 +2885,17 @@ package VMS_Data is
    --
    --   All compiler tables start at nnn times usual starting size.
 
-   S_GCC_Target  : aliased constant S := "/TARGET_DEPENDENT_INFO "         &
-                                             "-gnatet";
-   --        /NOTARGET_DEPENDENT_INFO (D)
-   --        /TARGET_DEPENDENT_INFO
+   S_GCC_Target_W  : aliased constant S := "/WRITE_TARGET_DEPENDENT_INFO=<" &
+                                             "-gnatet=>";
+   --        /WRITE_TARGET_DEPENDENT_INFO=file
    --
-   --   Generate target dependent information.
+   --   Generate target dependent information to file.
+
+   S_GCC_Target_R  : aliased constant S := "/READ_TARGET_DEPENDENT_INFO=<"  &
+                                             "-gnateT=>";
+   --        /READ_TARGET_DEPENDENT_INFO=file
+   --
+   --   Read target dependent information from file.
 
    S_GCC_Trace   : aliased constant S := "/TRACE_UNITS "                   &
                                             "-gnatdc";
@@ -3743,7 +3748,8 @@ package VMS_Data is
                      S_GCC_Symbol  'Access,
                      S_GCC_Syntax  'Access,
                      S_GCC_Table   'Access,
-                     S_GCC_Target  'Access,
+                     S_GCC_Target_W'Access,
+                     S_GCC_Target_R'Access,
                      S_GCC_Trace   'Access,
                      S_GCC_Tree    'Access,
                      S_GCC_Trys    'Access,
