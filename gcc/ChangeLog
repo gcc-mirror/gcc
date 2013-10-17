@@ -1,3 +1,13 @@
+2013-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58143
+	* tree-ssa-loop-im.c (arith_code_with_undefined_signed_overflow):
+	New function.
+	(rewrite_to_defined_overflow): Likewise.
+	(move_computations_dom_walker::before_dom): Rewrite stmts
+	with undefined signed overflow that are not always executed
+	into unsigned arithmetic.
+
 2013-10-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/57756
