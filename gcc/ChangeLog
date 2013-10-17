@@ -1,3 +1,7 @@
+2013-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Handle 'c'.
+
 2013-10-17  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_preferred_reload_class): Adjust
