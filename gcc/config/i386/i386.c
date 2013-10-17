@@ -16897,8 +16897,10 @@ ix86_fixup_binary_operands (enum rtx_code code, enum machine_mode mode,
 	  src2 = force_reg (mode, src2);
 	  src1 = src2;
 	}
-      else
+      else if (rtx_equal_p (dst, src1))
 	src2 = force_reg (mode, src2);
+      else
+	src1 = force_reg (mode, src1);
     }
 
   /* If the destination is memory, and we do not have matching source
