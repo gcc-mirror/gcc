@@ -1,5 +1,33 @@
 2013-10-17  Vincent Celier  <celier@adacore.com>
 
+	* gnat_ugn.texi: Remove VMS conversion of -gnatet and -gnateT,
+	now that they are both in ug_words.
+	* ug_words: Update qualifier for -gnatet Add qualifier for -gnateT
+	* vms_data.ads: Update qualifier for -gnatet Add qualifier
+	for -gnateT
+	* projects.texi: Continue to update the project documentation
+	for VMS.
+
+2013-10-17  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Body_References): New flag.
+	(Body_References): New field.
+	* sem_prag.adb (Record_Possible_Body_Reference): New procedure
+	(Analyze_Input_Output): Call Record_Possible_Body_Reference
+	(Analyze_Global_Item): Call Record_Possible_Body_Reference
+	(Analyze_Refinement_Clause): Output messages if illegal global refs.
+
+2013-10-17  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Reject a record or
+	array type that does not have an explicit Scalar_Storage_Order
+	attribute definition if a component of the record, or the
+	elements of the array, have one.
+	* gnat_rm.texi (attribute Scalar_Storage_Order): Document the above
+	rule.
+
+2013-10-17  Vincent Celier  <celier@adacore.com>
+
 	* gnat_ugn.texi: Add examples of switches -gnateD, including
 	one where the value is a string.
 	* projects.texi: Do not convert switches in project files to

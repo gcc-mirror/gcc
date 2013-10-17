@@ -277,22 +277,29 @@ package body Sem_Prag is
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
    --  spec expressions (i.e. similar to a default expression).
 
+   procedure Record_Possible_Body_Reference
+     (Item    : Node_Id;
+      Item_Id : Entity_Id);
+   --  Given an entity reference (Item) and the corresponding Entity (Item_Id),
+   --  determines if we have a body reference to an abstract state, which may
+   --  be illegal if the state is refined within the body.
+
    procedure Rewrite_Assertion_Kind (N : Node_Id);
    --  If N is Pre'Class, Post'Class, Invariant'Class, or Type_Invariant'Class,
    --  then it is rewritten as an identifier with the corresponding special
    --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas
    --  Check, Check_Policy.
 
+   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
+   --  Place semantic information on the argument of an Elaborate/Elaborate_All
+   --  pragma. Entity name for unit and its parents is taken from item in
+   --  previous with_clause that mentions the unit.
+
    procedure rv;
    --  This is a dummy function called by the processing for pragma Reviewable.
    --  It is there for assisting front end debugging. By placing a Reviewable
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
-
-   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
-   --  Place semantic information on the argument of an Elaborate/Elaborate_All
-   --  pragma. Entity name for unit and its parents is taken from item in
-   --  previous with_clause that mentions the unit.
 
    --------------
    -- Add_Item --
@@ -771,6 +778,8 @@ package body Sem_Prag is
                --  non-entire objects do not yield an entity (Empty).
 
                Item_Id := Entity_Of (Item);
+
+               Record_Possible_Body_Reference (Item, Item_Id);
 
                if Present (Item_Id) then
                   if Ekind_In (Item_Id, E_Abstract_State,
@@ -1645,6 +1654,7 @@ package body Sem_Prag is
             Item_Id := Entity_Of (Item);
 
             if Present (Item_Id) then
+               Record_Possible_Body_Reference (Item, Item_Id);
 
                --  A global item may denote a formal parameter of an enclosing
                --  subprogram. Do this check first to provide a better error
@@ -21641,6 +21651,29 @@ package body Sem_Prag is
                        ("& must denote an abstract state", State, State_Id);
                   end if;
 
+                  --  Enforce SPARK RM (6.1.5(4)): A global item shall not
+                  --  denote a state abstraction whose refinement is visible
+                  --  (a state abstraction cannot be named within its enclosing
+                  --  package's body other than in its refinement).
+
+                  if Has_Body_References (State_Id) then
+                     declare
+                        Ref : Elmt_Id;
+                        Nod : Node_Id;
+                     begin
+                        Ref := First_Elmt (Body_References (State_Id));
+                        while Present (Ref) loop
+                           Nod := Node (Ref);
+                           Error_Msg_N
+                             ("global reference to & not allowed "
+                              & "(SPARK RM 6.1.5(4))", Nod);
+                           Error_Msg_Sloc := Sloc (State);
+                           Error_Msg_N ("\refinement of & is visible#", Nod);
+                           Next_Elmt (Ref);
+                        end loop;
+                     end;
+                  end if;
+
                --  The state name is illegal
 
                else
@@ -23295,6 +23328,27 @@ package body Sem_Prag is
       --  Nothing else to do at the current time!
 
    end Process_Compilation_Unit_Pragmas;
+
+   ------------------------------------
+   -- Record_Possible_Body_Reference --
+   ------------------------------------
+
+   procedure Record_Possible_Body_Reference
+     (Item    : Node_Id;
+      Item_Id : Entity_Id)
+   is
+   begin
+      if In_Package_Body
+        and then Ekind (Item_Id) = E_Abstract_State
+      then
+         if not Has_Body_References (Item_Id) then
+            Set_Has_Body_References (Item_Id, True);
+            Set_Body_References (Item_Id, New_Elmt_List);
+         end if;
+
+         Append_Elmt (Item, Body_References (Item_Id));
+      end if;
+   end Record_Possible_Body_Reference;
 
    ------------------------------
    -- Relocate_Pragmas_To_Body --

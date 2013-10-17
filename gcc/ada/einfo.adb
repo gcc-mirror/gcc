@@ -132,6 +132,7 @@ package body Einfo is
    --    String_Literal_Low_Bound        Node15
 
    --    Access_Disp_Table               Elist16
+   --    Body_References                 Elist16
    --    Cloned_Subtype                  Node16
    --    DTC_Entity                      Node16
    --    Entry_Formal                    Node16
@@ -552,8 +553,8 @@ package body Einfo is
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
    --    Has_Visible_Refinement          Flag263
+   --    Has_Body_References             Flag264
 
-   --    (unused)                        Flag264
    --    (unused)                        Flag265
    --    (unused)                        Flag266
    --    (unused)                        Flag267
@@ -732,6 +733,12 @@ package body Einfo is
            or else Is_Generic_Unit (Id));
       return Flag40 (Id);
    end Body_Needed_For_SAL;
+
+   function Body_References (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Elist16 (Id);
+   end Body_References;
 
    function C_Pass_By_Copy (Id : E) return B is
    begin
@@ -1293,6 +1300,12 @@ package body Einfo is
    begin
       return Flag139 (Id);
    end Has_Biased_Representation;
+
+   function Has_Body_References (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag264 (Id);
+   end Has_Body_References;
 
    function Has_Completion (Id : E) return B is
    begin
@@ -3336,6 +3349,12 @@ package body Einfo is
       Set_Flag40 (Id, V);
    end Set_Body_Needed_For_SAL;
 
+   procedure Set_Body_References (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Elist16 (Id, V);
+   end Set_Body_References;
+
    procedure Set_C_Pass_By_Copy (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Record_Type (Id) and then Is_Base_Type (Id));
@@ -3908,6 +3927,12 @@ package body Einfo is
         ((V = False) or else (Is_Discrete_Type (Id) or else Is_Object (Id)));
       Set_Flag139 (Id, V);
    end Set_Has_Biased_Representation;
+
+   procedure Set_Has_Body_References (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag264 (Id, V);
+   end Set_Has_Body_References;
 
    procedure Set_Has_Completion (Id : E; V : B := True) is
    begin
@@ -7984,6 +8009,7 @@ package body Einfo is
       W ("Has_Anonymous_Master",            Flag253 (Id));
       W ("Has_Atomic_Components",           Flag86  (Id));
       W ("Has_Biased_Representation",       Flag139 (Id));
+      W ("Has_Body_References",             Flag264 (Id));
       W ("Has_Completion",                  Flag26  (Id));
       W ("Has_Completion_In_Body",          Flag71  (Id));
       W ("Has_Complex_Representation",      Flag140 (Id));
@@ -8672,6 +8698,10 @@ package body Einfo is
    procedure Write_Field16_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+
+         when E_Abstract_State                             =>
+            Write_Str ("Body_References");
+
          when E_Record_Type                                |
               E_Record_Type_With_Private                   =>
             Write_Str ("Access_Disp_Table");

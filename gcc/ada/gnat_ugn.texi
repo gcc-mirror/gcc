@@ -3825,12 +3825,12 @@ temporary use of special test software.
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backards compatibility.
 
-@item ^-gnatet^/TARGET_DEPENDENT_INFO^=@var{path}
+@item -gnatet=@var{path}
 @cindex @option{-gnatet=file} (@command{gcc})
 Generate target dependent information. The format of the output file is
 described in the section about switch @option{-gnateT}.
 
-@item ^-gnateT^/TARGET_DEPENDENT_INFO^=@var{path}
+@item -gnateT=@var{path}
 @cindex @option{-gnateT} (@command{gcc})
 Read target dependent information, such as endianness or sizes and alignments
 of base type. If this switch is passed, the default target dependent
