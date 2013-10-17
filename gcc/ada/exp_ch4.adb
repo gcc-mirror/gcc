@@ -1268,14 +1268,10 @@ package body Exp_Ch4 is
             --    * .NET/JVM - these targets do not support address arithmetic
             --    and unchecked conversion, key elements of Finalize_Address.
 
-            --    * SPARK mode - the call is useless and results in unwanted
-            --    expansion.
-
             --    * CodePeer mode - TSS primitive Finalize_Address is not
             --    created in this mode.
 
             if VM_Target = No_VM
-              and then not SPARK_Mode
               and then not CodePeer_Mode
               and then Present (Finalization_Master (PtrT))
               and then Present (Temp_Decl)
@@ -4295,16 +4291,13 @@ package body Exp_Ch4 is
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
-         --  the current semantic unit. This form of expansion is not carried
-         --  out in SPARK mode because it is useless. Note that the master is
-         --  updated when analysis changes current units.
+         --  the current semantic unit. Note that the master is updated when
+         --  analysis changes current units.
 
-         if not SPARK_Mode then
-            if Present (Rel_Typ) then
-               Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
-            else
-               Set_Finalization_Master (PtrT, Current_Anonymous_Master);
-            end if;
+         if Present (Rel_Typ) then
+            Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
+         else
+            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
          end if;
       end if;
 
@@ -4839,15 +4832,11 @@ package body Exp_Ch4 is
                      --    Set_Finalize_Address
                      --      (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-                     --  Do not generate this call in the following cases:
-                     --
-                     --    * SPARK mode - the call is useless and results in
-                     --    unwanted expansion.
-                     --
-                     --    * CodePeer mode - TSS primitive Finalize_Address is
-                     --    not created in this mode.
+                     --  Do not generate this call in CodePeer mode, as TSS
+                     --  primitive Finalize_Address is not created in this
+                     --  mode.
 
-                     elsif not (SPARK_Mode or CodePeer_Mode) then
+                     elsif not CodePeer_Mode then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Call
                             (Loc     => Loc,
@@ -7321,9 +7310,9 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
-      --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
+      --  CodePeer wants to see the unexpanded N_Op_Expon node
 
-      if CodePeer_Mode or SPARK_Mode then
+      if CodePeer_Mode then
          return;
       end if;
 

@@ -1,3 +1,41 @@
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Keep track of assignments for
+	renamings in SPARK mode.
+
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK): Remove special case for NOT IN
+	operation.
+	* sinfo.ads: Add special comment section to describe SPARK mode
+	effect on tree.
+	* exp_spark.ads: Remove comments, moved to sinfo.ads.
+
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type,
+	Expand_Freeze_Class_Wide_Type, Expand_Freeze_Class_Wide_Type):
+	Remove useless special cases.
+	* exp_ch4.adb (Expand_Allocator_Expression, Expand_N_Allocator,
+	Expand_N_Op_Expon): Remove useless special cases.
+	* exp_ch6.adb (Is_Build_In_Place_Function_Call): Disable build-in-place
+	in SPARK mode by testing Full_Expander_Active instead of
+	Expander_Active.
+	(Make_Build_In_Place_Call_In_Allocator): Remove useless special case.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Remove
+	useless special case.
+	* sem_eval.adb (Compile_Time_Known_Value): Remove special handling of
+	deferred constant.
+
+2013-10-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat_ugn.texi: Document -gnateT and target file format.
+
+2013-10-17  Vincent Celier  <celier@adacore.com>
+
+	* prep.adb (Check_Command_Line_Symbol_Definition): Is_A_String is
+	always False, even when the value starts and ends with double quotes.
+
 2013-10-17  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr-gcc.adb: Synchronize declarations of other/all others.

@@ -3825,9 +3825,112 @@ temporary use of special test software.
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backards compatibility.
 
-@item ^-gnatet^/TARGET_DEPENDENT_INFO^
-@cindex @option{-gnatet} (@command{gcc})
-Generate target dependent information.
+@item ^-gnatet^/TARGET_DEPENDENT_INFO^=@var{path}
+@cindex @option{-gnatet=file} (@command{gcc})
+Generate target dependent information. The format of the output file is
+described in the section about switch @option{-gnateT}.
+
+@item ^-gnateT^/TARGET_DEPENDENT_INFO^=@var{path}
+@cindex @option{-gnateT} (@command{gcc})
+Read target dependent information, such as endianness or sizes and alignments
+of base type. If this switch is passed, the default target dependent
+information of the compiler is replaced by the one read from the input file.
+This is used by tools other than the compiler, e.g. to do
+semantic analysis of programs that will run on some other target than
+the machine on which the tool is run.
+
+The following target dependent values should be defined,
+where @code{Nat} denotes a natural integer value, @code{Pos} denotes a
+positive integer value, and fields marked with a question mark are
+boolean fields, where a value of 0 is False, and a value of 1 is True:
+
+@smallexample
+Bits_BE                    : Nat; -- Bits stored big-endian?
+Bits_Per_Unit              : Pos; -- Bits in a storage unit
+Bits_Per_Word              : Pos; -- Bits in a word
+Bytes_BE                   : Nat; -- Bytes stored big-endian?
+Char_Size                  : Pos; -- Standard.Character'Size
+Double_Float_Alignment     : Nat; -- Alignment of double float
+Double_Scalar_Alignment    : Nat; -- Alignment of double length scalar
+Double_Size                : Pos; -- Standard.Long_Float'Size
+Float_Size                 : Pos; -- Standard.Float'Size
+Float_Words_BE             : Nat; -- Float words stored big-endian?
+Int_Size                   : Pos; -- Standard.Integer'Size
+Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
+Long_Size                  : Pos; -- Standard.Long_Integer'Size
+Maximum_Alignment          : Pos; -- Maximum permitted alignment
+Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
+Pointer_Size               : Pos; -- System.Address'Size
+Short_Size                 : Pos; -- Standard.Short_Integer'Size
+Strict_Alignment           : Nat; -- Strict alignment?
+System_Allocator_Alignment : Nat; -- Alignment for malloc calls
+Wchar_T_Size               : Pos; -- Interfaces.C.wchar_t'Size
+Words_BE                   : Nat; -- Words stored big-endian?
+@end smallexample
+
+The format of the input file is as follows. First come the values of
+the variables defined above, with one line per value:
+
+@smallexample
+name  value
+@end smallexample
+
+where @code{name} is the name of the parameter, spelled out in full,
+and cased as in the above list, and @code{value} is an unsigned decimal
+integer. Two or more blanks separates the name from the value.
+
+All the variables must be present, in alphabetical order (i.e. the
+same order as the list above).
+
+Then there is a blank line to separate the two parts of the file. Then
+come the lines showing the floating-point types to be registered, with
+one line per registered mode:
+
+@smallexample
+name  digs float_rep size alignment
+@end smallexample
+
+where @code{name} is the string name of the type (which can have
+single spaces embedded in the name (e.g. long double), @code{digs} is
+the number of digits for the floating-point type, @code{float_rep} is
+the float representation (I/V/A for IEEE-754-Binary, Vax_Native,
+AAMP), @code{size} is the size in bits, @code{alignment} is the
+alignment in bits. The name is followed by at least two blanks, fields
+are separated by at least one blank, and a LF character immediately
+follows the alignment field.
+
+Here is an example of target parametrization file:
+
+@smallexample
+Bits_BE                       0
+Bits_Per_Unit                 8
+Bits_Per_Word                64
+Bytes_BE                      0
+Char_Size                     8
+Double_Float_Alignment        0
+Double_Scalar_Alignment       0
+Double_Size                  64
+Float_Size                   32
+Float_Words_BE                0
+Int_Size                     64
+Long_Double_Size            128
+Long_Long_Size               64
+Long_Size                    64
+Maximum_Alignment            16
+Max_Unaligned_Field          64
+Pointer_Size                 64
+Short_Size                   16
+Strict_Alignment              0
+System_Allocator_Alignment   16
+Wchar_T_Size                 32
+Words_BE                      0
+
+float         15  I  64  64
+double        15  I  64  64
+long double   18  I  80 128
+TF            33  I 128 128
+@end smallexample
 
 @item -gnateu
 @cindex @option{-gnateu} (@command{gcc})

@@ -5073,9 +5073,14 @@ package body Sem_Ch8 is
             --  Entity is unambiguous, indicate that it is referenced here
 
             --  For a renaming of an object, always generate simple reference,
-            --  we don't try to keep track of assignments in this case.
+            --  we don't try to keep track of assignments in this case, except
+            --  in SPARK mode where renamings are traversed for generating
+            --  local effects of subprograms.
 
-            if Is_Object (E) and then Present (Renamed_Object (E)) then
+            if Is_Object (E)
+              and then Present (Renamed_Object (E))
+              and then not SPARK_Mode
+            then
                Generate_Reference (E, N);
 
                --  If the renamed entity is a private protected component,
