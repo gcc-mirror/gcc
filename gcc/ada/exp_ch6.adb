@@ -9599,7 +9599,11 @@ package body Exp_Ch6 is
       --  disabled (such as with -gnatc) since those would trip over the raise
       --  of Program_Error below.
 
-      if not Expander_Active then
+      --  In SPARK mode, build-in-place calls are not expanded, so that we
+      --  may end up with a call that is neither resolved to an entity, nor
+      --  an indirect call.
+
+      if not Full_Expander_Active then
          return False;
       end if;
 
@@ -9616,14 +9620,7 @@ package body Exp_Ch6 is
          return False;
 
       else
-         --  In SPARK mode, build-in-place calls are not expanded, so that we
-         --  may end up with a call that is neither resolved to an entity, nor
-         --  an indirect call.
-
-         if SPARK_Mode then
-            return False;
-
-         elsif Is_Entity_Name (Name (Exp_Node)) then
+         if Is_Entity_Name (Name (Exp_Node)) then
             Function_Id := Entity (Name (Exp_Node));
 
          --  In the case of an explicitly dereferenced call, use the subprogram
@@ -10092,14 +10089,10 @@ package body Exp_Ch6 is
          then
             null;
 
-         --  Do not generate the call to Set_Finalize_Address in SPARK mode
-         --  because it is not necessary and results in unwanted expansion.
-         --  This expansion is also not carried out in CodePeer mode because
-         --  Finalize_Address is never built.
+         --  Do not generate the call to Set_Finalize_Address in CodePeer mode
+         --  because Finalize_Address is never built.
 
-         elsif not SPARK_Mode
-           and then not CodePeer_Mode
-         then
+         elsif not CodePeer_Mode then
             Insert_Action (Allocator,
               Make_Set_Finalize_Address_Call (Loc,
                 Typ     => Etype (Function_Id),

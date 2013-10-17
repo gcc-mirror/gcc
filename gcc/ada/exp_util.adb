@@ -560,13 +560,6 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  Do not perform this expansion in SPARK mode because it is not
-      --  necessary.
-
-      if SPARK_Mode then
-         return;
-      end if;
-
       --  Obtain the attributes of the allocation / deallocation
 
       if Nkind (N) = N_Free_Statement then

@@ -1353,16 +1353,7 @@ package body Sem_Eval is
             if Ekind (E) = E_Enumeration_Literal then
                return True;
 
-            --  In SPARK mode, the value of deferred constants should be
-            --  ignored outside the scope of their full view. This allows
-            --  parameterized formal verification, in which a deferred constant
-            --  value if not known from client units.
-
-            elsif Ekind (E) = E_Constant
-              and then not (SPARK_Mode
-                             and then Present (Full_View (E))
-                             and then not In_Open_Scopes (Scope (E)))
-            then
+            elsif Ekind (E) = E_Constant then
                V := Constant_Value (E);
                return Present (V) and then Compile_Time_Known_Value (V);
             end if;

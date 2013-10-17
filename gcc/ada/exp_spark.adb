@@ -25,7 +25,6 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
-with Exp_Ch4;  use Exp_Ch4;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Sem_Aux;  use Sem_Aux;
@@ -79,12 +78,6 @@ package body Exp_SPARK is
          when N_Expanded_Name |
               N_Identifier    =>
             Expand_Potential_Renaming (N);
-
-         --  A NOT IN B gets transformed to NOT (A IN B). This is the same
-         --  expansion used in the normal case, so shared the code.
-
-         when N_Not_In =>
-            Expand_N_Not_In (N);
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);

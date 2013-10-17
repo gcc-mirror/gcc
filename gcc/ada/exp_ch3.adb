@@ -6151,12 +6151,6 @@ package body Exp_Ch3 is
 
       elsif CodePeer_Mode then
          return;
-
-      --  Do not create TSS routine Finalize_Address when compiling in SPARK
-      --  mode because it is not necessary and results in useless expansion.
-
-      elsif SPARK_Mode then
-         return;
       end if;
 
       --  Create the body of TSS primitive Finalize_Address. This automatically
@@ -6903,13 +6897,9 @@ package body Exp_Ch3 is
             --  be done before the bodies of all predefined primitives are
             --  created. If Def_Id is limited, Stream_Input and Stream_Read
             --  may produce build-in-place allocations and for those the
-            --  expander needs Finalize_Address. Do not create the body of
-            --  Finalize_Address in SPARK mode since it is not needed.
+            --  expander needs Finalize_Address.
 
-            if not SPARK_Mode then
-               Make_Finalize_Address_Body (Def_Id);
-            end if;
-
+            Make_Finalize_Address_Body (Def_Id);
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
             Append_Freeze_Actions (Def_Id, Predef_List);
          end if;
