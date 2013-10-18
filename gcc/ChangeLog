@@ -1,3 +1,8 @@
+2013-10-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa9_extra_costs): New table.
+	(arm_cortex_a9_tune): Use cortexa9_extra_costs.
+
 2013-10-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c: Do not include "tm.h" or "tm_p.h".
