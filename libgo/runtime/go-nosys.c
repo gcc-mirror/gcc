@@ -47,7 +47,7 @@ accept4 (int sockfd __attribute__ ((unused)),
 int
 dup3 (int oldfd __attribute__ ((unused)),
       int newfd __attribute__ ((unused)),
-      int flags __attribtue__ ((unused)))
+      int flags __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;
