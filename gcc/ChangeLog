@@ -1,3 +1,7 @@
+2013-10-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/frv/frv.c (frv_init_cumulative_args): Fix wrong cast.
+
 2013-10-18  Richard Biener  <rguenther@suse.de>
 
 	* stor-layout.c (layout_type): Do not change TYPE_PRECISION
