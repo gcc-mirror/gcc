@@ -103,7 +103,6 @@ extern void dump_immediate_uses (FILE *file);
 extern void debug_immediate_uses (void);
 extern void debug_immediate_uses_for (tree var);
 
-extern bool virtual_operand_p (tree);
 extern void unlink_stmt_vdef (gimple);
 
 /* Return the tree pointed-to by USE.  */

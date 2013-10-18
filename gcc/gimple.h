@@ -847,6 +847,8 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 
+/* Returns true iff T is a virtual ssa name decl.  */
+extern bool virtual_operand_p (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
 /* Returns true iff T is any sort of variable.  */

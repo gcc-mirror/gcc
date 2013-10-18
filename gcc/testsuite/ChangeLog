@@ -1,9 +1,13 @@
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/plugin/header_plugin.c: Don't include tree-flow.h.
+
 2013-10-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/tree-ssa/gen-vect-11.c: Use dynamic vector cost model.
-        gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
-        gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
-        gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
 
 2013-10-17  Charles Bayis  <charles.baylis@linaro.org>
 

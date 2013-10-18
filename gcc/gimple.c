@@ -30,12 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "diagnostic.h"
-#include "tree-flow.h"
 #include "value-prof.h"
 #include "flags.h"
 #include "alias.h"
 #include "demangle.h"
 #include "langhooks.h"
+#include "bitmap.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2775,6 +2775,25 @@ is_gimple_id (tree t)
 	  /* Allow string constants, since they are addressable.  */
 	  || TREE_CODE (t) == STRING_CST);
 }
+
+/* Return true if OP, an SSA name or a DECL is a virtual operand.  */
+
+bool
+virtual_operand_p (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      op = SSA_NAME_VAR (op);
+      if (!op)
+	return false;
+    }
+
+  if (TREE_CODE (op) == VAR_DECL)
+    return VAR_DECL_IS_VIRTUAL_OPERAND (op);
+
+  return false;
+}
+
 
 /* Return true if T is a non-aggregate register variable.  */
 

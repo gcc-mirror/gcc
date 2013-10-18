@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "dumpfile.h"
 #include "tree-pass.h"
-#include "tree-flow.h"
 #include "context.h"
 #include "pass_manager.h"
 
