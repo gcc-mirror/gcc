@@ -1462,6 +1462,8 @@ static void
 replace_block_by (basic_block bb1, basic_block bb2)
 {
   edge pred_edge;
+  edge e1;
+  edge_iterator ei;
   unsigned int i;
   gimple bb2_phi;
 
@@ -1493,6 +1495,18 @@ replace_block_by (basic_block bb1, basic_block bb2)
     bb2->frequency = BB_FREQ_MAX;
 
   bb2->count += bb1->count;
+
+  /* Merge the outgoing edge counts from bb1 onto bb2.  */
+  FOR_EACH_EDGE (e1, ei, bb1->succs)
+    {
+      edge e2;
+      e2 = find_edge (bb2, e1->dest);
+      gcc_assert (e2);
+      e2->count += e1->count;
+      /* Recompute the probability from the new merged edge count (bb2->count
+         was updated above).  */
+      e2->probability = GCOV_COMPUTE_SCALE (e2->count, bb2->count);
+    }
 
   /* Do updates that use bb1, before deleting bb1.  */
   release_last_vdef (bb1);
