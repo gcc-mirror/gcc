@@ -1,3 +1,11 @@
+2013-10-18  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_scanner.tcc: (_Scanner<>::_M_scan_normal,
+	_Scanner<>::_M_eat_escape_ecma, _Scanner<>::_M_eat_escape_posix,
+	_Scanner<>::_M_eat_escape_awk): Narrow character before finding in maps.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	New.
+
 2013-10-17  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):
