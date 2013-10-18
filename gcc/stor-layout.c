@@ -2052,18 +2052,9 @@ layout_type (tree type)
 	 of the language-specific code.  */
       gcc_unreachable ();
 
-    case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill.  */
-      if (TYPE_PRECISION (type) == 0)
-	TYPE_PRECISION (type) = 1; /* default to one byte/boolean.  */
-
-      /* ... fall through ...  */
-
+    case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
-	TYPE_UNSIGNED (type) = 1;
-
       SET_TYPE_MODE (type,
 		     smallest_mode_for_size (TYPE_PRECISION (type), MODE_INT));
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
@@ -2519,6 +2510,12 @@ set_min_and_max_values_for_integral_type (tree type,
 {
   tree min_value;
   tree max_value;
+
+  /* For bitfields with zero width we end up creating integer types
+     with zero precision.  Don't assign any minimum/maximum values
+     to those types, they don't have any valid value.  */
+  if (precision < 1)
+    return;
 
   if (is_unsigned)
     {

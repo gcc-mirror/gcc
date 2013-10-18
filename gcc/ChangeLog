@@ -1,3 +1,10 @@
+2013-10-18  Richard Biener  <rguenther@suse.de>
+
+	* stor-layout.c (layout_type): Do not change TYPE_PRECISION
+	or TYPE_UNSIGNED of integral types.
+	(set_min_and_max_values_for_integral_type): Leave TYPE_MIN/MAX_VALUE
+	NULL_TREE for zero-precision integral types.
+
 2013-10-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h
