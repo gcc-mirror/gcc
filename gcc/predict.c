@@ -237,17 +237,33 @@ probably_never_executed (struct function *fun,
   gcc_checking_assert (fun);
   if (profile_status_for_function (fun) == PROFILE_READ)
     {
-      if ((count * 4 + profile_info->runs / 2) / profile_info->runs > 0)
+      int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+      if (count * unlikely_count_fraction >= profile_info->runs)
 	return false;
       if (!frequency)
 	return true;
       if (!ENTRY_BLOCK_PTR->frequency)
 	return false;
-      if (ENTRY_BLOCK_PTR->count && ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE)
+      if (ENTRY_BLOCK_PTR->count)
 	{
-	  return (RDIV (frequency * ENTRY_BLOCK_PTR->count,
-		        ENTRY_BLOCK_PTR->frequency)
-		  < REG_BR_PROB_BASE / 4);
+          gcov_type computed_count;
+          /* Check for possibility of overflow, in which case entry bb count
+             is large enough to do the division first without losing much
+             precision.  */
+          if (ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE * REG_BR_PROB_BASE)
+            {
+              gcov_type scaled_count
+                  = frequency * ENTRY_BLOCK_PTR->count * unlikely_count_fraction;
+              computed_count = RDIV (scaled_count, ENTRY_BLOCK_PTR->frequency);
+            }
+          else
+            {
+              computed_count = RDIV (ENTRY_BLOCK_PTR->count,
+                                     ENTRY_BLOCK_PTR->frequency);
+              computed_count *= frequency * unlikely_count_fraction;
+            }
+          if (computed_count >= profile_info->runs)
+            return false;
 	}
       return true;
     }

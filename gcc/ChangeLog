@@ -1,3 +1,9 @@
+2013-10-18  Teresa Johnson  <tejohnson@google.com>
+
+	* predict.c (probably_never_executed): Compare frequency-based
+	count to number of training runs.
+	* params.def (UNLIKELY_BB_COUNT_FRACTION): New parameter.
+
 2013-10-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (cortexa9_extra_costs): New table.
