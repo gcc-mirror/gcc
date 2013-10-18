@@ -18615,10 +18615,15 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
       if (spec_tmpl == error_mark_node)
 	return error_mark_node;
 
+      ++processing_template_decl;
+
       tree parms = DECL_INNERMOST_TEMPLATE_PARMS (spec_tmpl);
       spec_args = get_class_bindings (tmpl, parms,
 				      partial_spec_args,
 				      args);
+
+      --processing_template_decl;
+
       if (spec_args)
 	{
 	  if (outer_args)
