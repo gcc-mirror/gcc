@@ -1,3 +1,8 @@
+2013-10-18  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Update edge
+	weights during merging.
+
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-cfg.h: Rename from tree-flow.h.  Remove #includes.
