@@ -63,11 +63,6 @@
 
 2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/sse.md (*vec_widen_smult_even_v8si): Remove
-	isa attribute.
-
-2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
-
 	* config/i386/i386.c (ix86_fixup_binary_operands): When both source
 	operands are in memory, prefer to force non-matched operand 1 to
 	the register.
