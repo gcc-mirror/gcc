@@ -52,7 +52,6 @@
 #include "cfgloop.h"
 #include "sched-int.h"
 #include "gimple.h"
-#include "tree-flow.h"
 #include "intl.h"
 #include "params.h"
 #include "tm-constrs.h"

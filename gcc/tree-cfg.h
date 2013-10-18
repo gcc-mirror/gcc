@@ -18,24 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _TREE_FLOW_H
-#define _TREE_FLOW_H 1
-
-#include "bitmap.h"
-#include "sbitmap.h"
-#include "basic-block.h"
-#include "hashtab.h"
-#include "gimple.h"
-#include "tree-ssa-operands.h"
-#include "cgraph.h"
-#include "ipa-reference.h"
-#include "tree-ssa-alias.h"
-#include "tree-cfgcleanup.h"
-#include "tree-dfa.h"
-#include "tree-pretty-print.h"
-#include "gimple-low.h"
-#include "tree-into-ssa.h"
-#include "tree-ssa-loop.h"
+#ifndef _TREE_CFG_H
+#define _TREE_CFG_H
 
 /* Location to track pending stmt for edge insertion.  */
 #define PENDING_STMT(e)	((e)->insns.g)
@@ -95,7 +79,7 @@ extern void debug_verbose (struct loop *ptr);
 extern void debug_loops (int);
 extern void debug_loop (struct loop *, int);
 extern void debug_loop_num (unsigned, int);
-void remove_edge_and_dominated_blocks (edge);
+extern void remove_edge_and_dominated_blocks (edge);
 extern bool gimple_purge_dead_eh_edges (basic_block);
 extern bool gimple_purge_all_dead_eh_edges (const_bitmap);
 extern bool gimple_purge_dead_abnormal_call_edges (basic_block);
@@ -109,4 +93,4 @@ extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern unsigned int execute_fixup_cfg (void);
 
-#endif /* _TREE_FLOW_H  */
+#endif /* _TREE_CFG_H  */

@@ -1,3 +1,18 @@
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-cfg.h: Rename from tree-flow.h.  Remove #includes.
+	* tree-ssa.h: Relocate required #includes from tree-cfg.h.
+	* tree-ssa-operands.h: Remove prototype.
+	* tree-ssa-operands.c (virtual_operand_p): Move to gimple.c.
+	* gimple.c (virtual_operand_p): Relocate from gimple.c.
+	* gimple.h: Add prototype.
+	* gimple-ssa.h: Include tree-ssa-operands.h.
+	* tree-dump.c: Add tree-cfg.h to include list.
+	* tree-ssa-alias.c: Add ipa-reference.h to include list.
+	* config/alpha/alpha.c: Include gimple-ssa.h instead of tree-flow.h.
+	* config/i386/i386.c: Don't include tree-flow.h.
+	* config/rs6000/rs6000.c: Likewise.
+
 2013-10-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/frv/frv.c (frv_init_cumulative_args): Fix wrong cast.

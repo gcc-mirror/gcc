@@ -1,3 +1,7 @@
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Remove tree-flow.h from include list.
+
 2013-10-15  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (hash_canonical_type): Split out from ...
