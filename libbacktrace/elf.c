@@ -759,6 +759,8 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
     {
       off_t end;
 
+      if (sections[i].size == 0)
+	continue;
       if (min_offset == 0 || sections[i].offset < min_offset)
 	min_offset = sections[i].offset;
       end = sections[i].offset + sections[i].size;
@@ -785,8 +787,13 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
   descriptor = -1;
 
   for (i = 0; i < (int) DEBUG_MAX; ++i)
-    sections[i].data = ((const unsigned char *) debug_view.data
-			+ (sections[i].offset - min_offset));
+    {
+      if (sections[i].size == 0)
+	sections[i].data = NULL;
+      else
+	sections[i].data = ((const unsigned char *) debug_view.data
+			    + (sections[i].offset - min_offset));
+    }
 
   if (!backtrace_dwarf_add (state, base_address,
 			    sections[DEBUG_INFO].data,
