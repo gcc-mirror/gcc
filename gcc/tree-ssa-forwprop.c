@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "optabs.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-dom.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized

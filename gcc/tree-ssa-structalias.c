@@ -25,6 +25,7 @@
 #include "ggc.h"
 #include "obstack.h"
 #include "bitmap.h"
+#include "sbitmap.h"
 #include "flags.h"
 #include "basic-block.h"
 #include "tree.h"

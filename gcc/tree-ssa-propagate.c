@@ -29,6 +29,7 @@
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
+#include "sbitmap.h"
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"

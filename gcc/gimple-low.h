@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_LOW_H
 #define GCC_GIMPLE_LOW_H
 
-extern bool gimple_check_call_matching_types (gimple, tree, bool);
 extern bool gimple_stmt_may_fallthru (gimple);
 extern bool gimple_seq_may_fallthru (gimple_seq);
 extern void record_vars_into (tree, tree);

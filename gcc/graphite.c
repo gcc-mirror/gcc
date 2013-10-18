@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-parloops.h"
 #include "tree-pass.h"
+#include "tree-cfgcleanup.h"
 
 #ifdef HAVE_cloog
 

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "expr.h"
 #include "optabs.h"
+#include "tree-ssa-threadedge.h"
 
 
 

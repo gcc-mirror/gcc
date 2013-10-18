@@ -1391,7 +1391,6 @@ OBJS = \
 	tree-nomudflap.o \
 	tree-nrv.o \
 	tree-object-size.o \
-	tree-optimize.o \
 	tree-outof-ssa.o \
 	tree-parloops.o \
 	tree-phinodes.o \

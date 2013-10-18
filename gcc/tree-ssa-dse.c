@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "flags.h"
 #include "langhooks.h"
+#include "tree-cfgcleanup.h"
 
 /* This file implements dead store elimination.
 

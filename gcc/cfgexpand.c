@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h" /* For reg_renumber.  */
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
 #include "asan.h"
+#include "tree-ssa-address.h"
 
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */

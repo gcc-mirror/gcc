@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-ssa-live.h"  /* For remove_unused_locals.  */
+#include "tree-cfgcleanup.h"
 
 using namespace gcc;
 

@@ -1,3 +1,58 @@
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa.h: Don't include gimple-low.h, tree-ssa-address.h, sbitmap.h,
+	tree-ssa-threadedge.h, tree-ssa-dom.h, and tree-cfgcleanup.h.
+	* gimple-low.c (gimple_check_call_arg,
+	gimple_check_call_matching_types): Move to cgraph.c.
+	* gimple-low.h: Remove prototype.
+	* cgraph.c: (gimple_check_call_arg, gimple_check_call_matching_types):
+	Relocate from gimple-low.c.
+	* cgraph.h: Add prototype.  Don't include basic-block.h.
+	* gimplify.c: Add gimple-low to include list.
+	* omp-low.c: Add gimple-low and tree-cfgcleanup.h to include list.
+	* tree-eh.c: Add gimple-low to include list.
+	* tree-nested.c: Likewise.
+	* cfgexpand.c: Add tree-ssa-address.h to include list.
+	* expr.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-mudflap.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-dom.c: Include tree-ssa-threadedge.h and tree-ssa-dom.h.
+	(degenerate_phi_result): Move to tree-phinodes.c.
+	* tree-ssa-loop-ch.c: Include tree-ssa-threadedge.h.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree-phinodes.c (degenerate_phi_result): Relocate here.
+	* tree-ssa-dom.h (degenerate_phi_result): Remove Prototype.
+	* tree-phinodes.h (degenerate_phi_result): Add prototype.
+	* tree-ssa-copy.c: Include tree-ssa-dom.h.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-cfgcleanup.c (execute_cleanup_cfg_post_optimizing,
+	pass_data_cleanup_cfg_post_optimizing,
+	make_pass_cleanup_cfg_post_optimizing): Relocate from tree-optimize.c.
+	* tree-optimize.c: Delete File.
+	* graphite.c: Include tree-cfgcleanup.h.
+	* passes.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-switch-conversion.c: Don't include tree-ssa-operands.h.
+	* tree-outof-ssa.c: Include sbitmap.h.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* Makefile.in (OBJS): Delete tree-optimize.o.
+	* basic-block.h (gcov_type, gcov_type_unsigned): Move to coretypes.h.
+	* coretypes.h (gcov_type, gcov_type_unsigned): Relocate here.
+	* varasm.c: Include basic-block.h.
+	* cfgloop.h: Include function.h instead of basic-block.h
+	(bb_loop_depth): Move to cfgloop.c.
+	* cfgloop.c (bb_loop_depth): Relocate from cfgloop.h.
+
 2013-10-18  Teresa Johnson  <tejohnson@google.com>
 
 	* predict.c (probably_never_executed): Compare frequency-based

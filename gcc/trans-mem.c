@@ -35,6 +35,7 @@
 #include "langhooks.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
+#include "tree-ssa-address.h"
 
 
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-ssa-live.h"
 #include "omp-low.h"
+#include "tree-cfgcleanup.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
