@@ -1463,12 +1463,26 @@ wi::ne_p (const T1 &x, const T2 &y)
 inline bool
 wi::lts_p (const wide_int_ref &x, const wide_int_ref &y)
 {
-  if (x.precision <= HOST_BITS_PER_WIDE_INT
-      && y.precision <= HOST_BITS_PER_WIDE_INT)
-    return x.slow () < y.slow ();
-  else
-    return lts_p_large (x.val, x.len, x.precision, y.val, y.len,
-			y.precision);
+  // We optimize x < y, where y is 64 or fewer bits.
+  // We have to be careful to not allow comparison to a large positive
+  // unsigned value like 0x8000000000000000, those would be encoded
+  // with a y.len == 2.
+  if (y.precision <= HOST_BITS_PER_WIDE_INT
+      && y.len == 1)
+    {
+      // If x fits directly into a shwi, we can compare directly.
+      if (wi::fits_shwi_p (x))
+	return x.slow () < y.slow ();
+      // If x doesn't fit and is negative, then it must be more
+      // negative than any value in y, and hence smaller than y.
+      if (neg_p (x, SIGNED))
+	return true;
+      // If x is positve, then it must be larger than any value in y,
+      // and hence greater than y.
+      return false;
+    }
+  return lts_p_large (x.val, x.len, x.precision, y.val, y.len,
+		      y.precision);
 }
 
 /* Return true if X < Y when both are treated as unsigned values.  */
