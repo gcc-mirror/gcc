@@ -1,3 +1,8 @@
+2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58466
+	* g++.dg/cpp0x/variadic145.C: New.
+
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* g++.dg/plugin/header_plugin.c: Don't include tree-flow.h.
