@@ -58,6 +58,7 @@
 #include "opts.h"
 #include "tree-vectorizer.h"
 #include "dumpfile.h"
+#include "cgraph.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
