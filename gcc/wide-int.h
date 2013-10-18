@@ -185,7 +185,9 @@ along with GCC; see the file COPYING3.  If not see
 
      assuming t is a int_cst.
 
-   Note that the bits above the precision are not defined and the
+   Note, the bits past the precision up to the nearest HOST_WDE_INT
+   boundary are defined to be copies of the top bit of the value,
+   however the bits above those defined bits not defined and the
    algorithms used here are careful not to depend on their value.  In
    particular, values that come in from rtx constants may have random
    bits.  When the precision is 0, all the bits in the LEN elements of
@@ -1283,7 +1285,7 @@ namespace wi
     static const bool host_dependent_precision = false;
     static unsigned int get_precision (const wi::hwi_with_prec &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
-    const wi::hwi_with_prec &);
+				      const wi::hwi_with_prec &);
   };
 }
 
