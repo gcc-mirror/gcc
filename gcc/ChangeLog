@@ -1,3 +1,11 @@
+2013-10-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Do not include "tm.h" or "tm_p.h".
+
+	* tree-ssa-threadupdate.c: Include "dbgcnt.h".
+	(register_jump_thread): Add "registered_jump_thread" debug counter support.
+	* dbgcnt.def (registered_jump_thread): New debug counter.
+
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/rs6000/rs6000.c: Include cgraph.h.
