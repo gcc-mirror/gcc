@@ -1,3 +1,8 @@
+2013-10-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vcvt<ds>_n_<fsu><32,64>_<fsu><32,64>): Correct argument types.
+
 2013-10-17  Sriraman Tallam  <tmsriram@google.com>
 
 	* opth-gen.awk: Define target_flags_explicit.
