@@ -24,13 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "function.h"
 
-/* Type we use to hold basic block counters.  Should be at least
+/* Use gcov_type to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
    type, because erroneous negative counts can be generated when the
    flow graph is manipulated by various optimizations.  A signed type
    makes those easy to detect.  */
-typedef HOST_WIDEST_INT gcov_type;
-typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 
 /* Control flow edge information.  */
 struct GTY((user)) edge_def {

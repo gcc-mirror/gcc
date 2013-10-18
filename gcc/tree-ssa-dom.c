@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
 #include "params.h"
+#include "tree-ssa-threadedge.h"
+#include "tree-ssa-dom.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -2587,42 +2589,6 @@ avail_expr_hash (const void *p)
 
 /* PHI-ONLY copy and constant propagation.  This pass is meant to clean
    up degenerate PHIs created by or exposed by jump threading.  */
-
-/* Given PHI, return its RHS if the PHI is a degenerate, otherwise return
-   NULL.  */
-
-tree
-degenerate_phi_result (gimple phi)
-{
-  tree lhs = gimple_phi_result (phi);
-  tree val = NULL;
-  size_t i;
-
-  /* Ignoring arguments which are the same as LHS, if all the remaining
-     arguments are the same, then the PHI is a degenerate and has the
-     value of that common argument.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
-    {
-      tree arg = gimple_phi_arg_def (phi, i);
-
-      if (arg == lhs)
-	continue;
-      else if (!arg)
-	break;
-      else if (!val)
-	val = arg;
-      else if (arg == val)
-	continue;
-      /* We bring in some of operand_equal_p not only to speed things
-	 up, but also to avoid crashing when dereferencing the type of
-	 a released SSA name.  */
-      else if (TREE_CODE (val) != TREE_CODE (arg)
-	       || TREE_CODE (val) == SSA_NAME
-	       || !operand_equal_p (arg, val, 0))
-	break;
-    }
-  return (i == gimple_phi_num_args (phi) ? val : NULL);
-}
 
 /* Given a statement STMT, which is either a PHI node or an assignment,
    remove it from the IL.  */

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "profile.h"
 #include "target.h"
+#include "tree-cfgcleanup.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;

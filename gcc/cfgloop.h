@@ -20,11 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFGLOOP_H
 #define GCC_CFGLOOP_H
 
-#include "basic-block.h"
 #include "double-int.h"
-
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "function.h"
 
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
@@ -455,14 +454,6 @@ loop_depth (const struct loop *loop)
   return vec_safe_length (loop->superloops);
 }
 
-/* Returns the loop depth of the loop BB belongs to.  */
-
-static inline int
-bb_loop_depth (const_basic_block bb)
-{
-  return bb->loop_father ? loop_depth (bb->loop_father) : 0;
-}
-
 /* Returns the immediate superloop of LOOP, or NULL if LOOP is the outermost
    loop.  */
 
@@ -744,6 +735,7 @@ extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
 extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
 extern bool get_estimated_loop_iterations (struct loop *loop, double_int *nit);
 extern bool get_max_loop_iterations (struct loop *loop, double_int *nit);
+extern int bb_loop_depth (const_basic_block);
 
 /* Converts VAL to double_int.  */
 

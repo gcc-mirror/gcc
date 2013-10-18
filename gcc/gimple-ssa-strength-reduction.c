@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "params.h"
 #include "hash-table.h"
+#include "tree-ssa-address.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the

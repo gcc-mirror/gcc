@@ -2998,4 +2998,99 @@ cgraph_get_body (struct cgraph_node *node)
   return true;
 }
 
+/* Verify if the type of the argument matches that of the function
+   declaration.  If we cannot verify this or there is a mismatch,
+   return false.  */
+
+static bool
+gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
+{
+  tree parms, p;
+  unsigned int i, nargs;
+
+  /* Calls to internal functions always match their signature.  */
+  if (gimple_call_internal_p (stmt))
+    return true;
+
+  nargs = gimple_call_num_args (stmt);
+
+  /* Get argument types for verification.  */
+  if (fndecl)
+    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  else
+    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
+
+  /* Verify if the type of the argument matches that of the function
+     declaration.  If we cannot verify this or there is a mismatch,
+     return false.  */
+  if (fndecl && DECL_ARGUMENTS (fndecl))
+    {
+      for (i = 0, p = DECL_ARGUMENTS (fndecl);
+	   i < nargs;
+	   i++, p = DECL_CHAIN (p))
+	{
+	  tree arg;
+	  /* We cannot distinguish a varargs function from the case
+	     of excess parameters, still deferring the inlining decision
+	     to the callee is possible.  */
+	  if (!p)
+	    break;
+	  arg = gimple_call_arg (stmt, i);
+	  if (p == error_mark_node
+	      || arg == error_mark_node
+	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
+            return false;
+	}
+      if (args_count_match && p)
+	return false;
+    }
+  else if (parms)
+    {
+      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
+	{
+	  tree arg;
+	  /* If this is a varargs function defer inlining decision
+	     to callee.  */
+	  if (!p)
+	    break;
+	  arg = gimple_call_arg (stmt, i);
+	  if (TREE_VALUE (p) == error_mark_node
+	      || arg == error_mark_node
+	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
+	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (TREE_VALUE (p), arg)))
+            return false;
+	}
+    }
+  else
+    {
+      if (nargs != 0)
+        return false;
+    }
+  return true;
+}
+
+/* Verify if the type of the argument and lhs of CALL_STMT matches
+   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
+   true, the arg count needs to be the same.
+   If we cannot verify this or there is a mismatch, return false.  */
+
+bool
+gimple_check_call_matching_types (gimple call_stmt, tree callee,
+				  bool args_count_match)
+{
+  tree lhs;
+
+  if ((DECL_RESULT (callee)
+       && !DECL_BY_REFERENCE (DECL_RESULT (callee))
+       && (lhs = gimple_call_lhs (call_stmt)) != NULL_TREE
+       && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
+                                      TREE_TYPE (lhs))
+       && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
+      || !gimple_check_call_args (call_stmt, callee, args_count_match))
+    return false;
+  return true;
+}
+
 #include "gt-cgraph.h"

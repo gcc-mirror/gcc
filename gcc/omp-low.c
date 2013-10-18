@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "target.h"
 #include "omp-low.h"
+#include "gimple-low.h"
+#include "tree-cfgcleanup.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two

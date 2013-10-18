@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-dom.h"
 
 /* This file implements the copy propagation pass and provides a
    handful of interfaces for performing const/copy propagation and

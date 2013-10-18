@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "cgraph.h"
 #include "gimple.h"
+#include "tree-ssa-address.h"
 
 extern void add_bb_to_loop (basic_block, struct loop *);
 
