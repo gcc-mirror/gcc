@@ -244,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_state = _S_state_in_brace;
 	  _M_token = _S_token_interval_begin;
 	}
-      else if ((_M_spec_char.count(__c)
+      else if ((_M_spec_char.count(_M_ctype.narrow(__c, '\0'))
 		&& __c != ']'
 		&& __c != '}')
 	       || (_M_is_grep() && __c == '\n'))
@@ -367,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       auto __c = *_M_current++;
 
-      if (_M_escape_map.count(__c)
+      if (_M_escape_map.count(_M_ctype.narrow(__c, '\0'))
 	  && (__c != 'b' || _M_state == _S_state_in_bracket))
 	{
 	  _M_token = _S_token_ord_char;
@@ -441,7 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       auto __c = *_M_current;
 
-      if (_M_spec_char.count(__c))
+      if (_M_spec_char.count(_M_ctype.narrow(__c, '\0')))
 	{
 	  _M_token = _S_token_ord_char;
 	  _M_value.assign(1, __c);
@@ -476,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       auto __c = *_M_current++;
 
-      if (_M_escape_map.count(__c))
+      if (_M_escape_map.count(_M_ctype.narrow(__c, '\0')))
 	{
 	  _M_token = _S_token_ord_char;
 	  _M_value.assign(1, _M_escape_map.at(__c));
