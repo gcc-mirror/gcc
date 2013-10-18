@@ -21882,7 +21882,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else if (object_type)
     {
-      tree object_decl = NULL_TREE;
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
       if (CLASS_TYPE_P (object_type))
@@ -21890,19 +21889,21 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
 	   parse, those errors are valid.  */
-	object_decl = lookup_member (object_type,
-				     name,
-				     /*protect=*/0,
-				     tag_type != none_type,
-				     tf_warning_or_error);
-      /* Look it up in the enclosing context, too.  */
-      decl = lookup_name_real (name, tag_type != none_type,
-			       /*nonclass=*/0,
-			       /*block_p=*/true, is_namespace, 0);
+	decl = lookup_member (object_type,
+			      name,
+			      /*protect=*/0,
+			      tag_type != none_type,
+			      tf_warning_or_error);
+      else
+	decl = NULL_TREE;
+
+      if (!decl)
+	/* Look it up in the enclosing context.  */
+	decl = lookup_name_real (name, tag_type != none_type,
+				 /*nonclass=*/0,
+				 /*block_p=*/true, is_namespace, 0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
-      if (object_decl)
-	decl = object_decl;
     }
   else
     {

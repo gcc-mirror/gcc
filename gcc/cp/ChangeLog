@@ -1,3 +1,7 @@
+2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_lookup_name): Tidy.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* parser.c: Include omp-low.h.
