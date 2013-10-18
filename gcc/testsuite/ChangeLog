@@ -1,3 +1,10 @@
+2013-10-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/gen-vect-11.c: Use dynamic vector cost model.
+        gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
+        gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+        gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+
 2013-10-17  Charles Bayis  <charles.baylis@linaro.org>
 
 	* gcc.dg/builtin-apply2.c: Skip test on arm hardfloat ABI targets.
