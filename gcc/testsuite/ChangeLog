@@ -1,3 +1,8 @@
+2013-10-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/58645
+	* gnat.dg/specs/linker_alias.ads: Skip on hppa*-*-hpux*.
+
 2013-10-19  Mike Stump  <mikestump@comcast.net>
 
 	* g++.dg/lto/lto.exp: Add support for C/C++ mix language testing.
