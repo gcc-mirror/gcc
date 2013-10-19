@@ -500,6 +500,22 @@ gnat_zaplevel (void)
   free_binding_level = level;
 }
 
+/* Set the context of TYPE and its parallel types (if any) to CONTEXT.  */
+
+static void
+gnat_set_type_context (tree type, tree context)
+{
+  tree decl = TYPE_STUB_DECL (type);
+
+  TYPE_CONTEXT (type) = context;
+
+  while (decl && DECL_PARALLEL_TYPE (decl))
+    {
+      TYPE_CONTEXT (DECL_PARALLEL_TYPE (decl)) = context;
+      decl = TYPE_STUB_DECL (DECL_PARALLEL_TYPE (decl));
+    }
+}
+
 /* Record DECL as belonging to the current lexical scope and use GNAT_NODE
    for location information and flag propagation.  */
 
@@ -581,7 +597,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	      if (TREE_CODE (t) == POINTER_TYPE)
 		TYPE_NEXT_PTR_TO (t) = tt;
 	      TYPE_NAME (tt) = DECL_NAME (decl);
-	      TYPE_CONTEXT (tt) = DECL_CONTEXT (decl);
+	      gnat_set_type_context (tt, DECL_CONTEXT (decl));
 	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
 	      DECL_ORIGINAL_TYPE (decl) = tt;
 	    }
@@ -591,7 +607,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  /* We need a variant for the placeholder machinery to work.  */
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
-	  TYPE_CONTEXT (tt) = DECL_CONTEXT (decl);
+	  gnat_set_type_context (tt, DECL_CONTEXT (decl));
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
 	  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
@@ -613,7 +629,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    {
 	      TYPE_NAME (t) = decl;
-	      TYPE_CONTEXT (t) = DECL_CONTEXT (decl);
+	      gnat_set_type_context (t, DECL_CONTEXT (decl));
 	    }
     }
 }
