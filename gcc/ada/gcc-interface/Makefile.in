@@ -167,6 +167,13 @@ tmake_file = @tmake_file@
 # Directory where sources are, from where we are.
 VPATH = $(srcdir)/ada
 
+# Full path to top source directory
+# In particular this is used to access libgcc headers, so that references to
+# these headers from GNAT runtime objects have path names in debugging info
+# that are consistent with libgcc objects.  Also used for other references to
+# the top source directory for consistency.
+ftop_srcdir := $(shell cd $(srcdir)/..;${PWD_COMMAND})
+
 fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
 fsrcpfx := $(shell cd $(srcdir);${PWD_COMMAND})/
 fcurdir := $(shell ${PWD_COMMAND})
@@ -262,7 +269,7 @@ TOOLS_LIBS = ../link.o ../targext.o ../../ggc-none.o ../../libcommon-target.a \
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include $(GMPINC)
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(ftop_srcdir)/include $(GMPINC)
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
@@ -272,11 +279,11 @@ ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 ifneq ($(findstring vxworks,$(target_os)),)
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada \
-			-I$(fsrcdir)/../include $(GMPINC)
+			-I$(ftop_srcdir)/include $(GMPINC)
 else
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
-			-I$(fsrcdir)/../include $(GMPINC)
+			-I$(ftop_srcdir)/include $(GMPINC)
 endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
@@ -496,7 +503,7 @@ endif
 # PowerPC and e500v2 VxWorks
 ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
 
-  ifeq ($(strip $(filter-out e500%, $(arch))),)
+  ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
   else
      ARCH_STR=ppc
@@ -993,7 +1000,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(target_cpu) $(target_vendor) $(target
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 endif
 
-# ARM linux, Android eabi
+# ARM android
 ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
@@ -1210,6 +1217,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
     indepsw.adb<indepsw-gnu.adb
 
   GNATLIB_SHARED = gnatlib-shared-dual
+  MISCLIB = -ldl
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1597,7 +1605,7 @@ ifeq ($(strip $(filter-out powerpc% %86 sysgo pikeos,$(target_cpu) $(target_vend
   indepsw.adb<indepsw-gnu.adb
 endif
 
-# *-elf, *-eabi or *-eabispe
+# *-elf, *-eabi, or *-eabispe
 ifeq ($(strip $(filter-out elf eabi eabispe,$(target_os))),)
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
@@ -2163,6 +2171,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt
+  MISCLIB = -ldl
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -3015,7 +3024,7 @@ vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		-iquote $(srcdir) -iquote $(srcdir)/../libgcc \
+		-iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 		$(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 cio.o     : cio.c

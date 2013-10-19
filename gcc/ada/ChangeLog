@@ -1,3 +1,8 @@
+2013-10-19  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/Makefile.in: Use canonical absolute path to refer to
+	the top source directory and to the libgcc subidrectories.
+
 2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (scale_by_factor_of): New function.
