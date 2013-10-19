@@ -1,3 +1,8 @@
+2013-10-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Make sure we check
+	all elements for both endian flavors.
+
 2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58792
