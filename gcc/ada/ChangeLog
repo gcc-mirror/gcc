@@ -1,3 +1,8 @@
+2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_set_type_context): New function.
+	(gnat_pushdecl): Use it to set the context of the type.
+
 2013-10-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Dependency_Clause):
