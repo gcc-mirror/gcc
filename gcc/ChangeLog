@@ -1,5 +1,12 @@
 2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/58792
+	* config/i386/i386.c (ix86_function_value_regno): Add DX_REG,
+	ST1_REG and XMM1_REG for 32bit and 64bit targets.  Also add DI_REG
+	and SI_REG for 64bit SYSV ABI targets.
+
+2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	* mode-switching.c (create_pre_exit): Rename maybe_builtin_apply
 	to multi_reg_return.  Clarify that we are skipping USEs of multiple
 	return registers.  Use bool type where appropriate.
