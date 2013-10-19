@@ -1,3 +1,7 @@
+2013-10-18  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/pr58508.c: New test.
+
 2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58466
