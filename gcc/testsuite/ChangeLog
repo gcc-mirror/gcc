@@ -1,3 +1,7 @@
+2013-10-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/pr54089-3.c: Fix test for load of constant 31.
+
 2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58596
