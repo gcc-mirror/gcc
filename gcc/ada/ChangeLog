@@ -1,5 +1,12 @@
 2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (scale_by_factor_of): New function.
+	(rest_of_record_type_compilation): Use scale_by_factor_of in order to
+	scale the original offset for both rounding cases; in the second case,
+	take into accout the addend to compute the alignment.  Tidy up.
+
+2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/cuintp.c: Remove useless include directives.
 	(build_cst_from_int): Use standard predicate.
 	(UI_To_gnu): Simplify.
