@@ -9221,10 +9221,14 @@ post_error (const char *msg, Node_Id node)
   String_Template temp;
   Fat_Pointer fp;
 
-  temp.Low_Bound = 1, temp.High_Bound = strlen (msg);
-  fp.Array = msg, fp.Bounds = &temp;
-  if (Present (node))
-    Error_Msg_N (fp, node);
+  if (No (node))
+    return;
+
+  temp.Low_Bound = 1;
+  temp.High_Bound = strlen (msg);
+  fp.Bounds = &temp;
+  fp.Array = msg;
+  Error_Msg_N (fp, node);
 }
 
 /* Similar to post_error, but NODE is the node at which to post the error and
@@ -9236,10 +9240,14 @@ post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
   String_Template temp;
   Fat_Pointer fp;
 
-  temp.Low_Bound = 1, temp.High_Bound = strlen (msg);
-  fp.Array = msg, fp.Bounds = &temp;
-  if (Present (node))
-    Error_Msg_NE (fp, node, ent);
+  if (No (node))
+    return;
+
+  temp.Low_Bound = 1;
+  temp.High_Bound = strlen (msg);
+  fp.Bounds = &temp;
+  fp.Array = msg;
+  Error_Msg_NE (fp, node, ent);
 }
 
 /* Similar to post_error_ne, but NUM is the number to use for the '^'.  */

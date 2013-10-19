@@ -1,5 +1,14 @@
 2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/cuintp.c: Remove useless include directives.
+	(build_cst_from_int): Use standard predicate.
+	(UI_To_gnu): Simplify.
+	(UI_From_gnu): Fix formatting.
+	* gcc-interface/trans.c (post_error): Likewise.
+	(post_error_ne): Likewise.
+
+2013-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_set_type_context): New function.
 	(gnat_pushdecl): Use it to set the context of the type.
 

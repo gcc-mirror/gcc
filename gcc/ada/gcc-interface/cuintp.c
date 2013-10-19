@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -23,8 +23,8 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This file corresponds to the Ada package body Uintp. It was created
-   manually from the files uintp.ads and uintp.adb. */
+/* This file corresponds to the Ada package body Uintp.  It was created
+   manually from the files uintp.ads and uintp.adb.  */
 
 #include "config.h"
 #include "system.h"
@@ -35,11 +35,6 @@
 #include "ada.h"
 #include "types.h"
 #include "uintp.h"
-#include "atree.h"
-#include "elists.h"
-#include "nlists.h"
-#include "stringt.h"
-#include "fe.h"
 #include "ada-tree.h"
 #include "gigi.h"
 
@@ -53,13 +48,13 @@
    the integer value itself.  The origin of the Uints_Ptr table is adjusted so
    that a Uint value of Uint_Bias indexes the first element.
 
-   First define a utility function that operates like build_int_cst for
-   integral types and does a conversion to floating-point for real types.  */
+   First define a utility function that operates like build_int_cst_type for
+   integral types and does a conversion for floating-point types.  */
 
 static tree
 build_cst_from_int (tree type, HOST_WIDE_INT low)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     return convert (type, build_int_cst (NULL_TREE, low));
   else
     return build_int_cst_type (type, low);
@@ -73,19 +68,14 @@ build_cst_from_int (tree type, HOST_WIDE_INT low)
 tree
 UI_To_gnu (Uint Input, tree type)
 {
+  /* We might have a TYPE with biased representation and be passed an unbiased
+     value that doesn't fit.  We always use an unbiased type to be able to hold
+     any such possible value for intermediate computations and then rely on a
+     conversion back to TYPE to perform the bias adjustment when need be.  */
+  tree comp_type
+    = TREE_CODE (type) == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type)
+      ? get_base_type (type) : type;
   tree gnu_ret;
-
-  /* We might have a TYPE with biased representation and be passed an
-     unbiased value that doesn't fit.  We always use an unbiased type able
-     to hold any such possible value for intermediate computations, and
-     then rely on a conversion back to TYPE to perform the bias adjustment
-     when need be.  */
-
-  int biased_type_p
-    = (TREE_CODE (type) == INTEGER_TYPE
-       && TYPE_BIASED_REPRESENTATION_P (type));
-
-  tree comp_type = biased_type_p ? get_base_type (type) : type;
 
   if (Input <= Uint_Direct_Last)
     gnu_ret = build_cst_from_int (comp_type, Input - Uint_Direct_Bias);
@@ -188,12 +178,13 @@ UI_From_gnu (tree Input)
     {
       v[i] = tree_low_cst (fold_build1 (ABS_EXPR, gnu_type,
 					fold_build2 (TRUNC_MOD_EXPR, gnu_type,
-						     gnu_temp, gnu_base)),
-			   0);
+						     gnu_temp, gnu_base)), 0);
       gnu_temp = fold_build2 (TRUNC_DIV_EXPR, gnu_type, gnu_temp, gnu_base);
     }
 
-  temp.Low_Bound = 1, temp.High_Bound = Max_For_Dint;
-  vec.Array = v, vec.Bounds = &temp;
+  temp.Low_Bound = 1;
+  temp.High_Bound = Max_For_Dint;
+  vec.Bounds = &temp;
+  vec.Array = v;
   return Vector_To_Uint (vec, tree_int_cst_sgn (Input) < 0);
 }
