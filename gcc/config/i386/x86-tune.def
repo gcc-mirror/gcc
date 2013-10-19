@@ -18,15 +18,13 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* X86_TUNE_USE_LEAVE: Leave does not affect Nocona SPEC2000 results
-   negatively, so enabling for Generic64 seems like good code size
-   tradeoff.  We can't enable it for 32bit generic because it does not
-   work well with PPro base chips.  */
+/* X86_TUNE_USE_LEAVE: Use "leave" instruction in epilogues where it fits.  */
 DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave", 
 	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_PUSH_MEMORY: Enable generation of "push mem" instructions.
-   Some chips, like 486 and Pentium have problems with these sequences.  */
+   Some chips, like 486 and Pentium works faster with separate load
+   and push instructions.  */
 DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory", 
           m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE 
           | m_GENERIC)
@@ -209,6 +207,16 @@ DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
           m_COREI7 | m_BDVER | m_SLM | m_GENERIC)
+
+/* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if true, unaligned loads are
+   split.  */
+DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal", 
+          ~(m_COREI7 | m_GENERIC))
+
+/* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if true, unaligned loads are
+   split.  */
+DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_load_optimal", 
+          ~(m_COREI7 | m_BDVER | m_GENERIC))
 
 /* Use packed single precision instructions where posisble.  I.e. movups instead
    of movupd.  */
@@ -398,3 +406,24 @@ DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
    fp converts to destination register.  */
 DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts",
           m_SLM)
+
+/* X86_TUNE_ACCUMULATE_OUTGOING_ARGS: Allocate stack space for outgoing
+   arguments in prologue/epilogue instead of separately for each call
+   by push/pop instructions.
+   This increase code size by about 5% in 32bit mode, less so in 64bit mode
+   because parameters are passed in registers.  It is considerable
+   win for targets without stack engine that prevents multple push operations
+   to happen in parallel.
+
+   FIXME: the flags is incorrectly enabled for amdfam10, Bulldozer,
+   Bobcat and Generic.  This is because disabling it causes large
+   regression on mgrid due to IRA limitation leading to unecessary
+   use of the frame pointer in 32bit mode.  */
+DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args", 
+	  m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
+
+/* X86_TUNE_ALWAYS_FANCY_MATH_387: controls use of fancy 387 operations,
+   such as fsqrt, fprem, fsin, fcos, fsincos etc.
+   Should be enabled for all targets that always has coprocesor.  */
+DEF_TUNE (X86_TUNE_ALWAYS_FANCY_MATH_387, "always_fancy_math_387", 
+          ~(m_386 | m_486))

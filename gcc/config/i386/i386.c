@@ -1897,18 +1897,6 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
   ~m_386,
 };
 
-static const unsigned int x86_accumulate_outgoing_args
-  = m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC;
-
-static const unsigned int x86_arch_always_fancy_math_387
-  = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC;
-
-static const unsigned int x86_avx256_split_unaligned_load
-  = m_COREI7 | m_GENERIC;
-
-static const unsigned int x86_avx256_split_unaligned_store
-  = m_COREI7 | m_BDVER | m_GENERIC;
-
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
    epilogue code.  */
@@ -2925,7 +2913,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts_set)
 {
   int i;
-  unsigned int ix86_arch_mask, ix86_tune_mask;
+  unsigned int ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
   const char *prefix;
   const char *suffix;
@@ -3693,7 +3681,7 @@ ix86_option_override_internal (bool main_args_p,
 
   /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,
      since the insns won't need emulation.  */
-  if (x86_arch_always_fancy_math_387 & ix86_arch_mask)
+  if (ix86_tune_features [X86_TUNE_ALWAYS_FANCY_MATH_387])
     opts->x_target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   /* Likewise, if the target doesn't have a 387, or we've specified
@@ -3835,8 +3823,7 @@ ix86_option_override_internal (bool main_args_p,
 	gcc_unreachable ();
       }
 
-  ix86_tune_mask = 1u << ix86_tune;
-  if ((x86_accumulate_outgoing_args & ix86_tune_mask)
+  if (ix86_tune_features [X86_TUNE_ACCUMULATE_OUTGOING_ARGS]
       && !(opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !opts->x_optimize_size)
     opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
@@ -3976,10 +3963,10 @@ ix86_option_override_internal (bool main_args_p,
       if (flag_expensive_optimizations
 	  && !(opts_set->x_target_flags & MASK_VZEROUPPER))
 	opts->x_target_flags |= MASK_VZEROUPPER;
-      if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-      if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
       /* Enable 128-bit AVX instruction generation
