@@ -16,7 +16,7 @@ void f ()
   T_TEST(float)
   T_TEST(double)
   /* Avoid trouble with non-power-of-two sizes.  */
-#if !defined(__i386__) && !defined(__x86_64__) && !defined(__m68k__) && !defined(__ia64__)
+#if !defined(__i386__) && !defined(__x86_64__) && !defined(__m68k__) && !defined(__ia64__) && !defined(__hppa__)
   T_TEST(long double)
 #endif
 }
