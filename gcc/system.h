@@ -264,8 +264,9 @@ extern int errno;
 
 #ifdef HAVE_SYS_PARAM_H
 # include <sys/param.h>
-/* We use this identifier later and it appears in some vendor param.h's.  */
+/* We use these identifiers later and they appear in some vendor param.h's.  */
 # undef PREFETCH
+# undef m_slot
 #endif
 
 #if HAVE_LIMITS_H
