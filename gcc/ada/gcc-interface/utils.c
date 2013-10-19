@@ -232,6 +232,7 @@ static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
+static unsigned int scale_by_factor_of (tree, unsigned int);
 static bool potential_alignment_gap (tree, tree, tree);
 
 /* Initialize data structures of the utils.c module.  */
@@ -1708,93 +1709,74 @@ rest_of_record_type_compilation (tree record_type)
       TYPE_SIZE_UNIT (new_record_type)
 	= size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
 
-      /* Now scan all the fields, replacing each field with a new
-	 field corresponding to the new encoding.  */
+      /* Now scan all the fields, replacing each field with a new field
+	 corresponding to the new encoding.  */
       for (old_field = TYPE_FIELDS (record_type); old_field;
 	   old_field = DECL_CHAIN (old_field))
 	{
 	  tree field_type = TREE_TYPE (old_field);
 	  tree field_name = DECL_NAME (old_field);
-	  tree new_field;
 	  tree curpos = bit_position (old_field);
+	  tree pos, new_field;
 	  bool var = false;
 	  unsigned int align = 0;
-	  tree pos;
+
+	  /* We're going to do some pattern matching below so remove as many
+	     conversions as possible.  */
+	  curpos = remove_conversions (curpos, true);
 
 	  /* See how the position was modified from the last position.
 
-	  There are two basic cases we support: a value was added
-	  to the last position or the last position was rounded to
-	  a boundary and they something was added.  Check for the
-	  first case first.  If not, see if there is any evidence
-	  of rounding.  If so, round the last position and try
-	  again.
+	     There are two basic cases we support: a value was added
+	     to the last position or the last position was rounded to
+	     a boundary and they something was added.  Check for the
+	     first case first.  If not, see if there is any evidence
+	     of rounding.  If so, round the last position and retry.
 
-	  If this is a union, the position can be taken as zero. */
-
-	  /* Some computations depend on the shape of the position expression,
-	     so strip conversions to make sure it's exposed.  */
-	  curpos = remove_conversions (curpos, true);
-
+	     If this is a union, the position can be taken as zero.  */
 	  if (TREE_CODE (new_record_type) == UNION_TYPE)
-	    pos = bitsize_zero_node, align = 0;
+	    pos = bitsize_zero_node;
 	  else
 	    pos = compute_related_constant (curpos, last_pos);
 
-	  if (!pos && TREE_CODE (curpos) == MULT_EXPR
+	  if (!pos
+	      && TREE_CODE (curpos) == MULT_EXPR
 	      && host_integerp (TREE_OPERAND (curpos, 1), 1))
 	    {
 	      tree offset = TREE_OPERAND (curpos, 0);
 	      align = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
-
-	      /* An offset which is a bitwise AND with a mask increases the
-		 alignment according to the number of trailing zeros.  */
-	      offset = remove_conversions (offset, true);
-	      if (TREE_CODE (offset) == BIT_AND_EXPR
-		  && TREE_CODE (TREE_OPERAND (offset, 1)) == INTEGER_CST)
-		{
-		  unsigned HOST_WIDE_INT mask
-		    = TREE_INT_CST_LOW (TREE_OPERAND (offset, 1));
-		  unsigned int i;
-
-		  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
-		    {
-		      if (mask & 1)
-			break;
-		      mask >>= 1;
-		      align *= 2;
-		    }
-		}
-
-	      pos = compute_related_constant (curpos,
-					      round_up (last_pos, align));
+	      align = scale_by_factor_of (offset, align);
+	      last_pos = round_up (last_pos, align);
+	      pos = compute_related_constant (curpos, last_pos);
 	    }
-	  else if (!pos && TREE_CODE (curpos) == PLUS_EXPR
-		   && TREE_CODE (TREE_OPERAND (curpos, 1)) == INTEGER_CST
+	  else if (!pos
+		   && TREE_CODE (curpos) == PLUS_EXPR
+		   && host_integerp (TREE_OPERAND (curpos, 1), 1)
 		   && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
-		   && host_integerp (TREE_OPERAND
-				     (TREE_OPERAND (curpos, 0), 1),
-				     1))
+		   && host_integerp
+		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1))
 	    {
+	      tree offset = TREE_OPERAND (TREE_OPERAND (curpos, 0), 0);
+	      unsigned HOST_WIDE_INT addend
+	        = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
 	      align
-		= tree_low_cst
-		(TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1);
-	      pos = compute_related_constant (curpos,
-					      round_up (last_pos, align));
+		= tree_low_cst (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1);
+	      align = scale_by_factor_of (offset, align);
+	      align = MIN (align, addend & -addend);
+	      last_pos = round_up (last_pos, align);
+	      pos = compute_related_constant (curpos, last_pos);
 	    }
-	  else if (potential_alignment_gap (prev_old_field, old_field,
-					    pos))
+	  else if (potential_alignment_gap (prev_old_field, old_field, pos))
 	    {
 	      align = TYPE_ALIGN (field_type);
-	      pos = compute_related_constant (curpos,
-					      round_up (last_pos, align));
+	      last_pos = round_up (last_pos, align);
+	      pos = compute_related_constant (curpos, last_pos);
 	    }
 
 	  /* If we can't compute a position, set it to zero.
 
-	  ??? We really should abort here, but it's too much work
-	  to get this correct for all cases.  */
-
+	     ??? We really should abort here, but it's too much work
+	     to get this correct for all cases.  */
 	  if (!pos)
 	    pos = bitsize_zero_node;
 
@@ -2574,6 +2556,32 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
             || value_factor_p (TREE_OPERAND (value, 1), factor));
 
   return false;
+}
+
+/* Return VALUE scaled by the biggest power-of-2 factor of EXPR.  */
+
+static unsigned int
+scale_by_factor_of (tree expr, unsigned int value)
+{
+  expr = remove_conversions (expr, true);
+
+  /* An expression which is a bitwise AND with a mask has a power-of-2 factor
+     corresponding to the number of trailing zeros of the mask.  */
+  if (TREE_CODE (expr) == BIT_AND_EXPR
+      && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (TREE_OPERAND (expr, 1));
+      unsigned int i = 0;
+
+      while ((mask & 1) == 0 && i < HOST_BITS_PER_WIDE_INT)
+	{
+	  mask >>= 1;
+	  value *= 2;
+	  i++;
+	}
+    }
+
+  return value;
 }
 
 /* Given two consecutive field decls PREV_FIELD and CURR_FIELD, return true
