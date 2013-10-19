@@ -1,5 +1,7 @@
 2013-10-19  John David Anglin  <danglin@gcc.gnu.org>
 
+	* c-c++-common/opaque-vector.c: Skip long double test on hppa.
+
 	PR testsuite/58645
 	* gnat.dg/specs/linker_alias.ads: Skip on hppa*-*-hpux*.
 
