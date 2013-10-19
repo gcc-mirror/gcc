@@ -1,3 +1,8 @@
+2013-10-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/58603
+	* system.h: Undef m_slot.
+
 2013-10-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (vspltis_constant): Make sure we check
