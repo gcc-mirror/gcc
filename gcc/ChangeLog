@@ -1,3 +1,18 @@
+2013-10-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Disable accumulation
+	for cold functions.
+	* x86-tune.def (X86_TUNE_USE_LEAVE): Update comment.
+	(X86_TUNE_PUSH_MEMORY): Likewise.
+	(X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL,
+	X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL): New.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS, X86_TUNE_ALWAYS_FANCY_MATH_387): New.
+	* i386.c (x86_accumulate_outgoing_args, x86_arch_always_fancy_math_387,
+	x86_avx256_split_unaligned_load, x86_avx256_split_unaligned_store):
+	Remove.
+	(ix86_option_override_internal): Update to use tune features instead
+	of variables.
+
 2013-10-18  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/58508
