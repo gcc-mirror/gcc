@@ -1,3 +1,16 @@
+2013-10-19  Mike Stump  <mikestump@comcast.net>
+
+	* g++.dg/lto/lto.exp: Add support for C/C++ mix language testing.
+
+	* gcc.dg/lto/pr54625-1_0.c: Move from here...
+	* g++.dg/lto/pr54625-1_0.c: ... to here.
+	* gcc.dg/lto/pr54625-1_1.C: Likewise.
+	* g++.dg/lto/pr54625-1_1.C: Likewise.
+	* gcc.dg/lto/pr54625-2_0.c: Likewise.
+	* g++.dg/lto/pr54625-2_0.c: Likewise.
+	* gcc.dg/lto/pr54625-2_1.C: Likewise.
+	* g++.dg/lto/pr54625-2_1.C: Likewise.
+
 2013-10-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr54089-3.c: Fix test for load of constant 31.
