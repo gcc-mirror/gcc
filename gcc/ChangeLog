@@ -1,3 +1,9 @@
+2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mode-switching.c (create_pre_exit): Rename maybe_builtin_apply
+	to multi_reg_return.  Clarify that we are skipping USEs of multiple
+	return registers.  Use bool type where appropriate.
+
 2013-10-18  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Disable accumulation
@@ -6,7 +12,8 @@
 	(X86_TUNE_PUSH_MEMORY): Likewise.
 	(X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL,
 	X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL): New.
-	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS, X86_TUNE_ALWAYS_FANCY_MATH_387): New.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS, X86_TUNE_ALWAYS_FANCY_MATH_387):
+	New.
 	* i386.c (x86_accumulate_outgoing_args, x86_arch_always_fancy_math_387,
 	x86_avx256_split_unaligned_load, x86_avx256_split_unaligned_store):
 	Remove.
@@ -21,8 +28,8 @@
 
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-ssa.h: Don't include gimple-low.h, tree-ssa-address.h, sbitmap.h,
-	tree-ssa-threadedge.h, tree-ssa-dom.h, and tree-cfgcleanup.h.
+	* tree-ssa.h: Don't include gimple-low.h, tree-ssa-address.h,
+	sbitmap.h, tree-ssa-threadedge.h, tree-ssa-dom.h and tree-cfgcleanup.h.
 	* gimple-low.c (gimple_check_call_arg,
 	gimple_check_call_matching_types): Move to cgraph.c.
 	* gimple-low.h: Remove prototype.
@@ -90,7 +97,8 @@
 	* tree-ssa-threadupdate.c: Do not include "tm.h" or "tm_p.h".
 
 	* tree-ssa-threadupdate.c: Include "dbgcnt.h".
-	(register_jump_thread): Add "registered_jump_thread" debug counter support.
+	(register_jump_thread): Add "registered_jump_thread" debug
+	counter support.
 	* dbgcnt.def (registered_jump_thread): New debug counter.
 
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>

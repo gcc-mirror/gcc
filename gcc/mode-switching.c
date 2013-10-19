@@ -229,9 +229,9 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    int ret_start = REGNO (ret_reg);
 	    int nregs = hard_regno_nregs[ret_start][GET_MODE (ret_reg)];
 	    int ret_end = ret_start + nregs;
-	    int short_block = 0;
-	    int maybe_builtin_apply = 0;
-	    int forced_late_switch = 0;
+	    bool short_block = false;
+	    bool multi_reg_return = false;
+	    bool forced_late_switch = false;
 	    rtx before_return_copy;
 
 	    do
@@ -251,19 +251,20 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		       copy yet, the copy must have been deleted.  */
 		    if (CALL_P (return_copy))
 		      {
-			short_block = 1;
+			short_block = true;
 			break;
 		      }
 		    return_copy_pat = PATTERN (return_copy);
 		    switch (GET_CODE (return_copy_pat))
 		      {
 		      case USE:
-			/* Skip __builtin_apply pattern.  */
+			/* Skip USEs of multiple return registers.
+			   __builtin_apply pattern is also handled here.  */
 			if (GET_CODE (XEXP (return_copy_pat, 0)) == REG
 			    && (targetm.calls.function_value_regno_p
 				(REGNO (XEXP (return_copy_pat, 0)))))
 			  {
-			    maybe_builtin_apply = 1;
+			    multi_reg_return = true;
 			    last_insn = return_copy;
 			    continue;
 			  }
@@ -326,7 +327,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			   there are no return copy insns at all.  This
 			   avoids an ice on that invalid function.  */
 			if (ret_start + nregs == ret_end)
-			  short_block = 1;
+			  short_block = true;
 			break;
 		      }
 		    if (!targetm.calls.function_value_regno_p (copy_start))
@@ -354,10 +355,10 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			   another mode than MODE_EXIT, even if it is
 			   unrelated to the return value, so we want to put
 			   the final mode switch after it.  */
-			if (maybe_builtin_apply
+			if (multi_reg_return
 			    && targetm.calls.function_value_regno_p
 			        (copy_start))
-			  forced_late_switch = 1;
+			  forced_late_switch = true;
 
 			/* For the SH4, floating point loads depend on fpscr,
 			   thus we might need to put the final mode switch
@@ -367,7 +368,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			if (copy_start >= ret_start
 			    && copy_start + copy_num <= ret_end
 			    && OBJECT_P (SET_SRC (return_copy_pat)))
-			  forced_late_switch = 1;
+			  forced_late_switch = true;
 			break;
 		      }
 		    if (copy_num == 0)
@@ -379,7 +380,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		    if (copy_start >= ret_start
 			&& copy_start + copy_num <= ret_end)
 		      nregs -= copy_num;
-		    else if (!maybe_builtin_apply
+		    else if (!multi_reg_return
 			     || !targetm.calls.function_value_regno_p
 				 (copy_start))
 		      break;
@@ -393,7 +394,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		   isolated use.  */
 		if (return_copy == BB_HEAD (src_bb))
 		  {
-		    short_block = 1;
+		    short_block = true;
 		    break;
 		  }
 		last_insn = return_copy;
