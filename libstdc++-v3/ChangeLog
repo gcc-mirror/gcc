@@ -1,3 +1,15 @@
+2013-10-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/58729
+	* include/tr2/dynamic_bitset (_M_resize, resize): Use input value
+	to set bits; (_M_do_left_shift, _M_do_right_shift, _M_do_to_ulong,
+	_M_do_to_ullong, _M_do_find_first, _M_do_find_next, _M_copy_from_ptr,
+	operator>>): Move long methods outline to...
+	* include/tr2/dynamic_bitset.tcc: New.
+	* include/Makefile.am: Add dynamic_bitset.tcc.
+	* include/Makefile.in: Add dynamic_bitset.tcc.
+	* testsuite/tr2/dynamic_bitset/pr58729.cc: New.
+
 2013-10-18  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_scanner.tcc: (_Scanner<>::_M_scan_normal,

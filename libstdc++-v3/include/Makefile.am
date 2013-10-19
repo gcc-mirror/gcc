@@ -623,6 +623,7 @@ tr2_headers = \
 	${tr2_srcdir}/bool_set \
 	${tr2_srcdir}/bool_set.tcc \
 	${tr2_srcdir}/dynamic_bitset \
+	${tr2_srcdir}/dynamic_bitset.tcc \
 	${tr2_srcdir}/ratio \
 	${tr2_srcdir}/type_traits
 
