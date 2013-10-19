@@ -185,7 +185,7 @@ along with GCC; see the file COPYING3.  If not see
 
      assuming t is a int_cst.
 
-   Note, the bits past the precision up to the nearest HOST_WDE_INT
+   Note, the bits past the precision up to the nearest HOST_WIDE_INT
    boundary are defined to be copies of the top bit of the value,
    however the bits above those defined bits not defined and the
    algorithms used here are careful not to depend on their value.  In
@@ -1477,7 +1477,7 @@ wi::lts_p (const wide_int_ref &x, const wide_int_ref &y)
       // negative than any value in y, and hence smaller than y.
       if (neg_p (x, SIGNED))
 	return true;
-      // If x is positve, then it must be larger than any value in y,
+      // If x is positive, then it must be larger than any value in y,
       // and hence greater than y.
       return false;
     }
