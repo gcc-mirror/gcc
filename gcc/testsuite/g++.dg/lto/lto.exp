@@ -48,7 +48,7 @@ if { ![check_effective_target_lto] } {
 }
 
 # Main loop.
-foreach src [lsort [find $srcdir/$subdir *_0.C]] {
+foreach src [lsort [find $srcdir/$subdir *_0.\[cC\]]] {
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $src] then {
 	continue
