@@ -4981,15 +4981,16 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
 
   /* Check if VAL is present in every STEP-th element, and the
      other elements are filled with its most significant bit.  */
-  for (i = 0; i < nunits - 1; ++i)
+  for (i = 1; i < nunits; ++i)
     {
       HOST_WIDE_INT desired_val;
-      if (((BYTES_BIG_ENDIAN ? i + 1 : i) & (step - 1)) == 0)
+      unsigned elt = BYTES_BIG_ENDIAN ? nunits - 1 - i : i;
+      if ((i & (step - 1)) == 0)
 	desired_val = val;
       else
 	desired_val = msb_val;
 
-      if (desired_val != const_vector_elt_as_int (op, i))
+      if (desired_val != const_vector_elt_as_int (op, elt))
 	return false;
     }
 
