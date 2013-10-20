@@ -1,3 +1,14 @@
+2013-10-20  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Remove virtual class _Automaton.
+	* include/bits/regex_automaton.h: Likewise.
+	* include/bits/regex.tcc: Adjust comment for policy changing.
+	* include/bits/regex_executor.h: Update comments of complexity.
+	* include/bits/regex_executor.tcc: Adjust executor choosing
+	policy. Now DFS executor is the default one.
+	* testsuite/util/testsuite_regex.h (regex_match_debug,
+	regex_search_debug): Adjust for policy changing.
+
 2013-10-20  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

@@ -727,7 +727,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
     protected:
-      typedef std::shared_ptr<__detail::_Automaton<_Ch_type, _Rx_traits>>
+      typedef std::shared_ptr<__detail::_NFA<_Ch_type, _Rx_traits>>
 	_AutomatonPtr;
 
       template<typename _BiIter, typename _Alloc,

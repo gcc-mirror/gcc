@@ -28,6 +28,13 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// See below __get_executor to get what this is talking about. The default
+// value 1 indicated a conservative optimization without giving up worst case
+// performance.
+#ifndef _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
+#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 1
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
@@ -60,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_dfs(_StateIdT __i)
     {
       auto& __current = this->_M_current;
-      const auto& __state = _M_nfa[__i];
+      const auto& __state = (*_M_nfa)[__i];
       bool __ret = false;
       switch (__state._M_opcode)
 	{
@@ -216,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto __u = _M_stack._M_pop();
 	  _GLIBCXX_DEBUG_ASSERT(_M_covered.count(__u));
-	  const auto& __state = _M_nfa[__u];
+	  const auto& __state = (*_M_nfa)[__u];
 
 	  // Can be implemented using method, but there will be too many
 	  // arguments. I would use macro function before C++11, but lambda is
@@ -314,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (!_M_match_stack._M_empty())
 	{
 	  auto __u = _M_match_stack._M_pop();
-	  const auto& __state = _M_nfa[__u];
+	  const auto& __state = (*_M_nfa)[__u];
 	  auto& __cu = _M_covered[__u];
 	  if (__state._M_matches(*this->_M_current)
 	      && (__next.count(__state._M_next) == 0
@@ -333,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_includes_some()
     {
       bool __succ = false;
-      for (auto __u : _M_nfa._M_final_states())
+      for (auto __u : _M_nfa->_M_final_states())
 	if (_M_covered.count(__u))
 	  {
 	    __succ = true;
@@ -380,8 +387,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   enum class _RegexExecutorPolicy : int
-    { _S_auto, _S_force_dfs };
+    { _S_auto, _S_alternate };
 
+  // This function decide which executor to use under given circumstances.
+  // The _S_auto policy now is the following: if a NFA has no back-references
+  // and has more than _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT quantifiers
+  // (*, +, ?), the _BFSExecutor will be used, other wise _DFSExecutor. This is
+  // because _DFSExecutor has a exponential upper bound, but better best-case
+  // performace. Meanwhile, _BFSExecutor can effectively prevent from
+  // exponential-long time matching (which must contains many quantifiers), but
+  // it's slower in average.
+  //
+  // For simple regex, _BFSExecutor could be 2 or more times slower than
+  // _DFSExecutor.
+  //
+  // Of course, _BFSExecutor cannot handle back-references.
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT,
     _RegexExecutorPolicy __policy>
@@ -396,12 +416,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ExecutorPtr;
       typedef _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _DFSExecutorT;
       typedef _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _BFSExecutorT;
-      auto __p = std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	(__re._M_automaton);
-      if (__policy == _RegexExecutorPolicy::_S_force_dfs
-	  || (__policy == _RegexExecutorPolicy::_S_auto && __p->_M_has_backref))
-	return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, __re, __flags));
-      return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, __re, __flags));
+      if (!__re._M_automaton->_M_has_backref
+	  && (__policy == _RegexExecutorPolicy::_S_alternate
+	      || __re._M_automaton->_M_quant_count
+		> _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT))
+	return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, __re, __flags));
+      return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, __re, __flags));
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
