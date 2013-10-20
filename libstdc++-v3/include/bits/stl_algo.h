@@ -1917,7 +1917,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_RandomAccessIterator __last, _Compare __comp)
     {
       _RandomAccessIterator __mid = __first + (__last - __first) / 2;
-      std::__move_median_to_first(__first, __first + 1, __mid, (__last - 2),
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
 				  __comp);
       return std::__unguarded_partition(__first + 1, __last, __first, __comp);
     }
