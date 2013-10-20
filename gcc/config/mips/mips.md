@@ -74,6 +74,11 @@
   UNSPEC_STORE_LEFT
   UNSPEC_STORE_RIGHT
 
+  ;; Integer operations that are too cumbersome to describe directly.
+  UNSPEC_WSBH
+  UNSPEC_DSBH
+  UNSPEC_DSHD
+
   ;; Floating-point moves.
   UNSPEC_LOAD_LOW
   UNSPEC_LOAD_HIGH
@@ -5358,6 +5363,56 @@
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(bswap:HI (match_operand:HI 1 "register_operand" "d")))]
+  "ISA_HAS_WSBH"
+  "wsbh\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_insn_and_split "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(bswap:SI (match_operand:SI 1 "register_operand" "d")))]
+  "ISA_HAS_WSBH && ISA_HAS_ROR"
+  "#"
+  ""
+  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_WSBH))
+   (set (match_dup 0) (rotatert:SI (match_dup 0) (const_int 16)))]
+  ""
+  [(set_attr "insn_count" "2")])
+
+(define_insn_and_split "bswapdi2"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(bswap:DI (match_operand:DI 1 "register_operand" "d")))]
+  "TARGET_64BIT && ISA_HAS_WSBH"
+  "#"
+  ""
+  [(set (match_dup 0) (unspec:DI [(match_dup 1)] UNSPEC_DSBH))
+   (set (match_dup 0) (unspec:DI [(match_dup 0)] UNSPEC_DSHD))]
+  ""
+  [(set_attr "insn_count" "2")])
+
+(define_insn "wsbh"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")] UNSPEC_WSBH))]
+  "ISA_HAS_WSBH"
+  "wsbh\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_insn "dsbh"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "d")] UNSPEC_DSBH))]
+  "TARGET_64BIT && ISA_HAS_WSBH"
+  "dsbh\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_insn "dshd"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "d")] UNSPEC_DSHD))]
+  "TARGET_64BIT && ISA_HAS_WSBH"
+  "dshd\t%0,%1"
+  [(set_attr "type" "shift")])
 
 ;;
 ;;  ....................
