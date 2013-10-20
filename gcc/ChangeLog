@@ -1,3 +1,11 @@
+2013-10-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_unpacku_hi_v16qi): Adjust for
+	little endian.
+	(vec_unpacku_hi_v8hi): Likewise.
+	(vec_unpacku_lo_v16qi): Likewise.
+	(vec_unpacku_lo_v8hi): Likewise.
+
 2013-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/x86-tune.def (X86_TUNE_SLOW_IMUL_IMM32_MEM,
