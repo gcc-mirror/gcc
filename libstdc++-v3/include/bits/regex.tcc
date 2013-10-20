@@ -38,8 +38,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Result of merging regex_match and regex_search.
   //
-  // __policy now can be _S_auto(auto dispatch by checking back-references)
-  // and _S_force_dfs(just use _DFSExecutor).
+  // __policy now can be _S_auto (auto dispatch) and _S_alternate (use
+  // the other one if possible, for test purpose).
   //
   // That __match_mode is true means regex_match, else regex_search.
   template<typename _BiIter, typename _Alloc,

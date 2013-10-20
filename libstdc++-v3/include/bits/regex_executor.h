@@ -179,8 +179,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // TODO: This approach is exponentially slow for certain input.
   //       Try to compile the NFA to a DFA.
   //
-  // Time complexity: exponential
-  // Space complexity: O(__end - __begin)
+  // Time complexity: o(match_length), O(2^(_M_nfa->size()))
+  // Space complexity: \theta(match_results.size() + match_length)
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     class _DFSExecutor
@@ -200,16 +200,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
-      _M_nfa(*std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	     (__re._M_automaton)),
-      _M_start_state(_M_nfa._M_start())
+      _M_nfa(__re._M_automaton), _M_start_state(_M_nfa->_M_start())
       { }
 
     private:
       void
       _M_init(_BiIter __cur)
       {
-	_M_cur_results.resize(_M_nfa._M_sub_count() + 2);
+	_M_cur_results.resize(_M_nfa->_M_sub_count() + 2);
 	this->_M_current = __cur;
       }
 
@@ -235,9 +233,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // To record current solution.
-      _ResultsVec     _M_cur_results;
-      const _NFAT&    _M_nfa;
-      _StateIdT       _M_start_state;
+      std::shared_ptr<_NFAT> _M_nfa;
+      _ResultsVec            _M_cur_results;
+      _StateIdT              _M_start_state;
     };
 
   // Like the DFS approach, it try every possible state transition; Unlike DFS,
@@ -251,8 +249,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // matching head. When states transit, solutions will be compared and
   // deduplicated(based on which greedy mode we have).
   //
-  // Time complexity: O((__end - __begin) * _M_nfa.size())
-  // Space complexity: O(_M_nfa.size() * _M_nfa.mark_count())
+  // Time complexity: o(match_length * (quantifier_number
+  //                                    + match_results.size())
+  //                  O(match_length * _M_nfa->size()
+  //                    * (quantifier_number + match_results.size())
+  // Space complexity: o(quantifier_number + match_results.size())
+  //                   O(_M_nfa->size()
+  //                     * (quantifier_number + match_results.size())
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     class _BFSExecutor
@@ -382,11 +385,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
-      _M_nfa(*std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	     (__re._M_automaton)),
-      _M_match_stack(_M_nfa.size()),
-      _M_stack(_M_nfa.size()),
-      _M_start_state(_M_nfa._M_start())
+      _M_nfa(__re._M_automaton), _M_match_stack(_M_nfa->size()),
+      _M_stack(_M_nfa->size()), _M_start_state(_M_nfa->_M_start())
       { }
 
     private:
@@ -398,7 +398,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ResultsVec& __res(this->_M_results);
 	_M_covered[this->_M_start_state] =
 	  _ResultsPtr(new _ResultsEntry(__res.size(),
-					_M_nfa._M_quant_count));
+					_M_nfa->_M_quant_count));
 	_M_stack._M_push(this->_M_start_state);
       }
 
@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							this->_M_flags));
       }
 
-      const _NFAT&                     _M_nfa;
+      std::shared_ptr<_NFAT>           _M_nfa;
       std::map<_StateIdT, _ResultsPtr> _M_covered;
       _TodoList                        _M_match_stack;
       _TodoList                        _M_stack;
