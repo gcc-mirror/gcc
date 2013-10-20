@@ -327,13 +327,13 @@ DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
    vector path on AMD machines. 
    FIXME: Do we need to enable this for core? */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
+          m_K8 | m_AMDFAM10)
 
 /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
    machines. 
    FIXME: Do we need to enable this for core? */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
+          m_K8 | m_AMDFAM10)
 
 /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
    than a MOV.  */
@@ -352,7 +352,7 @@ DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
    from FP to FP.  This form of instructions avoids partial write to the
    destination.  */
 DEF_TUNE (X86_TUNE_USE_VECTOR_FP_CONVERTS, "use_vector_fp_converts",
-          m_AMDFAM10 | m_GENERIC)
+          m_AMDFAM10)
 
 /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
    from integer to FP. */
