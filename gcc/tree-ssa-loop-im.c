@@ -227,7 +227,7 @@ get_lim_data (gimple stmt)
 static void
 free_lim_aux_data (struct lim_aux_data *data)
 {
-  data->depends.release();
+  data->depends.release ();
   free (data);
 }
 
@@ -242,98 +242,16 @@ clear_lim_data (gimple stmt)
   *p = NULL;
 }
 
-/* Calls CBCK for each index in memory reference ADDR_P.  There are two
-   kinds situations handled; in each of these cases, the memory reference
-   and DATA are passed to the callback:
 
-   Access to an array: ARRAY_{RANGE_}REF (base, index).  In this case we also
-   pass the pointer to the index to the callback.
+/* The possibilities of statement movement.  */
+enum move_pos
+  {
+    MOVE_IMPOSSIBLE,		/* No movement -- side effect expression.  */
+    MOVE_PRESERVE_EXECUTION,	/* Must not cause the non-executed statement
+				   become executed -- memory accesses, ... */
+    MOVE_POSSIBLE		/* Unlimited movement.  */
+  };
 
-   Pointer dereference: INDIRECT_REF (addr).  In this case we also pass the
-   pointer to addr to the callback.
-
-   If the callback returns false, the whole search stops and false is returned.
-   Otherwise the function returns true after traversing through the whole
-   reference *ADDR_P.  */
-
-bool
-for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
-{
-  tree *nxt, *idx;
-
-  for (; ; addr_p = nxt)
-    {
-      switch (TREE_CODE (*addr_p))
-	{
-	case SSA_NAME:
-	  return cbck (*addr_p, addr_p, data);
-
-	case MEM_REF:
-	  nxt = &TREE_OPERAND (*addr_p, 0);
-	  return cbck (*addr_p, nxt, data);
-
-	case BIT_FIELD_REF:
-	case VIEW_CONVERT_EXPR:
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	  nxt = &TREE_OPERAND (*addr_p, 0);
-	  break;
-
-	case COMPONENT_REF:
-	  /* If the component has varying offset, it behaves like index
-	     as well.  */
-	  idx = &TREE_OPERAND (*addr_p, 2);
-	  if (*idx
-	      && !cbck (*addr_p, idx, data))
-	    return false;
-
-	  nxt = &TREE_OPERAND (*addr_p, 0);
-	  break;
-
-	case ARRAY_REF:
-	case ARRAY_RANGE_REF:
-	  nxt = &TREE_OPERAND (*addr_p, 0);
-	  if (!cbck (*addr_p, &TREE_OPERAND (*addr_p, 1), data))
-	    return false;
-	  break;
-
-	case VAR_DECL:
-	case PARM_DECL:
-	case CONST_DECL:
-	case STRING_CST:
-	case RESULT_DECL:
-	case VECTOR_CST:
-	case COMPLEX_CST:
-	case INTEGER_CST:
-	case REAL_CST:
-	case FIXED_CST:
-	case CONSTRUCTOR:
-	  return true;
-
-	case ADDR_EXPR:
-	  gcc_assert (is_gimple_min_invariant (*addr_p));
-	  return true;
-
-	case TARGET_MEM_REF:
-	  idx = &TMR_BASE (*addr_p);
-	  if (*idx
-	      && !cbck (*addr_p, idx, data))
-	    return false;
-	  idx = &TMR_INDEX (*addr_p);
-	  if (*idx
-	      && !cbck (*addr_p, idx, data))
-	    return false;
-	  idx = &TMR_INDEX2 (*addr_p);
-	  if (*idx
-	      && !cbck (*addr_p, idx, data))
-	    return false;
-	  return true;
-
-	default:
-    	  gcc_unreachable ();
-	}
-    }
-}
 
 /* If it is possible to hoist the statement STMT unconditionally,
    returns MOVE_POSSIBLE.
@@ -1199,6 +1117,67 @@ public:
   unsigned int todo_;
 };
 
+/* Return true if CODE is an operation that when operating on signed
+   integer types involves undefined behavior on overflow and the
+   operation can be expressed with unsigned arithmetic.  */
+
+static bool
+arith_code_with_undefined_signed_overflow (tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case NEGATE_EXPR:
+    case POINTER_PLUS_EXPR:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Rewrite STMT, an assignment with a signed integer or pointer arithmetic
+   operation that can be transformed to unsigned arithmetic by converting
+   its operand, carrying out the operation in the corresponding unsigned
+   type and converting the result back to the original type.
+
+   Returns a sequence of statements that replace STMT and also contain
+   a modified form of STMT itself.  */
+
+static gimple_seq
+rewrite_to_defined_overflow (gimple stmt)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "rewriting stmt with undefined signed "
+	       "overflow ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+    }
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree type = unsigned_type_for (TREE_TYPE (lhs));
+  gimple_seq stmts = NULL;
+  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
+    {
+      gimple_seq stmts2 = NULL;
+      gimple_set_op (stmt, i,
+		     force_gimple_operand (fold_convert (type,
+							 gimple_op (stmt, i)),
+					   &stmts2, true, NULL_TREE));
+      gimple_seq_add_seq (&stmts, stmts2);
+    }
+  gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
+  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+    gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
+  gimple_seq_add_stmt (&stmts, stmt);
+  gimple cvt = gimple_build_assign_with_ops
+      (NOP_EXPR, lhs, gimple_assign_lhs (stmt), NULL_TREE);
+  gimple_seq_add_stmt (&stmts, cvt);
+
+  return stmts;
+}
+
 /* Hoist the statements in basic block BB out of the loops prescribed by
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
@@ -1329,7 +1308,21 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	    }
 	}
       gsi_remove (&bsi, false);
-      gsi_insert_on_edge (e, stmt);
+      /* In case this is a stmt that is not unconditionally executed
+         when the target loop header is executed and the stmt may
+	 invoke undefined integer or pointer overflow rewrite it to
+	 unsigned arithmetic.  */
+      if (is_gimple_assign (stmt)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  && arith_code_with_undefined_signed_overflow
+	       (gimple_assign_rhs_code (stmt))
+	  && (!ALWAYS_EXECUTED_IN (bb)
+	      || !(ALWAYS_EXECUTED_IN (bb) == level
+		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
+	gsi_insert_seq_on_edge (e, rewrite_to_defined_overflow (stmt));
+      else
+	gsi_insert_on_edge (e, stmt);
     }
 }
 
@@ -1695,12 +1688,12 @@ for_all_locs_in_loop (struct loop *loop, mem_ref_p ref, FN fn)
 struct rewrite_mem_ref_loc
 {
   rewrite_mem_ref_loc (tree tmp_var_) : tmp_var (tmp_var_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   tree tmp_var;
 };
 
 bool
-rewrite_mem_ref_loc::operator()(mem_ref_loc_p loc)
+rewrite_mem_ref_loc::operator () (mem_ref_loc_p loc)
 {
   *loc->ref = tmp_var;
   update_stmt (loc->stmt);
@@ -1720,12 +1713,12 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
 struct first_mem_ref_loc_1
 {
   first_mem_ref_loc_1 (mem_ref_loc_p *locp_) : locp (locp_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   mem_ref_loc_p *locp;
 };
 
 bool
-first_mem_ref_loc_1::operator()(mem_ref_loc_p loc)
+first_mem_ref_loc_1::operator () (mem_ref_loc_p loc)
 {
   *locp = loc;
   return true;
@@ -1739,122 +1732,6 @@ first_mem_ref_loc (struct loop *loop, mem_ref_p ref)
   mem_ref_loc_p locp = NULL;
   for_all_locs_in_loop (loop, ref, first_mem_ref_loc_1 (&locp));
   return locp;
-}
-
-/* The name and the length of the currently generated variable
-   for lsm.  */
-#define MAX_LSM_NAME_LENGTH 40
-static char lsm_tmp_name[MAX_LSM_NAME_LENGTH + 1];
-static int lsm_tmp_name_length;
-
-/* Adds S to lsm_tmp_name.  */
-
-static void
-lsm_tmp_name_add (const char *s)
-{
-  int l = strlen (s) + lsm_tmp_name_length;
-  if (l > MAX_LSM_NAME_LENGTH)
-    return;
-
-  strcpy (lsm_tmp_name + lsm_tmp_name_length, s);
-  lsm_tmp_name_length = l;
-}
-
-/* Stores the name for temporary variable that replaces REF to
-   lsm_tmp_name.  */
-
-static void
-gen_lsm_tmp_name (tree ref)
-{
-  const char *name;
-
-  switch (TREE_CODE (ref))
-    {
-    case MEM_REF:
-    case TARGET_MEM_REF:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      lsm_tmp_name_add ("_");
-      break;
-
-    case ADDR_EXPR:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      break;
-
-    case BIT_FIELD_REF:
-    case VIEW_CONVERT_EXPR:
-    case ARRAY_RANGE_REF:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      break;
-
-    case REALPART_EXPR:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      lsm_tmp_name_add ("_RE");
-      break;
-
-    case IMAGPART_EXPR:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      lsm_tmp_name_add ("_IM");
-      break;
-
-    case COMPONENT_REF:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      lsm_tmp_name_add ("_");
-      name = get_name (TREE_OPERAND (ref, 1));
-      if (!name)
-	name = "F";
-      lsm_tmp_name_add (name);
-      break;
-
-    case ARRAY_REF:
-      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
-      lsm_tmp_name_add ("_I");
-      break;
-
-    case SSA_NAME:
-    case VAR_DECL:
-    case PARM_DECL:
-      name = get_name (ref);
-      if (!name)
-	name = "D";
-      lsm_tmp_name_add (name);
-      break;
-
-    case STRING_CST:
-      lsm_tmp_name_add ("S");
-      break;
-
-    case RESULT_DECL:
-      lsm_tmp_name_add ("R");
-      break;
-
-    case INTEGER_CST:
-      /* Nothing.  */
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Determines name for temporary variable that replaces REF.
-   The name is accumulated into the lsm_tmp_name variable.
-   N is added to the name of the temporary.  */
-
-char *
-get_lsm_tmp_name (tree ref, unsigned n)
-{
-  char ns[2];
-
-  lsm_tmp_name_length = 0;
-  gen_lsm_tmp_name (ref);
-  lsm_tmp_name_add ("_lsm");
-  if (n < 10)
-    {
-      ns[0] = '0' + n;
-      ns[1] = 0;
-      lsm_tmp_name_add (ns);
-    }
-  return lsm_tmp_name;
 }
 
 struct prev_flag_edges {
@@ -2001,12 +1878,12 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 struct sm_set_flag_if_changed
 {
   sm_set_flag_if_changed (tree flag_) : flag (flag_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   tree flag;
 };
 
 bool
-sm_set_flag_if_changed::operator()(mem_ref_loc_p loc)
+sm_set_flag_if_changed::operator () (mem_ref_loc_p loc)
 {
   /* Only set the flag for writes.  */
   if (is_gimple_assign (loc->stmt)
@@ -2026,8 +1903,7 @@ static tree
 execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
 {
   tree flag;
-  char *str = get_lsm_tmp_name (ref->mem.ref, ~0);
-  lsm_tmp_name_add ("_flag");
+  char *str = get_lsm_tmp_name (ref->mem.ref, ~0, "_flag");
   flag = create_tmp_reg (boolean_type_node, str);
   for_all_locs_in_loop (loop, ref, sm_set_flag_if_changed (flag));
   return flag;
@@ -2130,14 +2006,14 @@ struct ref_always_accessed
 {
   ref_always_accessed (struct loop *loop_, tree base_, bool stored_p_)
       : loop (loop_), base (base_), stored_p (stored_p_) {}
-  bool operator()(mem_ref_loc_p loc);
+  bool operator () (mem_ref_loc_p loc);
   struct loop *loop;
   tree base;
   bool stored_p;
 };
 
 bool
-ref_always_accessed::operator()(mem_ref_loc_p loc)
+ref_always_accessed::operator () (mem_ref_loc_p loc)
 {
   struct loop *must_exec;
 
@@ -2639,3 +2515,61 @@ tree_ssa_lim (void)
 
   return todo;
 }
+
+/* Loop invariant motion pass.  */
+
+static unsigned int
+tree_ssa_loop_im (void)
+{
+  if (number_of_loops (cfun) <= 1)
+    return 0;
+
+  return tree_ssa_lim ();
+}
+
+static bool
+gate_tree_ssa_loop_im (void)
+{
+  return flag_tree_loop_im != 0;
+}
+
+namespace {
+
+const pass_data pass_data_lim =
+{
+  GIMPLE_PASS, /* type */
+  "lim", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LIM, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_lim : public gimple_opt_pass
+{
+public:
+  pass_lim (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lim, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_lim (m_ctxt); }
+  bool gate () { return gate_tree_ssa_loop_im (); }
+  unsigned int execute () { return tree_ssa_loop_im (); }
+
+}; // class pass_lim
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_lim (gcc::context *ctxt)
+{
+  return new pass_lim (ctxt);
+}
+
+

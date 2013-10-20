@@ -25,6 +25,7 @@
 
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
+with Output;   use Output;
 
 package body Warnsw is
 
@@ -50,6 +51,8 @@ package body Warnsw is
         W.Implementation_Unit_Warnings;
       Ineffective_Inline_Warnings         :=
         W.Ineffective_Inline_Warnings;
+      List_Body_Required_Info             :=
+        W.List_Body_Required_Info;
       List_Inherited_Aspects              :=
         W.List_Inherited_Aspects;
       Warning_Doc_Switch                  :=
@@ -144,6 +147,8 @@ package body Warnsw is
         Implementation_Unit_Warnings;
       W.Ineffective_Inline_Warnings         :=
         Ineffective_Inline_Warnings;
+      W.List_Body_Required_Info             :=
+        List_Body_Required_Info;
       W.List_Inherited_Aspects              :=
         List_Inherited_Aspects;
       W.Warning_Doc_Switch                  :=
@@ -256,6 +261,7 @@ package body Warnsw is
             Elab_Warnings                       := True;
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
+            List_Body_Required_Info             := True;
             List_Inherited_Aspects              := True;
             Warning_Doc_Switch                  := True;
             Warn_On_Ada_2005_Compatibility      := True;
@@ -385,8 +391,18 @@ package body Warnsw is
             Warn_On_Non_Local_Exception         := False;
             No_Warn_On_Non_Local_Exception      := True;
 
+         when 'y' =>
+            List_Body_Required_Info             := True;
+
+         when 'Y' =>
+            List_Body_Required_Info             := False;
+
          when others =>
-            return False;
+            if Ignore_Unrecognized_VWY_Switches then
+               Write_Line ("unrecognized switch -gnatw." & C & " ignored");
+            else
+               return False;
+            end if;
       end case;
 
       return True;
@@ -406,6 +422,7 @@ package body Warnsw is
       Elab_Warnings                       := False;
       Implementation_Unit_Warnings        := False;
       Ineffective_Inline_Warnings         := True;
+      List_Body_Required_Info             := False;
       List_Inherited_Aspects              := False;
       Warning_Doc_Switch                  := False;
       Warn_On_Ada_2005_Compatibility      := True;
@@ -487,6 +504,7 @@ package body Warnsw is
             Elab_Warnings                       := False;
             Implementation_Unit_Warnings        := False;
             Ineffective_Inline_Warnings         := False;
+            List_Body_Required_Info             := False;
             List_Inherited_Aspects              := False;
             Warning_Doc_Switch                  := False;
             Warn_On_Ada_2005_Compatibility      := False;
@@ -672,6 +690,11 @@ package body Warnsw is
             Warn_On_Unchecked_Conversion        := False;
 
          when others =>
+            if Ignore_Unrecognized_VWY_Switches then
+               Write_Line ("unrecognized switch -gnatw" & C & " ignored");
+            else
+               return False;
+            end if;
             return False;
       end case;
 

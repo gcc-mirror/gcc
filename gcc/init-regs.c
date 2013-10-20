@@ -158,8 +158,8 @@ const pass_data pass_data_initialize_regs =
 class pass_initialize_regs : public rtl_opt_pass
 {
 public:
-  pass_initialize_regs(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_initialize_regs, ctxt)
+  pass_initialize_regs (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_initialize_regs, ctxt)
   {}
 
   /* opt_pass methods: */

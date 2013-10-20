@@ -226,25 +226,44 @@ maybe_hot_edge_p (edge e)
 }
 
 
-/* Return true in case BB is probably never executed.  */
 
-bool
-probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
+/* Return true if profile COUNT and FREQUENCY, or function FUN static
+   node frequency reflects never being executed.  */
+   
+static bool
+probably_never_executed (struct function *fun,
+                         gcov_type count, int frequency)
 {
   gcc_checking_assert (fun);
   if (profile_status_for_function (fun) == PROFILE_READ)
     {
-      if ((bb->count * 4 + profile_info->runs / 2) / profile_info->runs > 0)
+      int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+      if (count * unlikely_count_fraction >= profile_info->runs)
 	return false;
-      if (!bb->frequency)
+      if (!frequency)
 	return true;
       if (!ENTRY_BLOCK_PTR->frequency)
 	return false;
-      if (ENTRY_BLOCK_PTR->count && ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE)
+      if (ENTRY_BLOCK_PTR->count)
 	{
-	  return (RDIV (bb->frequency * ENTRY_BLOCK_PTR->count,
-		        ENTRY_BLOCK_PTR->frequency)
-		  < REG_BR_PROB_BASE / 4);
+          gcov_type computed_count;
+          /* Check for possibility of overflow, in which case entry bb count
+             is large enough to do the division first without losing much
+             precision.  */
+          if (ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE * REG_BR_PROB_BASE)
+            {
+              gcov_type scaled_count
+                  = frequency * ENTRY_BLOCK_PTR->count * unlikely_count_fraction;
+              computed_count = RDIV (scaled_count, ENTRY_BLOCK_PTR->frequency);
+            }
+          else
+            {
+              computed_count = RDIV (ENTRY_BLOCK_PTR->count,
+                                     ENTRY_BLOCK_PTR->frequency);
+              computed_count *= frequency * unlikely_count_fraction;
+            }
+          if (computed_count >= profile_info->runs)
+            return false;
 	}
       return true;
     }
@@ -256,19 +275,21 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 }
 
 
+/* Return true in case BB is probably never executed.  */
+
+bool
+probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
+{
+  return probably_never_executed (fun, bb->count, bb->frequency);
+}
+
+
 /* Return true in case edge E is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
 {
-  gcc_checking_assert (fun);
-  if (profile_info && flag_branch_probabilities)
-    return ((e->count + profile_info->runs / 2) / profile_info->runs) == 0;
-  if ((!profile_info || !flag_branch_probabilities)
-      && (cgraph_get_node (fun->decl)->frequency
-	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
-    return true;
-  return false;
+  return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
 /* Return true if NODE should be optimized for size.  */
@@ -528,7 +549,7 @@ bool
 br_prob_note_reliable_p (const_rtx note)
 {
   gcc_assert (REG_NOTE_KIND (note) == REG_BR_PROB);
-  return probability_reliable_p (INTVAL (XEXP (note, 0)));
+  return probability_reliable_p (XINT (note, 0));
 }
 
 static void
@@ -682,7 +703,7 @@ invert_br_probabilities (rtx insn)
 
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_BR_PROB)
-      XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
+      XINT (note, 0) = REG_BR_PROB_BASE - XINT (note, 0);
     else if (REG_NOTE_KIND (note) == REG_BR_PRED)
       XEXP (XEXP (note, 0), 1)
 	= GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (XEXP (note, 0), 1)));
@@ -836,7 +857,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 
   if (!prob_note)
     {
-      add_reg_note (insn, REG_BR_PROB, GEN_INT (combined_probability));
+      add_int_reg_note (insn, REG_BR_PROB, combined_probability);
 
       /* Save the prediction into CFG in case we are seeing non-degenerated
 	 conditional jump.  */
@@ -849,7 +870,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
     }
   else if (!single_succ_p (bb))
     {
-      int prob = INTVAL (XEXP (prob_note, 0));
+      int prob = XINT (prob_note, 0);
 
       BRANCH_EDGE (bb)->probability = prob;
       FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
@@ -1976,11 +1997,12 @@ tree_predict_by_opcode (basic_block bb)
   BITMAP_FREE (visited);
   if (val)
     {
+      int percent = PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY);
+
+      gcc_assert (percent >= 0 && percent <= 100);
       if (integer_zerop (val))
-	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, NOT_TAKEN);
-      else
-	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, TAKEN);
-      return;
+        percent = 100 - percent;
+      predict_edge (then_edge, PRED_BUILTIN_EXPECT, HITRATE (percent));
     }
   /* Try "pointer heuristic."
      A comparison ptr == 0 is predicted as false.
@@ -2364,7 +2386,7 @@ tree_estimate_probability (void)
   pointer_map_destroy (bb_predictions);
   bb_predictions = NULL;
 
-  estimate_bb_frequencies ();
+  estimate_bb_frequencies (false);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
 }
@@ -2667,7 +2689,7 @@ propagate_freq (basic_block head, bitmap tovisit)
     }
 }
 
-/* Estimate probabilities of loopback edges in loops at same nest level.  */
+/* Estimate frequencies in loops at same nest level.  */
 
 static void
 estimate_loops_at_level (struct loop *first_loop)
@@ -2776,15 +2798,17 @@ expensive_function_p (int threshold)
   return false;
 }
 
-/* Estimate basic blocks frequency by given branch probabilities.  */
+/* Estimate and propagate basic block frequencies using the given branch
+   probabilities.  If FORCE is true, the frequencies are used to estimate
+   the counts even when there are already non-zero profile counts.  */
 
 void
-estimate_bb_frequencies (void)
+estimate_bb_frequencies (bool force)
 {
   basic_block bb;
   sreal freq_max;
 
-  if (profile_status != PROFILE_READ || !counts_to_freqs ())
+  if (force || profile_status != PROFILE_READ || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 
@@ -2821,8 +2845,8 @@ estimate_bb_frequencies (void)
 	    }
 	}
 
-      /* First compute probabilities locally for each loop from innermost
-         to outermost to examine probabilities for back edges.  */
+      /* First compute frequencies locally for each loop from innermost
+         to outermost to examine frequencies for back edges.  */
       estimate_loops ();
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
@@ -2938,8 +2962,8 @@ const pass_data pass_data_profile =
 class pass_profile : public gimple_opt_pass
 {
 public:
-  pass_profile(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_profile, ctxt)
+  pass_profile (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_profile, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2976,12 +3000,12 @@ const pass_data pass_data_strip_predict_hints =
 class pass_strip_predict_hints : public gimple_opt_pass
 {
 public:
-  pass_strip_predict_hints(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_strip_predict_hints, ctxt)
+  pass_strip_predict_hints (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strip_predict_hints, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_strip_predict_hints (ctxt_); }
+  opt_pass * clone () { return new pass_strip_predict_hints (m_ctxt); }
   unsigned int execute () { return strip_predict_hints (); }
 
 }; // class pass_strip_predict_hints
@@ -3003,13 +3027,29 @@ void
 rebuild_frequencies (void)
 {
   timevar_push (TV_REBUILD_FREQUENCIES);
-  if (profile_status == PROFILE_GUESSED)
+
+  /* When the max bb count in the function is small, there is a higher
+     chance that there were truncation errors in the integer scaling
+     of counts by inlining and other optimizations. This could lead
+     to incorrect classification of code as being cold when it isn't.
+     In that case, force the estimation of bb counts/frequencies from the
+     branch probabilities, rather than computing frequencies from counts,
+     which may also lead to frequencies incorrectly reduced to 0. There
+     is less precision in the probabilities, so we only do this for small
+     max counts.  */
+  gcov_type count_max = 0;
+  basic_block bb;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    count_max = MAX (bb->count, count_max);
+
+  if (profile_status == PROFILE_GUESSED
+      || (profile_status == PROFILE_READ && count_max < REG_BR_PROB_BASE/10))
     {
       loop_optimizer_init (0);
       add_noreturn_fake_exit_edges ();
       mark_irreducible_loops ();
       connect_infinite_loops_to_exit ();
-      estimate_bb_frequencies ();
+      estimate_bb_frequencies (true);
       remove_fake_exit_edges ();
       loop_optimizer_finalize ();
     }

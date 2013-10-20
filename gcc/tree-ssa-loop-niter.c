@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "wide-int-print.h"
 
+
 #define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
 /* The maximum number of dominator BBs we search for conditions
@@ -2509,41 +2510,6 @@ derive_constant_upper_bound_ops (tree type, tree op0,
     }
 }
 
-/* Records that every statement in LOOP is executed I_BOUND times.
-   REALISTIC is true if I_BOUND is expected to be close to the real number
-   of iterations.  UPPER is true if we are sure the loop iterates at most
-   I_BOUND times.  */
-
-void
-record_niter_bound (struct loop *loop, const max_wide_int &i_bound, 
-		    bool realistic, bool upper)
-{
-  /* Update the bounds only when there is no previous estimation, or when the
-     current estimation is smaller.  */
-  if (upper
-      && (!loop->any_upper_bound
-	  || wi::ltu_p (i_bound, loop->nb_iterations_upper_bound)))
-    {
-      loop->any_upper_bound = true;
-      loop->nb_iterations_upper_bound = i_bound;
-    }
-  if (realistic
-      && (!loop->any_estimate
-	  || wi::ltu_p (i_bound, loop->nb_iterations_estimate)))
-    {
-      loop->any_estimate = true;
-      loop->nb_iterations_estimate = i_bound;
-    }
-
-  /* If an upper bound is smaller than the realistic estimate of the
-     number of iterations, use the upper bound instead.  */
-  if (loop->any_upper_bound
-      && loop->any_estimate
-      && wi::ltu_p (loop->nb_iterations_upper_bound,
-		    loop->nb_iterations_estimate))
-    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
-}
-
 /* Emit a -Waggressive-loop-optimizations warning if needed.  */
 
 static void
@@ -3011,26 +2977,9 @@ infer_loop_bounds_from_undefined (struct loop *loop)
   free (bbs);
 }
 
-/* Converts VAL to max_wide_int.  */
-
-static max_wide_int
-gcov_type_to_wide_int (gcov_type val)
-{
-  HOST_WIDE_INT a[2];
-
-  a[0] = (unsigned HOST_WIDE_INT) val;
-  /* If HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_WIDEST_INT, avoid shifting by
-     the size of type.  */
-  val >>= HOST_BITS_PER_WIDE_INT - 1;
-  val >>= 1;
-  a[1] = (unsigned HOST_WIDE_INT) val;
-
-  return max_wide_int::from_array (a, 2);
-}
-
 /* Compare wide ints, callback for qsort.  */
 
-int
+static int
 wide_int_cmp (const void *p1, const void *p2)
 {
   const max_wide_int *d1 = (const max_wide_int *)p1;
@@ -3041,7 +2990,7 @@ wide_int_cmp (const void *p1, const void *p2)
 /* Return index of BOUND in BOUNDS array sorted in increasing order.
    Lookup by binary search.  */
 
-int
+static int
 bound_index (vec<max_wide_int> bounds, const max_wide_int &bound)
 {
   unsigned int end = bounds.length ();
@@ -3348,7 +3297,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
    is true also use estimates derived from undefined behavior.  */
 
-void
+static void
 estimate_numbers_of_iterations_loop (struct loop *loop)
 {
   vec<edge> exits;
@@ -3431,39 +3380,7 @@ estimated_loop_iterations (struct loop *loop, max_wide_int *nit)
   if (scev_initialized_p ())
     estimate_numbers_of_iterations_loop (loop);
 
-  /* Even if the bound is not recorded, possibly we can derrive one from
-     profile.  */
-  if (!loop->any_estimate)
-    {
-      if (loop->header->count)
-	{
-          *nit = gcov_type_to_wide_int
-		   (expected_loop_iterations_unbounded (loop) + 1);
-	  return true;
-	}
-      return false;
-    }
-
-  *nit = loop->nb_iterations_estimate;
-  return true;
-}
-
-/* Sets NIT to an upper bound for the maximum number of executions of the
-   latch of the LOOP.  If we have no reliable estimate, the function returns
-   false, otherwise returns true.  */
-
-bool
-max_loop_iterations (struct loop *loop, max_wide_int *nit)
-{
-  /* When SCEV information is available, try to update loop iterations
-     estimate.  Otherwise just return whatever we recorded earlier.  */
-  if (scev_initialized_p ())
-    estimate_numbers_of_iterations_loop (loop);
-  if (!loop->any_upper_bound)
-    return false;
-
-  *nit = loop->nb_iterations_upper_bound;
-  return true;
+  return (get_estimated_loop_iterations (loop, nit));
 }
 
 /* Similar to estimated_loop_iterations, but returns the estimate only
@@ -3486,6 +3403,22 @@ estimated_loop_iterations_int (struct loop *loop)
   return hwi_nit < 0 ? -1 : hwi_nit;
 }
 
+
+/* Sets NIT to an upper bound for the maximum number of executions of the
+   latch of the LOOP.  If we have no reliable estimate, the function returns
+   false, otherwise returns true.  */
+
+bool
+max_loop_iterations (struct loop *loop, max_wide_int *nit)
+{
+  /* When SCEV information is available, try to update loop iterations
+     estimate.  Otherwise just return whatever we recorded earlier.  */
+  if (scev_initialized_p ())
+    estimate_numbers_of_iterations_loop (loop);
+
+  return get_max_loop_iterations (loop, nit);
+}
+
 /* Similar to max_loop_iterations, but returns the estimate only
    if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
    on the number of iterations of LOOP could not be derived, returns -1.  */
@@ -3504,25 +3437,6 @@ max_loop_iterations_int (struct loop *loop)
   hwi_nit = nit.to_shwi ();
 
   return hwi_nit < 0 ? -1 : hwi_nit;
-}
-
-/* Returns an upper bound on the number of executions of statements
-   in the LOOP.  For statements before the loop exit, this exceeds
-   the number of execution of the latch by one.  */
-
-HOST_WIDE_INT
-max_stmt_executions_int (struct loop *loop)
-{
-  HOST_WIDE_INT nit = max_loop_iterations_int (loop);
-  HOST_WIDE_INT snit;
-
-  if (nit == -1)
-    return -1;
-
-  snit = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) nit + 1);
-
-  /* If the computation overflows, return -1.  */
-  return snit < 0 ? -1 : snit;
 }
 
 /* Returns an estimate for the number of executions of statements

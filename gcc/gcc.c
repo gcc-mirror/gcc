@@ -1556,7 +1556,7 @@ init_spec (void)
   /* Prepend "--traditional-format" to whatever asm_spec we had before.  */
   {
     static const char tf[] = "--traditional-format ";
-    obstack_grow (&obstack, tf, sizeof(tf) - 1);
+    obstack_grow (&obstack, tf, sizeof (tf) - 1);
     obstack_grow0 (&obstack, asm_spec, strlen (asm_spec));
     asm_spec = XOBFINISH (&obstack, const char *);
   }
@@ -1566,19 +1566,19 @@ init_spec (void)
     defined LINKER_HASH_STYLE
 # ifdef LINK_BUILDID_SPEC
   /* Prepend LINK_BUILDID_SPEC to whatever link_spec we had before.  */
-  obstack_grow (&obstack, LINK_BUILDID_SPEC, sizeof(LINK_BUILDID_SPEC) - 1);
+  obstack_grow (&obstack, LINK_BUILDID_SPEC, sizeof (LINK_BUILDID_SPEC) - 1);
 # endif
 # ifdef LINK_EH_SPEC
   /* Prepend LINK_EH_SPEC to whatever link_spec we had before.  */
-  obstack_grow (&obstack, LINK_EH_SPEC, sizeof(LINK_EH_SPEC) - 1);
+  obstack_grow (&obstack, LINK_EH_SPEC, sizeof (LINK_EH_SPEC) - 1);
 # endif
 # ifdef LINKER_HASH_STYLE
   /* Prepend --hash-style=LINKER_HASH_STYLE to whatever link_spec we had
      before.  */
   {
     static const char hash_style[] = "--hash-style=";
-    obstack_grow (&obstack, hash_style, sizeof(hash_style) - 1);
-    obstack_grow (&obstack, LINKER_HASH_STYLE, sizeof(LINKER_HASH_STYLE) - 1);
+    obstack_grow (&obstack, hash_style, sizeof (hash_style) - 1);
+    obstack_grow (&obstack, LINKER_HASH_STYLE, sizeof (LINKER_HASH_STYLE) - 1);
     obstack_1grow (&obstack, ' ');
   }
 # endif
@@ -1644,7 +1644,7 @@ set_spec (const char *name, const char *spec, bool user_p)
 
   /* Free the old spec.  */
   if (old_spec && sl->alloc_p)
-    free (CONST_CAST(char *, old_spec));
+    free (CONST_CAST (char *, old_spec));
 
   sl->user_p = user_p;
   sl->alloc_p = true;
@@ -2490,7 +2490,7 @@ find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
 #endif
 
 #ifdef DEFAULT_LINKER
-  if (! strcmp(name, "ld") && access (DEFAULT_LINKER, mode) == 0)
+  if (! strcmp (name, "ld") && access (DEFAULT_LINKER, mode) == 0)
     return xstrdup (DEFAULT_LINKER);
 #endif
 
@@ -5741,11 +5741,11 @@ handle_braces (const char *p)
       a_is_negated = false;
       a_is_spectype = false;
 
-      SKIP_WHITE();
+      SKIP_WHITE ();
       if (*p == '!')
 	p++, a_is_negated = true;
 
-      SKIP_WHITE();
+      SKIP_WHITE ();
       if (*p == '%' && p[1] == ':')
 	{
 	  atom = NULL;
@@ -5760,7 +5760,7 @@ handle_braces (const char *p)
 	    p++, a_is_spectype = true;
 
 	  atom = p;
-	  while (ISIDNUM(*p) || *p == '-' || *p == '+' || *p == '='
+	  while (ISIDNUM (*p) || *p == '-' || *p == '+' || *p == '='
 		 || *p == ',' || *p == '.' || *p == '@')
 	    p++;
 	  end_atom = p;
@@ -5769,7 +5769,7 @@ handle_braces (const char *p)
 	    p++, a_is_starred = 1;
 	}
 
-      SKIP_WHITE();
+      SKIP_WHITE ();
       switch (*p)
 	{
 	case '&': case '}':
@@ -6074,13 +6074,13 @@ give_switch (int switchnum, int omit_first_word)
 	      while (length-- && !IS_DIR_SEPARATOR (arg[length]))
 		if (arg[length] == '.')
 		  {
-		    (CONST_CAST(char *, arg))[length] = 0;
+		    (CONST_CAST (char *, arg))[length] = 0;
 		    dot = 1;
 		    break;
 		  }
 	      do_spec_1 (arg, 1, NULL);
 	      if (dot)
-		(CONST_CAST(char *, arg))[length] = '.';
+		(CONST_CAST (char *, arg))[length] = '.';
 	      do_spec_1 (suffix_subst, 1, NULL);
 	    }
 	  else
@@ -8395,7 +8395,7 @@ get_random_number (void)
   }
 #endif
 
-  return ret ^ getpid();
+  return ret ^ getpid ();
 }
 
 /* %:compare-debug-dump-opt spec function.  Save the last argument,
@@ -8607,7 +8607,7 @@ replace_extension_spec_func (int argc, const char **argv)
 
   name = xstrdup (argv[0]);
 
-  for (i = strlen(name) - 1; i >= 0; i--)
+  for (i = strlen (name) - 1; i >= 0; i--)
     if (IS_DIR_SEPARATOR (name[i]))
       break;
 

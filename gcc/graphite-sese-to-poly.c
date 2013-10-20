@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
 #include "sese.h"
+#include "tree-ssa-propagate.h"
 
 #ifdef HAVE_cloog
 #include "graphite-poly.h"
@@ -665,7 +666,7 @@ extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
 
   id = isl_id_for_ssa_name (s, e);
   dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
-  isl_id_free(id);
+  isl_id_free (id);
   dom = isl_set_universe (isl_space_copy (space));
   aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
   aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
@@ -994,7 +995,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   if (TREE_CODE (nb_iters) == INTEGER_CST)
     {
       c = isl_inequality_alloc
-	  (isl_local_space_from_space(isl_space_copy (space)));
+	  (isl_local_space_from_space (isl_space_copy (space)));
       c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
       tree_int_to_gmp (nb_iters, g);
       isl_int_set_gmp (v, g);
@@ -1132,8 +1133,8 @@ add_condition_to_pbb (poly_bb_p pbb, gimple stmt, enum tree_code code)
 	break;
 
       default:
-	isl_pw_aff_free(lhs);
-	isl_pw_aff_free(rhs);
+	isl_pw_aff_free (lhs);
+	isl_pw_aff_free (rhs);
 	return;
     }
 
@@ -1226,21 +1227,21 @@ public:
   virtual void after_dom_children (basic_block);
 
 private:
-  vec<gimple> conditions_, cases_;
-  sese region_;
+  vec<gimple> m_conditions, m_cases;
+  sese m_region;
 };
 
 sese_dom_walker::sese_dom_walker (cdi_direction direction, sese region)
-  : dom_walker (direction), region_ (region)
+  : dom_walker (direction), m_region (region)
 {
-  conditions_.create (3);
-  cases_.create (3);
+  m_conditions.create (3);
+  m_cases.create (3);
 }
 
 sese_dom_walker::~sese_dom_walker ()
 {
-  conditions_.release ();
-  cases_.release ();
+  m_conditions.release ();
+  m_cases.release ();
 }
 
 /* Call-back for dom_walk executed before visiting the dominated
@@ -1252,7 +1253,7 @@ sese_dom_walker::before_dom_children (basic_block bb)
   gimple_bb_p gbb;
   gimple stmt;
 
-  if (!bb_in_sese_p (bb, region_))
+  if (!bb_in_sese_p (bb, m_region))
     return;
 
   stmt = single_pred_cond_non_loop_exit (bb);
@@ -1261,20 +1262,20 @@ sese_dom_walker::before_dom_children (basic_block bb)
     {
       edge e = single_pred_edge (bb);
 
-      conditions_.safe_push (stmt);
+      m_conditions.safe_push (stmt);
 
       if (e->flags & EDGE_TRUE_VALUE)
-	cases_.safe_push (stmt);
+	m_cases.safe_push (stmt);
       else
-	cases_.safe_push (NULL);
+	m_cases.safe_push (NULL);
     }
 
   gbb = gbb_from_bb (bb);
 
   if (gbb)
     {
-      GBB_CONDITIONS (gbb) = conditions_.copy ();
-      GBB_CONDITION_CASES (gbb) = cases_.copy ();
+      GBB_CONDITIONS (gbb) = m_conditions.copy ();
+      GBB_CONDITION_CASES (gbb) = m_cases.copy ();
     }
 }
 
@@ -1284,13 +1285,13 @@ sese_dom_walker::before_dom_children (basic_block bb)
 void
 sese_dom_walker::after_dom_children (basic_block bb)
 {
-  if (!bb_in_sese_p (bb, region_))
+  if (!bb_in_sese_p (bb, m_region))
     return;
 
   if (single_pred_cond_non_loop_exit (bb))
     {
-      conditions_.pop ();
-      cases_.pop ();
+      m_conditions.pop ();
+      m_cases.pop ();
     }
 }
 

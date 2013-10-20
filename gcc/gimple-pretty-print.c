@@ -312,7 +312,7 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       else
 	{
 	  pp_left_bracket (buffer);
-	  pp_string (buffer, tree_code_name [rhs_code]);
+	  pp_string (buffer, get_tree_code_name (rhs_code));
 	  pp_string (buffer, "] ");
 	}
 
@@ -351,7 +351,7 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
-      for (p = tree_code_name [(int) code]; *p; p++)
+      for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -397,7 +397,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     {
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
-      for (p = tree_code_name [(int) code]; *p; p++)
+      for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -495,7 +495,7 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 	}
 
       dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T, %T>", gs,
-                       tree_code_name[gimple_assign_rhs_code (gs)],
+		       get_tree_code_name (gimple_assign_rhs_code (gs)),
                        gimple_assign_lhs (gs), arg1, arg2, arg3);
     }
   else
@@ -524,7 +524,7 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
       else
         gcc_unreachable ();
       if (!(flags & TDF_RHS_ONLY))
-	pp_semicolon(buffer);
+	pp_semicolon (buffer);
     }
 }
 
@@ -790,9 +790,9 @@ dump_gimple_cond (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T, %T>", gs,
-                   tree_code_name [gimple_cond_code (gs)],
-                   gimple_cond_lhs (gs), gimple_cond_rhs (gs),
-                   gimple_cond_true_label (gs), gimple_cond_false_label (gs));
+		     get_tree_code_name (gimple_cond_code (gs)),
+		     gimple_cond_lhs (gs), gimple_cond_rhs (gs),
+		     gimple_cond_true_label (gs), gimple_cond_false_label (gs));
   else
     {
       if (!(flags & TDF_RHS_ONLY))
@@ -1097,6 +1097,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
 	  break;
+	case GF_OMP_FOR_KIND_DISTRIBUTE:
+	  kind = " distribute";
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1110,7 +1113,7 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 			 gimple_omp_for_index (gs, i),
 			 gimple_omp_for_initial (gs, i),
 			 gimple_omp_for_final (gs, i),
-			 tree_code_name[gimple_omp_for_cond (gs, i)],
+			 get_tree_code_name (gimple_omp_for_cond (gs, i)),
 			 gimple_omp_for_incr (gs, i));
       dump_gimple_fmt (buffer, spc, flags, "PRE_BODY <%S>%->",
 		       gimple_omp_for_pre_body (gs));
@@ -1124,6 +1127,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	case GF_OMP_FOR_KIND_DISTRIBUTE:
+	  pp_string (buffer, "#pragma omp distribute");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1239,6 +1245,85 @@ dump_gimple_omp_single (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
 }
 
+/* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_target (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  const char *kind;
+  switch (gimple_omp_target_kind (gs))
+    {
+    case GF_OMP_TARGET_KIND_REGION:
+      kind = "";
+      break;
+    case GF_OMP_TARGET_KIND_DATA:
+      kind = " data";
+      break;
+    case GF_OMP_TARGET_KIND_UPDATE:
+      kind = " update";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
+		       kind, gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp target");
+      pp_string (buffer, kind);
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      if (gimple_omp_target_child_fn (gs))
+	{
+	  pp_string (buffer, " [child fn: ");
+	  dump_generic_node (buffer, gimple_omp_target_child_fn (gs),
+			     spc, flags, false);
+	  pp_right_bracket (buffer);
+	}
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
+/* Dump a GIMPLE_OMP_TEAMS tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_teams (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp teams");
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_SECTIONS tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -1275,8 +1360,8 @@ dump_gimple_omp_sections (pretty_printer *buffer, gimple gs, int spc,
     }
 }
 
-/* Dump a GIMPLE_OMP_{MASTER,ORDERED,SECTION} tuple on the pretty_printer
-   BUFFER.  */
+/* Dump a GIMPLE_OMP_{MASTER,TASKGROUP,ORDERED,SECTION} tuple on the
+   pretty_printer BUFFER.  */
 
 static void
 dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -1290,6 +1375,9 @@ dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
 	{
 	case GIMPLE_OMP_MASTER:
 	  pp_string (buffer, "#pragma omp master");
+	  break;
+	case GIMPLE_OMP_TASKGROUP:
+	  pp_string (buffer, "#pragma omp taskgroup");
 	  break;
 	case GIMPLE_OMP_ORDERED:
 	  pp_string (buffer, "#pragma omp ordered");
@@ -1350,14 +1438,26 @@ dump_gimple_omp_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     {
-      dump_gimple_fmt (buffer, spc, flags, "%G <nowait=%d>", gs,
+      dump_gimple_fmt (buffer, spc, flags, "%G <nowait=%d", gs,
                        (int) gimple_omp_return_nowait_p (gs));
+      if (gimple_omp_return_lhs (gs))
+	dump_gimple_fmt (buffer, spc, flags, ", lhs=%T>",
+			 gimple_omp_return_lhs (gs));
+      else
+	dump_gimple_fmt (buffer, spc, flags, ">");
     }
   else
     {
       pp_string (buffer, "#pragma omp return");
       if (gimple_omp_return_nowait_p (gs))
 	pp_string (buffer, "(nowait)");
+      if (gimple_omp_return_lhs (gs))
+	{
+	  pp_string (buffer, " (set ");
+	  dump_generic_node (buffer, gimple_omp_return_lhs (gs),
+			     spc, flags, false);
+	  pp_character (buffer, ')');
+	}
     }
 }
 
@@ -1600,23 +1700,20 @@ dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
 }
 
-
-/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.
-   The caller is responsible for calling pp_flush on BUFFER to finalize
-   pretty printer.  */
+/* Dump ptr_info and range_info for NODE on pretty_printer BUFFER with
+   SPC spaces of indent.  */
 
 static void
-dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
+dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
 {
-  size_t i;
-  tree lhs = gimple_phi_result (phi);
+  if (TREE_CODE (node) != SSA_NAME)
+    return;
 
-  if (flags & TDF_ALIAS
-      && POINTER_TYPE_P (TREE_TYPE (lhs))
-      && SSA_NAME_PTR_INFO (lhs))
+  if (POINTER_TYPE_P (TREE_TYPE (node))
+      && SSA_NAME_PTR_INFO (node))
     {
       unsigned int align, misalign;
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (node);
       pp_string (buffer, "PT = ");
       pp_points_to_solution (buffer, &pi->pt);
       newline_and_indent (buffer, spc);
@@ -1628,9 +1725,44 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
       pp_string (buffer, "# ");
     }
 
+  if (!POINTER_TYPE_P (TREE_TYPE (node))
+      && SSA_NAME_RANGE_INFO (node))
+    {
+      max_wide_int min, max;
+      value_range_type range_type = get_range_info (node, &min, &max);
+
+      if (range_type == VR_VARYING)
+	pp_printf (buffer, "# RANGE  VR_VARYING");
+      else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
+	{
+	  pp_printf (buffer, "# RANGE ");
+	  pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
+	  pp_wide_int (buffer, min, TYPE_SIGN (TREE_TYPE (node)));
+	  pp_printf (buffer, ", ");
+	  pp_wide_int (buffer, max, TYPE_SIGN (TREE_TYPE (node)));
+	  pp_printf (buffer, "]");
+	  newline_and_indent (buffer, spc);
+	}
+    }
+}
+
+
+/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.
+   The caller is responsible for calling pp_flush on BUFFER to finalize
+   pretty printer.  */
+
+static void
+dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
+{
+  size_t i;
+  tree lhs = gimple_phi_result (phi);
+
+  if (flags & TDF_ALIAS)
+    dump_ssaname_info (buffer, lhs, spc);
+
   if (flags & TDF_RAW)
-      dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
-                       gimple_phi_result (phi));
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
+		     gimple_phi_result (phi));
   else
     {
       dump_generic_node (buffer, lhs, spc, flags, false);
@@ -1794,6 +1926,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gimple gs, int spc,
   else
     {
       pp_string (buffer, "#pragma omp atomic_load");
+      if (gimple_omp_atomic_seq_cst_p (gs))
+	pp_string (buffer, " seq_cst");
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
       newline_and_indent (buffer, spc + 2);
@@ -1824,6 +1958,8 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer, gimple gs, int spc,
   else
     {
       pp_string (buffer, "#pragma omp atomic_store ");
+      if (gimple_omp_atomic_seq_cst_p (gs))
+	pp_string (buffer, "seq_cst ");
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
       pp_left_paren (buffer);
@@ -1908,27 +2044,9 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       && gimple_has_mem_ops (gs))
     dump_gimple_mem_ops (buffer, gs, spc, flags);
 
-  if ((flags & TDF_ALIAS)
-      && gimple_has_lhs (gs))
-    {
-      tree lhs = gimple_get_lhs (gs);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && POINTER_TYPE_P (TREE_TYPE (lhs))
-	  && SSA_NAME_PTR_INFO (lhs))
-	{
-	  unsigned int align, misalign;
-	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
-	  pp_string (buffer, "# PT = ");
-	  pp_points_to_solution (buffer, &pi->pt);
-	  newline_and_indent (buffer, spc);
-	  if (get_ptr_info_alignment (pi, &align, &misalign))
-	    {
-	      pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
-			 align, misalign);
-	      newline_and_indent (buffer, spc);
-	    }
-	}
-    }
+  if (gimple_has_lhs (gs)
+      && (flags & TDF_ALIAS))
+    dump_ssaname_info (buffer, gimple_get_lhs (gs), spc);
 
   switch (gimple_code (gs))
     {
@@ -2009,6 +2127,14 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_gimple_omp_single (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_OMP_TARGET:
+      dump_gimple_omp_target (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      dump_gimple_omp_teams (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_OMP_RETURN:
       dump_gimple_omp_return (buffer, gs, spc, flags);
       break;
@@ -2022,6 +2148,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       break;
 
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
       dump_gimple_omp_block (buffer, gs, spc, flags);
@@ -2271,7 +2398,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
       pp_newline_and_flush (buffer);
       gcc_checking_assert (DECL_STRUCT_FUNCTION (current_function_decl));
       dump_histograms_for_stmt (DECL_STRUCT_FUNCTION (current_function_decl),
-				pp_buffer(buffer)->stream, stmt);
+				pp_buffer (buffer)->stream, stmt);
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);

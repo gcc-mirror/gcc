@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-ssa.h"
 #include "hash-table.h"
-#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
 #include "diagnostic-core.h"
 
 
@@ -635,7 +635,7 @@ new_live_track (var_map map)
   ptr->map = map;
   lim = num_basevars (map);
   bitmap_obstack_initialize (&ptr->obstack);
-  ptr->live_base_partitions = (bitmap *) xmalloc(sizeof (bitmap *) * lim);
+  ptr->live_base_partitions = (bitmap *) xmalloc (sizeof (bitmap *) * lim);
   ptr->live_base_var = BITMAP_ALLOC (&ptr->obstack);
   for (x = 0; x < lim; x++)
     ptr->live_base_partitions[x] = BITMAP_ALLOC (&ptr->obstack);
@@ -980,10 +980,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 	      {
 		tree lhs = gimple_assign_lhs (stmt);
 		tree rhs1 = gimple_assign_rhs1 (stmt);
-
-		if (gimple_assign_copy_p (stmt)
-                    && TREE_CODE (lhs) == SSA_NAME
-		    && TREE_CODE (rhs1) == SSA_NAME
+		if (gimple_assign_ssa_name_copy_p (stmt)
 		    && gimple_can_coalesce_p (lhs, rhs1))
 		  {
 		    v1 = SSA_NAME_VERSION (lhs);
@@ -1335,39 +1332,4 @@ coalesce_ssa_name (void)
   ssa_conflicts_delete (graph);
 
   return map;
-}
-
-/* Given SSA_NAMEs NAME1 and NAME2, return true if they are candidates for
-   coalescing together, false otherwise.
-
-   This must stay consistent with var_map_base_init in tree-ssa-live.c.  */
-
-bool
-gimple_can_coalesce_p (tree name1, tree name2)
-{
-  /* First check the SSA_NAME's associated DECL.  We only want to
-     coalesce if they have the same DECL or both have no associated DECL.  */
-  if (SSA_NAME_VAR (name1) != SSA_NAME_VAR (name2))
-    return false;
-
-  /* Now check the types.  If the types are the same, then we should
-     try to coalesce V1 and V2.  */
-  tree t1 = TREE_TYPE (name1);
-  tree t2 = TREE_TYPE (name2);
-  if (t1 == t2)
-    return true;
-
-  /* If the types are not the same, check for a canonical type match.  This
-     (for example) allows coalescing when the types are fundamentally the
-     same, but just have different names. 
-
-     Note pointer types with different address spaces may have the same
-     canonical type.  Those are rejected for coalescing by the
-     types_compatible_p check.  */
-  if (TYPE_CANONICAL (t1)
-      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
-      && types_compatible_p (t1, t2))
-    return true;
-
-  return false;
 }

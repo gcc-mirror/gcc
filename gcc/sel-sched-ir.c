@@ -4881,7 +4881,7 @@ in_same_ebb_p (insn_t insn, insn_t succ)
 {
   basic_block ptr = BLOCK_FOR_INSN (insn);
 
-  for(;;)
+  for (;;)
     {
       if (ptr == BLOCK_FOR_INSN (succ))
         return true;

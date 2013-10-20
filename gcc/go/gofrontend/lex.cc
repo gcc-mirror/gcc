@@ -873,7 +873,28 @@ Lex::gather_identifier()
 	      && (cc < 'a' || cc > 'z')
 	      && cc != '_'
 	      && (cc < '0' || cc > '9'))
-	    break;
+	    {
+	      // Check for an invalid character here, as we get better
+	      // error behaviour if we swallow them as part of the
+	      // identifier we are building.
+	      if ((cc >= ' ' && cc < 0x7f)
+		  || cc == '\t'
+		  || cc == '\r'
+		  || cc == '\n')
+		break;
+
+	      this->lineoff_ = p - this->linebuf_;
+	      error_at(this->location(),
+		       "invalid character 0x%x in identifier",
+		       cc);
+	      if (!has_non_ascii_char)
+		{
+		  buf.assign(pstart, p - pstart);
+		  has_non_ascii_char = true;
+		}
+	      if (!Lex::is_invalid_identifier(buf))
+		buf.append("$INVALID$");
+	    }
 	  ++p;
 	  if (is_first)
 	    {

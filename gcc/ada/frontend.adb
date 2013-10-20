@@ -99,13 +99,6 @@ begin
 
    CStand.Create_Standard;
 
-   --  If the -gnatd.H flag is present, we are only interested in the Standard
-   --  package, so the frontend has done its job here.
-
-   if Debug_Flag_Dot_HH then
-      return;
-   end if;
-
    --  Check possible symbol definitions specified by -gnateD switches
 
    Prepcomp.Process_Command_Line_Symbol_Definitions;

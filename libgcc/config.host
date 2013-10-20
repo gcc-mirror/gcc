@@ -91,6 +91,9 @@ alpha*-*-*)
 am33_2.0-*-linux*)
 	cpu_type=mn10300
 	;;
+arc*-*-*)
+	cpu_type=arc
+	;;
 arm*-*-*)
 	cpu_type=arm
 	;;
@@ -101,6 +104,9 @@ bfin*-*)
 	cpu_type=bfin
 	;;
 cr16-*-*)
+	;;
+crisv32-*-*)
+	cpu_type=cris
 	;;
 fido-*-*)
 	cpu_type=m68k
@@ -315,6 +321,14 @@ alpha*-dec-*vms*)
 	extra_parts="$extra_parts vms-dwarf2.o vms-dwarf2eh.o"
 	md_unwind_header=alpha/vms-unwind.h
 	;;
+arc*-*-elf*)
+	tmake_file="arc/t-arc-newlib arc/t-arc"
+	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o libgmon.a crtg.o crtgend.o"
+	;;
+arc*-*-linux-uclibc*)
+	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc700-uClibc arc/t-arc"
+	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o libgmon.a crtg.o crtgend.o"
+	;;
 arm-wrs-vxworks)
 	tmake_file="$tmake_file arm/t-arm arm/t-vxworks t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
@@ -397,13 +411,13 @@ cr16-*-elf)
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
         ;;
 crisv32-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp"
  	;;
 cris-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-elfmulti"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
 	;;
 cris-*-linux* | crisv32-*-linux*)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-linux"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
 epiphany-*-elf*)
 	tmake_file="epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
@@ -435,6 +449,7 @@ h8300-*-elf*)
 	;;
 hppa*64*-*-linux*)
 	tmake_file="$tmake_file pa/t-linux pa/t-linux64"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	;;
 hppa*-*-linux*)
 	tmake_file="$tmake_file pa/t-linux t-slibgcc-libgcc"
@@ -444,6 +459,7 @@ hppa*-*-linux*)
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	md_unwind_header=pa/linux-unwind.h
 	;;
 hppa[12]*-*-hpux10*)

@@ -172,7 +172,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
       while (link)
 	{
 	  if (REG_NOTE_KIND (link) == REG_DEAD)
-	    REG_N_DEATHS(REGNO (XEXP (link, 0)))++;
+	    REG_N_DEATHS (REGNO (XEXP (link, 0)))++;
 	  link = XEXP (link, 1);
 	}
 

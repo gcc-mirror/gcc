@@ -155,7 +155,7 @@ static void sdbout_global_decl		(tree);
 #endif
 
 #ifndef PUT_SDB_SCL
-#define PUT_SDB_SCL(a) fprintf(asm_out_file, "\t.scl\t%d%s", (a), SDB_DELIM)
+#define PUT_SDB_SCL(a) fprintf (asm_out_file, "\t.scl\t%d%s", (a), SDB_DELIM)
 #endif
 
 #ifndef PUT_SDB_INT_VAL
@@ -182,15 +182,16 @@ do { fprintf (asm_out_file, "\t.def\t");	\
 #endif
 
 #ifndef PUT_SDB_PLAIN_DEF
-#define PUT_SDB_PLAIN_DEF(a) fprintf(asm_out_file,"\t.def\t.%s%s",a, SDB_DELIM)
+#define PUT_SDB_PLAIN_DEF(a) \
+  fprintf (asm_out_file, "\t.def\t.%s%s", a, SDB_DELIM)
 #endif
 
 #ifndef PUT_SDB_ENDEF
-#define PUT_SDB_ENDEF fputs("\t.endef\n", asm_out_file)
+#define PUT_SDB_ENDEF fputs ("\t.endef\n", asm_out_file)
 #endif
 
 #ifndef PUT_SDB_TYPE
-#define PUT_SDB_TYPE(a) fprintf(asm_out_file, "\t.type\t0%o%s", a, SDB_DELIM)
+#define PUT_SDB_TYPE(a) fprintf (asm_out_file, "\t.type\t0%o%s", a, SDB_DELIM)
 #endif
 
 #ifndef PUT_SDB_SIZE
@@ -198,19 +199,19 @@ do { fprintf (asm_out_file, "\t.def\t");	\
  do {									\
    fprintf (asm_out_file, "\t.size\t" HOST_WIDE_INT_PRINT_DEC "%s",	\
 	    (HOST_WIDE_INT) (a), SDB_DELIM);				\
- } while(0)
+ } while (0)
 #endif
 
 #ifndef PUT_SDB_START_DIM
-#define PUT_SDB_START_DIM fprintf(asm_out_file, "\t.dim\t")
+#define PUT_SDB_START_DIM fprintf (asm_out_file, "\t.dim\t")
 #endif
 
 #ifndef PUT_SDB_NEXT_DIM
-#define PUT_SDB_NEXT_DIM(a) fprintf(asm_out_file, "%d,", a)
+#define PUT_SDB_NEXT_DIM(a) fprintf (asm_out_file, "%d,", a)
 #endif
 
 #ifndef PUT_SDB_LAST_DIM
-#define PUT_SDB_LAST_DIM(a) fprintf(asm_out_file, "%d%s", a, SDB_DELIM)
+#define PUT_SDB_LAST_DIM(a) fprintf (asm_out_file, "%d%s", a, SDB_DELIM)
 #endif
 
 #ifndef PUT_SDB_TAG

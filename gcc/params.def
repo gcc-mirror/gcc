@@ -373,6 +373,11 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot",
 	 1000, 0, 0)
 
+DEFPARAM(UNLIKELY_BB_COUNT_FRACTION,
+	 "unlikely-bb-count-fraction",
+         "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely",
+	 20, 1, 10000)
+
 DEFPARAM (PARAM_ALIGN_THRESHOLD,
 	  "align-threshold",
 	  "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment",
@@ -398,6 +403,19 @@ DEFPARAM(PARAM_MAX_PREDICTED_ITERATIONS,
 	 "max-predicted-iterations",
 	 "The maximum number of loop iterations we predict statically",
 	 100, 0, 0)
+
+/* This parameter controls the probability of builtin_expect. The default
+   value is 90%. This empirical value is obtained through the weighted
+   probability of FDO counters (with the FDO count value as the weight)
+   in some real world programs:  
+   (1) Google performance test benchmarks: the probability is 0.9081.
+   (2) Linux 3.3 kernel running Google search workload: the probability
+   is 0.8717.  */
+
+DEFPARAM(BUILTIN_EXPECT_PROBABILITY,
+	 "builtin-expect-probability",
+	 "Set the estimated probability in percentage for builtin expect. The default value is 90% probability.",
+	 90, 0, 100)
 DEFPARAM(TRACER_DYNAMIC_COVERAGE_FEEDBACK,
 	 "tracer-dynamic-coverage-feedback",
 	 "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available",
@@ -544,6 +562,11 @@ DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
          "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check",
          10, 0, 0)
 
+DEFPARAM(PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
+         "vect-max-peeling-for-alignment",
+         "Max number of loop peels to enhancement alignment of data references in a loop",
+         -1, -1, 64)
+
 DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
 	 "max-cselib-memory-locations",
 	 "The maximum memory locations recorded by cselib",
@@ -663,6 +686,12 @@ DEFPARAM (PARAM_SSP_BUFFER_SIZE,
 	  "ssp-buffer-size",
 	  "The lower bound for a buffer to be considered for stack smashing protection",
 	  8, 1, 0)
+
+DEFPARAM (PARAM_MIN_SIZE_FOR_STACK_SHARING,
+	  "min-size-for-stack-sharing",
+	  "The minimum size of variables taking part in stack slot sharing "
+	  "when not optimizing",
+	  32, 0, 0)
 
 /* When we thread through a block we have to make copies of the
    statements within the block.  Clearly for large blocks the code

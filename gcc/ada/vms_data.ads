@@ -1802,6 +1802,13 @@ package VMS_Data is
    --   otherwise ignored. Allows style checks to be fully controlled by
    --   command line qualifiers.
 
+   S_GCC_IgnoreU : aliased constant S := "/IGNORE_UNRECOGNIZED "           &
+                                             "-gnateu";
+   --        /IGNORE_UNRECOGNIZED
+   --
+   --   Causes unrecognized style switches, validity switches, and warning
+   --   switches to be ignored rather than generating an error message.
+
    S_GCC_Immed   : aliased constant S := "/IMMEDIATE_ERRORS "              &
                                              "-gnatdO";
    --        /NOIMMEDIATE_ERRORS (D)
@@ -2885,12 +2892,17 @@ package VMS_Data is
    --
    --   All compiler tables start at nnn times usual starting size.
 
-   S_GCC_Target  : aliased constant S := "/TARGET_DEPENDENT_INFO "         &
-                                             "-gnatet";
-   --        /NOTARGET_DEPENDENT_INFO (D)
-   --        /TARGET_DEPENDENT_INFO
+   S_GCC_Target_W  : aliased constant S := "/WRITE_TARGET_DEPENDENT_INFO=<" &
+                                             "-gnatet=>";
+   --        /WRITE_TARGET_DEPENDENT_INFO=file
    --
-   --   Generate target dependent information.
+   --   Generate target dependent information to file.
+
+   S_GCC_Target_R  : aliased constant S := "/READ_TARGET_DEPENDENT_INFO=<"  &
+                                             "-gnateT=>";
+   --        /READ_TARGET_DEPENDENT_INFO=file
+   --
+   --   Read target dependent information from file.
 
    S_GCC_Trace   : aliased constant S := "/TRACE_UNITS "                   &
                                             "-gnatdc";
@@ -3094,6 +3106,10 @@ package VMS_Data is
                                                "-gnatwd "                  &
                                             "NO_IMPLICIT_DEREFERENCE "     &
                                                "-gnatwD "                  &
+                                            "TAG_WARNINGS "                &
+                                               "-gnatw.d "                 &
+                                            "NOTAG_WARNINGS "              &
+                                               "-gnatw.D "                 &
                                             "ERRORS "                      &
                                                "-gnatwe "                  &
                                             "UNREFERENCED_FORMALS "        &
@@ -3218,6 +3234,10 @@ package VMS_Data is
                                                "-gnatwy "                  &
                                             "NOADA_2005_COMPATIBILITY "    &
                                                "-gnatwY "                  &
+                                            "WHY_SPEC_NEEDS_BODY "         &
+                                               "-gnatw.y "                 &
+                                            "NO_WHY_SPEC_NEEDS_BODY "      &
+                                               "-gnatw.Y "                 &
                                             "UNCHECKED_CONVERSIONS "       &
                                                "-gnatwz "                  &
                                             "NOUNCHECKED_CONVERSIONS "     &
@@ -3483,12 +3503,24 @@ package VMS_Data is
    --   VARIABLES_UNINITIALIZED Activates warnings on unassigned variables.
    --                           Causes warnings to be generated when a variable
    --                           is accessed which may not be properly
-   --                           uninitialized.
-   --                           The default is that such warnings are
-   --                           generated.
+   --                           uninitialized. The default is that such
+   --                           warnings are generated.
    --
-   --   NOVARIABLES_UNINITIALIZED       Suppress warnings for uninitialized
-   --                                   variables.
+   --   NOVARIABLES_UNINITIALIZED
+   --                           Suppress warnings for uninitialized variables.
+   --
+   --   TAG_WARNINGS            Causes the string [xxx] to be added to warnings
+   --                           that are controlled by the warning string xxx,
+   --                           e.g. [REDUNDANT], or if the warning is enabled
+   --                           by default, the tag is [enabled by default].
+   --
+   --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
+   --
+   --   WHY_SPEC_NEEDS_BODY     Generates information messages showing why a
+   --                           package specification requires a body.
+   --
+   --   NO_WHY_SPEC_NEEDS_BODY  Turns off information messages showing why a
+   --                           package specification requires a body.
 
    S_GCC_WarnX   : aliased constant S := "/NOWARNINGS "                    &
                                             "-gnatws";
@@ -3681,6 +3713,7 @@ package VMS_Data is
                      S_GCC_IdentX  'Access,
                      S_GCC_IgnoreR 'Access,
                      S_GCC_IgnoreS 'Access,
+                     S_GCC_IgnoreU 'Access,
                      S_GCC_Immed   'Access,
                      S_GCC_Inline  'Access,
                      S_GCC_InlineX 'Access,
@@ -3723,7 +3756,8 @@ package VMS_Data is
                      S_GCC_Symbol  'Access,
                      S_GCC_Syntax  'Access,
                      S_GCC_Table   'Access,
-                     S_GCC_Target  'Access,
+                     S_GCC_Target_W'Access,
+                     S_GCC_Target_R'Access,
                      S_GCC_Trace   'Access,
                      S_GCC_Tree    'Access,
                      S_GCC_Trys    'Access,

@@ -140,6 +140,7 @@ enum lto_builtin_type
 #define DEF_FUNCTION_TYPE_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) NAME,
 #define DEF_FUNCTION_TYPE_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) NAME,
 #define DEF_FUNCTION_TYPE_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) NAME,
+#define DEF_FUNCTION_TYPE_8(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) NAME,
 #define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
 #define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
 #define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
@@ -158,6 +159,7 @@ enum lto_builtin_type
 #undef DEF_FUNCTION_TYPE_5
 #undef DEF_FUNCTION_TYPE_6
 #undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_8
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
@@ -630,6 +632,10 @@ lto_define_builtins (tree va_list_ref_type_node ATTRIBUTE_UNUSED,
 #define DEF_FUNCTION_TYPE_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6, ARG7)					\
   def_fn_type (ENUM, RETURN, 0, 7, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+#define DEF_FUNCTION_TYPE_8(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7, ARG8)				\
+  def_fn_type (ENUM, RETURN, 0, 8, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
+	       ARG7, ARG8);
 #define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN) \
   def_fn_type (ENUM, RETURN, 1, 0);
 #define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1) \
@@ -1127,31 +1133,11 @@ lto_build_c_type_nodes (void)
   pid_type_node = integer_type_node;
 }
 
-/* Re-compute TYPE_CANONICAL for NODE and related types.  */
-
-static void
-lto_register_canonical_types (tree node)
-{
-  if (!node
-      || !TYPE_P (node))
-    return;
-
-  TYPE_CANONICAL (node) = NULL_TREE;
-  TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
-
-  if (POINTER_TYPE_P (node)
-      || TREE_CODE (node) == COMPLEX_TYPE
-      || TREE_CODE (node) == ARRAY_TYPE)
-    lto_register_canonical_types (TREE_TYPE (node));
-}
-
 /* Perform LTO-specific initialization.  */
 
 static bool
 lto_init (void)
 {
-  unsigned i;
-
   /* We need to generate LTO if running in WPA mode.  */
   flag_generate_lto = flag_wpa;
 
@@ -1218,17 +1204,6 @@ lto_init (void)
   NAME_TYPE (void_type_node, "void");
   NAME_TYPE (boolean_type_node, "bool");
 #undef NAME_TYPE
-
-  /* Register the common node types with the canonical type machinery so
-     we properly share alias-sets across languages and TUs.  Do not
-     expose the common nodes as type merge target - those that should be
-     are already exposed so by pre-loading the LTO streamer caches.  */
-  for (i = 0; i < itk_none; ++i)
-    lto_register_canonical_types (integer_types[i]);
-  /* The sizetypes are not used to access data so we do not need to
-     do anything about them.  */
-  for (i = 0; i < TI_MAX; ++i)
-    lto_register_canonical_types (global_trees[i]);
 
   /* Initialize LTO-specific data structures.  */
   vec_alloc (lto_global_var_decls, 256);

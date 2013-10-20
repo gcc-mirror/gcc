@@ -624,7 +624,7 @@ tree_ssa_ifcombine (void)
   bool cfg_changed = false;
   int i;
 
-  bbs = blocks_in_phiopt_order ();
+  bbs = single_pred_before_succ_order ();
   calculate_dominance_info (CDI_DOMINATORS);
 
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; ++i)
@@ -668,8 +668,8 @@ const pass_data pass_data_tree_ifcombine =
 class pass_tree_ifcombine : public gimple_opt_pass
 {
 public:
-  pass_tree_ifcombine(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tree_ifcombine, ctxt)
+  pass_tree_ifcombine (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tree_ifcombine, ctxt)
   {}
 
   /* opt_pass methods: */

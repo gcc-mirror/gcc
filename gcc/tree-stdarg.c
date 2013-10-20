@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "target.h"
 #include "tree-ssa.h"
+#include "sbitmap.h"
 #include "tree-pass.h"
 #include "tree-stdarg.h"
 
@@ -1005,8 +1006,8 @@ const pass_data pass_data_stdarg =
 class pass_stdarg : public gimple_opt_pass
 {
 public:
-  pass_stdarg(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_stdarg, ctxt)
+  pass_stdarg (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_stdarg, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -165,6 +165,11 @@ PIC_FLAG=
 if test -n "${with_target_subdir}"; then
   PIC_FLAG=-fPIC
 fi
+# Similarly, use -fPIC with --enable-host-shared:
+AC_ARG_ENABLE(host-shared,
+[AS_HELP_STRING([--enable-host-shared],
+		[build host code as shared libraries])],
+[PIC_FLAG=-fPIC], [])
 AC_SUBST(PIC_FLAG)
 
 # Test for __sync support.

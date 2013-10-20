@@ -753,12 +753,12 @@ const pass_data pass_data_tsan =
 class pass_tsan : public gimple_opt_pass
 {
 public:
-  pass_tsan(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tsan, ctxt)
+  pass_tsan (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tsan, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tsan (ctxt_); }
+  opt_pass * clone () { return new pass_tsan (m_ctxt); }
   bool gate () { return tsan_gate (); }
   unsigned int execute () { return tsan_pass (); }
 
@@ -798,8 +798,8 @@ const pass_data pass_data_tsan_O0 =
 class pass_tsan_O0 : public gimple_opt_pass
 {
 public:
-  pass_tsan_O0(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tsan_O0, ctxt)
+  pass_tsan_O0 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tsan_O0, ctxt)
   {}
 
   /* opt_pass methods: */

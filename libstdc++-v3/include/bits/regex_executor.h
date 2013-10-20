@@ -62,7 +62,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef basic_regex<_CharT, _TraitsT>           _RegexT;
-      typedef match_results<_BiIter, _Alloc>          _ResultsT;
       typedef std::vector<sub_match<_BiIter>, _Alloc> _ResultsVec;
       typedef regex_constants::match_flag_type        _FlagT;
       typedef typename _TraitsT::char_class_type      _ClassT;
@@ -70,14 +69,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _Executor(_BiIter         __begin,
 		_BiIter         __end,
-		_ResultsT&      __results,
+		_ResultsVec&    __results,
 		const _RegexT&  __re,
 		_FlagT          __flags)
       : _M_begin(__begin),
       _M_end(__end),
-      _M_results(__results),
       _M_re(__re),
-      _M_flags(__flags)
+      _M_results(__results),
+      _M_flags((__flags & regex_constants::match_prev_avail)
+	       ? (__flags
+		  & ~regex_constants::match_not_bol
+		  & ~regex_constants::match_not_bow)
+	       : __flags)
+      { }
+
+      virtual
+      ~_Executor()
       { }
 
       // Set matched when string exactly match the pattern.
@@ -99,22 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      _M_search()
-      {
-	if (_M_flags & regex_constants::match_continuous)
-	  return _M_search_from_first();
-	auto __cur = _M_begin;
-	do
-	  {
-	    _M_match_mode = false;
-	    _M_init(__cur);
-	    if (_M_main())
-	      return true;
-	  }
-	// Continue when __cur == _M_end
-	while (__cur++ != _M_end);
-	return false;
-      }
+      _M_search();
 
       bool
       _M_is_word(_CharT __ch) const
@@ -142,8 +134,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_word_boundry(_State<_CharT, _TraitsT> __state) const;
 
+      virtual std::unique_ptr<_Executor>
+      _M_clone() const = 0;
+
+      // Return whether now match the given sub-NFA.
       bool
-      _M_lookahead(_State<_CharT, _TraitsT> __state) const;
+      _M_lookahead(_State<_CharT, _TraitsT> __state) const
+      {
+	auto __sub = this->_M_clone();
+	__sub->_M_set_start(__state._M_alt);
+	return __sub->_M_search_from_first();
+      }
+
+      void
+      _M_set_results(_ResultsVec& __cur_results);
 
     public:
       virtual void
@@ -159,8 +163,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _BiIter   _M_begin;
       const _BiIter   _M_end;
       const _RegexT&  _M_re;
-      _ResultsT&      _M_results;
-      const _FlagT    _M_flags;
+      _ResultsVec&    _M_results;
+      _FlagT          _M_flags;
       bool            _M_match_mode;
     };
 
@@ -175,8 +179,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // TODO: This approach is exponentially slow for certain input.
   //       Try to compile the NFA to a DFA.
   //
-  // Time complexity: exponential
-  // Space complexity: O(__end - __begin)
+  // Time complexity: o(match_length), O(2^(_M_nfa->size()))
+  // Space complexity: \theta(match_results.size() + match_length)
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     class _DFSExecutor
@@ -186,27 +190,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _NFAT;
       typedef typename _BaseT::_RegexT                     _RegexT;
-      typedef typename _BaseT::_ResultsT                   _ResultsT;
       typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef typename _BaseT::_FlagT                      _FlagT;
 
     public:
       _DFSExecutor(_BiIter         __begin,
 		   _BiIter         __end,
-		   _ResultsT&      __results,
+		   _ResultsVec&    __results,
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
-      _M_nfa(*std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	     (__re._M_automaton)),
-      _M_start_state(_M_nfa._M_start())
+      _M_nfa(__re._M_automaton), _M_start_state(_M_nfa->_M_start())
       { }
 
     private:
       void
       _M_init(_BiIter __cur)
       {
-	_M_cur_results.resize(_M_nfa._M_sub_count() + 2);
+	_M_cur_results.resize(_M_nfa->_M_sub_count() + 2);
 	this->_M_current = __cur;
       }
 
@@ -221,10 +222,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_dfs(_StateIdT __start);
 
+      std::unique_ptr<_BaseT>
+      _M_clone() const
+      {
+	return std::unique_ptr<_BaseT>(new _DFSExecutor(this->_M_current,
+							this->_M_end,
+							this->_M_results,
+							this->_M_re,
+							this->_M_flags));
+      }
+
       // To record current solution.
-      _ResultsVec     _M_cur_results;
-      const _NFAT&    _M_nfa;
-      _StateIdT       _M_start_state;
+      std::shared_ptr<_NFAT> _M_nfa;
+      _ResultsVec            _M_cur_results;
+      _StateIdT              _M_start_state;
     };
 
   // Like the DFS approach, it try every possible state transition; Unlike DFS,
@@ -238,8 +249,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // matching head. When states transit, solutions will be compared and
   // deduplicated(based on which greedy mode we have).
   //
-  // Time complexity: O((__end - __begin) * _M_nfa.size())
-  // Space complexity: O(_M_nfa.size() * _M_nfa.mark_count())
+  // Time complexity: o(match_length * (quantifier_number
+  //                                    + match_results.size())
+  //                  O(match_length * _M_nfa->size()
+  //                    * (quantifier_number + match_results.size())
+  // Space complexity: o(quantifier_number + match_results.size())
+  //                   O(_M_nfa->size()
+  //                     * (quantifier_number + match_results.size())
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     class _BFSExecutor
@@ -249,7 +265,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _NFAT;
       typedef typename _BaseT::_RegexT                     _RegexT;
-      typedef typename _BaseT::_ResultsT                   _ResultsT;
       typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef typename _BaseT::_FlagT                      _FlagT;
       // Here's a solution for greedy/ungreedy mode in BFS approach. We need to
@@ -264,8 +279,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // greedy policy.
       //
       // The definition of `greedy`:
-      // For the sequence of quantifiers in NFA sorted by there start position,
-      // now maintain a vector in every matching state, with equal length to
+      // For the sequence of quantifiers in NFA sorted by their start positions,
+      // now maintain a vector in every matching state, with length equal to
       // quantifier seq, recording repeating times of every quantifier. Now to
       // compare two matching states, we just lexically compare these two
       // vectors. To win the compare(to survive), one matching state needs to
@@ -277,26 +292,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // operator<() for lexicographical_compare will emit the answer.
       //
       // When two vectors equal, it means the `where`, `when` and quantifier
-      // counts are identical, and indicates the same solution; so just return
-      // false.
+      // counts are identical, and indicates the same solution; so
+      // _ResultsEntry::operator<() just return false.
       struct _ResultsEntry
       : private _ResultsVec
       {
       public:
-	_ResultsEntry(unsigned int __res_sz, unsigned int __sz)
+	_ResultsEntry(size_t __res_sz, size_t __sz)
 	: _ResultsVec(__res_sz), _M_quant_keys(__sz)
 	{ }
 
 	void
-	resize(unsigned int __n)
+	resize(size_t __n)
 	{ _ResultsVec::resize(__n); }
 
-	unsigned int
+	size_t
 	size()
 	{ return _ResultsVec::size(); }
 
 	sub_match<_BiIter>&
-	operator[](unsigned int __idx)
+	operator[](size_t __idx)
 	{ return _ResultsVec::operator[](__idx); }
 
 	bool
@@ -311,10 +326,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
 	void
-	_M_inc(unsigned int __idx, bool __neg)
+	_M_inc(size_t __idx, bool __neg)
 	{ _M_quant_keys[__idx] += __neg ? 1 : -1; }
 
-	_ResultsVec
+	_ResultsVec&
 	_M_get()
 	{ return *this; }
 
@@ -323,30 +338,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
       typedef std::unique_ptr<_ResultsEntry>               _ResultsPtr;
 
+      class _TodoList
+      {
+      public:
+	explicit
+	_TodoList(size_t __sz)
+	: _M_states(), _M_exists(__sz, false)
+	{ }
+
+	void _M_push(_StateIdT __u)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(__u < _M_exists.size());
+	  if (!_M_exists[__u])
+	    {
+	      _M_exists[__u] = true;
+	      _M_states.push_back(__u);
+	    }
+	}
+
+	_StateIdT _M_pop()
+	{
+	  auto __ret = _M_states.back();
+	  _M_states.pop_back();
+	  _M_exists[__ret] = false;
+	  return __ret;
+	}
+
+	bool _M_empty() const
+	{ return _M_states.empty(); }
+
+	void _M_clear()
+	{
+	  _M_states.clear();
+	  _M_exists.assign(_M_exists.size(), false);
+	}
+
+      private:
+	std::vector<_StateIdT>         _M_states;
+	std::vector<bool>              _M_exists;
+      };
+
     public:
       _BFSExecutor(_BiIter         __begin,
 		   _BiIter         __end,
-		   _ResultsT&      __results,
+		   _ResultsVec&    __results,
 		   const _RegexT&  __re,
 		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __re, __flags),
-      _M_nfa(*std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	     (__re._M_automaton)),
-      _M_start_state(_M_nfa._M_start())
+      _M_nfa(__re._M_automaton), _M_match_stack(_M_nfa->size()),
+      _M_stack(_M_nfa->size()), _M_start_state(_M_nfa->_M_start())
       { }
 
     private:
       void
       _M_init(_BiIter __cur)
       {
-	_GLIBCXX_DEBUG_ASSERT(this->_M_start_state != _S_invalid_state_id);
 	this->_M_current = __cur;
 	_M_covered.clear();
 	_ResultsVec& __res(this->_M_results);
 	_M_covered[this->_M_start_state] =
 	  _ResultsPtr(new _ResultsEntry(__res.size(),
-					_M_nfa._M_quant_count));
-	_M_e_closure();
+					_M_nfa->_M_quant_count));
+	_M_stack._M_push(this->_M_start_state);
       }
 
       void
@@ -365,21 +418,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_includes_some();
 
+      std::unique_ptr<_BaseT>
+      _M_clone() const
+      {
+	return std::unique_ptr<_BaseT>(new _BFSExecutor(this->_M_current,
+							this->_M_end,
+							this->_M_results,
+							this->_M_re,
+							this->_M_flags));
+      }
+
+      std::shared_ptr<_NFAT>           _M_nfa;
       std::map<_StateIdT, _ResultsPtr> _M_covered;
+      _TodoList                        _M_match_stack;
+      _TodoList                        _M_stack;
+      _StateIdT                        _M_start_state;
       // To record global optimal solution.
       _ResultsPtr                      _M_cur_results;
-      const _NFAT&                     _M_nfa;
-      _StateIdT                        _M_start_state;
     };
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
-    __get_executor(_BiIter __b,
-		   _BiIter __e,
-		   match_results<_BiIter, _Alloc>& __m,
-		   const basic_regex<_CharT, _TraitsT>& __re,
-		   regex_constants::match_flag_type __flags);
 
  //@} regex-detail
 _GLIBCXX_END_NAMESPACE_VERSION

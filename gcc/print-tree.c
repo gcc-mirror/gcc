@@ -72,7 +72,7 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
      name if any.  */
   if (indent > 0)
     fprintf (file, " ");
-  fprintf (file, "%s <%s", prefix, tree_code_name[(int) TREE_CODE (node)]);
+  fprintf (file, "%s <%s", prefix, get_tree_code_name (TREE_CODE (node)));
   dump_addr (file, " ", node);
 
   if (tclass == tcc_declaration)
@@ -239,7 +239,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   indent_to (file, indent);
 
   /* Print the slot this node is in, and its code, and address.  */
-  fprintf (file, "%s <%s", prefix, tree_code_name[(int) code]);
+  fprintf (file, "%s <%s", prefix, get_tree_code_name (code));
   dump_addr (file, " ", node);
 
   /* Print the name, if any.  */
@@ -800,7 +800,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		if (ch >= ' ' && ch < 127)
 		  putc (ch, file);
 		else
-		  fprintf(file, "\\%03o", ch & 0xFF);
+		  fprintf (file, "\\%03o", ch & 0xFF);
 	      }
 	    fputc ('\"', file);
 	  }

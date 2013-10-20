@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2012 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -122,7 +122,7 @@ THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
 MISCLIB =
-OUTPUT_OPTION = @OUTPUT_OPTION@
+OUTPUT_OPTION = -o $@
 
 objext = .o
 exeext =
@@ -166,6 +166,13 @@ tmake_file = @tmake_file@
 
 # Directory where sources are, from where we are.
 VPATH = $(srcdir)/ada
+
+# Full path to top source directory
+# In particular this is used to access libgcc headers, so that references to
+# these headers from GNAT runtime objects have path names in debugging info
+# that are consistent with libgcc objects.  Also used for other references to
+# the top source directory for consistency.
+ftop_srcdir := $(shell cd $(srcdir)/..;${PWD_COMMAND})
 
 fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
 fsrcpfx := $(shell cd $(srcdir);${PWD_COMMAND})/
@@ -262,7 +269,7 @@ TOOLS_LIBS = ../link.o ../targext.o ../../ggc-none.o ../../libcommon-target.a \
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include $(GMPINC)
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(ftop_srcdir)/include $(GMPINC)
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
@@ -272,11 +279,11 @@ ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 ifneq ($(findstring vxworks,$(target_os)),)
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada \
-			-I$(fsrcdir)/../include $(GMPINC)
+			-I$(ftop_srcdir)/include $(GMPINC)
 else
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
-			-I$(fsrcdir)/../include $(GMPINC)
+			-I$(ftop_srcdir)/include $(GMPINC)
 endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
@@ -408,6 +415,8 @@ DUMMY_SOCKETS_TARGET_PAIRS = \
 # special version of Ada.Strings.Unbounded package can be used.
 
 ATOMICS_TARGET_PAIRS = \
+  a-coinho.adb<a-coinho-shared.adb \
+  a-coinho.ads<a-coinho-shared.ads \
   a-stunau.adb<a-stunau-shared.adb \
   a-suteio.adb<a-suteio-shared.adb \
   a-strunb.ads<a-strunb-shared.ads \
@@ -493,6 +502,13 @@ endif
 
 # PowerPC and e500v2 VxWorks
 ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  ifeq ($(strip $(filter-out e500%, $(target_alias))),)
+     ARCH_STR=e500
+  else
+     ARCH_STR=ppc
+  endif
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -545,7 +561,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
     s-vxwext.ads<s-vxwext-rtp.ads \
     s-vxwext.adb<s-vxwext-rtp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
-    system.ads<system-vxworks-ppc-rtp.ads
+    system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
 
     EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
   else
@@ -555,7 +571,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
-      system.ads<system-vxworks-ppc-rtp.ads
+      system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
 
       EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
       EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -567,7 +583,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
-        system.ads<system-vxworks-ppc-kernel.ads
+        system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
 
         EH_MECHANISM=-gcc
         EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -581,7 +597,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<s-vxwext-kernel.ads \
           s-vxwext.adb<s-vxwext-kernel.adb \
-          system.ads<system-vxworks-ppc-kernel.ads
+          system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
         else
           LIBGNAT_TARGET_PAIRS += \
           system.ads<system-vxworks-ppc.ads
@@ -984,7 +1000,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(target_cpu) $(target_vendor) $(target
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 endif
 
-# ARM linux, Android eabi
+# ARM android
 ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
@@ -1201,6 +1217,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
     indepsw.adb<indepsw-gnu.adb
 
   GNATLIB_SHARED = gnatlib-shared-dual
+  MISCLIB = -ldl
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1581,7 +1598,14 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(target_
   LIBRARY_VERSION := $(subst .,_,$(LIB_VERSION))
 endif
 
-# *-elf, *-eabi or *-eabispe
+# PikeOS
+ifeq ($(strip $(filter-out powerpc% %86 sysgo pikeos,$(target_cpu) $(target_vendor) $(target_os)))),)
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
+  indepsw.adb<indepsw-gnu.adb
+endif
+
+# *-elf, *-eabi, or *-eabispe
 ifeq ($(strip $(filter-out elf eabi eabispe,$(target_os))),)
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
@@ -2147,6 +2171,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt
+  MISCLIB = -ldl
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -2291,9 +2316,10 @@ ifeq ($(strip $(filter-out arm nucleus%,$(target_cpu) $(target_os))),)
   GNATRTL_SOCKETS_OBJS =
 endif
 
-ifneq ($(EH_MECHANISM),)
-  LIBGNAT_TARGET_PAIRS += a-exexpr.adb<a-exexpr$(EH_MECHANISM).adb
-  EXTRA_LIBGNAT_OBJS+=raise$(EH_MECHANISM).o
+ifeq ($(EH_MECHANISM),-gcc)
+  LIBGNAT_TARGET_PAIRS += a-exexpr.adb<a-exexpr-gcc.adb
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o
 endif
 
 # Use the Ada 2005 version of Ada.Exceptions by default, unless specified
@@ -2998,7 +3024,7 @@ vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		-iquote $(srcdir) -iquote $(srcdir)/../libgcc \
+		-iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 		$(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 cio.o     : cio.c

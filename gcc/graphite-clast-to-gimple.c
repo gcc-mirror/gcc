@@ -1306,7 +1306,7 @@ translate_clast (loop_p context_loop, struct clast_stmt *stmt, edge next_e,
     next_e = translate_clast_assignment ((struct clast_assignment *) stmt,
 					 next_e, level, ip);
   else
-    gcc_unreachable();
+    gcc_unreachable ();
 
   recompute_all_dominators ();
   graphite_verify ();
@@ -1409,7 +1409,7 @@ init_cloog_input_file (int scop_number)
 /* Extend the scattering to NEW_DIMS scattering dimensions.  */
 
 static
-isl_map *extend_scattering(isl_map *scattering, int new_dims)
+isl_map *extend_scattering (isl_map *scattering, int new_dims)
 {
   int old_dims, i;
   isl_space *space;
@@ -1462,12 +1462,13 @@ build_cloog_union_domain (scop_p scop, int nb_scattering_dims)
 
       /* Dead code elimination: when the domain of a PBB is empty,
 	 don't generate code for the PBB.  */
-      if (isl_set_is_empty(pbb->domain))
+      if (isl_set_is_empty (pbb->domain))
 	continue;
 
-      domain = cloog_domain_from_isl_set(isl_set_copy(pbb->domain));
-      scattering = cloog_scattering_from_isl_map(extend_scattering(isl_map_copy(pbb->transformed),
-						 nb_scattering_dims));
+      domain = cloog_domain_from_isl_set (isl_set_copy (pbb->domain));
+      scattering = cloog_scattering_from_isl_map
+	(extend_scattering (isl_map_copy (pbb->transformed),
+			    nb_scattering_dims));
 
       union_domain = cloog_union_domain_add_domain (union_domain, "", domain,
 						    scattering, pbb);

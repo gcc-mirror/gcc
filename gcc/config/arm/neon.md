@@ -60,8 +60,9 @@
     default: return output_move_double (operands, true, NULL);
     }
 }
- [(set_attr "type" "neon_int_1,f_stored,neon_vmov,f_loadd,neon_mrrc,\
-                    neon_mcr_2_mcrr,mov_reg,load2,store2")
+ [(set_attr "type" "neon_move<q>,neon_store1_1reg,neon_move<q>,\
+                    neon_load1_1reg, neon_to_gp<q>,neon_from_gp<q>,mov_reg,\
+                    neon_load1_2reg, neon_store1_2reg")
   (set_attr "length" "4,4,4,4,4,4,8,8,8")
   (set_attr "arm_pool_range"     "*,*,*,1020,*,*,*,1020,*")
   (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,*,1018,*")
@@ -104,8 +105,9 @@
     default: return output_move_quad (operands);
     }
 }
-  [(set_attr "type" "neon_int_1,neon_stm_2,neon_vmov,neon_ldm_2,\
-                     neon_mrrc,neon_mcr_2_mcrr,mov_reg,load4,store4")
+  [(set_attr "type" "neon_move_q,neon_store2_2reg_q,neon_move_q,\
+                     neon_load2_2reg_q,neon_to_gp_q,neon_from_gp_q,\
+                     mov_reg,neon_load1_4reg,neon_store1_4reg")
    (set_attr "length" "4,8,4,8,8,8,16,8,16")
    (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,1020,*")
    (set_attr "thumb2_pool_range" "*,*,*,1018,*,*,*,1018,*")
@@ -149,7 +151,7 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_int_1,neon_stm_2,neon_ldm_2")
+  [(set_attr "type" "neon_move_q,neon_store2_2reg_q,neon_load2_2reg_q")
    (set (attr "length") (symbol_ref "arm_attr_length_move_neon (insn)"))])
 
 (define_split
@@ -257,7 +259,7 @@
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%P1}, %A0"
-  [(set_attr "type" "neon_vst1_1_2_regs_vst2_2_regs")])
+  [(set_attr "type" "neon_store1_1reg<q>")])
 
 (define_insn "*movmisalign<mode>_neon_load"
   [(set (match_operand:VDX 0 "s_register_operand"			"=w")
@@ -266,7 +268,7 @@
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%P0}, %A1"
-  [(set_attr "type" "neon_vld1_1_2_regs")])
+  [(set_attr "type" "neon_load1_1reg<q>")])
 
 (define_insn "*movmisalign<mode>_neon_store"
   [(set (match_operand:VQX 0 "neon_permissive_struct_operand"  "=Um")
@@ -274,7 +276,7 @@
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%q1}, %A0"
-  [(set_attr "type" "neon_vst1_1_2_regs_vst2_2_regs")])
+  [(set_attr "type" "neon_store1_1reg<q>")])
 
 (define_insn "*movmisalign<mode>_neon_load"
   [(set (match_operand:VQX 0 "s_register_operand"			"=w")
@@ -283,7 +285,7 @@
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
-  [(set_attr "type" "neon_vld1_1_2_regs")])
+  [(set_attr "type" "neon_store1_1reg<q>")])
 
 (define_insn "vec_set<mode>_internal"
   [(set (match_operand:VD 0 "s_register_operand" "=w,w")
@@ -304,7 +306,7 @@
   else
     return "vmov.<V_sz_elem>\t%P0[%c2], %1";
 }
-  [(set_attr "type" "neon_vld1_vld2_lane,neon_mcr")])
+  [(set_attr "type" "neon_load1_all_lanes<q>,neon_from_gp<q>")])
 
 (define_insn "vec_set<mode>_internal"
   [(set (match_operand:VQ 0 "s_register_operand" "=w,w")
@@ -332,7 +334,7 @@
   else
     return "vmov.<V_sz_elem>\t%P0[%c2], %1";
 }
-  [(set_attr "type" "neon_vld1_vld2_lane,neon_mcr")]
+  [(set_attr "type" "neon_load1_all_lanes<q>,neon_from_gp<q>")]
 )
 
 (define_insn "vec_setv2di_internal"
@@ -354,7 +356,7 @@
   else
     return "vmov\t%P0, %Q1, %R1";
 }
-  [(set_attr "type" "neon_vld1_1_2_regs,neon_mcr_2_mcrr")]
+  [(set_attr "type" "neon_load1_all_lanes_q,neon_from_gp_q")]
 )
 
 (define_expand "vec_set<mode>"
@@ -388,7 +390,7 @@
   else
     return "vmov.<V_uf_sclr>\t%0, %P1[%c2]";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane,neon_bp_simple")]
+  [(set_attr "type" "neon_store1_one_lane<q>,neon_to_gp<q>")]
 )
 
 (define_insn "vec_extract<mode>"
@@ -414,7 +416,7 @@
   else
     return "vmov.<V_uf_sclr>\t%0, %P1[%c2]";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane,neon_bp_simple")]
+  [(set_attr "type" "neon_store1_one_lane<q>,neon_to_gp<q>")]
 )
 
 (define_insn "vec_extractv2di"
@@ -433,7 +435,7 @@
   else
     return "vmov\t%Q0, %R0, %P1  @ v2di";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane,neon_int_1")]
+  [(set_attr "type" "neon_store1_one_lane_q,neon_to_gp_q")]
 )
 
 (define_expand "vec_init<mode>"
@@ -458,10 +460,8 @@
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_1")))]
+                    (const_string "neon_fp_addsub_s<q>")
+                    (const_string "neon_add<q>")))]
 )
 
 (define_insn "adddi3_neon"
@@ -483,7 +483,8 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_int_1,*,*,neon_int_1,*,*,*")
+  [(set_attr "type" "neon_add,multiple,multiple,neon_add,\
+		     multiple,multiple,multiple")
    (set_attr "conds" "*,clob,clob,*,clob,clob,clob")
    (set_attr "length" "*,8,8,*,8,8,8")
    (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits,*,*,*")]
@@ -497,10 +498,8 @@
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_2")))]
+                    (const_string "neon_fp_addsub_s<q>")
+                    (const_string "neon_sub<q>")))]
 )
 
 (define_insn "subdi3_neon"
@@ -520,75 +519,48 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_int_2,*,*,*,neon_int_2")
+  [(set_attr "type" "neon_sub,multiple,multiple,multiple,neon_sub")
    (set_attr "conds" "*,clob,clob,clob,*")
    (set_attr "length" "*,8,8,8,*")
    (set_attr "arch" "neon_for_64bits,*,*,*,avoid_neon_for_64bits")]
 )
 
 (define_insn "*mul<mode>3_neon"
-  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-        (mult:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
-                  (match_operand:VDQ 2 "s_register_operand" "w")))]
+  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+        (mult:VDQW (match_operand:VDQW 1 "s_register_operand" "w")
+                   (match_operand:VDQW 2 "s_register_operand" "w")))]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmul.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-                                  (if_then_else (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
+		    (const_string "neon_fp_mul_s<q>")
+                    (const_string "neon_mul_<V_elem_ch><q>")))]
 )
 
 (define_insn "mul<mode>3add<mode>_neon"
-  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-        (plus:VDQ (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
-                            (match_operand:VDQ 3 "s_register_operand" "w"))
-		  (match_operand:VDQ 1 "s_register_operand" "0")))]
+  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+        (plus:VDQW (mult:VDQW (match_operand:VDQW 2 "s_register_operand" "w")
+                            (match_operand:VDQW 3 "s_register_operand" "w"))
+		  (match_operand:VDQW 1 "s_register_operand" "0")))]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vmla_ddd")
-                                  (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_qqq_8_16")
-                                    (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
+		    (const_string "neon_fp_mla_s<q>")
+		    (const_string "neon_mla_<V_elem_ch><q>")))]
 )
 
 (define_insn "mul<mode>3neg<mode>add<mode>_neon"
-  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-        (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "0")
-                   (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
-                             (match_operand:VDQ 3 "s_register_operand" "w"))))]
+  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+        (minus:VDQW (match_operand:VDQW 1 "s_register_operand" "0")
+                    (mult:VDQW (match_operand:VDQW 2 "s_register_operand" "w")
+                               (match_operand:VDQW 3 "s_register_operand" "w"))))]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vmla_ddd")
-                                  (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_qqq_8_16")
-                                    (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
+		    (const_string "neon_fp_mla_s<q>")
+		    (const_string "neon_mla_<V_elem_ch><q>")))]
 )
 
 ;; Fused multiply-accumulate
@@ -603,10 +575,7 @@
 		 (match_operand:VCVTF 3 "register_operand" "0")))]
   "TARGET_NEON && TARGET_FMA && flag_unsafe_math_optimizations"
   "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_fp_vmla_ddd")
-		      (const_string "neon_fp_vmla_qqq")))]
+  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
 (define_insn "fma<VCVTF:mode>4_intrinsic"
@@ -616,10 +585,7 @@
 		 (match_operand:VCVTF 3 "register_operand" "0")))]
   "TARGET_NEON && TARGET_FMA"
   "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_fp_vmla_ddd")
-		      (const_string "neon_fp_vmla_qqq")))]
+  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
 (define_insn "*fmsub<VCVTF:mode>4"
@@ -629,10 +595,7 @@
 		   (match_operand:VCVTF 3 "register_operand" "0")))]
   "TARGET_NEON && TARGET_FMA && flag_unsafe_math_optimizations"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_fp_vmla_ddd")
-		      (const_string "neon_fp_vmla_qqq")))]
+  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
 (define_insn "fmsub<VCVTF:mode>4_intrinsic"
@@ -642,10 +605,7 @@
 		   (match_operand:VCVTF 3 "register_operand" "0")))]
   "TARGET_NEON && TARGET_FMA"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_fp_vmla_ddd")
-		      (const_string "neon_fp_vmla_qqq")))]
+  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
 (define_insn "neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>"
@@ -655,10 +615,7 @@
 		NEON_VRINT))]
   "TARGET_NEON && TARGET_FPU_ARMV8"
   "vrint<nvrint_variant>%?.f32\\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		(const_string "neon_fp_vadd_ddd_vabs_dd")
-		(const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_round_<V_elem_ch><q>")]
 )
 
 (define_insn "ior<mode>3"
@@ -675,7 +632,7 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_logic<q>")]
 )
 
 ;; The concrete forms of the Neon immediate-logic instructions are vbic and
@@ -697,7 +654,7 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_logic<q>")]
 )
 
 (define_insn "orn<mode>3_neon"
@@ -706,7 +663,7 @@
 		 (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vorn\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_logic<q>")]
 )
 
 ;; TODO: investigate whether we should disable 
@@ -744,7 +701,7 @@
         DONE;
       }
   }"
-  [(set_attr "type" "neon_int_1,*,*,*")
+  [(set_attr "type" "neon_logic,multiple,multiple,multiple")
    (set_attr "length" "*,16,8,8")
    (set_attr "arch" "any,a,t2,t2")]
 )
@@ -755,7 +712,7 @@
 		 (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vbic\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_logic<q>")]
 )
 
 ;; Compare to *anddi_notdi_di.
@@ -768,7 +725,7 @@
    vbic\t%P0, %P1, %P2
    #
    #"
-  [(set_attr "type" "neon_int_1,*,*")
+  [(set_attr "type" "neon_logic,multiple,multiple")
    (set_attr "length" "*,8,8")]
 )
 
@@ -778,7 +735,7 @@
 		 (match_operand:VDQ 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "veor\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_logic<q>")]
 )
 
 (define_insn "one_cmpl<mode>2"
@@ -786,7 +743,7 @@
         (not:VDQ (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vmvn\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_move<q>")]
 )
 
 (define_insn "abs<mode>2"
@@ -796,10 +753,8 @@
   "vabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_3")))]
+                    (const_string "neon_fp_abs_s<q>")
+                    (const_string "neon_abs<q>")))]
 )
 
 (define_insn "neg<mode>2"
@@ -809,10 +764,8 @@
   "vneg.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_3")))]
+                    (const_string "neon_fp_neg_s<q>")
+                    (const_string "neon_neg<q>")))]
 )
 
 (define_insn "negdi2_neon"
@@ -822,7 +775,8 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_NEON"
   "#"
-  [(set_attr "length" "8")]
+  [(set_attr "length" "8")
+   (set_attr "type" "multiple")]
 )
 
 ; Split negdi2_neon for vfp registers
@@ -860,7 +814,7 @@
 		    (match_operand:VDQIW 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vmin.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_minmax<q>")]
 )
 
 (define_insn "*umax<mode>3_neon"
@@ -869,7 +823,7 @@
 		    (match_operand:VDQIW 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vmax.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_minmax<q>")]
 )
 
 (define_insn "*smin<mode>3_neon"
@@ -880,8 +834,8 @@
   "vmin.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_minmax_s<q>")
+                    (const_string "neon_minmax<q>")))]
 )
 
 (define_insn "*smax<mode>3_neon"
@@ -892,8 +846,8 @@
   "vmax.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_minmax_s<q>")
+                    (const_string "neon_minmax<q>")))]
 )
 
 ; TODO: V2DI shifts are current disabled because there are bugs in the
@@ -916,10 +870,7 @@
         default: gcc_unreachable ();
       }
   }
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_vshl_ddd")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
 )
 
 (define_insn "vashr<mode>3_imm"
@@ -932,10 +883,7 @@
 					<MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode),
 					false);
   }
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_vshl_ddd")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_imm<q>")]
 )
 
 (define_insn "vlshr<mode>3_imm"
@@ -948,10 +896,7 @@
 					<MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode),
 					false);
   }              
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_vshl_ddd")
-		      (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_imm<q>")]
 )
 
 ; Used for implementing logical shift-right, which is a left-shift by a negative
@@ -966,10 +911,7 @@
 		     UNSPEC_ASHIFT_SIGNED))]
   "TARGET_NEON"
   "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_vshl_ddd")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_reg<q>")]
 )
 
 ; Used for implementing logical shift-right, which is a left-shift by a negative
@@ -982,10 +924,7 @@
 		     UNSPEC_ASHIFT_UNSIGNED))]
   "TARGET_NEON"
   "vshl.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_vshl_ddd")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_reg<q>")]
 )
 
 (define_expand "vashr<mode>3"
@@ -1037,7 +976,7 @@
   "@
    vld1.32\t{%P0[0]}, %A1
    vmov.32\t%P0[0], %1"
-  [(set_attr "type" "neon_vld1_vld2_lane,neon_mcr")]
+  [(set_attr "type" "neon_load1_1reg,neon_from_gp")]
 )
 
 (define_insn "ashldi3_neon_noclobber"
@@ -1050,7 +989,7 @@
   "@
    vshl.u64\t%P0, %P1, %2
    vshl.u64\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_vshl_ddd,neon_vshl_ddd")]
+  [(set_attr "type" "neon_shift_imm, neon_shift_reg")]
 )
 
 (define_insn_and_split "ashldi3_neon"
@@ -1101,7 +1040,8 @@
     DONE;
   }"
   [(set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")
-   (set_attr "opt" "*,*,speed,speed,*,*")]
+   (set_attr "opt" "*,*,speed,speed,*,*")
+   (set_attr "type" "multiple")]
 )
 
 ; The shift amount needs to be negated for right-shifts
@@ -1112,7 +1052,7 @@
 		   UNSPEC_ASHIFT_SIGNED))]
   "TARGET_NEON && reload_completed"
   "vshl.s64\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_vshl_ddd")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 ; The shift amount needs to be negated for right-shifts
@@ -1123,7 +1063,7 @@
 		   UNSPEC_ASHIFT_UNSIGNED))]
   "TARGET_NEON && reload_completed"
   "vshl.u64\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_vshl_ddd")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "ashrdi3_neon_imm_noclobber"
@@ -1133,7 +1073,7 @@
   "TARGET_NEON && reload_completed
    && INTVAL (operands[2]) > 0 && INTVAL (operands[2]) <= 64"
   "vshr.s64\t%P0, %P1, %2"
-  [(set_attr "type" "neon_vshl_ddd")]
+  [(set_attr "type" "neon_shift_imm")]
 )
 
 (define_insn "lshrdi3_neon_imm_noclobber"
@@ -1143,7 +1083,7 @@
   "TARGET_NEON && reload_completed
    && INTVAL (operands[2]) > 0 && INTVAL (operands[2]) <= 64"
   "vshr.u64\t%P0, %P1, %2"
-  [(set_attr "type" "neon_vshl_ddd")]
+  [(set_attr "type" "neon_shift_imm")]
 )
 
 ;; ashrdi3_neon
@@ -1202,7 +1142,8 @@
     DONE;
   }"
   [(set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")
-   (set_attr "opt" "*,*,speed,speed,*,*")]
+   (set_attr "opt" "*,*,speed,speed,*,*")
+   (set_attr "type" "multiple")]
 )
 
 ;; Widening operations
@@ -1214,7 +1155,7 @@
 		        (match_operand:<V_widen> 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vaddw.<V_s_elem>\t%q0, %q2, %P1"
-  [(set_attr "type" "neon_int_3")]
+  [(set_attr "type" "neon_add_widen")]
 )
 
 (define_insn "widen_usum<mode>3"
@@ -1224,7 +1165,7 @@
 		        (match_operand:<V_widen> 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vaddw.<V_u_elem>\t%q0, %q2, %P1"
-  [(set_attr "type" "neon_int_3")]
+  [(set_attr "type" "neon_add_widen")]
 )
 
 ;; VEXT can be used to synthesize coarse whole-vector shifts with 8-bit
@@ -1308,9 +1249,7 @@
   "TARGET_NEON"
   "<VQH_mnem>.<VQH_sign>32\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
-   (set (attr "type")
-      (if_then_else (eq_attr "vqh_mnem" "vadd")
-                    (const_string "neon_int_1") (const_string "neon_int_5")))]
+   (set_attr "type" "neon_reduc_<VQH_type>_q")]
 )
 
 (define_insn "quad_halves_<code>v4sf"
@@ -1323,9 +1262,7 @@
   "TARGET_NEON && flag_unsafe_math_optimizations"
   "<VQH_mnem>.f32\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
-   (set (attr "type")
-      (if_then_else (eq_attr "vqh_mnem" "vadd")
-                    (const_string "neon_int_1") (const_string "neon_int_5")))]
+   (set_attr "type" "neon_fp_reduc_<VQH_type>_s_q")]
 )
 
 (define_insn "quad_halves_<code>v8hi"
@@ -1340,9 +1277,7 @@
   "TARGET_NEON"
   "<VQH_mnem>.<VQH_sign>16\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
-   (set (attr "type")
-      (if_then_else (eq_attr "vqh_mnem" "vadd")
-                    (const_string "neon_int_1") (const_string "neon_int_5")))]
+   (set_attr "type" "neon_reduc_<VQH_type>_q")]
 )
 
 (define_insn "quad_halves_<code>v16qi"
@@ -1361,9 +1296,7 @@
   "TARGET_NEON"
   "<VQH_mnem>.<VQH_sign>8\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
-   (set (attr "type")
-      (if_then_else (eq_attr "vqh_mnem" "vadd")
-                    (const_string "neon_int_1") (const_string "neon_int_5")))]
+   (set_attr "type" "neon_reduc_<VQH_type>_q")]
 )
 
 (define_expand "move_hi_quad_<mode>"
@@ -1422,7 +1355,7 @@
 		     UNSPEC_VPADD))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vadd.i64\t%e0, %e1, %f1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_add_q")]
 )
 
 ;; NEON does not distinguish between signed and unsigned addition except on
@@ -1548,10 +1481,8 @@
   ;; Assume this schedules like vadd.
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_1")))]
+                    (const_string "neon_fp_reduc_add_s<q>")
+                    (const_string "neon_reduc_add<q>")))]
 )
 
 (define_insn "neon_vpsmin<mode>"
@@ -1561,11 +1492,10 @@
                    UNSPEC_VPSMIN))]
   "TARGET_NEON"
   "vpmin.<V_s_elem>\t%P0, %P1, %P2"
-  ;; Assume this schedules like vmin.
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_reduc_minmax_s<q>")
+                    (const_string "neon_reduc_minmax<q>")))]
 )
 
 (define_insn "neon_vpsmax<mode>"
@@ -1575,11 +1505,10 @@
                    UNSPEC_VPSMAX))]
   "TARGET_NEON"
   "vpmax.<V_s_elem>\t%P0, %P1, %P2"
-  ;; Assume this schedules like vmax.
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_reduc_minmax_s<q>")
+                    (const_string "neon_reduc_minmax<q>")))]
 )
 
 (define_insn "neon_vpumin<mode>"
@@ -1589,8 +1518,7 @@
                    UNSPEC_VPUMIN))]
   "TARGET_NEON"
   "vpmin.<V_u_elem>\t%P0, %P1, %P2"
-  ;; Assume this schedules like umin.
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_reduc_minmax<q>")]
 )
 
 (define_insn "neon_vpumax<mode>"
@@ -1600,8 +1528,7 @@
                    UNSPEC_VPUMAX))]
   "TARGET_NEON"
   "vpmax.<V_u_elem>\t%P0, %P1, %P2"
-  ;; Assume this schedules like umax.
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_reduc_minmax<q>")]
 )
 
 ;; Saturating arithmetic
@@ -1618,7 +1545,7 @@
                    (match_operand:VD 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vqadd.<V_s_elem>\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_qadd<q>")]
 )
 
 (define_insn "*us_add<mode>_neon"
@@ -1627,7 +1554,7 @@
                    (match_operand:VD 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vqadd.<V_u_elem>\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_qadd<q>")]
 )
 
 (define_insn "*ss_sub<mode>_neon"
@@ -1636,7 +1563,7 @@
                     (match_operand:VD 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vqsub.<V_s_elem>\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_qsub<q>")]
 )
 
 (define_insn "*us_sub<mode>_neon"
@@ -1645,7 +1572,7 @@
                     (match_operand:VD 2 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vqsub.<V_u_elem>\t%P0, %P1, %P2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_qsub<q>")]
 )
 
 ;; Conditional instructions.  These are comparisons with conditional moves for
@@ -1939,10 +1866,8 @@
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_1")))]
+                    (const_string "neon_fp_addsub_s<q>")
+                    (const_string "neon_add<q>")))]
 )
 
 ; operand 3 represents in bits:
@@ -1957,7 +1882,7 @@
                           UNSPEC_VADDL))]
   "TARGET_NEON"
   "vaddl.%T3%#<V_sz_elem>\t%q0, %P1, %P2"
-  [(set_attr "type" "neon_int_3")]
+  [(set_attr "type" "neon_add_long")]
 )
 
 (define_insn "neon_vaddw<mode>"
@@ -1968,7 +1893,7 @@
                           UNSPEC_VADDW))]
   "TARGET_NEON"
   "vaddw.%T3%#<V_sz_elem>\t%q0, %q1, %P2"
-  [(set_attr "type" "neon_int_2")]
+  [(set_attr "type" "neon_add_widen")]
 )
 
 ; vhadd and vrhadd.
@@ -1981,7 +1906,7 @@
 		      UNSPEC_VHADD))]
   "TARGET_NEON"
   "v%O3hadd.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_add_halve_q")]
 )
 
 (define_insn "neon_vqadd<mode>"
@@ -1992,7 +1917,7 @@
                      UNSPEC_VQADD))]
   "TARGET_NEON"
   "vqadd.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_qadd<q>")]
 )
 
 (define_insn "neon_vaddhn<mode>"
@@ -2003,7 +1928,7 @@
                            UNSPEC_VADDHN))]
   "TARGET_NEON"
   "v%O3addhn.<V_if_elem>\t%P0, %q1, %q2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_add_halve_narrow_q")]
 )
 
 ;; We cannot replace this unspec with mul<mode>3 because of the odd 
@@ -2018,17 +1943,8 @@
   "vmul.%F3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-                                  (if_then_else (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32")
-                                    (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
+                    (const_string "neon_fp_mul_s<q>")
+                    (const_string "neon_mul_<V_elem_ch><q>")))]
 )
 
 (define_expand "neon_vmla<mode>"
@@ -2077,26 +1993,17 @@
 ; Used for intrinsics when flag_unsafe_math_optimizations is false.
 
 (define_insn "neon_vmla<mode>_unspec"
-  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "0")
-		     (match_operand:VDQ 2 "s_register_operand" "w")
-		     (match_operand:VDQ 3 "s_register_operand" "w")]
+  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
+		      (match_operand:VDQW 2 "s_register_operand" "w")
+		      (match_operand:VDQW 3 "s_register_operand" "w")]
 		    UNSPEC_VMLA))]
   "TARGET_NEON"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vmla_ddd")
-                                  (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_qqq_8_16")
-                                    (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
+                    (const_string "neon_fp_mla_s<q>")
+                    (const_string "neon_mla_<V_elem_ch><q>")))]
 )
 
 (define_insn "neon_vmlal<mode>"
@@ -2108,10 +2015,7 @@
                           UNSPEC_VMLAL))]
   "TARGET_NEON"
   "vmlal.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_mla_<V_elem_ch>_long")]
 )
 
 (define_expand "neon_vmls<mode>"
@@ -2134,27 +2038,17 @@
 ; Used for intrinsics when flag_unsafe_math_optimizations is false.
 
 (define_insn "neon_vmls<mode>_unspec"
-  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "0")
-		     (match_operand:VDQ 2 "s_register_operand" "w")
-		     (match_operand:VDQ 3 "s_register_operand" "w")]
+  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
+	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
+		      (match_operand:VDQW 2 "s_register_operand" "w")
+		      (match_operand:VDQW 3 "s_register_operand" "w")]
 		    UNSPEC_VMLS))]
   "TARGET_NEON"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vmla_ddd")
-                                  (const_string "neon_fp_vmla_qqq"))
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
-                                  (if_then_else
-                                    (match_test "<Scalar_mul_8_16>")
-                                    (const_string "neon_mla_qqq_8_16")
-                                    (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
+                    (const_string "neon_fp_mla_s<q>")
+                    (const_string "neon_mla_<V_elem_ch><q>")))]
 )
 
 (define_insn "neon_vmlsl<mode>"
@@ -2166,10 +2060,7 @@
                           UNSPEC_VMLSL))]
   "TARGET_NEON"
   "vmlsl.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_mla_<V_elem_ch>_long")]
 )
 
 (define_insn "neon_vqdmulh<mode>"
@@ -2180,14 +2071,7 @@
                       UNSPEC_VQDMULH))]
   "TARGET_NEON"
   "vq%O3dmulh.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-        (if_then_else (match_test "<Scalar_mul_8_16>")
-                      (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-                      (const_string "neon_mul_qqq_8_16_32_ddd_32"))
-        (if_then_else (match_test "<Scalar_mul_8_16>")
-                      (const_string "neon_mul_qqq_8_16_32_ddd_32")
-                      (const_string "neon_mul_qqq_8_16_32_ddd_32"))))]
+  [(set_attr "type" "neon_sat_mul_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vqdmlal<mode>"
@@ -2199,10 +2083,7 @@
                           UNSPEC_VQDMLAL))]
   "TARGET_NEON"
   "vqdmlal.<V_s_elem>\t%q0, %P2, %P3"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_sat_mla_<V_elem_ch>_long")]
 )
 
 (define_insn "neon_vqdmlsl<mode>"
@@ -2214,10 +2095,7 @@
                           UNSPEC_VQDMLSL))]
   "TARGET_NEON"
   "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_sat_mla_<V_elem_ch>_long")]
 )
 
 (define_insn "neon_vmull<mode>"
@@ -2228,10 +2106,7 @@
                           UNSPEC_VMULL))]
   "TARGET_NEON"
   "vmull.%T3%#<V_sz_elem>\t%q0, %P1, %P2"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
+  [(set_attr "type" "neon_mul_<V_elem_ch>_long")]
 )
 
 (define_insn "neon_vqdmull<mode>"
@@ -2242,10 +2117,7 @@
                           UNSPEC_VQDMULL))]
   "TARGET_NEON"
   "vqdmull.<V_s_elem>\t%q0, %P1, %P2"
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
+  [(set_attr "type" "neon_sat_mul_<V_elem_ch>_long")]
 )
 
 (define_expand "neon_vsub<mode>"
@@ -2274,10 +2146,8 @@
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_2")))]
+                    (const_string "neon_fp_addsub_s<q>")
+                    (const_string "neon_sub<q>")))]
 )
 
 (define_insn "neon_vsubl<mode>"
@@ -2288,7 +2158,7 @@
                           UNSPEC_VSUBL))]
   "TARGET_NEON"
   "vsubl.%T3%#<V_sz_elem>\t%q0, %P1, %P2"
-  [(set_attr "type" "neon_int_2")]
+  [(set_attr "type" "neon_sub_long")]
 )
 
 (define_insn "neon_vsubw<mode>"
@@ -2299,7 +2169,7 @@
 			  UNSPEC_VSUBW))]
   "TARGET_NEON"
   "vsubw.%T3%#<V_sz_elem>\t%q0, %q1, %P2"
-  [(set_attr "type" "neon_int_2")]
+  [(set_attr "type" "neon_sub_widen")]
 )
 
 (define_insn "neon_vqsub<mode>"
@@ -2310,7 +2180,7 @@
 		      UNSPEC_VQSUB))]
   "TARGET_NEON"
   "vqsub.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_qsub<q>")]
 )
 
 (define_insn "neon_vhsub<mode>"
@@ -2321,7 +2191,7 @@
 		      UNSPEC_VHSUB))]
   "TARGET_NEON"
   "vhsub.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_sub_halve<q>")]
 )
 
 (define_insn "neon_vsubhn<mode>"
@@ -2332,7 +2202,7 @@
                            UNSPEC_VSUBHN))]
   "TARGET_NEON"
   "v%O3subhn.<V_if_elem>\t%P0, %q1, %q2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_sub_halve_narrow_q")]
 )
 
 (define_insn "neon_vceq<mode>"
@@ -2348,10 +2218,10 @@
   vceq.<V_if_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_compare_s<q>")
+                    (if_then_else (match_operand 2 "zero_operand")
+                      (const_string "neon_compare_zero<q>")
+                      (const_string "neon_compare<q>"))))]
 )
 
 (define_insn "neon_vcge<mode>"
@@ -2367,10 +2237,10 @@
   vcge.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (if_then_else (match_test "<Is_d_reg>")
-                                 (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                 (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                   (const_string "neon_int_5")))]
+                   (const_string "neon_fp_compare_s<q>")
+                    (if_then_else (match_operand 2 "zero_operand")
+                      (const_string "neon_compare_zero<q>")
+                      (const_string "neon_compare<q>"))))]
 )
 
 (define_insn "neon_vcgeu<mode>"
@@ -2382,7 +2252,7 @@
           UNSPEC_VCGEU))]
   "TARGET_NEON"
   "vcge.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_compare<q>")]
 )
 
 (define_insn "neon_vcgt<mode>"
@@ -2398,10 +2268,10 @@
   vcgt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (if_then_else (match_test "<Is_d_reg>")
-                                 (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                 (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                   (const_string "neon_int_5")))]
+                   (const_string "neon_fp_compare_s<q>")
+                    (if_then_else (match_operand 2 "zero_operand")
+                      (const_string "neon_compare_zero<q>")
+                      (const_string "neon_compare<q>"))))]
 )
 
 (define_insn "neon_vcgtu<mode>"
@@ -2413,7 +2283,7 @@
           UNSPEC_VCGTU))]
   "TARGET_NEON"
   "vcgt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_compare<q>")]
 )
 
 ;; VCLE and VCLT only support comparisons with immediate zero (register
@@ -2430,10 +2300,10 @@
   "vcle.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_compare_s<q>")
+                    (if_then_else (match_operand 2 "zero_operand")
+                      (const_string "neon_compare_zero<q>")
+                      (const_string "neon_compare<q>"))))]
 )
 
 (define_insn "neon_vclt<mode>"
@@ -2447,10 +2317,10 @@
   "vclt.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, #0"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
-                    (if_then_else (match_test "<Is_d_reg>")
-                                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                  (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                    (const_string "neon_int_5")))]
+                    (const_string "neon_fp_compare_s<q>")
+                    (if_then_else (match_operand 2 "zero_operand")
+                      (const_string "neon_compare_zero<q>")
+                      (const_string "neon_compare<q>"))))]
 )
 
 (define_insn "neon_vcage<mode>"
@@ -2461,10 +2331,7 @@
                                UNSPEC_VCAGE))]
   "TARGET_NEON"
   "vacge.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_compare_s<q>")]
 )
 
 (define_insn "neon_vcagt<mode>"
@@ -2475,10 +2342,7 @@
                                UNSPEC_VCAGT))]
   "TARGET_NEON"
   "vacgt.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_compare_s<q>")]
 )
 
 (define_insn "neon_vtst<mode>"
@@ -2489,7 +2353,7 @@
 		      UNSPEC_VTST))]
   "TARGET_NEON"
   "vtst.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_int_4")]
+  [(set_attr "type" "neon_tst<q>")]
 )
 
 (define_insn "neon_vabd<mode>"
@@ -2502,10 +2366,8 @@
   "vabd.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (if_then_else (match_test "<Is_d_reg>")
-                                 (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                 (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                   (const_string "neon_int_5")))]
+                   (const_string "neon_fp_abd_s<q>")
+                   (const_string "neon_abd<q>")))]
 )
 
 (define_insn "neon_vabdl<mode>"
@@ -2516,7 +2378,7 @@
                           UNSPEC_VABDL))]
   "TARGET_NEON"
   "vabdl.%T3%#<V_sz_elem>\t%q0, %P1, %P2"
-  [(set_attr "type" "neon_int_5")]
+  [(set_attr "type" "neon_abd_long")]
 )
 
 (define_insn "neon_vaba<mode>"
@@ -2528,9 +2390,7 @@
 		    (match_operand:VDQIW 1 "s_register_operand" "0")))]
   "TARGET_NEON"
   "vaba.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_vaba") (const_string "neon_vaba_qqq")))]
+  [(set_attr "type" "neon_arith_acc<q>")]
 )
 
 (define_insn "neon_vabal<mode>"
@@ -2542,7 +2402,7 @@
 			 (match_operand:<V_widen> 1 "s_register_operand" "0")))]
   "TARGET_NEON"
   "vabal.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
-  [(set_attr "type" "neon_vaba")]
+  [(set_attr "type" "neon_arith_acc<q>")]
 )
 
 (define_insn "neon_vmax<mode>"
@@ -2555,10 +2415,8 @@
   "vmax.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
     (if_then_else (match_test "<Is_float_mode>")
-                  (if_then_else (match_test "<Is_d_reg>")
-                                (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                  (const_string "neon_int_5")))]
+                  (const_string "neon_fp_minmax_s<q>")
+                  (const_string "neon_minmax<q>")))]
 )
 
 (define_insn "neon_vmin<mode>"
@@ -2571,10 +2429,8 @@
   "vmin.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
     (if_then_else (match_test "<Is_float_mode>")
-                  (if_then_else (match_test "<Is_d_reg>")
-                                (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                  (const_string "neon_int_5")))]
+                  (const_string "neon_fp_minmax_s<q>")
+                  (const_string "neon_minmax<q>")))]
 )
 
 (define_expand "neon_vpadd<mode>"
@@ -2596,8 +2452,7 @@
                                  UNSPEC_VPADDL))]
   "TARGET_NEON"
   "vpaddl.%T2%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
-  ;; Assume this schedules like vaddl.
-  [(set_attr "type" "neon_int_3")]
+  [(set_attr "type" "neon_reduc_add_long")]
 )
 
 (define_insn "neon_vpadal<mode>"
@@ -2608,8 +2463,7 @@
                                  UNSPEC_VPADAL))]
   "TARGET_NEON"
   "vpadal.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
-  ;; Assume this schedules like vpadd.
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_reduc_add_acc")]
 )
 
 (define_insn "neon_vpmax<mode>"
@@ -2620,11 +2474,10 @@
                    UNSPEC_VPMAX))]
   "TARGET_NEON"
   "vpmax.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  ;; Assume this schedules like vmax.
   [(set (attr "type")
     (if_then_else (match_test "<Is_float_mode>")
-                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                  (const_string "neon_int_5")))]
+                  (const_string "neon_fp_reduc_minmax_s<q>")
+                  (const_string "neon_reduc_minmax<q>")))]
 )
 
 (define_insn "neon_vpmin<mode>"
@@ -2635,11 +2488,10 @@
                    UNSPEC_VPMIN))]
   "TARGET_NEON"
   "vpmin.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  ;; Assume this schedules like vmin.
   [(set (attr "type")
     (if_then_else (match_test "<Is_float_mode>")
-                  (const_string "neon_fp_vadd_ddd_vabs_dd")
-                  (const_string "neon_int_5")))]
+                  (const_string "neon_fp_reduc_minmax_s<q>")
+                  (const_string "neon_reduc_minmax<q>")))]
 )
 
 (define_insn "neon_vrecps<mode>"
@@ -2650,10 +2502,7 @@
                       UNSPEC_VRECPS))]
   "TARGET_NEON"
   "vrecps.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_fp_vrecps_vrsqrts_ddd")
-                    (const_string "neon_fp_vrecps_vrsqrts_qqq")))]
+  [(set_attr "type" "neon_fp_recps_s<q>")]
 )
 
 (define_insn "neon_vrsqrts<mode>"
@@ -2664,10 +2513,7 @@
                       UNSPEC_VRSQRTS))]
   "TARGET_NEON"
   "vrsqrts.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_fp_vrecps_vrsqrts_ddd")
-                    (const_string "neon_fp_vrecps_vrsqrts_qqq")))]
+  [(set_attr "type" "neon_fp_rsqrts_s<q>")]
 )
 
 (define_expand "neon_vabs<mode>"
@@ -2687,7 +2533,7 @@
 		      UNSPEC_VQABS))]
   "TARGET_NEON"
   "vqabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_vqneg_vqabs")]
+  [(set_attr "type" "neon_qabs<q>")]
 )
 
 (define_expand "neon_vneg<mode>"
@@ -2707,7 +2553,7 @@
 		      UNSPEC_VQNEG))]
   "TARGET_NEON"
   "vqneg.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_vqneg_vqabs")]
+  [(set_attr "type" "neon_qneg<q>")]
 )
 
 (define_insn "neon_vcls<mode>"
@@ -2717,7 +2563,7 @@
 		      UNSPEC_VCLS))]
   "TARGET_NEON"
   "vcls.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_cls<q>")]
 )
 
 (define_insn "clz<mode>2"
@@ -2725,7 +2571,7 @@
         (clz:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vclz.<V_if_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_cnt<q>")]
 )
 
 (define_expand "neon_vclz<mode>"
@@ -2743,7 +2589,7 @@
         (popcount:VE (match_operand:VE 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vcnt.<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_cnt<q>")]
 )
 
 (define_expand "neon_vcnt<mode>"
@@ -2763,10 +2609,7 @@
                     UNSPEC_VRECPE))]
   "TARGET_NEON"
   "vrecpe.<V_u_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_recpe_s<q>")]
 )
 
 (define_insn "neon_vrsqrte<mode>"
@@ -2776,10 +2619,7 @@
                     UNSPEC_VRSQRTE))]
   "TARGET_NEON"
   "vrsqrte.<V_u_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_fp_vadd_ddd_vabs_dd")
-                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_rsqrte_s<q>")]
 )
 
 (define_expand "neon_vmvn<mode>"
@@ -2808,7 +2648,7 @@
     }
   return "vmov.s<V_sz_elem>\t%0, %P1[%c2]";
 }
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_to_gp")]
 )
 
 (define_insn "neon_vget_lane<mode>_zext_internal"
@@ -2827,7 +2667,7 @@
     }
   return "vmov.u<V_sz_elem>\t%0, %P1[%c2]";
 }
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_to_gp")]
 )
 
 (define_insn "neon_vget_lane<mode>_sext_internal"
@@ -2854,7 +2694,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_to_gp_q")]
 )
 
 (define_insn "neon_vget_lane<mode>_zext_internal"
@@ -2881,7 +2721,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_to_gp_q")]
 )
 
 (define_expand "neon_vget_lane<mode>"
@@ -3013,8 +2853,7 @@
         (vec_duplicate:VX (match_operand:<V_elem> 1 "s_register_operand" "r")))]
   "TARGET_NEON"
   "vdup.<V_sz_elem>\t%<V_reg>0, %1"
-  ;; Assume this schedules like vmov.
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_from_gp<q>")]
 )
 
 (define_insn "neon_vdup_n<mode>"
@@ -3024,8 +2863,7 @@
   "@
   vdup.<V_sz_elem>\t%<V_reg>0, %1
   vdup.<V_sz_elem>\t%<V_reg>0, %y1"
-  ;; Assume this schedules like vmov.
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_from_gp<q>,neon_dup<q>")]
 )
 
 (define_expand "neon_vdup_ndi"
@@ -3046,7 +2884,7 @@
   vmov\t%e0, %Q1, %R1\;vmov\t%f0, %Q1, %R1
   vmov\t%e0, %P1\;vmov\t%f0, %P1"
   [(set_attr "length" "8")
-   (set_attr "type" "neon_bp_simple")]
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "neon_vdup_lane<mode>_internal"
@@ -3068,8 +2906,7 @@
   else
     return "vdup.<V_sz_elem>\t%q0, %P1[%c2]";
 }
-  ;; Assume this schedules like vmov.
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_dup<q>")]
 )
 
 (define_expand "neon_vdup_lane<mode>"
@@ -3124,10 +2961,7 @@
    (set (match_dup 1) (match_dup 0))]
   "TARGET_NEON && reload_completed"
   "vswp\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-	(if_then_else (match_test "<Is_d_reg>")
-		      (const_string "neon_bp_simple")
-		      (const_string "neon_bp_2cycle")))]
+  [(set_attr "type" "neon_permute<q>")]
 )
 
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
@@ -3149,7 +2983,9 @@
 {
   neon_split_vcombine (operands);
   DONE;
-})
+}
+[(set_attr "type" "multiple")]
+)
 
 (define_expand "neon_vget_high<mode>"
   [(match_operand:<V_HALF> 0 "s_register_operand")
@@ -3178,10 +3014,7 @@
         (float:<V_CVTTO> (match_operand:VCVTI 1 "s_register_operand" "w")))]
   "TARGET_NEON && !flag_rounding_math"
   "vcvt.f32.s32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_int_to_fp_<V_elem_ch><q>")]
 )
 
 (define_insn "floatuns<mode><V_cvtto>2"
@@ -3189,10 +3022,7 @@
         (unsigned_float:<V_CVTTO> (match_operand:VCVTI 1 "s_register_operand" "w")))] 
   "TARGET_NEON && !flag_rounding_math"
   "vcvt.f32.u32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_int_to_fp_<V_elem_ch><q>")]
 )
 
 (define_insn "fix_trunc<mode><V_cvtto>2"
@@ -3200,10 +3030,7 @@
         (fix:<V_CVTTO> (match_operand:VCVTF 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vcvt.s32.f32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_to_int_<V_elem_ch><q>")]
 )
 
 (define_insn "fixuns_trunc<mode><V_cvtto>2"
@@ -3211,10 +3038,7 @@
         (unsigned_fix:<V_CVTTO> (match_operand:VCVTF 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vcvt.u32.f32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_to_int_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vcvt<mode>"
@@ -3224,10 +3048,7 @@
 			  UNSPEC_VCVT))]
   "TARGET_NEON"
   "vcvt.%T2%#32.f32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_to_int_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vcvt<mode>"
@@ -3237,10 +3058,7 @@
 			  UNSPEC_VCVT))]
   "TARGET_NEON"
   "vcvt.f32.%T2%#32\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_int_to_fp_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vcvtv4sfv4hf"
@@ -3249,7 +3067,7 @@
 			  UNSPEC_VCVT))]
   "TARGET_NEON && TARGET_FP16"
   "vcvt.f32.f16\t%q0, %P1"
-  [(set_attr "type" "neon_fp_vadd_ddd_vabs_dd")]
+  [(set_attr "type" "neon_fp_cvt_widen_h")]
 )
 
 (define_insn "neon_vcvtv4hfv4sf"
@@ -3258,7 +3076,7 @@
 			  UNSPEC_VCVT))]
   "TARGET_NEON && TARGET_FP16"
   "vcvt.f16.f32\t%P0, %q1"
-  [(set_attr "type" "neon_fp_vadd_ddd_vabs_dd")]
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
 )
 
 (define_insn "neon_vcvt_n<mode>"
@@ -3272,10 +3090,7 @@
   neon_const_bounds (operands[2], 1, 33);
   return "vcvt.%T3%#32.f32\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_fp_to_int_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vcvt_n<mode>"
@@ -3289,10 +3104,7 @@
   neon_const_bounds (operands[2], 1, 33);
   return "vcvt.f32.%T3%#32\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Is_d_reg>")
-                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                   (const_string "neon_fp_vadd_qqq_vabs_qq")))]
+  [(set_attr "type" "neon_int_to_fp_<V_elem_ch><q>")]
 )
 
 (define_insn "neon_vmovn<mode>"
@@ -3302,7 +3114,7 @@
                            UNSPEC_VMOVN))]
   "TARGET_NEON"
   "vmovn.<V_if_elem>\t%P0, %q1"
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vqmovn<mode>"
@@ -3312,7 +3124,7 @@
                            UNSPEC_VQMOVN))]
   "TARGET_NEON"
   "vqmovn.%T2%#<V_sz_elem>\t%P0, %q1"
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vqmovun<mode>"
@@ -3322,7 +3134,7 @@
                            UNSPEC_VQMOVUN))]
   "TARGET_NEON"
   "vqmovun.<V_s_elem>\t%P0, %q1"
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vmovl<mode>"
@@ -3332,7 +3144,7 @@
                           UNSPEC_VMOVL))]
   "TARGET_NEON"
   "vmovl.%T2%#<V_sz_elem>\t%q0, %P1"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_long")]
 )
 
 (define_insn "neon_vmul_lane<mode>"
@@ -3350,10 +3162,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmul_ddd")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
-                                 (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar"))))]
+                   (const_string "neon_fp_mul_s_scalar<q>")
+                   (const_string "neon_mul_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmul_lane<mode>"
@@ -3371,10 +3181,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmul_qqd")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
-                                 (const_string "neon_mul_qqd_32_scalar"))))]
+                   (const_string "neon_fp_mul_s_scalar<q>")
+                   (const_string "neon_mul_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmull_lane<mode>"
@@ -3390,10 +3198,7 @@
   neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmull.%T4%#<V_sz_elem>\t%q0, %P1, %P2[%c3]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
+  [(set_attr "type" "neon_mul_<V_elem_ch>_scalar_long")]
 )
 
 (define_insn "neon_vqdmull_lane<mode>"
@@ -3409,10 +3214,7 @@
   neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmull.<V_s_elem>\t%q0, %P1, %P2[%c3]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
+  [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_long")]
 )
 
 (define_insn "neon_vqdmulh_lane<mode>"
@@ -3428,10 +3230,7 @@
   neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vq%O4dmulh.%T4%#<V_sz_elem>\t%q0, %q1, %P2[%c3]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
-                   (const_string "neon_mul_qqd_32_scalar")))]
+  [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_q")]
 )
 
 (define_insn "neon_vqdmulh_lane<mode>"
@@ -3447,10 +3246,7 @@
   neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vq%O4dmulh.%T4%#<V_sz_elem>\t%P0, %P1, %P2[%c3]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
-                   (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
+  [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_q")]
 )
 
 (define_insn "neon_vmla_lane<mode>"
@@ -3469,10 +3265,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmla_ddd_scalar")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                                 (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))))]
+                   (const_string "neon_fp_mla_s_scalar<q>")
+                   (const_string "neon_mla_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmla_lane<mode>"
@@ -3491,10 +3285,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmla_qqq_scalar")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
-                                 (const_string "neon_mla_qqq_32_qqd_32_scalar"))))]
+                   (const_string "neon_fp_mla_s_scalar<q>")
+                   (const_string "neon_mla_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmlal_lane<mode>"
@@ -3511,10 +3303,7 @@
   neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmlal.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_mla_<V_elem_ch>_scalar_long")]
 )
 
 (define_insn "neon_vqdmlal_lane<mode>"
@@ -3531,10 +3320,7 @@
   neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmlal.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_sat_mla_<V_elem_ch>_scalar_long")]
 )
 
 (define_insn "neon_vmls_lane<mode>"
@@ -3553,10 +3339,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmla_ddd_scalar")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                                 (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))))]
+                   (const_string "neon_fp_mla_s_scalar<q>")
+                   (const_string "neon_mla_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmls_lane<mode>"
@@ -3575,10 +3359,8 @@
 }
   [(set (attr "type")
      (if_then_else (match_test "<Is_float_mode>")
-                   (const_string "neon_fp_vmla_qqq_scalar")
-                   (if_then_else (match_test "<Scalar_mul_8_16>")
-                                 (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")
-                                 (const_string "neon_mla_qqq_32_qqd_32_scalar"))))]
+                   (const_string "neon_fp_mla_s_scalar<q>")
+                   (const_string "neon_mla_<V_elem_ch>_scalar<q>")))]
 )
 
 (define_insn "neon_vmlsl_lane<mode>"
@@ -3595,10 +3377,7 @@
   neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmlsl.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_mla_<V_elem_ch>_scalar_long")]
 )
 
 (define_insn "neon_vqdmlsl_lane<mode>"
@@ -3615,10 +3394,7 @@
   neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
-  [(set (attr "type")
-     (if_then_else (match_test "<Scalar_mul_8_16>")
-                   (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
-                   (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
+  [(set_attr "type" "neon_sat_mla_<V_elem_ch>_scalar_long")]
 )
 
 ; FIXME: For the "_n" multiply/multiply-accumulate insns, we copy a value in a
@@ -3843,10 +3619,7 @@
   neon_const_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vext.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2, %3";
 }
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_bp_simple")
-                    (const_string "neon_bp_2cycle")))]
+  [(set_attr "type" "neon_ext<q>")]
 )
 
 (define_insn "neon_vrev64<mode>"
@@ -3856,7 +3629,7 @@
                     UNSPEC_VREV64))]
   "TARGET_NEON"
   "vrev64.<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_rev<q>")]
 )
 
 (define_insn "neon_vrev32<mode>"
@@ -3866,7 +3639,7 @@
                    UNSPEC_VREV32))]
   "TARGET_NEON"
   "vrev32.<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_rev<q>")]
 )
 
 (define_insn "neon_vrev16<mode>"
@@ -3876,7 +3649,7 @@
                    UNSPEC_VREV16))]
   "TARGET_NEON"
   "vrev16.<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "type" "neon_bp_simple")]
+  [(set_attr "type" "neon_rev<q>")]
 )
 
 ; vbsl_* intrinsics may compile to any of vbsl/vbif/vbit depending on register
@@ -3898,7 +3671,7 @@
   vbsl\t%<V_reg>0, %<V_reg>2, %<V_reg>3
   vbit\t%<V_reg>0, %<V_reg>2, %<V_reg>1
   vbif\t%<V_reg>0, %<V_reg>3, %<V_reg>1"
-  [(set_attr "type" "neon_int_1")]
+  [(set_attr "type" "neon_bsl<q>")]
 )
 
 (define_expand "neon_vbsl<mode>"
@@ -3921,10 +3694,7 @@
                       UNSPEC_VSHL))]
   "TARGET_NEON"
   "v%O3shl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_vshl_ddd")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_imm<q>")]
 )
 
 (define_insn "neon_vqshl<mode>"
@@ -3935,10 +3705,7 @@
                       UNSPEC_VQSHL))]
   "TARGET_NEON"
   "vq%O3shl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_shift_2")
-                    (const_string "neon_vqshl_vrshl_vqrshl_qqq")))]
+  [(set_attr "type" "neon_sat_shift_imm<q>")]
 )
 
 (define_insn "neon_vshr_n<mode>"
@@ -3952,7 +3719,7 @@
   neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) + 1);
   return "v%O3shr.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm<q>")]
 )
 
 (define_insn "neon_vshrn_n<mode>"
@@ -3966,7 +3733,7 @@
   neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
   return "v%O3shrn.<V_if_elem>\t%P0, %q1, %2";
 }
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vqshrn_n<mode>"
@@ -3980,7 +3747,7 @@
   neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
   return "vq%O3shrn.%T3%#<V_sz_elem>\t%P0, %q1, %2";
 }
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vqshrun_n<mode>"
@@ -3994,7 +3761,7 @@
   neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
   return "vq%O3shrun.%T3%#<V_sz_elem>\t%P0, %q1, %2";
 }
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "neon_vshl_n<mode>"
@@ -4008,7 +3775,7 @@
   neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
   return "vshl.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm<q>")]
 )
 
 (define_insn "neon_vqshl_n<mode>"
@@ -4022,7 +3789,7 @@
   neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
   return "vqshl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm<q>")]
 )
 
 (define_insn "neon_vqshlu_n<mode>"
@@ -4036,7 +3803,7 @@
   neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
   return "vqshlu.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
 }
-  [(set_attr "type" "neon_shift_2")]
+  [(set_attr "type" "neon_sat_shift_imm<q>")]
 )
 
 (define_insn "neon_vshll_n<mode>"
@@ -4051,7 +3818,7 @@
   neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode) + 1);
   return "vshll.%T3%#<V_sz_elem>\t%q0, %P1, %2";
 }
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_long")]
 )
 
 (define_insn "neon_vsra_n<mode>"
@@ -4066,7 +3833,7 @@
   neon_const_bounds (operands[3], 1, neon_element_bits (<MODE>mode) + 1);
   return "v%O4sra.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
 }
-  [(set_attr "type" "neon_vsra_vrsra")]
+  [(set_attr "type" "neon_shift_acc<q>")]
 )
 
 (define_insn "neon_vsri_n<mode>"
@@ -4080,10 +3847,7 @@
   neon_const_bounds (operands[3], 1, neon_element_bits (<MODE>mode) + 1);
   return "vsri.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
 }
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_shift_1")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_reg<q>")]
 )
 
 (define_insn "neon_vsli_n<mode>"
@@ -4097,10 +3861,7 @@
   neon_const_bounds (operands[3], 0, neon_element_bits (<MODE>mode));
   return "vsli.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
 }
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_shift_1")
-                    (const_string "neon_shift_3")))]
+  [(set_attr "type" "neon_shift_reg<q>")]
 )
 
 (define_insn "neon_vtbl1v8qi"
@@ -4110,7 +3871,7 @@
                      UNSPEC_VTBL))]
   "TARGET_NEON"
   "vtbl.8\t%P0, {%P1}, %P2"
-  [(set_attr "type" "neon_bp_2cycle")]
+  [(set_attr "type" "neon_tbl1")]
 )
 
 (define_insn "neon_vtbl2v8qi"
@@ -4131,7 +3892,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_2cycle")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
 (define_insn "neon_vtbl3v8qi"
@@ -4153,7 +3914,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_3cycle")]
+  [(set_attr "type" "neon_tbl3")]
 )
 
 (define_insn "neon_vtbl4v8qi"
@@ -4176,7 +3937,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_3cycle")]
+  [(set_attr "type" "neon_tbl4")]
 )
 
 ;; These three are used by the vec_perm infrastructure for V16QImode.
@@ -4207,7 +3968,9 @@
   part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
   emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
   DONE;
-})
+}
+  [(set_attr "type" "multiple")]
+)
 
 (define_insn_and_split "neon_vtbl2v16qi"
   [(set (match_operand:V16QI 0 "s_register_operand" "=&w")
@@ -4236,7 +3999,9 @@
   part2 = simplify_subreg (V8QImode, op2, V16QImode, ofs);
   emit_insn (gen_neon_vtbl2v8qi (part0, op1, part2));
   DONE;
-})
+}
+  [(set_attr "type" "multiple")]
+)
 
 ;; ??? Logically we should extend the regular neon_vcombine pattern to
 ;; handle quad-word input modes, producing octa-word output modes.  But
@@ -4254,7 +4019,9 @@
 {
   neon_split_vcombine (operands);
   DONE;
-})
+}
+[(set_attr "type" "multiple")]
+)
 
 (define_insn "neon_vtbx1v8qi"
   [(set (match_operand:V8QI 0 "s_register_operand" "=w")
@@ -4264,7 +4031,7 @@
                      UNSPEC_VTBX))]
   "TARGET_NEON"
   "vtbx.8\t%P0, {%P2}, %P3"
-  [(set_attr "type" "neon_bp_2cycle")]
+  [(set_attr "type" "neon_tbl1")]
 )
 
 (define_insn "neon_vtbx2v8qi"
@@ -4286,7 +4053,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_2cycle")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
 (define_insn "neon_vtbx3v8qi"
@@ -4309,7 +4076,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_3cycle")]
+  [(set_attr "type" "neon_tbl3")]
 )
 
 (define_insn "neon_vtbx4v8qi"
@@ -4333,7 +4100,7 @@
 
   return "";
 }
-  [(set_attr "type" "neon_bp_3cycle")]
+  [(set_attr "type" "neon_tbl4")]
 )
 
 (define_expand "neon_vtrn<mode>_internal"
@@ -4359,10 +4126,7 @@
                      UNSPEC_VTRN2))]
   "TARGET_NEON"
   "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_bp_simple")
-                    (const_string "neon_bp_3cycle")))]
+  [(set_attr "type" "neon_permute<q>")]
 )
 
 (define_expand "neon_vtrn<mode>"
@@ -4399,10 +4163,7 @@
                      UNSPEC_VZIP2))]
   "TARGET_NEON"
   "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_bp_simple")
-                    (const_string "neon_bp_3cycle")))]
+  [(set_attr "type" "neon_zip<q>")]
 )
 
 (define_expand "neon_vzip<mode>"
@@ -4439,10 +4200,7 @@
                      UNSPEC_VUZP2))]
   "TARGET_NEON"
   "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
-  [(set (attr "type")
-      (if_then_else (match_test "<Is_d_reg>")
-                    (const_string "neon_bp_simple")
-                    (const_string "neon_bp_3cycle")))]
+  [(set_attr "type" "neon_zip<q>")]
 )
 
 (define_expand "neon_vuzp<mode>"
@@ -4558,7 +4316,7 @@
                     UNSPEC_VLD1))]
   "TARGET_NEON"
   "vld1.<V_sz_elem>\t%h0, %A1"
-  [(set_attr "type" "neon_vld1_1_2_regs")]
+  [(set_attr "type" "neon_load1_1reg<q>")]
 )
 
 (define_insn "neon_vld1_lane<mode>"
@@ -4578,10 +4336,7 @@
   else
     return "vld1.<V_sz_elem>\t{%P0[%c3]}, %A1";
 }
-  [(set (attr "type")
-      (if_then_else (eq (const_string "<V_mode_nunits>") (const_int 2))
-                    (const_string "neon_vld1_1_2_regs")
-                    (const_string "neon_vld1_vld2_lane")))]
+  [(set_attr "type" "neon_load1_one_lane<q>")]
 )
 
 (define_insn "neon_vld1_lane<mode>"
@@ -4609,10 +4364,7 @@
   else
     return "vld1.<V_sz_elem>\t{%P0[%c3]}, %A1";
 }
-  [(set (attr "type")
-      (if_then_else (eq (const_string "<V_mode_nunits>") (const_int 2))
-                    (const_string "neon_vld1_1_2_regs")
-                    (const_string "neon_vld1_vld2_lane")))]
+  [(set_attr "type" "neon_load1_one_lane<q>")]
 )
 
 (define_insn "neon_vld1_dup<mode>"
@@ -4620,7 +4372,7 @@
         (vec_duplicate:VD (match_operand:<V_elem> 1 "neon_struct_operand" "Um")))]
   "TARGET_NEON"
   "vld1.<V_sz_elem>\t{%P0[]}, %A1"
-  [(set_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
+  [(set_attr "type" "neon_load1_all_lanes<q>")]
 )
 
 ;; Special case for DImode.  Treat it exactly like a simple load.
@@ -4639,7 +4391,7 @@
 {
   return "vld1.<V_sz_elem>\t{%e0[], %f0[]}, %A1";
 }
-  [(set_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
+  [(set_attr "type" "neon_load1_all_lanes<q>")]
 )
 
 (define_insn_and_split "neon_vld1_dupv2di"
@@ -4656,7 +4408,7 @@
     DONE;
     }
   [(set_attr "length" "8")
-   (set_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
+   (set_attr "type" "neon_load1_all_lanes_q")]
 )
 
 (define_expand "vec_store_lanes<mode><mode>"
@@ -4671,7 +4423,7 @@
 		     UNSPEC_VST1))]
   "TARGET_NEON"
   "vst1.<V_sz_elem>\t%h1, %A0"
-  [(set_attr "type" "neon_vst1_1_2_regs_vst2_2_regs")])
+  [(set_attr "type" "neon_store1_1reg<q>")])
 
 (define_insn "neon_vst1_lane<mode>"
   [(set (match_operand:<V_elem> 0 "neon_struct_operand" "=Um")
@@ -4690,10 +4442,8 @@
   else
     return "vst1.<V_sz_elem>\t{%P1[%c2]}, %A0";
 }
-  [(set (attr "type")
-      (if_then_else (eq (const_string "<V_mode_nunits>") (const_int 1))
-                    (const_string "neon_vst1_1_2_regs_vst2_2_regs")
-                    (const_string "neon_vst1_vst2_lane")))])
+  [(set_attr "type" "neon_store1_one_lane<q>")]
+)
 
 (define_insn "neon_vst1_lane<mode>"
   [(set (match_operand:<V_elem> 0 "neon_struct_operand" "=Um")
@@ -4720,7 +4470,7 @@
   else
     return "vst1.<V_sz_elem>\t{%P1[%c2]}, %A0";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane")]
+  [(set_attr "type" "neon_store1_one_lane<q>")]
 )
 
 (define_expand "vec_load_lanesti<mode>"
@@ -4744,8 +4494,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vld1_1_2_regs")
-                    (const_string "neon_vld2_2_regs_vld1_vld2_all_lanes")))]
+                    (const_string "neon_load1_2reg<q>")
+                    (const_string "neon_load2_2reg<q>")))]
 )
 
 (define_expand "vec_load_lanesoi<mode>"
@@ -4762,7 +4512,7 @@
                    UNSPEC_VLD2))]
   "TARGET_NEON"
   "vld2.<V_sz_elem>\t%h0, %A1"
-  [(set_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes")])
+  [(set_attr "type" "neon_load2_2reg_q")])
 
 (define_insn "neon_vld2_lane<mode>"
   [(set (match_operand:TI 0 "s_register_operand" "=w")
@@ -4786,7 +4536,7 @@
   output_asm_insn ("vld2.<V_sz_elem>\t{%P0[%c3], %P1[%c3]}, %A2", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld1_vld2_lane")]
+  [(set_attr "type" "neon_load2_one_lane<q>")]
 )
 
 (define_insn "neon_vld2_lane<mode>"
@@ -4816,7 +4566,7 @@
   output_asm_insn ("vld2.<V_sz_elem>\t{%P0[%c3], %P1[%c3]}, %A2", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld1_vld2_lane")]
+  [(set_attr "type" "neon_load2_one_lane<q>")]
 )
 
 (define_insn "neon_vld2_dup<mode>"
@@ -4833,8 +4583,8 @@
 }
   [(set (attr "type")
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
-                    (const_string "neon_vld2_2_regs_vld1_vld2_all_lanes")
-                    (const_string "neon_vld1_1_2_regs")))]
+                    (const_string "neon_load2_all_lanes<q>")
+                    (const_string "neon_load1_1reg<q>")))]
 )
 
 (define_expand "vec_store_lanesti<mode>"
@@ -4858,8 +4608,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vst1_1_2_regs_vst2_2_regs")
-                    (const_string "neon_vst1_1_2_regs_vst2_2_regs")))]
+                    (const_string "neon_store1_2reg<q>")
+                    (const_string "neon_store2_one_lane<q>")))]
 )
 
 (define_expand "vec_store_lanesoi<mode>"
@@ -4876,7 +4626,7 @@
 		   UNSPEC_VST2))]
   "TARGET_NEON"
   "vst2.<V_sz_elem>\t%h1, %A0"
-  [(set_attr "type" "neon_vst1_1_2_regs_vst2_2_regs")]
+  [(set_attr "type" "neon_store2_4reg<q>")]
 )
 
 (define_insn "neon_vst2_lane<mode>"
@@ -4901,7 +4651,7 @@
   output_asm_insn ("vst2.<V_sz_elem>\t{%P1[%c3], %P2[%c3]}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane")]
+  [(set_attr "type" "neon_store2_one_lane<q>")]
 )
 
 (define_insn "neon_vst2_lane<mode>"
@@ -4931,7 +4681,7 @@
   output_asm_insn ("vst2.<V_sz_elem>\t{%P1[%c3], %P2[%c3]}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst1_vst2_lane")]
+  [(set_attr "type" "neon_store2_one_lane<q>")]
 )
 
 (define_expand "vec_load_lanesei<mode>"
@@ -4955,8 +4705,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vld1_1_2_regs")
-                    (const_string "neon_vld3_vld4")))]
+                    (const_string "neon_load1_3reg<q>")
+                    (const_string "neon_load3_3reg<q>")))]
 )
 
 (define_expand "vec_load_lanesci<mode>"
@@ -5000,7 +4750,7 @@
   output_asm_insn ("vld3.<V_sz_elem>\t{%P0, %P1, %P2}, %A3", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4")]
+  [(set_attr "type" "neon_load3_3reg<q>")]
 )
 
 (define_insn "neon_vld3qb<mode>"
@@ -5020,7 +4770,7 @@
   output_asm_insn ("vld3.<V_sz_elem>\t{%P0, %P1, %P2}, %A3", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4")]
+  [(set_attr "type" "neon_load3_3reg<q>")]
 )
 
 (define_insn "neon_vld3_lane<mode>"
@@ -5047,7 +4797,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4_lane")]
+  [(set_attr "type" "neon_load3_one_lane<q>")]
 )
 
 (define_insn "neon_vld3_lane<mode>"
@@ -5079,7 +4829,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4_lane")]
+  [(set_attr "type" "neon_load3_one_lane<q>")]
 )
 
 (define_insn "neon_vld3_dup<mode>"
@@ -5105,8 +4855,8 @@
 }
   [(set (attr "type")
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
-                    (const_string "neon_vld3_vld4_all_lanes")
-                    (const_string "neon_vld1_1_2_regs")))])
+                    (const_string "neon_load3_all_lanes<q>")
+                    (const_string "neon_load1_1reg<q>")))])
 
 (define_expand "vec_store_lanesei<mode>"
   [(set (match_operand:EI 0 "neon_struct_operand")
@@ -5129,8 +4879,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vst1_1_2_regs_vst2_2_regs")
-                    (const_string "neon_vst2_4_regs_vst3_vst4")))])
+                    (const_string "neon_store1_3reg<q>")
+                    (const_string "neon_store3_one_lane<q>")))])
 
 (define_expand "vec_store_lanesci<mode>"
   [(match_operand:CI 0 "neon_struct_operand")
@@ -5173,7 +4923,7 @@
   output_asm_insn ("vst3.<V_sz_elem>\t{%P1, %P2, %P3}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst2_4_regs_vst3_vst4")]
+  [(set_attr "type" "neon_store3_3reg<q>")]
 )
 
 (define_insn "neon_vst3qb<mode>"
@@ -5192,7 +4942,7 @@
   output_asm_insn ("vst3.<V_sz_elem>\t{%P1, %P2, %P3}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst2_4_regs_vst3_vst4")]
+  [(set_attr "type" "neon_store3_3reg<q>")]
 )
 
 (define_insn "neon_vst3_lane<mode>"
@@ -5219,7 +4969,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vst3_vst4_lane")]
+  [(set_attr "type" "neon_store3_one_lane<q>")]
 )
 
 (define_insn "neon_vst3_lane<mode>"
@@ -5251,7 +5001,8 @@
                    ops);
   return "";
 }
-[(set_attr "type" "neon_vst3_vst4_lane")])
+  [(set_attr "type" "neon_store3_one_lane<q>")]
+)
 
 (define_expand "vec_load_lanesoi<mode>"
   [(set (match_operand:OI 0 "s_register_operand")
@@ -5274,8 +5025,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vld1_1_2_regs")
-                    (const_string "neon_vld3_vld4")))]
+                    (const_string "neon_load1_4reg<q>")
+                    (const_string "neon_load4_4reg<q>")))]
 )
 
 (define_expand "vec_load_lanesxi<mode>"
@@ -5320,7 +5071,7 @@
   output_asm_insn ("vld4.<V_sz_elem>\t{%P0, %P1, %P2, %P3}, %A4", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4")]
+  [(set_attr "type" "neon_load4_4reg<q>")]
 )
 
 (define_insn "neon_vld4qb<mode>"
@@ -5341,7 +5092,7 @@
   output_asm_insn ("vld4.<V_sz_elem>\t{%P0, %P1, %P2, %P3}, %A4", ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4")]
+  [(set_attr "type" "neon_load4_4reg<q>")]
 )
 
 (define_insn "neon_vld4_lane<mode>"
@@ -5369,7 +5120,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4_lane")]
+  [(set_attr "type" "neon_load4_one_lane<q>")]
 )
 
 (define_insn "neon_vld4_lane<mode>"
@@ -5402,7 +5153,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vld3_vld4_lane")]
+  [(set_attr "type" "neon_load4_one_lane<q>")]
 )
 
 (define_insn "neon_vld4_dup<mode>"
@@ -5430,8 +5181,8 @@
 }
   [(set (attr "type")
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
-                    (const_string "neon_vld3_vld4_all_lanes")
-                    (const_string "neon_vld1_1_2_regs")))]
+                    (const_string "neon_load4_all_lanes<q>")
+                    (const_string "neon_load1_1reg<q>")))]
 )
 
 (define_expand "vec_store_lanesoi<mode>"
@@ -5455,8 +5206,8 @@
 }
   [(set (attr "type")
       (if_then_else (eq (const_string "<V_sz_elem>") (const_string "64"))
-                    (const_string "neon_vst1_1_2_regs_vst2_2_regs")
-                    (const_string "neon_vst2_4_regs_vst3_vst4")))]
+                    (const_string "neon_store1_4reg<q>")
+                    (const_string "neon_store4_4reg<q>")))]
 )
 
 (define_expand "vec_store_lanesxi<mode>"
@@ -5501,7 +5252,7 @@
   output_asm_insn ("vst4.<V_sz_elem>\t{%P1, %P2, %P3, %P4}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst2_4_regs_vst3_vst4")]
+  [(set_attr "type" "neon_store4_4reg<q>")]
 )
 
 (define_insn "neon_vst4qb<mode>"
@@ -5521,7 +5272,7 @@
   output_asm_insn ("vst4.<V_sz_elem>\t{%P1, %P2, %P3, %P4}, %A0", ops);
   return "";
 }
-  [(set_attr "type" "neon_vst2_4_regs_vst3_vst4")]
+  [(set_attr "type" "neon_store4_4reg<q>")]
 )
 
 (define_insn "neon_vst4_lane<mode>"
@@ -5549,7 +5300,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vst3_vst4_lane")]
+  [(set_attr "type" "neon_store4_one_lane<q>")]
 )
 
 (define_insn "neon_vst4_lane<mode>"
@@ -5582,7 +5333,7 @@
                    ops);
   return "";
 }
-  [(set_attr "type" "neon_vst3_vst4_lane")]
+  [(set_attr "type" "neon_store4_4reg<q>")]
 )
 
 (define_expand "neon_vand<mode>"
@@ -5647,7 +5398,7 @@
 			  (match_operand:VU 2 "vect_par_constant_low" ""))))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmovl.<US><V_sz_elem> %q0, %e1"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_long")]
 )
 
 (define_insn "neon_vec_unpack<US>_hi_<mode>"
@@ -5657,7 +5408,7 @@
 			  (match_operand:VU 2 "vect_par_constant_high" ""))))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmovl.<US><V_sz_elem> %q0, %f1"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_long")]
 )
 
 (define_expand "vec_unpack<US>_hi_<mode>"
@@ -5707,7 +5458,7 @@
                            (match_dup 2)))))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmull.<US><V_sz_elem> %q0, %e1, %e3"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_mul_<V_elem_ch>_long")]
 )
 
 (define_expand "vec_widen_<US>mult_lo_<mode>"
@@ -5741,7 +5492,7 @@
 			    (match_dup 2)))))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmull.<US><V_sz_elem> %q0, %f1, %f3"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_mul_<V_elem_ch>_long")]
 )
 
 (define_expand "vec_widen_<US>mult_hi_<mode>"
@@ -5774,7 +5525,7 @@
 {
   return "vshll.<US><V_sz_elem> %q0, %P1, %2";
 }
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_shift_imm_long")]
 )
 
 (define_expand "vec_widen_<US>shiftl_lo_<mode>"
@@ -5810,7 +5561,7 @@
        (SE:<V_widen> (match_operand:VDI 1 "register_operand" "w")))]
  "TARGET_NEON"
  "vmovl.<US><V_sz_elem> %q0, %P1"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_move")]
 )
 
 (define_expand "vec_unpack<US>_lo_<mode>"
@@ -5847,7 +5598,7 @@
 			   (match_operand:VDI 2 "register_operand" "w"))))]
   "TARGET_NEON"
   "vmull.<US><V_sz_elem> %q0, %P1, %P2"
-  [(set_attr "type" "neon_shift_1")]
+  [(set_attr "type" "neon_mul_<V_elem_ch>_long")]
 )
 
 (define_expand "vec_widen_<US>mult_hi_<mode>"
@@ -5921,7 +5672,7 @@
 			(match_operand:VN 2 "register_operand" "w"))))]
  "TARGET_NEON && !BYTES_BIG_ENDIAN"
  "vmovn.i<V_sz_elem>\t%e0, %q1\;vmovn.i<V_sz_elem>\t%f0, %q2"
- [(set_attr "type" "neon_shift_1")
+ [(set_attr "type" "multiple")
   (set_attr "length" "8")]
 )
 
@@ -5931,7 +5682,7 @@
        (truncate:<V_narrow> (match_operand:VN 1 "register_operand" "w")))]
  "TARGET_NEON && !BYTES_BIG_ENDIAN"
  "vmovn.i<V_sz_elem>\t%P0, %q1"
- [(set_attr "type" "neon_shift_1")]
+ [(set_attr "type" "neon_move_narrow_q")]
 )
 
 (define_expand "vec_pack_trunc_<mode>"
@@ -5956,10 +5707,8 @@
  "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set (attr "type")
        (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
-                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                     (const_string "neon_int_5")))]
+                     (const_string "neon_fp_abd_s<q>")
+                     (const_string "neon_abd<q>")))]
 )
 
 (define_insn "neon_vabd<mode>_3"
@@ -5971,10 +5720,8 @@
  "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set (attr "type")
        (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
-                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
-                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                     (const_string "neon_int_5")))]
+                     (const_string "neon_fp_abd_s<q>")
+                     (const_string "neon_abd<q>")))]
 )
 
 ;; Copy from core-to-neon regs, then extend, not vice-versa

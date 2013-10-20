@@ -652,7 +652,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       index = streamer_read_hwi (ib);
     }
 
-  p_bb = ENTRY_BLOCK_PTR_FOR_FUNCTION(fn);
+  p_bb = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
   index = streamer_read_hwi (ib);
   while (index != -1)
     {

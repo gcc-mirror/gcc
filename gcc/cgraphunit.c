@@ -850,7 +850,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	dump_possible_polymorphic_call_targets 
 	  (cgraph_dump_file, edge);
 
-      for (i = 0; i < targets.length(); i++)
+      for (i = 0; i < targets.length (); i++)
 	{
 	  /* Do not bother to mark virtual methods in anonymous namespace;
 	     either we will find use of virtual table defining it, or it is
@@ -872,7 +872,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
      make the edge direct.  */
   if (final)
     {
-      if (targets.length() <= 1)
+      if (targets.length () <= 1)
 	{
 	  cgraph_node *target;
 	  if (targets.length () == 1)

@@ -1,5 +1,4 @@
-// { dg-options "-std=c++0x" }
-// { dg-do run { xfail *-*-* } }
+// { dg-options "-std=gnu++11" }
 
 // 2012-08-20  Benjamin Kosnik <bkoz@redhat.com>
 //

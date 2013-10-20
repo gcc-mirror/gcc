@@ -96,6 +96,8 @@ package Aspects is
       Aspect_External_Tag,
       Aspect_Global,                        -- GNAT
       Aspect_Implicit_Dereference,
+      Aspect_Initial_Condition,             -- GNAT
+      Aspect_Initializes,                   -- GNAT
       Aspect_Input,
       Aspect_Interrupt_Priority,
       Aspect_Invariant,                     -- GNAT
@@ -111,6 +113,10 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT
       Aspect_Priority,
       Aspect_Read,
+      Aspect_Refined_Depends,               -- GNAT
+      Aspect_Refined_Global,                -- GNAT
+      Aspect_Refined_Post,                  -- GNAT
+      Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
@@ -304,6 +310,8 @@ package Aspects is
       Aspect_External_Tag            => Expression,
       Aspect_Global                  => Expression,
       Aspect_Implicit_Dereference    => Name,
+      Aspect_Initial_Condition       => Expression,
+      Aspect_Initializes             => Expression,
       Aspect_Input                   => Name,
       Aspect_Interrupt_Priority      => Expression,
       Aspect_Invariant               => Expression,
@@ -319,6 +327,10 @@ package Aspects is
       Aspect_Predicate               => Expression,
       Aspect_Priority                => Expression,
       Aspect_Read                    => Name,
+      Aspect_Refined_Depends         => Expression,
+      Aspect_Refined_Global          => Expression,
+      Aspect_Refined_Post            => Expression,
+      Aspect_Refined_State           => Expression,
       Aspect_Relative_Deadline       => Expression,
       Aspect_Scalar_Storage_Order    => Expression,
       Aspect_Simple_Storage_Pool     => Name,
@@ -388,6 +400,8 @@ package Aspects is
       Aspect_Independent_Components       => Name_Independent_Components,
       Aspect_Inline                       => Name_Inline,
       Aspect_Inline_Always                => Name_Inline_Always,
+      Aspect_Initial_Condition            => Name_Initial_Condition,
+      Aspect_Initializes                  => Name_Initializes,
       Aspect_Input                        => Name_Input,
       Aspect_Interrupt_Handler            => Name_Interrupt_Handler,
       Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
@@ -415,6 +429,10 @@ package Aspects is
       Aspect_Pure_12                      => Name_Pure_12,
       Aspect_Pure_Function                => Name_Pure_Function,
       Aspect_Read                         => Name_Read,
+      Aspect_Refined_Depends              => Name_Refined_Depends,
+      Aspect_Refined_Global               => Name_Refined_Global,
+      Aspect_Refined_Post                 => Name_Refined_Post,
+      Aspect_Refined_State                => Name_Refined_State,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
       Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
@@ -582,6 +600,8 @@ package Aspects is
       Aspect_Independent_Components       => Always_Delay,
       Aspect_Inline                       => Always_Delay,
       Aspect_Inline_Always                => Always_Delay,
+      Aspect_Initial_Condition            => Always_Delay,
+      Aspect_Initializes                  => Always_Delay,
       Aspect_Input                        => Always_Delay,
       Aspect_Interrupt_Handler            => Always_Delay,
       Aspect_Interrupt_Priority           => Always_Delay,
@@ -606,6 +626,9 @@ package Aspects is
       Aspect_Pure_12                      => Always_Delay,
       Aspect_Pure_Function                => Always_Delay,
       Aspect_Read                         => Always_Delay,
+      Aspect_Refined_Depends              => Always_Delay,
+      Aspect_Refined_Global               => Always_Delay,
+      Aspect_Refined_State                => Always_Delay,
       Aspect_Relative_Deadline            => Always_Delay,
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
@@ -636,6 +659,7 @@ package Aspects is
       Aspect_Convention                   => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
+      Aspect_Refined_Post                 => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
@@ -657,15 +681,49 @@ package Aspects is
       Aspect_Volatile                     => Rep_Aspect,
       Aspect_Volatile_Components          => Rep_Aspect);
 
-   --  The following table indicates which aspects can apply simultaneously to
-   --  both subprogram/package specs and bodies. For instance, the following is
-   --  legal:
+   ------------------------------------------------
+   -- Handling of Aspect Specifications on Stubs --
+   ------------------------------------------------
+
+   --  Aspects that appear on the following stub nodes
+
+   --    N_Package_Body_Stub
+   --    N_Protected_Body_Stub
+   --    N_Subprogram_Body_Stub
+   --    N_Task_Body_Stub
+
+   --  are treated as if they apply to the corresponding proper body. Their
+   --  analysis is postponed until the analysis of the proper body takes place
+   --  (see Analyze_Proper_Body). The delay is required because the analysis
+   --  may generate extra code which would be harder to relocate to the body.
+   --  If the proper body is present, the aspect specifications are relocated
+   --  to the corresponding body node:
+
+   --    N_Package_Body
+   --    N_Protected_Body
+   --    N_Subprogram_Body
+   --    N_Task_Body
+
+   --  The subsequent analysis takes care of the aspect-to-pragma conversions
+   --  and verification of pragma legality. In the case where the proper body
+   --  is not available, the aspect specifications are analyzed on the spot
+   --  (see Analyze_Proper_Body) to catch potential errors.
+
+   --  The following table lists all aspects that can apply to a subprogram
+   --  body [stub]. For instance, the following example is legal:
 
    --    package P with SPARK_Mode ...;
    --    package body P with SPARK_Mode is ...;
 
-   Aspect_On_Body_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_SPARK_Mode                   => True,
+   --  The table should be synchronized with Pragma_On_Body_Or_Stub_OK in unit
+   --  Sem_Prag if the aspects below are implemented by a pragma.
+
+   Aspect_On_Body_Or_Stub_OK : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Refined_Depends              => True,
+      Aspect_Refined_Global               => True,
+      Aspect_Refined_Post                 => True,
+      Aspect_SPARK_Mode                   => True,
+      Aspect_Warnings                     => True,
       others                              => False);
 
    ---------------------------------------------------
@@ -696,9 +754,9 @@ package Aspects is
    --  Replace calls, and this function may be used to retrieve the aspect
    --  specifications for the original rewritten node in such cases.
 
-   function Aspects_On_Body_OK (N : Node_Id) return Boolean;
+   function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean;
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
-   --  can appear simultaneously in bodies and specs.
+   --  are allowed to appear on a body [stub].
 
    function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
    --  Find the aspect specification of aspect A associated with entity I.

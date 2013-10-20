@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-const.h"
 #include "arith.h"
+#include "omp-low.h"
 
 int ompws_flags;
 
@@ -157,6 +158,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 
   if (! GFC_DESCRIPTOR_TYPE_P (type)
       || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
+    return NULL;
+
+  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
     return NULL;
 
   gcc_assert (outer != NULL);
@@ -321,6 +325,9 @@ gfc_omp_clause_dtor (tree clause ATTRIBUTE_UNUSED, tree decl)
 
   if (! GFC_DESCRIPTOR_TYPE_P (type)
       || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
+    return NULL;
+
+  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
     return NULL;
 
   /* Allocatable arrays in FIRSTPRIVATE/LASTPRIVATE etc. clauses need

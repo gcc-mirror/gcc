@@ -188,16 +188,20 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 	     "rIJ" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
 	     "rIJ" ((USItype) (bl)))
-/* Call libgcc routine.  */
-#define umul_ppmm(w1, w0, u, v) \
-do {									\
-  DWunion __w;								\
-  __w.ll = __umulsidi3 (u, v);						\
-  w1 = __w.s.high;							\
-  w0 = __w.s.low;							\
-} while (0)
-#define __umulsidi3 __umulsidi3
-UDItype __umulsidi3 (USItype, USItype);
+
+#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
+#ifdef __ARC_NORM__
+#define count_leading_zeros(count, x) \
+  do									\
+    {									\
+      SItype c_;							\
+									\
+      __asm__ ("norm.f\t%0,%1\n\tmov.mi\t%0,-1" : "=r" (c_) : "r" (x) : "cc");\
+      (count) = c_ + 1;							\
+    }									\
+  while (0)
+#define COUNT_LEADING_ZEROS_0 32
+#endif
 #endif
 
 #if defined (__arm__) && (defined (__thumb2__) || !defined (__thumb__)) \
@@ -285,12 +289,39 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #endif /* defined (__AVR__) */
 
-#if defined (__CRIS__) && __CRIS_arch_version >= 3
+#if defined (__CRIS__)
+
+#if __CRIS_arch_version >= 3
 #define count_leading_zeros(COUNT, X) ((COUNT) = __builtin_clz (X))
+#define COUNT_LEADING_ZEROS_0 32
+#endif /* __CRIS_arch_version >= 3 */
+
 #if __CRIS_arch_version >= 8
 #define count_trailing_zeros(COUNT, X) ((COUNT) = __builtin_ctz (X))
-#endif
-#endif /* __CRIS__ */
+#endif /* __CRIS_arch_version >= 8 */
+
+#if __CRIS_arch_version >= 10
+#define __umulsidi3(u,v) ((UDItype)(USItype) (u) * (UDItype)(USItype) (v))
+#else
+#define __umulsidi3 __umulsidi3
+extern UDItype __umulsidi3 (USItype, USItype);
+#endif /* __CRIS_arch_version >= 10 */
+
+#define umul_ppmm(w1, w0, u, v)		\
+  do {					\
+    UDItype __x = __umulsidi3 (u, v);	\
+    (w0) = (USItype) (__x);		\
+    (w1) = (USItype) (__x >> 32);	\
+  } while (0)
+
+/* FIXME: defining add_ssaaaa and sub_ddmmss should be advantageous for
+   DFmode ("double" intrinsics, avoiding two of the three insns handling
+   carry), but defining them as open-code C composing and doing the
+   operation in DImode (UDImode) shows that the DImode needs work:
+   register pressure from requiring neighboring registers and the
+   traffic to and from them come to dominate, in the 4.7 series.  */
+
+#endif /* defined (__CRIS__) */
 
 #if defined (__hppa) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \

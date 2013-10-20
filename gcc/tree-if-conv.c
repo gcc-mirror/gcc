@@ -1842,8 +1842,8 @@ const pass_data pass_data_if_conversion =
 class pass_if_conversion : public gimple_opt_pass
 {
 public:
-  pass_if_conversion(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_if_conversion, ctxt)
+  pass_if_conversion (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_if_conversion, ctxt)
   {}
 
   /* opt_pass methods: */

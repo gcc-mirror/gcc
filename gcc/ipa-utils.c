@@ -54,9 +54,9 @@ ipa_print_order (FILE* out,
   fprintf (out, "\n\n ordered call graph: %s\n", note);
 
   for (i = count - 1; i >= 0; i--)
-    dump_cgraph_node(dump_file, order[i]);
+    dump_cgraph_node (dump_file, order[i]);
   fprintf (out, "\n");
-  fflush(out);
+  fflush (out);
 }
 
 
@@ -251,6 +251,22 @@ ipa_get_nodes_in_cycle (struct cgraph_node *node)
       node = node_dfs_info->next_cycle;
     }
   return v;
+}
+
+/* Return true iff the CS is an edge within a strongly connected component as
+   computed by ipa_reduced_postorder.  */
+
+bool
+ipa_edge_within_scc (struct cgraph_edge *cs)
+{
+  struct ipa_dfs_info *caller_dfs = (struct ipa_dfs_info *) cs->caller->symbol.aux;
+  struct ipa_dfs_info *callee_dfs;
+  struct cgraph_node *callee = cgraph_function_node (cs->callee, NULL);
+
+  callee_dfs = (struct ipa_dfs_info *) callee->symbol.aux;
+  return (caller_dfs
+	  && callee_dfs
+	  && caller_dfs->scc_no == callee_dfs->scc_no);
 }
 
 struct postorder_stack

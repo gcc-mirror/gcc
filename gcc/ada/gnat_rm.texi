@@ -206,11 +206,15 @@ Implementation Defined Pragmas
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Post::
 * Pragma Postcondition::
+* Pragma Post_Class::
+* Pragma Pre::
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
+* Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
@@ -249,6 +253,8 @@ Implementation Defined Pragmas
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
+* Pragma Type_Invariant::
+* Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
@@ -331,6 +337,7 @@ Implementation Defined Attributes
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Large::
+* Attribute Library_Level::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -1022,11 +1029,15 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Post::
 * Pragma Postcondition::
+* Pragma Post_Class::
+* Pragma Pre::
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
+* Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
@@ -1065,6 +1076,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
+* Pragma Type_Invariant::
+* Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
@@ -1375,7 +1388,9 @@ ID_ASSERTION_KIND ::= Assertions           |
                       Loop_Variant         |
                       Postcondition        |
                       Precondition         |
-                      Predicate
+                      Predicate            |
+                      Refined_Post         |
+                      Refined_Pre          |
                       Statement_Assertions
 
 POLICY_IDENTIFIER ::= Check | Disable | Ignore
@@ -1391,7 +1406,10 @@ are implementation defined additions recognized by the GNAT compiler.
 The pragma applies in both cases to pragmas and aspects with matching
 names, e.g. @code{Pre} applies to the Pre aspect, and @code{Precondition}
 applies to both the @code{Precondition} pragma
-and the aspect @code{Precondition}.
+and the aspect @code{Precondition}. Note that the identifiers for
+pragmas Pre_Class and Post_Class are Pre'Class and Post'Class (not
+Pre_Class and Post_Class), since these pragmas are intended to be
+identical to the corresponding aspects).
 
 If the policy is @code{CHECK}, then assertions are enabled, i.e.
 the corresponding pragma or aspect is activated.
@@ -5014,6 +5032,28 @@ Note that polling can also be enabled by use of the @option{-gnatP} switch.
 @xref{Switches for gcc,,, gnat_ugn, @value{EDITION} User's Guide}, for
 details.
 
+@node Pragma Post
+@unnumberedsec Pragma Post
+@cindex Post
+@cindex Checks, postconditions
+@findex Postconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Post (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Post} pragma is intended to be an exact replacement for
+the language-defined
+@code{Post} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
 @node Pragma Postcondition
 @unnumberedsec Pragma Postcondition
 @cindex Postcondition
@@ -5171,6 +5211,69 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
+Note that pragma @code{Postcondition} differs from the language-defined
+@code{Post} aspect (and corresponding @code{Post} pragma) in allowing
+multiple occurrences, allowing occurences in the body even if there
+is a separate spec, and allowing a second string parameter, and the
+use of the pragma identifier @code{Check}. Historically, pragma
+@code{Postcondition} was implemented prior to the development of
+Ada 2012, and has been retained in its original form for
+compatibility purposes.
+
+@node Pragma Post_Class
+@unnumberedsec Pragma Post_Class
+@cindex Post
+@cindex Checks, postconditions
+@findex Postconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Post_Class (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Post_Class} pragma is intended to be an exact replacement for
+the language-defined
+@code{Post'Class} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
+Note: This pragma is called @code{Post_Class} rather than
+@code{Post'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for provinding pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Post'Class}, not
+@code{Post_Class}.
+
+@node Pragma Pre
+@unnumberedsec Pragma Pre
+@cindex Pre
+@cindex Checks, preconditions
+@findex Preconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pre (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Pre} pragma is intended to be an exact replacement for
+the language-defined
+@code{Pre} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -5219,6 +5322,15 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if precondition
 checking is enabled.
 
+Note that pragma @code{Precondition} differs from the language-defined
+@code{Pre} aspect (and corresponding @code{Pre} pragma) in allowing
+multiple occurrences, allowing occurences in the body even if there
+is a separate spec, and allowing a second string parameter, and the
+use of the pragma identifier @code{Check}. Historically, pragma
+@code{Precondition} was implemented prior to the development of
+Ada 2012, and has been retained in its original form for
+compatibility purposes.
+
 @node Pragma Predicate
 @unnumberedsec Pragma Predicate
 @findex Predicate
@@ -5260,6 +5372,21 @@ subtype Q is R with
   Dynamic_Predicate => F(Q) or G(Q);
 @end smallexample
 
+Note that there is are no pragmas @code{Dynamic_Predicate}
+or @code{Static_Predicate}. That is
+because these pragmas would affect legality and semantics of
+the program and thus do not have a neutral effect if ignored.
+The motivation behind providing pragmas equivalent to
+corresponding aspects is to allow a program to be written
+using the pragmas, and then compiled with a compiler that
+will ignore the pragmas. That doesn't work in the case of
+static and dynamic predicates, since if the corresponding
+pragmas are ignored, then the behavior of the program is
+fundamentally changed (for example a membership test
+@code{A in B} would not take into account a predicate
+defined for subtype B). When following this approach, the
+use of predicates should be avoided.
+
 @node Pragma Preelaborable_Initialization
 @unnumberedsec Pragma Preelaborable_Initialization
 @findex Preelaborable_Initialization
@@ -5292,6 +5419,38 @@ no effect in Ada 83 or Ada 95 mode, but is
 equivalent to @code{pragma Prelaborate} when operating in later
 Ada versions. This is used to handle some cases where packages
 not previously preelaborable became so in Ada 2005.
+
+@node Pragma Pre_Class
+@unnumberedsec Pragma Pre_Class
+@cindex Pre_Class
+@cindex Checks, preconditions
+@findex Preconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pre_Class (Boolean_Expression);
+@end smallexample
+
+@noindent
+The @code{Pre_Class} pragma is intended to be an exact replacement for
+the language-defined
+@code{Pre'Class} aspect, and shares its restrictions and semantics.
+It must appear either immediately following the corresponding
+subprogram declaration (only other pragmas may intervene), or
+if there is no separate subprogram declaration, then it can
+appear at the start of the declarations in a subprogram body
+(preceded only by other pragmas).
+
+Note: This pragma is called @code{Pre_Class} rather than
+@code{Pre'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for providing pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Pre'Class}, not
+@code{Pre_Class}.
 
 @node Pragma Priority_Specific_Dispatching
 @unnumberedsec Pragma Priority_Specific_Dispatching
@@ -6647,6 +6806,56 @@ for this pragma, i.e.@: the parameters may be given in any order if named
 notation is used, and named and positional notation can be mixed
 following the normal rules for procedure calls in Ada.
 
+@node Pragma Type_Invariant
+@unnumberedsec Pragma Type_Invariant
+@findex Invariant
+@findex Type_Invariant pragma
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Type_Invariant
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+The @code{Type_Invariant} pragma is intended to be an exact
+replacement for the language-defined @code{Type_Invariant}
+aspect, and shares its restrictions and semantics. It differs
+from the language defined @code{Invariant} pragma in that it
+does not permit a string parameter, and it is
+controlled by the assertion identifier @code{Type_Invariant}
+rather than @code{Invariant}.
+
+@node Pragma Type_Invariant_Class
+@unnumberedsec Pragma Type_Invariant_Class
+@findex Invariant
+@findex Type_Invariant_Class pragma
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Type_Invariant_Class
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+The @code{Type_Invariant_Class} pragma is intended to be an exact
+replacement for the language-defined @code{Type_Invariant'Class}
+aspect, and shares its restrictions and semantics.
+
+Note: This pragma is called @code{Type_Invariant_Class} rather than
+@code{Type_Invariant'Class} because the latter would not be strictly
+conforming to the allowed syntax for pragmas. The motivation
+for providing pragmas equivalent to the aspects is to allow a program
+to be written using the pragmas, and then compiled if necessary
+using an Ada compiler that does not recognize the pragmas or
+aspects, but is prepared to ignore the pragmas. The assertion
+policy that controls this pragma is @code{Type_Invariant'Class},
+not @code{Type_Invariant_Class}.
+
 @node Pragma Unchecked_Union
 @unnumberedsec Pragma Unchecked_Union
 @cindex Unions in C
@@ -7634,6 +7843,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Large::
+* Attribute Library_Level::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -8133,6 +8343,30 @@ The @code{Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
+@node Attribute Library_Level
+@unnumberedsec Attribute Library_Level
+@findex Library_Level
+@noindent
+@noindent
+@code{P'Library_Level}, where P is an entity name,
+returns a Boolean value which is True if the entity is declared
+at the library level, and False otherwise. Note that within a
+generic instantition, the name of the generic unit denotes the
+instance, which means that this attribute can be used to test
+if a generic is instantiated at the library level, as shown
+in this example:
+
+@smallexample @c ada
+generic
+  ...
+package Gen is
+  pragma Compile_Time_Error
+    (not Gen'Library_Level,
+     "Gen can only be instantiated at library level");
+  ...
+end Gen;
+@end smallexample
+
 @node Attribute Loop_Entry
 @unnumberedsec Attribute Loop_Entry
 @findex Loop_Entry
@@ -8493,6 +8727,10 @@ have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
 if the component does not start on a byte boundary, then the scalar storage
 order specified for S and for the nested component type shall be identical.
 
+If @var{S} appears as the type of a record or array component, the enclosing
+record or array shall also have a @code{Scalar_Storage_Order} attribute
+definition clause.
+
 No component of a type that has a @code{Scalar_Storage_Order} attribute
 definition may be aliased.
 
@@ -8665,11 +8903,15 @@ denotes a function identical to
 @code{System.Storage_Elements.To_Address} except that
 it is a static attribute.  This means that if its argument is
 a static expression, then the result of the attribute is a
-static expression.  The result is that such an expression can be
+static expression.  This means that such an expression can be
 used in contexts (e.g.@: preelaborable packages) which require a
 static expression and where the function call could not be used
 (since the function call is always non-static, even if its
-argument is static).
+argument is static). The argument must be in the range
+-(2**(m-1) .. 2**m-1, where m is the memory size
+(typically 32 or 64). Negative values are intepreted in a
+modular manner (e.g. -1 means the same as 16#FFFF_FFFF# on
+a 32 bits machine).
 
 @node Attribute Type_Class
 @unnumberedsec Attribute Type_Class
@@ -8777,7 +9019,7 @@ The @code{Update} attribute creates a copy of an array or record value
 with one or more modified components. The syntax is:
 
 @smallexample @c ada
-PREFIX'Update (AGGREGATE);
+PREFIX'Update (AGGREGATE)
 @end smallexample
 
 @noindent
@@ -8825,6 +9067,8 @@ kept in mind when considering efficiency.
 
 The @code{Update} attribute cannot be applied to prefixes of a limited
 type, and cannot reference discriminants in the case of a record type.
+The accessibility level of an Update attribute result object is defined
+as for an aggregate.
 
 In the record case, no component can be mentioned more than once. In
 the array case, two overlapping ranges can appear in the aggregate,
@@ -11723,6 +11967,7 @@ where @var{nnn} is an integer.
 @emph{Exception_Name:} nnnnn
 @emph{Message:} mmmmm
 @emph{PID:} ppp
+@emph{Load address:} 0xhhhh
 @emph{Call stack traceback locations:}
 0xhhhh 0xhhhh 0xhhhh ... 0xhhh
 @end smallexample
@@ -11744,10 +11989,12 @@ present only if the Process Id is nonzero). Currently we are
 not making use of this field.
 
 @item
-The Call stack traceback locations line and the following values
-are present only if at least one traceback location was recorded.
-The values are given in C style format, with lower case letters
-for a-f, and only as many digits present as are necessary.
+The Load address line, the Call stack traceback locations line and the
+following values are present only if at least one traceback location was
+recorded. The Load address indicates the address at which the main executable
+was loaded; this line may not be present if operating system hasn't relocated
+the main executable. The values are given in C style format, with lower case
+letters for a-f, and only as many digits present as are necessary.
 @end itemize
 
 @noindent
@@ -12003,7 +12250,18 @@ See items describing the integer and floating-point types supported.
 @sp 1
 @cartouche
 @noindent
-@strong{61}.  The accuracy actually achieved by the elementary
+@strong{61}. The string returned by @code{Character_Set_Version}.
+See A.3.5(3).
+@end cartouche
+@noindent
+@code{Ada.Wide_Characters.Handling.Character_Set_Version} returns
+the string "Unicode 6.2", referring to version 6.2.x of the
+Unicode specification.
+
+@sp 1
+@cartouche
+@noindent
+@strong{62}.  The accuracy actually achieved by the elementary
 functions.  See A.5.1(1).
 @end cartouche
 @noindent
@@ -12013,7 +12271,7 @@ library.  Only fast math mode is implemented.
 @sp 1
 @cartouche
 @noindent
-@strong{62}.  The sign of a zero result from some of the operators or
+@strong{63}.  The sign of a zero result from some of the operators or
 functions in @code{Numerics.Generic_Elementary_Functions}, when
 @code{Float_Type'Signed_Zeros} is @code{True}.  See A.5.1(46).
 @end cartouche
@@ -12024,7 +12282,7 @@ floating-point.
 @sp 1
 @cartouche
 @noindent
-@strong{63}.  The value of
+@strong{64}.  The value of
 @code{Numerics.Float_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
@@ -12033,7 +12291,7 @@ Maximum image width is 6864, see library file @file{s-rannum.ads}.
 @sp 1
 @cartouche
 @noindent
-@strong{64}.  The value of
+@strong{65}.  The value of
 @code{Numerics.Discrete_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
@@ -12042,7 +12300,7 @@ Maximum image width is 6864, see library file @file{s-rannum.ads}.
 @sp 1
 @cartouche
 @noindent
-@strong{65}.  The algorithms for random number generation.  See
+@strong{66}.  The algorithms for random number generation.  See
 A.5.2(32).
 @end cartouche
 @noindent
@@ -12053,7 +12311,7 @@ The algorithm is the Mersenne Twister, as documented in the source file
 @sp 1
 @cartouche
 @noindent
-@strong{66}.  The string representation of a random number generator's
+@strong{67}.  The string representation of a random number generator's
 state.  See A.5.2(38).
 @end cartouche
 @noindent
@@ -12064,7 +12322,7 @@ of the state vector.
 @sp 1
 @cartouche
 @noindent
-@strong{67}.  The minimum time interval between calls to the
+@strong{68}.  The minimum time interval between calls to the
 time-dependent Reset procedure that are guaranteed to initiate different
 random number sequences.  See A.5.2(45).
 @end cartouche
@@ -12075,7 +12333,7 @@ random numbers is one microsecond.
 @sp 1
 @cartouche
 @noindent
-@strong{68}.  The values of the @code{Model_Mantissa},
+@strong{69}.  The values of the @code{Model_Mantissa},
 @code{Model_Emin}, @code{Model_Epsilon}, @code{Model},
 @code{Safe_First}, and @code{Safe_Last} attributes, if the Numerics
 Annex is not supported.  See A.5.3(72).
@@ -12087,7 +12345,7 @@ Run the compiler with @option{-gnatS} to produce a listing of package
 @sp 1
 @cartouche
 @noindent
-@strong{69}.  Any implementation-defined characteristics of the
+@strong{70}.  Any implementation-defined characteristics of the
 input-output packages.  See A.7(14).
 @end cartouche
 @noindent
@@ -12097,7 +12355,7 @@ packages.
 @sp 1
 @cartouche
 @noindent
-@strong{70}.  The value of @code{Buffer_Size} in @code{Storage_IO}.  See
+@strong{71}.  The value of @code{Buffer_Size} in @code{Storage_IO}.  See
 A.9(10).
 @end cartouche
 @noindent
@@ -12108,7 +12366,7 @@ boundary.
 @sp 1
 @cartouche
 @noindent
-@strong{71}.  External files for standard input, standard output, and
+@strong{72}.  External files for standard input, standard output, and
 standard error See A.10(5).
 @end cartouche
 @noindent
@@ -12118,7 +12376,7 @@ libraries.  See source file @file{i-cstrea.ads} for further details.
 @sp 1
 @cartouche
 @noindent
-@strong{72}.  The accuracy of the value produced by @code{Put}.  See
+@strong{73}.  The accuracy of the value produced by @code{Put}.  See
 A.10.9(36).
 @end cartouche
 @noindent
@@ -12129,7 +12387,7 @@ significant digit positions.
 @sp 1
 @cartouche
 @noindent
-@strong{73}.  The meaning of @code{Argument_Count}, @code{Argument}, and
+@strong{74}.  The meaning of @code{Argument_Count}, @code{Argument}, and
 @code{Command_Name}.  See A.15(1).
 @end cartouche
 @noindent
@@ -12139,7 +12397,7 @@ main program in the natural manner.
 @sp 1
 @cartouche
 @noindent
-@strong{74}.  The interpretation of the @code{Form} parameter in procedure
+@strong{75}.  The interpretation of the @code{Form} parameter in procedure
 @code{Create_Directory}.  See A.16(56).
 @end cartouche
 @noindent
@@ -12148,7 +12406,7 @@ The @code{Form} parameter is not used.
 @sp 1
 @cartouche
 @noindent
-@strong{75}.  The interpretation of the @code{Form} parameter in procedure
+@strong{76}.  The interpretation of the @code{Form} parameter in procedure
 @code{Create_Path}.  See A.16(60).
 @end cartouche
 @noindent
@@ -12157,7 +12415,7 @@ The @code{Form} parameter is not used.
 @sp 1
 @cartouche
 @noindent
-@strong{76}.  The interpretation of the @code{Form} parameter in procedure
+@strong{77}.  The interpretation of the @code{Form} parameter in procedure
 @code{Copy_File}.  See A.16(68).
 @end cartouche
 @noindent
@@ -12236,7 +12494,7 @@ Form => "mode=internal, preserve=timestamps"
 @sp 1
 @cartouche
 @noindent
-@strong{77}.  Implementation-defined convention names.  See B.1(11).
+@strong{78}.  Implementation-defined convention names.  See B.1(11).
 @end cartouche
 @noindent
 The following convention names are supported
@@ -12303,7 +12561,7 @@ implementations, these names are accepted silently.
 @sp 1
 @cartouche
 @noindent
-@strong{78}.  The meaning of link names.  See B.1(36).
+@strong{79}.  The meaning of link names.  See B.1(36).
 @end cartouche
 @noindent
 Link names are the actual names used by the linker.
@@ -12311,7 +12569,7 @@ Link names are the actual names used by the linker.
 @sp 1
 @cartouche
 @noindent
-@strong{79}.  The manner of choosing link names when neither the link
+@strong{80}.  The manner of choosing link names when neither the link
 name nor the address of an imported or exported entity is specified.  See
 B.1(36).
 @end cartouche
@@ -12323,7 +12581,7 @@ letters.
 @sp 1
 @cartouche
 @noindent
-@strong{80}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
+@strong{81}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
 @end cartouche
 @noindent
 The string passed to @code{Linker_Options} is presented uninterpreted as
@@ -12344,7 +12602,7 @@ from the corresponding package spec.
 @sp 1
 @cartouche
 @noindent
-@strong{81}.  The contents of the visible part of package
+@strong{82}.  The contents of the visible part of package
 @code{Interfaces} and its language-defined descendants.  See B.2(1).
 @end cartouche
 @noindent
@@ -12353,7 +12611,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{82}.  Implementation-defined children of package
+@strong{83}.  Implementation-defined children of package
 @code{Interfaces}.  The contents of the visible part of package
 @code{Interfaces}.  See B.2(11).
 @end cartouche
@@ -12363,7 +12621,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{83}.  The types @code{Floating}, @code{Long_Floating},
+@strong{84}.  The types @code{Floating}, @code{Long_Floating},
 @code{Binary}, @code{Long_Binary}, @code{Decimal_ Element}, and
 @code{COBOL_Character}; and the initialization of the variables
 @code{Ada_To_COBOL} and @code{COBOL_To_Ada}, in
@@ -12391,7 +12649,7 @@ For initialization, see the file @file{i-cobol.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{84}.  Support for access to machine instructions.  See C.1(1).
+@strong{85}.  Support for access to machine instructions.  See C.1(1).
 @end cartouche
 @noindent
 See documentation in file @file{s-maccod.ads} in the distributed library.
@@ -12399,7 +12657,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{85}.  Implementation-defined aspects of access to machine
+@strong{86}.  Implementation-defined aspects of access to machine
 operations.  See C.1(9).
 @end cartouche
 @noindent
@@ -12408,7 +12666,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{86}.  Implementation-defined aspects of interrupts.  See C.3(2).
+@strong{87}.  Implementation-defined aspects of interrupts.  See C.3(2).
 @end cartouche
 @noindent
 Interrupts are mapped to signals or conditions as appropriate.  See
@@ -12419,7 +12677,7 @@ on the interrupts supported on a particular target.
 @sp 1
 @cartouche
 @noindent
-@strong{87}.  Implementation-defined aspects of pre-elaboration.  See
+@strong{88}.  Implementation-defined aspects of pre-elaboration.  See
 C.4(13).
 @end cartouche
 @noindent
@@ -12429,7 +12687,7 @@ except under control of the debugger.
 @sp 1
 @cartouche
 @noindent
-@strong{88}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
+@strong{89}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
 @end cartouche
 @noindent
 Pragma @code{Discard_Names} causes names of enumeration literals to
@@ -12440,7 +12698,7 @@ Pos values.
 @sp 1
 @cartouche
 @noindent
-@strong{89}.  The result of the @code{Task_Identification.Image}
+@strong{90}.  The result of the @code{Task_Identification.Image}
 attribute.  See C.7.1(7).
 @end cartouche
 @noindent
@@ -12470,7 +12728,7 @@ virtual address of the control block of the task.
 @sp 1
 @cartouche
 @noindent
-@strong{90}.  The value of @code{Current_Task} when in a protected entry
+@strong{91}.  The value of @code{Current_Task} when in a protected entry
 or interrupt handler.  See C.7.1(17).
 @end cartouche
 @noindent
@@ -12480,7 +12738,7 @@ convenient thread, so the value of @code{Current_Task} is undefined.
 @sp 1
 @cartouche
 @noindent
-@strong{91}.  The effect of calling @code{Current_Task} from an entry
+@strong{92}.  The effect of calling @code{Current_Task} from an entry
 body or interrupt handler.  See C.7.1(19).
 @end cartouche
 @noindent
@@ -12491,7 +12749,7 @@ executing the code.
 @sp 1
 @cartouche
 @noindent
-@strong{92}.  Implementation-defined aspects of
+@strong{93}.  Implementation-defined aspects of
 @code{Task_Attributes}.  See C.7.2(19).
 @end cartouche
 @noindent
@@ -12500,7 +12758,7 @@ There are no implementation-defined aspects of @code{Task_Attributes}.
 @sp 1
 @cartouche
 @noindent
-@strong{93}.  Values of all @code{Metrics}.  See D(2).
+@strong{94}.  Values of all @code{Metrics}.  See D(2).
 @end cartouche
 @noindent
 The metrics information for GNAT depends on the performance of the
@@ -12515,7 +12773,7 @@ the required metrics.
 @sp 1
 @cartouche
 @noindent
-@strong{94}.  The declarations of @code{Any_Priority} and
+@strong{95}.  The declarations of @code{Any_Priority} and
 @code{Priority}.  See D.1(11).
 @end cartouche
 @noindent
@@ -12524,7 +12782,7 @@ See declarations in file @file{system.ads}.
 @sp 1
 @cartouche
 @noindent
-@strong{95}.  Implementation-defined execution resources.  See D.1(15).
+@strong{96}.  Implementation-defined execution resources.  See D.1(15).
 @end cartouche
 @noindent
 There are no implementation-defined execution resources.
@@ -12532,7 +12790,7 @@ There are no implementation-defined execution resources.
 @sp 1
 @cartouche
 @noindent
-@strong{96}.  Whether, on a multiprocessor, a task that is waiting for
+@strong{97}.  Whether, on a multiprocessor, a task that is waiting for
 access to a protected object keeps its processor busy.  See D.2.1(3).
 @end cartouche
 @noindent
@@ -12542,7 +12800,7 @@ object does not keep its processor busy.
 @sp 1
 @cartouche
 @noindent
-@strong{97}.  The affect of implementation defined execution resources
+@strong{98}.  The affect of implementation defined execution resources
 on task dispatching.  See D.2.1(9).
 @end cartouche
 @noindent
@@ -12553,7 +12811,7 @@ underlying operating system.
 @sp 1
 @cartouche
 @noindent
-@strong{98}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{99}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Task_Dispatching_Policy}.  See D.2.2(3).
 @end cartouche
 @noindent
@@ -12563,7 +12821,7 @@ pragma.
 @sp 1
 @cartouche
 @noindent
-@strong{99}.  Implementation-defined aspects of priority inversion.  See
+@strong{100}.  Implementation-defined aspects of priority inversion.  See
 D.2.2(16).
 @end cartouche
 @noindent
@@ -12573,7 +12831,7 @@ of delay expirations for lower priority tasks.
 @sp 1
 @cartouche
 @noindent
-@strong{100}.  Implementation-defined task dispatching.  See D.2.2(18).
+@strong{101}.  Implementation-defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
 The policy is the same as that of the underlying threads implementation.
@@ -12581,7 +12839,7 @@ The policy is the same as that of the underlying threads implementation.
 @sp 1
 @cartouche
 @noindent
-@strong{101}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{102}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Locking_Policy}.  See D.3(4).
 @end cartouche
 @noindent
@@ -12598,7 +12856,7 @@ concurrently.
 @sp 1
 @cartouche
 @noindent
-@strong{102}.  Default ceiling priorities.  See D.3(10).
+@strong{103}.  Default ceiling priorities.  See D.3(10).
 @end cartouche
 @noindent
 The ceiling priority of protected objects of the type
@@ -12608,7 +12866,7 @@ Reference Manual D.3(10),
 @sp 1
 @cartouche
 @noindent
-@strong{103}.  The ceiling of any protected object used internally by
+@strong{104}.  The ceiling of any protected object used internally by
 the implementation.  See D.3(16).
 @end cartouche
 @noindent
@@ -12618,7 +12876,7 @@ The ceiling priority of internal protected objects is
 @sp 1
 @cartouche
 @noindent
-@strong{104}.  Implementation-defined queuing policies.  See D.4(1).
+@strong{105}.  Implementation-defined queuing policies.  See D.4(1).
 @end cartouche
 @noindent
 There are no implementation-defined queuing policies.
@@ -12626,7 +12884,7 @@ There are no implementation-defined queuing policies.
 @sp 1
 @cartouche
 @noindent
-@strong{105}.  On a multiprocessor, any conditions that cause the
+@strong{106}.  On a multiprocessor, any conditions that cause the
 completion of an aborted construct to be delayed later than what is
 specified for a single processor.  See D.6(3).
 @end cartouche
@@ -12637,7 +12895,7 @@ processor, there are no further delays.
 @sp 1
 @cartouche
 @noindent
-@strong{106}.  Any operations that implicitly require heap storage
+@strong{107}.  Any operations that implicitly require heap storage
 allocation.  See D.7(8).
 @end cartouche
 @noindent
@@ -12647,7 +12905,7 @@ task creation.
 @sp 1
 @cartouche
 @noindent
-@strong{107}.  Implementation-defined aspects of pragma
+@strong{108}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See D.7(20).
 @end cartouche
 @noindent
@@ -12656,7 +12914,7 @@ There are no such implementation-defined aspects.
 @sp 1
 @cartouche
 @noindent
-@strong{108}.  Implementation-defined aspects of package
+@strong{109}.  Implementation-defined aspects of package
 @code{Real_Time}.  See D.8(17).
 @end cartouche
 @noindent
@@ -12665,7 +12923,7 @@ There are no implementation defined aspects of package @code{Real_Time}.
 @sp 1
 @cartouche
 @noindent
-@strong{109}.  Implementation-defined aspects of
+@strong{110}.  Implementation-defined aspects of
 @code{delay_statements}.  See D.9(8).
 @end cartouche
 @noindent
@@ -12675,7 +12933,7 @@ delayed (see D.9(7)).
 @sp 1
 @cartouche
 @noindent
-@strong{110}.  The upper bound on the duration of interrupt blocking
+@strong{111}.  The upper bound on the duration of interrupt blocking
 caused by the implementation.  See D.12(5).
 @end cartouche
 @noindent
@@ -12685,7 +12943,7 @@ no cases is it more than 10 milliseconds.
 @sp 1
 @cartouche
 @noindent
-@strong{111}.  The means for creating and executing distributed
+@strong{112}.  The means for creating and executing distributed
 programs.  See E(5).
 @end cartouche
 @noindent
@@ -12695,7 +12953,7 @@ distributed programs.  See the GLADE reference manual for further details.
 @sp 1
 @cartouche
 @noindent
-@strong{112}.  Any events that can result in a partition becoming
+@strong{113}.  Any events that can result in a partition becoming
 inaccessible.  See E.1(7).
 @end cartouche
 @noindent
@@ -12704,7 +12962,7 @@ See the GLADE reference manual for full details on such events.
 @sp 1
 @cartouche
 @noindent
-@strong{113}.  The scheduling policies, treatment of priorities, and
+@strong{114}.  The scheduling policies, treatment of priorities, and
 management of shared resources between partitions in certain cases.  See
 E.1(11).
 @end cartouche
@@ -12715,7 +12973,7 @@ multi-partition execution.
 @sp 1
 @cartouche
 @noindent
-@strong{114}.  Events that cause the version of a compilation unit to
+@strong{115}.  Events that cause the version of a compilation unit to
 change.  See E.3(5).
 @end cartouche
 @noindent
@@ -12728,7 +12986,7 @@ comments.
 @sp 1
 @cartouche
 @noindent
-@strong{115}.  Whether the execution of the remote subprogram is
+@strong{116}.  Whether the execution of the remote subprogram is
 immediately aborted as a result of cancellation.  See E.4(13).
 @end cartouche
 @noindent
@@ -12738,7 +12996,7 @@ a distributed application.
 @sp 1
 @cartouche
 @noindent
-@strong{116}.  Implementation-defined aspects of the PCS@.  See E.5(25).
+@strong{117}.  Implementation-defined aspects of the PCS@.  See E.5(25).
 @end cartouche
 @noindent
 See the GLADE reference manual for a full description of all implementation
@@ -12747,7 +13005,7 @@ defined aspects of the PCS@.
 @sp 1
 @cartouche
 @noindent
-@strong{117}.  Implementation-defined interfaces in the PCS@.  See
+@strong{118}.  Implementation-defined interfaces in the PCS@.  See
 E.5(26).
 @end cartouche
 @noindent
@@ -12757,7 +13015,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{118}.  The values of named numbers in the package
+@strong{119}.  The values of named numbers in the package
 @code{Decimal}.  See F.2(7).
 @end cartouche
 @noindent
@@ -12777,7 +13035,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{119}.  The value of @code{Max_Picture_Length} in the package
+@strong{120}.  The value of @code{Max_Picture_Length} in the package
 @code{Text_IO.Editing}.  See F.3.3(16).
 @end cartouche
 @noindent
@@ -12786,7 +13044,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{120}.  The value of @code{Max_Picture_Length} in the package
+@strong{121}.  The value of @code{Max_Picture_Length} in the package
 @code{Wide_Text_IO.Editing}.  See F.3.4(5).
 @end cartouche
 @noindent
@@ -12795,7 +13053,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{121}.  The accuracy actually achieved by the complex elementary
+@strong{122}.  The accuracy actually achieved by the complex elementary
 functions and by other complex arithmetic operations.  See G.1(1).
 @end cartouche
 @noindent
@@ -12805,7 +13063,7 @@ operations.  Only fast math mode is currently supported.
 @sp 1
 @cartouche
 @noindent
-@strong{122}.  The sign of a zero result (or a component thereof) from
+@strong{123}.  The sign of a zero result (or a component thereof) from
 any operator or function in @code{Numerics.Generic_Complex_Types}, when
 @code{Real'Signed_Zeros} is True.  See G.1.1(53).
 @end cartouche
@@ -12816,7 +13074,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{123}.  The sign of a zero result (or a component thereof) from
+@strong{124}.  The sign of a zero result (or a component thereof) from
 any operator or function in
 @code{Numerics.Generic_Complex_Elementary_Functions}, when
 @code{Real'Signed_Zeros} is @code{True}.  See G.1.2(45).
@@ -12828,7 +13086,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{124}.  Whether the strict mode or the relaxed mode is the
+@strong{125}.  Whether the strict mode or the relaxed mode is the
 default.  See G.2(2).
 @end cartouche
 @noindent
@@ -12838,7 +13096,7 @@ provides a highly efficient implementation of strict mode.
 @sp 1
 @cartouche
 @noindent
-@strong{125}.  The result interval in certain cases of fixed-to-float
+@strong{126}.  The result interval in certain cases of fixed-to-float
 conversion.  See G.2.1(10).
 @end cartouche
 @noindent
@@ -12849,7 +13107,7 @@ floating-point format.
 @sp 1
 @cartouche
 @noindent
-@strong{126}.  The result of a floating point arithmetic operation in
+@strong{127}.  The result of a floating point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.1(13).
 @end cartouche
@@ -12866,7 +13124,7 @@ properly generated.
 @sp 1
 @cartouche
 @noindent
-@strong{127}.  The result interval for division (or exponentiation by a
+@strong{128}.  The result interval for division (or exponentiation by a
 negative exponent), when the floating point hardware implements division
 as multiplication by a reciprocal.  See G.2.1(16).
 @end cartouche
@@ -12876,7 +13134,7 @@ Not relevant, division is IEEE exact.
 @sp 1
 @cartouche
 @noindent
-@strong{128}.  The definition of close result set, which determines the
+@strong{129}.  The definition of close result set, which determines the
 accuracy of certain fixed point multiplications and divisions.  See
 G.2.3(5).
 @end cartouche
@@ -12889,7 +13147,7 @@ is converted to the target type.
 @sp 1
 @cartouche
 @noindent
-@strong{129}.  Conditions on a @code{universal_real} operand of a fixed
+@strong{130}.  Conditions on a @code{universal_real} operand of a fixed
 point multiplication or division for which the result shall be in the
 perfect result set.  See G.2.3(22).
 @end cartouche
@@ -12901,7 +13159,7 @@ representable in 64-bits.
 @sp 1
 @cartouche
 @noindent
-@strong{130}.  The result of a fixed point arithmetic operation in
+@strong{131}.  The result of a fixed point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.3(27).
 @end cartouche
@@ -12912,7 +13170,7 @@ types.
 @sp 1
 @cartouche
 @noindent
-@strong{131}.  The result of an elementary function reference in
+@strong{132}.  The result of an elementary function reference in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.4(4).
 @end cartouche
@@ -12922,7 +13180,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{132}.  The value of the angle threshold, within which certain
+@strong{133}.  The value of the angle threshold, within which certain
 elementary functions, complex arithmetic operations, and complex
 elementary functions yield results conforming to a maximum relative
 error bound.  See G.2.4(10).
@@ -12933,7 +13191,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{133}.  The accuracy of certain elementary functions for
+@strong{134}.  The accuracy of certain elementary functions for
 parameters beyond the angle threshold.  See G.2.4(10).
 @end cartouche
 @noindent
@@ -12942,7 +13200,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{134}.  The result of a complex arithmetic operation or complex
+@strong{135}.  The result of a complex arithmetic operation or complex
 elementary function reference in overflow situations, when the
 @code{Machine_Overflows} attribute of the corresponding real type is
 @code{False}.  See G.2.6(5).
@@ -12953,7 +13211,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{135}.  The accuracy of certain complex arithmetic operations and
+@strong{136}.  The accuracy of certain complex arithmetic operations and
 certain complex elementary functions for parameters (or components
 thereof) beyond the angle threshold.  See G.2.6(8).
 @end cartouche
@@ -12963,7 +13221,7 @@ Information on those subjects is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{136}.  Information regarding bounded errors and erroneous
+@strong{137}.  Information regarding bounded errors and erroneous
 execution.  See H.2(1).
 @end cartouche
 @noindent
@@ -12972,7 +13230,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{137}.  Implementation-defined aspects of pragma
+@strong{138}.  Implementation-defined aspects of pragma
 @code{Inspection_Point}.  See H.3.2(8).
 @end cartouche
 @noindent
@@ -12982,7 +13240,7 @@ be examined by the debugger at the inspection point.
 @sp 1
 @cartouche
 @noindent
-@strong{138}.  Implementation-defined aspects of pragma
+@strong{139}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See H.4(25).
 @end cartouche
 @noindent
@@ -12993,7 +13251,7 @@ generated code.  Checks must suppressed by use of pragma @code{Suppress}.
 @sp 1
 @cartouche
 @noindent
-@strong{139}.  Any restrictions on pragma @code{Restrictions}.  See
+@strong{140}.  Any restrictions on pragma @code{Restrictions}.  See
 H.4(27).
 @end cartouche
 @noindent
@@ -16991,9 +17249,11 @@ is specifically authorized by the Ada Reference Manual
 @cindex Formal container for doubly linked lists
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for doubly linked lists, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for doubly linked lists, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
 @section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
@@ -17001,9 +17261,11 @@ code using such containers.
 @cindex Formal container for hashed maps
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for hashed maps, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for hashed maps, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
 @section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
@@ -17011,9 +17273,11 @@ code using such containers.
 @cindex Formal container for hashed sets
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for hashed sets, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for hashed sets, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
 @section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
@@ -17021,9 +17285,11 @@ code using such containers.
 @cindex Formal container for ordered maps
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for ordered maps, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for ordered maps, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
 @section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
@@ -17031,9 +17297,11 @@ code using such containers.
 @cindex Formal container for ordered sets
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for ordered sets, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for ordered sets, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Containers.Formal_Vectors (a-cofove.ads)
 @section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
@@ -17041,9 +17309,11 @@ code using such containers.
 @cindex Formal container for vectors
 
 @noindent
-This child of @code{Ada.Containers} defines a modified version of the Ada 2005
-container for vectors, meant to facilitate formal verification of
-code using such containers.
+This child of @code{Ada.Containers} defines a modified version of the
+Ada 2005 container for vectors, meant to facilitate formal
+verification of code using such containers. The specification of this
+unit is compatible with SPARK 2014. Note that the API of this unit may
+be subject to incompatible changes as SPARK 2014 evolves.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})
@@ -18610,6 +18880,19 @@ In addition, C++ exceptions are propagated and can be handled in an
 occurrence has no message, and the simple name of the exception identity
 contains @samp{Foreign_Exception}. Finalization and awaiting dependent
 tasks works properly when such foreign exceptions are propagated.
+
+It is also possible to import a C++ exception using the following syntax:
+
+@smallexample @c ada
+LOCAL_NAME : exception;
+pragma Import (Cpp,
+  [Entity =>] LOCAL_NAME,
+  [External_Name =>] static_string_EXPRESSION);
+@end smallexample
+
+@noindent
+The @code{External_Name} is the name of the C++ RTTI symbol. You can then
+cover a specific C++ exception in an exception handler.
 
 @node Interfacing to COBOL
 @section Interfacing to COBOL

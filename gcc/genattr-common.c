@@ -33,7 +33,7 @@ static void
 write_upcase (const char *str)
 {
   for (; *str; str++)
-    putchar (TOUPPER(*str));
+    putchar (TOUPPER (*str));
 }
 
 static void

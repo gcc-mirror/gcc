@@ -136,6 +136,11 @@ package body Sem_Ch7 is
    --  inherited private operation has been overridden, then it's replaced by
    --  the overriding operation.
 
+   procedure Unit_Requires_Body_Info (P : Entity_Id);
+   --  Outputs info messages showing why package specification P requires a
+   --  body. Caller has checked that the switch requesting this information
+   --  is set, and that the package does indeed require a body.
+
    --------------------------
    -- Analyze_Package_Body --
    --------------------------
@@ -224,15 +229,10 @@ package body Sem_Ch7 is
 
       Body_Id := Defining_Entity (N);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Body_Id);
-      end if;
+      --  Body is body of package instantiation. Corresponding spec has already
+      --  been set.
 
       if Present (Corresponding_Spec (N)) then
-
-         --  Body is body of package instantiation. Corresponding spec has
-         --  already been set.
-
          Spec_Id := Corresponding_Spec (N);
          Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
@@ -315,6 +315,7 @@ package body Sem_Ch7 is
       Set_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);
+      Set_Contract    (Body_Id, Make_Contract (Sloc (Body_Id)));
 
       --  Defining name for the package body is not a visible entity: Only the
       --  defining name for the declaration is visible.
@@ -337,6 +338,10 @@ package body Sem_Ch7 is
       Set_In_Package_Body (Spec_Id);
       Set_Has_Completion (Spec_Id);
       Last_Spec_Entity := Last_Entity (Spec_Id);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
 
       Push_Scope (Spec_Id);
 
@@ -770,6 +775,21 @@ package body Sem_Ch7 is
       --  True when this package declaration is not a nested declaration
 
    begin
+      if Debug_Flag_C then
+         Write_Str ("==> package spec ");
+         Write_Name (Chars (Id));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
+         Indent;
+      end if;
+
+      Generate_Definition (Id);
+      Enter_Name (Id);
+      Set_Ekind    (Id, E_Package);
+      Set_Etype    (Id, Standard_Void_Type);
+      Set_Contract (Id, Make_Contract (Sloc (Id)));
+
       --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
@@ -784,23 +804,9 @@ package body Sem_Ch7 is
       --     limited with Pkg; -- ERROR
       --     package Pkg is ...
 
-      if From_With_Type (Id) then
+      if From_Limited_With (Id) then
          return;
       end if;
-
-      if Debug_Flag_C then
-         Write_Str ("==> package spec ");
-         Write_Name (Chars (Id));
-         Write_Str (" from ");
-         Write_Location (Sloc (N));
-         Write_Eol;
-         Indent;
-      end if;
-
-      Generate_Definition (Id);
-      Enter_Name (Id);
-      Set_Ekind (Id, E_Package);
-      Set_Etype (Id, Standard_Void_Type);
 
       Push_Scope (Id);
 
@@ -1167,6 +1173,11 @@ package body Sem_Ch7 is
                --  then finish off by looping through the nongeneric parents
                --  and installing their private declarations.
 
+               --  If one of the non-generic parents is itself on the scope
+               --  stack, do not install its private declarations: they are
+               --  installed in due time when the private part of that parent
+               --  is analyzed. This is delicate ???
+
                else
                   while Present (Inst_Par)
                     and then Inst_Par /= Standard_Standard
@@ -1477,7 +1488,19 @@ package body Sem_Ch7 is
          Clear_Constants (Id, First_Private_Entity (Id));
       end if;
 
+      --  Issue an error in SPARK mode if a package specification contains
+      --  more than one tagged type or type extension.
+
       Check_One_Tagged_Type_Or_Extension_At_Most;
+
+      --  If switch set, output information on why body required
+
+      if List_Body_Required_Info
+        and then In_Extended_Main_Source_Unit (Id)
+        and then Unit_Requires_Body (Id)
+      then
+         Unit_Requires_Body_Info (Id);
+      end if;
    end Analyze_Package_Specification;
 
    --------------------------------------
@@ -1529,7 +1552,7 @@ package body Sem_Ch7 is
       E := First_Entity (Spec_Id);
       while Present (E) loop
          if Ekind (E) = E_Anonymous_Access_Type
-           and then From_With_Type (E)
+           and then From_Limited_With (E)
          then
             IR := Make_Itype_Reference (Sloc (P_Body));
             Set_Itype (IR, E);
@@ -1649,8 +1672,8 @@ package body Sem_Ch7 is
                           and then No (Interface_Alias (Node (Op_Elmt_2)))
                         then
                            --  The private inherited operation has been
-                           --  overridden by an explicit subprogram: replace
-                           --  the former by the latter.
+                           --  overridden by an explicit subprogram:
+                           --  replace the former by the latter.
 
                            New_Op := Node (Op_Elmt_2);
                            Replace_Elmt (Op_Elmt, New_Op);
@@ -2582,7 +2605,10 @@ package body Sem_Ch7 is
    -- Unit_Requires_Body --
    ------------------------
 
-   function Unit_Requires_Body (P : Entity_Id) return Boolean is
+   function Unit_Requires_Body
+     (P                     : Entity_Id;
+      Ignore_Abstract_State : Boolean := False) return Boolean
+   is
       E : Entity_Id;
 
    begin
@@ -2621,12 +2647,17 @@ package body Sem_Ch7 is
          end;
 
       --  A [generic] package that introduces at least one non-null abstract
-      --  state requires completion. A null abstract state always appears as
-      --  the sole element of the state list.
+      --  state requires completion. However, there is a separate rule that
+      --  requires that such a package have a reason other than this for a
+      --  body being required (if necessary a pragma Elaborate_Body must be
+      --  provided). If Ignore_Abstract_State is True, we don't do this check
+      --  (so we can use Unit_Requires_Body to check for some other reason).
 
       elsif Ekind_In (P, E_Generic_Package, E_Package)
+        and then not Ignore_Abstract_State
         and then Present (Abstract_States (P))
-        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+        and then
+            not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
       then
          return True;
       end if;
@@ -2703,4 +2734,135 @@ package body Sem_Ch7 is
       return False;
    end Unit_Requires_Body;
 
+   -----------------------------
+   -- Unit_Requires_Body_Info --
+   -----------------------------
+
+   procedure Unit_Requires_Body_Info (P : Entity_Id) is
+      E : Entity_Id;
+
+   begin
+      --  Imported entity never requires body. Right now, only subprograms can
+      --  be imported, but perhaps in the future we will allow import of
+      --  packages.
+
+      if Is_Imported (P) then
+         return;
+
+      --  Body required if library package with pragma Elaborate_Body
+
+      elsif Has_Pragma_Elaborate_Body (P) then
+         Error_Msg_N
+           ("?Y?info: & requires body (Elaborate_Body)", P);
+
+      --  Body required if subprogram
+
+      elsif Is_Subprogram (P) or else Is_Generic_Subprogram (P) then
+         Error_Msg_N ("?Y?info: & requires body (subprogram case)", P);
+
+      --  Body required if generic parent has Elaborate_Body
+
+      elsif Ekind (P) = E_Package
+        and then Nkind (Parent (P)) = N_Package_Specification
+        and then Present (Generic_Parent (Parent (P)))
+      then
+         declare
+            G_P : constant Entity_Id := Generic_Parent (Parent (P));
+         begin
+            if Has_Pragma_Elaborate_Body (G_P) then
+               Error_Msg_N
+                 ("?Y?info: & requires body (generic parent Elaborate_Body)",
+                  P);
+            end if;
+         end;
+
+      --  A [generic] package that introduces at least one non-null abstract
+      --  state requires completion. However, there is a separate rule that
+      --  requires that such a package have a reason other than this for a
+      --  body being required (if necessary a pragma Elaborate_Body must be
+      --  provided). If Ignore_Abstract_State is True, we don't do this check
+      --  (so we can use Unit_Requires_Body to check for some other reason).
+
+      elsif Ekind_In (P, E_Generic_Package, E_Package)
+        and then Present (Abstract_States (P))
+        and then
+          not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+      then
+         Error_Msg_N
+           ("?Y?info: & requires body (non-null abstract state aspect)",
+            P);
+      end if;
+
+      --  Otherwise search entity chain for entity requiring completion
+
+      E := First_Entity (P);
+      while Present (E) loop
+
+         --  Always ignore child units. Child units get added to the entity
+         --  list of a parent unit, but are not original entities of the
+         --  parent, and so do not affect whether the parent needs a body.
+
+         if Is_Child_Unit (E) then
+            null;
+
+         --  Ignore formal packages and their renamings
+
+         elsif Ekind (E) = E_Package
+           and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                                                N_Formal_Package_Declaration
+         then
+            null;
+
+         --  Otherwise test to see if entity requires a completion.
+         --  Note that subprogram entities whose declaration does not come
+         --  from source are ignored here on the basis that we assume the
+         --  expander will provide an implicit completion at some point.
+
+         elsif (Is_Overloadable (E)
+                 and then Ekind (E) /= E_Enumeration_Literal
+                 and then Ekind (E) /= E_Operator
+                 and then not Is_Abstract_Subprogram (E)
+                 and then not Has_Completion (E)
+                 and then Comes_From_Source (Parent (E)))
+
+           or else
+             (Ekind (E) = E_Package
+               and then E /= P
+               and then not Has_Completion (E)
+               and then Unit_Requires_Body (E))
+
+           or else
+             (Ekind (E) = E_Incomplete_Type
+               and then No (Full_View (E))
+               and then not Is_Generic_Type (E))
+
+           or else
+             (Ekind_In (E, E_Task_Type, E_Protected_Type)
+               and then not Has_Completion (E))
+
+           or else
+             (Ekind (E) = E_Generic_Package
+               and then E /= P
+               and then not Has_Completion (E)
+               and then Unit_Requires_Body (E))
+
+           or else
+             (Is_Generic_Subprogram (E)
+               and then not Has_Completion (E))
+
+         then
+            Error_Msg_Node_2 := E;
+            Error_Msg_NE
+              ("?Y?info: & requires body (& requires completion)",
+               E, P);
+
+         --  Entity that does not require completion
+
+         else
+            null;
+         end if;
+
+         Next_Entity (E);
+      end loop;
+   end Unit_Requires_Body_Info;
 end Sem_Ch7;

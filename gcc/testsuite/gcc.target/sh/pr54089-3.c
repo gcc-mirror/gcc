@@ -5,7 +5,7 @@
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m1*" "-m2" "-m2e*" } } */
 /* { dg-final { scan-assembler-not "and" } } */
-/* { dg-final { scan-assembler-not "31" } } */
+/* { dg-final { scan-assembler-not "#31" } } */
 
 int
 test00 (unsigned int a, int* b, int c, int* d, unsigned int e)

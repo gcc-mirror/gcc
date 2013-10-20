@@ -971,7 +971,7 @@ pp_cxx_assignment_operator (cxx_pretty_printer *pp, tree t)
       break;
 
     default:
-      op = tree_code_name[TREE_CODE (t)];
+      op = get_tree_code_name (TREE_CODE (t));
       break;
     }
 

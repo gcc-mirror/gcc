@@ -25,7 +25,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 void
@@ -33,10 +35,10 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(!regex_match("x", regex("[]")));
-  VERIFY(regex_match("x", regex("[^]")));
-  VERIFY(!regex_match("]", regex("[]]")));
-  VERIFY(!regex_match("]", regex("[^]]")));
+  VERIFY(!regex_match_debug("x", regex("[]")));
+  VERIFY(regex_match_debug("x", regex("[^]")));
+  VERIFY(!regex_match_debug("]", regex("[]]")));
+  VERIFY(!regex_match_debug("]", regex("[^]]")));
 }
 
 int

@@ -883,7 +883,7 @@ package body Sem_Ch8 is
          --  there is no copy involved and no performance hit.
 
          if Nkind (Nam) = N_Function_Call
-           and then Is_Immutably_Limited_Type (Etype (Nam))
+           and then Is_Limited_View (Etype (Nam))
            and then not Is_Constrained (Etype (Nam))
            and then Comes_From_Source (N)
          then
@@ -1208,11 +1208,22 @@ package body Sem_Ch8 is
       --  may have been rewritten in several ways.
 
       elsif Is_Object_Reference (Nam) then
-         if Comes_From_Source (N)
-           and then Is_Dependent_Component_Of_Mutable_Object (Nam)
-         then
-            Error_Msg_N
-              ("illegal renaming of discriminant-dependent component", Nam);
+         if Comes_From_Source (N) then
+            if Is_Dependent_Component_Of_Mutable_Object (Nam) then
+               Error_Msg_N
+                 ("illegal renaming of discriminant-dependent component", Nam);
+            end if;
+
+            --  If the renaming comes from source and the renamed object is a
+            --  dereference, then mark the prefix as needing debug information,
+            --  since it might have been rewritten hence internally generated
+            --  and Debug_Renaming_Declaration will link the renaming to it.
+
+            if Nkind (Nam) = N_Explicit_Dereference
+              and then Is_Entity_Name (Prefix (Nam))
+            then
+               Set_Debug_Info_Needed (Entity (Prefix (Nam)));
+            end if;
          end if;
 
       --  A static function call may have been folded into a literal
@@ -4093,7 +4104,7 @@ package body Sem_Ch8 is
 
          T := Entity (Id);
 
-         if T = Any_Type or else From_With_Type (T) then
+         if T = Any_Type or else From_Limited_With (T) then
             null;
 
          --  Note that the use_type clause may mention a subtype of the type
@@ -4987,6 +4998,7 @@ package body Sem_Ch8 is
 
          if Comes_From_Source (N)
            and then Is_Remote_Access_To_Subprogram_Type (E)
+           and then Ekind (E) = E_Access_Subprogram_Type
            and then Expander_Active
            and then Get_PCS_Name /= Name_No_DSA
          then
@@ -5061,9 +5073,14 @@ package body Sem_Ch8 is
             --  Entity is unambiguous, indicate that it is referenced here
 
             --  For a renaming of an object, always generate simple reference,
-            --  we don't try to keep track of assignments in this case.
+            --  we don't try to keep track of assignments in this case, except
+            --  in SPARK mode where renamings are traversed for generating
+            --  local effects of subprograms.
 
-            if Is_Object (E) and then Present (Renamed_Object (E)) then
+            if Is_Object (E)
+              and then Present (Renamed_Object (E))
+              and then not SPARK_Mode
+            then
                Generate_Reference (E, N);
 
                --  If the renamed entity is a private protected component,
@@ -5157,12 +5174,10 @@ package body Sem_Ch8 is
       Selector  : constant Node_Id := Selector_Name (N);
       Candidate : Entity_Id        := Empty;
       P_Name    : Entity_Id;
-      O_Name    : Entity_Id;
       Id        : Entity_Id;
 
    begin
       P_Name := Entity (Prefix (N));
-      O_Name := P_Name;
 
       --  If the prefix is a renamed package, look for the entity in the
       --  original package.
@@ -5206,7 +5221,7 @@ package body Sem_Ch8 is
             --  The non-limited view may itself be incomplete, in which case
             --  get the full view if available.
 
-            elsif From_With_Type (Id)
+            elsif From_Limited_With (Id)
               and then Is_Type (Id)
               and then Ekind (Id) = E_Incomplete_Type
               and then Present (Non_Limited_View (Id))
@@ -5340,15 +5355,22 @@ package body Sem_Ch8 is
             else
                --  Within the instantiation of a child unit, the prefix may
                --  denote the parent instance, but the selector has the name
-               --  of the original child. Find whether we are within the
-               --  corresponding instance, and get the proper entity, which
-               --  can only be an enclosing scope.
+               --  of the original child. That is to say, when A.B appears
+               --  within an instantiation of generic child unit B, the scope
+               --  stack includes an instance of A (P_Name) and an instance
+               --  of B under some other name. We scan the scope to find this
+               --  child instance, which is the desired entity.
+               --  Note that the parent may itself be a child instance, if
+               --  the reference is of the form A.B.C, in which case A.B has
+               --  already been rewritten with the proper entity.
 
-               if O_Name /= P_Name
-                 and then In_Open_Scopes (P_Name)
+               if In_Open_Scopes (P_Name)
                  and then Is_Generic_Instance (P_Name)
                then
                   declare
+                     Gen_Par : constant Entity_Id :=
+                                 Generic_Parent (Specification
+                                   (Unit_Declaration_Node (P_Name)));
                      S : Entity_Id := Current_Scope;
                      P : Entity_Id;
 
@@ -5365,9 +5387,12 @@ package body Sem_Ch8 is
                            P := Generic_Parent (Specification
                                   (Unit_Declaration_Node (S)));
 
+                           --  Check that P is a generic child of the generic
+                           --  parent of the prefix.
+
                            if Present (P)
-                             and then Chars (Scope (P)) = Chars (O_Name)
                              and then Chars (P) = Chars (Selector)
+                             and then Scope (P) = Gen_Par
                            then
                               Id := S;
                               goto Found;
@@ -5480,6 +5505,7 @@ package body Sem_Ch8 is
       <<Found>>
       if Comes_From_Source (N)
         and then Is_Remote_Access_To_Subprogram_Type (Id)
+        and then Ekind (Id) = E_Access_Subprogram_Type
         and then Present (Equivalent_Type (Id))
       then
          --  If we are not actually generating distribution code (i.e. the
@@ -5493,8 +5519,8 @@ package body Sem_Ch8 is
 
       --  Ada 2005 (AI-50217): Check usage of entities in limited withed units
 
-      if Ekind (P_Name) = E_Package and then From_With_Type (P_Name) then
-         if From_With_Type (Id)
+      if Ekind (P_Name) = E_Package and then From_Limited_With (P_Name) then
+         if From_Limited_With (Id)
            or else Is_Type (Id)
            or else Ekind (Id) = E_Package
          then
@@ -6302,7 +6328,7 @@ package body Sem_Ch8 is
                      --  tagged if the type itself has an untagged incomplete
                      --  type view in its package.
 
-                     if From_With_Type (T)
+                     if From_Limited_With (T)
                        and then not Is_Tagged_Type (Available_View (T))
                      then
                         Error_Msg_N
@@ -6493,7 +6519,7 @@ package body Sem_Ch8 is
             --  Ada 2005 (AI-251, AI-50217): Handle interfaces visible through
             --  limited-with clauses
 
-            if From_With_Type (T_Name)
+            if From_Limited_With (T_Name)
               and then Ekind (T_Name) in Incomplete_Kind
               and then Present (Non_Limited_View (T_Name))
               and then Is_Interface (Non_Limited_View (T_Name))
@@ -7071,7 +7097,7 @@ package body Sem_Ch8 is
            or else (Is_Private_Type (T1) and then Has_Discriminants (T1))
            or else (Is_Task_Type (T1) and then Has_Discriminants (T1))
            or else (Is_Incomplete_Type (T1)
-                     and then From_With_Type (T1)
+                     and then From_Limited_With (T1)
                      and then Present (Non_Limited_View (T1))
                      and then Is_Record_Type
                                 (Get_Full_View (Non_Limited_View (T1))));
@@ -7852,7 +7878,7 @@ package body Sem_Ch8 is
 
       --  Ada 2005 (AI-50217): Check restriction
 
-      if From_With_Type (P) then
+      if From_Limited_With (P) then
          Error_Msg_N ("limited withed package cannot appear in use clause", N);
       end if;
 
@@ -8175,7 +8201,7 @@ package body Sem_Ch8 is
       --  a limited view unless we only have a limited view of its enclosing
       --  package.
 
-      elsif From_With_Type (T) and then From_With_Type (Scope (T)) then
+      elsif From_Limited_With (T) and then From_Limited_With (Scope (T)) then
          Error_Msg_N
            ("incomplete type from limited view "
             & "cannot appear in use clause", Id);

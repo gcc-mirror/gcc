@@ -331,7 +331,7 @@ package body Sem_Disp is
 
          --  Ada 2005 (AI-50217)
 
-         elsif From_With_Type (Designated_Type (T))
+         elsif From_Limited_With (Designated_Type (T))
            and then Present (Non_Limited_View (Designated_Type (T)))
            and then Scope (Designated_Type (T)) = Scope (Subp)
          then

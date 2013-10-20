@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Casing;   use Casing;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -2189,7 +2190,9 @@ package body Checks is
          Formal_2 : Entity_Id;
          Check    : in out Node_Id)
       is
-         Cond : Node_Id;
+         Cond      : Node_Id;
+         ID_Casing : constant Casing_Type :=
+                       Identifier_Casing (Source_Index (Current_Sem_Unit));
 
       begin
          --  Generate:
@@ -2220,9 +2223,17 @@ package body Checks is
             end if;
 
             Store_String_Chars ("aliased parameters, actuals for """);
-            Store_String_Chars (Get_Name_String (Chars (Formal_1)));
+
+            Get_Name_String (Chars (Formal_1));
+            Set_Casing (ID_Casing);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
             Store_String_Chars (""" and """);
-            Store_String_Chars (Get_Name_String (Chars (Formal_2)));
+
+            Get_Name_String (Chars (Formal_2));
+            Set_Casing (ID_Casing);
+            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
             Store_String_Chars (""" overlap");
 
             Insert_Action (Call,
@@ -3543,6 +3554,32 @@ package body Checks is
       L : Node_Id;
       R : Node_Id;
 
+      function Left_Expression (Op : Node_Id) return Node_Id;
+      --  Return the relevant expression from the left operand of the given
+      --  short circuit form: this is LO itself, except if LO is a qualified
+      --  expression, a type conversion, or an expression with actions, in
+      --  which case this is Left_Expression (Expression (LO)).
+
+      ---------------------
+      -- Left_Expression --
+      ---------------------
+
+      function Left_Expression (Op : Node_Id) return Node_Id is
+         LE : Node_Id := Left_Opnd (Op);
+      begin
+         while Nkind_In (LE,
+                 N_Qualified_Expression,
+                 N_Type_Conversion,
+                 N_Expression_With_Actions)
+         loop
+            LE := Expression (LE);
+         end loop;
+
+         return LE;
+      end Left_Expression;
+
+   --  Start of processing for Check_Needed
+
    begin
       --  Always check if not simple entity
 
@@ -3576,37 +3613,40 @@ package body Checks is
 
          elsif K = N_Op_Or then
             exit when N = Right_Opnd (P)
-              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
+              and then Nkind (Left_Expression (P)) = N_Op_Eq;
 
          elsif K = N_Or_Else then
             exit when (N = Right_Opnd (P)
                         or else
                           (Is_List_Member (N)
                              and then List_Containing (N) = Actions (P)))
-              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
+              and then Nkind (Left_Expression (P)) = N_Op_Eq;
 
          --  Similar test for the And/And then case, where the left operand
          --  is an inequality test.
 
          elsif K = N_Op_And then
             exit when N = Right_Opnd (P)
-              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
+              and then Nkind (Left_Expression (P)) = N_Op_Ne;
 
          elsif K = N_And_Then then
             exit when (N = Right_Opnd (P)
                         or else
                           (Is_List_Member (N)
                              and then List_Containing (N) = Actions (P)))
-              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
+              and then Nkind (Left_Expression (P)) = N_Op_Ne;
          end if;
 
          N := P;
       end loop;
 
       --  If we fall through the loop, then we have a conditional with an
-      --  appropriate test as its left operand. So test further.
+      --  appropriate test as its left operand, so look further.
 
-      L := Left_Opnd (P);
+      L := Left_Expression (P);
+
+      --  L is an "=" or "/=" operator: extract its operands
+
       R := Right_Opnd (L);
       L := Left_Opnd (L);
 
@@ -5050,6 +5090,13 @@ package body Checks is
         and then Is_Bit_Packed_Array (Etype (Prefix (Expr)))
         and then Root_Type (Etype (Expr)) = Standard_Boolean
       then
+         return;
+
+      --  For an expression with actions, we want to insert the validity check
+      --  on the final Expression.
+
+      elsif Nkind (Expr) = N_Expression_With_Actions then
+         Ensure_Valid (Expression (Expr));
          return;
 
       --  An annoying special case. If this is an out parameter of a scalar

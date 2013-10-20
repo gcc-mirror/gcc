@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-propagate.h"
 #include "expmed.h"
+#include "tree-ssa-address.h"
 
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
@@ -452,7 +453,6 @@ single_dom_exit (struct loop *loop)
 
 /* Dumps information about the induction variable IV to FILE.  */
 
-extern void dump_iv (FILE *, struct iv *);
 void
 dump_iv (FILE *file, struct iv *iv)
 {
@@ -497,7 +497,6 @@ dump_iv (FILE *file, struct iv *iv)
 
 /* Dumps information about the USE to FILE.  */
 
-extern void dump_use (FILE *, struct iv_use *);
 void
 dump_use (FILE *file, struct iv_use *use)
 {
@@ -541,7 +540,6 @@ dump_use (FILE *file, struct iv_use *use)
 
 /* Dumps information about the uses to FILE.  */
 
-extern void dump_uses (FILE *, struct ivopts_data *);
 void
 dump_uses (FILE *file, struct ivopts_data *data)
 {
@@ -559,7 +557,6 @@ dump_uses (FILE *file, struct ivopts_data *data)
 
 /* Dumps information about induction variable candidate CAND to FILE.  */
 
-extern void dump_cand (FILE *, struct iv_cand *);
 void
 dump_cand (FILE *file, struct iv_cand *cand)
 {
@@ -1450,29 +1447,6 @@ expr_invariant_in_loop_p (struct loop *loop, tree expr)
     if (TREE_OPERAND (expr, i)
 	&& !expr_invariant_in_loop_p (loop, TREE_OPERAND (expr, i)))
       return false;
-
-  return true;
-}
-
-/* Returns true if statement STMT is obviously invariant in LOOP,
-   i.e. if all its operands on the RHS are defined outside of the LOOP.
-   LOOP should not be the function body.  */
-
-bool
-stmt_invariant_in_loop_p (struct loop *loop, gimple stmt)
-{
-  unsigned i;
-  tree lhs;
-
-  gcc_assert (loop_depth (loop) > 0);
-
-  lhs = gimple_get_lhs (stmt);
-  for (i = 0; i < gimple_num_ops (stmt); i++)
-    {
-      tree op = gimple_op (stmt, i);
-      if (op != lhs && !expr_invariant_in_loop_p (loop, op))
-	return false;
-    }
 
   return true;
 }
@@ -3925,7 +3899,7 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
 
   if (ratio == 1)
     {
-      if(operand_equal_p (ubase, cbase, 0))
+      if (operand_equal_p (ubase, cbase, 0))
         return -1;
 
       if (TREE_CODE (ubase) == ADDR_EXPR

@@ -145,6 +145,8 @@ extern void cp_common_init_ts (void);
 #define LANG_HOOKS_OMP_FINISH_CLAUSE cxx_omp_finish_clause
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE cxx_omp_privatize_by_reference
+#undef LANG_HOOKS_OMP_MAPPABLE_TYPE
+#define LANG_HOOKS_OMP_MAPPABLE_TYPE cp_omp_mappable_type
 
 #undef LANG_HOOKS_EH_USE_CXA_END_CLEANUP
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP true

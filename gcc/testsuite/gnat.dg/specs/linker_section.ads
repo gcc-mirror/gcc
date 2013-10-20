@@ -3,7 +3,7 @@ package Linker_Section is
    pragma Linker_Section (Entity  => Data1,
                           Section => ".eeprom");
    type EEPROM_String is new String;
-   pragma Linker_Section (Entity  => EEPROM_String, -- { dg-error "objects" }
+   pragma Linker_Section (Entity  => EEPROM_String,
                           Section => ".eeprom");
    Data2 : constant EEPROM_String := "12345678901234567";
    package Inner is end;

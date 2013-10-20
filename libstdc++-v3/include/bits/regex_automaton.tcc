@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __ostr << "digraph _Nfa {\n"
        << "  rankdir=LR;\n";
-      for (unsigned int __i = 0; __i < this->size(); ++__i)
+      for (size_t __i = 0; __i < this->size(); ++__i)
       { this->at(__i)._M_dot(__ostr, __i); }
       __ostr << "}\n";
       return __ostr;
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _TraitsT>
     _StateIdT _NFA<_CharT, _TraitsT>::
-    _M_insert_backref(unsigned int __index)
+    _M_insert_backref(size_t __index)
     {
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing
@@ -175,7 +175,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__it._M_next >= 0 && (*this)[__it._M_next]._M_opcode
 		 == _S_opcode_dummy)
 	    __it._M_next = (*this)[__it._M_next]._M_next;
-	  if (__it._M_opcode == _S_opcode_alternative)
+	  if (__it._M_opcode == _S_opcode_alternative
+	      || __it._M_opcode == _S_opcode_subexpr_lookahead)
 	    while (__it._M_alt >= 0 && (*this)[__it._M_alt]._M_opcode
 		   == _S_opcode_dummy)
 	      __it._M_alt = (*this)[__it._M_alt]._M_next;
@@ -201,7 +202,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    continue;
 	  if (__m.count(__dup._M_next) == 0)
 	    __stack.push(__dup._M_next);
-	  if (__dup._M_opcode == _S_opcode_alternative)
+	  if (__dup._M_opcode == _S_opcode_alternative
+	      || __dup._M_opcode == _S_opcode_subexpr_lookahead)
 	    if (__m.count(__dup._M_alt) == 0)
 	      __stack.push(__dup._M_alt);
 	}
@@ -213,7 +215,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_next));
 	      __ref._M_next = __m[__ref._M_next];
 	    }
-	  if (__ref._M_opcode == _S_opcode_alternative)
+	  if (__ref._M_opcode == _S_opcode_alternative
+	      || __ref._M_opcode == _S_opcode_subexpr_lookahead)
 	    if (__ref._M_alt != -1)
 	      {
 		_GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_alt));

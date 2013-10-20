@@ -336,8 +336,8 @@ const pass_data pass_data_loop2 =
 class pass_loop2 : public rtl_opt_pass
 {
 public:
-  pass_loop2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_loop2, ctxt)
+  pass_loop2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_loop2, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -390,8 +390,8 @@ const pass_data pass_data_rtl_loop_init =
 class pass_rtl_loop_init : public rtl_opt_pass
 {
 public:
-  pass_rtl_loop_init(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_loop_init, ctxt)
+  pass_rtl_loop_init (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_loop_init, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -448,8 +448,8 @@ const pass_data pass_data_rtl_loop_done =
 class pass_rtl_loop_done : public rtl_opt_pass
 {
 public:
-  pass_rtl_loop_done(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_loop_done, ctxt)
+  pass_rtl_loop_done (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_loop_done, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -502,8 +502,8 @@ const pass_data pass_data_rtl_move_loop_invariants =
 class pass_rtl_move_loop_invariants : public rtl_opt_pass
 {
 public:
-  pass_rtl_move_loop_invariants(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_move_loop_invariants, ctxt)
+  pass_rtl_move_loop_invariants (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_move_loop_invariants, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -556,8 +556,8 @@ const pass_data pass_data_rtl_unswitch =
 class pass_rtl_unswitch : public rtl_opt_pass
 {
 public:
-  pass_rtl_unswitch(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_unswitch, ctxt)
+  pass_rtl_unswitch (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_unswitch, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -623,8 +623,8 @@ const pass_data pass_data_rtl_unroll_and_peel_loops =
 class pass_rtl_unroll_and_peel_loops : public rtl_opt_pass
 {
 public:
-  pass_rtl_unroll_and_peel_loops(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_unroll_and_peel_loops, ctxt)
+  pass_rtl_unroll_and_peel_loops (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_unroll_and_peel_loops, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -683,8 +683,8 @@ const pass_data pass_data_rtl_doloop =
 class pass_rtl_doloop : public rtl_opt_pass
 {
 public:
-  pass_rtl_doloop(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_doloop, ctxt)
+  pass_rtl_doloop (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_doloop, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "pointer-set.h"
 #include "asan.h"
+#include "basic-block.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -3085,7 +3086,7 @@ compare_constant (const tree t1, const tree t2)
     case MINUS_EXPR:
     case RANGE_EXPR:
       return (compare_constant (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
-	      && compare_constant(TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)));
+	      && compare_constant (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)));
 
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
@@ -5536,9 +5537,9 @@ void
 do_assemble_alias (tree decl, tree target)
 {
   /* Emulated TLS had better not get this var.  */
-  gcc_assert(!(!targetm.have_tls
-	       && TREE_CODE (decl) == VAR_DECL
-	       && DECL_THREAD_LOCAL_P (decl)));
+  gcc_assert (!(!targetm.have_tls
+		&& TREE_CODE (decl) == VAR_DECL
+		&& DECL_THREAD_LOCAL_P (decl)));
 
   if (TREE_ASM_WRITTEN (decl))
     return;

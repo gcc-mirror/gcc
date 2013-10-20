@@ -150,7 +150,8 @@ print_rtx (const_rtx in_rtx)
 
       /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
       if ((GET_CODE (in_rtx) == EXPR_LIST
-	   || GET_CODE (in_rtx) == INSN_LIST)
+	   || GET_CODE (in_rtx) == INSN_LIST
+	   || GET_CODE (in_rtx) == INT_LIST)
 	  && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
 	fprintf (outfile, ":%s",
 		 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
@@ -398,7 +399,8 @@ print_rtx (const_rtx in_rtx)
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
 	    if (INSN_LOCATION (in_rtx) && insn_file (in_rtx))
-	      fprintf(outfile, " %s:%i", insn_file (in_rtx), insn_line (in_rtx));
+	      fprintf (outfile, " %s:%i", insn_file (in_rtx),
+		       insn_line (in_rtx));
 #endif
 	  }
 	else if (i == 6 && GET_CODE (in_rtx) == ASM_OPERANDS)

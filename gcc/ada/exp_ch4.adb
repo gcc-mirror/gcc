@@ -1244,7 +1244,7 @@ package body Exp_Ch4 is
             --  want to Adjust.
 
             if not Aggr_In_Place
-              and then not Is_Immutably_Limited_Type (T)
+              and then not Is_Limited_View (T)
             then
                Insert_Action (N,
 
@@ -1268,14 +1268,10 @@ package body Exp_Ch4 is
             --    * .NET/JVM - these targets do not support address arithmetic
             --    and unchecked conversion, key elements of Finalize_Address.
 
-            --    * SPARK mode - the call is useless and results in unwanted
-            --    expansion.
-
             --    * CodePeer mode - TSS primitive Finalize_Address is not
             --    created in this mode.
 
             if VM_Target = No_VM
-              and then not SPARK_Mode
               and then not CodePeer_Mode
               and then Present (Finalization_Master (PtrT))
               and then Present (Temp_Decl)
@@ -4295,16 +4291,13 @@ package body Exp_Ch4 is
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
-         --  the current semantic unit. This form of expansion is not carried
-         --  out in SPARK mode because it is useless. Note that the master is
-         --  updated when analysis changes current units.
+         --  the current semantic unit. Note that the master is updated when
+         --  analysis changes current units.
 
-         if not SPARK_Mode then
-            if Present (Rel_Typ) then
-               Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
-            else
-               Set_Finalization_Master (PtrT, Current_Anonymous_Master);
-            end if;
+         if Present (Rel_Typ) then
+            Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
+         else
+            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
          end if;
       end if;
 
@@ -4839,15 +4832,11 @@ package body Exp_Ch4 is
                      --    Set_Finalize_Address
                      --      (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-                     --  Do not generate this call in the following cases:
-                     --
-                     --    * SPARK mode - the call is useless and results in
-                     --    unwanted expansion.
-                     --
-                     --    * CodePeer mode - TSS primitive Finalize_Address is
-                     --    not created in this mode.
+                     --  Do not generate this call in CodePeer mode, as TSS
+                     --  primitive Finalize_Address is not created in this
+                     --  mode.
 
-                     elsif not (SPARK_Mode or CodePeer_Mode) then
+                     elsif not CodePeer_Mode then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Call
                             (Loc     => Loc,
@@ -4891,6 +4880,7 @@ package body Exp_Ch4 is
       Loc     : constant Source_Ptr := Sloc (N);
       Typ     : constant Entity_Id  := Etype (N);
       Cstmt   : Node_Id;
+      Decl    : Node_Id;
       Tnn     : Entity_Id;
       Pnn     : Entity_Id;
       Actions : List_Id;
@@ -4958,19 +4948,24 @@ package body Exp_Ch4 is
          Append_To (Actions,
            Make_Full_Type_Declaration (Loc,
              Defining_Identifier => Pnn,
-             Type_Definition =>
+             Type_Definition     =>
                Make_Access_To_Object_Definition (Loc,
-                 All_Present => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Typ, Loc))));
+                 All_Present        => True,
+                 Subtype_Indication => New_Reference_To (Typ, Loc))));
          Ttyp := Pnn;
       end if;
 
       Tnn := Make_Temporary (Loc, 'T');
-      Append_To (Actions,
+
+      --  Create declaration for target of expression, and indicate that it
+      --  does not require initialization.
+
+      Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
-          Object_Definition   => New_Occurrence_Of (Ttyp, Loc)));
+          Object_Definition   => New_Occurrence_Of (Ttyp, Loc));
+      Set_No_Initialization (Decl);
+      Append_To (Actions, Decl);
 
       --  Now process the alternatives
 
@@ -7315,9 +7310,9 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
-      --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
+      --  CodePeer wants to see the unexpanded N_Op_Expon node
 
-      if CodePeer_Mode or SPARK_Mode then
+      if CodePeer_Mode then
          return;
       end if;
 
@@ -12140,24 +12135,44 @@ package body Exp_Ch4 is
      (Decl     : Node_Id;
       Rel_Node : Node_Id)
    is
-      function Find_Enclosing_Context (N : Node_Id) return Node_Id;
-      --  Find the logical context where N appears. The context is chosen such
-      --  that it is possible to insert before and after it.
+      Hook_Context         : Node_Id;
+      --  Node on which to insert the hook pointer (as an action)
 
-      ----------------------------
-      -- Find_Enclosing_Context --
-      ----------------------------
+      Finalization_Context : Node_Id;
+      --  Node after which to insert finalization actions
 
-      function Find_Enclosing_Context (N : Node_Id) return Node_Id is
+      Finalize_Always : Boolean;
+      --  If False, call to finalizer includes a test of whether the
+      --  hook pointer is null.
+
+      procedure Find_Enclosing_Contexts (N : Node_Id);
+      --  Find the logical context where N appears, and initializae
+      --  Hook_Context and Finalization_Context accordingly. Also
+      --  sets Finalize_Always.
+
+      -----------------------------
+      -- Find_Enclosing_Contexts --
+      -----------------------------
+
+      procedure Find_Enclosing_Contexts (N : Node_Id) is
          Par : Node_Id;
          Top : Node_Id;
+
+         Wrapped_Node : Node_Id;
+         --  Note: if we are in a transient scope, we want to reuse it as
+         --  the context for actions insertion, if possible. But if N is itself
+         --  part of the stored actions for the current transient scope,
+         --  then we need to insert at the appropriate (inner) location in
+         --  the not as an action on Node_To_Be_Wrapped.
+
+         In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
 
       begin
          --  When the node is inside a case/if expression, the lifetime of any
          --  temporary controlled object is extended. Find a suitable insertion
          --  node by locating the topmost case or if expressions.
 
-         if Within_Case_Or_If_Expression (N) then
+         if In_Cond_Expr then
             Par := N;
             Top := N;
             while Present (Par) loop
@@ -12187,7 +12202,8 @@ package body Exp_Ch4 is
                                              N_Parameter_Association,
                                              N_Pragma_Argument_Association)
                then
-                  return Par;
+                  Hook_Context := Par;
+                  goto Hook_Context_Found;
 
                --  Prevent the search from going too far
 
@@ -12198,26 +12214,10 @@ package body Exp_Ch4 is
                Par := Parent (Par);
             end loop;
 
-            return Par;
-
-         --  Short circuit operators in complex expressions are converted into
-         --  expression_with_actions.
+            Hook_Context := Par;
+            goto Hook_Context_Found;
 
          else
-            --  Handle the case where the node is buried deep inside an if
-            --  statement. The temporary controlled object must be finalized
-            --  before the then, elsif or else statements are evaluated.
-
-            --    if Something
-            --      and then Ctrl_Func_Call
-            --    then
-            --       <result must be finalized at this point>
-            --       <statements>
-            --    end if;
-
-            --  To achieve this, find the topmost logical operator. Generated
-            --  actions are then inserted before/after it.
-
             Par := N;
             while Present (Par) loop
 
@@ -12254,14 +12254,23 @@ package body Exp_Ch4 is
 
             --    Proc (... and then Ctrl_Func_Call ...);
 
+            if Scope_Is_Transient then
+               Wrapped_Node := Node_To_Be_Wrapped;
+            else
+               Wrapped_Node := Empty;
+            end if;
+
             while Present (Par) loop
-               if Nkind_In (Par, N_Assignment_Statement,
+               if Par = Wrapped_Node
+                    or else
+                  Nkind_In (Par, N_Assignment_Statement,
                                  N_Object_Declaration,
                                  N_Pragma,
                                  N_Procedure_Call_Statement,
                                  N_Simple_Return_Statement)
                then
-                  return Par;
+                  Hook_Context := Par;
+                  goto Hook_Context_Found;
 
                --  Prevent the search from going too far
 
@@ -12274,25 +12283,71 @@ package body Exp_Ch4 is
 
             --  Return the topmost short circuit operator
 
-            return Top;
+            Hook_Context := Top;
          end if;
-      end Find_Enclosing_Context;
+
+      <<Hook_Context_Found>>
+
+         --  Special case for Boolean EWAs: capture expression in a temporary,
+         --  whose declaration will serve as the context around which to insert
+         --  finalization code. The finalization thus remains local to the
+         --  specific condition being evaluated.
+
+         if Is_Boolean_Type (Etype (N)) then
+
+            --  In this case, the finalization context is chosen so that
+            --  we know at finalization point that the hook pointer is
+            --  never null, so no need for a test, we can call the finalizer
+            --  unconditionally, except in the case where the object is
+            --  created in a specific branch of a conditional expression.
+
+            Finalize_Always :=
+               not (In_Cond_Expr
+                      or else
+                    Nkind_In (Original_Node (N), N_Case_Expression,
+                                                 N_If_Expression));
+
+            declare
+               Loc  : constant Source_Ptr := Sloc (N);
+               Temp : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+            begin
+               Append_To (Actions (N),
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Etype (N), Loc),
+                   Expression          => Expression (N)));
+               Finalization_Context := Last (Actions (N));
+
+               Analyze (Last (Actions (N)));
+
+               Set_Expression (N, New_Occurrence_Of (Temp, Loc));
+               Analyze (Expression (N));
+            end;
+
+         else
+            Finalize_Always := False;
+            Finalization_Context := Hook_Context;
+         end if;
+      end Find_Enclosing_Contexts;
 
       --  Local variables
 
-      Context   : constant Node_Id    := Find_Enclosing_Context (Rel_Node);
       Loc       : constant Source_Ptr := Sloc (Decl);
       Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
       Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
       Desig_Typ : Entity_Id;
       Expr      : Node_Id;
-      Fin_Call  : Node_Id;
+      Fin_Stmts : List_Id;
       Ptr_Id    : Entity_Id;
       Temp_Id   : Entity_Id;
 
    --  Start of processing for Process_Transient_Object
 
    begin
+      Find_Enclosing_Contexts (Rel_Node);
+
       --  Step 1: Create the access type which provides a reference to the
       --  transient controlled object.
 
@@ -12309,7 +12364,7 @@ package body Exp_Ch4 is
 
       Ptr_Id := Make_Temporary (Loc, 'A');
 
-      Insert_Action (Context,
+      Insert_Action (Hook_Context,
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Ptr_Id,
           Type_Definition     =>
@@ -12324,7 +12379,7 @@ package body Exp_Ch4 is
 
       Temp_Id := Make_Temporary (Loc, 'T');
 
-      Insert_Action (Context,
+      Insert_Action (Hook_Context,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp_Id,
           Object_Definition   => New_Reference_To (Ptr_Id, Loc)));
@@ -12337,6 +12392,13 @@ package body Exp_Ch4 is
       Set_Status_Flag_Or_Transient_Decl (Temp_Id, Decl);
 
       --  Step 3: Hook the transient object to the temporary
+
+      --  This must be inserted right after the object declaration, so that
+      --  the assignment is executed if, and only if, the object is actually
+      --  created (whereas the declaration of the hook pointer, and the
+      --  finalization call, may be inserted at an outer level, and may
+      --  remain unused for some executions, if the actual creation of
+      --  the object is conditional).
 
       --  The use of unchecked conversion / unrestricted access is needed to
       --  avoid an accessibility violation. Note that the finalization code is
@@ -12377,34 +12439,29 @@ package body Exp_Ch4 is
       --  insert the finalization code after the return statement as this will
       --  render it unreachable.
 
-      if Nkind (Context) /= N_Simple_Return_Statement then
-         Fin_Call :=
-           Make_Implicit_If_Statement (Decl,
-             Condition =>
-               Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Reference_To (Temp_Id, Loc),
-                 Right_Opnd => Make_Null (Loc)),
+      if Nkind (Finalization_Context) /= N_Simple_Return_Statement then
+         Fin_Stmts := New_List (
+           Make_Final_Call
+             (Obj_Ref =>
+                Make_Explicit_Dereference (Loc,
+                  Prefix => New_Reference_To (Temp_Id, Loc)),
+              Typ     => Desig_Typ),
 
-             Then_Statements => New_List (
-               Make_Final_Call
-                 (Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => New_Reference_To (Temp_Id, Loc)),
-                  Typ     => Desig_Typ),
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression => Make_Null (Loc)));
 
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Reference_To (Temp_Id, Loc),
-                 Expression => Make_Null (Loc))));
-
-         --  Use the Actions list of logical operators when inserting the
-         --  finalization call. This ensures that all transient controlled
-         --  objects are finalized after the operators are evaluated.
-
-         if Nkind_In (Context, N_And_Then, N_Or_Else) then
-            Insert_Action (Context, Fin_Call);
-         else
-            Insert_Action_After (Context, Fin_Call);
+         if not Finalize_Always then
+            Fin_Stmts := New_List (
+              Make_Implicit_If_Statement (Decl,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd  => New_Reference_To (Temp_Id, Loc),
+                    Right_Opnd => Make_Null (Loc)),
+                Then_Statements => Fin_Stmts));
          end if;
+
+         Insert_Actions_After (Finalization_Context, Fin_Stmts);
       end if;
    end Process_Transient_Object;
 

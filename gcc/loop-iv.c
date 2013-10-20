@@ -99,8 +99,8 @@ static unsigned int iv_ref_table_size = 0;
 static struct rtx_iv ** iv_ref_table;
 
 /* Induction variable stored at the reference.  */
-#define DF_REF_IV(REF) iv_ref_table[DF_REF_ID(REF)]
-#define DF_REF_IV_SET(REF, IV) iv_ref_table[DF_REF_ID(REF)] = (IV)
+#define DF_REF_IV(REF) iv_ref_table[DF_REF_ID (REF)]
+#define DF_REF_IV_SET(REF, IV) iv_ref_table[DF_REF_ID (REF)] = (IV)
 
 /* The current loop.  */
 
@@ -212,7 +212,7 @@ lowpart_subreg (enum machine_mode outer_mode, rtx expr,
 static void
 check_iv_ref_table_size (void)
 {
-  if (iv_ref_table_size < DF_DEFS_TABLE_SIZE())
+  if (iv_ref_table_size < DF_DEFS_TABLE_SIZE ())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
       iv_ref_table = XRESIZEVEC (struct rtx_iv *, iv_ref_table, new_size);
@@ -2997,9 +2997,9 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
       	  fprintf (dump_file, "\n");
 
 	  fprintf (dump_file, "  upper bound: %li\n",
-		   (long)max_loop_iterations_int (loop));
+		   (long)get_max_loop_iterations_int (loop));
 	  fprintf (dump_file, "  realistic bound: %li\n",
-		   (long)estimated_loop_iterations_int (loop));
+		   (long)get_estimated_loop_iterations_int (loop));
 	}
       else
 	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);

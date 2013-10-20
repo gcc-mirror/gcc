@@ -446,7 +446,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
   func = gimple_call_fndecl (call);
-  if (func && recursive_call_p (current_function_decl, func))
+  if (func
+      && !DECL_BUILT_IN (func)
+      && recursive_call_p (current_function_decl, func))
     {
       tree arg;
 
@@ -1083,12 +1085,12 @@ const pass_data pass_data_tail_recursion =
 class pass_tail_recursion : public gimple_opt_pass
 {
 public:
-  pass_tail_recursion(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tail_recursion, ctxt)
+  pass_tail_recursion (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tail_recursion, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tail_recursion (ctxt_); }
+  opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
   bool gate () { return gate_tail_calls (); }
   unsigned int execute () { return execute_tail_recursion (); }
 
@@ -1122,8 +1124,8 @@ const pass_data pass_data_tail_calls =
 class pass_tail_calls : public gimple_opt_pass
 {
 public:
-  pass_tail_calls(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_tail_calls, ctxt)
+  pass_tail_calls (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tail_calls, ctxt)
   {}
 
   /* opt_pass methods: */

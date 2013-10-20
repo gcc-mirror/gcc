@@ -1276,7 +1276,6 @@ d_name (struct d_info *di)
     case 'Z':
       return d_local_name (di);
 
-    case 'L':
     case 'U':
       return d_unqualified_name (di);
 
@@ -1323,6 +1322,7 @@ d_name (struct d_info *di)
 	return dc;
       }
 
+    case 'L':
     default:
       dc = d_unqualified_name (di);
       if (d_peek_char (di) == 'I')

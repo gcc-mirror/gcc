@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "vec.h"
 #include "tree.h"
-#include "basic-block.h"
 #include "function.h"
 #include "ipa-ref.h"
 
@@ -742,6 +741,7 @@ void cgraph_speculative_call_info (struct cgraph_edge *,
 				   struct cgraph_edge *&,
 				   struct cgraph_edge *&,
 				   struct ipa_ref *&);
+extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
 /* In cgraphunit.c  */
 struct asm_node *add_asm_node (tree);
@@ -901,21 +901,21 @@ cgraph_node_asm_name (struct cgraph_node *node)
 
 /* Return asm name of varpool node.  */
 static inline const char *
-varpool_node_asm_name(struct varpool_node *node)
+varpool_node_asm_name (struct varpool_node *node)
 {
   return symtab_node_asm_name ((symtab_node)node);
 }
 
 /* Return name of cgraph node.  */
 static inline const char *
-cgraph_node_name(struct cgraph_node *node)
+cgraph_node_name (struct cgraph_node *node)
 {
   return symtab_node_name ((symtab_node)node);
 }
 
 /* Return name of varpool node.  */
 static inline const char *
-varpool_node_name(struct varpool_node *node)
+varpool_node_name (struct varpool_node *node)
 {
   return symtab_node_name ((symtab_node)node);
 }

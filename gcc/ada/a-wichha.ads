@@ -15,10 +15,12 @@
 
 package Ada.Wide_Characters.Handling is
    pragma Pure;
-   --  This package is clearly intended to be Pure, by analogy with the
-   --  base Ada.Characters.Handling package. The version in the RM does
-   --  not yet have this pragma, but that is a clear omission. This will
-   --  be fixed in a future version of AI05-0266-1.
+
+   function Character_Set_Version return String;
+   pragma Inline (Character_Set_Version);
+   --  Returns an implementation-defined identifier that identifies the version
+   --  of the character set standard that is used for categorizing characters
+   --  by the implementation. For GNAT this is "Unicode v.v".
 
    function Is_Control (Item : Wide_Character) return Boolean;
    pragma Inline (Is_Control);
@@ -78,13 +80,13 @@ package Ada.Wide_Characters.Handling is
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  mark_non_spacing or mark_spacing_combining, otherwise returns false.
 
-   function Is_Other (Item : Wide_Character) return Boolean;
-   pragma Inline (Is_Other);
+   function Is_Other_Format (Item : Wide_Character) return Boolean;
+   pragma Inline (Is_Other_Format);
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  other_format, otherwise returns false.
 
-   function Is_Punctuation (Item : Wide_Character) return Boolean;
-   pragma Inline (Is_Punctuation);
+   function Is_Punctuation_Connector (Item : Wide_Character) return Boolean;
+   pragma Inline (Is_Punctuation_Connector);
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  punctuation_connector, otherwise returns false.
 

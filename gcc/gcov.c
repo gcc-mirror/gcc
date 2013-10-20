@@ -398,7 +398,7 @@ static void executed_summary (unsigned, unsigned);
 static void function_summary (const coverage_t *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_t *);
-static void output_gcov_file(const char *, source_t *);
+static void output_gcov_file (const char *, source_t *);
 static int output_branch_count (FILE *, int, const arc_t *);
 static void output_lines (FILE *, const source_t *);
 static char *make_gcov_file_name (const char *, const char *);
@@ -448,8 +448,8 @@ main (int argc, char **argv)
   for (; argno != argc; argno++)
     {
       if (flag_display_progress)
-        printf("Processing file %d out of %d\n",  
-               argno - first_arg + 1, argc - first_arg);
+        printf ("Processing file %d out of %d\n",
+		argno - first_arg + 1, argc - first_arg);
       process_file (argv[argno]);
     }
 
@@ -621,7 +621,7 @@ get_gcov_intermediate_filename (const char *file_name)
   /* Find the 'basename'.  */
   cptr = lbasename (file_name);
 
-  result = XNEWVEC(char, strlen (cptr) + strlen (gcov) + 1);
+  result = XNEWVEC (char, strlen (cptr) + strlen (gcov) + 1);
   sprintf (result, "%s%s", cptr, gcov);
 
   return result;
@@ -699,7 +699,7 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
                   branch_type = (arc->count > 0) ? "taken" : "nottaken";
                 else
                   branch_type = "notexec";
-                fprintf(gcov_file, "branch:%d,%s\n", line_num, branch_type);
+                fprintf (gcov_file, "branch:%d,%s\n", line_num, branch_type);
               }
           }
     }
@@ -782,7 +782,7 @@ process_file (const char *file_name)
 }
 
 static void
-output_gcov_file(const char *file_name, source_t *src)
+output_gcov_file (const char *file_name, source_t *src)
 {
   char *gcov_file_name = make_gcov_file_name (file_name, src->coverage.name);
 

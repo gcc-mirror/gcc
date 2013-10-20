@@ -735,7 +735,7 @@ do_SUBST (rtx *into, rtx newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST(INTO, NEWVAL)	do_SUBST(&(INTO), (NEWVAL))
+#define SUBST(INTO, NEWVAL)	do_SUBST (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but NEWVAL is an int expression.  Note that substitution
    for the value of a HOST_WIDE_INT value (including CONST_INT) is
@@ -763,7 +763,7 @@ do_SUBST_INT (int *into, int newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
+#define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but just substitute the mode.  This is used when
    changing the mode of a pseudo-register, so that any other
@@ -792,7 +792,7 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
 
-#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
+#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
 #ifndef HAVE_cc0
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
@@ -1197,8 +1197,8 @@ combine_instructions (rtx f, unsigned int nregs)
 	      INSN_COST (insn) = insn_rtx_cost (PATTERN (insn),
 	      					optimize_this_for_speed_p);
 	    if (dump_file)
-	      fprintf(dump_file, "insn_cost %d: %d\n",
-		    INSN_UID (insn), INSN_COST (insn));
+	      fprintf (dump_file, "insn_cost %d: %d\n",
+		       INSN_UID (insn), INSN_COST (insn));
 	  }
     }
 
@@ -2328,7 +2328,7 @@ can_change_dest_mode (rtx x, int added_sets, enum machine_mode mode)
 {
   unsigned int regno;
 
-  if (!REG_P(x))
+  if (!REG_P (x))
     return false;
 
   regno = REGNO (x);
@@ -3686,29 +3686,42 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	   && ! (contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 0)))
 		 && contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 1)))))
     {
+      rtx set0 = XVECEXP (newpat, 0, 0);
+      rtx set1 = XVECEXP (newpat, 0, 1);
+
       /* Normally, it doesn't matter which of the two is done first,
 	 but the one that references cc0 can't be the second, and
 	 one which uses any regs/memory set in between i2 and i3 can't
-	 be first.  */
-      if (!use_crosses_set_p (SET_SRC (XVECEXP (newpat, 0, 1)),
-			      DF_INSN_LUID (i2))
+	 be first.  The PARALLEL might also have been pre-existing in i3,
+	 so we need to make sure that we won't wrongly hoist a SET to i2
+	 that would conflict with a death note present in there.  */
+      if (!use_crosses_set_p (SET_SRC (set1), DF_INSN_LUID (i2))
+	  && !(REG_P (SET_DEST (set1))
+	       && find_reg_note (i2, REG_DEAD, SET_DEST (set1)))
+	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
+	       && find_reg_note (i2, REG_DEAD,
+				 SUBREG_REG (SET_DEST (set1))))
 #ifdef HAVE_cc0
-	  && !reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 0))
+	  && !reg_referenced_p (cc0_rtx, set0)
 #endif
 	 )
 	{
-	  newi2pat = XVECEXP (newpat, 0, 1);
-	  newpat = XVECEXP (newpat, 0, 0);
+	  newi2pat = set1;
+	  newpat = set0;
 	}
-      else if (!use_crosses_set_p (SET_SRC (XVECEXP (newpat, 0, 0)),
-				   DF_INSN_LUID (i2))
+      else if (!use_crosses_set_p (SET_SRC (set0), DF_INSN_LUID (i2))
+	       && !(REG_P (SET_DEST (set0))
+		    && find_reg_note (i2, REG_DEAD, SET_DEST (set0)))
+	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
+		    && find_reg_note (i2, REG_DEAD,
+				      SUBREG_REG (SET_DEST (set0))))
 #ifdef HAVE_cc0
-	       && !reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 1))
+	       && !reg_referenced_p (cc0_rtx, set1)
 #endif
 	      )
 	{
-	  newi2pat = XVECEXP (newpat, 0, 0);
-	  newpat = XVECEXP (newpat, 0, 1);
+	  newi2pat = set0;
+	  newpat = set1;
 	}
       else
 	{
@@ -4254,9 +4267,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       }
 
     /* Update reg_stat[].nonzero_bits et al for any changes that may have
-       been made to this insn.  The order of
-       set_nonzero_bits_and_sign_copies() is important.  Because newi2pat
-       can affect nonzero_bits of newpat */
+       been made to this insn.  The order is important, because newi2pat
+       can affect nonzero_bits of newpat.  */
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
     note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
@@ -4272,17 +4284,17 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (undobuf.other_insn);
     }
 
-  if (i0 && !(NOTE_P(i0) && (NOTE_KIND (i0) == NOTE_INSN_DELETED)))
+  if (i0 && !(NOTE_P (i0) && (NOTE_KIND (i0) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "modifying insn i1 ");
+	  fprintf (dump_file, "modifying insn i0 ");
 	  dump_insn_slim (dump_file, i0);
 	}
       df_insn_rescan (i0);
     }
 
-  if (i1 && !(NOTE_P(i1) && (NOTE_KIND (i1) == NOTE_INSN_DELETED)))
+  if (i1 && !(NOTE_P (i1) && (NOTE_KIND (i1) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4292,7 +4304,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (i1);
     }
 
-  if (i2 && !(NOTE_P(i2) && (NOTE_KIND (i2) == NOTE_INSN_DELETED)))
+  if (i2 && !(NOTE_P (i2) && (NOTE_KIND (i2) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4302,7 +4314,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       df_insn_rescan (i2);
     }
 
-  if (i3 && !(NOTE_P(i3) && (NOTE_KIND (i3) == NOTE_INSN_DELETED)))
+  if (i3 && !(NOTE_P (i3) && (NOTE_KIND (i3) == NOTE_INSN_DELETED)))
     {
       if (dump_file)
 	{
@@ -4314,7 +4326,6 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   /* Set new_direct_jump_p if a new return or simple jump instruction
      has been created.  Adjust the CFG accordingly.  */
-
   if (returnjump_p (i3) || any_uncondjump_p (i3))
     {
       *new_direct_jump_p = 1;
@@ -11008,7 +11019,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	 this shift are known to be zero for both inputs and if the type of
 	 comparison is compatible with the shift.  */
       if (GET_CODE (op0) == GET_CODE (op1)
-	  && HWI_COMPUTABLE_MODE_P (GET_MODE(op0))
+	  && HWI_COMPUTABLE_MODE_P (GET_MODE (op0))
 	  && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
 	      || ((GET_CODE (op0) == LSHIFTRT || GET_CODE (op0) == ASHIFT)
 		  && (code != GT && code != LT && code != GE && code != LE))
@@ -13670,7 +13681,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	}
 
       if (place2)
-	add_reg_note (place2, REG_NOTE_KIND (note), XEXP (note, 0));
+	add_shallow_copy_of_reg_note (place2, note);
     }
 }
 
@@ -13868,8 +13879,8 @@ const pass_data pass_data_combine =
 class pass_combine : public rtl_opt_pass
 {
 public:
-  pass_combine(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_combine, ctxt)
+  pass_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_combine, ctxt)
   {}
 
   /* opt_pass methods: */

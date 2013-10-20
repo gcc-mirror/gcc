@@ -126,7 +126,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
     }
-  add_reg_note (jump, REG_BR_PROB, GEN_INT (prob));
+  add_int_reg_note (jump, REG_BR_PROB, prob);
 
   seq = get_insns ();
   end_sequence ();
@@ -304,7 +304,7 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
     }
 
   /* Nor if the loop usually does not roll.  */
-  iterations = estimated_loop_iterations_int (loop);
+  iterations = get_estimated_loop_iterations_int (loop);
   if (iterations >= 0 && iterations <= 1)
     {
       if (dump_file)

@@ -469,7 +469,7 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
       || desc->infinite
       || !desc->const_iter
       || (desc->niter != 0
-	  && max_loop_iterations_int (loop) != 0))
+	  && get_max_loop_iterations_int (loop) != 0))
     {
       if (dump_file)
 	fprintf (dump_file,
@@ -694,8 +694,8 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
      than one exit it may well loop less than determined maximal number
      of iterations.  */
   if (desc->niter < 2 * nunroll
-      || ((estimated_loop_iterations (loop, &iterations)
-	   || max_loop_iterations (loop, &iterations))
+      || ((get_estimated_loop_iterations (loop, &iterations)
+	   || get_max_loop_iterations (loop, &iterations))
 	  && wi::ltu_p (iterations, 2 * nunroll)))
     {
       if (dump_file)
@@ -993,8 +993,8 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
     }
 
   /* Check whether the loop rolls.  */
-  if ((estimated_loop_iterations (loop, &iterations)
-       || max_loop_iterations (loop, &iterations))
+  if ((get_estimated_loop_iterations (loop, &iterations)
+       || get_max_loop_iterations (loop, &iterations))
       && wi::ltu_p (iterations, 2 * nunroll))
     {
       if (dump_file)
@@ -1378,7 +1378,7 @@ decide_peel_simple (struct loop *loop, int flags)
     }
 
   /* If we have realistic estimate on number of iterations, use it.  */
-  if (estimated_loop_iterations (loop, &iterations))
+  if (get_estimated_loop_iterations (loop, &iterations))
     {
       /* TODO: unsigned/signed confusion */
       if (wi::leu_p (npeel, iterations))
@@ -1397,7 +1397,7 @@ decide_peel_simple (struct loop *loop, int flags)
     }
   /* If we have small enough bound on iterations, we can still peel (completely
      unroll).  */
-  else if (max_loop_iterations (loop, &iterations)
+  else if (get_max_loop_iterations (loop, &iterations)
            && wi::ltu_p (iterations, npeel))
     npeel = iterations.to_shwi () + 1;
   else
@@ -1547,8 +1547,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   /* Check whether the loop rolls.  */
-  if ((estimated_loop_iterations (loop, &iterations)
-       || max_loop_iterations (loop, &iterations))
+  if ((get_estimated_loop_iterations (loop, &iterations)
+       || get_max_loop_iterations (loop, &iterations))
       && wi::ltu_p (iterations, 2 * nunroll))
     {
       if (dump_file)

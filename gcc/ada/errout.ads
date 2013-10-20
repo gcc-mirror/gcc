@@ -313,6 +313,8 @@ package Errout is
    --      taken as an Ada reserved word, and are converted to the default
    --      case for reserved words (see Scans package spec). Surrounding
    --      quotes are added unless manual quotation mode is currently set.
+   --      RM and SPARK are special exceptions, they are never treated as
+   --      keywords, and just appear verbatim, with no surrounding quotes.
 
    --    Insertion character ` (Backquote: set manual quotation mode)
    --      The backquote character always appears in pairs. Each backquote of
@@ -813,9 +815,11 @@ package Errout is
    --  matching Warnings Off pragma preceding this one.
 
    function Compilation_Errors return Boolean;
-   --  Returns true if errors have been detected, or warnings in -gnatwe
-   --  (treat warnings as errors) mode. Note that it is mandatory to call
-   --  Finalize before calling this routine.
+   --  Returns True if errors have been detected, or warnings in -gnatwe (treat
+   --  warnings as errors) mode. Note that it is mandatory to call Finalize
+   --  before calling this routine. Always returns False in formal verification
+   --  mode, because errors issued when generating Why code are not compilation
+   --  errors, and should not result in exiting with an error status.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
    --  Posts a non-fatal message on node N saying that the feature identified

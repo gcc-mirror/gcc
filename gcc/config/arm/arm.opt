@@ -143,6 +143,10 @@ mfpu=
 Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
 Specify the name of the target floating point hardware/format
 
+mlra
+Target Report Var(arm_lra_flag) Init(0) Save
+Use LRA instead of reload (transitional)
+
 mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
@@ -242,6 +246,14 @@ Only generate absolute relocations on word sized values.
 mrestrict-it
 Target Report Var(arm_restrict_it) Init(2)
 Generate IT blocks appropriate for ARMv8.
+
+mold-rtx-costs
+Target Report Mask(OLD_RTX_COSTS)
+Use the old RTX costing tables (transitional).
+
+mnew-generic-costs
+Target Report Mask(NEW_GENERIC_COSTS)
+Use the new generic RTX cost tables if new core-specific cost table not available (transitional).
 
 mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)

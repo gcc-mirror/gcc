@@ -134,17 +134,17 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	errors.lo expvar.lo flag.lo fmt.lo hash.lo html.lo image.lo \
 	io.lo log.lo math.lo mime.lo net.lo os.lo path.lo \
-	reflect-go.lo regexp.lo runtime-go.lo sort.lo strconv.lo \
-	strings.lo sync.lo syscall.lo syscall/errno.lo \
-	syscall/signame.lo syscall/wait.lo testing.lo time-go.lo \
-	unicode.lo archive/tar.lo archive/zip.lo compress/bzip2.lo \
-	compress/flate.lo compress/gzip.lo compress/lzw.lo \
-	compress/zlib.lo container/heap.lo container/list.lo \
-	container/ring.lo crypto/aes.lo crypto/cipher.lo crypto/des.lo \
-	crypto/dsa.lo crypto/ecdsa.lo crypto/elliptic.lo \
-	crypto/hmac.lo crypto/md5.lo crypto/rand.lo crypto/rc4.lo \
-	crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo crypto/sha512.lo \
-	crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
+	reflect-go.lo reflect/makefunc.lo regexp.lo runtime-go.lo \
+	sort.lo strconv.lo strings.lo sync.lo syscall.lo \
+	syscall/errno.lo syscall/signame.lo syscall/wait.lo testing.lo \
+	time-go.lo unicode.lo archive/tar.lo archive/zip.lo \
+	compress/bzip2.lo compress/flate.lo compress/gzip.lo \
+	compress/lzw.lo compress/zlib.lo container/heap.lo \
+	container/list.lo container/ring.lo crypto/aes.lo \
+	crypto/cipher.lo crypto/des.lo crypto/dsa.lo crypto/ecdsa.lo \
+	crypto/elliptic.lo crypto/hmac.lo crypto/md5.lo crypto/rand.lo \
+	crypto/rc4.lo crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo \
+	crypto/sha512.lo crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
 	crypto/x509/pkix.lo database/sql.lo database/sql/driver.lo \
 	debug/dwarf.lo debug/elf.lo debug/gosym.lo debug/macho.lo \
 	debug/pe.lo encoding/ascii85.lo encoding/asn1.lo \
@@ -195,7 +195,7 @@ libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 @LIBGO_IS_LINUX_TRUE@am__objects_5 = getncpu-linux.lo
 am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
-	go-callers.lo go-can-convert-interface.lo go-cgo.lo \
+	go-callers.lo go-can-convert-interface.lo go-cdiv.lo go-cgo.lo \
 	go-check-interface.lo go-construct-map.lo \
 	go-convert-interface.lo go-copy.lo go-defer.lo \
 	go-deferred-recover.lo go-eface-compare.lo \
@@ -757,6 +757,7 @@ runtime_files = \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-can-convert-interface.c \
+	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-check-interface.c \
 	runtime/go-construct-map.c \
@@ -1087,9 +1088,26 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = 
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_file = \
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefuncgo_386.go
+
+@LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_file = \
+@LIBGO_IS_X86_64_TRUE@	go/reflect/makefuncgo_amd64.go
+
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_386_FALSE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_dummy.c
+
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_386_TRUE@@LIBGO_IS_X86_64_FALSE@	go/reflect/makefunc_386.S
+
+@LIBGO_IS_X86_64_TRUE@go_reflect_makefunc_s_file = \
+@LIBGO_IS_X86_64_TRUE@	go/reflect/makefunc_amd64.S
+
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
+	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
 
@@ -1846,6 +1864,7 @@ libgo_go_objs = \
 	os.lo \
 	path.lo \
 	reflect-go.lo \
+	reflect/makefunc.lo \
 	regexp.lo \
 	runtime-go.lo \
 	sort.lo \
@@ -2350,6 +2369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-callers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-can-convert-interface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-check-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-construct-map.Plo@am__quote@
@@ -2535,6 +2555,13 @@ go-can-convert-interface.lo: runtime/go-can-convert-interface.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-can-convert-interface.c' object='go-can-convert-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-can-convert-interface.lo `test -f 'runtime/go-can-convert-interface.c' || echo '$(srcdir)/'`runtime/go-can-convert-interface.c
+
+go-cdiv.lo: runtime/go-cdiv.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-cdiv.lo -MD -MP -MF $(DEPDIR)/go-cdiv.Tpo -c -o go-cdiv.lo `test -f 'runtime/go-cdiv.c' || echo '$(srcdir)/'`runtime/go-cdiv.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-cdiv.Tpo $(DEPDIR)/go-cdiv.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-cdiv.c' object='go-cdiv.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-cdiv.lo `test -f 'runtime/go-cdiv.c' || echo '$(srcdir)/'`runtime/go-cdiv.c
 
 go-cgo.lo: runtime/go-cgo.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-cgo.lo -MD -MP -MF $(DEPDIR)/go-cgo.Tpo -c -o go-cgo.lo `test -f 'runtime/go-cgo.c' || echo '$(srcdir)/'`runtime/go-cgo.c
@@ -4499,6 +4526,9 @@ reflect-go.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
+reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
+	@$(MKDIR_P) reflect
+	$(LTCOMPILE) -c -o $@ $<
 .PHONY: reflect/check
 
 @go_include@ regexp.lo.dep

@@ -560,13 +560,6 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  Do not perform this expansion in SPARK mode because it is not
-      --  necessary.
-
-      if SPARK_Mode then
-         return;
-      end if;
-
       --  Obtain the attributes of the allocation / deallocation
 
       if Nkind (N) = N_Free_Statement then
@@ -1631,10 +1624,15 @@ package body Exp_Util is
             --  node to recognize this case.
 
            or else Present (Interface_List (Parent (Typ)))
-           or else
-             (((Has_Attach_Handler (Typ) and then not Restricted_Profile)
-                 or else Has_Interrupt_Handler (Typ))
-               and then not Restriction_Active (No_Dynamic_Attachment))
+
+            --  Protected types with interrupt handlers (when not using a
+            --  restricted profile) are also considered equivalent to
+            --  protected types with entries. The types which are used
+            --  (Static_Interrupt_Protection and Dynamic_Interrupt_Protection)
+            --  are derived from Protection_Entries.
+
+           or else (Has_Attach_Handler (Typ) and then not Restricted_Profile)
+           or else Has_Interrupt_Handler (Typ)
          then
             if Abort_Allowed
               or else Restriction_Active (No_Entry_Queue) = False
@@ -1772,35 +1770,6 @@ package body Exp_Util is
          Insert_Action (N, IR);
       end if;
    end Ensure_Defined;
-
-   ---------------
-   -- Entity_Of --
-   ---------------
-
-   function Entity_Of (N : Node_Id) return Entity_Id is
-      Id : Entity_Id;
-
-   begin
-      Id := Empty;
-
-      if Is_Entity_Name (N) then
-         Id := Entity (N);
-
-         --  Follow a possible chain of renamings to reach the root renamed
-         --  object.
-
-         while Present (Renamed_Object (Id)) loop
-            if Is_Entity_Name (Renamed_Object (Id)) then
-               Id := Entity (Renamed_Object (Id));
-            else
-               Id := Empty;
-               exit;
-            end if;
-         end loop;
-      end if;
-
-      return Id;
-   end Entity_Of;
 
    --------------------
    -- Entry_Names_OK --
@@ -1940,6 +1909,69 @@ package body Exp_Util is
              Right_Opnd => Cond1);
       end if;
    end Evolve_Or_Else;
+
+   -----------------------------------------
+   -- Expand_Static_Predicates_In_Choices --
+   -----------------------------------------
+
+   procedure Expand_Static_Predicates_In_Choices (N : Node_Id) is
+      pragma Assert (Nkind_In (N, N_Case_Statement_Alternative, N_Variant));
+
+      Choices : constant List_Id := Discrete_Choices (N);
+
+      Choice : Node_Id;
+      Next_C : Node_Id;
+      P      : Node_Id;
+      C      : Node_Id;
+
+   begin
+      Choice := First (Choices);
+      while Present (Choice) loop
+         Next_C := Next (Choice);
+
+         --  Check for name of subtype with static predicate
+
+         if Is_Entity_Name (Choice)
+           and then Is_Type (Entity (Choice))
+           and then Has_Predicates (Entity (Choice))
+         then
+            --  Loop through entries in predicate list, converting to choices
+            --  and inserting in the list before the current choice. Note that
+            --  if the list is empty, corresponding to a False predicate, then
+            --  no choices are inserted.
+
+            P := First (Static_Predicate (Entity (Choice)));
+            while Present (P) loop
+
+               --  If low bound and high bounds are equal, copy simple choice
+
+               if Expr_Value (Low_Bound (P)) = Expr_Value (High_Bound (P)) then
+                  C := New_Copy (Low_Bound (P));
+
+               --  Otherwise copy a range
+
+               else
+                  C := New_Copy (P);
+               end if;
+
+               --  Change Sloc to referencing choice (rather than the Sloc of
+               --  the predicate declaration element itself).
+
+               Set_Sloc (C, Sloc (Choice));
+               Insert_Before (Choice, C);
+               Next (P);
+            end loop;
+
+            --  Delete the predicated entry
+
+            Remove (Choice);
+         end if;
+
+         --  Move to next choice to check
+
+         Choice := Next_C;
+      end loop;
+   end Expand_Static_Predicates_In_Choices;
 
    ------------------------------
    -- Expand_Subtype_From_Expr --
@@ -2166,7 +2198,7 @@ package body Exp_Util is
       --  function being called is build-in-place. This will have to be revised
       --  when build-in-place functions are generalized to other types.
 
-      elsif Is_Immutably_Limited_Type (Exp_Typ)
+      elsif Is_Limited_View (Exp_Typ)
         and then
          (Is_Class_Wide_Type (Exp_Typ)
            or else Is_Interface (Exp_Typ)
@@ -2645,18 +2677,36 @@ package body Exp_Util is
         (N : Node_Id;
          S : Boolean)
       is
-         Cond : Node_Id;
-         Sens : Boolean;
+         Cond      : Node_Id;
+         Prev_Cond : Node_Id;
+         Sens      : Boolean;
 
       begin
          Cond := N;
          Sens := S;
 
-         --  Deal with NOT operators, inverting sense
+         loop
+            Prev_Cond := Cond;
 
-         while Nkind (Cond) = N_Op_Not loop
-            Cond := Right_Opnd (Cond);
-            Sens := not Sens;
+            --  Deal with NOT operators, inverting sense
+
+            while Nkind (Cond) = N_Op_Not loop
+               Cond := Right_Opnd (Cond);
+               Sens := not Sens;
+            end loop;
+
+            --  Deal with conversions, qualifications, and expressions with
+            --  actions.
+
+            while Nkind_In (Cond,
+                    N_Type_Conversion,
+                    N_Qualified_Expression,
+                    N_Expression_With_Actions)
+            loop
+               Cond := Expression (Cond);
+            end loop;
+
+            exit when Cond = Prev_Cond;
          end loop;
 
          --  Deal with AND THEN and AND cases
@@ -2737,8 +2787,15 @@ package body Exp_Util is
 
             return;
 
-            --  Case of Boolean variable reference, return as though the
-            --  reference had said var = True.
+         elsif Nkind_In (Cond,
+                 N_Type_Conversion,
+                 N_Qualified_Expression,
+                 N_Expression_With_Actions)
+         then
+            Cond := Expression (Cond);
+
+         --  Case of Boolean variable reference, return as though the
+         --  reference had said var = True.
 
          else
             if Is_Entity_Name (Cond) and then Ent = Entity (Cond) then
@@ -3345,8 +3402,13 @@ package body Exp_Util is
 
             when N_Expression_With_Actions =>
                if N = Expression (P) then
-                  Insert_List_After_And_Analyze
-                    (Last (Actions (P)), Ins_Actions);
+                  if Is_Empty_List (Actions (P)) then
+                     Append_List_To (Actions (P), Ins_Actions);
+                     Analyze_List (Actions (P));
+                  else
+                     Insert_List_After_And_Analyze
+                       (Last (Actions (P)), Ins_Actions);
+                  end if;
                   return;
                end if;
 
@@ -3448,7 +3510,8 @@ package body Exp_Util is
 
                --  Freeze entity behaves like a declaration or statement
 
-               N_Freeze_Entity
+               N_Freeze_Entity                          |
+               N_Freeze_Generic_Entity
             =>
                --  Do not insert here if the item is not a list member (this
                --  happens for example with a triggering statement, and the
@@ -6640,6 +6703,14 @@ package body Exp_Util is
             when N_Explicit_Dereference =>
                return Safe_Prefixed_Reference (N);
 
+            --  An expression with action is side effect free if its expression
+            --  is side effect free and it has no actions.
+
+            when N_Expression_With_Actions =>
+               return Is_Empty_List (Actions (N))
+                        and then
+                      Side_Effect_Free (Expression (N));
+
             --  A call to _rep_to_pos is side effect free, since we generate
             --  this pure function call ourselves. Moreover it is critically
             --  important to make this exception, since otherwise we can have
@@ -7019,7 +7090,7 @@ package body Exp_Util is
 
          if Ada_Version >= Ada_2005
            and then Nkind (Exp) = N_Function_Call
-           and then Is_Immutably_Limited_Type (Etype (Exp))
+           and then Is_Limited_View (Etype (Exp))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
          then
             declare
@@ -7041,7 +7112,6 @@ package body Exp_Util is
          end if;
 
          Def_Id := Make_Temporary (Loc, 'R', Exp);
-         Set_Etype (Def_Id, Exp_Type);
 
          --  The regular expansion of functions with side effects involves the
          --  generation of an access type to capture the return value found on
@@ -7718,7 +7788,14 @@ package body Exp_Util is
                Set_Entity_Current_Value (Right_Opnd (Cond));
             end if;
 
-            --  Check possible boolean variable reference
+         elsif Nkind_In (Cond,
+                 N_Type_Conversion,
+                 N_Qualified_Expression,
+                 N_Expression_With_Actions)
+         then
+            Set_Expression_Current_Value (Expression (Cond));
+
+         --  Check possible boolean variable reference
 
          else
             Set_Entity_Current_Value (Cond);

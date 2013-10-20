@@ -5,6 +5,6 @@
 
 #include "../aarch64/atomic-comp-swap-release-acquire.x"
 
-/* { dg-final { scan-assembler-times "ldaex\tr\[0-9\]+, \\\[r\[0-9\]+\\\]" 4 } } */
+/* { dg-final { scan-assembler-times "ldaex" 4 } } */
 /* { dg-final { scan-assembler-times "stlex" 4 } } */
 /* { dg-final { scan-assembler-not "dmb" } } */

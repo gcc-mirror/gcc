@@ -11,7 +11,7 @@ int t;
 void
 foo (int x)
 {
-  char *p;
+  char *pp;
   struct S { int i; int j; } s;
   char a[32];
   double d;
@@ -42,18 +42,18 @@ foo (int x)
     ;
 #pragma omp p firstprivate (bar) // { dg-error "is not a variable" }
     ;
-#pragma omp p reduction (+:p) // { dg-error "has invalid type for" }
+#pragma omp p reduction (+:pp) // { dg-error "user defined reduction not found for" }
     ;
-#pragma omp p reduction (*:s) // { dg-error "has invalid type for" }
+#pragma omp p reduction (*:s) // { dg-error "user defined reduction not found for" }
     ;
 #pragma omp p reduction (-:a) // { dg-error "has invalid type for" }
     ;
   d = 0;
 #pragma omp p reduction (*:d)
     ;
-#pragma omp p reduction (|:d) // { dg-error "has invalid type for" }
+#pragma omp p reduction (|:d) // { dg-error "user defined reduction not found for" }
     ;
-#pragma omp p reduction (&&:d) // { dg-error "has invalid type for" }
+#pragma omp p reduction (&&:d) // { dg-error "user defined reduction not found for" }
     ;
 #pragma omp p copyin (d) // { dg-error "must be 'threadprivate'" }
     ;

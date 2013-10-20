@@ -150,7 +150,9 @@ namespace __parallel
 
       if (_GLIBCXX_PARALLEL_CONDITION(true))
         {
-	  std::binder2nd<__gnu_parallel::_EqualTo<_ValueType, const _Tp&> >
+	  __gnu_parallel::__binder2nd<__gnu_parallel::_EqualTo<_ValueType,
+							       const _Tp&>,
+				      _ValueType, const _Tp&, bool>
             __comp(__gnu_parallel::_EqualTo<_ValueType, const _Tp&>(), __val);
           return __gnu_parallel::__find_template(
                    __begin, __end, __begin, __comp,

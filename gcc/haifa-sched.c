@@ -2605,7 +2605,7 @@ rank_for_schedule (const void *x, const void *y)
     }
 
   info_val = (*current_sched_info->rank) (tmp, tmp2);
-  if(flag_sched_rank_heuristic && info_val)
+  if (flag_sched_rank_heuristic && info_val)
     return info_val;
 
   /* Compare insns based on their relation to the last scheduled
@@ -7879,7 +7879,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
     /* Fix priorities.  If MUTATE_P is nonzero, this is not necessary,
        because it'll be done later in add_to_speculative_block.  */
     {
-      rtx_vec_t priorities_roots = rtx_vec_t();
+      rtx_vec_t priorities_roots = rtx_vec_t ();
 
       clear_priorities (twin, &priorities_roots);
       calc_priorities (priorities_roots);

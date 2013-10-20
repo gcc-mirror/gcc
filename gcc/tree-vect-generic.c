@@ -1472,8 +1472,8 @@ const pass_data pass_data_lower_vector =
 class pass_lower_vector : public gimple_opt_pass
 {
 public:
-  pass_lower_vector(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_vector, ctxt)
+  pass_lower_vector (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_vector, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1513,12 +1513,12 @@ const pass_data pass_data_lower_vector_ssa =
 class pass_lower_vector_ssa : public gimple_opt_pass
 {
 public:
-  pass_lower_vector_ssa(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_vector_ssa, ctxt)
+  pass_lower_vector_ssa (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_vector_ssa, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lower_vector_ssa (ctxt_); }
+  opt_pass * clone () { return new pass_lower_vector_ssa (m_ctxt); }
   unsigned int execute () { return expand_vector_operations (); }
 
 }; // class pass_lower_vector_ssa

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "cgraph.h"
 #include "gimple.h"
+#include "tree-ssa-address.h"
 
 extern void add_bb_to_loop (basic_block, struct loop *);
 
@@ -1390,8 +1391,8 @@ const pass_data pass_data_mudflap_1 =
 class pass_mudflap_1 : public gimple_opt_pass
 {
 public:
-  pass_mudflap_1(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_mudflap_1, ctxt)
+  pass_mudflap_1 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_mudflap_1, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1429,8 +1430,8 @@ const pass_data pass_data_mudflap_2 =
 class pass_mudflap_2 : public gimple_opt_pass
 {
 public:
-  pass_mudflap_2(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_mudflap_2, ctxt)
+  pass_mudflap_2 (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_mudflap_2, ctxt)
   {}
 
   /* opt_pass methods: */

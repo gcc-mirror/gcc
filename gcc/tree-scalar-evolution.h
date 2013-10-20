@@ -36,7 +36,8 @@ extern tree resolve_mixers (struct loop *, tree);
 extern void gather_stats_on_scev_database (void);
 extern unsigned int scev_const_prop (void);
 extern bool expression_expensive_p (tree);
-extern bool simple_iv (struct loop *, struct loop *, tree, affine_iv *, bool);
+extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv_d *,
+		       bool);
 extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
 
 /* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the

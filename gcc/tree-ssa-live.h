@@ -70,12 +70,16 @@ typedef struct _var_map
 
 extern var_map init_var_map (int);
 extern void delete_var_map (var_map);
-extern void dump_var_map (FILE *, var_map);
-extern void debug (_var_map &ref);
-extern void debug (_var_map *ptr);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map, bool);
 extern void partition_view_bitmap (var_map, bitmap, bool);
+extern void dump_scope_blocks (FILE *, int);
+extern void debug_scope_block (tree, int);
+extern void debug_scope_blocks (int);
+extern void remove_unused_locals (void);
+extern void dump_var_map (FILE *, var_map);
+extern void debug (_var_map &ref);
+extern void debug (_var_map *ptr);
 #ifdef ENABLE_CHECKING
 extern void register_ssa_partition_check (tree ssa_var);
 #endif
@@ -241,16 +245,15 @@ typedef struct tree_live_info_d
 } *tree_live_info_p;
 
 
-extern tree_live_info_p calculate_live_ranges (var_map);
-extern void calculate_live_on_exit (tree_live_info_p);
-extern void delete_tree_live_info (tree_live_info_p);
-
 #define LIVEDUMP_ENTRY	0x01
 #define LIVEDUMP_EXIT	0x02
 #define LIVEDUMP_ALL	(LIVEDUMP_ENTRY | LIVEDUMP_EXIT)
-extern void dump_live_info (FILE *, tree_live_info_p, int);
+extern void delete_tree_live_info (tree_live_info_p);
+extern void calculate_live_on_exit (tree_live_info_p);
+extern tree_live_info_p calculate_live_ranges (var_map);
 extern void debug (tree_live_info_d &ref);
 extern void debug (tree_live_info_d *ptr);
+extern void dump_live_info (FILE *, tree_live_info_p, int);
 
 
 /*  Return TRUE if P is marked as a global in LIVE.  */
@@ -320,15 +323,5 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
   bitmap_set_bit (&live->livein[bb->index], p);
   bitmap_set_bit (live->global, p);
 }
-
-
-/* From tree-ssa-coalesce.c  */
-extern var_map coalesce_ssa_name (void);
-
-
-/* From tree-ssa-ter.c  */
-extern bitmap find_replaceable_exprs (var_map);
-extern void dump_replaceable_exprs (FILE *, bitmap);
-
 
 #endif /* _TREE_SSA_LIVE_H  */

@@ -154,7 +154,7 @@ dom_walker::walk (basic_block bb)
   int sp = 0;
   int *postorder, postorder_num;
 
-  if (dom_direction_ == CDI_DOMINATORS)
+  if (m_dom_direction == CDI_DOMINATORS)
     {
       postorder = XNEWVEC (int, n_basic_blocks);
       postorder_num = inverted_post_order_compute (postorder);
@@ -181,10 +181,10 @@ dom_walker::walk (basic_block bb)
 	  worklist[sp++] = NULL;
 
 	  int saved_sp = sp;
-	  for (dest = first_dom_son (dom_direction_, bb);
-	       dest; dest = next_dom_son (dom_direction_, dest))
+	  for (dest = first_dom_son (m_dom_direction, bb);
+	       dest; dest = next_dom_son (m_dom_direction, dest))
 	    worklist[sp++] = dest;
-	  if (dom_direction_ == CDI_DOMINATORS)
+	  if (m_dom_direction == CDI_DOMINATORS)
 	    switch (sp - saved_sp)
 	      {
 	      case 0:
@@ -210,7 +210,7 @@ dom_walker::walk (basic_block bb)
       else
 	break;
     }
-  if (dom_direction_ == CDI_DOMINATORS)
+  if (m_dom_direction == CDI_DOMINATORS)
     {
       free (bb_postorder);
       bb_postorder = NULL;

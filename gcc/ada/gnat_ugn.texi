@@ -179,6 +179,9 @@ AdaCore@*
 * Tools Supporting Project Files::
 * The Cross-Referencing Tools gnatxref and gnatfind::
 * The GNAT Pretty-Printer gnatpp::
+@ifclear vms
+* The Ada-to-XML converter gnat2xml::
+@end ifclear
 * The GNAT Metrics Tool gnatmetric::
 * File Name Krunching with gnatkr::
 * Preprocessing with gnatprep::
@@ -241,7 +244,7 @@ By default, @value{EDITION} assumes Ada 2012, but you can override with a
 compiler switch (@pxref{Compiling Different Versions of Ada})
 to explicitly specify the language version.
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both all Ada 95/2005/2012 versions of the language.
+apply to all Ada 95/2005/2012 versions of the language.
 
 @ifclear FSFEDITION
 For ease of exposition, ``@value{EDITION}'' will be referred to simply as
@@ -327,6 +330,12 @@ way to navigate through sources.
 @ref{The GNAT Pretty-Printer gnatpp}, shows how to produce a reformatted
 version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
+
+@ifclear vms
+@item
+@ref{The Ada-to-XML converter gnat2xml}, shows how to convert Ada
+source code into XML.
+@end ifclear
 
 @item
 @ref{The GNAT Metrics Tool gnatmetric}, shows how to compute various
@@ -3816,9 +3825,120 @@ temporary use of special test software.
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backards compatibility.
 
-@item ^-gnatet^/TARGET_DEPENDENT_INFO^
-@cindex @option{-gnatet} (@command{gcc})
-Generate target dependent information.
+@item -gnatet=@var{path}
+@cindex @option{-gnatet=file} (@command{gcc})
+Generate target dependent information. The format of the output file is
+described in the section about switch @option{-gnateT}.
+
+@item -gnateT=@var{path}
+@cindex @option{-gnateT} (@command{gcc})
+Read target dependent information, such as endianness or sizes and alignments
+of base type. If this switch is passed, the default target dependent
+information of the compiler is replaced by the one read from the input file.
+This is used by tools other than the compiler, e.g. to do
+semantic analysis of programs that will run on some other target than
+the machine on which the tool is run.
+
+The following target dependent values should be defined,
+where @code{Nat} denotes a natural integer value, @code{Pos} denotes a
+positive integer value, and fields marked with a question mark are
+boolean fields, where a value of 0 is False, and a value of 1 is True:
+
+@smallexample
+Bits_BE                    : Nat; -- Bits stored big-endian?
+Bits_Per_Unit              : Pos; -- Bits in a storage unit
+Bits_Per_Word              : Pos; -- Bits in a word
+Bytes_BE                   : Nat; -- Bytes stored big-endian?
+Char_Size                  : Pos; -- Standard.Character'Size
+Double_Float_Alignment     : Nat; -- Alignment of double float
+Double_Scalar_Alignment    : Nat; -- Alignment of double length scalar
+Double_Size                : Pos; -- Standard.Long_Float'Size
+Float_Size                 : Pos; -- Standard.Float'Size
+Float_Words_BE             : Nat; -- Float words stored big-endian?
+Int_Size                   : Pos; -- Standard.Integer'Size
+Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
+Long_Size                  : Pos; -- Standard.Long_Integer'Size
+Maximum_Alignment          : Pos; -- Maximum permitted alignment
+Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
+Pointer_Size               : Pos; -- System.Address'Size
+Short_Size                 : Pos; -- Standard.Short_Integer'Size
+Strict_Alignment           : Nat; -- Strict alignment?
+System_Allocator_Alignment : Nat; -- Alignment for malloc calls
+Wchar_T_Size               : Pos; -- Interfaces.C.wchar_t'Size
+Words_BE                   : Nat; -- Words stored big-endian?
+@end smallexample
+
+The format of the input file is as follows. First come the values of
+the variables defined above, with one line per value:
+
+@smallexample
+name  value
+@end smallexample
+
+where @code{name} is the name of the parameter, spelled out in full,
+and cased as in the above list, and @code{value} is an unsigned decimal
+integer. Two or more blanks separates the name from the value.
+
+All the variables must be present, in alphabetical order (i.e. the
+same order as the list above).
+
+Then there is a blank line to separate the two parts of the file. Then
+come the lines showing the floating-point types to be registered, with
+one line per registered mode:
+
+@smallexample
+name  digs float_rep size alignment
+@end smallexample
+
+where @code{name} is the string name of the type (which can have
+single spaces embedded in the name (e.g. long double), @code{digs} is
+the number of digits for the floating-point type, @code{float_rep} is
+the float representation (I/V/A for IEEE-754-Binary, Vax_Native,
+AAMP), @code{size} is the size in bits, @code{alignment} is the
+alignment in bits. The name is followed by at least two blanks, fields
+are separated by at least one blank, and a LF character immediately
+follows the alignment field.
+
+Here is an example of target parametrization file:
+
+@smallexample
+Bits_BE                       0
+Bits_Per_Unit                 8
+Bits_Per_Word                64
+Bytes_BE                      0
+Char_Size                     8
+Double_Float_Alignment        0
+Double_Scalar_Alignment       0
+Double_Size                  64
+Float_Size                   32
+Float_Words_BE                0
+Int_Size                     64
+Long_Double_Size            128
+Long_Long_Size               64
+Long_Size                    64
+Maximum_Alignment            16
+Max_Unaligned_Field          64
+Pointer_Size                 64
+Short_Size                   16
+Strict_Alignment              0
+System_Allocator_Alignment   16
+Wchar_T_Size                 32
+Words_BE                      0
+
+float         15  I  64  64
+double        15  I  64  64
+long double   18  I  80 128
+TF            33  I 128 128
+@end smallexample
+
+@item -gnateu
+@cindex @option{-gnateu} (@command{gcc})
+Ignore unrecognized validity, warning, and style switches that
+appear after this switch is given. This may be useful when
+compiling sources developed on a later version of the compiler
+with an earlier version. Of course the earlier version must
+support this switch.
 
 @item ^-gnateV^/PARAMETER_VALIDITY_CHECK^
 @cindex @option{-gnateV} (@command{gcc})
@@ -4773,9 +4893,7 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
-@ifclear vms
 @option{-gnatw.d} (tag warnings with -gnatw switch)
-@end ifclear
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatw.i} (overlapping actuals),
 @option{-gnatw.k} (redefinition of names in standard),
@@ -4924,7 +5042,6 @@ this warning option.
 This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
 
-@ifclear vms
 @item -gnatw.d
 @emph{Activate tagging of warning messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
@@ -4940,7 +5057,6 @@ affected by the use of @code{-gnatwa}.
 If this switch is set, then warning messages return to the default
 mode in which warnings are not tagged as described above for
 @code{-gnatw.d}.
-@end ifclear
 
 @item -gnatwe
 @emph{Treat warnings and style checks as errors.}
@@ -5621,6 +5737,25 @@ This warning can also be turned on using @option{-gnatwa}.
 @cindex Ada compatibility issues warnings
 This switch suppresses the warnings intended to help in identifying
 incompatibilities between Ada language versions.
+
+@item -gnatw.y
+@emph{Activate information messages for why package spec needs body}
+@cindex @option{-gnatw.y} (@command{gcc})
+@cindex Package spec needing body
+There are a number of cases in which a package spec needs a body.
+For example, the use of pragma Elaborate_Body, or the declaration
+of a procedure specification requiring a completion. This switch
+causes information messages to be output showing why a package
+specification requires a body. This can be useful in the case of
+a large package specification which is unexpectedly requiring a
+body. The default is that such information messages are not output.
+
+@item -gnatw.Y
+@emph{Disable information messages for why package spec needs body}
+@cindex @option{-gnatw.Y} (@command{gcc})
+@cindex No information messages for why package spec needs body
+This switch suppresses the output of information messages showing why
+a package specification needs a body.
 
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
@@ -7589,10 +7724,22 @@ Examples of valid lines in a preprocessor data file:
 Define or redefine a preprocessing symbol, associated with value. If no value
 is given on the command line, then the value of the symbol is @code{True}.
 A symbol is an identifier, following normal Ada (case-insensitive)
-rules for its syntax, and value is any sequence (including an empty sequence)
-of characters from the set (letters, digits, period, underline).
+rules for its syntax, and value is either an arbitrary string between double
+quotes or any sequence (including an empty sequence) of characters from the
+set (letters, digits, period, underline).
 Ada reserved words may be used as symbols, with the exceptions of @code{if},
 @code{else}, @code{elsif}, @code{end}, @code{and}, @code{or} and @code{then}.
+
+@ifclear vms
+@noindent
+Examples:
+
+@smallexample
+   -gnateDToto=Titi
+   -gnateDFoo
+   -gnateDFoo=\"Foo-Bar\"
+@end smallexample
+@end ifclear
 
 @noindent
 A symbol declared with this ^switch^switch^ on the command line replaces a
@@ -9999,6 +10146,7 @@ some guidelines on debugging optimized code.
 * Vectorization of loops::
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
+* Aliased Variables and Optimization::
 
 @ifset vms
 * Coverage Analysis::
@@ -10796,6 +10944,58 @@ has on size and speed of the code. If you really need to use
 @option{-O2} with strict aliasing in effect, then you should
 review any uses of unchecked conversion of access types,
 particularly if you are getting the warnings described above.
+
+@node Aliased Variables and Optimization
+@subsection Aliased Variables and Optimization
+@cindex Aliasing
+There are scenarios in which programs may
+use low level techniques to modify variables
+that otherwise might be considered to be unassigned. For example,
+a variable can be passed to a procedure by reference, which takes
+the address of the parameter and uses the address to modify the
+variable's value, even though it is passed as an IN parameter.
+Consider the following example:
+
+@smallexample @c ada
+procedure P is
+   Max_Length : constant Natural := 16;
+   type Char_Ptr is access all Character;
+
+   procedure Get_String(Buffer: Char_Ptr; Size : Integer);
+   pragma Import (C, Get_String, "get_string");
+
+   Name : aliased String (1 .. Max_Length) := (others => ' ');
+   Temp : Char_Ptr;
+
+   function Addr (S : String) return Char_Ptr is
+      function To_Char_Ptr is
+        new Ada.Unchecked_Conversion (System.Address, Char_Ptr);
+   begin
+      return To_Char_Ptr (S (S'First)'Address);
+   end;
+
+begin
+   Temp := Addr (Name);
+   Get_String (Temp, Max_Length);
+end;
+@end smallexample
+
+@noindent
+where Get_String is a C function that uses the address in Temp to
+modify the variable @code{Name}. This code is dubious, and arguably
+erroneous, and the compiler would be entitled to assume that
+@code{Name} is never modified, and generate code accordingly.
+
+However, in practice, this would cause some existing code that
+seems to work with no optimization to start failing at high
+levels of optimzization.
+
+What the compiler does for such cases is to assume that marking
+a variable as aliased indicates that some "funny business" may
+be going on. The optimizer recognizes the aliased keyword and
+inhibits optimizations that assume the value cannot be assigned.
+This means that the above example will in fact "work" reliably,
+that is, it will produce the expected results.
 
 @ifset vms
 @node Coverage Analysis
@@ -13622,6 +13822,14 @@ version as output.
 You can specify various style directives via switches; e.g.,
 identifier case conventions, rules of indentation, and comment layout.
 
+Note: A newly-redesigned set of formatting algorithms used by gnatpp
+is now available.
+To invoke the new experimental formatting algorithms, use the
+@option{--pp-new} switch.
+The default is @option{--pp-old}; that is, gnatpp uses the old
+formatting algorithms by default.
+We intend to make @option{--pp-new} the default at some point.
+
 To produce a reformatted file, @command{gnatpp} generates and uses the ASIS
 tree for the input source and thus requires the input to be syntactically and
 semantically legal.
@@ -14230,6 +14438,14 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatpp}
 Display usage, then exit disregarding all other options.
 
+@item --pp-new
+@cindex @option{--pp-new} @command{gnatpp}
+Use the new experimental formatting algorithms.
+
+@item --pp-old
+@cindex @option{--pp-old} @command{gnatpp}
+Use the old formatting algorithms. This is the default.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
 Take the argument source files from the specified file. This file should be an
@@ -14785,6 +15001,468 @@ begin
 end Test;
 @end cartouche
 @end smallexample
+
+@ifclear vms
+@c *********************************
+@node The Ada-to-XML converter gnat2xml
+@chapter The Ada-to-XML converter @command{gnat2xml}
+@findex gnat2xml
+@cindex XML generation
+
+@noindent
+The @command{gnat2xml} tool is an ASIS-based utility that converts
+Ada source code into XML.
+
+@menu
+* Switches for gnat2xml::
+* Driving gnat2xml with gnatmake or gprbuild::
+* Other Programs::
+* Structure of the XML::
+@end menu
+
+@node Switches for gnat2xml
+@section Switches for @command{gnat2xml}
+
+@noindent
+@command{gnat2xml} takes Ada source code as input, and produces XML
+that conforms to the schema.
+
+Usage:
+
+@smallexample
+gnat2xml [options] files
+@end smallexample
+
+``files'' are the Ada source file names.
+
+@noindent
+Options:
+@smallexample
+-h
+--help -- generate usage information and quit, ignoring all other options
+
+-mdir -- generate one .xml file for each Ada source file, in directory
+         @file{dir}. (Default is to generate the XML to standard output.)
+
+-q -- debugging version, with interspersed source, and a more
+      compact representation of "sloc". This version does not conform
+      to any schema.
+
+-I <include-dir>
+    directories to search for dependencies
+    You can also set the ADA_INCLUDE_PATH environment variable for this.
+
+-v -- verbose (print out the command line options, and the names of
+      output files as they are generated).
+
+-t -- do not delete tree files when done (they are deleted by default).
+
+-cargs ... -- options to pass to gcc
+@end smallexample
+
+@noindent
+You can generate the ``tree files'' ahead of time using the -gnatct switch:
+
+@smallexample
+gnatmake -gnat2012 -gnatct *.ad[sb]
+@end smallexample
+
+@noindent
+If tree files do not exist, @command{gnat2xml} will create them by running gcc.
+See the ASIS documentation for more information on tree files.
+
+Example:
+
+@smallexample
+mkdir xml-files
+gnat2xml -v -mxml-files *.ad[sb] -cargs -gnat2012
+@end smallexample
+
+@noindent
+The above will create *.xml files in the @file{xml-files} subdirectory.
+For example, if there is an Ada package Mumble.Dumble, whose spec and
+body source code lives in mumble-dumble.ads and mumble-dumble.adb,
+the above will produce xml-files/mumble-dumble.ads.xml and
+xml-files/mumble-dumble.adb.xml.
+
+@node Driving gnat2xml with gnatmake or gprbuild
+@section Driving @command{gnat2xml} with @command{gnatmake} or @command{gprbuild}
+
+@noindent
+You can use gnatmake or gprbuild to drive @command{gnat2xml} to get
+incremental updates of the XML files on a per-source-file basis. For
+example, if you already have a bunch of XML files, and then you change
+one source file, it will regenerate XML files only for that source
+file, and other source files that depend on it. Gnatmake and gprbuild
+take care of tracking inter-file dependencies. For example, if
+this.adb says @code{with That;}, then this.adb depends on that.ads.
+
+To do this, you tell gnatmake/gprbuild to pretend that
+@command{gnat2xml} is the Ada compiler (instead of using gcc as the
+Ada compiler, as is normal).
+
+To tell gnatmake to use @command{gnat2xml} instead of gcc as the
+``compiler'', for example:
+
+@smallexample
+gnatmake -gnatc *.adb --GCC="gnat2xml -t -mxml"
+@end smallexample
+
+@noindent
+The @option{--GCC=} switch tells gnatmake that the ``compiler'' to run
+is @command{gnat2xml -t -mxml}. The @option{-t} switch means to keep the tree
+files, so they can be reused on the next run. (@command{gnat2xml}
+deletes them by default.) As usual, @option{-mxml} means to put the
+XML files in the @file{xml} subdirectory.
+
+You must give the @option{-gnatc} switch to gnatmake, which means
+``compile only; do not generate object code''. Otherwise, gnatmake will
+complain about missing object (*.o) files; @command{gnat2xml} of
+course does not generate *.o files.
+
+Using gprbuild is similar: you tell it to use @command{gnat2xml}
+instead of gcc. First write a project file, such as my_project.gpr:
+
+@smallexample @c projectfile
+project My_Project is
+
+   package Compiler is
+      for Driver ("ada") use "gnat2xml";
+      --  Use gnat2xml instead of the usual gcc.
+
+      for Default_Switches ("ada") use ("-t", "-mxml");
+      --  Same switches as in the gnatmake case.
+   end Compiler;
+
+end My_Project;
+@end smallexample
+
+@noindent
+Then:
+
+@smallexample @c projectfile
+gprbuild --no-object-check -P my_project.gpr
+@end smallexample
+
+@noindent
+The @option{--no-object-check} switch serves the same purpose as
+@option{-gnatc} in the gnatmake case --- it tells gprbuild not to
+expect that the ``compiler'' (really @command{gnat2xml}) will produce
+*.o files.
+
+See the gprbuild documentation for information on many other things
+you can put in the project file, such as telling it where to find
+the source files.
+
+@node Other Programs
+@section Other Programs
+
+@noindent
+The distribution includes two other programs that are related to
+@command{gnat2xml}:
+
+@command{gnat2xsd} is the schema generator, which generates the schema
+to standard output, based on the structure of Ada as encoded by
+ASIS. You don't need to run @command{gnat2xsd} in order to use
+@command{gnat2xml}. To generate the schema, type:
+
+@smallexample
+gnat2xsd > ada-schema.xsd
+@end smallexample
+
+@noindent
+@command{gnat2xml} generates XML files that will validate against
+@file{ada-schema.xsd}.
+
+@command{xml2gnat} is a back-translator that translates the XML back
+into Ada source code. The Ada generated by @command{xml2gnat} has
+identical semantics to the original Ada code passed to
+@command{gnat2xml}. It is not textually identical, however --- for
+example, no attempt is made to preserve the original indentation.
+
+@node Structure of the XML
+@section Structure of the XML
+
+@noindent
+The primary documentation for the structure of the XML generated by
+@command{gnat2xml} is the schema (see @command{gnat2xsd} above). The
+following documentation gives additional details needed to understand
+the schema and therefore the XML.
+
+The elements listed under Defining Occurrences, Usage Occurrences, and
+Other Elements represent the syntactic structure of the Ada program.
+Element names are given in lower case, with the corresponding element
+type Capitalized_Like_This. The element and element type names are
+derived directly from the ASIS enumeration type Flat_Element_Kinds,
+declared in Asis.Extensions.Flat_Kinds, with the leading ``An_'' or ``A_''
+removed. For example, the ASIS enumeration literal
+An_Assignment_Statement corresponds to the XML element
+assignment_statement of XML type Assignment_Statement.
+
+To understand the details of the schema and the corresponding XML, it is
+necessary to understand the ASIS standard, as well as the GNAT-specific
+extension to ASIS.
+
+A defining occurrence is an identifier (or character literal or operator
+symbol) declared by a declaration. A usage occurrence is an identifier
+(or ...) that references such a declared entity. For example, in:
+
+@smallexample
+type T is range 1..10;
+X, Y : constant T := 1;
+@end smallexample
+
+@noindent
+The first ``T'' is the defining occurrence of a type. The ``X'' is the
+defining occurrence of a constant, as is the ``Y'', and the second ``T'' is
+a usage occurrence referring to the defining occurrence of T.
+
+Each element has a 'sloc' (source location), and subelements for each
+syntactic subtree, reflecting the Ada grammar as implemented by ASIS.
+The types of subelements are as defined in the ASIS standard. For
+example, for the right-hand side of an assignment_statement we have
+the following comment in asis-statements.ads:
+
+@smallexample
+------------------------------------------------------------------------------
+--  18.3  function Assignment_Expression
+------------------------------------------------------------------------------
+
+   function Assignment_Expression
+     (Statement : Asis.Statement)
+      return      Asis.Expression;
+
+------------------------------------------------------------------------------
+...
+--  Returns the expression from the right hand side of the assignment.
+...
+--  Returns Element_Kinds:
+--       An_Expression
+@end smallexample
+
+@noindent
+The corresponding sub-element of type Assignment_Statement is:
+
+@smallexample
+<xsd:element name="assignment_expression_q" type="Expression_Class"/>
+@end smallexample
+
+@noindent
+where Expression_Class is defined by an xsd:choice of all the
+various kinds of expression.
+
+The 'sloc' of each element indicates the starting and ending line and
+column numbers. Column numbers are character counts; that is, a tab
+counts as 1, not as however many spaces it might expand to.
+
+Subelements of type Element have names ending in ``_q'' (for ASIS
+``Query''), and those of type Element_List end in ``_ql'' (``Query returning
+List'').
+
+Some subelements are ``Boolean''. For example, Private_Type_Definition
+has has_abstract_q and has_limited_q, to indicate whether those
+keywords are present, as in @code{type T is abstract limited
+private;}. False is represented by a Nil_Element. True is represented
+by an element type specific to that query (for example, Abstract and
+Limited).
+
+The root of the tree is a Compilation_Unit, with attributes:
+
+@itemize @bullet
+@item
+unit_kind, unit_class, and unit_origin. These are strings that match the
+enumeration literals of types Unit_Kinds, Unit_Classes, and Unit_Origins
+in package Asis.
+
+@item
+unit_full_name is the full expanded name of the unit, starting from a
+root library unit. So for @code{package P.Q.R is ...},
+@code{unit_full_name="P.Q.R"}. Same for @code{separate (P.Q) package R is ...}.
+
+@item
+def_name is the same as unit_full_name for library units; for subunits,
+it is just the simple name.
+
+@item
+source_file is the name of the Ada source file. For example, for
+the spec of @code{P.Q.R}, @code{source_file="p-q-r.ads"}. This allows one to
+interpret the source locations --- the ``sloc'' of all elements
+within this Compilation_Unit refers to line and column numbers
+within the named file.
+@end itemize
+
+@noindent
+Defining occurrences have these attributes:
+
+@itemize @bullet
+@item
+def_name is the simple name of the declared entity, as written in the Ada
+source code.
+
+@item
+def is a unique URI of the form:
+
+ ada://kind/fully/qualified/name
+
+where:
+
+ kind indicates the kind of Ada entity being declared (see below), and
+
+ fully/qualified/name, is the fully qualified name of the Ada
+ entity, with each of ``fully'', ``qualified'', and ``name'' being
+ mangled for uniqueness. We do not document the mangling
+ algorithm, which is subject to change; we just guarantee that the
+ names are unique in the face of overloading.
+
+@item
+type is the type of the declared object, or @code{null} for
+declarations of things other than objects.
+@end itemize
+
+@noindent
+Usage occurrences have these attributes:
+
+@itemize @bullet
+@item
+ref_name is the same as the def_name of the corresponding defining
+occurrence. This attribute is not of much use, because of
+overloading; use ref for lookups, instead.
+
+@item
+ref is the same as the def of the corresponding defining
+occurrence.
+@end itemize
+
+@noindent
+In summary, @code{def_name} and @code{ref_name} are as in the source
+code of the declaration, possibly overloaded, whereas @code{def} and
+@code{ref} are unique-ified.
+
+Literal elements have this attribute:
+
+@itemize @bullet
+@item
+lit_val is the value of the literal as written in the source text,
+appropriately escaped (e.g. @code{"} ---> @code{&quot;}). This applies
+only to numeric and string literals. Enumeration literals in Ada are
+not really "literals" in the usual sense; they are usage occurrences,
+and have ref_name and ref as described above. Note also that string
+literals used as operator symbols are treated as defining or usage
+occurrences, not as literals.
+@end itemize
+
+@noindent
+Elements that can syntactically represent names and expressions (which
+includes usage occurrences, plus function calls and so forth) have this
+attribute:
+
+@itemize @bullet
+@item
+type. If the element represents an expression or the name of an object,
+'type' is the 'def' for the defining occurrence of the type of that
+expression or name. Names of other kinds of entities, such as package
+names and type names, do not have a type in Ada; these have type="null"
+in the XML.
+@end itemize
+
+@noindent
+Pragma elements have this attribute:
+
+@itemize @bullet
+@item
+pragma_name is the name of the pragma. For language-defined pragmas, the
+pragma name is redundant with the element kind (for example, an
+assert_pragma element necessarily has pragma_name="Assert"). However, all
+implementation-defined pragmas are lumped together in ASIS as a single
+element kind (for example, the GNAT-specific pragma Unreferenced is
+represented by an implementation_defined_pragma element with
+pragma_name="Unreferenced").
+@end itemize
+
+@noindent
+Defining occurrences of formal parameters and generic formal objects have this
+attribute:
+
+@itemize @bullet
+@item
+mode indicates that the parameter is of mode 'in', 'in out', or 'out'.
+@end itemize
+
+@noindent
+The "kind" part of the "def" and "ref" attributes is taken from the ASIS
+enumeration type Flat_Declaration_Kinds, declared in
+Asis.Extensions.Flat_Kinds, with the leading "An_" or "A_" removed, and
+any trailing "_Declaration" or "_Specification" removed. Thus, the
+possible kinds are as follows:
+
+@smallexample
+ordinary_type
+task_type
+protected_type
+incomplete_type
+tagged_incomplete_type
+private_type
+private_extension
+subtype
+variable
+constant
+deferred_constant
+single_task
+single_protected
+integer_number
+real_number
+enumeration_literal
+discriminant
+component
+loop_parameter
+generalized_iterator
+element_iterator
+procedure
+function
+parameter
+procedure_body
+function_body
+return_variable
+return_constant
+null_procedure
+expression_function
+package
+package_body
+object_renaming
+exception_renaming
+package_renaming
+procedure_renaming
+function_renaming
+generic_package_renaming
+generic_procedure_renaming
+generic_function_renaming
+task_body
+protected_body
+entry
+entry_body
+entry_index
+procedure_body_stub
+function_body_stub
+package_body_stub
+task_body_stub
+protected_body_stub
+exception
+choice_parameter
+generic_procedure
+generic_function
+generic_package
+package_instantiation
+procedure_instantiation
+function_instantiation
+formal_object
+formal_type
+formal_incomplete_type
+formal_procedure
+formal_function
+formal_package
+formal_package_declaration_with_box
+@end smallexample
+@end ifclear
 
 @c *********************************
 @node The GNAT Metrics Tool gnatmetric
@@ -16154,6 +16832,11 @@ In this example, @i{expression} is defined by the following grammar:
 @i{expression} ::=  <symbol>
 @i{expression} ::=  <symbol> = "<value>"
 @i{expression} ::=  <symbol> = <symbol>
+@i{expression} ::=  <symbol> = <integer>
+@i{expression} ::=  <symbol> > <integer>
+@i{expression} ::=  <symbol> >= <integer>
+@i{expression} ::=  <symbol> < <integer>
+@i{expression} ::=  <symbol> <= <integer>
 @i{expression} ::=  <symbol> 'Defined
 @i{expression} ::=  not @i{expression}
 @i{expression} ::=  @i{expression} and @i{expression}
@@ -16185,6 +16868,11 @@ symbol definition must be one of the (case-insensitive) literals
 @code{True} or @code{False}. If the value is true, then the
 corresponding lines are included, and if the value is false, they are
 excluded.
+
+When comparing a symbol to an integer, the integer is any non negative
+literal integer as defined in the Ada Reference Manual, such as 3, 16#FF# or
+2#11#. The symbol value must also be a non negative integer. Integer values
+in the range 0 .. 2**31-1 are supported.
 
 The test (@i{expression} ::= <symbol> @code{'Defined}) is true only if
 the symbol has been defined in the definition file or by a @option{-D}
@@ -18565,8 +19253,8 @@ by @command{gnatstub} to compile an argument source file.
 
 @item ^-gnatyM^/MAX_LINE_LENGTH=^@var{n}
 @cindex @option{^-gnatyM^/MAX_LINE_LENGTH^} (@command{gnatstub})
-(@var{n} is a non-negative integer). Set the maximum line length in the
-body stub to @var{n}; the default is 79. The maximum value that can be
+(@var{n} is a non-negative integer). Set the maximum line length that is
+allowed in a source file. The default is 79. The maximum value that can be
 specified is 32767. Note that in the special case of configuration
 pragma files, the maximum is always 32767 regardless of whether or
 not this switch appears.
@@ -21267,7 +21955,7 @@ end STB;
 @end smallexample
 
 @smallexample
-$ gnatmake -g .\stb -bargs -E -largs -lgnat -laddr2line -lintl
+$ gnatmake -g .\stb -bargs -E
 $ stb
 
 0040149F in stb.p1 at stb.adb:8
@@ -26919,7 +27607,7 @@ The preprocessing language allows such constructs as
 
 @smallexample
 @group
-#if DEBUG or PRIORITY > 4 then
+#if DEBUG or else (PRIORITY > 4) then
    bunch of declarations
 #else
    completely different bunch of declarations

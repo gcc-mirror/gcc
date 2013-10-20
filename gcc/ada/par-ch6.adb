@@ -73,9 +73,6 @@ package body Ch6 is
          else
             Restore_Scan_State (Scan_State);
          end if;
-
-      elsif Bad_Spelling_Of (Tok_Return) then
-         null;
       end if;
    end Check_Junk_Semicolon_Before_Return;
 

@@ -1296,14 +1296,14 @@ package body Exp_Attr is
             --  Handle designated types that come from the limited view
 
             if Ekind (Btyp_DDT) = E_Incomplete_Type
-              and then From_With_Type (Btyp_DDT)
+              and then From_Limited_With (Btyp_DDT)
               and then Present (Non_Limited_View (Btyp_DDT))
             then
                Btyp_DDT := Non_Limited_View (Btyp_DDT);
 
             elsif Is_Class_Wide_Type (Btyp_DDT)
                and then Ekind (Etype (Btyp_DDT)) = E_Incomplete_Type
-               and then From_With_Type (Etype (Btyp_DDT))
+               and then From_Limited_With (Etype (Btyp_DDT))
                and then Present (Non_Limited_View (Etype (Btyp_DDT)))
                and then Present (Class_Wide_Type
                                   (Non_Limited_View (Etype (Btyp_DDT))))
@@ -6485,6 +6485,7 @@ package body Exp_Attr is
            Attribute_Has_Tagged_Values            |
            Attribute_Large                        |
            Attribute_Last_Valid                   |
+           Attribute_Library_Level                |
            Attribute_Lock_Free                    |
            Attribute_Machine_Emax                 |
            Attribute_Machine_Emin                 |
@@ -6608,12 +6609,14 @@ package body Exp_Attr is
       procedure Process_Range_Update
         (Temp : Entity_Id;
          Comp : Node_Id;
-         Expr : Node_Id);
+         Expr : Node_Id;
+         Typ  : Entity_Id);
       --  Generate the statements necessary to update a slice of the prefix.
       --  The code is inserted before the attribute N. Temp denotes the entity
       --  of the anonymous object created to reflect the changes in values.
       --  Comp is range of the slice to be updated. Expr is an expression
-      --  yielding the new value of Comp.
+      --  yielding the new value of Comp. Typ is the type of the prefix of
+      --  attribute Update.
 
       -----------------------------------------
       -- Process_Component_Or_Element_Update --
@@ -6687,10 +6690,12 @@ package body Exp_Attr is
       procedure Process_Range_Update
         (Temp : Entity_Id;
          Comp : Node_Id;
-         Expr : Node_Id)
+         Expr : Node_Id;
+         Typ  : Entity_Id)
       is
-         Loc   : constant Source_Ptr := Sloc (Comp);
-         Index : Entity_Id;
+         Index_Typ : constant Entity_Id  := Etype (First_Index (Typ));
+         Loc       : constant Source_Ptr := Sloc (Comp);
+         Index     : Entity_Id;
 
       begin
          --  A range update appears as
@@ -6702,7 +6707,7 @@ package body Exp_Attr is
          --  value of Expr:
 
          --    for Index in Low .. High loop
-         --       Temp (Index) := Expr;
+         --       Temp (<Index_Typ> (Index)) := Expr;
          --    end loop;
 
          Index := Make_Temporary (Loc, 'I');
@@ -6721,7 +6726,8 @@ package body Exp_Attr is
                  Name       =>
                    Make_Indexed_Component (Loc,
                      Prefix      => New_Reference_To (Temp, Loc),
-                     Expressions => New_List (New_Reference_To (Index, Loc))),
+                     Expressions => New_List (
+                       Convert_To (Index_Typ, New_Reference_To (Index, Loc)))),
                  Expression => Relocate_Node (Expr))),
 
              End_Label        => Empty));
@@ -6729,10 +6735,10 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Aggr  : constant Node_Id := First (Expressions (N));
+      Aggr  : constant Node_Id    := First (Expressions (N));
       Loc   : constant Source_Ptr := Sloc (N);
-      Pref  : constant Node_Id := Prefix (N);
-      Typ   : constant Entity_Id := Etype (Pref);
+      Pref  : constant Node_Id    := Prefix (N);
+      Typ   : constant Entity_Id  := Etype (Pref);
       Assoc : Node_Id;
       Comp  : Node_Id;
       Expr  : Node_Id;
@@ -6762,7 +6768,7 @@ package body Exp_Attr is
          Expr := Expression (Assoc);
          while Present (Comp) loop
             if Nkind (Comp) = N_Range then
-               Process_Range_Update (Temp, Comp, Expr);
+               Process_Range_Update (Temp, Comp, Expr, Typ);
             else
                Process_Component_Or_Element_Update (Temp, Comp, Expr, Typ);
             end if;
@@ -6879,7 +6885,7 @@ package body Exp_Attr is
       --  Function to check whether the specified run-time call is available
       --  in the run time used. In the case of a configurable run time, it
       --  is normal that some subprograms are not there.
-
+      --
       --  I don't understand this routine at all, why is this not just a
       --  call to RTE_Available? And if for some reason we need a different
       --  routine with different semantics, why is not in Rtsfind ???
@@ -6893,8 +6899,7 @@ package body Exp_Attr is
          --  Assume that the unit will always be available when using a
          --  "normal" (not configurable) run time.
 
-         return not Configurable_Run_Time_Mode
-           or else RTE_Available (Entity);
+         return not Configurable_Run_Time_Mode or else RTE_Available (Entity);
       end Is_Available;
 
    --  Start of processing for Find_Stream_Subprogram
@@ -6929,9 +6934,148 @@ package body Exp_Attr is
         and then
           not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
       then
+         --  Storage_Array as defined in package System.Storage_Elements
+
+         if Is_RTE (Base_Typ, RE_Storage_Array) then
+
+            --  Case of No_Stream_Optimizations restriction active
+
+            if Restriction_Active (No_Stream_Optimizations) then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Storage_Array_Input)
+               then
+                  return RTE (RE_Storage_Array_Input);
+
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Storage_Array_Output)
+               then
+                  return RTE (RE_Storage_Array_Output);
+
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Storage_Array_Read)
+               then
+                  return RTE (RE_Storage_Array_Read);
+
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Storage_Array_Write)
+               then
+                  return RTE (RE_Storage_Array_Write);
+
+               elsif Nam /= TSS_Stream_Input  and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read   and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
+               end if;
+
+            --  Restriction No_Stream_Optimizations is not set, so we can go
+            --  ahead and optimize using the block IO forms of the routines.
+
+            else
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Storage_Array_Input_Blk_IO)
+               then
+                  return RTE (RE_Storage_Array_Input_Blk_IO);
+
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Storage_Array_Output_Blk_IO)
+               then
+                  return RTE (RE_Storage_Array_Output_Blk_IO);
+
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Storage_Array_Read_Blk_IO)
+               then
+                  return RTE (RE_Storage_Array_Read_Blk_IO);
+
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Storage_Array_Write_Blk_IO)
+               then
+                  return RTE (RE_Storage_Array_Write_Blk_IO);
+
+               elsif Nam /= TSS_Stream_Input  and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read   and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
+               end if;
+            end if;
+
+         --  Stream_Element_Array as defined in package Ada.Streams
+
+         elsif Is_RTE (Base_Typ, RE_Stream_Element_Array) then
+
+            --  Case of No_Stream_Optimizations restriction active
+
+            if Restriction_Active (No_Stream_Optimizations) then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Stream_Element_Array_Input)
+               then
+                  return RTE (RE_Stream_Element_Array_Input);
+
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Stream_Element_Array_Output)
+               then
+                  return RTE (RE_Stream_Element_Array_Output);
+
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Stream_Element_Array_Read)
+               then
+                  return RTE (RE_Stream_Element_Array_Read);
+
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Stream_Element_Array_Write)
+               then
+                  return RTE (RE_Stream_Element_Array_Write);
+
+               elsif Nam /= TSS_Stream_Input  and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read   and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
+               end if;
+
+            --  Restriction No_Stream_Optimizations is not set, so we can go
+            --  ahead and optimize using the block IO forms of the routines.
+
+            else
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Stream_Element_Array_Input_Blk_IO)
+               then
+                  return RTE (RE_Stream_Element_Array_Input_Blk_IO);
+
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Stream_Element_Array_Output_Blk_IO)
+               then
+                  return RTE (RE_Stream_Element_Array_Output_Blk_IO);
+
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Stream_Element_Array_Read_Blk_IO)
+               then
+                  return RTE (RE_Stream_Element_Array_Read_Blk_IO);
+
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Stream_Element_Array_Write_Blk_IO)
+               then
+                  return RTE (RE_Stream_Element_Array_Write_Blk_IO);
+
+               elsif Nam /= TSS_Stream_Input  and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read   and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
+               end if;
+            end if;
+
          --  String as defined in package Ada
 
-         if Base_Typ = Standard_String then
+         elsif Base_Typ = Standard_String then
+
+            --  Case of No_Stream_Optimizations restriction active
+
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
                  and then Is_Available (RE_String_Input)
@@ -6961,6 +7105,9 @@ package body Exp_Attr is
                   raise Program_Error;
                end if;
 
+            --  Restriction No_Stream_Optimizations is not set, so we can go
+            --  ahead and optimize using the block IO forms of the routines.
+
             else
                if Nam = TSS_Stream_Input
                  and then Is_Available (RE_String_Input_Blk_IO)
@@ -6982,9 +7129,9 @@ package body Exp_Attr is
                then
                   return RTE (RE_String_Write_Blk_IO);
 
-               elsif Nam /= TSS_Stream_Input and then
+               elsif Nam /= TSS_Stream_Input  and then
                      Nam /= TSS_Stream_Output and then
-                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Read   and then
                      Nam /= TSS_Stream_Write
                then
                   raise Program_Error;
@@ -6994,6 +7141,9 @@ package body Exp_Attr is
          --  Wide_String as defined in package Ada
 
          elsif Base_Typ = Standard_Wide_String then
+
+            --  Case of No_Stream_Optimizations restriction active
+
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
                  and then Is_Available (RE_Wide_String_Input)
@@ -7015,13 +7165,16 @@ package body Exp_Attr is
                then
                   return RTE (RE_Wide_String_Write);
 
-               elsif Nam /= TSS_Stream_Input and then
+               elsif Nam /= TSS_Stream_Input  and then
                      Nam /= TSS_Stream_Output and then
-                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Read   and then
                      Nam /= TSS_Stream_Write
                then
                   raise Program_Error;
                end if;
+
+            --  Restriction No_Stream_Optimizations is not set, so we can go
+            --  ahead and optimize using the block IO forms of the routines.
 
             else
                if Nam = TSS_Stream_Input
@@ -7044,9 +7197,9 @@ package body Exp_Attr is
                then
                   return RTE (RE_Wide_String_Write_Blk_IO);
 
-               elsif Nam /= TSS_Stream_Input and then
+               elsif Nam /= TSS_Stream_Input  and then
                      Nam /= TSS_Stream_Output and then
-                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Read   and then
                      Nam /= TSS_Stream_Write
                then
                   raise Program_Error;
@@ -7056,6 +7209,9 @@ package body Exp_Attr is
          --  Wide_Wide_String as defined in package Ada
 
          elsif Base_Typ = Standard_Wide_Wide_String then
+
+            --  Case of No_Stream_Optimizations restriction active
+
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
                  and then Is_Available (RE_Wide_Wide_String_Input)
@@ -7077,13 +7233,16 @@ package body Exp_Attr is
                then
                   return RTE (RE_Wide_Wide_String_Write);
 
-               elsif Nam /= TSS_Stream_Input and then
+               elsif Nam /= TSS_Stream_Input  and then
                      Nam /= TSS_Stream_Output and then
-                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Read   and then
                      Nam /= TSS_Stream_Write
                then
                   raise Program_Error;
                end if;
+
+            --  Restriction No_Stream_Optimizations is not set, so we can go
+            --  ahead and optimize using the block IO forms of the routines.
 
             else
                if Nam = TSS_Stream_Input
@@ -7106,9 +7265,9 @@ package body Exp_Attr is
                then
                   return RTE (RE_Wide_Wide_String_Write_Blk_IO);
 
-               elsif Nam /= TSS_Stream_Input and then
+               elsif Nam /= TSS_Stream_Input  and then
                      Nam /= TSS_Stream_Output and then
-                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Read   and then
                      Nam /= TSS_Stream_Write
                then
                   raise Program_Error;
@@ -7117,9 +7276,7 @@ package body Exp_Attr is
          end if;
       end if;
 
-      if Is_Tagged_Type (Typ)
-        and then Is_Derived_Type (Typ)
-      then
+      if Is_Tagged_Type (Typ) and then Is_Derived_Type (Typ) then
          return Find_Prim_Op (Typ, Nam);
       else
          return Find_Inherited_TSS (Typ, Nam);

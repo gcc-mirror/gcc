@@ -39,7 +39,7 @@ alloc_stmt_list (void)
   if (!vec_safe_is_empty (stmt_list_cache))
     {
       list = stmt_list_cache->pop ();
-      memset (list, 0, sizeof(struct tree_base));
+      memset (list, 0, sizeof (struct tree_base));
       TREE_SET_CODE (list, STATEMENT_LIST);
     }
   else

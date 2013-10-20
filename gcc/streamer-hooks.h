@@ -61,19 +61,19 @@ struct streamer_hooks {
 };
 
 #define stream_write_tree(OB, EXPR, REF_P) \
-    streamer_hooks.write_tree(OB, EXPR, REF_P, REF_P)
+    streamer_hooks.write_tree (OB, EXPR, REF_P, REF_P)
 
 #define stream_write_tree_shallow_non_ref(OB, EXPR, REF_P) \
-    streamer_hooks.write_tree(OB, EXPR, REF_P, false)
+    streamer_hooks.write_tree (OB, EXPR, REF_P, false)
 
 #define stream_read_tree(IB, DATA_IN) \
-    streamer_hooks.read_tree(IB, DATA_IN)
+    streamer_hooks.read_tree (IB, DATA_IN)
 
 #define stream_input_location(BP, DATA_IN) \
-    streamer_hooks.input_location(BP, DATA_IN)
+    streamer_hooks.input_location (BP, DATA_IN)
 
 #define stream_output_location(OB, BP, LOC) \
-    streamer_hooks.output_location(OB, BP, LOC)
+    streamer_hooks.output_location (OB, BP, LOC)
 
 /* Streamer hooks.  */
 extern struct streamer_hooks streamer_hooks;

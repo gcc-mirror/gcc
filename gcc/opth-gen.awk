@@ -382,6 +382,8 @@ for (i = 0; i < n_opts; i++) {
 		}
 		print "#define TARGET_" name \
 		      " ((" vname " & " mask name ") != 0)"
+		print "#define TARGET_" name "_P(" vname ")" \
+		      " ((" vname " & " mask name ") != 0)"
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {

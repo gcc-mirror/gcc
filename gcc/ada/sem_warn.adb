@@ -1310,6 +1310,7 @@ package body Sem_Warn is
                   UR := Original_Node (UR);
                   while Nkind (UR) = N_Type_Conversion
                     or else Nkind (UR) = N_Qualified_Expression
+                    or else Nkind (UR) = N_Expression_With_Actions
                   loop
                      UR := Expression (UR);
                   end loop;
@@ -1674,6 +1675,15 @@ package body Sem_Warn is
          return;
       end if;
 
+      --  Nothing to do for numeric or string literal. Do this test early to
+      --  save time in a common case (it does not matter that we do not include
+      --  character literal here, since that will be caught later on in the
+      --  when others branch of the case statement).
+
+      if Nkind (N) in N_Numeric_Or_String_Literal then
+         return;
+      end if;
+
       --  Ignore reference unless it comes from source. Almost always if we
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
@@ -1707,7 +1717,7 @@ package body Sem_Warn is
                  and then (No (Unset_Reference (E))
                             or else
                               Earlier_In_Extended_Unit
-                                (Sloc (N),  Sloc (Unset_Reference (E))))
+                                (Sloc (N), Sloc (Unset_Reference (E))))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
                then
@@ -2025,9 +2035,12 @@ package body Sem_Warn is
                Check_Unset_Reference (Pref);
             end;
 
-         --  For type conversions or qualifications examine the expression
+         --  For type conversions, qualifications, or expressions with actions,
+         --  examine the expression.
 
-         when N_Type_Conversion | N_Qualified_Expression =>
+         when N_Type_Conversion         |
+              N_Qualified_Expression    |
+              N_Expression_With_Actions =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
@@ -2425,7 +2438,7 @@ package body Sem_Warn is
                           or else Referenced_As_LHS_Check_Spec (Ent)
                           or else Referenced_As_Out_Parameter_Check_Spec (Ent)
                           or else
-                            (From_With_Type (Ent)
+                            (From_Limited_With (Ent)
                               and then Is_Incomplete_Type (Ent)
                               and then Present (Non_Limited_View (Ent))
                               and then Referenced (Non_Limited_View (Ent)))
@@ -2532,13 +2545,16 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  Flag any unused with clauses, but skip this step if we are compiling
-      --  a subunit on its own, since we do not have enough information to
-      --  determine whether with's are used. We will get the relevant warnings
-      --  when we compile the parent. This is the normal style of GNAT
-      --  compilation in any case.
+      --  Flag any unused with clauses. For a subunit, check only the units
+      --  in its context, not those of the parent, which may be needed by other
+      --  subunits.  We will get the full warnings when we compile the parent,
+      --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then
+         if Current_Sem_Unit = Main_Unit then
+            Check_One_Unit (Main_Unit);
+         end if;
+
          return;
       end if;
 
@@ -3401,12 +3417,26 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  Here we may need to issue message
+                  --  Here we may need to issue overlap message
 
                   else
                      Error_Msg_Warn :=
+
+                       --  Overlap checking is an error only in Ada 2012. For
+                       --  earlier versions of Ada, this is a warning.
+
                        Ada_Version < Ada_2012
-                         or else not Is_Elementary_Type (Etype (Form1));
+
+                       --  Overlap is only illegal in Ada 2012 in the case of
+                       --  elementary types (passed by copy). For other types,
+                       --  we always have a warning in all Ada versions.
+
+                       or else not Is_Elementary_Type (Etype (Form1))
+
+                       --  Finally, debug flag -gnatd.E changes the error to a
+                       --  warning even in Ada 2012 mode.
+
+                       or else Error_To_Warning;
 
                      declare
                         Act  : Node_Id;
@@ -3448,23 +3478,28 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("`IN OUT` prefix overlaps with "
-                                 & "actual for&?I?", Act1, Form);
+                                ("<`IN OUT` prefix overlaps with "
+                                 & "actual for&", Act1, Form);
 
                            else
                               --  For greater clarity, give name of formal
 
                               Error_Msg_Node_2 := Form;
                               Error_Msg_FE
-                                ("writable actual for & overlaps with "
-                                  & "actual for&?I?", Act1, Form);
+                                ("<writable actual for & overlaps with "
+                                 & "actual for&", Act1, Form);
                            end if;
 
                         else
+                           --  For greater clarity, give name of formal
+
                            Error_Msg_Node_2 := Form;
+
+                           --  This is one of the messages
+
                            Error_Msg_FE
-                             ("writable actual for & overlaps with "
-                               & "actual for&?I?", Act1, Form1);
+                             ("<writable actual for & overlaps with "
+                              & "actual for&", Act1, Form1);
                         end if;
                      end;
                   end if;

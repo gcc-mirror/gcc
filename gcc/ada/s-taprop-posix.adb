@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,6 +178,18 @@ package body System.Task_Primitives.Operations is
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
+   procedure Compute_Deadline
+     (Time       : Duration;
+      Mode       : ST.Delay_Modes;
+      Check_Time : out Duration;
+      Abs_Time   : out Duration;
+      Rel_Time   : out Duration);
+   --  Helper for Timed_Sleep and Timed_Delay: given a deadline specified by
+   --  Time and Mode, compute the current clock reading (Check_Time), and the
+   --  target absolute and relative clock readings (Abs_Time, Rel_Time). The
+   --  epoch for Time depends on Mode; the epoch for Check_Time and Abs_Time
+   --  is always that of CLOCK_RT_Ada.
+
    -------------------
    -- Abort_Handler --
    -------------------
@@ -235,6 +247,67 @@ package body System.Task_Primitives.Operations is
          raise Standard'Abort_Signal;
       end if;
    end Abort_Handler;
+
+   ----------------------
+   -- Compute_Deadline --
+   ----------------------
+
+   procedure Compute_Deadline
+     (Time       : Duration;
+      Mode       : ST.Delay_Modes;
+      Check_Time : out Duration;
+      Abs_Time   : out Duration;
+      Rel_Time   : out Duration)
+   is
+   begin
+      Check_Time := Monotonic_Clock;
+
+      --  Relative deadline
+
+      if Mode = Relative then
+         Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
+
+         if Relative_Timed_Wait then
+            Rel_Time := Duration'Min (Max_Sensible_Delay, Time);
+         end if;
+
+         pragma Warnings (Off);
+         --  Comparison "OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME" is compile
+         --  time known.
+
+      --  Absolute deadline specified using the tasking clock (CLOCK_RT_Ada)
+
+      elsif Mode = Absolute_RT
+              or else OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME
+      then
+         pragma Warnings (On);
+         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
+
+         if Relative_Timed_Wait then
+            Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
+         end if;
+
+      --  Absolute deadline specified using the real-time clock, in the
+      --  case where it is not the same as the tasking clock: compensate for
+      --  difference between clock epochs (Base_Time - Base_Cal_Time).
+
+      else
+         declare
+            Cal_Check_Time : constant Duration :=
+                               OS_Primitives.Monotonic_Clock;
+            RT_Time        : constant Duration :=
+                               Time + Check_Time - Cal_Check_Time;
+         begin
+            Abs_Time :=
+              Duration'Min (Check_Time + Max_Sensible_Delay, RT_Time);
+
+            if Relative_Timed_Wait then
+               Rel_Time :=
+                 Duration'Min (Max_Sensible_Delay, RT_Time - Check_Time);
+            end if;
+         end;
+      end if;
+   end Compute_Deadline;
 
    -----------------
    -- Stack_Guard --
@@ -528,10 +601,11 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Reason);
 
-      Base_Time  : constant Duration := Monotonic_Clock;
-      Check_Time : Duration := Base_Time;
-      Rel_Time   : Duration;
+      Base_Time  : Duration;
+      Check_Time : Duration;
       Abs_Time   : Duration;
+      Rel_Time   : Duration;
+
       Request    : aliased timespec;
       Result     : Interfaces.C.int;
 
@@ -539,20 +613,13 @@ package body System.Task_Primitives.Operations is
       Timedout := True;
       Yielded := False;
 
-      if Mode = Relative then
-         Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time);
-         end if;
-
-      else
-         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
-         end if;
-      end if;
+      Compute_Deadline
+        (Time       => Time,
+         Mode       => Mode,
+         Check_Time => Check_Time,
+         Abs_Time   => Abs_Time,
+         Rel_Time   => Rel_Time);
+      Base_Time := Check_Time;
 
       if Abs_Time > Check_Time then
          Request :=
@@ -597,8 +664,8 @@ package body System.Task_Primitives.Operations is
       Time    : Duration;
       Mode    : ST.Delay_Modes)
    is
-      Base_Time  : constant Duration := Monotonic_Clock;
-      Check_Time : Duration := Base_Time;
+      Base_Time  : Duration;
+      Check_Time : Duration;
       Abs_Time   : Duration;
       Rel_Time   : Duration;
       Request    : aliased timespec;
@@ -613,20 +680,13 @@ package body System.Task_Primitives.Operations is
 
       Write_Lock (Self_ID);
 
-      if Mode = Relative then
-         Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time);
-         end if;
-
-      else
-         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
-         end if;
-      end if;
+      Compute_Deadline
+        (Time       => Time,
+         Mode       => Mode,
+         Check_Time => Check_Time,
+         Abs_Time   => Abs_Time,
+         Rel_Time   => Rel_Time);
+      Base_Time := Check_Time;
 
       if Abs_Time > Check_Time then
          Request :=

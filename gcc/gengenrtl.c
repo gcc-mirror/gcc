@@ -37,7 +37,7 @@ static const struct rtx_definition defs[] =
 {
 #include "rtl.def"		/* rtl expressions are documented here */
 };
-#define NUM_RTX_CODE ARRAY_SIZE(defs)
+#define NUM_RTX_CODE ARRAY_SIZE (defs)
 
 static const char *formats[NUM_RTX_CODE];
 

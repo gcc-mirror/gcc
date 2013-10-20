@@ -28,6 +28,13 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// See below __get_executor to get what this is talking about. The default
+// value 1 indicated a conservative optimization without giving up worst case
+// performance.
+#ifndef _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
+#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 1
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
@@ -36,14 +43,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
+    bool _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
+    _M_search()
+    {
+      if (_M_flags & regex_constants::match_continuous)
+	return _M_search_from_first();
+      auto __cur = _M_begin;
+      do
+	{
+	  _M_match_mode = false;
+	  _M_init(__cur);
+	  if (_M_main())
+	    return true;
+	}
+      // Continue when __cur == _M_end
+      while (__cur++ != _M_end);
+      return false;
+    }
+
+  template<typename _BiIter, typename _Alloc,
+    typename _CharT, typename _TraitsT>
     bool _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
     _M_dfs(_StateIdT __i)
     {
-      if (__i == _S_invalid_state_id)
-	// This is not that certain. Need deeper investigate.
-	return false;
       auto& __current = this->_M_current;
-      const auto& __state = _M_nfa[__i];
+      const auto& __state = (*_M_nfa)[__i];
       bool __ret = false;
       switch (__state._M_opcode)
 	{
@@ -66,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (!_M_cur_results[__state._M_subexpr].matched
 	      || _M_cur_results[__state._M_subexpr].first != __current)
 	    {
-	      auto __back = __current;
+	      auto __back = _M_cur_results[__state._M_subexpr].first;
 	      _M_cur_results[__state._M_subexpr].first = __current;
 	      __ret = _M_dfs(__state._M_next);
 	      _M_cur_results[__state._M_subexpr].first = __back;
@@ -128,15 +152,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (this->_M_re._M_traits.transform(__submatch.first,
 						__submatch.second)
 		== this->_M_re._M_traits.transform(__current, __last))
-	      if (__last != __current)
-		{
-		  auto __backup = __current;
-		  __current = __last;
+	      {
+		if (__last != __current)
+		  {
+		    auto __backup = __current;
+		    __current = __last;
+		    __ret = _M_dfs(__state._M_next);
+		    __current = __backup;
+		  }
+		else
 		  __ret = _M_dfs(__state._M_next);
-		  __current = __backup;
-		}
-	      else
-		__ret = _M_dfs(__state._M_next);
+	      }
 	  }
 	  break;
 	case _S_opcode_accept:
@@ -148,17 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && (this->_M_flags & regex_constants::match_not_null))
 	    __ret = false;
 	  if (__ret)
-	    {
-	      _ResultsVec& __res(this->_M_results);
-	      if (this->_M_re.flags() & regex_constants::nosubs)
-		{
-		  _M_cur_results.resize(3); // truncate
-		  __res.resize(3);
-		}
-	      for (unsigned int __i = 0; __i < _M_cur_results.size(); ++__i)
-		if (_M_cur_results[__i].matched)
-		  __res[__i] = _M_cur_results[__i];
-	    }
+	    this->_M_set_results(_M_cur_results);
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);
@@ -171,6 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
     _M_main()
     {
+      _M_e_closure();
       bool __ret = false;
       if (!this->_M_match_mode
 	  && !(this->_M_flags & regex_constants::match_not_null))
@@ -179,6 +196,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _M_move();
 	  ++this->_M_current;
+	  if (_M_stack._M_empty())
+	    break;
 	  _M_e_closure();
 	  if (!this->_M_match_mode)
 	    // To keep regex_search greedy, no "return true" here.
@@ -187,18 +206,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (this->_M_match_mode)
 	__ret = _M_includes_some();
       if (__ret)
-	{
-	  _ResultsVec& __res(this->_M_results);
-	  if (this->_M_re.flags() & regex_constants::nosubs)
-	    {
-	      // truncate
-	      _M_cur_results->resize(3);
-	      __res.resize(3);
-	    }
-	  for (unsigned int __i = 0; __i < _M_cur_results->size(); ++__i)
-	    if ((*_M_cur_results)[__i].matched)
-	      __res[__i] = (*_M_cur_results)[__i];
-	}
+	this->_M_set_results(_M_cur_results->_M_get());
+      _M_match_stack._M_clear();
+      _GLIBCXX_DEBUG_ASSERT(_M_stack._M_empty());
       return __ret;
     }
 
@@ -207,42 +217,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
     _M_e_closure()
     {
-      std::queue<_StateIdT> __q;
-      std::vector<bool> __in_q(_M_nfa.size(), false);
       auto& __current = this->_M_current;
 
-      for (auto& __it : _M_covered)
+      while (!_M_stack._M_empty())
 	{
-	  __in_q[__it.first] = true;
-	  __q.push(__it.first);
-	}
-      while (!__q.empty())
-	{
-	  auto __u = __q.front();
-	  __q.pop();
-	  __in_q[__u] = false;
-	  const auto& __state = _M_nfa[__u];
+	  auto __u = _M_stack._M_pop();
+	  _GLIBCXX_DEBUG_ASSERT(_M_covered.count(__u));
+	  const auto& __state = (*_M_nfa)[__u];
 
 	  // Can be implemented using method, but there will be too many
 	  // arguments. I would use macro function before C++11, but lambda is
 	  // a better choice, since hopefully compiler can inline it.
-	  auto __add_visited_state = [&](_StateIdT __v)
+	  auto __add_visited_state = [=](_StateIdT __v)
 	  {
-	    if (__v == _S_invalid_state_id)
-	      return;
-	    if (_M_covered.count(__u) != 0
-		&& (_M_covered.count(__v) == 0
-		    || *_M_covered[__u] < *_M_covered[__v]))
+	    if (_M_covered.count(__v) == 0)
 	      {
 		_M_covered[__v] =
 		  _ResultsPtr(new _ResultsEntry(*_M_covered[__u]));
+		_M_stack._M_push(__v);
+		return;
+	      }
+	    auto& __cu = _M_covered[__u];
+	    auto& __cv = _M_covered[__v];
+	    if (*__cu < *__cv)
+	      {
+		__cv = _ResultsPtr(new _ResultsEntry(*__cu));
 		// if a state is updated, it's outgoing neighbors should be
 		// reconsidered too. Push them to the queue.
-		if (!__in_q[__v])
-		  {
-		    __in_q[__v] = true;
-		    __q.push(__v);
-		  }
+		_M_stack._M_push(__v);
 	      }
 	  };
 
@@ -254,13 +256,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      case _S_opcode_alternative:
 		{
 		  __add_visited_state(__state._M_next);
-		  auto __back =
-		    _M_covered[__u]->_M_quant_keys[__state._M_quant_index];
-		  _M_covered[__u]->_M_inc(__state._M_quant_index,
-					  __state._M_neg);
+		  auto& __cu = *_M_covered[__u];
+		  auto __back = __cu._M_quant_keys[__state._M_quant_index];
+		  __cu._M_inc(__state._M_quant_index, __state._M_neg);
 		  __add_visited_state(__state._M_alt);
-		  _M_covered[__u]->_M_quant_keys[__state._M_quant_index]
-		    = __back;
+		  __cu._M_quant_keys[__state._M_quant_index] = __back;
 		}
 		break;
 	      case _S_opcode_subexpr_begin:
@@ -302,6 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __add_visited_state(__state._M_next);
 		break;
 	      case _S_opcode_match:
+		_M_match_stack._M_push(__u);
 		break;
 	      case _S_opcode_accept:
 		break;
@@ -317,15 +318,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_move()
     {
       decltype(_M_covered) __next;
-      for (auto& __it : _M_covered)
+      while (!_M_match_stack._M_empty())
 	{
-	  const auto& __state = _M_nfa[__it.first];
-	  if (__state._M_opcode == _S_opcode_match
-	      && __state._M_matches(*this->_M_current))
-	    if (__state._M_next != _S_invalid_state_id)
-	      if (__next.count(__state._M_next) == 0
-		  || *__it.second < *__next[__state._M_next])
-		__next[__state._M_next] = move(__it.second);
+	  auto __u = _M_match_stack._M_pop();
+	  const auto& __state = (*_M_nfa)[__u];
+	  auto& __cu = _M_covered[__u];
+	  if (__state._M_matches(*this->_M_current)
+	      && (__next.count(__state._M_next) == 0
+		  || *__cu < *__next[__state._M_next]))
+	    {
+	      __next[__state._M_next] = std::move(__cu);
+	      _M_stack._M_push(__state._M_next);
+	    }
 	}
       _M_covered = move(__next);
     }
@@ -335,31 +339,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
     _M_includes_some()
     {
-      auto& __s = _M_nfa._M_final_states();
-      auto& __t = _M_covered;
       bool __succ = false;
-      if (__s.size() > 0 && __t.size() > 0)
-	{
-	  auto __first = __s.begin();
-	  auto __second = __t.begin();
-	  while (__first != __s.end() && __second != __t.end())
-	    {
-	      if (*__first < __second->first)
-		++__first;
-	      else if (*__first > __second->first)
-		++__second;
-	      else
-		{
-		  if (_M_cur_results == nullptr
-		      || *__second->second < *_M_cur_results)
-		    _M_cur_results =
-		      _ResultsPtr(new _ResultsEntry(*__second->second));
-		  __succ = true;
-		  ++__first;
-		  ++__second;
-		}
-	    }
-	}
+      for (auto __u : _M_nfa->_M_final_states())
+	if (_M_covered.count(__u))
+	  {
+	    __succ = true;
+	    auto& __cu = _M_covered[__u];
+	    if (_M_cur_results == nullptr || *__cu < *_M_cur_results)
+	      _M_cur_results = _ResultsPtr(new _ResultsEntry(*__cu));
+	  }
       return __succ;
     }
 
@@ -374,39 +362,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __pre = _M_current;
       --__pre;
       if (!(_M_at_begin() && _M_at_end()))
-	if (_M_at_begin())
-	  __ans = _M_is_word(*_M_current)
-	    && !(_M_flags & regex_constants::match_not_bow);
-	else if (_M_at_end())
-	  __ans = _M_is_word(*__pre)
-	    && !(_M_flags & regex_constants::match_not_eow);
-	else
-	  __ans = _M_is_word(*_M_current)
-	    != _M_is_word(*__pre);
+	{
+	  if (_M_at_begin())
+	    __ans = _M_is_word(*_M_current)
+	      && !(_M_flags & regex_constants::match_not_bow);
+	  else if (_M_at_end())
+	    __ans = _M_is_word(*__pre)
+	      && !(_M_flags & regex_constants::match_not_eow);
+	  else
+	    __ans = _M_is_word(*_M_current)
+	      != _M_is_word(*__pre);
+	}
       return __ans;
     }
 
-  // Return whether now match the given sub-NFA.
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
-    bool _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_lookahead(_State<_CharT, _TraitsT> __state) const
+    void _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
+    _M_set_results(_ResultsVec& __cur_results)
     {
-      auto __sub = __get_executor(this->_M_current,
-				  this->_M_end,
-				  this->_M_results,
-				  this->_M_re,
-				  this->_M_flags);
-      __sub->_M_set_start(__state._M_alt);
-      return __sub->_M_search_from_first();
+      for (size_t __i = 0; __i < __cur_results.size(); ++__i)
+	if (__cur_results[__i].matched)
+	  _M_results[__i] = __cur_results[__i];
     }
 
+  enum class _RegexExecutorPolicy : int
+    { _S_auto, _S_alternate };
+
+  // This function decide which executor to use under given circumstances.
+  // The _S_auto policy now is the following: if a NFA has no back-references
+  // and has more than _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT quantifiers
+  // (*, +, ?), the _BFSExecutor will be used, other wise _DFSExecutor. This is
+  // because _DFSExecutor has a exponential upper bound, but better best-case
+  // performace. Meanwhile, _BFSExecutor can effectively prevent from
+  // exponential-long time matching (which must contains many quantifiers), but
+  // it's slower in average.
+  //
+  // For simple regex, _BFSExecutor could be 2 or more times slower than
+  // _DFSExecutor.
+  //
+  // Of course, _BFSExecutor cannot handle back-references.
   template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
+    typename _CharT, typename _TraitsT,
+    _RegexExecutorPolicy __policy>
     std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
     __get_executor(_BiIter __b,
 		   _BiIter __e,
-		   match_results<_BiIter, _Alloc>& __m,
+		   std::vector<sub_match<_BiIter>, _Alloc>& __m,
 		   const basic_regex<_CharT, _TraitsT>& __re,
 		   regex_constants::match_flag_type __flags)
     {
@@ -414,11 +416,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ExecutorPtr;
       typedef _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _DFSExecutorT;
       typedef _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _BFSExecutorT;
-      auto __p = std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
-	(__re._M_automaton);
-      if (__p->_M_has_backref)
-	return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, __re, __flags));
-      return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, __re, __flags));
+      if (!__re._M_automaton->_M_has_backref
+	  && (__policy == _RegexExecutorPolicy::_S_alternate
+	      || __re._M_automaton->_M_quant_count
+		> _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT))
+	return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, __re, __flags));
+      return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, __re, __flags));
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

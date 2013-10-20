@@ -14,6 +14,8 @@ TEST=all-gcc
 LIST = aarch64-elf aarch64-linux-gnu \
   alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
+  arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
+  arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
   arm-wrs-vxworks arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi \
   arm-symbianelf avr-rtems avr-elf \

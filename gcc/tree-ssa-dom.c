@@ -34,8 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
 #include "params.h"
+#include "tree-ssa-threadedge.h"
+#include "tree-ssa-dom.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -638,18 +641,18 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         break;
 
       case EXPR_UNARY:
-        fprintf (stream, "%s ", tree_code_name[element->expr.ops.unary.op]);
+	fprintf (stream, "%s ", get_tree_code_name (element->expr.ops.unary.op));
         print_generic_expr (stream, element->expr.ops.unary.opnd, 0);
         break;
 
       case EXPR_BINARY:
         print_generic_expr (stream, element->expr.ops.binary.opnd0, 0);
-        fprintf (stream, " %s ", tree_code_name[element->expr.ops.binary.op]);
+	fprintf (stream, " %s ", get_tree_code_name (element->expr.ops.binary.op));
         print_generic_expr (stream, element->expr.ops.binary.opnd1, 0);
         break;
 
       case EXPR_TERNARY:
-        fprintf (stream, " %s <", tree_code_name[element->expr.ops.ternary.op]);
+	fprintf (stream, " %s <", get_tree_code_name (element->expr.ops.ternary.op));
         print_generic_expr (stream, element->expr.ops.ternary.opnd0, 0);
 	fputs (", ", stream);
         print_generic_expr (stream, element->expr.ops.ternary.opnd1, 0);
@@ -774,7 +777,7 @@ class dom_opt_dom_walker : public dom_walker
 {
 public:
   dom_opt_dom_walker (cdi_direction direction)
-    : dom_walker (direction), dummy_cond_ (NULL) {}
+    : dom_walker (direction), m_dummy_cond (NULL) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -782,7 +785,7 @@ public:
 private:
   void thread_across_edge (edge);
 
-  gimple dummy_cond_;
+  gimple m_dummy_cond;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -901,7 +904,6 @@ tree_ssa_dominator_optimize (void)
 
   /* Free the value-handle array.  */
   threadedge_finalize_values ();
-  ssa_name_values.release ();
 
   return 0;
 }
@@ -934,12 +936,12 @@ const pass_data pass_data_dominator =
 class pass_dominator : public gimple_opt_pass
 {
 public:
-  pass_dominator(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_dominator, ctxt)
+  pass_dominator (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_dominator, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dominator (ctxt_); }
+  opt_pass * clone () { return new pass_dominator (m_ctxt); }
   bool gate () { return gate_dominator (); }
   unsigned int execute () { return tree_ssa_dominator_optimize (); }
 
@@ -1106,8 +1108,8 @@ record_temporary_equivalences (edge e)
 void
 dom_opt_dom_walker::thread_across_edge (edge e)
 {
-  if (! dummy_cond_)
-    dummy_cond_ =
+  if (! m_dummy_cond)
+    m_dummy_cond =
         gimple_build_cond (NE_EXPR,
                            integer_zero_node, integer_zero_node,
                            NULL, NULL);
@@ -1122,7 +1124,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
-  ::thread_across_edge (dummy_cond_, e, false,
+  ::thread_across_edge (m_dummy_cond, e, false,
 		        &const_and_copies_stack,
 		        simplify_stmt_for_jump_threading);
 
@@ -2588,42 +2590,6 @@ avail_expr_hash (const void *p)
 /* PHI-ONLY copy and constant propagation.  This pass is meant to clean
    up degenerate PHIs created by or exposed by jump threading.  */
 
-/* Given PHI, return its RHS if the PHI is a degenerate, otherwise return
-   NULL.  */
-
-tree
-degenerate_phi_result (gimple phi)
-{
-  tree lhs = gimple_phi_result (phi);
-  tree val = NULL;
-  size_t i;
-
-  /* Ignoring arguments which are the same as LHS, if all the remaining
-     arguments are the same, then the PHI is a degenerate and has the
-     value of that common argument.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
-    {
-      tree arg = gimple_phi_arg_def (phi, i);
-
-      if (arg == lhs)
-	continue;
-      else if (!arg)
-	break;
-      else if (!val)
-	val = arg;
-      else if (arg == val)
-	continue;
-      /* We bring in some of operand_equal_p not only to speed things
-	 up, but also to avoid crashing when dereferencing the type of
-	 a released SSA name.  */
-      else if (TREE_CODE (val) != TREE_CODE (arg)
-	       || TREE_CODE (val) == SSA_NAME
-	       || !operand_equal_p (arg, val, 0))
-	break;
-    }
-  return (i == gimple_phi_num_args (phi) ? val : NULL);
-}
-
 /* Given a statement STMT, which is either a PHI node or an assignment,
    remove it from the IL.  */
 
@@ -3127,12 +3093,12 @@ const pass_data pass_data_phi_only_cprop =
 class pass_phi_only_cprop : public gimple_opt_pass
 {
 public:
-  pass_phi_only_cprop(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_phi_only_cprop, ctxt)
+  pass_phi_only_cprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_phi_only_cprop, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phi_only_cprop (ctxt_); }
+  opt_pass * clone () { return new pass_phi_only_cprop (m_ctxt); }
   bool gate () { return gate_dominator (); }
   unsigned int execute () { return eliminate_degenerate_phis (); }
 

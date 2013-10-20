@@ -1893,7 +1893,7 @@ package body Exp_Ch3 is
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Immutably_Limited_Type (Typ)
+           and then not Is_Limited_View (Typ)
          then
             Append_To (Res,
               Make_Adjust_Call
@@ -4940,7 +4940,7 @@ package body Exp_Ch3 is
                Next_Elmt (Discr);
             end loop;
 
-            --  Now collect values of initialized components.
+            --  Now collect values of initialized components
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
@@ -4957,11 +4957,11 @@ package body Exp_Ch3 is
                Next_Component (Comp);
             end loop;
 
-            --  Finally, box-initialize remaining components.
+            --  Finally, box-initialize remaining components
 
             Append_To (Component_Associations (Aggr),
               Make_Component_Association (Loc,
-                Choices => New_List (Make_Others_Choice (Loc)),
+                Choices    => New_List (Make_Others_Choice (Loc)),
                 Expression => Empty));
             Set_Box_Present (Last (Component_Associations (Aggr)));
             Set_Expression (N, Aggr);
@@ -5310,7 +5310,7 @@ package body Exp_Ch3 is
             --  creating the object (via allocator) and initializing it.
 
             if Is_Return_Object (Def_Id)
-              and then Is_Immutably_Limited_Type (Typ)
+              and then Is_Limited_View (Typ)
             then
                null;
 
@@ -5578,7 +5578,7 @@ package body Exp_Ch3 is
             --  renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Immutably_Limited_Type (Typ)
+              and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
                Insert_Action_After (Init_After,
@@ -5846,23 +5846,18 @@ package body Exp_Ch3 is
    -- Expand_N_Variant_Part --
    ---------------------------
 
-   --  If the last variant does not contain the Others choice, replace it with
-   --  an N_Others_Choice node since Gigi always wants an Others. Note that we
-   --  do not bother to call Analyze on the modified variant part, since its
-   --  only effect would be to compute the Others_Discrete_Choices node
-   --  laboriously, and of course we already know the list of choices that
-   --  corresponds to the others choice (it's the list we are replacing!)
+   --  Note: this procedure no longer has any effect. It used to be that we
+   --  would replace the choices in the last variant by a when others, and
+   --  also expanded static predicates in variant choices here, but both of
+   --  those activities were being done too early, since we can't check the
+   --  choices until the statically predicated subtypes are frozen, which can
+   --  happen as late as the free point of the record, and we can't change the
+   --  last choice to an others before checking the choices, which is now done
+   --  at the freeze point of the record.
 
    procedure Expand_N_Variant_Part (N : Node_Id) is
-      Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
-      Others_Node : Node_Id;
    begin
-      if Nkind (First (Discrete_Choices (Last_Var))) /= N_Others_Choice then
-         Others_Node := Make_Others_Choice (Sloc (Last_Var));
-         Set_Others_Discrete_Choices
-           (Others_Node, Discrete_Choices (Last_Var));
-         Set_Discrete_Choices (Last_Var, New_List (Others_Node));
-      end if;
+      null;
    end Expand_N_Variant_Part;
 
    ---------------------------------
@@ -6155,12 +6150,6 @@ package body Exp_Ch3 is
       --  mode since the routine contains an Unchecked_Conversion.
 
       elsif CodePeer_Mode then
-         return;
-
-      --  Do not create TSS routine Finalize_Address when compiling in SPARK
-      --  mode because it is not necessary and results in useless expansion.
-
-      elsif SPARK_Mode then
          return;
       end if;
 
@@ -6908,13 +6897,9 @@ package body Exp_Ch3 is
             --  be done before the bodies of all predefined primitives are
             --  created. If Def_Id is limited, Stream_Input and Stream_Read
             --  may produce build-in-place allocations and for those the
-            --  expander needs Finalize_Address. Do not create the body of
-            --  Finalize_Address in SPARK mode since it is not needed.
+            --  expander needs Finalize_Address.
 
-            if not SPARK_Mode then
-               Make_Finalize_Address_Body (Def_Id);
-            end if;
-
+            Make_Finalize_Address_Body (Def_Id);
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
             Append_Freeze_Actions (Def_Id, Predef_List);
          end if;

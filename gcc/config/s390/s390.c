@@ -324,6 +324,12 @@ struct GTY (()) s390_frame_layout
   int first_save_gpr_slot;
   int last_save_gpr_slot;
 
+  /* Location (FP register number) where GPRs (r0-r15) should
+     be saved to.
+      0 - does not need to be saved at all
+     -1 - stack slot  */
+  signed char gpr_save_slots[16];
+
   /* Number of first and last gpr to be saved, restored.  */
   int first_save_gpr;
   int first_restore_gpr;
@@ -377,12 +383,17 @@ struct GTY(()) machine_function
 
 #define cfun_frame_layout (cfun->machine->frame_layout)
 #define cfun_save_high_fprs_p (!!cfun_frame_layout.high_fprs)
-#define cfun_gprs_save_area_size ((cfun_frame_layout.last_save_gpr_slot -           \
+#define cfun_save_arg_fprs_p (!!(TARGET_64BIT				\
+				 ? cfun_frame_layout.fpr_bitmap & 0x0f	\
+				 : cfun_frame_layout.fpr_bitmap & 0x03))
+#define cfun_gprs_save_area_size ((cfun_frame_layout.last_save_gpr_slot - \
   cfun_frame_layout.first_save_gpr_slot + 1) * UNITS_PER_LONG)
 #define cfun_set_fpr_save(REGNO) (cfun->machine->frame_layout.fpr_bitmap |=    \
   (1 << (REGNO - FPR0_REGNUM)))
 #define cfun_fpr_save_p(REGNO) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
   (1 << (REGNO - FPR0_REGNUM))))
+#define cfun_gpr_save_slot(REGNO) \
+  cfun->machine->frame_layout.gpr_save_slots[REGNO]
 
 /* Number of GPRs and FPRs used for argument passing.  */
 #define GP_ARG_NUM_REG 5
@@ -6025,11 +6036,11 @@ s390_split_branches (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (! JUMP_P (insn))
+      if (! JUMP_P (insn) || tablejump_p (insn, NULL, NULL))
 	continue;
 
       pat = PATTERN (insn);
-      if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+      if (GET_CODE (pat) == PARALLEL)
 	pat = XVECEXP (pat, 0, 0);
       if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
 	continue;
@@ -7049,6 +7060,8 @@ s390_chunkify_start (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
+      rtx table;
+
       /* Labels marked with LABEL_PRESERVE_P can be target
 	 of non-local jumps, so we have to mark them.
 	 The same holds for named labels.
@@ -7063,42 +7076,41 @@ s390_chunkify_start (void)
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
+      /* Check potential targets in a table jump (casesi_jump).  */
+      else if (tablejump_p (insn, NULL, &table))
+	{
+	  rtx vec_pat = PATTERN (table);
+	  int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
 
-      /* If we have a direct jump (conditional or unconditional)
-	 or a casesi jump, check all potential targets.  */
+	  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
+	    {
+	      rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
+
+	      if (s390_find_pool (pool_list, label)
+		  != s390_find_pool (pool_list, insn))
+		bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
+	    }
+	}
+      /* If we have a direct jump (conditional or unconditional),
+	 check all potential targets.  */
       else if (JUMP_P (insn))
 	{
-          rtx pat = PATTERN (insn);
-          rtx table;
+	  rtx pat = PATTERN (insn);
 
-	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+	  if (GET_CODE (pat) == PARALLEL)
 	    pat = XVECEXP (pat, 0, 0);
 
-          if (GET_CODE (pat) == SET)
-            {
+	  if (GET_CODE (pat) == SET)
+	    {
 	      rtx label = JUMP_LABEL (insn);
 	      if (label)
 		{
-	          if (s390_find_pool (pool_list, label)
+		  if (s390_find_pool (pool_list, label)
 		      != s390_find_pool (pool_list, insn))
 		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
-            }
-         else if (tablejump_p (insn, NULL, &table))
-           {
-             rtx vec_pat = PATTERN (table);
-             int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
-
-             for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
-               {
-                 rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
-
-                 if (s390_find_pool (pool_list, label)
-                     != s390_find_pool (pool_list, insn))
-                   bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
-		}
 	    }
-        }
+	}
     }
 
   /* Insert base register reload insns before every pool.  */
@@ -7363,7 +7375,7 @@ find_unused_clobbered_reg (void)
 static void
 s390_reg_clobbered_rtx (rtx setreg, const_rtx set_insn ATTRIBUTE_UNUSED, void *data)
 {
-  int *regs_ever_clobbered = (int *)data;
+  char *regs_ever_clobbered = (char *)data;
   unsigned int i, regno;
   enum machine_mode mode = GET_MODE (setreg);
 
@@ -7391,13 +7403,13 @@ s390_reg_clobbered_rtx (rtx setreg, const_rtx set_insn ATTRIBUTE_UNUSED, void *d
    each of those regs.  */
 
 static void
-s390_regs_ever_clobbered (int *regs_ever_clobbered)
+s390_regs_ever_clobbered (char regs_ever_clobbered[])
 {
   basic_block cur_bb;
   rtx cur_insn;
   unsigned int i;
 
-  memset (regs_ever_clobbered, 0, 32 * sizeof (int));
+  memset (regs_ever_clobbered, 0, 32);
 
   /* For non-leaf functions we have to consider all call clobbered regs to be
      clobbered.  */
@@ -7424,7 +7436,7 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
      This flag is also set for the unwinding code in libgcc.
      See expand_builtin_unwind_init.  For regs_ever_live this is done by
      reload.  */
-  if (cfun->has_nonlocal_label)
+  if (crtl->saves_all_registers)
     for (i = 0; i < 32; i++)
       if (!call_really_used_regs[i])
 	regs_ever_clobbered[i] = 1;
@@ -7433,10 +7445,38 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
     {
       FOR_BB_INSNS (cur_bb, cur_insn)
 	{
-	  if (INSN_P (cur_insn))
-	    note_stores (PATTERN (cur_insn),
-			 s390_reg_clobbered_rtx,
-			 regs_ever_clobbered);
+	  rtx pat;
+
+	  if (!INSN_P (cur_insn))
+	    continue;
+
+	  pat = PATTERN (cur_insn);
+
+	  /* Ignore GPR restore insns.  */
+	  if (epilogue_completed && RTX_FRAME_RELATED_P (cur_insn))
+	    {
+	      if (GET_CODE (pat) == SET
+		  && GENERAL_REG_P (SET_DEST (pat)))
+		{
+		  /* lgdr  */
+		  if (GET_MODE (SET_SRC (pat)) == DImode
+		      && FP_REG_P (SET_SRC (pat)))
+		    continue;
+
+		  /* l / lg  */
+		  if (GET_CODE (SET_SRC (pat)) == MEM)
+		    continue;
+		}
+
+	      /* lm / lmg */
+	      if (GET_CODE (pat) == PARALLEL
+		  && load_multiple_operation (pat, VOIDmode))
+		continue;
+	    }
+
+	  note_stores (pat,
+		       s390_reg_clobbered_rtx,
+		       regs_ever_clobbered);
 	}
     }
 }
@@ -7486,179 +7526,247 @@ s390_frame_area (int *area_bottom, int *area_top)
   *area_bottom = b;
   *area_top = t;
 }
-
-/* Fill cfun->machine with info about register usage of current function.
-   Return in CLOBBERED_REGS which GPRs are currently considered set.  */
+/* Update gpr_save_slots in the frame layout trying to make use of
+   FPRs as GPR save slots.
+   This is a helper routine of s390_register_info.  */
 
 static void
-s390_register_info (int clobbered_regs[])
+s390_register_info_gprtofpr ()
 {
+  int save_reg_slot = FPR0_REGNUM;
   int i, j;
 
-  /* Find first and last gpr to be saved.  We trust regs_ever_live
-     data, except that we don't save and restore global registers.
+  if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
+    return;
 
-     Also, all registers with special meaning to the compiler need
-     to be handled extra.  */
-
-  s390_regs_ever_clobbered (clobbered_regs);
-
-  /* fprs 8 - 15 are call saved for 64 Bit ABI.  */
-  if (!epilogue_completed)
+  for (i = 15; i >= 6; i--)
     {
-      cfun_frame_layout.fpr_bitmap = 0;
-      cfun_frame_layout.high_fprs = 0;
-      if (TARGET_64BIT)
-	for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
-	  /* During reload we have to use the df_regs_ever_live infos
-	     since reload is marking FPRs used as spill slots there as
-	     live before actually making the code changes.  Without
-	     this we fail during elimination offset verification.  */
-	  if ((clobbered_regs[i]
-	       || (df_regs_ever_live_p (i)
-		   && (lra_in_progress
-		       || reload_in_progress
-		       || crtl->saves_all_registers)))
-	      && !global_regs[i])
-	    {
-	      cfun_set_fpr_save (i);
-	      cfun_frame_layout.high_fprs++;
-	    }
+      if (cfun_gpr_save_slot (i) == 0)
+	continue;
+
+      /* Advance to the next FP register which can be used as a
+	 GPR save slot.  */
+      while ((!call_really_used_regs[save_reg_slot]
+	      || df_regs_ever_live_p (save_reg_slot)
+	      || cfun_fpr_save_p (save_reg_slot))
+	     && FP_REGNO_P (save_reg_slot))
+	save_reg_slot++;
+      if (!FP_REGNO_P (save_reg_slot))
+	{
+	  /* We only want to use ldgr/lgdr if we can get rid of
+	     stm/lm entirely.  So undo the gpr slot allocation in
+	     case we ran out of FPR save slots.  */
+	  for (j = 6; j <= 15; j++)
+	    if (FP_REGNO_P (cfun_gpr_save_slot (j)))
+	      cfun_gpr_save_slot (j) = -1;
+	  break;
+	}
+      cfun_gpr_save_slot (i) = save_reg_slot++;
     }
+}
 
-  for (i = 0; i < 16; i++)
-    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i] && !fixed_regs[i];
+/* Set the bits in fpr_bitmap for FPRs which need to be saved due to
+   stdarg.
+   This is a helper routine for s390_register_info.  */
 
-  if (frame_pointer_needed)
-    clobbered_regs[HARD_FRAME_POINTER_REGNUM] = 1;
+static void
+s390_register_info_stdarg_fpr ()
+{
+  int i;
+  int min_fpr;
+  int max_fpr;
+
+  /* Save the FP argument regs for stdarg. f0, f2 for 31 bit and
+     f0-f4 for 64 bit.  */
+  if (!cfun->stdarg
+      || !TARGET_HARD_FLOAT
+      || !cfun->va_list_fpr_size
+      || crtl->args.info.fprs >= FP_ARG_NUM_REG)
+    return;
+
+  min_fpr = crtl->args.info.fprs;
+  max_fpr = min_fpr + cfun->va_list_fpr_size;
+  if (max_fpr > FP_ARG_NUM_REG)
+    max_fpr = FP_ARG_NUM_REG;
+
+  for (i = min_fpr; i < max_fpr; i++)
+    cfun_set_fpr_save (i + FPR0_REGNUM);
+}
+
+/* Reserve the GPR save slots for GPRs which need to be saved due to
+   stdarg.
+   This is a helper routine for s390_register_info.  */
+
+static void
+s390_register_info_stdarg_gpr ()
+{
+  int i;
+  int min_gpr;
+  int max_gpr;
+
+  if (!cfun->stdarg
+      || !cfun->va_list_gpr_size
+      || crtl->args.info.gprs >= GP_ARG_NUM_REG)
+    return;
+
+  min_gpr = crtl->args.info.gprs;
+  max_gpr = min_gpr + cfun->va_list_gpr_size;
+  if (max_gpr > GP_ARG_NUM_REG)
+    max_gpr = GP_ARG_NUM_REG;
+
+  for (i = min_gpr; i < max_gpr; i++)
+    cfun_gpr_save_slot (2 + i) = -1;
+}
+
+/* The GPR and FPR save slots in cfun->machine->frame_layout are set
+   for registers which need to be saved in function prologue.
+   This function can be used until the insns emitted for save/restore
+   of the regs are visible in the RTL stream.  */
+
+static void
+s390_register_info ()
+{
+  int i, j;
+  char clobbered_regs[32];
+
+  gcc_assert (!epilogue_completed);
+
+  if (reload_completed)
+    /* After reload we rely on our own routine to determine which
+       registers need saving.  */
+    s390_regs_ever_clobbered (clobbered_regs);
+  else
+    /* During reload we use regs_ever_live as a base since reload
+       does changes in there which we otherwise would not be aware
+       of.  */
+    for (i = 0; i < 32; i++)
+      clobbered_regs[i] = df_regs_ever_live_p (i);
+
+  for (i = 0; i < 32; i++)
+    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i];
+
+  /* Mark the call-saved FPRs which need to be saved.
+     This needs to be done before checking the special GPRs since the
+     stack pointer usage depends on whether high FPRs have to be saved
+     or not.  */
+  cfun_frame_layout.fpr_bitmap = 0;
+  cfun_frame_layout.high_fprs = 0;
+  for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
+    if (clobbered_regs[i] && !call_really_used_regs[i])
+      {
+	cfun_set_fpr_save (i);
+	if (i >= FPR8_REGNUM)
+	  cfun_frame_layout.high_fprs++;
+      }
 
   if (flag_pic)
     clobbered_regs[PIC_OFFSET_TABLE_REGNUM]
-      |= df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
+      |= !!df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
 
   clobbered_regs[BASE_REGNUM]
     |= (cfun->machine->base_reg
-        && REGNO (cfun->machine->base_reg) == BASE_REGNUM);
+	&& REGNO (cfun->machine->base_reg) == BASE_REGNUM);
 
+  clobbered_regs[HARD_FRAME_POINTER_REGNUM]
+    |= !!frame_pointer_needed;
+
+  /* On pre z900 machines this might take until machine dependent
+     reorg to decide.
+     save_return_addr_p will only be set on non-zarch machines so
+     there is no risk that r14 goes into an FPR instead of a stack
+     slot.  */
   clobbered_regs[RETURN_REGNUM]
     |= (!crtl->is_leaf
 	|| TARGET_TPF_PROFILING
 	|| cfun->machine->split_branches_pending_p
 	|| cfun_frame_layout.save_return_addr_p
-	|| crtl->calls_eh_return
-	|| cfun->stdarg);
+	|| crtl->calls_eh_return);
 
   clobbered_regs[STACK_POINTER_REGNUM]
     |= (!crtl->is_leaf
 	|| TARGET_TPF_PROFILING
 	|| cfun_save_high_fprs_p
 	|| get_frame_size () > 0
-	|| cfun->calls_alloca
-	|| cfun->stdarg);
+	|| (reload_completed && cfun_frame_layout.frame_size > 0)
+	|| cfun->calls_alloca);
+
+  memset (cfun_frame_layout.gpr_save_slots, 0, 16);
 
   for (i = 6; i < 16; i++)
-    if (df_regs_ever_live_p (i) || clobbered_regs[i])
-      break;
-  for (j = 15; j > i; j--)
-    if (df_regs_ever_live_p (j) || clobbered_regs[j])
-      break;
+    if (clobbered_regs[i])
+      cfun_gpr_save_slot (i) = -1;
 
-  if (i == 16)
-    {
-      /* Nothing to save/restore.  */
-      cfun_frame_layout.first_save_gpr_slot = -1;
-      cfun_frame_layout.last_save_gpr_slot = -1;
-      cfun_frame_layout.first_save_gpr = -1;
-      cfun_frame_layout.first_restore_gpr = -1;
-      cfun_frame_layout.last_save_gpr = -1;
-      cfun_frame_layout.last_restore_gpr = -1;
-    }
-  else
-    {
-      /* Save slots for gprs from i to j.  */
-      cfun_frame_layout.first_save_gpr_slot = i;
-      cfun_frame_layout.last_save_gpr_slot = j;
+  s390_register_info_stdarg_fpr ();
+  s390_register_info_gprtofpr ();
 
-      for (i = cfun_frame_layout.first_save_gpr_slot;
-	   i < cfun_frame_layout.last_save_gpr_slot + 1;
-	   i++)
-	if (clobbered_regs[i])
-	  break;
+  /* First find the range of GPRs to be restored.  Vararg regs don't
+     need to be restored so we do it before assigning slots to the
+     vararg GPRs.  */
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
+  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
 
-      for (j = cfun_frame_layout.last_save_gpr_slot; j > i; j--)
-	if (clobbered_regs[j])
-	  break;
+  /* stdarg functions might need to save GPRs 2 to 6.  This might
+     override the GPR->FPR save decision made above for r6 since
+     vararg regs must go to the stack.  */
+  s390_register_info_stdarg_gpr ();
 
-      if (i == cfun_frame_layout.last_save_gpr_slot + 1)
-	{
-	  /* Nothing to save/restore.  */
-	  cfun_frame_layout.first_save_gpr = -1;
-	  cfun_frame_layout.first_restore_gpr = -1;
-	  cfun_frame_layout.last_save_gpr = -1;
-	  cfun_frame_layout.last_restore_gpr = -1;
-	}
-      else
-	{
-	  /* Save / Restore from gpr i to j.  */
-	  cfun_frame_layout.first_save_gpr = i;
-	  cfun_frame_layout.first_restore_gpr = i;
-	  cfun_frame_layout.last_save_gpr = j;
-	  cfun_frame_layout.last_restore_gpr = j;
-	}
-    }
+  /* Now the range of GPRs which need saving.  */
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
+  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
+}
 
-  if (cfun->stdarg)
-    {
-      /* Varargs functions need to save gprs 2 to 6.  */
-      if (cfun->va_list_gpr_size
-	  && crtl->args.info.gprs < GP_ARG_NUM_REG)
-	{
-	  int min_gpr = crtl->args.info.gprs;
-	  int max_gpr = min_gpr + cfun->va_list_gpr_size;
-	  if (max_gpr > GP_ARG_NUM_REG)
-	    max_gpr = GP_ARG_NUM_REG;
+/* This function is called by s390_optimize_prologue in order to get
+   rid of unnecessary GPR save/restore instructions.  The register info
+   for the GPRs is re-computed and the ranges are re-calculated.  */
 
-	  if (cfun_frame_layout.first_save_gpr == -1
-	      || cfun_frame_layout.first_save_gpr > 2 + min_gpr)
-	    {
-	      cfun_frame_layout.first_save_gpr = 2 + min_gpr;
-	      cfun_frame_layout.first_save_gpr_slot = 2 + min_gpr;
-	    }
+static void
+s390_optimize_register_info ()
+{
+  char clobbered_regs[32];
+  int i, j;
 
-	  if (cfun_frame_layout.last_save_gpr == -1
-	      || cfun_frame_layout.last_save_gpr < 2 + max_gpr - 1)
-	    {
-	      cfun_frame_layout.last_save_gpr = 2 + max_gpr - 1;
-	      cfun_frame_layout.last_save_gpr_slot = 2 + max_gpr - 1;
-	    }
-	}
+  gcc_assert (epilogue_completed);
+  gcc_assert (!cfun->machine->split_branches_pending_p);
 
-      /* Mark f0, f2 for 31 bit and f0-f4 for 64 bit to be saved.  */
-      if (TARGET_HARD_FLOAT && cfun->va_list_fpr_size
-	  && crtl->args.info.fprs < FP_ARG_NUM_REG)
-	{
-	  int min_fpr = crtl->args.info.fprs;
-	  int max_fpr = min_fpr + cfun->va_list_fpr_size;
-	  if (max_fpr > FP_ARG_NUM_REG)
-	    max_fpr = FP_ARG_NUM_REG;
+  s390_regs_ever_clobbered (clobbered_regs);
 
-	  /* ??? This is currently required to ensure proper location
-	     of the fpr save slots within the va_list save area.  */
-	  if (TARGET_PACKED_STACK)
-	    min_fpr = 0;
+  for (i = 0; i < 32; i++)
+    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i];
 
-	  for (i = min_fpr; i < max_fpr; i++)
-	    cfun_set_fpr_save (i + FPR0_REGNUM);
-	}
-    }
+  /* There is still special treatment needed for cases invisible to
+     s390_regs_ever_clobbered.  */
+  clobbered_regs[RETURN_REGNUM]
+    |= (TARGET_TPF_PROFILING
+	/* When expanding builtin_return_addr in ESA mode we do not
+	   know whether r14 will later be needed as scratch reg when
+	   doing branch splitting.  So the builtin always accesses the
+	   r14 save slot and we need to stick to the save/restore
+	   decision for r14 even if it turns out that it didn't get
+	   clobbered.  */
+	|| cfun_frame_layout.save_return_addr_p
+	|| crtl->calls_eh_return);
 
-  if (!TARGET_64BIT)
-    {
-      if (df_regs_ever_live_p (FPR4_REGNUM) && !global_regs[FPR4_REGNUM])
-	cfun_set_fpr_save (FPR4_REGNUM);
-      if (df_regs_ever_live_p (FPR6_REGNUM) && !global_regs[FPR6_REGNUM])
-	cfun_set_fpr_save (FPR6_REGNUM);
-    }
+  memset (cfun_frame_layout.gpr_save_slots, 0, 6);
+
+  for (i = 6; i < 16; i++)
+    if (!clobbered_regs[i])
+      cfun_gpr_save_slot (i) = 0;
+
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
+  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
+
+  s390_register_info_stdarg_gpr ();
+
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
+  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* Fill cfun->machine with info about frame of current function.  */
@@ -7666,7 +7774,23 @@ s390_register_info (int clobbered_regs[])
 static void
 s390_frame_info (void)
 {
-  int i;
+  HOST_WIDE_INT lowest_offset;
+
+  cfun_frame_layout.first_save_gpr_slot = cfun_frame_layout.first_save_gpr;
+  cfun_frame_layout.last_save_gpr_slot = cfun_frame_layout.last_save_gpr;
+
+  /* The va_arg builtin uses a constant distance of 16 *
+     UNITS_PER_LONG (r0-r15) to reach the FPRs from the reg_save_area
+     pointer.  So even if we are going to save the stack pointer in an
+     FPR we need the stack space in order to keep the offsets
+     correct.  */
+  if (cfun->stdarg && cfun_save_arg_fprs_p)
+    {
+      cfun_frame_layout.last_save_gpr_slot = STACK_POINTER_REGNUM;
+
+      if (cfun_frame_layout.first_save_gpr_slot == -1)
+	cfun_frame_layout.first_save_gpr_slot = STACK_POINTER_REGNUM;
+    }
 
   cfun_frame_layout.frame_size = get_frame_size ();
   if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
@@ -7674,6 +7798,7 @@ s390_frame_info (void)
 
   if (!TARGET_PACKED_STACK)
     {
+      /* Fixed stack layout.  */
       cfun_frame_layout.backchain_offset = 0;
       cfun_frame_layout.f0_offset = 16 * UNITS_PER_LONG;
       cfun_frame_layout.f4_offset = cfun_frame_layout.f0_offset + 2 * 8;
@@ -7681,99 +7806,89 @@ s390_frame_info (void)
       cfun_frame_layout.gprs_offset = (cfun_frame_layout.first_save_gpr_slot
 				       * UNITS_PER_LONG);
     }
-  else if (TARGET_BACKCHAIN) /* kernel stack layout */
+  else if (TARGET_BACKCHAIN)
     {
+      /* Kernel stack layout - packed stack, backchain, no float  */
+      gcc_assert (TARGET_SOFT_FLOAT);
       cfun_frame_layout.backchain_offset = (STACK_POINTER_OFFSET
 					    - UNITS_PER_LONG);
+
+      /* The distance between the backchain and the return address
+	 save slot must not change.  So we always need a slot for the
+	 stack pointer which resides in between.  */
+      cfun_frame_layout.last_save_gpr_slot = STACK_POINTER_REGNUM;
+
       cfun_frame_layout.gprs_offset
-	= (cfun_frame_layout.backchain_offset
-	   - (STACK_POINTER_REGNUM - cfun_frame_layout.first_save_gpr_slot + 1)
-	   * UNITS_PER_LONG);
+	= cfun_frame_layout.backchain_offset - cfun_gprs_save_area_size;
 
-      if (TARGET_64BIT)
-	{
-	  cfun_frame_layout.f4_offset
-	    = (cfun_frame_layout.gprs_offset
-	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		      + cfun_fpr_save_p (FPR6_REGNUM)));
-
-	  cfun_frame_layout.f0_offset
-	    = (cfun_frame_layout.f4_offset
-	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		      + cfun_fpr_save_p (FPR2_REGNUM)));
-	}
-      else
-	{
-	  /* On 31 bit we have to care about alignment of the
-	     floating point regs to provide fastest access.  */
-	  cfun_frame_layout.f0_offset
-	    = ((cfun_frame_layout.gprs_offset
-		& ~(STACK_BOUNDARY / BITS_PER_UNIT - 1))
-	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		      + cfun_fpr_save_p (FPR2_REGNUM)));
-
-	  cfun_frame_layout.f4_offset
-	    = (cfun_frame_layout.f0_offset
-	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		      + cfun_fpr_save_p (FPR6_REGNUM)));
-	}
+      /* FPRs will not be saved.  Nevertheless pick sane values to
+	 keep area calculations valid.  */
+      cfun_frame_layout.f0_offset =
+	cfun_frame_layout.f4_offset =
+	cfun_frame_layout.f8_offset = cfun_frame_layout.gprs_offset;
     }
-  else /* no backchain */
+  else
     {
-      cfun_frame_layout.f4_offset
-	= (STACK_POINTER_OFFSET
-	   - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
-		  + cfun_fpr_save_p (FPR6_REGNUM)));
+      int num_fprs;
 
-      cfun_frame_layout.f0_offset
-	= (cfun_frame_layout.f4_offset
-	   - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
-		  + cfun_fpr_save_p (FPR2_REGNUM)));
+      /* Packed stack layout without backchain.  */
+
+      /* With stdarg FPRs need their dedicated slots.  */
+      num_fprs = (TARGET_64BIT && cfun->stdarg ? 2
+		  : (cfun_fpr_save_p (FPR4_REGNUM) +
+		     cfun_fpr_save_p (FPR6_REGNUM)));
+      cfun_frame_layout.f4_offset = STACK_POINTER_OFFSET - 8 * num_fprs;
+
+      num_fprs = (cfun->stdarg ? 2
+		  : (cfun_fpr_save_p (FPR0_REGNUM)
+		     + cfun_fpr_save_p (FPR2_REGNUM)));
+      cfun_frame_layout.f0_offset = cfun_frame_layout.f4_offset - 8 * num_fprs;
 
       cfun_frame_layout.gprs_offset
 	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
+
+      cfun_frame_layout.f8_offset = (cfun_frame_layout.gprs_offset
+				     - cfun_frame_layout.high_fprs * 8);
     }
 
+  if (cfun_save_high_fprs_p)
+    cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
+
+  if (!crtl->is_leaf)
+    cfun_frame_layout.frame_size += crtl->outgoing_args_size;
+
+  /* In the following cases we have to allocate a STACK_POINTER_OFFSET
+     sized area at the bottom of the stack.  This is required also for
+     leaf functions.  When GCC generates a local stack reference it
+     will always add STACK_POINTER_OFFSET to all these references.  */
   if (crtl->is_leaf
       && !TARGET_TPF_PROFILING
       && cfun_frame_layout.frame_size == 0
-      && !cfun_save_high_fprs_p
-      && !cfun->calls_alloca
-      && !cfun->stdarg)
+      && !cfun->calls_alloca)
     return;
 
-  if (!TARGET_PACKED_STACK)
-    cfun_frame_layout.frame_size += (STACK_POINTER_OFFSET
-				     + crtl->outgoing_args_size
-				     + cfun_frame_layout.high_fprs * 8);
+  /* Calculate the number of bytes we have used in our own register
+     save area.  With the packed stack layout we can re-use the
+     remaining bytes for normal stack elements.  */
+
+  if (TARGET_PACKED_STACK)
+    lowest_offset = MIN (MIN (cfun_frame_layout.f0_offset,
+			      cfun_frame_layout.f4_offset),
+			 cfun_frame_layout.gprs_offset);
   else
-    {
-      if (TARGET_BACKCHAIN)
-	cfun_frame_layout.frame_size += UNITS_PER_LONG;
+    lowest_offset = 0;
 
-      /* No alignment trouble here because f8-f15 are only saved under
-	 64 bit.  */
-      cfun_frame_layout.f8_offset = (MIN (MIN (cfun_frame_layout.f0_offset,
-					       cfun_frame_layout.f4_offset),
-					  cfun_frame_layout.gprs_offset)
-				     - cfun_frame_layout.high_fprs * 8);
+  if (TARGET_BACKCHAIN)
+    lowest_offset = MIN (lowest_offset, cfun_frame_layout.backchain_offset);
 
-      cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
+  cfun_frame_layout.frame_size += STACK_POINTER_OFFSET - lowest_offset;
 
-      for (i = FPR0_REGNUM; i <= FPR7_REGNUM; i++)
-	if (cfun_fpr_save_p (i))
-	  cfun_frame_layout.frame_size += 8;
-
-      cfun_frame_layout.frame_size += cfun_gprs_save_area_size;
-
-      /* If under 31 bit an odd number of gprs has to be saved we have to adjust
-	 the frame size to sustain 8 byte alignment of stack frames.  */
-      cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
-				       STACK_BOUNDARY / BITS_PER_UNIT - 1)
-				      & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
-
-      cfun_frame_layout.frame_size += crtl->outgoing_args_size;
-    }
+  /* If under 31 bit an odd number of gprs has to be saved we have to
+     adjust the frame size to sustain 8 byte alignment of stack
+     frames.  */
+  cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
+				   STACK_BOUNDARY / BITS_PER_UNIT - 1)
+				  & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
 }
 
 /* Generate frame layout.  Fills in register and frame data for the current
@@ -7785,7 +7900,8 @@ s390_init_frame_layout (void)
 {
   HOST_WIDE_INT frame_size;
   int base_used;
-  int clobbered_regs[32];
+
+  gcc_assert (!reload_completed);
 
   /* On S/390 machines, we may need to perform branch splitting, which
      will require both base and return address register.  We have no
@@ -7814,7 +7930,7 @@ s390_init_frame_layout (void)
       else
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
 
-      s390_register_info (clobbered_regs);
+      s390_register_info ();
       s390_frame_info ();
     }
   while (frame_size != cfun_frame_layout.frame_size);
@@ -7971,29 +8087,6 @@ s390_optimize_nonescaping_tx (void)
   return;
 }
 
-/* Update frame layout.  Recompute actual register save data based on
-   current info and update regs_ever_live for the special registers.
-   May be called multiple times, but may never cause *more* registers
-   to be saved than s390_init_frame_layout allocated room for.  */
-
-static void
-s390_update_frame_layout (void)
-{
-  int clobbered_regs[32];
-
-  s390_register_info (clobbered_regs);
-
-  df_set_regs_ever_live (BASE_REGNUM,
-			 clobbered_regs[BASE_REGNUM] ? true : false);
-  df_set_regs_ever_live (RETURN_REGNUM,
-			 clobbered_regs[RETURN_REGNUM] ? true : false);
-  df_set_regs_ever_live (STACK_POINTER_REGNUM,
-			 clobbered_regs[STACK_POINTER_REGNUM] ? true : false);
-
-  if (cfun->machine->base_reg)
-    df_set_regs_ever_live (REGNO (cfun->machine->base_reg), true);
-}
-
 /* Return true if it is legal to put a value with MODE into REGNO.  */
 
 bool
@@ -8053,6 +8146,31 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
     if (REGNO (cfun->machine->base_reg) == old_reg
 	|| REGNO (cfun->machine->base_reg) == new_reg)
       return false;
+
+  /* Prevent regrename from using call-saved regs which haven't
+     actually been saved.  This is necessary since regrename assumes
+     the backend save/restore decisions are based on
+     df_regs_ever_live.  Since we have our own routine we have to tell
+     regrename manually about it.  */
+  if (GENERAL_REGNO_P (new_reg)
+      && !call_really_used_regs[new_reg]
+      && cfun_gpr_save_slot (new_reg) == 0)
+    return false;
+
+  return true;
+}
+
+/* Return nonzero if register REGNO can be used as a scratch register
+   in peephole2.  */
+
+static bool
+s390_hard_regno_scratch_ok (unsigned int regno)
+{
+  /* See s390_hard_regno_rename_ok.  */
+  if (GENERAL_REGNO_P (regno)
+      && !call_really_used_regs[regno]
+      && cfun_gpr_save_slot (regno) == 0)
+    return false;
 
   return true;
 }
@@ -8133,7 +8251,6 @@ HOST_WIDE_INT
 s390_initial_elimination_offset (int from, int to)
 {
   HOST_WIDE_INT offset;
-  int index;
 
   /* ??? Why are we called for non-eliminable pairs?  */
   if (!s390_can_eliminate (from, to))
@@ -8154,10 +8271,26 @@ s390_initial_elimination_offset (int from, int to)
 
     case RETURN_ADDRESS_POINTER_REGNUM:
       s390_init_frame_layout ();
-      index = RETURN_REGNUM - cfun_frame_layout.first_save_gpr_slot;
-      gcc_assert (index >= 0);
-      offset = cfun_frame_layout.frame_size + cfun_frame_layout.gprs_offset;
-      offset += index * UNITS_PER_LONG;
+
+      if (cfun_frame_layout.first_save_gpr_slot == -1)
+	{
+	  /* If it turns out that for stdarg nothing went into the reg
+	     save area we also do not need the return address
+	     pointer.  */
+	  if (cfun->stdarg && !cfun_save_arg_fprs_p)
+	    return 0;
+
+	  gcc_unreachable ();
+	}
+
+      /* In order to make the following work it is not necessary for
+	 r14 to have a save slot.  It is sufficient if one other GPR
+	 got one.  Since the GPRs are always stored without gaps we
+	 are able to calculate where the r14 save slot would
+	 reside.  */
+      offset = (cfun_frame_layout.frame_size + cfun_frame_layout.gprs_offset +
+		(RETURN_REGNUM - cfun_frame_layout.first_save_gpr_slot) *
+		UNITS_PER_LONG);
       break;
 
     case BASE_REGNUM:
@@ -8295,6 +8428,23 @@ save_gprs (rtx base, int offset, int first, int last)
 
       addr = plus_constant (Pmode, base,
 			    offset + (start - first) * UNITS_PER_LONG);
+
+      if (start == last)
+	{
+	  if (TARGET_64BIT)
+	    note = gen_movdi (gen_rtx_MEM (Pmode, addr),
+			      gen_rtx_REG (Pmode, start));
+	  else
+	    note = gen_movsi (gen_rtx_MEM (Pmode, addr),
+			      gen_rtx_REG (Pmode, start));
+	  note = PATTERN (note);
+
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  return insn;
+	}
+
       note = gen_store_multiple (gen_rtx_MEM (Pmode, addr),
 				 gen_rtx_REG (Pmode, start),
 				 GEN_INT (last - start + 1));
@@ -8335,12 +8485,14 @@ restore_gprs (rtx base, int offset, int first, int last)
       else
         insn = gen_movsi (gen_rtx_REG (Pmode, first), addr);
 
+      RTX_FRAME_RELATED_P (insn) = 1;
       return insn;
     }
 
   insn = gen_load_multiple (gen_rtx_REG (Pmode, first),
 			    addr,
 			    GEN_INT (last - first + 1));
+  RTX_FRAME_RELATED_P (insn) = 1;
   return insn;
 }
 
@@ -8405,6 +8557,56 @@ s390_emit_stack_tie (void)
   emit_insn (gen_stack_tie (mem));
 }
 
+/* Copy GPRS into FPR save slots.  */
+
+static void
+s390_save_gprs_to_fprs (void)
+{
+  int i;
+
+  if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
+    return;
+
+  for (i = 6; i < 16; i++)
+    {
+      if (FP_REGNO_P (cfun_gpr_save_slot (i)))
+	{
+	  rtx insn =
+	    emit_move_insn (gen_rtx_REG (DImode, cfun_gpr_save_slot (i)),
+			    gen_rtx_REG (DImode, i));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
+}
+
+/* Restore GPRs from FPR save slots.  */
+
+static void
+s390_restore_gprs_from_fprs (void)
+{
+  int i;
+
+  if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
+    return;
+
+  for (i = 6; i < 16; i++)
+    {
+      if (FP_REGNO_P (cfun_gpr_save_slot (i)))
+	{
+	  rtx insn =
+	    emit_move_insn (gen_rtx_REG (DImode, i),
+			    gen_rtx_REG (DImode, cfun_gpr_save_slot (i)));
+	  df_set_regs_ever_live (i, true);
+	  /* The frame related flag is only required on the save
+	     operations.  We nevertheless set it also for the restore
+	     in order to recognize these instructions in
+	     s390_optimize_prologue.  The flag will then be
+	     deleted.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -8419,8 +8621,8 @@ s390_emit_prologue (void)
   /* Try to get rid of the FPR clobbers.  */
   s390_optimize_nonescaping_tx ();
 
-  /* Complete frame layout.  */
-  s390_update_frame_layout ();
+  /* Re-compute register info.  */
+  s390_register_info ();
 
   /* Annotate all constant pool references to let the scheduler know
      they implicitly use the base register.  */
@@ -8445,6 +8647,8 @@ s390_emit_prologue (void)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
+
+  s390_save_gprs_to_fprs ();
 
   /* Save call saved gprs.  */
   if (cfun_frame_layout.first_save_gpr != -1)
@@ -8473,8 +8677,8 @@ s390_emit_prologue (void)
 	  save_fpr (stack_pointer_rtx, offset, i);
 	  offset += 8;
 	}
-      else if (!TARGET_PACKED_STACK)
-	  offset += 8;
+      else if (!TARGET_PACKED_STACK || cfun->stdarg)
+	offset += 8;
     }
 
   /* Save f4 and f6.  */
@@ -8486,12 +8690,12 @@ s390_emit_prologue (void)
 	  insn = save_fpr (stack_pointer_rtx, offset, i);
 	  offset += 8;
 
-	  /* If f4 and f6 are call clobbered they are saved due to stdargs and
-	     therefore are not frame related.  */
+	  /* If f4 and f6 are call clobbered they are saved due to
+	     stdargs and therefore are not frame related.  */
 	  if (!call_really_used_regs[i])
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      else if (!TARGET_PACKED_STACK)
+      else if (!TARGET_PACKED_STACK || call_really_used_regs[i])
 	offset += 8;
     }
 
@@ -8899,6 +9103,8 @@ s390_emit_epilogue (bool sibcall)
 				   STACK_POINTER_OFFSET));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+
+  s390_restore_gprs_from_fprs ();
 
   if (! sibcall)
     {
@@ -9589,7 +9795,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
   rtx retry_reg = gen_reg_rtx (SImode);
   rtx retry_label = NULL_RTX;
   rtx jump;
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
   if (retry != NULL_RTX)
     {
@@ -9612,7 +9818,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
 
   JUMP_LABEL (jump) = abort_label;
   LABEL_NUSES (abort_label) = 1;
-  add_reg_note (jump, REG_BR_PROB, very_unlikely);
+  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
 
   /* Initialize CC return value.  */
   emit_move_insn (dest, const0_rtx);
@@ -9632,7 +9838,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
 			       gen_rtx_REG (CCRAWmode, CC_REGNUM),
 			       gen_rtx_CONST_INT (VOIDmode, CC1 | CC3)));
       LABEL_NUSES (leave_label) = 2;
-      add_reg_note (jump, REG_BR_PROB, very_unlikely);
+      add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
 
       /* CC2 - transient failure. Perform retry with ppa.  */
       emit_move_insn (count, retry);
@@ -10561,8 +10767,7 @@ s390_optimize_prologue (void)
   rtx insn, new_insn, next_insn;
 
   /* Do a final recompute of the frame-related data.  */
-
-  s390_update_frame_layout ();
+  s390_optimize_register_info ();
 
   /* If all special registers are in fact used, there's nothing we
      can do, so no point in walking the insn list.  */
@@ -10580,18 +10785,63 @@ s390_optimize_prologue (void)
     {
       int first, last, off;
       rtx set, base, offset;
+      rtx pat;
 
       next_insn = NEXT_INSN (insn);
 
-      if (! NONJUMP_INSN_P (insn))
+      if (! NONJUMP_INSN_P (insn) || ! RTX_FRAME_RELATED_P (insn))
 	continue;
 
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && store_multiple_operation (PATTERN (insn), VOIDmode))
+      pat = PATTERN (insn);
+
+      /* Remove ldgr/lgdr instructions used for saving and restore
+	 GPRs if possible.  */
+      if (TARGET_Z10
+	  && GET_CODE (pat) == SET
+	  && GET_MODE (SET_SRC (pat)) == DImode
+	  && REG_P (SET_SRC (pat))
+	  && REG_P (SET_DEST (pat)))
 	{
-	  set = XVECEXP (PATTERN (insn), 0, 0);
+	  int src_regno = REGNO (SET_SRC (pat));
+	  int dest_regno = REGNO (SET_DEST (pat));
+	  int gpr_regno;
+	  int fpr_regno;
+
+	  if (!((GENERAL_REGNO_P (src_regno) && FP_REGNO_P (dest_regno))
+		|| (FP_REGNO_P (src_regno) && GENERAL_REGNO_P (dest_regno))))
+	    continue;
+
+	  gpr_regno = GENERAL_REGNO_P (src_regno) ? src_regno : dest_regno;
+	  fpr_regno = FP_REGNO_P (src_regno) ? src_regno : dest_regno;
+
+	  /* GPR must be call-saved, FPR must be call-clobbered.  */
+	  if (!call_really_used_regs[fpr_regno]
+	      || call_really_used_regs[gpr_regno])
+	    continue;
+
+	  /* For restores we have to revert the frame related flag
+	     since no debug info is supposed to be generated for
+	     these.  */
+	  if (dest_regno == gpr_regno)
+	    RTX_FRAME_RELATED_P (insn) = 0;
+
+	  /* It must not happen that what we once saved in an FPR now
+	     needs a stack slot.  */
+	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != -1);
+
+	  if (cfun_gpr_save_slot (gpr_regno) == 0)
+	    {
+	      remove_insn (insn);
+	      continue;
+	    }
+	}
+
+      if (GET_CODE (pat) == PARALLEL
+	  && store_multiple_operation (pat, VOIDmode))
+	{
+	  set = XVECEXP (pat, 0, 0);
 	  first = REGNO (SET_SRC (set));
-	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
+	  last = first + XVECLEN (pat, 0) - 1;
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
 	  off = INTVAL (offset);
@@ -10624,14 +10874,11 @@ s390_optimize_prologue (void)
 	}
 
       if (cfun_frame_layout.first_save_gpr == -1
-	  && GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_SRC (PATTERN (insn))) == REG
-	  && (REGNO (SET_SRC (PATTERN (insn))) == BASE_REGNUM
-	      || (!TARGET_CPU_ZARCH
-		  && REGNO (SET_SRC (PATTERN (insn))) == RETURN_REGNUM))
-	  && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
+	  && GET_CODE (pat) == SET
+	  && GENERAL_REG_P (SET_SRC (pat))
+	  && GET_CODE (SET_DEST (pat)) == MEM)
 	{
-	  set = PATTERN (insn);
+	  set = pat;
 	  first = REGNO (SET_SRC (set));
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
@@ -10647,18 +10894,21 @@ s390_optimize_prologue (void)
 	  continue;
 	}
 
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && load_multiple_operation (PATTERN (insn), VOIDmode))
+      if (GET_CODE (pat) == PARALLEL
+	  && load_multiple_operation (pat, VOIDmode))
 	{
-	  set = XVECEXP (PATTERN (insn), 0, 0);
+	  set = XVECEXP (pat, 0, 0);
 	  first = REGNO (SET_DEST (set));
-	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
+	  last = first + XVECLEN (pat, 0) - 1;
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
 	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
+
+	  RTX_FRAME_RELATED_P (insn) = 0;
+
 	  if (cfun_frame_layout.first_restore_gpr != -1
 	      && (cfun_frame_layout.first_restore_gpr < first
 		  || cfun_frame_layout.last_restore_gpr > last))
@@ -10676,6 +10926,7 @@ s390_optimize_prologue (void)
 					      - first) * UNITS_PER_LONG,
 				       cfun_frame_layout.first_restore_gpr,
 				       cfun_frame_layout.last_restore_gpr);
+	      RTX_FRAME_RELATED_P (new_insn) = 0;
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -10685,14 +10936,11 @@ s390_optimize_prologue (void)
 	}
 
       if (cfun_frame_layout.first_restore_gpr == -1
-	  && GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	  && (REGNO (SET_DEST (PATTERN (insn))) == BASE_REGNUM
-	      || (!TARGET_CPU_ZARCH
-		  && REGNO (SET_DEST (PATTERN (insn))) == RETURN_REGNUM))
-	  && GET_CODE (SET_SRC (PATTERN (insn))) == MEM)
+	  && GET_CODE (pat) == SET
+	  && GENERAL_REG_P (SET_DEST (pat))
+	  && GET_CODE (SET_SRC (pat)) == MEM)
 	{
-	  set = PATTERN (insn);
+	  set = pat;
 	  first = REGNO (SET_DEST (set));
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
@@ -10700,6 +10948,9 @@ s390_optimize_prologue (void)
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
+
+	  RTX_FRAME_RELATED_P (insn) = 0;
+
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
@@ -11637,6 +11888,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON s390_canonicalize_comparison
+
+#undef TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK s390_hard_regno_scratch_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -946,8 +946,8 @@ const pass_data pass_data_call_cdce =
 class pass_call_cdce : public gimple_opt_pass
 {
 public:
-  pass_call_cdce(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_call_cdce, ctxt)
+  pass_call_cdce (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_call_cdce, ctxt)
   {}
 
   /* opt_pass methods: */

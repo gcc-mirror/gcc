@@ -12,7 +12,7 @@ func g(x int, y float32) (...)	// ERROR "[.][.][.]" "final argument"
 
 func h(x, y ...int)		// ERROR "[.][.][.]"
 
-func i(x int, y ...int, z float)	// ERROR "[.][.][.]"
+func i(x int, y ...int, z float32)	// ERROR "[.][.][.]"
 
 var x ...int;		// ERROR "[.][.][.]|syntax|type"
 

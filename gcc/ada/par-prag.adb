@@ -1185,7 +1185,9 @@ begin
            Pragma_Import_Valued_Procedure        |
            Pragma_Independent                    |
            Pragma_Independent_Components         |
+           Pragma_Initial_Condition              |
            Pragma_Initialize_Scalars             |
+           Pragma_Initializes                    |
            Pragma_Inline                         |
            Pragma_Inline_Always                  |
            Pragma_Inline_Generic                 |
@@ -1234,11 +1236,15 @@ begin
            Pragma_Preelaborable_Initialization   |
            Pragma_Polling                        |
            Pragma_Persistent_BSS                 |
+           Pragma_Post                           |
            Pragma_Postcondition                  |
+           Pragma_Post_Class                     |
+           Pragma_Pre                            |
            Pragma_Precondition                   |
            Pragma_Predicate                      |
            Pragma_Preelaborate                   |
            Pragma_Preelaborate_05                |
+           Pragma_Pre_Class                      |
            Pragma_Priority                       |
            Pragma_Priority_Specific_Dispatching  |
            Pragma_Profile                        |
@@ -1250,6 +1256,10 @@ begin
            Pragma_Pure_12                        |
            Pragma_Pure_Function                  |
            Pragma_Queuing_Policy                 |
+           Pragma_Refined_Depends                |
+           Pragma_Refined_Global                 |
+           Pragma_Refined_Post                   |
+           Pragma_Refined_State                  |
            Pragma_Relative_Deadline              |
            Pragma_Remote_Access_Type             |
            Pragma_Remote_Call_Interface          |
@@ -1283,6 +1293,8 @@ begin
            Pragma_Thread_Local_Storage           |
            Pragma_Time_Slice                     |
            Pragma_Title                          |
+           Pragma_Type_Invariant                 |
+           Pragma_Type_Invariant_Class           |
            Pragma_Unchecked_Union                |
            Pragma_Unimplemented_Unit             |
            Pragma_Universal_Aliasing             |

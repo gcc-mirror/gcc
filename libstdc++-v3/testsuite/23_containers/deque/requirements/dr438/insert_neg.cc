@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1839 }
+// { dg-error "no matching" "" { target *-*-* } 1842 }
 
 #include <deque>
 
@@ -32,4 +32,3 @@ void f()
   std::deque<A> d;
   d.insert(d.begin(), 10, 1);
 }
-

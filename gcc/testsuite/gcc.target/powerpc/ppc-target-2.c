@@ -5,8 +5,7 @@
 /* { dg-final { scan-assembler-times "fabs" 3 } } */
 /* { dg-final { scan-assembler-times "fnabs" 3 } } */
 /* { dg-final { scan-assembler-times "fsel" 3 } } */
-/* { dg-final { scan-assembler-times "fcpsgn" 3 } } */
-/* { dg-final { scan-assembler-times "xscpsgndp" 1 } } */
+/* { dg-final { scan-assembler-times "fcpsgn\|xscpsgndp" 4 } } */
 
 /* fabs/fnabs/fsel */
 double normal1 (double a, double b) { return __builtin_copysign (a, b); }

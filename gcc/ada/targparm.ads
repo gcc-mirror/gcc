@@ -402,7 +402,7 @@ package Targparm is
    --  appropriate default in some cases, e.g. on embedded targets which do not
    --  allow the possibility of multi-processors. The default can be overridden
    --  using pragmas Enable/Disable_Atomic_Synchronization and also by use of
-   --  the debug flags gnat.d and gnatd.e.
+   --  the corresponding debug flags -gnatd.e and -gnatd.d.
 
    Support_Aggregates_On_Target : Boolean := True;
    --  In the general case, the use of aggregates may generate calls

@@ -853,7 +853,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      if (!pointer_set_insert (reachable_call_targets,
 				       cache_token))
 		{
-		  for (i = 0; i < targets.length(); i++)
+		  for (i = 0; i < targets.length (); i++)
 		    {
 		      struct cgraph_node *callee = targets[i];
 
@@ -1560,7 +1560,8 @@ input_symtab (void)
       ib = lto_create_simple_input_block (file_data, LTO_section_refs,
 					  &data, &len);
       if (!ib)
-	fatal_error("cannot find LTO section refs in %s", file_data->file_name);
+	fatal_error ("cannot find LTO section refs in %s",
+		     file_data->file_name);
       input_refs (ib, nodes);
       lto_destroy_simple_input_block (file_data, LTO_section_refs,
 				      ib, data, len);

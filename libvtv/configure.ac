@@ -27,6 +27,18 @@ target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
+# Use same top-level configure hooks in libgcc/libstdc++/libvtv.
+AC_MSG_CHECKING([for --enable-vtable-verify])
+AC_ARG_ENABLE(vtable-verify,
+[  --enable-vtable-verify    Enable vtable verification feature ],
+[case "$enableval" in
+ yes) enable_vtable_verify=yes ;;
+ no)  enable_vtable_verify=no ;;
+ *)   enable_vtable_verify=no;;
+ esac],
+[enable_vtable_verify=no])
+AC_MSG_RESULT($enable_vtable_verify)
+
 # See if supported.
 unset VTV_SUPPORTED
 AC_MSG_CHECKING([for host support for vtable verification])
@@ -36,9 +48,12 @@ AC_MSG_RESULT($VTV_SUPPORTED)
 # Decide if it's usable.
 use_vtable_verify=no
 if test "x$VTV_SUPPORTED" = "xyes"; then
-  use_vtable_verify=yes
-  AC_MSG_NOTICE(using vtable verification)
+  if test "x$enable_vtable_verify" = "xyes"; then
+    use_vtable_verify=yes
+    AC_MSG_NOTICE(using vtable verification)
+  fi
 fi 
+AM_CONDITIONAL(ENABLE_VTABLE_VERIFY, test $use_vtable_verify = yes)
 
 AM_INIT_AUTOMAKE(foreign no-dist)
 AM_ENABLE_MULTILIB(, ..)
@@ -126,7 +141,7 @@ fi
 AC_CONFIG_FILES([Makefile])
 
 if test "x$VTV_SUPPORTED" = "xyes"; then
-  AC_CONFIG_FILES(AC_FOREACH([DIR], [. testsuite], [DIR/Makefile ]), 
+  AC_CONFIG_FILES(AC_FOREACH([DIR], [testsuite], [DIR/Makefile ]), 
     [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF

@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
+#include "sbitmap.h"
 #include "tree-ssa.h"
 #include "timevar.h"
 #include "dumpfile.h"
@@ -104,7 +105,9 @@ var_map_base_init (var_map map)
       struct tree_int_map **slot;
       unsigned baseindex;
       var = partition_to_var (map, x);
-      if (SSA_NAME_VAR (var))
+      if (SSA_NAME_VAR (var)
+	  && (!VAR_P (SSA_NAME_VAR (var))
+	      || !DECL_IGNORED_P (SSA_NAME_VAR (var))))
 	m->base.from = SSA_NAME_VAR (var);
       else
 	/* This restricts what anonymous SSA names we can coalesce
@@ -990,9 +993,10 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
   edge_iterator ei;
   basic_block pred_bb;
   bitmap loe;
-  gcc_assert (!bitmap_bit_p (visited, bb->index));
 
+  gcc_checking_assert (!bitmap_bit_p (visited, bb->index));
   bitmap_set_bit (visited, bb->index);
+
   loe = live_on_entry (live, bb);
 
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1234,7 +1238,7 @@ dump_var_map (FILE *f, var_map map)
 	    {
 	      if (t++ == 0)
 	        {
-		  fprintf(f, "Partition %d (", x);
+		  fprintf (f, "Partition %d (", x);
 		  print_generic_expr (f, partition_to_var (map, p), TDF_SLIM);
 		  fprintf (f, " - ");
 		}

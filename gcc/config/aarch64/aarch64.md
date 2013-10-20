@@ -789,7 +789,7 @@
      case 8:
        return "dup\t%0.<Vallxd>, %w1";
      case 9:
-       return "dup\t%0, %1.<v>[0]";
+       return "dup\t%<Vetype>0, %1.<v>[0]";
      default:
        gcc_unreachable ();
      }
@@ -1033,7 +1033,7 @@
    stp\\t%1, %H1, %0"
   [(set_attr "v8type" "logic,move2,fmovi2f,fmovf2i,fconst,fconst,fpsimd_load,fpsimd_store,fpsimd_load2,fpsimd_store2")
    (set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
-                     f_loadd,f_stored,neon_ldm_2,neon_stm_2")
+                     f_loadd,f_stored,neon_load1_2reg,neon_store1_2reg")
    (set_attr "mode" "DF,DF,DF,DF,DF,DF,TF,TF,DF,DF")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
@@ -1098,7 +1098,7 @@
 			       GET_MODE_SIZE (<MODE>mode)))"
   "ldp\\t%<w>0, %<w>2, %1"
   [(set_attr "v8type" "fpsimd_load2")
-   (set_attr "type" "neon_ldm_2")
+   (set_attr "type" "neon_load1_2reg<q>")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -1115,7 +1115,7 @@
 			       GET_MODE_SIZE (<MODE>mode)))"
   "stp\\t%<w>1, %<w>3, %0"
   [(set_attr "v8type" "fpsimd_store2")
-   (set_attr "type" "neon_stm_2")
+   (set_attr "type" "neon_store1_2reg<q>")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -1365,7 +1365,7 @@
 	 (plus:GPI (mult:GPI
 		    (match_operand:GPI 1 "register_operand" "r")
 		    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))
-		   (match_operand:GPI 3 "register_operand" "rk"))
+		   (match_operand:GPI 3 "register_operand" "r"))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (mult:GPI (match_dup 1) (match_dup 2))
@@ -1380,7 +1380,7 @@
 (define_insn "*subs_mul_imm_<mode>"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 1 "register_operand" "rk")
+	 (minus:GPI (match_operand:GPI 1 "register_operand" "r")
 		    (mult:GPI
 		     (match_operand:GPI 2 "register_operand" "r")
 		     (match_operand:QI 3 "aarch64_pwr_2_<mode>" "n")))
@@ -1500,7 +1500,7 @@
 )
 
 (define_insn "*add_<shift>_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
+  [(set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (ASHIFT:GPI (match_operand:GPI 1 "register_operand" "r")
 			      (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
 		  (match_operand:GPI 3 "register_operand" "r")))]
@@ -1513,7 +1513,7 @@
 
 ;; zero_extend version of above
 (define_insn "*add_<shift>_si_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	 (plus:SI (ASHIFT:SI (match_operand:SI 1 "register_operand" "r")
 		             (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
@@ -1526,7 +1526,7 @@
 )
 
 (define_insn "*add_mul_imm_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
+  [(set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (mult:GPI (match_operand:GPI 1 "register_operand" "r")
 			    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))
 		  (match_operand:GPI 3 "register_operand" "r")))]
@@ -1873,7 +1873,7 @@
 )
 
 (define_insn "*sub_<shift>_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
+  [(set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_operand:GPI 3 "register_operand" "r")
 		   (ASHIFT:GPI
 		    (match_operand:GPI 1 "register_operand" "r")
@@ -1887,7 +1887,7 @@
 
 ;; zero_extend version of above
 (define_insn "*sub_<shift>_si_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
          (minus:SI (match_operand:SI 3 "register_operand" "r")
 		   (ASHIFT:SI
@@ -1901,7 +1901,7 @@
 )
 
 (define_insn "*sub_mul_imm_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
+  [(set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_operand:GPI 3 "register_operand" "r")
 		   (mult:GPI
 		    (match_operand:GPI 1 "register_operand" "r")
@@ -1915,7 +1915,7 @@
 
 ;; zero_extend version of above
 (define_insn "*sub_mul_imm_si_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
          (minus:SI (match_operand:SI 3 "register_operand" "r")
 		   (mult:SI
@@ -3954,38 +3954,6 @@
 ;; -------------------------------------------------------------------
 ;; Reload support
 ;; -------------------------------------------------------------------
-
-;; Reload SP+imm where imm cannot be handled by a single ADD instruction.  
-;; Must load imm into a scratch register and copy SP to the dest reg before
-;; adding, since SP cannot be used as a source register in an ADD
-;; instruction.
-(define_expand "reload_sp_immediate"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "=r")
-		   (match_operand:DI 1 "" ""))
-	     (clobber (match_operand:TI 2 "register_operand" "=&r"))])]
-  ""
-  {
-    rtx sp = XEXP (operands[1], 0);
-    rtx val = XEXP (operands[1], 1);
-    unsigned regno = REGNO (operands[2]);
-    rtx scratch = operands[1];
-    gcc_assert (GET_CODE (operands[1]) == PLUS);
-    gcc_assert (sp == stack_pointer_rtx);
-    gcc_assert (CONST_INT_P (val));
-
-    /* It is possible that one of the registers we got for operands[2]
-       might coincide with that of operands[0] (which is why we made
-       it TImode).  Pick the other one to use as our scratch.  */
-    if (regno == REGNO (operands[0]))
-      regno++;
-    scratch = gen_rtx_REG (DImode, regno);
-
-    emit_move_insn (scratch, val);
-    emit_move_insn (operands[0], sp);
-    emit_insn (gen_adddi3 (operands[0], operands[0], scratch));
-    DONE;
-  }
-)
 
 (define_expand "aarch64_reload_mov<mode>"
   [(set (match_operand:TX 0 "register_operand" "=w")

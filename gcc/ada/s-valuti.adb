@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,9 +134,9 @@ package body System.Val_Util is
 
       --  Scan out the exponent value as an unsigned integer. Values larger
       --  than (Integer'Last / 10) are simply considered large enough here.
-      --  This assumption is correct for all machines we know of (e.g. in
-      --  the case of 16 bit integers it allows exponents up to 3276, which
-      --  is large enough for the largest floating types in base 2.)
+      --  This assumption is correct for all machines we know of (e.g. in the
+      --  case of 16 bit integers it allows exponents up to 3276, which is
+      --  large enough for the largest floating types in base 2.)
 
       X := 0;
 
@@ -222,8 +222,8 @@ package body System.Val_Util is
       P : Natural := Ptr.all;
 
    begin
-      --  Deal with case of null string (all blanks!). As per spec, we
-      --  raise constraint error, with Ptr unchanged, and thus > Max.
+      --  Deal with case of null string (all blanks!). As per spec, we raise
+      --  constraint error, with Ptr unchanged, and thus > Max.
 
       if P > Max then
          Bad_Value (Str);
@@ -300,16 +300,16 @@ package body System.Val_Util is
    begin
       P := P + 1;
 
-      --  If underscore is at the end of string, then this is an error and
-      --  we raise Constraint_Error, leaving the pointer past the underscore.
-      --  This seems a bit strange. It means e.g. that if the field is:
+      --  If underscore is at the end of string, then this is an error and we
+      --  raise Constraint_Error, leaving the pointer past the underscore. This
+      --  seems a bit strange. It means e.g. that if the field is:
 
       --    345_
 
-      --  that Constraint_Error is raised. You might think that the RM in
-      --  this case would scan out the 345 as a valid integer, leaving the
-      --  pointer at the underscore, but the ACVC suite clearly requires
-      --  an error in this situation (see for example CE3704M).
+      --  that Constraint_Error is raised. You might think that the RM in this
+      --  case would scan out the 345 as a valid integer, leaving the pointer
+      --  at the underscore, but the ACVC suite clearly requires an error in
+      --  this situation (see for example CE3704M).
 
       if P > Max then
          Ptr.all := P;

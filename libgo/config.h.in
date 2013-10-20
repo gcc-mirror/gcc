@@ -3,6 +3,9 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Define to the flags needed for the .section .eh_frame directive. */
+#undef EH_FRAME_FLAGS
+
 /* Define to 1 if you have the `accept4' function. */
 #undef HAVE_ACCEPT4
 
@@ -11,6 +14,15 @@
 
 /* Define to 1 if you have the `asinl' function. */
 #undef HAVE_ASINL
+
+/* Define if your assembler supports GNU comdat group syntax. */
+#undef HAVE_AS_COMDAT_GAS
+
+/* Define if your assembler supports unwind section type. */
+#undef HAVE_AS_X86_64_UNWIND_SECTION_TYPE
+
+/* Define if your assembler supports PC relative relocs. */
+#undef HAVE_AS_X86_PCREL
 
 /* Define to 1 if you have the `atan2l' function. */
 #undef HAVE_ATAN2L
@@ -26,6 +38,9 @@
 
 /* Define to 1 if you have the `dl_iterate_phdr' function. */
 #undef HAVE_DL_ITERATE_PHDR
+
+/* Define to 1 if you have the `dup3' function. */
+#undef HAVE_DUP3
 
 /* Define to 1 if you have the `epoll_create1' function. */
 #undef HAVE_EPOLL_CREATE1
@@ -53,6 +68,9 @@
 
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
+
+/* Define to 1 if you have the `getxattr' function. */
+#undef HAVE_GETXATTR
 
 /* Define to 1 if you have the `inotify_add_watch' function. */
 #undef HAVE_INOTIFY_ADD_WATCH
@@ -98,6 +116,9 @@
 
 /* Define to 1 if you have the <linux/rtnetlink.h> header file. */
 #undef HAVE_LINUX_RTNETLINK_H
+
+/* Define to 1 if you have the `listxattr' function. */
+#undef HAVE_LISTXATTR
 
 /* Define to 1 if the system has the type `loff_t'. */
 #undef HAVE_LOFF_T
@@ -159,6 +180,9 @@
 /* Define to 1 if you have the `pipe2' function. */
 #undef HAVE_PIPE2
 
+/* Define to 1 if you have the `removexattr' function. */
+#undef HAVE_REMOVEXATTR
+
 /* Define to 1 if you have the `renameat' function. */
 #undef HAVE_RENAMEAT
 
@@ -167,6 +191,9 @@
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
+
+/* Define to 1 if you have the `setxattr' function. */
+#undef HAVE_SETXATTR
 
 /* Define to 1 if you have the `sinl' function. */
 #undef HAVE_SINL

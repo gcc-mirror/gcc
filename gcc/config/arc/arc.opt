@@ -1,0 +1,390 @@
+; Options for the Synopsys DesignWare ARC port of the compiler
+;
+; Copyright (C) 2005, 2007-2013 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/arc/arc-opts.h
+
+mbig-endian
+Target Report RejectNegative Mask(BIG_ENDIAN)
+Compile code for big endian mode
+
+mlittle-endian
+Target Report RejectNegative InverseMask(BIG_ENDIAN)
+Compile code for little endian mode.  This is the default
+
+mno-cond-exec
+Target Report RejectNegative Mask(NO_COND_EXEC)
+Disable ARCompact specific pass to generate conditional execution instructions
+
+mA5
+Target Report
+Generate ARCompact 32-bit code for ARCtangent-A5 processor
+
+mA6
+Target Report
+Generate ARCompact 32-bit code for ARC600 processor
+
+mARC600
+Target Report
+Same as -mA6
+
+mARC601
+Target Report
+Generate ARCompact 32-bit code for ARC601 processor
+
+mA7
+Target Report
+Generate ARCompact 32-bit code for ARC700 processor
+
+mARC700
+Target Report
+Same as -mA7
+
+mmixed-code
+Target Report Mask(MIXED_CODE_SET)
+Tweak register allocation to help 16-bit instruction generation
+; originally this was:
+;Generate ARCompact 16-bit instructions intermixed with 32-bit instructions for ARCtangent-A5 and higher processors
+; but we do that without -mmixed-code, too, it's just a different instruction
+; count / size tradeoff.
+
+; We use an explict definition for the negative form because that is the
+; actually interesting option, and we want that to have its own comment.
+mvolatile-cache
+Target Report RejectNegative Mask(VOLATILE_CACHE_SET)
+Use ordinarily cached memory accesses for volatile references
+
+mno-volatile-cache
+Target Report RejectNegative InverseMask(VOLATILE_CACHE_SET)
+Enable cache bypass for volatile references
+
+mbarrel-shifter
+Target Report Mask(BARREL_SHIFTER)
+Generate instructions supported by barrel shifter
+
+mnorm
+Target Report Mask(NORM_SET)
+Generate norm instruction
+
+mswap
+Target Report Mask(SWAP_SET)
+Generate swap instruction
+
+mmul64
+Target Report Mask(MUL64_SET)
+Generate mul64 and mulu64 instructions
+
+mno-mpy
+Target Report Mask(NOMPY_SET)
+Do not generate mpy instructions for ARC700
+
+mea
+Target Report Mask(EA_SET)
+Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported
+
+msoft-float
+Target Report Mask(0)
+Dummy flag. This is the default unless FPX switches are provided explicitly
+
+mlong-calls
+Target Report Mask(LONG_CALLS_SET)
+Generate call insns as register indirect calls
+
+mno-brcc
+Target Report Mask(NO_BRCC_SET)
+Do no generate BRcc instructions in arc_reorg.
+
+msdata
+Target Report InverseMask(NO_SDATA_SET)
+Generate sdata references.  This is the default, unless you compile for PIC.
+
+mno-millicode
+Target Report Mask(NO_MILLICODE_THUNK_SET)
+Do not generate millicode thunks (needed only with -Os)
+
+mspfp
+Target Report Mask(SPFP_COMPACT_SET)
+FPX: Generate Single Precision FPX (compact) instructions.
+
+mspfp-compact
+Target Report Mask(SPFP_COMPACT_SET) MaskExists
+FPX: Generate Single Precision FPX (compact) instructions.
+
+mspfp-fast
+Target Report Mask(SPFP_FAST_SET)
+FPX: Generate Single Precision FPX (fast) instructions.
+
+margonaut
+Target Report Mask(ARGONAUT_SET)
+FPX: Enable Argonaut ARC CPU Double Precision Floating Point extensions.
+
+mdpfp
+Target Report Mask(DPFP_COMPACT_SET)
+FPX: Generate Double Precision FPX (compact) instructions.
+
+mdpfp-compact
+Target Report Mask(DPFP_COMPACT_SET) MaskExists
+FPX: Generate Double Precision FPX (compact) instructions.
+
+mdpfp-fast
+Target Report Mask(DPFP_FAST_SET)
+FPX: Generate Double Precision FPX (fast) instructions.
+
+mno-dpfp-lrsr
+Target Report Mask(DPFP_DISABLE_LRSR)
+Disable LR and SR instructions from using FPX extension aux registers.
+
+msimd
+Target Report Mask(SIMD_SET)
+Enable generation of ARC SIMD instructions via target-specific builtins.
+
+mcpu=
+Target RejectNegative Joined Var(arc_cpu) Enum(processor_type) Init(PROCESSOR_NONE)
+-mcpu=CPU	Compile code for ARC variant CPU
+
+Enum
+Name(processor_type) Type(enum processor_type)
+
+EnumValue
+Enum(processor_type) String(A5) Value(PROCESSOR_A5)
+
+EnumValue
+Enum(processor_type) String(ARC600) Value(PROCESSOR_ARC600)
+
+EnumValue
+Enum(processor_type) String(ARC601) Value(PROCESSOR_ARC601)
+
+EnumValue
+Enum(processor_type) String(ARC700) Value(PROCESSOR_ARC700)
+
+msize-level=
+Target RejectNegative Joined UInteger Var(arc_size_opt_level) Init(-1)
+size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os
+
+misize
+Target Report Var(TARGET_DUMPISIZE)
+Annotate assembler instructions with estimated addresses
+
+mmultcost=
+Target RejectNegative Joined UInteger Var(arc_multcost) Init(-1)
+Cost to assume for a multiply instruction, with 4 being equal to a normal insn.
+
+mtune=ARC600
+Target RejectNegative Var(arc_tune, TUNE_ARC600)
+Tune for ARC600 cpu.
+
+mtune=ARC601
+Target RejectNegative Var(arc_tune, TUNE_ARC600)
+Tune for ARC601 cpu.
+
+mtune=ARC700
+Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_STD)
+Tune for ARC700 R4.2 Cpu with standard multiplier block.
+
+mtune=ARC700-xmac
+Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
+Tune for ARC700 R4.2 Cpu with XMAC block.
+
+mtune=ARC725D
+Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
+Tune for ARC700 R4.2 Cpu with XMAC block.
+
+mtune=ARC750D
+Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
+Tune for ARC700 R4.2 Cpu with XMAC block.
+
+mindexed-loads
+Target Var(TARGET_INDEXED_LOADS)
+Enable the use of indexed loads
+
+mauto-modify-reg
+Target Var(TARGET_AUTO_MODIFY_REG)
+Enable the use of pre/post modify with register displacement.
+
+mmul32x16
+Target Report Mask(MULMAC_32BY16_SET)
+Generate 32x16 multiply and mac instructions
+
+; the initializer is supposed to be: Init(REG_BR_PROB_BASE/2) ,
+; alas, basic-block.h is not included in options.c .
+munalign-prob-threshold=
+Target RejectNegative Joined UInteger Var(arc_unalign_prob_threshold) Init(10000/2)
+Set probability threshold for unaligning branches
+
+mmedium-calls
+Target Var(TARGET_MEDIUM_CALLS) Init(TARGET_MMEDIUM_CALLS_DEFAULT)
+Don't use less than 25 bit addressing range for calls.
+
+mannotate-align
+Target Var(TARGET_ANNOTATE_ALIGN)
+Explain what alignment considerations lead to the decision to make an insn short or long.
+
+malign-call
+Target Var(TARGET_ALIGN_CALL)
+Do alignment optimizations for call instructions.
+
+mRcq
+Target Var(TARGET_Rcq)
+Enable Rcq constraint handling - most short code generation depends on this.
+
+mRcw
+Target Var(TARGET_Rcw)
+Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
+
+mearly-cbranchsi
+Target Var(TARGET_EARLY_CBRANCHSI)
+Enable pre-reload use of cbranchsi pattern
+
+mbbit-peephole
+Target Var(TARGET_BBIT_PEEPHOLE)
+Enable bbit peephole2
+
+mcase-vector-pcrel
+Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)
+Use pc-relative switch case tables - this enables case table shortening.
+
+mcompact-casesi
+Target Var(TARGET_COMPACT_CASESI)
+Enable compact casesi pattern
+
+mq-class
+Target Var(TARGET_Q_CLASS)
+Enable 'q' instruction alternatives.
+
+mexpand-adddi
+Target Var(TARGET_EXPAND_ADDDI)
+Expand adddi3 and subdi3 at rtl generation time into add.f / adc etc.
+
+
+; Flags used by the assembler, but for which we define preprocessor
+; macro symbols as well.
+mcrc
+Target Report
+Enable variable polynomial CRC extension
+
+mdsp-packa
+Target Report
+Enable DSP 3.1 Pack A extensions
+
+mdvbf
+Target Report
+Enable dual viterbi butterfly extension
+
+mmac-d16
+Target Report Undocumented
+
+mmac-24
+Target Report Undocumented
+
+mtelephony
+Target Report RejectNegative
+Enable Dual and Single Operand Instructions for Telephony
+
+mxy
+Target Report
+Enable XY Memory extension (DSP version 3)
+
+; ARC700 4.10 extension instructions
+mlock
+Target Report
+Enable Locked Load/Store Conditional extension
+
+mswape
+Target Report
+Enable swap byte ordering extension instruction
+
+mrtsc
+Target Report
+Enable 64-bit Time-Stamp Counter extension instruction
+
+mno-epilogue-cfi
+Target Report RejectNegative InverseMask(EPILOGUE_CFI)
+Disable generation of cfi for epilogues.
+
+mepilogue-cfi
+Target RejectNegative Mask(EPILOGUE_CFI)
+Enable generation of cfi for epilogues.
+
+EB
+Target
+Pass -EB option through to linker.
+
+EL
+Target
+Pass -EL option through to linker.
+
+marclinux
+target
+Pass -marclinux option through to linker.
+
+marclinux_prof
+target
+Pass -marclinux_prof option through to linker.
+
+;; lra is still unproven for ARC, so allow to fall back to reload with -mno-lra.
+;Target InverseMask(NO_LRA)
+mlra
+; lra still won't allow to configure libgcc; see PR rtl-optimization/55464.
+; so don't enable by default.
+Target Mask(LRA)
+Enable lra
+
+mlra-priority-none
+Target RejectNegative Var(arc_lra_priority_tag, ARC_LRA_PRIORITY_NONE)
+Don't indicate any priority with TARGET_REGISTER_PRIORITY
+
+mlra-priority-compact
+Target RejectNegative Var(arc_lra_prioritytag, ARC_LRA_PRIORITY_COMPACT)
+Indicate priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY
+
+mlra-priority-noncompact
+Target RejectNegative Var(arc_lra_prioritytag, ARC_LRA_PRIORITY_NONCOMPACT)
+Reduce priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY
+
+mucb-mcount
+Target Report Var(TARGET_UCB_MCOUNT)
+instrument with mcount calls as in the ucb code
+
+; backward-compatibility aliases, translated by DRIVER_SELF_SPECS
+
+mEA
+Target
+
+multcost=
+Target RejectNegative Joined
+
+; Unfortunately, listing the full option name gives us clashes
+; with OPT_opt_name being claimed for both opt_name and opt-name,
+; so we leave out the last character or more.
+mbarrel_shifte
+Target Joined
+
+mspfp_
+Target Joined
+
+mdpfp_
+Target Joined
+
+mdsp_pack
+Target Joined
+
+mmac_
+Target Joined
+

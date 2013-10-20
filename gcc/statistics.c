@@ -76,7 +76,7 @@ stats_counter_hasher::equal (const value_type *c1, const compare_type *c2)
 inline void
 stats_counter_hasher::remove (value_type *v)
 {
-  free (CONST_CAST(char *, v->id));
+  free (CONST_CAST (char *, v->id));
   free (v);
 }
 
@@ -260,8 +260,10 @@ statistics_fini (void)
 void
 statistics_early_init (void)
 {
-  statistics_dump_nr = dump_register (".statistics", "statistics",
-				      "statistics", TDF_TREE, OPTGROUP_NONE);
+  gcc::dump_manager *dumps = g->get_dumps ();
+  statistics_dump_nr = dumps->dump_register (".statistics", "statistics",
+					     "statistics", TDF_TREE,
+					     OPTGROUP_NONE);
 }
 
 /* Init the statistics.  */
@@ -269,8 +271,9 @@ statistics_early_init (void)
 void
 statistics_init (void)
 {
+  gcc::dump_manager *dumps = g->get_dumps ();
   statistics_dump_file = dump_begin (statistics_dump_nr, NULL);
-  statistics_dump_flags = get_dump_file_info (statistics_dump_nr)->pflags;
+  statistics_dump_flags = dumps->get_dump_file_info (statistics_dump_nr)->pflags;
 }
 
 /* Lookup or add a statistics counter in the hashtable HASH with ID, VAL

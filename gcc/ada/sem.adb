@@ -242,6 +242,9 @@ package body Sem is
          when N_Freeze_Entity =>
             Analyze_Freeze_Entity (N);
 
+         when N_Freeze_Generic_Entity =>
+            Analyze_Freeze_Generic_Entity (N);
+
          when N_Full_Type_Declaration =>
             Analyze_Full_Type_Declaration (N);
 

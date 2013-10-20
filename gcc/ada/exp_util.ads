@@ -349,19 +349,15 @@ package Exp_Util is
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 
-   function Entity_Of (N : Node_Id) return Entity_Id;
-   --  Return the entity of N or Empty. If N is a renaming, return the entity
-   --  of the root renamed object.
-
    function Entry_Names_OK return Boolean;
    --  Determine whether it is appropriate to dynamically allocate strings
    --  which represent entry [family member] names. These strings are created
    --  by the compiler and used by GDB.
 
    procedure Evaluate_Name (Nam : Node_Id);
-   --  Remove the all side effects from a name which appears as part of an
-   --  object renaming declaration. More comments are needed here that explain
-   --  how this differs from Force_Evaluation and Remove_Side_Effects ???
+   --  Remove all side effects from a name which appears as part of an object
+   --  renaming declaration. More comments are needed here that explain how
+   --  this differs from Force_Evaluation and Remove_Side_Effects ???
 
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is
@@ -376,6 +372,12 @@ package Exp_Util is
    --  series of checks evolved by this routine, with a final result of Empty
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
+
+   procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
+   --  N is either a case alternative or a variant. The Discrete_Choices field
+   --  of N points to a list of choices. If any of these choices is the name
+   --  of a (statically) predicated subtype, then it is rewritten as the series
+   --  of choices that correspond to the values allowed for the subtype.
 
    procedure Expand_Subtype_From_Expr
      (N             : Node_Id;

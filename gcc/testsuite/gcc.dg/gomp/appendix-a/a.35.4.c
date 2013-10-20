@@ -11,7 +11,7 @@ wrong4 (int n)
       {
 	work (i, 0);
 	/* incorrect nesting of barrier region in a loop region */
-#pragma omp barrier	/* { dg-warning "may not be closely nested" } */
+#pragma omp barrier	/* { dg-error "may not be closely nested" } */
 	work (i, 1);
       }
   }

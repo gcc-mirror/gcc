@@ -2874,8 +2874,7 @@ package body Exp_Dist is
 
          if RCI_Locator = Empty then
             RCI_Locator_Decl :=
-              RCI_Package_Locator
-                (Loc, Specification (Unit_Declaration_Node (RCI_Package)));
+              RCI_Package_Locator (Loc, Package_Specification (RCI_Package));
             Prepend_To (Current_Sem_Unit_Declarations, RCI_Locator_Decl);
             Analyze (RCI_Locator_Decl);
             RCI_Locator := Defining_Unit_Name (RCI_Locator_Decl);
@@ -9839,7 +9838,8 @@ package body Exp_Dist is
                --  Constrained and unconstrained array types
 
                declare
-                  Constrained : constant Boolean := Is_Constrained (Typ);
+                  Constrained : constant Boolean :=
+                    not Transmit_As_Unconstrained (Typ);
 
                   procedure TA_Ary_Add_Process_Element
                     (Stmts   : List_Id;
@@ -9958,16 +9958,29 @@ package body Exp_Dist is
 
                   --  Generate:
                   --    T'Output (Strm'Access, E);
+                  --  or
+                  --    T'Write (Strm'Access, E);
+                  --  depending on whether to transmit as unconstrained
 
-                  Append_To (Stms,
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Typ, Loc),
-                        Attribute_Name => Name_Output,
-                        Expressions    => New_List (
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Occurrence_Of (Strm, Loc),
-                            Attribute_Name => Name_Access),
-                          New_Occurrence_Of (Expr_Parameter, Loc))));
+                  declare
+                     Attr_Name : Name_Id;
+                  begin
+                     if Transmit_As_Unconstrained (Typ) then
+                        Attr_Name := Name_Output;
+                     else
+                        Attr_Name := Name_Write;
+                     end if;
+
+                     Append_To (Stms,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Occurrence_Of (Typ, Loc),
+                           Attribute_Name => Attr_Name,
+                           Expressions    => New_List (
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => New_Occurrence_Of (Strm, Loc),
+                               Attribute_Name => Name_Access),
+                             New_Occurrence_Of (Expr_Parameter, Loc))));
+                  end;
 
                   --  Generate:
                   --    BS_To_Any (Strm, A);

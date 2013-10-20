@@ -93,6 +93,18 @@
   "membar\t%1"
   [(set_attr "type" "multi")])
 
+(define_peephole2
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (match_operand:SI 1 "const_int_operand")]
+		    UNSPEC_MEMBAR))
+   (set (match_operand:BLK 2 "" "")
+	(unspec:BLK [(match_dup 2) (match_operand:SI 3 "const_int_operand")]
+		    UNSPEC_MEMBAR))]
+  ""
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (match_dup 1)] UNSPEC_MEMBAR))]
+{ operands[1] = GEN_INT (UINTVAL (operands[1]) | UINTVAL (operands[3])); })
+
 (define_expand "atomic_load<mode>"
   [(match_operand:I 0 "register_operand" "")
    (match_operand:I 1 "memory_operand" "")

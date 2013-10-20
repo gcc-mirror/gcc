@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-pretty-print.h"
+#include "tree-cfg.h"
 #include "wide-int.h"
 #include "wide-int-print.h"
 
@@ -279,7 +280,7 @@ dequeue_and_dump (dump_info_p di)
   if (dni->binfo_p)
     code_name = "binfo";
   else
-    code_name = tree_code_name[(int) TREE_CODE (t)];
+    code_name = get_tree_code_name (TREE_CODE (t));
   fprintf (di->stream, "%-16s ", code_name);
   di->column = 25;
 

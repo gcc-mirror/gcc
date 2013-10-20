@@ -1,3 +1,13 @@
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: If --enable-host-shared, use -fPIC.
+	* configure: Regenerate.
+
+2013-10-11  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* cp-demangle.c (d_name): Demangle local-source-names.
+	* testsuite/demangle-expected: New test.
+
 2013-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR bootstrap/58386

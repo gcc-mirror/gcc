@@ -1564,7 +1564,23 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB (bb)
     {
+      bool cold_bb = false;
+
       if (probably_never_executed_bb_p (cfun, bb))
+        {
+          /* Handle profile insanities created by upstream optimizations
+             by also checking the incoming edge weights. If there is a non-cold
+             incoming edge, conservatively prevent this block from being split
+             into the cold section.  */
+          cold_bb = true;
+          FOR_EACH_EDGE (e, ei, bb->preds)
+            if (!probably_never_executed_edge_p (cfun, e))
+              {
+                cold_bb = false;
+                break;
+              }
+        }
+      if (cold_bb)
         {
           BB_SET_PARTITION (bb, BB_COLD_PARTITION);
           cold_bb_count++;
@@ -2329,8 +2345,8 @@ const pass_data pass_data_reorder_blocks =
 class pass_reorder_blocks : public rtl_opt_pass
 {
 public:
-  pass_reorder_blocks(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_reorder_blocks, ctxt)
+  pass_reorder_blocks (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_reorder_blocks, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2495,8 +2511,8 @@ const pass_data pass_data_duplicate_computed_gotos =
 class pass_duplicate_computed_gotos : public rtl_opt_pass
 {
 public:
-  pass_duplicate_computed_gotos(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_duplicate_computed_gotos, ctxt)
+  pass_duplicate_computed_gotos (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_duplicate_computed_gotos, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2719,8 +2735,8 @@ const pass_data pass_data_partition_blocks =
 class pass_partition_blocks : public rtl_opt_pass
 {
 public:
-  pass_partition_blocks(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_partition_blocks, ctxt)
+  pass_partition_blocks (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_partition_blocks, ctxt)
   {}
 
   /* opt_pass methods: */

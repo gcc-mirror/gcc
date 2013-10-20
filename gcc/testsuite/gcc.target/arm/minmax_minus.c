@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_cond_exec } */
 /* { dg-options "-O2" } */
 
 #define MAX(a, b) (a > b ? a : b)

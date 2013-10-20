@@ -361,10 +361,10 @@ main (int argc, char **argv)
   /* Output flag masks for use by reorg.
 
      Flags are used to hold branch direction for use by eligible_for_...  */
-  printf("\n#define ATTR_FLAG_forward\t0x1\n");
-  printf("#define ATTR_FLAG_backward\t0x2\n");
+  printf ("\n#define ATTR_FLAG_forward\t0x1\n");
+  printf ("#define ATTR_FLAG_backward\t0x2\n");
 
-  puts("\n#endif /* GCC_INSN_ATTR_H */");
+  puts ("\n#endif /* GCC_INSN_ATTR_H */");
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;

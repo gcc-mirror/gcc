@@ -1104,8 +1104,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 	  tree ret_type = TREE_TYPE (fntype);
 
 	  fprintf (stderr, ", fntype code = %s, ret code = %s\n",
-		   tree_code_name[(int)TREE_CODE (fntype)],
-		   tree_code_name[(int)TREE_CODE (ret_type)]);
+		   get_tree_code_name (TREE_CODE (fntype)),
+		   get_tree_code_name (TREE_CODE (ret_type)));
 	}
     }
 

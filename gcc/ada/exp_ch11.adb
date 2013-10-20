@@ -1025,7 +1025,13 @@ package body Exp_Ch11 is
                --        ...
                --     end;
 
-               if Present (Choice_Parameter (Handler)) then
+               --  This expansion is not performed when using GCC ZCX. Gigi
+               --  will insert a call to initialize the choice parameter.
+
+               if Present (Choice_Parameter (Handler))
+                 and then (Exception_Mechanism /= Back_End_Exceptions
+                            or else CodePeer_Mode)
+               then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
                      Cloc  : constant Source_Ptr := Sloc (Cparm);
@@ -1033,43 +1039,42 @@ package body Exp_Ch11 is
                      Save  : Node_Id;
 
                   begin
-                     --  Note use of No_Location to hide this code from the
-                     --  debugger, so single stepping doesn't jump back and
-                     --  forth.
+                     --  Note: No_Location used to hide code from the debugger,
+                     --  so single stepping doesn't jump back and forth.
 
                      Save :=
                        Make_Procedure_Call_Statement (No_Location,
-                         Name =>
+                         Name                   =>
                            New_Occurrence_Of
                              (RTE (RE_Save_Occurrence), No_Location),
                          Parameter_Associations => New_List (
                            New_Occurrence_Of (Cparm, No_Location),
                            Make_Explicit_Dereference (No_Location,
-                             Make_Function_Call (No_Location,
-                               Name =>
-                                 Make_Explicit_Dereference (No_Location,
-                                   New_Occurrence_Of
-                                     (RTE (RE_Get_Current_Excep),
-                                      No_Location))))));
+                             Prefix =>
+                               Make_Function_Call (No_Location,
+                                 Name =>
+                                   Make_Explicit_Dereference (No_Location,
+                                     Prefix =>
+                                       New_Occurrence_Of
+                                         (RTE (RE_Get_Current_Excep),
+                                          No_Location))))));
 
                      Mark_Rewrite_Insertion (Save);
                      Prepend (Save, Statements (Handler));
 
                      Obj_Decl :=
-                       Make_Object_Declaration
-                         (Cloc,
-                          Defining_Identifier => Cparm,
-                          Object_Definition   =>
-                            New_Occurrence_Of
-                              (RTE (RE_Exception_Occurrence), Cloc));
+                       Make_Object_Declaration (Cloc,
+                         Defining_Identifier => Cparm,
+                         Object_Definition   =>
+                           New_Occurrence_Of
+                             (RTE (RE_Exception_Occurrence), Cloc));
                      Set_No_Initialization (Obj_Decl, True);
 
                      Rewrite (Handler,
                        Make_Exception_Handler (Hloc,
                          Choice_Parameter  => Empty,
                          Exception_Choices => Exception_Choices (Handler),
-
-                         Statements => New_List (
+                         Statements        => New_List (
                            Make_Block_Statement (Hloc,
                              Declarations => New_List (Obj_Decl),
                              Handled_Statement_Sequence =>
@@ -1166,18 +1171,17 @@ package body Exp_Ch11 is
 
    --  Generates:
    --     exceptE : constant String := "A.B.EXCEP";   -- static data
-   --     except : exception_data :=  (
-   --                    Handled_By_Other => False,
-   --                    Lang             => 'A',
-   --                    Name_Length      => exceptE'Length,
-   --                    Full_Name        => exceptE'Address,
-   --                    HTable_Ptr       => null,
-   --                    Import_Code      => 0,
-   --                    Raise_Hook       => null,
-   --                    );
+   --     except : exception_data :=
+   --                (Handled_By_Other => False,
+   --                 Lang             => 'A',
+   --                 Name_Length      => exceptE'Length,
+   --                 Full_Name        => exceptE'Address,
+   --                 HTable_Ptr       => null,
+   --                 Foreign_Data     => null,
+   --                 Raise_Hook       => null);
 
    --  (protecting test only needed if not at library level)
-   --
+
    --     exceptF : Boolean := True --  static data
    --     if exceptF then
    --        exceptF := False;
@@ -1319,9 +1323,9 @@ package body Exp_Ch11 is
 
       Append_To (L, Make_Null (Loc));
 
-      --  Import_Code component: 0
+      --  Foreign_Data component: null
 
-      Append_To (L, Make_Integer_Literal (Loc, 0));
+      Append_To (L, Make_Null (Loc));
 
       --  Raise_Hook component: null
 
@@ -1446,7 +1450,7 @@ package body Exp_Ch11 is
       RCE : Node_Id;
 
    begin
-      Possible_Local_Raise (N, Name (N));
+      Possible_Local_Raise (N, Entity (Name (N)));
 
       --  Later we must teach the back end/gigi how to deal with this, but
       --  for now we will assume the type is Standard_Boolean and transform

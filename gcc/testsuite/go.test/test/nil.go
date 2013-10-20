@@ -115,7 +115,7 @@ func chantest() {
 	})
 	shouldBlock(func() {
 		x, ok := <-ch
-		println(x, ok)
+		println(x, ok) // unreachable
 	})
 
 	if len(ch) != 0 {
@@ -147,12 +147,13 @@ func maptest() {
 		panic(v)
 	}
 
+	// can delete (non-existent) entries
+	delete(m, 2)
+
 	// but cannot be written to
 	shouldPanic(func() {
 		m[2] = 3
 	})
-	// can delete (non-existent) entries
-	delete(m, 2)
 }
 
 // nil slice

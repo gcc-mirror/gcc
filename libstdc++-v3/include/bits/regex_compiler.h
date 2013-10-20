@@ -120,13 +120,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return ret;
       }
 
+      _FlagT          _M_flags;
       const _TraitsT& _M_traits;
       const _CtypeT&  _M_ctype;
       _ScannerT       _M_scanner;
       _RegexT         _M_nfa;
       _StringT        _M_value;
       _StackT         _M_stack;
-      _FlagT          _M_flags;
     };
 
   template<typename _CharT, typename _TraitsT>
@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       _CharMatcher(_CharT __ch, const _TraitsT& __traits, _FlagT __flags)
-      : _M_ch(_M_translate(__ch)), _M_traits(__traits), _M_flags(__flags)
+      : _M_traits(__traits), _M_flags(__flags), _M_ch(_M_translate(__ch))
       { }
 
       bool
@@ -189,8 +189,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _BracketMatcher(bool __is_non_matching,
 		      const _TraitsT& __traits,
 		      _FlagT __flags)
-      : _M_is_non_matching(__is_non_matching), _M_traits(__traits),
-	_M_flags(__flags), _M_class_set(0)
+      : _M_traits(__traits), _M_class_set(0), _M_flags(__flags),
+      _M_is_non_matching(__is_non_matching)
       { }
 
       bool
@@ -207,26 +207,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s.data() + __s.size());
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
-	// TODO: digraph
 	_M_char_set.insert(_M_translate(__st[0]));
       }
 
       void
       _M_add_equivalence_class(const _StringT& __s)
       {
-	_M_add_character_class(
-	  _M_traits.transform_primary(__s.data(),
-				      __s.data() + __s.size()));
+	auto __st = _M_traits.lookup_collatename(__s.data(),
+						 __s.data() + __s.size());
+	if (__st.empty())
+	  __throw_regex_error(regex_constants::error_collate);
+	__st = _M_traits.transform_primary(__st.data(),
+					   __st.data() + __st.size());
+	_M_equiv_set.insert(__st);
       }
 
       void
       _M_add_character_class(const _StringT& __s)
       {
-	auto __st = _M_traits.
-	  lookup_classname(__s.data(), __s.data() + __s.size(), _M_is_icase());
-	if (__st == 0)
+	auto __mask = _M_traits.lookup_classname(__s.data(),
+						 __s.data() + __s.size(),
+						 _M_is_icase());
+	if (__mask == 0)
 	  __throw_regex_error(regex_constants::error_ctype);
-	_M_class_set |= __st;
+	_M_class_set |= __mask;
       }
 
       void
@@ -261,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       std::set<_CharT>                   _M_char_set;
+      std::set<_StringT>                 _M_equiv_set;
       std::set<pair<_StringT, _StringT>> _M_range_set;
       const _TraitsT&                    _M_traits;
       _CharClassT                        _M_class_set;

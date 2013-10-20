@@ -109,6 +109,7 @@ enum aarch64_code_model aarch64_cmodel;
 #define TARGET_HAVE_TLS 1
 #endif
 
+static bool aarch64_lra_p (void);
 static bool aarch64_composite_type_p (const_tree, enum machine_mode);
 static bool aarch64_vfp_is_call_or_return_candidate (enum machine_mode,
 						     const_tree,
@@ -3439,6 +3440,32 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 {
   switch (code)
     {
+    /* An integer or symbol address without a preceding # sign.  */
+    case 'c':
+      switch (GET_CODE (x))
+	{
+	case CONST_INT:
+	  fprintf (f, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  break;
+
+	case SYMBOL_REF:
+	  output_addr_const (f, x);
+	  break;
+
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+	    {
+	      output_addr_const (f, x);
+	      break;
+	    }
+	  /* Fall through.  */
+
+	default:
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	}
+      break;
+
     case 'e':
       /* Print the sign/zero-extend size as a character 8->b, 16->h, 32->w.  */
       {
@@ -3857,13 +3884,6 @@ aarch64_print_operand_address (FILE *f, rtx x)
   output_addr_const (f, x);
 }
 
-void
-aarch64_function_profiler (FILE *f ATTRIBUTE_UNUSED,
-			   int labelno ATTRIBUTE_UNUSED)
-{
-  sorry ("function profiling");
-}
-
 bool
 aarch64_label_mentioned_p (rtx x)
 {
@@ -3910,7 +3930,7 @@ aarch64_regno_regclass (unsigned regno)
 
   if (regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)
-    return CORE_REGS;
+    return POINTER_REGS;
 
   if (FP_REGNUM_P (regno))
     return FP_LO_REGNUM_P (regno) ?  FP_LO_REGS : FP_REGS;
@@ -4014,9 +4034,9 @@ aarch64_legitimize_reload_address (rtx *x_p,
 
       /* Reload high part into base reg, leaving the low part
 	 in the mem instruction.  */
-      x = plus_constant (xmode,
-			 gen_rtx_PLUS (xmode, XEXP (x, 0), cst),
-			 low);
+      x = gen_rtx_PLUS (xmode,
+			gen_rtx_PLUS (xmode, XEXP (x, 0), cst),
+			GEN_INT (low));
 
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, xmode, VOIDmode, 0, 0,
@@ -4034,20 +4054,6 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  enum machine_mode mode,
 			  secondary_reload_info *sri)
 {
-  /* Address expressions of the form PLUS (SP, large_offset) need two
-     scratch registers, one for the constant, and one for holding a
-     copy of SP, since SP cannot be used on the RHS of an add-reg
-     instruction.  */
-  if (mode == DImode
-      && GET_CODE (x) == PLUS
-      && XEXP (x, 0) == stack_pointer_rtx
-      && CONST_INT_P (XEXP (x, 1))
-      && !aarch64_uimm12_shift (INTVAL (XEXP (x, 1))))
-    {
-      sri->icode = CODE_FOR_reload_sp_immediate;
-      return NO_REGS;
-    }
-
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
   if (REG_P (x) && (mode == TFmode || mode == TImode) && mode == GET_MODE (x)
@@ -4239,8 +4245,17 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 static reg_class_t
 aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
 {
-  if (regclass == POINTER_REGS || regclass == STACK_REG)
+  if (regclass == POINTER_REGS)
     return GENERAL_REGS;
+
+  if (regclass == STACK_REG)
+    {
+      if (REG_P(x)
+	  && reg_class_subset_p (REGNO_REG_CLASS (REGNO (x)), POINTER_REGS))
+	  return regclass;
+
+      return NO_REGS;
+    }
 
   /* If it's an integer immediate that MOVI can't handle, then
      FP_REGS is not an option, so we return NO_REGS instead.  */
@@ -6092,6 +6107,13 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
   return -1;
 }
 
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+aarch64_lra_p (void)
+{
+  return aarch64_lra_flag;
+}
+
 /* Return TRUE if the type, as described by TYPE and MODE, is a composite
    type as described in AAPCS64 \S 4.3.  This includes aggregate, union and
    array types.  The C99 floating-point complex types are also considered
@@ -7162,10 +7184,10 @@ aarch64_emit_store_exclusive (enum machine_mode mode, rtx bval,
 static void
 aarch64_emit_unlikely_jump (rtx insn)
 {
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
   insn = emit_jump_insn (insn);
-  add_reg_note (insn, REG_BR_PROB, very_unlikely);
+  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
 }
 
 /* Expand a compare and swap pattern.  */
@@ -8267,6 +8289,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P aarch64_lra_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type

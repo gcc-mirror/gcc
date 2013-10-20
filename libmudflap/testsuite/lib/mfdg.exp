@@ -20,6 +20,16 @@
 
 load_lib dg.exp
 
+# We set LC_ALL and LANG to C so that we get the same error messages as expected.
+setenv LC_ALL C
+setenv LANG C
+
+# Many hosts now default to a non-ASCII C locale, however, so
+# they can set a charset encoding here if they need.
+if { [ishost "*-*-cygwin*"] } {
+  setenv LC_ALL C.ASCII
+  setenv LANG C.ASCII
+}
 
 # dg-test -- runs a new style DejaGnu test
 #

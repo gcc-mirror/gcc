@@ -1452,9 +1452,9 @@ merge_in_block (int max_reg, basic_block bb)
     {
       /* In this case, we must clear these vectors since the trick of
 	 testing if the stale insn in the block will not work.  */
-      memset (reg_next_use, 0, max_reg * sizeof(rtx));
-      memset (reg_next_inc_use, 0, max_reg * sizeof(rtx));
-      memset (reg_next_def, 0, max_reg * sizeof(rtx));
+      memset (reg_next_use, 0, max_reg * sizeof (rtx));
+      memset (reg_next_inc_use, 0, max_reg * sizeof (rtx));
+      memset (reg_next_def, 0, max_reg * sizeof (rtx));
       df_recompute_luids (bb);
       merge_in_block (max_reg, bb);
     }
@@ -1526,8 +1526,8 @@ const pass_data pass_data_inc_dec =
 class pass_inc_dec : public rtl_opt_pass
 {
 public:
-  pass_inc_dec(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_inc_dec, ctxt)
+  pass_inc_dec (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_inc_dec, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -291,10 +291,13 @@ class Expression
   make_unsafe_cast(Type*, Expression*, Location);
 
   // Make a composite literal.  The DEPTH parameter is how far down we
-  // are in a list of composite literals with omitted types.
+  // are in a list of composite literals with omitted types.  HAS_KEYS
+  // is true if the expression list has keys alternating with values.
+  // ALL_ARE_NAMES is true if all the keys could be struct field
+  // names.
   static Expression*
   make_composite_literal(Type*, int depth, bool has_keys, Expression_list*,
-			 Location);
+			 bool all_are_names, Location);
 
   // Make a struct composite literal.
   static Expression*
@@ -652,17 +655,10 @@ class Expression
 		  Type* left_type, tree left_tree, Type* right_type,
 		  tree right_tree, Location);
 
-  // Return a tree for the multi-precision integer VAL in TYPE.
-  static tree
-  integer_constant_tree(mpz_t val, tree type);
-
-  // Return a tree for the floating point value VAL in TYPE.
-  static tree
-  float_constant_tree(mpfr_t val, tree type);
-
-  // Return a tree for the complex value REAL/IMAG in TYPE.
-  static tree
-  complex_constant_tree(mpfr_t real, mpfr_t imag, tree type);
+  // Return the backend expression for the numeric constant VAL.
+  static Bexpression*
+  backend_numeric_constant_expression(Translate_context*,
+                                      Numeric_constant* val);
 
   // Export the expression.  This is only used for constants.  It will
   // be used for things like values of named constants and sizes of
@@ -1518,8 +1514,8 @@ class Func_expression : public Expression
   closure()
   { return this->closure_; }
 
-  // Return a tree for the code for a function.
-  static tree
+  // Return a backend expression for the code of a function.
+  static Bexpression*
   get_code_pointer(Gogo*, Named_object* function, Location loc);
 
  protected:

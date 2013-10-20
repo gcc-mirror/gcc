@@ -231,6 +231,135 @@ flush_pending_stmts (edge e)
   redirect_edge_var_map_clear (e);
 }
 
+
+/* Data structure used to count the number of dereferences to PTR
+   inside an expression.  */
+struct count_ptr_d
+{
+  tree ptr;
+  unsigned num_stores;
+  unsigned num_loads;
+};
+
+
+/* Helper for count_uses_and_derefs.  Called by walk_tree to look for
+   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
+
+static tree
+count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi_p = (struct walk_stmt_info *) data;
+  struct count_ptr_d *count_p = (struct count_ptr_d *) wi_p->info;
+
+  /* Do not walk inside ADDR_EXPR nodes.  In the expression &ptr->fld,
+     pointer 'ptr' is *not* dereferenced, it is simply used to compute
+     the address of 'fld' as 'ptr + offsetof(fld)'.  */
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*tp) == MEM_REF && TREE_OPERAND (*tp, 0) == count_p->ptr)
+    {
+      if (wi_p->is_lhs)
+	count_p->num_stores++;
+      else
+	count_p->num_loads++;
+    }
+
+  return NULL_TREE;
+}
+
+
+/* Count the number of direct and indirect uses for pointer PTR in
+   statement STMT.  The number of direct uses is stored in
+   *NUM_USES_P.  Indirect references are counted separately depending
+   on whether they are store or load operations.  The counts are
+   stored in *NUM_STORES_P and *NUM_LOADS_P.  */
+
+void
+count_uses_and_derefs (tree ptr, gimple stmt, unsigned *num_uses_p,
+		       unsigned *num_loads_p, unsigned *num_stores_p)
+{
+  ssa_op_iter i;
+  tree use;
+
+  *num_uses_p = 0;
+  *num_loads_p = 0;
+  *num_stores_p = 0;
+
+  /* Find out the total number of uses of PTR in STMT.  */
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
+    if (use == ptr)
+      (*num_uses_p)++;
+
+  /* Now count the number of indirect references to PTR.  This is
+     truly awful, but we don't have much choice.  There are no parent
+     pointers inside INDIRECT_REFs, so an expression like
+     '*x_1 = foo (x_1, *x_1)' needs to be traversed piece by piece to
+     find all the indirect and direct uses of x_1 inside.  The only
+     shortcut we can take is the fact that GIMPLE only allows
+     INDIRECT_REFs inside the expressions below.  */
+  if (is_gimple_assign (stmt)
+      || gimple_code (stmt) == GIMPLE_RETURN
+      || gimple_code (stmt) == GIMPLE_ASM
+      || is_gimple_call (stmt))
+    {
+      struct walk_stmt_info wi;
+      struct count_ptr_d count;
+
+      count.ptr = ptr;
+      count.num_stores = 0;
+      count.num_loads = 0;
+
+      memset (&wi, 0, sizeof (wi));
+      wi.info = &count;
+      walk_gimple_op (stmt, count_ptr_derefs, &wi);
+
+      *num_stores_p = count.num_stores;
+      *num_loads_p = count.num_loads;
+    }
+
+  gcc_assert (*num_uses_p >= *num_loads_p + *num_stores_p);
+}
+
+
+/* Replace the LHS of STMT, an assignment, either a GIMPLE_ASSIGN or a
+   GIMPLE_CALL, with NLHS, in preparation for modifying the RHS to an
+   expression with a different value.
+
+   This will update any annotations (say debug bind stmts) referring
+   to the original LHS, so that they use the RHS instead.  This is
+   done even if NLHS and LHS are the same, for it is understood that
+   the RHS will be modified afterwards, and NLHS will not be assigned
+   an equivalent value.
+
+   Adjusting any non-annotation uses of the LHS, if needed, is a
+   responsibility of the caller.
+
+   The effect of this call should be pretty much the same as that of
+   inserting a copy of STMT before STMT, and then removing the
+   original stmt, at which time gsi_remove() would have update
+   annotations, but using this function saves all the inserting,
+   copying and removing.  */
+
+void
+gimple_replace_ssa_lhs (gimple stmt, tree nlhs)
+{
+  if (MAY_HAVE_DEBUG_STMTS)
+    {
+      tree lhs = gimple_get_lhs (stmt);
+
+      gcc_assert (SSA_NAME_DEF_STMT (lhs) == stmt);
+
+      insert_debug_temp_for_var_def (NULL, lhs);
+    }
+
+  gimple_set_lhs (stmt, nlhs);
+}
+
+
 /* Given a tree for an expression for which we might want to emit
    locations or values in debug information (generally a variable, but
    we might deal with other kinds of trees in the future), return the
@@ -1118,8 +1247,8 @@ const pass_data pass_data_init_datastructures =
 class pass_init_datastructures : public gimple_opt_pass
 {
 public:
-  pass_init_datastructures(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_init_datastructures, ctxt)
+  pass_init_datastructures (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_init_datastructures, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -1215,115 +1344,6 @@ ssa_undefined_value_p (tree t)
 
   /* The value is undefined iff its definition statement is empty.  */
   return gimple_nop_p (SSA_NAME_DEF_STMT (t));
-}
-
-
-/* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
-   described in walk_use_def_chains.
-
-   VISITED is a pointer set used to mark visited SSA_NAMEs to avoid
-      infinite loops.  We used to have a bitmap for this to just mark
-      SSA versions we had visited.  But non-sparse bitmaps are way too
-      expensive, while sparse bitmaps may cause quadratic behavior.
-
-   IS_DFS is true if the caller wants to perform a depth-first search
-      when visiting PHI nodes.  A DFS will visit each PHI argument and
-      call FN after each one.  Otherwise, all the arguments are
-      visited first and then FN is called with each of the visited
-      arguments in a separate pass.  */
-
-static bool
-walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
-		       struct pointer_set_t *visited, bool is_dfs)
-{
-  gimple def_stmt;
-
-  if (pointer_set_insert (visited, var))
-    return false;
-
-  def_stmt = SSA_NAME_DEF_STMT (var);
-
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
-    {
-      /* If we reached the end of the use-def chain, call FN.  */
-      return fn (var, def_stmt, data);
-    }
-  else
-    {
-      size_t i;
-
-      /* When doing a breadth-first search, call FN before following the
-	 use-def links for each argument.  */
-      if (!is_dfs)
-	for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
-	  if (fn (gimple_phi_arg_def (def_stmt, i), def_stmt, data))
-	    return true;
-
-      /* Follow use-def links out of each PHI argument.  */
-      for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
-	{
-	  tree arg = gimple_phi_arg_def (def_stmt, i);
-
-	  /* ARG may be NULL for newly introduced PHI nodes.  */
-	  if (arg
-	      && TREE_CODE (arg) == SSA_NAME
-	      && walk_use_def_chains_1 (arg, fn, data, visited, is_dfs))
-	    return true;
-	}
-
-      /* When doing a depth-first search, call FN after following the
-	 use-def links for each argument.  */
-      if (is_dfs)
-	for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
-	  if (fn (gimple_phi_arg_def (def_stmt, i), def_stmt, data))
-	    return true;
-    }
-
-  return false;
-}
-
-
-
-/* Walk use-def chains starting at the SSA variable VAR.  Call
-   function FN at each reaching definition found.  FN takes three
-   arguments: VAR, its defining statement (DEF_STMT) and a generic
-   pointer to whatever state information that FN may want to maintain
-   (DATA).  FN is able to stop the walk by returning true, otherwise
-   in order to continue the walk, FN should return false.
-
-   Note, that if DEF_STMT is a PHI node, the semantics are slightly
-   different.  The first argument to FN is no longer the original
-   variable VAR, but the PHI argument currently being examined.  If FN
-   wants to get at VAR, it should call PHI_RESULT (PHI).
-
-   If IS_DFS is true, this function will:
-
-	1- walk the use-def chains for all the PHI arguments, and,
-	2- call (*FN) (ARG, PHI, DATA) on all the PHI arguments.
-
-   If IS_DFS is false, the two steps above are done in reverse order
-   (i.e., a breadth-first search).  */
-
-void
-walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
-                     bool is_dfs)
-{
-  gimple def_stmt;
-
-  gcc_assert (TREE_CODE (var) == SSA_NAME);
-
-  def_stmt = SSA_NAME_DEF_STMT (var);
-
-  /* We only need to recurse if the reaching definition comes from a PHI
-     node.  */
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
-    (*fn) (var, def_stmt, data);
-  else
-    {
-      struct pointer_set_t *visited = pointer_set_create ();
-      walk_use_def_chains_1 (var, fn, data, visited, is_dfs);
-      pointer_set_destroy (visited);
-    }
 }
 
 
@@ -1758,8 +1778,8 @@ const pass_data pass_data_update_address_taken =
 class pass_update_address_taken : public gimple_opt_pass
 {
 public:
-  pass_update_address_taken(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_update_address_taken, ctxt)
+  pass_update_address_taken (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_update_address_taken, ctxt)
   {}
 
   /* opt_pass methods: */

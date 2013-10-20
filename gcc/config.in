@@ -1717,12 +1717,6 @@
 #endif
 
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#ifndef USED_FOR_TARGET
-#undef NO_MINUS_C_MINUS_O
-#endif
-
-
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef USED_FOR_TARGET
 #undef PACKAGE_BUGREPORT

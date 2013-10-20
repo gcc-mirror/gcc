@@ -2098,8 +2098,8 @@ const pass_data pass_data_strlen =
 class pass_strlen : public gimple_opt_pass
 {
 public:
-  pass_strlen(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_strlen, ctxt)
+  pass_strlen (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strlen, ctxt)
   {}
 
   /* opt_pass methods: */

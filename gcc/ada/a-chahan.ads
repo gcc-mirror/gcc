@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,18 +42,23 @@ package Ada.Characters.Handling is
    -- Character Classification Functions --
    ----------------------------------------
 
-   function Is_Control           (Item : Character) return Boolean;
-   function Is_Graphic           (Item : Character) return Boolean;
-   function Is_Letter            (Item : Character) return Boolean;
-   function Is_Lower             (Item : Character) return Boolean;
-   function Is_Upper             (Item : Character) return Boolean;
-   function Is_Basic             (Item : Character) return Boolean;
-   function Is_Digit             (Item : Character) return Boolean;
-   function Is_Decimal_Digit     (Item : Character) return Boolean
+   function Is_Control               (Item : Character) return Boolean;
+   function Is_Graphic               (Item : Character) return Boolean;
+   function Is_Letter                (Item : Character) return Boolean;
+   function Is_Lower                 (Item : Character) return Boolean;
+   function Is_Upper                 (Item : Character) return Boolean;
+   function Is_Basic                 (Item : Character) return Boolean;
+   function Is_Digit                 (Item : Character) return Boolean;
+   function Is_Decimal_Digit         (Item : Character) return Boolean
      renames Is_Digit;
-   function Is_Hexadecimal_Digit (Item : Character) return Boolean;
-   function Is_Alphanumeric      (Item : Character) return Boolean;
-   function Is_Special           (Item : Character) return Boolean;
+   function Is_Hexadecimal_Digit     (Item : Character) return Boolean;
+   function Is_Alphanumeric          (Item : Character) return Boolean;
+   function Is_Special               (Item : Character) return Boolean;
+   function Is_Line_Terminator       (Item : Character) return Boolean;
+   function Is_Mark                  (Item : Character) return Boolean;
+   function Is_Other_Format          (Item : Character) return Boolean;
+   function Is_Punctuation_Connector (Item : Character) return Boolean;
+   function Is_Space                 (Item : Character) return Boolean;
 
    ---------------------------------------------------
    -- Conversion Functions for Character and String --
@@ -129,22 +134,27 @@ package Ada.Characters.Handling is
      (Item : String) return Wide_String;
 
 private
-   pragma Inline (Is_Control);
-   pragma Inline (Is_Graphic);
-   pragma Inline (Is_Letter);
-   pragma Inline (Is_Lower);
-   pragma Inline (Is_Upper);
-   pragma Inline (Is_Basic);
-   pragma Inline (Is_Digit);
-   pragma Inline (Is_Hexadecimal_Digit);
    pragma Inline (Is_Alphanumeric);
+   pragma Inline (Is_Basic);
+   pragma Inline (Is_Character);
+   pragma Inline (Is_Control);
+   pragma Inline (Is_Digit);
+   pragma Inline (Is_Graphic);
+   pragma Inline (Is_Hexadecimal_Digit);
+   pragma Inline (Is_ISO_646);
+   pragma Inline (Is_Letter);
+   pragma Inline (Is_Line_Terminator);
+   pragma Inline (Is_Lower);
+   pragma Inline (Is_Mark);
+   pragma Inline (Is_Other_Format);
+   pragma Inline (Is_Punctuation_Connector);
+   pragma Inline (Is_Space);
    pragma Inline (Is_Special);
+   pragma Inline (Is_Upper);
+   pragma Inline (To_Basic);
+   pragma Inline (To_Character);
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
-   pragma Inline (To_Basic);
-   pragma Inline (Is_ISO_646);
-   pragma Inline (Is_Character);
-   pragma Inline (To_Character);
    pragma Inline (To_Wide_Character);
 
 end Ada.Characters.Handling;

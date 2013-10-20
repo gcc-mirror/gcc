@@ -121,13 +121,8 @@ struct dump_file_info
 };
 
 /* In dumpfile.c */
-extern char *get_dump_file_name (int);
-extern int dump_initialized_p (int);
 extern FILE *dump_begin (int, int *);
 extern void dump_end (int, FILE *);
-extern int dump_start (int, int *);
-extern void dump_finish (int);
-extern int dump_switch_p (const char *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
@@ -139,8 +134,6 @@ extern void dump_generic_expr (int, int, tree);
 extern void dump_gimple_stmt_loc (int, source_location, int, gimple, int);
 extern void dump_gimple_stmt (int, int, gimple, int);
 extern void print_combine_total_stats (void);
-extern unsigned int dump_register (const char *, const char *, const char *,
-                                   int, int);
 extern bool enable_rtl_dump_file (void);
 
 /* In tree-dump.c  */
@@ -157,14 +150,91 @@ extern FILE *alt_dump_file;
 extern int dump_flags;
 extern const char *dump_file_name;
 
-/* Return the dump_file_info for the given phase.  */
-extern struct dump_file_info *get_dump_file_info (int);
-
 /* Return true if any of the dumps is enabled, false otherwise. */
 static inline bool
 dump_enabled_p (void)
 {
   return (dump_file || alt_dump_file);
 }
+
+namespace gcc {
+
+class dump_manager
+{
+public:
+
+  dump_manager ();
+
+  unsigned int
+  dump_register (const char *suffix, const char *swtch, const char *glob,
+		 int flags, int optgroup_flags);
+
+  /* Return the dump_file_info for the given phase.  */
+  struct dump_file_info *
+  get_dump_file_info (int phase) const;
+
+  /* Return the name of the dump file for the given phase.
+     If the dump is not enabled, returns NULL.  */
+  char *
+  get_dump_file_name (int phase) const;
+
+  int
+  dump_switch_p (const char *arg);
+
+  /* Start a dump for PHASE. Store user-supplied dump flags in
+     *FLAG_PTR.  Return the number of streams opened.  Set globals
+     DUMP_FILE, and ALT_DUMP_FILE to point to the opened streams, and
+     set dump_flags appropriately for both pass dump stream and
+     -fopt-info stream. */
+  int
+  dump_start (int phase, int *flag_ptr);
+
+  /* Finish a tree dump for PHASE and close associated dump streams.  Also
+     reset the globals DUMP_FILE, ALT_DUMP_FILE, and DUMP_FLAGS.  */
+  void
+  dump_finish (int phase);
+
+  FILE *
+  dump_begin (int phase, int *flag_ptr);
+
+  /* Returns nonzero if tree dump PHASE has been initialized.  */
+  int
+  dump_initialized_p (int phase) const;
+
+  /* Returns the switch name of PHASE.  */
+  const char *
+  dump_flag_name (int phase) const;
+
+private:
+
+  int
+  dump_phase_enabled_p (int phase) const;
+
+  int
+  dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob);
+
+  int
+  dump_enable_all (int flags, const char *filename);
+
+  int
+  opt_info_enable_passes (int optgroup_flags, int flags, const char *filename);
+
+private:
+
+  /* Dynamically registered dump files and switches.  */
+  int m_next_dump;
+  struct dump_file_info *m_extra_dump_files;
+  size_t m_extra_dump_files_in_use;
+  size_t m_extra_dump_files_alloced;
+
+  /* Grant access to dump_enable_all.  */
+  friend bool ::enable_rtl_dump_file (void);
+
+  /* Grant access to opt_info_enable_passes.  */
+  friend int ::opt_info_switch_p (const char *arg);
+
+}; // class dump_manager
+
+} // namespace gcc
 
 #endif /* GCC_DUMPFILE_H */

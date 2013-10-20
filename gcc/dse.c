@@ -2916,8 +2916,8 @@ dse_step2_nospill (void)
       if (group == clear_alias_group)
 	continue;
 
-      memset (group->offset_map_n, 0, sizeof(int) * group->offset_map_size_n);
-      memset (group->offset_map_p, 0, sizeof(int) * group->offset_map_size_p);
+      memset (group->offset_map_n, 0, sizeof (int) * group->offset_map_size_n);
+      memset (group->offset_map_p, 0, sizeof (int) * group->offset_map_size_p);
       bitmap_clear (group->group_kill);
 
       EXECUTE_IF_SET_IN_BITMAP (group->store2_n, 0, j, bi)
@@ -3749,8 +3749,8 @@ const pass_data pass_data_rtl_dse1 =
 class pass_rtl_dse1 : public rtl_opt_pass
 {
 public:
-  pass_rtl_dse1(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_dse1, ctxt)
+  pass_rtl_dse1 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_dse1, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3787,8 +3787,8 @@ const pass_data pass_data_rtl_dse2 =
 class pass_rtl_dse2 : public rtl_opt_pass
 {
 public:
-  pass_rtl_dse2(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_rtl_dse2, ctxt)
+  pass_rtl_dse2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_rtl_dse2, ctxt)
   {}
 
   /* opt_pass methods: */

@@ -129,7 +129,7 @@ extern int errno;
 #define gcc_unreachable() (abort ())
 
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
-#define CONST_CAST(TYPE,X) CONST_CAST2(TYPE, const TYPE, (X))
+#define CONST_CAST(TYPE,X) CONST_CAST2 (TYPE, const TYPE, (X))
 
 /* Filename handling macros.  */
 #include "filenames.h"

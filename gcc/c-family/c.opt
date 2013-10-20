@@ -855,10 +855,6 @@ fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
 Enable Cilk Plus
 
-fcheck-new
-C++ ObjC++ Var(flag_check_new)
-Check the return value of new
-
 fcond-mismatch
 C ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types

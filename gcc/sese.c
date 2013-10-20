@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "hash-table.h"
+#include "tree.h"
 #include "tree-pretty-print.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
@@ -32,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "value-prof.h"
 #include "sese.h"
+#include "tree-ssa-propagate.h"
 
 /* Print to stderr the element ELT.  */
 

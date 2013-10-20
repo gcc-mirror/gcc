@@ -392,7 +392,7 @@ static struct queue_elem *
 queue_pattern (rtx pattern, struct queue_elem ***list_tail,
 	       const char *filename, int lineno)
 {
-  struct queue_elem *e = XNEW(struct queue_elem);
+  struct queue_elem *e = XNEW (struct queue_elem);
   e->data = pattern;
   e->filename = filename;
   e->lineno = lineno;
@@ -429,7 +429,7 @@ remove_from_queue (struct queue_elem *elem, struct queue_elem **queue)
 static void
 add_define_attr (const char *name)
 {
-  struct queue_elem *e = XNEW(struct queue_elem);
+  struct queue_elem *e = XNEW (struct queue_elem);
   rtx t1 = rtx_alloc (DEFINE_ATTR);
   XSTR (t1, 0) = name;
   XSTR (t1, 1) = "no,yes";
@@ -2445,14 +2445,29 @@ gen_mnemonic_attr (void)
       bool found = false;
 
       /* Check if the insn definition already has
-	 (set_attr "mnemonic" ...).  */
+	 (set_attr "mnemonic" ...) or (set (attr "mnemonic") ...).  */
       if (XVEC (insn, 4))
  	for (i = 0; i < XVECLEN (insn, 4); i++)
-	  if (strcmp (XSTR (XVECEXP (insn, 4, i), 0), MNEMONIC_ATTR_NAME) == 0)
-	    {
-	      found = true;
-	      break;
-	    }
+	  {
+	    rtx set_attr = XVECEXP (insn, 4, i);
+
+	    switch (GET_CODE (set_attr))
+	      {
+	      case SET_ATTR:
+	      case SET_ATTR_ALTERNATIVE:
+		if (strcmp (XSTR (set_attr, 0), MNEMONIC_ATTR_NAME) == 0)
+		  found = true;
+		break;
+	      case SET:
+		if (GET_CODE (SET_DEST (set_attr)) == ATTR
+		    && strcmp (XSTR (SET_DEST (set_attr), 0),
+			       MNEMONIC_ATTR_NAME) == 0)
+		  found = true;
+		break;
+	      default:
+		break;
+	      }
+	  }
 
       if (!found)
 	gen_mnemonic_setattr (mnemonic_htab, insn);
@@ -2876,7 +2891,7 @@ record_insn_name (int code, const char *name)
       new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
       insn_name_ptr = XRESIZEVEC (char *, insn_name_ptr, new_size);
       memset (insn_name_ptr + insn_name_ptr_size, 0,
-	      sizeof(char *) * (new_size - insn_name_ptr_size));
+	      sizeof (char *) * (new_size - insn_name_ptr_size));
       insn_name_ptr_size = new_size;
     }
 

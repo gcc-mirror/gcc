@@ -1264,7 +1264,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_range_check(size_type __n) const
       {
 	if (__n >= this->size())
-	  __throw_out_of_range(__N("deque::_M_range_check"));
+	  __throw_out_of_range_fmt(__N("deque::_M_range_check: __n "
+				       "(which is %zu)>= this->size() "
+				       "(which is %zu)"),
+				   __n, this->size());
       }
 
     public:

@@ -59,6 +59,8 @@
    UNSPEC_VSUMSWS
    UNSPEC_VPERM
    UNSPEC_VPERM_UNS
+   UNSPEC_VPERM_X
+   UNSPEC_VPERM_UNS_X
    UNSPEC_VRFIN
    UNSPEC_VCFUX
    UNSPEC_VCFSX
@@ -1279,21 +1281,91 @@
   "vrfiz %0,%1"
   [(set_attr "type" "vecfloat")])
 
-(define_insn "altivec_vperm_<mode>"
+(define_insn_and_split "altivec_vperm_<mode>"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
 		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM_X))]
+  "TARGET_ALTIVEC"
+  "#"
+  "!reload_in_progress && !reload_completed"
+  [(set (match_dup 0) (match_dup 4))]
+{
+  if (BYTES_BIG_ENDIAN)
+    operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                  gen_rtvec (3, operands[1],
+ 		                             operands[2], operands[3]),
+                                  UNSPEC_VPERM);
+  else
+    {
+      /* We want to subtract from 31, but we can't vspltisb 31 since
+         it's out of range.  -1 works as well because only the low-order
+         five bits of the permute control vector elements are used.  */
+      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+                                         gen_rtx_CONST_INT (QImode, -1));
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, splat);
+      rtx sel = gen_rtx_MINUS (V16QImode, tmp, operands[3]);
+      emit_move_insn (tmp, sel);
+      operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                    gen_rtvec (3, operands[2],
+		 		               operands[1], tmp),
+		                    UNSPEC_VPERM);
+    }
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vperm_<mode>_internal"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "+v")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
-(define_insn "altivec_vperm_<mode>_uns"
+(define_insn_and_split "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
 		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM_UNS_X))]
+  "TARGET_ALTIVEC"
+  "#"
+  "!reload_in_progress && !reload_completed"
+  [(set (match_dup 0) (match_dup 4))]
+{
+  if (BYTES_BIG_ENDIAN)
+    operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                  gen_rtvec (3, operands[1],
+				             operands[2], operands[3]),
+                                  UNSPEC_VPERM_UNS);
+  else
+    {
+      /* We want to subtract from 31, but we can't vspltisb 31 since
+         it's out of range.  -1 works as well because only the low-order
+         five bits of the permute control vector elements are used.  */
+      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+                                         gen_rtx_CONST_INT (QImode, -1));
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, splat);
+      rtx sel = gen_rtx_MINUS (V16QImode, tmp, operands[3]);
+      emit_move_insn (tmp, sel);
+      operands[4] = gen_rtx_UNSPEC (<MODE>mode,
+                                    gen_rtvec (3, operands[2],
+				               operands[1], tmp),
+		                    UNSPEC_VPERM_UNS);
+    }
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vperm_<mode>_uns_internal"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "+v")]
 		   UNSPEC_VPERM_UNS))]
   "TARGET_ALTIVEC"
   "vperm %0,%1,%2,%3"
@@ -1306,7 +1378,12 @@
 		       (match_operand:V16QI 3 "register_operand" "")]
 		      UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
-  "")
+{
+  if (!BYTES_BIG_ENDIAN) {
+    altivec_expand_vec_perm_le (operands);
+    DONE;
+  }
+})
 
 (define_expand "vec_perm_constv16qi"
   [(match_operand:V16QI 0 "register_operand" "")
@@ -1958,25 +2035,26 @@
   rtx vzero = gen_reg_rtx (V8HImode);
   rtx mask = gen_reg_rtx (V16QImode);
   rtvec v = rtvec_alloc (16);
+  bool be = BYTES_BIG_ENDIAN;
    
   emit_insn (gen_altivec_vspltish (vzero, const0_rtx));
    
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 0);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 1);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 2);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 3);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 5);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 6);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 7);
+  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 :  7);
+  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ?  0 : 16);
+  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ? 16 :  6);
+  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  1 : 16);
+  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 :  5);
+  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ?  2 : 16);
+  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 16 :  4);
+  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ?  3 : 16);
+  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 :  3);
+  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ?  4 : 16);
+  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 16 :  2);
+  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ?  5 : 16);
+  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  1);
+  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ?  6 : 16);
+  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  0);
+  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
   emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
@@ -1993,25 +2071,26 @@
   rtx vzero = gen_reg_rtx (V4SImode);
   rtx mask = gen_reg_rtx (V16QImode);
   rtvec v = rtvec_alloc (16);
+  bool be = BYTES_BIG_ENDIAN;
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
  
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 0);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 1);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 2);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 3);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 4);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 5);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 6);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 7);
+  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 :  7);
+  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ? 17 :  6);
+  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ?  0 : 17);
+  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  1 : 16);
+  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 :  5);
+  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 17 :  4);
+  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ?  2 : 17);
+  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ?  3 : 16);
+  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 :  3);
+  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 17 :  2);
+  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ?  4 : 17);
+  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ?  5 : 16);
+  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  1);
+  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 17 :  0);
+  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ?  6 : 17);
+  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
   emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
@@ -2028,25 +2107,26 @@
   rtx vzero = gen_reg_rtx (V8HImode);
   rtx mask = gen_reg_rtx (V16QImode);
   rtvec v = rtvec_alloc (16);
+  bool be = BYTES_BIG_ENDIAN;
 
   emit_insn (gen_altivec_vspltish (vzero, const0_rtx));
 
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 8);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 9);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 10);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 11);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 13);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 14);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 15);
+  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 : 15);
+  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ?  8 : 16);
+  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ? 16 : 14);
+  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  9 : 16);
+  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 : 13);
+  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 10 : 16);
+  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 16 : 12);
+  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ? 11 : 16);
+  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 : 11);
+  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 12 : 16);
+  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 16 : 10);
+  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ? 13 : 16);
+  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  9);
+  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 14 : 16);
+  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  8);
+  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
   emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
@@ -2063,25 +2143,26 @@
   rtx vzero = gen_reg_rtx (V4SImode);
   rtx mask = gen_reg_rtx (V16QImode);
   rtvec v = rtvec_alloc (16);
+  bool be = BYTES_BIG_ENDIAN;
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
  
-  RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 2) = gen_rtx_CONST_INT (QImode, 8);
-  RTVEC_ELT (v, 3) = gen_rtx_CONST_INT (QImode, 9);
-  RTVEC_ELT (v, 4) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 5) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 6) = gen_rtx_CONST_INT (QImode, 10);
-  RTVEC_ELT (v, 7) = gen_rtx_CONST_INT (QImode, 11);
-  RTVEC_ELT (v, 8) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 9) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, 12);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, 13);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, 16);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, 17);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, 14);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, 15);
+  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 : 15);
+  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ? 17 : 14);
+  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ?  8 : 17);
+  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  9 : 16);
+  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 : 13);
+  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 17 : 12);
+  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 10 : 17);
+  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ? 11 : 16);
+  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 : 11);
+  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 17 : 10);
+  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 12 : 17);
+  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ? 13 : 16);
+  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  9);
+  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 17 :  8);
+  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 14 : 17);
+  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
   emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));

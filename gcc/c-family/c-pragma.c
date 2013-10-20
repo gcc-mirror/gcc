@@ -874,7 +874,7 @@ handle_pragma_optimize (cpp_reader *ARG_UNUSED(dummy))
 
       parse_optimize_options (args, false);
       current_optimize_pragma = chainon (current_optimize_pragma, args);
-      optimization_current_node = build_optimization_node ();
+      optimization_current_node = build_optimization_node (&global_options);
       c_cpp_builtins_optimize_pragma (parse_in,
 				      optimization_previous_node,
 				      optimization_current_node);
@@ -916,8 +916,8 @@ handle_pragma_push_options (cpp_reader *ARG_UNUSED(dummy))
   options_stack = p;
 
   /* Save optimization and target flags in binary format.  */
-  p->optimize_binary = build_optimization_node ();
-  p->target_binary = build_target_option_node ();
+  p->optimize_binary = build_optimization_node (&global_options);
+  p->target_binary = build_target_option_node (&global_options);
 
   /* Save optimization and target flags in string list format.  */
   p->optimize_strings = copy_list (current_optimize_pragma);
@@ -1169,7 +1169,12 @@ struct omp_pragma_def { const char *name; unsigned int id; };
 static const struct omp_pragma_def omp_pragmas[] = {
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
+  { "cancel", PRAGMA_OMP_CANCEL },
+  { "cancellation", PRAGMA_OMP_CANCELLATION_POINT },
   { "critical", PRAGMA_OMP_CRITICAL },
+  { "declare", PRAGMA_OMP_DECLARE_REDUCTION },
+  { "distribute", PRAGMA_OMP_DISTRIBUTE },
+  { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
   { "for", PRAGMA_OMP_FOR },
   { "master", PRAGMA_OMP_MASTER },
@@ -1177,10 +1182,14 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
+  { "simd", PRAGMA_OMP_SIMD },
   { "single", PRAGMA_OMP_SINGLE },
+  { "target", PRAGMA_OMP_TARGET },
   { "task", PRAGMA_OMP_TASK },
+  { "taskgroup", PRAGMA_OMP_TASKGROUP },
   { "taskwait", PRAGMA_OMP_TASKWAIT },
   { "taskyield", PRAGMA_OMP_TASKYIELD },
+  { "teams", PRAGMA_OMP_TEAMS },
   { "threadprivate", PRAGMA_OMP_THREADPRIVATE }
 };
 

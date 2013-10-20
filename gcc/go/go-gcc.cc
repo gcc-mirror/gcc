@@ -29,6 +29,8 @@
 #include "gimple.h"
 #include "toplev.h"
 #include "output.h"
+#include "real.h"
+#include "realmpfr.h"
 
 #include "go-c.h"
 
@@ -208,6 +210,34 @@ class Gcc_backend : public Backend
   Bexpression*
   zero_expression(Btype*);
 
+  Bexpression*
+  error_expression()
+  { return this->make_expression(error_mark_node); }
+
+  Bexpression*
+  var_expression(Bvariable* var, Location);
+
+  Bexpression*
+  indirect_expression(Bexpression* expr, bool known_valid, Location);
+
+  Bexpression*
+  integer_constant_expression(Btype* btype, mpz_t val);
+
+  Bexpression*
+  float_constant_expression(Btype* btype, mpfr_t val);
+
+  Bexpression*
+  complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag);
+
+  Bexpression*
+  convert_expression(Btype* type, Bexpression* expr, Location);
+
+  Bexpression*
+  function_code_expression(Bfunction*, Location);
+
+  Bexpression*
+  address_expression(Bexpression*, Location);
+
   // Statements.
 
   Bstatement*
@@ -310,6 +340,17 @@ class Gcc_backend : public Backend
   Bexpression*
   label_address(Blabel*, Location);
 
+  // Functions.
+
+  Bfunction*
+  error_function()
+  { return this->make_function(error_mark_node); }
+
+  Bfunction*
+  function(Btype* fntype, const std::string& name, const std::string& asm_name,
+           bool is_visible, bool is_declaration, bool is_inlinable,
+           bool disable_split_stack, bool in_unique_section, Location);
+
  private:
   // Make a Bexpression from a tree.
   Bexpression*
@@ -325,6 +366,10 @@ class Gcc_backend : public Backend
   Btype*
   make_type(tree t)
   { return new Btype(t); }
+
+  Bfunction*
+  make_function(tree t)
+  { return new Bfunction(t); }
 
   Btype*
   fill_in_struct(Btype*, const std::vector<Btyped_identifier>&);
@@ -845,6 +890,126 @@ Gcc_backend::zero_expression(Btype* btype)
   else
     ret = build_zero_cst(t);
   return tree_to_expr(ret);
+}
+
+// An expression that references a variable.
+
+Bexpression*
+Gcc_backend::var_expression(Bvariable* var, Location)
+{
+  tree ret = var->get_tree();
+  if (ret == error_mark_node)
+    return this->error_expression();
+  return tree_to_expr(ret);
+}
+
+// An expression that indirectly references an expression.
+
+Bexpression*
+Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
+                                 Location location)
+{
+  tree ret = build_fold_indirect_ref_loc(location.gcc_location(),
+                                         expr->get_tree());
+  if (known_valid)
+    TREE_THIS_NOTRAP(ret) = 1;
+  return tree_to_expr(ret);
+}
+
+// Return a typed value as a constant integer.
+
+Bexpression*
+Gcc_backend::integer_constant_expression(Btype* btype, mpz_t val)
+{
+  tree t = btype->get_tree();
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  tree ret = double_int_to_tree(t, mpz_get_double_int(t, val, true));
+  return tree_to_expr(ret);
+}
+
+// Return a typed value as a constant floating-point number.
+
+Bexpression*
+Gcc_backend::float_constant_expression(Btype* btype, mpfr_t val)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  REAL_VALUE_TYPE r1;
+  real_from_mpfr(&r1, val, t, GMP_RNDN);
+  REAL_VALUE_TYPE r2;
+  real_convert(&r2, TYPE_MODE(t), &r1);
+  ret = build_real(t, r2);
+  return tree_to_expr(ret);
+}
+
+// Return a typed real and imaginary value as a constant complex number.
+
+Bexpression*
+Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    return this->error_expression();
+
+  REAL_VALUE_TYPE r1;
+  real_from_mpfr(&r1, real, TREE_TYPE(t), GMP_RNDN);
+  REAL_VALUE_TYPE r2;
+  real_convert(&r2, TYPE_MODE(TREE_TYPE(t)), &r1);
+
+  REAL_VALUE_TYPE r3;
+  real_from_mpfr(&r3, imag, TREE_TYPE(t), GMP_RNDN);
+  REAL_VALUE_TYPE r4;
+  real_convert(&r4, TYPE_MODE(TREE_TYPE(t)), &r3);
+
+  ret = build_complex(t, build_real(TREE_TYPE(t), r2),
+                      build_real(TREE_TYPE(t), r4));
+  return tree_to_expr(ret);
+}
+
+// An expression that converts an expression to a different type.
+
+Bexpression*
+Gcc_backend::convert_expression(Btype* type, Bexpression* expr, Location)
+{
+  tree type_tree = type->get_tree();
+  tree expr_tree = expr->get_tree();
+  if (type_tree == error_mark_node || expr_tree == error_mark_node)
+    return this->error_expression();
+
+  tree ret = fold_convert(type_tree, expr_tree);
+  return tree_to_expr(ret);
+}
+
+// Get the address of a function.
+
+Bexpression*
+Gcc_backend::function_code_expression(Bfunction* bfunc, Location location)
+{
+  tree func = bfunc->get_tree();
+  if (func == error_mark_node)
+    return this->error_expression();
+
+  tree ret = build_fold_addr_expr_loc(location.gcc_location(), func);
+  return this->make_expression(ret);
+}
+
+// Get the address of an expression.
+
+Bexpression*
+Gcc_backend::address_expression(Bexpression* bexpr, Location location)
+{
+  tree expr = bexpr->get_tree();
+  if (expr == error_mark_node)
+    return this->error_expression();
+
+  tree ret = build_fold_addr_expr_loc(location.gcc_location(), expr);
+  return this->make_expression(ret);
 }
 
 // An expression as a statement.
@@ -1605,6 +1770,56 @@ Gcc_backend::label_address(Blabel* label, Location location)
   return this->make_expression(ret);
 }
 
+// Declare or define a new function.
+
+Bfunction*
+Gcc_backend::function(Btype* fntype, const std::string& name,
+                      const std::string& asm_name, bool is_visible,
+                      bool is_declaration, bool is_inlinable,
+                      bool disable_split_stack, bool in_unique_section,
+                      Location location)
+{
+  tree functype = fntype->get_tree();
+  if (functype != error_mark_node)
+    {
+      gcc_assert(FUNCTION_POINTER_TYPE_P(functype));
+      functype = TREE_TYPE(functype);
+    }
+  tree id = get_identifier_from_string(name);
+  if (functype == error_mark_node || id == error_mark_node)
+    return this->error_function();
+
+  tree decl = build_decl(location.gcc_location(), FUNCTION_DECL, id, functype);
+  if (!asm_name.empty())
+    SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+  if (is_visible)
+    TREE_PUBLIC(decl) = 1;
+  if (is_declaration)
+    DECL_EXTERNAL(decl) = 1;
+  else
+    {
+      tree restype = TREE_TYPE(functype);
+      tree resdecl =
+          build_decl(location.gcc_location(), RESULT_DECL, NULL_TREE, restype);
+      DECL_ARTIFICIAL(resdecl) = 1;
+      DECL_IGNORED_P(resdecl) = 1;
+      DECL_CONTEXT(resdecl) = decl;
+      DECL_RESULT(decl) = resdecl;
+    }
+  if (!is_inlinable)
+    DECL_UNINLINABLE(decl) = 1;
+  if (disable_split_stack)
+    {
+      tree attr = get_identifier("__no_split_stack__");
+      DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
+    }
+  if (in_unique_section)
+    resolve_unique_section(decl, 0, 1);
+
+  go_preserve_from_gc(decl);
+  return new Bfunction(decl);
+}
+
 // The single backend.
 
 static Gcc_backend gcc_backend;
@@ -1679,4 +1894,10 @@ tree
 var_to_tree(Bvariable* bv)
 {
   return bv->get_tree();
+}
+
+tree
+function_to_tree(Bfunction* bf)
+{
+  return bf->get_tree();
 }

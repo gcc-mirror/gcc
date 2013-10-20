@@ -24,13 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "function.h"
 
-/* Type we use to hold basic block counters.  Should be at least
+/* Use gcov_type to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
    type, because erroneous negative counts can be generated when the
    flow graph is manipulated by various optimizations.  A signed type
    makes those easy to detect.  */
-typedef HOST_WIDEST_INT gcov_type;
-typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 
 /* Control flow edge information.  */
 struct GTY((user)) edge_def {
@@ -214,8 +212,8 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
    struct rtl_bb_info, so that inlining the former into basic_block_def
    is the better choice.  */
 typedef int __assert_gimple_bb_smaller_rtl_bb
-              [(int)sizeof(struct rtl_bb_info)
-               - (int)sizeof (struct gimple_bb_info)];
+              [(int) sizeof (struct rtl_bb_info)
+               - (int) sizeof (struct gimple_bb_info)];
 
 
 #define BB_FREQ_MAX 10000
@@ -324,9 +322,9 @@ struct GTY(()) control_flow_graph {
 #define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
 
 #define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  ((*basic_block_info_for_function(FN))[(N)])
+  ((*basic_block_info_for_function (FN))[(N)])
 #define SET_BASIC_BLOCK_FOR_FUNCTION(FN,N,BB) \
-  ((*basic_block_info_for_function(FN))[(N)] = (BB))
+  ((*basic_block_info_for_function (FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
 #define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
@@ -353,7 +351,7 @@ struct GTY(()) control_flow_graph {
 #define FOR_EACH_BB_REVERSE_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
 
-#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN(BB, cfun)
+#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN (BB, cfun)
 
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
@@ -479,7 +477,7 @@ private:
   void clear_control_dependence_bitmap (basic_block);
   void find_control_dependence (int);
   vec<bitmap> control_dependence_map;
-  edge_list *el;
+  edge_list *m_el;
 };
 
 /* The base value for branch probability notes and edge probabilities.  */
@@ -803,6 +801,7 @@ extern int dfs_enumerate_from (basic_block, int,
 			       basic_block *, int, const void *);
 extern void compute_dominance_frontiers (struct bitmap_head_def *);
 extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
+extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */
 extern rtx block_label (basic_block);
@@ -951,7 +950,7 @@ extern void default_rtl_profile (void);
 
 /* In profile.c.  */
 typedef struct gcov_working_set_info gcov_working_set_t;
-extern gcov_working_set_t *find_working_set(unsigned pct_times_10);
+extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
 
 /* Check tha probability is sane.  */
 

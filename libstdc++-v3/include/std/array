@@ -180,7 +180,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       at(size_type __n)
       {
 	if (__n >= _Nm)
-	  std::__throw_out_of_range(__N("array::at"));
+	  std::__throw_out_of_range_fmt(__N("array::at: __n (which is %zu) "
+					    ">= _Nm (which is %zu)"),
+					__n, _Nm);
 	return _AT_Type::_S_ref(_M_elems, __n);
       }
 
@@ -190,7 +192,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	// Result of conditional expression must be an lvalue so use
 	// boolean ? lvalue : (throw-expr, lvalue)
 	return __n < _Nm ? _AT_Type::_S_ref(_M_elems, __n)
-	  : (std::__throw_out_of_range(__N("array::at")),
+	  : (std::__throw_out_of_range_fmt(__N("array::at: __n (which is %zu) "
+					       ">= _Nm (which is %zu)"),
+					   __n, _Nm),
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 

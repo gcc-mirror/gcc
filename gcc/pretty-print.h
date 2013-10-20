@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "obstack.h"
 #include "input.h"
+#include "wide-int-print.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
@@ -261,6 +262,13 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
 #define pp_unsigned_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_UNSIGNED, (unsigned HOST_WIDE_INT) I)
+#define pp_wide_int(PP, W, SGN)					\
+  do								\
+    {								\
+      print_dec (W, pp_buffer (PP)->digit_buffer, SGN);		\
+      pp_string (PP, pp_buffer (PP)->digit_buffer);		\
+    }								\
+  while (0)
 #define pp_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_widest_integer(PP, I) \

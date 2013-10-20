@@ -275,11 +275,11 @@ get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
   if (!counts)
     return NULL;
 
-  get_working_sets();
+  get_working_sets ();
 
   if (dump_file && profile_info)
-    fprintf(dump_file, "Merged %u profiles with maximal count %u.\n",
-	    profile_info->runs, (unsigned) profile_info->sum_max);
+    fprintf (dump_file, "Merged %u profiles with maximal count %u.\n",
+	     profile_info->runs, (unsigned) profile_info->sum_max);
 
   return counts;
 }
@@ -976,7 +976,7 @@ branch_prob (void)
   unsigned num_edges, ignored_edges;
   unsigned num_instrumented;
   struct edge_list *el;
-  histogram_values values = histogram_values();
+  histogram_values values = histogram_values ();
   unsigned cfg_checksum, lineno_checksum;
 
   total_num_times_called++;

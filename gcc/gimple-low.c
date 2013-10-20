@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-pass.h"
 #include "langhooks.h"
+#include "gimple-low.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:
@@ -118,7 +119,8 @@ lower_function_body (void)
      need to do anything special.  Otherwise build one by hand.  */
   if (gimple_seq_may_fallthru (lowered_body)
       && (data.return_statements.is_empty ()
-	  || gimple_return_retval (data.return_statements.last().stmt) != NULL))
+	  || (gimple_return_retval (data.return_statements.last().stmt)
+	      != NULL)))
     {
       x = gimple_build_return (NULL);
       gimple_set_location (x, cfun->function_end_locus);
@@ -197,8 +199,8 @@ const pass_data pass_data_lower_cf =
 class pass_lower_cf : public gimple_opt_pass
 {
 public:
-  pass_lower_cf(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_lower_cf, ctxt)
+  pass_lower_cf (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_cf, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -212,103 +214,6 @@ gimple_opt_pass *
 make_pass_lower_cf (gcc::context *ctxt)
 {
   return new pass_lower_cf (ctxt);
-}
-
-
-
-/* Verify if the type of the argument matches that of the function
-   declaration.  If we cannot verify this or there is a mismatch,
-   return false.  */
-
-static bool
-gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
-{
-  tree parms, p;
-  unsigned int i, nargs;
-
-  /* Calls to internal functions always match their signature.  */
-  if (gimple_call_internal_p (stmt))
-    return true;
-
-  nargs = gimple_call_num_args (stmt);
-
-  /* Get argument types for verification.  */
-  if (fndecl)
-    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  else
-    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
-
-  /* Verify if the type of the argument matches that of the function
-     declaration.  If we cannot verify this or there is a mismatch,
-     return false.  */
-  if (fndecl && DECL_ARGUMENTS (fndecl))
-    {
-      for (i = 0, p = DECL_ARGUMENTS (fndecl);
-	   i < nargs;
-	   i++, p = DECL_CHAIN (p))
-	{
-	  tree arg;
-	  /* We cannot distinguish a varargs function from the case
-	     of excess parameters, still deferring the inlining decision
-	     to the callee is possible.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (p == error_mark_node
-	      || arg == error_mark_node
-	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
-            return false;
-	}
-      if (args_count_match && p)
-	return false;
-    }
-  else if (parms)
-    {
-      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
-	{
-	  tree arg;
-	  /* If this is a varargs function defer inlining decision
-	     to callee.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (TREE_VALUE (p) == error_mark_node
-	      || arg == error_mark_node
-	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
-	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (TREE_VALUE (p), arg)))
-            return false;
-	}
-    }
-  else
-    {
-      if (nargs != 0)
-        return false;
-    }
-  return true;
-}
-
-/* Verify if the type of the argument and lhs of CALL_STMT matches
-   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
-   true, the arg count needs to be the same.
-   If we cannot verify this or there is a mismatch, return false.  */
-
-bool
-gimple_check_call_matching_types (gimple call_stmt, tree callee,
-				  bool args_count_match)
-{
-  tree lhs;
-
-  if ((DECL_RESULT (callee)
-       && !DECL_BY_REFERENCE (DECL_RESULT (callee))
-       && (lhs = gimple_call_lhs (call_stmt)) != NULL_TREE
-       && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
-                                      TREE_TYPE (lhs))
-       && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
-      || !gimple_check_call_args (call_stmt, callee, args_count_match))
-    return false;
-  return true;
 }
 
 /* Lower sequence SEQ.  Unlike gimplification the statements are not relowered
@@ -424,6 +329,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_RETURN:
@@ -465,6 +371,8 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
       data->cannot_fallthru = false;
       lower_omp_directive (gsi, data);
       data->cannot_fallthru = false;
@@ -597,56 +505,9 @@ lower_try_catch (gimple_stmt_iterator *gsi, struct lower_data *data)
   gsi_next (gsi);
 }
 
+
 /* Try to determine whether a TRY_CATCH expression can fall through.
-   This is a subroutine of block_may_fallthru.  */
-
-static bool
-try_catch_may_fallthru (const_tree stmt)
-{
-  tree_stmt_iterator i;
-
-  /* If the TRY block can fall through, the whole TRY_CATCH can
-     fall through.  */
-  if (block_may_fallthru (TREE_OPERAND (stmt, 0)))
-    return true;
-
-  i = tsi_start (TREE_OPERAND (stmt, 1));
-  switch (TREE_CODE (tsi_stmt (i)))
-    {
-    case CATCH_EXPR:
-      /* We expect to see a sequence of CATCH_EXPR trees, each with a
-	 catch expression and a body.  The whole TRY_CATCH may fall
-	 through iff any of the catch bodies falls through.  */
-      for (; !tsi_end_p (i); tsi_next (&i))
-	{
-	  if (block_may_fallthru (CATCH_BODY (tsi_stmt (i))))
-	    return true;
-	}
-      return false;
-
-    case EH_FILTER_EXPR:
-      /* The exception filter expression only matters if there is an
-	 exception.  If the exception does not match EH_FILTER_TYPES,
-	 we will execute EH_FILTER_FAILURE, and we will fall through
-	 if that falls through.  If the exception does match
-	 EH_FILTER_TYPES, the stack unwinder will continue up the
-	 stack, so we will not fall through.  We don't know whether we
-	 will throw an exception which matches EH_FILTER_TYPES or not,
-	 so we just ignore EH_FILTER_TYPES and assume that we might
-	 throw an exception which doesn't match.  */
-      return block_may_fallthru (EH_FILTER_FAILURE (tsi_stmt (i)));
-
-    default:
-      /* This case represents statements to be executed when an
-	 exception occurs.  Those statements are implicitly followed
-	 by a RESX statement to resume execution after the exception.
-	 So in this case the TRY_CATCH never falls through.  */
-      return false;
-    }
-}
-
-
-/* Same as above, but for a GIMPLE_TRY_CATCH.  */
+   This is a subroutine of gimple_stmt_may_fallthru.  */
 
 static bool
 gimple_try_catch_may_fallthru (gimple stmt)
@@ -693,81 +554,6 @@ gimple_try_catch_may_fallthru (gimple stmt)
 	 by a GIMPLE_RESX to resume execution after the exception.  So
 	 in this case the try/catch never falls through.  */
       return false;
-    }
-}
-
-
-/* Try to determine if we can fall out of the bottom of BLOCK.  This guess
-   need not be 100% accurate; simply be conservative and return true if we
-   don't know.  This is used only to avoid stupidly generating extra code.
-   If we're wrong, we'll just delete the extra code later.  */
-
-bool
-block_may_fallthru (const_tree block)
-{
-  /* This CONST_CAST is okay because expr_last returns its argument
-     unmodified and we assign it to a const_tree.  */
-  const_tree stmt = expr_last (CONST_CAST_TREE(block));
-
-  switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
-    {
-    case GOTO_EXPR:
-    case RETURN_EXPR:
-      /* Easy cases.  If the last statement of the block implies
-	 control transfer, then we can't fall through.  */
-      return false;
-
-    case SWITCH_EXPR:
-      /* If SWITCH_LABELS is set, this is lowered, and represents a
-	 branch to a selected label and hence can not fall through.
-	 Otherwise SWITCH_BODY is set, and the switch can fall
-	 through.  */
-      return SWITCH_LABELS (stmt) == NULL_TREE;
-
-    case COND_EXPR:
-      if (block_may_fallthru (COND_EXPR_THEN (stmt)))
-	return true;
-      return block_may_fallthru (COND_EXPR_ELSE (stmt));
-
-    case BIND_EXPR:
-      return block_may_fallthru (BIND_EXPR_BODY (stmt));
-
-    case TRY_CATCH_EXPR:
-      return try_catch_may_fallthru (stmt);
-
-    case TRY_FINALLY_EXPR:
-      /* The finally clause is always executed after the try clause,
-	 so if it does not fall through, then the try-finally will not
-	 fall through.  Otherwise, if the try clause does not fall
-	 through, then when the finally clause falls through it will
-	 resume execution wherever the try clause was going.  So the
-	 whole try-finally will only fall through if both the try
-	 clause and the finally clause fall through.  */
-      return (block_may_fallthru (TREE_OPERAND (stmt, 0))
-	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
-
-    case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
-	stmt = TREE_OPERAND (stmt, 1);
-      else
-	return true;
-      /* FALLTHRU */
-
-    case CALL_EXPR:
-      /* Functions that do not return do not fall through.  */
-      return (call_expr_flags (stmt) & ECF_NORETURN) == 0;
-
-    case CLEANUP_POINT_EXPR:
-      return block_may_fallthru (TREE_OPERAND (stmt, 0));
-
-    case TARGET_EXPR:
-      return block_may_fallthru (TREE_OPERAND (stmt, 1));
-
-    case ERROR_MARK:
-      return true;
-
-    default:
-      return lang_hooks.block_may_fallthru (stmt);
     }
 }
 

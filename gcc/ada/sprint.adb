@@ -800,6 +800,7 @@ package body Sprint is
             --  do not duplicate the output at this point.
 
             if Nkind (Node) = N_Freeze_Entity
+              or else Nkind (Node) = N_Freeze_Generic_Entity
               or else Nkind (Node) = N_Implicit_Label_Declaration
             then
                Sprint_Node_Actual (Node);
@@ -1860,6 +1861,16 @@ package body Sprint is
                end if;
 
                Write_Rewrite_Str (">>>");
+            end if;
+
+         when N_Freeze_Generic_Entity =>
+            if Dump_Original_Only then
+               null;
+
+            else
+               Write_Indent;
+               Write_Str_With_Col_Check_Sloc ("freeze_generic ");
+               Write_Id (Entity (Node));
             end if;
 
          when N_Full_Type_Declaration =>

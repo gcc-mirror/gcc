@@ -48,8 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "params.h"
 #include "hash-table.h"
+#include "tree-ssa-address.h"
 #include "wide-int-print.h"
-
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the
@@ -381,6 +381,7 @@ static bool address_arithmetic_p;
 /* Forward function declarations.  */
 static slsr_cand_t base_cand_from_table (tree);
 static tree introduce_cast_before_cand (slsr_cand_t, tree, tree);
+static bool legal_cast_p_1 (tree, tree);
 
 /* Produce a pointer to the IDX'th candidate in the candidate vector.  */
 
@@ -770,6 +771,14 @@ backtrace_base_for_ref (tree *pbase)
   slsr_cand_t base_cand;
 
   STRIP_NOPS (base_in);
+
+  /* Strip off widening conversion(s) to handle cases where
+     e.g. 'B' is widened from an 'int' in order to calculate
+     a 64-bit address.  */
+  if (CONVERT_EXPR_P (base_in)
+      && legal_cast_p_1 (base_in, TREE_OPERAND (base_in, 0)))
+    base_in = get_unwidened (base_in, NULL_TREE);
+
   if (TREE_CODE (base_in) != SSA_NAME)
     return 0;
 
@@ -788,7 +797,7 @@ backtrace_base_for_ref (tree *pbase)
       else if (base_cand->kind == CAND_ADD
 	       && TREE_CODE (base_cand->stride) == INTEGER_CST
 	       && integer_onep (base_cand->stride))
-        {
+	{
 	  /* X = B + (i * S), S is integer one.  */
 	  *pbase = base_cand->base_expr;
 	  return base_cand->index;
@@ -3561,8 +3570,8 @@ const pass_data pass_data_strength_reduction =
 class pass_strength_reduction : public gimple_opt_pass
 {
 public:
-  pass_strength_reduction(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_strength_reduction, ctxt)
+  pass_strength_reduction (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strength_reduction, ctxt)
   {}
 
   /* opt_pass methods: */

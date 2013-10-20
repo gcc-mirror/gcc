@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-  typedef int _StateIdT;
+  typedef long _StateIdT;
   typedef std::set<_StateIdT> _StateSet;
   static const _StateIdT _S_invalid_state_id  = -1;
 
@@ -49,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Operation codes that define the type of transitions within the base NFA
   /// that represents the regular expression.
-  enum _Opcode
+  enum _Opcode : int
   {
       _S_opcode_unknown,
       _S_opcode_alternative,
@@ -69,15 +69,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _State
     {
     public:
-      typedef int                        _OpcodeT;
       typedef _Matcher<_CharT>           _MatcherT;
 
-      _OpcodeT     _M_opcode;           // type of outgoing transition
+      _Opcode      _M_opcode;           // type of outgoing transition
       _StateIdT    _M_next;             // outgoing transition
       union // Since they are mutually exclusive.
       {
-	unsigned int _M_subexpr;        // for _S_opcode_subexpr_*
-	unsigned int _M_backref_index;  // for _S_opcode_backref
+	size_t _M_subexpr;        // for _S_opcode_subexpr_*
+	size_t _M_backref_index;  // for _S_opcode_backref
 	struct
 	{
 	  // for _S_opcode_alternative.
@@ -91,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
       _MatcherT      _M_matches;        // for _S_opcode_match
 
-      explicit _State(_OpcodeT __opcode)
+      explicit _State(_Opcode  __opcode)
       : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
       { }
 
@@ -105,37 +104,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
-  /// Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
-  template<typename _CharT, typename _TraitsT>
-    class _Automaton
-    {
-    public:
-      typedef unsigned int _SizeT;
-
-    public:
-      virtual _SizeT
-      _M_sub_count() const = 0;
-
-#ifdef _GLIBCXX_DEBUG
-      virtual std::ostream&
-      _M_dot(std::ostream& __ostr) const = 0;
-#endif
-    };
-
   template<typename _CharT, typename _TraitsT>
     class _NFA
-    : public _Automaton<_CharT, _TraitsT>,
-      public std::vector<_State<_CharT, _TraitsT>>
+    : public std::vector<_State<_CharT, _TraitsT>>
     {
     public:
       typedef _State<_CharT, _TraitsT>            _StateT;
       typedef const _Matcher<_CharT>&             _MatcherT;
-      typedef unsigned int                        _SizeT;
+      typedef size_t                              _SizeT;
       typedef regex_constants::syntax_option_type _FlagT;
 
       _NFA(_FlagT __f)
       : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-      _M_has_backref(false), _M_quant_count(0)
+      _M_quant_count(0), _M_has_backref(false)
       { }
 
       _FlagT
@@ -203,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _StateIdT
-      _M_insert_backref(unsigned int __index);
+      _M_insert_backref(size_t __index);
 
       _StateIdT
       _M_insert_line_begin()
@@ -250,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_dot(std::ostream& __ostr) const;
 #endif
 
-      std::vector<unsigned int> _M_paren_stack;
+      std::vector<size_t>       _M_paren_stack;
       _StateSet                 _M_accepting_states;
       _FlagT                    _M_flags;
       _StateIdT                 _M_start_state;

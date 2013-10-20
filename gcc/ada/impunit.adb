@@ -253,6 +253,7 @@ package body Impunit is
     ("g-cgideb", F),  -- GNAT.CGI.Debug
     ("g-comlin", F),  -- GNAT.Command_Line
     ("g-comver", F),  -- GNAT.Compiler_Version
+    ("g-cppexc", F),  -- GNAT.CPP_Exceptions
     ("g-crc32 ", F),  -- GNAT.CRC32
     ("g-ctrl_c", F),  -- GNAT.Ctrl_C
     ("g-curexc", F),  -- GNAT.Current_Exception

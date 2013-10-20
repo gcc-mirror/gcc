@@ -923,10 +923,10 @@ set_prologue_iterations (basic_block bb_before_first_loop,
     unshare_expr (LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop)));
 
   e = single_pred_edge (bb_before_first_loop);
-  cond_bb = split_edge(e);
+  cond_bb = split_edge (e);
 
   e = single_pred_edge (bb_before_first_loop);
-  then_bb = split_edge(e);
+  then_bb = split_edge (e);
   set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
 
   e_false = make_single_succ_edge (cond_bb, bb_before_first_loop,
@@ -2449,7 +2449,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "alignment\n");
 
     }
-  free_original_copy_tables();
+  free_original_copy_tables ();
 
   /* Loop versioning violates an assumption we try to maintain during
      vectorization - that the loop exit block has a single predecessor.
@@ -2475,6 +2475,73 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       add_phi_arg (new_phi, arg, new_exit_e,
 		   gimple_phi_arg_location_from_edge (orig_phi, e));
       adjust_phi_and_debug_stmts (orig_phi, e, PHI_RESULT (new_phi));
+    }
+
+
+  /* Extract load statements on memrefs with zero-stride accesses.  */
+
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+    {
+      /* In the loop body, we iterate each statement to check if it is a load.
+	 Then we check the DR_STEP of the data reference.  If DR_STEP is zero,
+	 then we will hoist the load statement to the loop preheader.  */
+
+      basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+      int nbbs = loop->num_nodes;
+
+      for (int i = 0; i < nbbs; ++i)
+	{
+	  for (gimple_stmt_iterator si = gsi_start_bb (bbs[i]);
+	       !gsi_end_p (si);)
+	    {
+	      gimple stmt = gsi_stmt (si);
+	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	      struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+
+	      if (is_gimple_assign (stmt)
+		  && (!dr
+		      || (DR_IS_READ (dr) && integer_zerop (DR_STEP (dr)))))
+		{
+		  bool hoist = true;
+		  ssa_op_iter iter;
+		  tree var;
+
+		  /* We hoist a statement if all SSA uses in it are defined
+		     outside of the loop.  */
+		  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
+		    {
+		      gimple def = SSA_NAME_DEF_STMT (var);
+		      if (!gimple_nop_p (def)
+			  && flow_bb_inside_loop_p (loop, gimple_bb (def)))
+			{
+			  hoist = false;
+			  break;
+			}
+		    }
+
+		  if (hoist)
+		    {
+		      if (dr)
+			gimple_set_vuse (stmt, NULL);
+
+		      gsi_remove (&si, false);
+		      gsi_insert_on_edge_immediate (loop_preheader_edge (loop),
+						    stmt);
+
+		      if (dump_enabled_p ())
+			{
+			  dump_printf_loc
+			      (MSG_NOTE, vect_location,
+			       "hoisting out of the vectorized loop: ");
+			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+			  dump_printf (MSG_NOTE, "\n");
+			}
+		      continue;
+		    }
+		}
+	      gsi_next (&si);
+	    }
+	}
     }
 
   /* End loop-exit-fixes after versioning.  */

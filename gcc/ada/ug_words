@@ -72,7 +72,9 @@ gcc -c          ^ GNAT COMPILE
 -gnatep         ^ /DATA_PREPROCESSING
 -gnateP         ^ /CATEGORIZATION_WARNINGS
 -gnateS         ^ /SCO_OUTPUT
--gnatet         ^ /TARGET_DEPENDENT_INFO
+-gnatet         ^ /WRITE_TARGET_DEPENDENT_INFO
+-gnateT         ^ /READ_TARGET_DEPENDENT_INFO
+-gnateu         ^ /IGNORE_UNRECOGNIZED
 -gnateV         ^ /PARAMETER_VALIDITY_CHECK
 -gnateY         ^ /IGNORE_STYLE_CHECKS_PRAGMAS
 -gnatE          ^ /CHECKS=ELABORATION
@@ -142,6 +144,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwC         ^ /WARNINGS=NOCONDITIONALS
 -gnatw.c        ^ /WARNINGS=MISSING_COMPONENT_CLAUSES
 -gnatw.C        ^ /WARNINGS=NOMISSING_COMPONENT_CLAUSES
+-gnatw.d        ^ /WARNINGS=TAG_WARNINGS
+-gnatw.D        ^ /WARNINGS=NOTAG_WARNINGS
 -gnatwd         ^ /WARNINGS=IMPLICIT_DEREFERENCE
 -gnatwD         ^ /WARNINGS=NOIMPLICIT_DEREFERENCE
 -gnatwe         ^ /WARNINGS=ERRORS
@@ -202,6 +206,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatw.X        ^ /WARNINGS=NOLOCAL_RAISE_HANDLING
 -gnatwy         ^ /WARNINGS=ADA_2005_COMPATIBILITY
 -gnatwY         ^ /WARNINGS=NOADA_2005_COMPATIBILITY
+-gnatw.y        ^ /WARNINGS=WHY_SPEC_NEEDS_BODY
+-gnatw.Y        ^ /WARNINGS=NOWHY_SPEC_NEEDS_BODY
 -gnatwz         ^ /WARNINGS=UNCHECKED_CONVERSIONS
 -gnatwZ         ^ /WARNINGS=NOUNCHECKED_CONVERSIONS
 -gnatW8         ^ /WIDE_CHARACTER_ENCODING=UTF8

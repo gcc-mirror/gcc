@@ -16,7 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-glibc-c.o: config/glibc-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(C_TARGET_H) $(C_TARGET_DEF_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  $< $(OUTPUT_OPTION)
+glibc-c.o: config/glibc-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

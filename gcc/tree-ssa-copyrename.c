@@ -455,12 +455,12 @@ const pass_data pass_data_rename_ssa_copies =
 class pass_rename_ssa_copies : public gimple_opt_pass
 {
 public:
-  pass_rename_ssa_copies(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_rename_ssa_copies, ctxt)
+  pass_rename_ssa_copies (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_rename_ssa_copies, ctxt)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rename_ssa_copies (ctxt_); }
+  opt_pass * clone () { return new pass_rename_ssa_copies (m_ctxt); }
   bool gate () { return gate_copyrename (); }
   unsigned int execute () { return rename_ssa_copies (); }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2388,7 +2388,7 @@ package body Layout is
          --  If we only have a limited view of the type, see whether the
          --  non-limited view is available.
 
-         if From_With_Type (Designated_Type (E))
+         if From_Limited_With (Designated_Type (E))
            and then Ekind (Designated_Type (E)) = E_Incomplete_Type
            and then Present (Non_Limited_View (Designated_Type (E)))
          then

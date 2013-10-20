@@ -191,9 +191,9 @@ df_scan_free_internal (void)
   /* The vectors that hold the refs are not pool allocated because
      they come in many sizes.  This makes them impossible to delete
      all at once.  */
-  for (i = 0; i < DF_INSN_SIZE(); i++)
+  for (i = 0; i < DF_INSN_SIZE (); i++)
     {
-      struct df_insn_info *insn_info = DF_INSN_UID_GET(i);
+      struct df_insn_info *insn_info = DF_INSN_UID_GET (i);
       /* Skip the insns that have no insn_info or have been
 	 deleted.  */
       if (insn_info)
@@ -233,7 +233,7 @@ df_scan_free_internal (void)
   free (df->eq_use_regs);
   df->eq_use_regs = NULL;
   df->regs_size = 0;
-  DF_REG_SIZE(df) = 0;
+  DF_REG_SIZE (df) = 0;
 
   free (df->insns);
   df->insns = NULL;
@@ -2188,7 +2188,7 @@ df_notes_rescan (rtx insn)
   df_grow_bb_info (df_scan);
   df_grow_reg_info ();
 
-  insn_info = DF_INSN_UID_SAFE_GET (INSN_UID(insn));
+  insn_info = DF_INSN_UID_SAFE_GET (INSN_UID (insn));
 
   /* The client has deferred rescanning.  */
   if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
@@ -4558,11 +4558,11 @@ df_scan_verify (void)
   for (i = 0; i < DF_REG_SIZE (df); i++)
     {
       gcc_assert (df_reg_chain_mark (DF_REG_DEF_CHAIN (i), i, true, false)
-		  == DF_REG_DEF_COUNT(i));
+		  == DF_REG_DEF_COUNT (i));
       gcc_assert (df_reg_chain_mark (DF_REG_USE_CHAIN (i), i, false, false)
-		  == DF_REG_USE_COUNT(i));
+		  == DF_REG_USE_COUNT (i));
       gcc_assert (df_reg_chain_mark (DF_REG_EQ_USE_CHAIN (i), i, false, true)
-		  == DF_REG_EQ_USE_COUNT(i));
+		  == DF_REG_EQ_USE_COUNT (i));
     }
 
   /* (2) There are various bitmaps whose value may change over the

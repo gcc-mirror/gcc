@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "toplev.h"
 #include "tree-pass.h"
+#include "context.h"
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
@@ -385,7 +386,7 @@ handle_common_deferred_options (void)
 	  break;
 
 	case OPT_fdump_:
-	  if (!dump_switch_p (opt->arg))
+	  if (!g->get_dumps ()->dump_switch_p (opt->arg))
 	    error ("unrecognized command line option %<-fdump-%s%>", opt->arg);
 	  break;
 

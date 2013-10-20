@@ -565,6 +565,15 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
      NULL_TREE, is_disabled, true, true, true, NULL, Empty);
   DECL_IGNORED_P (get_excptr_decl) = 1;
 
+  set_exception_parameter_decl
+    = create_subprog_decl
+      (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
+       build_function_type_list (void_type_node,
+				 ptr_void_type_node,
+				 ptr_void_type_node,
+				 NULL_TREE),
+       NULL_TREE, is_disabled, true, true, true, NULL, Empty);
+
   raise_nodefer_decl
     = create_subprog_decl
       (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE,
@@ -632,20 +641,20 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   others_decl
     = create_var_decl (get_identifier ("OTHERS"),
 		       get_identifier ("__gnat_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   unhandled_others_decl
     = create_var_decl (get_identifier ("UNHANDLED_OTHERS"),
 		       get_identifier ("__gnat_unhandled_others_value"),
-		       integer_type_node, NULL_TREE, true, false, true, false,
-		       NULL, Empty);
+		       unsigned_char_type_node,
+		       NULL_TREE, true, false, true, false, NULL, Empty);
 
   main_identifier_node = get_identifier ("main");
 
@@ -4885,6 +4894,19 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
   add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
 					 gnu_incoming_exc_ptr),
 		      gnat_node);
+
+  /* Declare and initialize the choice parameter, if present.  */
+  if (Present (Choice_Parameter (gnat_node)))
+    {
+      tree gnu_param = gnat_to_gnu_entity
+	(Choice_Parameter (gnat_node), NULL_TREE, 1);
+
+      add_stmt (build_call_n_expr
+		(set_exception_parameter_decl, 2,
+		 build_unary_op (ADDR_EXPR, NULL_TREE, gnu_param),
+		 gnu_incoming_exc_ptr));
+    }
+
   /* We don't have an End_Label at hand to set the location of the cleanup
      actions, so we use that of the exception handler itself instead.  */
   add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
@@ -4987,7 +5009,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   /* Process any pragmas and actions following the unit.  */
   add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
   add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
-  finalize_from_with_types ();
+  finalize_from_limited_with ();
 
   /* Save away what we've made so far and record this potential elaboration
      procedure.  */
@@ -6607,7 +6629,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   Present (gnat_temp);
 	   gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	if (Is_Itype (Etype (gnat_temp))
-	    && !From_With_Type (Etype (gnat_temp)))
+	    && !From_Limited_With (Etype (gnat_temp)))
 	  gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
 
       /* Then the result type, set to Standard_Void_Type for procedures.  */
@@ -6615,7 +6637,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	Entity_Id gnat_temp_type
 	  = Etype (Defining_Entity (Specification (gnat_node)));
 
-	if (Is_Itype (gnat_temp_type) && !From_With_Type (gnat_temp_type))
+	if (Is_Itype (gnat_temp_type) && !From_Limited_With (gnat_temp_type))
 	  gnat_to_gnu_entity (Etype (gnat_temp_type), NULL_TREE, 0);
       }
 
@@ -6986,6 +7008,10 @@ gnat_to_gnu (Node_Id gnat_node)
       process_freeze_entity (gnat_node);
       process_decls (Actions (gnat_node), Empty, Empty, true, true);
       gnu_result = end_stmt_group ();
+      break;
+
+    case N_Freeze_Generic_Entity:
+      gnu_result = alloc_stmt_list ();
       break;
 
     case N_Itype_Reference:
@@ -9195,10 +9221,14 @@ post_error (const char *msg, Node_Id node)
   String_Template temp;
   Fat_Pointer fp;
 
-  temp.Low_Bound = 1, temp.High_Bound = strlen (msg);
-  fp.Array = msg, fp.Bounds = &temp;
-  if (Present (node))
-    Error_Msg_N (fp, node);
+  if (No (node))
+    return;
+
+  temp.Low_Bound = 1;
+  temp.High_Bound = strlen (msg);
+  fp.Bounds = &temp;
+  fp.Array = msg;
+  Error_Msg_N (fp, node);
 }
 
 /* Similar to post_error, but NODE is the node at which to post the error and
@@ -9210,10 +9240,14 @@ post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
   String_Template temp;
   Fat_Pointer fp;
 
-  temp.Low_Bound = 1, temp.High_Bound = strlen (msg);
-  fp.Array = msg, fp.Bounds = &temp;
-  if (Present (node))
-    Error_Msg_NE (fp, node, ent);
+  if (No (node))
+    return;
+
+  temp.Low_Bound = 1;
+  temp.High_Bound = strlen (msg);
+  fp.Bounds = &temp;
+  fp.Array = msg;
+  Error_Msg_NE (fp, node, ent);
 }
 
 /* Similar to post_error_ne, but NUM is the number to use for the '^'.  */

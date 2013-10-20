@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "alloc-pool.h"
 #include "tree-ssa-alias.h"
+#include "ipa-reference.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -404,6 +405,7 @@ dump_alias_info (FILE *file)
       struct ptr_info_def *pi;
 
       if (ptr == NULL_TREE
+	  || !POINTER_TYPE_P (TREE_TYPE (ptr))
 	  || SSA_NAME_IN_FREE_LIST (ptr))
 	continue;
 
@@ -802,12 +804,13 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
 	 goto may_overlap;
 
-      /* Different fields of the same record type cannot overlap.  */
+      /* Different fields of the same record type cannot overlap.
+	 ??? Bitfields can overlap at RTL level so punt on them.  */
       if (field1 != field2)
 	{
 	  component_refs1.release ();
 	  component_refs2.release ();
-	  return true;
+	  return !(DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2));
 	}
     }
 
@@ -1516,16 +1519,19 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_GOMP_ATOMIC_START:
 	case BUILT_IN_GOMP_ATOMIC_END:
 	case BUILT_IN_GOMP_BARRIER:
+	case BUILT_IN_GOMP_BARRIER_CANCEL:
 	case BUILT_IN_GOMP_TASKWAIT:
+	case BUILT_IN_GOMP_TASKGROUP_END:
 	case BUILT_IN_GOMP_CRITICAL_START:
 	case BUILT_IN_GOMP_CRITICAL_END:
 	case BUILT_IN_GOMP_CRITICAL_NAME_START:
 	case BUILT_IN_GOMP_CRITICAL_NAME_END:
 	case BUILT_IN_GOMP_LOOP_END:
+	case BUILT_IN_GOMP_LOOP_END_CANCEL:
 	case BUILT_IN_GOMP_ORDERED_START:
 	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_PARALLEL_END:
 	case BUILT_IN_GOMP_SECTIONS_END:
+	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
 	case BUILT_IN_GOMP_SINGLE_COPY_START:
 	case BUILT_IN_GOMP_SINGLE_COPY_END:
 	  return true;
@@ -1860,16 +1866,19 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_GOMP_ATOMIC_START:
 	case BUILT_IN_GOMP_ATOMIC_END:
 	case BUILT_IN_GOMP_BARRIER:
+	case BUILT_IN_GOMP_BARRIER_CANCEL:
 	case BUILT_IN_GOMP_TASKWAIT:
+	case BUILT_IN_GOMP_TASKGROUP_END:
 	case BUILT_IN_GOMP_CRITICAL_START:
 	case BUILT_IN_GOMP_CRITICAL_END:
 	case BUILT_IN_GOMP_CRITICAL_NAME_START:
 	case BUILT_IN_GOMP_CRITICAL_NAME_END:
 	case BUILT_IN_GOMP_LOOP_END:
+	case BUILT_IN_GOMP_LOOP_END_CANCEL:
 	case BUILT_IN_GOMP_ORDERED_START:
 	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_PARALLEL_END:
 	case BUILT_IN_GOMP_SECTIONS_END:
+	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
 	case BUILT_IN_GOMP_SINGLE_COPY_START:
 	case BUILT_IN_GOMP_SINGLE_COPY_END:
 	  return true;

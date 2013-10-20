@@ -1187,7 +1187,9 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
 
   gcc_assert (edge->speculative);
   cgraph_speculative_call_info (edge, e2, edge, ref);
-  if (ref->referred->symbol.decl != callee_decl)
+  if (!callee_decl
+      || !symtab_semantically_equivalent_p ((symtab_node) ref->referred,
+					    symtab_get_node (callee_decl)))
     {
       if (dump_file)
 	{
@@ -1632,7 +1634,7 @@ release_function_body (tree decl)
 	}
       if (cfun->value_histograms)
 	free_histograms ();
-      pop_cfun();
+      pop_cfun ();
       gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
@@ -1759,7 +1761,7 @@ cgraph_remove_node (struct cgraph_node *node)
 
   /* Clear out the node to NULL all pointers and add the node to the free
      list.  */
-  memset (node, 0, sizeof(*node));
+  memset (node, 0, sizeof (*node));
   node->symbol.type = SYMTAB_FUNCTION;
   node->uid = uid;
   SET_NEXT_FREE_NODE (node, free_nodes);
@@ -1944,13 +1946,13 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf (f, "(%.2f per call) ",
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (edge->speculative)
-	fprintf(f, "(speculative) ");
+	fprintf (f, "(speculative) ");
       if (!edge->inline_failed)
-	fprintf(f, "(inlined) ");
+	fprintf (f, "(inlined) ");
       if (edge->indirect_inlining_edge)
-	fprintf(f, "(indirect_inlining) ");
+	fprintf (f, "(indirect_inlining) ");
       if (edge->can_throw_external)
-	fprintf(f, "(can throw external) ");
+	fprintf (f, "(can throw external) ");
     }
 
   fprintf (f, "\n  Calls: ");
@@ -1959,11 +1961,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
       fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->callee),
 	       edge->callee->symbol.order);
       if (edge->speculative)
-	fprintf(f, "(speculative) ");
+	fprintf (f, "(speculative) ");
       if (!edge->inline_failed)
-	fprintf(f, "(inlined) ");
+	fprintf (f, "(inlined) ");
       if (edge->indirect_inlining_edge)
-	fprintf(f, "(indirect_inlining) ");
+	fprintf (f, "(indirect_inlining) ");
       if (edge->count)
 	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
 		 (HOST_WIDEST_INT)edge->count);
@@ -1971,7 +1973,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf (f, "(%.2f per call) ",
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (edge->can_throw_external)
-	fprintf(f, "(can throw external) ");
+	fprintf (f, "(can throw external) ");
     }
   fprintf (f, "\n");
 
@@ -2992,6 +2994,101 @@ cgraph_get_body (struct cgraph_node *node)
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
   lto_free_function_in_decl_state_for_node ((symtab_node) node);
+  return true;
+}
+
+/* Verify if the type of the argument matches that of the function
+   declaration.  If we cannot verify this or there is a mismatch,
+   return false.  */
+
+static bool
+gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
+{
+  tree parms, p;
+  unsigned int i, nargs;
+
+  /* Calls to internal functions always match their signature.  */
+  if (gimple_call_internal_p (stmt))
+    return true;
+
+  nargs = gimple_call_num_args (stmt);
+
+  /* Get argument types for verification.  */
+  if (fndecl)
+    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  else
+    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
+
+  /* Verify if the type of the argument matches that of the function
+     declaration.  If we cannot verify this or there is a mismatch,
+     return false.  */
+  if (fndecl && DECL_ARGUMENTS (fndecl))
+    {
+      for (i = 0, p = DECL_ARGUMENTS (fndecl);
+	   i < nargs;
+	   i++, p = DECL_CHAIN (p))
+	{
+	  tree arg;
+	  /* We cannot distinguish a varargs function from the case
+	     of excess parameters, still deferring the inlining decision
+	     to the callee is possible.  */
+	  if (!p)
+	    break;
+	  arg = gimple_call_arg (stmt, i);
+	  if (p == error_mark_node
+	      || arg == error_mark_node
+	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
+            return false;
+	}
+      if (args_count_match && p)
+	return false;
+    }
+  else if (parms)
+    {
+      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
+	{
+	  tree arg;
+	  /* If this is a varargs function defer inlining decision
+	     to callee.  */
+	  if (!p)
+	    break;
+	  arg = gimple_call_arg (stmt, i);
+	  if (TREE_VALUE (p) == error_mark_node
+	      || arg == error_mark_node
+	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
+	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (TREE_VALUE (p), arg)))
+            return false;
+	}
+    }
+  else
+    {
+      if (nargs != 0)
+        return false;
+    }
+  return true;
+}
+
+/* Verify if the type of the argument and lhs of CALL_STMT matches
+   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
+   true, the arg count needs to be the same.
+   If we cannot verify this or there is a mismatch, return false.  */
+
+bool
+gimple_check_call_matching_types (gimple call_stmt, tree callee,
+				  bool args_count_match)
+{
+  tree lhs;
+
+  if ((DECL_RESULT (callee)
+       && !DECL_BY_REFERENCE (DECL_RESULT (callee))
+       && (lhs = gimple_call_lhs (call_stmt)) != NULL_TREE
+       && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
+                                      TREE_TYPE (lhs))
+       && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
+      || !gimple_check_call_args (call_stmt, callee, args_count_match))
+    return false;
   return true;
 }
 

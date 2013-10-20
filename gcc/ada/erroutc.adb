@@ -31,6 +31,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Csets;    use Csets;
 with Debug;    use Debug;
 with Err_Vars; use Err_Vars;
 with Namet;    use Namet;
@@ -461,10 +462,7 @@ package body Erroutc is
             Warn_Tag := new String'(" [-gnatw" & Warn_Chr & ']');
 
          else pragma Assert (Warn_Chr in 'A' .. 'Z');
-            Warn_Tag :=
-              new String'(" [-gnatw."
-                          & Character'Val (Character'Pos (Warn_Chr) + 32)
-                          & ']');
+            Warn_Tag := new String'(" [-gnatw." & Fold_Lower (Warn_Chr) & ']');
          end if;
 
       else

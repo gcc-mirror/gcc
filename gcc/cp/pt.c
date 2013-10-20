@@ -5611,7 +5611,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		   TREE_TYPE (TREE_TYPE (addr)))))
 	    {
 	      expr = TREE_OPERAND (addr, 0);
-	      expr_type = TREE_TYPE (expr);
+	      expr_type = TREE_TYPE (probe_type);
 	    }
 	}
     }
@@ -8545,6 +8545,8 @@ can_complete_type_without_circularity (tree type)
     return 1;
 }
 
+static tree tsubst_omp_clauses (tree, bool, tree, tsubst_flags_t, tree);
+
 /* Apply any attributes which had to be deferred until instantiation
    time.  DECL_P, ATTRIBUTES and ATTR_FLAGS are as cplus_decl_attributes;
    ARGS, COMPLAIN, IN_DECL are as tsubst.  */
@@ -8586,14 +8588,29 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	    {
 	      *p = TREE_CHAIN (t);
 	      TREE_CHAIN (t) = NULL_TREE;
+	      if (flag_openmp
+		  && is_attribute_p ("omp declare simd",
+				     get_attribute_name (t))
+		  && TREE_VALUE (t))
+		{
+		  tree clauses = TREE_VALUE (TREE_VALUE (t));
+		  clauses = tsubst_omp_clauses (clauses, true, args,
+						complain, in_decl);
+		  c_omp_declare_simd_clauses_to_decls (*decl_p, clauses);
+		  clauses = finish_omp_clauses (clauses);
+		  tree parms = DECL_ARGUMENTS (*decl_p);
+		  clauses
+		    = c_omp_declare_simd_clauses_to_numbers (parms, clauses);
+		  if (clauses)
+		    TREE_VALUE (TREE_VALUE (t)) = clauses;
+		  else
+		    TREE_VALUE (t) = NULL_TREE;
+		}
 	      /* If the first attribute argument is an identifier, don't
 		 pass it through tsubst.  Attributes like mode, format,
 		 cleanup and several target specific attributes expect it
 		 unmodified.  */
-	      if (TREE_VALUE (t)
-		  && TREE_CODE (TREE_VALUE (t)) == TREE_LIST
-		  && TREE_VALUE (TREE_VALUE (t))
-		  && (identifier_p (TREE_VALUE (TREE_VALUE (t)))))
+	      else if (attribute_takes_identifier_p (TREE_PURPOSE (t)))
 		{
 		  tree chain
 		    = tsubst_expr (TREE_CHAIN (TREE_VALUE (t)), args, complain,
@@ -8915,6 +8932,9 @@ instantiate_class_template_1 (tree type)
 	      /* Instantiate members marked with attribute used.  */
 	      if (r != error_mark_node && DECL_PRESERVE_P (r))
 		mark_used (r);
+	      if (TREE_CODE (r) == FUNCTION_DECL
+		  && DECL_OMP_DECLARE_REDUCTION_P (r))
+		cp_check_omp_declare_reduction (r);
 	    }
 	  else
 	    {
@@ -10382,6 +10402,24 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (!DECL_DELETED_FN (r))
 	  DECL_INITIAL (r) = NULL_TREE;
 	DECL_CONTEXT (r) = ctx;
+
+	/* OpenMP UDRs have the only argument a reference to the declared
+	   type.  We want to diagnose if the declared type is a reference,
+	   which is invalid, but as references to references are usually
+	   quietly merged, diagnose it here.  */
+	if (DECL_OMP_DECLARE_REDUCTION_P (t))
+	  {
+	    tree argtype
+	      = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (t))));
+	    argtype = tsubst (argtype, args, complain, in_decl);
+	    if (TREE_CODE (argtype) == REFERENCE_TYPE)
+	      error_at (DECL_SOURCE_LOCATION (t),
+			"reference type %qT in "
+			"%<#pragma omp declare reduction%>", argtype);
+	    if (strchr (IDENTIFIER_POINTER (DECL_NAME (t)), '~') == NULL)
+	      DECL_NAME (r) = omp_reduction_id (ERROR_MARK, DECL_NAME (t),
+						argtype);
+	  }
 
 	if (member && DECL_CONV_FN_P (r))
 	  /* Type-conversion operator.  Reconstruct the name, in
@@ -12061,7 +12099,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       gcc_unreachable ();
 
     default:
-      sorry ("use of %qs in template", tree_code_name [(int) code]);
+      sorry ("use of %qs in template", get_tree_code_name (code));
       return error_mark_node;
     }
 }
@@ -12815,8 +12853,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 /* Like tsubst_copy, but specifically for OpenMP clauses.  */
 
 static tree
-tsubst_omp_clauses (tree clauses, tree args, tsubst_flags_t complain,
-		    tree in_decl)
+tsubst_omp_clauses (tree clauses, bool declare_simd,
+		    tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree new_clauses = NULL, nc, oc;
 
@@ -12841,7 +12879,6 @@ tsubst_omp_clauses (tree clauses, tree args, tsubst_flags_t complain,
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:
 	case OMP_CLAUSE_FIRSTPRIVATE:
-	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_IF:
@@ -12849,22 +12886,73 @@ tsubst_omp_clauses (tree clauses, tree args, tsubst_flags_t complain,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
+	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_UNIFORM:
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
+	case OMP_CLAUSE_SAFELEN:
+	case OMP_CLAUSE_SIMDLEN:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain, 
 			   in_decl, /*integral_constant_expression_p=*/false);
 	  break;
+	case OMP_CLAUSE_REDUCTION:
+	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (oc))
+	    {
+	      tree placeholder = OMP_CLAUSE_REDUCTION_PLACEHOLDER (oc);
+	      if (TREE_CODE (placeholder) == SCOPE_REF)
+		{
+		  tree scope = tsubst (TREE_OPERAND (placeholder, 0), args,
+				       complain, in_decl);
+		  OMP_CLAUSE_REDUCTION_PLACEHOLDER (nc)
+		    = build_qualified_name (NULL_TREE, scope,
+					    TREE_OPERAND (placeholder, 1),
+					    false);
+		}
+	      else
+		gcc_assert (identifier_p (placeholder));
+	    }
+	  OMP_CLAUSE_OPERAND (nc, 0)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
+	case OMP_CLAUSE_LINEAR:
+	case OMP_CLAUSE_ALIGNED:
+	  OMP_CLAUSE_OPERAND (nc, 0)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
+
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
     }
 
-  return finish_omp_clauses (nreverse (new_clauses));
+  new_clauses = nreverse (new_clauses);
+  if (!declare_simd)
+    new_clauses = finish_omp_clauses (new_clauses);
+  return new_clauses;
 }
 
 /* Like tsubst_copy_and_build, but unshare TREE_LIST nodes.  */
@@ -13169,6 +13257,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  }
 		else if (DECL_IMPLICIT_TYPEDEF_P (t))
 		  /* We already did a pushtag.  */;
+		else if (TREE_CODE (decl) == FUNCTION_DECL
+			 && DECL_OMP_DECLARE_REDUCTION_P (decl)
+			 && DECL_FUNCTION_SCOPE_P (pattern_decl))
+		  {
+		    DECL_CONTEXT (decl) = NULL_TREE;
+		    pushdecl (decl);
+		    DECL_CONTEXT (decl) = current_function_decl;
+		    cp_check_omp_declare_reduction (decl);
+		  }
 		else
 		  {
 		    int const_init = false;
@@ -13440,7 +13537,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_PARALLEL:
-      tmp = tsubst_omp_clauses (OMP_PARALLEL_CLAUSES (t),
+      tmp = tsubst_omp_clauses (OMP_PARALLEL_CLAUSES (t), false,
 				args, complain, in_decl);
       stmt = begin_omp_parallel ();
       RECUR (OMP_PARALLEL_BODY (t));
@@ -13449,7 +13546,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_TASK:
-      tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t),
+      tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t), false,
 				args, complain, in_decl);
       stmt = begin_omp_task ();
       RECUR (OMP_TASK_BODY (t));
@@ -13457,17 +13554,23 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_FOR:
+    case OMP_SIMD:
+    case OMP_DISTRIBUTE:
       {
 	tree clauses, body, pre_body;
-	tree declv, initv, condv, incrv;
+	tree declv = NULL_TREE, initv = NULL_TREE, condv = NULL_TREE;
+	tree incrv = NULL_TREE;
 	int i;
 
-	clauses = tsubst_omp_clauses (OMP_FOR_CLAUSES (t),
+	clauses = tsubst_omp_clauses (OMP_FOR_CLAUSES (t), false,
 				      args, complain, in_decl);
-	declv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	initv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	condv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  {
+	    declv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    initv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    condv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	  }
 
 	stmt = begin_omp_structured_block ();
 
@@ -13475,17 +13578,29 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	RECUR (OMP_FOR_PRE_BODY (t));
 	pre_body = pop_stmt_list (pre_body);
 
-	for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
-	  tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
-				   &clauses, args, complain, in_decl,
-				   integral_constant_expression_p);
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
+				     &clauses, args, complain, in_decl,
+				     integral_constant_expression_p);
 
 	body = push_stmt_list ();
 	RECUR (OMP_FOR_BODY (t));
 	body = pop_stmt_list (body);
 
-	t = finish_omp_for (EXPR_LOCATION (t), declv, initv, condv, incrv,
-			    body, pre_body, clauses);
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  t = finish_omp_for (EXPR_LOCATION (t), TREE_CODE (t), declv, initv,
+			      condv, incrv, body, pre_body, clauses);
+	else
+	  {
+	    t = make_node (TREE_CODE (t));
+	    TREE_TYPE (t) = void_type_node;
+	    OMP_FOR_BODY (t) = body;
+	    OMP_FOR_PRE_BODY (t) = pre_body;
+	    OMP_FOR_CLAUSES (t) = clauses;
+	    SET_EXPR_LOCATION (t, EXPR_LOCATION (t));
+	    add_stmt (t);
+	  }
 
 	add_stmt (finish_omp_structured_block (stmt));
       }
@@ -13493,7 +13608,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case OMP_SECTIONS:
     case OMP_SINGLE:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), args, complain, in_decl);
+    case OMP_TEAMS:
+    case OMP_TARGET_DATA:
+    case OMP_TARGET:
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), false,
+				args, complain, in_decl);
       stmt = push_stmt_list ();
       RECUR (OMP_BODY (t));
       stmt = pop_stmt_list (stmt);
@@ -13504,9 +13623,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       add_stmt (t);
       break;
 
+    case OMP_TARGET_UPDATE:
+      tmp = tsubst_omp_clauses (OMP_TARGET_UPDATE_CLAUSES (t), false,
+				args, complain, in_decl);
+      t = copy_node (t);
+      OMP_CLAUSES (t) = tmp;
+      add_stmt (t);
+      break;
+
     case OMP_SECTION:
     case OMP_CRITICAL:
     case OMP_MASTER:
+    case OMP_TASKGROUP:
     case OMP_ORDERED:
       stmt = push_stmt_list ();
       RECUR (OMP_BODY (t));
@@ -13532,7 +13660,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  lhs = RECUR (TREE_OPERAND (op1, 0));
 	  rhs = RECUR (TREE_OPERAND (op1, 1));
 	  finish_omp_atomic (OMP_ATOMIC, TREE_CODE (op1), lhs, rhs,
-			     NULL_TREE, NULL_TREE, rhs1);
+			     NULL_TREE, NULL_TREE, rhs1,
+			     OMP_ATOMIC_SEQ_CST (t));
 	}
       else
 	{
@@ -13560,6 +13689,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      lhs = RECUR (TREE_OPERAND (op11, 0));
 	      rhs = RECUR (TREE_OPERAND (op11, 1));
 	      opcode = TREE_CODE (op11);
+	      if (opcode == MODIFY_EXPR)
+		opcode = NOP_EXPR;
 	    }
 	  else
 	    {
@@ -13567,7 +13698,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      lhs = RECUR (TREE_OPERAND (op1, 0));
 	      rhs = RECUR (TREE_OPERAND (op1, 1));
 	    }
-	  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1);
+	  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1,
+			     OMP_ATOMIC_SEQ_CST (t));
 	}
       break;
 
@@ -13637,6 +13769,73 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
   return r;
 #undef RECUR
 #undef RETURN
+}
+
+/* Instantiate the special body of the artificial DECL_OMP_DECLARE_REDUCTION
+   function.  For description of the body see comment above
+   cp_parser_omp_declare_reduction_exprs.  */
+
+static void
+tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
+{
+  if (t == NULL_TREE || t == error_mark_node)
+    return;
+
+  gcc_assert (TREE_CODE (t) == STATEMENT_LIST);
+
+  tree_stmt_iterator tsi;
+  int i;
+  tree stmts[7];
+  memset (stmts, 0, sizeof stmts);
+  for (i = 0, tsi = tsi_start (t);
+       i < 7 && !tsi_end_p (tsi);
+       i++, tsi_next (&tsi))
+    stmts[i] = tsi_stmt (tsi);
+  gcc_assert (tsi_end_p (tsi));
+
+  if (i >= 3)
+    {
+      gcc_assert (TREE_CODE (stmts[0]) == DECL_EXPR
+		  && TREE_CODE (stmts[1]) == DECL_EXPR);
+      tree omp_out = tsubst (DECL_EXPR_DECL (stmts[0]),
+			     args, complain, in_decl);
+      tree omp_in = tsubst (DECL_EXPR_DECL (stmts[1]),
+			    args, complain, in_decl);
+      DECL_CONTEXT (omp_out) = current_function_decl;
+      DECL_CONTEXT (omp_in) = current_function_decl;
+      keep_next_level (true);
+      tree block = begin_omp_structured_block ();
+      tsubst_expr (stmts[2], args, complain, in_decl, false);
+      block = finish_omp_structured_block (block);
+      block = maybe_cleanup_point_expr_void (block);
+      add_decl_expr (omp_out);
+      if (TREE_NO_WARNING (DECL_EXPR_DECL (stmts[0])))
+	TREE_NO_WARNING (omp_out) = 1;
+      add_decl_expr (omp_in);
+      finish_expr_stmt (block);
+    }
+  if (i >= 6)
+    {
+      gcc_assert (TREE_CODE (stmts[3]) == DECL_EXPR
+		  && TREE_CODE (stmts[4]) == DECL_EXPR);
+      tree omp_priv = tsubst (DECL_EXPR_DECL (stmts[3]),
+			      args, complain, in_decl);
+      tree omp_orig = tsubst (DECL_EXPR_DECL (stmts[4]),
+			      args, complain, in_decl);
+      DECL_CONTEXT (omp_priv) = current_function_decl;
+      DECL_CONTEXT (omp_orig) = current_function_decl;
+      keep_next_level (true);
+      tree block = begin_omp_structured_block ();
+      tsubst_expr (stmts[5], args, complain, in_decl, false);
+      block = finish_omp_structured_block (block);
+      block = maybe_cleanup_point_expr_void (block);
+      cp_walk_tree (&block, cp_remove_omp_priv_cleanup_stmt, omp_priv, NULL);
+      add_decl_expr (omp_priv);
+      add_decl_expr (omp_orig);
+      finish_expr_stmt (block);
+      if (i == 7)
+	add_decl_expr (omp_orig);
+    }
 }
 
 /* T is a postfix-expression that is not being used in a function
@@ -16805,6 +17004,72 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
   return unify_success (explain_p);
 }
 
+/* Handle unification of the domain of an array.  PARM_DOM and ARG_DOM are
+   INTEGER_TYPEs representing the TYPE_DOMAIN of ARRAY_TYPEs.  The other
+   parameters and return value are as for unify.  */
+
+static int
+unify_array_domain (tree tparms, tree targs,
+		    tree parm_dom, tree arg_dom,
+		    bool explain_p)
+{
+  tree parm_max;
+  tree arg_max;
+  bool parm_cst;
+  bool arg_cst;
+
+  /* Our representation of array types uses "N - 1" as the
+     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
+     not an integer constant.  We cannot unify arbitrarily
+     complex expressions, so we eliminate the MINUS_EXPRs
+     here.  */
+  parm_max = TYPE_MAX_VALUE (parm_dom);
+  parm_cst = TREE_CODE (parm_max) == INTEGER_CST;
+  if (!parm_cst)
+    {
+      gcc_assert (TREE_CODE (parm_max) == MINUS_EXPR);
+      parm_max = TREE_OPERAND (parm_max, 0);
+    }
+  arg_max = TYPE_MAX_VALUE (arg_dom);
+  arg_cst = TREE_CODE (arg_max) == INTEGER_CST;
+  if (!arg_cst)
+    {
+      /* The ARG_MAX may not be a simple MINUS_EXPR, if we are
+	 trying to unify the type of a variable with the type
+	 of a template parameter.  For example:
+
+	   template <unsigned int N>
+	   void f (char (&) [N]);
+	   int g();
+	   void h(int i) {
+	     char a[g(i)];
+	     f(a);
+	   }
+
+	 Here, the type of the ARG will be "int [g(i)]", and
+	 may be a SAVE_EXPR, etc.  */
+      if (TREE_CODE (arg_max) != MINUS_EXPR)
+	return unify_vla_arg (explain_p, arg_dom);
+      arg_max = TREE_OPERAND (arg_max, 0);
+    }
+
+  /* If only one of the bounds used a MINUS_EXPR, compensate
+     by adding one to the other bound.  */
+  if (parm_cst && !arg_cst)
+    parm_max = fold_build2_loc (input_location, PLUS_EXPR,
+				integer_type_node,
+				parm_max,
+				integer_one_node);
+  else if (arg_cst && !parm_cst)
+    arg_max = fold_build2_loc (input_location, PLUS_EXPR,
+			       integer_type_node,
+			       arg_max,
+			       integer_one_node);
+
+  return unify (tparms, targs, parm_max, arg_max,
+		UNIFY_ALLOW_INTEGER, explain_p);
+}
+
 /* Deduce the value of template parameters.  TPARMS is the (innermost)
    set of template parameters to a template.  TARGS is the bindings
    for those template parameters, as determined thus far; TARGS may
@@ -16890,13 +17155,17 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  && flag_deduce_init_list)
 	parm = listify (parm);
 
-      if (!is_std_init_list (parm))
+      if (!is_std_init_list (parm)
+	  && TREE_CODE (parm) != ARRAY_TYPE)
 	/* We can only deduce from an initializer list argument if the
-	   parameter is std::initializer_list; otherwise this is a
-	   non-deduced context. */
+	   parameter is std::initializer_list or an array; otherwise this
+	   is a non-deduced context. */
 	return unify_success (explain_p);
 
-      elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
+      if (TREE_CODE (parm) == ARRAY_TYPE)
+	elttype = TREE_TYPE (parm);
+      else
+	elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
 
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
 	{
@@ -16917,6 +17186,15 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
 	  RECUR_AND_CHECK_FAILURE (tparms, targs, elttype, elt, elt_strict,
 				   explain_p);
+	}
+
+      if (TREE_CODE (parm) == ARRAY_TYPE)
+	{
+	  /* Also deduce from the length of the initializer list.  */
+	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
+	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
+	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				     idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the
@@ -17292,63 +17570,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       RECUR_AND_CHECK_FAILURE (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 			       strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
       if (TYPE_DOMAIN (parm) != NULL_TREE)
-	{
-	  tree parm_max;
-	  tree arg_max;
-	  bool parm_cst;
-	  bool arg_cst;
-
-	  /* Our representation of array types uses "N - 1" as the
-	     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
-	     not an integer constant.  We cannot unify arbitrarily
-	     complex expressions, so we eliminate the MINUS_EXPRs
-	     here.  */
-	  parm_max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm));
-	  parm_cst = TREE_CODE (parm_max) == INTEGER_CST;
-	  if (!parm_cst)
-	    {
-	      gcc_assert (TREE_CODE (parm_max) == MINUS_EXPR);
-	      parm_max = TREE_OPERAND (parm_max, 0);
-	    }
-	  arg_max = TYPE_MAX_VALUE (TYPE_DOMAIN (arg));
-	  arg_cst = TREE_CODE (arg_max) == INTEGER_CST;
-	  if (!arg_cst)
-	    {
-	      /* The ARG_MAX may not be a simple MINUS_EXPR, if we are
-		 trying to unify the type of a variable with the type
-		 of a template parameter.  For example:
-
-                   template <unsigned int N>
-		   void f (char (&) [N]);
-		   int g(); 
-		   void h(int i) {
-                     char a[g(i)];
-		     f(a); 
-                   }
-
-                Here, the type of the ARG will be "int [g(i)]", and
-                may be a SAVE_EXPR, etc.  */
-	      if (TREE_CODE (arg_max) != MINUS_EXPR)
-		return unify_vla_arg (explain_p, arg);
-	      arg_max = TREE_OPERAND (arg_max, 0);
-	    }
-
-	  /* If only one of the bounds used a MINUS_EXPR, compensate
-	     by adding one to the other bound.  */
-	  if (parm_cst && !arg_cst)
-	    parm_max = fold_build2_loc (input_location, PLUS_EXPR,
-				    integer_type_node,
-				    parm_max,
-				    integer_one_node);
-	  else if (arg_cst && !parm_cst)
-	    arg_max = fold_build2_loc (input_location, PLUS_EXPR,
-				   integer_type_node,
-				   arg_max,
-				   integer_one_node);
-
-	  RECUR_AND_CHECK_FAILURE (tparms, targs, parm_max, arg_max,
-				   UNIFY_ALLOW_INTEGER, explain_p);
-	}
+	return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				   TYPE_DOMAIN (arg), explain_p);
       return unify_success (explain_p);
 
     case REAL_TYPE:
@@ -18392,10 +18615,15 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
       if (spec_tmpl == error_mark_node)
 	return error_mark_node;
 
+      ++processing_template_decl;
+
       tree parms = DECL_INNERMOST_TEMPLATE_PARMS (spec_tmpl);
       spec_args = get_class_bindings (tmpl, parms,
 				      partial_spec_args,
 				      args);
+
+      --processing_template_decl;
+
       if (spec_args)
 	{
 	  if (outer_args)
@@ -19340,6 +19568,7 @@ instantiate_decl (tree d, int defer_ok,
       tree subst_decl;
       tree tmpl_parm;
       tree spec_parm;
+      tree block = NULL_TREE;
 
       /* Save away the current list, in case we are instantiating one
 	 template from within the body of another.  */
@@ -19349,7 +19578,11 @@ instantiate_decl (tree d, int defer_ok,
       local_specializations = pointer_map_create ();
 
       /* Set up context.  */
-      start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
+      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
+	  && TREE_CODE (DECL_CONTEXT (code_pattern)) == FUNCTION_DECL)
+	block = push_stmt_list ();
+      else
+	start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
 
       /* Some typedefs referenced from within the template code need to be
 	 access checked at template instantiation time, i.e now. These
@@ -19386,21 +19619,37 @@ instantiate_decl (tree d, int defer_ok,
       gcc_assert (!spec_parm);
 
       /* Substitute into the body of the function.  */
-      tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
-		   tf_warning_or_error, tmpl,
-		   /*integral_constant_expression_p=*/false);
+      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern))
+	tsubst_omp_udr (DECL_SAVED_TREE (code_pattern), args,
+			tf_warning_or_error, tmpl);
+      else
+	{
+	  tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
+		       tf_warning_or_error, tmpl,
+		       /*integral_constant_expression_p=*/false);
 
-      /* Set the current input_location to the end of the function
-         so that finish_function knows where we are.  */
-      input_location = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+	  /* Set the current input_location to the end of the function
+	     so that finish_function knows where we are.  */
+	  input_location
+	    = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+	}
 
       /* We don't need the local specializations any more.  */
       pointer_map_destroy (local_specializations);
       local_specializations = saved_local_specializations;
 
       /* Finish the function.  */
-      d = finish_function (0);
-      expand_or_defer_fn (d);
+      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
+	  && TREE_CODE (DECL_CONTEXT (code_pattern)) == FUNCTION_DECL)
+	DECL_SAVED_TREE (d) = pop_stmt_list (block);
+      else
+	{
+	  d = finish_function (0);
+	  expand_or_defer_fn (d);
+	}
+
+      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern))
+	cp_check_omp_declare_reduction (d);
     }
 
   /* We're not deferring instantiation any more.  */
@@ -20399,6 +20648,10 @@ type_dependent_expression_p (tree expression)
       /* SCOPE_REF with non-null TREE_TYPE is always non-dependent.  */
       if (TREE_CODE (expression) == SCOPE_REF)
 	return false;
+
+      /* Always dependent, on the number of arguments if nothing else.  */
+      if (TREE_CODE (expression) == EXPR_PACK_EXPANSION)
+	return true;
 
       if (BASELINK_P (expression))
 	expression = BASELINK_FUNCTIONS (expression);

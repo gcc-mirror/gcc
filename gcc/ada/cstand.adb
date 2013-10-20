@@ -1305,6 +1305,9 @@ package body CStand is
       Set_Scope (Standard_Integer_64, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_64, 64);
 
+      --  Standard_Unsigned is not user visible, but is used internally. It
+      --  is an unsigned type with the same length as Standard.Integer.
+
       Standard_Unsigned := New_Standard_Entity;
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Unsigned);
@@ -1328,6 +1331,32 @@ package body CStand is
       Set_Etype (Low_Bound (R_Node), Standard_Unsigned);
       Set_Etype (High_Bound (R_Node), Standard_Unsigned);
       Set_Scalar_Range (Standard_Unsigned, R_Node);
+
+      --  Standard_Unsigned_64 is not user visible, but is used internally. It
+      --  is an unsigned type mod 2**64, 64-bits unsigned, size is 64.
+
+      Standard_Unsigned_64 := New_Standard_Entity;
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Standard_Unsigned_64);
+      Make_Name (Standard_Unsigned_64, "unsigned_64");
+
+      Set_Ekind             (Standard_Unsigned_64, E_Modular_Integer_Type);
+      Set_Scope             (Standard_Unsigned_64, Standard_Standard);
+      Set_Etype             (Standard_Unsigned_64, Standard_Unsigned_64);
+      Init_Size             (Standard_Unsigned_64, 64);
+      Set_Elem_Alignment    (Standard_Unsigned_64);
+      Set_Modulus           (Standard_Unsigned_64, Uint_2 ** 64);
+      Set_Is_Unsigned_Type  (Standard_Unsigned_64);
+      Set_Size_Known_At_Compile_Time
+                            (Standard_Unsigned_64);
+      Set_Is_Known_Valid    (Standard_Unsigned_64, True);
+
+      R_Node := New_Node (N_Range, Stloc);
+      Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
+      Set_High_Bound (R_Node, Make_Integer (Uint_2 ** 64 - 1));
+      Set_Etype (Low_Bound (R_Node), Standard_Unsigned_64);
+      Set_Etype (High_Bound (R_Node), Standard_Unsigned_64);
+      Set_Scalar_Range (Standard_Unsigned_64, R_Node);
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the
@@ -1419,9 +1448,9 @@ package body CStand is
                                (Type_Definition (Parent (Standard_Duration))));
 
          --  Normally it does not matter that nodes in package Standard are
-         --  not marked as analyzed. The Scalar_Range of the fixed-point
-         --  type Standard_Duration is an exception, because of the special
-         --  test made in Freeze.Freeze_Fixed_Point_Type.
+         --  not marked as analyzed. The Scalar_Range of the fixed-point type
+         --  Standard_Duration is an exception, because of the special test
+         --  made in Freeze.Freeze_Fixed_Point_Type.
 
          Set_Analyzed (Scalar_Range (Standard_Duration));
 
@@ -1441,14 +1470,11 @@ package body CStand is
       end Build_Duration;
 
       --  Build standard exception type. Note that the type name here is
-      --  actually used in the generated code, so it must be set correctly
-
-      --  ??? Also note that the Import_Code component is now declared
-      --  as a System.Standard_Library.Exception_Code to enforce run-time
-      --  library implementation consistency. It's too early here to resort
-      --  to rtsfind to get the proper node for that type, so we use the
-      --  closest possible available type node at hand instead. We should
-      --  probably be fixing this up at some point.
+      --  actually used in the generated code, so it must be set correctly.
+      --  The type Standard_Exception_Type must be consistent with the type
+      --  System.Standard_Library.Exception_Data, as the latter is what is
+      --  known by the run-time. Components of the record are documented in
+      --  the declaration in System.Standard_Library.
 
       Standard_Exception_Type := New_Standard_Entity;
       Set_Ekind       (Standard_Exception_Type, E_Record_Type);
@@ -1472,7 +1498,7 @@ package body CStand is
       Make_Component
         (Standard_Exception_Type, Standard_A_Char,    "HTable_Ptr");
       Make_Component
-        (Standard_Exception_Type, Standard_Unsigned,  "Import_Code");
+        (Standard_Exception_Type, Standard_A_Char,    "Foreign_Data");
       Make_Component
         (Standard_Exception_Type, Standard_A_Char,    "Raise_Hook");
 

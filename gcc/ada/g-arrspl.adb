@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,14 +118,22 @@ package body GNAT.Array_Split is
       procedure Free is
          new Ada.Unchecked_Deallocation (Natural, Counter);
 
-   begin
-      S.Ref_Counter.all := S.Ref_Counter.all - 1;
+      Ref_Counter : Counter := S.Ref_Counter;
 
-      if S.Ref_Counter.all = 0 then
-         Free (S.Source);
-         Free (S.Indexes);
-         Free (S.Slices);
-         Free (S.Ref_Counter);
+   begin
+      --  Ensure call is idempotent
+
+      S.Ref_Counter := null;
+
+      if Ref_Counter /= null then
+         Ref_Counter.all := Ref_Counter.all - 1;
+
+         if Ref_Counter.all = 0 then
+            Free (S.Source);
+            Free (S.Indexes);
+            Free (S.Slices);
+            Free (Ref_Counter);
+         end if;
       end if;
    end Finalize;
 

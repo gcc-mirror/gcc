@@ -591,6 +591,7 @@ package Rtsfind is
 
      RE_Root_Stream_Type,                -- Ada.Streams
      RE_Stream_Element,                  -- Ada.Streams
+     RE_Stream_Element_Array,            -- Ada.Streams
      RE_Stream_Element_Offset,           -- Ada.Streams
 
      RE_Stream_Access,                   -- Ada.Streams.Stream_IO
@@ -748,6 +749,7 @@ package Rtsfind is
      RE_Uint64,                          -- System.Atomic_Primitives
 
      RE_AST_Handler,                     -- System.Aux_DEC
+     RE_Import_Address,                  -- System.Aux_DEC
      RE_Import_Value,                    -- System.Aux_DEC
      RE_No_AST_Handler,                  -- System.Aux_DEC
      RE_Type_Class,                      -- System.Aux_DEC
@@ -1413,7 +1415,6 @@ package Rtsfind is
      RE_Shared_Var_Procs,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
-     RE_Exception_Code,                  -- System.Standard_Library
      RE_Exception_Data_Ptr,              -- System.Standard_Library
 
      RE_Integer_Address,                 -- System.Storage_Elements
@@ -1477,6 +1478,24 @@ package Rtsfind is
      RE_W_WC,                            -- System.Stream_Attributes
      RE_W_WWC,                           -- System.Stream_Attributes
 
+     RE_Storage_Array_Input,             -- System.Strings.Stream_Ops
+     RE_Storage_Array_Input_Blk_IO,      -- System.Strings.Stream_Ops
+     RE_Storage_Array_Output,            -- System.Strings.Stream_Ops
+     RE_Storage_Array_Output_Blk_IO,     -- System.Strings.Stream_Ops
+     RE_Storage_Array_Read,              -- System.Strings.Stream_Ops
+     RE_Storage_Array_Read_Blk_IO,       -- System.Strings.Stream_Ops
+     RE_Storage_Array_Write,             -- System.Strings.Stream_Ops
+     RE_Storage_Array_Write_Blk_IO,      -- System.Strings.Stream_Ops
+
+     RE_Stream_Element_Array_Input,         -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Input_Blk_IO,  -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Output,        -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Output_Blk_IO, -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Read,          -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Read_Blk_IO,   -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Write,         -- System.Strings.Stream_Ops
+     RE_Stream_Element_Array_Write_Blk_IO,  -- System.Strings.Stream_Ops
+
      RE_String_Input,                    -- System.Strings.Stream_Ops
      RE_String_Input_Blk_IO,             -- System.Strings.Stream_Ops
      RE_String_Output,                   -- System.Strings.Stream_Ops
@@ -1485,6 +1504,7 @@ package Rtsfind is
      RE_String_Read_Blk_IO,              -- System.Strings.Stream_Ops
      RE_String_Write,                    -- System.Strings.Stream_Ops
      RE_String_Write_Blk_IO,             -- System.Strings.Stream_Ops
+
      RE_Wide_String_Input,               -- System.Strings.Stream_Ops
      RE_Wide_String_Input_Blk_IO,        -- System.Strings.Stream_Ops
      RE_Wide_String_Output,              -- System.Strings.Stream_Ops
@@ -1493,6 +1513,7 @@ package Rtsfind is
      RE_Wide_String_Read_Blk_IO,         -- System.Strings.Stream_Ops
      RE_Wide_String_Write,               -- System.Strings.Stream_Ops
      RE_Wide_String_Write_Blk_IO,        -- System.Strings.Stream_Ops
+
      RE_Wide_Wide_String_Input,          -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Input_Blk_IO,   -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Output,         -- System.Strings.Stream_Ops
@@ -1844,6 +1865,7 @@ package Rtsfind is
 
      RE_Root_Stream_Type                 => Ada_Streams,
      RE_Stream_Element                   => Ada_Streams,
+     RE_Stream_Element_Array             => Ada_Streams,
      RE_Stream_Element_Offset            => Ada_Streams,
 
      RE_Stream_Access                    => Ada_Streams_Stream_IO,
@@ -2001,6 +2023,7 @@ package Rtsfind is
      RE_Uint64                           => System_Atomic_Primitives,
 
      RE_AST_Handler                      => System_Aux_DEC,
+     RE_Import_Address                   => System_Aux_DEC,
      RE_Import_Value                     => System_Aux_DEC,
      RE_No_AST_Handler                   => System_Aux_DEC,
      RE_Type_Class                       => System_Aux_DEC,
@@ -2670,7 +2693,6 @@ package Rtsfind is
      RE_Shared_Var_Procs                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,
-     RE_Exception_Code                   => System_Standard_Library,
      RE_Exception_Data_Ptr               => System_Standard_Library,
 
      RE_Integer_Address                  => System_Storage_Elements,
@@ -2734,6 +2756,24 @@ package Rtsfind is
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
 
+     RE_Storage_Array_Input              =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Input_Blk_IO       =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Output             =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Output_Blk_IO      =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Read               =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Read_Blk_IO        =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Write              =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Write_Blk_IO       =>  System_Strings_Stream_Ops,
+
+     RE_Stream_Element_Array_Input          =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Input_Blk_IO   =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output         =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output_Blk_IO  =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read           =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read_Blk_IO    =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write          =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write_Blk_IO   =>  System_Strings_Stream_Ops,
+
      RE_String_Input                     => System_Strings_Stream_Ops,
      RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,
      RE_String_Output                    => System_Strings_Stream_Ops,
@@ -2742,6 +2782,7 @@ package Rtsfind is
      RE_String_Read_Blk_IO               => System_Strings_Stream_Ops,
      RE_String_Write                     => System_Strings_Stream_Ops,
      RE_String_Write_Blk_IO              => System_Strings_Stream_Ops,
+
      RE_Wide_String_Input                => System_Strings_Stream_Ops,
      RE_Wide_String_Input_Blk_IO         => System_Strings_Stream_Ops,
      RE_Wide_String_Output               => System_Strings_Stream_Ops,
@@ -2749,6 +2790,7 @@ package Rtsfind is
      RE_Wide_String_Read                 => System_Strings_Stream_Ops,
      RE_Wide_String_Read_Blk_IO          => System_Strings_Stream_Ops,
      RE_Wide_String_Write                => System_Strings_Stream_Ops,
+
      RE_Wide_String_Write_Blk_IO         => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Input           => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Input_Blk_IO    => System_Strings_Stream_Ops,

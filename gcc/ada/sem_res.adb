@@ -2095,10 +2095,19 @@ package body Sem_Res is
 
       Check_Parameterless_Call (N);
 
+      --  The resolution of an Expression_With_Actions is determined by
+      --  its Expression.
+
+      if Nkind (N) = N_Expression_With_Actions then
+         Resolve (Expression (N), Typ);
+
+         Found := True;
+         Expr_Type := Etype (Expression (N));
+
       --  If not overloaded, then we know the type, and all that needs doing
       --  is to check that this type is compatible with the context.
 
-      if not Is_Overloaded (N) then
+      elsif not Is_Overloaded (N) then
          Found := Covers (Typ, Etype (N));
          Expr_Type := Etype (N);
 
@@ -3602,7 +3611,7 @@ package body Sem_Res is
               and then Full_Expander_Active
               and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
-               Establish_Transient_Scope (A, False);
+               Establish_Transient_Scope (A, Sec_Stack => False);
                Resolve (A, Etype (F));
 
             --  A small optimization: if one of the actuals is a concatenation
@@ -3621,7 +3630,7 @@ package body Sem_Res is
                       and then Chars (Nam) = Name_Asm)
               and then not Static_Concatenation (A)
             then
-               Establish_Transient_Scope (A, False);
+               Establish_Transient_Scope (A, Sec_Stack => False);
                Resolve (A, Etype (F));
 
             else
@@ -3634,7 +3643,7 @@ package body Sem_Res is
                then
                   Error_Msg_N
                     ("conversion between unrelated limited array types "
-                     & "not allowed (\A\I-00246)", A);
+                     & "not allowed ('A'I-00246)", A);
 
                   if Is_Limited_Type (Etype (F)) then
                      Explain_Limited_Type (Etype (F), A);
@@ -3666,8 +3675,8 @@ package body Sem_Res is
                      then
                         New_Itype := Create_Itype (E_Anonymous_Access_Type, A);
                         Set_Etype (New_Itype, Etype (A));
-                        Set_Directly_Designated_Type (New_Itype,
-                          Directly_Designated_Type (Etype (A)));
+                        Set_Directly_Designated_Type
+                          (New_Itype, Directly_Designated_Type (Etype (A)));
                         Set_Etype (A, New_Itype);
                      end if;
 
@@ -3680,7 +3689,7 @@ package body Sem_Res is
                      if (Is_Controlled (DDT) or else Has_Task (DDT))
                        and then Full_Expander_Active
                      then
-                        Establish_Transient_Scope (A, False);
+                        Establish_Transient_Scope (A, Sec_Stack => False);
                      end if;
                   end;
 
@@ -3701,7 +3710,7 @@ package body Sem_Res is
 
                if Is_Tagged_Type (F_Typ)
                  and then (Is_Concurrent_Type (F_Typ)
-                             or else Is_Concurrent_Record_Type (F_Typ))
+                            or else Is_Concurrent_Record_Type (F_Typ))
                then
                   --  If the actual is overloaded, look for an interpretation
                   --  that has a synchronized type.
@@ -3768,10 +3777,10 @@ package body Sem_Res is
                         Resolve (A, Etype (F));
                      end if;
                   end;
+
+               --  Not a synchronized operation
+
                else
-
-                  --  not a synchronized operation.
-
                   Resolve (A, Etype (F));
                end if;
             end if;
@@ -3933,6 +3942,16 @@ package body Sem_Res is
                  and then not Is_Init_Proc (Nam)
                then
                   Error_Msg_NE ("actual for& must be a variable", A, F);
+
+                  if Is_Subprogram (Current_Scope)
+                    and then
+                      (Is_Invariant_Procedure (Current_Scope)
+                        or else Is_Predicate_Function (Current_Scope))
+                  then
+                     Error_Msg_N
+                       ("function used in predicate cannot "
+                        & "modify its argument", F);
+                  end if;
                end if;
 
                --  What's the following about???
@@ -4155,7 +4174,7 @@ package body Sem_Res is
               and then (Is_Class_Wide_Type (Designated_Type (A_Typ))
                          or else (Nkind (A) = N_Attribute_Reference
                                    and then
-                                  Is_Class_Wide_Type (Etype (Prefix (A)))))
+                                     Is_Class_Wide_Type (Etype (Prefix (A)))))
               and then not Is_Class_Wide_Type (Designated_Type (F_Typ))
               and then not Is_Controlling_Formal (F)
 
@@ -4179,12 +4198,14 @@ package body Sem_Res is
             Eval_Actual (A);
 
             --  If it is a named association, treat the selector_name as a
-            --  proper identifier, and mark the corresponding entity. Ignore
-            --  this reference in SPARK mode, as it refers to an entity not in
-            --  scope at the point of reference, so the reference should be
-            --  ignored for computing effects of subprograms.
+            --  proper identifier, and mark the corresponding entity.
 
             if Nkind (Parent (A)) = N_Parameter_Association
+
+              --  Ignore reference in SPARK mode, as it refers to an entity not
+              --  in scope at the point of reference, so the reference should
+              --  be ignored for computing effects of subprograms.
+
               and then not SPARK_Mode
             then
                Set_Entity (Selector_Name (Parent (A)), F);
@@ -4344,7 +4365,7 @@ package body Sem_Res is
          --  of the current b-i-p implementation to unify the handling for
          --  multiple kinds of storage pools). ???
 
-         if Is_Immutably_Limited_Type (Desig_T)
+         if Is_Limited_View (Desig_T)
            and then Nkind (Expression (E)) = N_Function_Call
          then
             declare
@@ -4583,7 +4604,7 @@ package body Sem_Res is
 
                if Ada_Version >= Ada_2012
                  and then Is_Limited_Type (Desig_T)
-                 and then not Is_Immutably_Limited_Type (Scope (Discr))
+                 and then not Is_Limited_View (Scope (Discr))
                then
                   Error_Msg_N
                     ("only immutably limited types can have anonymous "
@@ -7262,6 +7283,17 @@ package body Sem_Res is
    procedure Resolve_Expression_With_Actions (N : Node_Id; Typ : Entity_Id) is
    begin
       Set_Etype (N, Typ);
+
+      --  If N has no actions, and its expression has been constant folded,
+      --  then rewrite N as just its expression. Note, we can't do this in
+      --  the general case of Is_Empty_List (Actions (N)) as this would cause
+      --  Expression (N) to be expanded again.
+
+      if Is_Empty_List (Actions (N))
+        and then Compile_Time_Known_Value (Expression (N))
+      then
+         Rewrite (N, Expression (N));
+      end if;
    end Resolve_Expression_With_Actions;
 
    ---------------------------
@@ -8295,19 +8327,22 @@ package body Sem_Res is
    begin
       --  Catch attempts to do fixed-point exponentiation with universal
       --  operands, which is a case where the illegality is not caught during
-      --  normal operator analysis.
+      --  normal operator analysis. This is not done in preanalysis mode
+      --  since the tree is not fully decorated during preanalysis.
 
-      if Is_Fixed_Point_Type (Typ) and then Comes_From_Source (N) then
-         Error_Msg_N ("exponentiation not available for fixed point", N);
-         return;
+      if Full_Analysis then
+         if Is_Fixed_Point_Type (Typ) and then Comes_From_Source (N) then
+            Error_Msg_N ("exponentiation not available for fixed point", N);
+            return;
 
-      elsif Nkind (Parent (N)) in N_Op
-        and then Is_Fixed_Point_Type (Etype (Parent (N)))
-        and then Etype (N) = Universal_Real
-        and then Comes_From_Source (N)
-      then
-         Error_Msg_N ("exponentiation not available for fixed point", N);
-         return;
+         elsif Nkind (Parent (N)) in N_Op
+           and then Is_Fixed_Point_Type (Etype (Parent (N)))
+           and then Etype (N) = Universal_Real
+           and then Comes_From_Source (N)
+         then
+            Error_Msg_N ("exponentiation not available for fixed point", N);
+            return;
+         end if;
       end if;
 
       if Comes_From_Source (N)
@@ -8326,7 +8361,7 @@ package body Sem_Res is
       end if;
 
       --  We do the resolution using the base type, because intermediate values
-      --  in expressions always are of the base type, not a subtype of it.
+      --  in expressions are always of the base type, not a subtype of it.
 
       Resolve (Left_Opnd (N), B_Typ);
       Resolve (Right_Opnd (N), Standard_Integer);
@@ -8981,6 +9016,30 @@ package body Sem_Res is
       R     : constant Node_Id   := Right_Opnd (N);
 
    begin
+      --  Ensure all actions associated with the left operand (e.g.
+      --  finalization of transient controlled objects) are fully evaluated
+      --  locally within an expression with actions. This is particularly
+      --  helpful for coverage analysis. However this should not happen in
+      --  generics.
+
+      if Full_Expander_Active then
+         declare
+            Reloc_L : constant Node_Id := Relocate_Node (L);
+         begin
+            Save_Interps (Old_N => L, New_N => Reloc_L);
+
+            Rewrite (L,
+              Make_Expression_With_Actions (Sloc (L),
+                Actions    => New_List,
+                Expression => Reloc_L));
+
+            --  Set Comes_From_Source on L to preserve warnings for unset
+            --  reference.
+
+            Set_Comes_From_Source (L, Comes_From_Source (Reloc_L));
+         end;
+      end if;
+
       Resolve (L, B_Typ);
       Resolve (R, B_Typ);
 
@@ -9843,7 +9902,7 @@ package body Sem_Res is
 
                --  Ada 2005 (AI-217): Handle entities from limited views
 
-               if From_With_Type (Opnd) then
+               if From_Limited_With (Opnd) then
                   Error_Msg_Qual_Level := 99;
                   Error_Msg_NE -- CODEFIX
                     ("missing WITH clause on package &", N,
@@ -9852,7 +9911,7 @@ package body Sem_Res is
                     ("type conversions require visibility of the full view",
                      N);
 
-               elsif From_With_Type (Target)
+               elsif From_Limited_With (Target)
                  and then not
                    (Is_Access_Type (Target_Typ)
                       and then Present (Non_Limited_View (Etype (Target))))
@@ -10856,7 +10915,7 @@ package body Sem_Res is
          --  it to determine whether the conversion is legal.
 
          elsif Is_Class_Wide_Type (Opnd_Type)
-           and then From_With_Type (Opnd_Type)
+           and then From_Limited_With (Opnd_Type)
            and then Present (Non_Limited_View (Etype (Opnd_Type)))
            and then Is_Interface (Non_Limited_View (Etype (Opnd_Type)))
          then
@@ -11331,7 +11390,7 @@ package body Sem_Res is
                --  Handle the limited view of a type
 
                if Is_Incomplete_Type (Desig)
-                 and then From_With_Type (Desig)
+                 and then From_Limited_With (Desig)
                  and then Present (Non_Limited_View (Desig))
                then
                   return Available_View (Desig);

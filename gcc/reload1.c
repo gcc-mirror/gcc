@@ -2325,7 +2325,7 @@ mark_home_live_1 (int regno, enum machine_mode mode)
     return;
   lim = end_hard_regno (mode, i);
   while (i < lim)
-    df_set_regs_ever_live(i++, true);
+    df_set_regs_ever_live (i++, true);
 }
 
 /* Mark the slots in regs_ever_live for the hard regs
@@ -2776,6 +2776,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       /* ... fall through ...  */
 
     case INSN_LIST:
+    case INT_LIST:
       /* Now do eliminations in the rest of the chain.  If this was
 	 an EXPR_LIST, this might result in allocating more memory than is
 	 strictly needed, but it simplifies the code.  */
@@ -5558,6 +5559,14 @@ reloads_unique_chain_p (int r1, int r2)
       || ! (reg_mentioned_p (rld[r1].in, rld[r2].in)
 	    || reg_mentioned_p (rld[r2].in, rld[r1].in)))
     return false;
+
+  /* The following loop assumes that r1 is the reload that feeds r2.  */
+  if (r1 > r2)
+    {
+      int tmp = r2;
+      r2 = r1;
+      r1 = tmp;
+    }
 
   for (i = 0; i < n_reloads; i ++)
     /* Look for input reloads that aren't our two */

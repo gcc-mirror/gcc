@@ -612,6 +612,9 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
    CLOBBERS is a list of STRING_CST nodes each naming a hard register
    that is clobbered by this insn.
 
+   LABELS is a list of labels, and if LABELS is non-NULL, FALLTHRU_BB
+   should be the fallthru basic block of the asm goto.
+
    Not all kinds of lvalue that may appear in OUTPUTS can be stored directly.
    Some elements of OUTPUTS may be replaced with trees representing temporary
    values.  The caller should copy those temporary values to the originally
@@ -621,7 +624,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
 static void
 expand_asm_operands (tree string, tree outputs, tree inputs,
-		     tree clobbers, tree labels, int vol, location_t locus)
+		     tree clobbers, tree labels, basic_block fallthru_bb,
+		     int vol, location_t locus)
 {
   rtvec argvec, constraintvec, labelvec;
   rtx body;
@@ -642,6 +646,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
+  rtx fallthru_label = NULL_RTX;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
@@ -806,7 +811,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  || ! allows_reg
 	  || is_inout)
 	{
-	  op = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_WRITE);
+	  op = expand_expr (val, NULL_RTX, VOIDmode,
+			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);
 	  if (MEM_P (op))
 	    op = validize_mem (op);
 
@@ -941,8 +947,24 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
   /* Copy labels to the vector.  */
   for (i = 0, tail = labels; i < nlabels; ++i, tail = TREE_CHAIN (tail))
-    ASM_OPERANDS_LABEL (body, i)
-      = gen_rtx_LABEL_REF (Pmode, label_rtx (TREE_VALUE (tail)));
+    {
+      rtx r;
+      /* If asm goto has any labels in the fallthru basic block, use
+	 a label that we emit immediately after the asm goto.  Expansion
+	 may insert further instructions into the same basic block after
+	 asm goto and if we don't do this, insertion of instructions on
+	 the fallthru edge might misbehave.  See PR58670.  */
+      if (fallthru_bb
+	  && label_to_block_fn (cfun, TREE_VALUE (tail)) == fallthru_bb)
+	{
+	  if (fallthru_label == NULL_RTX)
+	    fallthru_label = gen_label_rtx ();
+	  r = fallthru_label;
+	}
+      else
+	r = label_rtx (TREE_VALUE (tail));
+      ASM_OPERANDS_LABEL (body, i) = gen_rtx_LABEL_REF (Pmode, r);
+    }
 
   generating_concat_p = old_generating_concat_p;
 
@@ -1066,6 +1088,9 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	emit_insn (body);
     }
 
+  if (fallthru_label)
+    emit_label (fallthru_label);
+
   /* For any outputs that needed reloading into registers, spill them
      back to where they belong.  */
   for (i = 0; i < noutputs; ++i)
@@ -1086,6 +1111,7 @@ expand_asm_stmt (gimple stmt)
   const char *s;
   tree str, out, in, cl, labels;
   location_t locus = gimple_location (stmt);
+  basic_block fallthru_bb = NULL;
 
   /* Meh... convert the gimple asm operands into real tree lists.
      Eventually we should make all routines work on the vectors instead
@@ -1121,6 +1147,9 @@ expand_asm_stmt (gimple stmt)
   n = gimple_asm_nlabels (stmt);
   if (n > 0)
     {
+      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
+      if (fallthru)
+	fallthru_bb = fallthru->dest;
       t = labels = gimple_asm_label_op (stmt, 0);
       for (i = 1; i < n; i++)
 	t = TREE_CHAIN (t) = gimple_asm_label_op (stmt, i);
@@ -1146,7 +1175,7 @@ expand_asm_stmt (gimple stmt)
 
   /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
      OUTPUTS some trees for where the values were actually stored.  */
-  expand_asm_operands (str, outputs, in, cl, labels,
+  expand_asm_operands (str, outputs, in, cl, labels, fallthru_bb,
 		       gimple_asm_volatile_p (stmt), locus);
 
   /* Copy all the intermediate outputs into the specified outputs.  */
@@ -1638,11 +1667,11 @@ dump_case_nodes (FILE *f, struct case_node *root,
 
   fputs (";; ", f);
   if (high == low)
-    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC,
-	    indent_step * indent_level, "", low);
+    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC,
+	     indent_step * indent_level, "", low);
   else
-    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
-	    indent_step * indent_level, "", low, high);
+    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
+	     indent_step * indent_level, "", low, high);
   fputs ("\n", f);
 
   dump_case_nodes (f, root->right, indent_step, indent_level);
@@ -1799,7 +1828,7 @@ get_outgoing_edge_probs (basic_block bb)
   int prob_sum = 0;
   if (!bb)
     return 0;
-  FOR_EACH_EDGE(e, ei, bb->succs)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     prob_sum += e->probability;
   return prob_sum;
 }
@@ -1848,7 +1877,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   rtx fallback_label = label_rtx (case_list->code_label);
   rtx table_label = gen_label_rtx ();
   bool has_gaps = false;
-  edge default_edge = stmt_bb ? EDGE_SUCC(stmt_bb, 0) : NULL;
+  edge default_edge = stmt_bb ? EDGE_SUCC (stmt_bb, 0) : NULL;
   int default_prob = default_edge ? default_edge->probability : 0;
   int base = get_outgoing_edge_probs (stmt_bb);
   bool try_with_tablejump = false;
@@ -1973,7 +2002,7 @@ reset_out_edges_aux (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  FOR_EACH_EDGE(e, ei, bb->succs)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     e->aux = (void *)0;
 }
 
@@ -2039,7 +2068,7 @@ expand_case (gimple stmt)
 
   /* Find the default case target label.  */
   default_label = label_rtx (CASE_LABEL (gimple_switch_default_label (stmt)));
-  edge default_edge = EDGE_SUCC(bb, 0);
+  edge default_edge = EDGE_SUCC (bb, 0);
   int default_prob = default_edge->probability;
 
   /* Get upper and lower bounds of case values.  */

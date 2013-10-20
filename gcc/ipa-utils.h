@@ -42,6 +42,7 @@ int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
 			  bool (*ignore_edge) (struct cgraph_edge *));
 void ipa_free_postorder_info (void);
 vec<cgraph_node_ptr> ipa_get_nodes_in_cycle (struct cgraph_node *);
+bool ipa_edge_within_scc (struct cgraph_edge *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
@@ -107,6 +108,19 @@ possible_polymorphic_call_target_p (struct cgraph_edge *e,
 {
   return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
 					     e->indirect_info->otr_token, n);
+}
+
+/* Return true if N can be possibly target of a polymorphic call of
+   OBJ_TYPE_REF expression CALL.  */
+
+inline bool
+possible_polymorphic_call_target_p (tree call,
+				    struct cgraph_node *n)
+{
+  return possible_polymorphic_call_target_p (obj_type_ref_class (call),
+					     tree_to_uhwi
+						(OBJ_TYPE_REF_TOKEN (call)),
+					     n);
 }
 #endif  /* GCC_IPA_UTILS_H  */
 

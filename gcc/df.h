@@ -607,29 +607,29 @@ struct df_d
   bool redo_entry_and_exit;
 };
 
-#define DF_SCAN_BB_INFO(BB) (df_scan_get_bb_info((BB)->index))
-#define DF_RD_BB_INFO(BB) (df_rd_get_bb_info((BB)->index))
-#define DF_LR_BB_INFO(BB) (df_lr_get_bb_info((BB)->index))
-#define DF_LIVE_BB_INFO(BB) (df_live_get_bb_info((BB)->index))
-#define DF_WORD_LR_BB_INFO(BB) (df_word_lr_get_bb_info((BB)->index))
-#define DF_MD_BB_INFO(BB) (df_md_get_bb_info((BB)->index))
+#define DF_SCAN_BB_INFO(BB) (df_scan_get_bb_info ((BB)->index))
+#define DF_RD_BB_INFO(BB) (df_rd_get_bb_info ((BB)->index))
+#define DF_LR_BB_INFO(BB) (df_lr_get_bb_info ((BB)->index))
+#define DF_LIVE_BB_INFO(BB) (df_live_get_bb_info ((BB)->index))
+#define DF_WORD_LR_BB_INFO(BB) (df_word_lr_get_bb_info ((BB)->index))
+#define DF_MD_BB_INFO(BB) (df_md_get_bb_info ((BB)->index))
 
 /* Most transformations that wish to use live register analysis will
    use these macros.  This info is the and of the lr and live sets.  */
-#define DF_LIVE_IN(BB) (&DF_LIVE_BB_INFO(BB)->in)
-#define DF_LIVE_OUT(BB) (&DF_LIVE_BB_INFO(BB)->out)
+#define DF_LIVE_IN(BB) (&DF_LIVE_BB_INFO (BB)->in)
+#define DF_LIVE_OUT(BB) (&DF_LIVE_BB_INFO (BB)->out)
 
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
    be fixed.  */
-#define DF_LR_IN(BB) (&DF_LR_BB_INFO(BB)->in)
-#define DF_LR_OUT(BB) (&DF_LR_BB_INFO(BB)->out)
+#define DF_LR_IN(BB) (&DF_LR_BB_INFO (BB)->in)
+#define DF_LR_OUT(BB) (&DF_LR_BB_INFO (BB)->out)
 
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
    be fixed.  */
-#define DF_WORD_LR_IN(BB) (&DF_WORD_LR_BB_INFO(BB)->in)
-#define DF_WORD_LR_OUT(BB) (&DF_WORD_LR_BB_INFO(BB)->out)
+#define DF_WORD_LR_IN(BB) (&DF_WORD_LR_BB_INFO (BB)->in)
+#define DF_WORD_LR_OUT(BB) (&DF_WORD_LR_BB_INFO (BB)->out)
 
 /* Macros to access the elements within the ref structure.  */
 
@@ -640,10 +640,11 @@ struct df_d
 #define DF_REF_REAL_LOC(REF) (GET_CODE (*((REF)->regular_ref.loc)) == SUBREG \
                                ? &SUBREG_REG (*((REF)->regular_ref.loc)) : ((REF)->regular_ref.loc))
 #define DF_REF_REG(REF) ((REF)->base.reg)
-#define DF_REF_LOC(REF) (DF_REF_CLASS(REF) == DF_REF_REGULAR ? \
+#define DF_REF_LOC(REF) (DF_REF_CLASS (REF) == DF_REF_REGULAR ? \
 			 (REF)->regular_ref.loc : NULL)
-#define DF_REF_BB(REF) (DF_REF_IS_ARTIFICIAL(REF) ? \
-                        (REF)->artificial_ref.bb : BLOCK_FOR_INSN (DF_REF_INSN(REF)))
+#define DF_REF_BB(REF) (DF_REF_IS_ARTIFICIAL (REF) \
+			? (REF)->artificial_ref.bb \
+			: BLOCK_FOR_INSN (DF_REF_INSN (REF)))
 #define DF_REF_BBNO(REF) (DF_REF_BB (REF)->index)
 #define DF_REF_INSN_INFO(REF) ((REF)->base.insn_info)
 #define DF_REF_INSN(REF) ((REF)->base.insn_info->insn)
@@ -660,7 +661,7 @@ struct df_d
 /* If DF_REF_IS_ARTIFICIAL () is true, this is not a real
    definition/use, but an artificial one created to model always live
    registers, eh uses, etc.  */
-#define DF_REF_IS_ARTIFICIAL(REF) (DF_REF_CLASS(REF) == DF_REF_ARTIFICIAL)
+#define DF_REF_IS_ARTIFICIAL(REF) (DF_REF_CLASS (REF) == DF_REF_ARTIFICIAL)
 #define DF_REF_REG_MARK(REF) (DF_REF_FLAGS_SET ((REF),DF_REF_REG_MARKER))
 #define DF_REF_REG_UNMARK(REF) (DF_REF_FLAGS_CLEAR ((REF),DF_REF_REG_MARKER))
 #define DF_REF_IS_REG_MARKED(REF) (DF_REF_FLAGS_IS_SET ((REF),DF_REF_REG_MARKER))
@@ -722,35 +723,35 @@ struct df_d
 /* Macros to access the elements within the reg_info structure table.  */
 
 #define DF_REGNO_FIRST_DEF(REGNUM) \
-(DF_REG_DEF_GET(REGNUM) ? DF_REG_DEF_GET(REGNUM) : 0)
+(DF_REG_DEF_GET(REGNUM) ? DF_REG_DEF_GET (REGNUM) : 0)
 #define DF_REGNO_LAST_USE(REGNUM) \
-(DF_REG_USE_GET(REGNUM) ? DF_REG_USE_GET(REGNUM) : 0)
+(DF_REG_USE_GET(REGNUM) ? DF_REG_USE_GET (REGNUM) : 0)
 
 /* Macros to access the elements within the insn_info structure table.  */
 
 #define DF_INSN_SIZE() ((df)->insns_size)
-#define DF_INSN_INFO_GET(INSN) (df->insns[(INSN_UID(INSN))])
+#define DF_INSN_INFO_GET(INSN) (df->insns[(INSN_UID (INSN))])
 #define DF_INSN_INFO_SET(INSN,VAL) (df->insns[(INSN_UID (INSN))]=(VAL))
 #define DF_INSN_INFO_LUID(II) ((II)->luid)
 #define DF_INSN_INFO_DEFS(II) ((II)->defs)
 #define DF_INSN_INFO_USES(II) ((II)->uses)
 #define DF_INSN_INFO_EQ_USES(II) ((II)->eq_uses)
 
-#define DF_INSN_LUID(INSN) (DF_INSN_INFO_LUID (DF_INSN_INFO_GET(INSN)))
-#define DF_INSN_DEFS(INSN) (DF_INSN_INFO_DEFS (DF_INSN_INFO_GET(INSN)))
-#define DF_INSN_USES(INSN) (DF_INSN_INFO_USES (DF_INSN_INFO_GET(INSN)))
-#define DF_INSN_EQ_USES(INSN) (DF_INSN_INFO_EQ_USES (DF_INSN_INFO_GET(INSN)))
+#define DF_INSN_LUID(INSN) (DF_INSN_INFO_LUID (DF_INSN_INFO_GET (INSN)))
+#define DF_INSN_DEFS(INSN) (DF_INSN_INFO_DEFS (DF_INSN_INFO_GET (INSN)))
+#define DF_INSN_USES(INSN) (DF_INSN_INFO_USES (DF_INSN_INFO_GET (INSN)))
+#define DF_INSN_EQ_USES(INSN) (DF_INSN_INFO_EQ_USES (DF_INSN_INFO_GET (INSN)))
 
 #define DF_INSN_UID_GET(UID) (df->insns[(UID)])
 #define DF_INSN_UID_SET(UID,VAL) (df->insns[(UID)]=(VAL))
-#define DF_INSN_UID_SAFE_GET(UID) (((unsigned)(UID) < DF_INSN_SIZE())	\
+#define DF_INSN_UID_SAFE_GET(UID) (((unsigned)(UID) < DF_INSN_SIZE ())	\
                                      ? DF_INSN_UID_GET (UID) \
                                      : NULL)
-#define DF_INSN_UID_LUID(INSN) (DF_INSN_UID_GET(INSN)->luid)
-#define DF_INSN_UID_DEFS(INSN) (DF_INSN_UID_GET(INSN)->defs)
-#define DF_INSN_UID_USES(INSN) (DF_INSN_UID_GET(INSN)->uses)
-#define DF_INSN_UID_EQ_USES(INSN) (DF_INSN_UID_GET(INSN)->eq_uses)
-#define DF_INSN_UID_MWS(INSN) (DF_INSN_UID_GET(INSN)->mw_hardregs)
+#define DF_INSN_UID_LUID(INSN) (DF_INSN_UID_GET (INSN)->luid)
+#define DF_INSN_UID_DEFS(INSN) (DF_INSN_UID_GET (INSN)->defs)
+#define DF_INSN_UID_USES(INSN) (DF_INSN_UID_GET (INSN)->uses)
+#define DF_INSN_UID_EQ_USES(INSN) (DF_INSN_UID_GET (INSN)->eq_uses)
+#define DF_INSN_UID_MWS(INSN) (DF_INSN_UID_GET (INSN)->mw_hardregs)
 
 /* An obstack for bitmap not related to specific dataflow problems.
    This obstack should e.g. be used for bitmaps with a short life time

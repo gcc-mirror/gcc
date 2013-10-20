@@ -508,6 +508,48 @@ package Sinfo is
    --      simply ignore these nodes, since they are not relevant to the task
    --      of back annotating representation information.
 
+   ----------------
+   -- SPARK Mode --
+   ----------------
+
+   --  When a file is compiled in SPARK mode (-gnatd.F), a very light expansion
+   --  is performed and the analysis must generate a tree in a form that meets
+   --  additional requirements.
+
+   --  The SPARK expansion does two transformations of the tree, that cannot be
+   --  postponed after the frontend semantic analysis:
+
+   --    1. Replace renamings by renamed (object/subprogram). This requires
+   --       introducing temporaries at the point of the renaming, which must be
+   --       properly analyzed.
+
+   --    2. Fully qualify entity names. This is needed to generate suitable
+   --       local effects/call-graphs in ALI files, with the completely
+   --       qualified names (in particular the suffix to distinguish homonyms).
+
+   --  The tree after SPARK expansion should be fully analyzed semantically,
+   --  which sometimes requires the insertion of semantic pre-analysis, for
+   --  example for subprogram contracts and pragma check/assert. In particular,
+   --  all expression must have their proper type, and semantic links should be
+   --  set between tree nodes (partial to full view, etc.) Some kinds of nodes
+   --  should be either absent, or can be ignored by the formal verification
+   --  backend:
+
+   --      N_Object_Renaming_Declaration: can be ignored safely
+   --      N_Expression_Function:         absent (rewitten)
+   --      N_Expression_With_Actions:     absent (not generated)
+
+   --  SPARK cross-references are generated from the regular cross-references
+   --  (used for browsing and code understanding) and additional references
+   --  collected during semantic analysis, in particular on all dereferences.
+   --  These SPARK cross-references are output in a separate section of ALI
+   --  files, as described in spark_xrefs.adb. They are the basis for the
+   --  computation of data dependences in the formal verification backend.
+   --  This implies that all cross-references should be generated in this mode,
+   --  even those that would not make sense from a user point-of-view, and that
+   --  cross-references that do not lead to data dependences for subprograms
+   --  can be safely ignored.
+
    ------------------------
    -- Common Flag Fields --
    ------------------------
@@ -822,6 +864,11 @@ package Sinfo is
    --    In Ada 2012, Corresponding_Spec is set on expression functions that
    --    complete a subprogram declaration.
 
+   --  Corresponding_Spec_Of_Stub (Node2-Sem)
+   --    This field is present in subprogram, package, task and protected body
+   --    stubs where it points to the corresponding spec of the stub. Due to
+   --    clashes in the structure of nodes, we cannot use Corresponding_Spec.
+
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
    --    the parent unit that is the stub declaration for the subunit. It is
@@ -928,6 +975,15 @@ package Sinfo is
    --    Note: when a range check is required in contexts other than those
    --    listed above (e.g. in a return statement), an additional type
    --    conversion node is introduced to represent the required check.
+
+   --    A special case arises for the arguments of the Pred/Succ attributes.
+   --    Here the range check needed is against First + 1 ..  Last (Pred) or
+   --    First .. Last - 1 (Succ) of the corresponding base type. Essentially
+   --    these checks are what would be performed within the implicit body of
+   --    the functions that correspond to these attributes. In these cases,
+   --    the Do_Range check flag is set on the argument to the attribute
+   --    function, and the back end must special case the appropriate range
+   --    to check against.
 
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
@@ -1237,6 +1293,12 @@ package Sinfo is
    --    of the expressions contains an access attribute reference to the
    --    enclosing type. Such a self-reference can only appear in default-
    --    initialized aggregate for a record type.
+
+   --  Has_SP_Choice (Flag15-Sem)
+   --    Present in all nodes containing a Discrete_Choices field (N_Variant,
+   --    N_Case_Expression_Alternative, N_Case_Statement_Alternative). Set to
+   --    True if the Discrete_Choices list has at least one occurrence of a
+   --    statically predicated subtype.
 
    --  Has_Storage_Size_Pragma (Flag5-Sem)
    --    A flag present in an N_Task_Definition node to flag the presence of a
@@ -3056,8 +3118,7 @@ package Sinfo is
 
       --  VARIANT_PART ::=
       --    case discriminant_DIRECT_NAME is
-      --      VARIANT
-      --      {VARIANT}
+      --      VARIANT {VARIANT}
       --    end case;
 
       --  Note: the variants list can contain pragmas as well as variants.
@@ -3083,6 +3144,14 @@ package Sinfo is
       --  Enclosing_Variant (Node2-Sem)
       --  Present_Expr (Uint3-Sem)
       --  Dcheck_Function (Node5-Sem)
+      --  Has_SP_Choice (Flag15-Sem)
+
+      --  Note: in the list of Discrete_Choices, the tree passed to the back
+      --  end does not have choice entries corresponding to names of statically
+      --  predicated subtypes. Such entries are always expanded out to the list
+      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
+      --  mode also has this expansion, but done with a proper Rewrite call on
+      --  the N_Variant node so that ASIS can properly retrieve the original.
 
       ---------------------------------
       -- 3.8.1  Discrete Choice List --
@@ -3569,7 +3638,7 @@ package Sinfo is
       --  Sloc points to first selector name
       --  Choices (List1)
       --  Loop_Actions (List2-Sem)
-      --  Expression (Node3)
+      --  Expression (Node3) (empty if Box_Present)
       --  Box_Present (Flag15)
       --  Inherited_Discriminant (Flag13)
 
@@ -4067,11 +4136,15 @@ package Sinfo is
       --  Actions (List1)
       --  Discrete_Choices (List4)
       --  Expression (Node3)
+      --  Has_SP_Choice (Flag15-Sem)
 
       --  Note: The Actions field temporarily holds any actions associated with
       --  evaluation of the Expression. During expansion of the case expression
       --  these actions are wrapped into an N_Expressions_With_Actions node
       --  replacing the original expression.
+
+      --  Note: this node never appears in the tree passed to the back end,
+      --  since the expander converts case expressions into case statements.
 
       ---------------------------------
       -- 4.5.9 Quantified Expression --
@@ -4381,6 +4454,13 @@ package Sinfo is
       --  Sloc points to WHEN
       --  Discrete_Choices (List4)
       --  Statements (List3)
+      --  Has_SP_Choice (Flag15-Sem)
+
+      --  Note: in the list of Discrete_Choices, the tree passed to the back
+      --  end does not have choice entries corresponding to names of statically
+      --  predicated subtypes. Such entries are always expanded out to the list
+      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
+      --  mode does not have this expansion, and has the original choices.
 
       -------------------------
       -- 5.5  Loop Statement --
@@ -6055,6 +6135,7 @@ package Sinfo is
       --  N_Subprogram_Body_Stub
       --  Sloc points to FUNCTION or PROCEDURE
       --  Specification (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6069,6 +6150,7 @@ package Sinfo is
       --  N_Package_Body_Stub
       --  Sloc points to PACKAGE
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6083,6 +6165,7 @@ package Sinfo is
       --  N_Task_Body_Stub
       --  Sloc points to TASK
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -6099,6 +6182,7 @@ package Sinfo is
       --  N_Protected_Body_Stub
       --  Sloc points to PROTECTED
       --  Defining_Identifier (Node1)
+      --  Corresponding_Spec_Of_Stub (Node2-Sem)
       --  Library_Unit (Node4-Sem) points to the subunit
       --  Corresponding_Body (Node5-Sem)
 
@@ -7109,12 +7193,16 @@ package Sinfo is
       -- Contract --
       --------------
 
-      --  This node is used to hold the various parts of an entry or subprogram
-      --  contract, consisting in pre- and postconditions on the one hand, and
-      --  test-cases on the other hand.
+      --  This node is used to hold the various parts of an entry, subprogram
+      --  [body] or package [body] contract, in particular:
+      --     Abstract states declared by a package declaration
+      --     Contract cases that apply to a subprogram
+      --     Dependency relations of inputs and output of a subprogram
+      --     Global annotations classifying data as input or output
+      --     Initialization sequences for a package declaration
+      --     Pre- and postconditions that apply to a subprogram
 
-      --  It is referenced from an entry, a subprogram or a generic subprogram
-      --  entity.
+      --  The node appears in an entry and [generic] subprogram [body] entity.
 
       --  Sprint syntax:  <none> as the node should not appear in the tree, but
       --                  only attached to an entry or [generic] subprogram
@@ -7127,9 +7215,15 @@ package Sinfo is
       --  Classifications (Node3) (set to Empty if none)
 
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
-      --  to pre- and postconditions associated with an entry or a subprogram.
-      --  The pragmas can either come from source or be the byproduct of aspect
-      --  expansion. The ordering in the list is in LIFO fashion.
+      --  to pre- and postconditions associated with an entry or a subprogram
+      --  [body or stub]. The pragmas can either come from source or be the
+      --  byproduct of aspect expansion. Currently the following pragmas appear
+      --  in this list:
+      --    Post
+      --    Postcondition
+      --    Pre
+      --    Precondition
+      --  The ordering in the list is in LIFO fashion.
 
       --  Note that there might be multiple preconditions or postconditions
       --  in this list, either because they come from separate pragmas in the
@@ -7140,10 +7234,18 @@ package Sinfo is
       --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
       --  list is in LIFO fashion.
 
-      --  Classifications contains pragmas that either categorize subprogram
-      --  inputs and outputs or establish dependencies between them. Currently
-      --  pragmas Depends and Global are stored in this list. The ordering is
-      --  in LIFO fashion.
+      --  Classifications contains pragmas that either declare, categorize or
+      --  establish dependencies between subprogram or package inputs and
+      --  outputs. Currently the following pragmas appear in this list:
+      --    Abstract_States
+      --    Depends
+      --    Global
+      --    Initial_Condition
+      --    Initializes
+      --    Refined_Depends
+      --    Refined_Global
+      --    Refined_States
+      --  The ordering is in LIFO fashion.
 
       -------------------
       -- Expanded_Name --
@@ -7285,6 +7387,29 @@ package Sinfo is
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the FREEZE keyword in the Sprint file output.
+
+      ---------------------------
+      -- Freeze_Generic_Entity --
+      ---------------------------
+
+      --  The freeze point of an entity indicates the point at which the
+      --  information needed to generate code for the entity is complete.
+      --  The freeze node for an entity triggers expander activities, such as
+      --  build initialization procedures, and backend activities, such as
+      --  completing the elaboration of packages.
+
+      --  For entities declared within a generic unit, for which no code is
+      --  generated, the freeze point is not equally meaningful. However, in
+      --  Ada 2012 several semantic checks on declarations must be delayed to
+      --  the freeze point, and we need to include such a mark in the tree to
+      --  trigger these checks. The Freeze_Generic_Entity node plays no other
+      --  role, and is ignored by the expander and the back-end.
+
+      --  Sprint syntax: freeze_generic entity-name
+
+      --  N_Freeze_Generic_Entity
+      --  Sloc points near freeze point
+      --  Entity (Node4-Sem)
 
       --------------------------------
       -- Implicit Label Declaration --
@@ -7564,7 +7689,7 @@ package Sinfo is
       --  N_Subprogram_Info
       --  Sloc points to the entity for the procedure
       --  Identifier (Node1) identifier referencing the procedure
-      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc
+      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc)
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the quote in the Sprint file output.
@@ -7822,13 +7947,18 @@ package Sinfo is
       N_Raise_Program_Error,
       N_Raise_Storage_Error,
 
+      --  N_Subexpr, N_Has_Etype, N_Numeric_Or_String_Literal
+
+      N_Integer_Literal,
+      N_Real_Literal,
+      N_String_Literal,
+
       --  N_Subexpr, N_Has_Etype
 
       N_Explicit_Dereference,
       N_Expression_With_Actions,
       N_If_Expression,
       N_Indexed_Component,
-      N_Integer_Literal,
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
@@ -7838,11 +7968,9 @@ package Sinfo is
       N_Extension_Aggregate,
       N_Raise_Expression,
       N_Range,
-      N_Real_Literal,
       N_Reference,
       N_Selected_Component,
       N_Slice,
-      N_String_Literal,
       N_Subprogram_Info,
       N_Type_Conversion,
       N_Unchecked_Expression,
@@ -8049,6 +8177,7 @@ package Sinfo is
       N_Formal_Incomplete_Type_Definition,
       N_Formal_Signed_Integer_Type_Definition,
       N_Freeze_Entity,
+      N_Freeze_Generic_Entity,
       N_Generic_Association,
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
@@ -8143,8 +8272,8 @@ package Sinfo is
      N_Expanded_Name ..
      N_Attribute_Reference;
    --  Nodes that have Entity fields
-   --  Warning: DOES NOT INCLUDE N_Freeze_Entity, N_Aspect_Specification,
-   --  or N_Attribute_Definition_Clause.
+   --  Warning: DOES NOT INCLUDE N_Freeze_Entity, N_Freeze_Generic_Entity,
+   --  N_Aspect_Specification, or N_Attribute_Definition_Clause.
 
    subtype N_Has_Etype is Node_Kind range
      N_Error ..
@@ -8172,6 +8301,10 @@ package Sinfo is
    subtype N_Membership_Test is Node_Kind range
       N_In ..
       N_Not_In;
+
+   subtype N_Numeric_Or_String_Literal is Node_Kind range
+      N_Integer_Literal ..
+      N_String_Literal;
 
    subtype N_Op is Node_Kind range
      N_Op_Add ..
@@ -8484,6 +8617,9 @@ package Sinfo is
    function Corresponding_Spec
      (N : Node_Id) return Node_Id;    -- Node5
 
+   function Corresponding_Spec_Of_Stub
+     (N : Node_Id) return Node_Id;    -- Node2
+
    function Corresponding_Stub
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -8741,6 +8877,9 @@ package Sinfo is
 
    function Has_Self_Reference
      (N : Node_Id) return Boolean;    -- Flag13
+
+   function Has_SP_Choice
+     (N : Node_Id) return Boolean;    -- Flag15
 
    function Has_Storage_Size_Pragma
      (N : Node_Id) return Boolean;    -- Flag5
@@ -9480,6 +9619,9 @@ package Sinfo is
    procedure Set_Corresponding_Spec
      (N : Node_Id; Val : Node_Id);            -- Node5
 
+   procedure Set_Corresponding_Spec_Of_Stub
+     (N : Node_Id; Val : Node_Id);            -- Node2
+
    procedure Set_Corresponding_Stub
      (N : Node_Id; Val : Node_Id);            -- Node3
 
@@ -9734,6 +9876,9 @@ package Sinfo is
 
    procedure Set_Has_Self_Reference
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Has_SP_Choice
+     (N : Node_Id; Val : Boolean := True);    -- Flag15
 
    procedure Set_Has_Storage_Size_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag5
@@ -11490,28 +11635,28 @@ package Sinfo is
 
      N_Subprogram_Body_Stub =>
        (1 => True,    --  Specification (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Package_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Task_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
 
      N_Protected_Body_Stub =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Corresponding_Spec_Of_Stub (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Body (Node5-Sem)
@@ -11838,6 +11983,13 @@ package Sinfo is
         4 => False,   --  Entity (Node4-Sem)
         5 => False),  --  First_Subtype_Link (Node5-Sem)
 
+     N_Freeze_Generic_Entity =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  Entity (Node4-Sem)
+        5 => False),  --  unused
+
      N_Implicit_Label_Declaration =>
        (1 => True,    --  Defining_Identifier (Node1)
         2 => False,   --  Label_Construct (Node2-Sem)
@@ -12078,6 +12230,7 @@ package Sinfo is
    pragma Inline (Corresponding_Generic_Association);
    pragma Inline (Corresponding_Integer_Value);
    pragma Inline (Corresponding_Spec);
+   pragma Inline (Corresponding_Spec_Of_Stub);
    pragma Inline (Corresponding_Stub);
    pragma Inline (Dcheck_Function);
    pragma Inline (Declarations);
@@ -12160,6 +12313,7 @@ package Sinfo is
    pragma Inline (Has_Init_Expression);
    pragma Inline (Has_Local_Raise);
    pragma Inline (Has_Self_Reference);
+   pragma Inline (Has_SP_Choice);
    pragma Inline (Has_No_Elaboration_Code);
    pragma Inline (Has_Pragma_Suppress_All);
    pragma Inline (Has_Private_View);
@@ -12407,6 +12561,7 @@ package Sinfo is
    pragma Inline (Set_Corresponding_Generic_Association);
    pragma Inline (Set_Corresponding_Integer_Value);
    pragma Inline (Set_Corresponding_Spec);
+   pragma Inline (Set_Corresponding_Spec_Of_Stub);
    pragma Inline (Set_Corresponding_Stub);
    pragma Inline (Set_Dcheck_Function);
    pragma Inline (Set_Declarations);
@@ -12492,6 +12647,7 @@ package Sinfo is
    pragma Inline (Set_Has_Private_View);
    pragma Inline (Set_Has_Relative_Deadline_Pragma);
    pragma Inline (Set_Has_Self_Reference);
+   pragma Inline (Set_Has_SP_Choice);
    pragma Inline (Set_Has_Storage_Size_Pragma);
    pragma Inline (Set_Has_Wide_Character);
    pragma Inline (Set_Has_Wide_Wide_Character);

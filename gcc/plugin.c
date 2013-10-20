@@ -803,7 +803,7 @@ dump_active_plugins (FILE *file)
 	for (ci = plugin_callbacks[event]; ci; ci = ci->next)
 	  fprintf (file, " %s", ci->plugin_name);
 
-	putc('\n', file);
+	putc ('\n', file);
       }
 }
 
