@@ -1,3 +1,9 @@
+2013-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_SLOW_IMUL_IMM32_MEM,
+	X86_TUNE_SLOW_IMUL_IMM8): Keep enabled only for K8 and AMDFAM10.
+	(X86_TUNE_USE_VECTOR_FP_CONVERTS): Disable for generic.
+
 2013-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (ISA_HAS_WSBH): Define.
