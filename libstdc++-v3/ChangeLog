@@ -1,3 +1,11 @@
+2013-10-20  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58800
+	* include/bits/stl_algo.h (__unguarded_partition_pivot): Change
+	__last - 2 to __last - 1.
+	* testsuite/25_algorithms/nth_element/58800.cc: New
+
 2013-10-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/58729
