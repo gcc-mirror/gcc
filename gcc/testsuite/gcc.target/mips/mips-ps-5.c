@@ -2,7 +2,9 @@
 /* { dg-options "-mpaired-single -mgp64 -ftree-vectorize" } */
 /* { dg-skip-if "requires vectorization" { *-*-* } { "-O0" "-Os" } { "" } } */
 
-extern float a[], b[], c[];
+extern float a[] __attribute__ ((aligned (8)));
+extern float b[] __attribute__ ((aligned (8)));
+extern float c[] __attribute__ ((aligned (8)));
 
 NOMIPS16 void
 foo (void)

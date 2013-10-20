@@ -1,5 +1,10 @@
 2013-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/mips-ps-5.c: Add alignment attributes.
+	* gcc.target/mips/mips-ps-7.c: Likewise.
+
+2013-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/bswap-1.c, gcc.target/mips/bswap-2.c,
 	gcc.target/mips/bswap-3.c, gcc.target/mips/bswap-4.c,
 	gcc.target/mips/bswap-5.c, gcc.target/mips/bswap-6.c: New tests.
