@@ -1,3 +1,16 @@
+2013-10-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/58804
+	PR libstdc++/58729
+	* include/tr2/dynamic_bitset
+	(__dynamic_bitset_base<_WordT, _Alloc>::_M_are_all_aux,
+	__dynamic_bitset_base<_WordT, _Alloc>::_M_do_count):
+	Use __builtin_popcountll() instead of __builtin_popcountl().
+	* include/tr2/dynamic_bitset.tcc
+	(__dynamic_bitset_base<_WordT, _Alloc>::_M_do_find_first,
+	__dynamic_bitset_base<_WordT, _Alloc>::_M_do_find_next):
+	Use __builtin_ctzll() instead of __builtin_ctzl().
+
 2013-10-20  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Remove virtual class _Automaton.
