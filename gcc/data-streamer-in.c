@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
+#include "tree.h"
 #include "data-streamer.h"
 
 /* Read a string from the string table in DATA_IN using input block

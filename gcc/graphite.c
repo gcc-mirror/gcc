@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h"
+#include "tree.h"
 #include "tree-ssa.h"
 #include "tree-dump.h"
 #include "cfgloop.h"

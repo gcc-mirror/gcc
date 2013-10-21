@@ -25,6 +25,15 @@
 	* gcc.target/i386/memset-vector_loop-1.c: New test.
 	* gcc.target/i386/memset-vector_loop-2.c: New test.
 
+2013-10-21  Diego Novillo  <dnovillo@google.com>
+
+	* g++.dg/plugin/selfassign.c: Include tree.h.
+	* gcc.dg/plugin/finish_unit_plugin.c: Likewise.
+	* gcc.dg/plugin/ggcplug.c: Likewise.
+	* gcc.dg/plugin/one_time_plugin.c: Likewise.
+	* gcc.dg/plugin/selfassign.c: Likewise.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
+
 2013-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips-ps-5.c: Add alignment attributes.

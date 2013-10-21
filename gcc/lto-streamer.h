@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "plugin-api.h"
 #include "hash-table.h"
-#include "tree.h"
+#include "tree-core.h"
 #include "gimple.h"
 #include "target.h"
 #include "cgraph.h"

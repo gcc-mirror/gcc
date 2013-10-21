@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "data-streamer.h"
 
 /* Return index used to reference STRING of LEN characters in the string table
