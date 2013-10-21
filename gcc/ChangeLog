@@ -1,3 +1,10 @@
+2013-10-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* system.h: Move hwint.h include further down.
+	* hwint.h (sext_hwi, zext_hwi): Define unconditionally.  Add
+	gcc_checking_asserts.
+	* hwint.c (sext_hwi, zext_hwi): Delete ENABLE_CHECKING versions.
+
 2013-10-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Fix volatile issues in optimize_bit_field_compare.
