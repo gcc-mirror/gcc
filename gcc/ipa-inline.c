@@ -903,12 +903,16 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       sreal tmp, relbenefit_real, growth_real;
       int relbenefit = relative_time_benefit (callee_info, edge, edge_time);
+      /* Capping edge->count to max_count. edge->count can be larger than
+	 max_count if an inline adds new edges which increase max_count
+	 after max_count is computed.  */
+      int edge_count = edge->count > max_count ? max_count : edge->count;
 
       sreal_init (&relbenefit_real, relbenefit, 0);
       sreal_init (&growth_real, growth, 0);
 
       /* relative_edge_count.  */
-      sreal_init (&tmp, edge->count, 0);
+      sreal_init (&tmp, edge_count, 0);
       sreal_div (&tmp, &tmp, &max_count_real);
 
       /* relative_time_benefit.  */
@@ -921,16 +925,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
       badness = -1 * sreal_to_int (&tmp);
  
-      /* Be sure that insanity of the profile won't lead to increasing counts
-	 in the scalling and thus to overflow in the computation above.  */
-      gcc_assert (max_count >= edge->count);
       if (dump)
 	{
 	  fprintf (dump_file,
-		   "      %i (relative %f): profile info. Relative count %f"
+		   "      %i (relative %f): profile info. Relative count %f%s"
 		   " * Relative benefit %f\n",
 		   (int) badness, (double) badness / INT_MIN,
-		   (double) edge->count / max_count,
+		   (double) edge_count / max_count,
+		   edge->count > max_count ? " (capped to max_count)" : "",
 		   relbenefit * 100.0 / RELATIVE_TIME_BENEFIT_RANGE);
 	}
     }
