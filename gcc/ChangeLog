@@ -1,3 +1,8 @@
+2013-10-21  Paulo Matos  <pmatos@broadcom.com>
+
+	* ipa-inline.c (edge_badness): Cap edge->count at max_count for badness
+	calculations.
+
 2013-10-21  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_through_normal_block): New argument VISITED.
