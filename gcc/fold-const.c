@@ -2715,10 +2715,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case COMPONENT_REF:
 	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
 	     may be NULL when we're called to compare MEM_EXPRs.  */
-	  if (!OP_SAME_WITH_NULL (0))
+	  if (!OP_SAME_WITH_NULL (0)
+	      || !OP_SAME (1))
 	    return 0;
 	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
-	  return OP_SAME (1) && OP_SAME_WITH_NULL (2);
+	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
 	  if (!OP_SAME (0))
