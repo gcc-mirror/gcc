@@ -1,5 +1,11 @@
 2013-10-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58794
+	* c-c++-common/torture/pr58794-1.c: New testcase.
+	* c-c++-common/torture/pr58794-2.c: Likewise.
+
+2013-10-21  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/58742
 	* c-c++-common/fold-divmul-1.c: New testcase.
 
