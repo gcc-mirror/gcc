@@ -1,3 +1,8 @@
+2013-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58803
+	* gfortran.dg/proc_ptr_comp_38.f90: New.
+
 2013-10-21  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/58809

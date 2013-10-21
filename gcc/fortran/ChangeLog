@@ -1,3 +1,9 @@
+2013-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58803
+	* decl.c (match_ppc_decl): Prevent later
+	double free.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* trans-openmp.c: Include omp-low.h.
