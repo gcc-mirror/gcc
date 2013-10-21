@@ -1076,18 +1076,18 @@ const struct cpu_cost_table cortexa9_extra_costs =
     {
       COSTS_N_INSNS (3),	/* Simple.  */
       COSTS_N_INSNS (3),	/* Flag_setting.  */
-      COSTS_N_INSNS (4),	/* Extend.  */
+      COSTS_N_INSNS (2),	/* Extend.  */
       COSTS_N_INSNS (3),	/* Add.  */
-      COSTS_N_INSNS (4),	/* Extend_add.  */
+      COSTS_N_INSNS (2),	/* Extend_add.  */
       COSTS_N_INSNS (30)	/* Idiv.  No HW div on Cortex A9.  */
     },
     /* MULT DImode */
     {
       0,			/* Simple (N/A).  */
       0,			/* Flag_setting (N/A).  */
-      0,			/* Extend (N/A).  */
+      COSTS_N_INSNS (4),	/* Extend.  */
       0,			/* Add (N/A).  */
-      0,			/* Extend_add (N/A).  */
+      COSTS_N_INSNS (4),	/* Extend_add.  */
       0				/* Idiv (N/A).  */
     }
   },

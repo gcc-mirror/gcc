@@ -1,3 +1,8 @@
+2013-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa9_extra_costs): Update mult costs for
+	extend and extend_add.
+
 2013-10-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58794
