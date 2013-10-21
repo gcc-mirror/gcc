@@ -1,3 +1,7 @@
+2013-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386-tune.def: Add comment; organize into categories
+
 2013-10-21  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 
 	* config/i386/i386.c (expand_set_or_movmem_via_loop): Add issetmem
