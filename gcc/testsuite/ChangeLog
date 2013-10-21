@@ -1,3 +1,9 @@
+2013-10-21  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort().
+	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort() and
+	exit().
+
 2013-10-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58794
