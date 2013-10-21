@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
+#include "sbitmap.h"
 #include "tree-ssa.h"
 #include "timevar.h"
 #include "dumpfile.h"

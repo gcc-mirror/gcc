@@ -901,7 +901,7 @@ class Type
   // Build a type descriptor entry for this type.  Return a pointer to
   // it.  The location is the location which causes us to need the
   // entry.
-  tree
+  Bexpression*
   type_descriptor_pointer(Gogo* gogo, Location);
 
   // Return the type reflection string for this type.
@@ -1924,7 +1924,7 @@ class Struct_field
 {
  public:
   explicit Struct_field(const Typed_identifier& typed_identifier)
-    : typed_identifier_(typed_identifier), tag_(NULL)
+    : typed_identifier_(typed_identifier), tag_(NULL), is_imported_(false)
   { }
 
   // The field name.
@@ -1934,6 +1934,10 @@ class Struct_field
   // Return whether this struct field is named NAME.
   bool
   is_field_name(const std::string& name) const;
+
+  // Return whether this struct field is an unexported field named NAME.
+  bool
+  is_unexported_field_name(Gogo*, const std::string& name) const;
 
   // Return whether this struct field is an embedded built-in type.
   bool
@@ -1972,6 +1976,11 @@ class Struct_field
   set_tag(const std::string& tag)
   { this->tag_ = new std::string(tag); }
 
+  // Record that this field is defined in an imported struct.
+  void
+  set_is_imported()
+  { this->is_imported_ = true; }
+
   // Set the type.  This is only used in error cases.
   void
   set_type(Type* type)
@@ -1982,6 +1991,8 @@ class Struct_field
   Typed_identifier typed_identifier_;
   // The field tag.  This is NULL if the field has no tag.
   std::string* tag_;
+  // Whether this field is defined in an imported struct.
+  bool is_imported_;
 };
 
 // A list of struct fields.
@@ -2401,7 +2412,7 @@ class Map_type : public Type
   // Build a map descriptor for this type.  Return a pointer to it.
   // The location is the location which causes us to need the
   // descriptor.
-  tree
+  Bexpression*
   map_descriptor_pointer(Gogo* gogo, Location);
 
  protected:

@@ -165,8 +165,8 @@ package Prj is
    --  The defined kinds of variables
 
    Ignored : constant Variable_Kind;
-   --  Used to indicate that a package declaration must be ignored
-   --  while processing the project tree (unknown package name).
+   --  Used to indicate that a package declaration must be ignored while
+   --  processing the project tree (unknown package name).
 
    type Variable_Value (Kind : Variable_Kind := Undefined) is record
       Project  : Project_Id := No_Project;
@@ -262,7 +262,7 @@ package Prj is
                         Attributes => No_Variable,
                         Arrays     => No_Array,
                         Packages   => No_Package);
-   --  Default value of Declarations: indicates that there is no declarations
+   --  Default value of Declarations: used if there are no declarations
 
    type Package_Element is record
       Name   : Name_Id      := No_Name;
@@ -435,8 +435,8 @@ package Prj is
 
    function Other_Part (Source : Source_Id) return Source_Id;
    pragma Inline (Other_Part);
-   --  Source ID for the other part, if any: for a spec, indicates its body;
-   --  for a body, indicates its spec.
+   --  Source ID for the other part, if any: for a spec, returns its body;
+   --  for a body, returns its spec.
 
    No_Source : constant Source_Id := null;
 
@@ -595,9 +595,9 @@ package Prj is
       --  spec pattern.
 
       Config_File_Unique : Boolean := False;
-      --  Indicate if the config file specified to the compiler needs to be
-      --  unique. If it is unique, then all config files are concatenated into
-      --  a temp config file.
+      --  True if the config file specified to the compiler needs to be unique.
+      --  If it is unique, then all config files are concatenated into a temp
+      --  config file.
 
       Binder_Driver : File_Name_Type := No_File;
       --  The name of the binder driver for the language, if any
@@ -675,16 +675,26 @@ package Prj is
                            Clean_Object_Artifacts       => No_Name_List,
                            Clean_Source_Artifacts       => No_Name_List);
 
-   --  The following record ???
-
    type Language_Data is record
-      Name          : Name_Id         := No_Name;
-      Display_Name  : Name_Id         := No_Name;
-      Config        : Language_Config := No_Language_Config;
-      First_Source  : Source_Id       := No_Source;
+      Name : Name_Id := No_Name;
+      --  The name of the language in lower case
+
+      Display_Name : Name_Id := No_Name;
+      --  The name of the language, as found in attribute Languages
+
+      Config : Language_Config := No_Language_Config;
+      --  Configuration of the language
+
+      First_Source : Source_Id := No_Source;
+      --  Head of the list of sources of the language in the project
+
       Mapping_Files : Mapping_Files_Htable.Instance :=
                         Mapping_Files_Htable.Nil;
-      Next          : Language_Ptr  := No_Language_Index;
+      --  Hash table containing the mapping of the sources to their path names
+
+      Next : Language_Ptr := No_Language_Index;
+      --  Next language of the project
+
    end record;
 
    No_Language_Data : constant Language_Data :=
@@ -755,8 +765,7 @@ package Prj is
       --  recursive notation <dir>/** is used in attribute Source_Dirs.
 
       Language : Language_Ptr := No_Language_Index;
-      --  Index of the language. This is an index into
-      --  Project_Tree.Languages_Data.
+      --  Language of the source
 
       In_Interfaces : Boolean := True;
       --  False when the source is not included in interfaces, when attribute
@@ -1133,6 +1142,17 @@ package Prj is
       Auto_Init_Supported : Boolean := False;
       --  True if automatic initialisation is supported for shared stand-alone
       --  libraries.
+
+      --  Cleaning
+
+      Artifacts_In_Exec_Dir : Name_List_Index := No_Name_List;
+      --  List of regexp file names to be cleaned in the exec directory of the
+      --  main project.
+
+      Artifacts_In_Object_Dir : Name_List_Index := No_Name_List;
+      --  List of regexp file names to be cleaned in the object directory of
+      --  all projects.
+
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
@@ -1167,7 +1187,9 @@ package Prj is
                                Lib_Version_Options            => No_Name_List,
                                Symbolic_Link_Supported        => False,
                                Lib_Maj_Min_Id_Supported       => False,
-                               Auto_Init_Supported            => False);
+                               Auto_Init_Supported            => False,
+                               Artifacts_In_Exec_Dir          => No_Name_List,
+                               Artifacts_In_Object_Dir        => No_Name_List);
 
    -------------------------
    -- Aggregated projects --
@@ -1245,10 +1267,8 @@ package Prj is
       ---------------
 
       Languages : Language_Ptr := No_Language_Index;
-      --  First index of the language data in the project.
-      --  This is an index into the project_tree_data.languages_data.
-      --  Traversing the list gives access to all the languages supported by
-      --  the project.
+      --  First index of the language data in the project. Traversing the list
+      --  gives access to all the languages supported by the project.
 
       --------------
       -- Projects --
@@ -1332,19 +1352,20 @@ package Prj is
       --  Indicate that this is a Standalone Library Project File
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
-      --  For Standalone Library Project Files, indicate the list of Interface
-      --  ALI files.
+      --  For Standalone Library Project Files, list of Interface ALI files.
+
+      Other_Interfaces : String_List_Id := Nil_String;
+      --  List of non unit based sources in attribute Interfaces
 
       Lib_Auto_Init : Boolean := False;
-      --  For non static Stand-Alone Library Project Files, indicate if
-      --  the library initialisation should be automatic.
+      --  For non static Stand-Alone Library Project Files, True if the library
+      --  initialisation should be automatic.
 
       Symbol_Data : Symbol_Record := No_Symbols;
       --  Symbol file name, reference symbol file name, symbol policy
 
       Need_To_Build_Lib : Boolean := False;
-      --  Indicates that the library of a Library Project needs to be built or
-      --  rebuilt.
+      --  True if the library of a Library Project needs to be built or rebuilt
 
       -------------
       -- Sources --
@@ -1402,8 +1423,8 @@ package Prj is
       --  The path name of the configuration pragmas file, if any
 
       Config_File_Temp : Boolean := False;
-      --  An indication that the configuration pragmas file is a temporary file
-      --  that must be deleted at the end.
+      --  True if the configuration pragmas file is a temporary file that must
+      --  be deleted at the end.
 
       Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file
@@ -1959,8 +1980,7 @@ private
       --  setting the env var to the same value. When different from No_Path,
       --  this indicates that logical names (VMS) or environment variables were
       --  created and should be deassigned to avoid polluting the environment
-      --  on VMS.
-      --  gnatmake only
+      --  on VMS. This is for gnatmake only.
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid

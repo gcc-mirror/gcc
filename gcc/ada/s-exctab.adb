@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,15 +67,12 @@ package body System.Exception_Table is
       S1 : constant Big_String_Ptr := To_Ptr (A);
       S2 : constant Big_String_Ptr := To_Ptr (B);
       J : Integer := 1;
-
    begin
       loop
          if S1 (J) /= S2 (J) then
             return False;
-
          elsif S1 (J) = ASCII.NUL then
             return True;
-
          else
             J := J + 1;
          end if;
@@ -180,7 +177,7 @@ package body System.Exception_Table is
               Name_Length           => Copy'Length,
               Full_Name             => Dyn_Copy.all'Address,
               HTable_Ptr            => null,
-              Import_Code           => 0,
+              Foreign_Data          => Null_Address,
               Raise_Hook            => null);
 
          Register_Exception (Res);

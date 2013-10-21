@@ -16,9 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = march=v10/march=v32
-MULTILIB_DIRNAMES = v10 v32
+MULTILIB_OPTIONS = march=v8/march=v10/march=v32
+MULTILIB_DIRNAMES = v8 v10 v32
 MULTILIB_MATCHES = \
+		march?v8=mcpu?v8 \
 		march?v10=mcpu?etrax100lx \
 		march?v10=mcpu?ng \
 		march?v10=march?etrax100lx \

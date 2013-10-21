@@ -304,7 +304,7 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
     }
 
   /* Nor if the loop usually does not roll.  */
-  iterations = estimated_loop_iterations_int (loop);
+  iterations = get_estimated_loop_iterations_int (loop);
   if (iterations >= 0 && iterations <= 1)
     {
       if (dump_file)

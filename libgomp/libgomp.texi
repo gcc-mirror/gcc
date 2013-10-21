@@ -106,17 +106,17 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 @chapter Enabling OpenMP
 
 To activate the OpenMP extensions for C/C++ and Fortran, the compile-time 
-flag @command{-fopenmp} must be specified. This enables the OpenMP directive
+flag @command{-fopenmp} must be specified.  This enables the OpenMP directive
 @code{#pragma omp} in C/C++ and @code{!$omp} directives in free form, 
 @code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form, 
 @code{!$} conditional compilation sentinels in free form and @code{c$},
-@code{*$} and @code{!$} sentinels in fixed form, for Fortran. The flag also
+@code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
 arranges for automatic linking of the OpenMP runtime library 
 (@ref{Runtime Library Routines}).
 
 A complete description of all OpenMP directives accepted may be found in 
 the @uref{http://www.openmp.org, OpenMP Application Program Interface} manual,
-version 3.1.
+version 4.0.
 
 
 @c ---------------------------------------------------------------------
@@ -126,30 +126,37 @@ version 3.1.
 @node Runtime Library Routines
 @chapter Runtime Library Routines
 
-The runtime routines described here are defined by section 3 of the OpenMP 
-specifications in version 3.1. The routines are structured in following
+The runtime routines described here are defined by Section 3 of the OpenMP
+specification in version 4.0.  The routines are structured in following
 three parts:
 
-Control threads, processors and the parallel environment.
-
-They have C linkage, and don't throw exceptions.
+Control threads, processors and the parallel environment.  They have C
+linkage, and do not throw exceptions.
 
 @menu
 * omp_get_active_level::        Number of active parallel regions
 * omp_get_ancestor_thread_num:: Ancestor thread ID
+* omp_get_cancellation::        Whether cancellation support is enabled
+* omp_get_default_device::      Get the default device for target regions
 * omp_get_dynamic::             Dynamic teams setting
 * omp_get_level::               Number of parallel regions
 * omp_get_max_active_levels::   Maximum number of active regions
 * omp_get_max_threads::         Maximum number of threads of parallel region
 * omp_get_nested::              Nested parallel regions
+* omp_get_num_devices::         Number of target devices
 * omp_get_num_procs::           Number of processors online
+* omp_get_num_teams::           Number of teams
 * omp_get_num_threads::         Size of the active team
+* omp_get_proc_bind::           Whether theads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
+* omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
 * omp_get_thread_limit::        Maximum number of threads
 * omp_get_thread_num::          Current thread ID
 * omp_in_parallel::             Whether a parallel region is active
 * omp_in_final::                Whether in final or included task region
+* omp_is_initial_device::       Whether executing on the host device
+* omp_set_default_device::      Set the default device for target regions
 * omp_set_dynamic::             Enable/disable dynamic teams
 * omp_set_max_active_levels::   Limits the number of active parallel regions
 * omp_set_nested::              Enable/disable nested parallel regions
@@ -202,7 +209,7 @@ which enclose the calling call.
 @ref{omp_get_level}, @ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.19.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.20.
 @end table
 
 
@@ -212,7 +219,7 @@ which enclose the calling call.
 @table @asis
 @item @emph{Description}:
 This function returns the thread identification number for the given
-nesting level of the current thread. For values of @var{level} outside
+nesting level of the current thread.  For values of @var{level} outside
 zero to @code{omp_get_level} -1 is returned; if @var{level} is
 @code{omp_get_level} the result is identical to @code{omp_get_thread_num}.
 
@@ -231,7 +238,60 @@ zero to @code{omp_get_level} -1 is returned; if @var{level} is
 @ref{omp_get_level}, @ref{omp_get_thread_num}, @ref{omp_get_team_size}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.17.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.18.
+@end table
+
+
+
+@node omp_get_cancellation
+@section @code{omp_get_cancellation} -- Whether cancellation support is enabled
+@table @asis
+@item @emph{Description}:
+This function returns @code{true} if cancellation is activated, @code{false}
+otherwise.  Here, @code{true} and @code{false} represent their language-specific
+counterparts.  Unless @env{OMP_CANCELLATION} is set true, cancellations are
+deactivated.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_cancellation(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_get_cancellation()}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_CANCELLATION}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.9.
+@end table
+
+
+
+@node omp_get_default_device
+@section @code{omp_get_default_device} -- Get the default device for target regions
+@table @asis
+@item @emph{Description}:
+Get the default device for target regions without device clause.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_default_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_default_device()}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.24.
 @end table
 
 
@@ -245,8 +305,8 @@ Here, @code{true} and @code{false} represent their language-specific
 counterparts.
 
 The dynamic team setting may be initialized at startup by the 
-@code{OMP_DYNAMIC} environment variable or at runtime using 
-@code{omp_set_dynamic}. If undefined, dynamic adjustment is 
+@env{OMP_DYNAMIC} environment variable or at runtime using
+@code{omp_set_dynamic}.  If undefined, dynamic adjustment is
 disabled by default.
 
 @item @emph{C/C++}:
@@ -263,7 +323,7 @@ disabled by default.
 @ref{omp_set_dynamic}, @ref{OMP_DYNAMIC}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.8.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.8.
 @end table
 
 
@@ -289,7 +349,7 @@ which enclose the calling call.
 @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.16.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.17.
 @end table
 
 
@@ -314,7 +374,7 @@ This function obtains the maximum allowed number of nested, active parallel regi
 @ref{omp_set_max_active_levels}, @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.15.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.16.
 @end table
 
 
@@ -340,7 +400,7 @@ that does not use the clause @code{num_threads}.
 @ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.3.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.3.
 @end table
 
 
@@ -350,12 +410,12 @@ that does not use the clause @code{num_threads}.
 @table @asis
 @item @emph{Description}:
 This function returns @code{true} if nested parallel regions are
-enabled, @code{false} otherwise. Here, @code{true} and @code{false} 
+enabled, @code{false} otherwise.  Here, @code{true} and @code{false}
 represent their language-specific counterparts.
 
 Nested parallel regions may be initialized at startup by the 
-@code{OMP_NESTED} environment variable or at runtime using 
-@code{omp_set_nested}. If undefined, nested parallel regions are
+@env{OMP_NESTED} environment variable or at runtime using
+@code{omp_set_nested}.  If undefined, nested parallel regions are
 disabled by default.
 
 @item @emph{C/C++}:
@@ -372,7 +432,29 @@ disabled by default.
 @ref{omp_set_nested}, @ref{OMP_NESTED}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.10.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.11.
+@end table
+
+
+
+@node omp_get_num_devices
+@section @code{omp_get_num_devices} -- Number of target devices
+@table @asis
+@item @emph{Description}:
+Returns the number of target devices.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_devices(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_devices()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.25.
 @end table
 
 
@@ -381,7 +463,7 @@ disabled by default.
 @section @code{omp_get_num_procs} -- Number of processors online
 @table @asis
 @item @emph{Description}:
-Returns the number of processors online.
+Returns the number of processors online on that device.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -394,7 +476,29 @@ Returns the number of processors online.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.5.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.5.
+@end table
+
+
+
+@node omp_get_num_teams
+@section @code{omp_get_num_teams} -- Number of teams
+@table @asis
+@item @emph{Description}:
+Returns the number of teams in the current team region.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_teams(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_teams()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.26.
 @end table
 
 
@@ -403,14 +507,14 @@ Returns the number of processors online.
 @section @code{omp_get_num_threads} -- Size of the active team
 @table @asis
 @item @emph{Description}:
-Returns the number of threads in the current team. In a sequential section of 
+Returns the number of threads in the current team.  In a sequential section of
 the program @code{omp_get_num_threads} returns 1.
 
 The default team size may be initialized at startup by the 
-@code{OMP_NUM_THREADS} environment variable. At runtime, the size 
+@env{OMP_NUM_THREADS} environment variable.  At runtime, the size
 of the current team may be set either by the @code{NUM_THREADS}
-clause or by @code{omp_set_num_threads}. If none of the above were 
-used to define a specific value and @code{OMP_DYNAMIC} is disabled,
+clause or by @code{omp_set_num_threads}.  If none of the above were
+used to define a specific value and @env{OMP_DYNAMIC} is disabled,
 one thread per CPU online is used.
 
 @item @emph{C/C++}:
@@ -427,7 +531,35 @@ one thread per CPU online is used.
 @ref{omp_get_max_threads}, @ref{omp_set_num_threads}, @ref{OMP_NUM_THREADS}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.2.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.2.
+@end table
+
+
+
+@node omp_get_proc_bind
+@section @code{omp_get_proc_bind} -- Whether theads may be moved between CPUs
+@table @asis
+@item @emph{Description}:
+This functions returns the currently active thread affinity policy, which is
+set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
+@code{omp_proc_bind_true}, @code{omp_proc_bind_master},
+@code{omp_proc_bind_close} and @code{omp_proc_bind_spread}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_proc_bind_t omp_get_proc_bind(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(kind=omp_proc_bind_kind) function omp_get_proc_bind()}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_PROC_BIND}, @ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY},
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.22.
 @end table
 
 
@@ -436,19 +568,19 @@ one thread per CPU online is used.
 @section @code{omp_get_schedule} -- Obtain the runtime scheduling method
 @table @asis
 @item @emph{Description}:
-Obtain the runtime scheduling method. The @var{kind} argument will be
+Obtain the runtime scheduling method.  The @var{kind} argument will be
 set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
-@code{omp_sched_guided} or @code{omp_sched_auto}. The second argument,
+@code{omp_sched_guided} or @code{omp_sched_auto}.  The second argument,
 @var{modifier}, is set to the chunk size.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_schedule(omp_sched_t *kind, int *modifier);}
+@item @emph{Prototype}: @tab @code{void omp_get_schedule(omp_sched_t *kind, int *modifier);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_schedule(kind, modifier)}
+@item @emph{Interface}: @tab @code{subroutine omp_get_schedule(kind, modifier)}
 @item                   @tab @code{integer(kind=omp_sched_kind) kind}
 @item                   @tab @code{integer modifier}
 @end multitable
@@ -457,7 +589,29 @@ set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
 @ref{omp_set_schedule}, @ref{OMP_SCHEDULE}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.12.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.13.
+@end table
+
+
+
+@node omp_get_team_num
+@section @code{omp_get_team_num} -- Get team number
+@table @asis
+@item @emph{Description}:
+Returns the team number of the calling thread.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_team_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_team_num()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.27.
 @end table
 
 
@@ -467,7 +621,7 @@ set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
 @table @asis
 @item @emph{Description}:
 This function returns the number of threads in a thread team to which
-either the current thread or its ancestor belongs. For values of @var{level}
+either the current thread or its ancestor belongs.  For values of @var{level}
 outside zero to @code{omp_get_level}, -1 is returned; if @var{level} is zero,
 1 is returned, and for @code{omp_get_level}, the result is identical
 to @code{omp_get_num_threads}.
@@ -487,7 +641,7 @@ to @code{omp_get_num_threads}.
 @ref{omp_get_num_threads}, @ref{omp_get_level}, @ref{omp_get_ancestor_thread_num}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.18.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.19.
 @end table
 
 
@@ -512,19 +666,19 @@ Return the maximum number of threads of the program.
 @ref{omp_get_max_threads}, @ref{OMP_THREAD_LIMIT}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.13.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.14.
 @end table
 
 
 
-@node omp_get_thread_num 
+@node omp_get_thread_num
 @section @code{omp_get_thread_num} -- Current thread ID
 @table @asis
 @item @emph{Description}:
 Returns a unique thread identification number within the current team.
 In a sequential parts of the program, @code{omp_get_thread_num}
-always returns 0. In parallel regions the return value varies
-from 0 to @code{omp_get_num_threads}-1 inclusive. The return 
+always returns 0.  In parallel regions the return value varies
+from 0 to @code{omp_get_num_threads}-1 inclusive.  The return
 value of the master thread of a team is always 0.
 
 @item @emph{C/C++}:
@@ -541,7 +695,7 @@ value of the master thread of a team is always 0.
 @ref{omp_get_num_threads}, @ref{omp_get_ancestor_thread_num}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.4.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.4.
 @end table
 
 
@@ -550,8 +704,8 @@ value of the master thread of a team is always 0.
 @section @code{omp_in_parallel} -- Whether a parallel region is active
 @table @asis
 @item @emph{Description}:
-This function returns @code{true} if currently running in parallel, 
-@code{false} otherwise. Here, @code{true} and @code{false} represent 
+This function returns @code{true} if currently running in parallel,
+@code{false} otherwise.  Here, @code{true} and @code{false} represent
 their language-specific counterparts.
 
 @item @emph{C/C++}:
@@ -565,7 +719,7 @@ their language-specific counterparts.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.6.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.6.
 @end table
 
 
@@ -574,7 +728,7 @@ their language-specific counterparts.
 @table @asis
 @item @emph{Description}:
 This function returns @code{true} if currently running in a final
-or included task region, @code{false} otherwise. Here, @code{true}
+or included task region, @code{false} otherwise.  Here, @code{true}
 and @code{false} represent their language-specific counterparts.
 
 @item @emph{C/C++}:
@@ -588,8 +742,60 @@ and @code{false} represent their language-specific counterparts.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.20.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.21.
 @end table
+
+
+
+@node omp_is_initial_device
+@section @code{omp_is_initial_device} -- Whether executing on the host device
+@table @asis
+@item @emph{Description}:
+This function returns @code{true} if currently running on the host device,
+@code{false} otherwise.  Here, @code{true} and @code{false} represent
+their language-specific counterparts.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_is_initial_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_is_initial_device()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.28.
+@end table
+
+
+
+@node omp_set_default_device
+@section @code{omp_set_default_device} -- Set the default device for target regions
+@table @asis
+@item @emph{Description}:
+Set the default device for target regions without device clause.  The argument
+shall be a nonnegative device number.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_default_device(int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_default_device(device_num)}
+@item                   @tab @code{integer device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}, @ref{omp_get_default_device}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.23.
+@end table
+
 
 
 @node omp_set_dynamic
@@ -597,7 +803,7 @@ and @code{false} represent their language-specific counterparts.
 @table @asis
 @item @emph{Description}:
 Enable or disable the dynamic adjustment of the number of threads 
-within a team. The function takes the language-specific equivalent
+within a team.  The function takes the language-specific equivalent
 of @code{true} and @code{false}, where @code{true} enables dynamic 
 adjustment of team sizes and @code{false} disables it.
 
@@ -616,7 +822,7 @@ adjustment of team sizes and @code{false} disables it.
 @ref{OMP_DYNAMIC}, @ref{omp_get_dynamic}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.7.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.7.
 @end table
 
 
@@ -643,7 +849,7 @@ parallel regions.
 @ref{omp_get_max_active_levels}, @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.14.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.15.
 @end table
 
 
@@ -653,7 +859,7 @@ parallel regions.
 @table @asis
 @item @emph{Description}:
 Enable or disable nested parallel regions, i.e., whether team members
-are allowed to create new teams. The function takes the language-specific 
+are allowed to create new teams.  The function takes the language-specific
 equivalent of @code{true} and @code{false}, where @code{true} enables 
 dynamic adjustment of team sizes and @code{false} disables it.
 
@@ -672,7 +878,7 @@ dynamic adjustment of team sizes and @code{false} disables it.
 @ref{OMP_NESTED}, @ref{omp_get_nested}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.9.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.10.
 @end table
 
 
@@ -682,8 +888,8 @@ dynamic adjustment of team sizes and @code{false} disables it.
 @table @asis
 @item @emph{Description}:
 Specifies the number of threads used by default in subsequent parallel 
-sections, if those do not specify a @code{num_threads} clause. The 
-argument of @code{omp_set_num_threads} shall be a positive integer. 
+sections, if those do not specify a @code{num_threads} clause.  The
+argument of @code{omp_set_num_threads} shall be a positive integer.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -700,7 +906,7 @@ argument of @code{omp_set_num_threads} shall be a positive integer.
 @ref{OMP_NUM_THREADS}, @ref{omp_get_num_threads}, @ref{omp_get_max_threads}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.1.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.1.
 @end table
 
 
@@ -709,16 +915,16 @@ argument of @code{omp_set_num_threads} shall be a positive integer.
 @section @code{omp_set_schedule} -- Set the runtime scheduling method
 @table @asis
 @item @emph{Description}:
-Sets the runtime scheduling method. The @var{kind} argument can have the
+Sets the runtime scheduling method.  The @var{kind} argument can have the
 value @code{omp_sched_static}, @code{omp_sched_dynamic},
-@code{omp_sched_guided} or @code{omp_sched_auto}. Except for
+@code{omp_sched_guided} or @code{omp_sched_auto}.  Except for
 @code{omp_sched_auto}, the chunk size is set to the value of
 @var{modifier} if positive, or to the default value if zero or negative.
 For @code{omp_sched_auto} the @var{modifier} argument is ignored.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_schedule(omp_sched_t *kind, int *modifier);}
+@item @emph{Prototype}: @tab @code{void omp_set_schedule(omp_sched_t kind, int modifier);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -733,7 +939,7 @@ For @code{omp_sched_auto} the @var{modifier} argument is ignored.
 @ref{OMP_SCHEDULE}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.2.11.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.2.12.
 @end table
 
 
@@ -742,7 +948,7 @@ For @code{omp_sched_auto} the @var{modifier} argument is ignored.
 @section @code{omp_init_lock} -- Initialize simple lock
 @table @asis
 @item @emph{Description}:
-Initialize a simple lock.  After initialization, the lock is in 
+Initialize a simple lock.  After initialization, the lock is in
 an unlocked state.
 
 @item @emph{C/C++}:
@@ -760,7 +966,7 @@ an unlocked state.
 @ref{omp_destroy_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.1.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.1.
 @end table
 
 
@@ -770,8 +976,8 @@ an unlocked state.
 @table @asis
 @item @emph{Description}:
 Before setting a simple lock, the lock variable must be initialized by 
-@code{omp_init_lock}. The calling thread is blocked until the lock 
-is available. If the lock is already held by the current thread, 
+@code{omp_init_lock}.  The calling thread is blocked until the lock 
+is available.  If the lock is already held by the current thread, 
 a deadlock occurs.
 
 @item @emph{C/C++}:
@@ -789,7 +995,7 @@ a deadlock occurs.
 @ref{omp_init_lock}, @ref{omp_test_lock}, @ref{omp_unset_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.3.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.3.
 @end table
 
 
@@ -799,9 +1005,9 @@ a deadlock occurs.
 @table @asis
 @item @emph{Description}:
 Before setting a simple lock, the lock variable must be initialized by 
-@code{omp_init_lock}. Contrary to @code{omp_set_lock}, @code{omp_test_lock} 
-does not block if the lock is not available. This function returns 
-@code{true} upon success, @code{false} otherwise. Here, @code{true} and 
+@code{omp_init_lock}.  Contrary to @code{omp_set_lock}, @code{omp_test_lock} 
+does not block if the lock is not available.  This function returns
+@code{true} upon success, @code{false} otherwise.  Here, @code{true} and
 @code{false} represent their language-specific counterparts.
 
 @item @emph{C/C++}:
@@ -819,7 +1025,7 @@ does not block if the lock is not available. This function returns
 @ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.5.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.5.
 @end table
 
 
@@ -829,9 +1035,9 @@ does not block if the lock is not available. This function returns
 @table @asis
 @item @emph{Description}:
 A simple lock about to be unset must have been locked by @code{omp_set_lock}
-or @code{omp_test_lock} before. In addition, the lock must be held by the 
-thread calling @code{omp_unset_lock}. Then, the lock becomes unlocked. If one 
-or more threads attempted to set the lock before, one of them is chosen to, 
+or @code{omp_test_lock} before.  In addition, the lock must be held by the
+thread calling @code{omp_unset_lock}.  Then, the lock becomes unlocked.  If one
+or more threads attempted to set the lock before, one of them is chosen to,
 again, set the lock to itself.
 
 @item @emph{C/C++}:
@@ -849,7 +1055,7 @@ again, set the lock to itself.
 @ref{omp_set_lock}, @ref{omp_test_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.4.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.4.
 @end table
 
 
@@ -858,7 +1064,7 @@ again, set the lock to itself.
 @section @code{omp_destroy_lock} -- Destroy simple lock
 @table @asis
 @item @emph{Description}:
-Destroy a simple lock. In order to be destroyed, a simple lock must be 
+Destroy a simple lock.  In order to be destroyed, a simple lock must be
 in the unlocked state. 
 
 @item @emph{C/C++}:
@@ -876,7 +1082,7 @@ in the unlocked state.
 @ref{omp_init_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.2.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.2.
 @end table
 
 
@@ -885,7 +1091,7 @@ in the unlocked state.
 @section @code{omp_init_nest_lock} -- Initialize nested lock
 @table @asis
 @item @emph{Description}:
-Initialize a nested lock.  After initialization, the lock is in 
+Initialize a nested lock.  After initialization, the lock is in
 an unlocked state and the nesting count is set to zero.
 
 @item @emph{C/C++}:
@@ -903,7 +1109,7 @@ an unlocked state and the nesting count is set to zero.
 @ref{omp_destroy_nest_lock}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.1.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.1.
 @end table
 
 
@@ -912,8 +1118,8 @@ an unlocked state and the nesting count is set to zero.
 @table @asis
 @item @emph{Description}:
 Before setting a nested lock, the lock variable must be initialized by 
-@code{omp_init_nest_lock}. The calling thread is blocked until the lock 
-is available. If the lock is already held by the current thread, the 
+@code{omp_init_nest_lock}.  The calling thread is blocked until the lock
+is available.  If the lock is already held by the current thread, the
 nesting count for the lock is incremented.
 
 @item @emph{C/C++}:
@@ -931,7 +1137,7 @@ nesting count for the lock is incremented.
 @ref{omp_init_nest_lock}, @ref{omp_unset_nest_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.3.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.3.
 @end table
 
 
@@ -941,10 +1147,10 @@ nesting count for the lock is incremented.
 @table @asis
 @item @emph{Description}:
 Before setting a nested lock, the lock variable must be initialized by 
-@code{omp_init_nest_lock}. Contrary to @code{omp_set_nest_lock}, 
+@code{omp_init_nest_lock}.  Contrary to @code{omp_set_nest_lock},
 @code{omp_test_nest_lock} does not block if the lock is not available. 
 If the lock is already held by the current thread, the new nesting count 
-is returned. Otherwise, the return value equals zero.
+is returned.  Otherwise, the return value equals zero.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -962,7 +1168,7 @@ is returned. Otherwise, the return value equals zero.
 @ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.5.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.5.
 @end table
 
 
@@ -972,9 +1178,9 @@ is returned. Otherwise, the return value equals zero.
 @table @asis
 @item @emph{Description}:
 A nested lock about to be unset must have been locked by @code{omp_set_nested_lock}
-or @code{omp_test_nested_lock} before. In addition, the lock must be held by the 
-thread calling @code{omp_unset_nested_lock}. If the nesting count drops to zero, the 
-lock becomes unlocked. If one ore more threads attempted to set the lock before, 
+or @code{omp_test_nested_lock} before.  In addition, the lock must be held by the
+thread calling @code{omp_unset_nested_lock}.  If the nesting count drops to zero, the
+lock becomes unlocked.  If one ore more threads attempted to set the lock before,
 one of them is chosen to, again, set the lock to itself.
 
 @item @emph{C/C++}:
@@ -992,7 +1198,7 @@ one of them is chosen to, again, set the lock to itself.
 @ref{omp_set_nest_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.4.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.4.
 @end table
 
 
@@ -1001,7 +1207,7 @@ one of them is chosen to, again, set the lock to itself.
 @section @code{omp_destroy_nest_lock} -- Destroy nested lock
 @table @asis
 @item @emph{Description}:
-Destroy a nested lock. In order to be destroyed, a nested lock must be 
+Destroy a nested lock.  In order to be destroyed, a nested lock must be
 in the unlocked state and its nesting count must equal zero.
 
 @item @emph{C/C++}:
@@ -1019,7 +1225,7 @@ in the unlocked state and its nesting count must equal zero.
 @ref{omp_init_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.3.2.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.3.2.
 @end table
 
 
@@ -1045,7 +1251,7 @@ successive clock ticks.
 @ref{omp_get_wtime}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.4.2.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.4.2.
 @end table
 
 
@@ -1054,7 +1260,7 @@ successive clock ticks.
 @section @code{omp_get_wtime} -- Elapsed wall clock time
 @table @asis
 @item @emph{Description}:
-Elapsed wall clock time in seconds. The time is measured per thread, no 
+Elapsed wall clock time in seconds.  The time is measured per thread, no
 guarantee can be made that two distinct threads measure the same time.
 Time is measured from some "time in the past", which is an arbitrary time
 guaranteed not to change during the execution of the program.
@@ -1073,7 +1279,7 @@ guaranteed not to change during the execution of the program.
 @ref{omp_get_wtick}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v3.1}, section 3.4.1.
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 3.4.1.
 @end table
 
 
@@ -1090,20 +1296,79 @@ section 4 of the OpenMP specification in version 4.0, while those
 beginning with @env{GOMP_} are GNU extensions.
 
 @menu
+* OMP_CANCELLATION::      Set whether cancellation is activated
+* OMP_DISPLAY_ENV::       Show OpenMP version and environment variables
+* OMP_DEFAULT_DEVICE::    Set the device used in target regions
 * OMP_DYNAMIC::           Dynamic adjustment of threads
 * OMP_MAX_ACTIVE_LEVELS:: Set the maximum number of nested parallel regions
 * OMP_NESTED::            Nested parallel regions
 * OMP_NUM_THREADS::       Specifies the number of threads to use
+* OMP_PROC_BIND::         Whether theads may be moved between CPUs
+* OMP_PLACES::            Specifies on which CPUs the theads should be placed
 * OMP_STACKSIZE::         Set default thread stack size
 * OMP_SCHEDULE::          How threads are scheduled
 * OMP_THREAD_LIMIT::      Set the maximum number of threads
 * OMP_WAIT_POLICY::       How waiting threads are handled
-* OMP_DISPLAY_ENV::       Show OpenMP version and environment variables
-* OMP_PROC_BIND::         Whether theads may be moved between CPUs
 * GOMP_CPU_AFFINITY::     Bind threads to specific CPUs
 * GOMP_STACKSIZE::        Set default thread stack size
 * GOMP_SPINCOUNT::        Set the busy-wait spin count
 @end menu
+
+
+@node OMP_CANCELLATION
+@section @env{OMP_CANCELLATION} -- Set whether cancellation is activated
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+If set to @code{TRUE}, the cancellation is activated.  If set to @code{FALSE} or
+if unset, cancellation is disabled and the @code{cancel} construct is ignored.
+
+@item @emph{See also}:
+@ref{omp_get_cancellation}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.11
+@end table
+
+
+
+@node OMP_DISPLAY_ENV
+@section @env{OMP_DISPLAY_ENV} -- Show OpenMP version and environment variables
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+If set to @code{TRUE}, the OpenMP version number and the values
+associated with the OpenMP environment variables are printed to @code{stderr}.
+If set to @code{VERBOSE}, it additionally shows the value of the environment
+variables which are GNU extensions.  If undefined or set to @code{FALSE},
+this information will not be shown.
+
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.12
+@end table
+
+
+
+@node OMP_DEFAULT_DEVICE
+@section @env{OMP_DEFAULT_DEVICE} -- Set the device used in target regions
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Set to choose the device which is used in a @code{target} region, unless the
+value is overridden by @code{omp_set_default_device} or by a @code{device}
+clause.  The value shall be the nonnegative device number. If no device with
+the given device number exists, the code is executed on the host.  If unset,
+device number 0 will be used.
+
+
+@item @emph{See also}:
+@ref{omp_get_default_device}, @ref{omp_set_default_device},
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.11
+@end table
+
 
 
 @node OMP_DYNAMIC
@@ -1112,15 +1377,15 @@ beginning with @env{GOMP_} are GNU extensions.
 @table @asis
 @item @emph{Description}:
 Enable or disable the dynamic adjustment of the number of threads 
-within a team. The value of this environment variable shall be 
-@code{TRUE} or @code{FALSE}. If undefined, dynamic adjustment is
+within a team.  The value of this environment variable shall be 
+@code{TRUE} or @code{FALSE}.  If undefined, dynamic adjustment is
 disabled by default.
 
 @item @emph{See also}:
 @ref{omp_set_dynamic}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.3
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.3
 @end table
 
 
@@ -1131,14 +1396,14 @@ disabled by default.
 @table @asis
 @item @emph{Description}:
 Specifies the initial value for the maximum number of nested parallel
-regions. The value of this variable shall be a positive integer.
+regions.  The value of this variable shall be a positive integer.
 If undefined, the number of active levels is unlimited.
 
 @item @emph{See also}:
 @ref{omp_set_max_active_levels}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.9
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.9
 @end table
 
 
@@ -1150,15 +1415,15 @@ If undefined, the number of active levels is unlimited.
 @table @asis
 @item @emph{Description}:
 Enable or disable nested parallel regions, i.e., whether team members
-are allowed to create new teams. The value of this environment variable 
-shall be @code{TRUE} or @code{FALSE}. If undefined, nested parallel 
+are allowed to create new teams.  The value of this environment variable 
+shall be @code{TRUE} or @code{FALSE}.  If undefined, nested parallel 
 regions are disabled by default.
 
 @item @emph{See also}:
 @ref{omp_set_nested}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.6
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.6
 @end table
 
 
@@ -1169,16 +1434,85 @@ regions are disabled by default.
 @cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
-Specifies the default number of threads to use in parallel regions. The 
+Specifies the default number of threads to use in parallel regions.  The 
 value of this variable shall be a comma-separated list of positive integers;
 the value specified the number of threads to use for the corresponding nested
-level. If undefined one thread per CPU is used.
+level.  If undefined one thread per CPU is used.
 
 @item @emph{See also}:
 @ref{omp_set_num_threads}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.2
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.2
+@end table
+
+
+
+@node OMP_PLACES
+@section @env{OMP_PLACES} -- Specifies on which CPUs the theads should be placed
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+The thread placement can be either specified using an abstract name or by an
+explicit list of the places.  The abstract names @code{threads}, @code{cores}
+and @code{sockets} can be optionally followed by a positive number in
+parentheses, which denotes the how many places shall be created.  With
+@code{threads} each place corresponds to a single hardware thread; @code{cores}
+to a single core with the corresponding number of hardware threads; and with
+@code{sockets} the place corresponds to a single socket.  The resulting
+placement can be shown by setting the @env{OMP_DISPLAY_ENV} environment
+variable.
+
+Alternatively, the placement can be specified explicitly as comma-separated
+list of places.  A place is specified by set of nonnegative numbers in curly
+braces, denoting the denoting the hardware threads.  The hardware threads
+belonging to a place can either be specified as comma-separated list of
+nonnegative thread numbers or using an interval.  Multiple places can also be
+either specified by a comma-separated list of places or by an interval.  To
+specify an interval, a colon followed by the count is placed after after
+the hardware thread number or the place.  Optionally, the length can be
+followed by a colon and the stride number -- otherwise a unit stride is
+assumed.  For instance, the following specifies the same places list:
+@code{"@{0,1,2@}, @{3,4,6@}, @{7,8,9@}, @{10,11,12@}"};
+@code{"@{0:3@}, @{3:3@}, @{7:3@}, @{10:3@}"}; and @code{"@{0:2@}:4:3"}.
+
+If @env{OMP_PLACES} and @env{GOMP_CPU_AFFINITY} are unset and
+@env{OMP_PROC_BIND} is either unset or @code{false}, threads may be moved
+between CPUs following no placement policy.
+
+@item @emph{See also}:
+@ref{OMP_PROC_BIND}, @ref{GOMP_CPU_AFFINITY}, @ref{omp_get_proc_bind},
+@ref{OMP_DISPLAY_ENV}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.5
+@end table
+
+
+
+@node OMP_PROC_BIND
+@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Specifies whether threads may be moved between processors.  If set to
+@code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
+they may be moved.  Alternatively, a comma separated list with the
+values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
+the thread affinity policy for the corresponding nesting level.  With
+@code{MASTER} the worker threads are in the same place partition as the
+master thread.  With @code{CLOSE} those are kept close to the master thread
+in contiguous place partitions.  And with @code{SPREAD} a sparse distribution
+across the place partitions is used.
+
+When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
+@env{OMP_PLACES} or @env{GOMP_CPU_AFFINITY} is set and @code{FALSE} otherwise.
+
+@item @emph{See also}:
+@ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY}, @ref{omp_get_proc_bind}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.4
 @end table
 
 
@@ -1192,14 +1526,14 @@ level. If undefined one thread per CPU is used.
 Allows to specify @code{schedule type} and @code{chunk size}. 
 The value of the variable shall have the form: @code{type[,chunk]} where
 @code{type} is one of @code{static}, @code{dynamic}, @code{guided} or @code{auto}
-The optional @code{chunk} size shall be a positive integer. If undefined,
+The optional @code{chunk} size shall be a positive integer.  If undefined,
 dynamic scheduling and a chunk size of 1 is used.
 
 @item @emph{See also}:
 @ref{omp_set_schedule}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, sections 2.7.1 and 4.1
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Sections 2.7.1 and 4.1
 @end table
 
 
@@ -1212,14 +1546,14 @@ dynamic scheduling and a chunk size of 1 is used.
 Set the default thread stack size in kilobytes, unless the number
 is suffixed by @code{B}, @code{K}, @code{M} or @code{G}, in which
 case the size is, respectively, in bytes, kilobytes, megabytes
-or gigabytes. This is different from @code{pthread_attr_setstacksize}
-which gets the number of bytes as an argument. If the stack size cannot
+or gigabytes.  This is different from @code{pthread_attr_setstacksize}
+which gets the number of bytes as an argument.  If the stack size cannot
 be set due to system constraints, an error is reported and the initial
-stack size is left unchanged. If undefined, the stack size is system
+stack size is left unchanged.  If undefined, the stack size is system
 dependent.
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.7
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.7
 @end table
 
 
@@ -1229,16 +1563,15 @@ dependent.
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
-Specifies the number of threads to use for the whole program. The
-value of this variable shall be a positive integer. If undefined,
+Specifies the number of threads to use for the whole program.  The
+value of this variable shall be a positive integer.  If undefined,
 the number of threads is not limited.
 
 @item @emph{See also}:
-@ref{OMP_NUM_THREADS}
-@ref{omp_get_thread_limit}
+@ref{OMP_NUM_THREADS}, @ref{omp_get_thread_limit}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.10
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.10
 @end table
 
 
@@ -1248,53 +1581,17 @@ the number of threads is not limited.
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
-Specifies whether waiting threads should be active or passive. If
+Specifies whether waiting threads should be active or passive.  If
 the value is @code{PASSIVE}, waiting threads should not consume CPU
 power while waiting; while the value is @code{ACTIVE} specifies that
-they should. If undefined, threads wait actively for a short time
+they should.  If undefined, threads wait actively for a short time
 before waiting passively.
 
 @item @emph{See also}:
 @ref{GOMP_SPINCOUNT}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.8
-@end table
-
-
-
-@node OMP_PROC_BIND
-@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
-@cindex Environment Variable
-@table @asis
-@item @emph{Description}:
-Specifies whether threads may be moved between processors. If set to
-@code{TRUE}, OpenMP theads should not be moved, if set to @code{FALSE}
-they may be moved. If undefined, threads may move between processors.
-
-@item @emph{See also}:
-@ref{GOMP_CPU_AFFINITY}
-
-@item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.4
-@end table
-
-
-
-@node OMP_DISPLAY_ENV
-@section @env{OMP_DISPLAY_ENV} -- Show OpenMP version and environment variables
-@cindex Environment Variable
-@table @asis
-@item @emph{Description}:
-If set to @code{TRUE}, the OpenMP version number and the values
-associated with the OpenMP environment variables are printed to @code{stderr}.
-If set to @code{VERBOSE}, it additionally shows the value of the environment
-variables which are GNU extensions. If undefined or set to @code{FALSE},
-this information will not be shown.
-
-
-@item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specifications v4.0}, section 4.12
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.8
 @end table
 
 
@@ -1304,10 +1601,10 @@ this information will not be shown.
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
-Binds threads to specific CPUs. The variable should contain a space-separated
-or comma-separated list of CPUs. This list may contain different kinds of 
+Binds threads to specific CPUs.  The variable should contain a space-separated
+or comma-separated list of CPUs.  This list may contain different kinds of 
 entries: either single CPU numbers in any order, a range of CPUs (M-N) 
-or a range with some stride (M-N:S).  CPU numbers are zero based. For example,
+or a range with some stride (M-N:S).  CPU numbers are zero based.  For example,
 @code{GOMP_CPU_AFFINITY="0 3 1-2 4-15:2"} will bind the initial thread
 to CPU 0, the second to CPU 3, the third to CPU 1, the fourth to 
 CPU 2, the fifth to CPU 4, the sixth through tenth to CPUs 6, 8, 10, 12,
@@ -1315,17 +1612,19 @@ and 14 respectively and then start assigning back from the beginning of
 the list.  @code{GOMP_CPU_AFFINITY=0} binds all threads to CPU 0.
 
 There is no GNU OpenMP library routine to determine whether a CPU affinity 
-specification is in effect. As a workaround, language-specific library 
+specification is in effect.  As a workaround, language-specific library 
 functions, e.g., @code{getenv} in C or @code{GET_ENVIRONMENT_VARIABLE} in 
 Fortran, may be used to query the setting of the @code{GOMP_CPU_AFFINITY} 
-environment variable. A defined CPU affinity on startup cannot be changed 
+environment variable.  A defined CPU affinity on startup cannot be changed 
 or disabled during the runtime of the application.
 
-If this environment variable is omitted, the host system will handle the
-assignment of threads to CPUs. 
+If both @env{GOMP_CPU_AFFINITY} and @env{OMP_PROC_BIND} are set,
+@env{OMP_PROC_BIND} has a higher precedence.  If neither has been set and
+@env{OMP_PROC_BIND} is unset, or when @env{OMP_PROC_BIND} is set to
+@code{FALSE}, the host system will handle the assignment of threads to CPUs.
 
 @item @emph{See also}:
-@ref{OMP_PROC_BIND}
+@ref{OMP_PLACES}, @ref{OMP_PROC_BIND}
 @end table
 
 
@@ -1336,10 +1635,10 @@ assignment of threads to CPUs.
 @cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
-Set the default thread stack size in kilobytes. This is different from
+Set the default thread stack size in kilobytes.  This is different from
 @code{pthread_attr_setstacksize} which gets the number of bytes as an 
-argument. If the stack size cannot be set due to system constraints, an 
-error is reported and the initial stack size is left unchanged. If undefined,
+argument.  If the stack size cannot be set due to system constraints, an 
+error is reported and the initial stack size is left unchanged.  If undefined,
 the stack size is system dependent.
 
 @item @emph{See also}:
@@ -1361,9 +1660,9 @@ GCC Patches Mailinglist}
 @table @asis
 @item @emph{Description}:
 Determines how long a threads waits actively with consuming CPU power
-before waiting passively without consuming CPU power. The value may be
+before waiting passively without consuming CPU power.  The value may be
 either @code{INFINITE}, @code{INFINITY} to always wait actively or an
-integer which gives the number of spins of the busy-wait loop. The
+integer which gives the number of spins of the busy-wait loop.  The
 integer may optionally be followed by the following suffixes acting
 as multiplication factors: @code{k} (kilo, thousand), @code{M} (mega,
 million), @code{G} (giga, billion), or @code{T} (tera, trillion).
@@ -1778,7 +2077,7 @@ becomes
 @chapter Reporting Bugs
 
 Bugs in the GNU OpenMP implementation should be reported via 
-@uref{http://gcc.gnu.org/bugzilla/, bugzilla}.  For all cases, please add 
+@uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  For all cases, please add 
 "openmp" to the keywords field in the bug report.
 
 

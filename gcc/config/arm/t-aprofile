@@ -1,0 +1,177 @@
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This is a target makefile fragment that attempts to get
+# multilibs built for the range of CPU's, FPU's and ABI's that
+# are relevant for the A-profile architecture.  It should
+# not be used in conjunction with another make file fragment and
+# assumes --with-arch, --with-cpu, --with-fpu, --with-float, --with-mode
+# have their default values during the configure step.  We enforce
+# this during the top-level configury.
+
+MULTILIB_OPTIONS     =
+MULTILIB_DIRNAMES    =
+MULTILIB_EXCEPTIONS  =
+MULTILIB_MATCHES     =
+MULTILIB_REUSE	     =
+
+# We have the following hierachy:
+#   ISA: A32 (.) or T32 (thumb)
+#   Architecture: ARMv7-A (v7-a), ARMv7VE (v7ve), or ARMv8-A (v8-a).
+#   FPU: VFPv3-D16 (fpv3), NEONv1 (simdv1), VFPv4-D16 (fpv4),
+#        NEON-VFPV4 (simdvfpv4), NEON for ARMv8 (simdv8), or None (.).
+#   Float-abi: Soft (.), softfp (softfp), or hard (hardfp).
+
+# We use the option -mcpu=cortex-a7 because we do not yet have march=armv7ve
+# or march=armv7a+virt as a command line option for the compiler.
+MULTILIB_OPTIONS       += mthumb
+MULTILIB_DIRNAMES      += thumb
+
+MULTILIB_OPTIONS       += march=armv7-a/mcpu=cortex-a7/march=armv8-a
+MULTILIB_DIRNAMES      += v7-a v7ve v8-a
+
+MULTILIB_OPTIONS       += mfpu=vfpv3-d16/mfpu=neon/mfpu=vfpv4-d16/mfpu=neon-vfpv4/mfpu=neon-fp-armv8
+MULTILIB_DIRNAMES      += fpv3 simdv1 fpv4 simdvfpv4 simdv8
+
+MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
+MULTILIB_DIRNAMES      += softfp hard
+
+# We don't build no-float libraries with an FPU.
+MULTILIB_EXCEPTIONS    += *mfpu=vfpv3-d16
+MULTILIB_EXCEPTIONS    += *mfpu=neon
+MULTILIB_EXCEPTIONS    += *mfpu=vfpv4-d16
+MULTILIB_EXCEPTIONS    += *mfpu=neon-vfpv4
+MULTILIB_EXCEPTIONS    += *mfpu=neon-fp-armv8
+
+# We don't build libraries requiring an FPU at the CPU/Arch/ISA level.
+MULTILIB_EXCEPTIONS    += mfloat-abi=*
+MULTILIB_EXCEPTIONS    += mfpu=*
+MULTILIB_EXCEPTIONS    += mthumb/mfloat-abi=*
+MULTILIB_EXCEPTIONS    += mthumb/mfpu=*
+MULTILIB_EXCEPTIONS    += *march=armv7-a/mfloat-abi=*
+MULTILIB_EXCEPTIONS    += *mcpu=cortex-a7/mfloat-abi=*
+MULTILIB_EXCEPTIONS    += *march=armv8-a/mfloat-abi=*
+
+# Ensure the correct FPU variants apply to the correct base architectures.
+MULTILIB_EXCEPTIONS    += *mcpu=cortex-a7/*mfpu=vfpv3-d16*
+MULTILIB_EXCEPTIONS    += *mcpu=cortex-a7/*mfpu=neon/*
+MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv3-d16*
+MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon/*
+MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=vfpv4-d16*
+MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-vfpv4*
+MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv4-d16*
+MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon-vfpv4*
+MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-fp-armv8*
+MULTILIB_EXCEPTIONS    += *mcpu=cortex-a7/*mfpu=neon-fp-armv8*
+
+# CPU Matches
+MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a8
+MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a9
+MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a5
+MULTILIB_MATCHES       += mcpu?cortex-a7=mcpu?cortex-a15
+MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a53
+
+# FPU matches
+MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3
+MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16
+MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16-d16
+MULTILIB_MATCHES       += mfpu?vfpv4-d16=mfpu?vfpv4
+MULTILIB_MATCHES       += mfpu?neon-fp-armv8=mfpu?crypto-neon-fp-armv8
+
+
+# Map all requests for vfpv3 with a later CPU to vfpv3-d16 v7-a.
+# So if new CPUs are added above at the newer architecture levels,
+# do something to map them below here.
+# We take the approach of mapping down to v7-a regardless of what
+# the fp option is if the integer architecture brings things down.
+# This applies to any similar combination at the v7ve and v8-a arch
+# levels.
+
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mcpu.cortex-a7/mfpu.vfpv3-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mcpu.cortex-a7/mfpu.vfpv3-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.fp-armv8/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.vfpv4/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=mcpu.cortex-a7/mfpu.neon/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.softfp=mcpu.cortex-a7/mfpu.neon/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=march.armv8-a/mfpu.neon/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.softfp=march.armv8-a/mfpu.neon/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=march.armv7-a/mfpu.neon-vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.softfp=march.armv7-a/mfpu.neon-vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.softfp=march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=mcpu.cortex-a7/mfpu.fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=mcpu.cortex-a7/mfpu.fp-armv8/mfloat-abi.softfp
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=march.armv8-a/mfpu.vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.hard=march.armv8-a/mfpu.neon-vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.softfp=march.armv8-a/mfpu.neon-vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.hard=mcpu.cortex-a7/mfpu.neon-fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.softfp=mcpu.cortex-a7/mfpu.neon-fp-armv8/mfloat-abi.softfp
+
+
+
+# And again for mthumb.
+
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/mcpu.cortex-a7/mfpu.vfpv3-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/mcpu.cortex-a7/mfpu.vfpv3-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.fp-armv8/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.vfpv4/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/mcpu.cortex-a7/mfpu.neon/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.softfp=mthumb/mcpu.cortex-a7/mfpu.neon/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.neon/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.neon/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.neon-vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.neon-vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/mcpu.cortex-a7/mfpu.fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/mcpu.cortex-a7/mfpu.fp-armv8/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.softfp
+
+
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.neon-vfpv4/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.neon-vfpv4/mfloat-abi.softfp
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.hard=mthumb/mcpu.cortex-a7/mfpu.neon-fp-armv8/mfloat-abi.hard
+MULTILIB_REUSE	      += mthumb/mcpu.cortex-a7/mfpu.neon-vfpv4/mfloat-abi.softfp=mthumb/mcpu.cortex-a7/mfpu.neon-fp-armv8/mfloat-abi.softfp

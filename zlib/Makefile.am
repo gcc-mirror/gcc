@@ -16,7 +16,7 @@ libzgcj_convenience_la_SOURCES = $(ZLIB_SOURCES)
 else
 toolexeclib_LIBRARIES = libz.a
 libz_a_SOURCES = $(ZLIB_SOURCES)
-libz_a_CFLAGS = $(AM_CFLAGS)
+libz_a_CFLAGS = $(AM_CFLAGS) $(PICFLAG)
 endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

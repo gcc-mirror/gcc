@@ -1,3 +1,1637 @@
+2013-10-21  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* config/i386/i386.c (expand_set_or_movmem_via_loop): Add issetmem
+	argument.  Update function comment.
+	(expand_set_or_movmem_via_rep): New function combining
+	expand_movmem_via_rep_mov and expand_setmem_via_rep_stos.
+	(expand_movmem_via_rep_mov): Remove.
+	expand_setmem_via_rep_stos): Remove.
+	(expand_movmem_epilogue): Update calls correspondingly.
+	(expand_setmem_epilogue_via_loop): Likewise.
+	(emit_memset): New.
+	(expand_setmem_epilogue): Add VEC_VALUE argument, refactor.
+	(expand_set_or_movmem_prologue): New function combining
+	expand_movmem_prologue and expand_setmem_prologue.
+	(expand_movmem_prologue): Remove.
+	(expand_setmem_prologue): Remove.
+	(expand_set_or_movmem_constant_prologue): New function combining
+	expand_constant_movmem_prologue and expand_constant_setmem_prologue.
+	(expand_constant_movmem_prologue): Remove.
+	(expand_constant_setmem_prologue): Remove.
+	(promote_duplicated_reg): Allow vector-const0 value.
+	(ix86_expand_set_or_movmem): New function combining ix86_expand_movmem
+	and ix86_expand_setmem.
+	(ix86_expand_movmem): Call ix86_expand_set_or_movmem.
+	(ix86_expand_setmem): Call ix86_expand_set_or_movmem.
+
+2013-10-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_unpacku_hi_v16qi): Adjust for
+	little endian.
+	(vec_unpacku_hi_v8hi): Likewise.
+	(vec_unpacku_lo_v16qi): Likewise.
+	(vec_unpacku_lo_v8hi): Likewise.
+
+2013-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_SLOW_IMUL_IMM32_MEM,
+	X86_TUNE_SLOW_IMUL_IMM8): Keep enabled only for K8 and AMDFAM10.
+	(X86_TUNE_USE_VECTOR_FP_CONVERTS): Disable for generic.
+
+2013-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (ISA_HAS_WSBH): Define.
+	* config/mips/mips.md (UNSPEC_WSBH, UNSPEC_DSBH, UNSPEC_DSHD): New
+	constants.
+	(bswaphi2, bswapsi2, bswapdi2, wsbh, dsbh, dshd): New patterns.
+
+2013-10-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/58603
+	* system.h: Undef m_slot.
+
+2013-10-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Make sure we check
+	all elements for both endian flavors.
+
+2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58792
+	* config/i386/i386.c (ix86_function_value_regno): Add DX_REG,
+	ST1_REG and XMM1_REG for 32bit and 64bit targets.  Also add DI_REG
+	and SI_REG for 64bit SYSV ABI targets.
+
+2013-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mode-switching.c (create_pre_exit): Rename maybe_builtin_apply
+	to multi_reg_return.  Clarify that we are skipping USEs of multiple
+	return registers.  Use bool type where appropriate.
+
+2013-10-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Disable accumulation
+	for cold functions.
+	* x86-tune.def (X86_TUNE_USE_LEAVE): Update comment.
+	(X86_TUNE_PUSH_MEMORY): Likewise.
+	(X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL,
+	X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL): New.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS, X86_TUNE_ALWAYS_FANCY_MATH_387):
+	New.
+	* i386.c (x86_accumulate_outgoing_args, x86_arch_always_fancy_math_387,
+	x86_avx256_split_unaligned_load, x86_avx256_split_unaligned_store):
+	Remove.
+	(ix86_option_override_internal): Update to use tune features instead
+	of variables.
+
+2013-10-18  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/58508
+	* tree-vect-loop-manip.c (vect_loop_versioning): Hoist loop invariant
+	statement that contains data refs with zero-step.
+
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa.h: Don't include gimple-low.h, tree-ssa-address.h,
+	sbitmap.h, tree-ssa-threadedge.h, tree-ssa-dom.h and tree-cfgcleanup.h.
+	* gimple-low.c (gimple_check_call_arg,
+	gimple_check_call_matching_types): Move to cgraph.c.
+	* gimple-low.h: Remove prototype.
+	* cgraph.c: (gimple_check_call_arg, gimple_check_call_matching_types):
+	Relocate from gimple-low.c.
+	* cgraph.h: Add prototype.  Don't include basic-block.h.
+	* gimplify.c: Add gimple-low to include list.
+	* omp-low.c: Add gimple-low and tree-cfgcleanup.h to include list.
+	* tree-eh.c: Add gimple-low to include list.
+	* tree-nested.c: Likewise.
+	* cfgexpand.c: Add tree-ssa-address.h to include list.
+	* expr.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-mudflap.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-dom.c: Include tree-ssa-threadedge.h and tree-ssa-dom.h.
+	(degenerate_phi_result): Move to tree-phinodes.c.
+	* tree-ssa-loop-ch.c: Include tree-ssa-threadedge.h.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree-phinodes.c (degenerate_phi_result): Relocate here.
+	* tree-ssa-dom.h (degenerate_phi_result): Remove Prototype.
+	* tree-phinodes.h (degenerate_phi_result): Add prototype.
+	* tree-ssa-copy.c: Include tree-ssa-dom.h.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-cfgcleanup.c (execute_cleanup_cfg_post_optimizing,
+	pass_data_cleanup_cfg_post_optimizing,
+	make_pass_cleanup_cfg_post_optimizing): Relocate from tree-optimize.c.
+	* tree-optimize.c: Delete File.
+	* graphite.c: Include tree-cfgcleanup.h.
+	* passes.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-switch-conversion.c: Don't include tree-ssa-operands.h.
+	* tree-outof-ssa.c: Include sbitmap.h.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* Makefile.in (OBJS): Delete tree-optimize.o.
+	* basic-block.h (gcov_type, gcov_type_unsigned): Move to coretypes.h.
+	* coretypes.h (gcov_type, gcov_type_unsigned): Relocate here.
+	* varasm.c: Include basic-block.h.
+	* cfgloop.h: Include function.h instead of basic-block.h
+	(bb_loop_depth): Move to cfgloop.c.
+	* cfgloop.c (bb_loop_depth): Relocate from cfgloop.h.
+
+2013-10-18  Teresa Johnson  <tejohnson@google.com>
+
+	* predict.c (probably_never_executed): Compare frequency-based
+	count to number of training runs.
+	* params.def (UNLIKELY_BB_COUNT_FRACTION): New parameter.
+
+2013-10-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa9_extra_costs): New table.
+	(arm_cortex_a9_tune): Use cortexa9_extra_costs.
+
+2013-10-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Do not include "tm.h" or "tm_p.h".
+
+	* tree-ssa-threadupdate.c: Include "dbgcnt.h".
+	(register_jump_thread): Add "registered_jump_thread" debug
+	counter support.
+	* dbgcnt.def (registered_jump_thread): New debug counter.
+
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/rs6000/rs6000.c: Include cgraph.h.
+
+2013-10-18  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Update edge
+	weights during merging.
+
+2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-cfg.h: Rename from tree-flow.h.  Remove #includes.
+	* tree-ssa.h: Relocate required #includes from tree-cfg.h.
+	* tree-ssa-operands.h: Remove prototype.
+	* tree-ssa-operands.c (virtual_operand_p): Move to gimple.c.
+	* gimple.c (virtual_operand_p): Relocate from gimple.c.
+	* gimple.h: Add prototype.
+	* gimple-ssa.h: Include tree-ssa-operands.h.
+	* tree-dump.c: Add tree-cfg.h to include list.
+	* tree-ssa-alias.c: Add ipa-reference.h to include list.
+	* config/alpha/alpha.c: Include gimple-ssa.h instead of tree-flow.h.
+	* config/i386/i386.c: Don't include tree-flow.h.
+	* config/rs6000/rs6000.c: Likewise.
+
+2013-10-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/frv/frv.c (frv_init_cumulative_args): Fix wrong cast.
+
+2013-10-18  Richard Biener  <rguenther@suse.de>
+
+	* stor-layout.c (layout_type): Do not change TYPE_PRECISION
+	or TYPE_UNSIGNED of integral types.
+	(set_min_and_max_values_for_integral_type): Leave TYPE_MIN/MAX_VALUE
+	NULL_TREE for zero-precision integral types.
+
+2013-10-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vcvt<ds>_n_<fsu><32,64>_<fsu><32,64>): Correct argument types.
+
+2013-10-17  Sriraman Tallam  <tmsriram@google.com>
+
+	* opth-gen.awk: Define target_flags_explicit.
+
+2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (enum rs6000_reload_reg_type): Add new
+	fields to the reg_addr array that describes the valid addressing
+	mode for any register, general purpose registers, floating point
+	registers, and Altivec registers.
+	(FIRST_RELOAD_REG_CLASS): Likewise.
+	(LAST_RELOAD_REG_CLASS): Likewise.
+	(struct reload_reg_map_type): Likewise.
+	(reload_reg_map_type): Likewise.
+	(RELOAD_REG_VALID): Likewise.
+	(RELOAD_REG_MULTIPLE): Likewise.
+	(RELOAD_REG_INDEXED): Likewise.
+	(RELOAD_REG_OFFSET): Likewise.
+	(RELOAD_REG_PRE_INCDEC): Likewise.
+	(RELOAD_REG_PRE_MODIFY): Likewise.
+	(reg_addr): Likewise.
+	(mode_supports_pre_incdec_p): New helper functions to say whether
+	a given mode supports PRE_INC, PRE_DEC, and PRE_MODIFY.
+	(mode_supports_pre_modify_p): Likewise.
+	(rs6000_debug_vector_unit): Rearrange the -mdebug=reg output to
+	print the valid address mode bits for each mode.
+	(rs6000_debug_print_mode): Likewise.
+	(rs6000_debug_reg_global): Likewise.
+	(rs6000_setup_reg_addr_masks): New function to set up the address
+	mask bits for each type.
+	(rs6000_init_hard_regno_mode_ok): Use memset to clear arrays.
+	Call rs6000_setup_reg_addr_masks to set up the address mask bits.
+	(rs6000_legitimate_address_p): Use mode_supports_pre_incdec_p and
+	mode_supports_pre_modify_p to determine if PRE_INC, PRE_DEC, and
+	PRE_MODIFY are supported.
+	(rs6000_output_move_128bit): Change to use {src,dest}_vmx_p for altivec
+	registers, instead of {src,dest}_av_p.
+	(rs6000_print_options_internal): Tweak the debug output slightly.
+
+2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_widen_smult_even_v8si): Remove
+	isa attribute.
+
+2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h (struct omp_region): Move to omp-low.c.
+	Remove omp_ prototypes and variables.
+	* gimple.h (omp_reduction_init): Move prototype to omp-low.h.
+	(copy_var_decl): Relocate prototype from tree-flow.h.
+	* gimple.c (copy_var_decl): Relocate from omp-low.c.
+	* tree.h: Move prototype to omp-low.h.
+	* omp-low.h: New File.  Relocate prototypes here.
+	* omp-low.c (struct omp_region): Make local here.
+	(root_omp_region): Make static.
+	(copy_var_decl) Move to gimple.c.
+	(new_omp_region): Make static.
+	(make_gimple_omp_edges): New.  Refactored from tree-cfg.c make_edges.
+	* tree-cfg.c: Include omp-low.h.
+	(make_edges): Factor out OMP specific bits to make_gimple_omp_edges.
+	* gimplify.c: Include omp-low.h.
+	* tree-parloops.c: Likewise.
+
+2013-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_fixup_binary_operands): When both source
+	operands are in memory, prefer to force non-matched operand 1 to
+	the register.
+
+2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58673
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Only
+	restrict TImode addresses to single indirect registers if both
+	-mquad-memory and -mvsx-timode are used.
+	(rs6000_output_move_128bit): Use quad_load_store_p to determine if
+	we should emit load/store quad.  Remove using %y for quad memory
+	addresses.
+
+	* config/rs6000/rs6000.md (mov<mode>_ppc64, TI/PTImode): Add
+	constraints to allow load/store quad on machines where TImode is
+	not allowed in VSX registers.  Use 'n' instead of 'F' constraint
+	for TImode to load integer constants.
+
+2013-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Handle 'c'.
+
+2013-10-17  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_reload_class): Adjust
+	handling of STACK_REG.
+
+2013-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58143
+	* tree-ssa-loop-im.c (arith_code_with_undefined_signed_overflow):
+	New function.
+	(rewrite_to_defined_overflow): Likewise.
+	(move_computations_dom_walker::before_dom): Rewrite stmts
+	with undefined signed overflow that are not always executed
+	into unsigned arithmetic.
+
+2013-10-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57756
+	* config/rs6000/rs6000.opt (rs6000_isa_flags_explicit): Move the
+	explicit isa flag to be an options variable, instead of using
+	global_options_set.  Remove define from rs6000.h.
+	* config/rs6000/rs6000.h (rs6000_isa_flags_explicit): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Initialize rs6000_isa_flags_explicit.
+	(rs6000_function_specific_save): Add gcc_options* parameter, so
+	that the powerpc builds after the 2013-10-15 changes.
+	(rs6000_function_specific_restore): Likewise.
+
+2013-10-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_alloc_address_registers_macax): Verify
+	op is a REG before checking REGNO.
+	(rl78_alloc_physical_registers): Verify pattern is a SET before
+	checking SET_SRC.
+
+2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc/config/rs6000/vector.md (vec_unpacks_hi_v4sf): Correct for
+	endianness.
+	(vec_unpacks_lo_v4sf): Likewise.
+	(vec_unpacks_float_hi_v4si): Likewise.
+	(vec_unpacks_float_lo_v4si): Likewise.
+	(vec_unpacku_float_hi_v4si): Likewise.
+	(vec_unpacku_float_lo_v4si): Likewise.
+
+2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_concat_<mode>): Adjust output for LE.
+	(vsx_concat_v2sf): Likewise.
+
+2013-10-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md
+	(*mov<mode>_aarch64): Fix output template for DUP (element) Scalar.
+
+2013-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/58697
+	* cfgloop.c (get_estimated_loop_iterations_int): Rename from
+	estimated_loop_iterations_int.
+	(max_stmt_executions_int): Call get_max_loop_iterations_int.
+	(get_max_loop_iterations_int): New.  HWINT version of
+	get_max_loop_iterations.
+	* cfgloop.h: Add prototypes.
+	* loop-iv.c (find_simple_exit): call get_estimated_loop_iterations_int.
+	* loop-unroll.c (decide_peel_once_rolling): Call
+	get_estimated_loop_iterations_int.
+	* tree-ssa-loop-niter.c (estimated_loop_iterations_int): Add back.
+	* tree-ssa-loop-niter.h: Tweak prototypes.
+
+2013-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (struct_field_seq): Ignore access-control
+	keywords ("public:" etc).
+
+2013-10-16  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_regno_regclass): Classify
+	FRAME_POINTER_REGNUM and ARG_POINTER_REGNUM as POINTER_REGS.
+
+2013-10-16  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/arm/arm.opt (mlra): New option.
+	* config/arm/arm.c (arm_lra_p): New function.
+	(TARGET_LRA_P): Define.
+
+2013-10-16  Paulo Matos  <pmatos@broadcom.com>
+
+	* tree-core.h (tree_code_name): Remove.
+	* tree.h (get_tree_code_name): New prototype.
+	* tree.c (tree_code_name): Make static.
+	(get_tree_code_name): New function.
+	(dump_tree_statistics, tree_check_failed, tree_not_check_failed,
+	tree_class_check_failed, tree_range_check_failed,
+	tree_not_class_check_failed, omp_clause_check_failed,
+	tree_contains_struct_check_failed, tree_operand_check_failed): Use new
+	wrapper get_tree_code_name instead of calling tree_code_name directly.
+	* tree-vrp.c (dump_asserts_for): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-pretty-print.c (do_niy, dump_generic_node): Likewise.
+	* tree-pretty-print.h (pp_unsupported_tree): Likewise.
+	* lto-streamer-out.c (lto_write_tree, DFS_write_tree): Likewise.
+	* tree-ssa-dom.c (print_expr_hash_elt): Likewise.
+	* gimple-pretty-print.c (dump_unary_rhs, dump_binary_rhs,
+	dump_ternary_rhs, dump_gimple_assign, dump_gimple_cond,
+	dump_gimple_omp_for): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Likewise.
+	* tree-ssa-pre.c (print_pre_expr): Likewise.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* gimple.c (gimple_check_failed): Likewise.
+	* lto-streamer.c (lto_tag_name, print_lto_report): Likewise.
+	* config/frv/frv.c (frv_init_cumulative_args): Likewise.
+	* config/mep/mep.c (mep_validate_vliw): Likewise.
+	* config/iq2000/iq2000.c (init_cumulative_args): Likewise.
+	* config/rs6000/rs6000.c (init_cumulative_args): Likewise.
+
+2013-10-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Enable FMA4
+	for AMD bdver3.
+
+2013-10-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-elfmulti (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES): Add multilib for -march=v8.
+
+2013-10-15 Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/57756
+	* optc-save-gen.awk: Add extra parameter to the save and restore
+	target calls.
+	* opth-gen.awk: Generate new TARGET_* macros  to accept a parameter.
+	* tree.c (build_optimization_node): New parameter.  Add extra parameter
+	to call to cl_optimization_save.
+	(build_target_option_node): New parameter. Add extra parameter
+	to call to cl_target_option_save.
+	* tree.h (build_optimization_node): New parameter.
+	(build_target_option_node): New parameter.
+	* c-family/c-common.c (handle_optimize_attribute): Fix calls to
+	build_optimization_node and build_target_option_node.
+	* c-family/c-pragma.c (handle_pragma_optimize): Ditto.
+	(handle_pragma_push_options): Ditto.
+	* toplev.c (process_options): Ditto.
+	* opts.c (init_options_struct): Check for opts_set non-null.
+	* target.def (target_option.save): New parameter.
+	(target_option.restore): New parameter.
+	* tm.texi: Generate.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Ditto.
+	(ix86_pragma_target_parse): Ditto.
+	* config/i386/i386-protos.h (ix86_valid_target_attribute_tree): New
+	parameters.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Fix calls
+	to  build_optimization_node and build_target_option_node.
+	(rs6000_valid_attribute_p): Ditto.
+	(rs6000_pragma_target_parse): Ditto.
+	* config/i386/i386.opt (x_ix86_target_flags_explicit): New TargetSave
+	data.
+	* config/i386/i386.h:
+	TARGET_64BIT_P: New Macro
+	TARGET_MMX_P: New Macro.
+	TARGET_3DNOW_P: New Macro.
+	TARGET_3DNOW_A_P: New Macro.
+	TARGET_SSE_P: New Macro.
+	TARGET_SSE2_P: New Macro.
+	TARGET_SSE3_P: New Macro.
+	TARGET_SSSE3_P: New Macro.
+	TARGET_SSE4_1_P: New Macro.
+	TARGET_SSE4_2_P: New Macro.
+	TARGET_AVX_P: New Macro.
+	TARGET_AVX2_P: New Macro.
+	TARGET_AVX512F_P: New Macro.
+	TARGET_AVX512PF_P: New Macro.
+	TARGET_AVX512ER_P: New Macro.
+	TARGET_AVX512CD_P: New Macro.
+	TARGET_FMA_P: New Macro.
+	TARGET_SSE4A_P: New Macro.
+	TARGET_FMA4_P: New Macro.
+	TARGET_XOP_P: New Macro.
+	TARGET_LWP_P: New Macro.
+	TARGET_ABM_P: New Macro.
+	TARGET_BMI_P: New Macro.
+	TARGET_BMI2_P: New Macro.
+	TARGET_LZCNT_P: New Macro.
+	TARGET_TBM_P: New Macro.
+	TARGET_POPCNT_P: New Macro.
+	TARGET_SAHF_P: New Macro.
+	TARGET_MOVBE_P: New Macro.
+	TARGET_CRC32_P: New Macro.
+	TARGET_AES_P: New Macro.
+	TARGET_PCLMUL_P: New Macro.
+	TARGET_CMPXCHG16B_P: New Macro.
+	TARGET_FSGSBASE_P: New Macro.
+	TARGET_RDRND_P: New Macro.
+	TARGET_F16C_P: New Macro.
+	TARGET_RTM_P: New Macro.
+	TARGET_HLE_P: New Macro.
+	TARGET_RDSEED_P: New Macro.
+	TARGET_PRFCHW_P: New Macro.
+	TARGET_ADX_P: New Macro.
+	TARGET_FXSR_P: New Macro.
+	TARGET_XSAVE_P: New Macro.
+	TARGET_XSAVEOPT_P: New Macro.
+	TARGET_LP64_P: New Macro.
+	TARGET_X32_P: New Macro.
+	TARGET_FPMATH_DEFAULT_P: New Macro.
+	TARGET_FLOAT_RETURNS_IN_80387_P: New Macro.
+	* config/i386/i386.c (ix86_option_override_internal): New parameters.
+	opts and opts_set.
+	Change ix86_tune_string to access opts->x_ix86_tune_string.
+	Change ix86_isa_flags to access opts->x_ix86_isa_flags.
+	Change ix86_arch_string to access opts->x_ix86_arch_string.
+	Change ix86_stringop_alg to access opts->x_ix86_stringop_alg.
+	Change ix86_pmode to access opts->x_ix86_pmode.
+	Change ix86_abi to access opts->x_ix86_abi.
+	Change ix86_cmodel to access opts->x_ix86_cmodel.
+	Change ix86_asm_dialect to access opts->x_ix86_asm_dialect.
+	Change ix86_isa_flags_explicit to access
+	opts->x_ix86_isa_flags_explicit.
+	Change ix86_dump_tunes to access opts->x_ix86_dump_tunes.
+	Change ix86_regparm to access opts->x_ix86_regparm.
+	Change ix86_branch_cost to access opts->x_ix86_branch_cost.
+	Change ix86_preferred_stack_boundary_arg to access
+	opts->x_ix86_preferred_stack_boundary_arg.
+	Change ix86_force_align_arg_pointer to access
+	opts->x_ix86_force_align_arg_pointer.
+	Change ix86_incoming_stack_boundar_arg to access
+	opts->x_ix86_incoming_stack_boundar_arg.
+	Change ix86_fpmath to access opts->x_ix86_fpmath.
+	Change ix86_veclibabi_type to access opts->x_ix86_veclibabi_type.
+	Change ix86_recip_name to access opts->x_ix86_recip_name.
+	Change ix86_stack_protector_guard to access
+	opts->x_ix86_stack_protector_guard.
+	Change ix86_tune_memcpy_strategy to access
+	opts->x_ix86_tune_memcpy_strategy.
+	Change ix86_tune_memset_strategy to access
+	opts->x_ix86_tune_memset_strategy.
+	Change global_options to access opts.
+	Change global_options_set to access opts_set.
+	Change TARGET_64BIT to TARGET_64BIT_P (opts->...).
+	Change TARGET_MMX to TARGET_MMX_P (opts->...).
+	Change TARGET_3DNOW to TARGET_3DNOW_P (opts->...).
+	Change TARGET_3DNOW_A to TARGET_3DNOW_A_P (opts->...).
+	Change TARGET_SSE to TARGET_SSE_P (opts->...).
+	Change TARGET_SSE2 to TARGET_SSE2_P (opts->...).
+	Change TARGET_SSE3 to TARGET_SSE3_P (opts->...).
+	Change TARGET_SSSE3 to TARGET_SSSE3_P (opts->...).
+	Change TARGET_SSE4_1 to TARGET_SSE4_1_P (opts->...).
+	Change TARGET_SSE4_2 to TARGET_SSE4_2_P (opts->...).
+	Change TARGET_AVX to TARGET_AVX_P (opts->...).
+	Change TARGET_AVX2 to TARGET_AVX2_P (opts->...).
+	Change TARGET_AVX512F to TARGET_AVX512F_P (opts->...).
+	Change TARGET_AVX512PF to TARGET_AVX512PF_P (opts->...).
+	Change TARGET_AVX512ER to TARGET_AVX512ER_P (opts->...).
+	Change TARGET_AVX512CD to TARGET_AVX512CD_P (opts->...).
+	Change TARGET_FMA to TARGET_FMA_P (opts->...).
+	Change TARGET_SSE4A to TARGET_SSE4A_P (opts->...).
+	Change TARGET_FMA4 to TARGET_FMA4_P (opts->...).
+	Change TARGET_XOP to TARGET_XOP_P (opts->...).
+	Change TARGET_LWP to TARGET_LWP_P (opts->...).
+	Change TARGET_ABM to TARGET_ABM_P (opts->...).
+	Change TARGET_BMI to TARGET_BMI_P (opts->...).
+	Change TARGET_BMI2 to TARGET_BMI2_P (opts->...).
+	Change TARGET_LZCNT to TARGET_LZCNT_P (opts->...).
+	Change TARGET_TBM to TARGET_TBM_P (opts->...).
+	Change TARGET_POPCNT to TARGET_POPCNT_P (opts->...).
+	Change TARGET_SAHF to TARGET_SAHF_P (opts->...).
+	Change TARGET_MOVBE to TARGET_MOVBE_P (opts->...).
+	Change TARGET_CRC32 to TARGET_CRC32_P (opts->...).
+	Change TARGET_AES to TARGET_AES_P (opts->...).
+	Change TARGET_PCLMUL to TARGET_PCLMUL_P (opts->...).
+	Change TARGET_CMPXCHG16B to TARGET_CMPXCHG16B_P (opts->...).
+	Change TARGET_FSGSBASE to TARGET_FSGSBASE_P (opts->...).
+	Change TARGET_RDRND to TARGET_RDRND_P (opts->...).
+	Change TARGET_F16C to TARGET_F16C_P (opts->...).
+	Change TARGET_RTM to TARGET_RTM_P (opts->...).
+	Change TARGET_HLE to TARGET_HLE_P (opts->...).
+	Change TARGET_RDSEED to TARGET_RDSEED_P (opts->...).
+	Change TARGET_PRFCHW to TARGET_PRFCHW_P (opts->...).
+	Change TARGET_ADX to TARGET_ADX_P (opts->...).
+	Change TARGET_FXSR to TARGET_FXSR_P (opts->...).
+	Change TARGET_XSAVE to TARGET_XSAVE_P (opts->...).
+	Change TARGET_XSAVEOPT to TARGET_XSAVEOPT_P (opts->...).
+	Change TARGET_LP64 to TARGET_LP64_P (opts->...).
+	Change TARGET_X32 to TARGET_X32_P (opts->...).
+	Change TARGET_FPMATH_DEFAULT to TARGET_FPMATH_DEFAULT_P (opts->...).
+	Change TARGET_FLOAT_RETURNS_IN_80387 to
+	TARGET_FLOAT_RETURNS_IN_80387_P (opts->...).
+	(ix86_function_specific_save): New parameter. Use opts-> fields
+	to replace global fields.
+	(ix86_function_specific_restore): Ditto.
+	(ix86_valid_target_attribute_inner_p): New parameters.
+	Fix recursive call.
+	Fix call to ix86_handle_option and set_option.
+	(ix86_valid_target_attribute_tree): New parameters.
+	Change global_options to access opts.
+	Change global_options_set to access opts_set.
+	Fix call to ix86_valid_target_attribute_inner_p.
+	Change ix86_tune_string to access opts->x_ix86_tune_string.
+	Change ix86_arch_string to access opts->x_ix86_arch_string.
+	Change ix86_fpmath to access opts->x_ix86_fpmath
+	Fix call to ix86_option_override_internal.
+	Fix call to ix86_add_new_builtins.
+	Fix calls to build_optimization_node and build_target_option_node.
+	(ix86_valid_target_attribute_p): Remove access to global_options.
+	Use new gcc_options structure func_options.
+	Fix call to ix86_valid_target_attribute_tree.
+	Fix call to  build_optimization_node.
+	(get_builtin_code_for_version):	Fix call to
+	ix86_valid_target_attribute_tree.
+
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PICFLAG): New.
+	(enable_host_shared): New.
+	(INTERNAL_CFLAGS): Use PICFLAG.
+	(LIBIBERTY): Use pic build of libiberty.a if configured with
+	--enable-host-shared.
+	* configure.ac: Add --enable-host-shared, setting up new
+	PICFLAG variable.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-shared): Add note contrasting it with ...
+	(--enable-host-shared): New option.
+
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-tailcall.c (find_tail_calls): Don't use tail-call recursion
+	for built-in functions.
+
+2013-10-15  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* tree-ssa-reassoc.c: Include rtl.h and tm_p.h.
+	(optimize_range_tests_1): New function,
+	extracted from optimize_range_tests.
+	(optimize_range_tests_xor): Similarly.
+	(optimize_range_tests_diff): New function.
+	(optimize_range_tests): Use optimize_range_tests_1.
+
+2013-10-15  Cong Hou  <congh@google.com>
+
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Relax the
+	requirement of the reduction pattern so that one operand of the
+	reduction operation can come from outside of the loop.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/neon-schedgen.ml: Remove.
+	* config/arm/cortex-a9-neon.md: Remove comment regarding
+	neon-schedgen.ml.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types: Remove old neon types.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a7.md
+	(cortex_a7_neon_type): New.
+	(cortex_a7_neon_mul): Update for new types.
+	(cortex_a7_neon_mla): Likewise.
+	(cortex_a7_neon): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a15-neon.md
+	(cortex_a15_neon_type): New,
+
+	(cortex_a15_neon_int_1): Remove.
+	(cortex_a15_neon_int_2): Likewise.
+	(cortex_a15_neon_int_3): Likewise.
+	(cortex_a15_neon_int_4): Likewise.
+	(cortex_a15_neon_int_5): Likewise.
+	(cortex_a15_neon_vqneg_vqabs): Likewise.
+	(cortex_a15_neon_vmov): Likewise.
+	(cortex_a15_neon_vaba): Likewise.
+	(cortex_a15_neon_vaba_qqq): Likewise.
+	(cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a15_neon_mul_qqq_8_16_32_ddd_32): Likewise.
+	(cortex_a15_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
+	Likewise.
+	(cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a15_neon_mla_qqq_8_16): Likewise.
+	(cortex_a15_neon_mla_ddd_32_qqd_16_ddd_32_scalar): Likewise.
+	(cortex_a15_neon_mla_qqq_32_qqd_32_scalar): Likewise.
+	(cortex_a15_neon_mul_ddd_16_scalar_32_16_long_scalar): Likewise.
+	(cortex_a15_neon_mul_qqd_32_scalar): Likewise.
+	(cortex_a15_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar): Likewise.
+	(cortex_a15_neon_shift_1): Likewise.
+	(cortex_a15_neon_shift_2): Likewise.
+	(cortex_a15_neon_shift_3): Likewise.
+	(cortex_a15_neon_vshl_ddd): Likewise.
+	(cortex_a15_neon_vqshl_vrshl_vqrshl_qqq): Likewise.
+	(cortex_a15_neon_vsra_vrsra): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a15_neon_bp_3cycle): Likewise.
+	(cortex_a15_neon_ldm_2): Likewise.
+	(cortex_a15_neon_stm_2): Likewise.
+	(cortex_a15_neon_mcr): Likewise.
+	(cortex_a15_neon_mrc): Likewise.
+	(cortex_a15_neon_fp_vadd_ddd_vabs_dd): Likewise.
+	(cortex_a15_neon_fp_vadd_qqq_vabs_qq): Likewise.
+	(cortex_a15_neon_fp_vmul_ddd): Likewise.
+	(cortex_a15_neon_fp_vmul_qqd): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq): Likewise.
+	(cortex_a15_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a15_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a15_neon_fp_vrecps_vrsqrts_ddd): Likewise.
+	(cortex_a15_neon_fp_vrecps_vrsqrts_qqq): Likewise.
+	(cortex_a15_neon_bp_simple): Likewise.
+	(cortex_a15_neon_bp_2cycle): Likewise.
+	(cortex_a15_neon_bp_3cycle): Likewise.
+	(cortex_a15_neon_vld1_1_2_regs): Likewise.
+	(cortex_a15_neon_vld1_3_4_regs): Likewise.
+	(cortex_a15_neon_vld2_2_regs_vld1_vld2_all_lanes): Likewise.
+	(cortex_a15_neon_vld2_4_regs): Likewise.
+	(cortex_a15_neon_vld3_vld4): Likewise.
+	(cortex_a15_neon_vst1_1_2_regs_vst2_2_regs): Likewise.
+	(cortex_a15_neon_vst1_3_4_regs): Likewise.
+	(cortex_a15_neon_vst2_4_regs_vst3_vst4): Rename to...
+	(cortex_a15_neon_vst2_4_regs_vst3): ...This, update for new attributes.
+	(cortex_a15_neon_vst3_vst4): Rename to...
+	(cortex_a15_neon_vst4): This, update for new attributes.
+	(cortex_a15_neon_vld1_vld2_lane): Update for new attributes.
+	(cortex_a15_neon_vld3_vld4_lane): Likewise.
+	(cortex_a15_neon_vst1_vst2_lane): Likewise.
+	(cortex_a15_neon_vst3_vst4_lane): Likewise.
+	(cortex_a15_neon_vld3_vld4_all_lanes): Likewise.
+	(cortex_a15_neon_ldm_2): Likewise.
+	(cortex_a15_neon_stm_2): Likewise.
+	(cortex_a15_neon_mcr): Likewise.
+	(cortex_a15_neon_mcr_2_mcrr): Likewise.
+	(cortex_a15_neon_mrc): Likewise.
+	(cortex_a15_neon_mrrc): Likewise.
+
+	(cortex_a15_neon_abd): New.
+	(cortex_a15_neon_abd_q): Likewise.
+	(cortex_a15_neon_aba): Likewise.
+	(cortex_a15_neon_aba_q): Likewise.
+	(cortex_a15_neon_acc): Likewise.
+	(cortex_a15_neon_acc_q): Likewise.
+	(cortex_a15_neon_arith_basic): Likewise.
+	(cortex_a15_neon_arith_complex): Likewise.
+	(cortex_a15_neon_multiply): Likewise.
+	(cortex_a15_neon_multiply_q): Likewise.
+	(cortex_a15_neon_mla): Likewise.
+	(cortex_a15_neon_mla_q): Likewise.
+	(cortex_a15_neon_sat_mla_long): Likewise.
+	(cortex_a15_neon_shift_acc): Likewise.
+	(cortex_a15_neon_shift_imm_basic): Likewise.
+	(cortex_a15_neon_shift_imm_complex): Likewise.
+	(cortex_a15_neon_shift_reg_basic): Likewise.
+	(cortex_a15_neon_shift_reg_basic_q): Likewise.
+	(cortex_a15_neon_shift_reg_complex): Likewise.
+	(cortex_a15_neon_shift_reg_complex_q): Likewise.
+	(cortex_a15_neon_fp_negabs): Likewise
+	(cortex_a15_neon_fp_arith): Likewise
+	(cortex_a15_neon_fp_arith_q): Likewise
+	(cortex_a15_neon_fp_cvt_int): Likewise
+	(cortex_a15_neon_fp_cvt_int_q): Likewise
+	(cortex_a15_neon_fp_cvt_16): Likewise
+	(cortex_a15_neon_fp_mul): Likewise
+	(cortex_a15_neon_fp_mul_q): Likewise
+	(cortex_a15_neon_fp_mla): Likewise
+	(cortex_a15_neon_fp_mla_q): Likewise
+	(cortex_a15_neon_fp_recps_rsqrte): Likewise.
+	(cortex_a15_neon_fp_recps_rsqrte_q): Likewise.
+	(cortex_a15_neon_bitops): Likewise.
+	(cortex_a15_neon_bitops_q): Likewise.
+	(cortex_a15_neon_from_gp): Likewise.
+	(cortex_a15_neon_from_gp_q): Likewise.
+	(cortex_a15_neon_tbl3_tbl4): Likewise.
+	(cortex_a15_neon_zip_q): Likewise.
+	(cortex_a15_neon_to_gp): Likewise.
+	(cortex_a15_neon_load_a): Likewise.
+	(cortex_a15_neon_load_b): Likewise.
+	(cortex_a15_neon_load_c): Likewise.
+	(cortex_a15_neon_load_d): Likewise.
+	(cortex_a15_neon_load_e): Likewise.
+	(cortex_a15_neon_load_f): Likewise.
+	(cortex_a15_neon_store_a): Likewise.
+	(cortex_a15_neon_store_b): Likewise.
+	(cortex_a15_neon_store_c): Likewise.
+	(cortex_a15_neon_store_d): Likewise.
+	(cortex_a15_neon_store_e): Likewise.
+	(cortex_a15_neon_store_f): Likewise.
+	(cortex_a15_neon_store_g): Likewise.
+	(cortex_a15_neon_store_h): Likewise.
+	(cortex_a15_vfp_to_from_gp): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a9-neon.md (cortex_a9_neon_type): New.
+
+	(cortex_a9_neon_vshl_ddd): Remove.
+	(cortex_a9_neon_vst3_vst4): Likewise.
+	(cortex_a9_neon_vld3_vld4_all_lanes): Likewise.
+
+	(cortex_a9_neon_bit_ops_q): New.
+
+	(cortex_a9_neon_int_1): Use cortex_a8_neon_type.
+	(cortex_a9_neon_int_2): Likewise.
+	(cortex_a9_neon_int_3): Likewise.
+	(cortex_a9_neon_int_4): Likewise.
+	(cortex_a9_neon_int_5): Likewise.
+	(cortex_a9_neon_vqneg_vqabs): Likewise.
+	(cortex_a9_neon_vmov): Likewise.
+	(cortex_a9_neon_vaba): Likewise.
+	(cortex_a9_neon_vaba_qqq): Likewise.
+	(cortex_a9_neon_shift_1): Likewise.
+	(cortex_a9_neon_shift_2): Likewise.
+	(cortex_a9_neon_shift_3): Likewise.
+	(cortex_a9_neon_vqshl_vrshl_vqrshl_qqq): Likewise.
+	(cortex_a9_neon_vsra_vrsra): Likewise.
+	(cortex_a9_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a9_neon_mul_qqq_8_16_32_ddd_32): Likewise.
+	(cortex_a9_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
+	Likewise.
+	(cortex_a9_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a9_neon_mla_qqq_8_16): Likewise.
+	(cortex_a9_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long):
+	Likewise.
+	(cortex_a9_neon_mla_qqq_32_qqd_32_scalar): Likewise.
+	(cortex_a9_neon_mul_ddd_16_scalar_32_16_long_scalar): Likewise.
+	(cortex_a9_neon_mul_qqd_32_scalar): Likewise.
+	(cortex_a9_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar): Likewise.
+	(cortex_a9_neon_fp_vadd_ddd_vabs_dd): Likewise.
+	(cortex_a9_neon_fp_vadd_qqq_vabs_qq): Likewise.
+	(cortex_a9_neon_fp_vsum): Likewise.
+	(cortex_a9_neon_fp_vmul_ddd): Likewise.
+	(cortex_a9_neon_fp_vmul_qqd): Likewise.
+	(cortex_a9_neon_fp_vmla_ddd): Likewise.
+	(cortex_a9_neon_fp_vmla_qqq): Likewise.
+	(cortex_a9_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a9_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a9_neon_fp_vrecps_vrsqrts_ddd): Likewise.
+	(cortex_a9_neon_fp_vrecps_vrsqrts_qqq): Likewise.
+	(cortex_a9_neon_bp_simple): Likewise.
+	(cortex_a9_neon_bp_2cycle): Likewise.
+	(cortex_a9_neon_bp_3cycle): Likewise.
+	(cortex_a9_neon_ldr): Likewise.
+	(cortex_a9_neon_str): Likewise.
+	(cortex_a9_neon_vld1_1_2_regs): Likewise.
+	(cortex_a9_neon_vld1_3_4_regs): Likewise.
+	(cortex_a9_neon_vld2_2_regs_vld1_vld2_all_lanes): Likewise.
+	(cortex_a9_neon_vld2_4_regs): Likewise.
+	(cortex_a9_neon_vld3_vld4): Likewise.
+	(cortex_a9_neon_vld1_vld2_lane): Likewise.
+	(cortex_a9_neon_vld3_vld4_lane): Likewise.
+	(cortex_a9_neon_vld3_vld4_all_lanes): Likewise.
+	(cortex_a9_neon_vst1_1_2_regs_vst2_2_regs): Likewise.
+	(cortex_a9_neon_vst1_3_4_regs): Likewise.
+	(cortex_a9_neon_vst2_4_regs_vst3_vst4): Likewise.
+	(cortex_a9_neon_vst1_vst2_lane): Likewise.
+	(cortex_a9_neon_vst3_vst4_lane): Likewise.
+	(cortex_a9_neon_mcr): Likewise.
+	(cortex_a9_neon_mcr_2_mcrr): Likewise.
+	(cortex_a9_neon_mrc): Likewise.
+	(cortex_a9_neon_mrrc): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a8-neon.md (cortex_a8_neon_type): New.
+
+	(cortex_a8_neon_vshl_ddd): Remove.
+	(cortex_a8_neon_vst3_vst4): Likewise.
+	(cortex_a8_neon_vld3_vld4_all_lanes): Likewise.
+
+	(cortex_a8_neon_bit_ops_q): New.
+
+	(cortex_a8_neon_int_1): Use cortex_a8_neon_type.
+	(cortex_a8_neon_int_2): Likewise..
+	(cortex_a8_neon_int_3): Likewise.
+	(cortex_a8_neon_int_5): Likewise.
+	(cortex_a8_neon_vqneg_vqabs): Likewise.
+	(cortex_a8_neon_int_4): Likewise.
+	(cortex_a8_neon_vaba): Likewise.
+	(cortex_a8_neon_vaba_qqq): Likewise.
+	(cortex_a8_neon_shift_1): Likewise.
+	(cortex_a8_neon_shift_2): Likewise.
+	(cortex_a8_neon_shift_3): Likewise.
+	(cortex_a8_neon_vqshl_vrshl_vqrshl_qqq): Likewise.
+	(cortex_a8_neon_vsra_vrsra): Likewise.
+	(cortex_a8_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a8_neon_mul_qqq_8_16_32_ddd_32): Likewise.
+	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
+	Likewise.
+	(cortex_a8_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
+	(cortex_a8_neon_mla_qqq_8_16): Likewise.
+	(cortex_a8_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long):
+	Likewise.
+	(cortex_a8_neon_mla_qqq_32_qqd_32_scalar): Likewise.
+	(cortex_a8_neon_mul_ddd_16_scalar_32_16_long_scalar): Likewise.
+	(cortex_a8_neon_mul_qqd_32_scalar): Likewise.
+	(cortex_a8_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar): Likewise.
+	(cortex_a8_neon_fp_vadd_ddd_vabs_dd): Likewise.
+	(cortex_a8_neon_fp_vadd_qqq_vabs_qq): Likewise.
+	(cortex_a8_neon_fp_vsum): Likewise.
+	(cortex_a8_neon_fp_vmul_ddd): Likewise.
+	(cortex_a8_neon_fp_vmul_qqd): Likewise.
+	(cortex_a8_neon_fp_vmla_ddd): Likewise.
+	(cortex_a8_neon_fp_vmla_qqq): Likewise.
+	(cortex_a8_neon_fp_vmla_ddd_scalar): Likewise.
+	(cortex_a8_neon_fp_vmla_qqq_scalar): Likewise.
+	(cortex_a8_neon_fp_vrecps_vrsqrts_ddd): Likewise.
+	(cortex_a8_neon_fp_vrecps_vrsqrts_qqq): Likewise.
+	(cortex_a8_neon_bp_simple): Likewise.
+	(cortex_a8_neon_bp_2cycle): Likewise.
+	(cortex_a8_neon_bp_3cycle): Likewise.
+	(cortex_a8_neon_ldr): Likewise.
+	(cortex_a8_neon_str): Likewise.
+	(cortex_a8_neon_vld1_1_2_regs): Likewise.
+	(cortex_a8_neon_vld1_3_4_regs): Likewise.
+	(cortex_a8_neon_vld2_2_regs_vld1_vld2_all_lanes): Likewise.
+	(cortex_a8_neon_vld2_4_regs): Likewise.
+	(cortex_a8_neon_vld3_vld4): Likewise.
+	(cortex_a8_neon_vld1_vld2_lane): Likewise.
+	(cortex_a8_neon_vld3_vld4_lane): Likewise.
+	(cortex_a8_neon_vst1_1_2_regs_vst2_2_regs): Likewise.
+	(cortex_a8_neon_vst1_3_4_regs): Likewise.
+	(cortex_a8_neon_vst2_4_regs_vst3_vst4): Likewise.
+	(cortex_a8_neon_vst1_vst2_lane): Likewise.
+	(cortex_a8_neon_vst3_vst4_lane): Likewise.
+	(cortex_a8_neon_mcr): Likewise.
+	(cortex_a8_neon_mcr_2_mcrr): Likewise.
+	(cortex_a8_neon_mrc): Likewise.
+	(cortex_a8_neon_mrrc): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/iterators.md (Vetype): Add SF and DF modes.
+	(fp): New.
+	* config/aarch64/aarch64-simd.md (neon_type): Remove.
+	(aarch64_simd_dup<mode>): Add "type" attribute.
+	(aarch64_dup_lane<mode>): Likewise.
+	(aarch64_dup_lane_<vswap_width_name><mode>): Likewise.
+	(*aarch64_simd_mov<mode>): Likewise.
+	(aarch64_simd_mov_from_<mode>low): Likewise.
+	(aarch64_simd_mov_from_<mode>high): Likewise.
+	(orn<mode>3): Likewise.
+	(bic<mode>3): Likewise.
+	(add<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(mul<mode>3): Likewise.
+	(*aarch64_mul3_elt<mode>): Likewise.
+	(*aarch64_mul3_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_mul3_elt_to_128df): Likewise.
+	(*aarch64_mul3_elt_to_64v2df): Likewise.
+	(neg<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+	(abd<mode>_3): Likewise.
+	(aba<mode>_3): Likewise.
+	(fabd<mode>_3): Likewise.
+	(*fabd_scalar<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(ior<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(aarch64_simd_vec_set<mode>): Likewise.
+	(aarch64_simd_lshr<mode>): Likewise.
+	(aarch64_simd_ashr<mode>): Likewise.
+	(aarch64_simd_imm_shl<mode>): Likewise.
+	(aarch64_simd_reg_sshl<mode): Likewise.
+	(aarch64_simd_reg_shl<mode>_unsigned): Likewise.
+	(aarch64_simd_reg_shl<mode>_signed): Likewise.
+	(aarch64_simd_vec_setv2di): Likewise.
+	(aarch64_simd_vec_set<mode>): Likewise.
+	(aarch64_mla<mode>): Likewise.
+	(*aarch64_mla_elt<mode>): Likewise.
+	(*aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_mls<mode>): Likewise.
+	(*aarch64_mls_elt<mode>): Likewise.
+	(*aarch64_mls_elt_<vswap_width_name><mode>): Likewise.
+	(<su><maxmin><mode>3): Likewise.
+	(move_lo_quad_<mode>): Likewise.
+	(aarch64_simd_move_hi_quad_<mode>): Likewise.
+	(aarch64_simd_vec_pack_trunc_<mode>): Likewise.
+	(vec_pack_trunc_<mode>): Likewise.
+	(aarch64_simd_vec_unpack<su>_lo_<mode>): Likewise.
+	(aarch64_simd_vec_unpack<su>_hi_<mode>): Likewise.
+	(*aarch64_<su>mlal_lo<mode>): Likewise.
+	(*aarch64_<su>mlal_hi<mode>): Likewise.
+	(*aarch64_<su>mlsl_lo<mode>): Likewise.
+	(*aarch64_<su>mlsl_hi<mode>): Likewise.
+	(*aarch64_<su>mlal<mode>): Likewise.
+	(*aarch64_<su>mlsl<mode>): Likewise.
+	(aarch64_simd_vec_<su>mult_lo_<mode>): Likewise.
+	(aarch64_simd_vec_<su>mult_hi_<mode>): Likewise.
+	(add<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(mul<mode>3): Likewise.
+	(div<mode>3): Likewise.
+	(neg<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+	(fma<mode>4): Likewise.
+	(*aarch64_fma4_elt<mode>): Likewise.
+	(*aarch64_fma4_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_fma4_elt_to_128df): Likewise.
+	(*aarch64_fma4_elt_to_64v2df): Likewise.
+	(fnma<mode>4): Likewise.
+	(*aarch64_fnma4_elt<mode>): Likewise.
+	(*aarch64_fnma4_elt_<vswap_width_name><mode>
+	(*aarch64_fnma4_elt_to_128df): Likewise.
+	(*aarch64_fnma4_elt_to_64v2df): Likewise.
+	(<frint_pattern><mode>2): Likewise.
+	(l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2): Likewise.
+	(<optab><fcvt_target><VDQF:VDQF:mode>2): Likewise.
+	(vec_unpacks_lo_v4sf): Likewise.
+	(aarch64_float_extend_lo_v2df): Likewise.
+	(vec_unpacks_hi_v4sf): Likewise.
+	(aarch64_float_truncate_lo_v2sf): Likewise.
+	(aarch64_float_truncate_hi_v4sf): Likewise.
+	(aarch64_vmls<mode>): Likewise.
+	(<su><maxmin><mode>3): Likewise.
+	(<maxmin_uns><mode>3): Likewise.
+	(reduc_<sur>plus_<mode>): Likewise.
+	(reduc_<sur>plus_v2di): Likewise.
+	(reduc_<sur>plus_v2si): Likewise.
+	(reduc_<sur>plus_<mode>): Likewise.
+	(aarch64_addpv4sf): Likewise.
+	(clz<mode>2): Likewise.
+	(reduc_<maxmin_uns>_<mode>): Likewise.
+	(reduc_<maxmin_uns>_v2di): Likewise.
+	(reduc_<maxmin_uns>_v2si): Likewise.
+	(reduc_<maxmin_uns>_<mode>): Likewise.
+	(reduc_<maxmin_uns>_v4sf): Likewise.
+	(aarch64_simd_bsl<mode>_internal): Likewise.
+	(*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>): Likewise.
+	(*aarch64_get_lane_zero_extendsi<mode>): Likewise.
+	(aarch64_get_lane<mode>): Likewise.
+	(*aarch64_combinez<mode>): Likewise.
+	(aarch64_combine<mode>): Likewise.
+	(aarch64_simd_combine<mode>): Likewise.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>_hi_internal): Likewise.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>_lo_internal): Likewise.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>): Likewise.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>): Likewise.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>w2<mode>_internal): Likewise.
+	(aarch64_<sur>h<addsub><mode>): Likewise.
+	(aarch64_<sur><addsub>hn<mode>): Likewise.
+	(aarch64_<sur><addsub>hn2<mode>): Likewise.
+	(aarch64_pmul<mode>): Likewise.
+	(aarch64_<su_optab><optab><mode>): Likewise.
+	(aarch64_<sur>qadd<mode>): Likewise.
+	(aarch64_sqmovun<mode>): Likewise.
+	(aarch64_<sur>qmovn<mode>): Likewise.
+	(aarch64_s<optab><mode>): Likewise.
+	(aarch64_sq<r>dmulh<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>): Likewise.
+	(aarch64_sq<r>dmulh_laneq<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_n<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>_internal): Likewise.
+	(aarch64_sqdmull<mode>): Likewise.
+	(aarch64_sqdmull_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull_n<mode>): Likewise.
+	(aarch64_sqdmull2<mode>_internal): Likewise.
+	(aarch64_sqdmull2_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull2_n<mode>_internal): Likewise.
+	(aarch64_<sur>shl<mode>): Likewise.
+	(aarch64_<sur>q<r>shl<mode>
+	(aarch64_<sur>shll_n<mode>): Likewise.
+	(aarch64_<sur>shll2_n<mode>): Likewise.
+	(aarch64_<sur>shr_n<mode>): Likewise.
+	(aarch64_<sur>sra_n<mode>): Likewise.
+	(aarch64_<sur>s<lr>i_n<mode>): Likewise.
+	(aarch64_<sur>qshl<u>_n<mode>): Likewise.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	(aarch64_cm<optab>di): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	(aarch64_cm<optab>di): Likewise.
+	(aarch64_cmtst<mode>): Likewise.
+	(aarch64_cmtstdi): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	(*aarch64_fac<optab><mode>): Likewise.
+	(aarch64_addp<mode>): Likewise.
+	(aarch64_addpdi): Likewise.
+	(sqrt<mode>2): Likewise.
+	(vec_load_lanesoi<mode>): Likewise.
+	(vec_store_lanesoi<mode>): Likewise.
+	(vec_load_lanesci<mode>): Likewise.
+	(vec_store_lanesci<mode>): Likewise.
+	(vec_load_lanesxi<mode>): Likewise.
+	(vec_store_lanesxi<mode>): Likewise.
+	(*aarch64_mov<mode>): Likewise.
+	(aarch64_ld2<mode>_dreg): Likewise.
+	(aarch64_ld2<mode>_dreg): Likewise.
+	(aarch64_ld3<mode>_dreg): Likewise.
+	(aarch64_ld3<mode>_dreg): Likewise.
+	(aarch64_ld4<mode>_dreg): Likewise.
+	(aarch64_ld4<mode>_dreg): Likewise.
+	(aarch64_tbl1<mode>): Likewise.
+	(aarch64_tbl2v16qi): Likewise.
+	(aarch64_combinev16qi): Likewise.
+	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): Likewise.
+	(aarch64_st2<mode>_dreg): Likewise.
+	(aarch64_st2<mode>_dreg): Likewise.
+	(aarch64_st3<mode>_dreg): Likewise.
+	(aarch64_st3<mode>_dreg): Likewise.
+	(aarch64_st4<mode>_dreg): Likewise.
+	(aarch64_st4<mode>_dreg): Likewise.
+	(*aarch64_simd_ld1r<mode>): Likewise.
+	(aarch64_frecpe<mode>): Likewise.
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): Likewise.
+	(aarch64_frecps<mode>): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/iterators.md (V_elem_ch): New.
+	(q): Likewise.
+	(VQH_type): Likewise.
+	* config/arm/arm.md (is_neon_type): New.
+	(conds): Use is_neon_type.
+	(anddi3_insn): Update type attribute.
+	(xordi3_insn): Likewise.
+	(one_cmpldi2): Likewise.
+	* gcc/config/arm/vfp.md (movhf_vfp_neon): Update type attribute.
+	* gcc/config/arm/neon.md (neon_mov): Update type attribute.
+	(*movmisalign<mode>_neon_store): Likewise.
+	(*movmisalign<mode>_neon_load): Likewise.
+	(vec_set<mode>_internal): Likewise.
+	(vec_set<mode>_internal): Likewise.
+	(vec_setv2di_internal): Likewise.
+	(vec_extract<mode>): Likewise.
+	(vec_extract<mode>): Likewise.
+	(vec_extractv2di): Likewise.
+	(*add<mode>3_neon): Likewise.
+	(adddi3_neon): Likewise.
+	(*sub<mode>3_neon): Likewise.
+	(subdi3_neon): Likewise.
+	(fma<VCVTF:mode>4): Likewise.
+	(fma<VCVTF:mode>4_intrinsic): Likewise.
+	(*fmsub<VCVTF:mode>4): Likewise.
+	(fmsub<VCVTF:mode>4_intrinsic): Likewise.
+	(neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>): Likewise.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(orn<mode>3_neon): Likewise.
+	(orndi3_neon): Likewise.
+	(bic<mode>3_neon): Likewise.
+	(bicdi3_neon): Likewise.
+	(xor<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+	(neg<mode>2): Likewise.
+	(negdi2_neon): Likewise.
+	(*umin<mode>3_neon): Likewise.
+	(*umax<mode>3_neon): Likewise.
+	(*smin<mode>3_neon): Likewise.
+	(*smax<mode>3_neon): Likewise.
+	(vashl<mode>3): Likewise.
+	(vashr<mode>3_imm): Likewise.
+	(vlshr<mode>3_imm): Likewise.
+	(ashl<mode>3_signed): Likewise.
+	(ashl<mode>3_unsigned): Likewise.
+	(neon_load_count): Likewise.
+	(ashldi3_neon_noclobber): Likewise.
+	(ashldi3_neon): Likewise.
+	(signed_shift_di3_neon): Likewise.
+	(unsigned_shift_di3_neon): Likewise.
+	(ashrdi3_neon_imm_noclobber): Likewise.
+	(lshrdi3_neon_imm_noclobber): Likewise.
+	(<shift>di3_neon): Likewise.
+	(widen_ssum<mode>3): Likewise.
+	(widen_usum<mode>3): Likewise.
+	(quad_halves_<code>v4si): Likewise.
+	(quad_halves_<code>v4sf): Likewise.
+	(quad_halves_<code>v8hi): Likewise.
+	(quad_halves_<code>v16qi): Likewise.
+	(reduc_splus_v2di): Likewise.
+	(neon_vpadd_internal<mode>): Likewise.
+	(neon_vpsmin<mode>): Likewise.
+	(neon_vpsmax<mode>): Likewise.
+	(neon_vpumin<mode>): Likewise.
+	(neon_vpumax<mode>): Likewise.
+	(*ss_add<mode>_neon): Likewise.
+	(*us_add<mode>_neon): Likewise.
+	(*ss_sub<mode>_neon): Likewise.
+	(*us_sub<mode>_neon): Likewise.
+	(neon_vadd<mode>_unspec): Likewise.
+	(neon_vaddl<mode>): Likewise.
+	(neon_vaddw<mode>): Likewise.
+	(neon_vhadd<mode>): Likewise.
+	(neon_vqadd<mode>): Likewise.
+	(neon_vaddhn<mode>): Likewise.
+	(neon_vmul<mode>): Likewise.
+	(neon_vfms<VCVTF:mode>): Likewise.
+	(neon_vmlal<mode>): Likewise.
+	(neon_vmls<mode>): Likewise.
+	(neon_vmlsl<mode>): Likewise.
+	(neon_vqdmulh<mode>): Likewise.
+	(neon_vqdmlal<mode>): Likewise.
+	(neon_vqdmlsl<mode>): Likewise.
+	(neon_vmull<mode>): Likewise.
+	(neon_vqdmull<mode>): Likewise.
+	(neon_vsub<mode>_unspec): Likewise.
+	(neon_vsubl<mode>): Likewise.
+	(neon_vsubw<mode>): Likewise.
+	(neon_vqsub<mode>): Likewise.
+	(neon_vhsub<mode>): Likewise.
+	(neon_vsubhn<mode>): Likewise.
+	(neon_vceq<mode>): Likewise.
+	(neon_vcge<mode>): Likewise.
+	(neon_vcgeu<mode>): Likewise.
+	(neon_vcgt<mode>): Likewise.
+	(neon_vcgtu<mode>): Likewise.
+	(neon_vcle<mode>): Likewise.
+	(neon_vclt<mode>): Likewise.
+	(neon_vcage<mode>): Likewise.
+	(neon_vcagt<mode>): Likewise.
+	(neon_vtst<mode>): Likewise.
+	(neon_vabd<mode>): Likewise.
+	(neon_vabdl<mode>): Likewise.
+	(neon_vaba<mode>): Likewise.
+	(neon_vabal<mode>): Likewise.
+	(neon_vmax<mode>): Likewise.
+	(neon_vmin<mode>): Likewise.
+	(neon_vpaddl<mode>): Likewise.
+	(neon_vpadal<mode>): Likewise.
+	(neon_vpmax<mode>): Likewise.
+	(neon_vpmin<mode>): Likewise.
+	(neon_vrecps<mode>): Likewise.
+	(neon_vrsqrts<mode>): Likewise.
+	(neon_vqabs<mode>): Likewise.
+	(neon_vqneg<mode>): Likewise.
+	(neon_vcls<mode>): Likewise.
+	(clz<mode>2): Likewise.
+	(popcount<mode>2): Likewise.
+	(neon_vrecpe<mode>): Likewise.
+	(neon_vrsqrte<mode>): Likewise.
+	(neon_vget_lane<mode>_sext_internal): Likewise.
+	(neon_vget_lane<mode>_zext_internal): Likewise.
+	(neon_vdup_n<mode>): Likewise.
+	(neon_vdup_n<mode>): Likewise.
+	(neon_vdup_nv2di): Likewise.
+	(neon_vdup_lane<mode>_interal): Likewise.
+	(*neon_vswp<mode>): Likewise.
+	(neon_vcombine<mode>): Likewise.
+	(float<mode><V_cvtto>2): Likewise.
+	(floatuns<mode><V_cvtto>2): Likewise.
+	(fix_trunc<mode><V_cvtto>2): Likewise.
+	(fixuns_trunc<mode><V_cvtto>2
+	(neon_vcvt<mode>): Likewise.
+	(neon_vcvt<mode>): Likewise.
+	(neon_vcvtv4sfv4hf): Likewise.
+	(neon_vcvtv4hfv4sf): Likewise.
+	(neon_vcvt_n<mode>): Likewise.
+	(neon_vcvt_n<mode>): Likewise.
+	(neon_vmovn<mode>): Likewise.
+	(neon_vqmovn<mode>): Likewise.
+	(neon_vqmovun<mode>): Likewise.
+	(neon_vmovl<mode>): Likewise.
+	(neon_vmul_lane<mode>): Likewise.
+	(neon_vmul_lane<mode>): Likewise.
+	(neon_vmull_lane<mode>): Likewise.
+	(neon_vqdmull_lane<mode>): Likewise.
+	(neon_vqdmulh_lane<mode>): Likewise.
+	(neon_vqdmulh_lane<mode>): Likewise.
+	(neon_vmla_lane<mode>): Likewise.
+	(neon_vmla_lane<mode>): Likewise.
+	(neon_vmlal_lane<mode>): Likewise.
+	(neon_vqdmlal_lane<mode>): Likewise.
+	(neon_vmls_lane<mode>): Likewise.
+	(neon_vmls_lane<mode>): Likewise.
+	(neon_vmlsl_lane<mode>): Likewise.
+	(neon_vqdmlsl_lane<mode>): Likewise.
+	(neon_vext<mode>): Likewise.
+	(neon_vrev64<mode>): Likewise.
+	(neon_vrev32<mode>): Likewise.
+	(neon_vrev16<mode>): Likewise.
+	(neon_vbsl<mode>_internal): Likewise.
+	(neon_vshl<mode>): Likewise.
+	(neon_vqshl<mode>): Likewise.
+	(neon_vshr_n<mode>): Likewise.
+	(neon_vshrn_n<mode>): Likewise.
+	(neon_vqshrn_n<mode>): Likewise.
+	(neon_vqshrun_n<mode>): Likewise.
+	(neon_vshl_n<mode>): Likewise.
+	(neon_vqshl_n<mode>): Likewise.
+	(neon_vqshlu_n<mode>): Likewise.
+	(neon_vshll_n<mode>): Likewise.
+	(neon_vsra_n<mode>): Likewise.
+	(neon_vsri_n<mode>): Likewise.
+	(neon_vsli_n<mode>): Likewise.
+	(neon_vtbl1v8qi): Likewise.
+	(neon_vtbl2v8qi): Likewise.
+	(neon_vtbl3v8qi): Likewise.
+	(neon_vtbl4v8qi): Likewise.
+	(neon_vtbl1v16qi): Likewise.
+	(neon_vtbl2v16qi): Likewise.
+	(neon_vcombinev16qi): Likewise.
+	(neon_vtbx1v8qi): Likewise.
+	(neon_vtbx2v8qi): Likewise.
+	(neon_vtbx3v8qi): Likewise.
+	(neon_vtbx4v8qi): Likewise.
+	(*neon_vtrn<mode>_insn): Likewise.
+	(*neon_vzip<mode>_insn): Likewise.
+	(*neon_vuzp<mode>_insn): Likewise.
+	(neon_vld1<mode>): Likewise.
+	(neon_vld1_lane<mode>): Likewise.
+	(neon_vld1_lane<mode>): Likewise.
+	(neon_vld1_dup<mode>): Likewise.
+	(neon_vld1_dup<mode>): Likewise.
+	(neon_vld1_dupv2di): Likewise.
+	(neon_vst1<mode>): Likewise.
+	(neon_vst1_lane<mode>): Likewise.
+	(neon_vst1_lane<mode>): Likewise.
+	(neon_vld2<mode>): Likewise.
+	(neon_vld2<mode>): Likewise.
+	(neon_vld2_lane<mode>): Likewise.
+	(neon_vld2_lane<mode>): Likewise.
+	(neon_vld2_dup<mode>): Likewise.
+	(neon_vst2<mode>): Likewise.
+	(neon_vst2<mode>): Likewise.
+	(neon_vst2_lane<mode>): Likewise.
+	(neon_vst2_lane<mode>): Likewise.
+	(neon_vld3<mode>): Likewise.
+	(neon_vld3qa<mode>): Likewise.
+	(neon_vld3qb<mode>): Likewise.
+	(neon_vld3_lane<mode>): Likewise.
+	(neon_vld3_lane<mode>): Likewise.
+	(neon_vld3_dup<mode>): Likewise.
+	(neon_vst3<mode>): Likewise.
+	(neon_vst3qa<mode>): Likewise.
+	(neon_vst3qb<mode>): Likewise.
+	(neon_vst3_lane<mode>): Likewise.
+	(neon_vst3_lane<mode>): Likewise.
+	(neon_vld4<mode>): Likewise.
+	(neon_vld4qa<mode>): Likewise.
+	(neon_vld4qb<mode>): Likewise.
+	(neon_vld4_lane<mode>): Likewise.
+	(neon_vld4_lane<mode>): Likewise.
+	(neon_vld4_dup<mode>): Likewise.
+	(neon_vst4<mode>): Likewise.
+	(neon_vst4qa<mode>): Likewise.
+	(neon_vst4qb<mode>): Likewise.
+	(neon_vst4_lane<mode>): Likewise.
+	(neon_vst4_lane<mode>): Likewise.
+	(neon_vec_unpack<US>_lo_<mode>): Likewise.
+	(neon_vec_unpack<US>_hi_<mode>): Likewise.
+	(neon_vec_<US>mult_lo_<mode>): Likewise.
+	(neon_vec_<US>mult_hi_<mode>): Likewise.
+	(neon_vec_<US>shiftl_<mode>): Likewise.
+	(neon_unpack<US>_<mode>): Likewise.
+	(neon_vec_<US>mult_<mode>): Likewise.
+	(vec_pack_trunc_<mode>): Likewise.
+	(neon_vec_pack_trunc_<mode>): Likewise.
+	(neon_vabd<mode>_2): Likewise.
+	(neon_vabd<mode>_3): Likewise.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (movtf_aarch64): Update type attribute.
+	(load_pair): Update type attribute.
+	(store_pair): Update type attribute.
+	* config/aarch64/iterators.md (q): New.
+
+2013-10-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types.md: Add new types for Neon insns.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (unspec): Add UNSPEC_RCP14, UNSPEC_RSQRT14,
+	UNSPEC_FIXUPIMM, UNSPEC_SCALEF, UNSPEC_GETEXP, UNSPEC_GETMANT,
+	UNSPEC_EXP2, UNSPEC_RCP28, UNSPEC_RSQRT28.
+	(rcp14<mode>): New.
+	(srcp14<mode>): Ditto.
+	(rsqrt14<mode>): Ditto.
+	(rsqrt14<mode>): Ditto.
+	(avx512f_vmscalef<mode>): Ditto.
+	(avx512f_scalef<mode>): Ditto.
+	(avx512f_getexp<mode>): Ditto.
+	(avx512f_sgetexp<mode>): Ditto.
+	(avx512f_fixupimm<mode>): Ditto.
+	(avx512f_sfixupimm<mode>): Ditto.
+	(avx512f_rndscale<mode>): Ditto.
+	(*avx512er_exp2<mode>): Ditto.
+	(*avx512er_rcp28<mode>): Ditto.
+	(avx512er_rsqrt28<mode>): Ditto.
+	(avx512f_getmant<mode>): Ditto.
+	(avx512f_getmant<mode>): Ditto.
+	(avx512f_rndscale<mode>): Fix formatting.
+
+2013-10-15  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-utils.h (ipa_edge_within_scc): Declare.
+	* ipa-cp.c (edge_within_scc): Moved...
+	* ipa-utils.c (ipa_edge_within_scc): ...here.  Updated all callers.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/predicates.md (const_8_to_15_operand): New.
+	(const_16_to_31_operand): Ditto.
+	* config/i386/sse.md (V8FI): New.
+	(V16FI): Ditto.
+	(reduc_splus_v8df): Ditto.
+	(reduc_splus_v16sf): Ditto.
+	(avx512f_vextract<shuffletype>32x4_1): Ditto.
+	(vec_extract_hi_<mode>): Ditto.
+	(avx512f_vinsert<shuffletype>32x4_1): Ditto.
+	(vec_set_lo_<mode>): Ditto.
+	(vec_set_hi_<mode>): Ditto.
+	(avx512f_shuf_<shuffletype>64x2_1): Ditto.
+	(avx512f_shuf_<shuffletype>32x4_1): Ditto.
+	(avx512f_pshufd_1): Ditto.
+	(avx512f_broadcast<mode>): Ditto.
+	(avx512f_broadcast<mode>): Ditto.
+	(define_split): Split vec_extract_lo into move.
+	(ssequartermode): Ditto.
+	(ssedoublemode): Extened with wider modes.
+	(vec_extract_lo_<mode>): Ditto.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/predicates.md (register_or_constm1_operand): New.
+	* config/i386/sse.md (unspec): Add UNSPEC_UNSIGNED_PCMP, UNSPEC_TESTM,
+	UNSPEC_TESTNM, UNSPEC_VTERNLOG, UNSPEC_ALIGN, UNSPEC_CONFLICT,
+	UNSPEC_MASKED_EQ, UNSPEC_MASKED_GT, UNSPEC_GATHER_PREFETCH,
+	UNSPEC_SCATTER_PREFETCH
+	(VI48_512): New.
+	(avx512f_ucmp<mode>3): Ditto.
+	(avx512f_vternlog<mode>): Ditto.
+	(avx512f_align<mode>): Ditto.
+	(<shift_insn><mode>3): Ditto.
+	(avx512f_<rotate>v<mode>): Ditto.
+	(avx512f_<rotate><mode>): Ditto.
+	(avx512f_eq<mode>3): Ditto.
+	(avx512f_eq<mode>3_1): Ditto.
+	(avx512f_gt<mode>3): Ditto.
+	(avx512f_testm<mode>3): Ditto.
+	(avx512f_testnm<mode>3): Ditto.
+	(avx512pf_gatherpf<mode>): Ditto.
+	(*avx512pf_gatherpf<mode>_mask): Ditto.
+	(*avx512pf_gatherpf<mode>): Ditto.
+	(avx512pf_scatterpf<mode>): Ditto.
+	(*avx512pf_scatterpf<mode>_mask): Ditto.
+	(*avx512pf_scatterpf<mode>): Ditto.
+	(avx512f_vec_dup_gpr<mode>): Ditto.
+	(clz<mode>2): Ditto.
+	(conflict<mode>): Ditto.
+	(REDUC_SMINMAX_MODE): Extened with wider modes.
+	(reduc_<code>_<mode>): Ditto.
+	(vlshr<mode>3): Ditto.
+	(vashl<mode>3): Ditto.
+
+2013-10-15  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (unspec): Added UNSPEC_VPERMI2, UNSPEC_VPERMT2,
+	UNSPEC_SCATTER.
+	(VI48F_512): New.
+	(avx512fmaskmode): Ditto.
+	(bcstscalarsuff): Ditto.
+	(avx512f_blendm<mode>): Ditto.
+	(cmp_imm_predicate): Ditto.
+	(avx512f_cmp<mode>3): Ditto.
+	(avx512f_vec_dup<mode>): Ditto.
+	(avx512f_vec_dup_mem<mode>): Ditto.
+	(avx512f_vpermi2var<mode>3): Ditto.
+	(avx512f_vpermt2var<mode>3): Ditto.
+	(vec_init<mode>): Ditto.
+	(avx512f_gathersi<mode>): Ditto.
+	(*avx512f_gathersi<mode>): Ditto.
+	(*avx512f_gathersi<mode>_2): Ditto.
+	(avx512f_gatherdi<mode>): Ditto.
+	(*avx512f_gatherdi<mode>): Ditto.
+	(*avx512f_gatherdi<mode>_2): Ditto.
+	(avx512f_scattersi<mode>): Ditto.
+	(*avx512f_scattersi<mode>): Ditto.
+	(avx512f_scatterdi<mode>): Ditto.
+	(*avx512f_scatterdi<mode>): Ditto.
+	(sseintprefix): Extened with wider modes.
+	(VEC_GATHER_IDXSI): Ditto.
+	(VEC_GATHER_IDXDI): Ditto.
+	(VEC_GATHER_SRCDI): Ditto.
+
+2013-10-15  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/t-aprofile: New file.
+	* config.gcc: Handle --with-multilib-list option.
+
+2013-10-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* reload1.c (reloads_unique_chain_p): Ensure that r1 is
+	the input for r2.
+
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (build_empty_rdg): Inline into
+	single user.
+	(rdg_flag_vertex): Inline into single user.
+	(rdg_flag_vertex_and_dependent): Likewise.
+	(build_rdg_partition_for_vertex): Remove processed bitmap.
+	(rdg_build_partitions): Simplify.
+
+2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
+	Restructure forwarding through conversions and copies to
+	avoid performing copy-propagation the wrong way.  Adjust
+	recursion invocations.
+	(forward_propagate_addr_expr): Add argument stating if we
+	are recursing from a single-use.
+	(ssa_forward_propagate_and_combine): Adjust.
+
+2013-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.h (gcc::dump_manager): New class, to hold state
+	relating to dumpfile management.
+	(get_dump_file_name): Remove in favor of method of dump_manager.
+	(dump_initialized_p): Likewise.
+	(dump_start): Likewise.
+	(dump_finish): Likewise.
+	(dump_switch_p): Likewise.
+	(dump_register): Likewise.
+	(get_dump_file_info): Likewise.
+	* context.c (gcc::context::context): Construct the dump_manager
+	instance.
+	* context.h (gcc::context::get_dumps): New.
+	(gcc::context::m_dumps): New.
+	* coverage.c (coverage_init): Port to dump_manager API.
+	* dumpfile.c (extra_dump_files): Convert to field of gcc::dump_manager.
+	(extra_dump_files_in_use): Likewise.
+	(extra_dump_files_alloced): Likewise.
+	(gcc::dump_manager::dump_manager): New.
+	(dump_register): Convert to...
+	(gcc::dump_manager::dump_register): ...method, replacing
+	function-static next_dump with m_next_dump field.
+	(get_dump_file_info): Convert to...
+	(gcc::dump_manager::get_dump_file_info): ...method.
+	(get_dump_file_name): Convert to...
+	(gcc::dump_manager::get_dump_file_name): ...method.
+	(dump_start): Convert to...
+	(gcc::dump_manager::dump_start): ...method.
+	(dump_finish): Convert to...
+	(gcc::dump_manager::dump_finish): ...method.
+	(dump_begin): Replace body with...
+	(gcc::dump_manager::dump_begin): ...new method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_phase_enabled_p): Convert to...
+	(gcc::dump_manager::dump_phase_enabled_p): ...method.
+	(dump_initialized_p):  Convert to...
+	(gcc::dump_manager::dump_initialized_p): ...method.
+	(dump_flag_name): Replace body with...
+	(gcc::dump_manager::dump_flag_name): ...new method.
+	(dump_enable_all): Convert to...
+	(gcc::dump_manager::dump_enable_all): ...new method.
+	(opt_info_enable_passes): Convert to...
+	(gcc::dump_manager::opt_info_enable_passes): ...new method.
+	(dump_switch_p_1): Convert to...
+	(gcc::dump_manager::dump_switch_p_1): ...new method.
+	(dump_switch_p):  Convert to...
+	(gcc::dump_manager::dump_switch_p): ...new method.
+	(opt_info_switch_p): Port to dump_manager API.
+	(enable_rtl_dump_file): Likewise.
+	* opts-global.c (handle_common_deferred_options): Port to new
+	dump_manager API.
+	* passes.c (pass_manager::finish_optimization_passes): Likewise.
+	(pass_manager::register_one_dump_file): Likewise.
+	(pass_manager::register_pass): Likewise.
+	(pass_init_dump_file): Likewise.
+	(pass_fini_dump_file): Likewise.
+	* statistics.c (statistics_early_init): Likewise.
+
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (gimple_canonical_types, canonical_type_hash_cache,
+	iterative_hash_canonical_type, gimple_canonical_type_hash,
+	gimple_canonical_types_compatible_p, gimple_canonical_type_eq,
+	gimple_register_canonical_type, print_gimple_types_stats,
+	free_gimple_type_tables): Move to lto/lto.c
+	(gt-gimple.h): Do not include.
+	* gimple.h (gimple_register_canonical_type,
+	print_gimple_types_stats, free_gimple_type_tables): Remove.
+	* Makefile.in (GTFILES): Remove gimple.c.
+
+2013-10-14  Travis Snoozy  <quandary@remstate.com>
+
+	PR target/58716
+	* config/msp430/msp430.c (msp430_option_override): Correct thinko
+	scanning for msp430x targets.
+
+2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/58509
+	* config/sparc/sparc-protos.h (widen_mem_for_ldd_peep): Declare.
+	(registers_ok_for_ldd_peep): Move around.
+	* config/sparc/sparc.c (widen_mem_for_ldd_peep): New.
+	* config/sparc/sparc.md (widening peepholes): Use it.
+
+2013-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58712
+	PR middle-end/55358
+	* gimple.c (iterative_hash_canonical_type): Make sure to
+	record the hash into the correct hashtable slot.
+
 2013-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/58662
@@ -96,7 +1730,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-	* config/i386/i386.c (bdesc_args): Change corresponding pattern  for
+	* config/i386/i386.c (bdesc_args): Change corresponding pattern for
 	__builtin_ia32_cvtps2dq, __builtin_ia32_cvtps2dq256.
 	* config/i386/sse.md (VI4_AVX): New.
 	(sf2simodelower): Ditto.
@@ -360,9 +1994,9 @@
 
 2013-10-11  Richard Biener  <rguenther@suse.de>
 
-	* tree-pretty-print.c (dump_generic_node): Allow to dump
-	both (D) and (ab) for SSA_NAMEs.  Mark INTEGER_CSTs with
-	(OVF) if TREE_OVERFLOW is set.
+	* tree-pretty-print.c (dump_generic_node): Allow to dump both (D)
+	and (ab) for SSA_NAMEs.  Mark INTEGER_CSTs with (OVF) if
+	TREE_OVERFLOW is set.
 
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -436,8 +2070,7 @@
 	GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS.
 	(build_omp_barrier): Add lhs argument, return gimple rather than tree.
 	(omp_clause_aligned_alignment): New function.
-	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR
-	on decls.
+	(lower_rec_simd_input_clauses): Only call SET_DECL_VALUE_EXPR on decls.
 	(lower_rec_input_clauses): Add FD argument.  Ignore shared clauses
 	on teams constructs.  Handle user defined reductions and new
 	OpenMP 4.0 clauses.
@@ -523,8 +2156,7 @@
 	hook.
 	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP,
 	GOVD_ALIGNED and GOVD_MAP_TO_ONLY.
-	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET_DATA and
-	ORT_TARGET.
+	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET_DATA and ORT_TARGET.
 	(struct gimplify_omp_ctx): Add combined_loop field.
 	(gimplify_call_expr, gimplify_modify_expr): Don't call fold_stmt
 	on stmts inside of target region.
@@ -659,8 +2291,7 @@
 2013-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58656
-	* tree-ssa-pre.c (phi_translate): Do not cache failed
-	translations.
+	* tree-ssa-pre.c (phi_translate): Do not cache failed translations.
 
 2013-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -1641,7 +3272,7 @@
 	next_readonly_imm_use, has_zero_uses, has_single_use, single_imm_use,
 	num_imm_uses): Move to ssa-iterators.h.
 	(get_use_from_ptr, get_def_from_ptr): Move to tree-ssa-operands.h
-	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Move to 
+	(gimple_phi_arg_imm_use_ptr, phi_arg_index_from_use): Move to
 	tree-phinodes.h.
 	(op_iter_done, op_iter_next_def, op_iter_next_tree,
 	clear_and_done_ssa_iter, op_iter_init, op_iter_init_use,
@@ -2096,11 +3727,6 @@
 2013-09-27  Diego Novillo  <dnovillo@google.com>
 
 	* gimple.h (enum ssa_mode): Remove.
-
-2013-09-27  Paulo Matos  <pmatos@broadcom.com>
-
-	PR middle-end/58463
-	* gcc.dg/pr58463.c: New test.
 
 2013-09-27  Paulo Matos  <pmatos@broadcom.com>
 
@@ -2664,8 +4290,8 @@
 	instructions.
 	(ww constraint): Likewise.
 	(wy constraint): Likewise.
-	(wv constraint): Repurpose ISA 2.07 constraint that we not used in
-	the previous submissions.
+	(wv constraint): Repurpose ISA 2.07 constraint that we did not use
+	in the previous submissions.
 	* doc/md.texi (PowerPC and IBM RS6000): Likewise.
 
 2013-09-23  Richard Sandiford  <rdsandiford@googlemail.com>

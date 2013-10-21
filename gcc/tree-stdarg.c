@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "target.h"
 #include "tree-ssa.h"
+#include "sbitmap.h"
 #include "tree-pass.h"
 #include "tree-stdarg.h"
 

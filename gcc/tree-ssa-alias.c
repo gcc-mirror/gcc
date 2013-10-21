@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "alloc-pool.h"
 #include "tree-ssa-alias.h"
+#include "ipa-reference.h"
 
 /* Broad overview of how alias analysis on gimple works:
 

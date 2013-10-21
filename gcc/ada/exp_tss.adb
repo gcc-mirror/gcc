@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -211,7 +211,7 @@ package body Exp_Tss is
    begin
       return Present (BIP)
         and then (Restriction_Active (No_Default_Initialization)
-                    or else not Is_Null_Init_Proc (BIP));
+                   or else not Is_Null_Init_Proc (BIP));
    end Has_Non_Null_Base_Init_Proc;
 
    ---------------

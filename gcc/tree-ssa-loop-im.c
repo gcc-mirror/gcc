@@ -1117,6 +1117,67 @@ public:
   unsigned int todo_;
 };
 
+/* Return true if CODE is an operation that when operating on signed
+   integer types involves undefined behavior on overflow and the
+   operation can be expressed with unsigned arithmetic.  */
+
+static bool
+arith_code_with_undefined_signed_overflow (tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case NEGATE_EXPR:
+    case POINTER_PLUS_EXPR:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Rewrite STMT, an assignment with a signed integer or pointer arithmetic
+   operation that can be transformed to unsigned arithmetic by converting
+   its operand, carrying out the operation in the corresponding unsigned
+   type and converting the result back to the original type.
+
+   Returns a sequence of statements that replace STMT and also contain
+   a modified form of STMT itself.  */
+
+static gimple_seq
+rewrite_to_defined_overflow (gimple stmt)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "rewriting stmt with undefined signed "
+	       "overflow ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+    }
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree type = unsigned_type_for (TREE_TYPE (lhs));
+  gimple_seq stmts = NULL;
+  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
+    {
+      gimple_seq stmts2 = NULL;
+      gimple_set_op (stmt, i,
+		     force_gimple_operand (fold_convert (type,
+							 gimple_op (stmt, i)),
+					   &stmts2, true, NULL_TREE));
+      gimple_seq_add_seq (&stmts, stmts2);
+    }
+  gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
+  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+    gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
+  gimple_seq_add_stmt (&stmts, stmt);
+  gimple cvt = gimple_build_assign_with_ops
+      (NOP_EXPR, lhs, gimple_assign_lhs (stmt), NULL_TREE);
+  gimple_seq_add_stmt (&stmts, cvt);
+
+  return stmts;
+}
+
 /* Hoist the statements in basic block BB out of the loops prescribed by
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
@@ -1247,7 +1308,21 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	    }
 	}
       gsi_remove (&bsi, false);
-      gsi_insert_on_edge (e, stmt);
+      /* In case this is a stmt that is not unconditionally executed
+         when the target loop header is executed and the stmt may
+	 invoke undefined integer or pointer overflow rewrite it to
+	 unsigned arithmetic.  */
+      if (is_gimple_assign (stmt)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  && arith_code_with_undefined_signed_overflow
+	       (gimple_assign_rhs_code (stmt))
+	  && (!ALWAYS_EXECUTED_IN (bb)
+	      || !(ALWAYS_EXECUTED_IN (bb) == level
+		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
+	gsi_insert_seq_on_edge (e, rewrite_to_defined_overflow (stmt));
+      else
+	gsi_insert_on_edge (e, stmt);
     }
 }
 

@@ -20,10 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
 #include "tree-ssa.h"
@@ -31,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "cfgloop.h"
 #include "hash-table.h"
+#include "dbgcnt.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -1534,6 +1533,14 @@ dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path)
 void
 register_jump_thread (vec<jump_thread_edge *> *path)
 {
+  if (!dbg_cnt (registered_jump_thread))
+    {
+      for (unsigned int i = 0; i < path->length (); i++)
+	delete (*path)[i];
+      path->release ();
+      return;
+    }
+
   /* First make sure there are no NULL outgoing edges on the jump threading
      path.  That can happen for jumping to a constant address.  */
   for (unsigned int i = 0; i < path->length (); i++)

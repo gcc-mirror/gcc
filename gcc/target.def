@@ -4964,9 +4964,9 @@ DEFHOOK
 (save,
  "This hook is called to save any additional target-specific information\n\
 in the @code{struct cl_target_option} structure for function-specific\n\
-options.\n\
+options from the @code{struct gcc_options} structure.\n\
 @xref{Option file format}.",
- void, (struct cl_target_option *ptr), NULL)
+ void, (struct cl_target_option *ptr, struct gcc_options *opts), NULL)
 
 /* Function to restore any extra target state from the target options
    structure.  */
@@ -4974,8 +4974,8 @@ DEFHOOK
 (restore,
  "This hook is called to restore any additional target-specific\n\
 information in the @code{struct cl_target_option} structure for\n\
-function-specific options.",
- void, (struct cl_target_option *ptr), NULL)
+function-specific options to the @code{struct gcc_options} structure.",
+ void, (struct gcc_options *opts, struct cl_target_option *ptr), NULL)
 
 /* Function to print any extra target state from the target options
    structure.  */

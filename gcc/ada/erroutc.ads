@@ -427,7 +427,8 @@ package Erroutc is
    --  Handle reserved word insertion (upper case letters). The Text argument
    --  is the current error message input text, and J is an index which on
    --  entry points to the first character of the reserved word, and on exit
-   --  points past the last character of the reserved word.
+   --  points past the last character of the reserved word. Note that RM and
+   --  SPARK are treated specially and not considered to be keywords.
 
    procedure Set_Msg_Insertion_Run_Time_Name;
    --  If package System contains a definition for Run_Time_Name (see package

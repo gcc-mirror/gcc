@@ -182,7 +182,7 @@ msp430_option_override (void)
       unsigned i;
 
       for (i = ARRAY_SIZE (msp430x_names); i--;)
-	if (strcasecmp (target_cpu, msp430x_names[i]))
+	if (strcasecmp (target_cpu, msp430x_names[i]) == 0)
 	  {
 	    msp430x = true;
 	    break;

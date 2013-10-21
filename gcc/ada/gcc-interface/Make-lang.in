@@ -371,6 +371,9 @@ GNAT_ADA_OBJS =	\
  ada/s-traent.o	\
  ada/s-unstyp.o	\
  ada/s-utf_32.o	\
+ ada/s-valint.o	\
+ ada/s-valuns.o	\
+ ada/s-valuti.o	\
  ada/s-wchcnv.o	\
  ada/s-wchcon.o	\
  ada/s-wchjis.o	\

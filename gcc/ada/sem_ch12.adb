@@ -3022,6 +3022,15 @@ package body Sem_Ch12 is
       Id := Defining_Entity (N);
       Generate_Definition (Id);
 
+      --  Expansion is not applied to generic units
+
+      Start_Generic;
+
+      Enter_Name (Id);
+      Set_Ekind    (Id, E_Generic_Package);
+      Set_Etype    (Id, Standard_Void_Type);
+      Set_Contract (Id, Make_Contract (Sloc (Id)));
+
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
@@ -3029,13 +3038,6 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Id);
       end if;
 
-      --  Expansion is not applied to generic units
-
-      Start_Generic;
-
-      Enter_Name (Id);
-      Set_Ekind (Id, E_Generic_Package);
-      Set_Etype (Id, Standard_Void_Type);
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
@@ -3124,7 +3126,7 @@ package body Sem_Ch12 is
             Aspects : constant List_Id := Aspect_Specifications (N);
          begin
             Set_Has_Aspects (N, False);
-            Move_Aspects (New_N, N);
+            Move_Aspects (New_N, To => N);
             Set_Has_Aspects (Original_Node (N), False);
             Set_Aspect_Specifications (Original_Node (N), Aspects);
          end;
@@ -3475,7 +3477,7 @@ package body Sem_Ch12 is
 
          --  Ada 2005 (AI-50217): Cannot use instance in limited with_clause
 
-         if From_With_Type (Gen_Unit) then
+         if From_Limited_With (Gen_Unit) then
             Error_Msg_N
               ("cannot instantiate a limited withed package", Gen_Id);
          else
@@ -4756,7 +4758,7 @@ package body Sem_Ch12 is
          --  pre/postconditions on the instance are analyzed below, in a
          --  separate step.
 
-         Move_Aspects (Act_Tree, Act_Decl);
+         Move_Aspects (Act_Tree, To => Act_Decl);
          Set_Categorization_From_Pragmas (Act_Decl);
 
          if Parent_Installed then
@@ -5662,8 +5664,7 @@ package body Sem_Ch12 is
                            (Related_Instance (Instance))));
                else
                   Gen_Id :=
-                    Generic_Parent
-                      (Specification (Unit_Declaration_Node (Instance)));
+                    Generic_Parent (Package_Specification (Instance));
                end if;
 
                Parent_Scope := Scope (Gen_Id);
@@ -8363,7 +8364,7 @@ package body Sem_Ch12 is
       --  of its generic parent.
 
       if Is_Generic_Instance (Par) then
-         Gen   := Generic_Parent (Specification (Unit_Declaration_Node (Par)));
+         Gen   := Generic_Parent (Package_Specification (Par));
          Gen_E := First_Entity (Gen);
       end if;
 
@@ -8447,8 +8448,7 @@ package body Sem_Ch12 is
       ------------------
 
       procedure Install_Spec (Par : Entity_Id) is
-         Spec : constant Node_Id :=
-                  Specification (Unit_Declaration_Node (Par));
+         Spec : constant Node_Id := Package_Specification (Par);
 
       begin
          --  If this parent of the child instance is a top-level unit,
@@ -8517,8 +8517,7 @@ package body Sem_Ch12 is
 
       First_Par := Inst_Par;
 
-      Gen_Par :=
-        Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
+      Gen_Par := Generic_Parent (Package_Specification (Inst_Par));
 
       First_Gen := Gen_Par;
 
@@ -8536,9 +8535,7 @@ package body Sem_Ch12 is
                Inst_Par := Renamed_Entity (Inst_Par);
             end if;
 
-            Gen_Par :=
-              Generic_Parent
-                (Specification (Unit_Declaration_Node (Inst_Par)));
+            Gen_Par := Generic_Parent (Package_Specification (Inst_Par));
 
             if Present (Gen_Par) then
                Prepend_Elmt (Inst_Par, Ancestors);
@@ -9007,7 +9004,7 @@ package body Sem_Ch12 is
          end if;
 
          if Nkind (Parent (Actual_Pack)) = N_Defining_Program_Unit_Name then
-            Parent_Spec := Specification (Unit_Declaration_Node (Actual_Pack));
+            Parent_Spec := Package_Specification (Actual_Pack);
          else
             Parent_Spec := Parent (Actual_Pack);
          end if;
@@ -10532,23 +10529,13 @@ package body Sem_Ch12 is
          --  only mode conformance was required.
 
          --  This is a binding interpretation that applies to previous versions
-         --  of the language, but for now we retain the milder check in order
-         --  to preserve ACATS tests. These will be protested eventually ???
+         --  of the language, no need to maintain previous weaker checks.
 
-         if Ada_Version < Ada_2012 then
-            Check_Mode_Conformant
-              (Designated_Type (Act_T),
-               Designated_Type (A_Gen_T),
-               Actual,
-               Get_Inst => True);
-
-         else
-            Check_Subtype_Conformant
-              (Designated_Type (Act_T),
-               Designated_Type (A_Gen_T),
-               Actual,
-               Get_Inst => True);
-         end if;
+         Check_Subtype_Conformant
+           (Designated_Type (Act_T),
+            Designated_Type (A_Gen_T),
+            Actual,
+            Get_Inst => True);
 
          if Ekind (Base_Type (Act_T)) = E_Access_Protected_Subprogram_Type then
             if Ekind (A_Gen_T) = E_Access_Subprogram_Type then
@@ -10613,7 +10600,7 @@ package body Sem_Ch12 is
          --  with clause, in which case retrieve the non-limited view. This
          --  applies to incomplete types as well as to class-wide types.
 
-         if From_With_Type (Desig_Act) then
+         if From_Limited_With (Desig_Act) then
             Desig_Act := Available_View (Desig_Act);
          end if;
 
@@ -12569,8 +12556,7 @@ package body Sem_Ch12 is
             elsif S = Current_Scope and then Is_Generic_Instance (S) then
                declare
                   Par : constant Entity_Id :=
-                          Generic_Parent
-                            (Specification (Unit_Declaration_Node (S)));
+                          Generic_Parent (Package_Specification (S));
                begin
                   if Present (Par)
                     and then P = Scope (Par)

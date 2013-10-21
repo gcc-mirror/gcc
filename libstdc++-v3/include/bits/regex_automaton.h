@@ -104,27 +104,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
-  /// Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
-  template<typename _CharT, typename _TraitsT>
-    class _Automaton
-    {
-    public:
-      typedef size_t _SizeT;
-
-    public:
-      virtual _SizeT
-      _M_sub_count() const = 0;
-
-#ifdef _GLIBCXX_DEBUG
-      virtual std::ostream&
-      _M_dot(std::ostream& __ostr) const = 0;
-#endif
-    };
-
   template<typename _CharT, typename _TraitsT>
     class _NFA
-    : public _Automaton<_CharT, _TraitsT>,
-      public std::vector<_State<_CharT, _TraitsT>>
+    : public std::vector<_State<_CharT, _TraitsT>>
     {
     public:
       typedef _State<_CharT, _TraitsT>            _StateT;
@@ -134,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _NFA(_FlagT __f)
       : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-      _M_has_backref(false), _M_quant_count(0)
+      _M_quant_count(0), _M_has_backref(false)
       { }
 
       _FlagT

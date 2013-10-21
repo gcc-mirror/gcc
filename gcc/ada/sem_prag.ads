@@ -41,7 +41,6 @@ package Sem_Prag is
      (Pragma_Refined_Depends => True,
       Pragma_Refined_Global  => True,
       Pragma_Refined_Post    => True,
-      Pragma_Refined_Pre     => True,
       Pragma_SPARK_Mode      => True,
       Pragma_Warnings        => True,
       others                 => False);
@@ -57,10 +56,18 @@ package Sem_Prag is
    --  Perform full analysis and expansion of delayed pragma Contract_Cases
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Depends
+   --  Perform full analysis of delayed pragma Depends. This routine is also
+   --  capable of performing basic analysis of pragma Refined_Depends.
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Global
+   --  Perform full analysis of delayed pragma Global. This routine is also
+   --  capable of performing basic analysis of pragma Refind_Global.
+
+   procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Initial_Condition
+
+   procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Initializes
 
    procedure Analyze_Pre_Post_Condition_In_Decl_Part
      (Prag    : Node_Id;
@@ -72,10 +79,14 @@ package Sem_Prag is
    --  of Default and Per-Object Expressions in Sem).
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
-   --  Preform full analysis of delayed pragma Refined_Depends
+   --  Preform full analysis of delayed pragma Refined_Depends. This routine
+   --  uses Analyze_Depends_In_Decl_Part as a starting point, then performs
+   --  various consistency checks between Depends and Refined_Depends.
 
    procedure Analyze_Refined_Global_In_Decl_Part (N : Node_Id);
-   --  Perform full analysis of delayed pragma Refined_Global
+   --  Perform full analysis of delayed pragma Refined_Global. This routine
+   --  uses Analyze_Global_In_Decl_Part as a starting point, then performs
+   --  various consistency checks between Global and Refined_Global.
 
    procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Refined_State

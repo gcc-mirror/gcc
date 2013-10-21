@@ -199,6 +199,7 @@ package body Sem_Ch11 is
 
                if Comes_From_Source (Choice) then
                   Check_Restriction (No_Exception_Propagation, Choice);
+                  Set_Debug_Info_Needed (Choice);
                end if;
 
                if No (H_Scope) then

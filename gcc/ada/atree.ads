@@ -462,25 +462,26 @@ package Atree is
    --  with copying aspect specifications where this is required.
 
    function New_Copy (Source : Node_Id) return Node_Id;
-   --  This function allocates a completely new node, and then initializes it
-   --  by copying the contents of the source node into it. The contents of the
-   --  source node is not affected. The target node is always marked as not
-   --  being in a list (even if the source is a list member). The new node will
-   --  have an extension if the source has an extension. New_Copy (Empty)
-   --  returns Empty and New_Copy (Error) returns Error. Note that, unlike
-   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendents,
-   --  so in general parent pointers are not set correctly for the descendents
-   --  of the copied node. Both normal and extended nodes (entities) may be
-   --  copied using New_Copy.
+   --  This function allocates a completely new node, and then initializes
+   --  it by copying the contents of the source node into it. The contents of
+   --  the source node is not affected. The target node is always marked as
+   --  not being in a list (even if the source is a list member), and not
+   --  overloaded. The new node will have an extension if the source has
+   --  an extension. New_Copy (Empty) returns Empty, and New_Copy (Error)
+   --  returns Error. Note that, unlike Copy_Separate_Tree, New_Copy does not
+   --  recursively copy any descendents, so in general parent pointers are not
+   --  set correctly for the descendents of the copied node. Both normal and
+   --  extended nodes (entities) may be copied using New_Copy.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
-   --  allocated and the contents of Source are copied to this node using
-   --  Copy_Node. The parent pointers of descendents of the node are then
+   --  allocated, and the contents of Source are copied to this node, using
+   --  New_Copy. The parent pointers of descendents of the node are then
    --  adjusted to point to the relocated copy. The original node is not
    --  modified, but the parent pointers of its descendents are no longer
-   --  valid. This routine is used in conjunction with the tree rewrite
-   --  routines (see descriptions of Replace/Rewrite).
+   --  valid. The new copy is always marked as not overloaded. This routine is
+   --  used in conjunction with the tree rewrite routines (see descriptions of
+   --  Replace/Rewrite).
    --
    --  Note that the resulting node has the same parent as the source node, and
    --  is thus still attached to the tree. It is valid for Source to be Empty,
@@ -736,6 +737,16 @@ package Atree is
       V6 : Entity_Kind) return Boolean;
 
    function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind) return Boolean;
+
+   function Ekind_In
      (T  : Entity_Kind;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean;
@@ -769,6 +780,16 @@ package Atree is
       V4 : Entity_Kind;
       V5 : Entity_Kind;
       V6 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind) return Boolean;
 
    pragma Inline (Ekind_In);
    --  Inline all above functions

@@ -3440,6 +3440,32 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 {
   switch (code)
     {
+    /* An integer or symbol address without a preceding # sign.  */
+    case 'c':
+      switch (GET_CODE (x))
+	{
+	case CONST_INT:
+	  fprintf (f, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  break;
+
+	case SYMBOL_REF:
+	  output_addr_const (f, x);
+	  break;
+
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+	    {
+	      output_addr_const (f, x);
+	      break;
+	    }
+	  /* Fall through.  */
+
+	default:
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	}
+      break;
+
     case 'e':
       /* Print the sign/zero-extend size as a character 8->b, 16->h, 32->w.  */
       {
@@ -3904,7 +3930,7 @@ aarch64_regno_regclass (unsigned regno)
 
   if (regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)
-    return CORE_REGS;
+    return POINTER_REGS;
 
   if (FP_REGNUM_P (regno))
     return FP_LO_REGNUM_P (regno) ?  FP_LO_REGS : FP_REGS;
@@ -4219,8 +4245,17 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 static reg_class_t
 aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
 {
-  if (regclass == POINTER_REGS || regclass == STACK_REG)
+  if (regclass == POINTER_REGS)
     return GENERAL_REGS;
+
+  if (regclass == STACK_REG)
+    {
+      if (REG_P(x)
+	  && reg_class_subset_p (REGNO_REG_CLASS (REGNO (x)), POINTER_REGS))
+	  return regclass;
+
+      return NO_REGS;
+    }
 
   /* If it's an integer immediate that MOVI can't handle, then
      FP_REGS is not an option, so we return NO_REGS instead.  */

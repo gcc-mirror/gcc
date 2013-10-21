@@ -43,6 +43,17 @@ accept4 (int sockfd __attribute__ ((unused)),
 }
 #endif
 
+#ifndef HAVE_DUP3
+int
+dup3 (int oldfd __attribute__ ((unused)),
+      int newfd __attribute__ ((unused)),
+      int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_EPOLL_CREATE1
 int
 epoll_create1 (int flags __attribute__ ((unused)))
@@ -112,6 +123,18 @@ futimesat (int dirfd __attribute__ ((unused)),
 }
 #endif
 
+#ifndef HAVE_GETXATTR
+ssize_t
+getxattr (const char *path __attribute__ ((unused)),
+	  const char *name __attribute__ ((unused)),
+	  void *value __attribute__ ((unused)),
+	  size_t size __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_INOTIFY_ADD_WATCH
 int
 inotify_add_watch (int fd __attribute__ ((unused)),
@@ -145,6 +168,17 @@ inotify_init1 (int flags __attribute__ ((unused)))
 int
 inotify_rm_watch (int fd __attribute__ ((unused)),
 		  uint32_t wd __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
+#ifndef HAVE_LISTXATTR
+ssize_t
+listxattr (const char *path __attribute__ ((unused)),
+	   char *list __attribute__ ((unused)),
+	   size_t size __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;
@@ -196,12 +230,35 @@ pipe2 (int pipefd[2] __attribute__ ((unused)),
 }
 #endif
 
+#ifndef HAVE_REMOVEXATTR
+int
+removexattr (const char *path __attribute__ ((unused)),
+	     const char *name __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_RENAMEAT
 int
 renameat (int olddirfd __attribute__ ((unused)),
 	  const char *oldpath __attribute__ ((unused)),
 	  int newdirfd __attribute__ ((unused)),
 	  const char *newpath __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
+#ifndef HAVE_SETXATTR
+int
+setxattr (const char *path __attribute__ ((unused)),
+	  const char *name __attribute__ ((unused)),
+	  const void *value __attribute__ ((unused)),
+	  size_t size __attribute__ ((unused)),
+	  int flags __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;

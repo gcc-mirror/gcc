@@ -733,6 +733,17 @@ struct_field_seq (void)
     {
       ty = type (&opts, true);
 
+      /* Ignore access-control keywords ("public:" etc).  */
+      while (!ty && token () == IGNORABLE_CXX_KEYWORD)
+	{
+	  const char *keyword = advance ();
+	  if (strcmp (keyword, "public:") != 0
+	      && strcmp (keyword, "private:") != 0
+	      && strcmp (keyword, "protected:") != 0)
+	    break;
+	  ty = type (&opts, true);
+	}
+
       if (!ty || token () == ':')
 	{
 	  consume_until_eos ();

@@ -896,7 +896,7 @@ package body Sem_Ch3 is
       --  (which is declared elsewhere in some other scope).
 
       if Ekind (Desig_Type) = E_Incomplete_Type
-        and then not From_With_Type (Desig_Type)
+        and then not From_Limited_With (Desig_Type)
         and then Is_Overloadable (Current_Scope)
       then
          Append_Elmt (Current_Scope, Private_Dependents (Desig_Type));
@@ -950,7 +950,7 @@ package body Sem_Ch3 is
       --  generic formal, because no use of it will reach the backend.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
-        and then not From_With_Type (Desig_Type)
+        and then not From_Limited_With (Desig_Type)
         and then not Is_Generic_Type (Desig_Type)
       then
          if Present (Enclosing_Prot_Type) then
@@ -982,7 +982,6 @@ package body Sem_Ch3 is
      (T_Name : Entity_Id;
       T_Def  : Node_Id)
    is
-
       procedure Check_For_Premature_Usage (Def : Node_Id);
       --  Check that type T_Name is not used, directly or recursively, as a
       --  parameter or a return type in Def. Def is either a subtype, an
@@ -1132,7 +1131,7 @@ package body Sem_Ch3 is
                        Scope_Id    => Current_Scope));
 
                else
-                  if From_With_Type (Typ) then
+                  if From_Limited_With (Typ) then
 
                      --  AI05-151: Incomplete types are allowed in all basic
                      --  declarations, including access to subprograms.
@@ -1361,7 +1360,7 @@ package body Sem_Ch3 is
       --  If the type has appeared already in a with_type clause, it is frozen
       --  and the pointer size is already set. Else, initialize.
 
-      if not From_With_Type (T) then
+      if not From_Limited_With (T) then
          Init_Size_Align (T);
       end if;
 
@@ -2067,6 +2066,17 @@ package body Sem_Ch3 is
       --  (They have the sloc of the label as found in the source, and that
       --  is ahead of the current declarative part).
 
+      procedure Remove_Visible_Refinements (Spec_Id : Entity_Id);
+      --  Spec_Id is the entity of a package that may define abstract states.
+      --  If the states have visible refinement, remove the visibility of each
+      --  constituent at the end of the package body declarations.
+
+      function Requires_State_Refinement
+        (Spec_Id : Entity_Id;
+         Body_Id : Entity_Id) return Boolean;
+      --  Determine whether a package denoted by its spec and body entities
+      --  requires refinement of abstract states.
+
       -----------------
       -- Adjust_Decl --
       -----------------
@@ -2080,13 +2090,109 @@ package body Sem_Ch3 is
          end loop;
       end Adjust_Decl;
 
+      --------------------------------
+      -- Remove_Visible_Refinements --
+      --------------------------------
+
+      procedure Remove_Visible_Refinements (Spec_Id : Entity_Id) is
+         State_Elmt : Elmt_Id;
+      begin
+         if Present (Abstract_States (Spec_Id)) then
+            State_Elmt := First_Elmt (Abstract_States (Spec_Id));
+            while Present (State_Elmt) loop
+               Set_Has_Visible_Refinement (Node (State_Elmt), False);
+               Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Remove_Visible_Refinements;
+
+      -------------------------------
+      -- Requires_State_Refinement --
+      -------------------------------
+
+      function Requires_State_Refinement
+        (Spec_Id : Entity_Id;
+         Body_Id : Entity_Id) return Boolean
+      is
+         function Mode_Is_Off (Prag : Node_Id) return Boolean;
+         --  Given pragma SPARK_Mode, determine whether the mode is Off
+
+         -----------------
+         -- Mode_Is_Off --
+         -----------------
+
+         function Mode_Is_Off (Prag : Node_Id) return Boolean is
+            Mode : Node_Id;
+
+         begin
+            --  The default SPARK mode is On
+
+            if No (Prag) then
+               return False;
+            end if;
+
+            Mode :=
+              Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+            --  Then the pragma lacks an argument, the default mode is On
+
+            if No (Mode) then
+               return False;
+            else
+               return Chars (Mode) = Name_Off;
+            end if;
+         end Mode_Is_Off;
+
+      --  Start of processing for Requires_State_Refinement
+
+      begin
+         --  A package that does not define at least one abstract state cannot
+         --  possibly require refinement.
+
+         if No (Abstract_States (Spec_Id)) then
+            return False;
+
+         --  The package instroduces a single null state which does not merit
+         --  refinement.
+
+         elsif Has_Null_Abstract_State (Spec_Id) then
+            return False;
+
+         --  Check whether the package body is subject to pragma SPARK_Mode. If
+         --  it is and the mode is Off, the package body is considered to be in
+         --  regular Ada and does not require refinement.
+
+         elsif Mode_Is_Off (SPARK_Mode_Pragmas (Body_Id)) then
+            return False;
+
+         --  The body's SPARK_Mode may be inherited from a similar pragma that
+         --  appears in the private declarations of the spec. The pragma we are
+         --  interested appears as the second entry in SPARK_Mode_Pragmas.
+
+         elsif Present (SPARK_Mode_Pragmas (Spec_Id))
+           and then Mode_Is_Off (Next_Pragma (SPARK_Mode_Pragmas (Spec_Id)))
+         then
+            return False;
+
+         --  The spec defines at least one abstract state and the body has no
+         --  way of circumventing the refinement.
+
+         else
+            return True;
+         end if;
+      end Requires_State_Refinement;
+
       --  Local variables
 
       Body_Id     : Entity_Id;
       Context     : Node_Id;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
+      Prag        : Node_Id;
       Spec_Id     : Entity_Id;
+
+      In_Package_Body : Boolean := False;
+      --  Flag set when the current declaration list belongs to a package body
 
    --  Start of processing for Analyze_Declarations
 
@@ -2196,31 +2302,51 @@ package body Sem_Ch3 is
          Decl := Next_Decl;
       end loop;
 
-      --  Analyze the state refinements within a package body now, after all
-      --  hidden states have been encountered and freely visible. Refinements
-      --  must be processed before pragmas Refined_Depends and Refined_Global
-      --  because the last two may mention constituents.
-
       if Present (L) then
          Context := Parent (L);
 
-         if Nkind (Context) = N_Package_Body then
+         --  Analyze pragmas Initializes and Initial_Condition of a package at
+         --  the end of the visible declarations as the pragmas have visibility
+         --  over the said region.
+
+         if Nkind (Context) = N_Package_Specification
+           and then L = Visible_Declarations (Context)
+         then
+            Spec_Id := Defining_Entity (Parent (Context));
+            Prag    := Get_Pragma (Spec_Id, Pragma_Initializes);
+
+            if Present (Prag) then
+               Analyze_Initializes_In_Decl_Part (Prag);
+            end if;
+
+            Prag := Get_Pragma (Spec_Id, Pragma_Initial_Condition);
+
+            if Present (Prag) then
+               Analyze_Initial_Condition_In_Decl_Part (Prag);
+            end if;
+
+         --  Analyze the state refinements within a package body now, after
+         --  all hidden states have been encountered and freely visible.
+         --  Refinements must be processed before pragmas Refined_Depends and
+         --  Refined_Global because the last two may mention constituents.
+
+         elsif Nkind (Context) = N_Package_Body then
+            In_Package_Body := True;
+
             Body_Id := Defining_Entity (Context);
             Spec_Id := Corresponding_Spec (Context);
+            Prag    := Get_Pragma (Body_Id, Pragma_Refined_State);
 
             --  The analysis of pragma Refined_State detects whether the spec
             --  has abstract states available for refinement.
 
-            if Present (Refined_State_Pragma (Body_Id)) then
-               Analyze_Refined_State_In_Decl_Part
-                 (Refined_State_Pragma (Body_Id));
+            if Present (Prag) then
+               Analyze_Refined_State_In_Decl_Part (Prag);
 
             --  State refinement is required when the package declaration has
             --  abstract states. Null states are not considered.
 
-            elsif Present (Abstract_States (Spec_Id))
-              and then not Has_Null_Abstract_State (Spec_Id)
-            then
+            elsif Requires_State_Refinement (Spec_Id, Body_Id) then
                Error_Msg_NE
                  ("package & requires state refinement", Context, Spec_Id);
             end if;
@@ -2241,6 +2367,14 @@ package body Sem_Ch3 is
 
          Next (Decl);
       end loop;
+
+      --  State refinements are visible upto the end the of the package body
+      --  declarations. Hide the refinements from visibility to restore the
+      --  original state conditions.
+
+      if In_Package_Body then
+         Remove_Visible_Refinements (Spec_Id);
+      end if;
    end Analyze_Declarations;
 
    -----------------------------------
@@ -2492,7 +2626,7 @@ package body Sem_Ch3 is
          --  finalization list at the point the access type is frozen, to
          --  prevent unsatisfied references at link time.
 
-         if not From_With_Type (T) or else Is_Access_Type (T) then
+         if not From_Limited_With (T) or else Is_Access_Type (T) then
             Set_Has_Delayed_Freeze (T);
          end if;
       end;
@@ -4412,11 +4546,11 @@ package body Sem_Ch3 is
                   --  Ada 2005 (AI-412): Decorate an incomplete subtype of an
                   --  incomplete type visible through a limited with clause.
 
-                  if From_With_Type (T)
+                  if From_Limited_With (T)
                     and then Present (Non_Limited_View (T))
                   then
-                     Set_From_With_Type   (Id);
-                     Set_Non_Limited_View (Id, Non_Limited_View (T));
+                     Set_From_Limited_With (Id);
+                     Set_Non_Limited_View  (Id, Non_Limited_View (T));
 
                   --  Ada 2005 (AI-412): Add the regular incomplete subtype
                   --  to the private dependents of the original incomplete
@@ -7282,45 +7416,65 @@ package body Sem_Ch3 is
         and then (Is_Constrained (Parent_Type) or else Constraint_Present)
       then
          --  First, we must analyze the constraint (see comment in point 5.)
+         --  The constraint may come from the subtype indication of the full
+         --  declaration.
 
          if Constraint_Present then
             New_Discrs := Build_Discriminant_Constraints (Parent_Type, Indic);
 
-            if Has_Discriminants (Derived_Type)
-              and then Has_Private_Declaration (Derived_Type)
-              and then Present (Discriminant_Constraint (Derived_Type))
-            then
-               --  Verify that constraints of the full view statically match
-               --  those given in the partial view.
+         --  If there is no explicit constraint, there might be one that is
+         --  inherited from a constrained parent type. In that case verify that
+         --  it conforms to the constraint in the partial view. In perverse
+         --  cases the parent subtypes of the partial and full view can have
+         --  different constraints.
 
-               declare
-                  C1, C2 : Elmt_Id;
+         elsif Present (Stored_Constraint (Parent_Type)) then
+            New_Discrs := Stored_Constraint (Parent_Type);
 
-               begin
-                  C1 := First_Elmt (New_Discrs);
-                  C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
-                  while Present (C1) and then Present (C2) loop
-                     if Fully_Conformant_Expressions (Node (C1), Node (C2))
-                       or else
-                         (Is_OK_Static_Expression (Node (C1))
-                            and then
-                          Is_OK_Static_Expression (Node (C2))
-                            and then
+         else
+            New_Discrs := No_Elist;
+         end if;
+
+         if Has_Discriminants (Derived_Type)
+           and then Has_Private_Declaration (Derived_Type)
+           and then Present (Discriminant_Constraint (Derived_Type))
+           and then Present (New_Discrs)
+         then
+            --  Verify that constraints of the full view statically match
+            --  those given in the partial view.
+
+            declare
+               C1, C2 : Elmt_Id;
+
+            begin
+               C1 := First_Elmt (New_Discrs);
+               C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
+               while Present (C1) and then Present (C2) loop
+                  if Fully_Conformant_Expressions (Node (C1), Node (C2))
+                    or else
+                      (Is_OK_Static_Expression (Node (C1))
+                        and then Is_OK_Static_Expression (Node (C2))
+                        and then
                           Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
-                     then
-                        null;
+                  then
+                     null;
 
+                  else
+                     if Constraint_Present then
+                        Error_Msg_N
+                          ("constraint not conformant to previous declaration",
+                           Node (C1));
                      else
-                        Error_Msg_N (
-                          "constraint not conformant to previous declaration",
-                             Node (C1));
+                        Error_Msg_N
+                          ("constraint of full view is incompatible "
+                           & "with partial view", N);
                      end if;
+                  end if;
 
-                     Next_Elmt (C1);
-                     Next_Elmt (C2);
-                  end loop;
-               end;
-            end if;
+                  Next_Elmt (C1);
+                  Next_Elmt (C2);
+               end loop;
+            end;
          end if;
 
          --  Insert and analyze the declaration for the unconstrained base type
@@ -9482,7 +9636,7 @@ package body Sem_Ch3 is
       --  or else be a partial view.
 
       if Nkind (Discriminant_Type (D)) = N_Access_Definition then
-         if Is_Immutably_Limited_Type (Current_Scope)
+         if Is_Limited_View (Current_Scope)
            or else
              (Nkind (Parent (Current_Scope)) = N_Private_Type_Declaration
                and then Limited_Present (Parent (Current_Scope)))
@@ -10378,6 +10532,14 @@ package body Sem_Ch3 is
             Set_First_Entity (Full, First_Entity (Full_Base));
             Set_Last_Entity  (Full, Last_Entity (Full_Base));
 
+            --  If the underlying base type is constrained, we know that the
+            --  full view of the subtype is constrained as well (the converse
+            --  is not necessarily true).
+
+            if Is_Constrained (Full_Base) then
+               Set_Is_Constrained (Full);
+            end if;
+
          when others =>
             Copy_Node (Full_Base, Full);
 
@@ -10837,8 +10999,7 @@ package body Sem_Ch3 is
          elsif Ekind (Current_Scope) = E_Package
            and then
              List_Containing (Parent (Prev)) /=
-               Visible_Declarations
-                 (Specification (Unit_Declaration_Node (Current_Scope)))
+               Visible_Declarations (Package_Specification (Current_Scope))
          then
             Error_Msg_N
               ("deferred constant must be declared in visible part",
@@ -11852,13 +12013,12 @@ package body Sem_Ch3 is
          --  incomplete type or imported via a limited with clause.
 
          if Has_Discriminants (T)
-           or else
-             (From_With_Type (T)
-                and then Present (Non_Limited_View (T))
-                and then Nkind (Parent (Non_Limited_View (T))) =
-                           N_Full_Type_Declaration
-                and then Present (Discriminant_Specifications
-                          (Parent (Non_Limited_View (T)))))
+           or else (From_Limited_With (T)
+                     and then Present (Non_Limited_View (T))
+                     and then Nkind (Parent (Non_Limited_View (T))) =
+                                               N_Full_Type_Declaration
+                     and then Present (Discriminant_Specifications
+                                         (Parent (Non_Limited_View (T)))))
          then
             Error_Msg_N
               ("(Ada 2005) incomplete subtype may not be constrained", C);

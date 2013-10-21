@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree-inline.h"
 #include "target.h"
+#include "tree-cfgcleanup.h"
 
 /* Specifies types of loops that may be unrolled.  */
 

@@ -21,8 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "coretypes.h"
 #include "system.h"
+#include "coretypes.h"
 #include "tree.h"
 #include "input.h"
 #include "c/c-tree.h"
@@ -40,10 +40,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-upc.h"
 #include "function.h"
 #include "bitmap.h"
+#include "cgraph.h"
 #include "gimple.h"
+#include "gimple-low.h"
 #include "timevar.h"
 #include "tree-check.h"
-#include "tree-flow.h"
+#include "tree-cfg.h"
 #include "tree-iterator.h"
 #include "ggc.h"
 #include "target.h"

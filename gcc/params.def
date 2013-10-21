@@ -373,6 +373,11 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot",
 	 1000, 0, 0)
 
+DEFPARAM(UNLIKELY_BB_COUNT_FRACTION,
+	 "unlikely-bb-count-fraction",
+         "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely",
+	 20, 1, 10000)
+
 DEFPARAM (PARAM_ALIGN_THRESHOLD,
 	  "align-threshold",
 	  "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment",

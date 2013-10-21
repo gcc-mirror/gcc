@@ -105,6 +105,9 @@ bfin*-*)
 	;;
 cr16-*-*)
 	;;
+crisv32-*-*)
+	cpu_type=cris
+	;;
 fido-*-*)
 	cpu_type=m68k
 	;;
@@ -408,13 +411,13 @@ cr16-*-elf)
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
         ;;
 crisv32-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp"
  	;;
 cris-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-elfmulti"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
 	;;
 cris-*-linux* | crisv32-*-linux*)
-	tmake_file="$tmake_file cris/t-cris t-fdpbit cris/t-linux"
+	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
 epiphany-*-elf*)
 	tmake_file="epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"

@@ -847,6 +847,8 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 
+/* Returns true iff T is a virtual ssa name decl.  */
+extern bool virtual_operand_p (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
 /* Returns true iff T is any sort of variable.  */
@@ -891,9 +893,6 @@ extern bool is_gimple_builtin_call (gimple stmt);
 
 extern void recalculate_side_effects (tree);
 extern bool gimple_compare_field_offset (tree, tree);
-extern tree gimple_register_canonical_type (tree);
-extern void print_gimple_types_stats (const char *);
-extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);
@@ -1090,9 +1089,7 @@ extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool gimple_can_coalesce_p (tree, tree);
 extern bool nonfreeing_call_p (gimple);
-
-/* In omp-low.c.  */
-extern tree omp_reduction_init (tree, tree);
+extern tree copy_var_decl (tree, tree, tree);
 
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);

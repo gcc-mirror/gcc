@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-const.h"
 #include "arith.h"
+#include "omp-low.h"
 
 int ompws_flags;
 

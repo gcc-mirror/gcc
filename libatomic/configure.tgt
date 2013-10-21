@@ -95,11 +95,6 @@ fi
 
 # Other system configury
 case "${target}" in
-  aarch64*)
-	# This is currently not supported in AArch64.
-	UNSUPPORTED=1
-	;;
-
   arm*-*-linux*)
 	# OS support for atomic primitives.
 	config_path="${config_path} linux/arm posix"

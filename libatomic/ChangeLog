@@ -1,3 +1,8 @@
+2013-10-17  Michael Hudson-Doyle  <michael.hudson@linaro.org>
+
+	* libatomic/configure.tgt (aarch64*): Remove code preventing
+	build.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

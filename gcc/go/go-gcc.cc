@@ -235,6 +235,9 @@ class Gcc_backend : public Backend
   Bexpression*
   function_code_expression(Bfunction*, Location);
 
+  Bexpression*
+  address_expression(Bexpression*, Location);
+
   // Statements.
 
   Bstatement*
@@ -994,6 +997,19 @@ Gcc_backend::function_code_expression(Bfunction* bfunc, Location location)
     return this->error_expression();
 
   tree ret = build_fold_addr_expr_loc(location.gcc_location(), func);
+  return this->make_expression(ret);
+}
+
+// Get the address of an expression.
+
+Bexpression*
+Gcc_backend::address_expression(Bexpression* bexpr, Location location)
+{
+  tree expr = bexpr->get_tree();
+  if (expr == error_mark_node)
+    return this->error_expression();
+
+  tree ret = build_fold_addr_expr_loc(location.gcc_location(), expr);
   return this->make_expression(ret);
 }
 

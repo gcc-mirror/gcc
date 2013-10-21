@@ -1,3 +1,60 @@
+2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58466
+	* pt.c (most_specialized_class): Bump processing_template_decl for
+	get_class_bindings.
+
+2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_lookup_name): Tidy.
+
+2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* parser.c: Include omp-low.h.
+	* semantics.c: Likewise.
+
+2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58596
+	* lambda.c (lambda_expr_this_capture): Handle NSDMIs in the
+	cp_unevaluated_operand case.
+
+2013-10-16  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (apply_late_template_attributes): Use
+	attribute_takes_identifier_p.
+
+	* error.c (dump_exception_spec): Print "noexcept" rather than
+	"noexcept (true)".
+
+	Core 1591
+	* pt.c (unify_array_domain): Split out from unify.
+	(unify): Use it for list deduction, too.
+
+	PR c++/57850
+	* decl2.c (dump_tu): Split out from...
+	(cp_write_global_declarations): ...here.  Call it in PCH mode.
+
+2013-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst): Fix typo in last commit.
+
+2013-10-16  Paulo Matos  <pmatos@broadcom.com>
+
+	* error.c (code_to_string): Use new wrapper get_tree_code_name.
+	* cxx-pretty-print.c (pp_cxx_assignment_operator): Likewise.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (cxx_eval_constant_expression,
+	potential_constant_expression_1): Likewise.
+	* mangle.c (MANGLE_TRACE_TREE, dump_substitution_candidates,
+	add_substitution, find_substitution): Likewise.
+
+2013-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58707
+	* parser.c (cp_parser_postfix_open_square_expression): Set
+	parser->greater_than_is_operator_p for the argument.
+
 2013-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58633

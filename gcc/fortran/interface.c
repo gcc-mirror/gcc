@@ -1990,8 +1990,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       if (!gfc_expr_attr (actual).class_ok)
 	return 0;
 
-      if (!gfc_compare_derived_types (CLASS_DATA (actual)->ts.u.derived,
-				      CLASS_DATA (formal)->ts.u.derived))
+      if ((!UNLIMITED_POLY (formal) || !UNLIMITED_POLY(actual))
+	  && !gfc_compare_derived_types (CLASS_DATA (actual)->ts.u.derived,
+					 CLASS_DATA (formal)->ts.u.derived))
 	{
 	  if (where)
 	    gfc_error ("Actual argument to '%s' at %L must have the same "

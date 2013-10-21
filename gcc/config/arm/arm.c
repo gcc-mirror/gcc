@@ -68,6 +68,7 @@ struct four_ints
 };
 
 /* Forward function declarations.  */
+static bool arm_lra_p (void);
 static bool arm_needs_doubleword_align (enum machine_mode, const_tree);
 static int arm_compute_static_chain_stack_bytes (void);
 static arm_stack_offsets *arm_get_frame_offsets (void);
@@ -337,6 +338,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS arm_legitimize_address
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P arm_lra_p
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arm_attribute_table
@@ -1046,6 +1050,108 @@ const struct cpu_cost_table generic_extra_costs =
   }
 };
 
+
+const struct cpu_cost_table cortexa9_extra_costs =
+{
+  /* ALU */
+  {
+    0,			/* Arith.  */
+    0,			/* Logical.  */
+    0,			/* Shift.  */
+    COSTS_N_INSNS (1),	/* Shift_reg.  */
+    COSTS_N_INSNS (1),	/* Arith_shift.  */
+    COSTS_N_INSNS (2),	/* Arith_shift_reg.  */
+    0,			/* Log_shift.  */
+    COSTS_N_INSNS (1),	/* Log_shift_reg.  */
+    COSTS_N_INSNS (1),	/* Extend.  */
+    COSTS_N_INSNS (2),	/* Extend_arith.  */
+    COSTS_N_INSNS (1),	/* Bfi.  */
+    COSTS_N_INSNS (1),	/* Bfx.  */
+    0,			/* Clz.  */
+    0,			/* non_exec.  */
+    true		/* non_exec_costs_exec.  */
+  },
+  {
+    /* MULT SImode */
+    {
+      COSTS_N_INSNS (3),	/* Simple.  */
+      COSTS_N_INSNS (3),	/* Flag_setting.  */
+      COSTS_N_INSNS (4),	/* Extend.  */
+      COSTS_N_INSNS (3),	/* Add.  */
+      COSTS_N_INSNS (4),	/* Extend_add.  */
+      COSTS_N_INSNS (30)	/* Idiv.  No HW div on Cortex A9.  */
+    },
+    /* MULT DImode */
+    {
+      0,			/* Simple (N/A).  */
+      0,			/* Flag_setting (N/A).  */
+      0,			/* Extend (N/A).  */
+      0,			/* Add (N/A).  */
+      0,			/* Extend_add (N/A).  */
+      0				/* Idiv (N/A).  */
+    }
+  },
+  /* LD/ST */
+  {
+    COSTS_N_INSNS (2),	/* Load.  */
+    COSTS_N_INSNS (2),	/* Load_sign_extend.  */
+    COSTS_N_INSNS (2),	/* Ldrd.  */
+    COSTS_N_INSNS (2),	/* Ldm_1st.  */
+    1,			/* Ldm_regs_per_insn_1st.  */
+    2,			/* Ldm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (5),	/* Loadf.  */
+    COSTS_N_INSNS (5),	/* Loadd.  */
+    COSTS_N_INSNS (1),  /* Load_unaligned.  */
+    COSTS_N_INSNS (2),	/* Store.  */
+    COSTS_N_INSNS (2),	/* Strd.  */
+    COSTS_N_INSNS (2),	/* Stm_1st.  */
+    1,			/* Stm_regs_per_insn_1st.  */
+    2,			/* Stm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (1),	/* Storef.  */
+    COSTS_N_INSNS (1),	/* Stored.  */
+    COSTS_N_INSNS (1)	/* Store_unaligned.  */
+  },
+  {
+    /* FP SFmode */
+    {
+      COSTS_N_INSNS (14),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (7),	/* Mult_addsub. */
+      COSTS_N_INSNS (30),	/* Fma.  */
+      COSTS_N_INSNS (3),	/* Addsub.  */
+      COSTS_N_INSNS (1),	/* Fpconst.  */
+      COSTS_N_INSNS (1),	/* Neg.  */
+      COSTS_N_INSNS (3),	/* Compare.  */
+      COSTS_N_INSNS (3),	/* Widen.  */
+      COSTS_N_INSNS (3),	/* Narrow.  */
+      COSTS_N_INSNS (3),	/* Toint.  */
+      COSTS_N_INSNS (3),	/* Fromint.  */
+      COSTS_N_INSNS (3)		/* Roundint.  */
+    },
+    /* FP DFmode */
+    {
+      COSTS_N_INSNS (24),	/* Div.  */
+      COSTS_N_INSNS (5),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub.  */
+      COSTS_N_INSNS (30),	/* Fma.  */
+      COSTS_N_INSNS (3),	/* Addsub.  */
+      COSTS_N_INSNS (1),	/* Fpconst.  */
+      COSTS_N_INSNS (1),	/* Neg.  */
+      COSTS_N_INSNS (3),	/* Compare.  */
+      COSTS_N_INSNS (3),	/* Widen.  */
+      COSTS_N_INSNS (3),	/* Narrow.  */
+      COSTS_N_INSNS (3),	/* Toint.  */
+      COSTS_N_INSNS (3),	/* Fromint.  */
+      COSTS_N_INSNS (3)		/* Roundint.  */
+    }
+  },
+  /* Vector */
+  {
+    COSTS_N_INSNS (1)	/* Alu.  */
+  }
+};
+
+
 const struct cpu_cost_table cortexa15_extra_costs =
 {
   /* ALU */
@@ -1300,7 +1406,7 @@ const struct tune_params arm_cortex_a5_tune =
 const struct tune_params arm_cortex_a9_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
+  &cortexa9_extra_costs,
   cortex_a9_sched_adjust_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
@@ -5184,6 +5290,12 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
     }
 }
 
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+arm_lra_p (void)
+{
+  return arm_lra_flag;
+}
 
 /* Return true if mode/type need doubleword alignment.  */
 static bool

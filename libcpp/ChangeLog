@@ -1,3 +1,12 @@
+2013-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PICFLAG): New.
+	(ALL_CFLAGS): Add PICFLAG.
+	(ALL_CXXFLAGS): Likewise.
+	* configure.ac: Add --enable-host-shared, setting up new
+	PICFLAG variable.
+	* configure: Regenerate.
+
 2013-08-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.ac: Set need_64bit_hwint for all arm targets.

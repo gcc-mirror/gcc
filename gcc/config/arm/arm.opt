@@ -143,6 +143,10 @@ mfpu=
 Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
 Specify the name of the target floating point hardware/format
 
+mlra
+Target Report Var(arm_lra_flag) Init(0) Save
+Use LRA instead of reload (transitional)
+
 mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 

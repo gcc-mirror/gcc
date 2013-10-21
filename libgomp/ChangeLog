@@ -1,3 +1,14 @@
+2013-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi: (Runtime Library Routines): Update references for
+	OpenMP 4.0. Add omp_get_cancellation, omp_get_default_device,
+	omp_get_num_devices, omp_get_num_teams, omp_get_proc_bind,
+	omp_get_team_num, omp_is_initial_device, omp_set_default_device.
+	(Environment Variables): Update references for OpenMP 4.0. Add
+	OMP_CANCELLATION, OMP_DEFAULT_DEVICE, OMP_PLACES.
+	Move OMP_DISPLAY_ENV and OMP_PROC_BIND up to be in alphabetical
+	order.
+
 2013-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* env.c (parse_bind_var): Initialize value to avoid

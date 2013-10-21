@@ -43,16 +43,20 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
-   procedure Add_Contract_Item (Prag : Node_Id; Subp_Id : Entity_Id);
-   --  Add one of the following contract item to the contract of a subprogram.
-   --  Prag denotes a pragma and Subp_Id is the related subprogram [body].
+   procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
+   --  Add pragma Prag to the contract of an entry, a package [body] or a
+   --  subprogram [body] denoted by Id. The following are valid pragmas:
+   --    Abstract_States
    --    Contract_Cases
    --    Depends
    --    Global
+   --    Initial_Condition
+   --    Initializes
    --    Postcondition
    --    Precondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_States
    --    Test_Case
 
    procedure Add_Global_Declaration (N : Node_Id);
@@ -477,6 +481,10 @@ package Sem_Util is
    --  Note: Enter_Name is not used for overloadable entities, instead these
    --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
 
+   function Entity_Of (N : Node_Id) return Entity_Id;
+   --  Return the entity of N or Empty. If N is a renaming, return the entity
+   --  of the root renamed object.
+
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
    --  inappropriate use of limited type T. If useful, it adds additional
@@ -899,6 +907,9 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
 
+   function Is_Attribute_Result (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Result
+
    function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a body or a package declaration
 
@@ -937,6 +948,16 @@ package Sem_Util is
    --  Returns True if type T1 is a descendent of type T2, and false otherwise.
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
+
+   function Is_Child_Or_Sibling
+     (Pack_1        : Entity_Id;
+      Pack_2        : Entity_Id;
+      Private_Child : Boolean) return Boolean;
+   --  Determine the following relations between two arbitrary packages:
+   --    1) One package is the parent of a child package
+   --    2) Both packages are siblings and share a common parent
+   --  If flag Private_Child is set, then the child in case 1) or both siblings
+   --  in case 2) must be private.
 
    function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
    --  First determine whether type T is an interface and then check whether

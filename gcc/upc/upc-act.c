@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "coretypes.h"
 #include "system.h"
+#include "coretypes.h"
 #include "tree.h"
 #include "input.h"
 #include "c/c-tree.h"

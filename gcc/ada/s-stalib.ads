@@ -85,20 +85,6 @@ package System.Standard_Library is
    type Exception_Data_Ptr is access all Exception_Data;
    --  An equivalent of Exception_Id that is public
 
-   type Exception_Code is mod 2 ** Integer'Size;
-   --  A scalar value bound to some exception data. Typically used for
-   --  imported or exported exceptions on VMS. Having a separate type for this
-   --  is useful to enforce consistency throughout the various run-time units
-   --  handling such codes, and having it unsigned is the most appropriate
-   --  choice for it's currently single use on VMS.
-
-   --  ??? The construction in Cstand has no way to access the proper type
-   --  node for Exception_Code, and currently uses Standard_Unsigned as a
-   --  fallback. The representations shall match, and the size clause below
-   --  is aimed at ensuring that.
-
-   for Exception_Code'Size use Integer'Size;
-
    --  The following record defines the underlying representation of exceptions
 
    --  WARNING! Any changes to this may need to be reflected in the following
@@ -121,6 +107,7 @@ package System.Standard_Library is
       --  A character indicating the language raising the exception.
       --  Set to "A" for exceptions defined by an Ada program.
       --  Set to "V" for imported VMS exceptions.
+      --  Set to "C" for imported C++ exceptions.
 
       Name_Length : Natural;
       --  Length of fully expanded name of exception
@@ -134,11 +121,10 @@ package System.Standard_Library is
       --  built (by Register_Exception in s-exctab.adb) for converting between
       --  identities and names.
 
-      Import_Code : Exception_Code;
-      --  Value for imported exceptions. Needed only for the handling of
-      --  Import/Export_Exception for the VMS case, but present in all
-      --  implementations (we might well extend this mechanism for other
-      --  systems in the future).
+      Foreign_Data : Address;
+      --  Data for imported exceptions. This represents the exception code
+      --  for the handling of Import/Export_Exception for the VMS case.
+      --  This represents the address of the RTTI for the C++ case.
 
       Raise_Hook : Raise_Action;
       --  This field can be used to place a "hook" on an exception. If the
@@ -169,7 +155,7 @@ package System.Standard_Library is
       Name_Length           => Constraint_Error_Name'Length,
       Full_Name             => Constraint_Error_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    Numeric_Error_Def : aliased Exception_Data :=
@@ -178,7 +164,7 @@ package System.Standard_Library is
       Name_Length           => Numeric_Error_Name'Length,
       Full_Name             => Numeric_Error_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    Program_Error_Def : aliased Exception_Data :=
@@ -187,7 +173,7 @@ package System.Standard_Library is
       Name_Length           => Program_Error_Name'Length,
       Full_Name             => Program_Error_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    Storage_Error_Def : aliased Exception_Data :=
@@ -196,7 +182,7 @@ package System.Standard_Library is
       Name_Length           => Storage_Error_Name'Length,
       Full_Name             => Storage_Error_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    Tasking_Error_Def : aliased Exception_Data :=
@@ -205,7 +191,7 @@ package System.Standard_Library is
       Name_Length           => Tasking_Error_Name'Length,
       Full_Name             => Tasking_Error_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    Abort_Signal_Def : aliased Exception_Data :=
@@ -214,7 +200,7 @@ package System.Standard_Library is
       Name_Length           => Abort_Signal_Name'Length,
       Full_Name             => Abort_Signal_Name'Address,
       HTable_Ptr            => null,
-      Import_Code           => 0,
+      Foreign_Data          => Null_Address,
       Raise_Hook            => null);
 
    pragma Export (C, Constraint_Error_Def, "constraint_error");

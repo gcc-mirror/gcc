@@ -508,6 +508,48 @@ package Sinfo is
    --      simply ignore these nodes, since they are not relevant to the task
    --      of back annotating representation information.
 
+   ----------------
+   -- SPARK Mode --
+   ----------------
+
+   --  When a file is compiled in SPARK mode (-gnatd.F), a very light expansion
+   --  is performed and the analysis must generate a tree in a form that meets
+   --  additional requirements.
+
+   --  The SPARK expansion does two transformations of the tree, that cannot be
+   --  postponed after the frontend semantic analysis:
+
+   --    1. Replace renamings by renamed (object/subprogram). This requires
+   --       introducing temporaries at the point of the renaming, which must be
+   --       properly analyzed.
+
+   --    2. Fully qualify entity names. This is needed to generate suitable
+   --       local effects/call-graphs in ALI files, with the completely
+   --       qualified names (in particular the suffix to distinguish homonyms).
+
+   --  The tree after SPARK expansion should be fully analyzed semantically,
+   --  which sometimes requires the insertion of semantic pre-analysis, for
+   --  example for subprogram contracts and pragma check/assert. In particular,
+   --  all expression must have their proper type, and semantic links should be
+   --  set between tree nodes (partial to full view, etc.) Some kinds of nodes
+   --  should be either absent, or can be ignored by the formal verification
+   --  backend:
+
+   --      N_Object_Renaming_Declaration: can be ignored safely
+   --      N_Expression_Function:         absent (rewitten)
+   --      N_Expression_With_Actions:     absent (not generated)
+
+   --  SPARK cross-references are generated from the regular cross-references
+   --  (used for browsing and code understanding) and additional references
+   --  collected during semantic analysis, in particular on all dereferences.
+   --  These SPARK cross-references are output in a separate section of ALI
+   --  files, as described in spark_xrefs.adb. They are the basis for the
+   --  computation of data dependences in the formal verification backend.
+   --  This implies that all cross-references should be generated in this mode,
+   --  even those that would not make sense from a user point-of-view, and that
+   --  cross-references that do not lead to data dependences for subprograms
+   --  can be safely ignored.
+
    ------------------------
    -- Common Flag Fields --
    ------------------------
@@ -3596,7 +3638,7 @@ package Sinfo is
       --  Sloc points to first selector name
       --  Choices (List1)
       --  Loop_Actions (List2-Sem)
-      --  Expression (Node3)
+      --  Expression (Node3) (empty if Box_Present)
       --  Box_Present (Flag15)
       --  Inherited_Discriminant (Flag13)
 
@@ -7151,9 +7193,14 @@ package Sinfo is
       -- Contract --
       --------------
 
-      --  This node is used to hold the various parts of an entry or subprogram
-      --  [body] contract, consisting of precondition, postconditions, contract
-      --  cases, test cases and global dependencies.
+      --  This node is used to hold the various parts of an entry, subprogram
+      --  [body] or package [body] contract, in particular:
+      --     Abstract states declared by a package declaration
+      --     Contract cases that apply to a subprogram
+      --     Dependency relations of inputs and output of a subprogram
+      --     Global annotations classifying data as input or output
+      --     Initialization sequences for a package declaration
+      --     Pre- and postconditions that apply to a subprogram
 
       --  The node appears in an entry and [generic] subprogram [body] entity.
 
@@ -7170,8 +7217,13 @@ package Sinfo is
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
       --  to pre- and postconditions associated with an entry or a subprogram
       --  [body or stub]. The pragmas can either come from source or be the
-      --  byproduct of aspect expansion. The ordering in the list is in LIFO
-      --  fashion.
+      --  byproduct of aspect expansion. Currently the following pragmas appear
+      --  in this list:
+      --    Post
+      --    Postcondition
+      --    Pre
+      --    Precondition
+      --  The ordering in the list is in LIFO fashion.
 
       --  Note that there might be multiple preconditions or postconditions
       --  in this list, either because they come from separate pragmas in the
@@ -7182,10 +7234,18 @@ package Sinfo is
       --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
       --  list is in LIFO fashion.
 
-      --  Classifications contains pragmas that either categorize subprogram
-      --  inputs and outputs or establish dependencies between them. Currently
-      --  pragmas Depends, Global, Refined_Depends and Refined_Global are
-      --  stored in this list. The ordering is in LIFO fashion.
+      --  Classifications contains pragmas that either declare, categorize or
+      --  establish dependencies between subprogram or package inputs and
+      --  outputs. Currently the following pragmas appear in this list:
+      --    Abstract_States
+      --    Depends
+      --    Global
+      --    Initial_Condition
+      --    Initializes
+      --    Refined_Depends
+      --    Refined_Global
+      --    Refined_States
+      --  The ordering is in LIFO fashion.
 
       -------------------
       -- Expanded_Name --
@@ -7629,7 +7689,7 @@ package Sinfo is
       --  N_Subprogram_Info
       --  Sloc points to the entity for the procedure
       --  Identifier (Node1) identifier referencing the procedure
-      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc
+      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc)
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the quote in the Sprint file output.

@@ -42,6 +42,7 @@ int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
 			  bool (*ignore_edge) (struct cgraph_edge *));
 void ipa_free_postorder_info (void);
 vec<cgraph_node_ptr> ipa_get_nodes_in_cycle (struct cgraph_node *);
+bool ipa_edge_within_scc (struct cgraph_edge *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,

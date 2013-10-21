@@ -3947,7 +3947,7 @@ package body Exp_Ch6 is
       --  result from the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
-         if not Is_Immutably_Limited_Type (Etype (Subp))
+         if not Is_Limited_View (Etype (Subp))
            and then
              (No (First_Formal (Subp))
                 or else
@@ -7100,7 +7100,7 @@ package body Exp_Ch6 is
          then
             null;
 
-         elsif Is_Immutably_Limited_Type (Typ) then
+         elsif Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Spec_Id);
 
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
@@ -7702,7 +7702,7 @@ package body Exp_Ch6 is
       --  the type of the expression may be.
 
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Immutably_Limited_Type (Etype (Expression (N)))
+        and then Is_Limited_View (Etype (Expression (N)))
         and then Ada_Version >= Ada_2005
         and then not Debug_Flag_Dot_L
 
@@ -7781,7 +7781,7 @@ package body Exp_Ch6 is
       --  type that requires special processing (indicated by the fact that
       --  it requires a cleanup scope for the secondary stack case).
 
-      if Is_Immutably_Limited_Type (Exptyp)
+      if Is_Limited_View (Exptyp)
         or else Is_Limited_Interface (Exptyp)
       then
          null;
@@ -8084,8 +8084,9 @@ package body Exp_Ch6 is
       --  AI05-0073: If function has a controlling access result, check that
       --  the tag of the return value, if it is not null, matches designated
       --  type of return type.
-      --  The return expression is referenced twice in the code below, so
-      --  it must be made free of side effects. Given that different compilers
+
+      --  The return expression is referenced twice in the code below, so it
+      --  must be made free of side effects. Given that different compilers
       --  may evaluate these parameters in different order, both occurrences
       --  perform a copy.
 
@@ -9571,7 +9572,7 @@ package body Exp_Ch6 is
          --  may return objects of nonlimited descendants.
 
          else
-            return Is_Immutably_Limited_Type (Etype (E))
+            return Is_Limited_View (Etype (E))
               and then Ada_Version >= Ada_2005
               and then not Debug_Flag_Dot_L;
          end if;
@@ -9598,7 +9599,11 @@ package body Exp_Ch6 is
       --  disabled (such as with -gnatc) since those would trip over the raise
       --  of Program_Error below.
 
-      if not Expander_Active then
+      --  In SPARK mode, build-in-place calls are not expanded, so that we
+      --  may end up with a call that is neither resolved to an entity, nor
+      --  an indirect call.
+
+      if not Full_Expander_Active then
          return False;
       end if;
 
@@ -9615,14 +9620,7 @@ package body Exp_Ch6 is
          return False;
 
       else
-         --  In SPARK mode, build-in-place calls are not expanded, so that we
-         --  may end up with a call that is neither resolved to an entity, nor
-         --  an indirect call.
-
-         if SPARK_Mode then
-            return False;
-
-         elsif Is_Entity_Name (Name (Exp_Node)) then
+         if Is_Entity_Name (Name (Exp_Node)) then
             Function_Id := Entity (Name (Exp_Node));
 
          --  In the case of an explicitly dereferenced call, use the subprogram
@@ -9815,7 +9813,7 @@ package body Exp_Ch6 is
          Typ  : constant Entity_Id := Etype (Subp);
          Utyp : constant Entity_Id := Underlying_Type (Typ);
       begin
-         if Is_Immutably_Limited_Type (Typ) then
+         if Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Subp);
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Subp);
@@ -10091,14 +10089,10 @@ package body Exp_Ch6 is
          then
             null;
 
-         --  Do not generate the call to Set_Finalize_Address in SPARK mode
-         --  because it is not necessary and results in unwanted expansion.
-         --  This expansion is also not carried out in CodePeer mode because
-         --  Finalize_Address is never built.
+         --  Do not generate the call to Set_Finalize_Address in CodePeer mode
+         --  because Finalize_Address is never built.
 
-         elsif not SPARK_Mode
-           and then not CodePeer_Mode
-         then
+         elsif not CodePeer_Mode then
             Insert_Action (Allocator,
               Make_Set_Finalize_Address_Call (Loc,
                 Typ     => Etype (Function_Id),

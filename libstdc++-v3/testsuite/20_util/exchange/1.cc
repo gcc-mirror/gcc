@@ -55,6 +55,10 @@ test02()
   VERIFY( old.value == 1 );
 }
 
+int f(int) { return 0; }
+
+double f(double) { return 0; }
+
 // Deduce type of overloaded function
 void
 test03()
@@ -62,8 +66,6 @@ test03()
   bool test __attribute__((unused)) = true;
 
   int (*fp)(int);
-  int f(int);
-  double f(double);
   std::exchange(fp, &f);
   VERIFY( fp != nullptr );
 }

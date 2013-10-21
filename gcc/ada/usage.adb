@@ -251,6 +251,11 @@ begin
    Write_Switch_Char ("eT=?");
    Write_Line ("Read target dependent information file ?, e.g. gnateT=tdf");
 
+   --  Line for -gnateu switch
+
+   Write_Switch_Char ("eu");
+   Write_Line ("Ignore unrecognized style/validity/warning switches");
+
    --  Line for -gnateV switch
 
    Write_Switch_Char ("eV");
@@ -571,6 +576,8 @@ begin
    Write_Line ("        .X*  turn off warnings for non-local exception");
    Write_Line ("        y*+  turn on warnings for Ada compatibility issues");
    Write_Line ("        Y    turn off warnings for Ada compatibility issues");
+   Write_Line ("        .y   turn on info messages for why pkg body needed");
+   Write_Line ("        .Y*  turn off info messages for why pkg body needed");
    Write_Line ("        z*+  turn on warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &

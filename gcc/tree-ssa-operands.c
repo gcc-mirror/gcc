@@ -1287,24 +1287,6 @@ debug_immediate_uses_for (tree var)
 }
 
 
-/* Return true if OP, an SSA name or a DECL is a virtual operand.  */
-
-bool
-virtual_operand_p (tree op)
-{
-  if (TREE_CODE (op) == SSA_NAME)
-    {
-      op = SSA_NAME_VAR (op);
-      if (!op)
-	return false;
-    }
-
-  if (TREE_CODE (op) == VAR_DECL)
-    return VAR_DECL_IS_VIRTUAL_OPERAND (op);
-
-  return false;
-}
-
 /* Unlink STMTs virtual definition from the IL by propagating its use.  */
 
 void

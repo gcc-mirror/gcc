@@ -3962,7 +3962,7 @@ mep_validate_vliw (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
       static int gave_array_note = 0;
       static const char * given_type = NULL;
  
-      given_type = tree_code_name[TREE_CODE (*node)];
+      given_type = get_tree_code_name (TREE_CODE (*node));
       if (TREE_CODE (*node) == POINTER_TYPE)
  	given_type = "pointers";
       if (TREE_CODE (*node) == ARRAY_TYPE)

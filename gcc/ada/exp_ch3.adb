@@ -1893,7 +1893,7 @@ package body Exp_Ch3 is
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Immutably_Limited_Type (Typ)
+           and then not Is_Limited_View (Typ)
          then
             Append_To (Res,
               Make_Adjust_Call
@@ -4940,7 +4940,7 @@ package body Exp_Ch3 is
                Next_Elmt (Discr);
             end loop;
 
-            --  Now collect values of initialized components.
+            --  Now collect values of initialized components
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
@@ -4957,11 +4957,11 @@ package body Exp_Ch3 is
                Next_Component (Comp);
             end loop;
 
-            --  Finally, box-initialize remaining components.
+            --  Finally, box-initialize remaining components
 
             Append_To (Component_Associations (Aggr),
               Make_Component_Association (Loc,
-                Choices => New_List (Make_Others_Choice (Loc)),
+                Choices    => New_List (Make_Others_Choice (Loc)),
                 Expression => Empty));
             Set_Box_Present (Last (Component_Associations (Aggr)));
             Set_Expression (N, Aggr);
@@ -5310,7 +5310,7 @@ package body Exp_Ch3 is
             --  creating the object (via allocator) and initializing it.
 
             if Is_Return_Object (Def_Id)
-              and then Is_Immutably_Limited_Type (Typ)
+              and then Is_Limited_View (Typ)
             then
                null;
 
@@ -5578,7 +5578,7 @@ package body Exp_Ch3 is
             --  renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Immutably_Limited_Type (Typ)
+              and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
                Insert_Action_After (Init_After,
@@ -6150,12 +6150,6 @@ package body Exp_Ch3 is
       --  mode since the routine contains an Unchecked_Conversion.
 
       elsif CodePeer_Mode then
-         return;
-
-      --  Do not create TSS routine Finalize_Address when compiling in SPARK
-      --  mode because it is not necessary and results in useless expansion.
-
-      elsif SPARK_Mode then
          return;
       end if;
 
@@ -6903,13 +6897,9 @@ package body Exp_Ch3 is
             --  be done before the bodies of all predefined primitives are
             --  created. If Def_Id is limited, Stream_Input and Stream_Read
             --  may produce build-in-place allocations and for those the
-            --  expander needs Finalize_Address. Do not create the body of
-            --  Finalize_Address in SPARK mode since it is not needed.
+            --  expander needs Finalize_Address.
 
-            if not SPARK_Mode then
-               Make_Finalize_Address_Body (Def_Id);
-            end if;
-
+            Make_Finalize_Address_Body (Def_Id);
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
             Append_Freeze_Actions (Def_Id, Predef_List);
          end if;

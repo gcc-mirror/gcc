@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2011, AdaCore                    --
+--                      Copyright (C) 1999-2013, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -921,7 +921,7 @@ package body System.Regpat is
 
          Link_Tail (IP, Ender);
 
-         if Have_Branch and then Emit_Ptr <= PM.Size then
+         if Have_Branch and then Emit_Ptr <= PM.Size + 1 then
 
             --  Hook the tails of the branches to the closing node
 

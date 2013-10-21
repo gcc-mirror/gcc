@@ -516,6 +516,13 @@ package Opt is
    --  to make a single long message, and then this message is split up into
    --  multiple lines not exceeding the specified length. Set by -gnatj=nn.
 
+   Error_To_Warning : Boolean := False;
+   --  GNAT
+   --  If True, then certain error messages (e.g. parameter overlap messages
+   --  for procedure calls in Ada 2012 mode) are treated as warnings instead
+   --  of errors. Set by debug flag -gnatd.E. A search for Error_To_Warning
+   --  will identify affected messages.
+
    Exception_Handler_Encountered : Boolean := False;
    --  GNAT
    --  This flag is set true if the parser encounters an exception handler.
@@ -719,6 +726,12 @@ package Opt is
    --  Set True to ignore all Style_Checks pragmas. Can be set True by use
    --  of -gnateY.
 
+   Ignore_Unrecognized_VWY_Switches : Boolean := False;
+   --  GNAT
+   --  Set True to ignore unrecognized y, V, w switches. Can be set True
+   --  by use of -gnateu, causing subsequent unrecognized switches to result
+   --  in a warning rather than an error.
+
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT
    --  Set True to active warnings for use of implementation internal units.
@@ -827,6 +840,11 @@ package Opt is
    --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
    --  set to True).
+
+   List_Body_Required_Info : Boolean := False;
+   --  GNATMAKE
+   --  List info messages about why a package requires a body. Modified by use
+   --  of -gnatw.y/.Y.
 
    List_Inherited_Aspects : Boolean := False;
    --  GNAT

@@ -32,7 +32,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree.h"
 #include "basic-block.h"
 #include "tree-ssa.h"
-#include "tree-ssa-operands.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"

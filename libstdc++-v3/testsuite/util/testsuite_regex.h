@@ -148,7 +148,7 @@ namespace __gnu_test
 	(__s, __e, __m, __re, __flags);
       match_results<_Bi_iter, _Alloc> __mm;
       auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_force_dfs, true>
+	   _RegexExecutorPolicy::_S_alternate, true>
 	(__s, __e, __mm, __re, __flags);
       if (__res1 == __res2 && __m == __mm)
 	return __res1;
@@ -234,7 +234,7 @@ namespace __gnu_test
         (__s, __e, __m, __re, __flags);
       match_results<_Bi_iter, _Alloc> __mm;
       auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_force_dfs, false>
+	   _RegexExecutorPolicy::_S_alternate, false>
         (__s, __e, __mm, __re, __flags);
       if (__res1 == __res2 && __m == __mm)
         return __res1;

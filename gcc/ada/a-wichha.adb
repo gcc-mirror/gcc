@@ -33,6 +33,11 @@ with Ada.Wide_Characters.Unicode; use Ada.Wide_Characters.Unicode;
 
 package body Ada.Wide_Characters.Handling is
 
+   function Character_Set_Version return String is
+   begin
+      return "Unicode 6.2";
+   end Character_Set_Version;
+
    ---------------------
    -- Is_Alphanumeric --
    ---------------------

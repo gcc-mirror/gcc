@@ -349,19 +349,15 @@ package Exp_Util is
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 
-   function Entity_Of (N : Node_Id) return Entity_Id;
-   --  Return the entity of N or Empty. If N is a renaming, return the entity
-   --  of the root renamed object.
-
    function Entry_Names_OK return Boolean;
    --  Determine whether it is appropriate to dynamically allocate strings
    --  which represent entry [family member] names. These strings are created
    --  by the compiler and used by GDB.
 
    procedure Evaluate_Name (Nam : Node_Id);
-   --  Remove the all side effects from a name which appears as part of an
-   --  object renaming declaration. More comments are needed here that explain
-   --  how this differs from Force_Evaluation and Remove_Side_Effects ???
+   --  Remove all side effects from a name which appears as part of an object
+   --  renaming declaration. More comments are needed here that explain how
+   --  this differs from Force_Evaluation and Remove_Side_Effects ???
 
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is

@@ -61,8 +61,12 @@ TargetSave
 HOST_WIDE_INT x_ix86_isa_flags_explicit
 
 ;; which flags were passed by the user
-TargetSave
+Variable
 int ix86_target_flags_explicit
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_target_flags_explicit
 
 ;; whether -mtune was not specified
 TargetSave

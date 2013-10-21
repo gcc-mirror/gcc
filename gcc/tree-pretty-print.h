@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define pp_unsupported_tree(PP, T)                         \
   pp_verbatim (PP, "#%qs not supported by %s#", \
-               tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
+	       get_tree_code_name (TREE_CODE (T)), __FUNCTION__)
 
 #define pp_ti_abstract_origin(TI) ((tree *) (TI)->x_data)
 

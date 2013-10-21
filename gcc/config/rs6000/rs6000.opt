@@ -30,6 +30,9 @@ TargetSave
 HOST_WIDE_INT x_rs6000_isa_flags
 
 ;; Miscellaneous flag bits that were set explicitly by the user
+Variable
+HOST_WIDE_INT rs6000_isa_flags_explicit
+
 TargetSave
 HOST_WIDE_INT x_rs6000_isa_flags_explicit
 

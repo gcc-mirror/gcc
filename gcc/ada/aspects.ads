@@ -96,6 +96,8 @@ package Aspects is
       Aspect_External_Tag,
       Aspect_Global,                        -- GNAT
       Aspect_Implicit_Dereference,
+      Aspect_Initial_Condition,             -- GNAT
+      Aspect_Initializes,                   -- GNAT
       Aspect_Input,
       Aspect_Interrupt_Priority,
       Aspect_Invariant,                     -- GNAT
@@ -114,7 +116,6 @@ package Aspects is
       Aspect_Refined_Depends,               -- GNAT
       Aspect_Refined_Global,                -- GNAT
       Aspect_Refined_Post,                  -- GNAT
-      Aspect_Refined_Pre,                   -- GNAT
       Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
@@ -309,6 +310,8 @@ package Aspects is
       Aspect_External_Tag            => Expression,
       Aspect_Global                  => Expression,
       Aspect_Implicit_Dereference    => Name,
+      Aspect_Initial_Condition       => Expression,
+      Aspect_Initializes             => Expression,
       Aspect_Input                   => Name,
       Aspect_Interrupt_Priority      => Expression,
       Aspect_Invariant               => Expression,
@@ -327,7 +330,6 @@ package Aspects is
       Aspect_Refined_Depends         => Expression,
       Aspect_Refined_Global          => Expression,
       Aspect_Refined_Post            => Expression,
-      Aspect_Refined_Pre             => Expression,
       Aspect_Refined_State           => Expression,
       Aspect_Relative_Deadline       => Expression,
       Aspect_Scalar_Storage_Order    => Expression,
@@ -398,6 +400,8 @@ package Aspects is
       Aspect_Independent_Components       => Name_Independent_Components,
       Aspect_Inline                       => Name_Inline,
       Aspect_Inline_Always                => Name_Inline_Always,
+      Aspect_Initial_Condition            => Name_Initial_Condition,
+      Aspect_Initializes                  => Name_Initializes,
       Aspect_Input                        => Name_Input,
       Aspect_Interrupt_Handler            => Name_Interrupt_Handler,
       Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
@@ -428,7 +432,6 @@ package Aspects is
       Aspect_Refined_Depends              => Name_Refined_Depends,
       Aspect_Refined_Global               => Name_Refined_Global,
       Aspect_Refined_Post                 => Name_Refined_Post,
-      Aspect_Refined_Pre                  => Name_Refined_Pre,
       Aspect_Refined_State                => Name_Refined_State,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
@@ -597,6 +600,8 @@ package Aspects is
       Aspect_Independent_Components       => Always_Delay,
       Aspect_Inline                       => Always_Delay,
       Aspect_Inline_Always                => Always_Delay,
+      Aspect_Initial_Condition            => Always_Delay,
+      Aspect_Initializes                  => Always_Delay,
       Aspect_Input                        => Always_Delay,
       Aspect_Interrupt_Handler            => Always_Delay,
       Aspect_Interrupt_Priority           => Always_Delay,
@@ -655,7 +660,6 @@ package Aspects is
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
       Aspect_Refined_Post                 => Never_Delay,
-      Aspect_Refined_Pre                  => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
@@ -718,7 +722,6 @@ package Aspects is
      (Aspect_Refined_Depends              => True,
       Aspect_Refined_Global               => True,
       Aspect_Refined_Post                 => True,
-      Aspect_Refined_Pre                  => True,
       Aspect_SPARK_Mode                   => True,
       Aspect_Warnings                     => True,
       others                              => False);

@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
 #include "params.h"
+#include "tree-ssa-threadedge.h"
+#include "tree-ssa-dom.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -639,18 +641,18 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         break;
 
       case EXPR_UNARY:
-        fprintf (stream, "%s ", tree_code_name[element->expr.ops.unary.op]);
+	fprintf (stream, "%s ", get_tree_code_name (element->expr.ops.unary.op));
         print_generic_expr (stream, element->expr.ops.unary.opnd, 0);
         break;
 
       case EXPR_BINARY:
         print_generic_expr (stream, element->expr.ops.binary.opnd0, 0);
-        fprintf (stream, " %s ", tree_code_name[element->expr.ops.binary.op]);
+	fprintf (stream, " %s ", get_tree_code_name (element->expr.ops.binary.op));
         print_generic_expr (stream, element->expr.ops.binary.opnd1, 0);
         break;
 
       case EXPR_TERNARY:
-        fprintf (stream, " %s <", tree_code_name[element->expr.ops.ternary.op]);
+	fprintf (stream, " %s <", get_tree_code_name (element->expr.ops.ternary.op));
         print_generic_expr (stream, element->expr.ops.ternary.opnd0, 0);
 	fputs (", ", stream);
         print_generic_expr (stream, element->expr.ops.ternary.opnd1, 0);
@@ -2587,42 +2589,6 @@ avail_expr_hash (const void *p)
 
 /* PHI-ONLY copy and constant propagation.  This pass is meant to clean
    up degenerate PHIs created by or exposed by jump threading.  */
-
-/* Given PHI, return its RHS if the PHI is a degenerate, otherwise return
-   NULL.  */
-
-tree
-degenerate_phi_result (gimple phi)
-{
-  tree lhs = gimple_phi_result (phi);
-  tree val = NULL;
-  size_t i;
-
-  /* Ignoring arguments which are the same as LHS, if all the remaining
-     arguments are the same, then the PHI is a degenerate and has the
-     value of that common argument.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
-    {
-      tree arg = gimple_phi_arg_def (phi, i);
-
-      if (arg == lhs)
-	continue;
-      else if (!arg)
-	break;
-      else if (!val)
-	val = arg;
-      else if (arg == val)
-	continue;
-      /* We bring in some of operand_equal_p not only to speed things
-	 up, but also to avoid crashing when dereferencing the type of
-	 a released SSA name.  */
-      else if (TREE_CODE (val) != TREE_CODE (arg)
-	       || TREE_CODE (val) == SSA_NAME
-	       || !operand_equal_p (arg, val, 0))
-	break;
-    }
-  return (i == gimple_phi_num_args (phi) ? val : NULL);
-}
 
 /* Given a statement STMT, which is either a PHI node or an assignment,
    remove it from the IL.  */

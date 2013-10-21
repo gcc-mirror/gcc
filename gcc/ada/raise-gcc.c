@@ -87,6 +87,36 @@ extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 #define CXX_EXCEPTION_CLASS 0x474e5543432b2b00ULL
 #define GNAT_EXCEPTION_CLASS 0x474e552d41646100ULL
 
+/* Structure of a C++ exception, represented as a C structure...  See
+   unwind-cxx.h for the full definition.  */
+
+struct __cxa_exception
+{
+  void *exceptionType;
+  void (*exceptionDestructor)(void *);
+
+  void (*unexpectedHandler)();
+  void (*terminateHandler)();
+
+  struct __cxa_exception *nextException;
+
+  int handlerCount;
+
+#ifdef __ARM_EABI_UNWINDER__
+  struct __cxa_exception* nextPropagatingException;
+
+  int propagationCount;
+#else
+  int handlerSwitchValue;
+  const unsigned char *actionRecord;
+  const unsigned char *languageSpecificData;
+  _Unwind_Ptr catchTemp;
+  void *adjustedPtr;
+#endif
+
+  _Unwind_Exception unwindHeader;
+};
+
 /* --------------------------------------------------------------
    -- The DB stuff below is there for debugging purposes only. --
    -------------------------------------------------------------- */
@@ -812,22 +842,32 @@ get_call_site_action_for (_Unwind_Ptr ip,
 
 #define Is_Handled_By_Others  __gnat_is_handled_by_others
 #define Language_For          __gnat_language_for
-#define Import_Code_For       __gnat_import_code_for
+#define Foreign_Data_For      __gnat_foreign_data_for
 #define EID_For               __gnat_eid_for
 
 extern bool Is_Handled_By_Others (_Unwind_Ptr eid);
 extern char Language_For (_Unwind_Ptr eid);
 
-extern Exception_Code Import_Code_For (_Unwind_Ptr eid);
+extern void *Foreign_Data_For (_Unwind_Ptr eid);
 
 extern Exception_Id EID_For (_GNAT_Exception * e);
+
+#define Foreign_Exception system__exceptions__foreign_exception
+extern struct Exception_Data Foreign_Exception;
+
+#ifdef VMS
+#define Non_Ada_Error system__aux_dec__non_ada_error
+extern struct Exception_Data Non_Ada_Error;
+#endif
 
 static enum action_kind
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 {
+  /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
     return handler;
 
+  /* GNAT exception occurrence.  */
   if (propagated_exception->common.exception_class == GNAT_EXCEPTION_CLASS)
     {
       /* Pointer to the GNAT exception data corresponding to the propagated
@@ -845,6 +885,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
       if (choice == E || (choice == GNAT_OTHERS && Is_Handled_By_Others (E)))
 	return handler;
 
+#ifdef VMS
       /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
          may have different exception data pointers that should match for the
          same condition code, if both an export and an import have been
@@ -852,29 +893,41 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
          occurrence are expected to have been masked off regarding severity
          bits already (at registration time for the former and from within the
          low level exception vector for the latter).  */
-#ifdef VMS
-#     define Non_Ada_Error system__aux_dec__non_ada_error
-      extern struct Exception_Data Non_Ada_Error;
-
       if ((Language_For (E) == 'V'
 	   && choice != GNAT_OTHERS
 	   && ((Language_For (choice) == 'V'
-		&& Import_Code_For (choice) != 0
-		&& Import_Code_For (choice) == Import_Code_For (E))
+		&& Foreign_Data_For (choice) != 0
+		&& Foreign_Data_For (choice) == Foreign_Data_For (E))
 	       || choice == (_Unwind_Ptr)&Non_Ada_Error)))
 	return handler;
 #endif
-    }
-  else
-    {
-#     define Foreign_Exception system__exceptions__foreign_exception
-      extern struct Exception_Data Foreign_Exception;
 
-      if (choice == GNAT_ALL_OTHERS
-	  || choice == GNAT_OTHERS
-	  || choice == (_Unwind_Ptr) &Foreign_Exception)
+      /* Otherwise, it doesn't match an Ada choice.  */
+      return nothing;
+    }
+
+  /* All others and others choice match any foreign exception.  */
+  if (choice == GNAT_ALL_OTHERS
+      || choice == GNAT_OTHERS
+      || choice == (_Unwind_Ptr) &Foreign_Exception)
+    return handler;
+
+  /* C++ exception occurrences.  */
+  if (propagated_exception->common.exception_class == CXX_EXCEPTION_CLASS
+      && Language_For (choice) == 'C')
+    {
+      void *choice_typeinfo = Foreign_Data_For (choice);
+      void *except_typeinfo =
+	(((struct __cxa_exception *)
+	  ((_Unwind_Exception *)propagated_exception + 1)) - 1)->exceptionType;
+
+      /* Typeinfo are directly compared, which might not be correct if they
+	 aren't merged.  ??? We should call the == operator if this module is
+	 compiled in C++.  */
+      if (choice_typeinfo == except_typeinfo)
 	return handler;
     }
+
   return nothing;
 }
 
@@ -1164,7 +1217,9 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
 
-  /* Write current exception, so that it can be retrieved from Ada.  */
+  /* Write current exception, so that it can be retrieved from Ada.  It was
+     already done during phase 1 (just above), but in between, one or several
+     exceptions may have been raised (in cleanup handlers).  */
   __gnat_setup_current_excep (uw_exception);
 
   return _URC_INSTALL_CONTEXT;
@@ -1408,3 +1463,10 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 				ms_disp, __gnat_personality_imp);
 }
 #endif /* SEH */
+
+#if !defined (__USING_SJLJ_EXCEPTIONS__)
+/* Size of the _Unwind_Exception structure.  This is used by g-cppexc to get
+   the offset to the C++ object.  */
+
+const int __gnat_unwind_exception_size = sizeof (_Unwind_Exception);
+#endif

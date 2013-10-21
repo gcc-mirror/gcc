@@ -1137,7 +1137,9 @@ coverage_init (const char *filename)
   /* Since coverage_init is invoked very early, before the pass
      manager, we need to set up the dumping explicitly. This is
      similar to the handling in finish_optimization_passes.  */
-  dump_start (g->get_passes ()->get_pass_profile ()->static_pass_number, NULL);
+  int profile_pass_num =
+    g->get_passes ()->get_pass_profile ()->static_pass_number;
+  g->get_dumps ()->dump_start (profile_pass_num, NULL);
 
   if (!profile_data_prefix && !IS_ABSOLUTE_PATH (filename))
     profile_data_prefix = getpwd ();
@@ -1182,7 +1184,7 @@ coverage_init (const char *filename)
 	}
     }
 
-  dump_finish (g->get_passes ()->get_pass_profile ()->static_pass_number);
+  g->get_dumps ()->dump_finish (profile_pass_num);
 }
 
 /* Performs file-level cleanup.  Close notes file, generate coverage

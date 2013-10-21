@@ -81,7 +81,9 @@ extern const char *output_probe_stack_range (rtx, rtx);
 extern const char *output_cbcond (rtx, rtx, rtx);
 extern bool emit_scc_insn (rtx []);
 extern void emit_conditional_branch_insn (rtx []);
+extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
+extern rtx widen_mem_for_ldd_peep (rtx, rtx, enum machine_mode);
 extern int empty_delay_slot (rtx);
 extern int emit_cbcond_nop (rtx);
 extern int eligible_for_return_delay (rtx);
@@ -95,7 +97,6 @@ extern int mem_min_alignment (rtx, int);
 extern int pic_address_needs_scratch (rtx);
 extern int register_ok_for_ldd (rtx);
 extern int memory_ok_for_ldd (rtx);
-extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int v9_regcmp_p (enum rtx_code);
 /* Function used for V8+ code generation.  Returns 1 if the high
    32 bits of REG are 0 before INSN.  */   

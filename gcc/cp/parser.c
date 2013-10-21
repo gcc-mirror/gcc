@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "parser.h"
 #include "type-utils.h"
+#include "omp-low.h"
 
 
 /* The lexer.  */
@@ -6231,9 +6232,13 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 {
   tree index = NULL_TREE;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  bool saved_greater_than_is_operator_p;
 
   /* Consume the `[' token.  */
   cp_lexer_consume_token (parser->lexer);
+
+  saved_greater_than_is_operator_p = parser->greater_than_is_operator_p;
+  parser->greater_than_is_operator_p = true;
 
   /* Parse the index expression.  */
   /* ??? For offsetof, there is a question of what to allow here.  If
@@ -6277,6 +6282,8 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
       else
 	index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
     }
+
+  parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
 
   /* Look for the closing `]'.  */
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
@@ -21875,7 +21882,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else if (object_type)
     {
-      tree object_decl = NULL_TREE;
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
       if (CLASS_TYPE_P (object_type))
@@ -21883,19 +21889,21 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
 	   parse, those errors are valid.  */
-	object_decl = lookup_member (object_type,
-				     name,
-				     /*protect=*/0,
-				     tag_type != none_type,
-				     tf_warning_or_error);
-      /* Look it up in the enclosing context, too.  */
-      decl = lookup_name_real (name, tag_type != none_type,
-			       /*nonclass=*/0,
-			       /*block_p=*/true, is_namespace, 0);
+	decl = lookup_member (object_type,
+			      name,
+			      /*protect=*/0,
+			      tag_type != none_type,
+			      tf_warning_or_error);
+      else
+	decl = NULL_TREE;
+
+      if (!decl)
+	/* Look it up in the enclosing context.  */
+	decl = lookup_name_real (name, tag_type != none_type,
+				 /*nonclass=*/0,
+				 /*block_p=*/true, is_namespace, 0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
-      if (object_decl)
-	decl = object_decl;
     }
   else
     {

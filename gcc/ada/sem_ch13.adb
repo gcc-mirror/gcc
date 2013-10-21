@@ -770,17 +770,9 @@ package body Sem_Ch13 is
          Set_Has_Default_Aspect (Base_Type (Ent));
 
          if Is_Scalar_Type (Ent) then
-            Set_Default_Aspect_Value (Ent, Expr);
-
-            --  Place default value of base type as well, because that is
-            --  the semantics of the aspect. It is convenient to link the
-            --  aspect to both the (possibly anonymous) base type and to
-            --  the given first subtype.
-
             Set_Default_Aspect_Value (Base_Type (Ent), Expr);
-
          else
-            Set_Default_Aspect_Component_Value (Ent, Expr);
+            Set_Default_Aspect_Component_Value (Base_Type (Ent), Expr);
          end if;
       end Analyze_Aspect_Default_Value;
 
@@ -1802,22 +1794,126 @@ package body Sem_Ch13 is
 
                --  CPU, Interrupt_Priority, Priority
 
-               --  These three aspects can be specified for a subprogram body,
-               --  in which case we generate pragmas for them and insert them
-               --  ahead of local declarations, rather than after the body.
+               --  These three aspects can be specified for a subprogram spec
+               --  or body, in which case we analyze the expression and export
+               --  the value of the aspect.
+
+               --  Previously, we generated an equivalent pragma for bodies
+               --  (note that the specs cannot contain these pragmas). The
+               --  pragma was inserted ahead of local declarations, rather than
+               --  after the body. This leads to a certain duplication between
+               --  the processing performed for the aspect and the pragma, but
+               --  given the straightforward handling required it is simpler
+               --  to duplicate than to translate the aspect in the spec into
+               --  a pragma in the declarative part of the body.
 
                when Aspect_CPU                |
                     Aspect_Interrupt_Priority |
                     Aspect_Priority           =>
 
-                  if Nkind (N) = N_Subprogram_Body then
-                     Make_Aitem_Pragma
-                       (Pragma_Argument_Associations => New_List (
-                          Make_Pragma_Argument_Association (Sloc (Expr),
-                            Expression => Relocate_Node (Expr))),
-                        Pragma_Name                  => Chars (Id));
+                  if Nkind_In (N, N_Subprogram_Body,
+                                  N_Subprogram_Declaration)
+                  then
+                     --  Analyze the aspect expression
+
+                     Analyze_And_Resolve (Expr, Standard_Integer);
+
+                     --  Interrupt_Priority aspect not allowed for main
+                     --  subprograms. ARM D.1 does not forbid this explicitly,
+                     --  but ARM J.15.11 (6/3) does not permit pragma
+                     --  Interrupt_Priority for subprograms.
+
+                     if A_Id = Aspect_Interrupt_Priority then
+                        Error_Msg_N
+                          ("Interrupt_Priority aspect cannot apply to "
+                           & "subprogram", Expr);
+
+                     --  The expression must be static
+
+                     elsif not Is_Static_Expression (Expr) then
+                        Flag_Non_Static_Expr
+                          ("aspect requires static expression!", Expr);
+
+                     --  Check whether this is the main subprogram. Issue a
+                     --  warning only if it is obviously not a main program
+                     --  (when it has parameters or when the subprogram is
+                     --  within a package).
+
+                     elsif Present (Parameter_Specifications
+                                      (Specification (N)))
+                       or else not Is_Compilation_Unit (Defining_Entity (N))
+                     then
+                        --  See ARM D.1 (14/3) and D.16 (12/3)
+
+                        Error_Msg_N
+                          ("aspect applied to subprogram other than the "
+                           & "main subprogram has no effect??", Expr);
+
+                     --  Otherwise check in range and export the value
+
+                     --  For the CPU aspect
+
+                     elsif A_Id = Aspect_CPU then
+                        if Is_In_Range (Expr, RTE (RE_CPU_Range)) then
+
+                           --  Value is correct so we export the value to make
+                           --  it available at execution time.
+
+                           Set_Main_CPU
+                             (Main_Unit, UI_To_Int (Expr_Value (Expr)));
+
+                        else
+                           Error_Msg_N
+                             ("main subprogram CPU is out of range", Expr);
+                        end if;
+
+                     --  For the Priority aspect
+
+                     elsif A_Id = Aspect_Priority then
+                        if Is_In_Range (Expr, RTE (RE_Priority)) then
+
+                           --  Value is correct so we export the value to make
+                           --  it available at execution time.
+
+                           Set_Main_Priority
+                             (Main_Unit, UI_To_Int (Expr_Value (Expr)));
+
+                        else
+                           Error_Msg_N
+                             ("main subprogram priority is out of range",
+                              Expr);
+                        end if;
+                     end if;
+
+                     --  Load an arbitrary entity from System.Tasking.Stages
+                     --  or System.Tasking.Restricted.Stages (depending on
+                     --  the supported profile) to make sure that one of these
+                     --  packages is implicitly with'ed, since we need to have
+                     --  the tasking run time active for the pragma Priority to
+                     --  have any effect. Previously with with'ed the package
+                     --  System.Tasking, but this package does not trigger the
+                     --  required initialization of the run-time library.
+
+                     declare
+                        Discard : Entity_Id;
+                        pragma Warnings (Off, Discard);
+                     begin
+                        if Restricted_Profile then
+                           Discard := RTE (RE_Activate_Restricted_Tasks);
+                        else
+                           Discard := RTE (RE_Activate_Tasks);
+                        end if;
+                     end;
+
+                     --  Handling for these Aspects in subprograms is complete
+
+                     goto Continue;
+
+                  --  For tasks
 
                   else
+                     --  Pass the aspect as an attribute
+
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
@@ -1883,22 +1979,20 @@ package body Sem_Ch13 is
 
                --  Abstract_State
 
+               --  Aspect Abstract_State introduces implicit declarations for
+               --  all state abstraction entities it defines. To emulate this
+               --  behavior, insert the pragma at the beginning of the visible
+               --  declarations of the related package so that it is analyzed
+               --  immediately.
+
                when Aspect_Abstract_State => Abstract_State : declare
                   Decls : List_Id;
-                  Spec  : Node_Id;
 
                begin
-                  --  Aspect Abstract_State introduces implicit declarations
-                  --  for all state abstraction entities it defines. To emulate
-                  --  this behavior, insert the pragma at the beginning of the
-                  --  visible declarations of the related package so that it is
-                  --  analyzed immediately.
-
                   if Nkind_In (N, N_Generic_Package_Declaration,
                                   N_Package_Declaration)
                   then
-                     Spec  := Specification (N);
-                     Decls := Visible_Declarations (Spec);
+                     Decls := Visible_Declarations (Specification (N));
 
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -1959,6 +2053,83 @@ package body Sem_Ch13 is
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
+               --  Initial_Condition
+
+               --  Aspect Initial_Condition covers the visible declarations of
+               --  a package and all hidden states through functions. As such,
+               --  it must be evaluated at the end of the said declarations.
+
+               when Aspect_Initial_Condition => Initial_Condition : declare
+                  Decls : List_Id;
+
+               begin
+                  if Nkind_In (N, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+                  then
+                     Decls := Visible_Declarations (Specification (N));
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  =>
+                          Name_Initial_Condition);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package declaration",
+                        Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Initial_Condition;
+
+               --  Initializes
+
+               --  Aspect Initializes coverts the visible declarations of a
+               --  package. As such, it must be evaluated at the end of the
+               --  said declarations.
+
+               when Aspect_Initializes => Initializes : declare
+                  Decls : List_Id;
+
+               begin
+                  if Nkind_In (N, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+                  then
+                     Decls := Visible_Declarations (Specification (N));
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Initializes);
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a package declaration",
+                        Aspect, Id);
+                  end if;
+
+                  goto Continue;
+               end Initializes;
+
                --  SPARK_Mode
 
                when Aspect_SPARK_Mode =>
@@ -1970,10 +2141,21 @@ package body Sem_Ch13 is
 
                --  Refined_Depends
 
-               --  ??? To be implemented
+               --  Aspect Refined_Depends must be delayed because it can
+               --  mention state refinements introduced by aspect Refined_State
+               --  and further classified by aspect Refined_Global. Since both
+               --  those aspects are delayed, so is Refined_Depends.
 
                when Aspect_Refined_Depends =>
-                  null;
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Refined_Depends);
+
+                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_Global
 
@@ -2001,15 +2183,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Post);
-
-               --  Refined_Pre
-
-               when Aspect_Refined_Pre =>
-                  Make_Aitem_Pragma
-                    (Pragma_Argument_Associations => New_List (
-                       Make_Pragma_Argument_Association (Loc,
-                         Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Name_Refined_Pre);
 
                --  Refined_State
 
@@ -2527,9 +2700,8 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  If the aspect is on a subprogram body (relevant aspects
-                  --  are Inline and Priority), add the pragma in front of
-                  --  the declarations.
+                  --  If the aspect is on a subprogram body (relevant aspect
+                  --  is Inline), add the pragma in front of the declarations.
 
                   if Nkind (N) = N_Subprogram_Body then
                      if No (Declarations (N)) then
@@ -5925,7 +6097,6 @@ package body Sem_Ch13 is
 
       if Present (SId) then
          PDecl := Unit_Declaration_Node (SId);
-
       else
          PDecl := Build_Invariant_Procedure_Declaration (Typ);
       end if;
@@ -7099,6 +7270,16 @@ package body Sem_Ch13 is
             when N_Qualified_Expression =>
                return Get_RList (Expression (Exp));
 
+            --  Expression with actions: if no actions, dig out expression
+
+            when N_Expression_With_Actions =>
+               if Is_Empty_List (Actions (Exp)) then
+                  return Get_RList (Expression (Exp));
+
+               else
+                  raise Non_Static;
+               end if;
+
             --  Xor operator
 
             when N_Op_Xor =>
@@ -7708,6 +7889,8 @@ package body Sem_Ch13 is
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |
+              Aspect_Initial_Condition    |
+              Aspect_Initializes          |
               Aspect_Post                 |
               Aspect_Postcondition        |
               Aspect_Pre                  |
@@ -7715,7 +7898,6 @@ package body Sem_Ch13 is
               Aspect_Refined_Depends      |
               Aspect_Refined_Global       |
               Aspect_Refined_Post         |
-              Aspect_Refined_Pre          |
               Aspect_Refined_State        |
               Aspect_SPARK_Mode           |
               Aspect_Test_Case            =>
@@ -9421,6 +9603,7 @@ package body Sem_Ch13 is
       --  Default_Component_Value
 
       if Is_Array_Type (Typ)
+        and then Is_Base_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value)
       then
@@ -9432,6 +9615,7 @@ package body Sem_Ch13 is
       --  Default_Value
 
       if Is_Scalar_Type (Typ)
+        and then Is_Base_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Value)
       then
@@ -10024,7 +10208,7 @@ package body Sem_Ch13 is
         --  Exclude imported types, which may be frozen if they appear in a
         --  representation clause for a local type.
 
-        and then not From_With_Type (T)
+        and then not From_Limited_With (T)
 
         --  Exclude generated entities (not coming from source). The common
         --  case is when we generate a renaming which prematurely freezes the

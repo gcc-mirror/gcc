@@ -310,11 +310,11 @@ package body Exp_Ch7 is
       Defer_Abort : Boolean;
       Fin_Id      : out Entity_Id);
    --  N may denote an accept statement, block, entry body, package body,
-   --  package spec, protected body, subprogram body, and a task body. Create
+   --  package spec, protected body, subprogram body, or a task body. Create
    --  a procedure which contains finalization calls for all controlled objects
    --  declared in the declarative or statement region of N. The calls are
    --  built in reverse order relative to the original declarations. In the
-   --  case of a tack body, the routine delays the creation of the finalizer
+   --  case of a task body, the routine delays the creation of the finalizer
    --  until all statements have been moved to the task body procedure.
    --  Clean_Stmts may contain additional context-dependent code used to abort
    --  asynchronous calls or complete tasks (see Build_Cleanup_Statements).
@@ -367,6 +367,11 @@ package body Exp_Ch7 is
    function Enclosing_Function (E : Entity_Id) return Entity_Id;
    --  Given an arbitrary entity, traverse the scope chain looking for the
    --  first enclosing function. Return Empty if no function was found.
+
+   procedure Expand_Pragma_Initial_Condition (N : Node_Id);
+   --  Subsidiary to the expansion of package specs and bodies. Generate a
+   --  runtime check needed to verify the assumption introduced by pragma
+   --  Initial_Condition. N denotes the package spec or body.
 
    function Make_Call
      (Loc        : Source_Ptr;
@@ -427,7 +432,7 @@ package body Exp_Ch7 is
            Typ   => Typ,
            Stmts => Make_Deep_Array_Body (Initialize_Case, Typ)));
 
-      if not Is_Immutably_Limited_Type (Typ) then
+      if not Is_Limited_View (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc
              (Prim  => Adjust_Case,
@@ -3222,7 +3227,7 @@ package body Exp_Ch7 is
            Typ   => Typ,
            Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
 
-      if not Is_Immutably_Limited_Type (Typ) then
+      if not Is_Limited_View (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc
              (Prim  => Adjust_Case,
@@ -3959,6 +3964,15 @@ package body Exp_Ch7 is
          end if;
 
          Build_Task_Activation_Call (N);
+
+         --  When the package is subject to pragma Initial_Condition, the
+         --  assertion expression must be verified at the end of the body
+         --  statements.
+
+         if Present (Get_Pragma (Spec_Ent, Pragma_Initial_Condition)) then
+            Expand_Pragma_Initial_Condition (N);
+         end if;
+
          Pop_Scope;
       end if;
 
@@ -4053,10 +4067,9 @@ package body Exp_Ch7 is
       if No_Body then
          Push_Scope (Id);
 
+         --  Generate RACW subprogram bodies
+
          if Has_RACW (Id) then
-
-            --  Generate RACW subprogram bodies
-
             Decls := Private_Declarations (Spec);
 
             if No (Decls) then
@@ -4072,11 +4085,19 @@ package body Exp_Ch7 is
             Analyze_List (Decls);
          end if;
 
+         --  Generate task activation call as last step of elaboration
+
          if Present (Activation_Chain_Entity (N)) then
-
-            --  Generate task activation call as last step of elaboration
-
             Build_Task_Activation_Call (N);
+         end if;
+
+         --  When the package is subject to pragma Initial_Condition and lacks
+         --  a body, the assertion expression must be verified at the end of
+         --  the visible declarations. Otherwise the check is performed at the
+         --  end of the body statements (see Expand_N_Package_Body).
+
+         if Present (Get_Pragma (Id, Pragma_Initial_Condition)) then
+            Expand_Pragma_Initial_Condition (N);
          end if;
 
          Pop_Scope;
@@ -4113,6 +4134,88 @@ package body Exp_Ch7 is
          Set_Finalizer (Id, Fin_Id);
       end if;
    end Expand_N_Package_Declaration;
+
+   -------------------------------------
+   -- Expand_Pragma_Initial_Condition --
+   -------------------------------------
+
+   procedure Expand_Pragma_Initial_Condition (N : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (N);
+      Check     : Node_Id;
+      Expr      : Node_Id;
+      Init_Cond : Node_Id;
+      List      : List_Id;
+      Pack_Id   : Entity_Id;
+
+   begin
+      if Nkind (N) = N_Package_Body then
+         Pack_Id := Corresponding_Spec (N);
+
+         if Present (Handled_Statement_Sequence (N)) then
+            List := Statements (Handled_Statement_Sequence (N));
+
+         --  The package body lacks statements, create an empty list
+
+         else
+            List := New_List;
+
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Loc, Statements => List));
+         end if;
+
+      elsif Nkind (N) = N_Package_Declaration then
+         Pack_Id := Defining_Entity (N);
+
+         if Present (Visible_Declarations (Specification (N))) then
+            List := Visible_Declarations (Specification (N));
+
+         --  The package lacks visible declarations, create an empty list
+
+         else
+            List := New_List;
+
+            Set_Visible_Declarations (Specification (N), List);
+         end if;
+
+      --  This routine should not be used on anything other than packages
+
+      else
+         raise Program_Error;
+      end if;
+
+      Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
+
+      --  The caller should check whether the package is subject to pragma
+      --  Initial_Condition.
+
+      pragma Assert (Present (Init_Cond));
+
+      Expr :=
+        Get_Pragma_Arg (First (Pragma_Argument_Associations (Init_Cond)));
+
+      --  The assertion expression was found to be illegal, do not generate the
+      --  runtime check as it will repeat the illegality.
+
+      if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
+         return;
+      end if;
+
+      --  Generate:
+      --    pragma Check (Initial_Condition, <Expr>);
+
+      Check :=
+        Make_Pragma (Loc,
+          Chars                        => Name_Check,
+          Pragma_Argument_Associations => New_List (
+            Make_Pragma_Argument_Association (Loc,
+              Expression => Make_Identifier (Loc, Name_Initial_Condition)),
+
+            Make_Pragma_Argument_Association (Loc,
+              Expression => New_Copy_Tree (Expr))));
+
+      Append_To (List, Check);
+      Analyze (Check);
+   end Expand_Pragma_Initial_Condition;
 
    -----------------------------
    -- Find_Node_To_Be_Wrapped --

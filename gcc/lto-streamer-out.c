@@ -367,7 +367,7 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
 {
   if (!lto_is_streamable (expr))
     internal_error ("tree code %qs is not supported in LTO streams",
-		    tree_code_name[TREE_CODE (expr)]);
+		    get_tree_code_name (TREE_CODE (expr)));
 
   /* Write the header, containing everything needed to materialize
      EXPR on the reading side.  */
@@ -1241,7 +1241,7 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 		  if (!lto_is_streamable (t))
 		    internal_error ("tree code %qs is not supported "
 				    "in LTO streams",
-				    tree_code_name[TREE_CODE (t)]);
+				    get_tree_code_name (TREE_CODE (t)));
 
 		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
 

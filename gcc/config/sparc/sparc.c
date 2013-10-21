@@ -8543,6 +8543,16 @@ mems_ok_for_ldd_peep (rtx mem1, rtx mem2, rtx dependent_reg_rtx)
   return 1;
 }
 
+/* Return the widened memory access made of MEM1 and MEM2 in MODE.  */
+
+rtx
+widen_mem_for_ldd_peep (rtx mem1, rtx mem2, enum machine_mode mode)
+{
+  rtx x = widen_memory_access (mem1, mode, 0);
+  MEM_NOTRAP_P (x) = MEM_NOTRAP_P (mem1) && MEM_NOTRAP_P (mem2);
+  return x;
+}
+
 /* Return 1 if reg is a pseudo, or is the first register in
    a hard register pair.  This makes it suitable for use in
    ldd and std insns.  */

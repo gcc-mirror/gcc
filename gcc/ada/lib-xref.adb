@@ -1307,9 +1307,23 @@ package body Lib.Xref is
                         Right := '>';
                      end if;
 
-                  --  If non-derived ptr, get directly designated type.
+                  --  If the completion of a private type is itself a derived
+                  --  type, we need the parent of the full view.
+
+                  elsif Is_Private_Type (Tref)
+                    and then Present (Full_View (Tref))
+                    and then Etype (Full_View (Tref)) /= Full_View (Tref)
+                  then
+                     Tref := Etype (Full_View (Tref));
+
+                     if Left /= '(' then
+                        Left := '<';
+                        Right := '>';
+                     end if;
+
+                  --  If non-derived pointer, get directly designated type.
                   --  If the type has a full view, all references are on the
-                  --  partial view, that is seen first.
+                  --  partial view that is seen first.
 
                   elsif Is_Access_Type (Tref) then
                      Tref := Directly_Designated_Type (Tref);

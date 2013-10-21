@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,9 @@ with Ada.Streams;              use Ada.Streams;
 with Ada.Streams.Stream_IO;    use Ada.Streams.Stream_IO;
 with Ada.Unchecked_Conversion;
 
-with System.Stream_Attributes; use System;
+with System;                   use System;
+with System.Storage_Elements;  use System.Storage_Elements;
+with System.Stream_Attributes;
 
 package body System.Strings.Stream_Ops is
 
@@ -46,31 +48,32 @@ package body System.Strings.Stream_Ops is
 
    --  The following package provides an IO framework for strings. Depending
    --  on the version of System.Stream_Attributes as well as the size of
-   --  formal parameter Character_Type, the package will either utilize block
-   --  IO or character-by-character IO.
+   --  formal parameter Element_Type, the package will either utilize block
+   --  IO or element-by-element IO.
 
    generic
-      type Character_Type is private;
-      type String_Type is array (Positive range <>) of Character_Type;
+      type Element_Type is private;
+      type Index_Type is range <>;
+      type Array_Type is array (Index_Type range <>) of Element_Type;
 
    package Stream_Ops_Internal is
       function Input
         (Strm : access Root_Stream_Type'Class;
-         IO   : IO_Kind) return String_Type;
+         IO   : IO_Kind) return Array_Type;
 
       procedure Output
         (Strm : access Root_Stream_Type'Class;
-         Item : String_Type;
+         Item : Array_Type;
          IO   : IO_Kind);
 
       procedure Read
         (Strm : access Root_Stream_Type'Class;
-         Item : out String_Type;
+         Item : out Array_Type;
          IO   : IO_Kind);
 
       procedure Write
         (Strm : access Root_Stream_Type'Class;
-         Item : String_Type;
+         Item : Array_Type;
          IO   : IO_Kind);
    end Stream_Ops_Internal;
 
@@ -86,31 +89,36 @@ package body System.Strings.Stream_Ops is
 
       Default_Block_Size : constant := 512 * 8;
 
-      --  Shorthand notation for stream element and character sizes
+      --  Shorthand notation for stream element and element type sizes
 
-      C_Size  : constant Integer := Character_Type'Size;
+      ET_Size : constant Integer := Element_Type'Size;
       SE_Size : constant Integer := Stream_Element'Size;
 
-      --  The following constants describe the number of stream elements or
-      --  characters that can fit into a default block.
+      --  The following constants describe the number of array elements or
+      --  stream elements that can fit into a default block.
 
-      C_In_Default_Block  : constant Integer := Default_Block_Size / C_Size;
+      AE_In_Default_Block : constant Index_Type :=
+                              Index_Type (Default_Block_Size / ET_Size);
+      --  Number of array elements in a default block
+
       SE_In_Default_Block : constant Integer := Default_Block_Size / SE_Size;
+      --  Number of storage elements in a default block
 
       --  Buffer types
 
       subtype Default_Block is Stream_Element_Array
         (1 .. Stream_Element_Offset (SE_In_Default_Block));
 
-      subtype String_Block is String_Type (1 .. C_In_Default_Block);
+      subtype Array_Block is
+        Array_Type (Index_Type range 1 .. AE_In_Default_Block);
 
       --  Conversions to and from Default_Block
 
       function To_Default_Block is
-        new Ada.Unchecked_Conversion (String_Block, Default_Block);
+        new Ada.Unchecked_Conversion (Array_Block, Default_Block);
 
-      function To_String_Block is
-        new Ada.Unchecked_Conversion (Default_Block, String_Block);
+      function To_Array_Block is
+        new Ada.Unchecked_Conversion (Default_Block, Array_Block);
 
       -----------
       -- Input --
@@ -118,7 +126,7 @@ package body System.Strings.Stream_Ops is
 
       function Input
         (Strm : access Root_Stream_Type'Class;
-         IO   : IO_Kind) return String_Type
+         IO   : IO_Kind) return Array_Type
       is
       begin
          if Strm = null then
@@ -126,23 +134,21 @@ package body System.Strings.Stream_Ops is
          end if;
 
          declare
-            Low  : Positive;
-            High : Positive;
+            Low  : Index_Type;
+            High : Index_Type;
 
          begin
             --  Read the bounds of the string
 
-            Positive'Read (Strm, Low);
-            Positive'Read (Strm, High);
+            Index_Type'Read (Strm, Low);
+            Index_Type'Read (Strm, High);
+
+            --  Read the character content of the string
 
             declare
-               Item : String_Type (Low .. High);
-
+               Item : Array_Type (Low .. High);
             begin
-               --  Read the character content of the string
-
                Read (Strm, Item, IO);
-
                return Item;
             end;
          end;
@@ -154,7 +160,7 @@ package body System.Strings.Stream_Ops is
 
       procedure Output
         (Strm : access Root_Stream_Type'Class;
-         Item : String_Type;
+         Item : Array_Type;
          IO   : IO_Kind)
       is
       begin
@@ -164,8 +170,8 @@ package body System.Strings.Stream_Ops is
 
          --  Write the bounds of the string
 
-         Positive'Write (Strm, Item'First);
-         Positive'Write (Strm, Item'Last);
+         Index_Type'Write (Strm, Item'First);
+         Index_Type'Write (Strm, Item'Last);
 
          --  Write the character content of the string
 
@@ -178,7 +184,7 @@ package body System.Strings.Stream_Ops is
 
       procedure Read
         (Strm : access Root_Stream_Type'Class;
-         Item : out String_Type;
+         Item : out Array_Type;
          IO   : IO_Kind)
       is
       begin
@@ -194,15 +200,13 @@ package body System.Strings.Stream_Ops is
 
          --  Block IO
 
-         if IO = Block_IO
-           and then Stream_Attributes.Block_IO_OK
-         then
+         if IO = Block_IO and then Stream_Attributes.Block_IO_OK then
             declare
                --  Determine the size in BITS of the block necessary to contain
                --  the whole string.
 
                Block_Size : constant Natural :=
-                              (Item'Last - Item'First + 1) * C_Size;
+                              Integer (Item'Last - Item'First + 1) * ET_Size;
 
                --  Item can be larger than what the default block can store,
                --  determine the number of whole reads necessary to read the
@@ -218,8 +222,8 @@ package body System.Strings.Stream_Ops is
 
                --  String indexes
 
-               Low  : Positive := Item'First;
-               High : Positive := Low + C_In_Default_Block - 1;
+               Low  : Index_Type := Item'First;
+               High : Index_Type := Low + AE_In_Default_Block - 1;
 
                --  End of stream error detection
 
@@ -237,10 +241,10 @@ package body System.Strings.Stream_Ops is
                   begin
                      for Counter in 1 .. Blocks loop
                         Read (Strm.all, Block, Last);
-                        Item (Low .. High) := To_String_Block (Block);
+                        Item (Low .. High) := To_Array_Block (Block);
 
                         Low  := High + 1;
-                        High := Low + C_In_Default_Block - 1;
+                        High := Low + AE_In_Default_Block - 1;
                         Sum  := Sum + Last;
                         Last := 0;
                      end loop;
@@ -254,17 +258,18 @@ package body System.Strings.Stream_Ops is
                      subtype Rem_Block is Stream_Element_Array
                        (1 .. Stream_Element_Offset (Rem_Size / SE_Size));
 
-                     subtype Rem_String_Block is
-                       String_Type (1 .. Rem_Size / C_Size);
+                     subtype Rem_Array_Block is
+                       Array_Type (Index_Type range
+                                    1 .. Index_Type (Rem_Size / ET_Size));
 
-                     function To_Rem_String_Block is new
-                       Ada.Unchecked_Conversion (Rem_Block, Rem_String_Block);
+                     function To_Rem_Array_Block is new
+                       Ada.Unchecked_Conversion (Rem_Block, Rem_Array_Block);
 
                      Block : Rem_Block;
 
                   begin
                      Read (Strm.all, Block, Last);
-                     Item (Low .. Item'Last) := To_Rem_String_Block (Block);
+                     Item (Low .. Item'Last) := To_Rem_Array_Block (Block);
 
                      Sum := Sum + Last;
                   end;
@@ -275,7 +280,7 @@ package body System.Strings.Stream_Ops is
                --  words, the stream does not contain enough elements to fully
                --  populate Item.
 
-               if (Integer (Sum) * SE_Size) / C_Size < Item'Length then
+               if (Integer (Sum) * SE_Size) / ET_Size < Item'Length then
                   raise End_Error;
                end if;
             end;
@@ -284,12 +289,11 @@ package body System.Strings.Stream_Ops is
 
          else
             declare
-               C : Character_Type;
-
+               E : Element_Type;
             begin
                for Index in Item'First .. Item'Last loop
-                  Character_Type'Read (Strm, C);
-                  Item (Index) := C;
+                  Element_Type'Read (Strm, E);
+                  Item (Index) := E;
                end loop;
             end;
          end if;
@@ -301,7 +305,7 @@ package body System.Strings.Stream_Ops is
 
       procedure Write
         (Strm : access Root_Stream_Type'Class;
-         Item : String_Type;
+         Item : Array_Type;
          IO   : IO_Kind)
       is
       begin
@@ -317,14 +321,12 @@ package body System.Strings.Stream_Ops is
 
          --  Block IO
 
-         if IO = Block_IO
-           and then Stream_Attributes.Block_IO_OK
-         then
+         if IO = Block_IO and then Stream_Attributes.Block_IO_OK then
             declare
                --  Determine the size in BITS of the block necessary to contain
                --  the whole string.
 
-               Block_Size : constant Natural := Item'Length * C_Size;
+               Block_Size : constant Natural := Item'Length * ET_Size;
 
                --  Item can be larger than what the default block can store,
                --  determine the number of whole writes necessary to output the
@@ -340,8 +342,8 @@ package body System.Strings.Stream_Ops is
 
                --  String indexes
 
-               Low  : Positive := Item'First;
-               High : Positive := Low + C_In_Default_Block - 1;
+               Low  : Index_Type := Item'First;
+               High : Index_Type := Low + AE_In_Default_Block - 1;
 
             begin
                --  Step 1: If the string is too large, write out individual
@@ -349,9 +351,8 @@ package body System.Strings.Stream_Ops is
 
                for Counter in 1 .. Blocks loop
                   Write (Strm.all, To_Default_Block (Item (Low .. High)));
-
                   Low  := High + 1;
-                  High := Low + C_In_Default_Block - 1;
+                  High := Low + AE_In_Default_Block - 1;
                end loop;
 
                --  Step 2: Write out any remaining elements
@@ -361,11 +362,12 @@ package body System.Strings.Stream_Ops is
                      subtype Rem_Block is Stream_Element_Array
                        (1 .. Stream_Element_Offset (Rem_Size / SE_Size));
 
-                     subtype Rem_String_Block is
-                       String_Type (1 .. Rem_Size / C_Size);
+                     subtype Rem_Array_Block is
+                       Array_Type (Index_Type range
+                                     1 .. Index_Type (Rem_Size / ET_Size));
 
                      function To_Rem_Block is new
-                       Ada.Unchecked_Conversion (Rem_String_Block, Rem_Block);
+                       Ada.Unchecked_Conversion (Rem_Array_Block, Rem_Block);
 
                   begin
                      Write (Strm.all, To_Rem_Block (Item (Low .. Item'Last)));
@@ -377,28 +379,233 @@ package body System.Strings.Stream_Ops is
 
          else
             for Index in Item'First .. Item'Last loop
-               Character_Type'Write (Strm, Item (Index));
+               Element_Type'Write (Strm, Item (Index));
             end loop;
          end if;
       end Write;
    end Stream_Ops_Internal;
 
-   --  Specific instantiations for all Ada string types
+   --  Specific instantiations for all Ada array types handled
+
+   package Storage_Array_Ops is
+     new Stream_Ops_Internal
+       (Element_Type => Storage_Element,
+        Index_Type   => Storage_Offset,
+        Array_Type   => Storage_Array);
+
+   package Stream_Element_Array_Ops is
+     new Stream_Ops_Internal
+       (Element_Type => Stream_Element,
+        Index_Type   => Stream_Element_Offset,
+        Array_Type   => Stream_Element_Array);
 
    package String_Ops is
      new Stream_Ops_Internal
-       (Character_Type => Character,
-        String_Type    => String);
+       (Element_Type => Character,
+        Index_Type   => Positive,
+        Array_Type   => String);
 
    package Wide_String_Ops is
      new Stream_Ops_Internal
-       (Character_Type => Wide_Character,
-        String_Type    => Wide_String);
+       (Element_Type => Wide_Character,
+        Index_Type   => Positive,
+        Array_Type   => Wide_String);
 
    package Wide_Wide_String_Ops is
      new Stream_Ops_Internal
-       (Character_Type => Wide_Wide_Character,
-        String_Type    => Wide_Wide_String);
+       (Element_Type => Wide_Wide_Character,
+        Index_Type   => Positive,
+        Array_Type   => Wide_Wide_String);
+
+   -------------------------
+   -- Storage_Array_Input --
+   -------------------------
+
+   function Storage_Array_Input
+     (Strm : access Ada.Streams.Root_Stream_Type'Class) return Storage_Array
+   is
+   begin
+      return Storage_Array_Ops.Input (Strm, Byte_IO);
+   end Storage_Array_Input;
+
+   --------------------------------
+   -- Storage_Array_Input_Blk_IO --
+   --------------------------------
+
+   function Storage_Array_Input_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class) return Storage_Array
+   is
+   begin
+      return Storage_Array_Ops.Input (Strm, Block_IO);
+   end Storage_Array_Input_Blk_IO;
+
+   --------------------------
+   -- Storage_Array_Output --
+   --------------------------
+
+   procedure Storage_Array_Output
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Output (Strm, Item, Byte_IO);
+   end Storage_Array_Output;
+
+   ---------------------------------
+   -- Storage_Array_Output_Blk_IO --
+   ---------------------------------
+
+   procedure Storage_Array_Output_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Output (Strm, Item, Block_IO);
+   end Storage_Array_Output_Blk_IO;
+
+   ------------------------
+   -- Storage_Array_Read --
+   ------------------------
+
+   procedure Storage_Array_Read
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Read (Strm, Item, Byte_IO);
+   end Storage_Array_Read;
+
+   -------------------------------
+   -- Storage_Array_Read_Blk_IO --
+   -------------------------------
+
+   procedure Storage_Array_Read_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Read (Strm, Item, Block_IO);
+   end Storage_Array_Read_Blk_IO;
+
+   -------------------------
+   -- Storage_Array_Write --
+   -------------------------
+
+   procedure Storage_Array_Write
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Write (Strm, Item, Byte_IO);
+   end Storage_Array_Write;
+
+   --------------------------------
+   -- Storage_Array_Write_Blk_IO --
+   --------------------------------
+
+   procedure Storage_Array_Write_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Storage_Array)
+   is
+   begin
+      Storage_Array_Ops.Write (Strm, Item, Block_IO);
+   end Storage_Array_Write_Blk_IO;
+
+   --------------------------------
+   -- Stream_Element_Array_Input --
+   --------------------------------
+
+   function Stream_Element_Array_Input
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return Stream_Element_Array
+   is
+   begin
+      return Stream_Element_Array_Ops.Input (Strm, Byte_IO);
+   end Stream_Element_Array_Input;
+
+   ---------------------------------------
+   -- Stream_Element_Array_Input_Blk_IO --
+   ---------------------------------------
+
+   function Stream_Element_Array_Input_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return Stream_Element_Array
+   is
+   begin
+      return Stream_Element_Array_Ops.Input (Strm, Block_IO);
+   end Stream_Element_Array_Input_Blk_IO;
+
+   ---------------------------------
+   -- Stream_Element_Array_Output --
+   ---------------------------------
+
+   procedure Stream_Element_Array_Output
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Output (Strm, Item, Byte_IO);
+   end Stream_Element_Array_Output;
+
+   ----------------------------------------
+   -- Stream_Element_Array_Output_Blk_IO --
+   ----------------------------------------
+
+   procedure Stream_Element_Array_Output_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Output (Strm, Item, Block_IO);
+   end Stream_Element_Array_Output_Blk_IO;
+
+   -------------------------------
+   -- Stream_Element_Array_Read --
+   -------------------------------
+
+   procedure Stream_Element_Array_Read
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Read (Strm, Item, Byte_IO);
+   end Stream_Element_Array_Read;
+
+   --------------------------------------
+   -- Stream_Element_Array_Read_Blk_IO --
+   --------------------------------------
+
+   procedure Stream_Element_Array_Read_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Read (Strm, Item, Block_IO);
+   end Stream_Element_Array_Read_Blk_IO;
+
+   --------------------------------
+   -- Stream_Element_Array_Write --
+   --------------------------------
+
+   procedure Stream_Element_Array_Write
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Write (Strm, Item, Byte_IO);
+   end Stream_Element_Array_Write;
+
+   ---------------------------------------
+   -- Stream_Element_Array_Write_Blk_IO --
+   ---------------------------------------
+
+   procedure Stream_Element_Array_Write_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Stream_Element_Array)
+   is
+   begin
+      Stream_Element_Array_Ops.Write (Strm, Item, Block_IO);
+   end Stream_Element_Array_Write_Blk_IO;
 
    ------------------
    -- String_Input --

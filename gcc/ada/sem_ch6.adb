@@ -586,7 +586,7 @@ package body Sem_Ch6 is
                  ("(Ada 2005) cannot copy object of a limited type " &
                   "(RM-2005 6.5(5.5/2))", Expr);
 
-               if Is_Immutably_Limited_Type (R_Type) then
+               if Is_Limited_View (R_Type) then
                   Error_Msg_N
                     ("\return by reference not permitted in Ada 2005", Expr);
                end if;
@@ -606,7 +606,7 @@ package body Sem_Ch6 is
                     ("return of limited object not permitted in Ada 2005 "
                      & "(RM-2005 6.5(5.5/2))?y?", Expr);
 
-               elsif Is_Immutably_Limited_Type (R_Type) then
+               elsif Is_Limited_View (R_Type) then
                   Error_Msg_N
                     ("return by reference not permitted in Ada 2005 "
                      & "(RM-2005 6.5(5.5/2))?y?", Expr);
@@ -880,7 +880,7 @@ package body Sem_Ch6 is
                     ("aliased only allowed for limited"
                      & " return objects in Ada 2012?", N);
 
-               elsif not Is_Immutably_Limited_Type (R_Type) then
+               elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N ("aliased only allowed for limited"
                      & " return objects", N);
                end if;
@@ -963,7 +963,7 @@ package body Sem_Ch6 is
          --  check the static cases.
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
-           and then Is_Immutably_Limited_Type (Etype (Scope_Id))
+           and then Is_Limited_View (Etype (Scope_Id))
            and then Object_Access_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
          then
@@ -1976,11 +1976,11 @@ package body Sem_Ch6 is
    --------------------------------------
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Body_Decl : constant Node_Id   := Parent (Parent (Body_Id));
-      Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
-      Prag      : Node_Id;
-
-      Has_Refined_Global : Boolean := False;
+      Body_Decl   : constant Node_Id   := Parent (Parent (Body_Id));
+      Spec_Id     : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Prag        : Node_Id;
+      Ref_Depends : Node_Id := Empty;
+      Ref_Global  : Node_Id := Empty;
 
    begin
       --  When a subprogram body declaration is erroneous, its defining entity
@@ -1991,27 +1991,54 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  Locate and store pragmas Refined_Depends and Refined_Global since
+      --  their order of analysis matters.
+
       Prag := Classifications (Contract (Body_Id));
       while Present (Prag) loop
          if Pragma_Name (Prag) = Name_Refined_Depends then
-            Analyze_Refined_Depends_In_Decl_Part (Prag);
+            Ref_Depends := Prag;
          elsif Pragma_Name (Prag) = Name_Refined_Global then
-            Has_Refined_Global := True;
-            Analyze_Refined_Global_In_Decl_Part (Prag);
+            Ref_Global := Prag;
          end if;
 
          Prag := Next_Pragma (Prag);
       end loop;
 
+      --  Analyze Refined_Global first as Refined_Depends may mention items
+      --  classified in the global refinement.
+
+      if Present (Ref_Global) then
+         Analyze_Refined_Global_In_Decl_Part (Ref_Global);
+
       --  When the corresponding Global aspect/pragma references a state with
       --  visible refinement, the body requires Refined_Global.
 
-      if not Has_Refined_Global and then Present (Spec_Id) then
+      elsif Present (Spec_Id) then
          Prag := Get_Pragma (Spec_Id, Pragma_Global);
 
          if Present (Prag) and then Contains_Refined_State (Prag) then
             Error_Msg_NE
               ("body of subprogram & requires global refinement",
+               Body_Decl, Spec_Id);
+         end if;
+      end if;
+
+      --  Refined_Depends must be analyzed after Refined_Global in order to see
+      --  the modes of all global refinements.
+
+      if Present (Ref_Depends) then
+         Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
+
+      --  When the corresponding Depends aspect/pragma references a state with
+      --  visible refinement, the body requires Refined_Depends.
+
+      elsif Present (Spec_Id) then
+         Prag := Get_Pragma (Spec_Id, Pragma_Depends);
+
+         if Present (Prag) and then Contains_Refined_State (Prag) then
+            Error_Msg_NE
+              ("body of subprogram & requires dependance refinement",
                Body_Decl, Spec_Id);
          end if;
       end if;
@@ -2473,7 +2500,7 @@ package body Sem_Ch6 is
 
          begin
             if Ekind (Typ) = E_Incomplete_Type
-              and then From_With_Type (Typ)
+              and then From_Limited_With (Typ)
               and then Present (Non_Limited_View (Typ))
             then
                Set_Etype (Id, Non_Limited_View (Typ));
@@ -3031,7 +3058,9 @@ package body Sem_Ch6 is
             if Ekind (Rtyp) = E_Anonymous_Access_Type then
                Etyp := Directly_Designated_Type (Rtyp);
 
-               if Is_Class_Wide_Type (Etyp) and then From_With_Type (Etyp) then
+               if Is_Class_Wide_Type (Etyp)
+                 and then From_Limited_With (Etyp)
+               then
                   Set_Directly_Designated_Type
                     (Etype (Current_Scope), Available_View (Etyp));
                end if;
@@ -3570,17 +3599,16 @@ package body Sem_Ch6 is
       --  Local variables
 
       Items       : constant Node_Id := Contract (Subp);
-      Error_CCase : Node_Id;
-      Error_Post  : Node_Id;
+      Depends     : Node_Id := Empty;
+      Error_CCase : Node_Id := Empty;
+      Error_Post  : Node_Id := Empty;
+      Global      : Node_Id := Empty;
       Nam         : Name_Id;
       Prag        : Node_Id;
 
    --  Start of processing for Analyze_Subprogram_Contract
 
    begin
-      Error_CCase := Empty;
-      Error_Post  := Empty;
-
       if Present (Items) then
 
          --  Analyze pre- and postconditions
@@ -3635,14 +3663,27 @@ package body Sem_Ch6 is
             Nam := Pragma_Name (Prag);
 
             if Nam = Name_Depends then
-               Analyze_Depends_In_Decl_Part (Prag);
-            else
-               pragma Assert (Nam = Name_Global);
-               Analyze_Global_In_Decl_Part (Prag);
+               Depends := Prag;
+            else pragma Assert (Nam = Name_Global);
+               Global := Prag;
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
+
+         --  Analyze Global first as Depends may mention items classified in
+         --  the global categorization.
+
+         if Present (Global) then
+            Analyze_Global_In_Decl_Part (Global);
+         end if;
+
+         --  Depends must be analyzed after Global in order to see the modes of
+         --  all global items.
+
+         if Present (Depends) then
+            Analyze_Depends_In_Decl_Part (Depends);
+         end if;
       end if;
 
       --  Emit an error when none of the postconditions or contract-cases
@@ -6508,7 +6549,9 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
 
-         elsif Ekind (T) = E_Incomplete_Type and then From_With_Type (T) then
+         elsif Ekind (T) = E_Incomplete_Type
+           and then From_Limited_With (T)
+         then
             Set_Has_Delayed_Freeze (Designator);
 
          --  AI05-0151: In Ada 2012, Incomplete types can appear in the profile
@@ -6550,7 +6593,7 @@ package body Sem_Ch6 is
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
          begin
-            if Is_Immutably_Limited_Type (Typ) then
+            if Is_Limited_View (Typ) then
                Set_Returns_By_Ref (Designator);
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
@@ -7672,14 +7715,14 @@ package body Sem_Ch6 is
          --  access-to-class-wide type in a formal. Both entities designate the
          --  same type.
 
-         if From_With_Type (T1) and then T2 = Available_View (T1) then
+         if From_Limited_With (T1) and then T2 = Available_View (T1) then
             return True;
 
-         elsif From_With_Type (T2) and then T1 = Available_View (T2) then
+         elsif From_Limited_With (T2) and then T1 = Available_View (T2) then
             return True;
 
-         elsif From_With_Type (T1)
-           and then From_With_Type (T2)
+         elsif From_Limited_With (T1)
+           and then From_Limited_With (T2)
            and then Available_View (T1) = Available_View (T2)
          then
             return True;
@@ -8173,7 +8216,8 @@ package body Sem_Ch6 is
             --  the designated type comes from the limited view (for back-end
             --  purposes).
 
-            Set_From_With_Type (Formal_Typ, From_With_Type (Result_Subt));
+            Set_From_Limited_With
+              (Formal_Typ, From_Limited_With (Result_Subt));
 
             Layout_Type (Formal_Typ);
 
@@ -10279,8 +10323,7 @@ package body Sem_Ch6 is
            and then In_Private_Part (Current_Scope)
          then
             Priv_Decls :=
-              Private_Declarations
-                (Specification (Unit_Declaration_Node (Current_Scope)));
+              Private_Declarations (Package_Specification (Current_Scope));
 
             return In_Package_Body (Current_Scope)
               or else
@@ -10908,7 +10951,7 @@ package body Sem_Ch6 is
       First_Out_Param : Entity_Id := Empty;
       --  Used for setting Is_Only_Out_Parameter
 
-      function Designates_From_With_Type (Typ : Entity_Id) return Boolean;
+      function Designates_From_Limited_With (Typ : Entity_Id) return Boolean;
       --  Determine whether an access type designates a type coming from a
       --  limited view.
 
@@ -10917,11 +10960,11 @@ package body Sem_Ch6 is
       --  default has the type of the formal, so we must also check explicitly
       --  for an access attribute.
 
-      -------------------------------
-      -- Designates_From_With_Type --
-      -------------------------------
+      ----------------------------------
+      -- Designates_From_Limited_With --
+      ----------------------------------
 
-      function Designates_From_With_Type (Typ : Entity_Id) return Boolean is
+      function Designates_From_Limited_With (Typ : Entity_Id) return Boolean is
          Desig : Entity_Id := Typ;
 
       begin
@@ -10934,8 +10977,9 @@ package body Sem_Ch6 is
          end if;
 
          return
-           Ekind (Desig) = E_Incomplete_Type and then From_With_Type (Desig);
-      end Designates_From_With_Type;
+           Ekind (Desig) = E_Incomplete_Type
+             and then From_Limited_With (Desig);
+      end Designates_From_Limited_With;
 
       ---------------------------
       -- Is_Class_Wide_Default --
@@ -10993,7 +11037,7 @@ package body Sem_Ch6 is
 
                if Is_Tagged_Type (Formal_Type) then
                   if Ekind (Scope (Current_Scope)) = E_Package
-                    and then not From_With_Type (Formal_Type)
+                    and then not From_Limited_With (Formal_Type)
                     and then not Is_Generic_Type (Formal_Type)
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
@@ -11176,7 +11220,7 @@ package body Sem_Ch6 is
             --  is also class-wide.
 
             if Ekind (Formal_Type) = E_Anonymous_Access_Type
-              and then not Designates_From_With_Type (Formal_Type)
+              and then not Designates_From_Limited_With (Formal_Type)
               and then Is_Class_Wide_Default (Default)
               and then not Is_Class_Wide_Type (Designated_Type (Formal_Type))
             then

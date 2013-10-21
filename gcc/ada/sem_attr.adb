@@ -189,6 +189,11 @@ package body Sem_Attr is
    --  where therefore the prefix of the attribute does not match the enclosing
    --  scope.
 
+   procedure Set_Boolean_Result (N : Node_Id; B : Boolean);
+   --  Rewrites node N with an occurrence of either Standard_False or
+   --  Standard_True, depending on the value of the parameter B. The
+   --  result is marked as a static expression.
+
    -----------------------
    -- Analyze_Attribute --
    -----------------------
@@ -339,12 +344,16 @@ package body Sem_Attr is
       --  Verify that prefix of attribute N is a scalar type
 
       procedure Check_Standard_Prefix;
-      --  Verify that prefix of attribute N is package Standard
+      --  Verify that prefix of attribute N is package Standard. Also checks
+      --  that there are no arguments.
 
       procedure Check_Stream_Attribute (Nam : TSS_Name_Type);
       --  Validity checking for stream attribute. Nam is the TSS name of the
       --  corresponding possible defined attribute function (e.g. for the
       --  Read attribute, Nam will be TSS_Stream_Read).
+
+      procedure Check_System_Prefix;
+      --  Verify that prefix of attribute N is package System
 
       procedure Check_PolyORB_Attribute;
       --  Validity checking for PolyORB/DSA attribute
@@ -1627,7 +1636,7 @@ package body Sem_Attr is
 
             Typ := Etype (E);
 
-            if From_With_Type (Typ) then
+            if From_Limited_With (Typ) then
                Error_Attr_P
                  ("prefix of % attribute cannot be an incomplete type");
 
@@ -1646,7 +1655,7 @@ package body Sem_Attr is
                --  entities may occur in subprogram formals.
 
                if Is_Incomplete_Type (Typ)
-                 and then From_With_Type (Typ)
+                 and then From_Limited_With (Typ)
                  and then Present (Non_Limited_View (Typ))
                  and then Is_Legal_Shadow_Entity_In_Body (Typ)
                then
@@ -1971,6 +1980,17 @@ package body Sem_Attr is
 
          Check_Not_CPP_Type;
       end Check_Stream_Attribute;
+
+      -------------------------
+      -- Check_System_Prefix --
+      -------------------------
+
+      procedure Check_System_Prefix is
+      begin
+         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_System then
+            Error_Attr ("only allowed prefix for % attribute is System", P);
+         end if;
+      end Check_System_Prefix;
 
       -----------------------
       -- Check_Task_Prefix --
@@ -3663,6 +3683,24 @@ package body Sem_Attr is
          Check_Array_Type;
          Set_Etype (N, Universal_Integer);
 
+      -------------------
+      -- Library_Level --
+      -------------------
+
+      when Attribute_Library_Level =>
+         Check_E0;
+
+         if not Is_Entity_Name (P) then
+            Error_Attr_P ("prefix of % attribute must be an entity name");
+         end if;
+
+         if not Inside_A_Generic then
+            Set_Boolean_Result (N,
+              Is_Library_Level_Entity (Entity (P)));
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
+
       ---------------
       -- Lock_Free --
       ---------------
@@ -3855,7 +3893,7 @@ package body Sem_Attr is
          --  Loop_Entry must create a constant initialized by the evaluated
          --  prefix.
 
-         if Is_Immutably_Limited_Type (Etype (P)) then
+         if Is_Limited_View (Etype (P)) then
             Error_Attr_P ("prefix of attribute % cannot be limited");
          end if;
 
@@ -4965,35 +5003,10 @@ package body Sem_Attr is
          U    : Node_Id;
          Unam : Unit_Name_Type;
 
-         procedure Set_Result (B : Boolean);
-         --  Replace restriction node by static constant False or True,
-         --  depending on the value of B.
-
-         ----------------
-         -- Set_Result --
-         ----------------
-
-         procedure Set_Result (B : Boolean) is
-         begin
-            if B then
-               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-            else
-               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-            end if;
-
-            Set_Is_Static_Expression (N);
-         end Set_Result;
-
-      --  Start of processing for Restriction_Set
-
       begin
          Check_E1;
          Analyze (P);
-
-         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_System then
-            Set_Result (False);
-            Error_Attr_P ("prefix of % attribute must be System");
-         end if;
+         Check_System_Prefix;
 
          --  No_Dependence case
 
@@ -5002,7 +5015,7 @@ package body Sem_Attr is
             U := Explicit_Actual_Parameter (E1);
 
             if not OK_No_Dependence_Unit_Name (U) then
-               Set_Result (False);
+               Set_Boolean_Result (N, False);
                Error_Attr;
             end if;
 
@@ -5013,14 +5026,14 @@ package body Sem_Attr is
                if Designate_Same_Unit (U, No_Dependences.Table (J).Unit)
                  and then No_Dependences.Table (J).Warn = False
                then
-                  Set_Result (True);
+                  Set_Boolean_Result (N, True);
                   return;
                end if;
             end loop;
 
             --  If not in the No_Dependence table, result is False
 
-            Set_Result (False);
+            Set_Boolean_Result (N, False);
 
             --  In this case, we must ensure that the binder will reject any
             --  other unit in the partition that sets No_Dependence for this
@@ -5043,29 +5056,29 @@ package body Sem_Attr is
 
          else
             if Nkind (E1) /= N_Identifier then
-               Set_Result (False);
+               Set_Boolean_Result (N, False);
                Error_Attr ("attribute % requires restriction identifier", E1);
 
             else
                R := Get_Restriction_Id (Process_Restriction_Synonyms (E1));
 
                if R = Not_A_Restriction_Id then
-                  Set_Result (False);
+                  Set_Boolean_Result (N, False);
                   Error_Msg_Node_1 := E1;
                   Error_Attr ("invalid restriction identifier &", E1);
 
                elsif R not in Partition_Boolean_Restrictions then
-                  Set_Result (False);
+                  Set_Boolean_Result (N, False);
                   Error_Msg_Node_1 := E1;
                   Error_Attr
                     ("& is not a boolean partition-wide restriction", E1);
                end if;
 
                if Restriction_Active (R) then
-                  Set_Result (True);
+                  Set_Boolean_Result (N, True);
                else
                   Check_Restriction (R, N);
-                  Set_Result (False);
+                  Set_Boolean_Result (N, False);
                end if;
             end if;
          end if;
@@ -5596,10 +5609,7 @@ package body Sem_Attr is
       begin
          Check_E1;
          Analyze (P);
-
-         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_System then
-            Error_Attr_P ("prefix of % attribute must be System");
-         end if;
+         Check_System_Prefix;
 
          Generate_Reference (RTE (RE_Address), P);
          Analyze_And_Resolve (E1, Any_Integer);
@@ -5617,9 +5627,16 @@ package body Sem_Attr is
                Error_Attr ("address value out of range for % attribute", E1);
             end if;
 
+            --  In most cases the expression is a numeric literal or some other
+            --  address expression, but if it is a declared constant it may be
+            --  of a compatible type that must be left on the node.
+
+            if Is_Entity_Name (E1) then
+               null;
+
             --  Set type to universal integer if negative
 
-            if Val < 0 then
+            elsif Val < 0 then
                Set_Etype (E1, Universal_Integer);
 
             --  Otherwise set type to Unsigned_64 to accomodate max values
@@ -5977,7 +5994,7 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of attribute % must be a record or array");
 
-         elsif Is_Immutably_Limited_Type (P_Type) then
+         elsif Is_Limited_View (P_Type) then
             Error_Attr ("prefix of attribute % cannot be limited", N);
 
          elsif Nkind (E1) /= N_Aggregate then
@@ -6809,8 +6826,8 @@ package body Sem_Attr is
             return;
          end if;
 
-      --  Cases where P is not an object. Cannot do anything if P is
-      --  not the name of an entity.
+      --  Cases where P is not an object. Cannot do anything if P is not the
+      --  name of an entity.
 
       elsif not Is_Entity_Name (P) then
          Check_Expressions;
@@ -6908,10 +6925,9 @@ package body Sem_Attr is
 
       --  We can fold 'Alignment applied to a type if the alignment is known
       --  (as happens for an alignment from an attribute definition clause).
-      --  At this stage, this can happen only for types (e.g. record
-      --  types) for which the size is always non-static. We exclude
-      --  generic types from consideration (since they have bogus
-      --  sizes set within templates).
+      --  At this stage, this can happen only for types (e.g. record types) for
+      --  which the size is always non-static. We exclude generic types from
+      --  consideration (since they have bogus sizes set within templates).
 
       elsif Id = Attribute_Alignment
         and then Is_Type (P_Entity)
@@ -9118,6 +9134,7 @@ package body Sem_Attr is
            Attribute_First_Bit                  |
            Attribute_Input                      |
            Attribute_Last_Bit                   |
+           Attribute_Library_Level              |
            Attribute_Maximum_Alignment          |
            Attribute_Old                        |
            Attribute_Output                     |
@@ -9688,7 +9705,7 @@ package body Sem_Attr is
                --  use of it. If it is an incomplete subtype, use the base type
                --  in any case.
 
-               if From_With_Type (Des_Btyp)
+               if From_Limited_With (Des_Btyp)
                  and then Present (Non_Limited_View (Des_Btyp))
                then
                   Des_Btyp := Non_Limited_View (Des_Btyp);
@@ -10420,6 +10437,23 @@ package body Sem_Attr is
       Analyze_Dimension (N);
       Eval_Attribute (N);
    end Resolve_Attribute;
+
+   ------------------------
+   -- Set_Boolean_Result --
+   ------------------------
+
+   procedure Set_Boolean_Result (N : Node_Id; B : Boolean) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+   begin
+      if B then
+         Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+      else
+         Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+      end if;
+
+      Set_Is_Static_Expression (N);
+   end Set_Boolean_Result;
 
    --------------------------------
    -- Stream_Attribute_Available --

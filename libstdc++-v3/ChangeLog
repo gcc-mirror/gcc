@@ -1,3 +1,80 @@
+2013-10-20  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Remove virtual class _Automaton.
+	* include/bits/regex_automaton.h: Likewise.
+	* include/bits/regex.tcc: Adjust comment for policy changing.
+	* include/bits/regex_executor.h: Update comments of complexity.
+	* include/bits/regex_executor.tcc: Adjust executor choosing
+	policy. Now DFS executor is the default one.
+	* testsuite/util/testsuite_regex.h (regex_match_debug,
+	regex_search_debug): Adjust for policy changing.
+
+2013-10-20  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58800
+	* include/bits/stl_algo.h (__unguarded_partition_pivot): Change
+	__last - 2 to __last - 1.
+	* testsuite/25_algorithms/nth_element/58800.cc: New
+
+2013-10-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/58729
+	* include/tr2/dynamic_bitset (_M_resize, resize): Use input value
+	to set bits; (_M_do_left_shift, _M_do_right_shift, _M_do_to_ulong,
+	_M_do_to_ullong, _M_do_find_first, _M_do_find_next, _M_copy_from_ptr,
+	operator>>): Move long methods outline to...
+	* include/tr2/dynamic_bitset.tcc: New.
+	* include/Makefile.am: Add dynamic_bitset.tcc.
+	* include/Makefile.in: Add dynamic_bitset.tcc.
+	* testsuite/tr2/dynamic_bitset/pr58729.cc: New.
+
+2013-10-18  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_scanner.tcc: (_Scanner<>::_M_scan_normal,
+	_Scanner<>::_M_eat_escape_ecma, _Scanner<>::_M_eat_escape_posix,
+	_Scanner<>::_M_eat_escape_awk): Narrow character before finding in maps.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	New.
+
+2013-10-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):
+	Fix initialization orders in initialization list and add explicit braces
+	for potentially ambiguous(actually not) `else` branch to eliminate
+	warnings.
+	* include/bits/regex_automaton.h (_NFA<>::_NFA): Likewise.
+	* include/bits/regex_compiler.h (_CharMatcher<>::_CharMatcher,
+	_BracketMatcher<>::_BracketMatcher): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_Compiler,
+	_Compiler<>::_M_atom): Likewise.
+	* include/bits/regex_executor.h (_Executor<>::_Executor): Likewise.
+	* include/bits/regex_executor.tcc (_DFSExecutor<>::_M_dfs,
+	_Executor<>::_M_word_boundry): Likewise.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_Scanner,
+	_Scanner<>::_M_eat_class): Likewise.
+	* include/bits/regex.tcc (__regex_algo_impl<>,
+	regex_iterator<>::operator++): Likewise, and remove unused typedef.
+
+2013-10-16  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_token_iterator<>::regex_token_iterator):
+	Add initialization for _M_has_m1.
+	* include/bits/regex.tcc (regex_token_iterator<>::operator=): Add return
+	statment.
+
+2013-10-15  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite/20_util/exchange/1.cc: Add missing function
+	bodies.
+
+2013-10-15  Tim Shen  <timshen91@gmail.com>
+
+	PR libstdc++/58737
+	* include/bits/regex_automaton.h (_Automaton<>::~_Automaton): Fix memory
+	leak by adding it.
+	* include/bits/regex_executor.h (_Executor<>::~_Executor): Likewise.
+
 2013-10-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.

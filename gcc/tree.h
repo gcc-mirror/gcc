@@ -2765,16 +2765,16 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define TREE_OPTIMIZATION_BASE_OPTABS(NODE) \
   (OPTIMIZATION_NODE_CHECK (NODE)->optimization.base_optabs)
 
-/* Return a tree node that encapsulates the current optimization options.  */
-extern tree build_optimization_node (void);
+/* Return a tree node that encapsulates the optimization options in OPTS.  */
+extern tree build_optimization_node (struct gcc_options *opts);
 
 extern void init_tree_optimization_optabs (tree);
 
 #define TREE_TARGET_OPTION(NODE) \
   (&TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
 
-/* Return a tree node that encapsulates the current target options.  */
-extern tree build_target_option_node (void);
+/* Return a tree node that encapsulates the target options in OPTS.  */
+extern tree build_target_option_node (struct gcc_options *opts);
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
@@ -3680,7 +3680,6 @@ extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);
 extern tree build_empty_stmt (location_t);
 extern tree build_omp_clause (location_t, enum omp_clause_code);
-extern tree find_omp_clause (tree, enum omp_clause_code);
 
 extern tree build_vl_exp_stat (enum tree_code, int MEM_STAT_DECL);
 #define build_vl_exp(c, n) build_vl_exp_stat (c, n MEM_STAT_INFO)
@@ -4728,6 +4727,8 @@ extern bool type_in_anonymous_namespace_p (tree);
 extern bool block_may_fallthru (const_tree);
 extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);
+
+extern const char *get_tree_code_name (enum tree_code);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);

@@ -80,7 +80,6 @@ package body Einfo is
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
-   --    Refined_State_Pragma            Node8
    --    Refinement_Constituents         Elist8
    --    Return_Applies_To               Node8
    --    First_Exit_Statement            Node8
@@ -133,6 +132,7 @@ package body Einfo is
    --    String_Literal_Low_Bound        Node15
 
    --    Access_Disp_Table               Elist16
+   --    Body_References                 Elist16
    --    Cloned_Subtype                  Node16
    --    DTC_Entity                      Node16
    --    Entry_Formal                    Node16
@@ -213,7 +213,6 @@ package body Einfo is
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
-   --    Finalizer                       Node24
    --    Related_Expression              Node24
    --    Contract                        Node24
 
@@ -238,6 +237,7 @@ package body Einfo is
    --    Wrapped_Entity                  Node27
 
    --    Extra_Formals                   Node28
+   --    Finalizer                       Node28
    --    Initialization_Statements       Node28
    --    Underlying_Record_View          Node28
 
@@ -437,7 +437,7 @@ package body Einfo is
    --    Referenced                      Flag156
    --    Has_Pragma_Inline               Flag157
    --    Finalize_Storage_Only           Flag158
-   --    From_With_Type                  Flag159
+   --    From_Limited_With               Flag159
    --    Is_Package_Body_Entity          Flag160
 
    --    Has_Qualified_Name              Flag161
@@ -552,9 +552,9 @@ package body Einfo is
 
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
+   --    Has_Visible_Refinement          Flag263
+   --    Has_Body_References             Flag264
 
-   --    (unused)                        Flag263
-   --    (unused)                        Flag264
    --    (unused)                        Flag265
    --    (unused)                        Flag266
    --    (unused)                        Flag267
@@ -734,6 +734,12 @@ package body Einfo is
       return Flag40 (Id);
    end Body_Needed_For_SAL;
 
+   function Body_References (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Elist16 (Id);
+   end Body_References;
+
    function C_Pass_By_Copy (Id : E) return B is
    begin
       pragma Assert (Is_Record_Type (Id));
@@ -854,13 +860,13 @@ package body Einfo is
    function Default_Aspect_Component_Value (Id : E) return N is
    begin
       pragma Assert (Is_Array_Type (Id));
-      return Node19 (Id);
+      return Node19 (Base_Type (Id));
    end Default_Aspect_Component_Value;
 
    function Default_Aspect_Value (Id : E) return N is
    begin
       pragma Assert (Is_Scalar_Type (Id));
-      return Node19 (Id);
+      return Node19 (Base_Type (Id));
    end Default_Aspect_Value;
 
    function Default_Expr_Function (Id : E) return E is
@@ -1068,9 +1074,14 @@ package body Einfo is
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
+        (Ekind_In (Id, E_Entry,
+                       E_Entry_Family,
+                       E_Generic_Package,
+                       E_Package,
+                       E_Package_Body,
+                       E_Subprogram_Body)
+          or else Is_Generic_Subprogram (Id)
+          or else Is_Subprogram (Id));
       return Node24 (Id);
    end Contract;
 
@@ -1108,6 +1119,7 @@ package body Einfo is
       pragma Assert
         (Ekind_In (Id, E_Class_Wide_Type,
                        E_Class_Wide_Subtype,
+                       E_Access_Subprogram_Type,
                        E_Access_Protected_Subprogram_Type,
                        E_Anonymous_Access_Protected_Subprogram_Type,
                        E_Access_Subprogram_Type,
@@ -1180,10 +1192,8 @@ package body Einfo is
 
    function Finalizer (Id : E) return E is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Package
-          or else Ekind (Id) = E_Package_Body);
-      return Node24 (Id);
+      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      return Node28 (Id);
    end Finalizer;
 
    function First_Entity (Id : E) return E is
@@ -1232,10 +1242,10 @@ package body Einfo is
       return Node7 (Id);
    end Freeze_Node;
 
-   function From_With_Type (Id : E) return B is
+   function From_Limited_With (Id : E) return B is
    begin
       return Flag159 (Id);
-   end From_With_Type;
+   end From_Limited_With;
 
    function Full_View (Id : E) return E is
    begin
@@ -1290,6 +1300,12 @@ package body Einfo is
    begin
       return Flag139 (Id);
    end Has_Biased_Representation;
+
+   function Has_Body_References (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag264 (Id);
+   end Has_Body_References;
 
    function Has_Completion (Id : E) return B is
    begin
@@ -1706,6 +1722,12 @@ package body Einfo is
         (Ekind_In (Id, E_Variable, E_Constant, E_Loop_Parameter));
       return Flag215 (Id);
    end Has_Up_Level_Access;
+
+   function Has_Visible_Refinement (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag263 (Id);
+   end Has_Visible_Refinement;
 
    function Has_Volatile_Components (Id : E) return B is
    begin
@@ -2656,12 +2678,6 @@ package body Einfo is
       return Node10 (Id);
    end Refined_State;
 
-   function Refined_State_Pragma (Id : E) return N is
-   begin
-      pragma Assert (Ekind (Id) = E_Package_Body);
-      return Node8 (Id);
-   end Refined_State_Pragma;
-
    function Refinement_Constituents (Id : E) return L is
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
@@ -3333,6 +3349,12 @@ package body Einfo is
       Set_Flag40 (Id, V);
    end Set_Body_Needed_For_SAL;
 
+   procedure Set_Body_References (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Elist16 (Id, V);
+   end Set_Body_References;
+
    procedure Set_C_Pass_By_Copy (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Record_Type (Id) and then Is_Base_Type (Id));
@@ -3453,13 +3475,13 @@ package body Einfo is
 
    procedure Set_Default_Aspect_Component_Value (Id : E; V : E) is
    begin
-      pragma Assert (Is_Array_Type (Id));
+      pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
       Set_Node19 (Id, V);
    end Set_Default_Aspect_Component_Value;
 
    procedure Set_Default_Aspect_Value (Id : E; V : E) is
    begin
-      pragma Assert (Is_Scalar_Type (Id));
+      pragma Assert (Is_Scalar_Type (Id) and then Is_Base_Type (Id));
       Set_Node19 (Id, V);
    end Set_Default_Aspect_Value;
 
@@ -3666,9 +3688,15 @@ package body Einfo is
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Subprogram_Body, E_Void)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
+        (Ekind_In (Id, E_Entry,
+                       E_Entry_Family,
+                       E_Generic_Package,
+                       E_Package,
+                       E_Package_Body,
+                       E_Subprogram_Body,
+                       E_Void)
+          or else Is_Generic_Subprogram (Id)
+          or else Is_Subprogram (Id));
       Set_Node24 (Id, V);
    end Set_Contract;
 
@@ -3779,10 +3807,8 @@ package body Einfo is
 
    procedure Set_Finalizer (Id : E; V : E) is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Package
-          or else Ekind (Id) = E_Package_Body);
-      Set_Node24 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Package, E_Package_Body));
+      Set_Node28 (Id, V);
    end Set_Finalizer;
 
    procedure Set_First_Entity (Id : E; V : E) is
@@ -3837,13 +3863,11 @@ package body Einfo is
       Set_Node7 (Id, V);
    end Set_Freeze_Node;
 
-   procedure Set_From_With_Type (Id : E; V : B := True) is
+   procedure Set_From_Limited_With (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Is_Type (Id)
-           or else Ekind (Id) = E_Package);
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Package);
       Set_Flag159 (Id, V);
-   end Set_From_With_Type;
+   end Set_From_Limited_With;
 
    procedure Set_Full_View (Id : E; V : E) is
    begin
@@ -3901,6 +3925,12 @@ package body Einfo is
         ((V = False) or else (Is_Discrete_Type (Id) or else Is_Object (Id)));
       Set_Flag139 (Id, V);
    end Set_Has_Biased_Representation;
+
+   procedure Set_Has_Body_References (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag264 (Id, V);
+   end Set_Has_Body_References;
 
    procedure Set_Has_Completion (Id : E; V : B := True) is
    begin
@@ -4329,6 +4359,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag72 (Id, V);
    end Set_Has_Unknown_Discriminants;
+
+   procedure Set_Has_Visible_Refinement (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag263 (Id, V);
+   end Set_Has_Visible_Refinement;
 
    procedure Set_Has_Volatile_Components (Id : E; V : B := True) is
    begin
@@ -5328,12 +5364,6 @@ package body Einfo is
       Set_Node10 (Id, V);
    end Set_Refined_State;
 
-   procedure Set_Refined_State_Pragma (Id : E; V : N) is
-   begin
-      pragma Assert (Ekind (Id) = E_Package_Body);
-      Set_Node8 (Id, V);
-   end Set_Refined_State_Pragma;
-
    procedure Set_Refinement_Constituents (Id : E; V : L) is
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
@@ -6293,15 +6323,19 @@ package body Einfo is
 
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
       Is_CDG  : constant Boolean :=
-                  Id = Pragma_Depends         or else
-                  Id = Pragma_Global          or else
-                  Id = Pragma_Refined_Depends or else
-                  Id = Pragma_Refined_Global;
+                  Id = Pragma_Abstract_State    or else
+                  Id = Pragma_Depends           or else
+                  Id = Pragma_Global            or else
+                  Id = Pragma_Initial_Condition or else
+                  Id = Pragma_Initializes       or else
+                  Id = Pragma_Refined_Depends   or else
+                  Id = Pragma_Refined_Global    or else
+                  Id = Pragma_Refined_State;
       Is_CTC : constant Boolean :=
-                  Id = Pragma_Contract_Cases  or else
+                  Id = Pragma_Contract_Cases    or else
                   Id = Pragma_Test_Case;
       Is_PPC : constant Boolean :=
-                  Id = Pragma_Precondition     or else
+                  Id = Pragma_Precondition      or else
                   Id = Pragma_Postcondition;
 
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
@@ -6462,6 +6496,29 @@ package body Einfo is
    end Has_Interrupt_Handler;
 
    -----------------------------
+   -- Has_Non_Null_Refinement --
+   -----------------------------
+
+   function Has_Non_Null_Refinement (Id : E) return B is
+   begin
+      --  "Refinement" is a concept applicable only to abstract states
+
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      if Has_Visible_Refinement (Id) then
+         pragma Assert (Present (Refinement_Constituents (Id)));
+
+         --  For a refinement to be non-null, the first constituent must be
+         --  anything other than null.
+
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
+      end if;
+
+      return False;
+   end Has_Non_Null_Refinement;
+
+   -----------------------------
    -- Has_Null_Abstract_State --
    -----------------------------
 
@@ -6473,6 +6530,29 @@ package body Einfo is
         Present (Abstract_States (Id))
           and then Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
    end Has_Null_Abstract_State;
+
+   -------------------------
+   -- Has_Null_Refinement --
+   -------------------------
+
+   function Has_Null_Refinement (Id : E) return B is
+   begin
+      --  "Refinement" is a concept applicable only to abstract states
+
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      if Has_Visible_Refinement (Id) then
+         pragma Assert (Present (Refinement_Constituents (Id)));
+
+         --  For a refinement to be null, the state's sole constituent must be
+         --  a null.
+
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
+      end if;
+
+      return False;
+   end Has_Null_Refinement;
 
    --------------------
    -- Has_Unmodified --
@@ -7817,7 +7897,7 @@ package body Einfo is
          --  view then we return the Underlying_Type of its non-limited
          --  view.
 
-         elsif From_With_Type (Id)
+         elsif From_Limited_With (Id)
            and then Present (Non_Limited_View (Id))
          then
             return Underlying_Type (Non_Limited_View (Id));
@@ -7920,13 +8000,14 @@ package body Einfo is
       W ("Entry_Accepted",                  Flag152 (Id));
       W ("Can_Use_Internal_Rep",            Flag229 (Id));
       W ("Finalize_Storage_Only",           Flag158 (Id));
-      W ("From_With_Type",                  Flag159 (Id));
+      W ("From_Limited_With",               Flag159 (Id));
       W ("Has_Aliased_Components",          Flag135 (Id));
       W ("Has_Alignment_Clause",            Flag46  (Id));
       W ("Has_All_Calls_Remote",            Flag79  (Id));
       W ("Has_Anonymous_Master",            Flag253 (Id));
       W ("Has_Atomic_Components",           Flag86  (Id));
       W ("Has_Biased_Representation",       Flag139 (Id));
+      W ("Has_Body_References",             Flag264 (Id));
       W ("Has_Completion",                  Flag26  (Id));
       W ("Has_Completion_In_Body",          Flag71  (Id));
       W ("Has_Complex_Representation",      Flag140 (Id));
@@ -8000,6 +8081,7 @@ package body Einfo is
       W ("Has_Unchecked_Union",             Flag123 (Id));
       W ("Has_Unknown_Discriminants",       Flag72  (Id));
       W ("Has_Up_Level_Access",             Flag215 (Id));
+      W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
@@ -8339,9 +8421,6 @@ package body Einfo is
          when E_Procedure                                  =>
             Write_Str ("Postcondition_Proc");
 
-         when E_Package_Body                               =>
-            Write_Str ("Refined_State_Pragma");
-
          when E_Abstract_State                             =>
             Write_Str ("Refinement_Constituents");
 
@@ -8621,6 +8700,9 @@ package body Einfo is
               E_Record_Type_With_Private                   =>
             Write_Str ("Access_Disp_Table");
 
+         when E_Abstract_State                             =>
+            Write_Str ("Body_References");
+
          when E_Record_Subtype                             |
               E_Class_Wide_Subtype                         =>
             Write_Str ("Cloned_Subtype");
@@ -8709,7 +8791,7 @@ package body Einfo is
             Write_Str ("Non_Limited_View");
 
          when E_Incomplete_Subtype                         =>
-            if From_With_Type (Id) then
+            if From_Limited_With (Id) then
                Write_Str ("Non_Limited_View");
             end if;
 
@@ -9055,10 +9137,6 @@ package body Einfo is
    procedure Write_Field24_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Package                                    |
-              E_Package_Body                               =>
-            Write_Str ("Finalizer");
-
          when E_Constant                                   |
               E_Variable                                   |
               Type_Kind                                    =>
@@ -9066,9 +9144,12 @@ package body Einfo is
 
          when E_Entry                                      |
               E_Entry_Family                               |
+              E_Generic_Package                            |
+              E_Package                                    |
+              E_Package_Body                               |
               E_Subprogram_Body                            |
-              Subprogram_Kind                              |
-              Generic_Subprogram_Kind                      =>
+              Generic_Subprogram_Kind                      |
+              Subprogram_Kind                              =>
             Write_Str ("Contract");
 
          when others                                       =>
@@ -9202,7 +9283,12 @@ package body Einfo is
               E_Subprogram_Type                            =>
             Write_Str ("Extra_Formals");
 
-         when E_Constant | E_Variable =>
+         when E_Package                                    |
+              E_Package_Body                               =>
+            Write_Str ("Finalizer");
+
+         when E_Constant                                   |
+              E_Variable                                   =>
             Write_Str ("Initialization_Statements");
 
          when E_Record_Type =>
