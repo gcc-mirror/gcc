@@ -9504,8 +9504,8 @@ vrp_finalize (void)
 		  }
 		else
 		  set_range_info (name,
-				  vr_value[i]->max + 1,
-				  vr_value[i]->min - 1);
+				  max_wide_int (vr_value[i]->max) + 1,
+				  max_wide_int (vr_value[i]->min) - 1);
 	      }
 	  }
       }
