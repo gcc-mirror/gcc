@@ -1,3 +1,13 @@
+2013-10-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix DECL_BIT_FIELD depencency on flag_strict_volatile_bitfields
+	and get_inner_reference returning different pmode for non-volatile
+	bit-field members dependent on flag_strict_volatile_bitfields.
+	* stor-layout.c (layout_decl): Remove special handling of
+	flag_strict_volatile_bitfields.
+	* expr.c (get_inner_reference): Don't use DECL_BIT_FIELD
+	if flag_strict_volatile_bitfields > 0 and TREE_THIS_VOLATILE.
+
 2013-10-21  Paulo Matos  <pmatos@broadcom.com>
 
 	* ipa-inline.c (edge_badness): Cap edge->count at max_count for badness
