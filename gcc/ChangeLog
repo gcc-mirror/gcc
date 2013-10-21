@@ -1,3 +1,9 @@
+2013-10-21  Ian Lance Taylor  <iant@google.com>
+
+	* doc/invoke.texi (Optimize Options): For -fno-toplevel-reorder,
+	don't imply that attributes can solve all problems.
+	(Directory Options): Fix typo.
+
 2013-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (cortexa9_extra_costs): Update mult costs for
