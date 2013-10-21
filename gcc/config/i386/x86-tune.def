@@ -18,167 +18,30 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* X86_TUNE_USE_LEAVE: Use "leave" instruction in epilogues where it fits.  */
-DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave", 
-	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
+/* Tuning for a given CPU XXXX consists of:
+    - adding new CPU into:
+	- adding PROCESSOR_XXX to processor_type (in i386.h)
+	- possibly adding XXX into CPU attribute in i386.md
+	- adding XXX to processor_alias_table (in i386.c)
+    - introducing ix86_XXX_cost in i386.c
+	- Stringop generation table can be build based on test_stringop
+	- script (once rest of tuning is complete)
+    - designing a scheduler model in
+	- XXXX.md file
+	- Updating ix86_issue_rate and ix86_adjust_cost in i386.md
+	- possibly updating ia32_multipass_dfa_lookahead, ix86_sched_reorder
+	  and ix86_sched_init_global if those tricks are needed.
+    - Tunning the flags bellow. Those are split into sections and each
+      section is very roughly ordered by importance.  */
 
-/* X86_TUNE_PUSH_MEMORY: Enable generation of "push mem" instructions.
-   Some chips, like 486 and Pentium works faster with separate load
-   and push instructions.  */
-DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory", 
-          m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE 
-          | m_GENERIC)
+/*****************************************************************************/
+/* Scheduling flags. 					                     */
+/*****************************************************************************/
 
-/* X86_TUNE_ZERO_EXTEND_WITH_AND: Use AND instruction instead
-   of mozbl/movwl.  */
-DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and",  m_486 | m_PENT)
-
-/* X86_TUNE_UNROLL_STRLEN: Produce (quite lame) unrolled sequence for
-   inline strlen.  This affects only -minline-all-stringops mode. By
-   default we always dispatch to a library since our internal strlen
-   is bad.  */
-DEF_TUNE (X86_TUNE_UNROLL_STRLEN, "unroll_strlen",
-	 m_486 | m_PENT | m_PPRO | m_ATOM | m_SLM | m_CORE_ALL | m_K6
-	 | m_AMD_MULTIPLE | m_GENERIC)
-
-/* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
-   on simulation result. But after P4 was made, no performance benefit
-   was observed with branch hints.  It also increases the code size.
-   As a result, icc never generates branch hints.  */
-DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", 0)
-
-/* X86_TUNE_DOUBLE_WITH_ADD: Use add instead of sal to double value in
-   an integer register.  */
-DEF_TUNE (X86_TUNE_DOUBLE_WITH_ADD, "double_with_add", ~m_386)
-
-/* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
-DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
-          | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
-
-/* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
-   partial dependencies.  */
-DEF_TUNE (X86_TUNE_MOVX, "movx",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE 
-          | m_AMD_MULTIPLE  | m_GENERIC)
-
-/* X86_TUNE_PARTIAL_REG_STALL: Pentium pro, unlike later chips, handled
-   use of partial registers by renaming.  This improved performance of 16bit
-   code where upper halves of registers are not used.  It also leads to
-   an penalty whenever a 16bit store is followed by 32bit use.  This flag
-   disables production of such sequences in common cases.
-   See also X86_TUNE_HIMODE_MATH.
-
-   In current implementation the partial register stalls are not eliminated
-   very well - they can be introduced via subregs synthesized by combine
-   and can happen in caller/callee saving sequences.  */
-DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall", m_PPRO)
-
-/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of of flags
-   set by instructions affecting just some flags (in particular shifts).
-   This is because Core2 resolves dependencies on whole flags register
-   and such sequences introduce false dependency on previous instruction
-   setting full flags.
-
-   The flags does not affect generation of INC and DEC that is controlled
-   by X86_TUNE_USE_INCDEC.
-
-   This flag may be dropped from generic once core2-corei5 machines are
-   rare enough.  */
-DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
-          m_CORE2 | m_GENERIC)
-
-/* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
-   on 16-bit immediate moves into memory on Core2 and Corei7.  */
-DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
-
-/* X86_TUNE_USE_HIMODE_FIOP: Enables use of x87 instructions with 16bit
-   integer operand.
-   FIXME: Why this is disabled for modern chips?  */
-DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop", 
-          m_386 | m_486 | m_K6_GEODE)
-
-/* X86_TUNE_USE_SIMODE_FIOP: Enables use of x87 instructions with 32bit
-   integer operand.  */
-DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
-          ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM 
-            | m_SLM | m_AMD_MULTIPLE | m_GENERIC))
-
-/* X86_TUNE_USE_MOV0: Use "mov $0, reg" instead of "xor reg, reg" to clear
-   integer register.  */
-DEF_TUNE (X86_TUNE_USE_MOV0, "use_mov0", m_K6)
-
-/* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
-DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd", ~(m_PENT | m_ATOM | m_SLM | m_K6))
-
-/* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
-DEF_TUNE (X86_TUNE_USE_XCHGB, "use_xchgb", m_PENT4)
-
-/* X86_TUNE_SPLIT_LONG_MOVES: Avoid instructions moving immediates
-   directly to memory.  */
-DEF_TUNE (X86_TUNE_SPLIT_LONG_MOVES, "split_long_moves", m_PPRO)
-
-/* X86_TUNE_READ_MODIFY_WRITE: Enable use of read modify write instructions
-   such as "add $1, mem".  */
-DEF_TUNE (X86_TUNE_READ_MODIFY_WRITE, "read_modify_write", ~m_PENT)
-
-/* X86_TUNE_READ_MODIFY: Enable use of read-modify instructions such
-   as "add mem, reg".  */
-DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_PPRO))
-
-/* X86_TUNE_PROMOTE_QIMODE: When it is cheap, turn 8bit arithmetic to
-   corresponding 32bit arithmetic.  */
-DEF_TUNE (X86_TUNE_PROMOTE_QIMODE, "promote_qimode",
-          m_386 | m_486 | m_PENT | m_CORE_ALL | m_ATOM | m_SLM 
-          | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
-
-/* X86_TUNE_FAST_PREFIX: Enable demoting some 32bit or 64bit arithmetic
-   into 16bit/8bit when resulting sequence is shorter.  For example
-   for "and $-65536, reg" to 16bit store of 0.  */
-DEF_TUNE (X86_TUNE_FAST_PREFIX, "fast_prefix", ~(m_386 | m_486 | m_PENT))
-
-/* X86_TUNE_SINGLE_STRINGOP: Enable use of single string operations, such
-   as MOVS and STOS (without a REP prefix) to move/set sequences of bytes.  */
-DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
-
-/* X86_TUNE_QIMODE_MATH: Enable use of 8bit arithmetic.  */
-DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0)
-
-/* X86_TUNE_HIMODE_MATH: Enable use of 16bit arithmetic.
-   On PPro this flag is meant to avoid partial register stalls.  */
-DEF_TUNE (X86_TUNE_HIMODE_MATH, "himode_math", ~m_PPRO)
-
-/* X86_TUNE_PROMOTE_QI_REGS: This enables generic code that promotes all 8bit
-   arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
-   is usually used for RISC targets.  */
-DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0)
-
-/* X86_TUNE_PROMOTE_HI_REGS: Same, but for 16bit artihmetic.  Again we avoid
-   partial register stalls on PentiumPro targets. */
-DEF_TUNE (X86_TUNE_PROMOTE_HI_REGS, "promote_hi_regs", m_PPRO)
-
-/* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
-   over esp addition.  */
-DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop", m_386 | m_486 | m_PENT | m_PPRO)
-
-/* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
-   over esp addition.  */
-DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT)
-
-/* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
-   over esp subtraction.  */
-DEF_TUNE (X86_TUNE_SINGLE_PUSH, "single_push", m_386 | m_486 | m_PENT 
-          | m_K6_GEODE)
-
-/* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
-   over esp subtraction.  */
-DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_K6_GEODE)
-
-/* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
-   for DFmode copies */
-DEF_TUNE (X86_TUNE_INTEGER_DFMODE_MOVES, "integer_dfmode_moves",
-          ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM 
-          | m_GEODE | m_AMD_MULTIPLE | m_GENERIC))
+/* X86_TUNE_SCHEDULE: Enable scheduling.  */
+DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
+          m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE 
+          | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
    on modern chips.  Preffer stores affecting whole integer register
@@ -198,50 +61,71 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMDFAM10 
           | m_BDVER | m_GENERIC)
 
-/* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
-   of a sequence loading registers by parts.  */
-DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-          m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM | m_GENERIC)
-
-/* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
-   of a sequence loading registers by parts.  */
-DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-          m_COREI7 | m_BDVER | m_SLM | m_GENERIC)
-
-/* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if true, unaligned loads are
-   split.  */
-DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal", 
-          ~(m_COREI7 | m_GENERIC))
-
-/* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if true, unaligned loads are
-   split.  */
-DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_load_optimal", 
-          ~(m_COREI7 | m_BDVER | m_GENERIC))
-
-/* Use packed single precision instructions where posisble.  I.e. movups instead
-   of movupd.  */
-DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal",
-          m_BDVER)
-
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
    maintain just lower part of scalar values in proper format leaving the
    upper part undefined.  */
 DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
 
-/* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores.   */
-DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
-	  m_AMD_MULTIPLE | m_CORE_ALL | m_GENERIC)
+/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of of flags
+   set by instructions affecting just some flags (in particular shifts).
+   This is because Core2 resolves dependencies on whole flags register
+   and such sequences introduce false dependency on previous instruction
+   setting full flags.
 
-/* X86_TUNE_SSE_LOAD0_BY_PXOR: Always use pxor to load0 as opposed to
-   xorps/xorpd and other variants.  */
-DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
-	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_GENERIC)
+   The flags does not affect generation of INC and DEC that is controlled
+   by X86_TUNE_USE_INCDEC.
+
+   This flag may be dropped from generic once core2-corei5 machines are
+   rare enough.  */
+DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
+          m_CORE2 | m_GENERIC)
+
+/* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
+   partial dependencies.  */
+DEF_TUNE (X86_TUNE_MOVX, "movx",
+          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE 
+          | m_AMD_MULTIPLE  | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
 DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
           m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
+
+/* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
+   with a subsequent conditional jump instruction into a single
+   compare-and-branch uop.
+   FIXME: revisit for generic.  */
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch", m_BDVER | m_CORE_ALL)
+
+/* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
+   during reassociation of integer computation.  */
+DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel",
+          m_ATOM)
+
+/* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
+   during reassociation of fp computation.  */
+DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
+          m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2 | m_GENERIC)
+
+/*****************************************************************************/
+/* Function prologue, epilogue and function calling sequences.               */
+/*****************************************************************************/
+
+/* X86_TUNE_ACCUMULATE_OUTGOING_ARGS: Allocate stack space for outgoing
+   arguments in prologue/epilogue instead of separately for each call
+   by push/pop instructions.
+   This increase code size by about 5% in 32bit mode, less so in 64bit mode
+   because parameters are passed in registers.  It is considerable
+   win for targets without stack engine that prevents multple push operations
+   to happen in parallel.
+
+   FIXME: the flags is incorrectly enabled for amdfam10, Bulldozer,
+   Bobcat and Generic.  This is because disabling it causes large
+   regression on mgrid due to IRA limitation leading to unecessary
+   use of the frame pointer in 32bit mode.  */
+DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args", 
+	  m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_PROLOGUE_USING_MOVE: Do not use push/pop in prologues that are
    considered on critical path.  */
@@ -253,12 +137,180 @@ DEF_TUNE (X86_TUNE_PROLOGUE_USING_MOVE, "prologue_using_move",
 DEF_TUNE (X86_TUNE_EPILOGUE_USING_MOVE, "epilogue_using_move",
           m_PPRO | m_ATHLON_K8)	
 
-/* X86_TUNE_SHIFT1: Enables use of short encoding of "sal reg" instead of
-   longer "sal $1, reg".  */
-DEF_TUNE (X86_TUNE_SHIFT1, "shift1", ~m_486)
+/* X86_TUNE_USE_LEAVE: Use "leave" instruction in epilogues where it fits.  */
+DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave", 
+	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
+
+/* X86_TUNE_PUSH_MEMORY: Enable generation of "push mem" instructions.
+   Some chips, like 486 and Pentium works faster with separate load
+   and push instructions.  */
+DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory", 
+          m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE 
+          | m_GENERIC)
+
+/* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
+   over esp subtraction.  */
+DEF_TUNE (X86_TUNE_SINGLE_PUSH, "single_push", m_386 | m_486 | m_PENT 
+          | m_K6_GEODE)
+
+/* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
+   over esp subtraction.  */
+DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_K6_GEODE)
+
+/* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
+   over esp addition.  */
+DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop", m_386 | m_486 | m_PENT | m_PPRO)
+
+/* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
+   over esp addition.  */
+DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT)
+
+/*****************************************************************************/
+/* Branch predictor tuning  		                                     */
+/*****************************************************************************/
+
+/* X86_TUNE_PAD_SHORT_FUNCTION: Make every function to be at least 4
+   instructions long.  */
+DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function", m_ATOM)
+
+/* X86_TUNE_PAD_RETURNS: Place NOP before every RET that is a destination
+   of conditional jump or directly preceded by other jump instruction.
+   This is important for AND K8-AMDFAM10 because the branch prediction
+   architecture expect at most one jump per 2 byte window.  Failing to
+   pad returns leads to misaligned return stack.  */
+DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
+          m_ATHLON_K8 | m_AMDFAM10 | m_GENERIC)
+
+/* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
+   than 4 branch instructions in the 16 byte window.  */
+DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
+          m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_ATHLON_K8 | m_AMDFAM10)
+
+/*****************************************************************************/
+/* Integer instruction selection tuning                                      */
+/*****************************************************************************/
+
+/* X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL: Enable software prefetching
+   at -O3.  For the moment, the prefetching seems badly tuned for Intel
+   chips.  */
+DEF_TUNE (X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL, "software_prefetching_beneficial",
+          m_K6_GEODE | m_AMD_MULTIPLE)
+
+/* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
+   on 16-bit immediate moves into memory on Core2 and Corei7.  */
+DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
+
+/* X86_TUNE_READ_MODIFY: Enable use of read-modify instructions such
+   as "add mem, reg".  */
+DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_PPRO))
+
+/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
+DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
+          ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC))
+
+/* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
+   for DFmode copies */
+DEF_TUNE (X86_TUNE_INTEGER_DFMODE_MOVES, "integer_dfmode_moves",
+          ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM 
+          | m_GEODE | m_AMD_MULTIPLE | m_GENERIC))
+
+/* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
+   will impact LEA instruction selection. */
+DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu", m_ATOM | m_SLM)
+
+/* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
+   vector path on AMD machines. 
+   FIXME: Do we need to enable this for core? */
+DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem",
+          m_K8 | m_AMDFAM10)
+
+/* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
+   machines. 
+   FIXME: Do we need to enable this for core? */
+DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
+          m_K8 | m_AMDFAM10)
+
+/* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
+   a conditional move.  */
+DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
+	  m_ATOM | m_SLM)
+
+/* X86_TUNE_SINGLE_STRINGOP: Enable use of single string operations, such
+   as MOVS and STOS (without a REP prefix) to move/set sequences of bytes.  */
+DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
+
+/* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
+DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
+          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
+          | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
+
+/* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
+DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd", ~(m_PENT | m_ATOM | m_SLM | m_K6))
+
+/* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
+DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
+          m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
+
+/*****************************************************************************/
+/* 387 instruction selection tuning                                          */
+/*****************************************************************************/
+
+/* X86_TUNE_USE_HIMODE_FIOP: Enables use of x87 instructions with 16bit
+   integer operand.
+   FIXME: Why this is disabled for modern chips?  */
+DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop", 
+          m_386 | m_486 | m_K6_GEODE)
+
+/* X86_TUNE_USE_SIMODE_FIOP: Enables use of x87 instructions with 32bit
+   integer operand.  */
+DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
+          ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM 
+            | m_SLM | m_AMD_MULTIPLE | m_GENERIC))
 
 /* X86_TUNE_USE_FFREEP: Use freep instruction instead of fstp.  */
 DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep", m_AMD_MULTIPLE)
+
+/* X86_TUNE_EXT_80387_CONSTANTS: Use fancy 80387 constants, such as PI.  */
+DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
+          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
+          | m_ATHLON_K8 | m_GENERIC)
+
+/*****************************************************************************/
+/* SSE instruction selection tuning                                          */
+/*****************************************************************************/
+
+/* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
+   instructions.  */
+DEF_TUNE (X86_TUNE_VECTORIZE_DOUBLE, "vectorize_double", ~m_ATOM)
+
+/* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
+   regs instead of memory.  */
+DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
+          m_CORE_ALL)
+
+/* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
+   of a sequence loading registers by parts.  */
+DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
+          m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM | m_GENERIC)
+
+/* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
+   of a sequence loading registers by parts.  */
+DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
+          m_COREI7 | m_BDVER | m_SLM | m_GENERIC)
+
+/* Use packed single precision instructions where posisble.  I.e. movups instead
+   of movupd.  */
+DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal",
+          m_BDVER)
+
+/* X86_TUNE_SSE_TYPELESS_STORES: Always movaps/movups for 128bit stores.   */
+DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
+	  m_AMD_MULTIPLE | m_CORE_ALL | m_GENERIC)
+
+/* X86_TUNE_SSE_LOAD0_BY_PXOR: Always use pxor to load0 as opposed to
+   xorps/xorpd and other variants.  */
+DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BDVER | m_BTVER | m_GENERIC)
 
 /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC: Enable moves in from integer
    to SSE registers.  If disabled, the moves will be done by storing
@@ -278,75 +330,10 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_FROM_VEC, "inter_unit_moves_from_vec",
 DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
           ~(m_AMDFAM10 | m_BDVER))
 
-/* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
-   than 4 branch instructions in the 16 byte window.  */
-DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
-          m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_ATHLON_K8 | m_AMDFAM10)
-
-/* X86_TUNE_SCHEDULE: Enable scheduling.  */
-DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
-          m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE 
-          | m_AMD_MULTIPLE | m_GENERIC)
-
-/* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
-DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
-          m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
-
-/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
-DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
-          ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC))
-
-/* X86_TUNE_PAD_RETURNS: Place NOP before every RET that is a destination
-   of conditional jump or directly preceded by other jump instruction.
-   This is important for AND K8-AMDFAM10 because the branch prediction
-   architecture expect at most one jump per 2 byte window.  Failing to
-   pad returns leads to misaligned return stack.  */
-DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
-          m_ATHLON_K8 | m_AMDFAM10 | m_GENERIC)
-
-/* X86_TUNE_PAD_SHORT_FUNCTION: Make every function to be at least 4
-   instructions long.  */
-DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function", m_ATOM)
-
-/* X86_TUNE_EXT_80387_CONSTANTS: Use fancy 80387 constants, such as PI.  */
-DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
-          | m_ATHLON_K8 | m_GENERIC)
-
-/* X86_TUNE_AVOID_VECTOR_DECODE: Enable splitters that avoid vector decoded
-   forms of instructions on K8 targets.  */
-DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
-          m_K8)
-
-/* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
-   and SImode multiply, but 386 and 486 do HImode multiply faster.  */
-DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
-          ~(m_386 | m_486))
-
-/* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
-   vector path on AMD machines. 
-   FIXME: Do we need to enable this for core? */
-DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem",
-          m_K8 | m_AMDFAM10)
-
-/* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
-   machines. 
-   FIXME: Do we need to enable this for core? */
-DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
-          m_K8 | m_AMDFAM10)
-
-/* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
-   than a MOV.  */
-DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT)
-
-/* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
-   but one byte longer.  */
-DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT)
-
-/* X86_TUNE_NOT_VECTORMODE: On AMD K6, NOT is vector decoded with memory
-   operand that cannot be represented using a modRM byte.  The XOR
-   replacement is long decoded, so this split helps here as well.  */
-DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
+/* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
+   fp converts to destination register.  */
+DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts",
+          m_SLM)
 
 /* X86_TUNE_USE_VECTOR_FP_CONVERTS: Prefer vector packed SSE conversion
    from FP to FP.  This form of instructions avoids partial write to the
@@ -358,72 +345,134 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_FP_CONVERTS, "use_vector_fp_converts",
    from integer to FP. */
 DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 
-/* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
-   with a subsequent conditional jump instruction into a single
-   compare-and-branch uop.
-   FIXME: revisit for generic.  */
-DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch", m_BDVER | m_CORE_ALL)
+/*****************************************************************************/
+/* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
+/*****************************************************************************/
 
-/* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
-   will impact LEA instruction selection. */
-DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu", m_ATOM | m_SLM)
+/* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if true, unaligned loads are
+   split.  */
+DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal", 
+          ~(m_COREI7 | m_GENERIC))
 
-/* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
-   instructions.  */
-DEF_TUNE (X86_TUNE_VECTORIZE_DOUBLE, "vectorize_double", ~m_ATOM)
-
-/* X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL: Enable software prefetching
-   at -O3.  For the moment, the prefetching seems badly tuned for Intel
-   chips.  */
-DEF_TUNE (X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL, "software_prefetching_beneficial",
-          m_K6_GEODE | m_AMD_MULTIPLE)
+/* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if true, unaligned loads are
+   split.  */
+DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_load_optimal", 
+          ~(m_COREI7 | m_BDVER | m_GENERIC))
 
 /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
    the auto-vectorizer.  */
 DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2)
 
-/* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
-   during reassociation of integer computation.  */
-DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel",
-          m_ATOM)
+/*****************************************************************************/
+/* Historical relics: tuning flags that helps a specific old CPU designs     */
+/*****************************************************************************/
 
-/* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
-   during reassociation of fp computation.  */
-DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
-          m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2 | m_GENERIC)
-
-/* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
-   regs instead of memory.  */
-DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
-          m_CORE_ALL)
-
-/* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
-   a conditional move.  */
-DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
-	  m_ATOM | m_SLM)
-
-/* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
-   fp converts to destination register.  */
-DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts",
-          m_SLM)
-
-/* X86_TUNE_ACCUMULATE_OUTGOING_ARGS: Allocate stack space for outgoing
-   arguments in prologue/epilogue instead of separately for each call
-   by push/pop instructions.
-   This increase code size by about 5% in 32bit mode, less so in 64bit mode
-   because parameters are passed in registers.  It is considerable
-   win for targets without stack engine that prevents multple push operations
-   to happen in parallel.
-
-   FIXME: the flags is incorrectly enabled for amdfam10, Bulldozer,
-   Bobcat and Generic.  This is because disabling it causes large
-   regression on mgrid due to IRA limitation leading to unecessary
-   use of the frame pointer in 32bit mode.  */
-DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args", 
-	  m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
+/* X86_TUNE_DOUBLE_WITH_ADD: Use add instead of sal to double value in
+   an integer register.  */
+DEF_TUNE (X86_TUNE_DOUBLE_WITH_ADD, "double_with_add", ~m_386)
 
 /* X86_TUNE_ALWAYS_FANCY_MATH_387: controls use of fancy 387 operations,
    such as fsqrt, fprem, fsin, fcos, fsincos etc.
    Should be enabled for all targets that always has coprocesor.  */
 DEF_TUNE (X86_TUNE_ALWAYS_FANCY_MATH_387, "always_fancy_math_387", 
           ~(m_386 | m_486))
+
+/* X86_TUNE_UNROLL_STRLEN: Produce (quite lame) unrolled sequence for
+   inline strlen.  This affects only -minline-all-stringops mode. By
+   default we always dispatch to a library since our internal strlen
+   is bad.  */
+DEF_TUNE (X86_TUNE_UNROLL_STRLEN, "unroll_strlen", ~m_386)
+
+/* X86_TUNE_SHIFT1: Enables use of short encoding of "sal reg" instead of
+   longer "sal $1, reg".  */
+DEF_TUNE (X86_TUNE_SHIFT1, "shift1", ~m_486)
+
+/* X86_TUNE_ZERO_EXTEND_WITH_AND: Use AND instruction instead
+   of mozbl/movwl.  */
+DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and",  m_486 | m_PENT)
+
+/* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
+   and SImode multiply, but 386 and 486 do HImode multiply faster.  */
+DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
+          ~(m_386 | m_486))
+
+/* X86_TUNE_FAST_PREFIX: Enable demoting some 32bit or 64bit arithmetic
+   into 16bit/8bit when resulting sequence is shorter.  For example
+   for "and $-65536, reg" to 16bit store of 0.  */
+DEF_TUNE (X86_TUNE_FAST_PREFIX, "fast_prefix", ~(m_386 | m_486 | m_PENT))
+
+/* X86_TUNE_READ_MODIFY_WRITE: Enable use of read modify write instructions
+   such as "add $1, mem".  */
+DEF_TUNE (X86_TUNE_READ_MODIFY_WRITE, "read_modify_write", ~m_PENT)
+
+/* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
+   than a MOV.  */
+DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT)
+
+/* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
+   but one byte longer.  */
+DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT)
+
+/* X86_TUNE_PARTIAL_REG_STALL: Pentium pro, unlike later chips, handled
+   use of partial registers by renaming.  This improved performance of 16bit
+   code where upper halves of registers are not used.  It also leads to
+   an penalty whenever a 16bit store is followed by 32bit use.  This flag
+   disables production of such sequences in common cases.
+   See also X86_TUNE_HIMODE_MATH.
+
+   In current implementation the partial register stalls are not eliminated
+   very well - they can be introduced via subregs synthesized by combine
+   and can happen in caller/callee saving sequences.  */
+DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall", m_PPRO)
+
+/* X86_TUNE_PROMOTE_QIMODE: When it is cheap, turn 8bit arithmetic to
+   corresponding 32bit arithmetic.  */
+DEF_TUNE (X86_TUNE_PROMOTE_QIMODE, "promote_qimode",
+	  ~m_PPRO)
+
+/* X86_TUNE_PROMOTE_HI_REGS: Same, but for 16bit artihmetic.  Again we avoid
+   partial register stalls on PentiumPro targets. */
+DEF_TUNE (X86_TUNE_PROMOTE_HI_REGS, "promote_hi_regs", m_PPRO)
+
+/* X86_TUNE_HIMODE_MATH: Enable use of 16bit arithmetic.
+   On PPro this flag is meant to avoid partial register stalls.  */
+DEF_TUNE (X86_TUNE_HIMODE_MATH, "himode_math", ~m_PPRO)
+
+/* X86_TUNE_SPLIT_LONG_MOVES: Avoid instructions moving immediates
+   directly to memory.  */
+DEF_TUNE (X86_TUNE_SPLIT_LONG_MOVES, "split_long_moves", m_PPRO)
+
+/* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
+DEF_TUNE (X86_TUNE_USE_XCHGB, "use_xchgb", m_PENT4)
+
+/* X86_TUNE_USE_MOV0: Use "mov $0, reg" instead of "xor reg, reg" to clear
+   integer register.  */
+DEF_TUNE (X86_TUNE_USE_MOV0, "use_mov0", m_K6)
+
+/* X86_TUNE_NOT_VECTORMODE: On AMD K6, NOT is vector decoded with memory
+   operand that cannot be represented using a modRM byte.  The XOR
+   replacement is long decoded, so this split helps here as well.  */
+DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
+
+/* X86_TUNE_AVOID_VECTOR_DECODE: Enable splitters that avoid vector decoded
+   forms of instructions on K8 targets.  */
+DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
+          m_K8)
+
+/*****************************************************************************/
+/* This never worked well before.                                            */
+/*****************************************************************************/
+
+/* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
+   on simulation result. But after P4 was made, no performance benefit
+   was observed with branch hints.  It also increases the code size.
+   As a result, icc never generates branch hints.  */
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", 0)
+
+/* X86_TUNE_QIMODE_MATH: Enable use of 8bit arithmetic.  */
+DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0)
+
+/* X86_TUNE_PROMOTE_QI_REGS: This enables generic code that promotes all 8bit
+   arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
+   is usually used for RISC targets.  */
+DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0)
