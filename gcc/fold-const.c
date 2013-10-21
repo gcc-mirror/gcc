@@ -3473,11 +3473,6 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree mask;
   tree offset;
 
-  /* In the strict volatile bitfields case, doing code changes here may prevent
-     other optimizations, in particular in a SLOW_BYTE_ACCESS setting.  */
-  if (flag_strict_volatile_bitfields > 0)
-    return 0;
-
   /* Get all the information about the extractions being done.  If the bit size
      if the same as the size of the underlying object, we aren't doing an
      extraction at all and so can do nothing.  We also don't want to
@@ -3486,7 +3481,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
 				&lunsignedp, &lvolatilep, false);
   if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
-      || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR)
+      || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR || lvolatilep)
     return 0;
 
  if (!const_p)
@@ -3498,22 +3493,17 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
      if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
 	 || lunsignedp != runsignedp || offset != 0
-	 || TREE_CODE (rinner) == PLACEHOLDER_EXPR)
+	 || TREE_CODE (rinner) == PLACEHOLDER_EXPR || rvolatilep)
        return 0;
    }
 
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  if (lvolatilep
-      && GET_MODE_BITSIZE (lmode) > 0
-      && flag_strict_volatile_bitfields > 0)
-    nmode = lmode;
-  else
-    nmode = get_best_mode (lbitsize, lbitpos, 0, 0,
-			   const_p ? TYPE_ALIGN (TREE_TYPE (linner))
-			   : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
-				  TYPE_ALIGN (TREE_TYPE (rinner))),
-			   word_mode, lvolatilep || rvolatilep);
+  nmode = get_best_mode (lbitsize, lbitpos, 0, 0,
+			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
+			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
+				TYPE_ALIGN (TREE_TYPE (rinner))),
+			 word_mode, false);
   if (nmode == VOIDmode)
     return 0;
 
@@ -3602,11 +3592,6 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
      appropriate number of bits and mask it with the computed mask
      (in case this was a signed field).  If we changed it, make a new one.  */
   lhs = make_bit_field_ref (loc, linner, unsigned_type, nbitsize, nbitpos, 1);
-  if (lvolatilep)
-    {
-      TREE_SIDE_EFFECTS (lhs) = 1;
-      TREE_THIS_VOLATILE (lhs) = 1;
-    }
 
   rhs = const_binop (BIT_AND_EXPR,
 		     const_binop (LSHIFT_EXPR,
