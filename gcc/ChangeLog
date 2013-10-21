@@ -1,3 +1,29 @@
+2013-10-21  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* config/i386/i386.c (expand_set_or_movmem_via_loop): Add issetmem
+	argument.  Update function comment.
+	(expand_set_or_movmem_via_rep): New function combining
+	expand_movmem_via_rep_mov and expand_setmem_via_rep_stos.
+	(expand_movmem_via_rep_mov): Remove.
+	expand_setmem_via_rep_stos): Remove.
+	(expand_movmem_epilogue): Update calls correspondingly.
+	(expand_setmem_epilogue_via_loop): Likewise.
+	(emit_memset): New.
+	(expand_setmem_epilogue): Add VEC_VALUE argument, refactor.
+	(expand_set_or_movmem_prologue): New function combining
+	expand_movmem_prologue and expand_setmem_prologue.
+	(expand_movmem_prologue): Remove.
+	(expand_setmem_prologue): Remove.
+	(expand_set_or_movmem_constant_prologue): New function combining
+	expand_constant_movmem_prologue and expand_constant_setmem_prologue.
+	(expand_constant_movmem_prologue): Remove.
+	(expand_constant_setmem_prologue): Remove.
+	(promote_duplicated_reg): Allow vector-const0 value.
+	(ix86_expand_set_or_movmem): New function combining ix86_expand_movmem
+	and ix86_expand_setmem.
+	(ix86_expand_movmem): Call ix86_expand_set_or_movmem.
+	(ix86_expand_setmem): Call ix86_expand_set_or_movmem.
+
 2013-10-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (vec_unpacku_hi_v16qi): Adjust for
