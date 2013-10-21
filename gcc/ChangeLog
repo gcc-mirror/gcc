@@ -1,5 +1,11 @@
 2013-10-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	Fix volatile issues in optimize_bit_field_compare.
+	* fold-const.c (optimize_bit_field_compare): Bail out if
+	lvolatilep or rvolatilep.
+
+2013-10-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	Fix DECL_BIT_FIELD depencency on flag_strict_volatile_bitfields
 	and get_inner_reference returning different pmode for non-volatile
 	bit-field members dependent on flag_strict_volatile_bitfields.
