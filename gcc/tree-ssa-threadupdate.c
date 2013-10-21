@@ -1244,7 +1244,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
      When this occurs ignore the jump thread request with the joiner
      block.  It's totally subsumed by the simpler jump thread request.
 
-     This results in less block copying, simpler CFGs.  More improtantly,
+     This results in less block copying, simpler CFGs.  More importantly,
      when we duplicate the joiner block, B, in this case we will create
      a new threading opportunity that we wouldn't be able to optimize
      until the next jump threading iteration.
@@ -1263,20 +1263,30 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	}
     }
 
-
-  /* Now iterate again, converting cases where we threaded through
-     a joiner block, but ignoring those where we have already
-     threaded through the joiner block.  */
+  /* Now iterate again, converting cases where we want to thread
+     through a joiner block, but only if no other edge on the path
+     already has a jump thread attached to it.  */
   for (i = 0; i < paths.length (); i++)
     {
       vec<jump_thread_edge *> *path = paths[i];
 
-      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK
-	  && (*path)[0]->e->aux == NULL)
+      
+      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
 	{
-	  edge e = (*path)[0]->e;
-	  e->aux = path;
-	  bitmap_set_bit (tmp, e->dest->index);
+	  unsigned int j;
+
+	  for (j = 0; j < path->length (); j++)
+	    if ((*path)[j]->e->aux != NULL)
+	      break;
+
+	  /* If we iterated through the entire path without exiting the loop,
+	     then we are good to go, attach the path to the starting edge.  */
+	  if (j == path->length ())
+	    {
+	      edge e = (*path)[0]->e;
+	      e->aux = path;
+	      bitmap_set_bit (tmp, e->dest->index);
+	    }
 	}
     }
 
