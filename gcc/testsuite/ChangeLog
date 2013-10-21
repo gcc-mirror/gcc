@@ -1,3 +1,8 @@
+2013-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58742
+	* c-c++-common/fold-divmul-1.c: New testcase.
+
 2013-10-21  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 
 	* gcc.target/i386/memset-vector_loop-1.c: New test.

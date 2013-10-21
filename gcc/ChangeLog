@@ -1,3 +1,9 @@
+2013-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58742
+	* fold-const.c (fold_binary_loc): Fold ((T) (X /[ex] C)) * C
+	to (T) X for sign-changing conversions (or no conversion).
+
 2013-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (kxnor<mode>): Add FLAGS_REG clobber.

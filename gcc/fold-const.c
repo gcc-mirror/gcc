@@ -11002,6 +11002,13 @@ fold_binary_loc (location_t loc,
 				fold_build2_loc (loc, MULT_EXPR, type,
 					     build_int_cst (type, 2) , arg1));
 
+	  /* ((T) (X /[ex] C)) * C cancels out if the conversion is
+	     sign-changing only.  */
+	  if (TREE_CODE (arg1) == INTEGER_CST
+	      && TREE_CODE (arg0) == EXACT_DIV_EXPR
+	      && operand_equal_p (arg1, TREE_OPERAND (arg0, 1), 0))
+	    return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+
 	  strict_overflow_p = false;
 	  if (TREE_CODE (arg1) == INTEGER_CST
 	      && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
