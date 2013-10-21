@@ -8364,7 +8364,7 @@ statements.  Output them in the same order that they appear in the
 input file.  When this option is used, unreferenced static variables
 are not removed.  This option is intended to support existing code
 that relies on a particular ordering.  For new code, it is better to
-use attributes.
+use attributes when possible.
 
 Enabled at level @option{-O0}.  When disabled explicitly, it also implies
 @option{-fno-section-anchors}, which is otherwise enabled at @option{-O0} on some
@@ -10367,7 +10367,7 @@ separator character at the end of the path.
 @option{-B} prefixes that effectively specify directory names also apply
 to libraries in the linker, because the compiler translates these
 options into @option{-L} options for the linker.  They also apply to
-includes files in the preprocessor, because the compiler translates these
+include files in the preprocessor, because the compiler translates these
 options into @option{-isystem} options for the preprocessor.  In this case,
 the compiler appends @samp{include} to the prefix.
 
