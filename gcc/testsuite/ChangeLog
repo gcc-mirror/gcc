@@ -1,3 +1,8 @@
+2013-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/58809
+	* gcc.dg/gomp/pr58809.c: New test.
+
 2013-10-21  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort().
