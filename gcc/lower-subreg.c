@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "machmode.h"
 #include "tm.h"
+#include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"

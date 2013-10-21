@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "tree-ssa.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
