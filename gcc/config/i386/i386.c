@@ -22731,6 +22731,315 @@ expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
   return destmem;
 }
 
+/* Test if COUNT&SIZE is nonzero and if so, expand movme
+   or setmem sequence that is valid for SIZE..2*SIZE-1 bytes
+   and jump to DONE_LABEL.  */
+static void
+expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
+			       rtx destptr, rtx srcptr,
+			       rtx value, rtx vec_value,
+			       rtx count, int size,
+			       rtx done_label, bool issetmem)
+{
+  rtx label = ix86_expand_aligntest (count, size, false);
+  enum machine_mode mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 1);
+  rtx modesize;
+  int n;
+
+  /* If we do not have vector value to copy, we must reduce size.  */
+  if (issetmem)
+    {
+      if (!vec_value)
+	{
+	  if (GET_MODE (value) == VOIDmode && size > 8)
+	    mode = Pmode;
+	  else if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (value)))
+	    mode = GET_MODE (value);
+	}
+      else
+	mode = GET_MODE (vec_value), value = vec_value;
+    }
+  else
+    {
+      /* Choose appropriate vector mode.  */
+      if (size >= 32)
+	mode = TARGET_AVX ? V32QImode : TARGET_SSE ? V16QImode : DImode;
+      else if (size >= 16)
+	mode = TARGET_SSE ? V16QImode : DImode;
+      srcmem = change_address (srcmem, mode, srcptr);
+    }
+  destmem = change_address (destmem, mode, destptr);
+  modesize = GEN_INT (GET_MODE_SIZE (mode));
+  gcc_assert (GET_MODE_SIZE (mode) <= size);
+  for (n = 0; n * GET_MODE_SIZE (mode) < size; n++)
+    {
+      if (issetmem)
+	emit_move_insn (destmem, gen_lowpart (mode, value));
+      else
+	{
+          emit_move_insn (destmem, srcmem);
+          srcmem = offset_address (srcmem, modesize, GET_MODE_SIZE (mode));
+	}
+      destmem = offset_address (destmem, modesize, GET_MODE_SIZE (mode));
+    }
+
+  destmem = offset_address (destmem, count, 1);
+  destmem = offset_address (destmem, GEN_INT (-size - GET_MODE_SIZE (mode)),
+			    GET_MODE_SIZE (mode));
+  if (issetmem)
+    emit_move_insn (destmem, gen_lowpart (mode, value));
+  else
+    {
+      srcmem = offset_address (srcmem, count, 1);
+      srcmem = offset_address (srcmem, GEN_INT (-size - GET_MODE_SIZE (mode)),
+			       GET_MODE_SIZE (mode));
+      emit_move_insn (destmem, srcmem);
+    }
+  emit_jump_insn (gen_jump (done_label));
+  emit_barrier ();
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+}
+
+/* Handle small memcpy (up to SIZE that is supposed to be small power of 2.
+   and get ready for the main memcpy loop by copying iniital DESIRED_ALIGN-ALIGN
+   bytes and last SIZE bytes adjusitng DESTPTR/SRCPTR/COUNT in a way we can
+   proceed with an loop copying SIZE bytes at once. Do moves in MODE.
+   DONE_LABEL is a label after the whole copying sequence. The label is created
+   on demand if *DONE_LABEL is NULL.
+   MIN_SIZE is minimal size of block copied.  This value gets adjusted for new
+   bounds after the initial copies. 
+
+   DESTMEM/SRCMEM are memory expressions pointing to the copies block,
+   DESTPTR/SRCPTR are pointers to the block. DYNAMIC_CHECK indicate whether
+   we will dispatch to a library call for large blocks.
+
+   In pseudocode we do:
+
+   if (COUNT < SIZE)
+     {
+       Assume that SIZE is 4. Bigger sizes are handled analogously
+       if (COUNT & 4)
+	 {
+	    copy 4 bytes from SRCPTR to DESTPTR
+	    copy 4 bytes from SRCPTR + COUNT - 4 to DESTPTR + COUNT - 4
+	    goto done_label
+	 }
+       if (!COUNT)
+	 goto done_label;
+       copy 1 byte from SRCPTR to DESTPTR
+       if (COUNT & 2)
+	 {
+	    copy 2 bytes from SRCPTR to DESTPTR
+	    copy 2 bytes from SRCPTR + COUNT - 2 to DESTPTR + COUNT - 2
+	 }
+     }
+   else
+     {
+       copy at least DESIRED_ALIGN-ALIGN bytes from SRCPTR to DESTPTR
+       copy SIZE bytes from SRCPTR + COUNT - SIZE to DESTPTR + COUNT -SIZE
+
+       OLD_DESPTR = DESTPTR;
+       Align DESTPTR up to DESIRED_ALIGN
+       SRCPTR += DESTPTR - OLD_DESTPTR
+       COUNT -= DEST_PTR - OLD_DESTPTR
+       if (DYNAMIC_CHECK)
+	 Round COUNT down to multiple of SIZE
+       << optional caller supplied zero size guard is here >>
+       << optional caller suppplied dynamic check is here >>
+       << caller supplied main copy loop is here >>
+     }
+   done_label:
+  */
+static void
+expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx srcmem,
+							    rtx *destptr, rtx *srcptr,
+							    enum machine_mode mode,
+							    rtx value, rtx vec_value,
+							    rtx *count,
+							    rtx *done_label,
+							    int size,
+							    int desired_align,
+							    int align,
+							    unsigned HOST_WIDE_INT *min_size,
+							    bool dynamic_check,
+							    bool issetmem)
+{
+  rtx loop_label = NULL, label;
+  int n;
+  rtx modesize;
+  int prolog_size = 0;
+  rtx mode_value;
+
+  /* Chose proper value to copy.  */
+  if (issetmem && VECTOR_MODE_P (mode))
+    mode_value = vec_value;
+  else
+    mode_value = value;
+  gcc_assert (GET_MODE_SIZE (mode) <= size);
+
+  /* See if block is big or small, handle small blocks.  */
+  if (!CONST_INT_P (*count) && *min_size < (unsigned HOST_WIDE_INT)size)
+    {
+      int size2 = size;
+      loop_label = gen_label_rtx ();
+
+      if (!*done_label)
+	*done_label = gen_label_rtx ();
+
+      emit_cmp_and_jump_insns (*count, GEN_INT (size2), GE, 0, GET_MODE (*count),
+			       1, loop_label);
+      size2 >>= 1;
+
+      /* Handle sizes > 3.  */
+      for (;size2 > 2; size2 >>= 1)
+	expand_small_movmem_or_setmem (destmem, srcmem,
+				       *destptr, *srcptr,
+				       value, vec_value,
+				       *count,
+				       size2, *done_label, issetmem);
+      /* Nothing to copy?  Jump to DONE_LABEL if so */
+      emit_cmp_and_jump_insns (*count, const0_rtx, EQ, 0, GET_MODE (*count),
+			       1, *done_label);
+
+      /* Do a byte copy.  */
+      destmem = change_address (destmem, QImode, *destptr);
+      if (issetmem)
+	emit_move_insn (destmem, gen_lowpart (QImode, value));
+      else
+	{
+          srcmem = change_address (srcmem, QImode, *srcptr);
+          emit_move_insn (destmem, srcmem);
+	}
+
+      /* Handle sizes 2 and 3.  */
+      label = ix86_expand_aligntest (*count, 2, false);
+      destmem = change_address (destmem, HImode, *destptr);
+      destmem = offset_address (destmem, *count, 1);
+      destmem = offset_address (destmem, GEN_INT (-2), 2);
+      if (issetmem)
+        emit_move_insn (destmem, gen_lowpart (HImode, value));
+      else
+	{
+	  srcmem = change_address (srcmem, HImode, *srcptr);
+	  srcmem = offset_address (srcmem, *count, 1);
+	  srcmem = offset_address (srcmem, GEN_INT (-2), 2);
+	  emit_move_insn (destmem, srcmem);
+	}
+
+      emit_label (label);
+      LABEL_NUSES (label) = 1;
+      emit_jump_insn (gen_jump (*done_label));
+      emit_barrier ();
+    }
+  else
+    gcc_assert (*min_size >= (unsigned HOST_WIDE_INT)size
+		|| UINTVAL (*count) >= (unsigned HOST_WIDE_INT)size);
+
+  /* Start memcpy for COUNT >= SIZE.  */
+  if (loop_label)
+    {
+       emit_label (loop_label);
+       LABEL_NUSES (loop_label) = 1;
+    }
+
+  /* Copy first desired_align bytes.  */
+  if (!issetmem)
+    srcmem = change_address (srcmem, mode, *srcptr);
+  destmem = change_address (destmem, mode, *destptr);
+  modesize = GEN_INT (GET_MODE_SIZE (mode));
+  for (n = 0; prolog_size < desired_align - align; n++)
+    {
+      if (issetmem)
+        emit_move_insn (destmem, mode_value);
+      else
+	{
+          emit_move_insn (destmem, srcmem);
+          srcmem = offset_address (srcmem, modesize, GET_MODE_SIZE (mode));
+	}
+      destmem = offset_address (destmem, modesize, GET_MODE_SIZE (mode));
+      prolog_size += GET_MODE_SIZE (mode);
+    }
+
+
+  /* Copy last SIZE bytes.  */
+  destmem = offset_address (destmem, *count, 1);
+  destmem = offset_address (destmem,
+			    GEN_INT (-size - prolog_size),
+			    1);
+  if (issetmem)
+    emit_move_insn (destmem, mode_value);
+  else
+    {
+      srcmem = offset_address (srcmem, *count, 1);
+      srcmem = offset_address (srcmem,
+			       GEN_INT (-size - prolog_size),
+			       1);
+      emit_move_insn (destmem, srcmem);
+    }
+  for (n = 1; n * GET_MODE_SIZE (mode) < size; n++)
+    {
+      destmem = offset_address (destmem, modesize, 1);
+      if (issetmem)
+	emit_move_insn (destmem, mode_value);
+      else
+	{
+          srcmem = offset_address (srcmem, modesize, 1);
+          emit_move_insn (destmem, srcmem);
+	}
+    }
+
+  /* Align destination.  */
+  if (desired_align > 1 && desired_align > align)
+    {
+      rtx saveddest = *destptr;
+
+      gcc_assert (desired_align <= size);
+      /* Align destptr up, place it to new register.  */
+      *destptr = expand_simple_binop (GET_MODE (*destptr), PLUS, *destptr,
+				      GEN_INT (prolog_size),
+				      NULL_RTX, 1, OPTAB_DIRECT);
+      *destptr = expand_simple_binop (GET_MODE (*destptr), AND, *destptr,
+				      GEN_INT (-desired_align),
+				      *destptr, 1, OPTAB_DIRECT);
+      /* See how many bytes we skipped.  */
+      saveddest = expand_simple_binop (GET_MODE (*destptr), MINUS, saveddest,
+				       *destptr,
+				       saveddest, 1, OPTAB_DIRECT);
+      /* Adjust srcptr and count.  */
+      if (!issetmem)
+	*srcptr = expand_simple_binop (GET_MODE (*srcptr), MINUS, *srcptr, saveddest,
+					*srcptr, 1, OPTAB_DIRECT);
+      *count = expand_simple_binop (GET_MODE (*count), PLUS, *count,
+				    saveddest, *count, 1, OPTAB_DIRECT);
+      /* We copied at most size + prolog_size.  */
+      if (*min_size > (unsigned HOST_WIDE_INT)(size + prolog_size))
+	*min_size = (*min_size - size) & ~(unsigned HOST_WIDE_INT)(size - 1);
+      else
+	*min_size = 0;
+
+      /* Our loops always round down the bock size, but for dispatch to library
+	 we need precise value.  */
+      if (dynamic_check)
+	*count = expand_simple_binop (GET_MODE (*count), AND, *count,
+				      GEN_INT (-size), *count, 1, OPTAB_DIRECT);
+    }
+  else
+    {
+      gcc_assert (prolog_size == 0);
+      /* Decrease count, so we won't end up copying last word twice.  */
+      if (!CONST_INT_P (*count))
+	*count = expand_simple_binop (GET_MODE (*count), PLUS, *count,
+				      constm1_rtx, *count, 1, OPTAB_DIRECT);
+      else
+	*count = GEN_INT ((UINTVAL (*count) - 1) & ~(unsigned HOST_WIDE_INT)(size - 1));
+      if (*min_size)
+	*min_size = (*min_size - 1) & ~(unsigned HOST_WIDE_INT)(size - 1);
+    }
+}
+
+
 /* This function is like the previous one, except here we know how many bytes
    need to be copied.  That allows us to update alignment not only of DST, which
    is returned, but also of SRC, which is passed as a pointer for that
@@ -22805,62 +23114,99 @@ expand_set_or_movmem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
   return dst;
 }
 
-/* Given COUNT and EXPECTED_SIZE, decide on codegen of string operation.  */
-static enum stringop_alg
-decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
-	    int *dynamic_check, bool *noalign)
+/* Return true if ALG can be used in current context.  
+   Assume we expand memset if MEMSET is true.  */
+static bool
+alg_usable_p (enum stringop_alg alg, bool memset)
 {
-  const struct stringop_algs * algs;
-  bool optimize_for_speed;
+  if (alg == no_stringop)
+    return false;
+  if (alg == vector_loop)
+    return TARGET_SSE || TARGET_AVX;
   /* Algorithms using the rep prefix want at least edi and ecx;
      additionally, memset wants eax and memcpy wants esi.  Don't
      consider such algorithms if the user has appropriated those
      registers for their own purposes.	*/
-  bool rep_prefix_usable = !(fixed_regs[CX_REG] || fixed_regs[DI_REG]
-                             || (memset
-				 ? fixed_regs[AX_REG] : fixed_regs[SI_REG]));
-  *noalign = false;
+  if (alg == rep_prefix_1_byte
+      || alg == rep_prefix_4_byte
+      || alg == rep_prefix_8_byte)
+    return !(fixed_regs[CX_REG] || fixed_regs[DI_REG]
+             || (memset ? fixed_regs[AX_REG] : fixed_regs[SI_REG]));
+  return true;
+}
 
-#define ALG_USABLE_P(alg) (rep_prefix_usable			\
-			   || (alg != rep_prefix_1_byte		\
-			       && alg != rep_prefix_4_byte      \
-			       && alg != rep_prefix_8_byte))
+/* Given COUNT and EXPECTED_SIZE, decide on codegen of string operation.  */
+static enum stringop_alg
+decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
+	    unsigned HOST_WIDE_INT min_size, unsigned HOST_WIDE_INT max_size,
+	    bool memset, bool zero_memset, int *dynamic_check, bool *noalign)
+{
+  const struct stringop_algs * algs;
+  bool optimize_for_speed;
+  int max = -1;
   const struct processor_costs *cost;
+  int i;
+  bool any_alg_usable_p = false;
+
+  *noalign = false;
+  *dynamic_check = -1;
 
   /* Even if the string operation call is cold, we still might spend a lot
      of time processing large blocks.  */
   if (optimize_function_for_size_p (cfun)
       || (optimize_insn_for_size_p ()
-          && expected_size != -1 && expected_size < 256))
+ 	  && (max_size < 256
+              || (expected_size != -1 && expected_size < 256))))
     optimize_for_speed = false;
   else
     optimize_for_speed = true;
 
   cost = optimize_for_speed ? ix86_cost : &ix86_size_cost;
-
-  *dynamic_check = -1;
   if (memset)
     algs = &cost->memset[TARGET_64BIT != 0];
   else
     algs = &cost->memcpy[TARGET_64BIT != 0];
-  if (ix86_stringop_alg != no_stringop && ALG_USABLE_P (ix86_stringop_alg))
+
+  /* See maximal size for user defined algorithm.  */
+  for (i = 0; i < MAX_STRINGOP_ALGS; i++)
+    {
+      enum stringop_alg candidate = algs->size[i].alg;
+      bool usable = alg_usable_p (candidate, memset);
+      any_alg_usable_p |= usable;
+
+      if (candidate != libcall && candidate && usable)
+	  max = algs->size[i].max;
+    }
+
+  /* If expected size is not known but max size is small enough
+     so inline version is a win, set expected size into
+     the range.  */
+  if (max > 1 && (unsigned HOST_WIDE_INT)max >= max_size && expected_size == -1)
+    expected_size = min_size / 2 + max_size / 2;
+
+  /* If user specified the algorithm, honnor it if possible.  */
+  if (ix86_stringop_alg != no_stringop
+      && alg_usable_p (ix86_stringop_alg, memset))
     return ix86_stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
   else if (!optimize_for_speed)
     {
-      if (!count || (count & 3))
-	return rep_prefix_usable ? rep_prefix_1_byte : loop_1_byte;
+      *noalign = true;
+      if (!count || (count & 3) || (memset && !zero_memset))
+	return alg_usable_p (rep_prefix_1_byte, memset)
+	       ? rep_prefix_1_byte : loop_1_byte;
       else
-	return rep_prefix_usable ? rep_prefix_4_byte : loop;
+	return alg_usable_p (rep_prefix_4_byte, memset)
+	       ? rep_prefix_4_byte : loop;
     }
-  /* Very tiny blocks are best handled via the loop, REP is expensive to setup.
-   */
+  /* Very tiny blocks are best handled via the loop, REP is expensive to
+     setup.  */
   else if (expected_size != -1 && expected_size < 4)
     return loop_1_byte;
   else if (expected_size != -1)
     {
-      unsigned int i;
       enum stringop_alg alg = libcall;
+      bool alg_noalign = false;
       for (i = 0; i < MAX_STRINGOP_ALGS; i++)
 	{
 	  /* We get here if the algorithms that were not libcall-based
@@ -22873,8 +23219,11 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 	    {
 	      enum stringop_alg candidate = algs->size[i].alg;
 
-	      if (candidate != libcall && ALG_USABLE_P (candidate))
-		alg = candidate;
+	      if (candidate != libcall && alg_usable_p (candidate, memset))
+		{
+		  alg = candidate;
+		  alg_noalign = algs->size[i].noalign;
+		}
 	      /* Honor TARGET_INLINE_ALL_STRINGOPS by picking
 		 last non-libcall inline algorithm.  */
 	      if (TARGET_INLINE_ALL_STRINGOPS)
@@ -22883,17 +23232,19 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 		     but we are still forced to inline, run the heuristic below
 		     that will pick code for medium sized blocks.  */
 		  if (alg != libcall)
-		    return alg;
+		    {
+		      *noalign = alg_noalign;
+		      return alg;
+		    }
 		  break;
 		}
-	      else if (ALG_USABLE_P (candidate))
+	      else if (alg_usable_p (candidate, memset))
 		{
 		  *noalign = algs->size[i].noalign;
 		  return candidate;
 		}
 	    }
 	}
-      gcc_assert (TARGET_INLINE_ALL_STRINGOPS || !rep_prefix_usable);
     }
   /* When asked to inline the call anyway, try to pick meaningful choice.
      We look for maximal size of block that is faster to copy by hand and
@@ -22903,22 +23254,11 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      If this turns out to be bad, we might simply specify the preferred
      choice in ix86_costs.  */
   if ((TARGET_INLINE_ALL_STRINGOPS || TARGET_INLINE_STRINGOPS_DYNAMICALLY)
-      && (algs->unknown_size == libcall || !ALG_USABLE_P (algs->unknown_size)))
+      && (algs->unknown_size == libcall
+	  || !alg_usable_p (algs->unknown_size, memset)))
     {
-      int max = -1;
       enum stringop_alg alg;
-      int i;
-      bool any_alg_usable_p = true;
 
-      for (i = 0; i < MAX_STRINGOP_ALGS; i++)
-        {
-          enum stringop_alg candidate = algs->size[i].alg;
-          any_alg_usable_p = any_alg_usable_p && ALG_USABLE_P (candidate);
-
-          if (candidate != libcall && candidate
-              && ALG_USABLE_P (candidate))
-              max = algs->size[i].max;
-        }
       /* If there aren't any usable algorithms, then recursing on
          smaller sizes isn't going to find anything.  Just return the
          simple byte-at-a-time copy loop.  */
@@ -22931,15 +23271,16 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
         }
       if (max == -1)
 	max = 4096;
-      alg = decide_alg (count, max / 2, memset, dynamic_check, noalign);
+      alg = decide_alg (count, max / 2, min_size, max_size, memset,
+			zero_memset, dynamic_check, noalign);
       gcc_assert (*dynamic_check == -1);
       gcc_assert (alg != libcall);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
 	*dynamic_check = max;
       return alg;
     }
-  return ALG_USABLE_P (algs->unknown_size) ? algs->unknown_size : libcall;
-#undef ALG_USABLE_P
+  return (alg_usable_p (algs->unknown_size, memset)
+	  ? algs->unknown_size : libcall);
 }
 
 /* Decide on alignment.  We know that the operand is already aligned to ALIGN
@@ -23073,27 +23414,46 @@ promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align,
 
 /* Expand string move (memcpy) ot store (memset) operation.  Use i386 string
    operations when profitable.  The code depends upon architecture, block size
-   and alignment, but always has the same overall structure:
+   and alignment, but always has one of the following overall structures:
 
-   1) Prologue guard: Conditional that jumps up to epilogues for small
-      blocks that can be handled by epilogue alone.  This is faster
-      but also needed for correctness, since prologue assume the block
-      is larger than the desired alignment.
+   Aligned move sequence:
 
-      Optional dynamic check for size and libcall for large
-      blocks is emitted here too, with -minline-stringops-dynamically.
+     1) Prologue guard: Conditional that jumps up to epilogues for small
+	blocks that can be handled by epilogue alone.  This is faster
+	but also needed for correctness, since prologue assume the block
+	is larger than the desired alignment.
 
-   2) Prologue: copy/set first few bytes in order to get destination
-      aligned to DESIRED_ALIGN.  It is emitted only when ALIGN is less
-      than DESIRED_ALIGN and up to DESIRED_ALIGN - ALIGN bytes can be
-      copied/set.  We emit either a jump tree on power of two sized
-      blocks, or a byte loop.
+	Optional dynamic check for size and libcall for large
+	blocks is emitted here too, with -minline-stringops-dynamically.
 
-   3) Main body: the copying/storing loop itself, copying/storing in SIZE_NEEDED
-      chunks with specified algorithm.
+     2) Prologue: copy first few bytes in order to get destination
+	aligned to DESIRED_ALIGN.  It is emitted only when ALIGN is less
+	than DESIRED_ALIGN and up to DESIRED_ALIGN - ALIGN bytes can be
+	copied.  We emit either a jump tree on power of two sized
+	blocks, or a byte loop.
 
-   4) Epilogue: code copying/storing tail of the block that is too small to be
-      handled by main body (or up to size guarded by prologue guard).  */
+     3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
+	with specified algorithm.
+
+     4) Epilogue: code copying tail of the block that is too small to be
+	handled by main body (or up to size guarded by prologue guard). 
+
+  Misaligned move sequence
+
+     1) missaligned move prologue/epilogue containing:
+        a) Prologue handling small memory blocks and jumping to done_label
+	   (skipped if blocks are known to be large enough)
+	b) Signle move copying first DESIRED_ALIGN-ALIGN bytes if alignment is
+           needed by single possibly misaligned move
+	   (skipped if alignment is not needed)
+        c) Copy of last SIZE_NEEDED bytes by possibly misaligned moves
+
+     2) Zero size guard dispatching to done_label, if needed
+
+     3) dispatch to library call, if needed,
+
+     3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
+	with specified algorithm.  */
 static bool
 ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 			      rtx align_exp, rtx expected_align_exp,
@@ -23118,6 +23478,10 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool noalign;
   enum machine_mode move_mode = VOIDmode;
   int unroll_factor = 1;
+  /* TODO: Once vlaue ranges are available, fill in proper data.  */
+  unsigned HOST_WIDE_INT min_size = 0;
+  unsigned HOST_WIDE_INT max_size = -1;
+  bool misaligned_prologue_used = false;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -23132,7 +23496,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     align = MEM_ALIGN (dst) / BITS_PER_UNIT;
 
   if (CONST_INT_P (count_exp))
-    count = expected_size = INTVAL (count_exp);
+    min_size = max_size = count = expected_size = INTVAL (count_exp);
   if (CONST_INT_P (expected_size_exp) && count == 0)
     expected_size = INTVAL (expected_size_exp);
 
@@ -23142,7 +23506,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
-  alg = decide_alg (count, expected_size, issetmem, &dynamic_check, &noalign);
+  alg = decide_alg (count, expected_size, min_size, max_size, issetmem,
+		    issetmem && val_exp == const0_rtx,
+		    &dynamic_check, &noalign);
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);
@@ -23234,10 +23600,20 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     }
   gcc_assert (desired_align >= 1 && align >= 1);
 
+  /* Misaligned move sequences handles both prologues and epilogues at once.
+     Default code generation results in smaller code for large alignments and
+     also avoids redundant job when sizes are known precisely.  */
+  misaligned_prologue_used = (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES
+			      && MAX (desired_align, epilogue_size_needed) <= 32
+			      && ((desired_align > align && !align_bytes)
+				  || (!count && epilogue_size_needed > 1)));
+
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
-     front of all code.  */
-  if (issetmem && CONST_INT_P (val_exp))
+     front of all code.  
+     For now the misaligned move sequences do not have fast path
+     without broadcasting.  */
+  if (issetmem && ((CONST_INT_P (val_exp) || misaligned_prologue_used)))
     {
       if (alg == vector_loop)
 	{
@@ -23253,8 +23629,45 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 							 desired_align, align);
 	}
     }
+  /* Misaligned move sequences handles both prologues and epilogues at once.
+     Default code generation results in smaller code for large alignments and
+     also avoids redundant job when sizes are known precisely.  */
+  if (misaligned_prologue_used)
+    {
+      /* Misaligned move prologue handled small blocks by itself.  */
+      misaligned_prologue_used = true;
+      expand_set_or_movmem_prologue_epilogue_by_misaligned_moves
+	   (dst, src, &destreg, &srcreg,
+	    move_mode, promoted_val, vec_promoted_val,
+	    &count_exp,
+	    &jump_around_label,
+            desired_align < align
+	    ? MAX (desired_align, epilogue_size_needed) : epilogue_size_needed,
+	    desired_align, align, &min_size, dynamic_check, issetmem);
+      if (!issetmem)
+        src = change_address (src, BLKmode, srcreg);
+      dst = change_address (dst, BLKmode, destreg);
+      set_mem_align (dst, desired_align * BITS_PER_UNIT);
+      epilogue_size_needed = 0;
+      if (need_zero_guard && !min_size)
+	{
+	  /* It is possible that we copied enough so the main loop will not
+	     execute.  */
+	  gcc_assert (size_needed > 1);
+	  if (jump_around_label == NULL_RTX)
+	    jump_around_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (count_exp,
+				   GEN_INT (size_needed),
+				   LTU, 0, counter_mode (count_exp), 1, jump_around_label);
+	  if (expected_size == -1
+	      || expected_size < (desired_align - align) / 2 + size_needed)
+	    predict_jump (REG_BR_PROB_BASE * 20 / 100);
+	  else
+	    predict_jump (REG_BR_PROB_BASE * 60 / 100);
+	}
+    }
   /* Ensure that alignment prologue won't copy past end of block.  */
-  if (size_needed > 1 || (desired_align > 1 && desired_align > align))
+  else if (size_needed > 1 || (desired_align > 1 && desired_align > align))
     {
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
       /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
@@ -23279,8 +23692,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 		goto epilogue;
 	    }
 	}
-      else
+      else if (min_size < (unsigned HOST_WIDE_INT)epilogue_size_needed)
 	{
+	  gcc_assert (max_size >= (unsigned HOST_WIDE_INT)epilogue_size_needed);
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (epilogue_size_needed),
@@ -23327,11 +23741,11 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
 						   desired_align, align);
 
-  if (desired_align > align)
+  if (desired_align > align && !misaligned_prologue_used)
     {
       if (align_bytes == 0)
 	{
-	  /* Except for the first move in epilogue, we no longer know
+	  /* Except for the first move in prologue, we no longer know
 	     constant offset in aliasing info.  It don't seems to worth
 	     the pain to maintain it for the first move, so throw away
 	     the info early.  */
@@ -23342,6 +23756,11 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 					    promoted_val, vec_promoted_val,
 					    count_exp, align, desired_align,
 					    issetmem);
+	  /* At most desired_align - align bytes are copied.  */
+	  if (min_size < (unsigned)(desired_align - align))
+	    min_size = 0;
+	  else
+	    min_size -= desired_align - align;
 	}
       else
 	{
@@ -23358,8 +23777,11 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	  count_exp = plus_constant (counter_mode (count_exp),
 				     count_exp, -align_bytes);
 	  count -= align_bytes;
+	  min_size -= align_bytes;
+	  max_size -= align_bytes;
 	}
       if (need_zero_guard
+	  && !min_size
 	  && (count < (unsigned HOST_WIDE_INT) size_needed
 	      || (align_bytes == 0
 		  && count < ((unsigned HOST_WIDE_INT) size_needed
@@ -23389,7 +23811,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       if (issetmem)
 	promoted_val = val_exp;
     }
-  else if (label == NULL_RTX)
+  else if (label == NULL_RTX && !misaligned_prologue_used)
     epilogue_size_needed = size_needed;
 
   /* Step 3: Main loop.  */

@@ -1,3 +1,12 @@
+2013-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES_EPILOGUES): New tuning flag.
+	* x86-tune.def (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES): Define it.
+	* i386.c (expand_small_movmem_or_setmem): New function.
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves): New function
+	(alg_usable_p): Add support for value ranges; cleanup.
+	(ix86_expand_set_or_movmem): Add support for misaligned moves.
+
 2013-10-22  Sterling Augustine  <saugustine@google.com>
 
 	* doc/invoke.texi: Document -ggnu-pubnames.
