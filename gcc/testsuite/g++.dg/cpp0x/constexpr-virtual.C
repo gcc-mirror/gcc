@@ -1,5 +1,5 @@
 // PR c++/47067
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct X {
     virtual void x();

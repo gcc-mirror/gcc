@@ -3,7 +3,7 @@
 // Test the "Augmented" template argument deduction when binding an lvalue to an rvalue reference.
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

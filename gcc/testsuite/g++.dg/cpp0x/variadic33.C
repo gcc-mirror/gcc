@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 void print_all() {}
 
 template<typename T, typename... Rest>

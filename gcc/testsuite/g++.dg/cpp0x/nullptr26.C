@@ -1,5 +1,5 @@
 // PR c++/51530
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <class T, class U>
 void f(T, U);

@@ -1,5 +1,5 @@
-// Runtime test for C++0x unrestricted unions
-// { dg-options -std=c++0x }
+// Runtime test for C++11 unrestricted unions
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 int c, d;

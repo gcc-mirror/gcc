@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // [basic.types]/10:
 // Scalar types, trivial class types (Clause 9), arrays of such types and

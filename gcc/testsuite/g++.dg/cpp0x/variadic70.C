@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template <typename T, T... Args> struct bomb;
 
 template <typename T>

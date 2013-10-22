@@ -1,6 +1,6 @@
 // PR c++/49102
 // PR c++/50034
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct A {
   A() = default;

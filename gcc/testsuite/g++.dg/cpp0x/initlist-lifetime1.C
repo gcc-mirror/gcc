@@ -1,6 +1,6 @@
 // Test that we properly extend the lifetime of the initializer_list
 // array even if the initializer_list is a subobject.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 #include <initializer_list>

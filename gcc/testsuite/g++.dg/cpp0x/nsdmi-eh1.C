@@ -1,6 +1,6 @@
 // Core issue 1351
 // { dg-do run { xfail *-*-* } }
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 bool fail;
 struct A

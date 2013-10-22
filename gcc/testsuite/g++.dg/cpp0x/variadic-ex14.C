@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<class T> class A { /* ... */ };
 template<class T, class U = T> class B { /* ... */ };

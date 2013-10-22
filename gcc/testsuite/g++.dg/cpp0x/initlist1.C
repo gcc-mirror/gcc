@@ -1,6 +1,6 @@
 // Basic uses of initializer lists
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 #include <initializer_list>
 

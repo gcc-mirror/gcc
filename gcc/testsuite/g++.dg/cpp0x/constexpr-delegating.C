@@ -1,5 +1,5 @@
 // PR c++/51526
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 const int j = 42;
 

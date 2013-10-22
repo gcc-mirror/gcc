@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // Test user-defined literals.
 // Test simple operator declaration and definition in namespaces.

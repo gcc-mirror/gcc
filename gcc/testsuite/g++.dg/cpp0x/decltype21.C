@@ -1,6 +1,6 @@
 // PR c++/6709 (DR 743)
 // PR c++/42603 (DR 950)
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <class T>
 T make();

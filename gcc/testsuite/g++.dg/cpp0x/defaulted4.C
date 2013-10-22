@@ -1,6 +1,6 @@
 // PR c++/37208: SFINAE and deleted functions.
 
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do compile }
 template<int> struct A { };
 

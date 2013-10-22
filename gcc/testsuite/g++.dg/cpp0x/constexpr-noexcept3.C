@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 constexpr int f(int i) { return i; }
 #define SA(X) static_assert (X, #X)

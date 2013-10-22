@@ -1,5 +1,5 @@
 // We allocate a cookie to help us run the destructor even if it's deleted.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 struct A

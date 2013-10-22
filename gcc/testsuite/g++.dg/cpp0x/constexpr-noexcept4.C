@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // A call is noexcept if it is a valid subexpression of a constant
 // expression, even if it is not itself a constant expression.
 

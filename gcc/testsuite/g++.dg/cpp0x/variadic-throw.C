@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-prune-output "note" }
 // PR c++/33509
 template<int M, int N> struct pair

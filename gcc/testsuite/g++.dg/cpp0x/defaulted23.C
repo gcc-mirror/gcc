@@ -1,5 +1,5 @@
 // Test for checking of exception specifications on defaulted fns
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct A
 {

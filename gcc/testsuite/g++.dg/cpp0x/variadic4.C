@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -fabi-version=0" }
+// { dg-options "-std=gnu++11 -fabi-version=0" }
 // { dg-do compile }
 template<typename... Args>
 class tuple {};

@@ -1,5 +1,5 @@
 // PR c++/51611
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 struct A

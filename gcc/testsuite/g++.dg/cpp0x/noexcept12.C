@@ -1,5 +1,5 @@
 // Test that we handle merging with deferred noexcept.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <class U>
 struct O

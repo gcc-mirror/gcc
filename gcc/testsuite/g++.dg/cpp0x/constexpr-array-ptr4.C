@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 constexpr const int do_last(const int* x, int n) {
  return x[n - 1];

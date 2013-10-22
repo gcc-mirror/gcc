@@ -2,7 +2,7 @@
 // supported by the working draft, but is necessary for perfect forwarding
 // of initializer-lists to things that can take a std::initializer_list.
 
-// { dg-options "-std=c++0x -fdeduce-init-list" }
+// { dg-options "-std=c++11 -fdeduce-init-list" }
 // { dg-do run }
 
 #include <initializer_list>

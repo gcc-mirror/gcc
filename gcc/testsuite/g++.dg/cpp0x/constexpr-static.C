@@ -1,5 +1,5 @@
 // Test for constant initialization of non-literal class (e.g. mutex)
-// { dg-options "-std=c++0x -save-temps" }
+// { dg-options "-std=c++11 -save-temps" }
 // { dg-do run }
 
 struct A
