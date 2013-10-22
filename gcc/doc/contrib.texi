@@ -238,6 +238,10 @@ maintaining @code{complex<>}, sanity checking and disbursement, configuration
 architecture, libio maintenance, and early math work.
 
 @item
+Fran@,{c}ois Dumont for his work on libstdc++-v3, especially maintaining and
+improving @code{debug-mode} and associative and unordered containers.
+
+@item
 Zdenek Dvorak for a new loop unroller and various fixes.
 
 @item
@@ -838,6 +842,9 @@ Lars Segerlund for work on GNU Fortran.
 Dodji Seketeli for numerous C++ bug fixes and debug info improvements.
 
 @item
+Tim Shen for major work on @code{<regex>}.
+
+@item
 Joel Sherrill for his direction via the steering committee, RTEMS
 contributions and RTEMS testing.
 
@@ -871,6 +878,10 @@ Danny Smith for his major efforts on the Mingw (and Cygwin) ports.
 
 @item
 Randy Smith finished the Sun FPA support.
+
+@item
+Ed Smith-Rowland for his continuous work on libstdc++-v3, special functions,
+@code{<random>}, and various improvements to C++11 features.
 
 @item
 Scott Snyder for queue, iterator, istream, and string fixes and libstdc++
@@ -995,7 +1006,7 @@ Feng Wang for contributions to GNU Fortran.
 @item
 Stephen M. Webb for time and effort on making libstdc++ shadow files
 work with the tricky Solaris 8+ headers, and for pushing the build-time
-header tree.
+header tree. Also, for starting and driving the @code{<regex>} effort.
 
 @item
 John Wehle for various improvements for the x86 code generator,
