@@ -1,5 +1,5 @@
 // PR c++/50324
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct complete { };
 struct incomplete;

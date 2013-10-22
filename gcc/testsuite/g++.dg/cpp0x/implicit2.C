@@ -1,6 +1,6 @@
 // Test that the synthesized C copy constructor calls the A template
 // constructor and has the appropriate exception specification.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 int r = 1;

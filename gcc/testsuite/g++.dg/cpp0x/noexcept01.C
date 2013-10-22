@@ -1,5 +1,5 @@
 // Test for noexcept-expression
-// { dg-options "-std=c++0x -O2" }
+// { dg-options "-std=c++11 -O2" }
 
 #include <typeinfo>
 

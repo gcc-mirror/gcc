@@ -1,5 +1,5 @@
 // PR c++/44175
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <bool, class T> struct enable_if { };
 template <class T> struct enable_if <true, T> { typedef T type; };

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<typename T1, typename T2>
 float& f(T1, T2);
 

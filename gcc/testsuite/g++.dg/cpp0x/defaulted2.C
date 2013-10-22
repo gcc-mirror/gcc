@@ -1,5 +1,5 @@
 // Negative test for defaulted/deleted fns.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 void f();			// { dg-error "previous" }
 void f() = delete;		// { dg-error "deleted" }

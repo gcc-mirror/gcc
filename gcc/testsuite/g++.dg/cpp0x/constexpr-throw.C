@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 constexpr int may_throw(bool decide) {
 	return decide ? 42 : throw -1; // { dg-error "throw" }

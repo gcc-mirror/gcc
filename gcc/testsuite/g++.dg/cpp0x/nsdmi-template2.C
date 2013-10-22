@@ -1,5 +1,5 @@
 // PR c++/50614
-// { dg-options "-std=c++0x -fcompare-debug" }
+// { dg-options "-std=c++11 -fcompare-debug" }
 
 struct A
 {

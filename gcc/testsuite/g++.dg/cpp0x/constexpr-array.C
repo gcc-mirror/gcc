@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-final { scan-assembler-not "static_initialization" } }
 
 struct A

@@ -1,5 +1,5 @@
 // Test for non-trivial list-initialization with array new.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 struct A

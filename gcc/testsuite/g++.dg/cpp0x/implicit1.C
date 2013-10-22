@@ -1,5 +1,5 @@
 // Test for implicitly deleted destructors.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-prune-output "default definition would be ill-formed" }
 // { dg-prune-output "within this context" }
 

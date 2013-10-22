@@ -2,7 +2,7 @@
 // incomplete type or unknown size
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 extern int a[10];
 extern int b[];

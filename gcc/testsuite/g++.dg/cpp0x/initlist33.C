@@ -1,5 +1,5 @@
 // PR c++/44045
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct base
 {

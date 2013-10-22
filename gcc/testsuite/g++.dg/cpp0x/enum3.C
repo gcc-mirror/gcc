@@ -1,5 +1,5 @@
 // PR c++/38064
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 enum class E { elem };

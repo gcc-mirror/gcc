@@ -1,5 +1,5 @@
 // PR c++/47544
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-final { scan-assembler "_ZN1sIiEC2Ev" } }
 // { dg-final { scan-assembler-not "_ZN1sIiED2Ev" } }
 

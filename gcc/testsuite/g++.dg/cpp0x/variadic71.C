@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<typename...> struct list {};
 
 template<typename Sequence, typename Head>

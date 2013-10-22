@@ -4,7 +4,7 @@
 //    for how cv-qualifications are applied to reference types. 7.1.3, 14.3.1
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

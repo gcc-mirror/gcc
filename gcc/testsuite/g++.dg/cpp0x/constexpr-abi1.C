@@ -1,5 +1,5 @@
 // PR c++/47301
-// { dg-options "-std=c++0x -fabi-version=1" }
+// { dg-options "-std=c++11 -fabi-version=1" }
 
 struct A
 {

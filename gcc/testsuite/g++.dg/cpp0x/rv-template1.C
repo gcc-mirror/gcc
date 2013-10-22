@@ -1,5 +1,5 @@
 // PR c++/44870
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 void foo(int&& data);
 

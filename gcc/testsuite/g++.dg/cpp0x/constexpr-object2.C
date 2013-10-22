@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 constexpr int verysquare(int x) { return x * x; }
 

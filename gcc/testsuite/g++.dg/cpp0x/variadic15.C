@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<typename R, typename... ArgTypes>
 struct make_function_type
 {

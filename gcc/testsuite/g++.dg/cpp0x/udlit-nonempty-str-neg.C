@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // Test user-defined literals.
 // Test error on non-empty string after 'operator' keyword.

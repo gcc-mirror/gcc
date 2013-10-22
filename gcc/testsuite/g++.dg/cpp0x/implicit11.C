@@ -1,6 +1,6 @@
 // Test that we consider base dtors in determining whether
 // a derived ctor is deleted even if the ctor is trivial.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct A
 {

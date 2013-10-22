@@ -1,5 +1,5 @@
 // Make sure C99 complex works with constexpr
-// { dg-options -std=gnu++0x }
+// { dg-options -std=gnu++11 }
 
 struct complex
 {

@@ -1,4 +1,4 @@
-// { dg-options "--std=c++0x" }
+// { dg-options "--std=c++11" }
 template<typename T, typename U> struct same_type;
 template<typename T> struct same_type<T, T> {};
 

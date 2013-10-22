@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 template<typename... T> int foo()
 {
   typename T::X x; // { dg-error "parameter packs|T" }

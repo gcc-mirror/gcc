@@ -1,5 +1,5 @@
 // PR c++/49458
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 typedef void ftype();
 

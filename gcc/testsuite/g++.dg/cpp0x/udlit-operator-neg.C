@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 //  Can't have *both* literal operator template and raw literal operator.
 

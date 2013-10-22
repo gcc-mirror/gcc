@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 //A few constexpr's
 constexpr int foo() { return __alignof__(int); }

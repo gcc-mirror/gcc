@@ -1,5 +1,5 @@
 // PR c++/51216
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 void foo()
 {

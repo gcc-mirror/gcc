@@ -1,5 +1,5 @@
 // PR c++/48935
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 enum class ENUM { a };
 

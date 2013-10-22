@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // A tuple type
 template<typename... Args> struct tuple { };
 

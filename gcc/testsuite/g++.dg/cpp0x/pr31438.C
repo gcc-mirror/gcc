@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<typename> struct A;
 template<typename T, typename... U> struct A<T(U)> // { dg-error "parameter packs|U" }

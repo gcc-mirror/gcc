@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 enum class E { e = 10 };
 enum E2 { e2 = 10 };

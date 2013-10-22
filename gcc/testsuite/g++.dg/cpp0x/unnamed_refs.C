@@ -3,7 +3,7 @@
 // Test: Unamed rvalue references are treated as lvalues.
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

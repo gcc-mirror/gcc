@@ -1,5 +1,5 @@
 // PR c++/49229
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 extern void* enabler;
 
