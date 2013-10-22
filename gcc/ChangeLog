@@ -1,3 +1,20 @@
+2013-10-22  Sterling Augustine  <saugustine@google.com>
+
+	* doc/invoke.texi: Document -ggnu-pubnames.
+	* common.opt: Add new option -ggnu-pubnames and modify -gpubnames
+	logic.
+	* dwarf2out.c: Include gdb/gdb-index.h.
+	(DEBUG_PUBNAMES_SECTION, DEBUG_PUBTYPES_SECTION): Handle
+	debug_generate_pub_sections.
+	(is_java, output_pubtables, output_pubname): New functions.
+	(include_pubname_in_output): Handle debug_generate_pub_sections at
+	level 2.
+	(size_of_pubnames): Use new local space_for_flags based on
+	debug_generate_pub_sections.
+	(output_pubnames): Unify pubnames and pubtypes output logic.
+	Genericize comments.  Call output_pubname.
+	(dwarf2out_finish): Move logic to output_pubnames and call it.
+
 2013-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58779
