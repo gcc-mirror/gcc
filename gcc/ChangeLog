@@ -1,3 +1,9 @@
+2013-10-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/contrib.texi ([Fran@,{c}ois Dumont], [Tim Shen],
+	[Ed Smith-Rowland]): New entries.
+	([Stephen M. Webb]): Update.
+
 2013-10-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-ter.h: Remove duplicate copy of file contents.
@@ -38,15 +44,15 @@
 
 2013-10-21  Jeff Law  <law@redhat.com>
 
-	* tree-ssa-threadedge.c (thread_through_normal_block): New argument VISITED.
-	Remove VISISTED as a local variable.  When we have a threadable jump, verify
-	the destination of the jump has not been visised.
-	(thread_across_edge): Allocate VISITED bitmap once at function scope and
-	use it throughout.  Make sure to set appropriate bits in VISITED for E (start
-	of jump thread path).
-
-	* tree-ssa-threadupdate.c (mark_threaded_blocks): Reject threading through
-	a joiner if any edge on the path has a recorded jump thread.
+	* tree-ssa-threadedge.c (thread_through_normal_block): New
+	argument VISITED.  Remove VISISTED as a local variable.  When we
+	have a threadable jump, verify the destination of the jump has not
+	been visised.
+	(thread_across_edge): Allocate VISITED bitmap once at function
+	scope and use it throughout.  Make sure to set appropriate bits in
+	VISITED for E (start of jump thread path).
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Reject threading
+	through a joiner if any edge on the path has a recorded jump thread.
 
 2013-10-21  Ian Lance Taylor  <iant@google.com>
 
