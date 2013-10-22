@@ -1,3 +1,8 @@
+2013-10-22  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (notice_update_cc): Handle register conflict
+	with PRE_DEC.
+
 2013-10-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/contrib.texi ([Fran@,{c}ois Dumont], [Tim Shen],
