@@ -239,6 +239,15 @@ DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
    as MOVS and STOS (without a REP prefix) to move/set sequences of bytes.  */
 DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop", m_386 | m_P4_NOCONA)
 
+/* TARGET_MISALIGNED_MOVE_STRING_PROLOGUES: Enable generation of compace
+   prologues and epilogues by issuing a misaligned moves.  This require
+   target to handle misaligned moves and partial memory stalls resonably
+   well.  
+   FIXME: This actualy may be a win on more targets than listed here.  */
+DEF_TUNE (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES,
+	  "misaligned_move_string_prologues",
+	  m_386 | m_486 | m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC)
+
 /* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
 DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
