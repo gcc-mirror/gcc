@@ -1,3 +1,9 @@
+2013-10-22  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
+	meaning of merge-high and merge-low masks for little endian; avoid
+	use of vector-pack masks for little endian for mismatched modes.
+
 2013-10-22  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/tilepro/tilepro.c: Include "tree.h".

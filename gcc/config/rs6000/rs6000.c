@@ -28838,17 +28838,23 @@ altivec_expand_vec_perm_const (rtx operands[4])
       {  1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31 } },
     { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum,
       {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrghb,
+    { OPTION_MASK_ALTIVEC, 
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb : CODE_FOR_altivec_vmrglb,
       {  0, 16,  1, 17,  2, 18,  3, 19,  4, 20,  5, 21,  6, 22,  7, 23 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrghh,
+    { OPTION_MASK_ALTIVEC,
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghh : CODE_FOR_altivec_vmrglh,
       {  0,  1, 16, 17,  2,  3, 18, 19,  4,  5, 20, 21,  6,  7, 22, 23 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrghw,
+    { OPTION_MASK_ALTIVEC,
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghw : CODE_FOR_altivec_vmrglw,
       {  0,  1,  2,  3, 16, 17, 18, 19,  4,  5,  6,  7, 20, 21, 22, 23 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrglb,
+    { OPTION_MASK_ALTIVEC,
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglb : CODE_FOR_altivec_vmrghb,
       {  8, 24,  9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrglh,
+    { OPTION_MASK_ALTIVEC,
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglh : CODE_FOR_altivec_vmrghh,
       {  8,  9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vmrglw,
+    { OPTION_MASK_ALTIVEC,
+      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw : CODE_FOR_altivec_vmrghw,
       {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } },
     { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgew,
       {  0,  1,  2,  3, 16, 17, 18, 19,  8,  9, 10, 11, 24, 25, 26, 27 } },
@@ -28980,6 +28986,26 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	  enum insn_code icode = patterns[j].impl;
 	  enum machine_mode omode = insn_data[icode].operand[0].mode;
 	  enum machine_mode imode = insn_data[icode].operand[1].mode;
+
+	  /* For little-endian, don't use vpkuwum and vpkuhum if the
+	     underlying vector type is not V4SI and V8HI, respectively.
+	     For example, using vpkuwum with a V8HI picks up the even
+	     halfwords (BE numbering) when the even halfwords (LE
+	     numbering) are what we need.  */
+	  if (!BYTES_BIG_ENDIAN
+	      && icode == CODE_FOR_altivec_vpkuwum
+	      && ((GET_CODE (op0) == REG
+		   && GET_MODE (op0) != V4SImode)
+		  || (GET_CODE (op0) == SUBREG
+		      && GET_MODE (XEXP (op0, 0)) != V4SImode)))
+	    continue;
+	  if (!BYTES_BIG_ENDIAN
+	      && icode == CODE_FOR_altivec_vpkuhum
+	      && ((GET_CODE (op0) == REG
+		   && GET_MODE (op0) != V8HImode)
+		  || (GET_CODE (op0) == SUBREG
+		      && GET_MODE (XEXP (op0, 0)) != V8HImode)))
+	    continue;
 
           /* For little-endian, the two input operands must be swapped
              (or swapped back) to ensure proper right-to-left numbering
