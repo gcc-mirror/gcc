@@ -1,3 +1,9 @@
+2013-10-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58816
+	* pt.c (apply_late_template_attributes): Use get_attribute_name,
+	not TREE_PURPOSE.
+
 2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58466
