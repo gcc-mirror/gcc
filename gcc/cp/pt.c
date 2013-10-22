@@ -8610,7 +8610,7 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 		 pass it through tsubst.  Attributes like mode, format,
 		 cleanup and several target specific attributes expect it
 		 unmodified.  */
-	      else if (attribute_takes_identifier_p (TREE_PURPOSE (t)))
+	      else if (attribute_takes_identifier_p (get_attribute_name (t)))
 		{
 		  tree chain
 		    = tsubst_expr (TREE_CHAIN (TREE_VALUE (t)), args, complain,
