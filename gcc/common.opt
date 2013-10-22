@@ -2412,12 +2412,16 @@ Common JoinedOrMissing
 Generate debug information in default extended format
 
 gno-pubnames
-Common RejectNegative Var(debug_generate_pub_sections, 0) Init(-1)
+Common Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
 Don't generate DWARF pubnames and pubtypes sections.
 
 gpubnames
-Common RejectNegative Var(debug_generate_pub_sections, 1)
+Common Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
 Generate DWARF pubnames and pubtypes sections.
+
+ggnu-pubnames
+Common Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
+Generate DWARF pubnames and pubtypes sections with GNU extensions.
 
 gno-record-gcc-switches
 Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)

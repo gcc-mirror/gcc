@@ -5087,6 +5087,12 @@ possible.
 @opindex gpubnames
 Generate dwarf .debug_pubnames and .debug_pubtypes sections.
 
+@item -ggnu-pubnames
+@opindex ggnu-pubnames
+Generate .debug_pubnames and .debug_pubtypes sections in a format
+suitable for conversion into a GDB@ index.  This option is only useful
+with a linker that can produce GDB@ index version 7.
+
 @item -gstabs
 @opindex gstabs
 Produce debugging information in stabs format (if that is supported),
