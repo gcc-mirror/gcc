@@ -1,8 +1,8 @@
-/* Test typedef redeclaration in C1X.  */
+/* Test typedef redeclaration in C11.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
-/* C1X permits typedefs to be redeclared to the same type, but not to
+/* C11 permits typedefs to be redeclared to the same type, but not to
    different-but-compatible types, and not when the type is variably
    modified.  */
 

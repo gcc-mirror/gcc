@@ -1,6 +1,6 @@
-/* Test C1X alignment support.  Test invalid code.  */
+/* Test C11 alignment support.  Test invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 int a = _Alignof (void (void)); /* { dg-error "function" } */
 struct s;

@@ -3,7 +3,7 @@
 /* { dg-do preprocess } */
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
-/* This test checks that the C90 macros (but not the C99 or C1X ones)
+/* This test checks that the C90 macros (but not the C99 or C11 ones)
    are defined; it does not check the correctness of their values.  */
 
 #include <float.h>

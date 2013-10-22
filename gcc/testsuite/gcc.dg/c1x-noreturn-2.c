@@ -1,6 +1,6 @@
-/* Test C1X _Noreturn.  Test valid code using stdnoreturn.h.  */
+/* Test C11 _Noreturn.  Test valid code using stdnoreturn.h.  */
 /* { dg-do run } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 #include <stdnoreturn.h>
 

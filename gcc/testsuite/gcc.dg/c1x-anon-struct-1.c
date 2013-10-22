@@ -1,6 +1,6 @@
-/* Test for anonymous structures and unions in C1X.  */
+/* Test for anonymous structures and unions in C11.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 #include <stddef.h>
 

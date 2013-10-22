@@ -1,6 +1,6 @@
-/* Test C1X constraint against pointer / floating-point casts.  */
+/* Test C11 constraint against pointer / floating-point casts.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 void *p;
 float f;

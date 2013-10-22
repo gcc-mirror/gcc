@@ -1,6 +1,6 @@
-/* Test C1X static assertions.  Invalid assertions.  */
+/* Test C11 static assertions.  Invalid assertions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 _Static_assert (__INT_MAX__ * 2, "overflow"); /* { dg-warning "integer overflow in expression" } */
 /* { dg-error "overflow in constant expression" "error" { target *-*-* } 5 } */
