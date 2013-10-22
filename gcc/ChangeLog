@@ -1,3 +1,7 @@
+2013-10-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-ter.h: Remove duplicate copy of file contents.
+
 2013-10-21  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/58809
