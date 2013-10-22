@@ -1,3 +1,15 @@
+2013-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58779
+	* config/i386/i386.c (put_condition_code) <case GTU, case LEU>:
+	Remove CCCmode handling.
+	<case LTU>: Return 'c' suffix for CCCmode.
+	<case GEU>: Return 'nc' suffix for CCCmode.
+	(ix86_cc_mode) <case GTU, case LEU>: Do not generate overflow checks.
+	* config/i386/i386.md (*sub<mode>3_cconly_overflow): Remove.
+	(*sub<mode>3_cc_overflow): Ditto.
+	(*subsi3_zext_cc_overflow): Ditto.
+
 2013-10-22  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c (mips_rtx_costs):  Fix cost estimate for nor

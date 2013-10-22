@@ -1,3 +1,10 @@
+2013-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58779
+	* gcc.target/i386/pr30315.c: Remove MINUSCC, DECCC, MINUSCCONLY
+	and MINUSCCZEXT defines. Update scan-assembler dg directive.
+	* gcc.dg/torture/pr58779.c: New test.
+
 2013-10-22  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.target/mips/nor.c: New.
@@ -27,8 +34,7 @@
 2013-10-21  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort().
-	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort() and
-	exit().
+	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort() and exit().
 
 2013-10-21  Richard Biener  <rguenther@suse.de>
 
@@ -228,8 +234,8 @@
 
 2013-10-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* gcc.dg/torture/pr58670.c (ASM_STR) [__i386__ || __x86_64__]: Use
-	btsl.
+	* gcc.dg/torture/pr58670.c (ASM_STR) [__i386__ || __x86_64__]:
+	Use btsl.
 
 2013-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 

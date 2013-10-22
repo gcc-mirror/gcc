@@ -14103,8 +14103,6 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
 	 Those same assemblers have the same but opposite lossage on cmov.  */
       if (mode == CCmode)
 	suffix = fp ? "nbe" : "a";
-      else if (mode == CCCmode)
-	suffix = "b";
       else
 	gcc_unreachable ();
       break;
@@ -14126,8 +14124,12 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
 	}
       break;
     case LTU:
-      gcc_assert (mode == CCmode || mode == CCCmode);
-      suffix = "b";
+      if (mode == CCmode)
+	suffix = "b";
+      else if (mode == CCCmode)
+	suffix = "c";
+      else
+	gcc_unreachable ();
       break;
     case GE:
       switch (mode)
@@ -14147,20 +14149,20 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
 	}
       break;
     case GEU:
-      /* ??? As above.  */
-      gcc_assert (mode == CCmode || mode == CCCmode);
-      suffix = fp ? "nb" : "ae";
+      if (mode == CCmode)
+	suffix = fp ? "nb" : "ae";
+      else if (mode == CCCmode)
+	suffix = "nc";
+      else
+	gcc_unreachable ();
       break;
     case LE:
       gcc_assert (mode == CCmode || mode == CCGCmode || mode == CCNOmode);
       suffix = "le";
       break;
     case LEU:
-      /* ??? As above.  */
       if (mode == CCmode)
 	suffix = "be";
-      else if (mode == CCCmode)
-	suffix = fp ? "nb" : "ae";
       else
 	gcc_unreachable ();
       break;
@@ -18862,12 +18864,7 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	return CCmode;
     case GTU:			/* CF=0 & ZF=0 */
     case LEU:			/* CF=1 | ZF=1 */
-      /* Detect overflow checks.  They need just the carry flag.  */
-      if (GET_CODE (op0) == MINUS
-	  && rtx_equal_p (op1, XEXP (op0, 0)))
-	return CCCmode;
-      else
-	return CCmode;
+      return CCmode;
       /* Codes possibly doable only with sign flag when
          comparing against zero.  */
     case GE:			/* SF=OF   or   SF=0 */
