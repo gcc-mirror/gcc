@@ -1,7 +1,7 @@
-/* Test C1X alignment support.  Test reducing alignment (assumes there
+/* Test C11 alignment support.  Test reducing alignment (assumes there
    are at least some alignment constraints).  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 /* { dg-skip-if "no alignment constraints" { "avr-*-*" } { "*" } { "" } } */
 
 #include <stddef.h>

@@ -1,10 +1,10 @@
-/* Test Unicode strings in C1X.  Test valid code.  */
+/* Test Unicode strings in C11.  Test valid code.  */
 /* { dg-do run } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 /* More thorough tests are in c-c++-common/raw-string-*.c; this test
    verifies the particular subset (Unicode but not raw strings) that
-   is in C1X.  */
+   is in C11.  */
 
 typedef __CHAR16_TYPE__ char16_t;
 typedef __CHAR32_TYPE__ char32_t;

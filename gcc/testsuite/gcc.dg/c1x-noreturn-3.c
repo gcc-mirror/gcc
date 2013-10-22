@@ -1,6 +1,6 @@
-/* Test C1X _Noreturn.  Test _Noreturn on main, hosted.  */
+/* Test C11 _Noreturn.  Test _Noreturn on main, hosted.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors -fhosted" } */
+/* { dg-options "-std=c11 -pedantic-errors -fhosted" } */
 
 _Noreturn void exit (int);
 

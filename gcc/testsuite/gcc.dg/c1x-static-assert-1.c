@@ -1,6 +1,6 @@
-/* Test C1X static assertions.  Valid assertions.  */
+/* Test C11 static assertions.  Valid assertions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 _Static_assert (1, "foo");
 

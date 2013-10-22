@@ -1,6 +1,6 @@
-/* Test C1X _Noreturn.  Test valid code.  */
+/* Test C11 _Noreturn.  Test valid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 _Noreturn void exit (int);
 

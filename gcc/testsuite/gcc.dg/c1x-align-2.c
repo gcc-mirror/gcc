@@ -1,6 +1,6 @@
-/* Test C1X alignment support.  Test valid code using stdalign.h.  */
+/* Test C11 alignment support.  Test valid code using stdalign.h.  */
 /* { dg-do run } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 #include <stdalign.h>
 #include <stddef.h>

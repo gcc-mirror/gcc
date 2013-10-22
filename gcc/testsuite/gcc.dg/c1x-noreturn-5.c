@@ -1,6 +1,6 @@
-/* Test C1X _Noreturn.  Test invalid uses.  */
+/* Test C11 _Noreturn.  Test invalid uses.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 _Noreturn struct s; /* { dg-error "empty declaration" } */
 

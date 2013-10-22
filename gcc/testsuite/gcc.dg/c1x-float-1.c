@@ -1,9 +1,9 @@
-/* Test for <float.h> C1X macros.  */
+/* Test for <float.h> C11 macros.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
-/* This test checks that the C1X macros are defined;
+/* This test checks that the C11 macros are defined;
    it does not check the correctness of their values.  */
 
 #include <float.h>

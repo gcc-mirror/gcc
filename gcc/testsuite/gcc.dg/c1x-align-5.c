@@ -1,6 +1,6 @@
-/* Test C1X alignment support.  Test invalid code.  */
+/* Test C11 alignment support.  Test invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 void foo (int []);
 void bar1 (int [_Alignas (double) 10]); /* { dg-error "expected expression before" } */

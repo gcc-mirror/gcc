@@ -1,7 +1,7 @@
-/* Test for anonymous structures and unions in C1X.  Test for invalid
+/* Test for anonymous structures and unions in C11.  Test for invalid
    cases: typedefs disallowed by N1549.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 typedef struct
 {

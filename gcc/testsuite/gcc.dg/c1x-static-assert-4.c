@@ -1,6 +1,6 @@
-/* Test C1X static assertions.  More invalid assertions.  */
+/* Test C11 static assertions.  More invalid assertions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 /* Static assertions not valid in old-style parameter declarations
    because declarations there must have declarators.  */
