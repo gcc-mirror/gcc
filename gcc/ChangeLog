@@ -1,3 +1,8 @@
+2013-10-22  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_rtx_costs):  Fix cost estimate for nor
+	(AND (NOT OP1) (NOT OP2)).
+
 2013-10-22  Bill Schmidt  <wschmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
