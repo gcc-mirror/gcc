@@ -1,3 +1,7 @@
+2013-10-22  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/mips/nor.c: New.
+
 2013-10-22  Bill Schmidt  <wschmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/altivec-perm-1.c: Move the two vector pack
