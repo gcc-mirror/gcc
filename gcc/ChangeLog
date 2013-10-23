@@ -1,3 +1,11 @@
+2013-10-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57488
+	* tree-ssa-pre.c (insert): Clear NEW sets before each iteration.
+
 2013-10-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
         Backport from mainline
