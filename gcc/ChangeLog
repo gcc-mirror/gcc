@@ -1,3 +1,35 @@
+2013-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58775
+	PR tree-optimization/58791
+	* tree-ssa-reassoc.c (reassoc_stmt_dominates_stmt_p): New function.
+	(insert_stmt_after): Rewritten, don't move the stmt, but really
+	insert it.
+	(get_stmt_uid_with_default): Remove.
+	(build_and_add_sum): Use insert_stmt_after and
+	reassoc_stmt_dominates_stmt_p.  Fix up uid if bb contains only
+	labels.
+	(update_range_test): Set uid on stmts added by
+	force_gimple_operand_gsi.  Don't immediately modify statements
+	in inter-bb optimization, just update oe->op values.
+	(optimize_range_tests): Return bool whether any changed have
+	been made.
+	(update_ops): New function.
+	(struct inter_bb_range_test_entry): New type.
+	(maybe_optimize_range_tests): Perform statement changes here.
+	(not_dominated_by, appears_later_in_bb, get_def_stmt,
+	ensure_ops_are_available): Remove.
+	(find_insert_point): Rewritten.
+	(rewrite_expr_tree): Remove MOVED argument, add CHANGED argument,
+	return LHS of the (new resp. old) stmt.  Don't call
+	ensure_ops_are_available, don't reuse SSA_NAMEs, recurse first
+	instead of last, move new stmt at the right place.
+	(linearize_expr, repropagate_negates): Don't reuse SSA_NAMEs.
+	(negate_value): Likewise.  Set uids.
+	(break_up_subtract_bb): Initialize uids.
+	(reassociate_bb): Adjust rewrite_expr_tree caller.
+	(do_reassoc): Don't call renumber_gimple_stmt_uids.
+
 2013-10-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/58838
