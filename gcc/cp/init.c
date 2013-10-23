@@ -312,60 +312,55 @@ build_value_init (tree type, tsubst_flags_t complain)
 
      To value-initialize an object of type T means:
 
-     - if T is a class type (clause 9) with a user-provided constructor
-       (12.1), then the default constructor for T is called (and the
-       initialization is ill-formed if T has no accessible default
-       constructor);
+     - if T is a class type (clause 9) with either no default constructor
+       (12.1) or a default constructor that is user-provided or deleted,
+       then then the object is default-initialized;
 
-     - if T is a non-union class type without a user-provided constructor,
-       then every non-static data member and base-class component of T is
-       value-initialized;92)
+     - if T is a (possibly cv-qualified) class type without a user-provided
+       or deleted default constructor, then the object is zero-initialized
+       and the semantic constraints for default-initialization are checked,
+       and if T has a non-trivial default constructor, the object is
+       default-initialized;
 
      - if T is an array type, then each element is value-initialized;
 
      - otherwise, the object is zero-initialized.
 
      A program that calls for default-initialization or
-     value-initialization of an entity of reference type is ill-formed.
-
-     92) Value-initialization for such a class object may be implemented by
-     zero-initializing the object and then calling the default
-     constructor.  */
+     value-initialization of an entity of reference type is ill-formed.  */
 
   /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
   gcc_assert (!processing_template_decl
 	      || (SCALAR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE));
 
-  if (CLASS_TYPE_P (type))
+  if (type_build_ctor_call (type))
     {
-      /* Instead of the above, only consider the user-providedness of the
-	 default constructor itself so value-initializing a class with an
-	 explicitly defaulted default constructor and another user-provided
-	 constructor works properly (c++std-core-19883).  */
-      if (type_has_user_provided_default_constructor (type)
-	  || (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type)
-	      && type_has_user_provided_constructor (type)))
-	return build_aggr_init_expr
-	  (type,
-	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
-				      NULL, type, LOOKUP_NORMAL,
-				      complain));
+      tree ctor = build_aggr_init_expr
+	(type,
+	 build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				    NULL, type, LOOKUP_NORMAL,
+				    complain));
+      if (ctor == error_mark_node
+	  || type_has_user_provided_default_constructor (type))
+	return ctor;
       else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
 	     the object and then call the implicitly defined ctor.
 	     This will be handled in simplify_aggr_init_expr.  */
-	  tree ctor = build_special_member_call
-	    (NULL_TREE, complete_ctor_identifier,
-	     NULL, type, LOOKUP_NORMAL, complain);
-	  ctor = build_aggr_init_expr (type, ctor);
-	  if (ctor != error_mark_node)
-	    AGGR_INIT_ZERO_FIRST (ctor) = 1;
+	  AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
 	}
     }
-  return build_value_init_noctor (type, complain);
+
+  /* Discard any access checking during subobject initialization;
+     the checks are implied by the call to the ctor which we have
+     verified is OK (cpp0x/defaulted46.C).  */
+  push_deferring_access_checks (dk_deferred);
+  tree r = build_value_init_noctor (type, complain);
+  pop_deferring_access_checks ();
+  return r;
 }
 
 /* Like build_value_init, but don't call the constructor for TYPE.  Used
@@ -503,14 +498,15 @@ perform_target_ctor (tree init)
   finish_expr_stmt (build_aggr_init (decl, init,
 				     LOOKUP_NORMAL|LOOKUP_DELEGATING_CONS,
 				     tf_warning_or_error));
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+  if (type_build_dtor_call (type))
     {
       tree expr = build_delete (type, decl, sfk_complete_destructor,
 				LOOKUP_NORMAL
 				|LOOKUP_NONVIRTUAL
 				|LOOKUP_DESTRUCTOR,
 				0, tf_warning_or_error);
-      if (expr != error_mark_node)
+      if (expr != error_mark_node
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	finish_eh_cleanup (expr);
     }
 }
@@ -732,7 +728,7 @@ perform_member_init (tree member, tree init)
 						tf_warning_or_error));
     }
 
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+  if (type_build_dtor_call (type))
     {
       tree expr;
 
@@ -744,7 +740,8 @@ perform_member_init (tree member, tree init)
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0,
 			   tf_warning_or_error);
 
-      if (expr != error_mark_node)
+      if (expr != error_mark_node
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	finish_eh_cleanup (expr);
     }
 }
@@ -1192,7 +1189,7 @@ expand_cleanup_for_base (tree binfo, tree flag)
 {
   tree expr;
 
-  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (binfo)))
+  if (!type_build_dtor_call (BINFO_TYPE (binfo)))
     return;
 
   /* Call the destructor.  */
@@ -1202,6 +1199,10 @@ expand_cleanup_for_base (tree binfo, tree flag)
 				    binfo,
 				    LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
                                     tf_warning_or_error);
+
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (binfo)))
+    return;
+
   if (flag)
     expr = fold_build3_loc (input_location,
 			COND_EXPR, void_type_node,
@@ -2360,7 +2361,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   is_initialized = (type_build_ctor_call (elt_type) || *init != NULL);
 
-  if (*init == NULL)
+  if (*init == NULL && cxx_dialect < cxx11)
     {
       bool maybe_uninitialized_error = false;
       /* A program that calls for default-initialization [...] of an
@@ -3152,8 +3153,21 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 
   size_exp = size_in_bytes (type);
 
-  if (! MAYBE_CLASS_TYPE_P (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+  if (! MAYBE_CLASS_TYPE_P (type))
     goto no_destructor;
+  else if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+    {
+      /* Make sure the destructor is callable.  */
+      if (type_build_dtor_call (type))
+	{
+	  tmp = build_delete (ptype, base, sfk_complete_destructor,
+			      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1,
+			      complain);
+	  if (tmp == error_mark_node)
+	    return error_mark_node;
+	}
+      goto no_destructor;
+    }
 
   /* The below is short by the cookie size.  */
   virtual_size = size_binop (MULT_EXPR, size_exp,
@@ -3829,7 +3843,7 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags,
    flags.  See cp-tree.h for more info.  */
 
 tree
-build_delete (tree type, tree addr, special_function_kind auto_delete,
+build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	      int flags, int use_global_delete, tsubst_flags_t complain)
 {
   tree expr;
@@ -3837,22 +3851,33 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
   if (addr == error_mark_node)
     return error_mark_node;
 
+  tree type = TYPE_MAIN_VARIANT (otype);
+
   /* Can happen when CURRENT_EXCEPTION_OBJECT gets its type
      set to `error_mark_node' before it gets properly cleaned up.  */
   if (type == error_mark_node)
     return error_mark_node;
 
-  type = TYPE_MAIN_VARIANT (type);
+  if (TREE_CODE (type) == POINTER_TYPE)
+    type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
-  addr = mark_rvalue_use (addr);
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (type) == NULL_TREE)
+	{
+	  if (complain & tf_error)
+	    error ("unknown array size in delete");
+	  return error_mark_node;
+	}
+      return build_vec_delete (addr, array_type_nelts (type),
+			       auto_delete, use_global_delete, complain);
+    }
 
-  if (TYPE_PTR_P (type))
+  if (TYPE_PTR_P (otype))
     {
       bool complete_p = true;
 
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	goto handle_array;
+      addr = mark_rvalue_use (addr);
 
       /* We don't want to warn about delete of void*, only other
 	  incomplete types.  Deleting other incomplete types
@@ -3908,19 +3933,6 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       /* Throw away const and volatile on target type of addr.  */
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-    handle_array:
-
-      if (TYPE_DOMAIN (type) == NULL_TREE)
-	{
-	  if (complain & tf_error)
-	    error ("unknown array size in delete");
-	  return error_mark_node;
-	}
-      return build_vec_delete (addr, array_type_nelts (type),
-			       auto_delete, use_global_delete, complain);
-    }
   else
     {
       /* Don't check PROTECT here; leave that decision to the
@@ -3935,10 +3947,18 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
 
-  gcc_assert (MAYBE_CLASS_TYPE_P (type));
-
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
+      /* Make sure the destructor is callable.  */
+      if (type_build_dtor_call (type))
+	{
+	  expr = build_dtor_call (cp_build_indirect_ref (addr, RO_NULL,
+							 complain),
+				  sfk_complete_destructor, flags, complain);
+	  if (expr == error_mark_node)
+	    return error_mark_node;
+	}
+
       if (auto_delete != sfk_deleting_destructor)
 	return void_zero_node;
 
@@ -4062,7 +4082,7 @@ push_base_cleanups (void)
       for (vbases = CLASSTYPE_VBASECLASSES (current_class_type), i = 0;
 	   vec_safe_iterate (vbases, i, &base_binfo); i++)
 	{
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
+	  if (type_build_dtor_call (BINFO_TYPE (base_binfo)))
 	    {
 	      expr = build_special_member_call (current_class_ref,
 						base_dtor_identifier,
@@ -4070,10 +4090,13 @@ push_base_cleanups (void)
 						base_binfo,
 						(LOOKUP_NORMAL
 						 | LOOKUP_NONVIRTUAL),
-                                                tf_warning_or_error);
-	      expr = build3 (COND_EXPR, void_type_node, cond,
-			     expr, void_zero_node);
-	      finish_decl_cleanup (NULL_TREE, expr);
+						tf_warning_or_error);
+	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
+		{
+		  expr = build3 (COND_EXPR, void_type_node, cond,
+				 expr, void_zero_node);
+		  finish_decl_cleanup (NULL_TREE, expr);
+		}
 	    }
 	}
     }
@@ -4082,8 +4105,8 @@ push_base_cleanups (void)
   for (binfo = TYPE_BINFO (current_class_type), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
-	  || BINFO_VIRTUAL_P (base_binfo))
+      if (BINFO_VIRTUAL_P (base_binfo)
+	  || !type_build_dtor_call (BINFO_TYPE (base_binfo)))
 	continue;
 
       expr = build_special_member_call (current_class_ref,
@@ -4091,7 +4114,8 @@ push_base_cleanups (void)
 					NULL, base_binfo,
 					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
                                         tf_warning_or_error);
-      finish_decl_cleanup (NULL_TREE, expr);
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
+	finish_decl_cleanup (NULL_TREE, expr);
     }
 
   /* Don't automatically destroy union members.  */
@@ -4108,7 +4132,7 @@ push_base_cleanups (void)
 	continue;
       if (ANON_UNION_TYPE_P (this_type))
 	continue;
-      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (this_type))
+      if (type_build_dtor_call (this_type))
 	{
 	  tree this_member = (build_class_member_access_expr
 			      (current_class_ref, member,
@@ -4119,7 +4143,8 @@ push_base_cleanups (void)
 			       sfk_complete_destructor,
 			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
 			       0, tf_warning_or_error);
-	  finish_decl_cleanup (NULL_TREE, expr);
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (this_type))
+	    finish_decl_cleanup (NULL_TREE, expr);
 	}
     }
 }

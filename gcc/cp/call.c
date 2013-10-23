@@ -9273,6 +9273,9 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 	    static_aggregates = tree_cons (NULL_TREE, var,
 					   static_aggregates);
 	}
+      else
+	/* Check whether the dtor is callable.  */
+	cxx_maybe_build_cleanup (var, tf_warning_or_error);
     }
 
   *initp = init;

@@ -12,6 +12,6 @@ struct B: A { };		// { dg-error "deleted" }
 extern B eb;
 int main()
 {
-  B* b1 = new B;		// { dg-error "use of deleted function" "" { xfail *-*-* } }
+  B* b1 = new B;		// { dg-error "use of deleted function" }
   B* b2 = new B(eb);		// { dg-error "use of deleted function" }
 }

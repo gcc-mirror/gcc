@@ -1,3 +1,30 @@
+2013-10-23  Jason Merrill  <jason@redhat.com>
+
+	In C++11 a trivial [cd]tor might not be callable.
+	* class.c (user_provided_p): A function deleted on its declation
+	in the class is not user-provided.
+	(type_build_ctor_call): Also force a ctor call if we
+	might have a deleted or private trivial ctor.
+	(type_build_dtor_call): New.
+	(deduce_noexcept_on_destructors): Remove obsolete code.
+	* cp-tree.h: Declare type_build_dtor_call.
+	* decl.c (expand_static_init): Make sure trivial dtors are callable.
+	(cxx_maybe_build_cleanup): Likewise.
+	* except.c (build_throw): Likewise.
+	* init.c (build_value_init): Handle trivial but not callable ctors.
+	(perform_target_ctor): Make sure trivial dtor is callable.
+	(perform_member_init): Likewise.
+	(expand_cleanup_for_base): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_delete): Likewise.
+	(push_base_cleanups): Likewise.
+	(build_new_1): Avoid redundant error.
+	* method.c (synthesized_method_walk): Can't ever exit early in C++11.
+	Always process the subobject destructor.
+	* semantics.c (finish_compound_literal): Make sure trivial dtor is
+	callable.
+	* typeck2.c (split_nonconstant_init): Likewise.
+
 2013-10-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++14 [[deprecated]] modulo [[gnu::deprecated]] bugs.

@@ -62,7 +62,7 @@ int main()
 {
   F f;
   F f2(f);			// { dg-error "use" }
-  B* b = new const B;		// { dg-error "uninitialized const" }
+  const B* b = new const B;		// { dg-error "uninitialized const" }
   U u;				// { dg-error "deleted" }
 }
 
