@@ -1,3 +1,11 @@
+2013-10-22  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3779 - User-defined Literals for std::complex,
+	part 2 of UDL for Standard Library Types
+	* include/std/complex: Add complex literal operators.
+	* testsuite/26_numerics/complex/literals/types.cc: New.
+	* testsuite/26_numerics/complex/literals/values.cc: New.
+
 2013-10-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/58804
