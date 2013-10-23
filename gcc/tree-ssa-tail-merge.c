@@ -304,7 +304,8 @@ stmt_local_def (gimple stmt)
   tree val;
   def_operand_p def_p;
 
-  if (gimple_has_side_effects (stmt))
+  if (gimple_has_side_effects (stmt)
+      || gimple_vdef (stmt) != NULL_TREE)
     return false;
 
   def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);

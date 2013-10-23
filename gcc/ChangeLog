@@ -1,3 +1,8 @@
+2013-10-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/58805
+	* tree-ssa-tail-merge.c (stmt_local_def): Add gimple_vdef check.
+
 2013-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_recog_divmod_pattern): Optimize
