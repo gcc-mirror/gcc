@@ -1,3 +1,11 @@
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58815
+	* include/decimal/decimal (decimal32::operator long long(),
+	decimal64::operator long long(), decimal128::operator long long()):
+	Add in c++11 mode per n3407.
+	* testsuite/decimal/pr58815.cc: New.
+
 2013-10-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/basic_string.h (operator""s): Remove space between quotes
