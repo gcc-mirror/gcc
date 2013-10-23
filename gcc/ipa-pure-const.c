@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "tree-cfg.h"
-#include "tree-ssa-loop.h"
+#include "tree-ssa-loop-niter.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "langhooks.h"
