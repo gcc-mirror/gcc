@@ -417,6 +417,9 @@ namespace wi
   template <typename T1, typename T2>
   unsigned int get_binary_precision (const T1 &, const T2 &);
 
+  template <typename T1, typename T2>
+  void copy (T1 &, const T2 &);
+
 #define UNARY_PREDICATE \
   template <typename T> bool
 #define UNARY_FUNCTION \
@@ -954,10 +957,7 @@ inline wide_int_storage::wide_int_storage (const T &x)
   STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision);
   wide_int_ref xi (x);
   precision = xi.precision;
-  unsigned int l = xi.len;
-  for (unsigned int i = 0; i < l; ++i)
-    val[i] = xi.val[i];
-  set_len (l);
+  wi::copy (*this, xi);
 }
 
 inline unsigned int
@@ -1090,10 +1090,7 @@ inline fixed_wide_int_storage <N>::fixed_wide_int_storage (const T &x)
   /* Check for type compatibility.  We don't want to initialize a
      fixed-width integer from something like a wide_int.  */
   WI_BINARY_RESULT (T, FIXED_WIDE_INT (N)) *assertion ATTRIBUTE_UNUSED;
-  wide_int_ref xi (x, N);
-  len = xi.len;
-  for (unsigned int i = 0; i < len; ++i)
-    val[i] = xi.val[i];
+  wi::copy (*this, wide_int_ref (x, N));
 }
 
 template <int N>
@@ -1405,6 +1402,21 @@ wi::get_binary_precision (const T1 &x, const T2 &y)
 			get_binary_result (x, y));
 }
 
+/* Copy the contents of Y to X, but keeping X's current precision.  */
+template <typename T1, typename T2>
+inline void
+wi::copy (T1 &x, const T2 &y)
+{
+  HOST_WIDE_INT *xval = x.write_val ();
+  const HOST_WIDE_INT *yval = y.get_val ();
+  unsigned int len = y.get_len ();
+  unsigned int i = 0;
+  do
+    xval[i] = yval[i];
+  while (++i < len);
+  x.set_len (len);
+}
+
 /* Return true if X fits in a HOST_WIDE_INT with no loss of
    precision.  */
 template <typename T>
@@ -1708,16 +1720,7 @@ template <typename T>
 inline WI_UNARY_RESULT (T)
 wi::abs (const T &x)
 {
-  if (neg_p (x))
-    return neg (x);
-
-  WI_UNARY_RESULT_VAR (result, val, T, x);
-  wide_int_ref xi (x, get_precision (result));
-  for (unsigned int i = 0; i < xi.len; ++i)
-    val[i] = xi.val[i];
-  result.set_len (xi.len);
-
-  return result;
+  return neg_p (x) ? neg (x) : x;
 }
 
 /* Return the result of sign-extending the low OFFSET bits of X.  */
@@ -1752,9 +1755,7 @@ wi::zext (const T &x, unsigned int offset)
      maintain canonization.  */
   if (offset >= precision)
     {
-      for (unsigned int i = 0; i < xi.len; ++i)
-	val[i] = xi.val[i];
-      result.set_len (xi.len);
+      wi::copy (result, xi);
       return result;
     }
 
@@ -1801,22 +1802,12 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::min (const T1 &x, const T2 &y, signop sgn)
 {
-  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (result, val ATTRIBUTE_UNUSED, T1, x, T2, y);
   unsigned int precision = get_precision (result);
   if (wi::le_p (x, y, sgn))
-    {
-      wide_int_ref xi (x, precision);
-      for (unsigned int i = 0; i < xi.len; ++i)
-	val[i] = xi.val[i];
-      result.set_len (xi.len);
-    }
+    wi::copy (result, wide_int_ref (x, precision));
   else
-    {
-      wide_int_ref yi (y, precision);
-      for (unsigned int i = 0; i < yi.len; ++i)
-	val[i] = yi.val[i];
-      result.set_len (yi.len);
-    }
+    wi::copy (result, wide_int_ref (y, precision));
   return result;
 }
 
@@ -1842,22 +1833,12 @@ template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::max (const T1 &x, const T2 &y, signop sgn)
 {
-  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (result, val ATTRIBUTE_UNUSED, T1, x, T2, y);
   unsigned int precision = get_precision (result);
   if (wi::ge_p (x, y, sgn))
-    {
-      wide_int_ref xi (x, precision);
-      for (unsigned int i = 0; i < xi.len; ++i)
-	val[i] = xi.val[i];
-      result.set_len (xi.len);
-    }
+    wi::copy (result, wide_int_ref (x, precision));
   else
-    {
-      wide_int_ref yi (y, precision);
-      for (unsigned int i = 0; i < yi.len; ++i)
-	val[i] = yi.val[i];
-      result.set_len (yi.len);
-    }
+    wi::copy (result, wide_int_ref (y, precision));
   return result;
 }
 
