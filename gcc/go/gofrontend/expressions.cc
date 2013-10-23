@@ -3351,14 +3351,10 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	  return se->get_tree(context);
 	}
 
-      static tree int_to_string_fndecl;
-      ret = Gogo::call_builtin(&int_to_string_fndecl,
-			       this->location(),
-			       "__go_int_to_string",
-			       1,
-			       type_tree,
-			       int_type_tree,
-			       expr_tree);
+      Call_expression* i2s_expr =
+          Runtime::make_call(Runtime::INT_TO_STRING, this->location(), 1,
+                             this->expr_);
+      ret = i2s_expr->get_tree(context);
     }
   else if (type->is_string_type() && expr_type->is_slice_type())
     {
@@ -3408,29 +3404,18 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
     {
       Type* e = type->array_type()->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
+
+      Call_expression* s2a_expr;
       if (e->integer_type()->is_byte())
-	{
-	  tree string_to_byte_array_fndecl = NULL_TREE;
-	  ret = Gogo::call_builtin(&string_to_byte_array_fndecl,
-				   this->location(),
-				   "__go_string_to_byte_array",
-				   1,
-				   type_tree,
-				   TREE_TYPE(expr_tree),
-				   expr_tree);
-	}
+        s2a_expr = Runtime::make_call(Runtime::STRING_TO_BYTE_ARRAY,
+                                      this->location(), 1, this->expr_);
       else
 	{
 	  go_assert(e->integer_type()->is_rune());
-	  tree string_to_int_array_fndecl = NULL_TREE;
-	  ret = Gogo::call_builtin(&string_to_int_array_fndecl,
-				   this->location(),
-				   "__go_string_to_int_array",
-				   1,
-				   type_tree,
-				   TREE_TYPE(expr_tree),
-				   expr_tree);
+          s2a_expr = Runtime::make_call(Runtime::STRING_TO_INT_ARRAY,
+                                        this->location(), 1, this->expr_);
 	}
+      ret = s2a_expr->get_tree(context);
     }
   else if ((type->is_unsafe_pointer_type()
 	    && expr_type->points_to() != NULL)
