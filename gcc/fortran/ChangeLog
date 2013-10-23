@@ -1,3 +1,9 @@
+2013-10-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58793
+	* interface.c (compare_parameter): Reject passing TYPE(*)
+	to CLASS(*).
+
 2013-10-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran 57893
