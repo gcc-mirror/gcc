@@ -1,3 +1,7 @@
+2013-10-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr58830.c: New testcase.
+
 2013-10-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++14 [[deprecated]] modulo [[gnu::deprecated]] bugs.
