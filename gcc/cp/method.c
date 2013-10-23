@@ -1466,13 +1466,34 @@ maybe_explain_implicit_delete (tree decl)
 	  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
 	  tree parm_type = TREE_VALUE (parms);
 	  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+	  tree raises = NULL_TREE;
+	  bool deleted_p = false;
 	  tree scope = push_scope (ctype);
-	  inform (0, "%q+#D is implicitly deleted because the default "
-		 "definition would be ill-formed:", decl);
-	  pop_scope (scope);
+
 	  synthesized_method_walk (ctype, sfk, const_p,
-				   NULL, NULL, NULL, NULL, true,
+				   &raises, NULL, &deleted_p, NULL, false,
 				   DECL_INHERITED_CTOR_BASE (decl), parms);
+	  if (deleted_p)
+	    {
+	      inform (0, "%q+#D is implicitly deleted because the default "
+		      "definition would be ill-formed:", decl);
+	      synthesized_method_walk (ctype, sfk, const_p,
+				       NULL, NULL, NULL, NULL, true,
+				       DECL_INHERITED_CTOR_BASE (decl), parms);
+	    }
+	  else if (!comp_except_specs
+		   (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+		    raises, ce_normal))
+	    inform (DECL_SOURCE_LOCATION (decl), "%q#F is implicitly "
+		    "deleted because its exception-specification does not "
+		    "match the implicit exception-specification %qX",
+		    decl, raises);
+#ifdef ENABLE_CHECKING
+	  else
+	    gcc_unreachable ();
+#endif
+
+	  pop_scope (scope);
 	}
 
       input_location = loc;
@@ -1782,9 +1803,10 @@ defaulted_late_check (tree fn)
 			      eh_spec, ce_normal))
 	{
 	  if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	    error ("function %q+D defaulted on its first declaration "
-		   "with an exception-specification that differs from "
-		   "the implicit declaration %q#D", fn, implicit_fn);
+	    {
+	      DECL_DELETED_FN (fn) = true;
+	      eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	    }
 	  else
 	    error ("function %q+D defaulted on its redeclaration "
 		   "with an exception-specification that differs from "
