@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
 
 
 /* The GCC vectorizer generates loop versioning for the following loop
