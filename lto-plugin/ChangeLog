@@ -334,7 +334,7 @@
 	(claim_file_handler): Add n variable. Check return value of
 	process_symtab. Call resolve_conflicts.
 
-2010-07-27  Andi Kleen <ak@linux.intel.com>
+2010-07-27  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-plugin.c (translate): Remove debug fprintf.
 
@@ -343,7 +343,7 @@
 	PR bootstrap/45042
 	* lto-plugin.c (translate): Cast to unsigned long.
 
-2010-07-23   Andi Kleen <ak@linux.intel.com>
+2010-07-23   Andi Kleen  <ak@linux.intel.com>
 
 	PR lto/44992
 	* lto-plugin.c (sym_aux): Add.

@@ -83,7 +83,7 @@
 	* hashtab.c (hash_pointer): Remove conditional and avoid
 	unexecuted shift equal to wordsize.
 
-2013-04-22  Andi Kleen <ak@linux.intel.com>
+2013-04-22  Andi Kleen  <ak@linux.intel.com>
 
 	* hashtab.c (hash_pointer): Move to end of file and reimplement.
 
@@ -657,12 +657,12 @@
 	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY(C)): Delete.
 	* configure: Regenerate.
 
-2010-10-07  Andi Kleen <ak@linux.intel.com>
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
 
 	* configure: Regenerate.
 	* configure.ac: Turn PR_SET_NAME check into link check.
 
-2010-10-06  Andi Kleen <ak@linux.intel.com>
+2010-10-06  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in (CFILES): Add setproctitle.
 	(CONFIGURED_OFILES): Add setproctitle.

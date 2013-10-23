@@ -394,7 +394,7 @@
 	* c-family/array-notation-common.c (length_mismatch_in_expr_p): Delete
 	unused variables l_length and l_node.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* c-common.c (complete_array_type): Delay folding first index

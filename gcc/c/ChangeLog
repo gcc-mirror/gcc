@@ -220,7 +220,7 @@
 	PR c++/57793
 	* c-decl.c (finish_struct): Check for too-large class.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* c-typeck.c (set_init_index): When folding, check for index overflow.

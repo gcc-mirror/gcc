@@ -241,7 +241,7 @@
 	lto_register_function_decl_in_symtab): Update.
 	(read_cgraph_and_symbols): Update resolution_map handling.
 
-2013-06-11 Jan Hubicka  <jh@suse.cz>
+2013-06-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (get_symbol_class): Simplify weakref handling.
 	(add_symbol_to_partition_1): Likewise.
@@ -704,7 +704,7 @@
 	builtins on the fly in the future.  Change all uses, and poison
 	the old names.  Make sure 0 is not a legitimate builtin index.
 
-2011-10-02   Andi Kleen <ak@linux.intel.com>
+2011-10-02   Andi Kleen  <ak@linux.intel.com>
 
 	* lto-object.c (lto_obj_add_section_data): Add list.
 	(lto_obj_add_section): Fill in list.
@@ -743,7 +743,7 @@
 	lto_splay_tree_insert.
 	(lto_file_read): Use lto_splay_tree_new.
 
-2011-09-26   Andi Kleen <ak@linux.intel.com>
+2011-09-26   Andi Kleen  <ak@linux.intel.com>
 
 	* lto.c (lto_resolution_read): Remove id dumping.
 	(lto_section_with_id): Turn id HOST_WIDE_ID.
@@ -1118,7 +1118,7 @@
 
 	* lto.c (lto_balanced_map): Do not produce empty partitions.
 
-2010-10-06  Andi Kleen <ak@linux.intel.com>
+2010-10-06  Andi Kleen  <ak@linux.intel.com>
 
 	* lto.c (lto_process_name): Add.
 	(lto_main): Call lto_process_name.
@@ -1144,11 +1144,11 @@
 	(do_whole_program_analysis): Chose proper partitioning alg.
 	* Make-lang.in (lto.o): Add dependency on params.h
 
-2010-10-04  Andi Kleen <ak@linux.intel.com>
+2010-10-04  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in (lto1): Add + to build rule.
 
-2010-10-03  Andi Kleen <ak@linux.intel.com>
+2010-10-03  Andi Kleen  <ak@linux.intel.com>
 
     	* lto.c (lto_file_finalize): Replace gcc_assert for missing section
           with fatal_error.
@@ -1234,7 +1234,7 @@
 
 	* lto.c: Use FOR_EACH_VEC_ELT.
 
-2010-07-27  Andi Kleen <ak@linux.intel.com>
+2010-07-27  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in (lto.o): Add dependency to splay-tree.h
 
@@ -1251,7 +1251,7 @@
 	(LANG_HOOKS_OPTION_LANG_MASK, LANG_HOOKS_COMPLAIN_WRONG_LANG_P):
 	Define.
 
-2010-07-10   Andi Kleen <ak@linux.intel.com>
+2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	PR lto/44992
         * lto.c: Include splay-tree.h
@@ -1267,7 +1267,7 @@
 	(lto_flatten_file): Add.
 	(read_cgraph_and_symbols): Handle linked lists of file_datas.
 
-2010-07-10  Andi Kleen <ak@linux.intel.com>
+2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-coff.c (hash_name, eq_name): Move.
 	(lto_obj_build_section_table): Call lto_obj_create_section_hash_table.

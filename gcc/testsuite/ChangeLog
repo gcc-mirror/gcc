@@ -6082,7 +6082,7 @@
 	* gcc.target/arm/vselvsdf.c: Likewise.
 	* gcc.target/arm/vselvssf.c: Likewise.
 
-2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov at arm.com>
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Move test
 	body from here...
@@ -6970,7 +6970,7 @@
 	PR rtl-optimization/56151
 	* gcc.target/i386/pr56151.c: New test.
 
-2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
+2013-02-11  Sriraman Tallam  <tmsriram@google.com>
 
 	* g++.dg/ext/mv12.C: New test.
 	* g++.dg/ext/mv12.h: New file.
@@ -7151,7 +7151,7 @@
 	PR target/54131
 	* gfortran.dg/pr54131.f: New test.
 
-2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
+2013-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55789
 	* gfortran.dg/array_constructor_41.f90: New test.
