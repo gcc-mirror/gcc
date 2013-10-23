@@ -1,3 +1,10 @@
+2013-10-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/58838
+	* config/rs6000/rs6000.md (mulsi3_internal1 and splitter): Add
+	TARGET_32BIT final condition.
+	(mulsi3_internal2 and splitter): Same.
+
 2013-10-23  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_across_edge): Do not allow threading
