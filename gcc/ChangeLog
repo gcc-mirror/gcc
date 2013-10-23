@@ -1,3 +1,9 @@
+2013-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* doc/invoke.texi (Option Summary): Remove -fno-default-inline.
+	(C++ Dialect Options): Likewise.
+	(Optimize Options): Likewise.
+
 2013-10-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/58805
