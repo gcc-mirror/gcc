@@ -250,8 +250,11 @@ namespace decimal
     /// Conforming extension: Conversion from scalar decimal type.
     decimal32(__decfloat32 __z)			: __val(__z) {}
 
-    // 3.2.2.5  Conversion to integral type. (DISABLED)
-    //operator long long() const { return (long long)__val; }
+#if __cplusplus >= 201103L
+    // 3.2.2.5  Conversion to integral type.
+    // Note: explicit per n3407.
+    explicit operator long long() const { return (long long)__val; }
+#endif
 
     // 3.2.2.6  Increment and decrement operators.
     decimal32& operator++()
@@ -333,8 +336,11 @@ namespace decimal
     /// Conforming extension: Conversion from scalar decimal type.
     decimal64(__decfloat64 __z)			: __val(__z) {}
 
-    // 3.2.3.5  Conversion to integral type. (DISABLED)
-    //operator long long() const { return (long long)__val; }
+#if __cplusplus >= 201103L
+    // 3.2.3.5  Conversion to integral type.
+    // Note: explicit per n3407.
+    explicit operator long long() const { return (long long)__val; }
+#endif
 
     // 3.2.3.6  Increment and decrement operators.
     decimal64& operator++()
@@ -417,8 +423,11 @@ namespace decimal
     /// Conforming extension: Conversion from scalar decimal type.
     decimal128(__decfloat128 __z)		: __val(__z) {}
 
-    // 3.2.4.5  Conversion to integral type. (DISABLED)
-    //operator long long() const { return (long long)__val; }
+#if __cplusplus >= 201103L
+    // 3.2.4.5  Conversion to integral type.
+    // Note: explicit per n3407.
+    explicit operator long long() const { return (long long)__val; }
+#endif
 
     // 3.2.4.6  Increment and decrement operators.
     decimal128& operator++()
