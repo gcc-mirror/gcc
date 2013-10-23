@@ -1,3 +1,7 @@
+2013-10-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (mulv8hi3): Adjust for little endian.
+
 2013-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58775

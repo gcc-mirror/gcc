@@ -681,7 +681,10 @@
    emit_insn (gen_altivec_vmrghw (high, even, odd));
    emit_insn (gen_altivec_vmrglw (low, even, odd));
 
-   emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+   if (BYTES_BIG_ENDIAN)
+     emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+   else
+     emit_insn (gen_altivec_vpkuwum (operands[0], low, high));
 
    DONE;
 }")
