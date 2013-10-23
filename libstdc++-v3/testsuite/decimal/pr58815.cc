@@ -25,9 +25,9 @@
 void
 test01 ()
 {
-  std::decimal::decimal32 d32;
-  std::decimal::decimal64 d64;
-  std::decimal::decimal128 d128;
+  std::decimal::decimal32 d32(0);
+  std::decimal::decimal64 d64(0);
+  std::decimal::decimal128 d128(0);
 
   static_cast<long long>(d32);
   static_cast<long long>(d64);

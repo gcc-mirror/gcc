@@ -1,5 +1,9 @@
 2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/decimal/pr58815.cc: Fix thinko.
+
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/58815
 	* include/decimal/decimal (decimal32::operator long long(),
 	decimal64::operator long long(), decimal128::operator long long()):
