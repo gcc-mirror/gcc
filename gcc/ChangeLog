@@ -1,3 +1,12 @@
+2013-10-23  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/57756
+	* config/i386/i386.c (ix86_option_override_internal):
+	Change TARGET_SSE2 to TARGET_SSE2_P (opts->...)
+	(ix86_valid_target_attribute_tree):
+	Change TARGET_64BIT to TARGET_64BIT_P (opts->...)
+	Change TARGET_SSE to TARGET_SSE_P (opts->...)
+
 2013-10-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-loop.h: Remove include files.
@@ -680,6 +689,7 @@
 
 2013-10-17  Sriraman Tallam  <tmsriram@google.com>
 
+	PR target/57756
 	* opth-gen.awk: Define target_flags_explicit.
 
 2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>

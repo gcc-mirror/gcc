@@ -3798,7 +3798,7 @@ ix86_option_override_internal (bool main_args_p,
      codegen.  We may switch to 387 with -ffast-math for size optimized
      functions. */
   else if (fast_math_flags_set_p (&global_options)
-	   && TARGET_SSE2)
+	   && TARGET_SSE2_P (opts->x_ix86_isa_flags))
     ix86_fpmath = FPMATH_SSE;
   else
     opts->x_ix86_fpmath = TARGET_FPMATH_DEFAULT_P (opts->x_ix86_isa_flags);
@@ -4553,7 +4553,8 @@ ix86_valid_target_attribute_tree (tree args,
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
       if (enum_opts_set.x_ix86_fpmath)
 	opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
-      else if (!TARGET_64BIT && TARGET_SSE)
+      else if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	       && TARGET_SSE_P (opts->x_ix86_isa_flags))
 	{
 	  opts->x_ix86_fpmath = (enum fpmath_unit) (FPMATH_SSE | FPMATH_387);
 	  opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
