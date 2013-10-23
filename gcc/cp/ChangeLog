@@ -1,5 +1,8 @@
 2013-10-23  Jason Merrill  <jason@redhat.com>
 
+	* error.c (eh_spec_to_string): New.
+	(cp_printer): Use it for %X.
+
 	In C++11 a trivial [cd]tor might not be callable.
 	* class.c (user_provided_p): A function deleted on its declation
 	in the class is not user-provided.
