@@ -1,3 +1,8 @@
+2013-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Optimize
+	sequence based on get_range_info returned range.
+
 2013-10-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa.h: Remove all #include's

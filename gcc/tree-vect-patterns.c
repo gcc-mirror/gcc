@@ -2230,20 +2230,19 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
       if (post_shift >= prec)
 	return NULL;
 
-      /* t1 = oprnd1 h* ml;  */
+      /* t1 = oprnd0 h* ml;  */
       t1 = vect_recog_temp_ssa_var (itype, NULL);
       def_stmt
 	= gimple_build_assign_with_ops (MULT_HIGHPART_EXPR, t1, oprnd0,
 					build_int_cst (itype, ml));
-      append_pattern_def_seq (stmt_vinfo, def_stmt);
 
       if (add)
 	{
 	  /* t2 = t1 + oprnd0;  */
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	  t2 = vect_recog_temp_ssa_var (itype, NULL);
 	  def_stmt
 	    = gimple_build_assign_with_ops (PLUS_EXPR, t2, t1, oprnd0);
-	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	}
       else
 	t2 = t1;
@@ -2251,27 +2250,57 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
       if (post_shift)
 	{
 	  /* t3 = t2 >> post_shift;  */
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	  t3 = vect_recog_temp_ssa_var (itype, NULL);
 	  def_stmt
 	    = gimple_build_assign_with_ops (RSHIFT_EXPR, t3, t2,
 					    build_int_cst (itype, post_shift));
-	  append_pattern_def_seq (stmt_vinfo, def_stmt);
 	}
       else
 	t3 = t2;
 
-      /* t4 = oprnd0 >> (prec - 1);  */
-      t4 = vect_recog_temp_ssa_var (itype, NULL);
-      def_stmt
-	= gimple_build_assign_with_ops (RSHIFT_EXPR, t4, oprnd0,
-					build_int_cst (itype, prec - 1));
-      append_pattern_def_seq (stmt_vinfo, def_stmt);
+      double_int oprnd0_min, oprnd0_max;
+      int msb = 1;
+      if (get_range_info (oprnd0, &oprnd0_min, &oprnd0_max) == VR_RANGE)
+	{
+	  if (!oprnd0_min.is_negative ())
+	    msb = 0;
+	  else if (oprnd0_max.is_negative ())
+	    msb = -1;
+	}
 
-      /* q = t3 - t4;  or q = t4 - t3;  */
-      q = vect_recog_temp_ssa_var (itype, NULL);
-      pattern_stmt
-	= gimple_build_assign_with_ops (MINUS_EXPR, q, d < 0 ? t4 : t3,
-					d < 0 ? t3 : t4);
+      if (msb == 0 && d >= 0)
+	{
+	  /* q = t3;  */
+	  q = t3;
+	  pattern_stmt = def_stmt;
+	}
+      else
+	{
+	  /* t4 = oprnd0 >> (prec - 1);
+	     or if we know from VRP that oprnd0 >= 0
+	     t4 = 0;
+	     or if we know from VRP that oprnd0 < 0
+	     t4 = -1;  */
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
+	  t4 = vect_recog_temp_ssa_var (itype, NULL);
+	  if (msb != 1)
+	    def_stmt
+	      = gimple_build_assign_with_ops (INTEGER_CST,
+					      t4, build_int_cst (itype, msb),
+					      NULL_TREE);
+	  else
+	    def_stmt
+	      = gimple_build_assign_with_ops (RSHIFT_EXPR, t4, oprnd0,
+					      build_int_cst (itype, prec - 1));
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
+
+	  /* q = t3 - t4;  or q = t4 - t3;  */
+	  q = vect_recog_temp_ssa_var (itype, NULL);
+	  pattern_stmt
+	    = gimple_build_assign_with_ops (MINUS_EXPR, q, d < 0 ? t4 : t3,
+					    d < 0 ? t3 : t4);
+	}
     }
 
   if (rhs_code == TRUNC_MOD_EXPR)
