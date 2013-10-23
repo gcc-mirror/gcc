@@ -7030,7 +7030,7 @@
 	    Ryan Mansfield  <rmansfield@qnx.com>
 	    Diego Novillo  <dnovillo@google.com>
 	    Ollie Wild  <aaw@google.com>
-	    Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* lto-cgraph.c: New file.
 	* lto-compress.c: New file.
@@ -7091,7 +7091,7 @@
 	(cgraph_optimize): Make extern.
 
 2009-10-03  Nathan Froyd  <froydnj@codesourcery.com>
-	    Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* toplev.c (in_lto_p): Declare.
 	* collect2.c (scan_prog_file): Read all the output when reading
@@ -7142,7 +7142,7 @@
 	(gimple_eh_must_not_throw_set_fndecl): New.
 
 2009-10-03  Jan Hubicka  <jh@suse.cz>
-	    Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* ipa-pure-const.c: Include lto-streamer.h.
 	(register_hooks): Factor out of ...

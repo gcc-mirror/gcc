@@ -4452,7 +4452,7 @@
 	return for unknown exceptions.
 	* raise-gcc.c (__gnat_personality_seh0): Call __gnat_SEH_error_handler.
 
-2012-07-09  Joel Brobecker  <brobecker@adacore.com brobecker>
+2012-07-09  Joel Brobecker  <brobecker@adacore.com>
 
 	* exp_dbug.ads (No_Dollar_In_Label): Delete.
 

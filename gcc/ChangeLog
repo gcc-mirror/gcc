@@ -19754,7 +19754,7 @@
 	PR tree-optimization/57066
 	* builtins.c (fold_builtin_logb): Return +Inf for -Inf.
 
-2013-04-25  James Greenhalgh  <jame.greenhalgh@arm.com>
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md (neg<mode>2): Use VDQ iterator.
 
@@ -23694,7 +23694,7 @@
 	(udivsi3_i4_single, divsi3_i4_single): Use
 	TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE instead of TARGET_HARD_SH4.
 
-2013-03-13  Dave Korn  <dave.korn.cygwin@....>
+2013-03-13  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygwin.h (SHARED_LIBGCC_SPEC): Make shared libgcc the
 	default setting.
@@ -24741,7 +24741,7 @@
 	* target-globals.c (save_target_globals): For init_reg_sets and
 	target_reinit remporarily set this_fn_optabs to this_target_optabs.
 
-2013-02-22  James Grennahlgh  <james.greenhalgh@arm.com>
+2013-02-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Add copyright header.
 	* config/aarch64/t-aarch64
@@ -25235,7 +25235,7 @@
 	equal to op0 or op1, and last_insn pattern is CODE operation
 	with MEM dest and one of the operands matches that MEM.
 
-2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
+2013-02-11  Sriraman Tallam  <tmsriram@google.com>
 
 	* doc/extend.texi: Document Function Multiversioning and "default"
 	parameter string to target attribute.

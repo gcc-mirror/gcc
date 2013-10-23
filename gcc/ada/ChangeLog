@@ -3657,7 +3657,7 @@
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Use
 	int_const_binop to shift bounds by 1 when they are integer constants.
 
-2013-04-25  Arnaud Charlet  <charlet@adacore.com>>
+2013-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in (ADA_EXCLUDE_SRCS): Exclude s-init.ad{s,b}
 
@@ -7343,7 +7343,7 @@
 	accept an aspect name followed by a comma, indicating a defaulted
 	boolean aspect.
 
-2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
+2013-01-04  Joel Brobecker  <brobecker@adacore.com>
 
 	* gnat_ugn.texi: Document procedure to codesign GDB on Darwin.
 	Update doc on gnattest --separates switch.

@@ -7983,7 +7983,7 @@
 
 	* freeze.adb: Minor reformatting.
 
-2010-06-17  Joel Brobecker  <brobecker@adacore.com brobecker>
+2010-06-17  Joel Brobecker  <brobecker@adacore.com>
 
 	* gnat_ugn.texi: Add a section introducing gdbserver.
 
@@ -8032,7 +8032,7 @@
 	* par-labl.adb (Try_Loop): Test whether the label and the goto are in
 	the same list.
 
-2010-06-17  Joel Brobecker  <brobecker@adacore.com brobecker>
+2010-06-17  Joel Brobecker  <brobecker@adacore.com>
 
 	* gnat_ugn.texi: Update the documentation about GDB re: exception
 	catchpoints.

@@ -140,12 +140,12 @@
 	for 'open'.  Update function comment.
 	* vtv_rts.cc (log_memory_protection_data):  Remove %d from file name.
 
-2013-08-08  Benjamin Kosnik  <bkoz@rehat.com>
+2013-08-08  Benjamin Kosnik  <bkoz@redhat.com>
 	    Michael Meissner <meissner@linux.vnet.ibm.com>
 
 	* configure.tgt : Simplify, just use VTV_SUPPORTED.
 
-2013-08-07  Benjamin Kosnik  <bkoz@rehat.com>
+2013-08-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* Makefile.am (SUBDIRS): Protect with ENABLE_VTABLE_VERIFY.
 	* Makefile.in: Regenerate.

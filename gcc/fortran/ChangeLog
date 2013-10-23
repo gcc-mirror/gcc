@@ -1444,7 +1444,7 @@
 	(TS 29113 Status): Add TYPE(*) and DIMENSION(..).
 	(C Interop): Update the section about TS29113.
 
-2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
+2013-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55789
 	* trans-array.c (trans_array_constructor): Remove condition
@@ -1541,7 +1541,7 @@
 	(variable_decl): Remove undeclared type error.
 	(gfc_match_import): Use renamed instead of original name.
 
-2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
+2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55984
 	PR fortran/56047
