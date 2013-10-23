@@ -190,7 +190,7 @@ in the following sections.
 -frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
--fno-default-inline  -fvisibility-inlines-hidden @gol
+-fvisibility-inlines-hidden @gol
 -fvtable-verify=@var{std|preinit|none} @gol
 -fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
@@ -385,7 +385,6 @@ Objective-C and Objective-C++ Dialects}.
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
--fno-default-inline @gol
 -fno-defer-pop -fno-function-cse -fno-guess-branch-probability @gol
 -fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
@@ -2403,13 +2402,6 @@ In addition, these optimization, warning, and code generation options
 have meanings only for C++ programs:
 
 @table @gcctabopt
-@item -fno-default-inline
-@opindex fno-default-inline
-Do not assume @samp{inline} for functions defined inside a class scope.
-@xref{Optimize Options,,Options That Control Optimization}.  Note that these
-functions have linkage like inline functions; they just aren't
-inlined by default.
-
 @item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
 @opindex Wabi
 @opindex Wno-abi
@@ -6828,14 +6820,6 @@ can use the following flags in the rare cases when ``fine-tuning'' of
 optimizations to be performed is desired.
 
 @table @gcctabopt
-@item -fno-default-inline
-@opindex fno-default-inline
-Do not make member functions inline by default merely because they are
-defined inside the class scope (C++ only).  Otherwise, when you specify
-@w{@option{-O}}, member functions defined inside class scope are compiled
-inline by default; i.e., you don't need to add @samp{inline} in front of
-the member function name.
-
 @item -fno-defer-pop
 @opindex fno-defer-pop
 Always pop the arguments to each function call as soon as that function
