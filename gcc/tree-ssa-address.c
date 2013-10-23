@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple.h"
 #include "tree-ssanames.h"
-#include "tree-ssa-loop.h"
+#include "tree-ssa-loop-ivopts.h"
 #include "tree-dfa.h"
 #include "dumpfile.h"
 #include "flags.h"

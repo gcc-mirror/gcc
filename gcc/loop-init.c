@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "ggc.h"
 #include "gimple.h"
-#include "tree-ssa-loop.h"
+#include "tree-ssa-loop-niter.h"
 
 
 /* Apply FLAGS to the loop state.  */

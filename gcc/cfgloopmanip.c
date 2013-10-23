@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree.h"
 #include "gimple.h"
-#include "tree-ssa-loop.h"
+#include "tree-ssa-loop-manip.h"
 #include "dumpfile.h"
 
 static void copy_loops_to (struct loop **, int,

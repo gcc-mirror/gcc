@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
-#include "tree-ssa-loop.h"
+#include "tree-ssa-loop-manip.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
