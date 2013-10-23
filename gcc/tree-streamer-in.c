@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "tree.h"
-#include "tree-ssa.h"
 #include "tree-streamer.h"
 #include "data-streamer.h"
 #include "streamer-hooks.h"

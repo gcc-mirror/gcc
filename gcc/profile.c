@@ -61,7 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "value-prof.h"
 #include "tree.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "tree-cfg.h"
 #include "cfgloop.h"
 #include "dumpfile.h"
 

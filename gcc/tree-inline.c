@@ -33,12 +33,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "basic-block.h"
 #include "tree-iterator.h"
-#include "cgraph.h"
 #include "intl.h"
 #include "tree-mudflap.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-into-ssa.h"
+#include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "function.h"
-#include "tree-ssa.h"
 #include "tree-pretty-print.h"
 #include "except.h"
 #include "debug.h"
@@ -53,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
-#include "gimple.h"
 
 /* Inlining, Cloning, Versioning, Parallelization
 

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimple.h"
-#include "tree-ssa.h"
+#include "tree-ssanames.h"
 
 
 /* Return the expression type to use based on the CODE and type of

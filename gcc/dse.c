@@ -46,7 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 #include "params.h"
-#include "tree-ssa.h" /* for may_be_aliased */
+#include "gimple.h"
+#include "gimple-ssa.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
