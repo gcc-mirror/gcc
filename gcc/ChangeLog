@@ -1,3 +1,17 @@
+2013-10-23  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Do not allow threading
+	through joiner blocks with abnormal outgoing edges.
+
+	* tree-ssa-threadupdate.c (thread_block_1): Renamed from thread_block.
+	Add parameter JOINERS, to allow/disallow threading through joiner
+	blocks.
+	(thread_block): New.  Call thread_block_1.
+	(mark_threaded_blocks): Remove code to filter out certain cases
+	of threading through joiner blocks.
+	(thread_through_all_blocks): Document how we can have a dangling
+	edge AUX field and clear it.
+
 2013-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* doc/invoke.texi (Option Summary): Remove -fno-default-inline.
