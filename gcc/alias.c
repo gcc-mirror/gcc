@@ -40,11 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "dumpfile.h"
 #include "target.h"
-#include "cgraph.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
 #include "pointer-set.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
 
 /* The aliasing API provided here solves related but different problems:
 

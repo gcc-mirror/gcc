@@ -25,7 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
-#include "tree-ssa.h"
+#include "bitmap.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 

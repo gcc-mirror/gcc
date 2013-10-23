@@ -27,9 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "hashtab.h"
-#include "tree-ssa.h"
-#include "dumpfile.h"	/* for dump_flags */
+#include "bitmap.h"
 #include "gimple.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
+#include "tree-ssanames.h"
+#include "dumpfile.h"	/* for dump_flags */
 #include "value-prof.h"
 #include "trans-mem.h"
 

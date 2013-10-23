@@ -1736,8 +1736,11 @@ open_base_files (void)
       "tree.h", "rtl.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
+      "gimple.h", "gimple-ssa.h", "tree-cfg.h", "tree-phinodes.h",
+      "ssa-iterators.h", "tree-ssanames.h", "tree-ssa-loop.h",
+      "tree-into-ssa.h", "tree-dfa.h", 
       "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
-      "except.h", "output.h", "gimple.h", "cfgloop.h",
+      "except.h", "output.h",  "cfgloop.h",
       "target.h", "ipa-prop.h", "lto-streamer.h", "target-globals.h",
       "ipa-inline.h", "dwarf2out.h", NULL
     };
