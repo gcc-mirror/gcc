@@ -524,22 +524,22 @@ _GLIBCXX_END_NAMESPACE_VERSION
       { return !(__lhs < __rhs); }
 
     /// nanoseconds
-    typedef duration<int64_t, nano> 	nanoseconds;
+    typedef duration<int64_t, nano> 	    nanoseconds;
 
     /// microseconds
-    typedef duration<int64_t, micro> 	microseconds;
+    typedef duration<int64_t, micro> 	    microseconds;
 
     /// milliseconds
-    typedef duration<int64_t, milli> 	milliseconds;
+    typedef duration<int64_t, milli> 	    milliseconds;
 
     /// seconds
-    typedef duration<int64_t> 		seconds;
+    typedef duration<int64_t> 		    seconds;
 
     /// minutes
-    typedef duration<int, ratio< 60>> 	minutes;
+    typedef duration<int64_t, ratio< 60>>   minutes;
 
     /// hours
-    typedef duration<int, ratio<3600>> 	hours;
+    typedef duration<int64_t, ratio<3600>>  hours;
 
     /// time_point
     template<typename _Clock, typename _Dur>
