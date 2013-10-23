@@ -1,3 +1,15 @@
+2013-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58775
+	PR tree-optimization/58791
+	* gcc.dg/guality/pr58791-1.c: New test.
+	* gcc.dg/guality/pr58791-2.c: New test.
+	* gcc.dg/guality/pr58791-3.c: New test.
+	* gcc.dg/guality/pr58791-4.c: New test.
+	* gcc.dg/guality/pr58791-5.c: New test.
+	* gcc.c-torture/compile/pr58775.c: New test.
+	* gcc.dg/tree-ssa/reassoc-28.c: Don't scan reassoc1 dump.
+
 2013-10-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/58805
