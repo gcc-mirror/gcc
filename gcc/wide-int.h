@@ -417,41 +417,47 @@ namespace wi
   template <typename T1, typename T2>
   unsigned int get_binary_precision (const T1 &, const T2 &);
 
-  bool fits_shwi_p (const wide_int_ref &);
-  bool fits_uhwi_p (const wide_int_ref &);
-  bool neg_p (const wide_int_ref &, signop = SIGNED);
-  bool only_sign_bit_p (const wide_int_ref &, unsigned int);
-  bool only_sign_bit_p (const wide_int_ref &);
-  HOST_WIDE_INT sign_mask (const wide_int_ref &);
-
-  template <typename T1, typename T2>
-  bool eq_p (const T1 &, const T2 &);
-
-  template <typename T1, typename T2>
-  bool ne_p (const T1 &, const T2 &);
-
-  bool lt_p (const wide_int_ref &, const wide_int_ref &, signop);
-  bool lts_p (const wide_int_ref &, const wide_int_ref &);
-  bool ltu_p (const wide_int_ref &, const wide_int_ref &);
-  bool le_p (const wide_int_ref &, const wide_int_ref &, signop);
-  bool les_p (const wide_int_ref &, const wide_int_ref &);
-  bool leu_p (const wide_int_ref &, const wide_int_ref &);
-  bool gt_p (const wide_int_ref &, const wide_int_ref &, signop);
-  bool gts_p (const wide_int_ref &, const wide_int_ref &);
-  bool gtu_p (const wide_int_ref &, const wide_int_ref &);
-  bool ge_p (const wide_int_ref &, const wide_int_ref &, signop);
-  bool ges_p (const wide_int_ref &, const wide_int_ref &);
-  bool geu_p (const wide_int_ref &, const wide_int_ref &);
-  int cmp (const wide_int_ref &, const wide_int_ref &, signop);
-  int cmps (const wide_int_ref &, const wide_int_ref &);
-  int cmpu (const wide_int_ref &, const wide_int_ref &);
-
+#define UNARY_PREDICATE \
+  template <typename T> bool
 #define UNARY_FUNCTION \
   template <typename T> WI_UNARY_RESULT (T)
+#define BINARY_PREDICATE \
+  template <typename T1, typename T2> bool
 #define BINARY_FUNCTION \
   template <typename T1, typename T2> WI_BINARY_RESULT (T1, T2)
 #define SHIFT_FUNCTION \
   template <typename T> WI_UNARY_RESULT (T)
+
+  UNARY_PREDICATE fits_shwi_p (const T &);
+  UNARY_PREDICATE fits_uhwi_p (const T &);
+  UNARY_PREDICATE neg_p (const T &, signop = SIGNED);
+
+  template <typename T>
+  HOST_WIDE_INT sign_mask (const T &);
+
+  BINARY_PREDICATE eq_p (const T1 &, const T2 &);
+  BINARY_PREDICATE ne_p (const T1 &, const T2 &);
+  BINARY_PREDICATE lt_p (const T1 &, const T2 &, signop);
+  BINARY_PREDICATE lts_p (const T1 &, const T2 &);
+  BINARY_PREDICATE ltu_p (const T1 &, const T2 &);
+  BINARY_PREDICATE le_p (const T1 &, const T2 &, signop);
+  BINARY_PREDICATE les_p (const T1 &, const T2 &);
+  BINARY_PREDICATE leu_p (const T1 &, const T2 &);
+  BINARY_PREDICATE gt_p (const T1 &, const T2 &, signop);
+  BINARY_PREDICATE gts_p (const T1 &, const T2 &);
+  BINARY_PREDICATE gtu_p (const T1 &, const T2 &);
+  BINARY_PREDICATE ge_p (const T1 &, const T2 &, signop);
+  BINARY_PREDICATE ges_p (const T1 &, const T2 &);
+  BINARY_PREDICATE geu_p (const T1 &, const T2 &);
+
+  template <typename T1, typename T2>
+  int cmp (const T1 &, const T2 &, signop);
+
+  template <typename T1, typename T2>
+  int cmps (const T1 &, const T2 &);
+
+  template <typename T1, typename T2>
+  int cmpu (const T1 &, const T2 &);
 
   UNARY_FUNCTION bit_not (const T &);
   UNARY_FUNCTION neg (const T &);
@@ -516,9 +522,13 @@ namespace wi
   SHIFT_FUNCTION rrotate (const T &, const wide_int_ref &, unsigned int = 0);
 
 #undef SHIFT_FUNCTION
+#undef BINARY_PREDICATE
 #undef BINARY_FUNCTION
+#undef UNARY_PREDICATE
 #undef UNARY_FUNCTION
 
+  bool only_sign_bit_p (const wide_int_ref &, unsigned int);
+  bool only_sign_bit_p (const wide_int_ref &);
   int clz (const wide_int_ref &);
   int clrsb (const wide_int_ref &);
   int ctz (const wide_int_ref &);
@@ -1397,40 +1407,48 @@ wi::get_binary_precision (const T1 &x, const T2 &y)
 
 /* Return true if X fits in a HOST_WIDE_INT with no loss of
    precision.  */
+template <typename T>
 inline bool
-wi::fits_shwi_p (const wide_int_ref &x)
+wi::fits_shwi_p (const T &x)
 {
-  return x.len == 1;
+  wide_int_ref xi (x);
+  return xi.len == 1;
 }
 
 /* Return true if X fits in an unsigned HOST_WIDE_INT with no loss of
    precision.  */
+template <typename T>
 inline bool
-wi::fits_uhwi_p (const wide_int_ref &x)
+wi::fits_uhwi_p (const T &x)
 {
-  if (x.precision <= HOST_BITS_PER_WIDE_INT)
+  wide_int_ref xi (x);
+  if (xi.precision <= HOST_BITS_PER_WIDE_INT)
     return true;
-  if (x.len == 1)
-    return x.slow () >= 0;
-  return x.len == 2 && x.uhigh () == 0;
+  if (xi.len == 1)
+    return xi.slow () >= 0;
+  return xi.len == 2 && xi.uhigh () == 0;
 }
 
 /* Return true if X is negative based on the interpretation of SGN.
    For UNSIGNED, this is always false.  */
+template <typename T>
 inline bool
-wi::neg_p (const wide_int_ref &x, signop sgn)
+wi::neg_p (const T &x, signop sgn)
 {
+  wide_int_ref xi (x);
   if (sgn == UNSIGNED)
     return false;
-  return x.sign_mask () < 0;
+  return xi.sign_mask () < 0;
 }
 
 /* Return -1 if the top bit of X is set and 0 if the top bit is
    clear.  */
+template <typename T>
 inline HOST_WIDE_INT
-wi::sign_mask (const wide_int_ref &x)
+wi::sign_mask (const T &x)
 {
-  return x.sign_mask ();
+  wide_int_ref xi (x);
+  return xi.sign_mask ();
 }
 
 /* Return true if X == Y.  X and Y must be binary-compatible.  */
@@ -1460,46 +1478,53 @@ wi::ne_p (const T1 &x, const T2 &y)
 }
 
 /* Return true if X < Y when both are treated as signed values.  */
+template <typename T1, typename T2>
 inline bool
-wi::lts_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::lts_p (const T1 &x, const T2 &y)
 {
+  wide_int_ref xi (x);
+  wide_int_ref yi (y);
   // We optimize x < y, where y is 64 or fewer bits.
-  if (y.precision <= HOST_BITS_PER_WIDE_INT)
+  if (yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
       // If x fits directly into a shwi, we can compare directly.
-      if (wi::fits_shwi_p (x))
-	return x.to_shwi () < y.to_shwi ();
+      if (wi::fits_shwi_p (xi))
+	return xi.to_shwi () < yi.to_shwi ();
       // If x doesn't fit and is negative, then it must be more
       // negative than any value in y, and hence smaller than y.
-      if (neg_p (x, SIGNED))
+      if (neg_p (xi, SIGNED))
 	return true;
       // If x is positive, then it must be larger than any value in y,
       // and hence greater than y.
       return false;
     }
-  return lts_p_large (x.val, x.len, x.precision, y.val, y.len,
-		      y.precision);
+  return lts_p_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
+		      yi.precision);
 }
 
 /* Return true if X < Y when both are treated as unsigned values.  */
+template <typename T1, typename T2>
 inline bool
-wi::ltu_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::ltu_p (const T1 &x, const T2 &y)
 {
-  if (x.precision <= HOST_BITS_PER_WIDE_INT
-      && y.precision <= HOST_BITS_PER_WIDE_INT)
+  wide_int_ref xi (x);
+  wide_int_ref yi (y);
+  if (xi.precision <= HOST_BITS_PER_WIDE_INT
+      && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT xl = x.to_uhwi ();
-      unsigned HOST_WIDE_INT yl = y.to_uhwi ();
+      unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
+      unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
       return xl < yl;
     }
   else
-    return ltu_p_large (x.val, x.len, x.precision, 
-			y.val, y.len, y.precision);
+    return ltu_p_large (xi.val, xi.len, xi.precision,
+			yi.val, yi.len, yi.precision);
 }
 
 /* Return true if X < Y.  Signedness of X and Y is indicated by SGN.  */
+template <typename T1, typename T2>
 inline bool
-wi::lt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+wi::lt_p (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == SIGNED)
     return lts_p (x, y);
@@ -1508,22 +1533,25 @@ wi::lt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
 }
 
 /* Return true if X <= Y when both are treated as signed values.  */
+template <typename T1, typename T2>
 inline bool
-wi::les_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::les_p (const T1 &x, const T2 &y)
 {
   return !lts_p (y, x);
 }
 
 /* Return true if X <= Y when both are treated as unsigned values.  */
+template <typename T1, typename T2>
 inline bool
-wi::leu_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::leu_p (const T1 &x, const T2 &y)
 {
   return !ltu_p (y, x);
 }
 
 /* Return true if X <= Y.  Signedness of X and Y is indicated by SGN.  */
+template <typename T1, typename T2>
 inline bool
-wi::le_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+wi::le_p (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == SIGNED)
     return les_p (x, y);
@@ -1532,22 +1560,25 @@ wi::le_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
 }
 
 /* Return true if X > Y when both are treated as signed values.  */
+template <typename T1, typename T2>
 inline bool
-wi::gts_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::gts_p (const T1 &x, const T2 &y)
 {
   return lts_p (y, x);
 }
 
 /* Return true if X > Y when both are treated as unsigned values.  */
+template <typename T1, typename T2>
 inline bool
-wi::gtu_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::gtu_p (const T1 &x, const T2 &y)
 {
   return ltu_p (y, x);
 }
 
 /* Return true if X > Y.  Signedness of X and Y is indicated by SGN.  */
+template <typename T1, typename T2>
 inline bool
-wi::gt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+wi::gt_p (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == SIGNED)
     return gts_p (x, y);
@@ -1556,22 +1587,25 @@ wi::gt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
 }
 
 /* Return true if X >= Y when both are treated as signed values.  */
+template <typename T1, typename T2>
 inline bool
-wi::ges_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::ges_p (const T1 &x, const T2 &y)
 {
   return !lts_p (x, y);
 }
 
 /* Return true if X >= Y when both are treated as unsigned values.  */
+template <typename T1, typename T2>
 inline bool
-wi::geu_p (const wide_int_ref &x, const wide_int_ref &y)
+wi::geu_p (const T1 &x, const T2 &y)
 {
   return !ltu_p (x, y);
 }
 
 /* Return true if X >= Y.  Signedness of X and Y is indicated by SGN.  */
+template <typename T1, typename T2>
 inline bool
-wi::ge_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+wi::ge_p (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == SIGNED)
     return ges_p (x, y);
@@ -1581,14 +1615,17 @@ wi::ge_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
 
 /* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Treat both X and Y
    as signed values.  */
+template <typename T1, typename T2>
 inline int
-wi::cmps (const wide_int_ref &x, const wide_int_ref &y)
+wi::cmps (const T1 &x, const T2 &y)
 {
-  if (x.precision <= HOST_BITS_PER_WIDE_INT
-      && y.precision <= HOST_BITS_PER_WIDE_INT)
+  wide_int_ref xi (x);
+  wide_int_ref yi (y);
+  if (xi.precision <= HOST_BITS_PER_WIDE_INT
+      && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      HOST_WIDE_INT xl = x.to_shwi ();
-      HOST_WIDE_INT yl = y.to_shwi ();
+      HOST_WIDE_INT xl = xi.to_shwi ();
+      HOST_WIDE_INT yl = yi.to_shwi ();
       if (xl < yl)
 	return -1;
       else if (xl > yl)
@@ -1596,20 +1633,23 @@ wi::cmps (const wide_int_ref &x, const wide_int_ref &y)
       else
 	return 0;
     }
-  return cmps_large (x.val, x.len, x.precision, y.val, y.len,
-		     y.precision);
+  return cmps_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
+		     yi.precision);
 }
 
 /* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Treat both X and Y
    as unsigned values.  */
+template <typename T1, typename T2>
 inline int
-wi::cmpu (const wide_int_ref &x, const wide_int_ref &y)
+wi::cmpu (const T1 &x, const T2 &y)
 {
-  if (x.precision <= HOST_BITS_PER_WIDE_INT
-      && y.precision <= HOST_BITS_PER_WIDE_INT)
+  wide_int_ref xi (x);
+  wide_int_ref yi (y);
+  if (xi.precision <= HOST_BITS_PER_WIDE_INT
+      && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT xl = x.to_uhwi ();
-      unsigned HOST_WIDE_INT yl = y.to_uhwi ();
+      unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
+      unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
       if (xl < yl)
 	return -1;
       else if (xl == yl)
@@ -1617,14 +1657,15 @@ wi::cmpu (const wide_int_ref &x, const wide_int_ref &y)
       else
 	return 1;
     }
-  return cmpu_large (x.val, x.len, x.precision, y.val, y.len,
-		     y.precision);
+  return cmpu_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
+		     yi.precision);
 }
 
 /* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Signedness of
    X and Y indicated by SGN.  */
+template <typename T1, typename T2>
 inline int
-wi::cmp (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+wi::cmp (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == SIGNED)
     return cmps (x, y);
