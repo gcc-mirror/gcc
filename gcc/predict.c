@@ -1300,10 +1300,10 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       bool overflow, overall_overflow = false;
       max_wide_int compare_count, tem, loop_count;
 
-      max_wide_int loop_bound = loop_bound_var;
-      max_wide_int compare_bound = compare_var;
-      max_wide_int base = compare_base;
-      max_wide_int compare_step = compare_step_var;
+      max_wide_int loop_bound = wi::extend (loop_bound_var);
+      max_wide_int compare_bound = wi::extend (compare_var);
+      max_wide_int base = wi::extend (compare_base);
+      max_wide_int compare_step = wi::extend (compare_step_var);
 
       /* (loop_bound - base) / compare_step */
       tem = wi::sub (loop_bound, base, SIGNED, &overflow);

@@ -10312,7 +10312,7 @@ wide_int_type_size_in_bits (const_tree type)
   else if (TYPE_SIZE (type) == NULL_TREE)
     return 0;
   else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-    return TYPE_SIZE (type);
+    return wi::address (TYPE_SIZE (type));
   else
     return TYPE_ALIGN (type);
 }
@@ -14721,7 +14721,7 @@ field_byte_offset (const_tree decl)
   if (TREE_CODE (bit_position (decl)) != INTEGER_CST)
     return 0;
 
-  bitpos_int = bit_position (decl);
+  bitpos_int = wi::address (bit_position (decl));
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS)
@@ -14747,7 +14747,7 @@ field_byte_offset (const_tree decl)
 
       /* If the size of the field is not constant, use the type size.  */
       if (TREE_CODE (field_size_tree) == INTEGER_CST)
-	field_size_in_bits = field_size_tree;
+	field_size_in_bits = wi::address (field_size_tree);
       else
 	field_size_in_bits = type_size_in_bits;
 

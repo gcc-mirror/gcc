@@ -3849,7 +3849,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
 	  
-	  wtmp = wi::mul (step, nit, sgn, &overflow);
+	  wtmp = wi::mul (wi::extend (step), nit, sgn, &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
 	     of the induction variable.  For a signed type we have to
@@ -6292,7 +6292,7 @@ search_for_addr_array (tree t, location_t location)
 	return;
 
       idx = mem_ref_offset (t);
-      idx = wi::sdiv_trunc (idx, el_sz);
+      idx = wi::sdiv_trunc (idx, wi::address (el_sz));
       if (wi::lts_p (idx, 0))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -6305,7 +6305,8 @@ search_for_addr_array (tree t, location_t location)
 		      "array subscript is below array bounds");
 	  TREE_NO_WARNING (t) = 1;
 	}
-      else if (wi::gts_p (idx, addr_wide_int (up_bound) - low_bound + 1))
+      else if (wi::gts_p (idx, (wi::address (up_bound)
+				- wi::address (low_bound) + 1)))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -8731,11 +8732,11 @@ range_fits_type_p (value_range_t *vr, unsigned dest_precision, signop dest_sgn)
 
   /* Then we can perform the conversion on both ends and compare
      the result for equality.  */
-  tem = wi::ext (vr->min, dest_precision, dest_sgn);
-  if (tem != vr->min)
+  tem = wi::ext (wi::extend (vr->min), dest_precision, dest_sgn);
+  if (tem != wi::extend (vr->min))
     return false;
-  tem = wi::ext (vr->max, dest_precision, dest_sgn);
-  if (tem != vr->max)
+  tem = wi::ext (wi::extend (vr->max), dest_precision, dest_sgn);
+  if (tem != wi::extend (vr->max))
     return false;
 
   return true;
@@ -9021,8 +9022,8 @@ simplify_conversion_using_ranges (gimple stmt)
 
   /* Simulate the conversion chain to check if the result is equal if
      the middle conversion is removed.  */
-  innermin = innervr->min;
-  innermax = innervr->max;
+  innermin = wi::extend (innervr->min);
+  innermax = wi::extend (innervr->max);
 
   inner_prec = TYPE_PRECISION (TREE_TYPE (innerop));
   middle_prec = TYPE_PRECISION (TREE_TYPE (middleop));
@@ -9482,7 +9483,8 @@ vrp_finalize (void)
 	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST))
 	  {
 	    if (vr_value[i]->type == VR_RANGE)
-	      set_range_info (name, vr_value[i]->min, vr_value[i]->max);
+	      set_range_info (name, wi::extend (vr_value[i]->min),
+			      wi::extend (vr_value[i]->max));
 	    else if (vr_value[i]->type == VR_ANTI_RANGE)
 	      {
 		/* VR_ANTI_RANGE ~[min, max] is encoded compactly as
@@ -9496,16 +9498,14 @@ vrp_finalize (void)
 		    && integer_zerop (vr_value[i]->min)
 		    && integer_zerop (vr_value[i]->max))
 		  {
-		    max_wide_int tmmwi
-		      = max_wide_int::from (wi::max_value (TYPE_PRECISION (TREE_TYPE (name)),
-							   UNSIGNED),
-					    UNSIGNED);
-		    set_range_info (name, 1, tmmwi);
+		    unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
+		    set_range_info (name, 1,
+				    wi::mask <max_wide_int> (prec, false));
 		  }
 		else
 		  set_range_info (name,
-				  max_wide_int (vr_value[i]->max) + 1,
-				  max_wide_int (vr_value[i]->min) - 1);
+				  wi::extend (vr_value[i]->max) + 1,
+				  wi::extend (vr_value[i]->min) - 1);
 	      }
 	  }
       }

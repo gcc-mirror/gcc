@@ -2352,9 +2352,9 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 	  return;
 	}
 
-      woffset = xoffset;
-      woffset += wi::udiv_trunc (addr_wide_int (DECL_FIELD_BIT_OFFSET (field)),
-				 BITS_PER_UNIT);
+      woffset = (wi::address (xoffset)
+		 + wi::udiv_trunc (wi::address (DECL_FIELD_BIT_OFFSET (field)),
+				   BITS_PER_UNIT));
 
       if (!wi::fits_uhwi_p (woffset))
 	{

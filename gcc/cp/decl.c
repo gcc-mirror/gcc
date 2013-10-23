@@ -12884,7 +12884,8 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		{
 		  tree type = TREE_TYPE (prev_value);
 		  signop sgn = TYPE_SIGN (type);
-		  wide_int wi = wi::add (prev_value, 1, sgn, &overflowed);
+		  max_wide_int wi = wi::add (wi::extend (prev_value), 1, sgn,
+					     &overflowed);
 		  if (!overflowed)
 		    {
 		      bool pos = !wi::neg_p (wi, sgn);

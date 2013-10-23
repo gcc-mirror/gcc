@@ -1119,8 +1119,8 @@ process_init_constructor_array (tree type, tree init,
     {
       tree domain = TYPE_DOMAIN (type);
       if (domain && TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
-	len = wi::ext (addr_wide_int (TYPE_MAX_VALUE (domain))
-		       - TYPE_MIN_VALUE (domain) + 1,
+	len = wi::ext (wi::address (TYPE_MAX_VALUE (domain))
+		       - wi::address (TYPE_MIN_VALUE (domain)) + 1,
 		       TYPE_PRECISION (TREE_TYPE (domain)),
 		       TYPE_SIGN (TREE_TYPE (domain))).to_uhwi ();
       else

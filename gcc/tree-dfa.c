@@ -422,7 +422,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += TREE_OPERAND (exp, 2);
+	  bit_offset += wi::address (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -432,11 +432,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		addr_wide_int woffset = this_offset;
+		addr_wide_int woffset = wi::address (this_offset);
 		woffset = wi::lshift (woffset,
 				      (BITS_PER_UNIT == 8
 				       ? 3 : exact_log2 (BITS_PER_UNIT)));
-		woffset += DECL_FIELD_BIT_OFFSET (field);
+		woffset += wi::address (DECL_FIELD_BIT_OFFSET (field));
 		bit_offset += woffset;
 
 		/* If we had seen a variable array ref already and we just
@@ -497,10 +497,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		addr_wide_int woffset 
-		  = wi::sext (addr_wide_int (index) - low_bound,
+		addr_wide_int woffset
+		  = wi::sext (wi::address (index) - wi::address (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
-		woffset *= addr_wide_int (unit_size);
+		woffset *= wi::address (unit_size);
 		woffset = wi::lshift (woffset,
 				      (BITS_PER_UNIT == 8
 				       ? 3 : exact_log2 (BITS_PER_UNIT)));

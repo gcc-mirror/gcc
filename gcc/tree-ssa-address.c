@@ -203,8 +203,7 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      addr_wide_int dc = wi::sext (addr_wide_int (addr->offset),
-				   TYPE_PRECISION (TREE_TYPE (addr->offset)));
+      addr_wide_int dc = addr_wide_int::from (addr->offset, SIGNED);
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else

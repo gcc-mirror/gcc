@@ -251,6 +251,46 @@ along with GCC; see the file COPYING3.  If not see
 #define ADDR_MAX_PRECISION \
   ((ADDR_MAX_BITSIZE + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1))
 
+/* The type of result produced by a binary operation on types T1 and T2.
+   Defined purely for brevity.  */
+#define WI_BINARY_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::result_type
+
+/* The type of result produced by a unary operation on type T.  */
+#define WI_UNARY_RESULT(T) \
+  typename wi::unary_traits <T>::result_type
+
+/* Define a variable RESULT to hold the result of a binary operation on
+   X and Y, which have types T1 and T2 respectively.  Define VAR to
+   point to the blocks of RESULT.  Once the user of the macro has
+   filled in VAR, it should call RESULT.set_len to set the number
+   of initialized blocks.  */
+#define WI_BINARY_RESULT_VAR(RESULT, VAL, T1, X, T2, Y) \
+  WI_BINARY_RESULT (T1, T2) RESULT = \
+    wi::int_traits <WI_BINARY_RESULT (T1, T2)>::get_binary_result (X, Y); \
+  HOST_WIDE_INT *VAL = RESULT.write_val ()
+
+/* Similar for the result of a unary operation on X, which has type T.  */
+#define WI_UNARY_RESULT_VAR(RESULT, VAL, T, X) \
+  WI_UNARY_RESULT (T) RESULT = \
+    wi::int_traits <WI_UNARY_RESULT (T)>::get_binary_result (X, X); \
+  HOST_WIDE_INT *VAL = RESULT.write_val ()
+
+template <typename T> struct generic_wide_int;
+template <int N> struct fixed_wide_int_storage;
+struct wide_int_storage;
+
+/* An N-bit integer.  Until we can use typedef templates, use this instead.  */
+#define FIXED_WIDE_INT(N) \
+  generic_wide_int < fixed_wide_int_storage <N> >
+
+typedef generic_wide_int <wide_int_storage> wide_int;
+typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) addr_wide_int;
+typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) max_wide_int;
+
+struct wide_int_ref_storage;
+typedef generic_wide_int <wide_int_ref_storage> wide_int_ref;
+
 namespace wi
 {
   /* Classifies an integer based on its precision.  */
@@ -303,40 +343,70 @@ namespace wi
      a binary operation on two values of type T.  */
   template <typename T>
   struct unary_traits : public binary_traits <T, T> {};
+
+  /* Specify the result type for each supported combination of binary
+     inputs.  Note that CONST_PRECISION and VAR_PRECISION cannot be
+     mixed, in order to give stronger type checking.  When both inputs
+     are CONST_PRECISION, they must have the same precision.  */
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
+  {
+    typedef max_wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, VAR_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, CONST_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T2>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, VAR_PRECISION, FLEXIBLE_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, CONST_PRECISION, FLEXIBLE_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T1>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, CONST_PRECISION, CONST_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T1>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, VAR_PRECISION, VAR_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
 }
-
-/* The type of result produced by a binary operation on types T1 and T2.
-   Defined purely for brevity.  */
-#define WI_BINARY_RESULT(T1, T2) \
-  typename wi::binary_traits <T1, T2>::result_type
-
-/* The type of result produced by a unary operation on type T.  */
-#define WI_UNARY_RESULT(T) \
-  typename wi::unary_traits <T>::result_type
-
-/* Define a variable RESULT to hold the result of a binary operation on
-   X and Y, which have types T1 and T2 respectively.  Define VAR to
-   point to the blocks of RESULT.  Once the user of the macro has
-   filled in VAR, it should call RESULT.set_len to set the number
-   of initialized blocks.  */
-#define WI_BINARY_RESULT_VAR(RESULT, VAL, T1, X, T2, Y) \
-  WI_BINARY_RESULT (T1, T2) RESULT = \
-    wi::int_traits <WI_BINARY_RESULT (T1, T2)>::get_binary_result (X, Y); \
-  HOST_WIDE_INT *VAL = RESULT.write_val ()
-
-/* Similar for the result of a unary operation on X, which has type T.  */
-#define WI_UNARY_RESULT_VAR(RESULT, VAL, T, X) \
-  WI_UNARY_RESULT (T) RESULT = \
-    wi::int_traits <WI_UNARY_RESULT (T)>::get_binary_result (X, X); \
-  HOST_WIDE_INT *VAL = RESULT.write_val ()
-
-template <typename T> struct generic_wide_int;
-
-struct wide_int_storage;
-typedef generic_wide_int <wide_int_storage> wide_int;
-
-struct wide_int_ref_storage;
-typedef generic_wide_int <wide_int_ref_storage> wide_int_ref;
 
 /* Public functions for querying and operating on integers.  */
 namespace wi
@@ -572,38 +642,39 @@ public:
   bool OP (const T &c) const { return wi::F (*this, c); }
 
 #define UNARY_OPERATOR(OP, F) \
-  generic_wide_int OP () const { return wi::F (*this); }
+  WI_UNARY_RESULT (generic_wide_int) OP () const { return wi::F (*this); }
 
 #define BINARY_OPERATOR(OP, F) \
   template <typename T> \
-  generic_wide_int OP (const T &c) const { return wi::F (*this, c); }
+    WI_BINARY_RESULT (generic_wide_int, T) \
+    OP (const T &c) const { return wi::F (*this, c); }
 
 #define ASSIGNMENT_OPERATOR(OP, F) \
   template <typename T> \
-  generic_wide_int &OP (const T &c) { return (*this = wi::F (*this, c)); }
+    generic_wide_int &OP (const T &c) { return (*this = wi::F (*this, c)); }
 
 #define INCDEC_OPERATOR(OP, DELTA) \
   generic_wide_int &OP () { *this += DELTA; return *this; }
 
-  UNARY_OPERATOR (operator ~, bit_not) \
-  UNARY_OPERATOR (operator -, neg) \
-  BINARY_PREDICATE (operator ==, eq_p) \
-  BINARY_PREDICATE (operator !=, ne_p) \
-  BINARY_OPERATOR (operator &, bit_and) \
-  BINARY_OPERATOR (and_not, bit_and_not) \
-  BINARY_OPERATOR (operator |, bit_or) \
-  BINARY_OPERATOR (or_not, bit_or_not) \
-  BINARY_OPERATOR (operator ^, bit_xor) \
-  BINARY_OPERATOR (operator +, add) \
-  BINARY_OPERATOR (operator -, sub) \
-  BINARY_OPERATOR (operator *, mul) \
-  ASSIGNMENT_OPERATOR (operator &=, bit_and) \
-  ASSIGNMENT_OPERATOR (operator |=, bit_or) \
-  ASSIGNMENT_OPERATOR (operator ^=, bit_xor) \
-  ASSIGNMENT_OPERATOR (operator +=, add) \
-  ASSIGNMENT_OPERATOR (operator -=, sub) \
-  ASSIGNMENT_OPERATOR (operator *=, mul) \
-  INCDEC_OPERATOR (operator ++, 1) \
+  UNARY_OPERATOR (operator ~, bit_not)
+  UNARY_OPERATOR (operator -, neg)
+  BINARY_PREDICATE (operator ==, eq_p)
+  BINARY_PREDICATE (operator !=, ne_p)
+  BINARY_OPERATOR (operator &, bit_and)
+  BINARY_OPERATOR (and_not, bit_and_not)
+  BINARY_OPERATOR (operator |, bit_or)
+  BINARY_OPERATOR (or_not, bit_or_not)
+  BINARY_OPERATOR (operator ^, bit_xor)
+  BINARY_OPERATOR (operator +, add)
+  BINARY_OPERATOR (operator -, sub)
+  BINARY_OPERATOR (operator *, mul)
+  ASSIGNMENT_OPERATOR (operator &=, bit_and)
+  ASSIGNMENT_OPERATOR (operator |=, bit_or)
+  ASSIGNMENT_OPERATOR (operator ^=, bit_xor)
+  ASSIGNMENT_OPERATOR (operator +=, add)
+  ASSIGNMENT_OPERATOR (operator -=, sub)
+  ASSIGNMENT_OPERATOR (operator *=, mul)
+  INCDEC_OPERATOR (operator ++, 1)
   INCDEC_OPERATOR (operator --, -1)
 
 #undef BINARY_PREDICATE
@@ -848,6 +919,19 @@ public:
   wide_int bswap () const;
 };
 
+namespace wi
+{
+  template <>
+  struct int_traits <wide_int_storage>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    /* Guaranteed by a static assert in the wide_int_storage constructor.  */
+    static const bool host_dependent_precision = false;
+    template <typename T1, typename T2>
+    static wide_int get_binary_result (const T1 &, const T2 &);
+  };
+}
+
 inline wide_int_storage::wide_int_storage () {}
 
 /* Initialize the storage from integer X, in its natural precision.
@@ -933,19 +1017,6 @@ wide_int_storage::create (unsigned int precision)
   return x;
 }
 
-namespace wi
-{
-  template <>
-  struct int_traits <wide_int_storage>
-  {
-    static const enum precision_type precision_type = VAR_PRECISION;
-    /* Guaranteed by a static assert in the wide_int_storage constructor.  */
-    static const bool host_dependent_precision = false;
-    template <typename T1, typename T2>
-    static wide_int get_binary_result (const T1 &, const T2 &);
-  };
-}
-
 template <typename T1, typename T2>
 inline wide_int
 wi::int_traits <wide_int_storage>::get_binary_result (const T1 &x, const T2 &y)
@@ -958,10 +1029,6 @@ wi::int_traits <wide_int_storage>::get_binary_result (const T1 &x, const T2 &y)
   else
     return wide_int::create (wi::get_precision (x));
 }
-
-/* An N-bit integer.  Until we can use typedef templates, use this instead.  */
-#define FIXED_WIDE_INT(N) \
-  generic_wide_int < fixed_wide_int_storage <N> >
 
 /* The storage used by FIXED_WIDE_INT (N).  */
 template <int N>
@@ -988,8 +1055,19 @@ public:
 					bool = true);
 };
 
-typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) addr_wide_int;
-typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) max_wide_int;
+namespace wi
+{
+  template <>
+  template <int N>
+  struct int_traits < fixed_wide_int_storage <N> >
+  {
+    static const enum precision_type precision_type = CONST_PRECISION;
+    static const bool host_dependent_precision = false;
+    static const unsigned int precision = N;
+    template <typename T1, typename T2>
+    static FIXED_WIDE_INT (N) get_binary_result (const T1 &, const T2 &);
+  };
+}
 
 template <int N>
 inline fixed_wide_int_storage <N>::fixed_wide_int_storage () {}
@@ -1071,20 +1149,6 @@ fixed_wide_int_storage <N>::from_array (const HOST_WIDE_INT *val,
   return result;
 }
 
-namespace wi
-{
-  template <>
-  template <int N>
-  struct int_traits < fixed_wide_int_storage <N> >
-  {
-    static const enum precision_type precision_type = CONST_PRECISION;
-    static const bool host_dependent_precision = false;
-    static const unsigned int precision = N;
-    template <typename T1, typename T2>
-    static FIXED_WIDE_INT (N) get_binary_result (const T1 &, const T2 &);
-  };
-}
-
 template <int N>
 template <typename T1, typename T2>
 inline FIXED_WIDE_INT (N)
@@ -1092,72 +1156,6 @@ wi::int_traits < fixed_wide_int_storage <N> >::
 get_binary_result (const T1 &, const T2 &)
 {
   return FIXED_WIDE_INT (N) ();
-}
-
-/* Specify the result type for each supported combination of binary
-   inputs.  Note that CONST_PRECISION and VAR_PRECISION cannot be
-   mixed, in order to give stronger type checking.  When both inputs
-   are CONST_PRECISION, they must have the same precision.  */
-namespace wi
-{
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
-  {
-    typedef max_wide_int result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, VAR_PRECISION>
-  {
-    typedef wide_int result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, CONST_PRECISION>
-  {
-    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
-       so as not to confuse gengtype.  */
-    typedef generic_wide_int < fixed_wide_int_storage
-			       <int_traits <T2>::precision> > result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, VAR_PRECISION, FLEXIBLE_PRECISION>
-  {
-    typedef wide_int result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, CONST_PRECISION, FLEXIBLE_PRECISION>
-  {
-    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
-       so as not to confuse gengtype.  */
-    typedef generic_wide_int < fixed_wide_int_storage
-			       <int_traits <T1>::precision> > result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, CONST_PRECISION, CONST_PRECISION>
-  {
-    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
-       so as not to confuse gengtype.  */
-    STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
-    typedef generic_wide_int < fixed_wide_int_storage
-			       <int_traits <T1>::precision> > result_type;
-  };
-
-  template <>
-  template <typename T1, typename T2>
-  struct binary_traits <T1, T2, VAR_PRECISION, VAR_PRECISION>
-  {
-    typedef wide_int result_type;
-  };
 }
 
 namespace wi
@@ -1288,9 +1286,7 @@ namespace wi
   template <>
   struct int_traits <wi::hwi_with_prec>
   {
-    /* Since we have a sign, we can extend or truncate the integer to
-       other precisions where necessary.  */
-    static const enum precision_type precision_type = FLEXIBLE_PRECISION;
+    static const enum precision_type precision_type = VAR_PRECISION;
     /* hwi_with_prec has an explicitly-given precision, rather than the
        precision of HOST_WIDE_INT.  */
     static const bool host_dependent_precision = false;

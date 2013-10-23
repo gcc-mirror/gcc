@@ -269,7 +269,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   switch (code)
     {
     case INTEGER_CST:
-      aff_combination_const (comb, type, expr);
+      aff_combination_const (comb, type, wi::extend (expr));
       return;
 
     case POINTER_PLUS_EXPR:
@@ -292,7 +292,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       if (TREE_CODE (cst) != INTEGER_CST)
 	break;
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, cst);
+      aff_combination_scale (comb, wi::extend (cst));
       return;
 
     case NEGATE_EXPR:
@@ -383,7 +383,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, max_wide_int scale,
     {
       elt = convert_to_ptrofftype (elt);
       elt = fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt);
-      scale = max_wide_int (1);
+      scale = 1;
     }
 
   if (scale == 1)

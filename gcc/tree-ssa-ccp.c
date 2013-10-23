@@ -202,7 +202,7 @@ dump_lattice_value (FILE *outf, const char *prefix, prop_value_t val)
 	}
       else
 	{
-	  wide_int cval = wi::bit_and_not (val.value, val.mask);
+	  wide_int cval = wi::bit_and_not (wi::extend (val.value), val.mask);
 	  fprintf (outf, "%sCONSTANT ", prefix);
 	  print_hex (cval, outf);
 	  fprintf (outf, " (");
@@ -432,8 +432,8 @@ valid_lattice_transition (prop_value_t old_val, prop_value_t new_val)
   /* Bit-lattices have to agree in the still valid bits.  */
   if (TREE_CODE (old_val.value) == INTEGER_CST
       && TREE_CODE (new_val.value) == INTEGER_CST)
-    return (wi::bit_and_not (old_val.value, new_val.mask)
-	    == wi::bit_and_not (new_val.value, new_val.mask));
+    return (wi::bit_and_not (wi::extend (old_val.value), new_val.mask)
+	    == wi::bit_and_not (wi::extend (new_val.value), new_val.mask));
 
   /* Otherwise constant values have to agree.  */
   return operand_equal_p (old_val.value, new_val.value, 0);
@@ -458,7 +458,8 @@ set_lattice_value (tree var, prop_value_t new_val)
       && TREE_CODE (new_val.value) == INTEGER_CST
       && TREE_CODE (old_val->value) == INTEGER_CST)
     {
-      max_wide_int diff = wi::bit_xor (new_val.value, old_val->value);
+      max_wide_int diff = (wi::extend (new_val.value)
+			   ^ wi::extend (old_val->value));
       new_val.mask = new_val.mask | old_val->mask | diff;
     }
 
@@ -505,7 +506,7 @@ value_to_wide_int (prop_value_t val)
 {
   if (val.value
       && TREE_CODE (val.value) == INTEGER_CST)
-    return val.value;
+    return wi::extend (val.value);
 
   return 0;
 }
@@ -908,7 +909,7 @@ ccp_lattice_meet (prop_value_t *val1, prop_value_t *val2)
          For INTEGER_CSTs mask unequal bits.  If no equal bits remain,
 	 drop to varying.  */
       val1->mask = (val1->mask | val2->mask
-		    | (wi::bit_xor (val1->value, val2->value)));
+		    | (wi::extend (val1->value) ^ wi::extend (val2->value)));
       if (val1->mask == -1)
 	{
 	  val1->lattice_val = VARYING;

@@ -1581,9 +1581,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		&& TREE_CODE (op[1]) == INTEGER_CST
 		&& TREE_CODE (op[2]) == INTEGER_CST)
 	      {
-		addr_wide_int off = op[0];
-		off += -addr_wide_int (op[1]);
-		off *= addr_wide_int (op[2]);
+		addr_wide_int off = ((wi::address (op[0])
+				      - wi::address (op[1]))
+				     * wi::address (op[2]));
 		if (wi::fits_shwi_p (off))
 		  newop.off = off.to_shwi ();
 	      }

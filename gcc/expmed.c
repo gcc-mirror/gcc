@@ -1821,9 +1821,7 @@ static rtx
 lshift_value (enum machine_mode mode, unsigned HOST_WIDE_INT value,
 	      int bitpos)
 {
-  return 
-    immed_wide_int_const (wi::lshift (max_wide_int (value),
-				      bitpos), mode);
+  return immed_wide_int_const (wi::lshift (value, bitpos), mode);
 }
 
 /* Extract a bit field that is split across two words

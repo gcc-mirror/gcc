@@ -69,7 +69,6 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
 {
   tree type = TREE_TYPE (expr);
   tree op0, op1;
-  max_wide_int off;
   bool negate = false;
 
   *var = expr;
@@ -90,18 +89,15 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
 	break;
 
       *var = op0;
-      off = op1;
       /* Always sign extend the offset.  */
-      off = wi::sext (off, TYPE_PRECISION (type));
-      wi::to_mpz (off, offset, SIGNED);
+      wi::to_mpz (op1, offset, SIGNED);
       if (negate)
 	mpz_neg (offset, offset);
       break;
 
     case INTEGER_CST:
       *var = build_int_cst_type (type, 0);
-      off = expr;
-      wi::to_mpz (off, offset, TYPE_SIGN (type));
+      wi::to_mpz (expr, offset, TYPE_SIGN (type));
       break;
 
     default:
@@ -810,7 +806,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     niter->may_be_zero = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 				      niter->may_be_zero,
 				      noloop);
-  bounds_add (bnds, mod, type);
+  bounds_add (bnds, wi::extend (mod), type);
   *delta = fold_build2 (PLUS_EXPR, niter_type, *delta, mod);
 
   ret = true;
@@ -926,10 +922,10 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   /* First check whether the answer does not follow from the bounds we gathered
      before.  */
   if (integer_nonzerop (iv0->step))
-    dstep = iv0->step;
+    dstep = wi::extend (iv0->step);
   else
     {
-      dstep = wi::sext (iv1->step, TYPE_PRECISION (type));
+      dstep = wi::sext (wi::extend (iv1->step), TYPE_PRECISION (type));
       dstep = -dstep;
     }
 
@@ -1913,7 +1909,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 
   /* If NITER has simplified into a constant, update MAX.  */
   if (TREE_CODE (niter->niter) == INTEGER_CST)
-    niter->max = niter->niter;
+    niter->max = wi::extend (niter->niter);
 
   if (integer_onep (niter->assumptions))
     return true;
@@ -2387,12 +2383,12 @@ derive_constant_upper_bound_ops (tree type, tree op0,
   else
     maxt = upper_bound_in_type (type, type);
 
-  max = maxt;
+  max = wi::extend (maxt);
 
   switch (code)
     {
     case INTEGER_CST:
-      return op0;
+      return wi::extend (op0);
 
     CASE_CONVERT:
       subtype = TREE_TYPE (op0);
@@ -2429,8 +2425,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
       /* Canonicalize to OP0 - CST.  Consider CST to be signed, in order to
 	 choose the most logical way how to treat this constant regardless
 	 of the signedness of the type.  */
-      cst = op1;
-      cst = wi::sext (cst, TYPE_PRECISION (type));
+      cst = wi::sext (wi::extend (op1), TYPE_PRECISION (type));
       if (code != MINUS_EXPR)
 	cst = -cst;
 
@@ -2490,13 +2485,13 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	return max;
 
       bnd = derive_constant_upper_bound (op0);
-      return wi::udiv_floor (bnd, op1);
+      return wi::udiv_floor (bnd, wi::extend (op1));
 
     case BIT_AND_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST
 	  || tree_int_cst_sign_bit (op1))
 	return max;
-      return op1;
+      return wi::extend (op1);
 
     case SSA_NAME:
       stmt = SSA_NAME_DEF_STMT (op0);
@@ -2575,7 +2570,7 @@ record_estimate (struct loop *loop, tree bound, max_wide_int i_bound,
   if (TREE_CODE (bound) != INTEGER_CST)
     realistic = false;
   else
-    gcc_checking_assert (i_bound == bound);
+    gcc_checking_assert (i_bound == wi::extend (bound));
   if (!upper && !realistic)
     return;
 
@@ -3363,7 +3358,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
       && TREE_CODE (loop->nb_iterations) == INTEGER_CST)
     {
       loop->any_upper_bound = true;
-      loop->nb_iterations_upper_bound = loop->nb_iterations;
+      loop->nb_iterations_upper_bound = wi::extend (loop->nb_iterations);
     }
 }
 

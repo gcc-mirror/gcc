@@ -792,7 +792,7 @@ backtrace_base_for_ref (tree *pbase)
 	{
 	  /* X = B + (1 * S), S is integer constant.  */
 	  *pbase = base_cand->base_expr;
-	  return base_cand->stride;
+	  return wi::extend (base_cand->stride);
 	}
       else if (base_cand->kind == CAND_ADD
 	       && TREE_CODE (base_cand->stride) == INTEGER_CST
@@ -860,14 +860,14 @@ restructure_reference (tree *pbase, tree *poffset, max_wide_int *pindex,
   type = TREE_TYPE (TREE_OPERAND (base, 1));
 
   mult_op0 = TREE_OPERAND (offset, 0);
-  c3 = TREE_OPERAND (offset, 1);
+  c3 = wi::extend (TREE_OPERAND (offset, 1));
 
   if (TREE_CODE (mult_op0) == PLUS_EXPR)
 
     if (TREE_CODE (TREE_OPERAND (mult_op0, 1)) == INTEGER_CST)
       {
 	t2 = TREE_OPERAND (mult_op0, 0);
-	c2 = TREE_OPERAND (mult_op0, 1);
+	c2 = wi::extend (TREE_OPERAND (mult_op0, 1));
       }
     else
       return false;
@@ -877,7 +877,7 @@ restructure_reference (tree *pbase, tree *poffset, max_wide_int *pindex,
     if (TREE_CODE (TREE_OPERAND (mult_op0, 1)) == INTEGER_CST)
       {
 	t2 = TREE_OPERAND (mult_op0, 0);
-	c2 = -(max_wide_int)TREE_OPERAND (mult_op0, 1);
+	c2 = -wi::extend (TREE_OPERAND (mult_op0, 1));
       }
     else
       return false;
@@ -979,7 +979,7 @@ create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     ============================
 	     X = B + ((i' * S) * Z)  */
 	  base = base_cand->base_expr;
-	  index = base_cand->index * base_cand->stride;
+	  index = base_cand->index * wi::extend (base_cand->stride);
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1035,7 +1035,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = (B + i') * (S * c)  */
 	  base = base_cand->base_expr;
 	  index = base_cand->index;
-	  temp = wi::mul (base_cand->stride, stride_in);
+	  temp = wi::extend (base_cand->stride) * wi::extend (stride_in);
 	  stride = wide_int_to_tree (TREE_TYPE (stride_in), temp);
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1065,7 +1065,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     ===========================
 	     X = (B + S) * c  */
 	  base = base_cand->base_expr;
-	  index = base_cand->stride;
+	  index = wi::extend (base_cand->stride);
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1166,7 +1166,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 	     ===========================
 	     X = Y + ((+/-1 * S) * B)  */
 	  base = base_in;
-	  index = addend_cand->stride;
+	  index = wi::extend (addend_cand->stride);
 	  if (subtract_p)
 	    index = -index;
 	  stride = addend_cand->base_expr;
@@ -1216,7 +1216,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 		     ===========================
 		     Value:  X = Y + ((-1 * S) * B)  */
 		  base = base_in;
-		  index = subtrahend_cand->stride;
+		  index = wi::extend (subtrahend_cand->stride);
 		  index = -index;
 		  stride = subtrahend_cand->base_expr;
 		  ctype = TREE_TYPE (base_in);
@@ -1272,7 +1272,8 @@ create_add_imm_cand (gimple gs, tree base_in, max_wide_int index_in, bool speed)
       signop sign = TYPE_SIGN (TREE_TYPE (base_cand->stride));
 
       if (TREE_CODE (base_cand->stride) == INTEGER_CST
-	  && wi::multiple_of_p (index_in, base_cand->stride, sign, &multiple))
+	  && wi::multiple_of_p (index_in, wi::extend (base_cand->stride),
+				sign, &multiple))
 	{
 	  /* Y = (B + i') * S, S constant, c = kS for some integer k
 	     X = Y + c
@@ -1360,7 +1361,7 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
       max_wide_int index;
 
       /* Record an interpretation for the add-immediate.  */
-      index = rhs2;
+      index = wi::extend (rhs2);
       if (subtract_p)
 	index = -index;
 
@@ -2027,7 +2028,7 @@ replace_unconditional_candidate (slsr_cand_t c)
     return;
 
   basis = lookup_cand (c->basis);
-  bump = cand_increment (c) * c->stride;
+  bump = cand_increment (c) * wi::extend (c->stride);
 
   replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
@@ -2078,7 +2079,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
     {
       tree bump_tree;
       enum tree_code code = PLUS_EXPR;
-      max_wide_int bump = increment * c->stride;
+      max_wide_int bump = increment * wi::extend (c->stride);
       if (wi::neg_p (bump))
 	{
 	  code = MINUS_EXPR;
@@ -2246,7 +2247,7 @@ replace_conditional_candidate (slsr_cand_t c)
   name = create_phi_basis (c, lookup_cand (c->def_phi)->cand_stmt,
 			   basis_name, loc, KNOWN_STRIDE);
   /* Replace C with an add of the new basis phi and a constant.  */
-  bump = c->index * c->stride;
+  bump = c->index * wi::extend (c->stride);
 
   replace_mult_candidate (c, name, bump);
 }

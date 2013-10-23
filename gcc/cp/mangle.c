@@ -3223,7 +3223,7 @@ write_array_type (const tree type)
 	{
 	  /* The ABI specifies that we should mangle the number of
 	     elements in the array, not the largest allowed index.  */
-	  addr_wide_int wmax = addr_wide_int (max) + 1;
+	  addr_wide_int wmax = wi::address (max) + 1;
 	  /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
 	     number of elements as zero.  */
 	  wmax = wi::zext (wmax, TYPE_PRECISION (TREE_TYPE (max)));

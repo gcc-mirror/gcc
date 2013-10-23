@@ -4317,8 +4317,7 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
 addr_wide_int
 mem_ref_offset (const_tree t)
 {
-  tree toff = TREE_OPERAND (t, 1);
-  return wi::sext (addr_wide_int (toff), TYPE_PRECISION (TREE_TYPE (toff)));
+  return addr_wide_int::from (TREE_OPERAND (t, 1), SIGNED);
 }
 
 /* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE
@@ -6891,26 +6890,17 @@ type_num_arguments (const_tree type)
 int
 tree_int_cst_equal (const_tree t1, const_tree t2)
 {
-  unsigned int prec1, prec2;
   if (t1 == t2)
     return 1;
 
   if (t1 == 0 || t2 == 0)
     return 0;
 
-  if (TREE_CODE (t1) != INTEGER_CST
-      || TREE_CODE (t2) != INTEGER_CST)
-    return 0;
+  if (TREE_CODE (t1) == INTEGER_CST
+      && TREE_CODE (t2) == INTEGER_CST
+      && wi::extend (t1) == wi::extend (t2))
+    return 1;
 
-  prec1 = TYPE_PRECISION (TREE_TYPE (t1));
-  prec2 = TYPE_PRECISION (TREE_TYPE (t2));
-
-  if (prec1 == prec2)
-    return wi::eq_p (t1, t2);
-  else if (prec1 < prec2)
-    return wide_int::from (t1, prec2, TYPE_SIGN (TREE_TYPE (t1))) == t2;
-  else
-    return wide_int::from (t2, prec1, TYPE_SIGN (TREE_TYPE (t2))) == t1;
   return 0;
 }
 
@@ -7080,7 +7070,7 @@ simple_cst_equal (const_tree t1, const_tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return wi::eq_p (t1, t2);
+      return wi::extend (t1) == wi::extend (t2);
 
     case REAL_CST:
       return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));

@@ -2300,7 +2300,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
 	  bool overflow;
-	  addr_wide_int result = wi::mul (addr_wide_int (inner_nelts_cst),
+	  addr_wide_int result = wi::mul (wi::address (inner_nelts_cst),
 					  inner_nelts_count, SIGNED,
 					  &overflow);
 	  if (overflow)
@@ -2417,9 +2417,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Unconditionally subtract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
-      max_size -= cookie_size;
+      max_size -= wi::address (cookie_size);
       bool overflow;
-      inner_size = wi::mul (addr_wide_int (size), inner_nelts_count, SIGNED,
+      inner_size = wi::mul (wi::address (size), inner_nelts_count, SIGNED,
 			    &overflow);
       if (overflow || wi::gtu_p (inner_size, max_size))
 	{

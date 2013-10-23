@@ -4812,10 +4812,10 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = addr_wide_int (max_index) - tmp + 1;
+  i = wi::address (max_index) - wi::address (tmp) + 1;
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i *= addr_wide_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
+  i *= wi::address (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
   gcc_assert (wi::fits_uhwi_p (i));
   return i.to_uhwi ();
@@ -4899,8 +4899,10 @@ output_constructor_regular_field (oc_local_state *local)
 	 but we are using an unsigned sizetype.  */
       unsigned prec = TYPE_PRECISION (sizetype);
       addr_wide_int idx 
-	= wi::sext (addr_wide_int (local->index) - local->min_index, prec);
-      fieldpos = (idx * TYPE_SIZE_UNIT (TREE_TYPE (local->val))).to_shwi ();
+	= wi::sext (wi::address (local->index)
+		    - wi::address (local->min_index), prec);
+      fieldpos = (idx * wi::address (TYPE_SIZE_UNIT (TREE_TYPE (local->val))))
+	.to_shwi ();
     }
   else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);

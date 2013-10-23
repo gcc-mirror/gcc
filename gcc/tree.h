@@ -5239,7 +5239,7 @@ namespace wi
   template <>
   struct int_traits <const_tree>
   {
-    static const enum precision_type precision_type = FLEXIBLE_PRECISION;
+    static const enum precision_type precision_type = VAR_PRECISION;
     static const bool host_dependent_precision = false;
     static unsigned int get_precision (const_tree);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
@@ -5248,6 +5248,34 @@ namespace wi
 
   template <>
   struct int_traits <tree> : public int_traits <const_tree> {};
+
+  template <int N>
+  class extended_tree
+  {
+  private:
+    const_tree m_t;
+
+  public:
+    extended_tree (const_tree);
+
+    unsigned int get_precision () const;
+    const HOST_WIDE_INT *get_val () const;
+    unsigned int get_len () const;
+  };
+
+  template <>
+  template <int N>
+  struct int_traits <extended_tree <N> >
+  {
+    static const enum precision_type precision_type = CONST_PRECISION;
+    static const bool host_dependent_precision = false;
+    static const unsigned int precision = N;
+  };
+
+  generic_wide_int <extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
+  extend (const_tree);
+
+  generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > address (const_tree);
 }
 
 inline unsigned int
@@ -5265,9 +5293,8 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
   const HOST_WIDE_INT *val = (const HOST_WIDE_INT *) &TREE_INT_CST_ELT (x, 0);
   unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
 			  / HOST_BITS_PER_WIDE_INT);
-  unsigned int xprecision = get_precision (x);
 
-  gcc_assert (precision >= xprecision);
+  gcc_checking_assert (precision == get_precision (x));
 
   /* If an unsigned constant occupies a whole number of HWIs and has the
      upper bit set, its representation includes an extra zero HWI,
@@ -5280,6 +5307,46 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 
   /* Signed and the rest of the unsigned cases are easy.  */
   return wi::storage_ref (val, len, precision);
+}
+
+inline generic_wide_int <wi::extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
+wi::extend (const_tree t)
+{
+  return t;
+}
+
+inline generic_wide_int <wi::extended_tree <ADDR_MAX_PRECISION> >
+wi::address (const_tree t)
+{
+  return t;
+}
+
+template <int N>
+inline wi::extended_tree <N>::extended_tree (const_tree t)
+  : m_t (t)
+{
+  gcc_checking_assert (TYPE_PRECISION (TREE_TYPE (t)) <= N);
+}
+
+template <int N>
+inline unsigned int
+wi::extended_tree <N>::get_precision () const
+{
+  return N;
+}
+
+template <int N>
+inline const HOST_WIDE_INT *
+wi::extended_tree <N>::get_val () const
+{
+  return &TREE_INT_CST_ELT (m_t, 0);
+}
+
+template <int N>
+inline unsigned int
+wi::extended_tree <N>::get_len () const
+{
+  return TREE_INT_CST_NUNITS (m_t);
 }
 
 namespace wi

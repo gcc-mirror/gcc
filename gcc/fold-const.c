@@ -1581,7 +1581,7 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  Use max_wide_int
      so that any extension is done according ARG1's type.  */
-  return force_fit_type (type, max_wide_int (arg1),
+  return force_fit_type (type, wi::extend (arg1),
 			 !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			 TREE_OVERFLOW (arg1));
 }
@@ -1622,7 +1622,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
   if (REAL_VALUE_ISNAN (r))
     {
       overflow = true;
-      val = max_wide_int (0);
+      val = wi::zero (TYPE_PRECISION (type));
     }
 
   /* See if R is less than the lower bound or greater than the
@@ -1635,7 +1635,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
       if (REAL_VALUES_LESS (r, l))
 	{
 	  overflow = true;
-	  val = max_wide_int (lt);
+	  val = lt;
 	}
     }
 
@@ -1648,7 +1648,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
 	  if (REAL_VALUES_LESS (u, r))
 	    {
 	      overflow = true;
-	      val = max_wide_int (ut);
+	      val = ut;
 	    }
 	}
     }
@@ -6611,7 +6611,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 	 not overflow, adjust BITNUM and INNER.  */
       if (TREE_CODE (inner) == RSHIFT_EXPR
 	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
-	  && wi::ltu_p (wi::add (TREE_OPERAND (inner, 1), bitnum),
+	  && wi::ltu_p (wi::extend (TREE_OPERAND (inner, 1)) + bitnum,
 			TYPE_PRECISION (type)))
 	{
 	  bitnum += tree_to_hwi (TREE_OPERAND (inner, 1));
@@ -7287,7 +7287,9 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
   for (byte = 0; byte < total_bytes; byte++)
     {
       int bitpos = byte * BITS_PER_UNIT;
-      value = wi::extract_uhwi (expr, bitpos, BITS_PER_UNIT);
+      /* Extend EXPR according to TYPE_SIGN if the precision isn't a whole
+	 number of bytes.  */
+      value = wi::extract_uhwi (wi::extend (expr), bitpos, BITS_PER_UNIT);
 
       if (total_bytes > UNITS_PER_WORD)
 	{
@@ -10450,7 +10452,7 @@ fold_binary_loc (location_t loc,
 	    code11 = TREE_CODE (tree11);
 	    if (code01 == INTEGER_CST
 		&& code11 == INTEGER_CST
-		&& (wi::add (tree01, tree11)
+		&& (wi::extend (tree01) + wi::extend (tree11)
 		    == element_precision (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
 	      {
 		tem = build2_loc (loc, LROTATE_EXPR,

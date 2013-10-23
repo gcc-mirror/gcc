@@ -1590,7 +1590,7 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
       if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
 	return false;
 
-      *mul = wi::sext (res * mby, precision);
+      *mul = wi::sext (res * wi::extend (mby), precision);
       return true;
 
     case PLUS_EXPR:
@@ -1608,8 +1608,8 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = wi::sext (top, precision);
-      p1 = wi::sext (bot, precision);
+      p0 = max_wide_int::from (top, SIGNED);
+      p1 = max_wide_int::from (bot, SIGNED);
       if (p1 == 0)
 	return false;
       *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);
@@ -4632,7 +4632,7 @@ may_eliminate_iv (struct ivopts_data *data,
       max_niter = desc->max;
       if (stmt_after_increment (loop, cand, use->stmt))
         max_niter += 1;
-      period_value = period;
+      period_value = wi::extend (period);
       if (wi::gtu_p (max_niter, period_value))
         {
           /* See if we can take advantage of inferred loop bound information.  */

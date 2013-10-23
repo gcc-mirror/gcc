@@ -2821,14 +2821,14 @@ fold_array_ctor_reference (tree type, tree ctor,
       /* Static constructors for variably sized objects makes no sense.  */
       gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
       index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
-      low_bound = TYPE_MIN_VALUE (domain_type);
+      low_bound = wi::address (TYPE_MIN_VALUE (domain_type));
     }
   else
     low_bound = 0;
   /* Static constructors for variably sized objects makes no sense.  */
   gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))))
 	      == INTEGER_CST);
-  elt_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor)));
+  elt_size = wi::address (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* We can handle only constantly sized accesses that are known to not
      be larger than size of array element.  */
@@ -2866,12 +2866,12 @@ fold_array_ctor_reference (tree type, tree ctor,
       if (cfield)
 	{
 	  if (TREE_CODE (cfield) == INTEGER_CST)
-	    max_index = index = cfield;
+	    max_index = index = wi::address (cfield);
 	  else
 	    {
 	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
-	      index = TREE_OPERAND (cfield, 0);
-	      max_index = TREE_OPERAND (cfield, 1);
+	      index = wi::address (TREE_OPERAND (cfield, 0));
+	      max_index = wi::address (TREE_OPERAND (cfield, 1));
 	    }
 	}
       else
@@ -2913,7 +2913,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
       tree field_size = DECL_SIZE (cfield);
       addr_wide_int bitoffset;
-      addr_wide_int byte_offset_cst = byte_offset;
+      addr_wide_int byte_offset_cst = wi::address (byte_offset);
       addr_wide_int bitoffset_end, access_end;
 
       /* Variable sized objects in static constructors makes no sense,
@@ -2925,10 +2925,11 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 		      : TREE_CODE (TREE_TYPE (cfield)) == ARRAY_TYPE));
 
       /* Compute bit offset of the field.  */
-      bitoffset = wi::add (field_offset, byte_offset_cst * BITS_PER_UNIT);
+      bitoffset = (wi::address (field_offset)
+		   + byte_offset_cst * BITS_PER_UNIT);
       /* Compute bit offset where the field ends.  */
       if (field_size != NULL_TREE)
-	bitoffset_end = bitoffset + field_size;
+	bitoffset_end = bitoffset + wi::address (field_size);
       else
 	bitoffset_end = 0;
 
@@ -3043,8 +3044,8 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  if ((TREE_CODE (low_bound) == INTEGER_CST)
 	      && (tree_fits_uhwi_p (unit_size)))
 	    {
-	      addr_wide_int woffset 
-		= wi::sext (addr_wide_int (idx) - low_bound,
+	      addr_wide_int woffset
+		= wi::sext (wi::address (idx) - wi::address (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
 	      
 	      if (wi::fits_shwi_p (woffset))

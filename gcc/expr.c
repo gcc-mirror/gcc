@@ -6581,7 +6581,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += TREE_OPERAND (exp, 2);
+	  bit_offset += wi::address (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -6596,7 +6596,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      break;
 
 	    offset = size_binop (PLUS_EXPR, offset, this_offset);
-	    bit_offset += DECL_FIELD_BIT_OFFSET (field);
+	    bit_offset += wi::address (DECL_FIELD_BIT_OFFSET (field));
 
 	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
 	  }
@@ -6675,7 +6675,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      this conversion.  */
   if (TREE_CODE (offset) == INTEGER_CST)
     {
-      addr_wide_int tem = wi::sext (addr_wide_int (offset),
+      addr_wide_int tem = wi::sext (wi::address (offset),
 				    TYPE_PRECISION (sizetype));
       tem = wi::lshift (tem, (BITS_PER_UNIT == 8
 			      ? 3 : exact_log2 (BITS_PER_UNIT)));

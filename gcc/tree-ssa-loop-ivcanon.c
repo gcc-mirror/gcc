@@ -927,7 +927,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
-      record_niter_bound (loop, niter,
+      record_niter_bound (loop, wi::extend (niter),
 			  exit == single_likely_exit (loop), true);
     }
 

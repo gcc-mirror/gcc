@@ -801,8 +801,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		if (tree_to_hwi (bit_offset) % BITS_PER_UNIT == 0)
 		  {
 		    addr_wide_int off
-		      = (addr_wide_int (this_offset)
-			 + wi::lrshift (addr_wide_int (bit_offset),
+		      = (wi::address (this_offset)
+			 + wi::lrshift (wi::address (bit_offset),
 					BITS_PER_UNIT == 8
 					? 3 : exact_log2 (BITS_PER_UNIT)));
 		    if (wi::fits_shwi_p (off))
@@ -822,9 +822,9 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      && TREE_CODE (temp.op1) == INTEGER_CST
 	      && TREE_CODE (temp.op2) == INTEGER_CST)
 	    {
-	      addr_wide_int off = temp.op0;
-	      off += -addr_wide_int (temp.op1);
-	      off *= addr_wide_int (temp.op2);
+	      addr_wide_int off = ((wi::address (temp.op0)
+				    - wi::address (temp.op1))
+				   * wi::address (temp.op2));
 	      if (wi::fits_shwi_p (off))
 		temp.off = off.to_shwi();
 	    }
@@ -1146,8 +1146,7 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      addr_wide_int off = wi::sext (addr_wide_int (mem_op->op0),
-				    TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+      addr_wide_int off = addr_wide_int::from (mem_op->op0, SIGNED);
       off += addr_offset;
       mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
@@ -1180,8 +1179,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return;
 
-  off = wi::sext (addr_wide_int (mem_op->op0),
-		  TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+  off = addr_wide_int::from (mem_op->op0, SIGNED);
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1211,7 +1209,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  || TREE_CODE (ptroff) != INTEGER_CST)
 	return;
 
-      off += ptroff;
+      off += wi::address (ptroff);
       op->op0 = ptr;
     }
 
@@ -1369,9 +1367,9 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	       && TREE_CODE (vro->op1) == INTEGER_CST
 	       && TREE_CODE (vro->op2) == INTEGER_CST)
 	{
-	  addr_wide_int off = vro->op0;
-	  off += -addr_wide_int (vro->op1);
-	  off *= addr_wide_int (vro->op2);
+	  addr_wide_int off = ((wi::address (vro->op0)
+				- wi::address (vro->op1))
+			       * wi::address (vro->op2));
 	  if (wi::fits_shwi_p (off))
 	    vro->off = off.to_shwi ();
 	}

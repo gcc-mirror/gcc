@@ -2198,11 +2198,10 @@ layout_type (tree type)
 		    && TYPE_UNSIGNED (TREE_TYPE (lb))
 		    && tree_int_cst_lt (ub, lb))
 		  {
-		    unsigned prec = TYPE_PRECISION (TREE_TYPE (lb));
 		    lb = wide_int_to_tree (ssizetype,
-					   wi::sext (addr_wide_int (lb), prec));
+					   addr_wide_int::from (lb, SIGNED));
 		    ub = wide_int_to_tree (ssizetype,
-					   wi::sext (addr_wide_int (ub), prec));
+					   addr_wide_int::from (ub, SIGNED));
 		  }
 		length
 		  = fold_convert (sizetype,
