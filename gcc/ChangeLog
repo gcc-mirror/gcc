@@ -1,3 +1,7 @@
+2013-10-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/tilegx/tilegx.c: Include "tree.h".
+
 2013-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-pretty-print.c (dump_ssaname_info): Always print "# " before
