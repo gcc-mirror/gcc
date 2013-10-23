@@ -854,7 +854,7 @@ struct wide_int_ref_storage : public wi::storage_ref
 private:
   /* Scratch space that can be used when decomposing the original integer.
      It must live as long as this object.  */
-  HOST_WIDE_INT scratch[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT scratch[2];
 
 public:
   template <typename T>
