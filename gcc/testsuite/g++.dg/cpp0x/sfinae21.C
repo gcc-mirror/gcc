@@ -9,6 +9,10 @@ char f(int);
 template<class>
 char (&f(...))[2];
 
-struct ND { ND() = delete; };
+struct ND {
+  // Make ND() non-aggregate.
+  virtual void f();
+  ND() = delete;
+};
 
 static_assert(sizeof(f<ND[1]>(0)) != 1, "Error");

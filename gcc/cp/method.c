@@ -1265,8 +1265,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      class versions and other properties of the type.  But a subobject
      class can be trivially copyable and yet have overload resolution
      choose a template constructor for initialization, depending on
-     rvalueness and cv-quals.  So we can't exit early for copy/move
-     methods in C++0x.  The same considerations apply in C++98/03, but
+     rvalueness and cv-quals.  And furthermore, a member in a base might
+     be trivial but deleted or otherwise not callable.  So we can't exit
+     early in C++0x.  The same considerations apply in C++98/03, but
      there the definition of triviality does not consider overload
      resolution, so a constructor can be trivial even if it would otherwise
      call a non-trivial constructor.  */
@@ -1282,7 +1283,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    inform (input_location, "defaulted default constructor does "
 		    "not initialize any non-static data member");
 	}
-      if (!diag)
+      if (!diag && cxx_dialect < cxx11)
 	return;
     }
 
@@ -1323,7 +1324,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
       process_subob_fn (rval, spec_p, trivial_p, deleted_p,
 			constexpr_p, diag, basetype);
-      if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
+      if (ctor_p)
 	{
 	  /* In a constructor we also need to check the subobject
 	     destructors for cleanup of partially constructed objects.  */

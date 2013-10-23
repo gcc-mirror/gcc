@@ -2521,6 +2521,10 @@ finish_compound_literal (tree type, tree compound_literal,
       decl = pushdecl_top_level (decl);
       DECL_NAME (decl) = make_anon_name ();
       SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+      /* Make sure the destructor is callable.  */
+      tree clean = cxx_maybe_build_cleanup (decl, complain);
+      if (clean == error_mark_node)
+	return error_mark_node;
       return decl;
     }
   else
