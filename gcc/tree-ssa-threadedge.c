@@ -1040,6 +1040,16 @@ thread_across_edge (gimple dummy_cond,
     edge_iterator ei;
     bool found;
 
+    /* If E->dest has abnormal outgoing edges, then there's no guarantee
+       we can safely redirect any of the edges.  Just punt those cases.  */
+    FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
+      if (taken_edge->flags & EDGE_ABNORMAL)
+	{
+	  remove_temporary_equivalences (stack);
+	  BITMAP_FREE (visited);
+	  return;
+	}
+
     /* Look at each successor of E->dest to see if we can thread through it.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
       {
