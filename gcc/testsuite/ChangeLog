@@ -1,3 +1,8 @@
+2013-10-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58793
+	* gfortran.dg/assumed_type_8.f90: New.
+
 2013-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58779
