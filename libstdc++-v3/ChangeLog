@@ -1,5 +1,12 @@
 2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/58850
+	* include/std/chrono (minutes, hours): Change typedefs to uniformly
+	use int64_t.
+	* testsuite/20_util/duration/arithmetic/58850.cc: New.
+
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/decimal/pr58815.cc: Fix thinko.
 
 2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
