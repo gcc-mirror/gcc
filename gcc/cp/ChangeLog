@@ -1,5 +1,9 @@
 2013-10-23  Jason Merrill  <jason@redhat.com>
 
+	LWG 2165
+	* method.c (defaulted_late_check): Delete on eh-spec mismatch.
+	(maybe_explain_implicit_delete): Explain it.
+
 	* error.c (eh_spec_to_string): New.
 	(cp_printer): Use it for %X.
 
