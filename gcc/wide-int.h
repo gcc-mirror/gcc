@@ -185,17 +185,16 @@ along with GCC; see the file COPYING3.  If not see
 
      assuming t is a int_cst.
 
-   Note, the bits past the precision up to the nearest HOST_WIDE_INT
-   boundary are defined to be copies of the top bit of the value,
-   however the bits above those defined bits not defined and the
-   algorithms used here are careful not to depend on their value.  In
-   particular, values that come in from rtx constants may have random
-   bits.  When the precision is 0, all the bits in the LEN elements of
-   VEC are significant with no undefined bits.  Precisionless
-   constants are limited to being one or two HOST_WIDE_INTs.  When two
-   are used the upper value is 0, and the high order bit of the first
-   value is set.  (Note that this may need to be generalized if it is
-   ever necessary to support 32bit HWIs again).
+   Any bits in a wide_int above the precision are sign-extended from the
+   most significant bit.  For example, a 4-bit value 0x8 is represented as
+   VAL = { 0xf...fff8 }.  However, as an optimization, we allow other integer
+   constants to be represented with undefined bits above the precision.
+   This allows INTEGER_CSTs to be pre-extended according to TYPE_SIGN,
+   so that the INTEGER_CST representation can be used both in TYPE_PRECISION
+   and in wider precisions.
+
+   Precision 0 is allowed for the special case of zero-width bitfields.
+   They always have a VAL of { 0 } and a LEN of 1.
 
    Many binary operations require that the precisions of the two
    operands be the same.  However, the API tries to keep this relaxed
@@ -208,7 +207,7 @@ along with GCC; see the file COPYING3.  If not see
      This is allowed because it is always known whether to sign or zero
      extend these values.
 
-   * The comparisons do not require that the operands be the same
+   * order comparisons do not require that the operands be the same
      length.  This allows wide ints to be used in hash tables where
      all of the values may not be the same precision.  */
 
@@ -679,7 +678,13 @@ template <typename storage>
 inline HOST_WIDE_INT
 generic_wide_int <storage>::sign_mask () const
 {
-  return this->get_val ()[this->get_len () - 1] < 0 ? -1 : 0;
+  unsigned int len = this->get_len ();
+  unsigned int precision = this->get_precision ();
+  unsigned HOST_WIDE_INT high = this->get_val ()[len - 1];
+  int excess = len * HOST_BITS_PER_WIDE_INT - precision;
+  if (excess > 0)
+    high <<= excess;
+  return HOST_WIDE_INT (high) < 0 ? -1 : 0;
 }
 
 /* Return the signed value of the least-significant explicitly-encoded
@@ -855,9 +860,10 @@ inline wide_int_storage::wide_int_storage (const T &x)
   STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision);
   wide_int_ref xi (x);
   precision = xi.precision;
-  len = xi.len;
-  for (unsigned int i = 0; i < len; ++i)
+  unsigned int l = xi.len;
+  for (unsigned int i = 0; i < l; ++i)
     val[i] = xi.val[i];
+  set_len (l);
 }
 
 inline unsigned int
@@ -888,6 +894,9 @@ inline void
 wide_int_storage::set_len (unsigned int l)
 {
   len = l;
+  if (len * HOST_BITS_PER_WIDE_INT > precision)
+    val[len - 1] = sext_hwi (val[len - 1],
+			     precision % HOST_BITS_PER_WIDE_INT);
 }
 
 /* Treat X as having signedness SGN and convert it to a PRECISION-bit
@@ -1032,6 +1041,8 @@ inline void
 fixed_wide_int_storage <N>::set_len (unsigned int l)
 {
   len = l;
+  /* There are no excess bits in val[len - 1].  */
+  STATIC_ASSERT (N % HOST_BITS_PER_WIDE_INT == 0);
 }
 
 /* Treat X as having signedness SGN and convert it to an N-bit number.  */
@@ -1302,11 +1313,7 @@ decompose (HOST_WIDE_INT *scratch, unsigned int precision,
 {
   scratch[0] = x.val;
   if (x.sgn == SIGNED || x.val >= 0 || precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      if (precision < HOST_BITS_PER_WIDE_INT)
-	scratch[0] = sext_hwi (scratch[0], precision);
-      return wi::storage_ref (scratch, 1, precision);
-    }
+    return wi::storage_ref (scratch, 1, precision);
   scratch[1] = 0;
   return wi::storage_ref (scratch, 2, precision);
 }
@@ -1419,7 +1426,7 @@ wi::neg_p (const wide_int_ref &x, signop sgn)
 {
   if (sgn == UNSIGNED)
     return false;
-  return x.shigh () < 0;
+  return x.sign_mask () < 0;
 }
 
 /* Return -1 if the top bit of X is set and 0 if the top bit is
@@ -1443,10 +1450,7 @@ wi::eq_p (const T1 &x, const T2 &y)
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT diff = xi.ulow () ^ yi.ulow ();
-      bool result = (diff << (HOST_BITS_PER_WIDE_INT - precision)) == 0;
-      if (result)
-	gcc_assert (xi.ulow () == yi.ulow ());
-      return result;
+      return (diff << (-precision % HOST_BITS_PER_WIDE_INT)) == 0;
     }
   return eq_p_large (xi.val, xi.len, yi.val, yi.len, precision);
 }
@@ -1468,7 +1472,7 @@ wi::lts_p (const wide_int_ref &x, const wide_int_ref &y)
     {
       // If x fits directly into a shwi, we can compare directly.
       if (wi::fits_shwi_p (x))
-	return x.slow () < y.slow ();
+	return x.to_shwi () < y.to_shwi ();
       // If x doesn't fit and is negative, then it must be more
       // negative than any value in y, and hence smaller than y.
       if (neg_p (x, SIGNED))
@@ -1488,8 +1492,8 @@ wi::ltu_p (const wide_int_ref &x, const wide_int_ref &y)
   if (x.precision <= HOST_BITS_PER_WIDE_INT
       && y.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT xl = zext_hwi (x.ulow (), x.precision);
-      unsigned HOST_WIDE_INT yl = zext_hwi (y.ulow (), y.precision);
+      unsigned HOST_WIDE_INT xl = x.to_uhwi ();
+      unsigned HOST_WIDE_INT yl = y.to_uhwi ();
       return xl < yl;
     }
   else
@@ -1587,8 +1591,8 @@ wi::cmps (const wide_int_ref &x, const wide_int_ref &y)
   if (x.precision <= HOST_BITS_PER_WIDE_INT
       && y.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      HOST_WIDE_INT xl = x.slow ();
-      HOST_WIDE_INT yl = y.slow ();
+      HOST_WIDE_INT xl = x.to_shwi ();
+      HOST_WIDE_INT yl = y.to_shwi ();
       if (xl < yl)
 	return -1;
       else if (xl > yl)
@@ -1608,8 +1612,8 @@ wi::cmpu (const wide_int_ref &x, const wide_int_ref &y)
   if (x.precision <= HOST_BITS_PER_WIDE_INT
       && y.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT xl = zext_hwi (x.ulow (), x.precision);
-      unsigned HOST_WIDE_INT yl = zext_hwi (y.ulow (), y.precision);
+      unsigned HOST_WIDE_INT xl = x.to_uhwi ();
+      unsigned HOST_WIDE_INT yl = y.to_uhwi ();
       if (xl < yl)
 	return -1;
       else if (xl == yl)
@@ -1671,7 +1675,7 @@ wi::abs (const T &x)
     return neg (x);
 
   WI_UNARY_RESULT_VAR (result, val, T, x);
-  wide_int_ref xi (x, get_precision(result));
+  wide_int_ref xi (x, get_precision (result));
   for (unsigned int i = 0; i < xi.len; ++i)
     val[i] = xi.val[i];
   result.set_len (xi.len);
@@ -1947,7 +1951,7 @@ wi::add (const T1 &x, const T2 &y)
   wide_int_ref yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = sext_hwi (xi.ulow () + yi.ulow (), precision);
+      val[0] = xi.ulow () + yi.ulow ();
       result.set_len (1);
     }
   else
@@ -1980,7 +1984,7 @@ wi::add (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       else
 	*overflow = ((resultl << (HOST_BITS_PER_WIDE_INT - precision))
 		     < (xl << (HOST_BITS_PER_WIDE_INT - precision)));
-      val[0] = sext_hwi (resultl, precision);
+      val[0] = resultl;
       result.set_len (1);
     }
   else
@@ -2001,7 +2005,7 @@ wi::sub (const T1 &x, const T2 &y)
   wide_int_ref yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = sext_hwi (xi.ulow () - yi.ulow (), precision);
+      val[0] = xi.ulow () - yi.ulow ();
       result.set_len (1);
     }
   else
@@ -2033,7 +2037,7 @@ wi::sub (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       else
 	*overflow = ((resultl << (HOST_BITS_PER_WIDE_INT - precision))
 		     > (xl << (HOST_BITS_PER_WIDE_INT - precision)));
-      val[0] = sext_hwi (resultl, precision);
+      val[0] = resultl;
       result.set_len (1);
     }
   else
@@ -2054,7 +2058,7 @@ wi::mul (const T1 &x, const T2 &y)
   wide_int_ref yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = sext_hwi (xi.ulow () * yi.ulow (), precision);
+      val[0] = xi.ulow () * yi.ulow ();
       result.set_len (1);
     }
   else
@@ -2458,11 +2462,7 @@ wi::trunc_shift (const wide_int_ref &x, unsigned int bitsize,
       if (geu_p (x, precision))
 	return precision;
     }
-  /* Flush out undefined bits.  */
-  unsigned int shift = x.ulow ();
-  if (x.precision < HOST_BITS_PER_WIDE_INT)
-    shift = zext_hwi (shift, x.precision);
-  return shift & (bitsize - 1);
+  return x.to_uhwi () & (bitsize - 1);
 }
 
 /* Return X << Y.  If BITSIZE is nonzero, only use the low BITSIZE
@@ -2483,7 +2483,7 @@ wi::lshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
     }
   else if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = sext_hwi (xi.ulow () << shift, precision);
+      val[0] = xi.ulow () << shift;
       result.set_len (1);
     }
   else
@@ -2511,8 +2511,7 @@ wi::lrshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
     }
   else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = sext_hwi (zext_hwi (xi.ulow (), xi.precision) >> shift, 
-			 xi.precision);
+      val[0] = xi.to_uhwi () >> shift;
       result.set_len (1);
     }
   else

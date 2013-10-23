@@ -5258,7 +5258,7 @@ wi::int_traits <const_tree>::get_precision (const_tree tcst)
 
 /* Convert the tree_cst X into a wide_int of PRECISION.  */
 inline wi::storage_ref
-wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
+wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 					unsigned int precision, const_tree x)
 {
   unsigned int len = TREE_INT_CST_NUNITS (x);
@@ -5269,32 +5269,14 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
 
   gcc_assert (precision >= xprecision);
 
-  /* Got to be careful of precision 0 values.  */
-  if (precision)
-    len = MIN (len, max_len);
-  if (TYPE_SIGN (TREE_TYPE (x)) == UNSIGNED)
-    {
-      unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-      if (small_prec)
-	{
-	  /* We have to futz with this because the canonization for
-	     short unsigned numbers in wide-int is different from the
-	     canonized short unsigned numbers in the tree-cst.  */
-	  if (len == max_len) 
-	    {
-	      for (unsigned int i = 0; i < len - 1; i++)
-		scratch[i] = val[i];
-	      scratch[len - 1] = sext_hwi (val[len - 1], precision);
-	      return wi::storage_ref (scratch, len, precision);
-	    }
-	} 
-      /* We have to futz here because a large unsigned int with
-	 precision 128 may look (0x0 0xFFFFFFFFFFFFFFFF 0xF...) as a
-	 tree-cst and as (0xF...) as a wide-int.  */
-      else if (precision == xprecision && len == max_len)
-        while (len > 1 && val[len - 1] == (HOST_WIDE_INT)-1)
-          len--;
-    }
+  /* If an unsigned constant occupies a whole number of HWIs and has the
+     upper bit set, its representation includes an extra zero HWI,
+     so that the representation can be used for wider precisions.
+     Trim the length if we're accessing the tree in its own precision.  */
+  if (__builtin_expect (len > max_len, 0))
+    do
+      len--;
+    while (len > 1 && val[len - 1] == -1 && val[len - 2] < 0);
 
   /* Signed and the rest of the unsigned cases are easy.  */
   return wi::storage_ref (val, len, precision);

@@ -46,7 +46,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 #define BLOCK_OF(TARGET) ((TARGET) / HOST_BITS_PER_WIDE_INT)
 #define BLOCKS_NEEDED(PREC) \
   (PREC ? (((PREC) + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT) : 1)
-#define SIGN_MASK(X) (((HOST_WIDE_INT)X) >> (HOST_BITS_PER_WIDE_INT - 1))
+#define SIGN_MASK(X) ((HOST_WIDE_INT) (X) < 0 ? -1 : 0)
 
 /* Return the value a VAL[I] if I < LEN, otherwise, return 0 or -1
    based on the top existing bit of VAL. */
@@ -65,7 +65,6 @@ safe_uhwi (const HOST_WIDE_INT *val, unsigned int len, unsigned int i)
 static unsigned int
 canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
 {
-  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
   unsigned int blocks_needed = BLOCKS_NEEDED (precision);
   HOST_WIDE_INT top;
   int i;
@@ -73,15 +72,12 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
   if (len > blocks_needed)
     len = blocks_needed;
 
-  /* Clean up the top bits for any mode that is not a multiple of a
-     HWI and is not compressed.  */
-  if (len == blocks_needed && small_prec)
-    val[len - 1] = sext_hwi (val[len - 1], small_prec);
-
   if (len == 1)
     return len;
 
   top = val[len - 1];
+  if (len * HOST_BITS_PER_WIDE_INT > precision)
+    top = sext_hwi (top, precision % HOST_BITS_PER_WIDE_INT);
   if (top != 0 && top != (HOST_WIDE_INT)-1)
     return len;
 
@@ -215,9 +211,7 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
 {
   size_t count, numb;
   int prec = TYPE_PRECISION (type);
-  int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
   wide_int res = wide_int::create (prec);
-  unsigned int i;
 
   if (!wrap)
     {
@@ -242,22 +236,14 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
   numb = 8*sizeof(HOST_WIDE_INT);
   count = (mpz_sizeinbase (x, 2) + numb-1) / numb;
-  if (count < 1)
-    count = 1;
-
-  /* Need to initialize the number because it writes nothing for
-     zero.  */
   HOST_WIDE_INT *val = res.write_val ();
-  for (i = 0; i < count; i++)
-    val[i] = 0;
-
-  res.set_len (count);
-
   mpz_export (val, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
-
-  /* Canonize for small_prec.  */
-  if (small_prec && count == (size_t)BLOCKS_NEEDED (prec))
-    val[count-1] = sext_hwi (val[count-1], small_prec); 
+  if (count < 1)
+    {
+      val[0] = 0;
+      count = 1;
+    }
+  res.set_len (count);
 
   if (mpz_sgn (x) < 0)
     res = -res;
@@ -324,11 +310,11 @@ wi::force_to_size (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 
   if (precision > xprecision)
     {
+      unsigned int small_xprecision = xprecision % HOST_BITS_PER_WIDE_INT;
+
       /* Expanding.  */
       if (sgn == UNSIGNED)
 	{
-	  unsigned int small_xprecision = xprecision % HOST_BITS_PER_WIDE_INT;
-
 	  if (small_xprecision && len == BLOCKS_NEEDED (xprecision))
 	    val[len - 1] = zext_hwi (val[len - 1], small_xprecision);
 	  else if (val[len - 1] < 0)
@@ -340,6 +326,11 @@ wi::force_to_size (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 	      else
 		val[len++] = 0;
 	    }
+	}
+      else
+	{
+	  if (small_xprecision && len == BLOCKS_NEEDED (xprecision))
+	    val[len - 1] = sext_hwi (val[len - 1], small_xprecision);
 	}
     }
   len = canonize (val, len, precision);
@@ -356,28 +347,34 @@ selt (const HOST_WIDE_INT *a, unsigned int len,
      unsigned int small_prec,
      unsigned int index, signop sgn)
 {
-  if (index >= len)
-    {
-      if (index < blocks_needed || sgn == SIGNED)
-	/* Signed or within the precision.  */
-	return SIGN_MASK (a[len - 1]);
-      else
-	/* Unsigned extension beyond the precision. */
-	return 0;
-    }
-
-  if (sgn == UNSIGNED && small_prec && index == blocks_needed - 1)
-    return zext_hwi (a[index], small_prec);
+  HOST_WIDE_INT val;
+  if (index < len)
+    val = a[index];
+  else if (index < blocks_needed || sgn == SIGNED)
+    /* Signed or within the precision.  */
+    val = SIGN_MASK (a[len - 1]);
   else
-    return a[index];
+    /* Unsigned extension beyond the precision. */
+    val = 0;
+
+  if (small_prec && index == blocks_needed - 1)
+    return (sgn == SIGNED
+	    ? sext_hwi (val, small_prec)
+	    : zext_hwi (val, small_prec));
+  else
+    return val;
 }
 
 /* Find the highest bit represented in a wide int.  This will in
    general have the same value as the sign bit.  */
 static inline HOST_WIDE_INT
-top_bit_of (const HOST_WIDE_INT *a, unsigned int len)
+top_bit_of (const HOST_WIDE_INT *a, unsigned int len, unsigned int prec)
 {
-  return (a[len - 1] >> (HOST_BITS_PER_WIDE_INT - 1)) & 1;
+  int excess = len * HOST_BITS_PER_WIDE_INT - prec;
+  unsigned HOST_WIDE_INT val = a[len - 1];
+  if (excess > 0)
+    val <<= excess;
+  return val >> (HOST_BITS_PER_WIDE_INT - 1);
 }
 
 /*
@@ -759,8 +756,6 @@ unsigned int
 wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
 		  bool negate, unsigned int prec)
 {
-  int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-
   gcc_assert (start < 4 * MAX_BITSIZE_MODE_ANY_INT);
 
   if (start + width > prec)
@@ -787,8 +782,6 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
 	  /* case 000111000 */
 	  block = (((unsigned HOST_WIDE_INT) 1) << shift) - block - 1;
 	  val[i++] = negate ? ~block : block;
-	  if (i == BLOCKS_NEEDED (prec) && small_prec)
-	    val[i - 1] = sext_hwi (val[i - 1], small_prec);
 	  return i;
 	}
       else
@@ -810,9 +803,6 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   else if (end < prec)
     val[i++] = negate ? -1 : 0;
 
-  if (i == BLOCKS_NEEDED (prec) && small_prec)
-    val[i - 1] = sext_hwi (val[i - 1], small_prec);
-
   return i;
 }
 
@@ -833,7 +823,7 @@ wi::and_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
-      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len);
+      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask  == 0)
 	{
 	  l0 = l1;
@@ -851,7 +841,7 @@ wi::and_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (l1 > l0)
     {
-      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len);
+      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask == 0)
 	len = l0 + 1;
       else
@@ -891,7 +881,7 @@ wi::and_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
-      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len);
+      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask != 0)
 	{
 	  l0 = l1;
@@ -909,7 +899,7 @@ wi::and_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (l1 > l0)
     {
-      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len);
+      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask == 0)
 	len = l0 + 1;
       else
@@ -949,7 +939,7 @@ wi::or_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
-      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len);
+      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask != 0)
 	{
 	  l0 = l1;
@@ -967,7 +957,7 @@ wi::or_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (l1 > l0)
     {
-      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len);
+      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask != 0)
 	len = l0 + 1;
       else
@@ -1007,7 +997,7 @@ wi::or_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
-      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len);
+      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask == 0)
 	{
 	  l0 = l1;
@@ -1025,7 +1015,7 @@ wi::or_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (l1 > l0)
     {
-      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len);
+      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask != 0)
 	len = l0 + 1;
       else
@@ -1064,7 +1054,7 @@ wi::xor_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
-      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len);
+      HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       while (l0 > l1)
 	{
 	  val[l0] = op0[l0] ^ op1mask;
@@ -1074,7 +1064,7 @@ wi::xor_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
 
   if (l1 > l0)
     {
-      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len);
+      HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       while (l1 > l0)
 	{
 	  val[l1] = op0mask ^ op1[l1];
@@ -1110,17 +1100,17 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned HOST_WIDE_INT carry = 0;
   unsigned HOST_WIDE_INT old_carry = 0;
   unsigned HOST_WIDE_INT mask0, mask1;
-  unsigned int i, small_prec;
+  unsigned int i;
 
   unsigned int len = MAX (op0len, op1len);
-  mask0 = -top_bit_of (op0, op0len);
-  mask1 = -top_bit_of (op1, op1len);
+  mask0 = -top_bit_of (op0, op0len, prec);
+  mask1 = -top_bit_of (op1, op1len, prec);
   /* Add all of the explicitly defined elements.  */
 
   for (i = 0; i < len; i++)
     {
-      o0 = i < op0len ? (unsigned HOST_WIDE_INT)op0[i] : mask0;
-      o1 = i < op1len ? (unsigned HOST_WIDE_INT)op1[i] : mask1;
+      o0 = i < op0len ? (unsigned HOST_WIDE_INT) op0[i] : mask0;
+      o1 = i < op1len ? (unsigned HOST_WIDE_INT) op1[i] : mask1;
       x = o0 + o1 + carry;
       val[i] = x;
       old_carry = carry;
@@ -1136,31 +1126,22 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (overflow)
     {
+      unsigned int shift = -prec % HOST_BITS_PER_WIDE_INT;
       if (sgn == SIGNED)
 	{
-	  unsigned int p = (len == BLOCKS_NEEDED (prec)
-			    ? HOST_BITS_PER_WIDE_INT
-			    : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
-	  HOST_WIDE_INT x = (val[len - 1] ^ o0) & (val[len - 1] ^ o1);
-	  x = (x >> p) & 1;
-	  *overflow = (x != 0);
+	  unsigned HOST_WIDE_INT x = (val[len - 1] ^ o0) & (val[len - 1] ^ o1);
+	  *overflow = HOST_WIDE_INT (x << shift) < 0;
 	}
       else
 	{
+	  /* Put the MSB of X and O0 and in the top of the HWI.  */
+	  x <<= shift;
+	  o0 <<= shift;
 	  if (old_carry)
-	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] <= o0);
+	    *overflow = (x <= o0);
 	  else
-	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] < o0);
+	    *overflow = (x < o0);
 	}
-    }
-
-  /* Canonize the top of the top block.  */
-  small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  if (small_prec != 0 && BLOCKS_NEEDED (prec) == len)
-    {
-      /* Modes with weird precisions.  */
-      i = len - 1;
-      val[i] = sext_hwi (val[i], small_prec);
     }
 
   return canonize (val, len, prec);
@@ -1224,7 +1205,7 @@ wi_unpack (unsigned HOST_HALF_WIDE_INT *result,
 
   if (sgn == SIGNED)
     {
-      mask = -top_bit_of ((const HOST_WIDE_INT *) input, in_len);
+      mask = -top_bit_of ((const HOST_WIDE_INT *) input, in_len, prec);
       mask &= HALF_INT_MASK;
     }
   else
@@ -1323,7 +1304,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
   if ((high || full || needs_overflow)
       && (prec <= HOST_BITS_PER_HALF_WIDE_INT))
     {
-      HOST_WIDE_INT r;
+      unsigned HOST_WIDE_INT r;
 
       if (sgn == SIGNED)
 	{
@@ -1339,29 +1320,18 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
       r = o0 * o1;
       if (needs_overflow)
 	{
-	  HOST_WIDE_INT upper;
-	  HOST_WIDE_INT sm
-	    = (r << (HOST_BITS_PER_WIDE_INT - prec))
-	    >> (HOST_BITS_PER_WIDE_INT - 1);
-	  mask = ((HOST_WIDE_INT)1 << prec) - 1;
-	  sm &= mask;
-	  upper = (r >> prec) & mask;
-
 	  if (sgn == SIGNED)
 	    {
-	      if (sm != upper)
+	      if (HOST_WIDE_INT (r) != sext_hwi (r, prec))
 		*overflow = true;
 	    }
 	  else
-	    if (upper != 0)
-	      *overflow = true;
+	    {
+	      if ((r >> prec) != 0)
+		*overflow = true;
+	    }
 	}
-      if (full)
-	val[0] = sext_hwi (r, prec * 2);
-      else if (high)
-	val[0] = r >> prec;
-      else
-	val[0] = sext_hwi (r, prec);
+      val[0] = high ? r >> prec : r;
       return 1;
     }
 
@@ -1511,11 +1481,11 @@ wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   unsigned HOST_WIDE_INT old_borrow = 0;
 
   unsigned HOST_WIDE_INT mask0, mask1;
-  unsigned int i, small_prec;
+  unsigned int i;
 
   unsigned int len = MAX (op0len, op1len);
-  mask0 = -top_bit_of (op0, op0len);
-  mask1 = -top_bit_of (op1, op1len);
+  mask0 = -top_bit_of (op0, op0len, prec);
+  mask1 = -top_bit_of (op1, op1len, prec);
 
   /* Subtract all of the explicitly defined elements.  */
   for (i = 0; i < len; i++)
@@ -1537,30 +1507,22 @@ wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
     }
   else if (overflow)
     {
+      unsigned int shift = -prec % HOST_BITS_PER_WIDE_INT;
       if (sgn == SIGNED)
 	{
-	  unsigned int p = (len == BLOCKS_NEEDED (prec)
-			    ? HOST_BITS_PER_WIDE_INT
-			    : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
-	  HOST_WIDE_INT x = (((o0 ^ o1) & (val[len - 1] ^ o0)) >> p) & 1;
-	  *overflow = (x != 0);
+	  unsigned HOST_WIDE_INT x = (o0 ^ o1) & (val[len - 1] ^ o0);
+	  *overflow = HOST_WIDE_INT (x << shift) < 0;
 	}
       else
 	{
+	  /* Put the MSB of X and O0 and in the top of the HWI.  */
+	  x <<= shift;
+	  o0 <<= shift;
 	  if (old_borrow)
-	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] >= o0);
+	    *overflow = (x >= o0);
 	  else
-	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] > o0);
+	    *overflow = (x > o0);
 	}
-    }
-
-  /* Canonize the top of the top block.  */
-  small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  if (small_prec != 0 && BLOCKS_NEEDED (prec) == len)
-    {
-      /* Modes with weird precisions.  */
-      i = len - 1;
-      val[i] = sext_hwi (val[i], small_prec);
     }
 
   return canonize (val, len, prec);
@@ -1716,34 +1678,31 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     overflow = true;
 
   /* The smallest signed number / -1 causes overflow.  */
-  if (sgn == SIGNED)
+  if (sgn == SIGNED
+      && dividend_len == BLOCKS_NEEDED (dividend_prec)
+      && divisor_len == 1)
     {
-      HOST_WIDE_INT small_prec = dividend_prec & (HOST_BITS_PER_WIDE_INT - 1);
-      if (dividend_len == BLOCKS_NEEDED (dividend_prec)
-	  && divisor_len == 1
-	  && divisor[0] == HOST_WIDE_INT(-1))
-
-	if ((small_prec
-	     && ((HOST_WIDE_INT)zext_hwi (dividend[dividend_len - 1],
-					  small_prec)
-		 == (HOST_WIDE_INT(1) << (small_prec - 1))))
-	    || dividend[dividend_len - 1]
-	    == HOST_WIDE_INT(1) << (HOST_BITS_PER_WIDE_INT - 1))
-	  {
-	    /* The smallest neg number is 100...00.  The high word was
-	       checked above, now check the rest of the words are
-	       zero.  */
-	    unsigned int i;
-	    bool all_zero = true;
-	    for (i = 0; i + 1 < dividend_len; i++)
-	      if (dividend[i] != 0)
-		{
-		  all_zero = false;
-		  break;
-		}
-	    if (all_zero)
-	      overflow = true;
-	  }
+      HOST_WIDE_INT divisor_low = divisor[0];
+      if (divisor_prec < HOST_BITS_PER_WIDE_INT)
+	divisor_low = sext_hwi (divisor_low, divisor_prec);
+      unsigned HOST_WIDE_INT dividend_high = dividend[dividend_len - 1];
+      dividend_high <<= -dividend_prec % HOST_BITS_PER_WIDE_INT;
+      if (divisor_low == -1
+	  && HOST_WIDE_INT (dividend_high) == HOST_WIDE_INT_MIN)
+	{
+	  /* The smallest neg number is 100...00.  The high word was
+	     checked above, now check the rest of the words are zero.  */
+	  unsigned int i;
+	  bool all_zero = true;
+	  for (i = 0; i + 1 < dividend_len; i++)
+	    if (dividend[i] != 0)
+	      {
+		all_zero = false;
+		break;
+	      }
+	  if (all_zero)
+	    overflow = true;
+	}
     }
 
   /* If overflow is set, just get out.  There will only be grief by
@@ -1775,10 +1734,10 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	  HOST_WIDE_INT o1 = sext_hwi (divisor[0], divisor_prec);
 
 	  if (quotient)
-	    quotient[0] = sext_hwi (o0 / o1, dividend_prec);
+	    quotient[0] = o0 / o1;
 	  if (remainder)
 	    {
-	      remainder[0] = sext_hwi (o0 % o1, dividend_prec);
+	      remainder[0] = o0 % o1;
 	      *remainder_len = 1;
 	    }
 	}
@@ -1788,10 +1747,10 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	  unsigned HOST_WIDE_INT o1 = zext_hwi (divisor[0], divisor_prec);
 
 	  if (quotient)
-	    quotient[0] = sext_hwi (o0 / o1, dividend_prec);
+	    quotient[0] = o0 / o1;
 	  if (remainder)
 	    {
-	      remainder[0] = sext_hwi (o0 % o1, dividend_prec);
+	      remainder[0] = o0 % o1;
 	      *remainder_len = 1;
 	    }
 	}
@@ -1803,14 +1762,14 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
      did.  */
   if (sgn == SIGNED)
     {
-      if (top_bit_of (dividend, dividend_len))
+      if (top_bit_of (dividend, dividend_len, dividend_prec))
 	{
 	  dividend_len = wi::sub_large (u0, zeros, 1, dividend, dividend_len,
 					dividend_prec, UNSIGNED, 0);
 	  dividend = u0;
 	  dividend_neg = true;
 	}
-      if (top_bit_of (divisor, divisor_len))
+      if (top_bit_of (divisor, divisor_len, divisor_prec))
 	{
 	  divisor_len = wi::sub_large (u1, zeros, 1, divisor, divisor_len,
 				       divisor_prec, UNSIGNED, 0);
@@ -1824,12 +1783,12 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
   wi_unpack (b_divisor, (const unsigned HOST_WIDE_INT*)divisor,
 	     divisor_len, divisor_blocks_needed, divisor_prec, sgn);
 
-  if (top_bit_of (dividend, dividend_len) && sgn == SIGNED)
+  if (top_bit_of (dividend, dividend_len, dividend_prec) && sgn == SIGNED)
     m = dividend_blocks_needed;
   else
     m = 2 * dividend_len;
 
-  if (top_bit_of (divisor, divisor_len) && sgn == SIGNED)
+  if (top_bit_of (divisor, divisor_len, divisor_prec) && sgn == SIGNED)
     n = divisor_blocks_needed;
   else
     n = 2 * divisor_len;
@@ -2197,10 +2156,3 @@ wide_int_ro::dump (char* buf) const
   return buf;
 }
 #endif
-
-HOST_WIDE_INT foo (tree x)
-{
-  addr_wide_int y = x;
-  addr_wide_int z = y;
-  return z.to_shwi ();
-}
