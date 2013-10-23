@@ -288,8 +288,21 @@ typedef generic_wide_int <wide_int_storage> wide_int;
 typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) addr_wide_int;
 typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) max_wide_int;
 
+template <bool SE>
 struct wide_int_ref_storage;
-typedef generic_wide_int <wide_int_ref_storage> wide_int_ref;
+
+typedef generic_wide_int <wide_int_ref_storage <false> > wide_int_ref;
+
+/* This can be used instead of wide_int_ref if the referenced value is
+   known to have type T.  It carries across properties of T's representation,
+   such as whether excess upper bits in a HWI are defined, and can therefore
+   help avoid redundant work.
+
+   The macro could be replaced with a template typedef, once we're able
+   to use those.  */
+#define WIDE_INT_REF_FOR(T) \
+  generic_wide_int \
+    <wide_int_ref_storage <wi::int_traits <T>::is_sign_extended> >
 
 namespace wi
 {
@@ -590,18 +603,6 @@ wi::storage_ref::get_val () const
   return val;
 }
 
-namespace wi
-{
-  template <>
-  struct int_traits <wi::storage_ref>
-  {
-    static const enum precision_type precision_type = VAR_PRECISION;
-    /* wi::storage_ref can be a reference to a primitive type,
-       so this is the conservatively-correct setting.  */
-    static const bool host_dependent_precision = true;
-  };
-}
-
 /* This class defines an integer type using the storage provided by the
    template argument.  The storage class must provide the following
    functions:
@@ -697,6 +698,9 @@ public:
 #undef INCDEC_OPERATOR
 
   char *dump (char *) const;
+
+  static const bool is_sign_extended
+    = wi::int_traits <generic_wide_int <storage> >::is_sign_extended;
 };
 
 template <typename storage>
@@ -724,7 +728,11 @@ inline HOST_WIDE_INT
 generic_wide_int <storage>::to_shwi (unsigned int precision) const
 {
   if (precision == 0)
-    precision = this->get_precision ();
+    {
+      if (is_sign_extended)
+	return this->get_val ()[0];
+      precision = this->get_precision ();
+    }
   if (precision < HOST_BITS_PER_WIDE_INT)
     return sext_hwi (this->get_val ()[0], precision);
   else
@@ -763,11 +771,14 @@ inline HOST_WIDE_INT
 generic_wide_int <storage>::sign_mask () const
 {
   unsigned int len = this->get_len ();
-  unsigned int precision = this->get_precision ();
   unsigned HOST_WIDE_INT high = this->get_val ()[len - 1];
-  int excess = len * HOST_BITS_PER_WIDE_INT - precision;
-  if (excess > 0)
-    high <<= excess;
+  if (!is_sign_extended)
+    {
+      unsigned int precision = this->get_precision ();
+      int excess = len * HOST_BITS_PER_WIDE_INT - precision;
+      if (excess > 0)
+	high <<= excess;
+    }
   return HOST_WIDE_INT (high) < 0 ? -1 : 0;
 }
 
@@ -852,6 +863,7 @@ decompose (HOST_WIDE_INT *, unsigned int precision,
 /* Provide the storage for a wide_int_ref.  This acts like a read-only
    wide_int, with the optimization that VAL is normally a pointer to
    another integer's storage, so that no array copy is needed.  */
+template <bool SE>
 struct wide_int_ref_storage : public wi::storage_ref
 {
 private:
@@ -870,17 +882,19 @@ public:
 /* Create a reference to integer X in its natural precision.  Note
    that the natural precision is host-dependent for primitive
    types.  */
+template <bool SE>
 template <typename T>
-inline wide_int_ref_storage::wide_int_ref_storage (const T &x)
+inline wide_int_ref_storage <SE>::wide_int_ref_storage (const T &x)
   : storage_ref (wi::int_traits <T>::decompose (scratch,
 						wi::get_precision (x), x))
 {
 }
 
 /* Create a reference to integer X in precision PRECISION.  */
+template <bool SE>
 template <typename T>
-inline wide_int_ref_storage::wide_int_ref_storage (const T &x,
-						   unsigned int precision)
+inline wide_int_ref_storage <SE>::wide_int_ref_storage (const T &x,
+							unsigned int precision)
   : storage_ref (wi::int_traits <T>::decompose (scratch, precision, x))
 {
 }
@@ -888,9 +902,14 @@ inline wide_int_ref_storage::wide_int_ref_storage (const T &x,
 namespace wi
 {
   template <>
-  struct int_traits <wide_int_ref_storage>
-    : public int_traits <wi::storage_ref>
+  template <bool SE>
+  struct int_traits <wide_int_ref_storage <SE> >
   {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    /* wi::storage_ref can be a reference to a primitive type,
+       so this is the conservatively-correct setting.  */
+    static const bool host_dependent_precision = true;
+    static const bool is_sign_extended = SE;
   };
 }
 
@@ -921,7 +940,7 @@ public:
   const HOST_WIDE_INT *get_val () const;
   unsigned int get_len () const;
   HOST_WIDE_INT *write_val ();
-  void set_len (unsigned int);
+  void set_len (unsigned int, bool = false);
 
   static wide_int from (const wide_int_ref &, unsigned int, signop);
   static wide_int from_array (const HOST_WIDE_INT *, unsigned int,
@@ -940,6 +959,7 @@ namespace wi
     static const enum precision_type precision_type = VAR_PRECISION;
     /* Guaranteed by a static assert in the wide_int_storage constructor.  */
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
     template <typename T1, typename T2>
     static wide_int get_binary_result (const T1 &, const T2 &);
   };
@@ -955,7 +975,7 @@ template <typename T>
 inline wide_int_storage::wide_int_storage (const T &x)
 {
   STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision);
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   precision = xi.precision;
   wi::copy (*this, xi);
 }
@@ -985,10 +1005,10 @@ wide_int_storage::write_val ()
 }
 
 inline void
-wide_int_storage::set_len (unsigned int l)
+wide_int_storage::set_len (unsigned int l, bool is_sign_extended)
 {
   len = l;
-  if (len * HOST_BITS_PER_WIDE_INT > precision)
+  if (!is_sign_extended && len * HOST_BITS_PER_WIDE_INT > precision)
     val[len - 1] = sext_hwi (val[len - 1],
 			     precision % HOST_BITS_PER_WIDE_INT);
 }
@@ -1058,7 +1078,7 @@ public:
   const HOST_WIDE_INT *get_val () const;
   unsigned int get_len () const;
   HOST_WIDE_INT *write_val ();
-  void set_len (unsigned int);
+  void set_len (unsigned int, bool = false);
 
   static FIXED_WIDE_INT (N) from (const wide_int_ref &, signop);
   static FIXED_WIDE_INT (N) from_array (const HOST_WIDE_INT *, unsigned int,
@@ -1073,6 +1093,7 @@ namespace wi
   {
     static const enum precision_type precision_type = CONST_PRECISION;
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
     static const unsigned int precision = N;
     template <typename T1, typename T2>
     static FIXED_WIDE_INT (N) get_binary_result (const T1 &, const T2 &);
@@ -1090,7 +1111,7 @@ inline fixed_wide_int_storage <N>::fixed_wide_int_storage (const T &x)
   /* Check for type compatibility.  We don't want to initialize a
      fixed-width integer from something like a wide_int.  */
   WI_BINARY_RESULT (T, FIXED_WIDE_INT (N)) *assertion ATTRIBUTE_UNUSED;
-  wi::copy (*this, wide_int_ref (x, N));
+  wi::copy (*this, WIDE_INT_REF_FOR (T) (x, N));
 }
 
 template <int N>
@@ -1123,7 +1144,7 @@ fixed_wide_int_storage <N>::write_val ()
 
 template <int N>
 inline void
-fixed_wide_int_storage <N>::set_len (unsigned int l)
+fixed_wide_int_storage <N>::set_len (unsigned int l, bool)
 {
   len = l;
   /* There are no excess bits in val[len - 1].  */
@@ -1173,6 +1194,7 @@ namespace wi
   {
     static const enum precision_type precision_type = FLEXIBLE_PRECISION;
     static const bool host_dependent_precision = true;
+    static const bool is_sign_extended = true;
     static unsigned int get_precision (T);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int, T);
   };
@@ -1297,6 +1319,7 @@ namespace wi
     /* hwi_with_prec has an explicitly-given precision, rather than the
        precision of HOST_WIDE_INT.  */
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
     static unsigned int get_precision (const wi::hwi_with_prec &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
 				      const wi::hwi_with_prec &);
@@ -1414,7 +1437,7 @@ wi::copy (T1 &x, const T2 &y)
   do
     xval[i] = yval[i];
   while (++i < len);
-  x.set_len (len);
+  x.set_len (len, y.is_sign_extended);
 }
 
 /* Return true if X fits in a HOST_WIDE_INT with no loss of
@@ -1423,7 +1446,7 @@ template <typename T>
 inline bool
 wi::fits_shwi_p (const T &x)
 {
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   return xi.len == 1;
 }
 
@@ -1433,7 +1456,7 @@ template <typename T>
 inline bool
 wi::fits_uhwi_p (const T &x)
 {
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   if (xi.precision <= HOST_BITS_PER_WIDE_INT)
     return true;
   if (xi.len == 1)
@@ -1447,7 +1470,7 @@ template <typename T>
 inline bool
 wi::neg_p (const T &x, signop sgn)
 {
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   if (sgn == UNSIGNED)
     return false;
   return xi.sign_mask () < 0;
@@ -1459,7 +1482,7 @@ template <typename T>
 inline HOST_WIDE_INT
 wi::sign_mask (const T &x)
 {
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   return xi.sign_mask ();
 }
 
@@ -1469,10 +1492,19 @@ inline bool
 wi::eq_p (const T1 &x, const T2 &y)
 {
   unsigned int precision = get_binary_precision (x, y);
-  if (precision == 0)
-    return true;
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  if (xi.is_sign_extended && yi.is_sign_extended)
+    {
+      if (xi.len != yi.len)
+	return false;
+      unsigned int i = 0;
+      do
+	if (xi.val[i] != yi.val[i])
+	  return false;
+      while (++i != xi.len);
+      return true;
+    }
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT diff = xi.ulow () ^ yi.ulow ();
@@ -1494,8 +1526,8 @@ template <typename T1, typename T2>
 inline bool
 wi::lts_p (const T1 &x, const T2 &y)
 {
-  wide_int_ref xi (x);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
   // We optimize x < y, where y is 64 or fewer bits.
   if (yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
@@ -1519,8 +1551,8 @@ template <typename T1, typename T2>
 inline bool
 wi::ltu_p (const T1 &x, const T2 &y)
 {
-  wide_int_ref xi (x);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
   if (xi.precision <= HOST_BITS_PER_WIDE_INT
       && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
@@ -1631,8 +1663,8 @@ template <typename T1, typename T2>
 inline int
 wi::cmps (const T1 &x, const T2 &y)
 {
-  wide_int_ref xi (x);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
   if (xi.precision <= HOST_BITS_PER_WIDE_INT
       && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
@@ -1655,8 +1687,8 @@ template <typename T1, typename T2>
 inline int
 wi::cmpu (const T1 &x, const T2 &y)
 {
-  wide_int_ref xi (x);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
   if (xi.precision <= HOST_BITS_PER_WIDE_INT
       && yi.precision <= HOST_BITS_PER_WIDE_INT)
     {
@@ -1691,7 +1723,7 @@ inline WI_UNARY_RESULT (T)
 wi::bit_not (const T &x)
 {
   WI_UNARY_RESULT_VAR (result, val, T, x);
-  wide_int_ref xi (x, get_precision (result));
+  WIDE_INT_REF_FOR (T) xi (x, get_precision (result));
   for (unsigned int i = 0; i < xi.len; ++i)
     val[i] = ~xi.val[i];
   result.set_len (xi.len);
@@ -1730,12 +1762,12 @@ wi::sext (const T &x, unsigned int offset)
 {
   WI_UNARY_RESULT_VAR (result, val, T, x);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
 
   if (offset <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = sext_hwi (xi.ulow (), offset);
-      result.set_len (1);
+      result.set_len (1, true);
     }
   else
     result.set_len (sext_large (val, xi.val, xi.len, precision, offset));
@@ -1749,7 +1781,7 @@ wi::zext (const T &x, unsigned int offset)
 {
   WI_UNARY_RESULT_VAR (result, val, T, x);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
 
   /* This is not just an optimization, it is actually required to
      maintain canonization.  */
@@ -1759,13 +1791,15 @@ wi::zext (const T &x, unsigned int offset)
       return result;
     }
 
+  /* In these cases we know that at least the top bit will be clear,
+     so no sign extension is necessary.  */
   if (offset < HOST_BITS_PER_WIDE_INT)
     {
       val[0] = zext_hwi (xi.ulow (), offset);
-      result.set_len (1);
+      result.set_len (1, true);
     }
   else
-    result.set_len (zext_large (val, xi.val, xi.len, precision, offset));
+    result.set_len (zext_large (val, xi.val, xi.len, precision, offset), true);
   return result;
 }
 
@@ -1785,7 +1819,7 @@ wi::set_bit (const T &x, unsigned int bit)
 {
   WI_UNARY_RESULT_VAR (result, val, T, x);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = xi.ulow () | ((unsigned HOST_WIDE_INT) 1 << bit);
@@ -1805,9 +1839,9 @@ wi::min (const T1 &x, const T2 &y, signop sgn)
   WI_BINARY_RESULT_VAR (result, val ATTRIBUTE_UNUSED, T1, x, T2, y);
   unsigned int precision = get_precision (result);
   if (wi::le_p (x, y, sgn))
-    wi::copy (result, wide_int_ref (x, precision));
+    wi::copy (result, WIDE_INT_REF_FOR (T1) (x, precision));
   else
-    wi::copy (result, wide_int_ref (y, precision));
+    wi::copy (result, WIDE_INT_REF_FOR (T2) (y, precision));
   return result;
 }
 
@@ -1836,9 +1870,9 @@ wi::max (const T1 &x, const T2 &y, signop sgn)
   WI_BINARY_RESULT_VAR (result, val ATTRIBUTE_UNUSED, T1, x, T2, y);
   unsigned int precision = get_precision (result);
   if (wi::ge_p (x, y, sgn))
-    wi::copy (result, wide_int_ref (x, precision));
+    wi::copy (result, WIDE_INT_REF_FOR (T1) (x, precision));
   else
-    wi::copy (result, wide_int_ref (y, precision));
+    wi::copy (result, WIDE_INT_REF_FOR (T2) (y, precision));
   return result;
 }
 
@@ -1865,16 +1899,17 @@ wi::bit_and (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
   if (xi.len + yi.len == 2)
     {
       val[0] = xi.ulow () & yi.ulow ();
-      result.set_len (1);
+      result.set_len (1, is_sign_extended);
     }
   else
     result.set_len (and_large (val, xi.val, xi.len, yi.val, yi.len,
-			       precision));
+			       precision), is_sign_extended);
   return result;
 }
 
@@ -1885,16 +1920,17 @@ wi::bit_and_not (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
   if (xi.len + yi.len == 2)
     {
       val[0] = xi.ulow () & ~yi.ulow ();
-      result.set_len (1);
+      result.set_len (1, is_sign_extended);
     }
   else
     result.set_len (and_not_large (val, xi.val, xi.len, yi.val, yi.len,
-				   precision));
+				   precision), is_sign_extended);
   return result;
 }
 
@@ -1905,16 +1941,17 @@ wi::bit_or (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
   if (xi.len + yi.len == 2)
     {
       val[0] = xi.ulow () | yi.ulow ();
-      result.set_len (1);
+      result.set_len (1, is_sign_extended);
     }
   else
     result.set_len (or_large (val, xi.val, xi.len, 
-			      yi.val, yi.len, precision));
+			      yi.val, yi.len, precision), is_sign_extended);
   return result;
 }
 
@@ -1925,16 +1962,17 @@ wi::bit_or_not (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
   if (xi.len + yi.len == 2)
     {
       val[0] = xi.ulow () | ~yi.ulow ();
-      result.set_len (1);
+      result.set_len (1, is_sign_extended);
     }
   else
     result.set_len (or_not_large (val, xi.val, xi.len, yi.val, yi.len,
-				  precision));
+				  precision), is_sign_extended);
   return result;
 }
 
@@ -1945,16 +1983,17 @@ wi::bit_xor (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
   if (xi.len + yi.len == 2)
     {
       val[0] = xi.ulow () ^ yi.ulow ();
-      result.set_len (1);
+      result.set_len (1, is_sign_extended);
     }
   else
     result.set_len (xor_large (val, xi.val, xi.len, 
-			       yi.val, yi.len, precision));
+			       yi.val, yi.len, precision), is_sign_extended);
   return result;
 }
 
@@ -1965,8 +2004,8 @@ wi::add (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = xi.ulow () + yi.ulow ();
@@ -1987,8 +2026,8 @@ wi::add (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
@@ -2019,8 +2058,8 @@ wi::sub (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = xi.ulow () - yi.ulow ();
@@ -2041,8 +2080,8 @@ wi::sub (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
@@ -2072,8 +2111,8 @@ wi::mul (const T1 &x, const T2 &y)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = xi.ulow () * yi.ulow ();
@@ -2093,8 +2132,8 @@ wi::mul (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   result.set_len (mul_internal (val, xi.val, xi.len, 
 				yi.val, yi.len, precision,
 				sgn, overflow, false, false));
@@ -2127,8 +2166,8 @@ wi::mul_high (const T1 &x, const T2 &y, signop sgn)
 {
   WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   result.set_len (mul_internal (val, xi.val, xi.len, 
 				yi.val, yi.len, precision,
 				sgn, 0, true, false));
@@ -2144,8 +2183,8 @@ wi::div_trunc (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   quotient.set_len (divmod_internal (quotient_val, 0, 0, xi.val, xi.len,
 				     precision,
@@ -2180,8 +2219,8 @@ wi::div_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2222,8 +2261,8 @@ wi::div_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2247,8 +2286,8 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2291,8 +2330,8 @@ wi::divmod_trunc (const T1 &x, const T2 &y, signop sgn,
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2314,8 +2353,8 @@ wi::mod_trunc (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (remainder);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   divmod_internal (0, &remainder_len, remainder_val, 
@@ -2354,8 +2393,8 @@ wi::mod_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2390,8 +2429,8 @@ wi::mod_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2416,8 +2455,8 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
   WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
   unsigned int precision = get_precision (quotient);
-  wide_int_ref xi (x, precision);
-  wide_int_ref yi (y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
   quotient.set_len (divmod_internal (quotient_val, 
@@ -2491,7 +2530,7 @@ wi::lshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
 {
   WI_UNARY_RESULT_VAR (result, val, T, x);
   unsigned int precision = get_precision (result);
-  wide_int_ref xi (x, precision);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
   unsigned int shift = trunc_shift (y, bitsize, precision);
   /* Handle the simple cases quickly.   */
   if (shift >= precision)
@@ -2519,7 +2558,7 @@ wi::lrshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
   WI_UNARY_RESULT_VAR (result, val, T, x);
   /* Do things in the precision of the input rather than the output,
      since the result can be no larger than that.  */
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   unsigned int shift = trunc_shift (y, bitsize, xi.precision);
   /* Handle the simple cases quickly.   */
   if (shift >= xi.precision)
@@ -2547,7 +2586,7 @@ wi::arshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
   WI_UNARY_RESULT_VAR (result, val, T, x);
   /* Do things in the precision of the input rather than the output,
      since the result can be no larger than that.  */
-  wide_int_ref xi (x);
+  WIDE_INT_REF_FOR (T) xi (x);
   unsigned int shift = trunc_shift (y, bitsize, xi.precision);
   /* Handle the simple case quickly.   */
   if (shift >= xi.precision)
@@ -2558,7 +2597,7 @@ wi::arshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
   else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
     {
       val[0] = sext_hwi (xi.ulow () >> shift, xi.precision - shift);
-      result.set_len (1);
+      result.set_len (1, true);
     }
   else
     result.set_len (arshift_large (val, xi.val, xi.len, xi.precision,
@@ -2633,7 +2672,7 @@ wi::extract_uhwi (const T &x, unsigned int bitpos,
   unsigned precision = get_precision (x);
   if (precision < bitpos + width)
     precision = bitpos + width;
-  wide_int_ref xi (x, precision);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
 
   /* Handle this rare case after the above, so that we assert about
      bogus BITPOS values.  */

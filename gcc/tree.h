@@ -5241,6 +5241,7 @@ namespace wi
   {
     static const enum precision_type precision_type = VAR_PRECISION;
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = false;
     static unsigned int get_precision (const_tree);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
 				      const_tree);
@@ -5269,6 +5270,7 @@ namespace wi
   {
     static const enum precision_type precision_type = CONST_PRECISION;
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
     static const unsigned int precision = N;
   };
 

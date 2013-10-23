@@ -1412,6 +1412,7 @@ namespace wi
   {
     static const enum precision_type precision_type = VAR_PRECISION;
     static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
     static unsigned int get_precision (const rtx_mode_t &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
 				      const rtx_mode_t &);
