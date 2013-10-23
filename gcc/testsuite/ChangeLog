@@ -1,3 +1,7 @@
+2013-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/pr58508.c: Remove dg-options.
+
 2013-10-23  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/torture/pr58830.c: New testcase.
