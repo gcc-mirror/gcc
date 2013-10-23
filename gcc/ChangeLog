@@ -1,3 +1,12 @@
+2013-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-pretty-print.c (dump_ssaname_info): Always print "# " before
+	the info, not after it.
+	(gump_gimple_phi): Add COMMENT argument, if true, print "# " after
+	dump_ssaname_info call.
+	(pp_gimple_stmt_1): Adjust caller.
+	(dump_phi_nodes): Likewise.  Don't print "# " here.
+
 2013-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES_EPILOGUES): New tuning flag.
