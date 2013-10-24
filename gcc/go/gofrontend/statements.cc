@@ -5540,7 +5540,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
 
       ref = this->make_range_ref(range_object, range_temp, loc);
       Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
-      Expression* index = Expression::make_index(ref, ref2, NULL, loc);
+      Expression* index = Expression::make_index(ref, ref2, NULL, NULL, loc);
 
       tref = Expression::make_temporary_reference(value_temp, loc);
       tref->set_is_lvalue();
@@ -5641,7 +5641,7 @@ For_range_statement::lower_range_slice(Gogo* gogo,
 
       ref = Expression::make_temporary_reference(for_temp, loc);
       Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
-      Expression* index = Expression::make_index(ref, ref2, NULL, loc);
+      Expression* index = Expression::make_index(ref, ref2, NULL, NULL, loc);
 
       tref = Expression::make_temporary_reference(value_temp, loc);
       tref->set_is_lvalue();
@@ -5849,7 +5849,7 @@ For_range_statement::lower_range_map(Gogo*,
   Expression* zexpr = Expression::make_integer(&zval, NULL, loc);
   mpz_clear(zval);
 
-  Expression* index = Expression::make_index(ref, zexpr, NULL, loc);
+  Expression* index = Expression::make_index(ref, zexpr, NULL, NULL, loc);
 
   Expression* ne = Expression::make_binary(OPERATOR_NOTEQ, index,
 					   Expression::make_nil(loc),
