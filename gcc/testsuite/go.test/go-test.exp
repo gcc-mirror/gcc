@@ -90,6 +90,21 @@ proc errchk { test opts } {
 	    puts $fdout $copy_line
 	    continue
 	}
+
+	# Combine quoted strings in comments, so that
+	# // ERROR "first error" "second error"
+	# turns into
+	# // ERROR "first error|second error"
+	# This format is used by the master testsuite to recognize
+	# multiple errors on a single line.  We don't require that all
+	# the errors be present, but we do want to accept any of them.
+	set changed ""
+	while { $changed != $copy_line } {
+	    set changed $copy_line
+	    regsub "\(// \[^\"\]*\"\[^\"\]*\)\" \"" $copy_line "\\1|" out_line
+	    set copy_line $out_line
+	}
+
 	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\".*$" $copy_line "// \{ dg-error \"\\2\" \}" out_line
 	if [string match "*dg-error*\\\[*" $out_line] {
 	    set index [string first "dg-error" $out_line]
