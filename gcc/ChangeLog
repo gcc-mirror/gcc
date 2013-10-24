@@ -35,7 +35,7 @@
 	(arc_ifcvt) <case 1 and 2>: Check that arc_ccfsm_post_advance
 	changes statep->state.
 
-2013-08-24  Tobias Burnus  <burnus@net-b.de>
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
 	* tree-cfg.c (replace_loop_annotate): New function.
