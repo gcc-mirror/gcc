@@ -1,5 +1,10 @@
 2013-10-24  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/58705
+	* g++.dg/parse/pr58705.C: New test.
+
+2013-10-24  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/c11-align-5.c: Add more testing.
 
 2013-10-23  Pat Haugen  <pthaugen@us.ibm.com>

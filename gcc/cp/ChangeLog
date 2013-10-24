@@ -1,3 +1,9 @@
+2013-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58705
+	* typeck2.c (check_narrowing): Don't check narrowing when the scalar
+	initializer is empty.
+
 2013-10-23  Jason Merrill  <jason@redhat.com>
 
 	LWG 2165
