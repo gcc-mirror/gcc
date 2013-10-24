@@ -124,7 +124,7 @@ pack_ts_int_cst_value_fields (struct bitpack_d *bp,
   int i;
   /* Note that the number of elements has already been written out in
      streamer_write_tree_header.  */
-  for (i = 0; i < TREE_INT_CST_NUNITS (expr); i++)
+  for (i = 0; i < TREE_INT_CST_EXT_NUNITS (expr); i++)
     bp_pack_var_len_int (bp, TREE_INT_CST_ELT (expr, i));
 }
 
@@ -962,8 +962,9 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
     streamer_write_uhwi (ob, call_expr_nargs (expr));
   else if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      gcc_assert (TREE_INT_CST_NUNITS (expr));
-    streamer_write_uhwi (ob, TREE_INT_CST_NUNITS (expr));
+      gcc_checking_assert (TREE_INT_CST_NUNITS (expr));
+      streamer_write_uhwi (ob, TREE_INT_CST_NUNITS (expr));
+      streamer_write_uhwi (ob, TREE_INT_CST_EXT_NUNITS (expr));
     }
 }
 
@@ -979,6 +980,10 @@ streamer_write_integer_cst (struct output_block *ob, tree cst, bool ref_p)
   gcc_assert (!TREE_OVERFLOW (cst));
   streamer_write_record_start (ob, LTO_integer_cst);
   stream_write_tree (ob, TREE_TYPE (cst), ref_p);
+  /* We're effectively streaming a non-sign-extended wide_int here,
+     so there's no need to stream TREE_INT_CST_EXT_NUNITS or any
+     array members beyond LEN.  We'll recreate the tree from the
+     wide_int and the type.  */
   streamer_write_uhwi (ob, len);
   for (i = 0; i < len; i++)
     streamer_write_hwi (ob, TREE_INT_CST_ELT (cst, i));

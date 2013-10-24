@@ -712,6 +712,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
     {
       int i; 
       v = iterative_hash_host_wide_int (TREE_INT_CST_NUNITS (t), v);
+      v = iterative_hash_host_wide_int (TREE_INT_CST_EXT_NUNITS (t), v);
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
 	v = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), v);
     }

@@ -559,7 +559,7 @@ init_ttree (void)
   int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
 					int_cst_hash_eq, NULL);
 
-  int_cst_node = make_int_cst (1);
+  int_cst_node = make_int_cst (1, 1);
 
   cl_option_hash_table = htab_create_ggc (64, cl_option_hash_hash,
 					  cl_option_hash_eq, NULL);
@@ -759,7 +759,7 @@ tree_size (const_tree node)
     {
     case INTEGER_CST:
       return (sizeof (struct tree_int_cst)
-	      + (TREE_INT_CST_NUNITS (node) - 1) * sizeof (HOST_WIDE_INT));
+	      + (TREE_INT_CST_EXT_NUNITS (node) - 1) * sizeof (HOST_WIDE_INT));
 
     case TREE_BINFO:
       return (offsetof (struct tree_binfo, base_binfos)
@@ -1083,6 +1083,53 @@ copy_list (tree list)
 }
 
 
+/* Return the value that TREE_INT_CST_EXT_NUNITS should have for an
+   INTEGER_CST with value CST and type TYPE.   */
+
+static unsigned int
+get_int_cst_ext_nunits (tree type, const wide_int &cst)
+{
+  gcc_checking_assert (cst.get_precision () == TYPE_PRECISION (type));
+  /* We need an extra zero HWI if CST is an unsigned integer with its
+     upper bit set, and if CST occupies a whole number of HWIs.  */
+  if (TYPE_UNSIGNED (type)
+      && wi::neg_p (cst)
+      && (cst.get_precision () % HOST_BITS_PER_WIDE_INT) == 0)
+    return cst.get_precision () / HOST_BITS_PER_WIDE_INT + 1;
+  return cst.get_len ();
+}
+
+/* Return a new INTEGER_CST with value CST and type TYPE.  */
+
+static tree
+build_new_int_cst (tree type, const wide_int &cst)
+{
+  unsigned int len = cst.get_len ();
+  unsigned int ext_len = get_int_cst_ext_nunits (type, cst);
+  tree nt = make_int_cst (len, ext_len);
+
+  if (len < ext_len)
+    {
+      --ext_len;
+      TREE_INT_CST_ELT (nt, ext_len) = 0;
+      for (unsigned int i = len; i < ext_len; ++i)
+	TREE_INT_CST_ELT (nt, i) = -1;
+    }
+  else if (TYPE_UNSIGNED (type)
+	   && cst.get_precision () < len * HOST_BITS_PER_WIDE_INT)
+    {
+      len--;
+      TREE_INT_CST_ELT (nt, len)
+	= zext_hwi (cst.elt (len),
+		    cst.get_precision () % HOST_BITS_PER_WIDE_INT);
+    }
+
+  for (unsigned int i = 0; i < len; i++)
+    TREE_INT_CST_ELT (nt, i) = cst.elt (i);
+  TREE_TYPE (nt) = type;
+  return nt;
+}
+
 /* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
@@ -1148,20 +1195,7 @@ force_fit_type (tree type, const wide_int_ref &cst,
 	  || (overflowable > 0 && sign == SIGNED))
 	{
 	  wide_int tmp = wide_int::from (cst, TYPE_PRECISION (type), sign);
-	  int l = tmp.get_len ();
-	  tree t = make_int_cst (l);
-	  if (l > 1)
-	    {
-	      if (tmp.elt (l - 1) == 0)
-		gcc_assert (tmp.elt (l - 2) < 0);
-	      if (tmp.elt (l - 1) == (HOST_WIDE_INT) -1)
-		gcc_assert (tmp.elt (l - 2) >= 0);
-	    }
-
-	  for (int i = 0; i < l; i++)
-	    TREE_INT_CST_ELT (t, i) = tmp.elt (i);
-
-	  TREE_TYPE (t) = type;
+	  tree t = build_new_int_cst (type, tmp);
 	  TREE_OVERFLOW (t) = 1;
 	  return t;
 	}
@@ -1199,7 +1233,8 @@ int_cst_hash_eq (const void *x, const void *y)
   const_tree const yt = (const_tree) y;
 
   if (TREE_TYPE (xt) != TREE_TYPE (yt)
-      || TREE_INT_CST_NUNITS (xt) != TREE_INT_CST_NUNITS (yt))
+      || TREE_INT_CST_NUNITS (xt) != TREE_INT_CST_NUNITS (yt)
+      || TREE_INT_CST_EXT_NUNITS (xt) != TREE_INT_CST_EXT_NUNITS (yt))
     return false;
 
   for (int i = 0; i < TREE_INT_CST_NUNITS (xt); i++)
@@ -1223,7 +1258,6 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
   tree t;
   int ix = -1;
   int limit = 0;
-  unsigned int i;
 
   gcc_assert (type);
   unsigned int prec = TYPE_PRECISION (type);
@@ -1240,11 +1274,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
     }
 
   wide_int cst = wide_int::from (pcst, prec, sgn);
-  unsigned int len = cst.get_len ();
-  unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  bool recanonize = sgn == UNSIGNED
-    && small_prec
-    && (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT == len;
+  unsigned int ext_len = get_int_cst_ext_nunits (type, cst);
 
   switch (TREE_CODE (type))
     {
@@ -1314,74 +1344,56 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
       gcc_unreachable ();
     }
 
-  if (ix >= 0)
+  if (ext_len == 1)
     {
-      /* Look for it in the type's vector of small shared ints.  */
-      if (!TYPE_CACHED_VALUES_P (type))
+      /* We just need to store a single HOST_WIDE_INT.  */
+      HOST_WIDE_INT hwi;
+      if (TYPE_UNSIGNED (type))
+	hwi = cst.to_uhwi ();
+      else
+	hwi = cst.to_shwi ();
+      if (ix >= 0)
 	{
-	  TYPE_CACHED_VALUES_P (type) = 1;
-	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
-	}
-
-      t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
-      if (t)
-	{
-	  /* Make sure no one is clobbering the shared constant.  We
-	     must be careful here because tree-csts and wide-ints are
-	     not canonicalized in the same way.  */
-	  gcc_assert (TREE_TYPE (t) == type);
-	  gcc_assert (TREE_INT_CST_NUNITS (t) == (int)len);
-	  if (recanonize)
+	  /* Look for it in the type's vector of small shared ints.  */
+	  if (!TYPE_CACHED_VALUES_P (type))
 	    {
-	      len--;
-	      gcc_assert (sext_hwi (TREE_INT_CST_ELT (t, len), small_prec) 
-			  == cst.elt (len));
+	      TYPE_CACHED_VALUES_P (type) = 1;
+	      TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
 	    }
-	  for (i = 0; i < len; i++)
-	    gcc_assert (TREE_INT_CST_ELT (t, i) == cst.elt (i));
+
+	  t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
+	  if (t)
+	    /* Make sure no one is clobbering the shared constant.  */
+	    gcc_assert (TREE_TYPE (t) == type
+			&& TREE_INT_CST_NUNITS (t) == 1
+			&& TREE_INT_CST_EXT_NUNITS (t) == 1
+			&& TREE_INT_CST_ELT (t, 0) == hwi);
+	  else
+	    {
+	      /* Create a new shared int.  */
+	      t = build_new_int_cst (type, cst);
+	      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+	    }
 	}
       else
 	{
-	  /* Create a new shared int.  */
-	  t = make_int_cst (cst.get_len ());
-	  TREE_INT_CST_NUNITS (t) = len;
-	  if (recanonize)
+	  /* Use the cache of larger shared ints, using int_cst_node as
+	     a temporary.  */
+	  void **slot;
+
+	  TREE_INT_CST_ELT (int_cst_node, 0) = hwi;
+	  TREE_TYPE (int_cst_node) = type;
+
+	  slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
+	  t = (tree) *slot;
+	  if (!t)
 	    {
-	      len--;
-	      TREE_INT_CST_ELT (t, len) = zext_hwi (cst.elt (len), small_prec);
+	      /* Insert this one into the hash table.  */
+	      t = int_cst_node;
+	      *slot = t;
+	      /* Make a new node for next time round.  */
+	      int_cst_node = make_int_cst (1, 1);
 	    }
-	  for (i = 0; i < len; i++)
-	    TREE_INT_CST_ELT (t, i) = cst.elt (i);
-	  TREE_TYPE (t) = type;
-	  
-	  TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
-	}
-    }
-  else if (cst.get_len () == 1
-	   && (TYPE_SIGN (type) == SIGNED
-	       || recanonize
-	       || cst.elt (0) >= 0))
-    {
-      /* 99.99% of all int csts will fit in a single HWI.  Do that one
-	 efficiently.  */
-	  /* Use the cache of larger shared ints.  */
-      void **slot;
-
-      if (recanonize)
-	TREE_INT_CST_ELT (int_cst_node, 0) = zext_hwi (cst.elt (0), small_prec);
-      else
-	TREE_INT_CST_ELT (int_cst_node, 0) = cst.elt (0);
-      TREE_TYPE (int_cst_node) = type;
-
-      slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
-      t = (tree) *slot;
-      if (!t)
-	{
-	  /* Insert this one into the hash table.  */
-	  t = int_cst_node;
-	  *slot = t;
-	  /* Make a new node for next time round.  */
-	  int_cst_node = make_int_cst (1);
 	}
     }
   else
@@ -1390,32 +1402,8 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	 for the gc to take care of.  There will not be enough of them
 	 to worry about.  */
       void **slot;
-      tree nt;
-      if (!recanonize
-	  && TYPE_SIGN (type) == UNSIGNED 
-	  && cst.elt (len - 1) < 0)
-	{
-	  unsigned int blocks_needed 
-	    = (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
 
-	  nt = make_int_cst (blocks_needed + 1);
-	  for (i = len; i < blocks_needed; i++)
-	    TREE_INT_CST_ELT (nt, i) = (HOST_WIDE_INT)-1;
-    
-	  TREE_INT_CST_ELT (nt, blocks_needed) = 0;
-	}
-      else
-	nt = make_int_cst (len);
-      if (recanonize)
-	{
-	  len--;
-	  TREE_INT_CST_ELT (nt, len) = zext_hwi (cst.elt (len), small_prec);
-	}
-	
-      for (i = 0; i < len; i++)
-	TREE_INT_CST_ELT (nt, i) = cst.elt (i);
-      TREE_TYPE (nt) = type;
-
+      tree nt = build_new_int_cst (type, cst);
       slot = htab_find_slot (int_cst_hash_table, nt, INSERT);
       t = (tree) *slot;
       if (!t)
@@ -2028,10 +2016,10 @@ build_case_label (tree low_value, tree high_value, tree label_decl)
 /* Build a newly constructed INETEGER_CST node of length LEN.  */
 
 tree
-make_int_cst_stat (int len MEM_STAT_DECL)
+make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)
 {
   tree t;
-  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_int_cst);
+  int length = (ext_len - 1) * sizeof (tree) + sizeof (struct tree_int_cst);
 
   gcc_assert (len);
   record_node_allocation_statistics (INTEGER_CST, length);
@@ -2040,6 +2028,7 @@ make_int_cst_stat (int len MEM_STAT_DECL)
 
   TREE_SET_CODE (t, INTEGER_CST);
   TREE_INT_CST_NUNITS (t) = len;
+  TREE_INT_CST_EXT_NUNITS (t) = ext_len;
 
   TREE_CONSTANT (t) = 1;
 
@@ -10658,18 +10647,16 @@ widest_int_cst_value (const_tree x)
 
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
-  gcc_assert (TREE_INT_CST_NUNITS (x) <= 2
-	      || (TREE_INT_CST_NUNITS (x) == 3 && TREE_INT_CST_ELT (x, 2) == 0));
+  gcc_assert (TREE_INT_CST_NUNITS (x) == 2);
   
   if (TREE_INT_CST_NUNITS (x) == 1)
-    val = ((HOST_WIDEST_INT)val << HOST_BITS_PER_WIDE_INT) >> HOST_BITS_PER_WIDE_INT;
+    val = HOST_WIDE_INT (val);
   else
     val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_ELT (x, 1))
 	    << HOST_BITS_PER_WIDE_INT);
 #else
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 1
-	      || (TREE_INT_CST_NUNITS (x) == 2 && TREE_INT_CST_ELT (x, 1) == 0));
+  gcc_assert (TREE_INT_CST_NUNITS (x) == 1);
 #endif
 
   if (bits < HOST_BITS_PER_WIDEST_INT)

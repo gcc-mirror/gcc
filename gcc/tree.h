@@ -883,7 +883,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define INT_CST_LT_UNSIGNED(A, B)			\
   (wi::ltu_p (A, B))
 
-#define TREE_INT_CST_NUNITS(NODE) (INTEGER_CST_CHECK (NODE)->base.u.length)
+#define TREE_INT_CST_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.unextended)
+#define TREE_INT_CST_EXT_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
 
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
@@ -2862,8 +2865,9 @@ tree_int_cst_elt_check (const_tree __t, int __i,
 {
   if (TREE_CODE (__t) != INTEGER_CST)
     tree_check_failed (__t, __f, __l, __g, INTEGER_CST, 0);
-  if (__i < 0 || __i >= __t->base.u.length)
-    tree_int_cst_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
+  if (__i < 0 || __i >= __t->base.u.int_length.extended)
+    tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
+				   __f, __l, __g);
   return &CONST_CAST_TREE (__t)->int_cst.val[__i];
 }
 
@@ -2873,8 +2877,9 @@ tree_int_cst_elt_check (tree __t, int __i,
 {
   if (TREE_CODE (__t) != INTEGER_CST)
     tree_check_failed (__t, __f, __l, __g, INTEGER_CST, 0);
-  if (__i < 0 || __i >= __t->base.u.length)
-    tree_int_cst_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
+  if (__i < 0 || __i >= __t->base.u.int_length.extended)
+    tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
+				   __f, __l, __g);
   return &CONST_CAST_TREE (__t)->int_cst.val[__i];
 }
 
@@ -3111,7 +3116,7 @@ omp_clause_elt_check (const_tree __t, int __i,
 
 /* Checks that X is integer constant that can be expressed in signed
    HOST_WIDE_INT without loss of precision.  This function differs
-   from the tree_fits_* versions in that the type of signedness of the
+   from the tree_fits_* versions in that the signedness of the
    type of X is not considered.  */
 
 static inline bool
@@ -3120,13 +3125,12 @@ cst_fits_shwi_p (const_tree x)
   if (TREE_CODE (x) != INTEGER_CST)
     return false;
 
-  return TREE_INT_CST_NUNITS (x) == 1
-    || (TREE_INT_CST_NUNITS (x) == 2 && TREE_INT_CST_ELT (x, 1) == 0);
+  return TREE_INT_CST_NUNITS (x) == 1;
 }
 
 /* Checks that X is integer constant that can be expressed in signed
    HOST_WIDE_INT without loss of precision.  This function differs
-   from the tree_fits_* versions in that the type of signedness of the
+   from the tree_fits_* versions in that the signedness of the
    type of X is not considered.  */
 
 static inline bool
@@ -3580,8 +3584,9 @@ extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 
 /* Make a INTEGER_CST.  */
 
-extern tree make_int_cst_stat (int MEM_STAT_DECL);
-#define make_int_cst(t) make_int_cst_stat (t MEM_STAT_INFO)
+extern tree make_int_cst_stat (int, int MEM_STAT_DECL);
+#define make_int_cst(LEN, EXT_LEN) \
+  make_int_cst_stat (LEN, EXT_LEN MEM_STAT_INFO)
 
 /* Make a TREE_VEC.  */
 
@@ -5291,24 +5296,8 @@ inline wi::storage_ref
 wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 					unsigned int precision, const_tree x)
 {
-  unsigned int len = TREE_INT_CST_NUNITS (x);
-  const HOST_WIDE_INT *val = (const HOST_WIDE_INT *) &TREE_INT_CST_ELT (x, 0);
-  unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
-			  / HOST_BITS_PER_WIDE_INT);
-
-  gcc_checking_assert (precision == get_precision (x));
-
-  /* If an unsigned constant occupies a whole number of HWIs and has the
-     upper bit set, its representation includes an extra zero HWI,
-     so that the representation can be used for wider precisions.
-     Trim the length if we're accessing the tree in its own precision.  */
-  if (__builtin_expect (len > max_len, 0))
-    do
-      len--;
-    while (len > 1 && val[len - 1] == -1 && val[len - 2] < 0);
-
-  /* Signed and the rest of the unsigned cases are easy.  */
-  return wi::storage_ref (val, len, precision);
+  return wi::storage_ref (&TREE_INT_CST_ELT (x, 0), TREE_INT_CST_NUNITS (x),
+			  precision);
 }
 
 inline generic_wide_int <wi::extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
@@ -5348,7 +5337,11 @@ template <int N>
 inline unsigned int
 wi::extended_tree <N>::get_len () const
 {
-  return TREE_INT_CST_NUNITS (m_t);
+  if (N == MAX_BITSIZE_MODE_ANY_INT
+      || N > TYPE_PRECISION (TREE_TYPE (m_t)))
+    return TREE_INT_CST_EXT_NUNITS (m_t);
+  else
+    return TREE_INT_CST_NUNITS (m_t);
 }
 
 namespace wi

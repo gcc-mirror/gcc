@@ -741,12 +741,25 @@ struct GTY(()) tree_base {
 	 of the field must be large enough to hold addr_space_t values.  */
       unsigned address_space : 8;
     } bits;
+
     /* The following fields are present in tree_base to save space.  The
        nodes using them do not require any of the flags above and so can
        make better use of the 4-byte sized word.  */
-    /* VEC length.  This field is only used with TREE_VEC and
-       TREE_INT_CST.  */
+
+    /* The number of HOST_WIDE_INTs in an INTEGER_CST.  */
+    struct {
+      /* The number of HOST_WIDE_INTs if the INTEGER_CST is accessed in
+	 its native precision.  */
+      unsigned short unextended;
+
+      /* The number of HOST_WIDE_INTs if the INTEGER_CST is extended to
+	 wider precisions based on its TYPE_SIGN.  */
+      unsigned short extended;
+    } int_length;
+
+    /* VEC length.  This field is only used with TREE_VEC.  */
     int length;
+
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
   } GTY((skip(""))) u;
