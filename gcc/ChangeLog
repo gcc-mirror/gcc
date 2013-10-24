@@ -1,3 +1,11 @@
+2013-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
+	
+	PR ipa/58712
+	* cgraph.c (cgraph_create_edge_1): Add indirect_unknown_callee
+	as argument.
+	(cgraph_create_edge): Use the new argument.
+	(cgraph_create_indirect_edge): Likewise.
+
 2013-10-24  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc/config/arc/arc.c (arc_ccfsm_post_advance): Also handle
