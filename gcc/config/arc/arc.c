@@ -3711,12 +3711,16 @@ arc_ccfsm_record_condition (rtx cond, bool reverse, rtx jump,
 static void
 arc_ccfsm_post_advance (rtx insn, struct arc_ccfsm *state)
 {
+  enum attr_type type;
+
   if (LABEL_P (insn))
     arc_ccfsm_at_label ("L", CODE_LABEL_NUMBER (insn), state);
   else if (JUMP_P (insn)
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
 	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
-	   && get_attr_type (insn) == TYPE_BRANCH)
+	   && ((type = get_attr_type (insn)) == TYPE_BRANCH
+	       || (type == TYPE_UNCOND_BRANCH
+		   && ARC_CCFSM_BRANCH_DELETED_P (state))))
     {
       if (ARC_CCFSM_BRANCH_DELETED_P (state))
 	ARC_CCFSM_RECORD_BRANCH_DELETED (state);
@@ -8120,6 +8124,7 @@ arc_ifcvt (void)
 	    basic_block succ_bb
 	      = BLOCK_FOR_INSN (NEXT_INSN (NEXT_INSN (PREV_INSN (insn))));
 	    arc_ccfsm_post_advance (insn, statep);
+	    gcc_assert (!IN_RANGE (statep->state, 1, 2));
 	    rtx seq = NEXT_INSN (PREV_INSN (insn));
 	    if (seq != insn)
 	      {
