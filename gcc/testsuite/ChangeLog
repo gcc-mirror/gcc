@@ -1,3 +1,8 @@
+2013-10-24  Richard Henderson  <rth@redhat.com>
+
+	PR rtl/58542
+	* gcc.dg/atomic-store-6.c: New.
+
 2013-10-24  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (errchk): Combine quoted strings in
