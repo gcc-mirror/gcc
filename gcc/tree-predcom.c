@@ -229,7 +229,7 @@ typedef struct dref_d
   unsigned distance;
 
   /* Number of iterations offset from the first reference in the component.  */
-  max_wide_int offset;
+  widest_int offset;
 
   /* Number of the reference in a component, in dominance ordering.  */
   unsigned pos;
@@ -618,7 +618,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, wi::extend (DR_INIT (dr)));
+  aff_combination_const (&delta, type, wi::to_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 
@@ -630,7 +630,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
 static bool
 determine_offset (struct data_reference *a, struct data_reference *b,
-		  max_wide_int *off)
+		  widest_int *off)
 {
   aff_tree diff, baseb, step;
   tree typea, typeb;
@@ -734,7 +734,7 @@ split_data_refs_to_components (struct loop *loop,
 
   FOR_EACH_VEC_ELT (depends, i, ddr)
     {
-      max_wide_int dummy_off;
+      widest_int dummy_off;
 
       if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	continue;
@@ -919,7 +919,7 @@ static void
 add_ref_to_chain (chain_p chain, dref ref)
 {
   dref root = get_chain_root (chain);
-  max_wide_int dist;
+  widest_int dist;
 
   gcc_assert (wi::les_p (root->offset, ref->offset));
   dist = ref->offset - root->offset;
@@ -1023,7 +1023,7 @@ valid_initializer_p (struct data_reference *ref,
 		     unsigned distance, struct data_reference *root)
 {
   aff_tree diff, base, step;
-  max_wide_int off;
+  widest_int off;
 
   /* Both REF and ROOT must be accessing the same object.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
@@ -1179,7 +1179,7 @@ determine_roots_comp (struct loop *loop,
   unsigned i;
   dref a;
   chain_p chain = NULL;
-  max_wide_int last_ofs = 0;
+  widest_int last_ofs = 0;
 
   /* Invariants are handled specially.  */
   if (comp->comp_step == RS_INVARIANT)

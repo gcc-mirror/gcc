@@ -3640,7 +3640,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		  if (TYPE_ALIGN (type) > align)
 		    align = TYPE_ALIGN (type);
 		}
-	      misalign += (addr_wide_int::from (off, SIGNED)
+	      misalign += (offset_int::from (off, SIGNED)
 			   * BITS_PER_UNIT).to_short_addr ();
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)

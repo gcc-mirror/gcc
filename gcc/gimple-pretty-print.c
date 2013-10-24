@@ -1728,7 +1728,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
   if (!POINTER_TYPE_P (TREE_TYPE (node))
       && SSA_NAME_RANGE_INFO (node))
     {
-      max_wide_int min, max;
+      widest_int min, max;
       value_range_type range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)

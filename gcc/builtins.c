@@ -8679,7 +8679,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      else if (TREE_CODE (src_base) == MEM_REF
 		       && TREE_CODE (dest_base) == MEM_REF)
 		{
-		  addr_wide_int off;
+		  offset_int off;
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;

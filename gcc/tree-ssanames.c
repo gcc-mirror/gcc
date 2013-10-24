@@ -173,7 +173,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 /* Store range information MIN, and MAX to tree ssa_name NAME.  */
 
 void
-set_range_info (tree name, max_wide_int min, max_wide_int max)
+set_range_info (tree name, widest_int min, widest_int max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
@@ -196,7 +196,7 @@ set_range_info (tree name, max_wide_int min, max_wide_int max)
    is used to determine if MIN and MAX are valid values.  */
 
 enum value_range_type
-get_range_info (tree name, max_wide_int *min, max_wide_int *max)
+get_range_info (tree name, widest_int *min, widest_int *max)
 {
   enum value_range_type range_type;
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));

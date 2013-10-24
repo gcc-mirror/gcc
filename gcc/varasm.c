@@ -4790,7 +4790,7 @@ array_size_for_constructor (tree val)
   tree max_index;
   unsigned HOST_WIDE_INT cnt;
   tree index, value, tmp;
-  addr_wide_int i;
+  offset_int i;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -4812,10 +4812,10 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = wi::address (max_index) - wi::address (tmp) + 1;
+  i = wi::to_offset (max_index) - wi::to_offset (tmp) + 1;
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i *= wi::address (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
+  i *= wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
   gcc_assert (wi::fits_uhwi_p (i));
   return i.to_uhwi ();
@@ -4898,10 +4898,9 @@ output_constructor_regular_field (oc_local_state *local)
 	 sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
 	 but we are using an unsigned sizetype.  */
       unsigned prec = TYPE_PRECISION (sizetype);
-      addr_wide_int idx 
-	= wi::sext (wi::address (local->index)
-		    - wi::address (local->min_index), prec);
-      fieldpos = (idx * wi::address (TYPE_SIZE_UNIT (TREE_TYPE (local->val))))
+      offset_int idx = wi::sext (wi::to_offset (local->index)
+				 - wi::to_offset (local->min_index), prec);
+      fieldpos = (idx * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (local->val))))
 	.to_shwi ();
     }
   else if (local->field != NULL_TREE)

@@ -485,7 +485,7 @@ struct tree_niter_desc
 			   a loop (provided that assumptions == true and
 			   may_be_zero == false), more precisely the number
 			   of executions of the latch of the loop.  */
-  max_wide_int max;     /* The upper bound on the number of iterations of
+  widest_int max;	/* The upper bound on the number of iterations of
 			   the loop.  */
 
   /* The simplified shape of the exit condition.  The loop exits if

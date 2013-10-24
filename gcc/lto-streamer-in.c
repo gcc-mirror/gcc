@@ -702,7 +702,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  for (i = 0; i < len; i++)
 	    a[i] = streamer_read_hwi (ib);
 	  
-	  loop->nb_iterations_upper_bound = max_wide_int::from_array (a, len);
+	  loop->nb_iterations_upper_bound = widest_int::from_array (a, len);
 	}
       loop->any_estimate = streamer_read_hwi (ib);
       if (loop->any_estimate)
@@ -714,7 +714,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  for (i = 0; i < len; i++)
 	    a[i] = streamer_read_hwi (ib);
 	  
-	  loop->nb_iterations_estimate = max_wide_int::from_array (a, len);
+	  loop->nb_iterations_estimate = widest_int::from_array (a, len);
 	}
 
       place_new_loop (fn, loop);

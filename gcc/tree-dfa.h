@@ -135,7 +135,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	      {
 		if (!integer_zerop (TREE_OPERAND (exp, 1)))
 		  {
-		    addr_wide_int off = mem_ref_offset (exp);
+		    offset_int off = mem_ref_offset (exp);
 		    byte_offset += off.to_short_addr ();
 		  }
 		exp = TREE_OPERAND (base, 0);
@@ -157,7 +157,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		  return NULL_TREE;
 		if (!integer_zerop (TMR_OFFSET (exp)))
 		  {
-		    addr_wide_int off = mem_ref_offset (exp);
+		    offset_int off = mem_ref_offset (exp);
 		    byte_offset += off.to_short_addr ();
 		  }
 		exp = TREE_OPERAND (base, 0);

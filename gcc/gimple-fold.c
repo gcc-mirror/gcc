@@ -2806,10 +2806,10 @@ fold_array_ctor_reference (tree type, tree ctor,
 {
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
-  addr_wide_int low_bound;
-  addr_wide_int elt_size;
-  addr_wide_int index, max_index;
-  addr_wide_int access_index;
+  offset_int low_bound;
+  offset_int elt_size;
+  offset_int index, max_index;
+  offset_int access_index;
   tree domain_type = NULL_TREE, index_type = NULL_TREE;
   HOST_WIDE_INT inner_offset;
 
@@ -2821,14 +2821,14 @@ fold_array_ctor_reference (tree type, tree ctor,
       /* Static constructors for variably sized objects makes no sense.  */
       gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
       index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
-      low_bound = wi::address (TYPE_MIN_VALUE (domain_type));
+      low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
     }
   else
     low_bound = 0;
   /* Static constructors for variably sized objects makes no sense.  */
   gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))))
 	      == INTEGER_CST);
-  elt_size = wi::address (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
+  elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* We can handle only constantly sized accesses that are known to not
      be larger than size of array element.  */
@@ -2838,7 +2838,7 @@ fold_array_ctor_reference (tree type, tree ctor,
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
-  access_index = wi::udiv_trunc (addr_wide_int (offset / BITS_PER_UNIT),
+  access_index = wi::udiv_trunc (offset_int (offset / BITS_PER_UNIT),
 				 elt_size);
   access_index += low_bound;
   if (index_type)
@@ -2866,12 +2866,12 @@ fold_array_ctor_reference (tree type, tree ctor,
       if (cfield)
 	{
 	  if (TREE_CODE (cfield) == INTEGER_CST)
-	    max_index = index = wi::address (cfield);
+	    max_index = index = wi::to_offset (cfield);
 	  else
 	    {
 	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
-	      index = wi::address (TREE_OPERAND (cfield, 0));
-	      max_index = wi::address (TREE_OPERAND (cfield, 1));
+	      index = wi::to_offset (TREE_OPERAND (cfield, 0));
+	      max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
 	    }
 	}
       else
@@ -2912,9 +2912,9 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       tree byte_offset = DECL_FIELD_OFFSET (cfield);
       tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
       tree field_size = DECL_SIZE (cfield);
-      addr_wide_int bitoffset;
-      addr_wide_int byte_offset_cst = wi::address (byte_offset);
-      addr_wide_int bitoffset_end, access_end;
+      offset_int bitoffset;
+      offset_int byte_offset_cst = wi::to_offset (byte_offset);
+      offset_int bitoffset_end, access_end;
 
       /* Variable sized objects in static constructors makes no sense,
 	 but field_size can be NULL for flexible array members.  */
@@ -2925,15 +2925,15 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 		      : TREE_CODE (TREE_TYPE (cfield)) == ARRAY_TYPE));
 
       /* Compute bit offset of the field.  */
-      bitoffset = (wi::address (field_offset)
+      bitoffset = (wi::to_offset (field_offset)
 		   + byte_offset_cst * BITS_PER_UNIT);
       /* Compute bit offset where the field ends.  */
       if (field_size != NULL_TREE)
-	bitoffset_end = bitoffset + wi::address (field_size);
+	bitoffset_end = bitoffset + wi::to_offset (field_size);
       else
 	bitoffset_end = 0;
 
-      access_end = addr_wide_int (offset) + size;
+      access_end = offset_int (offset) + size;
 
       /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
 	 [BITOFFSET, BITOFFSET_END)?  */
@@ -2941,7 +2941,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 	  && (field_size == NULL_TREE
 	      || wi::lts_p (offset, bitoffset_end)))
 	{
-	  addr_wide_int inner_offset = addr_wide_int (offset) - bitoffset;
+	  offset_int inner_offset = offset_int (offset) - bitoffset;
 	  /* We do have overlap.  Now see if field is large enough to
 	     cover the access.  Give up for accesses spanning multiple
 	     fields.  */
@@ -3044,8 +3044,8 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  if ((TREE_CODE (low_bound) == INTEGER_CST)
 	      && (tree_fits_uhwi_p (unit_size)))
 	    {
-	      addr_wide_int woffset
-		= wi::sext (wi::address (idx) - wi::address (low_bound),
+	      offset_int woffset
+		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
 	      
 	      if (wi::fits_shwi_p (woffset))

@@ -32,7 +32,7 @@ struct aff_comb_elt
   tree val;
 
   /* Its coefficient in the combination.  */
-  max_wide_int coef;
+  widest_int coef;
 };
 
 typedef struct affine_tree_combination
@@ -41,7 +41,7 @@ typedef struct affine_tree_combination
   tree type;
 
   /* Constant offset.  */
-  max_wide_int offset;
+  widest_int offset;
 
   /* Number of elements of the combination.  */
   unsigned n;
@@ -60,25 +60,26 @@ typedef struct affine_tree_combination
   tree rest;
 } aff_tree;
 
-max_wide_int wide_int_ext_for_comb (max_wide_int, aff_tree *);
-void aff_combination_const (aff_tree *, tree, const max_wide_int &);
+widest_int wide_int_ext_for_comb (widest_int, aff_tree *);
+void aff_combination_const (aff_tree *, tree, const widest_int &);
 void aff_combination_elt (aff_tree *, tree, tree);
-void aff_combination_scale (aff_tree *, max_wide_int);
+void aff_combination_scale (aff_tree *, widest_int);
 void aff_combination_mult (aff_tree *, aff_tree *, aff_tree *);
 void aff_combination_add (aff_tree *, aff_tree *);
-void aff_combination_add_elt (aff_tree *, tree, max_wide_int);
+void aff_combination_add_elt (aff_tree *, tree, widest_int);
 void aff_combination_remove_elt (aff_tree *, unsigned);
 void aff_combination_convert (aff_tree *, tree);
 void tree_to_aff_combination (tree, tree, aff_tree *);
 tree aff_combination_to_tree (aff_tree *);
 void unshare_aff_combination (aff_tree *);
-bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, max_wide_int *);
+bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, widest_int *);
 void aff_combination_expand (aff_tree *, struct pointer_map_t **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     struct pointer_map_t **);
-void get_inner_reference_aff (tree, aff_tree *, max_wide_int *);
+void get_inner_reference_aff (tree, aff_tree *, widest_int *);
 void free_affine_expand_cache (struct pointer_map_t **);
-bool aff_comb_cannot_overlap_p (aff_tree *, const max_wide_int &, const max_wide_int &);
+bool aff_comb_cannot_overlap_p (aff_tree *, const widest_int &,
+				const widest_int &);
 
 /* Debugging functions.  */
 void debug_aff (aff_tree *);

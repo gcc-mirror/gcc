@@ -160,7 +160,7 @@ struct prop_value_d {
        with a CONSTANT lattice value X & ~mask == value & ~mask.  The
        zero bits in the mask cover constant values.  The ones mean no
        information.  */
-    max_wide_int mask;
+    widest_int mask;
 };
 
 typedef struct prop_value_d prop_value_t;
@@ -202,7 +202,7 @@ dump_lattice_value (FILE *outf, const char *prefix, prop_value_t val)
 	}
       else
 	{
-	  wide_int cval = wi::bit_and_not (wi::extend (val.value), val.mask);
+	  wide_int cval = wi::bit_and_not (wi::to_widest (val.value), val.mask);
 	  fprintf (outf, "%sCONSTANT ", prefix);
 	  print_hex (cval, outf);
 	  fprintf (outf, " (");
@@ -432,8 +432,8 @@ valid_lattice_transition (prop_value_t old_val, prop_value_t new_val)
   /* Bit-lattices have to agree in the still valid bits.  */
   if (TREE_CODE (old_val.value) == INTEGER_CST
       && TREE_CODE (new_val.value) == INTEGER_CST)
-    return (wi::bit_and_not (wi::extend (old_val.value), new_val.mask)
-	    == wi::bit_and_not (wi::extend (new_val.value), new_val.mask));
+    return (wi::bit_and_not (wi::to_widest (old_val.value), new_val.mask)
+	    == wi::bit_and_not (wi::to_widest (new_val.value), new_val.mask));
 
   /* Otherwise constant values have to agree.  */
   return operand_equal_p (old_val.value, new_val.value, 0);
@@ -458,8 +458,8 @@ set_lattice_value (tree var, prop_value_t new_val)
       && TREE_CODE (new_val.value) == INTEGER_CST
       && TREE_CODE (old_val->value) == INTEGER_CST)
     {
-      max_wide_int diff = (wi::extend (new_val.value)
-			   ^ wi::extend (old_val->value));
+      widest_int diff = (wi::to_widest (new_val.value)
+			 ^ wi::to_widest (old_val->value));
       new_val.mask = new_val.mask | old_val->mask | diff;
     }
 
@@ -494,19 +494,19 @@ set_lattice_value (tree var, prop_value_t new_val)
 
 static prop_value_t get_value_for_expr (tree, bool);
 static prop_value_t bit_value_binop (enum tree_code, tree, tree, tree);
-static void bit_value_binop_1 (enum tree_code, tree, max_wide_int *, max_wide_int *,
-			       tree, max_wide_int, max_wide_int,
-			       tree, max_wide_int, max_wide_int);
+static void bit_value_binop_1 (enum tree_code, tree, widest_int *, widest_int *,
+			       tree, widest_int, widest_int,
+			       tree, widest_int, widest_int);
 
-/* Return a max_wide_int that can be used for bitwise simplifications
+/* Return a widest_int that can be used for bitwise simplifications
    from VAL.  */
 
-static max_wide_int
+static widest_int
 value_to_wide_int (prop_value_t val)
 {
   if (val.value
       && TREE_CODE (val.value) == INTEGER_CST)
-    return wi::extend (val.value);
+    return wi::to_widest (val.value);
 
   return 0;
 }
@@ -526,7 +526,7 @@ get_value_from_alignment (tree expr)
 
   get_pointer_alignment_1 (expr, &align, &bitpos);
   val.mask = (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
-	      ? wi::mask <max_wide_int> (TYPE_PRECISION (type), false)
+	      ? wi::mask <widest_int> (TYPE_PRECISION (type), false)
 	      : -1).and_not (align / BITS_PER_UNIT - 1);
   val.lattice_val = val.mask == -1 ? VARYING : CONSTANT;
   if (val.lattice_val == CONSTANT)
@@ -909,7 +909,8 @@ ccp_lattice_meet (prop_value_t *val1, prop_value_t *val2)
          For INTEGER_CSTs mask unequal bits.  If no equal bits remain,
 	 drop to varying.  */
       val1->mask = (val1->mask | val2->mask
-		    | (wi::extend (val1->value) ^ wi::extend (val2->value)));
+		    | (wi::to_widest (val1->value)
+		       ^ wi::to_widest (val2->value)));
       if (val1->mask == -1)
 	{
 	  val1->lattice_val = VARYING;
@@ -1098,8 +1099,8 @@ ccp_fold (gimple stmt)
 
 static void
 bit_value_unop_1 (enum tree_code code, tree type,
-		  max_wide_int *val, max_wide_int *mask,
-		  tree rtype, const max_wide_int &rval, const max_wide_int &rmask)
+		  widest_int *val, widest_int *mask,
+		  tree rtype, const widest_int &rval, const widest_int &rmask)
 {
   switch (code)
     {
@@ -1110,7 +1111,7 @@ bit_value_unop_1 (enum tree_code code, tree type,
 
     case NEGATE_EXPR:
       {
-	max_wide_int temv, temm;
+	widest_int temv, temm;
 	/* Return ~rval + 1.  */
 	bit_value_unop_1 (BIT_NOT_EXPR, type, &temv, &temm, type, rval, rmask);
 	bit_value_binop_1 (PLUS_EXPR, type, val, mask,
@@ -1146,9 +1147,9 @@ bit_value_unop_1 (enum tree_code code, tree type,
 
 static void
 bit_value_binop_1 (enum tree_code code, tree type,
-		   max_wide_int *val, max_wide_int *mask,
-		   tree r1type, max_wide_int r1val, max_wide_int r1mask,
-		   tree r2type, max_wide_int r2val, max_wide_int r2mask)
+		   widest_int *val, widest_int *mask,
+		   tree r1type, widest_int r1val, widest_int r1mask,
+		   tree r2type, widest_int r2val, widest_int r2mask)
 {
   signop sgn = TYPE_SIGN (type);
   int width = TYPE_PRECISION (type);
@@ -1254,7 +1255,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
       {
-	max_wide_int lo, hi;
+	widest_int lo, hi;
 	/* Do the addition with unknown bits set to zero, to give carry-ins of
 	   zero wherever possible.  */
 	lo = r1val.and_not (r1mask) + r2val.and_not (r2mask);
@@ -1276,7 +1277,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 
     case MINUS_EXPR:
       {
-	max_wide_int temv, temm;
+	widest_int temv, temm;
 	bit_value_unop_1 (NEGATE_EXPR, r2type, &temv, &temm,
 			  r2type, r2val, r2mask);
 	bit_value_binop_1 (PLUS_EXPR, type, val, mask,
@@ -1298,7 +1299,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	  }
 	else if (r1tz + r2tz > 0)
 	  {
-	    *mask = wi::ext (wi::mask <max_wide_int> (r1tz + r2tz, true),
+	    *mask = wi::ext (wi::mask <widest_int> (r1tz + r2tz, true),
 			     width, sgn);
 	    *val = 0;
 	  }
@@ -1308,7 +1309,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case EQ_EXPR:
     case NE_EXPR:
       {
-	max_wide_int m = r1mask | r2mask;
+	widest_int m = r1mask | r2mask;
 	if (r1val.and_not (m) != r2val.and_not (m))
 	  {
 	    *mask = 0;
@@ -1328,7 +1329,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case LT_EXPR:
     case LE_EXPR:
       {
-	max_wide_int o1val, o2val, o1mask, o2mask;
+	widest_int o1val, o2val, o1mask, o2mask;
 	int minmax, maxmin;
 
 	if ((code == GE_EXPR) || (code == GT_EXPR)) 
@@ -1395,7 +1396,7 @@ static prop_value_t
 bit_value_unop (enum tree_code code, tree type, tree rhs)
 {
   prop_value_t rval = get_value_for_expr (rhs, true);
-  max_wide_int value, mask;
+  widest_int value, mask;
   prop_value_t val;
 
   if (rval.lattice_val == UNDEFINED)
@@ -1430,7 +1431,7 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
 {
   prop_value_t r1val = get_value_for_expr (rhs1, true);
   prop_value_t r2val = get_value_for_expr (rhs2, true);
-  max_wide_int value, mask;
+  widest_int value, mask;
   prop_value_t val;
 
   if (r1val.lattice_val == UNDEFINED
@@ -1478,7 +1479,7 @@ bit_value_assume_aligned (gimple stmt)
   unsigned HOST_WIDE_INT aligni, misaligni = 0;
   prop_value_t ptrval = get_value_for_expr (ptr, true);
   prop_value_t alignval;
-  max_wide_int value, mask;
+  widest_int value, mask;
   prop_value_t val;
 
   if (ptrval.lattice_val == UNDEFINED)

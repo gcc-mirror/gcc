@@ -49,9 +49,9 @@ struct GTY(()) ptr_info_def
 
 struct GTY (()) range_info_def {
   /* Minimum for value range.  */
-  max_wide_int min;
+  widest_int min;
   /* Maximum for value range.  */
-  max_wide_int max;
+  widest_int max;
 };
 
 
@@ -68,10 +68,10 @@ struct GTY (()) range_info_def {
 enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree ssa, max_wide_int min, max_wide_int max);
+extern void set_range_info (tree ssa, widest_int min, widest_int max);
 /* Gets the value range from SSA.  */
-extern enum value_range_type  get_range_info (tree name, max_wide_int *min,
-					      max_wide_int *max);
+extern enum value_range_type  get_range_info (tree name, widest_int *min,
+					      widest_int *max);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);
 extern void ssanames_print_statistics (void);

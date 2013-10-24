@@ -1006,7 +1006,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   /* loop_i <= expr_nb_iters */
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      max_wide_int nit;
+      widest_int nit;
       isl_pw_aff *aff;
       isl_set *valid;
       isl_local_space *ls;

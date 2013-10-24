@@ -32,8 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
-max_wide_int
-wide_int_ext_for_comb (max_wide_int cst, aff_tree *comb)
+widest_int
+wide_int_ext_for_comb (widest_int cst, aff_tree *comb)
 {
   return wi::sext (cst, TYPE_PRECISION (comb->type));
 }
@@ -54,7 +54,7 @@ aff_combination_zero (aff_tree *comb, tree type)
 /* Sets COMB to CST.  */
 
 void
-aff_combination_const (aff_tree *comb, tree type, const max_wide_int &cst)
+aff_combination_const (aff_tree *comb, tree type, const widest_int &cst)
 {
   aff_combination_zero (comb, type);
   comb->offset = wide_int_ext_for_comb (cst, comb);;
@@ -75,7 +75,7 @@ aff_combination_elt (aff_tree *comb, tree type, tree elt)
 /* Scales COMB by SCALE.  */
 
 void
-aff_combination_scale (aff_tree *comb, max_wide_int scale)
+aff_combination_scale (aff_tree *comb, widest_int scale)
 {
   unsigned i, j;
 
@@ -92,7 +92,7 @@ aff_combination_scale (aff_tree *comb, max_wide_int scale)
   comb->offset = wide_int_ext_for_comb (scale * comb->offset, comb);
   for (i = 0, j = 0; i < comb->n; i++)
     {
-      max_wide_int new_coef;
+      widest_int new_coef;
 
       new_coef = wide_int_ext_for_comb (scale * comb->elts[i].coef, comb);
       /* A coefficient may become zero due to overflow.  Remove the zero
@@ -126,7 +126,7 @@ aff_combination_scale (aff_tree *comb, max_wide_int scale)
 /* Adds ELT * SCALE to COMB.  */
 
 void
-aff_combination_add_elt (aff_tree *comb, tree elt, max_wide_int scale)
+aff_combination_add_elt (aff_tree *comb, tree elt, widest_int scale)
 {
   unsigned i;
   tree type;
@@ -138,7 +138,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, max_wide_int scale)
   for (i = 0; i < comb->n; i++)
     if (operand_equal_p (comb->elts[i].val, elt, 0))
       {
-	max_wide_int new_coef;
+	widest_int new_coef;
 
 	new_coef = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb);
 	if (new_coef != 0)
@@ -189,7 +189,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, max_wide_int scale)
 /* Adds CST to C.  */
 
 static void
-aff_combination_add_cst (aff_tree *c, const max_wide_int &cst)
+aff_combination_add_cst (aff_tree *c, const widest_int &cst)
 {
   c->offset = wide_int_ext_for_comb (c->offset + cst, c);
 }
@@ -233,7 +233,7 @@ aff_combination_convert (aff_tree *comb, tree type)
   comb->offset = wide_int_ext_for_comb (comb->offset, comb);
   for (i = j = 0; i < comb->n; i++)
     {
-      max_wide_int new_coef = comb->elts[i].coef;
+      widest_int new_coef = comb->elts[i].coef;
       if (new_coef == 0)
 	continue;
       comb->elts[j].coef = new_coef;
@@ -269,7 +269,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   switch (code)
     {
     case INTEGER_CST:
-      aff_combination_const (comb, type, wi::extend (expr));
+      aff_combination_const (comb, type, wi::to_widest (expr));
       return;
 
     case POINTER_PLUS_EXPR:
@@ -292,7 +292,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       if (TREE_CODE (cst) != INTEGER_CST)
 	break;
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, wi::extend (cst));
+      aff_combination_scale (comb, wi::to_widest (cst));
       return;
 
     case NEGATE_EXPR:
@@ -368,7 +368,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
    combination COMB.  */
 
 static tree
-add_elt_to_tree (tree expr, tree type, tree elt, max_wide_int scale,
+add_elt_to_tree (tree expr, tree type, tree elt, widest_int scale,
 		 aff_tree *comb ATTRIBUTE_UNUSED)
 {
   enum tree_code code;
@@ -452,7 +452,7 @@ aff_combination_to_tree (aff_tree *comb)
   tree type = comb->type;
   tree expr = NULL_TREE;
   unsigned i;
-  max_wide_int off, sgn;
+  widest_int off, sgn;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
@@ -517,7 +517,7 @@ aff_combination_remove_elt (aff_tree *comb, unsigned m)
 
 
 static void
-aff_combination_add_product (aff_tree *c, const max_wide_int &coef, tree val,
+aff_combination_add_product (aff_tree *c, const widest_int &coef, tree val,
 			     aff_tree *r)
 {
   unsigned i;
@@ -615,7 +615,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
   aff_tree to_add, current, curre;
   tree e, rhs;
   gimple def;
-  max_wide_int scale;
+  widest_int scale;
   void **slot;
   struct name_expansion *exp;
 
@@ -760,10 +760,10 @@ free_affine_expand_cache (struct pointer_map_t **cache)
    is set to true.  */
 
 static bool
-wide_int_constant_multiple_p (max_wide_int val, max_wide_int div,
-			      bool *mult_set, max_wide_int *mult)
+wide_int_constant_multiple_p (widest_int val, widest_int div,
+			      bool *mult_set, widest_int *mult)
 {
-  max_wide_int rem, cst;
+  widest_int rem, cst;
 
   if (val == 0)
     {
@@ -793,7 +793,7 @@ wide_int_constant_multiple_p (max_wide_int val, max_wide_int div,
 
 bool
 aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
-				     max_wide_int *mult)
+				     widest_int *mult)
 {
   bool mult_set = false;
   unsigned i;
@@ -877,7 +877,7 @@ debug_aff (aff_tree *val)
    location is stored to SIZE.  */
 
 void
-get_inner_reference_aff (tree ref, aff_tree *addr, max_wide_int *size)
+get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
 {
   HOST_WIDE_INT bitsize, bitpos;
   tree toff;
@@ -908,9 +908,10 @@ get_inner_reference_aff (tree ref, aff_tree *addr, max_wide_int *size)
    size SIZE2 at position DIFF cannot overlap.  */
 
 bool
-aff_comb_cannot_overlap_p (aff_tree *diff, const max_wide_int &size1, const max_wide_int &size2)
+aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
+			   const widest_int &size2)
 {
-  max_wide_int d, bound;
+  widest_int d, bound;
 
   /* Unless the difference is a constant, we fail.  */
   if (diff->n != 0)

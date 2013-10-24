@@ -874,7 +874,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   tree ptrtype1, dbase2;
   HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
   HOST_WIDE_INT doffset1, doffset2;
-  addr_wide_int moff;
+  offset_int moff;
 
   gcc_checking_assert ((TREE_CODE (base1) == MEM_REF
 			|| TREE_CODE (base1) == TARGET_MEM_REF)
@@ -961,7 +961,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (TREE_CODE (dbase2) == MEM_REF
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
-      addr_wide_int moff = mem_ref_offset (dbase2);
+      offset_int moff = mem_ref_offset (dbase2);
       moff = wi::lshift (moff, (BITS_PER_UNIT == 8
 				? 3 : exact_log2 (BITS_PER_UNIT)));
       if (wi::neg_p (moff))
@@ -1053,7 +1053,7 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 		      && operand_equal_p (TMR_INDEX2 (base1),
 					  TMR_INDEX2 (base2), 0))))))
     {
-      addr_wide_int moff;
+      offset_int moff;
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
@@ -2018,11 +2018,11 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	      if (!tree_int_cst_equal (TREE_OPERAND (base, 1),
 				       TREE_OPERAND (ref->base, 1)))
 		{
-		  addr_wide_int off1 = mem_ref_offset (base);
+		  offset_int off1 = mem_ref_offset (base);
 		  off1 = wi::lshift (off1, (BITS_PER_UNIT == 8
 					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off1 += offset;
-		  addr_wide_int off2 = mem_ref_offset (ref->base);
+		  offset_int off2 = mem_ref_offset (ref->base);
 		  off2 = wi::lshift (off2, (BITS_PER_UNIT == 8
 					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off2 += ref_offset;

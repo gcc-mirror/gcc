@@ -3701,7 +3701,7 @@ extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
 
 extern tree double_int_to_tree (tree, double_int);
 
-extern addr_wide_int mem_ref_offset (const_tree);
+extern offset_int mem_ref_offset (const_tree);
 extern tree wide_int_to_tree (tree type, const wide_int_ref &cst);
 extern tree force_fit_type (tree, const wide_int_ref &, int, bool);
 
@@ -5275,9 +5275,9 @@ namespace wi
   };
 
   generic_wide_int <extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
-  extend (const_tree);
+  to_widest (const_tree);
 
-  generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > address (const_tree);
+  generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > to_offset (const_tree);
 }
 
 inline unsigned int
@@ -5312,13 +5312,13 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 }
 
 inline generic_wide_int <wi::extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
-wi::extend (const_tree t)
+wi::to_widest (const_tree t)
 {
   return t;
 }
 
 inline generic_wide_int <wi::extended_tree <ADDR_MAX_PRECISION> >
-wi::address (const_tree t)
+wi::to_offset (const_tree t)
 {
   return t;
 }

@@ -773,7 +773,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
-	  addr_wide_int moff = mem_ref_offset (base);
+	  offset_int moff = mem_ref_offset (base);
 	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
@@ -1370,7 +1370,7 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
   if (!loop_nest)
     {
       aff_tree off1, off2;
-      max_wide_int size1, size2;
+      widest_int size1, size2;
       get_inner_reference_aff (DR_REF (a), &off1, &size1);
       get_inner_reference_aff (DR_REF (b), &off2, &size2);
       aff_combination_scale (&off1, -1);
@@ -1748,7 +1748,7 @@ analyze_ziv_subscript (tree chrec_a,
 static tree
 max_stmt_executions_tree (struct loop *loop)
 {
-  max_wide_int nit;
+  widest_int nit;
 
   if (!max_stmt_executions (loop, &nit))
     return chrec_dont_know;

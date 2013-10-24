@@ -5475,8 +5475,8 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("double_int", &pos));
       POS_HERE (do_scalar_typedef ("double_int_storage", &pos));
-      POS_HERE (do_scalar_typedef ("addr_wide_int", &pos));
-      POS_HERE (do_scalar_typedef ("max_wide_int", &pos));
+      POS_HERE (do_scalar_typedef ("offset_int", &pos));
+      POS_HERE (do_scalar_typedef ("widest_int", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

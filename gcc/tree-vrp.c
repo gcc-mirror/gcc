@@ -3838,18 +3838,18 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
       && (TREE_CODE (init) != SSA_NAME
 	  || get_value_range (init)->type == VR_RANGE))
     {
-      max_wide_int nit;
+      widest_int nit;
 
       /* We are only entering here for loop header PHI nodes, so using
 	 the number of latch executions is the correct thing to use.  */
       if (max_loop_iterations (loop, &nit))
 	{
 	  value_range_t maxvr = VR_INITIALIZER;
-	  max_wide_int wtmp;
+	  widest_int wtmp;
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
 	  
-	  wtmp = wi::mul (wi::extend (step), nit, sgn, &overflow);
+	  wtmp = wi::mul (wi::to_widest (step), nit, sgn, &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
 	     of the induction variable.  For a signed type we have to
@@ -6274,7 +6274,7 @@ search_for_addr_array (tree t, location_t location)
     {
       tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
       tree low_bound, up_bound, el_sz;
-      addr_wide_int idx;
+      offset_int idx;
       if (TREE_CODE (TREE_TYPE (tem)) != ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (TREE_TYPE (tem))) == ARRAY_TYPE
 	  || !TYPE_DOMAIN (TREE_TYPE (tem)))
@@ -6292,7 +6292,7 @@ search_for_addr_array (tree t, location_t location)
 	return;
 
       idx = mem_ref_offset (t);
-      idx = wi::sdiv_trunc (idx, wi::address (el_sz));
+      idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
       if (wi::lts_p (idx, 0))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -6305,8 +6305,8 @@ search_for_addr_array (tree t, location_t location)
 		      "array subscript is below array bounds");
 	  TREE_NO_WARNING (t) = 1;
 	}
-      else if (wi::gts_p (idx, (wi::address (up_bound)
-				- wi::address (low_bound) + 1)))
+      else if (wi::gts_p (idx, (wi::to_offset (up_bound)
+				- wi::to_offset (low_bound) + 1)))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -8698,7 +8698,7 @@ range_fits_type_p (value_range_t *vr, unsigned dest_precision, signop dest_sgn)
 {
   tree src_type;
   unsigned src_precision;
-  max_wide_int tem;
+  widest_int tem;
   signop src_sgn;
 
   /* We can only handle integral and pointer types.  */
@@ -8732,11 +8732,11 @@ range_fits_type_p (value_range_t *vr, unsigned dest_precision, signop dest_sgn)
 
   /* Then we can perform the conversion on both ends and compare
      the result for equality.  */
-  tem = wi::ext (wi::extend (vr->min), dest_precision, dest_sgn);
-  if (tem != wi::extend (vr->min))
+  tem = wi::ext (wi::to_widest (vr->min), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (vr->min))
     return false;
-  tem = wi::ext (wi::extend (vr->max), dest_precision, dest_sgn);
-  if (tem != wi::extend (vr->max))
+  tem = wi::ext (wi::to_widest (vr->max), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (vr->max))
     return false;
 
   return true;
@@ -8998,7 +8998,7 @@ simplify_conversion_using_ranges (gimple stmt)
   value_range_t *innervr;
   signop inner_sgn, middle_sgn, final_sgn;
   unsigned inner_prec, middle_prec, final_prec;
-  max_wide_int innermin, innermed, innermax, middlemin, middlemed, middlemax;
+  widest_int innermin, innermed, innermax, middlemin, middlemed, middlemax;
 
   finaltype = TREE_TYPE (gimple_assign_lhs (stmt));
   if (!INTEGRAL_TYPE_P (finaltype))
@@ -9022,8 +9022,8 @@ simplify_conversion_using_ranges (gimple stmt)
 
   /* Simulate the conversion chain to check if the result is equal if
      the middle conversion is removed.  */
-  innermin = wi::extend (innervr->min);
-  innermax = wi::extend (innervr->max);
+  innermin = wi::to_widest (innervr->min);
+  innermax = wi::to_widest (innervr->max);
 
   inner_prec = TYPE_PRECISION (TREE_TYPE (innerop));
   middle_prec = TYPE_PRECISION (TREE_TYPE (middleop));
@@ -9032,14 +9032,14 @@ simplify_conversion_using_ranges (gimple stmt)
   /* If the first conversion is not injective, the second must not
      be widening.  */
   if (wi::gtu_p (innermax - innermin,
-		 wi::mask <max_wide_int> (middle_prec, false))
+		 wi::mask <widest_int> (middle_prec, false))
       && middle_prec < final_prec)
     return false;
   /* We also want a medium value so that we can track the effect that
      narrowing conversions with sign change have.  */
   inner_sgn = TYPE_SIGN (TREE_TYPE (innerop));
   if (inner_sgn == UNSIGNED)
-    innermed = wi::shifted_mask <max_wide_int> (1, inner_prec - 1, false);
+    innermed = wi::shifted_mask <widest_int> (1, inner_prec - 1, false);
   else
     innermed = 0;
   if (wi::cmp (innermin, innermed, inner_sgn) >= 0
@@ -9483,8 +9483,8 @@ vrp_finalize (void)
 	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST))
 	  {
 	    if (vr_value[i]->type == VR_RANGE)
-	      set_range_info (name, wi::extend (vr_value[i]->min),
-			      wi::extend (vr_value[i]->max));
+	      set_range_info (name, wi::to_widest (vr_value[i]->min),
+			      wi::to_widest (vr_value[i]->max));
 	    else if (vr_value[i]->type == VR_ANTI_RANGE)
 	      {
 		/* VR_ANTI_RANGE ~[min, max] is encoded compactly as
@@ -9500,12 +9500,12 @@ vrp_finalize (void)
 		  {
 		    unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
 		    set_range_info (name, 1,
-				    wi::mask <max_wide_int> (prec, false));
+				    wi::mask <widest_int> (prec, false));
 		  }
 		else
 		  set_range_info (name,
-				  wi::extend (vr_value[i]->max) + 1,
-				  wi::extend (vr_value[i]->min) - 1);
+				  wi::to_widest (vr_value[i]->max) + 1,
+				  wi::to_widest (vr_value[i]->min) - 1);
 	      }
 	  }
       }

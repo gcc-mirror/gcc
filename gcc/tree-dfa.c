@@ -383,7 +383,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   HOST_WIDE_INT bitsize = -1;
   HOST_WIDE_INT maxsize = -1;
   tree size_tree = NULL_TREE;
-  addr_wide_int bit_offset = 0;
+  offset_int bit_offset = 0;
   HOST_WIDE_INT hbit_offset;
   bool seen_variable_array_ref = false;
   tree base_type;
@@ -422,7 +422,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += wi::address (TREE_OPERAND (exp, 2));
+	  bit_offset += wi::to_offset (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -432,11 +432,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		addr_wide_int woffset = wi::address (this_offset);
+		offset_int woffset = wi::to_offset (this_offset);
 		woffset = wi::lshift (woffset,
 				      (BITS_PER_UNIT == 8
 				       ? 3 : exact_log2 (BITS_PER_UNIT)));
-		woffset += wi::address (DECL_FIELD_BIT_OFFSET (field));
+		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		bit_offset += woffset;
 
 		/* If we had seen a variable array ref already and we just
@@ -497,10 +497,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		addr_wide_int woffset
-		  = wi::sext (wi::address (index) - wi::address (low_bound),
+		offset_int woffset
+		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
-		woffset *= wi::address (unit_size);
+		woffset *= wi::to_offset (unit_size);
 		woffset = wi::lshift (woffset,
 				      (BITS_PER_UNIT == 8
 				       ? 3 : exact_log2 (BITS_PER_UNIT)));
@@ -550,7 +550,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 	      else
 		{
-		  addr_wide_int off = mem_ref_offset (exp);
+		  offset_int off = mem_ref_offset (exp);
 		  off = wi::lshift (off, (BITS_PER_UNIT == 8
 					  ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off += bit_offset;
@@ -580,7 +580,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		exp = TREE_OPERAND (TMR_BASE (exp), 0);
 	      else
 		{
-		  addr_wide_int off = mem_ref_offset (exp);
+		  offset_int off = mem_ref_offset (exp);
 		  off = wi::lshift (off, (BITS_PER_UNIT == 8
 					  ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off += bit_offset;

@@ -2764,7 +2764,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	{
 	  if (off == NULL_TREE)
 	    {
-	      addr_wide_int moff = mem_ref_offset (base);
+	      offset_int moff = mem_ref_offset (base);
 	      off = wide_int_to_tree (sizetype, moff);
 	    }
 	  else

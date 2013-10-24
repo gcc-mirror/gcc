@@ -646,7 +646,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, best_copies, best_unroll = 0, n_copies, i;
   struct niter_desc *desc;
-  max_wide_int iterations;
+  widest_int iterations;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -939,7 +939,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
   struct niter_desc *desc;
-  max_wide_int iterations;
+  widest_int iterations;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -1336,7 +1336,7 @@ static void
 decide_peel_simple (struct loop *loop, int flags)
 {
   unsigned npeel;
-  max_wide_int iterations;
+  widest_int iterations;
 
   if (!(flags & UAP_PEEL))
     {
@@ -1492,7 +1492,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
   struct niter_desc *desc;
-  max_wide_int iterations;
+  widest_int iterations;
 
   if (!(flags & UAP_UNROLL_ALL))
     {

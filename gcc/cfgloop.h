@@ -63,7 +63,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
         overflows (as MAX + 1 is sometimes produced as the estimate on number
 	of executions of STMT).
      b) it is consistent with the result of number_of_iterations_exit.  */
-  max_wide_int bound;
+  widest_int bound;
 
   /* True if the statement will cause the loop to be leaved the (at most)
      BOUND + 1-st time it is executed, that is, all the statements after it
@@ -147,12 +147,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* An integer guaranteed to be greater or equal to nb_iterations.  Only
      valid if any_upper_bound is true.  */
-  max_wide_int nb_iterations_upper_bound;
+  widest_int nb_iterations_upper_bound;
 
   /* An integer giving an estimate on nb_iterations.  Unlike
      nb_iterations_upper_bound, there is no guarantee that it is at least
      nb_iterations.  */
-  max_wide_int nb_iterations_estimate;
+  widest_int nb_iterations_estimate;
 
   bool any_upper_bound;
   bool any_estimate;
@@ -731,16 +731,16 @@ loop_outermost (struct loop *loop)
   return (*loop->superloops)[1];
 }
 
-extern void record_niter_bound (struct loop *, const max_wide_int &, bool, bool);
+extern void record_niter_bound (struct loop *, const widest_int &, bool, bool);
 extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
 extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
-extern bool get_estimated_loop_iterations (struct loop *loop, max_wide_int *nit);
-extern bool get_max_loop_iterations (struct loop *loop, max_wide_int *nit);
+extern bool get_estimated_loop_iterations (struct loop *loop, widest_int *nit);
+extern bool get_max_loop_iterations (struct loop *loop, widest_int *nit);
 extern int bb_loop_depth (const_basic_block);
 
-/* Converts VAL to max_wide_int.  */
+/* Converts VAL to widest_int.  */
 
-static inline max_wide_int
+static inline widest_int
 gcov_type_to_wide_int (gcov_type val)
 {
   HOST_WIDE_INT a[2];
@@ -752,6 +752,6 @@ gcov_type_to_wide_int (gcov_type val)
   val >>= 1;
   a[1] = (unsigned HOST_WIDE_INT) val;
 
-  return max_wide_int::from_array (a, 2);
+  return widest_int::from_array (a, 2);
 }
 #endif /* GCC_CFGLOOP_H */

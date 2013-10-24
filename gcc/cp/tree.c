@@ -2603,7 +2603,7 @@ cp_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return wi::extend (t1) == wi::extend (t2);
+      return wi::to_widest (t1) == wi::to_widest (t2);
 
     case REAL_CST:
       return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));

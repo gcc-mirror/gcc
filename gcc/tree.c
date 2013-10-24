@@ -1116,7 +1116,7 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
 tree
 double_int_to_tree (tree type, double_int cst)
 {
-  return wide_int_to_tree (type, max_wide_int::from (cst, TYPE_SIGN (type)));
+  return wide_int_to_tree (type, widest_int::from (cst, TYPE_SIGN (type)));
 }
 
 /* We force the wide_int CST to the range of the type TYPE by sign or
@@ -4314,10 +4314,10 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
 
 /* Return the constant offset of a MEM_REF or TARGET_MEM_REF tree T.  */
 
-addr_wide_int
+offset_int
 mem_ref_offset (const_tree t)
 {
-  return addr_wide_int::from (TREE_OPERAND (t, 1), SIGNED);
+  return offset_int::from (TREE_OPERAND (t, 1), SIGNED);
 }
 
 /* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE
@@ -6898,7 +6898,7 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
 
   if (TREE_CODE (t1) == INTEGER_CST
       && TREE_CODE (t2) == INTEGER_CST
-      && wi::extend (t1) == wi::extend (t2))
+      && wi::to_widest (t1) == wi::to_widest (t2))
     return 1;
 
   return 0;
@@ -7070,7 +7070,7 @@ simple_cst_equal (const_tree t1, const_tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return wi::extend (t1) == wi::extend (t2);
+      return wi::to_widest (t1) == wi::to_widest (t2);
 
     case REAL_CST:
       return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));

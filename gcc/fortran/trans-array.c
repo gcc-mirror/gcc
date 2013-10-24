@@ -5362,7 +5362,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 {
   gfc_constructor *c;
   tree tmp;
-  addr_wide_int wtmp; 
+  offset_int wtmp;
   gfc_se se;
   tree index, range;
   vec<constructor_elt, va_gc> *v = NULL;
@@ -5385,7 +5385,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       else
 	gfc_conv_structure (&se, expr, 1);
 
-      wtmp = wi::address (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1;
+      wtmp = wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1;
       gcc_assert (wtmp != 0);
       /* This will probably eat buckets of memory for large arrays.  */
       while (wtmp != 0)

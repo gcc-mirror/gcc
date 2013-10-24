@@ -1563,12 +1563,12 @@ idx_record_use (tree base, tree *idx,
    signedness of TOP and BOT.  */
 
 static bool
-constant_multiple_of (tree top, tree bot, max_wide_int *mul)
+constant_multiple_of (tree top, tree bot, widest_int *mul)
 {
   tree mby;
   enum tree_code code;
   unsigned precision = TYPE_PRECISION (TREE_TYPE (top));
-  max_wide_int res, p0, p1;
+  widest_int res, p0, p1;
 
   STRIP_NOPS (top);
   STRIP_NOPS (bot);
@@ -1590,7 +1590,7 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
       if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
 	return false;
 
-      *mul = wi::sext (res * wi::extend (mby), precision);
+      *mul = wi::sext (res * wi::to_widest (mby), precision);
       return true;
 
     case PLUS_EXPR:
@@ -1608,8 +1608,8 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = max_wide_int::from (top, SIGNED);
-      p1 = max_wide_int::from (bot, SIGNED);
+      p0 = widest_int::from (top, SIGNED);
+      p1 = widest_int::from (bot, SIGNED);
       if (p1 == 0)
 	return false;
       *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);
@@ -2969,7 +2969,7 @@ get_computation_aff (struct loop *loop,
   tree common_type, var;
   tree uutype;
   aff_tree cbase_aff, var_aff;
-  max_wide_int rat;
+  widest_int rat;
 
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
     {
@@ -3968,7 +3968,7 @@ get_computation_cost_at (struct ivopts_data *data,
   HOST_WIDE_INT ratio, aratio;
   bool var_present, symbol_present, stmt_is_after_inc;
   comp_cost cost;
-  max_wide_int rat;
+  widest_int rat;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
   enum machine_mode mem_mode = (address_p
 				? TYPE_MODE (TREE_TYPE (*use->op_p))
@@ -4627,12 +4627,12 @@ may_eliminate_iv (struct ivopts_data *data,
      entire loop and compare against that instead.  */
   else
     {
-      max_wide_int period_value, max_niter;
+      widest_int period_value, max_niter;
 
       max_niter = desc->max;
       if (stmt_after_increment (loop, cand, use->stmt))
         max_niter += 1;
-      period_value = wi::extend (period);
+      period_value = wi::to_widest (period);
       if (wi::gtu_p (max_niter, period_value))
         {
           /* See if we can take advantage of inferred loop bound information.  */

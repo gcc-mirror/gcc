@@ -409,7 +409,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   basic_block loop_end = desc->out_edge->src;
   enum machine_mode mode;
   rtx true_prob_val;
-  max_wide_int iterations;
+  widest_int iterations;
 
   jump_insn = BB_END (loop_end);
 
@@ -617,7 +617,7 @@ doloop_optimize (struct loop *loop)
   struct niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
-  max_wide_int iter;
+  widest_int iter;
   int entered_at_top;
 
   if (dump_file)

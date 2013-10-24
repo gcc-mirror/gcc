@@ -231,7 +231,7 @@ struct slsr_cand_d
   tree stride;
 
   /* The index constant i.  */
-  max_wide_int index;
+  widest_int index;
 
   /* The type of the candidate.  This is normally the type of base_expr,
      but casts may have occurred when combining feeding instructions.
@@ -306,7 +306,7 @@ typedef const struct cand_chain_d *const_cand_chain_t;
 struct incr_info_d
 {
   /* The increment that relates a candidate to its basis.  */
-  max_wide_int incr;
+  widest_int incr;
 
   /* How many times the increment occurs in the candidate tree.  */
   unsigned count;
@@ -555,7 +555,7 @@ record_potential_basis (slsr_cand_t c)
 
 static slsr_cand_t
 alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base, 
-			   const max_wide_int &index, tree stride, tree ctype,
+			   const widest_int &index, tree stride, tree ctype,
 			   unsigned savings)
 {
   slsr_cand_t c = (slsr_cand_t) obstack_alloc (&cand_obstack,
@@ -764,7 +764,7 @@ slsr_process_phi (gimple phi, bool speed)
    int (i * S).
    Otherwise, just return double int zero.  */
 
-static max_wide_int
+static widest_int
 backtrace_base_for_ref (tree *pbase)
 {
   tree base_in = *pbase;
@@ -792,7 +792,7 @@ backtrace_base_for_ref (tree *pbase)
 	{
 	  /* X = B + (1 * S), S is integer constant.  */
 	  *pbase = base_cand->base_expr;
-	  return wi::extend (base_cand->stride);
+	  return wi::to_widest (base_cand->stride);
 	}
       else if (base_cand->kind == CAND_ADD
 	       && TREE_CODE (base_cand->stride) == INTEGER_CST
@@ -839,13 +839,13 @@ backtrace_base_for_ref (tree *pbase)
     *PINDEX:   C1 + (C2 * C3) + C4 + (C5 * C3)  */
 
 static bool
-restructure_reference (tree *pbase, tree *poffset, max_wide_int *pindex,
+restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
 		       tree *ptype)
 {
   tree base = *pbase, offset = *poffset;
-  max_wide_int index = *pindex;
+  widest_int index = *pindex;
   tree mult_op0, t1, t2, type;
-  max_wide_int c1, c2, c3, c4, c5;
+  widest_int c1, c2, c3, c4, c5;
 
   if (!base
       || !offset
@@ -856,18 +856,18 @@ restructure_reference (tree *pbase, tree *poffset, max_wide_int *pindex,
     return false;
 
   t1 = TREE_OPERAND (base, 0);
-  c1 = max_wide_int::from (mem_ref_offset (base), SIGNED);
+  c1 = widest_int::from (mem_ref_offset (base), SIGNED);
   type = TREE_TYPE (TREE_OPERAND (base, 1));
 
   mult_op0 = TREE_OPERAND (offset, 0);
-  c3 = wi::extend (TREE_OPERAND (offset, 1));
+  c3 = wi::to_widest (TREE_OPERAND (offset, 1));
 
   if (TREE_CODE (mult_op0) == PLUS_EXPR)
 
     if (TREE_CODE (TREE_OPERAND (mult_op0, 1)) == INTEGER_CST)
       {
 	t2 = TREE_OPERAND (mult_op0, 0);
-	c2 = wi::extend (TREE_OPERAND (mult_op0, 1));
+	c2 = wi::to_widest (TREE_OPERAND (mult_op0, 1));
       }
     else
       return false;
@@ -877,7 +877,7 @@ restructure_reference (tree *pbase, tree *poffset, max_wide_int *pindex,
     if (TREE_CODE (TREE_OPERAND (mult_op0, 1)) == INTEGER_CST)
       {
 	t2 = TREE_OPERAND (mult_op0, 0);
-	c2 = -wi::extend (TREE_OPERAND (mult_op0, 1));
+	c2 = -wi::to_widest (TREE_OPERAND (mult_op0, 1));
       }
     else
       return false;
@@ -910,7 +910,7 @@ slsr_process_ref (gimple gs)
   HOST_WIDE_INT bitsize, bitpos;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  max_wide_int index;
+  widest_int index;
   slsr_cand_t c;
 
   if (gimple_vdef (gs))
@@ -947,7 +947,7 @@ static slsr_cand_t
 create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 {
   tree base = NULL_TREE, stride = NULL_TREE, ctype = NULL_TREE;
-  max_wide_int index;
+  widest_int index;
   unsigned savings = 0;
   slsr_cand_t c;
   slsr_cand_t base_cand = base_cand_from_table (base_in);
@@ -979,7 +979,7 @@ create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     ============================
 	     X = B + ((i' * S) * Z)  */
 	  base = base_cand->base_expr;
-	  index = base_cand->index * wi::extend (base_cand->stride);
+	  index = base_cand->index * wi::to_widest (base_cand->stride);
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1017,7 +1017,7 @@ static slsr_cand_t
 create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 {
   tree base = NULL_TREE, stride = NULL_TREE, ctype = NULL_TREE;
-  max_wide_int index, temp;
+  widest_int index, temp;
   unsigned savings = 0;
   slsr_cand_t c;
   slsr_cand_t base_cand = base_cand_from_table (base_in);
@@ -1035,7 +1035,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = (B + i') * (S * c)  */
 	  base = base_cand->base_expr;
 	  index = base_cand->index;
-	  temp = wi::extend (base_cand->stride) * wi::extend (stride_in);
+	  temp = wi::to_widest (base_cand->stride) * wi::to_widest (stride_in);
 	  stride = wide_int_to_tree (TREE_TYPE (stride_in), temp);
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1065,7 +1065,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     ===========================
 	     X = (B + S) * c  */
 	  base = base_cand->base_expr;
-	  index = wi::extend (base_cand->stride);
+	  index = wi::to_widest (base_cand->stride);
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
 	  if (has_single_use (base_in))
@@ -1147,7 +1147,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 		     bool subtract_p, bool speed)
 {
   tree base = NULL_TREE, stride = NULL_TREE, ctype = NULL;
-  max_wide_int index;
+  widest_int index;
   unsigned savings = 0;
   slsr_cand_t c;
   slsr_cand_t base_cand = base_cand_from_table (base_in);
@@ -1166,7 +1166,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 	     ===========================
 	     X = Y + ((+/-1 * S) * B)  */
 	  base = base_in;
-	  index = wi::extend (addend_cand->stride);
+	  index = wi::to_widest (addend_cand->stride);
 	  if (subtract_p)
 	    index = -index;
 	  stride = addend_cand->base_expr;
@@ -1216,7 +1216,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 		     ===========================
 		     Value:  X = Y + ((-1 * S) * B)  */
 		  base = base_in;
-		  index = wi::extend (subtrahend_cand->stride);
+		  index = wi::to_widest (subtrahend_cand->stride);
 		  index = -index;
 		  stride = subtrahend_cand->base_expr;
 		  ctype = TREE_TYPE (base_in);
@@ -1258,11 +1258,11 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
    about BASE_IN into the new candidate.  Return the new candidate.  */
 
 static slsr_cand_t
-create_add_imm_cand (gimple gs, tree base_in, max_wide_int index_in, bool speed)
+create_add_imm_cand (gimple gs, tree base_in, widest_int index_in, bool speed)
 {
   enum cand_kind kind = CAND_ADD;
   tree base = NULL_TREE, stride = NULL_TREE, ctype = NULL_TREE;
-  max_wide_int index, multiple;
+  widest_int index, multiple;
   unsigned savings = 0;
   slsr_cand_t c;
   slsr_cand_t base_cand = base_cand_from_table (base_in);
@@ -1272,7 +1272,7 @@ create_add_imm_cand (gimple gs, tree base_in, max_wide_int index_in, bool speed)
       signop sign = TYPE_SIGN (TREE_TYPE (base_cand->stride));
 
       if (TREE_CODE (base_cand->stride) == INTEGER_CST
-	  && wi::multiple_of_p (index_in, wi::extend (base_cand->stride),
+	  && wi::multiple_of_p (index_in, wi::to_widest (base_cand->stride),
 				sign, &multiple))
 	{
 	  /* Y = (B + i') * S, S constant, c = kS for some integer k
@@ -1358,10 +1358,10 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
     }
   else
     {
-      max_wide_int index;
+      widest_int index;
 
       /* Record an interpretation for the add-immediate.  */
-      index = wi::extend (rhs2);
+      index = wi::to_widest (rhs2);
       if (subtract_p)
 	index = -index;
 
@@ -1871,7 +1871,7 @@ phi_dependent_cand_p (slsr_cand_t c)
 /* Calculate the increment required for candidate C relative to 
    its basis.  */
 
-static max_wide_int
+static widest_int
 cand_increment (slsr_cand_t c)
 {
   slsr_cand_t basis;
@@ -1894,10 +1894,10 @@ cand_increment (slsr_cand_t c)
    for this candidate, return the absolute value of that increment
    instead.  */
 
-static inline max_wide_int
+static inline widest_int
 cand_abs_increment (slsr_cand_t c)
 {
-  max_wide_int increment = cand_increment (c);
+  widest_int increment = cand_increment (c);
 
   if (!address_arithmetic_p && wi::neg_p (increment))
     increment = -increment;
@@ -1918,11 +1918,12 @@ cand_already_replaced (slsr_cand_t c)
    replace_conditional_candidate.  */
 
 static void
-replace_mult_candidate (slsr_cand_t c, tree basis_name, const max_wide_int &bump_in)
+replace_mult_candidate (slsr_cand_t c, tree basis_name,
+			const widest_int &bump_in)
 {
   tree target_type = TREE_TYPE (gimple_assign_lhs (c->cand_stmt));
   enum tree_code cand_code = gimple_assign_rhs_code (c->cand_stmt);
-  max_wide_int bump = bump_in;
+  widest_int bump = bump_in;
 
   /* It is highly unlikely, but possible, that the resulting
      bump doesn't fit in a HWI.  Abandon the replacement
@@ -2022,13 +2023,13 @@ static void
 replace_unconditional_candidate (slsr_cand_t c)
 {
   slsr_cand_t basis;
-  max_wide_int bump;
+  widest_int bump;
 
   if (cand_already_replaced (c))
     return;
 
   basis = lookup_cand (c->basis);
-  bump = cand_increment (c) * wi::extend (c->stride);
+  bump = cand_increment (c) * wi::to_widest (c->stride);
 
   replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
@@ -2038,7 +2039,7 @@ replace_unconditional_candidate (slsr_cand_t c)
    MAX_INCR_VEC_LEN increments have been found.  */
 
 static inline int
-incr_vec_index (max_wide_int increment)
+incr_vec_index (widest_int increment)
 {
   unsigned i;
   
@@ -2058,7 +2059,7 @@ incr_vec_index (max_wide_int increment)
 
 static tree
 create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
-			     max_wide_int increment, edge e, location_t loc,
+			     widest_int increment, edge e, location_t loc,
 			     bool known_stride)
 {
   basic_block insert_bb;
@@ -2079,7 +2080,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
     {
       tree bump_tree;
       enum tree_code code = PLUS_EXPR;
-      max_wide_int bump = increment * wi::extend (c->stride);
+      widest_int bump = increment * wi::to_widest (c->stride);
       if (wi::neg_p (bump))
 	{
 	  code = MINUS_EXPR;
@@ -2171,7 +2172,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 	  feeding_def = gimple_assign_lhs (basis->cand_stmt);
 	else
 	  {
-	    max_wide_int incr = -basis->index;
+	    widest_int incr = -basis->index;
 	    feeding_def = create_add_on_incoming_edge (c, basis_name, incr,
 						       e, loc, known_stride);
 	  }
@@ -2188,7 +2189,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      max_wide_int diff = arg_cand->index - basis->index;
+	      widest_int diff = arg_cand->index - basis->index;
 	      feeding_def = create_add_on_incoming_edge (c, basis_name, diff,
 							 e, loc, known_stride);
 	    }
@@ -2234,7 +2235,7 @@ replace_conditional_candidate (slsr_cand_t c)
   tree basis_name, name;
   slsr_cand_t basis;
   location_t loc;
-  max_wide_int bump;
+  widest_int bump;
 
   /* Look up the LHS SSA name from C's basis.  This will be the 
      RHS1 of the adds we will introduce to create new phi arguments.  */
@@ -2247,7 +2248,7 @@ replace_conditional_candidate (slsr_cand_t c)
   name = create_phi_basis (c, lookup_cand (c->def_phi)->cand_stmt,
 			   basis_name, loc, KNOWN_STRIDE);
   /* Replace C with an add of the new basis phi and a constant.  */
-  bump = c->index * wi::extend (c->stride);
+  bump = c->index * wi::to_widest (c->stride);
 
   replace_mult_candidate (c, name, bump);
 }
@@ -2379,11 +2380,12 @@ count_candidates (slsr_cand_t c)
    candidates with the same increment, also record T_0 for subsequent use.  */
 
 static void
-record_increment (slsr_cand_t c, const max_wide_int &increment_in, bool is_phi_adjust)
+record_increment (slsr_cand_t c, const widest_int &increment_in,
+		  bool is_phi_adjust)
 {
   bool found = false;
   unsigned i;
-  max_wide_int increment = increment_in;
+  widest_int increment = increment_in;
 
   /* Treat increments that differ only in sign as identical so as to
      share initializers, unless we are generating pointer arithmetic.  */
@@ -2490,7 +2492,7 @@ record_phi_increments (slsr_cand_t basis, gimple phi)
 	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      max_wide_int diff = arg_cand->index - basis->index;
+	      widest_int diff = arg_cand->index - basis->index;
 	      record_increment (arg_cand, diff, PHI_ADJUST);
 	    }
 	}
@@ -2541,7 +2543,7 @@ record_increments (slsr_cand_t c)
    uses.  */
 
 static int
-phi_incr_cost (slsr_cand_t c, const max_wide_int &incr, gimple phi, int *savings)
+phi_incr_cost (slsr_cand_t c, const widest_int &incr, gimple phi, int *savings)
 {
   unsigned i;
   int cost = 0;
@@ -2566,7 +2568,7 @@ phi_incr_cost (slsr_cand_t c, const max_wide_int &incr, gimple phi, int *savings
 	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      max_wide_int diff = arg_cand->index - basis->index;
+	      widest_int diff = arg_cand->index - basis->index;
 
 	      if (incr == diff)
 		{
@@ -2631,10 +2633,10 @@ optimize_cands_for_speed_p (slsr_cand_t c)
 
 static int
 lowest_cost_path (int cost_in, int repl_savings, slsr_cand_t c,
-		  const max_wide_int &incr, bool count_phis)
+		  const widest_int &incr, bool count_phis)
 {
   int local_cost, sib_cost, savings = 0;
-  max_wide_int cand_incr = cand_abs_increment (c);
+  widest_int cand_incr = cand_abs_increment (c);
 
   if (cand_already_replaced (c))
     local_cost = cost_in;
@@ -2677,11 +2679,11 @@ lowest_cost_path (int cost_in, int repl_savings, slsr_cand_t c,
    would go dead.  */
 
 static int
-total_savings (int repl_savings, slsr_cand_t c, const max_wide_int &incr,
+total_savings (int repl_savings, slsr_cand_t c, const widest_int &incr,
 	       bool count_phis)
 {
   int savings = 0;
-  max_wide_int cand_incr = cand_abs_increment (c);
+  widest_int cand_incr = cand_abs_increment (c);
 
   if (incr == cand_incr && !cand_already_replaced (c))
     savings += repl_savings + c->dead_savings;
@@ -2885,7 +2887,7 @@ ncd_for_two_cands (basic_block bb1, basic_block bb2,
    candidates, return the earliest candidate in the block in *WHERE.  */
 
 static basic_block
-ncd_with_phi (slsr_cand_t c, const max_wide_int &incr, gimple phi,
+ncd_with_phi (slsr_cand_t c, const widest_int &incr, gimple phi,
 	      basic_block ncd, slsr_cand_t *where)
 {
   unsigned i;
@@ -2905,7 +2907,7 @@ ncd_with_phi (slsr_cand_t c, const max_wide_int &incr, gimple phi,
 	  else 
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      max_wide_int diff = arg_cand->index - basis->index;
+	      widest_int diff = arg_cand->index - basis->index;
 
 	      if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
 		ncd = ncd_for_two_cands (ncd, gimple_bb (arg_cand->cand_stmt),
@@ -2924,7 +2926,7 @@ ncd_with_phi (slsr_cand_t c, const max_wide_int &incr, gimple phi,
    return the earliest candidate in the block in *WHERE.  */
 
 static basic_block
-ncd_of_cand_and_phis (slsr_cand_t c, const max_wide_int &incr, slsr_cand_t *where)
+ncd_of_cand_and_phis (slsr_cand_t c, const widest_int &incr, slsr_cand_t *where)
 {
   basic_block ncd = NULL;
 
@@ -2949,7 +2951,7 @@ ncd_of_cand_and_phis (slsr_cand_t c, const max_wide_int &incr, slsr_cand_t *wher
    *WHERE.  */
 
 static basic_block
-nearest_common_dominator_for_cands (slsr_cand_t c, const max_wide_int &incr,
+nearest_common_dominator_for_cands (slsr_cand_t c, const widest_int &incr,
 				    slsr_cand_t *where)
 {
   basic_block sib_ncd = NULL, dep_ncd = NULL, this_ncd = NULL, ncd;
@@ -3025,7 +3027,7 @@ insert_initializers (slsr_cand_t c)
       slsr_cand_t where = NULL;
       gimple init_stmt;
       tree stride_type, new_name, incr_tree;
-      max_wide_int incr = incr_vec[i].incr;
+      widest_int incr = incr_vec[i].incr;
 
       if (!profitable_increment_p (i)
 	  || incr == 1
@@ -3117,7 +3119,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 	    {
 	      int j;
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      max_wide_int increment = arg_cand->index - basis->index;
+	      widest_int increment = arg_cand->index - basis->index;
 
 	      if (!address_arithmetic_p && wi::neg_p (increment))
 		increment = -increment;
@@ -3225,7 +3227,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
   tree orig_rhs1, orig_rhs2;
   tree rhs2;
   enum tree_code orig_code, repl_code;
-  max_wide_int cand_incr;
+  widest_int cand_incr;
 
   orig_code = gimple_assign_rhs_code (c->cand_stmt);
   orig_rhs1 = gimple_assign_rhs1 (c->cand_stmt);
@@ -3365,7 +3367,7 @@ replace_profitable_candidates (slsr_cand_t c)
 {
   if (!cand_already_replaced (c))
     {
-      max_wide_int increment = cand_abs_increment (c);
+      widest_int increment = cand_abs_increment (c);
       enum tree_code orig_code = gimple_assign_rhs_code (c->cand_stmt);
       int i;
 

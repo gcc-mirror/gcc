@@ -6520,7 +6520,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   enum machine_mode mode = VOIDmode;
   bool blkmode_bitfield = false;
   tree offset = size_zero_node;
-  addr_wide_int bit_offset = 0;
+  offset_int bit_offset = 0;
 
   /* First get the mode, signedness, and size.  We do this from just the
      outermost expression.  */
@@ -6581,7 +6581,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += wi::address (TREE_OPERAND (exp, 2));
+	  bit_offset += wi::to_offset (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -6596,7 +6596,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      break;
 
 	    offset = size_binop (PLUS_EXPR, offset, this_offset);
-	    bit_offset += wi::address (DECL_FIELD_BIT_OFFSET (field));
+	    bit_offset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 
 	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
 	  }
@@ -6649,7 +6649,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      tree off = TREE_OPERAND (exp, 1);
 	      if (!integer_zerop (off))
 		{
-		  addr_wide_int boff, coff = mem_ref_offset (exp);
+		  offset_int boff, coff = mem_ref_offset (exp);
 		  boff = wi::lshift (coff, (BITS_PER_UNIT == 8
 					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  bit_offset += boff;
@@ -6675,8 +6675,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      this conversion.  */
   if (TREE_CODE (offset) == INTEGER_CST)
     {
-      addr_wide_int tem = wi::sext (wi::address (offset),
-				    TYPE_PRECISION (sizetype));
+      offset_int tem = wi::sext (wi::to_offset (offset),
+				 TYPE_PRECISION (sizetype));
       tem = wi::lshift (tem, (BITS_PER_UNIT == 8
 			      ? 3 : exact_log2 (BITS_PER_UNIT)));
       tem += bit_offset;
@@ -6693,11 +6693,11 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
       if (wi::neg_p (bit_offset))
         {
-	  addr_wide_int mask
-	    = wi::mask <addr_wide_int> (BITS_PER_UNIT == 8
-					? 3 : exact_log2 (BITS_PER_UNIT),
-					false);
-	  addr_wide_int tem = bit_offset.and_not (mask);
+	  offset_int mask
+	    = wi::mask <offset_int> (BITS_PER_UNIT == 8
+				     ? 3 : exact_log2 (BITS_PER_UNIT),
+				     false);
+	  offset_int tem = bit_offset.and_not (mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;

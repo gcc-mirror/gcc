@@ -53,7 +53,7 @@ along with GCC; see the file COPYING3.  If not see
      multiply, division, shifts, comparisons, and operations that need
      overflow detected), the signedness must be specified separately.
 
-     2) addr_wide_int.  This is a fixed size representation that is
+     2) offset_int.  This is a fixed size representation that is
      guaranteed to be large enough to compute any bit or byte sized
      address calculation on the target.  Currently the value is 64 + 4
      bits rounded up to the next number even multiple of
@@ -70,17 +70,17 @@ along with GCC; see the file COPYING3.  If not see
      been no effort by the front ends to convert most addressing
      arithmetic to canonical types.
 
-     In the addr_wide_int, all numbers are represented as signed
-     numbers.  There are enough bits in the internal representation so
-     that no infomation is lost by representing them this way.
+     In the offset_int, all numbers are represented as signed numbers.
+     There are enough bits in the internal representation so that no
+     infomation is lost by representing them this way.
 
-     3) max_wide_int.  This representation is an approximation of
+     3) widest_int.  This representation is an approximation of
      infinite precision math.  However, it is not really infinite
      precision math as in the GMP library.  It is really finite
      precision math where the precision is 4 times the size of the
      largest integer that the target port can represent.
 
-     Like, the addr_wide_ints, all numbers are inherently signed.
+     Like the offset_ints, all numbers are inherently signed.
 
      There are several places in the GCC where this should/must be used:
 
@@ -96,14 +96,14 @@ along with GCC; see the file COPYING3.  If not see
        works with induction variables of many different types at the
        same time.  Because of this, it ends up doing many different
        calculations where the operands are not compatible types.  The
-       max_wide_int makes this easy, because it provides a field where
+       widest_int makes this easy, because it provides a field where
        nothing is lost when converting from any variable,
 
      * There are a small number of passes that currently use the
-       max_wide_int that should use the default.  These should be
+       widest_int that should use the default.  These should be
        changed.
 
-   There are surprising features of addr_wide_int and max_wide_int
+   There are surprising features of offset_int and widest_int
    that the users should be careful about:
 
      1) Shifts and rotations are just weird.  You have to specify a
@@ -117,7 +117,7 @@ along with GCC; see the file COPYING3.  If not see
      produce a different answer if the first product is larger than
      what can be represented in the input precision.
 
-   The addr_wide_int and the max_wide_int flavors are more expensive
+   The offset_int and the widest_int flavors are more expensive
    than the default wide int, so in addition to the caveats with these
    two, the default is the prefered representation.
 
@@ -130,7 +130,7 @@ along with GCC; see the file COPYING3.  If not see
 
    A wide_int contains three fields: the vector (VAL), precision and a
    length (LEN).  The length is the number of HWIs needed to
-   represent the value.  For the max_wide_int and the addr_wide_int,
+   represent the value.  For the widest_int and the offset_int,
    the precision is a constant that cannot be changed.  For the
    default wide_int, the precision is set from the constructor.
 
@@ -285,8 +285,8 @@ struct wide_int_storage;
   generic_wide_int < fixed_wide_int_storage <N> >
 
 typedef generic_wide_int <wide_int_storage> wide_int;
-typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) addr_wide_int;
-typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) max_wide_int;
+typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) offset_int;
+typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) widest_int;
 
 template <bool SE>
 struct wide_int_ref_storage;
@@ -365,7 +365,7 @@ namespace wi
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
   {
-    typedef max_wide_int result_type;
+    typedef widest_int result_type;
   };
 
   template <>
@@ -755,7 +755,7 @@ generic_wide_int <storage>::to_uhwi (unsigned int precision) const
 }
 
 /* TODO: The compiler is half converted from using HOST_WIDE_INT to
-   represent addresses to using addr_wide_int to represent addresses.
+   represent addresses to using offset_int to represent addresses.
    We use to_short_addr at the interface from new code to old,
    unconverted code.  */
 template <typename storage>

@@ -1788,7 +1788,7 @@ get_loop_location (struct loop *loop)
    I_BOUND times.  */
 
 void
-record_niter_bound (struct loop *loop, const max_wide_int &i_bound,
+record_niter_bound (struct loop *loop, const widest_int &i_bound,
 		    bool realistic, bool upper)
 {
   /* Update the bounds only when there is no previous estimation, or when the
@@ -1824,7 +1824,7 @@ record_niter_bound (struct loop *loop, const max_wide_int &i_bound,
 HOST_WIDE_INT
 get_estimated_loop_iterations_int (struct loop *loop)
 {
-  max_wide_int nit;
+  widest_int nit;
   HOST_WIDE_INT hwi_nit;
 
   if (!get_estimated_loop_iterations (loop, &nit))
@@ -1861,7 +1861,7 @@ max_stmt_executions_int (struct loop *loop)
    returns true.  */
 
 bool
-get_estimated_loop_iterations (struct loop *loop, max_wide_int *nit)
+get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
 {
   /* Even if the bound is not recorded, possibly we can derrive one from
      profile.  */
@@ -1885,7 +1885,7 @@ get_estimated_loop_iterations (struct loop *loop, max_wide_int *nit)
    false, otherwise returns true.  */
 
 bool
-get_max_loop_iterations (struct loop *loop, max_wide_int *nit)
+get_max_loop_iterations (struct loop *loop, widest_int *nit)
 {
   if (!loop->any_upper_bound)
     return false;
@@ -1901,7 +1901,7 @@ get_max_loop_iterations (struct loop *loop, max_wide_int *nit)
 HOST_WIDE_INT
 get_max_loop_iterations_int (struct loop *loop)
 {
-  max_wide_int nit;
+  widest_int nit;
   HOST_WIDE_INT hwi_nit;
 
   if (!get_max_loop_iterations (loop, &nit))

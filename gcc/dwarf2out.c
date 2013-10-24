@@ -10304,7 +10304,7 @@ simple_type_size_in_bits (const_tree type)
 
 /* Similarly, but return a wide_int instead of UHWI.  */
 
-static inline addr_wide_int
+static inline offset_int
 wide_int_type_size_in_bits (const_tree type)
 {
   if (TREE_CODE (type) == ERROR_MARK)
@@ -10312,7 +10312,7 @@ wide_int_type_size_in_bits (const_tree type)
   else if (TYPE_SIZE (type) == NULL_TREE)
     return 0;
   else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-    return wi::address (TYPE_SIZE (type));
+    return wi::to_offset (TYPE_SIZE (type));
   else
     return TYPE_ALIGN (type);
 }
@@ -14687,8 +14687,8 @@ simple_decl_align_in_bits (const_tree decl)
 
 /* Return the result of rounding T up to ALIGN.  */
 
-static inline addr_wide_int
-round_up_to_align (addr_wide_int t, unsigned int align)
+static inline offset_int
+round_up_to_align (offset_int t, unsigned int align)
 {
   t += align - 1;
   t = wi::udiv_trunc (t, align);
@@ -14706,9 +14706,9 @@ round_up_to_align (addr_wide_int t, unsigned int align)
 static HOST_WIDE_INT
 field_byte_offset (const_tree decl)
 {
-  addr_wide_int object_offset_in_bits;
-  addr_wide_int object_offset_in_bytes;
-  addr_wide_int bitpos_int;
+  offset_int object_offset_in_bits;
+  offset_int object_offset_in_bytes;
+  offset_int bitpos_int;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
@@ -14721,18 +14721,18 @@ field_byte_offset (const_tree decl)
   if (TREE_CODE (bit_position (decl)) != INTEGER_CST)
     return 0;
 
-  bitpos_int = wi::address (bit_position (decl));
+  bitpos_int = wi::to_offset (bit_position (decl));
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS)
     {
       tree type;
       tree field_size_tree;
-      addr_wide_int deepest_bitpos;
-      addr_wide_int field_size_in_bits;
+      offset_int deepest_bitpos;
+      offset_int field_size_in_bits;
       unsigned int type_align_in_bits;
       unsigned int decl_align_in_bits;
-      addr_wide_int type_size_in_bits;
+      offset_int type_size_in_bits;
 
       type = field_type (decl);
       type_size_in_bits = wide_int_type_size_in_bits (type);
@@ -14747,7 +14747,7 @@ field_byte_offset (const_tree decl)
 
       /* If the size of the field is not constant, use the type size.  */
       if (TREE_CODE (field_size_tree) == INTEGER_CST)
-	field_size_in_bits = wi::address (field_size_tree);
+	field_size_in_bits = wi::to_offset (field_size_tree);
       else
 	field_size_in_bits = type_size_in_bits;
 

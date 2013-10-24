@@ -3012,7 +3012,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      addr_wide_int soffset = addr_wide_int::from (offset, SIGNED);
+      offset_int soffset = offset_int::from (offset, SIGNED);
       if (!wi::fits_shwi_p (soffset))
 	rhsoffset = UNKNOWN_OFFSET;
       else

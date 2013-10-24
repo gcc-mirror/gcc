@@ -812,7 +812,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  addr_wide_int off = mem_ref_offset (lhs);
+	  offset_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -903,7 +903,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  addr_wide_int off = mem_ref_offset (rhs);
+	  offset_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)

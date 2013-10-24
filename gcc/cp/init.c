@@ -2242,10 +2242,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* For arrays, a bounds checks on the NELTS parameter. */
   tree outer_nelts_check = NULL_TREE;
   bool outer_nelts_from_type = false;
-  addr_wide_int inner_nelts_count = 1;
+  offset_int inner_nelts_count = 1;
   tree alloc_call, alloc_expr;
   /* Size of the inner array elements. */
-  addr_wide_int inner_size;
+  offset_int inner_size;
   /* The address returned by the call to "operator new".  This node is
      a VAR_DECL and is therefore reusable.  */
   tree alloc_node;
@@ -2300,9 +2300,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
 	  bool overflow;
-	  addr_wide_int result = wi::mul (wi::address (inner_nelts_cst),
-					  inner_nelts_count, SIGNED,
-					  &overflow);
+	  offset_int result = wi::mul (wi::to_offset (inner_nelts_cst),
+				       inner_nelts_count, SIGNED, &overflow);
 	  if (overflow)
 	    {
 	      if (complain & tf_error)
@@ -2404,10 +2403,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       /* Maximum available size in bytes.  Half of the address space
 	 minus the cookie size.  */
-      addr_wide_int max_size
-	= wi::set_bit_in_zero <addr_wide_int> (TYPE_PRECISION (sizetype) - 1);
+      offset_int max_size
+	= wi::set_bit_in_zero <offset_int> (TYPE_PRECISION (sizetype) - 1);
       /* Maximum number of outer elements which can be allocated. */
-      addr_wide_int max_outer_nelts;
+      offset_int max_outer_nelts;
       tree max_outer_nelts_tree;
 
       gcc_assert (TREE_CODE (size) == INTEGER_CST);
@@ -2417,9 +2416,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Unconditionally subtract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
-      max_size -= wi::address (cookie_size);
+      max_size -= wi::to_offset (cookie_size);
       bool overflow;
-      inner_size = wi::mul (wi::address (size), inner_nelts_count, SIGNED,
+      inner_size = wi::mul (wi::to_offset (size), inner_nelts_count, SIGNED,
 			    &overflow);
       if (overflow || wi::gtu_p (inner_size, max_size))
 	{
