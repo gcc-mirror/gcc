@@ -1,3 +1,9 @@
+2013-10-17  Ian Bolton  <ian.bolton@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_reload_class):
+	Special case reload SP+C into none GENERAL_REGS.
+
 2013-10-24  Michael Matz  <matz@suse.de>
 
 	* gengtype.c (is_file_equal): Check that files will be same
