@@ -1,3 +1,8 @@
+2013-08-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* cgraph.c (cgraph_fnver_htab): Move GTY((...)) to be before htab_t.
+	Change param_is to use the struct and not the pointer to the struct.
+
 2013-10-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c (dummy_object, gimplify_va_arg_expr): Move to gimplify.c.
