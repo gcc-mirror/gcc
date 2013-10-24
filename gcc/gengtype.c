@@ -674,7 +674,7 @@ resolve_typedef (const char *s, struct fileloc *pos)
 
 type_p
 new_structure (const char *name, enum typekind kind, struct fileloc *pos,
-	       pair_p fields, options_p o)
+	       pair_p fields, options_p o, type_p base_class)
 {
   type_p si;
   type_p s = NULL;
@@ -748,6 +748,7 @@ new_structure (const char *name, enum typekind kind, struct fileloc *pos,
   s->u.s.bitmap = bitmap;
   if (s->u.s.lang_struct)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
+  s->u.s.base_class = base_class;
 
   return s;
 }
@@ -976,7 +977,7 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
     create_string_option (union_fields->opt, "tag", "1");
   union_type = 
     new_structure (xasprintf ("%s_%d", "fake_union", id++), TYPE_UNION,
-                   &lexer_line, union_fields, NULL);
+                   &lexer_line, union_fields, NULL, NULL);
 
   /* Create the field and give it the new fake union type.  Add a "desc"
      tag that specifies the condition under which the field is valid.  */
@@ -1167,7 +1168,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    create_string_option (nodot, "tag", note_insn_name[c]);
       }
     note_union_tp = new_structure ("rtx_def_note_subunion", TYPE_UNION,
-				   &lexer_line, note_flds, NULL);
+				   &lexer_line, note_flds, NULL, NULL);
   }
   /* Create a type to represent the various forms of SYMBOL_REF_DATA.  */
   {
@@ -1177,7 +1178,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
     sym_flds = create_field (sym_flds, constant_tp, "rt_constant");
     sym_flds->opt = create_string_option (nodot, "tag", "1");
     symbol_union_tp = new_structure ("rtx_def_symbol_subunion", TYPE_UNION,
-				     &lexer_line, sym_flds, NULL);
+				     &lexer_line, sym_flds, NULL, NULL);
   }
   for (i = 0; i < NUM_RTX_CODE; i++)
     {
@@ -1319,7 +1320,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);
       substruct = new_structure (sname, TYPE_STRUCT, &lexer_line, subfields,
-				 NULL);
+				 NULL, NULL);
 
       ftag = xstrdup (rtx_name[i]);
       for (nmindex = 0; nmindex < strlen (ftag); nmindex++)
@@ -1328,7 +1329,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       flds->opt = create_string_option (nodot, "tag", ftag);
     }
   return new_structure ("rtx_def_subunion", TYPE_UNION, &lexer_line, flds,
-			nodot);
+			nodot, NULL);
 }
 
 /* Handle `special("tree_exp")'.  This is a special case for
@@ -1358,7 +1359,7 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
   flds->opt = create_string_option (flds->opt, "default", "");
 
   return new_structure ("tree_exp_subunion", TYPE_UNION, &lexer_line, flds,
-			nodot);
+			nodot, NULL);
 }
 
 /* Perform any special processing on a type T, about to become the type
