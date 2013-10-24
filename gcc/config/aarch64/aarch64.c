@@ -4263,6 +4263,24 @@ aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
       && !aarch64_simd_imm_scalar_p (x, GET_MODE (x)))
     return NO_REGS;
 
+  /* Register eliminiation can result in a request for
+     SP+constant->FP_REGS.  We cannot support such operations which
+     use SP as source and an FP_REG as destination, so reject out
+     right now.  */
+  if (! reg_class_subset_p (regclass, GENERAL_REGS) && GET_CODE (x) == PLUS)
+    {
+      rtx lhs = XEXP (x, 0);
+
+      /* Look through a possible SUBREG introduced by ILP32.  */
+      if (GET_CODE (lhs) == SUBREG)
+	lhs = SUBREG_REG (lhs);
+
+      gcc_assert (REG_P (lhs));
+      gcc_assert (reg_class_subset_p (REGNO_REG_CLASS (REGNO (lhs)),
+				      POINTER_REGS));
+      return NO_REGS;
+    }
+
   return regclass;
 }
 
