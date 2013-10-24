@@ -1,3 +1,8 @@
+2013-10-24  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p ): Check both
+	[reg+mult*reg] and [mult*reg] to determine if multiplier is allowed.
+
 2013-10-24  Cong Hou  <congh@google.com>
 
 	* convert.c (convert_to_real): Guard those unsafe math function
