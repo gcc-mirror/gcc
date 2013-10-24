@@ -1,3 +1,14 @@
+2013-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c (dummy_object, gimplify_va_arg_expr): Move to gimplify.c.
+	* gimplify.c (build_va_arg_indirect_ref, std_gimplify_va_arg_expr):
+	Move to targhooks.c.
+	(dummy_object, gimplify_va_arg_expr): Relocate from builtins.c.
+	* targhooks.c (build_va_arg_indirect_ref, std_gimplify_va_arg_expr):
+	Relocate from gimplify.c.
+	* targhooks.h: Add 2 prototypes.
+	* tree.h: Delete 2 prototypes.
+
 2013-10-24  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
 
 	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p ): Check both

@@ -9258,118 +9258,107 @@ force_gimple_operand_gsi (gimple_stmt_iterator *gsi, tree expr,
 				     var, before, m);
 }
 
-#ifndef PAD_VARARGS_DOWN
-#define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
-#endif
+/* Return a dummy expression of type TYPE in order to keep going after an
+   error.  */
 
-/* Build an indirect-ref expression over the given TREE, which represents a
-   piece of a va_arg() expansion.  */
-tree
-build_va_arg_indirect_ref (tree addr)
+static tree
+dummy_object (tree type)
 {
-  addr = build_simple_mem_ref_loc (EXPR_LOCATION (addr), addr);
-
-  if (flag_mudflap) /* Don't instrument va_arg INDIRECT_REF.  */
-    mf_mark (addr);
-
-  return addr;
+  tree t = build_int_cst (build_pointer_type (type), 0);
+  return build2 (MEM_REF, type, t, t);
 }
 
-/* The "standard" implementation of va_arg: read the value from the
-   current (padded) address and increment by the (padded) size.  */
+/* Gimplify __builtin_va_arg, aka VA_ARG_EXPR, which is not really a
+   builtin function, but a very special sort of operator.  */
 
-tree
-std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
-			  gimple_seq *post_p)
+enum gimplify_status
+gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
-  tree addr, t, type_size, rounded_size, valist_tmp;
-  unsigned HOST_WIDE_INT align, boundary;
-  bool indirect;
+  tree promoted_type, have_va_type;
+  tree valist = TREE_OPERAND (*expr_p, 0);
+  tree type = TREE_TYPE (*expr_p);
+  tree t;
+  location_t loc = EXPR_LOCATION (*expr_p);
 
-#ifdef ARGS_GROW_DOWNWARD
-  /* All of the alignment and movement below is for args-grow-up machines.
-     As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
-     implement their own specialized gimplify_va_arg_expr routines.  */
-  gcc_unreachable ();
-#endif
+  /* Verify that valist is of the proper type.  */
+  have_va_type = TREE_TYPE (valist);
+  if (have_va_type == error_mark_node)
+    return GS_ERROR;
+  have_va_type = targetm.canonical_va_list_type (have_va_type);
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
-  if (indirect)
-    type = build_pointer_type (type);
-
-  align = PARM_BOUNDARY / BITS_PER_UNIT;
-  boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
-
-  /* When we align parameter on stack for caller, if the parameter
-     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
-     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
-     here with caller.  */
-  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
-    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
-
-  boundary /= BITS_PER_UNIT;
-
-  /* Hoist the valist value into a temporary for the moment.  */
-  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
-
-  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
-     requires greater alignment, we must perform dynamic alignment.  */
-  if (boundary > align
-      && !integer_zerop (TYPE_SIZE (type)))
+  if (have_va_type == NULL_TREE)
     {
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
+      error_at (loc, "first argument to %<va_arg%> not of type %<va_list%>");
+      return GS_ERROR;
+    }
+
+  /* Generate a diagnostic for requesting data of a type that cannot
+     be passed through `...' due to type promotion at the call site.  */
+  if ((promoted_type = lang_hooks.types.type_promotes_to (type))
+	   != type)
+    {
+      static bool gave_help;
+      bool warned;
+
+      /* Unfortunately, this is merely undefined, rather than a constraint
+	 violation, so we cannot make this an error.  If this call is never
+	 executed, the program is still strictly conforming.  */
+      warned = warning_at (loc, 0,
+	  		   "%qT is promoted to %qT when passed through %<...%>",
+			   type, promoted_type);
+      if (!gave_help && warned)
+	{
+	  gave_help = true;
+	  inform (loc, "(so you should pass %qT not %qT to %<va_arg%>)",
+		  promoted_type, type);
+	}
+
+      /* We can, however, treat "undefined" any way we please.
+	 Call abort to encourage the user to fix the program.  */
+      if (warned)
+	inform (loc, "if this code is reached, the program will abort");
+      /* Before the abort, allow the evaluation of the va_list
+	 expression to exit or longjmp.  */
+      gimplify_and_add (valist, pre_p);
+      t = build_call_expr_loc (loc,
+			       builtin_decl_implicit (BUILT_IN_TRAP), 0);
       gimplify_and_add (t, pre_p);
 
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  fold_build2 (BIT_AND_EXPR, TREE_TYPE (valist),
-			       valist_tmp,
-			       build_int_cst (TREE_TYPE (valist), -boundary)));
-      gimplify_and_add (t, pre_p);
+      /* This is dead code, but go ahead and finish so that the
+	 mode of the result comes out right.  */
+      *expr_p = dummy_object (type);
+      return GS_ALL_DONE;
     }
   else
-    boundary = align;
-
-  /* If the actual alignment is less than the alignment of the type,
-     adjust the type accordingly so that we don't assume strict alignment
-     when dereferencing the pointer.  */
-  boundary *= BITS_PER_UNIT;
-  if (boundary < TYPE_ALIGN (type))
     {
-      type = build_variant_type_copy (type);
-      TYPE_ALIGN (type) = boundary;
+      /* Make it easier for the backends by protecting the valist argument
+	 from multiple evaluations.  */
+      if (TREE_CODE (have_va_type) == ARRAY_TYPE)
+	{
+	  /* For this case, the backends will be expecting a pointer to
+	     TREE_TYPE (abi), but it's possible we've
+	     actually been given an array (an actual TARGET_FN_ABI_VA_LIST).
+	     So fix it.  */
+	  if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
+	    {
+	      tree p1 = build_pointer_type (TREE_TYPE (have_va_type));
+	      valist = fold_convert_loc (loc, p1,
+					 build_fold_addr_expr_loc (loc, valist));
+	    }
+
+	  gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
+	}
+      else
+	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
+
+      if (!targetm.gimplify_va_arg_expr)
+	/* FIXME: Once most targets are converted we should merely
+	   assert this is non-null.  */
+	return GS_ALL_DONE;
+
+      *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
+      return GS_OK;
     }
-
-  /* Compute the rounded size of the type.  */
-  type_size = size_in_bytes (type);
-  rounded_size = round_up (type_size, align);
-
-  /* Reduce rounded_size so it's sharable with the postqueue.  */
-  gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
-
-  /* Get AP.  */
-  addr = valist_tmp;
-  if (PAD_VARARGS_DOWN && !integer_zerop (rounded_size))
-    {
-      /* Small args are padded downward.  */
-      t = fold_build2_loc (input_location, GT_EXPR, sizetype,
-		       rounded_size, size_int (align));
-      t = fold_build3 (COND_EXPR, sizetype, t, size_zero_node,
-		       size_binop (MINUS_EXPR, rounded_size, type_size));
-      addr = fold_build_pointer_plus (addr, t);
-    }
-
-  /* Compute new value for AP.  */
-  t = fold_build_pointer_plus (valist_tmp, rounded_size);
-  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-  gimplify_and_add (t, pre_p);
-
-  addr = fold_convert (build_pointer_type (type), addr);
-
-  if (indirect)
-    addr = build_va_arg_indirect_ref (addr);
-
-  return build_va_arg_indirect_ref (addr);
 }
 
 #include "gt-gimplify.h"
