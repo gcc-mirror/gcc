@@ -1,3 +1,8 @@
+2013-10-24  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Combine quoted strings in
+	comments.
+
 2013-10-24  Cong Hou  <congh@google.com>
 
 	* gcc.c-torture/execute/20030125-1.c: Update.
