@@ -707,6 +707,29 @@ if test "$enable_upc_backtrace" = yes; then
     [Define to 1 if UPC backtrace is enabled.])
 fi
 
+# Check for user specified GDB
+AC_ARG_WITH(upc-backtrace-gdb,
+  [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
+  [specify which GDB to use for UPC backtrace support
+  [default='gdb']])],
+[
+  upc_backtrace_gdb=$withval
+],
+[
+  upc_backtrace_gdb=gdb
+])
+AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
+AC_MSG_CHECKING([for UPC backtrace GDB to use])
+if test -n "$PATH_TO_GDB"; then
+  AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
+    [Define path to preferred GDB for backtrace])
+  AC_MSG_RESULT([$PATH_TO_GDB])
+  upc_backtrace_gdb_available=yes
+else
+  upc_backtrace_gdb_available=no
+  AC_MSG_RESULT(no)
+fi
+
 AC_MSG_CHECKING([for UPC backtrace GDB support])
 AC_ARG_ENABLE(upc-backtrace-gdb,
 [AS_HELP_STRING([--enable-upc-backtrace-gdb],
@@ -714,42 +737,26 @@ AC_ARG_ENABLE(upc-backtrace-gdb,
 		[default='yes']])],
 [
   case "$enableval" in
-    yes | no) ;;
+    yes | no)
+      if test "$enableval" = yes &&
+         test "$upc_backtrace_gdb_available" = no; then
+        AC_MSG_ERROR(
+          [Cannot find gdb. Set the correct gdb path with
+           --with-upc-backtrace-gdb option or disable gdb backtrace with
+           --disable-upc-backtrace-gdb option.])
+      fi
+      ;;
     *)
       AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no])
   esac
 ],
 [
-  enable_upc_backtrace_gdb=yes
+  enable_upc_backtrace_gdb=$upc_backtrace_gdb_available
 ])
 AC_MSG_RESULT([$enable_upc_backtrace_gdb])
 if test "$enable_upc_backtrace_gdb" = yes; then
   AC_DEFINE(HAVE_UPC_BACKTRACE_GDB, 1,
     [Define to 1 if UPC backtrace with GDB is enabled.])
-
-  # Check for user specified GDB
-  AC_MSG_CHECKING([for UPC backtrace GDB to use])
-  AC_ARG_WITH(upc-backtrace-gdb,
-    [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
-    [specify which GDB to use for UPC backtrace support
-    [default='gdb']])],
-  [
-    upc_backtrace_gdb=$withval
-  ],
-  [
-    upc_backtrace_gdb=gdb
-  ])
-  AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
-  if test -n "$PATH_TO_GDB"; then
-    AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
-      [Define path to preferred GDB for backtrace])
-  else
-    AC_MSG_ERROR(
-      [cannot find gdb. Try the correct --with-upc-backtrace-gdb
-       option or disable GDB for backtrace with
-       --disable-upc-backtrace option)])
-  fi
-  AC_MSG_RESULT([$PATH_TO_GDB])
 fi
 
 AC_MSG_CHECKING([for UPC backtrace signal support])
@@ -818,6 +825,8 @@ if test "$enable_upc_backtrace" = yes; then
       -o conftest > /dev/null 2>&1
     if $export_sym_check conftest | grep foobar > /dev/null; then
       have_rdynamic=yes
+    else
+      have_rdynamic=no
     fi
   fi
   AC_MSG_RESULT([$have_rdynamic])

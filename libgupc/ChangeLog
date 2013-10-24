@@ -1,3 +1,13 @@
+2013-10-23  Nenad Vukicevic <nenad@intrepid.com>
+
+	* configure.ac: Rework checking of GDB availability for backtracing.
+	Usage of GDB backtracing is enabled only if GDB was found or the
+	path was specified by the user.  Change was needed as Mac OS X 
+	10.9 does not have gdb installed.
+	Additional fix for printing correct result if "-rdynamic" option
+	is available.
+	* configure: Re-generate.
+
 2013-10-04  Nenad Vukicevic <nenad@intrepid.com>
 
 	Add UPC backtrace to Portals4 runtime.

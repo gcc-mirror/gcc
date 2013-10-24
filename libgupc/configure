@@ -854,8 +854,8 @@ enable_upc_runtime_debug
 enable_upc_link_script
 with_upc_runtime_tree_fanout
 enable_upc_backtrace
-enable_upc_backtrace_gdb
 with_upc_backtrace_gdb
+enable_upc_backtrace_gdb
 enable_upc_backtrace_signal
 with_upc_backtrace_signal
 enable_upc_gum_debug
@@ -15210,46 +15210,20 @@ $as_echo "#define HAVE_UPC_BACKTRACE 1" >>confdefs.h
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB support" >&5
-$as_echo_n "checking for UPC backtrace GDB support... " >&6; }
-# Check whether --enable-upc-backtrace-gdb was given.
-if test "${enable_upc_backtrace_gdb+set}" = set; then :
-  enableval=$enable_upc_backtrace_gdb;
-  case "$enableval" in
-    yes | no) ;;
-    *)
-      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no" "$LINENO" 5
-  esac
-
-else
-
-  enable_upc_backtrace_gdb=yes
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_gdb" >&5
-$as_echo "$enable_upc_backtrace_gdb" >&6; }
-if test "$enable_upc_backtrace_gdb" = yes; then
-
-$as_echo "#define HAVE_UPC_BACKTRACE_GDB 1" >>confdefs.h
-
-
-  # Check for user specified GDB
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB to use" >&5
-$as_echo_n "checking for UPC backtrace GDB to use... " >&6; }
+# Check for user specified GDB
 
 # Check whether --with-upc-backtrace-gdb was given.
 if test "${with_upc_backtrace_gdb+set}" = set; then :
   withval=$with_upc_backtrace_gdb;
-    upc_backtrace_gdb=$withval
+  upc_backtrace_gdb=$withval
 
 else
 
-    upc_backtrace_gdb=gdb
+  upc_backtrace_gdb=gdb
 
 fi
 
-  for ac_prog in $GDB $upc_backtrace_gdb
+for ac_prog in $GDB $upc_backtrace_gdb
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -15295,19 +15269,53 @@ fi
   test -n "$PATH_TO_GDB" && break
 done
 
-  if test -n "$PATH_TO_GDB"; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB to use" >&5
+$as_echo_n "checking for UPC backtrace GDB to use... " >&6; }
+if test -n "$PATH_TO_GDB"; then
 
 cat >>confdefs.h <<_ACEOF
 #define GUPCR_BACKTRACE_GDB "$PATH_TO_GDB"
 _ACEOF
 
-  else
-    as_fn_error "cannot find gdb. Try the correct --with-upc-backtrace-gdb
-       option or disable GDB for backtrace with
-       --disable-upc-backtrace option)" "$LINENO" 5
-  fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
 $as_echo "$PATH_TO_GDB" >&6; }
+  upc_backtrace_gdb_available=yes
+else
+  upc_backtrace_gdb_available=no
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"none\"" >&5
+$as_echo "\"none\"" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB support" >&5
+$as_echo_n "checking for UPC backtrace GDB support... " >&6; }
+# Check whether --enable-upc-backtrace-gdb was given.
+if test "${enable_upc_backtrace_gdb+set}" = set; then :
+  enableval=$enable_upc_backtrace_gdb;
+  case "$enableval" in
+    yes | no)
+      if test "$enableval" = yes &&
+         test "$upc_backtrace_gdb_available" = no; then
+        as_fn_error "Cannot find gdb. Set the correct gdb path with
+           --with-upc-backtrace-gdb option or disable gdb backtrace with
+           --disable-upc-backtrace-gdb option." "$LINENO" 5
+      fi
+      ;;
+    *)
+      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no" "$LINENO" 5
+  esac
+
+else
+
+  enable_upc_backtrace_gdb=$upc_backtrace_gdb_available
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace_gdb" >&5
+$as_echo "$enable_upc_backtrace_gdb" >&6; }
+if test "$enable_upc_backtrace_gdb" = yes; then
+
+$as_echo "#define HAVE_UPC_BACKTRACE_GDB 1" >>confdefs.h
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace signal support" >&5
@@ -15388,6 +15396,8 @@ $as_echo_n "checking for -rdynamic... " >&6; }
       -o conftest > /dev/null 2>&1
     if $export_sym_check conftest | grep foobar > /dev/null; then
       have_rdynamic=yes
+    else
+      have_rdynamic=no
     fi
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
