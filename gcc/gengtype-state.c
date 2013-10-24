@@ -957,6 +957,7 @@ state_writer::write_state_struct_type (type_p current)
 {
   write_state_struct_union_type (current, "struct");
   write_state_type (current->u.s.lang_struct);
+  write_state_type (current->u.s.base_class);
 }
 
 /* Write a GTY user-defined struct type.  */
@@ -1613,6 +1614,7 @@ read_state_struct_type (type_p type)
       read_state_options (&(type->u.s.opt));
       read_state_lang_bitmap (&(type->u.s.bitmap));
       read_state_type (&(type->u.s.lang_struct));
+      read_state_type (&(type->u.s.base_class));
     }
   else
     {

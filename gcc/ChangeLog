@@ -1,3 +1,22 @@
+2013-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (require_without_advance): New.
+	(type): For GTY-marked types that are not GTY((user)), parse any
+	base classes, requiring them to be single-inheritance, and not
+	be templates.  For non-GTY-marked types and GTY((user)),
+	continue to skip over any C++ inheritance specification.
+	* gengtype-state.c (state_writer::write_state_struct_type):
+	Write base class of type (if any).
+	(read_state_struct_type): Read base class of type (if any).
+	* gengtype.c (new_structure): Add a "base_class" parameter.
+	(create_optional_field_): Update for new parameter to
+	new_structure.
+	(adjust_field_rtx_def): Likewise.
+	(adjust_field_tree_exp): Likewise.
+	* gengtype.h (struct type): Add "base_class" field to the s
+	union field.
+	(new_structure): Add "base" parameter.
+
 2013-10-23  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/57756
