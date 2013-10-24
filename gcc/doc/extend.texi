@@ -15473,6 +15473,7 @@ for further explanation.
 * Visibility Pragmas::
 * Push/Pop Macro Pragmas::
 * Function Specific Option Pragmas::
+* Loop-Specific Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -15994,6 +15995,48 @@ on the command line.
 The @samp{#pragma GCC reset_options} pragma is not implemented in GCC
 versions earlier than 4.4.
 @end table
+
+@node Loop-Specific Pragmas
+@subsection Loop-Specific Pragmas
+
+@table @code
+@item #pragma GCC ivdep
+@cindex pragma GCC ivdep
+@end table
+
+With this pragma, the programmer asserts that there are no loop-carried
+dependencies which would prevent that consecutive iterations of
+the following loop can be executed concurrently with SIMD
+(single instruction multiple data) instructions.
+
+For example, the compiler can only unconditionally vectorize the following
+loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC ivdep
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
+@}
+@end smallexample
+
+@noindent
+In this example, using the @code{restrict} qualifier had the same
+effect. In the following example, that would not be possible. Assume
+@math{k < -m} or @math{k >= m}. Only with the pragma, the compiler knows
+that it can unconditionally vectorize the following loop:
+
+@smallexample
+void ignore_vec_dep (int *a, int k, int c, int m)
+@{
+#pragma GCC ivdep
+  for (int i = 0; i < m; i++)
+    a[i] = a[i + k] * c;
+@}
+@end smallexample
+
 
 @node Unnamed Fields
 @section Unnamed struct/union fields within structs/unions

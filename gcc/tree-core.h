@@ -647,6 +647,10 @@ enum tree_node_kind {
   all_kinds
 };
 
+enum annot_expr_kind {
+  annot_expr_ivdep_kind
+};
+
 
 /*---------------------------------------------------------------------------
                                 Type definitions

@@ -1159,7 +1159,7 @@ static void c_parser_if_statement (c_parser *);
 static void c_parser_switch_statement (c_parser *);
 static void c_parser_while_statement (c_parser *);
 static void c_parser_do_statement (c_parser *);
-static void c_parser_for_statement (c_parser *);
+static void c_parser_for_statement (c_parser *, bool);
 static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
 static tree c_parser_asm_goto_operands (c_parser *);
@@ -4585,7 +4585,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	  c_parser_do_statement (parser);
 	  break;
 	case RID_FOR:
-	  c_parser_for_statement (parser);
+	  c_parser_for_statement (parser, false);
 	  break;
 	case RID_GOTO:
 	  c_parser_consume_token (parser);
@@ -5038,7 +5038,7 @@ c_parser_do_statement (c_parser *parser)
 */
 
 static void
-c_parser_for_statement (c_parser *parser)
+c_parser_for_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, incr, save_break, save_cont, body;
   /* The following are only used when parsing an ObjC foreach statement.  */
@@ -5144,8 +5144,17 @@ c_parser_for_statement (c_parser *parser)
 	{
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      c_parser_consume_token (parser);
-	      cond = NULL_TREE;
+	      if (ivdep)
+		{
+		  c_parser_error (parser, "missing loop condition in loop with "
+				  "%<GCC ivdep%> pragma");
+		  cond = error_mark_node;
+		}
+	      else
+		{
+		  c_parser_consume_token (parser);
+		  cond = NULL_TREE;
+		}
 	    }
 	  else
 	    {
@@ -5159,6 +5168,10 @@ c_parser_for_statement (c_parser *parser)
 	      c_parser_skip_until_found (parser, CPP_SEMICOLON,
 					 "expected %<;%>");
 	    }
+	  if (ivdep && cond != error_mark_node)
+	    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+			   build_int_cst (integer_type_node,
+			   annot_expr_ivdep_kind));
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is
@@ -9085,6 +9098,16 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
 
     case PRAGMA_OMP_DECLARE_REDUCTION:
       c_parser_omp_declare (parser, context);
+      return false;
+    case PRAGMA_IVDEP:
+      c_parser_consume_pragma (parser);
+      c_parser_skip_to_pragma_eol (parser);
+      if (!c_parser_next_token_is_keyword (parser, RID_FOR))
+	{
+	  c_parser_error (parser, "for statement expected");
+	  return false;
+	}
+      c_parser_for_statement (parser, true);
       return false;
 
     case PRAGMA_GCC_PCH_PREPROCESS:
