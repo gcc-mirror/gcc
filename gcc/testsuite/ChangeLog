@@ -1,3 +1,7 @@
+2013-10-24  Cong Hou  <congh@google.com>
+
+	* gcc.c-torture/execute/20030125-1.c: Update.
+
 2013-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44646

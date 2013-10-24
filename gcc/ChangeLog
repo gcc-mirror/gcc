@@ -1,3 +1,9 @@
+2013-10-24  Cong Hou  <congh@google.com>
+
+	* convert.c (convert_to_real): Guard those unsafe math function
+	convertions with flag_unsafe_math_optimizations.  Handle sqrt()
+	specially. 
+
 2013-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 	
 	PR ipa/58712

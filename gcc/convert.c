@@ -135,16 +135,19 @@ convert_to_real (tree type, tree expr)
  	  CASE_MATHFN (COS)
  	  CASE_MATHFN (ERF)
  	  CASE_MATHFN (ERFC)
- 	  CASE_MATHFN (FABS)
 	  CASE_MATHFN (LOG)
 	  CASE_MATHFN (LOG10)
 	  CASE_MATHFN (LOG2)
  	  CASE_MATHFN (LOG1P)
- 	  CASE_MATHFN (LOGB)
  	  CASE_MATHFN (SIN)
-	  CASE_MATHFN (SQRT)
  	  CASE_MATHFN (TAN)
  	  CASE_MATHFN (TANH)
+	    /* The above functions are not safe to do this conversion.  */
+	    if (!flag_unsafe_math_optimizations)
+	      break;
+	  CASE_MATHFN (SQRT)
+	  CASE_MATHFN (FABS)
+	  CASE_MATHFN (LOGB)
 #undef CASE_MATHFN
 	    {
 	      tree arg0 = strip_float_extensions (CALL_EXPR_ARG (expr, 0));
@@ -155,13 +158,44 @@ convert_to_real (tree type, tree expr)
 	      if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
 		newtype = TREE_TYPE (arg0);
 
+	      /* We consider to convert
+
+		     (T1) sqrtT2 ((T2) exprT3)
+		 to
+		     (T1) sqrtT4 ((T4) exprT3)
+
+		  , where T1 is TYPE, T2 is ITYPE, T3 is TREE_TYPE (ARG0),
+		 and T4 is NEWTYPE.  All those types are of floating point types.
+		 T4 (NEWTYPE) should be narrower than T2 (ITYPE). This conversion
+		 is safe only if P1 >= P2*2+2, where P1 and P2 are precisions of
+		 T2 and T4.  See the following URL for a reference:
+		 http://stackoverflow.com/questions/9235456/determining-
+                 floating-point-square-root
+		 */
+	      if ((fcode == BUILT_IN_SQRT || fcode == BUILT_IN_SQRTL)
+		  && !flag_unsafe_math_optimizations)
+		{
+		  /* The following conversion is unsafe even the precision condition
+		     below is satisfied:
+
+		     (float) sqrtl ((long double) double_val) -> (float) sqrt (double_val)
+		    */
+		  if (TYPE_MODE (type) != TYPE_MODE (newtype))
+		    break;
+
+		  int p1 = REAL_MODE_FORMAT (TYPE_MODE (itype))->p;
+		  int p2 = REAL_MODE_FORMAT (TYPE_MODE (newtype))->p;
+		  if (p1 < p2 * 2 + 2)
+		    break;
+		}
+
 	      /* Be careful about integer to fp conversions.
 		 These may overflow still.  */
 	      if (FLOAT_TYPE_P (TREE_TYPE (arg0))
 		  && TYPE_PRECISION (newtype) < TYPE_PRECISION (itype)
 		  && (TYPE_MODE (newtype) == TYPE_MODE (double_type_node)
 		      || TYPE_MODE (newtype) == TYPE_MODE (float_type_node)))
-	        {
+		{
 		  tree fn = mathfn_built_in (newtype, fcode);
 
 		  if (fn)
