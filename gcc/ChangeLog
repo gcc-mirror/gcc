@@ -1,3 +1,8 @@
+2013-10-24  Michael Matz  <matz@suse.de>
+
+	* gengtype.c (is_file_equal): Check that files will be same
+	length.
+
 2013-10-25  Christian Bruel  <christian.bruel@st.com>
 
 	* config.gcc (sh-*): Add sh-mem.o to extra_obj.
@@ -5293,28 +5298,29 @@
 	(move_computations_stmt): Convert to method
 	move_computations_dom_walker::before_dom_children.
 	(move_computations, tree_ssa_lim): Adjust.
-	* tree-ssa-phiopt.c (nontrapping_dom_walker): new class
-	(nt_init_block): Make method
+	* tree-ssa-phiopt.c (nontrapping_dom_walker): New class.
+	(nt_init_block): Convert to method
 	notrappping_dom_walker::before_dom_children.
-	(nt_fini_block): Make
+	(nt_fini_block): Convert to method
 	method nontrapping_dom_walker::after_dom_children.
 	(get_non_trapping): Adjust.
 	* tree-ssa-pre.c (eliminate_dom_walker): New class.
-	(eliminate_bb): Make method eliminate_dom_walker::before_dom_children.
-	(eliminate_leave_block): Make method.
+	(eliminate_bb): Convert to method
+	eliminate_dom_walker::before_dom_children.
+	(eliminate_leave_block): Convert to method
 	eliminate_dom_walker::after_dom_children.
-	(eliminate): Adjust
+	(eliminate): Adjust.
 	* tree-ssa-strlen.c (strlen_dom_walker): New class.
-	(strlen_enter_block): Make method
+	(strlen_enter_block): Convert to method
 	strlen_dom_walker::before_dom_children.
-	(strlen_leave_block): Make
+	(strlen_leave_block): Convert to method
 	method strlen_dom_walker::after_dom_children.
 	(tree_ssa_strlen): Adjust.
 	* tree-ssa-uncprop.c (uncprop_dom_walker): New class.
 	(tree_ssa_uncprop): Adjust.
-	(uncprop_leave_block): Make method
+	(uncprop_leave_block): Convert to method
 	uncprop_dom_walker::after_dom_children.
-	(uncprop_leave_block): Make method
+	(uncprop_leave_block): Convert to method
 	uncprop_dom_walker::before_dom_children.
 
 2013-09-18  Bin Cheng  <bin.cheng@arm.com>

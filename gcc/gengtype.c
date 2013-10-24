@@ -2344,6 +2344,8 @@ is_file_equal (outf_p of)
 	  break;
 	}
     }
+  if (equal && EOF != fgetc (newfile))
+    equal = false;
   fclose (newfile);
   return equal;
 }
