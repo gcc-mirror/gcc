@@ -1,3 +1,7 @@
+2013-10-24  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/opt/devirt3.C: New test.
+
 2013-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
