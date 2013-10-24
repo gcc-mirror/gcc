@@ -10235,7 +10235,9 @@ Index_expression::do_traverse(Traverse* traverse)
   if (Expression::traverse(&this->left_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->start_, traverse) == TRAVERSE_EXIT
       || (this->end_ != NULL
-	  && Expression::traverse(&this->end_, traverse) == TRAVERSE_EXIT))
+	  && Expression::traverse(&this->end_, traverse) == TRAVERSE_EXIT)
+      || (this->cap_ != NULL
+          && Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT))
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
 }
@@ -10250,6 +10252,7 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   Expression* left = this->left_;
   Expression* start = this->start_;
   Expression* end = this->end_;
+  Expression* cap = this->cap_;
 
   Type* type = left->type();
   if (type->is_error())
@@ -10260,20 +10263,27 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       return Expression::make_error(location);
     }
   else if (type->array_type() != NULL)
-    return Expression::make_array_index(left, start, end, location);
+    return Expression::make_array_index(left, start, end, cap, location);
   else if (type->points_to() != NULL
 	   && type->points_to()->array_type() != NULL
 	   && !type->points_to()->is_slice_type())
     {
       Expression* deref = Expression::make_unary(OPERATOR_MULT, left,
 						 location);
-      return Expression::make_array_index(deref, start, end, location);
+      return Expression::make_array_index(deref, start, end, cap, location);
     }
   else if (type->is_string_type())
-    return Expression::make_string_index(left, start, end, location);
+    {
+      if (cap != NULL)
+        {
+          error_at(location, "invalid 3-index slice of string");
+          return Expression::make_error(location);
+        }
+      return Expression::make_string_index(left, start, end, location);
+    }
   else if (type->map_type() != NULL)
     {
-      if (end != NULL)
+      if (end != NULL || cap != NULL)
 	{
 	  error_at(location, "invalid slice of map");
 	  return Expression::make_error(location);
@@ -10292,14 +10302,15 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     }
 }
 
-// Write an indexed expression (expr[expr:expr] or expr[expr]) to a
-// dump context
+// Write an indexed expression
+// (expr[expr:expr:expr], expr[expr:expr] or expr[expr]) to a dump context.
 
 void
 Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context, 
 					const Expression* expr, 
 					const Expression* start,
-					const Expression* end)
+					const Expression* end,
+					const Expression* cap)
 {
   expr->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << "[";
@@ -10308,6 +10319,11 @@ Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
     {
       ast_dump_context->ostream() << ":";
       end->dump_expression(ast_dump_context);
+    }
+  if (cap != NULL)
+    {
+      ast_dump_context->ostream() << ":";
+      cap->dump_expression(ast_dump_context);
     }
   ast_dump_context->ostream() << "]";
 }
@@ -10319,16 +10335,16 @@ Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   Index_expression::dump_index_expression(ast_dump_context, this->left_, 
-                                          this->start_, this->end_);
+                                          this->start_, this->end_, this->cap_);
 }
 
 // Make an index expression.
 
 Expression*
 Expression::make_index(Expression* left, Expression* start, Expression* end,
-		       Location location)
+		       Expression* cap, Location location)
 {
-  return new Index_expression(left, start, end, location);
+  return new Index_expression(left, start, end, cap, location);
 }
 
 // An array index.  This is used for both indexing and slicing.
@@ -10337,9 +10353,9 @@ class Array_index_expression : public Expression
 {
  public:
   Array_index_expression(Expression* array, Expression* start,
-			 Expression* end, Location location)
+			 Expression* end, Expression* cap, Location location)
     : Expression(EXPRESSION_ARRAY_INDEX, location),
-      array_(array), start_(start), end_(end), type_(NULL)
+      array_(array), start_(start), end_(end), cap_(cap), type_(NULL)
   { }
 
  protected:
@@ -10363,6 +10379,9 @@ class Array_index_expression : public Expression
 					(this->end_ == NULL
 					 ? NULL
 					 : this->end_->copy()),
+					(this->cap_ == NULL
+					 ? NULL
+					 : this->cap_->copy()),
 					this->location());
   }
 
@@ -10394,6 +10413,9 @@ class Array_index_expression : public Expression
   // The end index of a slice.  This may be NULL for a simple array
   // index, or it may be a nil expression for the length of the array.
   Expression* end_;
+  // The capacity argument of a slice.  This may be NULL for an array index or
+  // slice.
+  Expression* cap_;
   // The type of the expression.
   Type* type_;
 };
@@ -10411,6 +10433,11 @@ Array_index_expression::do_traverse(Traverse* traverse)
     {
       if (Expression::traverse(&this->end_, traverse) == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
+    }
+  if (this->cap_ != NULL)
+    {
+      if (Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
+        return TRAVERSE_EXIT;
     }
   return TRAVERSE_CONTINUE;
 }
@@ -10451,6 +10478,8 @@ Array_index_expression::do_determine_type(const Type_context*)
   this->start_->determine_type_no_context();
   if (this->end_ != NULL)
     this->end_->determine_type_no_context();
+  if (this->cap_ != NULL)
+    this->cap_->determine_type_no_context();
 }
 
 // Check types of an array index.
@@ -10473,6 +10502,14 @@ Array_index_expression::do_check_types(Gogo*)
       && (!this->end_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
+  if (this->cap_ != NULL
+      && this->cap_->type()->integer_type() == NULL
+      && !this->cap_->type()->is_error()
+      && !this->cap_->is_nil_expression()
+      && !this->cap_->is_error_expression()
+      && (!this->cap_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
+    this->report_error(_("slice capacity must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
   if (array_type == NULL)
@@ -10510,8 +10547,10 @@ Array_index_expression::do_check_types(Gogo*)
     {
       Numeric_constant enc;
       mpz_t eval;
+      bool eval_valid = false;
       if (this->end_->numeric_constant_value(&enc) && enc.to_int(&eval))
 	{
+	  eval_valid = true;
 	  if (mpz_sgn(eval) < 0
 	      || mpz_sizeinbase(eval, 2) >= int_bits
 	      || (lval_valid && mpz_cmp(eval, lval) > 0))
@@ -10521,8 +10560,37 @@ Array_index_expression::do_check_types(Gogo*)
 	    }
 	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
 	    this->report_error(_("inverted slice range"));
-	  mpz_clear(eval);
 	}
+
+      Numeric_constant cnc;
+      mpz_t cval;
+      if (this->cap_ != NULL
+          && this->cap_->numeric_constant_value(&cnc) && cnc.to_int(&cval))
+        {
+          if (mpz_sgn(cval) < 0
+              || mpz_sizeinbase(cval, 2) >= int_bits
+              || (lval_valid && mpz_cmp(cval, lval) > 0))
+            {
+              error_at(this->cap_->location(), "array index out of bounds");
+              this->set_is_error();
+            }
+	  else if (ival_valid && mpz_cmp(ival, cval) > 0)
+	    {
+	      error_at(this->cap_->location(),
+		       "invalid slice index: capacity less than start");
+	      this->set_is_error();
+	    }
+          else if (eval_valid && mpz_cmp(eval, cval) > 0)
+            {
+              error_at(this->cap_->location(),
+                       "invalid slice index: capacity less than length");
+              this->set_is_error();
+            }
+          mpz_clear(cval);
+        }
+
+      if (eval_valid)
+        mpz_clear(eval);
     }
   if (ival_valid)
     mpz_clear(ival);
@@ -10602,9 +10670,17 @@ Array_index_expression::do_get_tree(Translate_context* context)
       capacity_tree = save_expr(capacity_tree);
     }
 
+  tree cap_arg = capacity_tree;
+  if (this->cap_ != NULL)
+    {
+      cap_arg = this->cap_->get_tree(context);
+      if (cap_arg == error_mark_node)
+        return error_mark_node;
+    }
+
   tree length_type = (length_tree != NULL_TREE
 		      ? TREE_TYPE(length_tree)
-		      : TREE_TYPE(capacity_tree));
+		      : TREE_TYPE(cap_arg));
 
   tree bad_index = boolean_false_node;
 
@@ -10676,6 +10752,29 @@ Array_index_expression::do_get_tree(Translate_context* context)
 
   // Array slice.
 
+  if (this->cap_ != NULL)
+    {
+      if (!DECL_P(cap_arg))
+        cap_arg = save_expr(cap_arg);
+      if (!INTEGRAL_TYPE_P(TREE_TYPE(cap_arg)))
+        cap_arg = convert_to_integer(length_type, cap_arg);
+
+      bad_index = Expression::check_bounds(cap_arg, length_type, bad_index,
+                                           loc);
+      cap_arg = fold_convert_loc(loc.gcc_location(), length_type, cap_arg);
+
+      tree bad_cap = fold_build2_loc(loc.gcc_location(), TRUTH_OR_EXPR,
+                                     boolean_type_node,
+                                     fold_build2_loc(loc.gcc_location(),
+                                                     LT_EXPR, boolean_type_node,
+                                                     cap_arg, start_tree),
+                                     fold_build2_loc(loc.gcc_location(),
+                                                     GT_EXPR, boolean_type_node,
+                                                     cap_arg, capacity_tree));
+      bad_index = fold_build2_loc(loc.gcc_location(), TRUTH_OR_EXPR,
+                                  boolean_type_node, bad_index, bad_cap);
+    }
+
   tree end_tree;
   if (this->end_->is_nil_expression())
     end_tree = length_tree;
@@ -10701,10 +10800,11 @@ Array_index_expression::do_get_tree(Translate_context* context)
 						     end_tree, start_tree),
 				     fold_build2_loc(loc.gcc_location(),
                                                      GT_EXPR, boolean_type_node,
-						     end_tree, capacity_tree));
+						     end_tree, cap_arg));
       bad_index = fold_build2_loc(loc.gcc_location(), TRUTH_OR_EXPR,
                                   boolean_type_node, bad_index, bad_end);
     }
+
 
   Type* element_type = array_type->element_type();
   tree element_type_tree = type_to_tree(element_type->get_backend(gogo));
@@ -10729,8 +10829,7 @@ Array_index_expression::do_get_tree(Translate_context* context)
                                             length_type, end_tree, start_tree);
 
   tree result_capacity_tree = fold_build2_loc(loc.gcc_location(), MINUS_EXPR,
-                                              length_type, capacity_tree,
-                                              start_tree);
+                                              length_type, cap_arg, start_tree);
 
   tree struct_tree = type_to_tree(this->type()->get_backend(gogo));
   go_assert(TREE_CODE(struct_tree) == RECORD_TYPE);
@@ -10780,16 +10879,17 @@ Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   Index_expression::dump_index_expression(ast_dump_context, this->array_, 
-                                          this->start_, this->end_);
+                                          this->start_, this->end_, this->cap_);
 }
 
-// Make an array index expression.  END may be NULL.
+// Make an array index expression.  END and CAP may be NULL.
 
 Expression*
 Expression::make_array_index(Expression* array, Expression* start,
-			     Expression* end, Location location)
+                             Expression* end, Expression* cap,
+                             Location location)
 {
-  return new Array_index_expression(array, start, end, location);
+  return new Array_index_expression(array, start, end, cap, location);
 }
 
 // A string index.  This is used for both indexing and slicing.
@@ -11067,8 +11167,8 @@ void
 String_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->string_, 
-					  this->start_, this->end_);
+  Index_expression::dump_index_expression(ast_dump_context, this->string_,
+                                          this->start_, this->end_, NULL);
 }
 
 // Make a string index expression.  END may be NULL.
@@ -11295,8 +11395,8 @@ void
 Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, 
-                                          this->map_, this->index_, NULL);
+  Index_expression::dump_index_expression(ast_dump_context, this->map_,
+                                          this->index_, NULL, NULL);
 }
 
 // Make a map index expression.
