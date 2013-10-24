@@ -311,7 +311,7 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 # --------
 
 # Dependency tracking stuff.
-CCDEPMODE = @CCDEPMODE@
+CXXDEPMODE = @CXXDEPMODE@
 DEPDIR = @DEPDIR@
 depcomp = $(SHELL) $(srcdir)/../depcomp
 
@@ -1040,7 +1040,7 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   $(CLOOGINC) $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@
-ifeq ($(CCDEPMODE),depmode=gcc3)
+ifeq ($(CXXDEPMODE),depmode=gcc3)
 # Note a subtlety here: we use $(@D) for the directory part, to make
 # things like the go/%.o rule work properly; but we use $(*F) for the
 # file part, as we just want the file part of the stem, not the entire
@@ -1049,7 +1049,7 @@ COMPILE = $(COMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo
 POSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
 else
 COMPILE = source='$<' object='$@' libtool=no \
-    DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) $(COMPILE.base)
+    DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) $(COMPILE.base)
 POSTCOMPILE =
 endif
 

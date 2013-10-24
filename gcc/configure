@@ -737,7 +737,7 @@ LDEXP_LIB
 EXTRA_GCC_LIBS
 GNAT_LIBEXC
 COLLECT2_LIBS
-CCDEPMODE
+CXXDEPMODE
 DEPDIR
 am__leading_dot
 CXXCPP
@@ -8766,12 +8766,12 @@ ac_config_commands="$ac_config_commands depdir"
 ac_config_commands="$ac_config_commands gccdepdir"
 
 
-depcc="$CC"   am_compiler_list=
+depcc="$CXX"  am_compiler_list=
 
 am_depcomp=$ac_aux_dir/depcomp
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dependency style of $depcc" >&5
 $as_echo_n "checking dependency style of $depcc... " >&6; }
-if test "${am_cv_CC_dependencies_compiler_type+set}" = set; then :
+if test "${am_cv_CXX_dependencies_compiler_type+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   if test -f "$am_depcomp"; then
@@ -8793,7 +8793,7 @@ else
   # directory.
   mkdir sub
 
-  am_cv_CC_dependencies_compiler_type=none
+  am_cv_CXX_dependencies_compiler_type=none
   if test "$am_compiler_list" = ""; then
      am_compiler_list=`sed -n 's/^\([a-zA-Z0-9]*\))$/\1/p' < ./depcomp`
   fi
@@ -8838,7 +8838,7 @@ else
       #   icc: Command line remark: option '-MP' not supported
       if (grep 'ignoring option' conftest.err ||
           grep 'not supported' conftest.err) >/dev/null 2>&1; then :; else
-        am_cv_CC_dependencies_compiler_type=$depmode
+        am_cv_CXX_dependencies_compiler_type=$depmode
 	$as_echo "$as_me:$LINENO: success" >&5
         break
       fi
@@ -8850,15 +8850,15 @@ else
   cd ..
   rm -rf conftest.dir
 else
-  am_cv_CC_dependencies_compiler_type=none
+  am_cv_CXX_dependencies_compiler_type=none
 fi
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_CC_dependencies_compiler_type" >&5
-$as_echo "$am_cv_CC_dependencies_compiler_type" >&6; }
-if test x${am_cv_CC_dependencies_compiler_type-none} = xnone
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_CXX_dependencies_compiler_type" >&5
+$as_echo "$am_cv_CXX_dependencies_compiler_type" >&6; }
+if test x${am_cv_CXX_dependencies_compiler_type-none} = xnone
 then as_fn_error "no usable dependency style found" "$LINENO" 5
-else CCDEPMODE=depmode=$am_cv_CC_dependencies_compiler_type
+else CXXDEPMODE=depmode=$am_cv_CXX_dependencies_compiler_type
 
 fi
 
