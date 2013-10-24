@@ -3120,16 +3120,19 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
     {
       enum machine_mode address_mode = targetm.addr_space.address_mode (as);
       rtx reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
-      rtx addr;
+      rtx reg2 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
+      rtx addr, scaled;
       HOST_WIDE_INT i;
 
       valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
       bitmap_clear (valid_mult);
-      addr = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
+      scaled = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
+      addr = gen_rtx_fmt_ee (PLUS, address_mode, scaled, reg2);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{
-	  XEXP (addr, 1) = gen_int_mode (i, address_mode);
-	  if (memory_address_addr_space_p (mode, addr, as))
+	  XEXP (scaled, 1) = gen_int_mode (i, address_mode);
+	  if (memory_address_addr_space_p (mode, addr, as)
+	      || memory_address_addr_space_p (mode, scaled, as))
 	    bitmap_set_bit (valid_mult, i + MAX_RATIO);
 	}
 
