@@ -7,7 +7,7 @@
 
 	* gcc.c-torture/execute/20030125-1.c: Update.
 
-2013-08-24  Tobias Burnus  <burnus@net-b.de>
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44646
 	* gfortran.dg/vect/vect-do-concurrent-1.f90: New.

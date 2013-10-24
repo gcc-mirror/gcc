@@ -1,4 +1,4 @@
-2013-08-24  Tobias Burnus  <burnus@net-b.de>
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
 	* c-pragma.c (init_pragma) Add #pragma ivdep handling.
