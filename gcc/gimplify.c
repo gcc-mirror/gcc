@@ -3076,6 +3076,17 @@ gimple_boolify (tree expr)
 	TREE_TYPE (expr) = boolean_type_node;
       return expr;
 
+    case ANNOTATE_EXPR:
+      if ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1))
+	  == annot_expr_ivdep_kind)
+	{
+	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
+	  if (TREE_CODE (type) != BOOLEAN_TYPE)
+	    TREE_TYPE (expr) = boolean_type_node;
+	  return expr;
+	}
+      /* FALLTHRU */
+
     default:
       if (COMPARISON_CLASS_P (expr))
 	{
@@ -7730,6 +7741,21 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case ADDR_EXPR:
 	  ret = gimplify_addr_expr (expr_p, pre_p, post_p);
 	  break;
+
+	case ANNOTATE_EXPR:
+	  {
+	    tree cond = TREE_OPERAND (*expr_p, 0);
+	    tree id = TREE_OPERAND (*expr_p, 1);
+	    tree tmp = create_tmp_var_raw (TREE_TYPE(cond), NULL);
+	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
+	    gimple call = gimple_build_call_internal (IFN_ANNOTATE, 2,
+						      cond, id);
+	    gimple_call_set_lhs (call, tmp);
+	    gimplify_seq_add_stmt (pre_p, call);
+	    *expr_p = tmp;
+	    ret = GS_ALL_DONE;
+	    break;
+	  }
 
 	case VA_ARG_EXPR:
 	  ret = gimplify_va_arg_expr (expr_p, pre_p, post_p);

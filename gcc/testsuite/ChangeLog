@@ -1,3 +1,9 @@
+2013-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* testsuite/gcc.dg/ivdep.c: New.
+	* testsuite/gcc.dg/vect/vect-ivdep-1.c: New.
+
 2013-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/c-output-mod-2.c: Fix for -fPIC.

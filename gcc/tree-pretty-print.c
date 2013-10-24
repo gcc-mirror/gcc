@@ -2095,6 +2095,18 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " predictor.");
       break;
 
+    case ANNOTATE_EXPR:
+      pp_string (buffer, "ANNOTATE_EXPR <");
+      switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (node, 1)))
+	{
+	case annot_expr_ivdep_kind:
+	  pp_string (buffer, "ivdep, ");
+	  break;
+	}
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_greater (buffer);
+      break;
+
     case RETURN_EXPR:
       pp_string (buffer, "return");
       op0 = TREE_OPERAND (node, 0);

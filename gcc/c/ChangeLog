@@ -1,3 +1,10 @@
+2013-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_pragma, c_parser_for_statement):
+	Handle PRAGMA_IVDEP.
+	(c_parser_statement_after_labels): Update call.
+
 2013-10-24  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_struct_declaration): Add a comment.

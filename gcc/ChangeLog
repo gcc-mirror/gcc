@@ -1,3 +1,17 @@
+2013-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* tree-cfg.c (replace_loop_annotate): New function.
+	(execute_build_cfg): Call it.
+	* gimplify.c (gimple_boolify, gimplify_expr): Handle ANNOTATE_EXPR.
+	* internal-fn.c (expand_ANNOTATE): New function.
+	* internal-fn.def (ANNOTATE): Define as new internal function.
+	* tree-core.h (tree_node_kind): Add annot_expr_ivdep_kind.
+	* tree-pretty-print.c (dump_generic_node): Handle ANNOTATE_EXPR.
+	* tree.def (ANNOTATE_EXPR): New DEFTREECODE.
+	* doc/extend.texi (Pragmas): Document #pragma ivdep.
+	* doc/generic.texi (Expressions): Document ANNOTATE_EXPR.
+
 2013-10-17  Ian Bolton  <ian.bolton@arm.com>
 	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
 

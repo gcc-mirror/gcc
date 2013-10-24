@@ -250,6 +250,71 @@ build_gimple_cfg (gimple_seq seq)
   discriminator_per_locus.dispose ();
 }
 
+
+/* Search for ANNOTATE call with annot_expr_ivdep_kind; if found, remove
+   it and set loop->safelen to INT_MAX.  We assume that the annotation
+   comes immediately before the condition.  */
+
+static void
+replace_loop_annotate ()
+{
+  struct loop *loop;
+  loop_iterator li;
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      gsi = gsi_last_bb (loop->header);
+      stmt = gsi_stmt (gsi);
+      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+	{
+	  gsi_prev_nondebug (&gsi);
+	  if (gsi_end_p (gsi))
+	    continue;
+	  stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+		continue;
+	  if (!gimple_call_internal_p (stmt)
+		  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    continue;
+	  if ((annot_expr_kind) tree_low_cst (gimple_call_arg (stmt, 1), 0)
+	      != annot_expr_ivdep_kind)
+	    continue;
+	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      gimple_call_arg (stmt, 0));
+	  gsi_replace (&gsi, stmt, true);
+	  loop->safelen = INT_MAX;
+	}
+    }
+
+  /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
+  FOR_EACH_BB (bb)
+    {
+      gsi = gsi_last_bb (bb);
+      stmt = gsi_stmt (gsi);
+      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+	gsi_prev_nondebug (&gsi);
+      if (gsi_end_p (gsi))
+	continue;
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) != GIMPLE_CALL)
+	continue;
+      if (!gimple_call_internal_p (stmt)
+	  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	continue;
+      if ((annot_expr_kind) tree_low_cst (gimple_call_arg (stmt, 1), 0)
+	  != annot_expr_ivdep_kind)
+	continue;
+      warning (0, "ignoring %<GCC ivdep%> annotation");
+      stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				  gimple_call_arg (stmt, 0));
+      gsi_replace (&gsi, stmt, true);
+    }
+}
+
+
 static unsigned int
 execute_build_cfg (void)
 {
@@ -264,6 +329,7 @@ execute_build_cfg (void)
     }
   cleanup_tree_cfg ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  replace_loop_annotate ();
   return 0;
 }
 

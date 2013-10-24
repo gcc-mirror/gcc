@@ -1279,6 +1279,7 @@ the byte offset of the field, but should not be used directly; call
 @tindex SAVE_EXPR
 @tindex TARGET_EXPR
 @tindex VA_ARG_EXPR
+@tindex ANNOTATE_EXPR
 
 @table @code
 @item NEGATE_EXPR
@@ -1692,7 +1693,12 @@ mechanism.  It represents expressions like @code{va_arg (ap, type)}.
 Its @code{TREE_TYPE} yields the tree representation for @code{type} and
 its sole argument yields the representation for @code{ap}.
 
+@item ANNOTATE_EXPR
+This node is used to attach markers to an expression. The first operand
+is the annotated expression, the second is an @code{INTEGER_CST} with
+a value from @code{enum annot_expr_kind}.
 @end table
+
 
 @node Vectors
 @subsection Vectors

@@ -1261,6 +1261,12 @@ DEFTREECODE (OPTIMIZATION_NODE, "optimization_node", tcc_exceptional, 0)
 /* TARGET_OPTION_NODE.  Node to store the target specific options.  */
 DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
 
+/* ANNOTATE_EXPR.
+   Operand 0 is the expression to be annotated.
+   Operand 1 is the annotation id. */
+DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 2)
+
+
 /*
 Local variables:
 mode:c
