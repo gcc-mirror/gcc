@@ -2645,6 +2645,11 @@ c_parser_struct_declaration (c_parser *parser)
     }
   specs = build_null_declspecs ();
   decl_loc = c_parser_peek_token (parser)->location;
+  /* Strictly by the standard, we shouldn't allow _Alignas here,
+     but it appears to have been intended to allow it there, so
+     we're keeping it as it is until WG14 reaches a conclusion
+     of N1731.
+     <http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1731.pdf>  */
   c_parser_declspecs (parser, specs, false, true, true,
 		      true, cla_nonabstract_decl);
   if (parser->error)
@@ -2959,7 +2964,7 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declarator *inner;
       c_parser_consume_token (parser);
       c_parser_declspecs (parser, quals_attrs, false, false, true,
-			  true, cla_prefer_id);
+			  false, cla_prefer_id);
       inner = c_parser_declarator (parser, type_seen_p, kind, seen_id);
       if (inner == NULL)
 	return NULL;
