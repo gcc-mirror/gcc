@@ -1,3 +1,10 @@
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44646
+	* trans-stmt.c (struct forall_info): Add do_concurrent field.
+	(gfc_trans_forall_1): Set it for do concurrent.
+	(gfc_trans_forall_loop): Mark those as annot_expr_ivdep_kind.
+
 2013-10-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58793
