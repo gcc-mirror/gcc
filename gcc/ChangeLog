@@ -1,3 +1,12 @@
+2013-08-24  Richard Henderson  <rth@twiddle.net>
+
+	PR rtl/58542
+	* optabs.c (maybe_emit_atomic_exchange): Use create_input_operand
+	instead of create_convert_operand_to.
+	(maybe_emit_sync_lock_test_and_set): Likewise.
+	(expand_atomic_compare_and_swap): Likewise.
+	(maybe_emit_compare_and_swap_exchange_loop): Don't convert_modes.
+
 2013-08-24  Sriraman Tallam  <tmsriram@google.com>
 
 	* cgraph.c (cgraph_fnver_htab): Move GTY((...)) to be before htab_t.
