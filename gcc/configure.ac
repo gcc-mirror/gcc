@@ -974,7 +974,7 @@ AC_CONFIG_COMMANDS([gccdepdir],[
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
 
-ZW_PROG_COMPILER_DEPENDENCIES([CC])
+ZW_PROG_COMPILER_DEPENDENCIES([CXX])
 AC_LANG_POP(C++)
 
 # --------

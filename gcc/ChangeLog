@@ -1,3 +1,10 @@
+2013-10-24  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* configure.ac (ZW_PROG_COMPILER_DEPENDENCIES): Use CXX instead of CC.
+	* Makefile.in (CXXDEPMODE): Assign and change users.
+	(CCDEPMODE): Delete.
+	* configure: Regenerate.
+
 2013-10-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype-parse.c (require_without_advance): New.
