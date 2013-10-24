@@ -1,3 +1,8 @@
+2013-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/c-output-mod-2.c: Fix for -fPIC.
+	* gcc.target/aarch64/c-output-mod-3.c: Likewise.
+
 2013-10-24  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/20020312-2.c: No PIC register for RL78 or MSP430.
