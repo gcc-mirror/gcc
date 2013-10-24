@@ -1,3 +1,7 @@
+2013-10-24  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/20020312-2.c: No PIC register for RL78 or MSP430.
+
 2013-10-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58705
