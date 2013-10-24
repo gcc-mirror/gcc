@@ -1,3 +1,7 @@
+2013-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Make-lang.in (ADA_DEPS): Fix quoting.
+
 2013-10-19  Thomas Quinot  <quinot@adacore.com>
 
 	* gcc-interface/Makefile.in: Use canonical absolute path to refer to
