@@ -1,3 +1,9 @@
+2013-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58878
+	* pt.c (check_template_shadow): Don't skip declarations in inline
+	member templates.
+
 2013-10-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
