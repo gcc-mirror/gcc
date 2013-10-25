@@ -1,3 +1,8 @@
+2013-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Look for an
+	ADDR_EXPR in the defining statement.
+
 2013-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58626

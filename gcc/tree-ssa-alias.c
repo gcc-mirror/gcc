@@ -568,6 +568,14 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
   HOST_WIDE_INT t1, t2;
   ref->ref = NULL_TREE;
+  if (TREE_CODE (ptr) == SSA_NAME)
+    {
+      gimple stmt = SSA_NAME_DEF_STMT (ptr);
+      if (gimple_assign_single_p (stmt)
+	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	ptr = gimple_assign_rhs1 (stmt);
+    }
+
   if (TREE_CODE (ptr) == ADDR_EXPR)
     ref->base = get_ref_base_and_extent (TREE_OPERAND (ptr, 0),
 					 &ref->offset, &t1, &t2);
