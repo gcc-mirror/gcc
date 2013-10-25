@@ -232,6 +232,11 @@ DEFTREECODE (QUAL_UNION_TYPE, "qual_union_type", tcc_type, 0)
 /* The void type in C */
 DEFTREECODE (VOID_TYPE, "void_type", tcc_type, 0)
 
+/* Type to hold bounds for a pointer.
+   Has TYPE_PRECISION component to specify number of bits used
+   by this type.  */
+DEFTREECODE (POINTER_BOUNDS_TYPE, "pointer_bounds_type", tcc_type, 0)
+
 /* Type of functions.  Special fields:
    TREE_TYPE		    type of value returned.
    TYPE_ARG_TYPES      list of types of arguments expected.

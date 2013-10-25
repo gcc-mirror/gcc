@@ -4704,6 +4704,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     case FIXED_POINT_TYPE:
+    case POINTER_BOUNDS_TYPE:
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
 			      MIN (size, thissize), align, 0))
