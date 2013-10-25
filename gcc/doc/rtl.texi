@@ -1295,6 +1295,12 @@ These modes stand for a complex number represented as a pair of integer
 values.  The integer values are in @code{QImode}, @code{HImode},
 @code{SImode}, @code{DImode}, @code{TImode}, and @code{OImode},
 respectively.
+
+@findex BND32mode
+@findex BND64mode
+@item BND32mode BND64mode
+These modes stand for bounds for pointer of 32 and 64 bit size respectively.
+Mode size is double pointer mode size.
 @end table
 
 The machine description defines @code{Pmode} as a C macro which expands
