@@ -3511,7 +3511,8 @@ check_template_shadow (tree decl)
      name inside a class.  We check TPFI to avoid duplicate errors for
      inline member templates.  */
   if (decl == olddecl
-      || TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
+      || (DECL_TEMPLATE_PARM_P (decl)
+	  && TEMPLATE_PARMS_FOR_INLINE (current_template_parms)))
     return true;
 
   error ("declaration of %q+#D", decl);

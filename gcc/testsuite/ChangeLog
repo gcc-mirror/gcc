@@ -1,3 +1,8 @@
+2013-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58878
+	* g++.dg/template/pr58878.C: New.
+
 2013-10-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/alias-23.c: New file.
