@@ -1,3 +1,7 @@
+2013-10-25  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/wmul-1.c: New test.
+
 2013-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58878
