@@ -1,3 +1,9 @@
+2013-10-25  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Call
+	has_single_use () and not do the conversion if has_single_use ()
+	returns false for the multiplication result.
+
 2013-10-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree.h (EXCEPTIONAL_CLASS_P): Rename parameter from "CODE"
