@@ -383,6 +383,9 @@ build_must_not_throw_expr (tree body, tree cond)
 {
   tree type = body ? TREE_TYPE (body) : void_type_node;
 
+  if (!flag_exceptions)
+    return body;
+
   if (cond && !value_dependent_expression_p (cond))
     {
       cond = cxx_constant_value (cond);

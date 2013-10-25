@@ -1,3 +1,8 @@
+2013-10-25  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* g++.dg/tm/noexcept-6.C: New test.
+
 2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/pr58831.c: New test.
