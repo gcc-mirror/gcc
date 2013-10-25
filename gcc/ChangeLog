@@ -1,3 +1,8 @@
+2013-10-24  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* expr.c (expand_expr_real_1): Use mode of memory reference rather
+	than mode of address computation when calling memory_address_addr_space.
+
 2013-08-24  Richard Henderson  <rth@twiddle.net>
 
 	PR rtl/58542
