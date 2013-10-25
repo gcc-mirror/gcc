@@ -1,3 +1,26 @@
+2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/rs6000/rs6000-protos.h
+	(rs6000_secondary_memory_needed_mode): New prototype.
+	* config/rs6000/rs6000.c: Include ira.h.
+	(TARGET_LRA_P): Redefine.
+	(rs6000_legitimate_offset_address_p): Call
+	legitimate_constant_pool_address_p in strict mode for LRA.
+	(rs6000_legitimate_address_p): Ditto.
+	(legitimate_lo_sum_address_p): Add code for LRA.
+	Use lra_in_progress.
+	(rs6000_emit_move): Add LRA version of code to generate load/store
+	of SDmode values.
+	(rs6000_secondary_memory_needed_mode): New.
+	(rs6000_alloc_sdmode_stack_slot): Do nothing for LRA.
+	(rs6000_secondary_reload_class): Return NO_REGS for LRA for
+	constants, memory, and FP registers.
+	(rs6000_lra_p): New.
+	* config/rs6000/rs6000.h (SECONDARY_MEMORY_NEEDED_MODE): New
+	macro.
+	* config/rs6000/rs6000.opt (mlra): New option.
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
 2013-10-25  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Call
