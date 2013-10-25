@@ -1,5 +1,11 @@
 2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR rtl-optimization/58831
+	* alias.c (init_alias_analysis): At the beginning of each iteration, set
+	the reg_seen[N] bit if static_reg_base_value[N] is non-null.
+
+2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* recog.c (search_ofs): New static variable moved from...
 	(peep2_find_free_register): ...here.
 	(peephole2_optimize): Initialize it.

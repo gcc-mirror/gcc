@@ -1,4 +1,8 @@
-2013-10-24  Nick Clifton  <nickc@redhat.com>
+2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/pr58831.c: New test.
+
+2013-10-25  Nick Clifton  <nickc@redhat.com>
 
 	* c-c++-common/pr57793.c: Add expected error messages for
 	targets with small integers.
