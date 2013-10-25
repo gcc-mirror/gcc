@@ -1,3 +1,18 @@
+2013-10-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (__check_singular): Add const on
+	iterator reference.
+	* include/debug/functions.h (__check_singular): Likewise.
+	(__check_singular(const _Safe_iterator<_Ite, _Seq>&)): Delete.
+	(__check_dereferenceable(const _Ite&)): Add const on iterator
+	reference.
+	(__check_dereferenceable(const _Safe_local_iterator<>&)): New.
+	* include/debug/safe_iterator.h (__check_singular_aux): Review
+	comment.
+	* testsuite/23_containers/vector/debug/debug_functions.cc: New.
+	* testsuite/23_containers/unordered_set/debug/debug_functions.cc:
+	New.
+
 2013-10-23  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
