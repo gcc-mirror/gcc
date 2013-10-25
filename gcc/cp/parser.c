@@ -1970,13 +1970,13 @@ static tree cp_parser_selection_statement
 static tree cp_parser_condition
   (cp_parser *);
 static tree cp_parser_iteration_statement
-  (cp_parser *);
+  (cp_parser *, bool);
 static bool cp_parser_for_init_statement
   (cp_parser *, tree *decl);
 static tree cp_parser_for
-  (cp_parser *);
+  (cp_parser *, bool);
 static tree cp_parser_c_for
-  (cp_parser *, tree, tree);
+  (cp_parser *, tree, tree, bool);
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree);
 static void do_range_for_auto_deduction
@@ -9231,7 +9231,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_WHILE:
 	case RID_DO:
 	case RID_FOR:
-	  statement = cp_parser_iteration_statement (parser);
+	  statement = cp_parser_iteration_statement (parser, false);
 	  break;
 
 	case RID_BREAK:
@@ -9892,7 +9892,7 @@ cp_parser_condition (cp_parser* parser)
    not included. */
 
 static tree
-cp_parser_for (cp_parser *parser)
+cp_parser_for (cp_parser *parser, bool ivdep)
 {
   tree init, scope, decl;
   bool is_range_for;
@@ -9906,11 +9906,11 @@ cp_parser_for (cp_parser *parser)
   if (is_range_for)
     return cp_parser_range_for (parser, scope, init, decl);
   else
-    return cp_parser_c_for (parser, scope, init);
+    return cp_parser_c_for (parser, scope, init, ivdep);
 }
 
 static tree
-cp_parser_c_for (cp_parser *parser, tree scope, tree init)
+cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep)
 {
   /* Normal for loop */
   tree condition = NULL_TREE;
@@ -9924,7 +9924,19 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init)
 
   /* If there's a condition, process it.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-    condition = cp_parser_condition (parser);
+    {
+      condition = cp_parser_condition (parser);
+      if (ivdep)
+	condition = build2 (ANNOTATE_EXPR, TREE_TYPE (condition), condition,
+			    build_int_cst (integer_type_node,
+					   annot_expr_ivdep_kind));
+    }
+  else if (ivdep)
+    {
+      cp_parser_error (parser, "missing loop condition in loop with "
+		       "%<GCC ivdep%> pragma");
+      condition = error_mark_node;
+    }
   finish_for_cond (condition, stmt);
   /* Look for the `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
@@ -10287,7 +10299,7 @@ cp_parser_range_for_member_function (tree range, tree identifier)
    Returns the new WHILE_STMT, DO_STMT, FOR_STMT or RANGE_FOR_STMT.  */
 
 static tree
-cp_parser_iteration_statement (cp_parser* parser)
+cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 {
   cp_token *token;
   enum rid keyword;
@@ -10360,7 +10372,7 @@ cp_parser_iteration_statement (cp_parser* parser)
 	/* Look for the `('.  */
 	cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
-	statement = cp_parser_for (parser);
+	statement = cp_parser_for (parser, ivdep);
 
 	/* Look for the `)'.  */
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
@@ -30908,6 +30920,20 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 		"%<#pragma omp section%> may only be used in "
 		"%<#pragma omp sections%> construct");
       break;
+
+    case PRAGMA_IVDEP:
+      {
+	cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	cp_token *tok;
+	tok = cp_lexer_peek_token (the_parser->lexer);
+	if (tok->type != CPP_KEYWORD || tok->keyword != RID_FOR)
+	  {
+	    cp_parser_error (parser, "for statement expected");
+	    return false;
+	  }
+	cp_parser_iteration_statement (parser, true);
+	return true;
+      }
 
     default:
       gcc_assert (id >= PRAGMA_FIRST_EXTERNAL);

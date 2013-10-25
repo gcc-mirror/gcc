@@ -1,3 +1,8 @@
+2013-10-25  Tobias Burnus  <burnus@net-b.de>
+
+	* g++.dg/parse/ivdep.C: New.
+	* g++.dg/vect/pr33426-ivdep.cc: New.
+
 2013-10-24  Richard Henderson  <rth@redhat.com>
 
 	PR rtl/58542
