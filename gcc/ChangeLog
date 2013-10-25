@@ -1,3 +1,8 @@
+2013-10-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (fopenmp): Change supported OpenMP version
+	to 4.0.
+
 2013-10-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_MPX): New define.
