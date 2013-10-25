@@ -1,3 +1,26 @@
+2013-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58626
+	* tree-loop-distribution.c (enum rdg_dep_type): Remove
+	anti_dd, output_dd and input_dd.
+	(struct rdg_edge): Remove level and relation members.
+	(RDGE_LEVEL, RDGE_RELATION): Remove.
+	(dot_rdg_1): Adjust.
+	(create_rdg_edge_for_ddr): Remove.
+	(create_rdg_edges_for_scalar): Adjust.
+	(create_edge_for_control_dependence): Likewise.
+	(create_rdg_edges): Split into ...
+	(create_rdg_flow_edges): ... this
+	(create_rdg_cd_edges): ... and this.
+	(free_rdg): Adjust.
+	(build_rdg): Likewise, do not compute data dependences or
+	add edges for them.
+	(pg_add_dependence_edges): New function.
+	(pgcmp): Likewise.
+	(distribute_loop): First apply all non-dependence based
+	partition mergings.  Then compute dependences between partitions
+	and merge and order partitions according to them.
+
 2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/58831
