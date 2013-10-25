@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_float }
-! { dg-options "-O3 -fopt-info-vec-optimized" }
+! { dg-additional-options "-O3 -fopt-info-vec-optimized" }
 
 subroutine test(n, a, b, c)
   integer, value :: n
@@ -12,6 +12,6 @@ subroutine test(n, a, b, c)
 end subroutine test
 
 ! { dg-message "loop vectorized" "" { target *-*-* } 0 }
-! { dg-bogus "version" "" { target *-*-* } 0 }
-! { dg-bogus "alias" "" { target *-*-* } 0 }
+! { dg-bogus " version" "" { target *-*-* } 0 }
+! { dg-bogus " alias" "" { target *-*-* } 0 }
 ! { dg-final { cleanup-tree-dump "vect" } }
