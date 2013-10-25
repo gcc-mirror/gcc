@@ -1,3 +1,8 @@
+2013-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54812
+	* g++.dg/cpp0x/defaulted47.C: New.
+
 2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/pr58831.c: New test.
