@@ -1,5 +1,11 @@
 2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/58759
+	* lra-constraints.c (lra_constraints): Remove wrong condition to
+	remove insn setting up an equivalent pseudo.
+
+2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* config/rs6000/rs6000-protos.h
 	(rs6000_secondary_memory_needed_mode): New prototype.
 	* config/rs6000/rs6000.c: Include ira.h.

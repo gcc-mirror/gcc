@@ -3975,18 +3975,6 @@ lra_constraints (bool first_p)
 		dest_reg = SUBREG_REG (dest_reg);
 	      if ((REG_P (dest_reg)
 		   && (x = get_equiv_substitution (dest_reg)) != dest_reg
-		   /* Check that this is actually an insn setting up
-		      the equivalence.  */
-		   && (in_list_p (curr_insn,
-				  ira_reg_equiv
-				  [REGNO (dest_reg)].init_insns)
-		       /* Init insns may contain not all insns setting
-			  up equivalence as we have live range
-			  splitting.  So here we use another condition
-			  to check insn setting up the equivalence
-			  which should be removed, e.g. in case when
-			  the equivalence is a constant.  */
-		       || ! MEM_P (x))
 		   /* Remove insns which set up a pseudo whose value
 		      can not be changed.  Such insns might be not in
 		      init_insns because we don't update equiv data
@@ -3999,8 +3987,10 @@ lra_constraints (bool first_p)
 		      secondary memory movement.  Then the pseudo is
 		      spilled and we use the equiv constant.  In this
 		      case we should remove the additional insn and
-		      this insn is not init_insns list.	 */
+		      this insn is not init_insns list.  */
 		   && (! MEM_P (x) || MEM_READONLY_P (x)
+		       /* Check that this is actually an insn setting
+			  up the equivalence.  */
 		       || in_list_p (curr_insn,
 				     ira_reg_equiv
 				     [REGNO (dest_reg)].init_insns)))
