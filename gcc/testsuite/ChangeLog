@@ -1,3 +1,8 @@
+2013-10-25  Richard Henderson  <rth@redhat.com>
+
+	PR rtl/58542
+	* gcc.dg/atomic-store-6.c: New.
+
 2013-10-25  Tom de Vries  <tom@codesourcery.com>
 
 	PR c++/58282
@@ -78,9 +83,9 @@
 	Backport from mainline
 	2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-        * gcc.target/s390/htm-1.c: New file.
-        * gcc.target/s390/htm-nofloat-1.c: New file.
-        * gcc.target/s390/htm-xl-intrin-1.c: New file.
+	* gcc.target/s390/htm-1.c: New file.
+	* gcc.target/s390/htm-nofloat-1.c: New file.
+	* gcc.target/s390/htm-xl-intrin-1.c: New file.
 
 2013-10-04  Tobias Burnus  <burnus@net-b.de>
 
@@ -346,8 +351,8 @@
 	Backport from mainline
 	2013-08-12  Perez Read  <netfirewall@gmail.com>
 
-        PR target/58132
-        * gcc.target/i386/movabs-1.c: New test.
+	PR target/58132
+	* gcc.target/i386/movabs-1.c: New test.
 
 2013-08-11  Janus Weil  <janus@gcc.gnu.org>
 
@@ -662,8 +667,8 @@
 
 2013-05-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR middle-end/56988
-        * gcc.dg/ipa/pr56988.c: New test.
+	PR middle-end/56988
+	* gcc.dg/ipa/pr56988.c: New test.
 
 2013-05-08  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -740,7 +745,7 @@
 	2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
-        * gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
+	* gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
 
 2013-05-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -766,32 +771,32 @@
 	Backport from mainline
 	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR rtl-optimizations/57046
-        * gcc.target/i386/pr57046.c: New test.
+	PR rtl-optimizations/57046
+	* gcc.target/i386/pr57046.c: New test.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR target/57018
-        * gcc.target/i386/pr57018.c: New test.
+	PR target/57018
+	* gcc.target/i386/pr57018.c: New test.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
-        PR rtl-optimization/56999
-        * g++.dg/opt/pr56999.C: New test.
+	PR rtl-optimization/56999
+	* g++.dg/opt/pr56999.C: New test.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR rtl-optimization/56847
-        * gcc.dg/pr56847.c: New test.
+	PR rtl-optimization/56847
+	* gcc.dg/pr56847.c: New test.
 
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
