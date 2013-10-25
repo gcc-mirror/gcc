@@ -1,3 +1,21 @@
+2013-10-24  Nick Clifton  <nickc@redhat.com>
+
+	* c-c++-common/pr57793.c: Add expected error messages for
+	targets with small integers.
+	* gcc.dg/c99-stdint-1.c: Only run on 32-bit plus targets.
+	* gcc.dg/c99-stdint-2.c: Likewise.
+	* gcc.dg/cdce1.c: Likewise.
+	* gcc.dg/fold-overflow-1.c: Likewise.
+	* gcc.dg/utf-cvt.c: Likewise.
+	* gcc.dg/ftrapv-1.c: Only run on targets that support trapping
+	arithmetic.
+	* gcc.dg/ftrapv-2.c: Likewise.
+	* gcc.dg/pr30286.c: Likewise.
+	* gcc.dg/pr19340.c: Only run on targets that support
+	scheduling.
+	* lib/target-supports.exp (check_effective_target_trapping): New
+	proc.  Returns true if the target supports trapping arithmetic.
+
 2013-10-25  Tobias Burnus  <burnus@net-b.de>
 
 	* g++.dg/parse/ivdep.C: New.
