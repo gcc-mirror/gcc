@@ -1,3 +1,9 @@
+2013-10-25  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* except.c (build_must_not_throw_expr): Handle
+	flag_exceptions.
+
 2013-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58596
