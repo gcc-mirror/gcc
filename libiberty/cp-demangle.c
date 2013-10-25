@@ -275,6 +275,18 @@ struct d_growable_string
   int allocation_failure;
 };
 
+/* A demangle component and some scope captured when it was first
+   traversed.  */
+
+struct d_saved_scope
+{
+  /* The component whose scope this is.  */
+  const struct demangle_component *container;
+  /* The list of templates, if any, that was current when this
+     scope was captured.  */
+  struct d_print_template *templates;
+};
+
 enum { D_PRINT_BUFFER_LENGTH = 256 };
 struct d_print_info
 {
@@ -302,6 +314,10 @@ struct d_print_info
   int pack_index;
   /* Number of d_print_flush calls so far.  */
   unsigned long int flush_count;
+  /* Array of saved scopes for evaluating substitutions.  */
+  struct d_saved_scope *saved_scopes;
+  /* Number of saved scopes in the above array.  */
+  int num_saved_scopes;
 };
 
 #ifdef CP_DEMANGLE_DEBUG
@@ -3665,6 +3681,30 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+
+  dpi->saved_scopes = NULL;
+  dpi->num_saved_scopes = 0;
+}
+
+/* Free a print information structure.  */
+
+static void
+d_print_free (struct d_print_info *dpi)
+{
+  int i;
+
+  for (i = 0; i < dpi->num_saved_scopes; i++)
+    {
+      struct d_print_template *ts, *tn;
+
+      for (ts = dpi->saved_scopes[i].templates; ts != NULL; ts = tn)
+	{
+	  tn = ts->next;
+	  free (ts);
+	}
+    }
+
+  free (dpi->saved_scopes);
 }
 
 /* Indicate that an error occurred during printing, and test for error.  */
@@ -3749,6 +3789,7 @@ cplus_demangle_print_callback (int options,
                                demangle_callbackref callback, void *opaque)
 {
   struct d_print_info dpi;
+  int success;
 
   d_print_init (&dpi, callback, opaque);
 
@@ -3756,7 +3797,9 @@ cplus_demangle_print_callback (int options,
 
   d_print_flush (&dpi);
 
-  return ! d_print_saw_error (&dpi);
+  success = ! d_print_saw_error (&dpi);
+  d_print_free (&dpi);
+  return success;
 }
 
 /* Turn components into a human readable string.  OPTIONS is the
@@ -3913,6 +3956,36 @@ d_print_subexpr (struct d_print_info *dpi, int options,
     d_append_char (dpi, ')');
 }
 
+/* Return a shallow copy of the current list of templates.
+   On error d_print_error is called and a partial list may
+   be returned.  Whatever is returned must be freed.  */
+
+static struct d_print_template *
+d_copy_templates (struct d_print_info *dpi)
+{
+  struct d_print_template *src, *result, **link = &result;
+
+  for (src = dpi->templates; src != NULL; src = src->next)
+    {
+      struct d_print_template *dst =
+	malloc (sizeof (struct d_print_template));
+
+      if (dst == NULL)
+	{
+	  d_print_error (dpi);
+	  break;
+	}
+
+      dst->template_decl = src->template_decl;
+      *link = dst;
+      link = &dst->next;
+    }
+
+  *link = NULL;
+
+  return result;
+}
+
 /* Subroutine to handle components.  */
 
 static void
@@ -3922,6 +3995,13 @@ d_print_comp (struct d_print_info *dpi, int options,
   /* Magic variable to let reference smashing skip over the next modifier
      without needing to modify *dc.  */
   const struct demangle_component *mod_inner = NULL;
+
+  /* Variable used to store the current templates while a previously
+     captured scope is used.  */
+  struct d_print_template *saved_templates;
+
+  /* Nonzero if templates have been stored in the above variable.  */
+  int need_template_restore = 0;
 
   if (dc == NULL)
     {
@@ -4291,12 +4371,56 @@ d_print_comp (struct d_print_info *dpi, int options,
 	const struct demangle_component *sub = d_left (dc);
 	if (sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
 	  {
-	    struct demangle_component *a = d_lookup_template_argument (dpi, sub);
+	    struct demangle_component *a;
+	    struct d_saved_scope *scope = NULL, *scopes;
+	    int i;
+
+	    for (i = 0; i < dpi->num_saved_scopes; i++)
+	      if (dpi->saved_scopes[i].container == sub)
+		scope = &dpi->saved_scopes[i];
+
+	    if (scope == NULL)
+	      {
+		/* This is the first time SUB has been traversed.
+		   We need to capture the current templates so
+		   they can be restored if SUB is reentered as a
+		   substitution.  */
+		++dpi->num_saved_scopes;
+		scopes = realloc (dpi->saved_scopes,
+				  sizeof (struct d_saved_scope)
+				  * dpi->num_saved_scopes);
+		if (scopes == NULL)
+		  {
+		    d_print_error (dpi);
+		    return;
+		  }
+
+		dpi->saved_scopes = scopes;
+		scope = dpi->saved_scopes + (dpi->num_saved_scopes - 1);
+
+		scope->container = sub;
+		scope->templates = d_copy_templates (dpi);
+		if (d_print_saw_error (dpi))
+		  return;
+	      }
+	    else
+	      {
+		/* This traversal is reentering SUB as a substition.
+		   Restore the original templates temporarily.  */
+		saved_templates = dpi->templates;
+		dpi->templates = scope->templates;
+		need_template_restore = 1;
+	      }
+
+	    a = d_lookup_template_argument (dpi, sub);
 	    if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
 	      a = d_index_template_argument (a, dpi->pack_index);
 
 	    if (a == NULL)
 	      {
+		if (need_template_restore)
+		  dpi->templates = saved_templates;
+
 		d_print_error (dpi);
 		return;
 	      }
@@ -4343,6 +4467,9 @@ d_print_comp (struct d_print_info *dpi, int options,
 	  d_print_mod (dpi, options, dc);
 
 	dpi->modifiers = dpm.next;
+
+	if (need_template_restore)
+	  dpi->templates = saved_templates;
 
 	return;
       }

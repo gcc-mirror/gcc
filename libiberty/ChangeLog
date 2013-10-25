@@ -1,3 +1,20 @@
+2013-10-25  Gary Benson  <gbenson@redhat.com>
+
+	* cp-demangle.c (struct d_saved_scope): New structure.
+	(struct d_print_info): New fields saved_scopes and
+	num_saved_scopes.
+	(d_print_init): Initialize the above.
+	(d_print_free): New function.
+	(cplus_demangle_print_callback): Call the above.
+	(d_copy_templates): New function.
+	(d_print_comp): New variables saved_templates and
+	need_template_restore.
+	[DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE]: Capture scope the first
+	time the component is traversed, and use the captured scope for
+	subsequent traversals.
+	* testsuite/demangle-expected: Add regression test.
+
 2013-10-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* testsuite/test-expandargv.c: Include unistd.h.
