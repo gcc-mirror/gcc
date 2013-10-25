@@ -1,7 +1,12 @@
+2013-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* recog.c (search_ofs): New static variable moved from...
+	(peep2_find_free_register): ...here.
+	(peephole2_optimize): Initialize it.
+
 2013-10-25  Tobias Burnus  <burnus@net-b.de>
 
-	* doc/invoke.texi (fopenmp): Change supported OpenMP version
-	to 4.0.
+	* doc/invoke.texi (fopenmp): Change supported OpenMP version to 4.0.
 
 2013-10-25  Uros Bizjak  <ubizjak@gmail.com>
 
