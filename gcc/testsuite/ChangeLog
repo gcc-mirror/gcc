@@ -1,3 +1,8 @@
+2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58759
+	* gcc.target/i386/pr58759.c: New.
+
 2013-10-25  Tobias Burnus  <burnus@net-b.de>
 
 	* g++.dg/vect/pr33426-ivdep.cc: Use dg-options.
