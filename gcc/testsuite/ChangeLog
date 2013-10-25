@@ -1,3 +1,7 @@
+2013-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/alias-23.c: New file.
+
 2013-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58626
