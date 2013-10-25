@@ -2810,16 +2810,13 @@ init_alias_analysis (void)
       /* Wipe the reg_seen array clean.  */
       memset (reg_seen, 0, maxreg);
 
-      /* Mark all hard registers which may contain an address.
-	 The stack, frame and argument pointers may contain an address.
-	 An argument register which can hold a Pmode value may contain
-	 an address even if it is not in BASE_REGS.
-
-	 The address expression is VOIDmode for an argument and
-	 Pmode for other registers.  */
-
-      memcpy (new_reg_base_value, static_reg_base_value,
-	      FIRST_PSEUDO_REGISTER * sizeof (rtx));
+      /* Initialize the alias information for this pass.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (static_reg_base_value[i])
+	  {
+	    new_reg_base_value[i] = static_reg_base_value[i];
+	    reg_seen[i] = 1;
+	  }
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
