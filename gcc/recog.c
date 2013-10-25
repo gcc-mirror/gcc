@@ -3030,6 +3030,9 @@ peep2_reg_dead_p (int ofs, rtx reg)
   return 1;
 }
 
+/* Regno offset to be used in the register search.  */
+static int search_ofs;
+
 /* Try to find a hard register of mode MODE, matching the register class in
    CLASS_STR, which is available at the beginning of insn CURRENT_INSN and
    remains available until the end of LAST_INSN.  LAST_INSN may be NULL_RTX,
@@ -3045,7 +3048,6 @@ rtx
 peep2_find_free_register (int from, int to, const char *class_str,
 			  enum machine_mode mode, HARD_REG_SET *reg_set)
 {
-  static int search_ofs;
   enum reg_class cl;
   HARD_REG_SET live;
   df_ref *def_rec;
@@ -3488,6 +3490,7 @@ peephole2_optimize (void)
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
     peep2_insn_data[i].live_before = BITMAP_ALLOC (&reg_obstack);
+  search_ofs = 0;
   live = BITMAP_ALLOC (&reg_obstack);
 
   FOR_EACH_BB_REVERSE (bb)
