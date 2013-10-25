@@ -1,3 +1,21 @@
+2013-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree.h (EXCEPTIONAL_CLASS_P): Rename parameter from "CODE"
+	to "NODE", since this works on a "tree", not an
+	"enum tree_code".
+	(CONSTANT_CLASS_P): Likewise.
+	(TYPE_P): Likewise.
+	(DECL_P): Likewise.
+	(INDIRECT_REF_P): Likewise.
+	(REFERENCE_CLASS_P): Likewise.
+	(COMPARISON_CLASS_P): Likewise.
+	(UNARY_CLASS_P): Likewise.
+	(BINARY_CLASS_P): Likewise.
+	(STATEMENT_CLASS_P): Likewise.
+	(VL_EXP_CLASS_P): Likewise.
+	(EXPRESSION_CLASS_P): Likewise.
+	(IS_TYPE_OR_DECL_P): Likewise.
+
 2013-10-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Look for an
