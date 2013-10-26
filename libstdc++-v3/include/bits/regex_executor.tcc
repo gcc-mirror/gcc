@@ -28,22 +28,15 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-// See below __get_executor to get what this is talking about. The default
-// value 1 indicated a conservative optimization without giving up worst case
-// performance.
-#ifndef _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
-#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 1
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+    bool __dfs_mode>
+    bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_search()
     {
       if (_M_flags & regex_constants::match_continuous)
@@ -51,9 +44,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __cur = _M_begin;
       do
 	{
-	  _M_match_mode = false;
-	  _M_init(__cur);
-	  if (_M_main())
+	  _M_current = __cur;
+	  if (_M_main<false>())
 	    return true;
 	}
       // Continue when __cur == _M_end
@@ -61,24 +53,141 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+    bool __dfs_mode>
+  template<bool __match_mode>
+    bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
+    _M_main()
+    {
+      if (__dfs_mode)
+	{
+	  _M_has_sol = false;
+	  _M_cur_results = _M_results;
+	  _M_dfs<__match_mode>(_M_start_state);
+	  return _M_has_sol;
+	}
+      else
+	{
+	  // Like the DFS approach, it try every possible state transition;
+	  // Unlike DFS, it uses a queue instead of a stack to store matching
+	  // states. It's a BFS approach.
+	  //
+	  // Russ Cox's article(http://swtch.com/~rsc/regexp/regexp1.html)
+	  // explained this algorithm clearly.
+	  //
+	  // Time complexity: o(match_length * match_results.size())
+	  //                  O(match_length * _M_nfa.size()
+	  //                    * match_results.size())
+	  // Space complexity: o(_M_nfa.size() + match_results.size())
+	  //                   O(_M_nfa.size() * match_results.size())
+	  _M_match_queue->push(make_pair(_M_start_state, _M_results));
+	  bool __ret = false;
+	  while (1)
+	    {
+	      _M_has_sol = false;
+	      if (_M_match_queue->empty())
+		break;
+	      _M_visited->assign(_M_visited->size(), false);
+	      auto _M_old_queue = std::move(*_M_match_queue);
+	      while (!_M_old_queue.empty())
+		{
+		  auto __task = _M_old_queue.front();
+		  _M_old_queue.pop();
+		  _M_cur_results = __task.second;
+		  _M_dfs<__match_mode>(__task.first);
+		}
+	      if (!__match_mode)
+		__ret |= _M_has_sol;
+	      if (_M_current == _M_end)
+		break;
+	      ++_M_current;
+	    }
+	  if (__match_mode)
+	    __ret = _M_has_sol;
+	  return __ret;
+	}
+    }
+
+  // Return whether now match the given sub-NFA.
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+    bool __dfs_mode>
+    bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
+    _M_lookahead(_State<_Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
+		 _CharT, _TraitsT> __state)
+    {
+      _ResultsVec __what(_M_cur_results.size());
+      auto __sub = std::unique_ptr<_Executor>(new _Executor(_M_current,
+							    _M_end,
+							    __what,
+							    _M_re,
+							    _M_flags));
+      __sub->_M_start_state = __state._M_alt;
+      if (__sub->_M_search_from_first())
+	{
+	  for (size_t __i = 0; __i < __what.size(); __i++)
+	    if (__what[__i].matched)
+	      _M_cur_results[__i] = __what[__i];
+	  return true;
+	}
+      return false;
+    }
+
+  // A _DFSExecutor perform a DFS on given NFA and input string. At the very
+  // beginning the executor stands in the start state, then it try every
+  // possible state transition in current state recursively. Some state
+  // transitions consume input string, say, a single-char-matcher or a
+  // back-reference matcher; some not, like assertion or other anchor nodes.
+  // When the input is exhausted and the current state is an accepting state,
+  // the whole executor return true.
+  //
+  // TODO: This approach is exponentially slow for certain input.
+  //       Try to compile the NFA to a DFA.
+  //
+  // Time complexity: o(match_length), O(2^(_M_nfa.size()))
+  // Space complexity: \theta(match_results.size() + match_length)
+  //
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+    bool __dfs_mode>
+  template<bool __match_mode>
+    void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_dfs(_StateIdT __i)
     {
-      auto& __current = this->_M_current;
-      const auto& __state = (*_M_nfa)[__i];
-      bool __ret = false;
+      if (!__dfs_mode)
+	{
+	  if ((*_M_visited)[__i])
+	    return;
+	  (*_M_visited)[__i] = true;
+	}
+
+      const auto& __state = _M_nfa[__i];
       switch (__state._M_opcode)
 	{
 	case _S_opcode_alternative:
 	  // Greedy or not, this is a question ;)
 	  if (!__state._M_neg)
-	    __ret = _M_dfs(__state._M_alt)
-	      || _M_dfs(__state._M_next);
+	    {
+	      _M_dfs<__match_mode>(__state._M_alt);
+	      if (!__dfs_mode || !_M_has_sol)
+		_M_dfs<__match_mode>(__state._M_next);
+	    }
 	  else
-	    __ret = _M_dfs(__state._M_next)
-	      || _M_dfs(__state._M_alt);
+	    {
+	      if (__dfs_mode)
+		{
+		  _M_dfs<__match_mode>(__state._M_next);
+		  if (!_M_has_sol)
+		    _M_dfs<__match_mode>(__state._M_alt);
+		}
+	      else
+		{
+		  if (!_M_has_sol)
+		    {
+		      _M_dfs<__match_mode>(__state._M_next);
+		      if (!_M_has_sol)
+			_M_dfs<__match_mode>(__state._M_alt);
+		    }
+		}
+	    }
 	  break;
 	case _S_opcode_subexpr_begin:
 	  // Here's the critical part: if there's nothing changed since last
@@ -88,273 +197,128 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Every change on _M_cur_results will be roll back after the
 	  // recursion step finished.
 	  if (!_M_cur_results[__state._M_subexpr].matched
-	      || _M_cur_results[__state._M_subexpr].first != __current)
+	      || _M_cur_results[__state._M_subexpr].first != _M_current)
 	    {
-	      auto __back = _M_cur_results[__state._M_subexpr].first;
-	      _M_cur_results[__state._M_subexpr].first = __current;
-	      __ret = _M_dfs(__state._M_next);
-	      _M_cur_results[__state._M_subexpr].first = __back;
+	      auto& __res = _M_cur_results[__state._M_subexpr];
+	      auto __back = __res.first;
+	      __res.first = _M_current;
+	      _M_dfs<__match_mode>(__state._M_next);
+	      __res.first = __back;
 	    }
 	  break;
 	case _S_opcode_subexpr_end:
-	  if (_M_cur_results[__state._M_subexpr].second != __current
+	  if (_M_cur_results[__state._M_subexpr].second != _M_current
 	      || _M_cur_results[__state._M_subexpr].matched != true)
 	    {
-	      auto __back = _M_cur_results[__state._M_subexpr];
-	      _M_cur_results[__state._M_subexpr].second = __current;
-	      _M_cur_results[__state._M_subexpr].matched = true;
-	      __ret = _M_dfs(__state._M_next);
-	      _M_cur_results[__state._M_subexpr] = __back;
+	      auto& __res = _M_cur_results[__state._M_subexpr];
+	      auto __back = __res;
+	      __res.second = _M_current;
+	      __res.matched = true;
+	      _M_dfs<__match_mode>(__state._M_next);
+	      __res = __back;
 	    }
 	  else
-	    __ret = _M_dfs(__state._M_next);
+	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	case _S_opcode_line_begin_assertion:
-	  if (this->_M_at_begin())
-	    __ret = _M_dfs(__state._M_next);
+	  if (_M_at_begin())
+	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	case _S_opcode_line_end_assertion:
-	  if (this->_M_at_end())
-	    __ret = _M_dfs(__state._M_next);
+	  if (_M_at_end())
+	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	case _S_opcode_word_boundry:
-	  if (this->_M_word_boundry(__state) == !__state._M_neg)
-	    __ret = _M_dfs(__state._M_next);
+	  if (_M_word_boundry(__state) == !__state._M_neg)
+	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	  // Here __state._M_alt offers a single start node for a sub-NFA.
 	  // We recursivly invoke our algorithm to match the sub-NFA.
 	case _S_opcode_subexpr_lookahead:
-	  if (this->_M_lookahead(__state) == !__state._M_neg)
-	    __ret = _M_dfs(__state._M_next);
+	  if (_M_lookahead(__state) == !__state._M_neg)
+	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	case _S_opcode_match:
-	  if (__current != this->_M_end && __state._M_matches(*__current))
+	  if (__dfs_mode)
 	    {
-	      ++__current;
-	      __ret = _M_dfs(__state._M_next);
-	      --__current;
+	      if (_M_current != _M_end && __state._M_matches(*_M_current))
+		{
+		  ++_M_current;
+		  _M_dfs<__match_mode>(__state._M_next);
+		  --_M_current;
+		}
 	    }
+	  else
+	    if (__state._M_matches(*_M_current))
+	      _M_match_queue->push(make_pair(__state._M_next, _M_cur_results));
 	  break;
 	// First fetch the matched result from _M_cur_results as __submatch;
 	// then compare it with
-	// (__current, __current + (__submatch.second - __submatch.first))
+	// (_M_current, _M_current + (__submatch.second - __submatch.first))
 	// If matched, keep going; else just return to try another state.
 	case _S_opcode_backref:
 	  {
+	    _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
 	    auto& __submatch = _M_cur_results[__state._M_backref_index];
 	    if (!__submatch.matched)
 	      break;
-	    auto __last = __current;
+	    auto __last = _M_current;
 	    for (auto __tmp = __submatch.first;
-		 __last != this->_M_end && __tmp != __submatch.second;
+		 __last != _M_end && __tmp != __submatch.second;
 		 ++__tmp)
 	      ++__last;
-	    if (this->_M_re._M_traits.transform(__submatch.first,
+	    if (_M_re._M_traits.transform(__submatch.first,
 						__submatch.second)
-		== this->_M_re._M_traits.transform(__current, __last))
+		== _M_re._M_traits.transform(_M_current, __last))
 	      {
-		if (__last != __current)
+		if (__last != _M_current)
 		  {
-		    auto __backup = __current;
-		    __current = __last;
-		    __ret = _M_dfs(__state._M_next);
-		    __current = __backup;
+		    auto __backup = _M_current;
+		    _M_current = __last;
+		    _M_dfs<__match_mode>(__state._M_next);
+		    _M_current = __backup;
 		  }
 		else
-		  __ret = _M_dfs(__state._M_next);
+		  _M_dfs<__match_mode>(__state._M_next);
 	      }
 	  }
 	  break;
 	case _S_opcode_accept:
-	  if (this->_M_match_mode)
-	    __ret = __current == this->_M_end;
+	  if (__dfs_mode)
+	    {
+	      _GLIBCXX_DEBUG_ASSERT(!_M_has_sol);
+	      if (__match_mode)
+		_M_has_sol = _M_current == _M_end;
+	      else
+		_M_has_sol = true;
+	      if (_M_current == _M_begin
+		  && (_M_flags & regex_constants::match_not_null))
+		_M_has_sol = false;
+	      if (_M_has_sol)
+		_M_results = _M_cur_results;
+	    }
 	  else
-	    __ret = true;
-	  if (__current == this->_M_begin
-	      && (this->_M_flags & regex_constants::match_not_null))
-	    __ret = false;
-	  if (__ret)
-	    this->_M_set_results(_M_cur_results);
+	    {
+	      if (_M_current == _M_begin
+		  && (_M_flags & regex_constants::match_not_null))
+		break;
+	      if (!__match_mode || _M_current == _M_end)
+		if (!_M_has_sol)
+		  {
+		    _M_has_sol = true;
+		    _M_results = _M_cur_results;
+		  }
+	    }
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);
 	}
-      return __ret;
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_main()
-    {
-      _M_e_closure();
-      bool __ret = false;
-      if (!this->_M_match_mode
-	  && !(this->_M_flags & regex_constants::match_not_null))
-	__ret = _M_includes_some() || __ret;
-      while (this->_M_current != this->_M_end)
-	{
-	  _M_move();
-	  ++this->_M_current;
-	  if (_M_stack._M_empty())
-	    break;
-	  _M_e_closure();
-	  if (!this->_M_match_mode)
-	    // To keep regex_search greedy, no "return true" here.
-	    __ret = _M_includes_some() || __ret;
-	}
-      if (this->_M_match_mode)
-	__ret = _M_includes_some();
-      if (__ret)
-	this->_M_set_results(_M_cur_results->_M_get());
-      _M_match_stack._M_clear();
-      _GLIBCXX_DEBUG_ASSERT(_M_stack._M_empty());
-      return __ret;
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    void _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_e_closure()
-    {
-      auto& __current = this->_M_current;
-
-      while (!_M_stack._M_empty())
-	{
-	  auto __u = _M_stack._M_pop();
-	  _GLIBCXX_DEBUG_ASSERT(_M_covered.count(__u));
-	  const auto& __state = (*_M_nfa)[__u];
-
-	  // Can be implemented using method, but there will be too many
-	  // arguments. I would use macro function before C++11, but lambda is
-	  // a better choice, since hopefully compiler can inline it.
-	  auto __add_visited_state = [=](_StateIdT __v)
-	  {
-	    if (_M_covered.count(__v) == 0)
-	      {
-		_M_covered[__v] =
-		  _ResultsPtr(new _ResultsEntry(*_M_covered[__u]));
-		_M_stack._M_push(__v);
-		return;
-	      }
-	    auto& __cu = _M_covered[__u];
-	    auto& __cv = _M_covered[__v];
-	    if (*__cu < *__cv)
-	      {
-		__cv = _ResultsPtr(new _ResultsEntry(*__cu));
-		// if a state is updated, it's outgoing neighbors should be
-		// reconsidered too. Push them to the queue.
-		_M_stack._M_push(__v);
-	      }
-	  };
-
-	  // Identical to DFS's switch part.
-	  switch (__state._M_opcode)
-	    {
-	      // Needs to maintain quantifier count vector here. A quantifier
-	      // must be concerned with a alt node.
-	      case _S_opcode_alternative:
-		{
-		  __add_visited_state(__state._M_next);
-		  auto& __cu = *_M_covered[__u];
-		  auto __back = __cu._M_quant_keys[__state._M_quant_index];
-		  __cu._M_inc(__state._M_quant_index, __state._M_neg);
-		  __add_visited_state(__state._M_alt);
-		  __cu._M_quant_keys[__state._M_quant_index] = __back;
-		}
-		break;
-	      case _S_opcode_subexpr_begin:
-		{
-		  auto& __sub = (*_M_covered[__u])[__state._M_subexpr];
-		  if (!__sub.matched || __sub.first != __current)
-		    {
-		      auto __back = __sub.first;
-		      __sub.first = __current;
-		      __add_visited_state(__state._M_next);
-		      __sub.first = __back;
-		    }
-		}
-		break;
-	      case _S_opcode_subexpr_end:
-		{
-		  auto& __cu = *_M_covered[__u];
-		  auto __back = __cu[__state._M_subexpr];
-		  __cu[__state._M_subexpr].second = __current;
-		  __cu[__state._M_subexpr].matched = true;
-		  __add_visited_state(__state._M_next);
-		  __cu[__state._M_subexpr] = __back;
-		}
-		break;
-	      case _S_opcode_line_begin_assertion:
-		if (this->_M_at_begin())
-		  __add_visited_state(__state._M_next);
-		break;
-	      case _S_opcode_line_end_assertion:
-		if (this->_M_at_end())
-		  __add_visited_state(__state._M_next);
-		break;
-	      case _S_opcode_word_boundry:
-		if (this->_M_word_boundry(__state) == !__state._M_neg)
-		  __add_visited_state(__state._M_next);
-		break;
-	      case _S_opcode_subexpr_lookahead:
-		if (this->_M_lookahead(__state) == !__state._M_neg)
-		  __add_visited_state(__state._M_next);
-		break;
-	      case _S_opcode_match:
-		_M_match_stack._M_push(__u);
-		break;
-	      case _S_opcode_accept:
-		break;
-	      default:
-		_GLIBCXX_DEBUG_ASSERT(false);
-	    }
-	}
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    void _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_move()
-    {
-      decltype(_M_covered) __next;
-      while (!_M_match_stack._M_empty())
-	{
-	  auto __u = _M_match_stack._M_pop();
-	  const auto& __state = (*_M_nfa)[__u];
-	  auto& __cu = _M_covered[__u];
-	  if (__state._M_matches(*this->_M_current)
-	      && (__next.count(__state._M_next) == 0
-		  || *__cu < *__next[__state._M_next]))
-	    {
-	      __next[__state._M_next] = std::move(__cu);
-	      _M_stack._M_push(__state._M_next);
-	    }
-	}
-      _M_covered = move(__next);
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_includes_some()
-    {
-      bool __succ = false;
-      for (auto __u : _M_nfa->_M_final_states())
-	if (_M_covered.count(__u))
-	  {
-	    __succ = true;
-	    auto& __cu = _M_covered[__u];
-	    if (_M_cur_results == nullptr || *__cu < *_M_cur_results)
-	      _M_cur_results = _ResultsPtr(new _ResultsEntry(*__cu));
-	  }
-      return __succ;
     }
 
   // Return whether now is at some word boundry.
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+    bool __dfs_mode>
+    bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_word_boundry(_State<_CharT, _TraitsT> __state) const
     {
       // By definition.
@@ -374,54 +338,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      != _M_is_word(*__pre);
 	}
       return __ans;
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_set_results(_ResultsVec& __cur_results)
-    {
-      for (size_t __i = 0; __i < __cur_results.size(); ++__i)
-	if (__cur_results[__i].matched)
-	  _M_results[__i] = __cur_results[__i];
-    }
-
-  enum class _RegexExecutorPolicy : int
-    { _S_auto, _S_alternate };
-
-  // This function decide which executor to use under given circumstances.
-  // The _S_auto policy now is the following: if a NFA has no back-references
-  // and has more than _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT quantifiers
-  // (*, +, ?), the _BFSExecutor will be used, other wise _DFSExecutor. This is
-  // because _DFSExecutor has a exponential upper bound, but better best-case
-  // performace. Meanwhile, _BFSExecutor can effectively prevent from
-  // exponential-long time matching (which must contains many quantifiers), but
-  // it's slower in average.
-  //
-  // For simple regex, _BFSExecutor could be 2 or more times slower than
-  // _DFSExecutor.
-  //
-  // Of course, _BFSExecutor cannot handle back-references.
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT,
-    _RegexExecutorPolicy __policy>
-    std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
-    __get_executor(_BiIter __b,
-		   _BiIter __e,
-		   std::vector<sub_match<_BiIter>, _Alloc>& __m,
-		   const basic_regex<_CharT, _TraitsT>& __re,
-		   regex_constants::match_flag_type __flags)
-    {
-      typedef std::unique_ptr<_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
-	_ExecutorPtr;
-      typedef _DFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _DFSExecutorT;
-      typedef _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT> _BFSExecutorT;
-      if (!__re._M_automaton->_M_has_backref
-	  && (__policy == _RegexExecutorPolicy::_S_alternate
-	      || __re._M_automaton->_M_quant_count
-		> _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT))
-	return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, __re, __flags));
-      return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, __re, __flags));
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,3 +1,21 @@
+2013-10-26  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Remove unnecessary friends.
+	* include/bits/regex.tcc (__regex_algo_impl<>): Move __get_executor
+	to here.
+	* include/bits/regex_executor.h: Remove _DFSExecutor and _BFSExecutor;
+	they are merged into _Executor. Eliminate quantifier tracking part, so
+	it's faster.
+	* include/bits/regex_executor.tcc: Implement _Executor.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/ungreedy.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/ecma/greedy.cc: Adjust
+	duplicate testcases.
+	* testsuite/performance/28_regex/split.h: New.
+	* testsuite/performance/28_regex/split_bfs.cc: New.
+	* testsuite/util/testsuite_regex.h: Adjust behavior of two-executors
+	agreement judger: do not compare match_results when executor return
+	false.
+
 2013-10-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h (__check_singular): Add const on
