@@ -1,5 +1,11 @@
 2013-10-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (movmemsi): Remove empty constraints and predicates.
+	Fix formatting.
+	(cmpstr_t, cmpstrsi): Fix formatting.
+
+2013-10-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/52483
 	* config/sh/predicates.md (general_movdst_operand): Allow reg+reg
 	addressing, do not use general_operand for memory operands.
