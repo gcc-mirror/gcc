@@ -117,9 +117,6 @@ DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (96), 0)
 /* Branch ending with return; is probably not taken */
 DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (90), 0)
 
-/* Branches to a mudflap bounds check are extremely unlikely.  */
-DEF_PREDICTOR (PRED_MUDFLAP, "mudflap check", PROB_VERY_LIKELY, 0)
-
 /* Branches to compare induction variable to a loop bound is
    extremely likely.  */
 DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",

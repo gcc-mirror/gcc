@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-ssa-alias.h"
 #include "insn-codes.h"
-#include "tree-mudflap.h"
 
 
 bool
@@ -1576,10 +1575,6 @@ tree
 build_va_arg_indirect_ref (tree addr)
 {
   addr = build_simple_mem_ref_loc (EXPR_LOCATION (addr), addr);
-
-  if (flag_mudflap) /* Don't instrument va_arg INDIRECT_REF.  */
-    mf_mark (addr);
-
   return addr;
 }
 
