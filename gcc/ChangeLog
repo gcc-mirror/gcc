@@ -1,5 +1,8 @@
 2013-10-26  Jeff Law  <law@redhat.com>
 
+	* predict.c (PRED_MUDFLAP): Remove.
+	* targhooks.c (build_va_arg_indirect_ref): Remove mudflap support.
+
 	* Makefile.in (C_COMMON_OBJS): Remove tree-mudflap.
 	(OBJS): Remove tree-nomudflap.o
 	(GTFILES): Remove tree-mudflap.c
