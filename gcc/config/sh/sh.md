@@ -11836,19 +11836,20 @@ label:
 ;; String/block move insn.
 
 (define_expand "movmemsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
-		   (mem:BLK (match_operand:BLK 1 "" "")))
-	      (use (match_operand:SI 2 "nonmemory_operand" ""))
-	      (use (match_operand:SI 3 "immediate_operand" ""))
+  [(parallel [(set (mem:BLK (match_operand:BLK 0))
+		   (mem:BLK (match_operand:BLK 1)))
+	      (use (match_operand:SI 2 "nonmemory_operand"))
+	      (use (match_operand:SI 3 "immediate_operand"))
 	      (clobber (reg:SI PR_REG))
 	      (clobber (reg:SI R4_REG))
 	      (clobber (reg:SI R5_REG))
 	      (clobber (reg:SI R0_REG))])]
   "TARGET_SH1 && ! TARGET_SH5"
 {
-  if(expand_block_move (operands))
-     DONE;
-  else FAIL;
+  if (expand_block_move (operands))
+    DONE;
+  else
+    FAIL;
 })
 
 (define_insn "block_move_real"
@@ -11916,17 +11917,19 @@ label:
 (define_insn "cmpstr_t"
   [(set (reg:SI T_REG)
 	(eq:SI (and:SI
-		(and:SI
 		 (and:SI
-		  (zero_extract:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "r")
-					   (match_operand:SI 1 "arith_reg_operand" "r"))
-				   (const_int 8) (const_int 0))
-		  (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
-				   (const_int 8) (const_int 8)))
-		  (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
-				   (const_int 8) (const_int 16)))
-		(zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
-				 (const_int 8) (const_int 24))) (const_int 0)))]
+		   (and:SI
+		     (zero_extract:SI
+		       (xor:SI (match_operand:SI 0 "arith_reg_operand" "r")
+			       (match_operand:SI 1 "arith_reg_operand" "r"))
+		       (const_int 8) (const_int 0))
+		     (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
+				      (const_int 8) (const_int 8)))
+		    (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
+				     (const_int 8) (const_int 16)))
+		 (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
+				  (const_int 8) (const_int 24)))
+	       (const_int 0)))]
   "TARGET_SH1"
   "cmp/str	%0,%1"
   [(set_attr "type" "mt_group")])
@@ -11938,9 +11941,10 @@ label:
    (use (match_operand 3 "immediate_operand"))]
   "TARGET_SH1"
 {
-   if (! optimize_insn_for_size_p () && sh_expand_cmpstr (operands))
-      DONE;
-   else FAIL;
+  if (! optimize_insn_for_size_p () && sh_expand_cmpstr (operands))
+    DONE;
+  else
+    FAIL;
 })
 
 
