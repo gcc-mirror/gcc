@@ -4362,10 +4362,6 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
   bool alloca_with_align = (DECL_FUNCTION_CODE (get_callee_fndecl (exp))
 			    == BUILT_IN_ALLOCA_WITH_ALIGN);
 
-  /* Emit normal call if we use mudflap.  */
-  if (flag_mudflap)
-    return NULL_RTX;
-
   valid_arglist
     = (alloca_with_align
        ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)

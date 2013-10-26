@@ -1,3 +1,32 @@
+2013-10-26  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Remove tree-mudflap.
+	(OBJS): Remove tree-nomudflap.o
+	(GTFILES): Remove tree-mudflap.c
+	* builtins.c (expand_builtin_alloc): Remove mudflap support.
+	* gcc.c (MFWRAP_SPEC, MFLIB_SPEC): Likewise.
+	(mfwrap_spec, mflib_spec): Likewise.
+	(cpp_unique_options, cc1_options, static_specs): Likewise.
+	* gimplify (gimplify_vla_decl, build_va_arg_indirect_ref): Likewise.
+	* passes.def: Likewise.
+	* toplev.c (compile_file, process_options): Likewise.
+	* tree-inline.c (copy_tree_r): Likewise.
+	* tree-pass.,h (make_pass_mudflap_1, make_pass_mudflap_2): Likewise.
+	* varasm.c (make_decl_rtl, make_decl_rtl_for_debug): Likewise.
+	(build_constant_desc, output_constant_def_contents): Likewise.
+	(categorize_decl_for_section): Likewise.
+	* tree-mudflap.c: Removed.
+	* tree-mudflap.h: Removed.
+	* tree-nomudflap.c: Removed.
+	* bfin/uclinux.h (MFWRAP_SPEC): Remove.
+	* moxie/uclinux.h (MFWRAP_SPEC): Likewise.
+	* rs6000/aix.h (MFWRAP_SPEC, MFLIB_SPEC): Likewise.
+	* config/sol2.h (MFLIB_SPEC): Likewise.
+	* doc/install.texi: Remove mudflap references.
+	* doc/passes.texi: Similarly.
+	* doc/sourcebuild.texi: Similarly.
+	* doc/invoke.texi: Remove mudlfap related options.
+
 2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58759

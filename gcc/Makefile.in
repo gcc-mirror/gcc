@@ -1132,14 +1132,11 @@ GCC_OBJS = gcc.o ggc-none.o
 c-family-warn = $(STRICT_WARN)
 
 # Language-specific object files shared by all C-family front ends.
-# FIXME: tree-mudflap is C-family only, but it is also part of the middle-end.
-# The mudflap machinery should be properly separated from the front ends, and
-# perhaps turned into a plugin.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-format.o c-family/c-gimplify.o c-family/c-lex.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
-  c-family/c-semantics.o c-family/c-ada-spec.o tree-mudflap.o \
+  c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/array-notation-common.o c-family/c-ubsan.o
 
 # Language-independent object files.
@@ -1388,7 +1385,6 @@ OBJS = \
 	tree-iterator.o \
 	tree-loop-distribution.o \
 	tree-nested.o \
-	tree-nomudflap.o \
 	tree-nrv.o \
 	tree-object-size.o \
 	tree-outof-ssa.o \
@@ -2252,7 +2248,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
-  $(srcdir)/tree-mudflap.c $(srcdir)/gimple-ssa.h \
+  $(srcdir)/gimple-ssa.h \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c \
   $(srcdir)/tree-dfa.c \
