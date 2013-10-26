@@ -625,7 +625,7 @@ lra_final_code_change (void)
 {
   int i, hard_regno;
   basic_block bb;
-  rtx insn, curr, set;
+  rtx insn, curr;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -661,19 +661,5 @@ lra_final_code_change (void)
 	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
-
-	  if ((set = single_set (insn)) != NULL
-	      && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
-	      && REGNO (SET_SRC (set)) == REGNO (SET_DEST (set)))
-	    {
-	      /* Remove an useless move insn.  IRA can generate move
-		 insns involving pseudos.  It is better remove them
-		 earlier to speed up compiler a bit.  It is also
-		 better to do it here as they might not pass final RTL
-		 check in LRA, (e.g. insn moving a control register
-		 into itself).  */
-	      lra_invalidate_insn_data (insn);
-	      delete_insn (insn);
-	    }
 	}
 }
