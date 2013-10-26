@@ -23,7 +23,7 @@
 	ST1_REG and XMM1_REG for 32bit and 64bit targets.  Also add DI_REG
 	and SI_REG for 64bit SYSV ABI targets.
 
-2013-08-25  Richard Henderson  <rth@twiddle.net>
+2013-10-25  Richard Henderson  <rth@twiddle.net>
 
 	PR rtl/58542
 	* optabs.c (maybe_emit_atomic_exchange): Use create_input_operand
