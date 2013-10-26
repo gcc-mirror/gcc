@@ -575,15 +575,11 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
 @endif target-libstdc++-v3
-
-@if target-libmudflap
-TARGET_LIB_PATH_libmudflap = $$r/$(TARGET_SUBDIR)/libmudflap/.libs:
-@endif target-libmudflap
 
 @if target-libsanitizer
 TARGET_LIB_PATH_libsanitizer = $$r/$(TARGET_SUBDIR)/libsanitizer/.libs:
@@ -927,7 +923,6 @@ configure-host:  \
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
-    maybe-configure-target-libmudflap \
     maybe-configure-target-libsanitizer \
     maybe-configure-target-libvtv \
     maybe-configure-target-libssp \
@@ -1077,7 +1072,6 @@ all-host: maybe-all-lto-plugin
 @if target-libstdc++-v3-no-bootstrap
 all-target: maybe-all-target-libstdc++-v3
 @endif target-libstdc++-v3-no-bootstrap
-all-target: maybe-all-target-libmudflap
 @if target-libsanitizer-no-bootstrap
 all-target: maybe-all-target-libsanitizer
 @endif target-libsanitizer-no-bootstrap
@@ -1173,7 +1167,6 @@ info-host: maybe-info-lto-plugin
 .PHONY: info-target
 
 info-target: maybe-info-target-libstdc++-v3
-info-target: maybe-info-target-libmudflap
 info-target: maybe-info-target-libsanitizer
 info-target: maybe-info-target-libvtv
 info-target: maybe-info-target-libssp
@@ -1256,7 +1249,6 @@ dvi-host: maybe-dvi-lto-plugin
 .PHONY: dvi-target
 
 dvi-target: maybe-dvi-target-libstdc++-v3
-dvi-target: maybe-dvi-target-libmudflap
 dvi-target: maybe-dvi-target-libsanitizer
 dvi-target: maybe-dvi-target-libvtv
 dvi-target: maybe-dvi-target-libssp
@@ -1339,7 +1331,6 @@ pdf-host: maybe-pdf-lto-plugin
 .PHONY: pdf-target
 
 pdf-target: maybe-pdf-target-libstdc++-v3
-pdf-target: maybe-pdf-target-libmudflap
 pdf-target: maybe-pdf-target-libsanitizer
 pdf-target: maybe-pdf-target-libvtv
 pdf-target: maybe-pdf-target-libssp
@@ -1422,7 +1413,6 @@ html-host: maybe-html-lto-plugin
 .PHONY: html-target
 
 html-target: maybe-html-target-libstdc++-v3
-html-target: maybe-html-target-libmudflap
 html-target: maybe-html-target-libsanitizer
 html-target: maybe-html-target-libvtv
 html-target: maybe-html-target-libssp
@@ -1505,7 +1495,6 @@ TAGS-host: maybe-TAGS-lto-plugin
 .PHONY: TAGS-target
 
 TAGS-target: maybe-TAGS-target-libstdc++-v3
-TAGS-target: maybe-TAGS-target-libmudflap
 TAGS-target: maybe-TAGS-target-libsanitizer
 TAGS-target: maybe-TAGS-target-libvtv
 TAGS-target: maybe-TAGS-target-libssp
@@ -1588,7 +1577,6 @@ install-info-host: maybe-install-info-lto-plugin
 .PHONY: install-info-target
 
 install-info-target: maybe-install-info-target-libstdc++-v3
-install-info-target: maybe-install-info-target-libmudflap
 install-info-target: maybe-install-info-target-libsanitizer
 install-info-target: maybe-install-info-target-libvtv
 install-info-target: maybe-install-info-target-libssp
@@ -1671,7 +1659,6 @@ install-pdf-host: maybe-install-pdf-lto-plugin
 .PHONY: install-pdf-target
 
 install-pdf-target: maybe-install-pdf-target-libstdc++-v3
-install-pdf-target: maybe-install-pdf-target-libmudflap
 install-pdf-target: maybe-install-pdf-target-libsanitizer
 install-pdf-target: maybe-install-pdf-target-libvtv
 install-pdf-target: maybe-install-pdf-target-libssp
@@ -1754,7 +1741,6 @@ install-html-host: maybe-install-html-lto-plugin
 .PHONY: install-html-target
 
 install-html-target: maybe-install-html-target-libstdc++-v3
-install-html-target: maybe-install-html-target-libmudflap
 install-html-target: maybe-install-html-target-libsanitizer
 install-html-target: maybe-install-html-target-libvtv
 install-html-target: maybe-install-html-target-libssp
@@ -1837,7 +1823,6 @@ installcheck-host: maybe-installcheck-lto-plugin
 .PHONY: installcheck-target
 
 installcheck-target: maybe-installcheck-target-libstdc++-v3
-installcheck-target: maybe-installcheck-target-libmudflap
 installcheck-target: maybe-installcheck-target-libsanitizer
 installcheck-target: maybe-installcheck-target-libvtv
 installcheck-target: maybe-installcheck-target-libssp
@@ -1920,7 +1905,6 @@ mostlyclean-host: maybe-mostlyclean-lto-plugin
 .PHONY: mostlyclean-target
 
 mostlyclean-target: maybe-mostlyclean-target-libstdc++-v3
-mostlyclean-target: maybe-mostlyclean-target-libmudflap
 mostlyclean-target: maybe-mostlyclean-target-libsanitizer
 mostlyclean-target: maybe-mostlyclean-target-libvtv
 mostlyclean-target: maybe-mostlyclean-target-libssp
@@ -2003,7 +1987,6 @@ clean-host: maybe-clean-lto-plugin
 .PHONY: clean-target
 
 clean-target: maybe-clean-target-libstdc++-v3
-clean-target: maybe-clean-target-libmudflap
 clean-target: maybe-clean-target-libsanitizer
 clean-target: maybe-clean-target-libvtv
 clean-target: maybe-clean-target-libssp
@@ -2086,7 +2069,6 @@ distclean-host: maybe-distclean-lto-plugin
 .PHONY: distclean-target
 
 distclean-target: maybe-distclean-target-libstdc++-v3
-distclean-target: maybe-distclean-target-libmudflap
 distclean-target: maybe-distclean-target-libsanitizer
 distclean-target: maybe-distclean-target-libvtv
 distclean-target: maybe-distclean-target-libssp
@@ -2169,7 +2151,6 @@ maintainer-clean-host: maybe-maintainer-clean-lto-plugin
 .PHONY: maintainer-clean-target
 
 maintainer-clean-target: maybe-maintainer-clean-target-libstdc++-v3
-maintainer-clean-target: maybe-maintainer-clean-target-libmudflap
 maintainer-clean-target: maybe-maintainer-clean-target-libsanitizer
 maintainer-clean-target: maybe-maintainer-clean-target-libvtv
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
@@ -2307,7 +2288,6 @@ check-host:  \
 .PHONY: check-target
 check-target:  \
     maybe-check-target-libstdc++-v3 \
-    maybe-check-target-libmudflap \
     maybe-check-target-libsanitizer \
     maybe-check-target-libvtv \
     maybe-check-target-libssp \
@@ -2463,7 +2443,6 @@ install-host:  \
 .PHONY: install-target
 install-target:  \
     maybe-install-target-libstdc++-v3 \
-    maybe-install-target-libmudflap \
     maybe-install-target-libsanitizer \
     maybe-install-target-libvtv \
     maybe-install-target-libssp \
@@ -2566,7 +2545,6 @@ install-strip-host:  \
 .PHONY: install-strip-target
 install-strip-target:  \
     maybe-install-strip-target-libstdc++-v3 \
-    maybe-install-strip-target-libmudflap \
     maybe-install-strip-target-libsanitizer \
     maybe-install-strip-target-libvtv \
     maybe-install-strip-target-libssp \
@@ -31745,463 +31723,6 @@ maintainer-clean-target-libstdc++-v3:
 
 
 
-.PHONY: configure-target-libmudflap maybe-configure-target-libmudflap
-maybe-configure-target-libmudflap:
-@if gcc-bootstrap
-configure-target-libmudflap: stage_current
-@endif gcc-bootstrap
-@if target-libmudflap
-maybe-configure-target-libmudflap: configure-target-libmudflap
-configure-target-libmudflap: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libmudflap..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmudflap/multilib.tmp 2> /dev/null ; \
-	if test -r $(TARGET_SUBDIR)/libmudflap/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmudflap/multilib.tmp $(TARGET_SUBDIR)/libmudflap/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmudflap/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmudflap/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmudflap/multilib.tmp $(TARGET_SUBDIR)/libmudflap/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmudflap/multilib.tmp $(TARGET_SUBDIR)/libmudflap/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmudflap/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libmudflap; \
-	cd "$(TARGET_SUBDIR)/libmudflap" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmudflap/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/libmudflap"; \
-	libsrcdir="$$s/libmudflap"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
-	  || exit 1
-@endif target-libmudflap
-
-
-
-
-
-.PHONY: all-target-libmudflap maybe-all-target-libmudflap
-maybe-all-target-libmudflap:
-@if gcc-bootstrap
-all-target-libmudflap: stage_current
-@endif gcc-bootstrap
-@if target-libmudflap
-TARGET-target-libmudflap=all
-maybe-all-target-libmudflap: all-target-libmudflap
-all-target-libmudflap: configure-target-libmudflap
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
-		$(TARGET-target-libmudflap))
-@endif target-libmudflap
-
-
-
-
-
-.PHONY: check-target-libmudflap maybe-check-target-libmudflap
-maybe-check-target-libmudflap:
-@if target-libmudflap
-maybe-check-target-libmudflap: check-target-libmudflap
-
-check-target-libmudflap:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-libmudflap
-
-.PHONY: install-target-libmudflap maybe-install-target-libmudflap
-maybe-install-target-libmudflap:
-@if target-libmudflap
-maybe-install-target-libmudflap: install-target-libmudflap
-
-install-target-libmudflap: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libmudflap
-
-.PHONY: install-strip-target-libmudflap maybe-install-strip-target-libmudflap
-maybe-install-strip-target-libmudflap:
-@if target-libmudflap
-maybe-install-strip-target-libmudflap: install-strip-target-libmudflap
-
-install-strip-target-libmudflap: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-libmudflap
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-libmudflap info-target-libmudflap
-maybe-info-target-libmudflap:
-@if target-libmudflap
-maybe-info-target-libmudflap: info-target-libmudflap
-
-info-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-dvi-target-libmudflap dvi-target-libmudflap
-maybe-dvi-target-libmudflap:
-@if target-libmudflap
-maybe-dvi-target-libmudflap: dvi-target-libmudflap
-
-dvi-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-pdf-target-libmudflap pdf-target-libmudflap
-maybe-pdf-target-libmudflap:
-@if target-libmudflap
-maybe-pdf-target-libmudflap: pdf-target-libmudflap
-
-pdf-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-html-target-libmudflap html-target-libmudflap
-maybe-html-target-libmudflap:
-@if target-libmudflap
-maybe-html-target-libmudflap: html-target-libmudflap
-
-html-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-TAGS-target-libmudflap TAGS-target-libmudflap
-maybe-TAGS-target-libmudflap:
-@if target-libmudflap
-maybe-TAGS-target-libmudflap: TAGS-target-libmudflap
-
-TAGS-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-install-info-target-libmudflap install-info-target-libmudflap
-maybe-install-info-target-libmudflap:
-@if target-libmudflap
-maybe-install-info-target-libmudflap: install-info-target-libmudflap
-
-install-info-target-libmudflap: \
-    configure-target-libmudflap \
-    info-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-install-pdf-target-libmudflap install-pdf-target-libmudflap
-maybe-install-pdf-target-libmudflap:
-@if target-libmudflap
-maybe-install-pdf-target-libmudflap: install-pdf-target-libmudflap
-
-install-pdf-target-libmudflap: \
-    configure-target-libmudflap \
-    pdf-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-install-html-target-libmudflap install-html-target-libmudflap
-maybe-install-html-target-libmudflap:
-@if target-libmudflap
-maybe-install-html-target-libmudflap: install-html-target-libmudflap
-
-install-html-target-libmudflap: \
-    configure-target-libmudflap \
-    html-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-installcheck-target-libmudflap installcheck-target-libmudflap
-maybe-installcheck-target-libmudflap:
-@if target-libmudflap
-maybe-installcheck-target-libmudflap: installcheck-target-libmudflap
-
-installcheck-target-libmudflap: \
-    configure-target-libmudflap 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-mostlyclean-target-libmudflap mostlyclean-target-libmudflap
-maybe-mostlyclean-target-libmudflap:
-@if target-libmudflap
-maybe-mostlyclean-target-libmudflap: mostlyclean-target-libmudflap
-
-mostlyclean-target-libmudflap: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-clean-target-libmudflap clean-target-libmudflap
-maybe-clean-target-libmudflap:
-@if target-libmudflap
-maybe-clean-target-libmudflap: clean-target-libmudflap
-
-clean-target-libmudflap: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-distclean-target-libmudflap distclean-target-libmudflap
-maybe-distclean-target-libmudflap:
-@if target-libmudflap
-maybe-distclean-target-libmudflap: distclean-target-libmudflap
-
-distclean-target-libmudflap: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libmudflap
-
-.PHONY: maybe-maintainer-clean-target-libmudflap maintainer-clean-target-libmudflap
-maybe-maintainer-clean-target-libmudflap:
-@if target-libmudflap
-maybe-maintainer-clean-target-libmudflap: maintainer-clean-target-libmudflap
-
-maintainer-clean-target-libmudflap: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libmudflap" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libmudflap
-
-
-
-
-
 .PHONY: configure-target-libsanitizer maybe-configure-target-libsanitizer
 maybe-configure-target-libsanitizer:
 @if gcc-bootstrap
@@ -44237,13 +43758,6 @@ maintainer-clean-target-libatomic:
 
 
 
-@if target-libmudflap
-.PHONY: check-target-libmudflap-c++
-check-target-libmudflap-c++:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++frags.exp" check-target-libmudflap
-
-@endif target-libmudflap
-
 @if target-libgomp
 .PHONY: check-target-libgomp-c++
 check-target-libgomp-c++:
@@ -44292,7 +43806,7 @@ check-gcc-c++:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++);
-check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libmudflap-c++ check-target-libitm-c++ check-target-libgomp-c++
+check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libitm-c++ check-target-libgomp-c++
 
 .PHONY: check-gcc-fortran check-fortran
 check-gcc-fortran:
@@ -46375,7 +45889,6 @@ configure-stage3-target-libstdc++-v3: maybe-all-stage3-gcc
 configure-stage4-target-libstdc++-v3: maybe-all-stage4-gcc
 configure-stageprofile-target-libstdc++-v3: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libstdc++-v3: maybe-all-stagefeedback-gcc
-configure-target-libmudflap: stage_last
 configure-stage1-target-libsanitizer: maybe-all-stage1-gcc
 configure-stage2-target-libsanitizer: maybe-all-stage2-gcc
 configure-stage3-target-libsanitizer: maybe-all-stage3-gcc
@@ -46422,7 +45935,6 @@ configure-target-libatomic: stage_last
 
 @if gcc-no-bootstrap
 configure-target-libstdc++-v3: maybe-all-gcc
-configure-target-libmudflap: maybe-all-gcc
 configure-target-libsanitizer: maybe-all-gcc
 configure-target-libvtv: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
@@ -47268,7 +46780,6 @@ configure-stagefeedback-target-libgomp: maybe-all-stagefeedback-target-libgcc
 
 @if gcc-no-bootstrap
 configure-target-libstdc++-v3: maybe-all-target-libgcc
-configure-target-libmudflap: maybe-all-target-libgcc
 configure-target-libsanitizer: maybe-all-target-libgcc
 configure-target-libvtv: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
@@ -47294,8 +46805,6 @@ configure-target-libatomic: maybe-all-target-libgcc
 
 
 configure-target-libstdc++-v3: maybe-all-target-newlib maybe-all-target-libgloss
-
-configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libsanitizer: maybe-all-target-newlib maybe-all-target-libgloss
 

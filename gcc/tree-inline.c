@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-iterator.h"
 #include "intl.h"
-#include "tree-mudflap.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
@@ -4592,10 +4591,6 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       /* Copy the node.  */
       new_tree = copy_node (*tp);
 
-      /* Propagate mudflap marked-ness.  */
-      if (flag_mudflap && mf_marked_p (*tp))
-        mf_mark (new_tree);
-
       *tp = new_tree;
 
       /* Now, restore the chain, if appropriate.  That will cause
@@ -4617,11 +4612,6 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       tree new_tree;
 
       new_tree = copy_node (*tp);
-
-      /* Propagate mudflap marked-ness.  */
-      if (flag_mudflap && mf_marked_p (*tp))
-        mf_mark (new_tree);
-
       CONSTRUCTOR_ELTS (new_tree) = vec_safe_copy (CONSTRUCTOR_ELTS (*tp));
       *tp = new_tree;
     }

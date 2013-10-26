@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
-#include "tree-mudflap.h"
 #include "expr.h"
 #include "tm_p.h"
 
@@ -1236,8 +1235,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       gimple stack_restore;
 
       /* Save stack on entry and restore it on exit.  Add a try_finally
-	 block to achieve this.  Note that mudflap depends on the
-	 format of the emitted code: see mx_register_decls().  */
+	 block to achieve this.  */
       build_stack_save_restore (&stack_save, &stack_restore);
 
       gimplify_seq_add_stmt (&cleanup, stack_restore);
@@ -1395,8 +1393,7 @@ static void
 gimplify_vla_decl (tree decl, gimple_seq *seq_p)
 {
   /* This is a variable-sized decl.  Simplify its size and mark it
-     for deferred expansion.  Note that mudflap depends on the format
-     of the emitted code: see mx_register_decls().  */
+     for deferred expansion.  */
   tree t, addr, ptr_type;
 
   gimplify_one_sizepos (&DECL_SIZE (decl), seq_p);

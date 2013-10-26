@@ -159,7 +159,6 @@ target_libraries="target-libgcc \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
-		target-libmudflap \
 		target-libsanitizer \
 		target-libvtv \
 		target-libssp \
@@ -472,22 +471,6 @@ if test x$enable_static_libjava != xyes ; then
   EXTRA_CONFIGARGS_LIBJAVA=--disable-static
 fi
 AC_SUBST(EXTRA_CONFIGARGS_LIBJAVA)
-
-# Disable libmudflap on some systems.
-if test x$enable_libmudflap = x ; then
-    case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
-        # Enable libmudflap by default in GNU and friends.
-	;;
-    *-*-freebsd*)
-        # Enable libmudflap by default in FreeBSD.
-	;;
-    *)
-        # Disable it by default everywhere else.
-	noconfigdirs="$noconfigdirs target-libmudflap"
-	;;
-    esac
-fi
 
 # Disable libgomp on non POSIX hosted systems.
 if test x$enable_libgomp = x ; then

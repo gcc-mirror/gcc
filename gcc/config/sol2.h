@@ -194,11 +194,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif /* HAVE_LD_EH_FRAME && TARGET_DL_ITERATE_PHDR */
 #endif
 
-#ifndef USE_GLD
-/* The default MFLIB_SPEC is GNU ld specific.  */
-#define MFLIB_SPEC ""
-#endif
-
 /* collect2.c can only parse GNU nm -n output.  Solaris nm needs -png to
    produce the same format.  */
 #define NM_FLAGS "-png"

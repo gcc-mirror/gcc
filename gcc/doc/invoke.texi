@@ -256,7 +256,6 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
@@ -308,7 +307,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-ch @gol
 -fdump-tree-ssa@r{[}-@var{n}@r{]} -fdump-tree-pre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-ccp@r{[}-@var{n}@r{]} -fdump-tree-dce@r{[}-@var{n}@r{]} @gol
--fdump-tree-gimple@r{[}-raw@r{]} -fdump-tree-mudflap@r{[}-@var{n}@r{]} @gol
+-fdump-tree-gimple@r{[}-raw@r{]} @gol
 -fdump-tree-dom@r{[}-@var{n}@r{]} @gol
 -fdump-tree-dse@r{[}-@var{n}@r{]} @gol
 -fdump-tree-phiprop@r{[}-@var{n}@r{]} @gol
@@ -384,7 +383,7 @@ Objective-C and Objective-C++ Dialects}.
 -floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
--fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
+-fmove-loop-invariants -fno-branch-count-reg @gol
 -fno-defer-pop -fno-function-cse -fno-guess-branch-probability @gol
 -fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
@@ -4991,11 +4990,6 @@ This option is only supported for C and Objective-C@.  It is implied by
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that are not protected against stack smashing.
 
-@item -Wno-mudflap
-@opindex Wno-mudflap
-Suppress warnings about constructs that cannot be instrumented by
-@option{-fmudflap}.
-
 @item -Woverlength-strings
 @opindex Woverlength-strings
 @opindex Wno-overlength-strings
@@ -6200,11 +6194,6 @@ by appending @file{.store_copyprop} to the source file name.
 Dump each function after dead code elimination.  The file name is made by
 appending @file{.dce} to the source file name.
 
-@item mudflap
-@opindex fdump-tree-mudflap
-Dump each function after adding mudflap instrumentation.  The file name is
-made by appending @file{.mudflap} to the source file name.
-
 @item sra
 @opindex fdump-tree-sra
 Dump each function after performing scalar replacement of aggregates.  The
@@ -7070,32 +7059,6 @@ resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
-
-@item -fmudflap -fmudflapth -fmudflapir
-@opindex fmudflap
-@opindex fmudflapth
-@opindex fmudflapir
-@cindex bounds checking
-@cindex mudflap
-For front-ends that support it (C and C++), instrument all risky
-pointer/array dereferencing operations, some standard library
-string/heap functions, and some other associated constructs with
-range/validity tests.  Modules so instrumented should be immune to
-buffer overflows, invalid heap use, and some other classes of C/C++
-programming errors.  The instrumentation relies on a separate runtime
-library (@file{libmudflap}), which is linked into a program if
-@option{-fmudflap} is given at link time.  Run-time behavior of the
-instrumented program is controlled by the @env{MUDFLAP_OPTIONS}
-environment variable.  See @code{env MUDFLAP_OPTIONS=-help a.out}
-for its options.
-
-Use @option{-fmudflapth} instead of @option{-fmudflap} to compile and to
-link if your program is multi-threaded.  Use @option{-fmudflapir}, in
-addition to @option{-fmudflap} or @option{-fmudflapth}, if
-instrumentation should ignore pointer reads.  This produces less
-instrumentation (and therefore faster execution) and still provides
-some protection against outright memory corrupting writes, but allows
-erroneously read data to propagate within a program.
 
 @item -fthread-jumps
 @opindex fthread-jumps

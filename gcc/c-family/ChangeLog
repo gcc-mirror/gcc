@@ -1,3 +1,8 @@
+2013-10-26  Jeff Law  <law@redhat.com>
+
+	* c-family/c-common.c (c_define_builtins): Remove mudflap support.
+	* c-family/c.opt: Ignore and warn for mudflap options.
+
 2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426

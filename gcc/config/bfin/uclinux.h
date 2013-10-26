@@ -32,14 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
 "
 
-/* Like the definition in gcc.c, but for purposes of uClinux, every link is
-   static.  */
-#define MFWRAP_SPEC " %{fmudflap|fmudflapth: \
- --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\
- --wrap=mmap --wrap=munmap --wrap=alloca\
- %{fmudflapth: --wrap=pthread_create\
-}} %{fmudflap|fmudflapth: --wrap=main}"
-
 #undef TARGET_SUPPORTS_SYNC_CALLS
 #define TARGET_SUPPORTS_SYNC_CALLS 1
 
