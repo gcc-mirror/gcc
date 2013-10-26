@@ -550,17 +550,36 @@
       && ! (reload_in_progress || reload_completed))
     return 0;
 
-  if ((mode == QImode || mode == HImode)
-      && mode == GET_MODE (op)
-      && (MEM_P (op)
-	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
+  if (mode == GET_MODE (op)
+      && (MEM_P (op) || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
     {
-      rtx x = XEXP ((MEM_P (op) ? op : SUBREG_REG (op)), 0);
+      rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
+      rtx x = XEXP (mem_rtx, 0);
 
-      if (GET_CODE (x) == PLUS
+      if ((mode == QImode || mode == HImode)
+	  && GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
 	  && CONST_INT_P (XEXP (x, 1)))
 	return sh_legitimate_index_p (mode, XEXP (x, 1), TARGET_SH2A, false);
+
+      /* Allow reg+reg addressing here without validating the register
+	 numbers.  Usually one of the regs must be R0 or a pseudo reg.
+	 In some cases it can happen that arguments from hard regs are
+	 propagated directly into address expressions.  In this cases reload
+	 will have to fix it up later.  However, allow this only for native
+	 1, 2 or 4 byte addresses.  */
+      if (can_create_pseudo_p () && GET_CODE (x) == PLUS
+	  && GET_MODE_SIZE (mode) <= 4
+	  && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
+	return true;
+
+      /* 'general_operand' does not allow volatile mems during RTL expansion to
+	 avoid matching arithmetic that operates on mems, it seems.
+	 On SH this leads to redundant sign extensions for QImode or HImode
+	 stores.  Thus we mimic the behavior but allow volatile mems.  */
+        if (memory_address_addr_space_p (GET_MODE (mem_rtx), x,
+					 MEM_ADDR_SPACE (mem_rtx)))
+	  return true;
     }
 
   return general_operand (op, mode);
