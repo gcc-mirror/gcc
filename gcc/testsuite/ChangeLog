@@ -1,3 +1,11 @@
+2013-10-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52483
+	* gcc.target/sh/pr52483-1.c: Add tests for memory stores.
+	* gcc.target/sh/pr52483-2.c: Likewise.
+	* gcc.target/sh/pr52483-3.c: Likewise.
+	* gcc.target/sh/pr52483-4.c: Likewise.
+
 2013-10-26  Jeff Law  <law@redhat.com>
 
 	* g++.dg/torture/pr49309.C: Removed.
