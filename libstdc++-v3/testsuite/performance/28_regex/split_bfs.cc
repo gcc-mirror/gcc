@@ -15,9 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 2013-10-08  Tim Shen  <timshen91@gmail.com>
+// 2013-10-26  Tim Shen  <timshen91@gmail.com>
 
 #include <testsuite_performance.h>
+#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 0
 #include "split.h"
 
 using namespace __gnu_test;
