@@ -1,3 +1,8 @@
+2013-10-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* gcc.dg/vect/vect-ivdep-2.c: New.
+
 2013-10-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52483
