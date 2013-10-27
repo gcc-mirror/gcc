@@ -4789,14 +4789,18 @@ gimple_expand_cfg (void)
 	  if (e->insns.r)
 	    {
 	      rebuild_jump_labels_chain (e->insns.r);
-	      /* Avoid putting insns before parm_birth_insn.  */
+	      /* Put insns after parm birth, but before
+		 NOTE_INSNS_FUNCTION_BEG.  */
 	      if (e->src == ENTRY_BLOCK_PTR
-		  && single_succ_p (ENTRY_BLOCK_PTR)
-		  && parm_birth_insn)
+		  && single_succ_p (ENTRY_BLOCK_PTR))
 		{
 		  rtx insns = e->insns.r;
 		  e->insns.r = NULL_RTX;
-		  emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
+		  if (NOTE_P (parm_birth_insn)
+		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
+		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
+		  else
+		    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
 		}
 	      else
 		commit_one_edge_insertion (e);
