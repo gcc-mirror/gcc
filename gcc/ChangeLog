@@ -362,9 +362,9 @@
 	* config.gcc (sh-*): Add sh-mem.o to extra_obj.
 	* gcc/config/sh/t-sh (sh-mem.o): New rule.
 	* gcc/config/sh/sh-mem.cc (expand_block_move): Moved here.
-	(sh4_expand_cmpstr): New function.
+	(sh_expand_cmpstr): New function.
 	* gcc/config/sh/sh.c (force_into, expand_block_move): Move to sh-mem.c.
-	* gcc/config/sh/sh-protos.h (sh4_expand_cmpstr): Declare.
+	* gcc/config/sh/sh-protos.h (sh_expand_cmpstr): Declare.
 	* gcc/config/sh/sh.md (cmpstrsi, cmpstr_t): New patterns.
 	(rotlhi3_8): Rename.
 
