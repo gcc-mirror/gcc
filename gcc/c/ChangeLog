@@ -1,3 +1,10 @@
+2013-10-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_while_statement, c_parser_while_statement,
+	c_parser_pragma): Add GCC ivdep support to 'do' and 'while'.
+	(c_parser_statement_after_labels): Update calls.
+
 2013-10-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426

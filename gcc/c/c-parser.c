@@ -1157,8 +1157,8 @@ static void c_parser_statement (c_parser *);
 static void c_parser_statement_after_labels (c_parser *);
 static void c_parser_if_statement (c_parser *);
 static void c_parser_switch_statement (c_parser *);
-static void c_parser_while_statement (c_parser *);
-static void c_parser_do_statement (c_parser *);
+static void c_parser_while_statement (c_parser *, bool);
+static void c_parser_do_statement (c_parser *, bool);
 static void c_parser_for_statement (c_parser *, bool);
 static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
@@ -4579,10 +4579,10 @@ c_parser_statement_after_labels (c_parser *parser)
 	  c_parser_switch_statement (parser);
 	  break;
 	case RID_WHILE:
-	  c_parser_while_statement (parser);
+	  c_parser_while_statement (parser, false);
 	  break;
 	case RID_DO:
-	  c_parser_do_statement (parser);
+	  c_parser_do_statement (parser, false);
 	  break;
 	case RID_FOR:
 	  c_parser_for_statement (parser, false);
@@ -4912,7 +4912,7 @@ c_parser_switch_statement (c_parser *parser)
 */
 
 static void
-c_parser_while_statement (c_parser *parser)
+c_parser_while_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, body, save_break, save_cont;
   location_t loc;
@@ -4927,6 +4927,11 @@ c_parser_while_statement (c_parser *parser)
 		"statement");
       cond = error_mark_node;
     }
+
+  if (ivdep && cond != error_mark_node)
+    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+		   annot_expr_ivdep_kind));
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -4945,7 +4950,7 @@ c_parser_while_statement (c_parser *parser)
 */
 
 static void
-c_parser_do_statement (c_parser *parser)
+c_parser_do_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, body, save_break, save_cont, new_break, new_cont;
   location_t loc;
@@ -4974,7 +4979,10 @@ c_parser_do_statement (c_parser *parser)
 		"do-while statement");
       cond = error_mark_node;
     }
-
+  if (ivdep && cond != error_mark_node)
+    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+		   annot_expr_ivdep_kind));
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -9102,12 +9110,19 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
     case PRAGMA_IVDEP:
       c_parser_consume_pragma (parser);
       c_parser_skip_to_pragma_eol (parser);
-      if (!c_parser_next_token_is_keyword (parser, RID_FOR))
+      if (!c_parser_next_token_is_keyword (parser, RID_FOR)
+	  && !c_parser_next_token_is_keyword (parser, RID_WHILE)
+	  && !c_parser_next_token_is_keyword (parser, RID_DO))
 	{
-	  c_parser_error (parser, "for statement expected");
+	  c_parser_error (parser, "for, while or do statement expected");
 	  return false;
 	}
-      c_parser_for_statement (parser, true);
+      if (c_parser_next_token_is_keyword (parser, RID_FOR))
+	c_parser_for_statement (parser, true);
+      else if (c_parser_next_token_is_keyword (parser, RID_WHILE))
+	c_parser_while_statement (parser, true);
+      else
+	c_parser_do_statement (parser, true);
       return false;
 
     case PRAGMA_GCC_PCH_PREPROCESS:
