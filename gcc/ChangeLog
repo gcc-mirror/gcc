@@ -1,3 +1,13 @@
+2013-10-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (MSW, LSW): Move and rename macros to...
+	* config/sh/sh.h (SH_REG_MSW_OFFSET, SH_REG_LSW_OFFSET): ... here.
+	(TARGET_BIG_ENDIAN): New macro.
+	* config/sh/sh.md: Use it instead of !TARGET_LITTLE_ENDIAN.
+	Use SH_REG_MSW_OFFSET and SH_REG_LSW_OFFSET.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+
 2013-10-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_emit_trap_for_misalignment): Replace the

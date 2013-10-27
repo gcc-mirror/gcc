@@ -670,7 +670,7 @@
 	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
 		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
 	  (const_int 0)))]
-  "TARGET_SH1 && !TARGET_LITTLE_ENDIAN"
+  "TARGET_SH1 && TARGET_BIG_ENDIAN"
   "tst	%0,%1"
   [(set_attr "type" "mt_group")])
 
@@ -761,7 +761,7 @@
 			    (match_operand:SI 3 "const_int_operand")) 3)
 	 (match_operand:SI 1 "const_int_operand")
 	 (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN
+  "TARGET_SH1 && TARGET_BIG_ENDIAN
    && ZERO_EXTRACT_ANDMASK (operands[1], operands[2])
       == (INTVAL (operands[3]) & 255)
    && CONST_OK_FOR_K08 (INTVAL (operands[3]) & 255)"
@@ -2115,7 +2115,7 @@
 	(zero_extend:SI (subreg:QI (not:SI (subreg:SI (match_operand:QI 1
 						       "general_extend_operand"
 						       "") 0)) 3)))]
-  "TARGET_SHMEDIA && ! TARGET_LITTLE_ENDIAN"
+  "TARGET_SHMEDIA && TARGET_BIG_ENDIAN"
   [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 255)))]
   "")
@@ -3840,7 +3840,7 @@ label:
       operands[0] = SUBREG_REG (operands[0]);
     }
   gcc_assert (REG_P (operands[0]));
-  if (! TARGET_LITTLE_ENDIAN)
+  if (TARGET_BIG_ENDIAN)
     offset += 8 - GET_MODE_SIZE (inmode);
   operands[5] = gen_rtx_SUBREG (inmode, operands[0], offset);
 })
@@ -7733,11 +7733,11 @@ label:
   rtx mem2
     = change_address (mem, SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
-					   regno + !! TARGET_LITTLE_ENDIAN),
+					       regno + SH_REG_MSW_OFFSET),
 				  mem2, operands[2]));
   add_reg_note (insn, REG_INC, operands[1]);
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
-					       regno + ! TARGET_LITTLE_ENDIAN),
+					       regno + SH_REG_LSW_OFFSET),
 				  change_address (mem, SFmode, NULL_RTX),
 				  operands[2]));
   DONE;
@@ -7755,8 +7755,8 @@ label:
   int regno = true_regnum (operands[0]);
   rtx addr, insn;
   rtx mem2 = change_address (operands[1], SFmode, NULL_RTX);
-  rtx reg0 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  rtx reg1 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 0 : 1));
+  rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
+  rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
 
   operands[1] = copy_rtx (mem2);
   addr = XEXP (mem2, 0);
@@ -7821,8 +7821,8 @@ label:
 {
   int regno = true_regnum (operands[1]);
   rtx insn, addr;
-  rtx reg0 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  rtx reg1 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 0 : 1));
+  rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
+  rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
 
   operands[0] = copy_rtx (operands[0]);
   PUT_MODE (operands[0], SFmode);
@@ -13160,7 +13160,7 @@ label:
 			 (match_operand:SI 1 "immediate_operand" "")
 			 (match_operand:SI 2 "immediate_operand" ""))
 	(match_operand:SI 3 "general_operand" ""))]
-  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
+  "TARGET_SH1 && TARGET_BIG_ENDIAN"
 {
   rtx addr_target, orig_address, shift_reg, qi_val;
   HOST_WIDE_INT bitsize, size, v = 0;
@@ -14522,7 +14522,7 @@ label:
 	   (zero_extract:QI (not:QI (match_dup 2)) (const_int 2) (const_int 4))
 	   (zero_extract:QI (not:QI (match_dup 2))
 			    (const_int 2) (const_int 6))])))]
-  "TARGET_SHMEDIA && ! TARGET_LITTLE_ENDIAN"
+  "TARGET_SHMEDIA && TARGET_BIG_ENDIAN"
   "mperm.w	%1, %N2, %0"
   [(set_attr "type" "arith_media")])
 

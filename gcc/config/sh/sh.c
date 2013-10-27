@@ -63,9 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
-#define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
-#define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
-
 /* These are some macros to abstract register modes.  */
 #define CONST_OK_FOR_I10(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -512 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 511)
@@ -1208,12 +1205,12 @@ sh_print_operand (FILE *stream, rtx x, int code)
       if (REG_P (x) || GET_CODE (x) == SUBREG)
 	{
 	  regno = true_regnum (x);
-	  regno += FP_REGISTER_P (regno) ? 1 : LSW;
+	  regno += FP_REGISTER_P (regno) ? 1 : SH_REG_LSW_OFFSET;
 	  fputs (reg_names[regno], (stream));
 	}
       else if (MEM_P (x))
 	{
-	  x = adjust_address (x, SImode, 4 * LSW);
+	  x = adjust_address (x, SImode, 4 * SH_REG_LSW_OFFSET);
 	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
@@ -1224,7 +1221,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  if (mode == VOIDmode)
 	    mode = DImode;
 	  if (GET_MODE_SIZE (mode) >= 8)
-	    sub = simplify_subreg (SImode, x, mode, 4 * LSW);
+	    sub = simplify_subreg (SImode, x, mode, 4 * SH_REG_LSW_OFFSET);
 	  if (sub)
 	    sh_print_operand (stream, sub, 0);
 	  else
@@ -1235,12 +1232,12 @@ sh_print_operand (FILE *stream, rtx x, int code)
       if (REG_P (x) || GET_CODE (x) == SUBREG)
 	{
 	  regno = true_regnum (x);
-	  regno += FP_REGISTER_P (regno) ? 0 : MSW;
+	  regno += FP_REGISTER_P (regno) ? 0 : SH_REG_MSW_OFFSET;
 	  fputs (reg_names[regno], (stream));
 	}
       else if (MEM_P (x))
 	{
-	  x = adjust_address (x, SImode, 4 * MSW);
+	  x = adjust_address (x, SImode, 4 * SH_REG_MSW_OFFSET);
 	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
@@ -1251,7 +1248,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  if (mode == VOIDmode)
 	    mode = DImode;
 	  if (GET_MODE_SIZE (mode) >= 8)
-	    sub = simplify_subreg (SImode, x, mode, 4 * MSW);
+	    sub = simplify_subreg (SImode, x, mode, 4 * SH_REG_MSW_OFFSET);
 	  if (sub)
 	    sh_print_operand (stream, sub, 0);
 	  else
@@ -8261,8 +8258,8 @@ sh_builtin_saveregs (void)
 	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (-UNITS_PER_WORD)));
 	  mem = change_address (regbuf, SFmode, fpregs);
 	  emit_move_insn (mem,
-			  gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno
-						- (TARGET_LITTLE_ENDIAN != 0)));
+			  gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode)
+					       + regno - SH_REG_MSW_OFFSET));
 	}
     }
   else
