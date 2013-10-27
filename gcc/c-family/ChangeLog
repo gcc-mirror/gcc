@@ -1,3 +1,7 @@
+2013-10-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-lex.c (interpret_integer): Remove call to cpp_num_sign_extend.
+
 2013-10-26  Jeff Law  <law@redhat.com>
 
 	* c-family/c-common.c (c_define_builtins): Remove mudflap support.

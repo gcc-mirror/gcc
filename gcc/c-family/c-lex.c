@@ -595,12 +595,10 @@ interpret_integer (const cpp_token *token, unsigned int flags,
   tree value, type;
   enum integer_type_kind itk;
   cpp_num integer;
-  cpp_options *options = cpp_get_options (parse_in);
 
   *overflow = OT_NONE;
 
   integer = cpp_interpret_integer (parse_in, token, flags);
-  integer = cpp_num_sign_extend (integer, options->precision);
   if (integer.overflow)
     *overflow = OT_OVERFLOW;
 
