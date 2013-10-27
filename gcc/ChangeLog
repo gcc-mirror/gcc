@@ -1,3 +1,8 @@
+2013-10-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_emit_trap_for_misalignment): Replace the
+	removed PRED_MUDFLAP with PRED_NORETURN.  Correct file-path in comment.
+
 2013-10-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (movmemsi): Remove empty constraints and predicates.
