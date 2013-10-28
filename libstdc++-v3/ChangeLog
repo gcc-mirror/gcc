@@ -1,3 +1,7 @@
+2013-10-28  Tim Shen  <timshen91@gmail.com>
+
+	* regex_executor.tcc: Add comments.
+
 2013-10-26  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Remove unnecessary friends.
