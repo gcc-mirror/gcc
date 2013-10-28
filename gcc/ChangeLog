@@ -1,3 +1,7 @@
+2013-10-28  Jeff Law  <law@redhat.com>
+
+	* lower-subreg.c (resolve_simple_move): Fix comment typo.
+
 2013-10-28  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* df-scan.c (df_collection_rec): Adjust.
