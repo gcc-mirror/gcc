@@ -1,3 +1,8 @@
+2013-10-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/gcc-bug-i.c: Add little endian variant.
+	* gcc.dg/vmx/eg-5.c: Likewise.
+
 2013-10-28   Claudiu Zissulescu  <claziss@synopsys.com>
 	     Joern Rennecke  <joern.rennecke@embecosm.com>
 
