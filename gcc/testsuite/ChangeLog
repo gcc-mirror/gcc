@@ -1,3 +1,8 @@
+2013-10-28   Claudiu Zissulescu  <claziss@synopsys.com>
+	     Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/arc/jump-around-jump.c: New test.
+
 2013-10-27  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/arm/require-pic-register-loc.c: New test.

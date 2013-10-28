@@ -1,3 +1,8 @@
+2013-10-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (arc_ccfsm_post_advance):
+	Add comment about TYPE_RETURN.
+
 2013-10-28  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (strip_offset_1): Change parameter type.
