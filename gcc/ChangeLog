@@ -1,3 +1,9 @@
+2013-10-28  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (strip_offset_1): Change parameter type.
+	Count DECL_FIELD_BIT_OFFSET for COMPONENT_REF.
+	(strip_offset): Convert offset to unsigned number.
+
 2013-10-27  Tom de Vries  <tom@codesourcery.com>
 
 	* cfgexpand.c (gimple_expand_cfg): Remove test for parm_birth_insn.
