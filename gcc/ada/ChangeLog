@@ -1,3 +1,7 @@
+2013-10-28  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/decl.c (components_to_record): Adjust.
+
 2013-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Make-lang.in (ADA_DEPS): Fix quoting.

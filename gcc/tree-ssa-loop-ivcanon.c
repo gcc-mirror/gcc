@@ -1100,7 +1100,7 @@ propagate_constants_for_unrolling (basic_block bb)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				vec<loop_p, va_stack>& father_stack,
+				vec<loop_p, va_heap>& father_stack,
 				struct loop *loop)
 {
   struct loop *loop_father;
@@ -1164,12 +1164,11 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
-  vec<loop_p, va_stack> father_stack;
+  stack_vec<loop_p, 16> father_stack;
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;
 
-  vec_stack_alloc (loop_p, father_stack, 16);
   do
     {
       changed = false;

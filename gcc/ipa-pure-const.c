@@ -190,15 +190,6 @@ warn_function_noreturn (tree decl)
 			   true, warned_about, "noreturn");
 }
 
-/* Init the function state.  */
-
-static void
-finish_state (void)
-{
-  funct_state_vec.release ();
-}
-
-
 /* Return true if we have a function state for NODE.  */
 
 static inline bool
@@ -1488,7 +1479,6 @@ propagate (void)
     if (has_function_state (node))
       free (get_function_state (node));
   funct_state_vec.release ();
-  finish_state ();
   return 0;
 }
 
