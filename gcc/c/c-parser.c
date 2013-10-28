@@ -1178,9 +1178,9 @@ static void c_parser_statement (c_parser *);
 static void c_parser_statement_after_labels (c_parser *);
 static void c_parser_if_statement (c_parser *);
 static void c_parser_switch_statement (c_parser *);
-static void c_parser_while_statement (c_parser *);
-static void c_parser_do_statement (c_parser *);
-static void c_parser_for_statement (c_parser *);
+static void c_parser_while_statement (c_parser *, bool);
+static void c_parser_do_statement (c_parser *, bool);
+static void c_parser_for_statement (c_parser *, bool);
 static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
 static tree c_parser_asm_goto_operands (c_parser *);
@@ -2685,6 +2685,11 @@ c_parser_struct_declaration (c_parser *parser)
     }
   specs = build_null_declspecs ();
   decl_loc = c_parser_peek_token (parser)->location;
+  /* Strictly by the standard, we shouldn't allow _Alignas here,
+     but it appears to have been intended to allow it there, so
+     we're keeping it as it is until WG14 reaches a conclusion
+     of N1731.
+     <http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1731.pdf>  */
   c_parser_declspecs (parser, specs, false, true, true,
 		      true, cla_nonabstract_decl);
   if (parser->error)
@@ -2999,7 +3004,7 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declarator *inner;
       c_parser_consume_token (parser);
       c_parser_declspecs (parser, quals_attrs, false, false, true,
-			  true, cla_prefer_id);
+			  false, cla_prefer_id);
       inner = c_parser_declarator (parser, type_seen_p, kind, seen_id);
       if (inner == NULL)
 	return NULL;
@@ -4628,13 +4633,13 @@ c_parser_statement_after_labels (c_parser *parser)
 	  c_parser_switch_statement (parser);
 	  break;
 	case RID_WHILE:
-	  c_parser_while_statement (parser);
+	  c_parser_while_statement (parser, false);
 	  break;
 	case RID_DO:
-	  c_parser_do_statement (parser);
+	  c_parser_do_statement (parser, false);
 	  break;
 	case RID_FOR:
-	  c_parser_for_statement (parser);
+	  c_parser_for_statement (parser, false);
 	  break;
 	case RID_GOTO:
 	  c_parser_consume_token (parser);
@@ -4977,7 +4982,7 @@ c_parser_switch_statement (c_parser *parser)
 */
 
 static void
-c_parser_while_statement (c_parser *parser)
+c_parser_while_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, body, save_break, save_cont;
   location_t loc;
@@ -4992,6 +4997,11 @@ c_parser_while_statement (c_parser *parser)
 		"statement");
       cond = error_mark_node;
     }
+
+  if (ivdep && cond != error_mark_node)
+    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+		   annot_expr_ivdep_kind));
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -5010,7 +5020,7 @@ c_parser_while_statement (c_parser *parser)
 */
 
 static void
-c_parser_do_statement (c_parser *parser)
+c_parser_do_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, body, save_break, save_cont, new_break, new_cont;
   location_t loc;
@@ -5039,7 +5049,10 @@ c_parser_do_statement (c_parser *parser)
 		"do-while statement");
       cond = error_mark_node;
     }
-
+  if (ivdep && cond != error_mark_node)
+    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+		   annot_expr_ivdep_kind));
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -5103,7 +5116,7 @@ c_parser_do_statement (c_parser *parser)
 */
 
 static void
-c_parser_for_statement (c_parser *parser)
+c_parser_for_statement (c_parser *parser, bool ivdep)
 {
   tree block, cond, incr, save_break, save_cont, body;
   /* The following are only used when parsing an ObjC foreach statement.  */
@@ -5209,8 +5222,17 @@ c_parser_for_statement (c_parser *parser)
 	{
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      c_parser_consume_token (parser);
-	      cond = NULL_TREE;
+	      if (ivdep)
+		{
+		  c_parser_error (parser, "missing loop condition in loop with "
+				  "%<GCC ivdep%> pragma");
+		  cond = error_mark_node;
+		}
+	      else
+		{
+		  c_parser_consume_token (parser);
+		  cond = NULL_TREE;
+		}
 	    }
 	  else
 	    {
@@ -5224,6 +5246,10 @@ c_parser_for_statement (c_parser *parser)
 	      c_parser_skip_until_found (parser, CPP_SEMICOLON,
 					 "expected %<;%>");
 	    }
+	  if (ivdep && cond != error_mark_node)
+	    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+			   build_int_cst (integer_type_node,
+			   annot_expr_ivdep_kind));
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is
@@ -9543,6 +9569,23 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
 
     case PRAGMA_OMP_DECLARE_REDUCTION:
       c_parser_omp_declare (parser, context);
+      return false;
+    case PRAGMA_IVDEP:
+      c_parser_consume_pragma (parser);
+      c_parser_skip_to_pragma_eol (parser);
+      if (!c_parser_next_token_is_keyword (parser, RID_FOR)
+	  && !c_parser_next_token_is_keyword (parser, RID_WHILE)
+	  && !c_parser_next_token_is_keyword (parser, RID_DO))
+	{
+	  c_parser_error (parser, "for, while or do statement expected");
+	  return false;
+	}
+      if (c_parser_next_token_is_keyword (parser, RID_FOR))
+	c_parser_for_statement (parser, true);
+      else if (c_parser_next_token_is_keyword (parser, RID_WHILE))
+	c_parser_while_statement (parser, true);
+      else
+	c_parser_do_statement (parser, true);
       return false;
 
     case PRAGMA_GCC_PCH_PREPROCESS:

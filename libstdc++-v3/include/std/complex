@@ -1924,6 +1924,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     conj(_Tp __x)
     { return __x; }
 
+#if __cplusplus > 201103L
+
+inline namespace literals {
+inline namespace complex_literals {
+
+  constexpr std::complex<float>
+  operator""if(long double __num)
+  { return std::complex<float>{0.0F, static_cast<float>(__num)}; }
+
+  constexpr std::complex<float>
+  operator""if(unsigned long long __num)
+  { return std::complex<float>{0.0F, static_cast<float>(__num)}; }
+
+  constexpr std::complex<double>
+  operator""i(long double __num)
+  { return std::complex<double>{0.0, static_cast<double>(__num)}; }
+
+  constexpr std::complex<double>
+  operator""i(unsigned long long __num)
+  { return std::complex<double>{0.0, static_cast<double>(__num)}; }
+
+  constexpr std::complex<long double>
+  operator""il(long double __num)
+  { return std::complex<long double>{0.0L, __num}; }
+
+  constexpr std::complex<long double>
+  operator""il(unsigned long long __num)
+  { return std::complex<long double>{0.0L, static_cast<long double>(__num)}; }
+
+} // inline namespace complex_literals
+} // inline namespace literals
+
+#endif // C++14
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

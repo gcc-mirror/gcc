@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // PR c++/50958
 
 typedef decltype(sizeof(0)) size_type;

@@ -1,5 +1,6 @@
-// We allocate a cookie to help us run the destructor even if it's deleted.
-// { dg-options -std=c++0x }
+// We don't allocate a cookie to help us run the destructor if it's trivial,
+// even if it's deleted.
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 struct A
@@ -17,5 +18,5 @@ void *operator new[](__SIZE_TYPE__ t)
 int main()
 {
   A* ap = new A[5];
-  return ap == p;
+  return ap != p;
 }

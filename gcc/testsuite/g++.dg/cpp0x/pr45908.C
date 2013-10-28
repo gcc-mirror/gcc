@@ -2,7 +2,7 @@
 // Testcase by Jonathan Wakely <redi@gcc.gnu.org>
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct vector {
     struct iterator { };

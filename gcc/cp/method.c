@@ -1265,8 +1265,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      class versions and other properties of the type.  But a subobject
      class can be trivially copyable and yet have overload resolution
      choose a template constructor for initialization, depending on
-     rvalueness and cv-quals.  So we can't exit early for copy/move
-     methods in C++0x.  The same considerations apply in C++98/03, but
+     rvalueness and cv-quals.  And furthermore, a member in a base might
+     be trivial but deleted or otherwise not callable.  So we can't exit
+     early in C++0x.  The same considerations apply in C++98/03, but
      there the definition of triviality does not consider overload
      resolution, so a constructor can be trivial even if it would otherwise
      call a non-trivial constructor.  */
@@ -1282,7 +1283,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    inform (input_location, "defaulted default constructor does "
 		    "not initialize any non-static data member");
 	}
-      if (!diag)
+      if (!diag && cxx_dialect < cxx11)
 	return;
     }
 
@@ -1323,7 +1324,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
       process_subob_fn (rval, spec_p, trivial_p, deleted_p,
 			constexpr_p, diag, basetype);
-      if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
+      if (ctor_p)
 	{
 	  /* In a constructor we also need to check the subobject
 	     destructors for cleanup of partially constructed objects.  */
@@ -1465,13 +1466,34 @@ maybe_explain_implicit_delete (tree decl)
 	  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
 	  tree parm_type = TREE_VALUE (parms);
 	  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+	  tree raises = NULL_TREE;
+	  bool deleted_p = false;
 	  tree scope = push_scope (ctype);
-	  inform (0, "%q+#D is implicitly deleted because the default "
-		 "definition would be ill-formed:", decl);
-	  pop_scope (scope);
+
 	  synthesized_method_walk (ctype, sfk, const_p,
-				   NULL, NULL, NULL, NULL, true,
+				   &raises, NULL, &deleted_p, NULL, false,
 				   DECL_INHERITED_CTOR_BASE (decl), parms);
+	  if (deleted_p)
+	    {
+	      inform (0, "%q+#D is implicitly deleted because the default "
+		      "definition would be ill-formed:", decl);
+	      synthesized_method_walk (ctype, sfk, const_p,
+				       NULL, NULL, NULL, NULL, true,
+				       DECL_INHERITED_CTOR_BASE (decl), parms);
+	    }
+	  else if (!comp_except_specs
+		   (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+		    raises, ce_normal))
+	    inform (DECL_SOURCE_LOCATION (decl), "%q#F is implicitly "
+		    "deleted because its exception-specification does not "
+		    "match the implicit exception-specification %qX",
+		    decl, raises);
+#ifdef ENABLE_CHECKING
+	  else
+	    gcc_unreachable ();
+#endif
+
+	  pop_scope (scope);
 	}
 
       input_location = loc;
@@ -1781,9 +1803,10 @@ defaulted_late_check (tree fn)
 			      eh_spec, ce_normal))
 	{
 	  if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	    error ("function %q+D defaulted on its first declaration "
-		   "with an exception-specification that differs from "
-		   "the implicit declaration %q#D", fn, implicit_fn);
+	    {
+	      DECL_DELETED_FN (fn) = true;
+	      eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	    }
 	  else
 	    error ("function %q+D defaulted on its redeclaration "
 		   "with an exception-specification that differs from "

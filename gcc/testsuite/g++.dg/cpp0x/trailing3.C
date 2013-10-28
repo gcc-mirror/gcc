@@ -1,5 +1,5 @@
 // More auto/decltype mangling tests.
-// { dg-options "-std=c++0x -fabi-version=0" }
+// { dg-options "-std=c++11 -fabi-version=0" }
 
 template <class T>
 struct B

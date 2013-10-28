@@ -1,3 +1,102 @@
+2013-10-28  Tim Shen  <timshen91@gmail.com>
+
+	* regex_executor.tcc: Add comments.
+
+2013-10-26  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Remove unnecessary friends.
+	* include/bits/regex.tcc (__regex_algo_impl<>): Move __get_executor
+	to here.
+	* include/bits/regex_executor.h: Remove _DFSExecutor and _BFSExecutor;
+	they are merged into _Executor. Eliminate quantifier tracking part, so
+	it's faster.
+	* include/bits/regex_executor.tcc: Implement _Executor.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/ungreedy.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/ecma/greedy.cc: Adjust
+	duplicate testcases.
+	* testsuite/performance/28_regex/split.h: New.
+	* testsuite/performance/28_regex/split_bfs.cc: New.
+	* testsuite/util/testsuite_regex.h: Adjust behavior of two-executors
+	agreement judger: do not compare match_results when executor return
+	false.
+
+2013-10-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (__check_singular): Add const on
+	iterator reference.
+	* include/debug/functions.h (__check_singular): Likewise.
+	(__check_singular(const _Safe_iterator<_Ite, _Seq>&)): Delete.
+	(__check_dereferenceable(const _Ite&)): Add const on iterator
+	reference.
+	(__check_dereferenceable(const _Safe_local_iterator<>&)): New.
+	* include/debug/safe_iterator.h (__check_singular_aux): Review
+	comment.
+	* testsuite/23_containers/vector/debug/debug_functions.cc: New.
+	* testsuite/23_containers/unordered_set/debug/debug_functions.cc:
+	New.
+
+2013-10-23  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_containergen.h: New.
+	* testsuite/util/testsuite_iterators.h (test_container<>::val): Add.
+	* testsuite/25_algorithms/nth_element/random_test.cc: New, use the
+	above.
+	* testsuite/25_algorithms/partial_sort/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/random_test.cc: Likewise.
+	* testsuite/25_algorithms/sort/random_test.cc: Likewise.
+
+2013-10-23  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Force EBO for _Hash_code_base.
+
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58850
+	* include/std/chrono (minutes, hours): Change typedefs to uniformly
+	use int64_t.
+	* testsuite/20_util/duration/arithmetic/58850.cc: New.
+
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/decimal/pr58815.cc: Fix thinko.
+
+2013-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58815
+	* include/decimal/decimal (decimal32::operator long long(),
+	decimal64::operator long long(), decimal128::operator long long()):
+	Add in c++11 mode per n3407.
+	* testsuite/decimal/pr58815.cc: New.
+
+2013-10-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/basic_string.h (operator""s): Remove space between quotes
+	and literal identifier.
+	* include/std/chrono (operator""h, operator""min, operator""s,
+	operator""ms, operator""us, operator""ns): Ditto.
+
+2013-10-22  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3779 - User-defined Literals for std::complex,
+	part 2 of UDL for Standard Library Types
+	* include/std/complex: Add complex literal operators.
+	* testsuite/26_numerics/complex/literals/types.cc: New.
+	* testsuite/26_numerics/complex/literals/values.cc: New.
+
+2013-10-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/58804
+	PR libstdc++/58729
+	* include/tr2/dynamic_bitset
+	(__dynamic_bitset_base<_WordT, _Alloc>::_M_are_all_aux,
+	__dynamic_bitset_base<_WordT, _Alloc>::_M_do_count):
+	Use __builtin_popcountll() instead of __builtin_popcountl().
+	* include/tr2/dynamic_bitset.tcc
+	(__dynamic_bitset_base<_WordT, _Alloc>::_M_do_find_first,
+	__dynamic_bitset_base<_WordT, _Alloc>::_M_do_find_next):
+	Use __builtin_ctzll() instead of __builtin_ctzl().
+
 2013-10-20  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Remove virtual class _Automaton.
@@ -2564,7 +2663,7 @@
 	* config/abi/pre/gnu.ver: Add new symbols.
 	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
 
-2013-05-08  Andoni Morales Alastruey <ylatuya@gmail.com>
+2013-05-08  Andoni Morales Alastruey  <ylatuya@gmail.com>
 
 	PR libstdc++/57212
 	* include/Makefile.am (_GLIBCXX___MINGW32_GLIBCXX___): Modify

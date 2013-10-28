@@ -42,6 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "timevar.h"
 #include "dumpfile.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "value-prof.h"
 #include "except.h"
@@ -135,7 +138,7 @@ bool cpp_implicit_aliases_done;
    The cgraph_function_version_info has a THIS_NODE field that is the
    corresponding cgraph_node..  */
 
-static htab_t GTY((param_is (struct cgraph_function_version_info *)))
+static GTY((param_is (struct cgraph_function_version_info))) htab_t
   cgraph_fnver_htab = NULL;
 
 /* Hash function for cgraph_fnver_htab.  */
@@ -814,7 +817,8 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt,
 
 static struct cgraph_edge *
 cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
-		       gimple call_stmt, gcov_type count, int freq)
+		       gimple call_stmt, gcov_type count, int freq,
+		       bool indir_unknown_callee)
 {
   struct cgraph_edge *edge;
 
@@ -874,6 +878,7 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
+  edge->indirect_unknown_callee = indir_unknown_callee;
   if (call_stmt && caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (edge);
 
@@ -887,9 +892,8 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 		    gimple call_stmt, gcov_type count, int freq)
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, callee, call_stmt,
-						   count, freq);
+						   count, freq, false);
 
-  edge->indirect_unknown_callee = 0;
   initialize_inline_failed (edge);
 
   edge->next_caller = callee->callers;
@@ -926,10 +930,9 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
 			     gcov_type count, int freq)
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, NULL, call_stmt,
-						   count, freq);
+						   count, freq, true);
   tree target;
 
-  edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();

@@ -284,7 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    is_default_constructible<
 		      // We use _Hashtable_ebo_helper to access the protected
 		      // default constructor.
-		      __detail::_Hashtable_ebo_helper<0, __hash_code_base>>>::value,
+		      __detail::_Hashtable_ebo_helper<0, __hash_code_base, true>>>::value,
 		    "Cache the hash code or make functors involved in hash code"
 		    " and bucket index computation default constructible");
 

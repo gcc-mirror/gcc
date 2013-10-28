@@ -204,35 +204,3 @@ least_common_multiple (HOST_WIDE_INT a, HOST_WIDE_INT b)
 {
   return mul_hwi (abs_hwi (a) / gcd (a, b), abs_hwi (b));
 }
-
-#ifdef ENABLE_CHECKING
-/* Sign extend SRC starting from PREC.  */
-
-HOST_WIDE_INT
-sext_hwi (HOST_WIDE_INT src, unsigned int prec)
-{
-  gcc_checking_assert (prec <= HOST_BITS_PER_WIDE_INT);
-
-  if (prec == HOST_BITS_PER_WIDE_INT)
-    return src;
-  else
-    {
-      int shift = HOST_BITS_PER_WIDE_INT - prec;
-      return (src << shift) >> shift;
-    }
-}
-
-/* Zero extend SRC starting from PREC.  */
-
-unsigned HOST_WIDE_INT
-zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
-{
-  gcc_checking_assert (prec <= HOST_BITS_PER_WIDE_INT);
-
-  if (prec == HOST_BITS_PER_WIDE_INT)
-    return src;
-  else
-    return src & (((HOST_WIDE_INT)1 << prec) - 1);
-}
-
-#endif

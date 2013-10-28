@@ -1,5 +1,5 @@
 // PR c++/47277
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 int main(void) {
   enum e {};

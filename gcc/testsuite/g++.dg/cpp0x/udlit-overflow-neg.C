@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x -Woverflow" }
+// { dg-options "-std=c++11 -Woverflow" }
 // PR c++/52654
 
 int

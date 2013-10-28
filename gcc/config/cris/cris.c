@@ -1989,17 +1989,14 @@ cris_emit_trap_for_misalignment (rtx mem)
 
   /* This will yield a btstq without a separate register used, usually -
      with the exception for PRE hoisting the "and" but not the branch
-     around the trap: see gcc.dg/target/cris/sync-3s.c.  */
+     around the trap: see testsuite/gcc.target/cris/sync-3s.c.  */
   andop = gen_rtx_AND (Pmode, reg, GEN_INT (natural_alignment - 1));
   emit_cmp_and_jump_insns (force_reg (SImode, andop), const0_rtx, EQ,
 			   NULL_RTX, Pmode, 1, ok_label);
   jmp = get_last_insn ();
   gcc_assert (JUMP_P (jmp));
 
-  /* While this isn't mudflap, it is a similar kind of assertion.
-     If PRED_MUDFLAP stops working, use something else or introduce a
-     more suitable assertion predication type.  */
-  predict_insn_def (jmp, PRED_MUDFLAP, TAKEN);
+  predict_insn_def (jmp, PRED_NORETURN, TAKEN);
   expand_builtin_trap ();
   emit_label (ok_label);
 }

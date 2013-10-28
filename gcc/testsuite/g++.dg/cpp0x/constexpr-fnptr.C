@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 constexpr bool is_negative(int x) { return x < 0; }
 

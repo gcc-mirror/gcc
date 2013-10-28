@@ -1,6 +1,7 @@
 /* PR middle-end/38364 */
 /* { dg-do run } */
 /* { dg-options "-O2 -ftrapv" } */
+/* { dg-require-effective-target trapping } */
 
 extern void abort (void);
 

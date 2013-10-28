@@ -190,7 +190,7 @@ in the following sections.
 -frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
--fno-default-inline  -fvisibility-inlines-hidden @gol
+-fvisibility-inlines-hidden @gol
 -fvtable-verify=@var{std|preinit|none} @gol
 -fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
@@ -256,7 +256,6 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
@@ -308,7 +307,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-ch @gol
 -fdump-tree-ssa@r{[}-@var{n}@r{]} -fdump-tree-pre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-ccp@r{[}-@var{n}@r{]} -fdump-tree-dce@r{[}-@var{n}@r{]} @gol
--fdump-tree-gimple@r{[}-raw@r{]} -fdump-tree-mudflap@r{[}-@var{n}@r{]} @gol
+-fdump-tree-gimple@r{[}-raw@r{]} @gol
 -fdump-tree-dom@r{[}-@var{n}@r{]} @gol
 -fdump-tree-dse@r{[}-@var{n}@r{]} @gol
 -fdump-tree-phiprop@r{[}-@var{n}@r{]} @gol
@@ -384,8 +383,7 @@ Objective-C and Objective-C++ Dialects}.
 -floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
--fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
--fno-default-inline @gol
+-fmove-loop-invariants -fno-branch-count-reg @gol
 -fno-defer-pop -fno-function-cse -fno-guess-branch-probability @gol
 -fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
@@ -669,7 +667,7 @@ Objective-C and Objective-C++ Dialects}.
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
@@ -1826,7 +1824,7 @@ freestanding and hosted environments.
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
-Program Interface v3.0 @w{@uref{http://www.openmp.org/}}.  This option
+Program Interface v4.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
@@ -2403,13 +2401,6 @@ In addition, these optimization, warning, and code generation options
 have meanings only for C++ programs:
 
 @table @gcctabopt
-@item -fno-default-inline
-@opindex fno-default-inline
-Do not assume @samp{inline} for functions defined inside a class scope.
-@xref{Optimize Options,,Options That Control Optimization}.  Note that these
-functions have linkage like inline functions; they just aren't
-inlined by default.
-
 @item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
 @opindex Wabi
 @opindex Wno-abi
@@ -4999,11 +4990,6 @@ This option is only supported for C and Objective-C@.  It is implied by
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that are not protected against stack smashing.
 
-@item -Wno-mudflap
-@opindex Wno-mudflap
-Suppress warnings about constructs that cannot be instrumented by
-@option{-fmudflap}.
-
 @item -Woverlength-strings
 @opindex Woverlength-strings
 @opindex Wno-overlength-strings
@@ -5086,6 +5072,12 @@ possible.
 @item -gpubnames
 @opindex gpubnames
 Generate dwarf .debug_pubnames and .debug_pubtypes sections.
+
+@item -ggnu-pubnames
+@opindex ggnu-pubnames
+Generate .debug_pubnames and .debug_pubtypes sections in a format
+suitable for conversion into a GDB@ index.  This option is only useful
+with a linker that can produce GDB@ index version 7.
 
 @item -gstabs
 @opindex gstabs
@@ -6202,11 +6194,6 @@ by appending @file{.store_copyprop} to the source file name.
 Dump each function after dead code elimination.  The file name is made by
 appending @file{.dce} to the source file name.
 
-@item mudflap
-@opindex fdump-tree-mudflap
-Dump each function after adding mudflap instrumentation.  The file name is
-made by appending @file{.mudflap} to the source file name.
-
 @item sra
 @opindex fdump-tree-sra
 Dump each function after performing scalar replacement of aggregates.  The
@@ -6822,14 +6809,6 @@ can use the following flags in the rare cases when ``fine-tuning'' of
 optimizations to be performed is desired.
 
 @table @gcctabopt
-@item -fno-default-inline
-@opindex fno-default-inline
-Do not make member functions inline by default merely because they are
-defined inside the class scope (C++ only).  Otherwise, when you specify
-@w{@option{-O}}, member functions defined inside class scope are compiled
-inline by default; i.e., you don't need to add @samp{inline} in front of
-the member function name.
-
 @item -fno-defer-pop
 @opindex fno-defer-pop
 Always pop the arguments to each function call as soon as that function
@@ -7080,32 +7059,6 @@ resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
-
-@item -fmudflap -fmudflapth -fmudflapir
-@opindex fmudflap
-@opindex fmudflapth
-@opindex fmudflapir
-@cindex bounds checking
-@cindex mudflap
-For front-ends that support it (C and C++), instrument all risky
-pointer/array dereferencing operations, some standard library
-string/heap functions, and some other associated constructs with
-range/validity tests.  Modules so instrumented should be immune to
-buffer overflows, invalid heap use, and some other classes of C/C++
-programming errors.  The instrumentation relies on a separate runtime
-library (@file{libmudflap}), which is linked into a program if
-@option{-fmudflap} is given at link time.  Run-time behavior of the
-instrumented program is controlled by the @env{MUDFLAP_OPTIONS}
-environment variable.  See @code{env MUDFLAP_OPTIONS=-help a.out}
-for its options.
-
-Use @option{-fmudflapth} instead of @option{-fmudflap} to compile and to
-link if your program is multi-threaded.  Use @option{-fmudflapir}, in
-addition to @option{-fmudflap} or @option{-fmudflapth}, if
-instrumentation should ignore pointer reads.  This produces less
-instrumentation (and therefore faster execution) and still provides
-some protection against outright memory corrupting writes, but allows
-erroneously read data to propagate within a program.
 
 @item -fthread-jumps
 @opindex fthread-jumps
@@ -8364,7 +8317,7 @@ statements.  Output them in the same order that they appear in the
 input file.  When this option is used, unreferenced static variables
 are not removed.  This option is intended to support existing code
 that relies on a particular ordering.  For new code, it is better to
-use attributes.
+use attributes when possible.
 
 Enabled at level @option{-O0}.  When disabled explicitly, it also implies
 @option{-fno-section-anchors}, which is otherwise enabled at @option{-O0} on some
@@ -10367,7 +10320,7 @@ separator character at the end of the path.
 @option{-B} prefixes that effectively specify directory names also apply
 to libraries in the linker, because the compiler translates these
 options into @option{-L} options for the linker.  They also apply to
-includes files in the preprocessor, because the compiler translates these
+include files in the preprocessor, because the compiler translates these
 options into @option{-isystem} options for the preprocessor.  In this case,
 the compiler appends @samp{include} to the prefix.
 
@@ -15002,6 +14955,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mrtm
 @itemx -mtbm
 @itemx -mno-tbm
+@itemx -mmpx
+@itemx -mno-mpx
 @opindex mmmx
 @opindex mno-mmx
 @opindex msse
@@ -15011,7 +14966,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM or 3DNow!@:
+FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and

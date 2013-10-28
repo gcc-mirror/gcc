@@ -225,20 +225,6 @@ stuff quickly rather than wait until later when it's more work to get
 rid of it.  This pass is located in @file{tree-cfg.c} and described by
 @code{pass_remove_useless_stmts}.
 
-@item Mudflap declaration registration
-
-If mudflap (@pxref{Optimize Options,,-fmudflap -fmudflapth
--fmudflapir,gcc,Using the GNU Compiler Collection (GCC)}) is
-enabled, we generate code to register some variable declarations with
-the mudflap runtime.  Specifically, the runtime tracks the lifetimes of
-those variable declarations that have their addresses taken, or whose
-bounds are unknown at compile time (@code{extern}).  This pass generates
-new exception handling constructs (@code{try}/@code{finally}), and so
-must run before those are lowered.  In addition, the pass enqueues
-declarations of static variables whose lifetimes extend to the entire
-program.  The pass is located in @file{tree-mudflap.c} and is described
-by @code{pass_mudflap_1}.
-
 @item OpenMP lowering
 
 If OpenMP generation (@option{-fopenmp}) is enabled, this pass lowers
@@ -575,18 +561,6 @@ been injected by falling off the end of the function.  This pass is
 run last so that we have as much time as possible to prove that the
 statement is not reachable.  It is located in @file{tree-cfg.c} and
 is described by @code{pass_warn_function_return}.
-
-@item Mudflap statement annotation
-
-If mudflap is enabled, we rewrite some memory accesses with code to
-validate that the memory access is correct.  In particular, expressions
-involving pointer dereferences (@code{INDIRECT_REF}, @code{ARRAY_REF},
-etc.) are replaced by code that checks the selected address range
-against the mudflap runtime's database of valid regions.  This check
-includes an inline lookup into a direct-mapped cache, based on
-shift/mask operations of the pointer value, with a fallback function
-call into the runtime.  The pass is located in @file{tree-mudflap.c} and
-is described by @code{pass_mudflap_2}.
 
 @item Leave static single assignment form
 
@@ -968,10 +942,7 @@ This pass outputs the assembler code for the function.  The source files
 are @file{final.c} plus @file{insn-output.c}; the latter is generated
 automatically from the machine description by the tool @file{genoutput}.
 The header file @file{conditions.h} is used for communication between
-these files.  If mudflap is enabled, the queue of deferred declarations
-and any addressed constants (e.g., string literals) is processed by
-@code{mudflap_finish_file} into a synthetic constructor function
-containing calls into the mudflap runtime.
+these files.
 
 @item Debugging information output
 

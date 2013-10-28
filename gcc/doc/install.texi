@@ -1391,7 +1391,7 @@ addition, @samp{libstdc++}'s include files will be installed into
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
-@samp{libjava}, @samp{libmudflap}, @samp{libstdc++}, and @samp{libobjc}.
+@samp{libjava}, @samp{libstdc++}, and @samp{libobjc}.
 
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and

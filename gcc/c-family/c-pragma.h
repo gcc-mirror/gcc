@@ -53,6 +53,7 @@ typedef enum pragma_kind {
   PRAGMA_OMP_TEAMS,
 
   PRAGMA_GCC_PCH_PREPROCESS,
+  PRAGMA_IVDEP,
 
   PRAGMA_FIRST_EXTERNAL
 } pragma_kind;

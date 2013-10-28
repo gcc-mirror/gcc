@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<class T>
 constexpr T value(T t) { return t; }

@@ -1,3 +1,22 @@
+2013-10-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_while_statement, c_parser_while_statement,
+	c_parser_pragma): Add GCC ivdep support to 'do' and 'while'.
+	(c_parser_statement_after_labels): Update calls.
+
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_pragma, c_parser_for_statement):
+	Handle PRAGMA_IVDEP.
+	(c_parser_statement_after_labels): Update call.
+
+2013-10-24  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_struct_declaration): Add a comment.
+	(c_parser_declarator): Don't allow _Alignas here.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-parser.c: Include omp-low.h.
@@ -220,7 +239,7 @@
 	PR c++/57793
 	* c-decl.c (finish_struct): Check for too-large class.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* c-typeck.c (set_init_index): When folding, check for index overflow.

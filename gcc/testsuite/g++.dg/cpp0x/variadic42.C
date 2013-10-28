@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -fabi-version=5" }
+// { dg-options "-std=gnu++11 -fabi-version=5" }
 // { dg-do compile }
 template<typename... Args>
 void f(Args...) { }

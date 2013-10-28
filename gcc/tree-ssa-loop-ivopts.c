@@ -69,6 +69,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-ssa-loop-ivopts.h"
+#include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
+#include "tree-ssa-loop.h"
+#include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
@@ -2011,12 +2023,12 @@ find_interesting_uses (struct ivopts_data *data)
 
 static tree
 strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
-		unsigned HOST_WIDE_INT *offset)
+		HOST_WIDE_INT *offset)
 {
   tree op0 = NULL_TREE, op1 = NULL_TREE, tmp, step;
   enum tree_code code;
   tree type, orig_type = TREE_TYPE (expr);
-  unsigned HOST_WIDE_INT off0, off1, st;
+  HOST_WIDE_INT off0, off1, st;
   tree orig_expr = expr;
 
   STRIP_NOPS (expr);
@@ -2107,19 +2119,32 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       break;
 
     case COMPONENT_REF:
-      if (!inside_addr)
-	return orig_expr;
+      {
+	tree field;
 
-      tmp = component_ref_field_offset (expr);
-      if (top_compref
-	  && cst_and_fits_in_hwi (tmp))
-	{
-	  /* Strip the component reference completely.  */
-	  op0 = TREE_OPERAND (expr, 0);
-	  op0 = strip_offset_1 (op0, inside_addr, top_compref, &off0);
-	  *offset = off0 + int_cst_value (tmp);
-	  return op0;
-	}
+	if (!inside_addr)
+	  return orig_expr;
+
+	tmp = component_ref_field_offset (expr);
+	field = TREE_OPERAND (expr, 1);
+	if (top_compref
+	    && cst_and_fits_in_hwi (tmp)
+	    && cst_and_fits_in_hwi (DECL_FIELD_BIT_OFFSET (field)))
+	  {
+	    HOST_WIDE_INT boffset, abs_off;
+
+	    /* Strip the component reference completely.  */
+	    op0 = TREE_OPERAND (expr, 0);
+	    op0 = strip_offset_1 (op0, inside_addr, top_compref, &off0);
+	    boffset = int_cst_value (DECL_FIELD_BIT_OFFSET (field));
+	    abs_off = abs_hwi (boffset) / BITS_PER_UNIT;
+	    if (boffset < 0)
+	      abs_off = -abs_off;
+
+	    *offset = off0 + int_cst_value (tmp) + abs_off;
+	    return op0;
+	  }
+      }
       break;
 
     case ADDR_EXPR:
@@ -2170,7 +2195,10 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 static tree
 strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
 {
-  return strip_offset_1 (expr, false, false, offset);
+  HOST_WIDE_INT off;
+  tree core = strip_offset_1 (expr, false, false, &off);
+  *offset = off;
+  return core;
 }
 
 /* Returns variant of TYPE that can be used as base for different uses.
@@ -3108,16 +3136,19 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
     {
       enum machine_mode address_mode = targetm.addr_space.address_mode (as);
       rtx reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
-      rtx addr;
+      rtx reg2 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
+      rtx addr, scaled;
       HOST_WIDE_INT i;
 
       valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
       bitmap_clear (valid_mult);
-      addr = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
+      scaled = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
+      addr = gen_rtx_fmt_ee (PLUS, address_mode, scaled, reg2);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{
-	  XEXP (addr, 1) = gen_int_mode (i, address_mode);
-	  if (memory_address_addr_space_p (mode, addr, as))
+	  XEXP (scaled, 1) = gen_int_mode (i, address_mode);
+	  if (memory_address_addr_space_p (mode, addr, as)
+	      || memory_address_addr_space_p (mode, scaled, as))
 	    bitmap_set_bit (valid_mult, i + MAX_RATIO);
 	}
 

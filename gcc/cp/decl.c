@@ -6897,7 +6897,11 @@ expand_static_init (tree decl, tree init)
   /* Some variables require no dynamic initialization.  */
   if (!init
       && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
-    return;
+    {
+      /* Make sure the destructor is callable.  */
+      cxx_maybe_build_cleanup (decl, tf_warning_or_error);
+      return;
+    }
 
   if (DECL_THREAD_LOCAL_P (decl) && DECL_GNU_TLS_P (decl)
       && !DECL_FUNCTION_SCOPE_P (decl))
@@ -14296,7 +14300,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
     }
   /* Handle ordinary C++ destructors.  */
   type = TREE_TYPE (decl);
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+  if (type_build_dtor_call (type))
     {
       int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       bool has_vbases = (TREE_CODE (type) == RECORD_TYPE
@@ -14317,6 +14321,8 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
 			   sfk_complete_destructor, flags, 0, complain);
       if (call == error_mark_node)
 	cleanup = error_mark_node;
+      else if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+	/* Discard the call.  */;
       else if (cleanup)
 	cleanup = cp_build_compound_expr (cleanup, call, complain);
       else

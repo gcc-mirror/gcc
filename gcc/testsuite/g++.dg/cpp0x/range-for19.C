@@ -1,7 +1,7 @@
 // PR c++/49838
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 int main()
 {

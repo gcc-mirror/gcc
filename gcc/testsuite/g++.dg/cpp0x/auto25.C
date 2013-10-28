@@ -1,5 +1,5 @@
 // PR c++/42056
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<int> struct A
 {

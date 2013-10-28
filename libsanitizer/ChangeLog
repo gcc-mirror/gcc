@@ -53,7 +53,7 @@
 	* asan/asan_preinit.cc: New file, synced from upstream.
 	* asan/asan_rtl.cc: Remove preinit stuff, synced from upstream.
 
-2013-02-21  Jack Howarth <howarth@bromo.med.uc.edu>
+2013-02-21  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* asan/Makefile.am (libasan_la_SOURCES): Remove deprecated
 	dynamic/asan_interceptors_dynamic.cc.
@@ -209,7 +209,7 @@
 
 	* configure.tgt: Enable build on powerpc*-linux.
 
-2012-12-06  Jack Howarth <howarth@bromo.med.uc.edu>
+2012-12-06  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 55599/sanitizer
 	* configure.ac: Set enable_static=no on darwin.
@@ -224,7 +224,7 @@
 	* All files: Merge from upstream r169371.
 
 2012-12-04  Kostya Serebryany  <kcc@google.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 55521/sanitizer
 	* configure.ac: Define USING_MAC_INTERPOSE when on darwin.
@@ -290,7 +290,7 @@
 	* All files: Merge from upstream r168699.
 
 2012-11-24  Kostya Serebryany  <kcc@google.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* interception/mach_override/mach_override.c: Migrate from llvm.
 	* interception/mach_override/mach_override.h: Likewise.

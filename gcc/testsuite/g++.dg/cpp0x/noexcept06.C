@@ -1,6 +1,6 @@
 // Test that checking of a nothrow specification uses the one on the
 // definition.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 #include <exception>

@@ -30,7 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "timevar.h"
 #include "dumpfile.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
@@ -883,7 +888,8 @@ thread_through_normal_block (edge e,
 			     bool handle_dominating_asserts,
 			     vec<tree> *stack,
 			     tree (*simplify) (gimple, gimple),
-			     vec<jump_thread_edge *> *path)
+			     vec<jump_thread_edge *> *path,
+			     bitmap visited)
 {
   /* If E is a backedge, then we want to verify that the COND_EXPR,
      SWITCH_EXPR or GOTO_EXPR at the end of e->dest is not affected
@@ -922,11 +928,10 @@ thread_through_normal_block (edge e,
 	{
 	  edge taken_edge = find_taken_edge (e->dest, cond);
 	  basic_block dest = (taken_edge ? taken_edge->dest : NULL);
-	  bitmap visited;
 
 	  /* DEST could be NULL for a computed jump to an absolute
 	     address.  */
-	  if (dest == NULL || dest == e->dest)
+	  if (dest == NULL || dest == e->dest || bitmap_bit_p (visited, dest->index))
 	    return false;
 
           jump_thread_edge *x
@@ -944,7 +949,6 @@ thread_through_normal_block (edge e,
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
-	      visited = BITMAP_ALLOC (NULL);
 	      bitmap_set_bit (visited, dest->index);
 	      bitmap_set_bit (visited, e->dest->index);
 	      thread_around_empty_blocks (taken_edge,
@@ -953,7 +957,6 @@ thread_through_normal_block (edge e,
 					  simplify,
 					  visited,
 					  path);
-	      BITMAP_FREE (visited);
 	    }
 	  return true;
 	}
@@ -995,15 +998,21 @@ thread_across_edge (gimple dummy_cond,
 		    vec<tree> *stack,
 		    tree (*simplify) (gimple, gimple))
 {
+  bitmap visited = BITMAP_ALLOC (NULL);
+
   stmt_count = 0;
 
   vec<jump_thread_edge *> *path = new vec<jump_thread_edge *> ();
+  bitmap_clear (visited);
+  bitmap_set_bit (visited, e->src->index);
+  bitmap_set_bit (visited, e->dest->index);
   if (thread_through_normal_block (e, dummy_cond, handle_dominating_asserts,
-				   stack, simplify, path))
+				   stack, simplify, path, visited))
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
       remove_temporary_equivalences (stack);
+      BITMAP_FREE (visited);
       register_jump_thread (path);
       return;
     }
@@ -1030,7 +1039,16 @@ thread_across_edge (gimple dummy_cond,
     edge taken_edge;
     edge_iterator ei;
     bool found;
-    bitmap visited = BITMAP_ALLOC (NULL);
+
+    /* If E->dest has abnormal outgoing edges, then there's no guarantee
+       we can safely redirect any of the edges.  Just punt those cases.  */
+    FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
+      if (taken_edge->flags & EDGE_ABNORMAL)
+	{
+	  remove_temporary_equivalences (stack);
+	  BITMAP_FREE (visited);
+	  return;
+	}
 
     /* Look at each successor of E->dest to see if we can thread through it.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)

@@ -87,6 +87,9 @@ VECTOR_MODE (INT, DI, 1);     /*                   V1DI */
 VECTOR_MODE (INT, SI, 1);     /*                   V1SI */
 VECTOR_MODE (INT, QI, 2);     /*                   V2QI */
 
+POINTER_BOUNDS_MODE (BND32, 8);
+POINTER_BOUNDS_MODE (BND64, 16);
+
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);
 

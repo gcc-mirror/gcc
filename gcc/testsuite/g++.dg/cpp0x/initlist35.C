@@ -1,5 +1,5 @@
 // PR c++/41510
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct B
 {

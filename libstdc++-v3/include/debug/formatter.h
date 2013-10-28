@@ -38,7 +38,7 @@ namespace __gnu_debug
   using std::type_info;
 
   template<typename _Iterator>
-    bool __check_singular(_Iterator&);
+    bool __check_singular(const _Iterator&);
 
   class _Safe_sequence_base;
 

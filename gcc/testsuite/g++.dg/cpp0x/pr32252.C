@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 int x[5];
 
 template<int M, int N, int (&... p)[N]> struct A;

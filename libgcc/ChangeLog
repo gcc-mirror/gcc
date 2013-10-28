@@ -479,7 +479,7 @@
 	* config/sh/lib1funcs.S (udivsi3_i4i, sdivsi3_i4i): Add __SH2A__ to
 	inclusion list.
 
-2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-03-04  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/crti.S: Setup stack protection at entry
 
@@ -590,7 +590,7 @@
 	_divQQ,  _divHQ,  _divHA,  _divSA,
 	_divUQQ, _divUHQ, _divUHA, _divUSA.
 
-2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
+2013-01-26  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config.host(microblaze*-linux*): tmake_file: Remove
 	t-slibgcc-nolc-override, add t-slibgcc-libgcc.
@@ -598,7 +598,7 @@
 	to exclude functions from being built with libgcc.c and use
 	the microblaze assembly.
 
-2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-01-26  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config.host (microblaze*-*-*): Rename microblaze*-*-elf, update
 	extra_parts.

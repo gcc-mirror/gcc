@@ -4683,7 +4683,7 @@
 
 	* gcc.c-torture/compile/limits-fndefn.c: Add dg-timeout-factor.
 
-2009-08-25 Ville Voutilainen <ville.voutilainen@gmail.com>
+2009-08-25  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* g++.dg/cpp0x/alignof.C: New. Tests that the alignof
 	keyword works in the same manner as __alignof.

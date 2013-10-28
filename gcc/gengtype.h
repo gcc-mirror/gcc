@@ -291,6 +291,8 @@ struct type {
          field the original TYPE_LANG_STRUCT type.  This is a dirty
          trick, see the new_structure function for details.  */
       type_p lang_struct;
+
+      type_p base_class; /* the parent class, if any.  */
     } s;
 
     /* when TYPE_SCALAR: */
@@ -424,7 +426,7 @@ extern void do_scalar_typedef (const char *s, struct fileloc *pos);
 extern type_p resolve_typedef (const char *s, struct fileloc *pos);
 extern type_p new_structure (const char *name, enum typekind kind,
 			     struct fileloc *pos, pair_p fields,
-			     options_p o);
+			     options_p o, type_p base);
 type_p create_user_defined_type (const char *, struct fileloc *);
 extern type_p find_structure (const char *s, enum typekind kind);
 extern type_p create_scalar_type (const char *name);

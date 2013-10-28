@@ -16,6 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+sh-mem.o: $(srcdir)/config/sh/sh-mem.cc \
+  $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) $(TM_P_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
 sh-c.o: $(srcdir)/config/sh/sh-c.c \
   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

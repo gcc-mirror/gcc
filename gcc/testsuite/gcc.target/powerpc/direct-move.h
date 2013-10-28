@@ -1,5 +1,7 @@
 /* Test functions for direct move support.  */
 
+#include <math.h>
+extern void abort (void);
 
 void __attribute__((__noinline__))
 copy (TYPE *a, TYPE *b)
@@ -107,7 +109,7 @@ const struct test_struct test_functions[] = {
 void __attribute__((__noinline__))
 test_value (TYPE a)
 {
-  size_t i;
+  long i;
 
   for (i = 0; i < sizeof (test_functions) / sizeof (test_functions[0]); i++)
     {
@@ -123,8 +125,7 @@ test_value (TYPE a)
 int
 main (void)
 {
-  size_t i;
-  long j;
+  long i,j;
   union {
     TYPE value;
     unsigned char bytes[sizeof (TYPE)];

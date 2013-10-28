@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 template<template<typename... T> class Comp, typename... T> void f( T... Value)
 {
   static_assert( Comp<T>::value > 0, "" ); // { dg-error "parameter packs|T" }

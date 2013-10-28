@@ -2,7 +2,7 @@
 // and begin/end as member functions
 
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 /* Preliminary declarations */
 namespace pre

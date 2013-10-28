@@ -20,10 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_LOOP_H
 #define GCC_TREE_SSA_LOOP_H
 
-#include "tree-ssa-loop-ivopts.h"
-#include "tree-ssa-loop-manip.h"
-#include "tree-ssa-loop-niter.h"
-
 /* Affine iv.  */
 
 typedef struct affine_iv_d

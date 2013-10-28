@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "ggc.h"
 #include "basic-block.h"
-#include "tree.h"
+#include "tree-core.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"

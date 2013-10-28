@@ -1,3 +1,28 @@
+2013-10-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* testsuite/test-demangle.c: Include unistd.h.
+	
+2013-10-25  Gary Benson  <gbenson@redhat.com>
+
+	* cp-demangle.c (struct d_saved_scope): New structure.
+	(struct d_print_info): New fields saved_scopes and
+	num_saved_scopes.
+	(d_print_init): Initialize the above.
+	(d_print_free): New function.
+	(cplus_demangle_print_callback): Call the above.
+	(d_copy_templates): New function.
+	(d_print_comp): New variables saved_templates and
+	need_template_restore.
+	[DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE]: Capture scope the first
+	time the component is traversed, and use the captured scope for
+	subsequent traversals.
+	* testsuite/demangle-expected: Add regression test.
+
+2013-10-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* testsuite/test-expandargv.c: Include unistd.h.
+
 2013-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* configure.ac: If --enable-host-shared, use -fPIC.
@@ -83,7 +108,7 @@
 	* hashtab.c (hash_pointer): Remove conditional and avoid
 	unexecuted shift equal to wordsize.
 
-2013-04-22  Andi Kleen <ak@linux.intel.com>
+2013-04-22  Andi Kleen  <ak@linux.intel.com>
 
 	* hashtab.c (hash_pointer): Move to end of file and reimplement.
 
@@ -657,12 +682,12 @@
 	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY(C)): Delete.
 	* configure: Regenerate.
 
-2010-10-07  Andi Kleen <ak@linux.intel.com>
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
 
 	* configure: Regenerate.
 	* configure.ac: Turn PR_SET_NAME check into link check.
 
-2010-10-06  Andi Kleen <ak@linux.intel.com>
+2010-10-06  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in (CFILES): Add setproctitle.
 	(CONFIGURED_OFILES): Add setproctitle.

@@ -1,3 +1,30 @@
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44646
+	* trans-stmt.c (struct forall_info): Add do_concurrent field.
+	(gfc_trans_forall_1): Set it for do concurrent.
+	(gfc_trans_forall_loop): Mark those as annot_expr_ivdep_kind.
+
+2013-10-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58793
+	* interface.c (compare_parameter): Reject passing TYPE(*)
+	to CLASS(*).
+
+2013-10-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran 57893
+	* class.c : Include target-memory.h.
+	(gfc_find_intrinsic_vtab) Build a minimal expression so that
+	gfc_element_size can be used to obtain the storage size, rather
+	that the kind value.
+
+2013-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58803
+	* decl.c (match_ppc_decl): Prevent later
+	double free.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* trans-openmp.c: Include omp-low.h.
@@ -1424,7 +1451,7 @@
 	(TS 29113 Status): Add TYPE(*) and DIMENSION(..).
 	(C Interop): Update the section about TS29113.
 
-2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
+2013-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55789
 	* trans-array.c (trans_array_constructor): Remove condition
@@ -1521,7 +1548,7 @@
 	(variable_decl): Remove undeclared type error.
 	(gfc_match_import): Use renamed instead of original name.
 
-2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
+2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55984
 	PR fortran/56047

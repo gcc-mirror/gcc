@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
-#include "tree.h"
+#include "basic-block.h"
 #include "function.h"
 #include "ipa-ref.h"
 

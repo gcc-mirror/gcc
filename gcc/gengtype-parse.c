@@ -165,6 +165,21 @@ require (int t)
   return v;
 }
 
+/* As per require, but do not advance.  */
+static const char *
+require_without_advance (int t)
+{
+  int u = token ();
+  const char *v = T.value;
+  if (u != t)
+    {
+      parse_error ("expected %s, have %s",
+		   print_token (t, 0), print_token (u, v));
+      return 0;
+    }
+  return v;
+}
+
 /* If the next token does not have one of the codes T1 or T2, report a
    parse error; otherwise return the token's value.  */
 static const char *
@@ -829,6 +844,7 @@ type (options_p *optsp, bool nested)
     case STRUCT:
     case UNION:
       {
+	type_p base_class = NULL;
 	options_p opts = 0;
 	/* GTY annotations follow attribute syntax
 	   GTY_BEFORE_ID is for union/struct declarations
@@ -868,16 +884,39 @@ type (options_p *optsp, bool nested)
 	    opts = gtymarker_opt ();
 	  }
 
+	bool is_user_gty = opts_have (opts, "user");
+
 	if (token () == ':')
 	  {
-	    /* Skip over C++ inheritance specification.  */
-	    while (token () != '{')
-	      advance ();
+	    if (is_gty && !is_user_gty)
+	      {
+		/* For GTY-marked types that are not "user", parse some C++
+		   inheritance specifications.
+		   We require single-inheritance from a non-template type.  */
+		advance ();
+		const char *basename = require (ID);
+		/* This may be either an access specifier, or the base name.  */
+		if (0 == strcmp (basename, "public")
+		    || 0 == strcmp (basename, "protected")
+		    || 0 == strcmp (basename, "private"))
+		  basename = require (ID);
+		base_class = find_structure (basename, TYPE_STRUCT);
+		if (!base_class)
+		  parse_error ("unrecognized base class: %s", basename);
+		require_without_advance ('{');
+	      }
+	    else
+	      {
+		/* For types lacking GTY-markings, skip over C++ inheritance
+		   specification (and thus avoid having to parse e.g. template
+		   types).  */
+		while (token () != '{')
+		  advance ();
+	      }
 	  }
 
 	if (is_gty)
 	  {
-	    bool is_user_gty = opts_have (opts, "user");
 	    if (token () == '{')
 	      {
 		pair_p fields;
@@ -900,7 +939,8 @@ type (options_p *optsp, bool nested)
 		    return create_user_defined_type (s, &lexer_line);
 		  }
 
-		return new_structure (s, kind, &lexer_line, fields, opts);
+		return new_structure (s, kind, &lexer_line, fields, opts,
+				      base_class);
 	      }
 	  }
 	else if (token () == '{')

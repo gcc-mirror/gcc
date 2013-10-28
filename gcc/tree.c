@@ -47,7 +47,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-iterator.h"
 #include "basic-block.h"
-#include "tree-ssa.h"
+#include "bitmap.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-phinodes.h"
+#include "tree-ssanames.h"
+#include "tree-dfa.h"
 #include "params.h"
 #include "pointer-set.h"
 #include "tree-pass.h"
@@ -55,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
 #include "tree-pretty-print.h"
-#include "cgraph.h"
 #include "except.h"
 #include "debug.h"
 #include "intl.h"
@@ -1219,7 +1224,8 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      /* Cache NULL pointer.  */
+    case POINTER_BOUNDS_TYPE:
+      /* Cache NULL pointer and zero bounds.  */
       if (!hi && !low)
 	{
 	  limit = 1;
@@ -3271,6 +3277,7 @@ type_contains_placeholder_1 (const_tree type)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case POINTER_BOUNDS_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:

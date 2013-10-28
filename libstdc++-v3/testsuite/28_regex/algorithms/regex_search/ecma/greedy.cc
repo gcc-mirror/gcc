@@ -54,9 +54,9 @@ test01()
   VERIFY(regex_search_debug("aaaa", m, regex("(a+)(a+)")));
   TEST(1, "aaa");
   TEST(2, "a");
-  VERIFY(regex_search_debug("aaaa", m, regex("(a+?)(a+)")));
-  TEST(1, "a");
-  TEST(2, "aaa");
+  VERIFY(regex_search_debug("aaaa", m, regex("(a+)(a+?)")));
+  TEST(1, "aaa");
+  TEST(2, "a");
   VERIFY(regex_search_debug("aaaa", m, regex("(a+?)(a+)")));
   TEST(1, "a");
   TEST(2, "aaa");

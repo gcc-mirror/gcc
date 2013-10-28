@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // Just discard errors pointing at header files
 // { dg-prune-output "include" }

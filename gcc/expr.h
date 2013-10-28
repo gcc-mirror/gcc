@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 /* For host_integerp, tree_low_cst, fold_convert, size_binop, ssize_int,
    TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
-#include "tree.h"
+#include "tree-core.h"
 /* For GET_MODE_BITSIZE, word_mode */
 #include "machmode.h"
 

@@ -287,7 +287,7 @@ public:
 	  if (_M_w[__i] != ~static_cast<block_type>(0))
 	    return 0;
 	return ((this->_M_w.size() - 1) * _S_bits_per_block
-		+ __builtin_popcountl(this->_M_hiword()));
+		+ __builtin_popcountll(this->_M_hiword()));
       }
 
       bool
@@ -332,7 +332,7 @@ public:
       {
 	size_t __result = 0;
 	for (size_t __i = 0; __i < this->_M_w.size(); ++__i)
-	  __result += __builtin_popcountl(this->_M_w[__i]);
+	  __result += __builtin_popcountll(this->_M_w[__i]);
 	return __result;
       }
 

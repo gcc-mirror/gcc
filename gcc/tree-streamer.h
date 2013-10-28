@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_STREAMER_H
 #define GCC_TREE_STREAMER_H
 
-#include "tree.h"
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
 

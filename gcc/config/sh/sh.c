@@ -63,9 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
-#define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
-#define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
-
 /* These are some macros to abstract register modes.  */
 #define CONST_OK_FOR_I10(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -512 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 511)
@@ -174,7 +171,6 @@ static bool shmedia_space_reserved_for_target_registers;
 
 static void split_branches (rtx);
 static int branch_dest (rtx);
-static void force_into (rtx, rtx);
 static void print_slot (rtx);
 static rtx add_constant (rtx, enum machine_mode, rtx);
 static void dump_table (rtx, rtx);
@@ -1209,12 +1205,12 @@ sh_print_operand (FILE *stream, rtx x, int code)
       if (REG_P (x) || GET_CODE (x) == SUBREG)
 	{
 	  regno = true_regnum (x);
-	  regno += FP_REGISTER_P (regno) ? 1 : LSW;
+	  regno += FP_REGISTER_P (regno) ? 1 : SH_REG_LSW_OFFSET;
 	  fputs (reg_names[regno], (stream));
 	}
       else if (MEM_P (x))
 	{
-	  x = adjust_address (x, SImode, 4 * LSW);
+	  x = adjust_address (x, SImode, 4 * SH_REG_LSW_OFFSET);
 	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
@@ -1225,7 +1221,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  if (mode == VOIDmode)
 	    mode = DImode;
 	  if (GET_MODE_SIZE (mode) >= 8)
-	    sub = simplify_subreg (SImode, x, mode, 4 * LSW);
+	    sub = simplify_subreg (SImode, x, mode, 4 * SH_REG_LSW_OFFSET);
 	  if (sub)
 	    sh_print_operand (stream, sub, 0);
 	  else
@@ -1236,12 +1232,12 @@ sh_print_operand (FILE *stream, rtx x, int code)
       if (REG_P (x) || GET_CODE (x) == SUBREG)
 	{
 	  regno = true_regnum (x);
-	  regno += FP_REGISTER_P (regno) ? 0 : MSW;
+	  regno += FP_REGISTER_P (regno) ? 0 : SH_REG_MSW_OFFSET;
 	  fputs (reg_names[regno], (stream));
 	}
       else if (MEM_P (x))
 	{
-	  x = adjust_address (x, SImode, 4 * MSW);
+	  x = adjust_address (x, SImode, 4 * SH_REG_MSW_OFFSET);
 	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
@@ -1252,7 +1248,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  if (mode == VOIDmode)
 	    mode = DImode;
 	  if (GET_MODE_SIZE (mode) >= 8)
-	    sub = simplify_subreg (SImode, x, mode, 4 * MSW);
+	    sub = simplify_subreg (SImode, x, mode, 4 * SH_REG_MSW_OFFSET);
 	  if (sub)
 	    sh_print_operand (stream, sub, 0);
 	  else
@@ -1619,157 +1615,6 @@ sh_encode_section_info (tree decl, rtx rtl, int first)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && sh2a_function_vector_p (decl) && TARGET_SH2A)
     SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_FUNCVEC_FUNCTION;
-}
-
-/* Like force_operand, but guarantees that VALUE ends up in TARGET.  */
-static void
-force_into (rtx value, rtx target)
-{
-  value = force_operand (value, target);
-  if (! rtx_equal_p (value, target))
-    emit_insn (gen_move_insn (target, value));
-}
-
-/* Emit code to perform a block move.  Choose the best method.
-
-   OPERANDS[0] is the destination.
-   OPERANDS[1] is the source.
-   OPERANDS[2] is the size.
-   OPERANDS[3] is the alignment safe to use.  */
-bool
-expand_block_move (rtx *operands)
-{
-  int align = INTVAL (operands[3]);
-  int constp = (CONST_INT_P (operands[2]));
-  int bytes = (constp ? INTVAL (operands[2]) : 0);
-
-  if (! constp)
-    return false;
-
-  /* If we could use mov.l to move words and dest is word-aligned, we
-     can use movua.l for loads and still generate a relatively short
-     and efficient sequence.  */
-  if (TARGET_SH4A_ARCH && align < 4
-      && MEM_ALIGN (operands[0]) >= 32
-      && can_move_by_pieces (bytes, 32))
-    {
-      rtx dest = copy_rtx (operands[0]);
-      rtx src = copy_rtx (operands[1]);
-      /* We could use different pseudos for each copied word, but
-	 since movua can only load into r0, it's kind of
-	 pointless.  */
-      rtx temp = gen_reg_rtx (SImode);
-      rtx src_addr = copy_addr_to_reg (XEXP (src, 0));
-      int copied = 0;
-
-      while (copied + 4 <= bytes)
-	{
-	  rtx to = adjust_address (dest, SImode, copied);
-	  rtx from = adjust_automodify_address (src, BLKmode,
-						src_addr, copied);
-
-	  set_mem_size (from, 4);
-	  emit_insn (gen_movua (temp, from));
-	  emit_move_insn (src_addr, plus_constant (Pmode, src_addr, 4));
-	  emit_move_insn (to, temp);
-	  copied += 4;
-	}
-
-      if (copied < bytes)
-	move_by_pieces (adjust_address (dest, BLKmode, copied),
-			adjust_automodify_address (src, BLKmode,
-						   src_addr, copied),
-			bytes - copied, align, 0);
-
-      return true;
-    }
-
-  /* If it isn't a constant number of bytes, or if it doesn't have 4 byte
-     alignment, or if it isn't a multiple of 4 bytes, then fail.  */
-  if (align < 4 || (bytes % 4 != 0))
-    return false;
-
-  if (TARGET_HARD_SH4)
-    {
-      if (bytes < 12)
-	return false;
-      else if (bytes == 12)
-	{
-	  rtx func_addr_rtx = gen_reg_rtx (Pmode);
-	  rtx r4 = gen_rtx_REG (SImode, 4);
-	  rtx r5 = gen_rtx_REG (SImode, 5);
-
-	  function_symbol (func_addr_rtx, "__movmemSI12_i4", SFUNC_STATIC);
-	  force_into (XEXP (operands[0], 0), r4);
-	  force_into (XEXP (operands[1], 0), r5);
-	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
-	  return true;
-	}
-      else if (! optimize_size)
-	{
-	  const char *entry_name;
-	  rtx func_addr_rtx = gen_reg_rtx (Pmode);
-	  int dwords;
-	  rtx r4 = gen_rtx_REG (SImode, 4);
-	  rtx r5 = gen_rtx_REG (SImode, 5);
-	  rtx r6 = gen_rtx_REG (SImode, 6);
-
-	  entry_name = (bytes & 4 ? "__movmem_i4_odd" : "__movmem_i4_even");
-	  function_symbol (func_addr_rtx, entry_name, SFUNC_STATIC);
-	  force_into (XEXP (operands[0], 0), r4);
-	  force_into (XEXP (operands[1], 0), r5);
-
-	  dwords = bytes >> 3;
-	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
-	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx));
-	  return true;
-	}
-      else
-	return false;
-    }
-  if (bytes < 64)
-    {
-      char entry[30];
-      rtx func_addr_rtx = gen_reg_rtx (Pmode);
-      rtx r4 = gen_rtx_REG (SImode, 4);
-      rtx r5 = gen_rtx_REG (SImode, 5);
-
-      sprintf (entry, "__movmemSI%d", bytes);
-      function_symbol (func_addr_rtx, entry, SFUNC_STATIC);
-      force_into (XEXP (operands[0], 0), r4);
-      force_into (XEXP (operands[1], 0), r5);
-      emit_insn (gen_block_move_real (func_addr_rtx));
-      return true;
-    }
-
-  /* This is the same number of bytes as a memcpy call, but to a different
-     less common function name, so this will occasionally use more space.  */
-  if (! optimize_size)
-    {
-      rtx func_addr_rtx = gen_reg_rtx (Pmode);
-      int final_switch, while_loop;
-      rtx r4 = gen_rtx_REG (SImode, 4);
-      rtx r5 = gen_rtx_REG (SImode, 5);
-      rtx r6 = gen_rtx_REG (SImode, 6);
-
-      function_symbol (func_addr_rtx, "__movmem", SFUNC_STATIC);
-      force_into (XEXP (operands[0], 0), r4);
-      force_into (XEXP (operands[1], 0), r5);
-
-      /* r6 controls the size of the move.  16 is decremented from it
-	 for each 64 bytes moved.  Then the negative bit left over is used
-	 as an index into a list of move instructions.  e.g., a 72 byte move
-	 would be set up with size(r6) = 14, for one iteration through the
-	 big while loop, and a switch of -2 for the last part.  */
-
-      final_switch = 16 - ((bytes / 4) % 16);
-      while_loop = ((bytes / 4) / 16 - 1) * 16;
-      emit_insn (gen_move_insn (r6, GEN_INT (while_loop + final_switch)));
-      emit_insn (gen_block_lump_real (func_addr_rtx));
-      return true;
-    }
-
-  return false;
 }
 
 /* Prepare operands for a move define_expand; specifically, one of the
@@ -8413,8 +8258,8 @@ sh_builtin_saveregs (void)
 	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (-UNITS_PER_WORD)));
 	  mem = change_address (regbuf, SFmode, fpregs);
 	  emit_move_insn (mem,
-			  gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno
-						- (TARGET_LITTLE_ENDIAN != 0)));
+			  gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode)
+					       + regno - SH_REG_MSW_OFFSET));
 	}
     }
   else

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef IPA_PROP_H
 #define IPA_PROP_H
 
-#include "tree.h"
+#include "tree-core.h"
 #include "vec.h"
 #include "cgraph.h"
 #include "gimple.h"

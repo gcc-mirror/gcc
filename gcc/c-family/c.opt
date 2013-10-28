@@ -541,8 +541,7 @@ C UPC ObjC Var(warn_missing_prototypes) Warning
 Warn about global functions without prototypes
 
 Wmudflap
-C UPC ObjC C++ ObjC++ Var(warn_mudflap) Init(1) Warning
-Warn about constructs not instrumented by -fmudflap
+C UPC ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 Wmultichar
 C UPC ObjC C++ ObjC++ Warning
@@ -1004,16 +1003,13 @@ C UPC ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions
 
 fmudflap
-C UPC ObjC C++ ObjC++ RejectNegative Report Var(flag_mudflap)
-Add mudflap bounds-checking instrumentation for single-threaded program
+C UPC ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fmudflapth
-C UPC ObjC C++ ObjC++ RejectNegative Report Var(flag_mudflap,2)
-Add mudflap bounds-checking instrumentation for multi-threaded program
+C UPC ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fmudflapir
-C UPC ObjC C++ ObjC++ RejectNegative Report Var(flag_mudflap_ignore_reads)
-Ignore read operations when inserting mudflap instrumentation
+C UPC ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fname-mangling-version-
 C++ ObjC++ Joined Ignore Warn(switch %qs is no longer supported)

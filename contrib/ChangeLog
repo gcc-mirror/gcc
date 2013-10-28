@@ -23,7 +23,7 @@
 
 	* gcc_update (configure): Update to handle svn 1.8.1.
 
-2013-08-03  Caroline Tice4  <cmtice@google.com>
+2013-08-03  Caroline Tice  <cmtice@google.com>
 
 	* gcc_update: Add libvtv files.
 	

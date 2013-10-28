@@ -104,6 +104,8 @@
 #include "regs.h"
 #include "expr.h"
 #include "tree-pass.h"
+#include "bitmap.h"
+#include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "cselib.h"
 #include "target.h"

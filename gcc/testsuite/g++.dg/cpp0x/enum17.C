@@ -1,5 +1,5 @@
 // PR c++/48536
-// { dg-options "-std=c++0x -pedantic-errors" }
+// { dg-options "-std=c++11 -pedantic-errors" }
 
 #include <climits>
 

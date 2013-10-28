@@ -36,6 +36,9 @@ namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  enum class _RegexExecutorPolicy : int
+    { _S_auto, _S_alternate };
+
   template<typename _BiIter, typename _Alloc,
 	   typename _CharT, typename _TraitsT,
 	   _RegexExecutorPolicy __policy,
@@ -730,17 +733,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
       typedef std::shared_ptr<__detail::_NFA<_Ch_type, _Rx_traits>>
 	_AutomatonPtr;
 
-      template<typename _BiIter, typename _Alloc,
-	typename _CharT, typename _TraitsT,
-	__detail::_RegexExecutorPolicy __policy>
-	friend std::unique_ptr<
-	  __detail::_Executor<_BiIter, _Alloc, _CharT, _TraitsT>>
-	__detail::__get_executor(_BiIter,
-				 _BiIter,
-				 std::vector<sub_match<_BiIter>, _Alloc>&,
-				 const basic_regex<_CharT, _TraitsT>&,
-				 regex_constants::match_flag_type);
-
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool
@@ -748,14 +740,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type);
 
-      template<typename, typename, typename, typename>
+      template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
-
-      template<typename, typename, typename, typename>
-	friend class __detail::_DFSExecutor;
-
-      template<typename, typename, typename, typename>
-	friend class __detail::_BFSExecutor;
 
       flag_type     _M_flags;
       _Rx_traits    _M_traits;
@@ -1851,14 +1837,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
       //@}
 
     private:
-      template<typename, typename, typename, typename>
+      template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
-
-      template<typename, typename, typename, typename>
-	friend class __detail::_DFSExecutor;
-
-      template<typename, typename, typename, typename>
-	friend class __detail::_BFSExecutor;
 
       template<typename, typename, typename>
 	friend class regex_iterator;

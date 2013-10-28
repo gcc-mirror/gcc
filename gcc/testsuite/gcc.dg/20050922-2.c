@@ -4,7 +4,8 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -std=c99" } */
 
-#include <stdlib.h>
+extern void abort (void);
+extern void exit (int);
 
 #if __INT_MAX__ == 2147483647
 typedef unsigned int uint32_t;

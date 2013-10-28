@@ -1,6 +1,6 @@
 // Test that the default B copy constructor calls the deleted A
 // copy constructor.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct A			// { dg-message "declares a move" }
 {

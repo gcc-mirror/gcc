@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-pretty-print.h"
 #include "hashtab.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "cgraph.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-chrec.h"
@@ -884,6 +885,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case VOID_TYPE:
+    case POINTER_BOUNDS_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -2128,6 +2130,18 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
         pp_string (buffer, "unlikely by ");
       pp_string (buffer, predictor_name (PREDICT_EXPR_PREDICTOR (node)));
       pp_string (buffer, " predictor.");
+      break;
+
+    case ANNOTATE_EXPR:
+      pp_string (buffer, "ANNOTATE_EXPR <");
+      switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (node, 1)))
+	{
+	case annot_expr_ivdep_kind:
+	  pp_string (buffer, "ivdep, ");
+	  break;
+	}
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_greater (buffer);
       break;
 
     case RETURN_EXPR:

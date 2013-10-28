@@ -1,5 +1,5 @@
 // PR c++/47721
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 // template type parameter friend:
 

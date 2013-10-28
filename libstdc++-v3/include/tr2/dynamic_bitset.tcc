@@ -131,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _WordT __thisword = this->_M_w[__i];
 	  if (__thisword != static_cast<_WordT>(0))
 	    return (__i * _S_bits_per_block
-		    + __builtin_ctzl(__thisword));
+		    + __builtin_ctzll(__thisword));
 	}
       // not found, so return an indication of failure.
       return __not_found;
@@ -158,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__thisword != static_cast<_WordT>(0))
 	return (__i * _S_bits_per_block
-		+ __builtin_ctzl(__thisword));
+		+ __builtin_ctzll(__thisword));
 
       // check subsequent words
       for (++__i; __i < this->_M_w.size(); ++__i)
@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __thisword = this->_M_w[__i];
 	  if (__thisword != static_cast<_WordT>(0))
 	    return (__i * _S_bits_per_block
-		    + __builtin_ctzl(__thisword));
+		    + __builtin_ctzll(__thisword));
 	}
       // not found, so return an indication of failure.
       return __not_found;

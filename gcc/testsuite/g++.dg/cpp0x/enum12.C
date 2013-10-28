@@ -1,5 +1,5 @@
 // PR c++/48780
-// { dg-options "-std=c++0x -fabi-version=0" }
+// { dg-options "-std=c++11 -fabi-version=0" }
 
 typedef __builtin_va_list __gnuc_va_list;
 typedef __gnuc_va_list va_list;

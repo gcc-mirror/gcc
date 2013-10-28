@@ -66,30 +66,6 @@
 /* Because of the above, we must have gcc search itself to find libgcc.a.  */
 #define LINK_LIBGCC_SPECIAL_1
 
-#define MFWRAP_SPEC " %{static: %{fmudflap|fmudflapth: \
- -brename:malloc,__wrap_malloc -brename:__real_malloc,malloc \
- -brename:free,__wrap_free -brename:__real_free,free \
- -brename:calloc,__wrap_calloc -brename:__real_calloc,calloc \
- -brename:realloc,__wrap_realloc -brename:__real_realloc,realloc \
- -brename:mmap,__wrap_mmap -brename:__real_mmap,mmap \
- -brename:munmap,__wrap_munmap -brename:__real_munmap,munmap \
- -brename:alloca,__wrap_alloca -brename:__real_alloca,alloca \
-} %{fmudflapth: \
- -brename:pthread_create,__wrap_pthread_create \
- -brename:__real_pthread_create,pthread_create \
- -brename:pthread_join,__wrap_pthread_join \
- -brename:__real_pthread_join,pthread_join \
- -brename:pthread_exit,__wrap_pthread_exit \
- -brename:__real_pthread_exit,pthread_exit \
-}} %{fmudflap|fmudflapth: \
- -brename:main,__wrap_main -brename:__real_main,main \
-}"
-
-#define MFLIB_SPEC " %{fmudflap: -lmudflap \
- %{static:%(link_gcc_c_sequence) -lmudflap}} \
- %{fmudflapth: -lmudflapth -lpthread \
- %{static:%(link_gcc_c_sequence) -lmudflapth}} "
-
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_OS_AIX_CPP_BUILTINS()		\
   do						\

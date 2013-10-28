@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 //  Make sure handing a string to a raw literal generates a sensible error message.
 

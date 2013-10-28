@@ -45,6 +45,9 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
 
+  template<typename _Iterator, typename _Sequence>
+    class _Safe_local_iterator;
+
   template<typename _Sequence>
     struct _Insert_range_from_self_is_safe
     { enum { __value = 0 }; };
@@ -57,7 +60,7 @@ namespace __gnu_debug
   // a _Safe_iterator.
   template<typename _Iterator>
     inline bool
-    __check_singular(_Iterator& __x)
+    __check_singular(const _Iterator& __x)
     { return __check_singular_aux(&__x); }
 
   /** Non-NULL pointers are nonsingular. */
@@ -66,17 +69,11 @@ namespace __gnu_debug
     __check_singular(const _Tp* __ptr)
     { return __ptr == 0; }
 
-  /** Safe iterators know if they are singular. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __check_singular(const _Safe_iterator<_Iterator, _Sequence>& __x)
-    { return __x._M_singular(); }
-
   /** Assume that some arbitrary iterator is dereferenceable, because we
       can't prove that it isn't. */
   template<typename _Iterator>
     inline bool
-    __check_dereferenceable(_Iterator&)
+    __check_dereferenceable(const _Iterator&)
     { return true; }
 
   /** Non-NULL pointers are dereferenceable. */
@@ -85,10 +82,17 @@ namespace __gnu_debug
     __check_dereferenceable(const _Tp* __ptr)
     { return __ptr; }
 
-  /** Safe iterators know if they are singular. */
+  /** Safe iterators know if they are dereferenceable. */
   template<typename _Iterator, typename _Sequence>
     inline bool
     __check_dereferenceable(const _Safe_iterator<_Iterator, _Sequence>& __x)
+    { return __x._M_dereferenceable(); }
+
+  /** Safe local iterators know if they are dereferenceable. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __check_dereferenceable(const _Safe_local_iterator<_Iterator,
+						       _Sequence>& __x)
     { return __x._M_dereferenceable(); }
 
   /** If the distance between two random access iterators is

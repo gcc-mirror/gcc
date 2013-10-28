@@ -3,7 +3,7 @@
 // the compiler doesn't get clever about optimizing the calls based on
 // knowledge about the called functions.
 
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 #include <exception>
