@@ -1,3 +1,89 @@
+2013-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.md (any_truncate): New.
+	(trunsuffix): Ditto.
+	* config/i386/predicates.md (const_8_to_9_operand): New.
+	(const_10_to_11_operand): Ditto.
+	(const_12_to_13_operand): Ditto.
+	(const_14_to_15_operand): Ditto.
+	(const_16_to_19_operand): Ditto.
+	(const_20_to_23_operand): Ditto.
+	(const_24_to_27_operand): Ditto.
+	(const_28_to_31_operand): Ditto.
+	* config/i386/sse.md (unspec): Add UNSPEC_UNSIGNED_FIX_NOTRUNC.
+	(cvtusi2<ssescalarmodesuffix>32): New.
+	(cvtusi2<ssescalarmodesuffix>64): Ditto.
+	(ufloatv16siv16sf2): Ditto.
+	(avx512f_fix_notruncv16sfv16si): Ditto.
+	(avx512f_ufix_notruncv16sfv16si): Ditto.
+	(avx512f_vcvtss2usi): Ditto.
+	(avx512f_vcvtss2usiq): Ditto.
+	(avx512f_vcvttss2usi): Ditto.
+	(avx512f_vcvttss2usiq): Ditto.
+	(avx512f_vcvtsd2usi): Ditto.
+	(avx512f_vcvtsd2usiq): Ditto.
+	(avx512f_vcvttsd2usi): Ditto.
+	(avx512f_vcvttsd2usiq): Ditto.
+	(ufloatv8siv8df): Ditto.
+	(avx512f_cvtdq2pd512_2): Ditto.
+	(avx512f_cvtpd2dq512): Ditto.
+	(avx512f_ufix_notruncv8dfv8si): Ditto.
+	(avx512f_cvtpd2ps512): Ditto.
+	(vec_unpacks_lo_v16sf): Ditto.
+	(vec_unpacks_hi_v16sf): Ditto.
+	(vec_unpacks_float_hi_v16si): Ditto.
+	(vec_unpacks_float_lo_v16si): Ditto.
+	(avx512f_unpckhps512): Ditto.
+	(avx512f_unpcklps512): Ditto.
+	(avx512f_movshdup512): Ditto.
+	(avx512f_movsldup512): Ditto.
+	(vec_extract_lo_v32hi): Ditto.
+	(vec_extract_hi_v32hi): Ditto.
+	(vec_extract_lo_v64qi): Ditto.
+	(vec_extract_hi_v64qi): Ditto.
+	(avx512f_unpckhpd512): Ditto.
+	(avx512f_movddup512): Ditto.
+	(avx512f_unpcklpd512): Ditto.
+	(*avx512f_unpcklpd512): Ditto.
+	(avx512f_shufps512_1): Ditto.
+	(avx512f_shufpd512_1): Ditto.
+	(avx512f_interleave_highv8di): Ditto.
+	(avx512f_interleave_lowv8di): Ditto.
+	(PMOV_DST_MODE): Ditto.
+	(pmov_src_mode): Ditto.
+	(pmov_src_lower): Ditto.
+	(pmov_suff): Ditto.
+	(*avx512f_<code><pmov_src_lower><mode>2): Ditto.
+	(*avx512f_<code>v8div16qi2): Ditto.
+	(*avx512f_<code>v8div16qi2_store): Ditto.
+	(vec_widen_umult_even_v16si): Ditto.
+	(*vec_widen_umult_even_v16si): Ditto.
+	(vec_widen_smult_even_v16si): Ditto.
+	(*vec_widen_smult_even_v16si): Ditto.
+	(avx512f_interleave_highv16si): Ditto.
+	(avx512f_interleave_lowv16si): Ditto.
+	(avx512f_<code>v16qiv16si2): Ditto.
+	(avx512f_<code>v16hiv16si2): Ditto.
+	(avx512f_<code>v8qiv8di2): Ditto.
+	(avx512f_<code>v8hiv8di2): Ditto.
+	(avx512f_<code>v8siv8di2): Ditto.
+	(avx512cd_maskb_vec_dupv8di): Ditto.
+	(avx512cd_maskw_vec_dupv16si): Ditto.
+	(avx512f_vcvtph2ps512): Ditto.
+	(avx512f_vcvtps2ph512): Ditto.
+	(VEC_EXTRACT_MODE): Extened with wider modes.
+	(VEC_PERM_AVX2): Ditto.
+	(VEC_PERM_CONST): Ditto.
+
+
 2013-10-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_ccfsm_post_advance):
