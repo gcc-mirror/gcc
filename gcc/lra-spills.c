@@ -625,7 +625,7 @@ lra_final_code_change (void)
 {
   int i, hard_regno;
   basic_block bb;
-  rtx insn, curr;
+  rtx insn, curr, set;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -636,6 +636,7 @@ lra_final_code_change (void)
     FOR_BB_INSNS_SAFE (bb, insn, curr)
       if (INSN_P (insn))
 	{
+	  bool change_p;
 	  rtx pat = PATTERN (insn);
 
 	  if (GET_CODE (pat) == CLOBBER && LRA_TEMP_CLOBBER_P (pat))
@@ -648,6 +649,12 @@ lra_final_code_change (void)
 	      continue;
 	    }
 
+	  set = single_set (insn);
+	  change_p = (set != NULL
+		      && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
+		      && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
+		      && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER);
+	  
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;
@@ -661,5 +668,20 @@ lra_final_code_change (void)
 	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
+
+	  if (change_p && REGNO (SET_SRC (set)) == REGNO (SET_DEST (set)))
+	    {
+	      /* Remove an useless move insn but only involving
+		 pseudos as some subsequent optimizations are based on
+		 that move insns involving originally hard registers
+		 are preserved.  IRA can generate move insns involving
+		 pseudos.  It is better remove them earlier to speed
+		 up compiler a bit.  It is also better to do it here
+		 as they might not pass final RTL check in LRA,
+		 (e.g. insn moving a control register into
+		 itself).  */
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	    }
 	}
 }
