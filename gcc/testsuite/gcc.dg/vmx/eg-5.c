@@ -7,10 +7,17 @@ matvecmul4 (vector float c0, vector float c1, vector float c2,
   /* Set result to a vector of f32 0's */
   vector float result = ((vector float){0.,0.,0.,0.});
 
+#ifdef __LITTLE_ENDIAN__
+  result  = vec_madd (c0, vec_splat (v, 3), result);
+  result  = vec_madd (c1, vec_splat (v, 2), result);
+  result  = vec_madd (c2, vec_splat (v, 1), result);
+  result  = vec_madd (c3, vec_splat (v, 0), result);
+#else
   result  = vec_madd (c0, vec_splat (v, 0), result);
   result  = vec_madd (c1, vec_splat (v, 1), result);
   result  = vec_madd (c2, vec_splat (v, 2), result);
   result  = vec_madd (c3, vec_splat (v, 3), result);
+#endif
 
   return result;
 }
