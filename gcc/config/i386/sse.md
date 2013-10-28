@@ -2010,6 +2010,34 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "avx512f_vmcmp<mode>3"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
+	(and:<avx512fmaskmode>
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VF_128 1 "register_operand" "v")
+	     (match_operand:VF_128 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "const_0_to_31_operand" "n")]
+	    UNSPEC_PCMP)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vcmp<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<ssescalarmode>")])
+
+(define_insn "avx512f_maskcmp<mode>3"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
+	(match_operator:<avx512fmaskmode> 3 "sse_comparison_operator"
+	  [(match_operand:VF 1 "register_operand" "v")
+	   (match_operand:VF 2 "nonimmediate_operand" "vm")]))]
+  "TARGET_SSE"
+  "vcmp%D3<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "<sse>_comi"
   [(set (reg:CCFP FLAGS_REG)
 	(compare:CCFP
@@ -12147,6 +12175,12 @@
       DONE;
     }
 })
+
+(define_expand "vashrv16si3"
+  [(set (match_operand:V16SI 0 "register_operand")
+	(ashiftrt:V16SI (match_operand:V16SI 1 "register_operand")
+		        (match_operand:V16SI 2 "nonimmediate_operand")))]
+  "TARGET_AVX512F")
 
 (define_expand "vashrv8si3"
   [(set (match_operand:V8SI 0 "register_operand")
