@@ -53,6 +53,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
+  // This function operates in different modes, DFS mode or BFS mode, indicated
+  // by template parameter __dfs_mode. See _M_main for details.
+  //
+  // ------------------------------------------------------------
+  //
+  // DFS mode:
+  //
+  // It applies a Depth-First-Search (aka backtracking) on given NFA and input
+  // string.
+  // At the very beginning the executor stands in the start state, then it tries
+  // every possible state transition in current state recursively. Some state
+  // transitions consume input string, say, a single-char-matcher or a
+  // back-reference matcher; some don't, like assertion or other anchor nodes.
+  // When the input is exhausted and/or the current state is an accepting state,
+  // the whole executor returns true.
+  //
+  // TODO: This approach is exponentially slow for certain input.
+  //       Try to compile the NFA to a DFA.
+  //
+  // Time complexity: o(match_length), O(2^(_M_nfa.size()))
+  // Space complexity: \theta(match_results.size() + match_length)
+  //
+  // ------------------------------------------------------------
+  //
+  // BFS mode:
+  //
+  // Russ Cox's article (http://swtch.com/~rsc/regexp/regexp1.html)
+  // explained this algorithm clearly.
+  //
+  // It first computes epsilon closure for every state that's still matching,
+  // using the same DFS algorithm, but doesn't reenter states (set true in
+  // _M_visited), nor follows _S_opcode_match.
+  //
+  // Then apply DFS using every _S_opcode_match (in _M_match_queue) as the start
+  // state.
+  //
+  // It significantly reduces potential duplicate states, so has a better
+  // upper bound; but it requires more overhead.
+  //
+  // Time complexity: o(match_length * match_results.size())
+  //                  O(match_length * _M_nfa.size() * match_results.size())
+  // Space complexity: o(_M_nfa.size() + match_results.size())
+  //                   O(_M_nfa.size() * match_results.size())
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
   template<bool __match_mode>
@@ -68,18 +111,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  // Like the DFS approach, it try every possible state transition;
-	  // Unlike DFS, it uses a queue instead of a stack to store matching
-	  // states. It's a BFS approach.
-	  //
-	  // Russ Cox's article(http://swtch.com/~rsc/regexp/regexp1.html)
-	  // explained this algorithm clearly.
-	  //
-	  // Time complexity: o(match_length * match_results.size())
-	  //                  O(match_length * _M_nfa.size()
-	  //                    * match_results.size())
-	  // Space complexity: o(_M_nfa.size() + match_results.size())
-	  //                   O(_M_nfa.size() * match_results.size())
 	  _M_match_queue->push(make_pair(_M_start_state, _M_results));
 	  bool __ret = false;
 	  while (1)
@@ -132,20 +163,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-  // A _DFSExecutor perform a DFS on given NFA and input string. At the very
-  // beginning the executor stands in the start state, then it try every
-  // possible state transition in current state recursively. Some state
-  // transitions consume input string, say, a single-char-matcher or a
-  // back-reference matcher; some not, like assertion or other anchor nodes.
-  // When the input is exhausted and the current state is an accepting state,
-  // the whole executor return true.
-  //
-  // TODO: This approach is exponentially slow for certain input.
-  //       Try to compile the NFA to a DFA.
-  //
-  // Time complexity: o(match_length), O(2^(_M_nfa.size()))
-  // Space complexity: \theta(match_results.size() + match_length)
-  //
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
   template<bool __match_mode>
@@ -160,29 +177,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       const auto& __state = _M_nfa[__i];
+      // Every change on _M_cur_results and _M_current will be rolled back after
+      // finishing the recursion step.
       switch (__state._M_opcode)
 	{
+	// _M_alt branch is "match once more", while _M_next is "get me out
+	// of this quantifier". Executing _M_next first or _M_alt first don't
+	// mean the same thing, and we need to choose the correct order under
+	// given greedy mode.
 	case _S_opcode_alternative:
-	  // Greedy or not, this is a question ;)
+	  // Greedy.
 	  if (!__state._M_neg)
 	    {
+	      // "Once more" is preferred in greedy mode.
 	      _M_dfs<__match_mode>(__state._M_alt);
+	      // If it's DFS executor and already accepted, we're done.
 	      if (!__dfs_mode || !_M_has_sol)
 		_M_dfs<__match_mode>(__state._M_next);
 	    }
-	  else
+	  else // Non-greedy mode
 	    {
 	      if (__dfs_mode)
 		{
+		  // vice-versa.
 		  _M_dfs<__match_mode>(__state._M_next);
 		  if (!_M_has_sol)
 		    _M_dfs<__match_mode>(__state._M_alt);
 		}
 	      else
 		{
+		  // DON'T attempt anything, because there's already another
+		  // state with higher priority accepted. This state cannot be
+		  // better by attempting its next node.
 		  if (!_M_has_sol)
 		    {
 		      _M_dfs<__match_mode>(__state._M_next);
+		      // DON'T attempt anything if it's already accepted. An
+		      // accepted state *must* be better than a solution that
+		      // matches a non-greedy quantifier one more time.
 		      if (!_M_has_sol)
 			_M_dfs<__match_mode>(__state._M_alt);
 		    }
@@ -190,12 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  break;
 	case _S_opcode_subexpr_begin:
-	  // Here's the critical part: if there's nothing changed since last
-	  // visit, do NOT continue. This prevents the executor from get into
-	  // infinite loop when use "()*" to match "".
-	  //
-	  // Every change on _M_cur_results will be roll back after the
-	  // recursion step finished.
+	  // If there's nothing changed since last visit, do NOT continue.
+	  // This prevents the executor from get into infinite loop when using
+	  // "()*" to match "".
 	  if (!_M_cur_results[__state._M_subexpr].matched
 	      || _M_cur_results[__state._M_subexpr].first != _M_current)
 	    {
@@ -232,8 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_word_boundry(__state) == !__state._M_neg)
 	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
-	  // Here __state._M_alt offers a single start node for a sub-NFA.
-	  // We recursivly invoke our algorithm to match the sub-NFA.
+	// Here __state._M_alt offers a single start node for a sub-NFA.
+	// We recursively invoke our algorithm to match the sub-NFA.
 	case _S_opcode_subexpr_lookahead:
 	  if (_M_lookahead(__state) == !__state._M_neg)
 	    _M_dfs<__match_mode>(__state._M_next);
@@ -254,8 +283,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  break;
 	// First fetch the matched result from _M_cur_results as __submatch;
 	// then compare it with
-	// (_M_current, _M_current + (__submatch.second - __submatch.first))
-	// If matched, keep going; else just return to try another state.
+	// (_M_current, _M_current + (__submatch.second - __submatch.first)).
+	// If matched, keep going; else just return and try another state.
 	case _S_opcode_backref:
 	  {
 	    _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
