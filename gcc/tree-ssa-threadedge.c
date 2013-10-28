@@ -644,7 +644,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
       i++;
     }
 
-  vec<tree, va_stack> fewvars = vNULL;
+  stack_vec<tree, alloc_count> fewvars;
   pointer_set_t *vars = NULL;
 
   /* If we're already starting with 3/4 of alloc_count, go for a
@@ -652,8 +652,6 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
      VEC.  */
   if (i * 4 > alloc_count * 3)
     vars = pointer_set_create ();
-  else if (alloc_count)
-    vec_stack_alloc (tree, fewvars, alloc_count);
 
   /* Now go through the initial debug stmts in DEST again, this time
      actually inserting in VARS or FEWVARS.  Don't bother checking for

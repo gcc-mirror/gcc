@@ -115,7 +115,7 @@ typedef struct
    with a PHI DEF that would soon become non-dominant, and when we got
    to the suitable one, it wouldn't have anything to substitute any
    more.  */
-static vec<adjust_info, va_stack> adjust_vec;
+static vec<adjust_info, va_heap> adjust_vec;
 
 /* Adjust any debug stmts that referenced AI->from values to use the
    loop-closed AI->to, if the references are dominated by AI->bb and
@@ -1133,7 +1133,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (MAY_HAVE_DEBUG_STMTS)
     {
       gcc_assert (!adjust_vec.exists ());
-      vec_stack_alloc (adjust_info, adjust_vec, 32);
+      adjust_vec.create (32);
     }
 
   if (e == exit_e)

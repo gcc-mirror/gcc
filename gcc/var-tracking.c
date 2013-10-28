@@ -7907,7 +7907,7 @@ struct expand_loc_callback_data
 
   /* Stack of values and debug_exprs under expansion, and their
      children.  */
-  vec<rtx, va_stack> expanding;
+  stack_vec<rtx, 4> expanding;
 
   /* Stack of values and debug_exprs whose expansion hit recursion
      cycles.  They will have VALUE_RECURSED_INTO marked when added to
@@ -7915,7 +7915,7 @@ struct expand_loc_callback_data
      resolves to a valid location.  So, if the flag remains set at the
      end of the search, we know no valid location for this one can
      possibly exist.  */
-  vec<rtx, va_stack> pending;
+  stack_vec<rtx, 4> pending;
 
   /* The maximum depth among the sub-expressions under expansion.
      Zero indicates no expansion so far.  */
@@ -8417,11 +8417,11 @@ vt_expand_loc_callback (rtx x, bitmap regs,
    This function performs this finalization of NULL locations.  */
 
 static void
-resolve_expansions_pending_recursion (vec<rtx, va_stack> pending)
+resolve_expansions_pending_recursion (vec<rtx, va_heap> *pending)
 {
-  while (!pending.is_empty ())
+  while (!pending->is_empty ())
     {
-      rtx x = pending.pop ();
+      rtx x = pending->pop ();
       decl_or_value dv;
 
       if (!VALUE_RECURSED_INTO (x))
@@ -8441,8 +8441,6 @@ resolve_expansions_pending_recursion (vec<rtx, va_stack> pending)
   do								\
     {								\
       (d).vars = (v);						\
-      vec_stack_alloc (rtx, (d).expanding, 4);			\
-      vec_stack_alloc (rtx, (d).pending, 4);			\
       (d).depth.complexity = (d).depth.entryvals = 0;		\
     }								\
   while (0)
@@ -8450,7 +8448,7 @@ resolve_expansions_pending_recursion (vec<rtx, va_stack> pending)
 #define FINI_ELCD(d, l)						\
   do								\
     {								\
-      resolve_expansions_pending_recursion ((d).pending);	\
+      resolve_expansions_pending_recursion (&(d).pending);	\
       (d).pending.release ();					\
       (d).expanding.release ();					\
 								\
@@ -8744,7 +8742,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
 
 int
 var_track_values_to_stack (variable_def **slot,
-			   vec<rtx, va_stack> *changed_values_stack)
+			   vec<rtx, va_heap> *changed_values_stack)
 {
   variable var = *slot;
 
@@ -8779,7 +8777,7 @@ remove_value_from_changed_variables (rtx val)
 
 static void
 notify_dependents_of_changed_value (rtx val, variable_table_type htab,
-				    vec<rtx, va_stack> *changed_values_stack)
+				    vec<rtx, va_heap> *changed_values_stack)
 {
   variable_def **slot;
   variable var;
@@ -8864,13 +8862,11 @@ process_changed_values (variable_table_type htab)
 {
   int i, n;
   rtx val;
-  vec<rtx, va_stack> changed_values_stack;
-
-  vec_stack_alloc (rtx, changed_values_stack, 20);
+  stack_vec<rtx, 20> changed_values_stack;
 
   /* Move values from changed_variables to changed_values_stack.  */
   changed_variables
-    .traverse <vec<rtx, va_stack>*, var_track_values_to_stack>
+    .traverse <vec<rtx, va_heap>*, var_track_values_to_stack>
       (&changed_values_stack);
 
   /* Back-propagate change notifications in values while popping
@@ -8891,8 +8887,6 @@ process_changed_values (variable_table_type htab)
 	  n--;
 	}
     }
-
-  changed_values_stack.release ();
 }
 
 /* Emit NOTE_INSN_VAR_LOCATION note for each variable from a chain

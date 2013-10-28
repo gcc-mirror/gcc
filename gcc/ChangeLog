@@ -1,3 +1,46 @@
+2013-10-28  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* df-scan.c (df_collection_rec): Adjust.
+	(copy_defs): New constant.
+	(copy_uses): Likewise.
+	(copy_eq_uses): Likewise.
+	(copy_mw): Likewise.
+	(copy_all): Likewise.
+	(df_insn_rescan): Adjust.
+	(df_notes_rescan): Likewise.
+	(df_swap_refs): Likewise.
+	(df_sort_and_compress_refs): Likewise.
+	(df_sort_and_compress_mws): Likewise.
+	(df_install_refs): Likewise.
+	(df_install_mws): Likewise.
+	(df_refs_add_to_chains): Add flags parameter controlling which vectors
+	are coppied.
+	(df_bb_refs_record): Adjust.
+	(df_record_entry_block_defs): Likewise.
+	(df_record_exit_block_defs): Likewise.
+	(df_refs_verify): Likewise.
+	(df_mws_verify): Likewise.
+	(df_insn_refs_verify): Likewise.
+	(df_bb_verify): Likewise.
+	* ipa-pure-const.c (finish_state): Remove.
+	(propagate): Adjust.
+	* tree-data-ref.c tree-ssa-alias.c tree-ssa-loop-ivcanon.c
+	tree-ssa-threadedge.c tree-vect-loop-manip.c tree-vect-slp.c
+	var-tracking.c: Adjust.
+	* vec.c (stack_vecs): Remove.
+	(register_stack_vec): Likewise.
+	(stack_vec_register_index): Likewise.
+	(unregister_stack_vec): Likewise.
+	* vec.h (struct va_stack): Remove.
+	(struct vec<T, A, vl_ptr>): Specialize as
+	struct vec<T, va_heap, vl_ptr> instead since va_heap is the only
+	allocation strategy compatable with the vl_ptr layout.
+	(struct vec<T, va_gc, vl_ptr>): Remove because it now gets an empty
+	specialization anyway.
+	(class stack_vec): New class.
+	(vec_stack_alloc): Remove.
+	(vec<T, va_heap, vl_ptr>::using_auto_storage): New method.
+
 2013-10-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>

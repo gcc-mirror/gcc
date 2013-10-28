@@ -736,11 +736,8 @@ aliasing_component_refs_p (tree ref1,
 static bool
 nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
 {
-  vec<tree, va_stack> component_refs1;
-  vec<tree, va_stack> component_refs2;
-
-  vec_stack_alloc (tree, component_refs1, 16);
-  vec_stack_alloc (tree, component_refs2, 16);
+  stack_vec<tree, 16> component_refs1;
+  stack_vec<tree, 16> component_refs2;
 
   /* Create the stack of handled components for REF1.  */
   while (handled_component_p (ref1))
