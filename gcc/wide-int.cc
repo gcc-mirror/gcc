@@ -416,22 +416,19 @@ wi::eq_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 /* Return true if OP0 < OP1 using signed comparisons.  */
 bool
 wi::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-		 unsigned int p0,
-		 const HOST_WIDE_INT *op1, unsigned int op1len,
-		 unsigned int p1)
+		 unsigned int precision,
+		 const HOST_WIDE_INT *op1, unsigned int op1len)
 {
   HOST_WIDE_INT s0, s1;
   unsigned HOST_WIDE_INT u0, u1;
-  unsigned int blocks_needed0 = BLOCKS_NEEDED (p0);
-  unsigned int blocks_needed1 = BLOCKS_NEEDED (p1);
-  unsigned int small_prec0 = p0 & (HOST_BITS_PER_WIDE_INT - 1);
-  unsigned int small_prec1 = p1 & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
   int l = MAX (op0len - 1, op1len - 1);
 
   /* Only the top block is compared as signed.  The rest are unsigned
      comparisons.  */
-  s0 = selt (op0, op0len, blocks_needed0, small_prec0, l, SIGNED);
-  s1 = selt (op1, op1len, blocks_needed1, small_prec1, l, SIGNED);
+  s0 = selt (op0, op0len, blocks_needed, small_prec, l, SIGNED);
+  s1 = selt (op1, op1len, blocks_needed, small_prec, l, SIGNED);
   if (s0 < s1)
     return true;
   if (s0 > s1)
@@ -440,8 +437,8 @@ wi::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
   l--;
   while (l >= 0)
     {
-      u0 = selt (op0, op0len, blocks_needed0, small_prec0, l, SIGNED);
-      u1 = selt (op1, op1len, blocks_needed1, small_prec1, l, SIGNED);
+      u0 = selt (op0, op0len, blocks_needed, small_prec, l, SIGNED);
+      u1 = selt (op1, op1len, blocks_needed, small_prec, l, SIGNED);
 
       if (u0 < u1)
 	return true;
@@ -457,22 +454,19 @@ wi::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
    signed compares.  */
 int
 wi::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-		unsigned int p0,
-		const HOST_WIDE_INT *op1, unsigned int op1len,
-		unsigned int p1)
+		unsigned int precision,
+		const HOST_WIDE_INT *op1, unsigned int op1len)
 {
   HOST_WIDE_INT s0, s1;
   unsigned HOST_WIDE_INT u0, u1;
-  unsigned int blocks_needed0 = BLOCKS_NEEDED (p0);
-  unsigned int blocks_needed1 = BLOCKS_NEEDED (p1);
-  unsigned int small_prec0 = p0 & (HOST_BITS_PER_WIDE_INT - 1);
-  unsigned int small_prec1 = p1 & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
   int l = MAX (op0len - 1, op1len - 1);
 
   /* Only the top block is compared as signed.  The rest are unsigned
      comparisons.  */
-  s0 = selt (op0, op0len, blocks_needed0, small_prec0, l, SIGNED);
-  s1 = selt (op1, op1len, blocks_needed1, small_prec1, l, SIGNED);
+  s0 = selt (op0, op0len, blocks_needed, small_prec, l, SIGNED);
+  s1 = selt (op1, op1len, blocks_needed, small_prec, l, SIGNED);
   if (s0 < s1)
     return -1;
   if (s0 > s1)
@@ -481,8 +475,8 @@ wi::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
   l--;
   while (l >= 0)
     {
-      u0 = selt (op0, op0len, blocks_needed0, small_prec0, l, SIGNED);
-      u1 = selt (op1, op1len, blocks_needed1, small_prec1, l, SIGNED);
+      u0 = selt (op0, op0len, blocks_needed, small_prec, l, SIGNED);
+      u1 = selt (op1, op1len, blocks_needed, small_prec, l, SIGNED);
 
       if (u0 < u1)
 	return -1;
@@ -496,21 +490,20 @@ wi::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return true if OP0 < OP1 using unsigned comparisons.  */
 bool
-wi::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
-		 const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
+wi::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
+		 unsigned int precision,
+		 const HOST_WIDE_INT *op1, unsigned int op1len)
 {
   unsigned HOST_WIDE_INT x0;
   unsigned HOST_WIDE_INT x1;
-  unsigned int blocks_needed0 = BLOCKS_NEEDED (p0);
-  unsigned int blocks_needed1 = BLOCKS_NEEDED (p1);
-  unsigned int small_prec0 = p0 & (HOST_BITS_PER_WIDE_INT - 1);
-  unsigned int small_prec1 = p1 & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
   int l = MAX (op0len - 1, op1len - 1);
 
   while (l >= 0)
     {
-      x0 = selt (op0, op0len, blocks_needed0, small_prec0, l, UNSIGNED);
-      x1 = selt (op1, op1len, blocks_needed1, small_prec1, l, UNSIGNED);
+      x0 = selt (op0, op0len, blocks_needed, small_prec, l, UNSIGNED);
+      x1 = selt (op1, op1len, blocks_needed, small_prec, l, UNSIGNED);
       if (x0 < x1)
 	return true;
       if (x0 > x1)
@@ -524,21 +517,20 @@ wi::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
 /* Returns -1 if OP0 < OP1, 0 if OP0 == OP1 and 1 if OP0 > OP1 using
    unsigned compares.  */
 int
-wi::cmpu_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
-		const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
+wi::cmpu_large (const HOST_WIDE_INT *op0, unsigned int op0len,
+		unsigned int precision,
+		const HOST_WIDE_INT *op1, unsigned int op1len)
 {
   unsigned HOST_WIDE_INT x0;
   unsigned HOST_WIDE_INT x1;
-  unsigned int blocks_needed0 = BLOCKS_NEEDED (p0);
-  unsigned int blocks_needed1 = BLOCKS_NEEDED (p1);
-  unsigned int small_prec0 = p0 & (HOST_BITS_PER_WIDE_INT - 1);
-  unsigned int small_prec1 = p1 & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
   int l = MAX (op0len - 1, op1len - 1);
 
   while (l >= 0)
     {
-      x0 = selt (op0, op0len, blocks_needed0, small_prec0, l, UNSIGNED);
-      x1 = selt (op1, op1len, blocks_needed1, small_prec1, l, UNSIGNED);
+      x0 = selt (op0, op0len, blocks_needed, small_prec, l, UNSIGNED);
+      x1 = selt (op1, op1len, blocks_needed, small_prec, l, UNSIGNED);
       if (x0 < x1)
 	return -1;
       if (x0 > x1)

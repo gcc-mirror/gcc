@@ -5790,7 +5790,7 @@ end_of_class (tree t, int include_virtuals_p)
 	continue;
 
       offset = end_of_base (base_binfo);
-      if (INT_CST_LT_UNSIGNED (result, offset))
+      if (INT_CST_LT (result, offset))
 	result = offset;
     }
 
@@ -5800,7 +5800,7 @@ end_of_class (tree t, int include_virtuals_p)
 	 vec_safe_iterate (vbases, i, &base_binfo); i++)
       {
 	offset = end_of_base (base_binfo);
-	if (INT_CST_LT_UNSIGNED (result, offset))
+	if (INT_CST_LT (result, offset))
 	  result = offset;
       }
 
@@ -5880,7 +5880,7 @@ include_empty_classes (record_layout_info rli)
 		      CLASSTYPE_AS_BASE (rli->t) != NULL_TREE);
   rli_size = rli_size_unit_so_far (rli);
   if (TREE_CODE (rli_size) == INTEGER_CST
-      && INT_CST_LT_UNSIGNED (rli_size, eoc))
+      && INT_CST_LT (rli_size, eoc))
     {
       if (!abi_version_at_least (2))
 	/* In version 1 of the ABI, the size of a class that ends with

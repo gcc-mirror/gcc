@@ -877,17 +877,14 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Define additional fields and accessors for nodes representing constants.  */
 
-#define INT_CST_LT(A, B)				\
-  (wi::lts_p (A, B))
-
-#define INT_CST_LT_UNSIGNED(A, B)			\
-  (wi::ltu_p (A, B))
-
 #define TREE_INT_CST_NUNITS(NODE) \
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.unextended)
 #define TREE_INT_CST_EXT_NUNITS(NODE) \
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
+
+#define INT_CST_LT(A, B) (wi::lts_p (wi::to_widest (A), wi::to_widest (B)))
+#define INT_CST_LE(A, B) (wi::les_p (wi::to_widest (A), wi::to_widest (B)))
 
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))

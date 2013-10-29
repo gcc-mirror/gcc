@@ -6899,26 +6899,7 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
 int
 tree_int_cst_lt (const_tree t1, const_tree t2)
 {
-  if (t1 == t2)
-    return 0;
-
-  if (TYPE_UNSIGNED (TREE_TYPE (t1)) != TYPE_UNSIGNED (TREE_TYPE (t2)))
-    {
-      int t1_sgn = tree_int_cst_sgn (t1);
-      int t2_sgn = tree_int_cst_sgn (t2);
-
-      if (t1_sgn < t2_sgn)
-	return 1;
-      else if (t1_sgn > t2_sgn)
-	return 0;
-      /* Otherwise, both are non-negative, so we compare them as
-	 unsigned just in case one of them would overflow a signed
-	 type.  */
-    }
-  else if (!TYPE_UNSIGNED (TREE_TYPE (t1)))
-    return INT_CST_LT (t1, t2);
-
-  return INT_CST_LT_UNSIGNED (t1, t2);
+  return INT_CST_LT (t1, t2);
 }
 
 /* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  */
@@ -6926,12 +6907,7 @@ tree_int_cst_lt (const_tree t1, const_tree t2)
 int
 tree_int_cst_compare (const_tree t1, const_tree t2)
 {
-  if (tree_int_cst_lt (t1, t2))
-    return -1;
-  else if (tree_int_cst_lt (t2, t1))
-    return 1;
-  else
-    return 0;
+  return wi::cmps (wi::to_widest (t1), wi::to_widest (t2));
 }
 
 /* Return the HOST_WIDE_INT least significant bits of T, a sizetype
@@ -8667,18 +8643,7 @@ retry:
   /* Check if c >= type_low_bound.  */
   if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
-      wd = type_low_bound;
-      if (sgn_c != TYPE_SIGN (TREE_TYPE (type_low_bound)))
-	{
-	  int c_neg = (sgn_c == SIGNED && wi::neg_p (wc));
-	  int t_neg = (sgn_c == UNSIGNED && wi::neg_p (wd));
-
-	  if (c_neg && !t_neg)
-	    return false;
-	  if ((c_neg || !t_neg) && wi::ltu_p (wc, wd))
-	    return false;
-	}
-      else if (wi::lt_p (wc, wd, sgn_c))
+      if (INT_CST_LT (c, type_low_bound))
 	return false;
       ok_for_low_bound = true;
     }
@@ -8688,18 +8653,7 @@ retry:
   /* Check if c <= type_high_bound.  */
   if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
     {
-      wd = type_high_bound;
-      if (sgn_c != TYPE_SIGN (TREE_TYPE (type_high_bound)))
-	{
-	  int c_neg = (sgn_c == SIGNED && wi::neg_p (wc));
-	  int t_neg = (sgn_c == UNSIGNED && wi::neg_p (wd));
-
-	  if (t_neg && !c_neg)
-	    return false;
-	  if ((t_neg || !c_neg) && wi::gtu_p (wc, wd))
-	    return false;
-	}
-      else if (wi::gt_p (wc, wd, sgn_c))
+      if (INT_CST_LT (type_high_bound, c))
 	return false;
       ok_for_high_bound = true;
     }

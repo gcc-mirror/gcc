@@ -1127,15 +1127,7 @@ operand_less_p (tree val, tree val2)
 {
   /* LT is folded faster than GE and others.  Inline the common case.  */
   if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    {
-      if (TYPE_UNSIGNED (TREE_TYPE (val)))
-	return INT_CST_LT_UNSIGNED (val, val2);
-      else
-	{
-	  if (INT_CST_LT (val, val2))
-	    return 1;
-	}
-    }
+    return INT_CST_LT (val, val2);
   else
     {
       tree tcmp;

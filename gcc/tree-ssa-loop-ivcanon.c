@@ -546,7 +546,8 @@ remove_redundant_iv_tests (struct loop *loop)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST
-	      || !wi::ltu_p (loop->nb_iterations_upper_bound, niter.niter))
+	      || !wi::ltu_p (loop->nb_iterations_upper_bound,
+			     wi::to_widest (niter.niter)))
 	    continue;
 	  
 	  if (dump_file && (dump_flags & TDF_DETAILS))

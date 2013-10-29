@@ -2834,7 +2834,7 @@ fold_array_ctor_reference (tree type, tree ctor,
      be larger than size of array element.  */
   if (!TYPE_SIZE_UNIT (type)
       || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || wi::lts_p (elt_size, TYPE_SIZE_UNIT (type)))
+      || wi::lts_p (elt_size, wi::to_offset (TYPE_SIZE_UNIT (type))))
     return NULL_TREE;
 
   /* Compute the array index we look for.  */

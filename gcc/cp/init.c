@@ -2412,7 +2412,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       gcc_assert (TREE_CODE (size) == INTEGER_CST);
       cookie_size = targetm.cxx.get_cookie_size (elt_type);
       gcc_assert (TREE_CODE (cookie_size) == INTEGER_CST);
-      gcc_checking_assert (wi::ltu_p (cookie_size, max_size));
+      gcc_checking_assert (wi::ltu_p (wi::to_offset (cookie_size), max_size));
       /* Unconditionally subtract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */

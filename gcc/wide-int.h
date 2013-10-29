@@ -1354,13 +1354,13 @@ namespace wi
   bool eq_p_large (const HOST_WIDE_INT *, unsigned int,
 		   const HOST_WIDE_INT *, unsigned int, unsigned int);
   bool lts_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-		    const HOST_WIDE_INT *, unsigned int, unsigned int);
+		    const HOST_WIDE_INT *, unsigned int);
   bool ltu_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-		    const HOST_WIDE_INT *, unsigned int, unsigned int);
+		    const HOST_WIDE_INT *, unsigned int);
   int cmps_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-		  const HOST_WIDE_INT *, unsigned int, unsigned int);
+		  const HOST_WIDE_INT *, unsigned int);
   int cmpu_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-		  const HOST_WIDE_INT *, unsigned int, unsigned int);
+		  const HOST_WIDE_INT *, unsigned int);
   unsigned int sext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, 
 			   unsigned int,
 			   unsigned int, unsigned int);
@@ -1526,10 +1526,11 @@ template <typename T1, typename T2>
 inline bool
 wi::lts_p (const T1 &x, const T2 &y)
 {
-  WIDE_INT_REF_FOR (T1) xi (x);
-  WIDE_INT_REF_FOR (T2) yi (y);
+  unsigned int precision = get_binary_precision (x, y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
   // We optimize x < y, where y is 64 or fewer bits.
-  if (yi.precision <= HOST_BITS_PER_WIDE_INT)
+  if (wi::fits_shwi_p (yi))
     {
       // If x fits directly into a shwi, we can compare directly.
       if (wi::fits_shwi_p (xi))
@@ -1542,8 +1543,7 @@ wi::lts_p (const T1 &x, const T2 &y)
       // and hence greater than y.
       return false;
     }
-  return lts_p_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
-		      yi.precision);
+  return lts_p_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
 /* Return true if X < Y when both are treated as unsigned values.  */
@@ -1551,18 +1551,16 @@ template <typename T1, typename T2>
 inline bool
 wi::ltu_p (const T1 &x, const T2 &y)
 {
-  WIDE_INT_REF_FOR (T1) xi (x);
-  WIDE_INT_REF_FOR (T2) yi (y);
-  if (xi.precision <= HOST_BITS_PER_WIDE_INT
-      && yi.precision <= HOST_BITS_PER_WIDE_INT)
+  unsigned int precision = get_binary_precision (x, y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
       return xl < yl;
     }
-  else
-    return ltu_p_large (xi.val, xi.len, xi.precision,
-			yi.val, yi.len, yi.precision);
+  return ltu_p_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
 /* Return true if X < Y.  Signedness of X and Y is indicated by SGN.  */
@@ -1663,10 +1661,10 @@ template <typename T1, typename T2>
 inline int
 wi::cmps (const T1 &x, const T2 &y)
 {
-  WIDE_INT_REF_FOR (T1) xi (x);
-  WIDE_INT_REF_FOR (T2) yi (y);
-  if (xi.precision <= HOST_BITS_PER_WIDE_INT
-      && yi.precision <= HOST_BITS_PER_WIDE_INT)
+  unsigned int precision = get_binary_precision (x, y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       HOST_WIDE_INT xl = xi.to_shwi ();
       HOST_WIDE_INT yl = yi.to_shwi ();
@@ -1677,8 +1675,7 @@ wi::cmps (const T1 &x, const T2 &y)
       else
 	return 0;
     }
-  return cmps_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
-		     yi.precision);
+  return cmps_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
 /* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Treat both X and Y
@@ -1687,10 +1684,10 @@ template <typename T1, typename T2>
 inline int
 wi::cmpu (const T1 &x, const T2 &y)
 {
-  WIDE_INT_REF_FOR (T1) xi (x);
-  WIDE_INT_REF_FOR (T2) yi (y);
-  if (xi.precision <= HOST_BITS_PER_WIDE_INT
-      && yi.precision <= HOST_BITS_PER_WIDE_INT)
+  unsigned int precision = get_binary_precision (x, y);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
@@ -1701,8 +1698,7 @@ wi::cmpu (const T1 &x, const T2 &y)
       else
 	return 1;
     }
-  return cmpu_large (xi.val, xi.len, xi.precision, yi.val, yi.len,
-		     yi.precision);
+  return cmpu_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
 /* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Signedness of

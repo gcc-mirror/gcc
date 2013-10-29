@@ -1422,7 +1422,7 @@ non_rewritable_mem_ref_base (tree ref)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
 	  && wi::fits_uhwi_p (mem_ref_offset (base))
-	  && wi::gtu_p (TYPE_SIZE_UNIT (TREE_TYPE (decl)),
+	  && wi::gtu_p (wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 			mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))

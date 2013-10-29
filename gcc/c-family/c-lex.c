@@ -48,9 +48,9 @@ static tree interpret_float (const cpp_token *, unsigned int, const char *,
 			     enum overflow_type *);
 static tree interpret_fixed (const cpp_token *, unsigned int);
 static enum integer_type_kind narrowest_unsigned_type
-	(const wide_int &, unsigned int);
+	(const widest_int &, unsigned int);
 static enum integer_type_kind narrowest_signed_type
-	(const wide_int &, unsigned int);
+	(const widest_int &, unsigned int);
 static enum cpp_ttype lex_string (const cpp_token *, tree *, bool, bool);
 static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
@@ -526,7 +526,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
    there isn't one.  */
 
 static enum integer_type_kind
-narrowest_unsigned_type (const wide_int &val, unsigned int flags)
+narrowest_unsigned_type (const widest_int &val, unsigned int flags)
 {
   int itk;
 
@@ -545,7 +545,7 @@ narrowest_unsigned_type (const wide_int &val, unsigned int flags)
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if (wi::geu_p (upper, val))
+      if (wi::geu_p (wi::to_widest (upper), val))
 	return (enum integer_type_kind) itk;
     }
 
@@ -554,7 +554,7 @@ narrowest_unsigned_type (const wide_int &val, unsigned int flags)
 
 /* Ditto, but narrowest signed type.  */
 static enum integer_type_kind
-narrowest_signed_type (const wide_int &val, unsigned int flags)
+narrowest_signed_type (const widest_int &val, unsigned int flags)
 {
   int itk;
 
@@ -573,7 +573,7 @@ narrowest_signed_type (const wide_int &val, unsigned int flags)
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if (wi::geu_p (upper, val))
+      if (wi::geu_p (wi::to_widest (upper), val))
 	return (enum integer_type_kind) itk;
     }
 
@@ -588,20 +588,18 @@ interpret_integer (const cpp_token *token, unsigned int flags,
   tree value, type;
   enum integer_type_kind itk;
   cpp_num integer;
-  cpp_options *options = cpp_get_options (parse_in);
-  HOST_WIDE_INT ival[2];
-  wide_int wval;
+  HOST_WIDE_INT ival[3];
 
   *overflow = OT_NONE;
 
   integer = cpp_interpret_integer (parse_in, token, flags);
-  integer = cpp_num_sign_extend (integer, options->precision);
   if (integer.overflow)
     *overflow = OT_OVERFLOW;
 
   ival[0] = integer.low;
   ival[1] = integer.high;
-  wval = wide_int::from_array (ival, 2, HOST_BITS_PER_WIDE_INT * 2);
+  ival[2] = 0;
+  widest_int wval = widest_int::from_array (ival, 3);
 
   /* The type of a constant with a U suffix is straightforward.  */
   if (flags & CPP_N_UNSIGNED)

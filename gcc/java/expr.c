@@ -1716,7 +1716,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
 	  tree field_offset = byte_position (field_decl);
 	  if (! page_size)
 	    page_size = size_int (4096); 	      
-	  check = ! INT_CST_LT_UNSIGNED (field_offset, page_size);
+	  check = ! INT_CST_LT (field_offset, page_size);
 	}
 
       if (base_type != TREE_TYPE (self_value))

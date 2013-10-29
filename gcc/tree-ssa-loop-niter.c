@@ -2520,7 +2520,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
       || loop->warned_aggressive_loop_optimizations
       /* Only warn if undefined behavior gives us lower estimate than the
 	 known constant bound.  */
-      || wi::cmpu (i_bound, loop->nb_iterations) >= 0
+      || wi::cmpu (i_bound, wi::to_widest (loop->nb_iterations)) >= 0
       /* And undefined behavior happens unconditionally.  */
       || !dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (stmt)))
     return;

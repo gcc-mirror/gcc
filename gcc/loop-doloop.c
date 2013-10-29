@@ -462,8 +462,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if (get_max_loop_iterations (loop, &iterations)
 	  && wi::leu_p (iterations,
-			wi::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1,
-					     GET_MODE_PRECISION (mode))))
+			wi::set_bit_in_zero <widest_int>
+			(GET_MODE_PRECISION (mode) - 1)))
 	nonneg = 1;
       break;
 
