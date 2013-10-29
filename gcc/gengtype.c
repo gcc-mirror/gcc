@@ -137,6 +137,16 @@ xasprintf (const char *format, ...)
   return result;
 }
 
+/* Locate the ultimate base class of struct S.  */
+
+static const_type_p
+get_ultimate_base_class (const_type_p s)
+{
+  while (s->u.s.base_class)
+    s = s->u.s.base_class;
+  return s;
+}
+
 /* Input file handling. */
 
 /* Table of all input files.  */
@@ -667,6 +677,16 @@ resolve_typedef (const char *s, struct fileloc *pos)
   return p;
 }
 
+/* Add SUBCLASS to head of linked list of BASE's subclasses.  */
+
+void add_subclass (type_p base, type_p subclass)
+{
+  gcc_assert (union_or_struct_p (base));
+  gcc_assert (union_or_struct_p (subclass));
+
+  subclass->u.s.next_sibling_class = base->u.s.first_subclass;
+  base->u.s.first_subclass = subclass;
+}
 
 /* Create and return a new structure with tag NAME at POS with fields
    FIELDS and options O.  The KIND of structure must be one of
@@ -749,6 +769,8 @@ new_structure (const char *name, enum typekind kind, struct fileloc *pos,
   if (s->u.s.lang_struct)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
   s->u.s.base_class = base_class;
+  if (base_class)
+    add_subclass (base_class, s);
 
   return s;
 }
@@ -1534,6 +1556,12 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM],
 
 	if (t->u.s.base_class)
 	  set_gc_used_type (t->u.s.base_class, level, param,
+			    allow_undefined_types);
+	/* Anything pointing to a base class might actually be pointing
+	   to a subclass.  */
+	for (type_p subclass = t->u.s.first_subclass; subclass;
+	     subclass = subclass->u.s.next_sibling_class)
+	  set_gc_used_type (subclass, level, param,
 			    allow_undefined_types);
 
 	FOR_ALL_INHERITED_FIELDS(t, f)
@@ -2554,8 +2582,7 @@ output_mangled_typename (outf_p of, const_type_p t)
 	  /* For references to classes within an inheritance hierarchy,
 	     only ever reference the ultimate base class, since only
 	     it will have gt_ functions.  */
-	  while (t->u.s.base_class)
-	    t = t->u.s.base_class;
+	  t = get_ultimate_base_class (t);
 	  const char *id_for_tag = filter_type_name (t->u.s.tag);
 	  oprintf (of, "%lu%s", (unsigned long) strlen (id_for_tag),
 		   id_for_tag);
@@ -2630,30 +2657,28 @@ get_string_option (options_p opt, const char *key)
 static void
 walk_subclasses (type_p base, struct walk_type_data *d)
 {
-  for (type_p sub = structures; sub != NULL; sub = sub->next)
+  for (type_p sub = base->u.s.first_subclass; sub != NULL;
+       sub = sub->u.s.next_sibling_class)
     {
-      if (sub->u.s.base_class == base)
+      const char *type_tag = get_string_option (sub->u.s.opt, "tag");
+      if (type_tag)
 	{
-	  const char *type_tag = get_string_option (sub->u.s.opt, "tag");
-	  if (type_tag)
-	    {
-	      oprintf (d->of, "%*scase %s:\n", d->indent, "", type_tag);
-	      d->indent += 2;
-	      oprintf (d->of, "%*s{\n", d->indent, "");
-	      d->indent += 2;
-	      oprintf (d->of, "%*s%s *sub = static_cast <%s *> (x);\n",
-		       d->indent, "", sub->u.s.tag, sub->u.s.tag);
-	      const char *old_val = d->val;
-	      d->val = "(*sub)";
-	      walk_type (sub, d);
-	      d->val = old_val;
-	      d->indent -= 2;
-	      oprintf (d->of, "%*s}\n", d->indent, "");
-	      oprintf (d->of, "%*sbreak;\n", d->indent, "");
-	      d->indent -= 2;
-	    }
-	  walk_subclasses (sub, d);
+	  oprintf (d->of, "%*scase %s:\n", d->indent, "", type_tag);
+	  d->indent += 2;
+	  oprintf (d->of, "%*s{\n", d->indent, "");
+	  d->indent += 2;
+	  oprintf (d->of, "%*s%s *sub = static_cast <%s *> (x);\n",
+		   d->indent, "", sub->u.s.tag, sub->u.s.tag);
+	  const char *old_val = d->val;
+	  d->val = "(*sub)";
+	  walk_type (sub, d);
+	  d->val = old_val;
+	  d->indent -= 2;
+	  oprintf (d->of, "%*s}\n", d->indent, "");
+	  oprintf (d->of, "%*sbreak;\n", d->indent, "");
+	  d->indent -= 2;
 	}
+      walk_subclasses (sub, d);
     }
 }
 
@@ -3023,6 +3048,20 @@ walk_type (type_p t, struct walk_type_data *d)
 	  }
 	else if (desc)
 	  {
+	    /* We have a "desc" option on a struct, signifying the
+	       base class within a GC-managed inheritance hierarchy.
+	       The current code specialcases the base class, then walks
+	       into subclasses, recursing into this routine to handle them.
+	       This organization requires the base class to have a case in
+	       the switch statement, and hence a tag value is mandatory
+	       for the base class.   This restriction could be removed, but
+	       it would require some restructing of this code.  */
+	    if (!type_tag)
+	      {
+		error_at_line (d->line,
+			       "missing `tag' option for type `%s'",
+			       t->u.s.tag);
+	      }
 	    oprintf (d->of, "%*sswitch (", d->indent, "");
 	    output_escaped_param (d, desc, "desc");
 	    oprintf (d->of, ")\n");
@@ -3187,6 +3226,16 @@ walk_type (type_p t, struct walk_type_data *d)
 	  {
 	    /* Add cases to handle subclasses.  */
 	    walk_subclasses (t, d);
+
+	    /* Ensure that if someone forgets a "tag" option that we don't
+	       silent fail to traverse that subclass's fields.  */
+	    if (!seen_default_p)
+	      {
+		oprintf (d->of, "%*s/* Unrecognized tag value.  */\n",
+			 d->indent, "");
+		oprintf (d->of, "%*sdefault: gcc_unreachable (); \n",
+			 d->indent, "");
+	      }
 
 	    /* End of the switch statement */
 	    oprintf (d->of, "%*s}\n", d->indent, "");
@@ -3537,10 +3586,23 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   options_p opt;
   struct walk_type_data d;
 
-  /* Don't write fns for subclasses, only for the ultimate base class
-     within an inheritance hierarchy.  */
   if (s->u.s.base_class)
-    return;
+    {
+      /* Verify that the base class has a "desc", since otherwise
+	 the traversal hooks there won't attempt to visit fields of
+	 subclasses such as this one.  */
+      const_type_p ubc = get_ultimate_base_class (s);
+      if ((!opts_have (ubc->u.s.opt, "user")
+	   && !opts_have (ubc->u.s.opt, "desc")))
+	error_at_line (&s->u.s.line,
+		       ("'%s' is a subclass of non-GTY(user) GTY class '%s'"
+			", but '%s' lacks a discriminator 'desc' option"),
+		       s->u.s.tag, ubc->u.s.tag, ubc->u.s.tag);
+
+      /* Don't write fns for subclasses, only for the ultimate base class
+	 within an inheritance hierarchy.  */
+      return;
+    }
 
   memset (&d, 0, sizeof (d));
   d.of = get_output_file_for_structure (s, param);
@@ -4452,7 +4514,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
     case TYPE_POINTER:
       {
-	type_p tp;
+	const_type_p tp;
 
 	if (!start_root_entry (f, v, name, line))
 	  return;
@@ -4461,8 +4523,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
 	if (!has_length && union_or_struct_p (tp))
 	  {
-	    while (tp->u.s.base_class)
-	      tp = tp->u.s.base_class;
+	    tp = get_ultimate_base_class (tp);
 	    const char *id_for_tag = filter_type_name (tp->u.s.tag);
 	    oprintf (f, "    &gt_ggc_mx_%s,\n", id_for_tag);
 	    if (emit_pch)
