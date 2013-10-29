@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "target.h"
 #include "except.h"
+#include "gimple.h"
 #include "lto-streamer.h"
 
 /* i386/PE specific attribute support.

@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "debug.h"
 #include "obstack.h"
+#include "gimple.h"
 #include "lto-streamer.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used
