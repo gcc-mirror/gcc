@@ -9648,8 +9648,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    rtx off
 	      = immed_double_int_const (mem_ref_offset (exp), address_mode);
 	    op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
+	    op0 = memory_address_addr_space (mode, op0, as);
 	  }
-	op0 = memory_address_addr_space (mode, op0, as);
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
 	set_mem_addr_space (temp, as);
