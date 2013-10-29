@@ -1,3 +1,8 @@
+2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/darwin.c: Include gimple.h.
+	* config/i386/winnt.c: Likewise.
+
 2013-10-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/19831
