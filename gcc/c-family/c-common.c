@@ -409,6 +409,8 @@ const struct c_common_resword c_common_reswords[] =
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
+  { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
+  { "_Cilk_sync",       RID_CILK_SYNC,  0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY | D_EXT },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY | D_EXT },
@@ -5219,6 +5221,9 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
   targetm.init_builtins ();
 
   build_common_builtin_nodes ();
+
+  if (flag_enable_cilkplus)
+    cilk_init_builtins ();
 }
 
 /* Like get_identifier, but avoid warnings about null arguments when

@@ -1,3 +1,25 @@
+2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/CK/compound_cilk_spawn.c: New test.
+	* c-c++-common/cilk-plus/CK/concec_cilk_spawn.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib.c: Likewise.
+	* c-c++-common/cilk-plus/CK/no_args_error.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawnee_inline.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawning_arg.c: Likewise.
+	* c-c++-common/cilk-plus/CK/steal_check.c: Likewise.
+	* c-c++-common/cilk-plus/CK/test__cilk.c: Likewise.
+	* c-c++-common/cilk-plus/CK/varargs_test.c: Likewise.
+	* c-c++-common/cilk-plus/CK/sync_wo_spawn.c: Likewise.
+	* c-c++-common/cilk-plus/CK/invalid_spawn.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawn_in_return.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_init_expr_xy.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_sync.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_return.c: Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Added support to run Cilk Keywords
+	test stored in c-c++-common.  Also, added the Cilk runtime's library
+	to the ld_library_path.
+
 2013-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58888

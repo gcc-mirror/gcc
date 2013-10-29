@@ -124,13 +124,45 @@ true, then we expand them using either @code{expand_array_notation_exprs} or
 inside conditions, they are transformed using the function 
 @code{fix_conditional_array_notations}.  The C language-specific routines are 
 located in @file{c/c-array-notation.c} and the equivalent C++ routines are in 
-file @file{cp/cp-array-notation.c}.  Common routines such as functions to 
-initialize builtin functions are stored in @file{array-notation-common.c}.
+the file @file{cp/cp-array-notation.c}.  Common routines such as functions to 
+initialize built-in functions are stored in @file{array-notation-common.c}.
+
+@item Cilk keywords:
+@itemize @bullet 
+@item @code{_Cilk_spawn}:
+The @code{_Cilk_spawn} keyword is parsed and the function it contains is marked 
+as a spawning function.  The spawning function is called the spawner.  At 
+the end of the parsing phase, appropriate built-in functions are 
+added to the spawner that are defined in the Cilk runtime.  The appropriate 
+locations of these functions, and the internal structures are detailed in 
+@code{cilk_init_builtins} in the file @file{cilk-common.c}.  The pointers to 
+Cilk functions and fields of internal structures are described 
+in @file{cilk.h}.  The built-in functions are described in 
+@file{cilk-builtins.def}.
+
+During gimplification, a new "spawn-helper" function is created.  
+The spawned function is replaced with a spawn helper function in the spawner.  
+The spawned function-call is moved into the spawn helper.  The main function
+that does these transformations is @code{gimplify_cilk_spawn} in
+@file{c-family/cilk.c}.  In the spawn-helper, the gimplification function 
+@code{gimplify_call_expr}, inserts a function call @code{__cilkrts_detach}.
+This function is expanded by @code{builtin_expand_cilk_detach} located in
+@file{c-family/cilk.c}.
+
+@item @code{_Cilk_sync}:
+@code{_Cilk_sync} is parsed like a keyword.  During gimplification, 
+the function @code{gimplify_cilk_sync} in @file{c-family/cilk.c}, will replace
+this keyword with a set of functions that are stored in the Cilk runtime.  
+One of the internal functions inserted during gimplification, 
+@code{__cilkrts_pop_frame} must be expanded by the compiler and is 
+done by @code{builtin_expand_cilk_pop_frame} in @file{cilk-common.c}.
+
+@end itemize
 @end itemize
 
-Detailed information about Cilk Plus and language specification is provided in 
-@w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning that the current 
-implementation follows ABI 0.9.
+Documentation about Cilk Plus and language specification is provided under the
+"Learn" section in @w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning
+that the current implementation follows ABI 1.1.
 
 @node Gimplification pass
 @section Gimplification pass
