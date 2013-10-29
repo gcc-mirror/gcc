@@ -1,3 +1,28 @@
+2013-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.h (symtab_node_base): Convert to a class;
+	add GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"))), and take
+	chain_next/prev from symtab_node_def.
+	(cgraph_node): Inherit from symtab_node; add GTY option
+	tag ("SYMTAB_FUNCTION").
+	(varpool_node): Inherit from symtab_node; add GTY option
+	tag ("SYMTAB_VARIABLE").
+	(symtab_node_def): Remove.
+	(is_a_helper <cgraph_node>::test (symtab_node_def *)): Convert to...
+	(is_a_helper <cgraph_node>::test (symtab_node_base *)): ...this.
+	(is_a_helper <varpool_node>::test (symtab_node_def *)): Convert to...
+	(is_a_helper <varpool_node>::test (symtab_node_base *)): ...this.
+
+	* ipa-ref.h (symtab_node_def): Drop.
+	(symtab_node): Change underlying type from symtab_node_def to
+	symtab_node_base.
+	(const_symtab_node): Likwise.
+
+	* is-a.h: Update examples in comment.
+
+	* symtab.c (symtab_hash): Change symtab_node_def to symtab_node_base.
+	(assembler_name_hash): Likewise.
+
 2013-10-29  Martin Liska <marxin.liska@gmail.com>
 
        * doc/tree-ssa.texi (gimple_phi_result): Document.

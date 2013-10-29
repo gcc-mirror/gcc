@@ -39,8 +39,11 @@ enum symtab_type
 
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
-struct GTY(()) symtab_node_base
+class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
+	   chain_next ("%h.next"), chain_prev ("%h.previous")))
+  symtab_node_base
 {
+public:
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
 
@@ -251,25 +254,19 @@ struct GTY(()) cgraph_clone_info
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-struct GTY(()) cgraph_node {
-  struct symtab_node_base symbol;
+struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node_base {
+public:
   struct cgraph_edge *callees;
   struct cgraph_edge *callers;
   /* List of edges representing indirect calls with a yet undetermined
      callee.  */
   struct cgraph_edge *indirect_calls;
   /* For nested functions points to function the node is nested in.  */
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    origin;
+  struct cgraph_node *origin;
   /* Points to first nested function, if any.  */
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    nested;
+  struct cgraph_node *nested;
   /* Pointer to the next function with same origin, if any.  */
-  struct cgraph_node *
-    GTY ((nested_ptr (union symtab_node_def, "(struct cgraph_node *)(%h)", "(symtab_node)%h")))
-    next_nested;
+  struct cgraph_node *next_nested;
   /* Pointer to the next clone.  */
   struct cgraph_node *next_sibling_clone;
   struct cgraph_node *prev_sibling_clone;
@@ -517,9 +514,8 @@ typedef struct cgraph_edge *cgraph_edge_p;
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-struct GTY(()) varpool_node {
-  struct symtab_node_base symbol;
-
+class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node_base {
+public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
 };
@@ -535,22 +531,12 @@ struct GTY(()) asm_node {
   int order;
 };
 
-/* Symbol table entry.  */
-union GTY((desc ("%h.symbol.type"), chain_next ("%h.symbol.next"),
-	   chain_prev ("%h.symbol.previous"))) symtab_node_def {
-  struct symtab_node_base GTY ((tag ("SYMTAB_SYMBOL"))) symbol;
-  /* To access the following fields,
-     use the use dyn_cast or as_a to obtain the concrete type.  */
-  struct cgraph_node GTY ((tag ("SYMTAB_FUNCTION"))) x_function;
-  struct varpool_node GTY ((tag ("SYMTAB_VARIABLE"))) x_variable;
-};
-
 /* Report whether or not THIS symtab node is a function, aka cgraph_node.  */
 
 template <>
 template <>
 inline bool
-is_a_helper <cgraph_node>::test (symtab_node_def *p)
+is_a_helper <cgraph_node>::test (symtab_node_base *p)
 {
   return p->symbol.type == SYMTAB_FUNCTION;
 }
@@ -560,7 +546,7 @@ is_a_helper <cgraph_node>::test (symtab_node_def *p)
 template <>
 template <>
 inline bool
-is_a_helper <varpool_node>::test (symtab_node_def *p)
+is_a_helper <varpool_node>::test (symtab_node_base *p)
 {
   return p->symbol.type == SYMTAB_VARIABLE;
 }
