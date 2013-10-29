@@ -1,3 +1,10 @@
+2013-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbhooks.py (CGraphNodePrinter.to_string): Update gdb
+	prettyprinter for cgraph_node to reflect the conversion of the
+	symtable types to a C++ class hierarchy: it now *is* a
+	symtab_node_base, rather than having one (named "symbol").
+
 2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* builtins.c (is_builtin_name): Added a check for __cilkrts_detach and
