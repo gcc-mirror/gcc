@@ -506,4 +506,12 @@ void dbgprint_count_type_at (const char *, int, const char *, type_p);
 #define DBGPRINT_COUNT_TYPE(Msg,Ty) do{/*nodbgprint_count_type*/}while (0)
 #endif /*ENABLE_CHECKING */
 
+#define FOR_ALL_INHERITED_FIELDS(TYPE, FIELD_VAR) \
+  for (type_p sub = (TYPE); sub; sub = sub->u.s.base_class) \
+    for (FIELD_VAR = sub->u.s.fields; FIELD_VAR; FIELD_VAR = FIELD_VAR->next)
+
+extern bool
+opts_have (options_p opts, const char *str);
+
+
 #endif
