@@ -1496,6 +1496,7 @@ wi::eq_p (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   if (xi.is_sign_extended && yi.is_sign_extended)
     {
+      /* This case reduces to array equality.  */
       if (xi.len != yi.len)
 	return false;
       unsigned int i = 0;
@@ -1505,10 +1506,21 @@ wi::eq_p (const T1 &x, const T2 &y)
       while (++i != xi.len);
       return true;
     }
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  if (yi.len == 1)
     {
-      unsigned HOST_WIDE_INT diff = xi.ulow () ^ yi.ulow ();
-      return (diff << (-precision % HOST_BITS_PER_WIDE_INT)) == 0;
+      /* XI is only equal to YI if it too has a single HWI.  */
+      if (xi.len != 1)
+	return false;
+      /* Excess bits in xi.val[0] will be signs or zeros, so comparisons
+	 with 0 are simple.  */
+      if (STATIC_CONSTANT_P (yi.val[0] == 0))
+	return xi.val[0] == 0;
+      /* Otherwise flush out any excess bits first.  */
+      unsigned HOST_WIDE_INT diff = xi.val[0] ^ yi.val[0];
+      int excess = HOST_BITS_PER_WIDE_INT - precision;
+      if (excess > 0)
+	diff <<= excess;
+      return diff == 0;
     }
   return eq_p_large (xi.val, xi.len, yi.val, yi.len, precision);
 }
@@ -1529,20 +1541,28 @@ wi::lts_p (const T1 &x, const T2 &y)
   unsigned int precision = get_binary_precision (x, y);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  // We optimize x < y, where y is 64 or fewer bits.
+  /* We optimize x < y, where y is 64 or fewer bits.  */
   if (wi::fits_shwi_p (yi))
     {
-      // If x fits directly into a shwi, we can compare directly.
+      /* Make lts_p (x, 0) as efficient as wi::neg_p (x).  */
+      if (STATIC_CONSTANT_P (yi.val[0] == 0))
+	return neg_p (xi);
+      /* If x fits directly into a shwi, we can compare directly.  */
       if (wi::fits_shwi_p (xi))
 	return xi.to_shwi () < yi.to_shwi ();
-      // If x doesn't fit and is negative, then it must be more
-      // negative than any value in y, and hence smaller than y.
-      if (neg_p (xi, SIGNED))
+      /* If x doesn't fit and is negative, then it must be more
+	 negative than any value in y, and hence smaller than y.  */
+      if (neg_p (xi))
 	return true;
-      // If x is positive, then it must be larger than any value in y,
-      // and hence greater than y.
+      /* If x is positive, then it must be larger than any value in y,
+	 and hence greater than y.  */
       return false;
     }
+  /* Optimize the opposite case, if it can be detected at compile time.  */
+  if (STATIC_CONSTANT_P (xi.len == 1))
+    /* If YI is negative it is lower than the least HWI.
+       If YI is positive it is greater than the greatest HWI.  */
+    return !neg_p (yi);
   return lts_p_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
@@ -1554,6 +1574,12 @@ wi::ltu_p (const T1 &x, const T2 &y)
   unsigned int precision = get_binary_precision (x, y);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
+  /* Optimize comparisons with constants and with sub-HWI unsigned
+     integers.  */
+  if (STATIC_CONSTANT_P (yi.len == 1 && yi.val[0] >= 0))
+    return xi.len == 1 && xi.to_uhwi () < (unsigned HOST_WIDE_INT) yi.val[0];
+  if (STATIC_CONSTANT_P (xi.len == 1 && xi.val[0] >= 0))
+    return yi.len != 1 || yi.to_uhwi () > (unsigned HOST_WIDE_INT) xi.val[0];
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();

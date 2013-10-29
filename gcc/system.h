@@ -711,6 +711,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
 
+#if GCC_VERSION >= 3001
+#define STATIC_CONSTANT_P(X) (__builtin_constant_p (X) && (X))
+#else
+#define STATIC_CONSTANT_P(X) (false && (X))
+#endif
+
 /* Until we can use STATIC_ASSERT.  */
 #define STATIC_ASSERT(X) \
   typedef int assertion1[(X) ? 1 : -1] ATTRIBUTE_UNUSED
