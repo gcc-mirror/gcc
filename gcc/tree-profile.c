@@ -528,14 +528,14 @@ tree_profiling (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!gimple_has_body_p (node->symbol.decl))
+      if (!gimple_has_body_p (node->decl))
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
+      if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
-      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
       /* Local pure-const may imply need to fixup the cfg.  */
       if (execute_fixup_cfg () & TODO_cleanup_cfg)
@@ -563,13 +563,13 @@ tree_profiling (void)
   /* Drop pure/const flags from instrumented functions.  */
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!gimple_has_body_p (node->symbol.decl)
+      if (!gimple_has_body_p (node->decl)
 	  || !(!node->clone_of
-	  || node->symbol.decl != node->clone_of->symbol.decl))
+	  || node->decl != node->clone_of->decl))
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
+      if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
       cgraph_set_const_flag (node, false, false);
@@ -581,16 +581,16 @@ tree_profiling (void)
     {
       basic_block bb;
 
-      if (!gimple_has_body_p (node->symbol.decl)
+      if (!gimple_has_body_p (node->decl)
 	  || !(!node->clone_of
-	  || node->symbol.decl != node->clone_of->symbol.decl))
+	  || node->decl != node->clone_of->decl))
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
+      if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
-      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
       FOR_EACH_BB (bb)
 	{

@@ -433,19 +433,19 @@ lto_free_function_in_decl_state_for_node (symtab_node node)
   struct lto_in_decl_state temp;
   void **slot;
 
-  if (!node->symbol.lto_file_data)
+  if (!node->lto_file_data)
     return;
 
-  temp.fn_decl = node->symbol.decl;
-  slot = htab_find_slot (node->symbol.lto_file_data->function_decl_states,
+  temp.fn_decl = node->decl;
+  slot = htab_find_slot (node->lto_file_data->function_decl_states,
 			 &temp, NO_INSERT);
   if (slot && *slot)
     {
       lto_free_function_in_decl_state ((struct lto_in_decl_state*) *slot);
-      htab_clear_slot (node->symbol.lto_file_data->function_decl_states,
+      htab_clear_slot (node->lto_file_data->function_decl_states,
 		       slot);
     }
-  node->symbol.lto_file_data = NULL;
+  node->lto_file_data = NULL;
 }
 
 

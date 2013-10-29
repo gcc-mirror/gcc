@@ -45,12 +45,12 @@ ipa_record_reference (symtab_node referring_node,
   gcc_checking_assert (!stmt || is_a <cgraph_node> (referring_node));
   gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
 
-  list = &referring_node->symbol.ref_list;
+  list = &referring_node->ref_list;
   old_references = vec_safe_address (list->references);
   vec_safe_grow (list->references, vec_safe_length (list->references) + 1);
   ref = &list->references->last ();
 
-  list2 = &referred_node->symbol.ref_list;
+  list2 = &referred_node->ref_list;
   list2->referring.safe_push (ref);
   ref->referred_index = list2->referring.length () - 1;
   ref->referring = referring_node;
@@ -155,7 +155,7 @@ ipa_dump_references (FILE * file, struct ipa_ref_list *list)
     {
       fprintf (file, "%s/%i (%s)",
                symtab_node_asm_name (ref->referred),
-               ref->referred->symbol.order,
+               ref->referred->order,
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)
 	fprintf (file, " (speculative)");
@@ -174,7 +174,7 @@ ipa_dump_referring (FILE * file, struct ipa_ref_list *list)
     {
       fprintf (file, "%s/%i (%s)",
                symtab_node_asm_name (ref->referring),
-               ref->referring->symbol.order,
+               ref->referring->order,
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)
 	fprintf (file, " (speculative)");
@@ -274,7 +274,7 @@ ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
   struct ipa_ref *r = NULL;
   int i;
 
-  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->ref_list, i, r); i++)
     if (r->referred == referred_node
 	&& !r->speculative
 	&& ((stmt && r->stmt == stmt)
@@ -293,7 +293,7 @@ ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
   struct ipa_ref *r = NULL;
   int i;
 
-  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->ref_list, i, r); i++)
     if (r->stmt == stmt)
       ipa_remove_reference (r);
 }
@@ -309,7 +309,7 @@ ipa_clear_stmts_in_references (symtab_node referring_node)
   struct ipa_ref *r = NULL;
   int i;
 
-  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->ref_list, i, r); i++)
     if (!r->speculative)
       {
 	r->stmt = NULL;

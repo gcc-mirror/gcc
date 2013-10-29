@@ -386,8 +386,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 				 this_adjusting, fixed_offset, virtual_value,
 				 virtual_offset, alias);
   if (DECL_ONE_ONLY (function))
-    symtab_add_to_same_comdat_group ((symtab_node) thunk_node,
-				     (symtab_node) funcn);
+    symtab_add_to_same_comdat_group (thunk_node,
+				     funcn);
 
   if (!this_adjusting
       || !targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,

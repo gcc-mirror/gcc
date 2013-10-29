@@ -3983,8 +3983,8 @@ cp_fix_function_decl_p (tree decl)
 
       /* Don't fix same_body aliases.  Although they don't have their own
 	 CFG, they share it with what they alias to.  */
-      if (!node || !node->symbol.alias
-	  || !vec_safe_length (node->symbol.ref_list.references))
+      if (!node || !node->alias
+	  || !vec_safe_length (node->ref_list.references))
 	return true;
     }
 

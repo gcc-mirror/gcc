@@ -1208,9 +1208,9 @@ init_node_map (bool local)
 			   " with nodes %s/%i %s/%i\n",
 			   n->profile_id,
 			   cgraph_node_name (n),
-			   n->symbol.order,
+			   n->order,
 			   symtab_node_name (*(symtab_node*)val),
-			   (*(symtab_node *)val)->symbol.order);
+			   (*(symtab_node *)val)->order);
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
@@ -1221,7 +1221,7 @@ init_node_map (bool local)
 		       "Node %s/%i has no profile-id"
 		       " (profile feedback missing?)\n",
 		       cgraph_node_name (n),
-		       n->symbol.order);
+		       n->order);
 	    continue;
 	  }
 	else if ((val = pointer_map_contains (cgraph_node_map,
@@ -1232,7 +1232,7 @@ init_node_map (bool local)
 		       "Node %s/%i has IP profile-id %i conflict. "
 		       "Giving up.\n",
 		       cgraph_node_name (n),
-		       n->symbol.order,
+		       n->order,
 		       n->profile_id);
 	    *val = NULL;
 	    continue;
@@ -1273,7 +1273,7 @@ static bool
 check_ic_target (gimple call_stmt, struct cgraph_node *target)
 {
    location_t locus;
-   if (gimple_check_call_matching_types (call_stmt, target->symbol.decl, true))
+   if (gimple_check_call_matching_types (call_stmt, target->decl, true))
      return true;
 
    locus =  gimple_location (call_stmt);
@@ -1316,7 +1316,7 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   load_stmt = gimple_build_assign (tmp0, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  tmp = fold_convert (optype, build_addr (direct_call->symbol.decl,
+  tmp = fold_convert (optype, build_addr (direct_call->decl,
 					  current_function_decl));
   load_stmt = gimple_build_assign (tmp1, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
@@ -1328,8 +1328,8 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   gimple_set_vuse (icall_stmt, NULL_TREE);
   update_stmt (icall_stmt);
   dcall_stmt = gimple_copy (icall_stmt);
-  gimple_call_set_fndecl (dcall_stmt, direct_call->symbol.decl);
-  dflags = flags_from_decl_or_type (direct_call->symbol.decl);
+  gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
+  dflags = flags_from_decl_or_type (direct_call->decl);
   if ((dflags & ECF_NORETURN) != 0)
     gimple_call_set_lhs (dcall_stmt, NULL_TREE);
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
@@ -1494,7 +1494,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 	  fprintf (dump_file, "Indirect call -> direct call ");
 	  print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
 	  fprintf (dump_file, "=> ");
-	  print_generic_expr (dump_file, direct_call->symbol.decl, TDF_SLIM);
+	  print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
 	  fprintf (dump_file, " transformation skipped because of type mismatch");
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
@@ -1507,7 +1507,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
       fprintf (dump_file, "Indirect call -> direct call ");
       print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
       fprintf (dump_file, "=> ");
-      print_generic_expr (dump_file, direct_call->symbol.decl, TDF_SLIM);
+      print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
       fprintf (dump_file, " transformation on insn postponned to ipa-profile");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
       fprintf (dump_file, "hist->count "HOST_WIDEST_INT_PRINT_DEC

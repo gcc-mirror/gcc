@@ -112,7 +112,7 @@ example,
   inline bool
   is_a_helper <cgraph_node>::test (symtab_node_base *p)
   {
-    return p->symbol.type == SYMTAB_FUNCTION;
+    return p->type == SYMTAB_FUNCTION;
   }
 
 If a simple reinterpret_cast between the pointer types is incorrect, then you

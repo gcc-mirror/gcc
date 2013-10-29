@@ -977,7 +977,7 @@ unshare_body (tree fndecl)
 
   if (cgn)
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-      unshare_body (cgn->symbol.decl);
+      unshare_body (cgn->decl);
 }
 
 /* Callback for walk_tree to unmark the visited trees rooted at *TP.
@@ -1020,7 +1020,7 @@ unvisit_body (tree fndecl)
 
   if (cgn)
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-      unvisit_body (cgn->symbol.decl);
+      unvisit_body (cgn->decl);
 }
 
 /* Unconditionally make an unshared copy of EXPR.  This is used when using

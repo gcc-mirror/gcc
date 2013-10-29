@@ -2175,8 +2175,8 @@ asan_finish_file (void)
   tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
   append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if (TREE_ASM_WRITTEN (vnode->symbol.decl)
-	&& asan_protect_global (vnode->symbol.decl))
+    if (TREE_ASM_WRITTEN (vnode->decl)
+	&& asan_protect_global (vnode->decl))
       ++gcount;
   htab_t const_desc_htab = constant_pool_htab ();
   htab_traverse (const_desc_htab, count_string_csts, &gcount);
@@ -2197,9 +2197,9 @@ asan_finish_file (void)
       DECL_IGNORED_P (var) = 1;
       vec_alloc (v, gcount);
       FOR_EACH_DEFINED_VARIABLE (vnode)
-	if (TREE_ASM_WRITTEN (vnode->symbol.decl)
-	    && asan_protect_global (vnode->symbol.decl))
-	  asan_add_global (vnode->symbol.decl, TREE_TYPE (type), v);
+	if (TREE_ASM_WRITTEN (vnode->decl)
+	    && asan_protect_global (vnode->decl))
+	  asan_add_global (vnode->decl, TREE_TYPE (type), v);
       struct asan_add_string_csts_data aascd;
       aascd.type = TREE_TYPE (type);
       aascd.v = v;
