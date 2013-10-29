@@ -13,6 +13,10 @@ module m
   integer, parameter :: c2 = real_kinds(2)
   integer, parameter :: c3 = real_kinds(size(real_kinds)-1)
   integer, parameter :: c4 = real_kinds(size(real_kinds))
+  real(c1) :: r1
+  real(c2) :: r2
+  real(c3) :: r3
+  real(c4) :: r4
 contains
  subroutine s(o, k)
     class(*) :: o
@@ -21,11 +25,13 @@ contains
 
     select case (k)
      case (4)
-      sz = 32*2
+      sz = storage_size(r1)*2
      case (8)
-      sz = 64*2
-     case (10,16)
-      sz = 128*2
+      sz = storage_size(r2)*2
+     case (10)
+      sz = storage_size(r3)*2
+     case (16)
+      sz = storage_size(r4)*2
      case default
        call abort()
     end select
@@ -36,8 +42,6 @@ contains
         if (storage_size(o) /= sz) call abort()
       type is (complex(c2))
         if (storage_size(o) /= sz) call abort()
-    end select
-    select type (o)
       type is (complex(c3))
         if (storage_size(o) /= sz) call abort()
       type is (complex(c4))
