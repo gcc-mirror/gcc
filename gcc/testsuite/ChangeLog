@@ -1,3 +1,9 @@
+2013-10-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-2: New.
+	* gcc.target/sh/pr54089-6: Add another rotl special case.
+
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran 58793
