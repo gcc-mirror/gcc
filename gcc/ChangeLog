@@ -1,3 +1,22 @@
+2013-10-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/58789
+	Backport from mainline
+        2013-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57084
+	* gimple-fold.c (canonicalize_constructor_val): Call
+	cgraph_get_create_real_symbol_node instead of cgraph_get_create_node.
+
+	Backport from mainline
+	2013-03-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_get_create_real_symbol_node): Declare.
+	* cgraph.c (cgraph_get_create_real_symbol_node): New function.
+	* cgrpahbuild.c: Use cgraph_get_create_real_symbol_node instead
+	of cgraph_get_create_node.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+
 2013-10-28  Tom de Vries  <tom@codesourcery.com>
 
 	* cfgexpand.c (gimple_expand_cfg): Remove test for parm_birth_insn.
