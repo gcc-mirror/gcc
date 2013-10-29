@@ -1,5 +1,11 @@
 2013-10-29  David Malcolm  <dmalcolm@redhat.com>
 
+	* doc/gty.texi (GTY Options): Add note about inheritance to
+	description of desc and tag.
+	(Inheritance and GTY): New.
+
+2013-10-29  David Malcolm  <dmalcolm@redhat.com>
+
 	* gengtype-parse.c (opts_have): Drop "static" so that
 	we can use this from gengtype.c.
 	* gengtype.c (set_gc_used_type): Mark any base class as used;
