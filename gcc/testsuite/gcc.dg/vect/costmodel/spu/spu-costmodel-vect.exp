@@ -29,7 +29,7 @@ if { ![istarget spu*-*-*] } then {
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model"
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model=dynamic"
 
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.
