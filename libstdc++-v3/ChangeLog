@@ -1,3 +1,10 @@
+2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable.cc (__access_protected_ctor): Define and use
+	new type instead of _Hashtable_ebo_helper.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Adjust line number.
+
 2013-10-28  Tim Shen  <timshen91@gmail.com>
 
 	* regex_executor.tcc: Add comments.
