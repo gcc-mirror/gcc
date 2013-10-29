@@ -955,26 +955,6 @@ grokfield (const cp_declarator *declarator,
 	/* C++11 NSDMI, keep going.  */;
       else if (!VAR_P (value))
 	gcc_unreachable ();
-      else if (!processing_template_decl)
-	{
-	  if (TREE_CODE (init) == CONSTRUCTOR)
-	    init = digest_init (TREE_TYPE (value), init, tf_warning_or_error);
-	  init = maybe_constant_init (init);
-
-	  if (init != error_mark_node && !TREE_CONSTANT (init))
-	    {
-	      /* We can allow references to things that are effectively
-		 static, since references are initialized with the
-		 address.  */
-	      if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
-		  || (TREE_STATIC (init) == 0
-		      && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
-		{
-		  error ("field initializer is not constant");
-		  init = error_mark_node;
-		}
-	    }
-	}
     }
 
   if (processing_template_decl && VAR_OR_FUNCTION_DECL_P (value))
