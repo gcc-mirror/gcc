@@ -526,31 +526,29 @@ the result of ``merging'' @code{a_1}, @code{a_2} and @code{a_3}.
 Hence, PHI nodes mean ``one of these operands.  I don't know
 which''.
 
-The following macros can be used to examine PHI nodes
+The following functions can be used to examine PHI nodes
 
-@defmac PHI_RESULT (@var{phi})
+@defun gimple_phi_result (@var{phi})
 Returns the @code{SSA_NAME} created by PHI node @var{phi} (i.e.,
 @var{phi}'s LHS)@.
-@end defmac
+@end defun
 
-@defmac PHI_NUM_ARGS (@var{phi})
+@defun gimple_phi_num_args (@var{phi})
 Returns the number of arguments in @var{phi}.  This number is exactly
 the number of incoming edges to the basic block holding @var{phi}@.
-@end defmac
+@end defun
 
-@defmac PHI_ARG_ELT (@var{phi}, @var{i})
-Returns a tuple representing the @var{i}th argument of @var{phi}@.
-Each element of this tuple contains an @code{SSA_NAME} @var{var} and
-the incoming edge through which @var{var} flows.
-@end defmac
+@defun gimple_phi_arg (@var{phi}, @var{i})
+Returns @var{i}th argument of @var{phi}@.
+@end defun
 
-@defmac PHI_ARG_EDGE (@var{phi}, @var{i})
+@defun gimple_phi_arg_edge (@var{phi}, @var{i})
 Returns the incoming edge for the @var{i}th argument of @var{phi}.
-@end defmac
+@end defun
 
-@defmac PHI_ARG_DEF (@var{phi}, @var{i})
+@defun gimple_phi_arg_def (@var{phi}, @var{i})
 Returns the @code{SSA_NAME} for the @var{i}th argument of @var{phi}.
-@end defmac
+@end defun
 
 
 @subsection Preserving the SSA form

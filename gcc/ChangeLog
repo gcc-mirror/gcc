@@ -1,3 +1,11 @@
+2013-10-29  Martin Liska <marxin.liska@gmail.com>
+
+       * doc/tree-ssa.texi (gimple_phi_result): Document.
+       (gimple_phi_num_args, gimple_phi_arg): Likewise.
+       (gimple_phi_arg_edge, gimple_phi_arg_def): Likewise.
+       (PHI_RESULT, PHI_NUM_ARGS): Remove.
+       (PHI_ARG_ELT, PHI_ARG_EDGE, PHI_ARG_DEF): Likewise.
+
 2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* expr.h: Revert change and include tree-core.h.
