@@ -20,9 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 
 struct cgraph_node;
 struct varpool_node;
-union symtab_node_def;
-typedef union symtab_node_def *symtab_node;
-typedef const union symtab_node_def *const_symtab_node;
+class symtab_node_base;
+typedef symtab_node_base *symtab_node;
+typedef const symtab_node_base *const_symtab_node;
 
 
 /* How the reference is done.  */

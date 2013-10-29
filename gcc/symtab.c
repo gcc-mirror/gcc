@@ -49,9 +49,9 @@ const char * const ld_plugin_symbol_resolution_names[]=
 };
 
 /* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (union symtab_node_def))) htab_t symtab_hash;
+static GTY((param_is (symtab_node_base))) htab_t symtab_hash;
 /* Hash table used to convert assembler names into nodes.  */
-static GTY((param_is (union symtab_node_def))) htab_t assembler_name_hash;
+static GTY((param_is (symtab_node_base))) htab_t assembler_name_hash;
 
 /* Linked list of symbol table nodes.  */
 symtab_node symtab_nodes;
