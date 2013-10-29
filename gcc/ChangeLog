@@ -1,3 +1,9 @@
+2013-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa7_extra_costs): New table.
+	(arm_cortex_a7_tune): New.
+	* config/arm/arm-cores.def: Use cortex_a7 tuning for cortex-a7.
+
 2013-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <MEM_EXPR>: Eliminate small redundancy.
