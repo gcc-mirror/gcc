@@ -1,3 +1,31 @@
+2013-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (opts_have): Drop "static" so that
+	we can use this from gengtype.c.
+	* gengtype.c (set_gc_used_type): Mark any base class as used;
+	update field traversal to visit inherited fields.
+	(output_mangled_typename):  Convert references to classes within
+	an inheritance hierarchy to reference the ultimate base class,
+	since only it will have gt_ functions.
+	(get_string_option): New.
+	(walk_subclasses): New.
+	(walk_type): Treat GTY structs that have a "desc" as being the
+	root of an inheritance hierarchy.  Generate a switch on it
+	within the marking function which walks all subclasses, adding
+	cases for them via walk_subclasses.  For subclasses, visit all
+	fields of the type (including inherited ones).
+	(write_func_for_structure): Don't write fns for subclasses, only
+	for the ultimate base class within an inheritance hierarchy.
+	Subclasses-marking will be handled by the base class marking
+	functions.
+	(write_types): Likewise.
+	(write_local_func_for_structure): Likewise.
+	(USED_BY_TYPED_GC_P): Emit allocators for subclasses that have
+	a "tag" option (and are thus concrete subclasses).
+	(write_root): Use the marker function for the ultimate base class.
+	* gengtype.h (FOR_ALL_INHERITED_FIELDS): New.
+	(opts_have): Add declaration.
+
 2013-10-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-spills.c (lra_final_code_change): Remove useless move insns
