@@ -1,5 +1,15 @@
 2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/58839
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr<T>::__shared_ptr(unique_ptr<U,D>&&)): Only use addressof
+	when unique_ptr<U,D>::pointer is not a built-in pointer type.
+	* testsuite/20_util/shared_ptr/cons/58839.cc: New.
+	* testsuite/20_util/enable_shared_from_this/members/assign.cc: New.
+	* testsuite/20_util/enable_shared_from_this/members/unique_ptr.cc: New.
+
+2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/hashtable.cc (__access_protected_ctor): Define and use
 	new type instead of _Hashtable_ebo_helper.
 	* testsuite/23_containers/unordered_set/
