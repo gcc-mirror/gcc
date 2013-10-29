@@ -1,3 +1,9 @@
+2013-10-29  Teresa Johnson  <tejohnson@google.com>
+
+	PR ipa/58862
+	* tree-ssa-tail-merge.c (replace_block_by): Tolerate profile
+	insanities when updating probabilities.
+
 2013-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbhooks.py (CGraphNodePrinter.to_string): Update gdb
