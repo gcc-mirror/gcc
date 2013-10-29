@@ -1,5 +1,10 @@
 2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
+	* expr.h: Revert change and include tree-core.h.
+	* rtl.h: Revert change and don't include tree-core.h.
+
+2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
 	* config/darwin.c: Include gimple.h.
 	* config/i386/winnt.c: Likewise.
 
