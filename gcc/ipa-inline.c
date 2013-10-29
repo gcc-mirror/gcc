@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "ipa-utils.h"
 #include "sreal.h"
+#include "cilk.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
@@ -264,7 +265,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
       inlinable = false;
     }
-  else if (!inline_summary (callee)->inlinable)
+  else if (!inline_summary (callee)->inlinable 
+	   || (caller_cfun && fn_contains_cilk_spawn_p (caller_cfun)))
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       inlinable = false;

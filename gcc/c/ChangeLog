@@ -1,3 +1,21 @@
+2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-decl.c (finish_function): Added a call for insert_cilk_frame when
+	a spawning function is found.
+	* c-objc-common.h (LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN): New #define.
+	(LANG_HOOKS_CILKPLUS_FRAME_CLEANUP): Likewise.
+	(LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP): Likewise.
+	* c-parser.c (c_parser_statement_after_labels): Added RID_CILK_SYNC
+	case.
+	(c_parser_postfix_expression): Added RID_CILK_SPAWN case.
+	* c-typeck.c (build_compound_expr): Reject _Cilk_spawn in a comma
+	expr.
+	(c_finish_return): Added a check to reject _Cilk_spawn in return
+	expression.
+	(build_cilk_spawn): New function.
+	(build_cilk_sync): Likewise.
+	* Makefile.in (c-decl.o): Added cilk.h in dependency list.
+	
 2013-10-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426

@@ -1874,6 +1874,9 @@ ira_setup_eliminable_regset (bool from_ira_p)
        || (flag_stack_check && STACK_CHECK_MOVING_SP)
        || crtl->accesses_prior_frames
        || crtl->stack_realign_needed
+       /* We need a frame pointer for all Cilk Plus functions that use
+	  Cilk keywords.  */
+       || (flag_enable_cilkplus && cfun->is_cilk_function)
        || targetm.frame_pointer_required ());
 
   if (from_ira_p && ira_use_lra_p)

@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "builtins.h"
 #include "ubsan.h"
+#include "cilk.h"
 
 
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
@@ -234,6 +235,10 @@ is_builtin_name (const char *name)
   if (strncmp (name, "__sync_", 7) == 0)
     return true;
   if (strncmp (name, "__atomic_", 9) == 0)
+    return true;
+  if (flag_enable_cilkplus 
+      && (!strcmp (name, "__cilkrts_detach")   
+	  || !strcmp (name, "__cilkrts_pop_frame")))
     return true;
   return false;
 }
@@ -6683,6 +6688,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     case BUILT_IN_SET_THREAD_POINTER:
       expand_builtin_set_thread_pointer (exp);
+      return const0_rtx;
+
+    case BUILT_IN_CILK_DETACH:
+      expand_builtin_cilk_detach (exp);
+      return const0_rtx;
+      
+    case BUILT_IN_CILK_POP_FRAME:
+      expand_builtin_cilk_pop_frame (exp);
       return const0_rtx;
 
     default:	/* just do library call, if unknown builtin */

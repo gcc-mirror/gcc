@@ -3166,6 +3166,30 @@ several statements chained together.
 Used to represent a @code{break} statement.  There are no additional
 fields.
 
+@item CILK_SPAWN_STMT
+
+Used to represent a spawning function in the Cilk Plus language extension.  
+This tree has one field that holds the name of the spawning function.
+@code{_Cilk_spawn} can be written in C in the following way:
+
+@smallexample
+@code{_Cilk_spawn} <function_name> (<parameters>);
+@end smallexample
+
+Detailed description for usage and functionality of @code{_Cilk_spawn} can be 
+found at http://www.cilkplus.org
+
+@item CILK_SYNC_STMT
+
+This statement is part of the Cilk Plus language extension.  It indicates that
+the current function cannot continue in parallel with its spawned children.  
+There are no additional fields.  @code{_Cilk_sync} can be written in C in the 
+following way:
+
+@smallexample
+@code{_Cilk_sync};
+@end smallexample
+
 @item CLEANUP_STMT
 
 Used to represent an action that should take place upon exit from the

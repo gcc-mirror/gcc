@@ -139,6 +139,23 @@ struct lang_hooks_for_types
   tree (*reconstruct_complex_type) (tree, tree);
 };
 
+/* Language hooks related to Cilk Plus.  */
+
+struct lang_hooks_for_cilkplus
+{
+  /* Returns true if the expression passed in has a spawned function call.  */
+  bool (*cilk_detect_spawn_and_unwrap) (tree *);
+
+  /* Function to add the clean up functions after spawn.  The reason why it is
+     language dependent is because in C++, it must handle exceptions.  */
+  void (*install_body_with_frame_cleanup) (tree, tree);
+
+  /* Function to gimplify a spawned function call.  Returns enum gimplify
+     status, but as mentioned in a previous comment, we can't see that type 
+     here, so just return an int.  */
+  int (*gimplify_cilk_spawn) (tree *, gimple_seq *, gimple_seq *);
+};
+
 /* Language hooks related to decls and the symbol table.  */
 
 struct lang_hooks_for_decls
@@ -408,6 +425,8 @@ struct lang_hooks
 
   struct lang_hooks_for_types types;
 
+  struct lang_hooks_for_cilkplus cilkplus;
+  
   struct lang_hooks_for_lto lto;
 
   /* Returns a TREE_VEC of the generic parameters of an instantiation of

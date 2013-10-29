@@ -147,6 +147,13 @@ along with GCC; see the file COPYING3.  If not see
                false, true, true, ATTRS, false, \
 	       (flag_openmp || flag_tree_parallelize_loops))
 
+/* Builtin used by implementation of Cilk Plus.  Most of these are decomposed
+   by the compiler but a few are implemented in libcilkrts.  */ 
+#undef DEF_CILK_BUILTIN_STUB
+#define DEF_CILK_BUILTIN_STUB(ENUM, NAME) \
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_LAST, BT_LAST, false, false, \
+	       false, ATTR_LAST, false, false)
+
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
 #undef DEF_TM_BUILTIN
@@ -845,6 +852,9 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* OpenMP builtins.  */
 #include "omp-builtins.def"
+
+/* Cilk keywords builtins.  */
+#include "cilk-builtins.def"
 
 /* GTM builtins. */
 #include "gtm-builtins.def"

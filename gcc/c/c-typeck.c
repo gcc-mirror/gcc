@@ -4387,6 +4387,14 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
   tree eptype = NULL_TREE;
   tree ret;
 
+  if (flag_enable_cilkplus
+      && (TREE_CODE (expr1) == CILK_SPAWN_STMT
+	  || TREE_CODE (expr2) == CILK_SPAWN_STMT))
+    {
+      error_at (loc,
+		"spawned function call cannot be part of a comma expression");
+      return error_mark_node;
+    }
   expr1_int_operands = EXPR_INT_CONST_OPERANDS (expr1);
   if (expr1_int_operands)
     expr1 = remove_c_maybe_const_expr (expr1);
@@ -8693,6 +8701,12 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		    "return value");
 	  return error_mark_node;
 	}
+    }
+  if (flag_enable_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+    {
+      error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
+		"allowed");
+      return error_mark_node;
     }
   if (retval)
     {

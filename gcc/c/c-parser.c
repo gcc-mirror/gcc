@@ -4587,6 +4587,14 @@ c_parser_statement_after_labels (c_parser *parser)
 	case RID_FOR:
 	  c_parser_for_statement (parser, false);
 	  break;
+	case RID_CILK_SYNC:
+	  c_parser_consume_token (parser);
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	  if (!flag_enable_cilkplus) 
+	    error_at (loc, "-fcilkplus must be enabled to use %<_Cilk_sync%>");
+	  else 
+	    add_stmt (build_cilk_sync ());
+	  break;
 	case RID_GOTO:
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_NAME))
@@ -7174,6 +7182,30 @@ c_parser_postfix_expression (c_parser *parser)
 	case RID_GENERIC:
 	  expr = c_parser_generic_selection (parser);
 	  break;
+	case RID_CILK_SPAWN:
+	  c_parser_consume_token (parser);
+	  if (!flag_enable_cilkplus)
+	    {
+	      error_at (loc, "-fcilkplus must be enabled to use "
+			"%<_Cilk_spawn%>");
+	      expr = c_parser_postfix_expression (parser);
+	      expr.value = error_mark_node;	      
+	    }
+	  if (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
+	    {
+	      error_at (loc, "consecutive %<_Cilk_spawn%> keywords "
+			"are not permitted");
+	      /* Now flush out all the _Cilk_spawns.  */
+	      while (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
+		c_parser_consume_token (parser);
+	      expr = c_parser_postfix_expression (parser);
+	    }
+	  else
+	    {
+	      expr = c_parser_postfix_expression (parser);
+	      expr.value = build_cilk_spawn (loc, expr.value);
+	    }
+	  break; 
 	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;

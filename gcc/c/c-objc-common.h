@@ -105,4 +105,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P c_vla_unspec_p
 
+#undef  LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN
+#define LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN gimplify_cilk_spawn
+
+#undef  LANG_HOOKS_CILKPLUS_FRAME_CLEANUP
+#define LANG_HOOKS_CILKPLUS_FRAME_CLEANUP c_cilk_install_body_w_frame_cleanup
+
+#undef  LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP
+#define LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP  \
+  cilk_detect_spawn_and_unwrap
 #endif /* GCC_C_OBJC_COMMON */

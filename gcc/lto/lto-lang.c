@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "lto-streamer.h"
+#include "cilk.h"
 
 static tree lto_type_for_size (unsigned, int);
 
@@ -1174,6 +1175,9 @@ lto_init (void)
       lto_define_builtins (va_list_type_node,
 			   build_reference_type (va_list_type_node));
     }
+  
+  if (flag_enable_cilkplus)
+    cilk_init_builtins ();
 
   targetm.init_builtins ();
   build_common_builtin_nodes ();
