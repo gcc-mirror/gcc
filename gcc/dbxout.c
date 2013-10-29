@@ -690,8 +690,7 @@ stabstr_U (unsigned HOST_WIDE_INT num)
 static void
 stabstr_O (tree cst)
 {
-  wide_int wcst = cst;
-  int prec = wcst.get_precision ();
+  int prec = TYPE_PRECISION (TREE_TYPE (cst));
   int res_pres = prec % 3;
   int i;
   unsigned int digit;
@@ -701,7 +700,7 @@ stabstr_O (tree cst)
 
   /* If the value is zero, the base indicator will serve as the value
      all by itself.  */
-  if (wcst == 0)
+  if (wi::eq_p (cst, 0))
     return;
 
   /* GDB wants constants with no extra leading "1" bits, so
@@ -709,19 +708,19 @@ stabstr_O (tree cst)
      present.  */
   if (res_pres == 1)
     {
-      digit = wi::extract_uhwi (wcst, prec - 1, 1);
+      digit = wi::extract_uhwi (cst, prec - 1, 1);
       stabstr_C ('0' + digit);
     }
   else if (res_pres == 2)
     {
-      digit = wi::extract_uhwi (wcst, prec - 2, 2);
+      digit = wi::extract_uhwi (cst, prec - 2, 2);
       stabstr_C ('0' + digit);
     }
 
   prec -= res_pres;
   for (i = prec - 3; i <= 0; i = i - 3)
     {
-      digit = wi::extract_uhwi (wcst, i, 3);
+      digit = wi::extract_uhwi (cst, i, 3);
       stabstr_C ('0' + digit);
     }
 }

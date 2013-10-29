@@ -699,7 +699,6 @@ c_getstr (tree src)
 static rtx
 c_readstr (const char *str, enum machine_mode mode)
 {
-  wide_int c;
   HOST_WIDE_INT ch;
   unsigned int i, j;
   HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
@@ -727,7 +726,7 @@ c_readstr (const char *str, enum machine_mode mode)
       tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
   
-  c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
+  wide_int c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
   return immed_wide_int_const (c, mode);
 }
 
@@ -7961,7 +7960,6 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	{
 	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
 	  tree ftype = TREE_TYPE (arg);
-	  wide_int val;
 	  REAL_VALUE_TYPE r;
 	  bool fail = false;
 
@@ -7989,8 +7987,7 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	      gcc_unreachable ();
 	    }
 
-	  val = real_to_integer (&r, &fail, 
-				 TYPE_PRECISION (itype));
+	  wide_int val = real_to_integer (&r, &fail, TYPE_PRECISION (itype));
 	  if (!fail)
 	    return wide_int_to_tree (itype, val);
 	}
@@ -8025,33 +8022,32 @@ fold_builtin_bitop (tree fndecl, tree arg)
   /* Optimize for constant argument.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
-      wide_int warg = arg;
       int result;
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
 	CASE_INT_FN (BUILT_IN_FFS):
-	  result = wi::ffs (warg);
+	  result = wi::ffs (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLZ):
-	  result = wi::clz (warg);
+	  result = wi::clz (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CTZ):
-	  result = wi::ctz (warg);
+	  result = wi::ctz (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):
-	  result = wi::clrsb (warg);
+	  result = wi::clrsb (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = wi::popcount (warg);
+	  result = wi::popcount (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = wi::parity (warg);
+	  result = wi::parity (arg);
 	  break;
 
 	default:
@@ -8679,11 +8675,10 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      else if (TREE_CODE (src_base) == MEM_REF
 		       && TREE_CODE (dest_base) == MEM_REF)
 		{
-		  offset_int off;
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;
-		  off = mem_ref_offset (src_base) + src_offset;
+		  offset_int off = mem_ref_offset (src_base) + src_offset;
 		  if (!wi::fits_shwi_p (off))
 		    return NULL_TREE;
 		  src_offset = off.to_shwi ();
@@ -12622,7 +12617,6 @@ fold_builtin_object_size (tree ptr, tree ost)
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
-
       wide_int wbytes 
 	= wi::uhwi (compute_builtin_object_size (ptr, object_size_type),
 		    precision);
@@ -12634,9 +12628,8 @@ fold_builtin_object_size (tree ptr, tree ost)
       /* If object size is not known yet, delay folding until
        later.  Maybe subsequent passes will help determining
        it.  */
-      wide_int wbytes;
       bytes = compute_builtin_object_size (ptr, object_size_type);
-      wbytes = wi::uhwi (bytes, precision);
+      wide_int wbytes = wi::uhwi (bytes, precision);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
           && wi::fits_to_tree_p (wbytes, size_type_node))
 	return wide_int_to_tree (size_type_node, wbytes);

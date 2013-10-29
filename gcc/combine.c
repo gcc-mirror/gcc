@@ -2671,11 +2671,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
       if (offset >= 0)
 	{
-	  wide_int o;
 	  rtx inner = SET_SRC (PATTERN (i3));
 	  rtx outer = SET_SRC (temp);
 
-	  o = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp))),
+	  wide_int o
+	    = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp))),
 			  std::make_pair (inner, GET_MODE (dest)),
 			  offset, width);
 

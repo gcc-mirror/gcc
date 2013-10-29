@@ -1255,14 +1255,13 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
       {
-	widest_int lo, hi;
 	/* Do the addition with unknown bits set to zero, to give carry-ins of
 	   zero wherever possible.  */
-	lo = r1val.and_not (r1mask) + r2val.and_not (r2mask);
+	widest_int lo = r1val.and_not (r1mask) + r2val.and_not (r2mask);
 	lo = wi::ext (lo, width, sgn);
 	/* Do the addition with unknown bits set to one, to give carry-ins of
 	   one wherever possible.  */
-	hi = (r1val | r1mask) + (r2val | r2mask);
+	widest_int hi = (r1val | r1mask) + (r2val | r2mask);
 	hi = wi::ext (hi, width, sgn);
 	/* Each bit in the result is known if (a) the corresponding bits in
 	   both inputs are known, and (b) the carry-in to that bit position

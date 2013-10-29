@@ -6941,12 +6941,11 @@ tree_int_cst_sign_bit (const_tree t)
 int
 tree_int_cst_sgn (const_tree t)
 {
-  wide_int w = t;
-  if (w == 0)
+  if (wi::eq_p (t, 0))
     return 0;
   else if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return 1;
-  else if (wi::neg_p (w))
+  else if (wi::neg_p (t))
     return -1;
   else
     return 1;
@@ -8621,10 +8620,7 @@ int_fits_type_p (const_tree c, const_tree type)
 {
   tree type_low_bound, type_high_bound;
   bool ok_for_low_bound, ok_for_high_bound;
-  wide_int wc, wd;
   signop sgn_c = TYPE_SIGN (TREE_TYPE (c));
-
-  wc = c;
 
 retry:
   type_low_bound = TYPE_MIN_VALUE (type);
@@ -8667,7 +8663,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wi::neg_p (wc))
+  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wi::neg_p (c))
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8675,7 +8671,7 @@ retry:
     return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
-  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED && wi::neg_p (wc))
+  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED && wi::neg_p (c))
     return false;
 
   /* If we haven't been able to decide at this point, there nothing more we
@@ -8690,7 +8686,7 @@ retry:
     }
 
   /* Or to fits_to_tree_p, if nothing else.  */
-  return wi::fits_to_tree_p (wc, type);
+  return wi::fits_to_tree_p (c, type);
 }
 
 /* Stores bounds of an integer TYPE in MIN and MAX.  If TYPE has non-constant

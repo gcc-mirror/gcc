@@ -450,8 +450,8 @@ struct GTY((variable_size)) rtvec_def {
    case CONST_INT: \
    case CONST_DOUBLE
 
-/* Match CONST_*s for which pointer equality corresponds to value 
-equality.  */
+/* Match CONST_*s for which pointer equality corresponds to value
+   equality.  */
 #define CASE_CONST_UNIQUE \
    case CONST_INT: \
    case CONST_DOUBLE: \
@@ -464,9 +464,6 @@ equality.  */
    case CONST_FIXED: \
    case CONST_VECTOR
 #endif
-
-
-
 
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
@@ -1400,9 +1397,8 @@ struct address_info {
 };
 
 /* This is used to bundle an rtx and a mode together so that the pair
-   can be used as the second operand of a wide int expression.  If we
-   ever put modes into rtx integer constants, this should go away and
-   then just pass an rtx in.  */
+   can be used with the wi:: routines.  If we ever put modes into rtx
+   integer constants, this should go away and then just pass an rtx in.  */
 typedef std::pair <rtx, enum machine_mode> rtx_mode_t;
 
 namespace wi
@@ -1435,7 +1431,8 @@ wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
     {
     case CONST_INT:
       if (precision < HOST_BITS_PER_WIDE_INT)
-	gcc_checking_assert (INTVAL (x.first) == sext_hwi (INTVAL (x.first), precision));
+	gcc_checking_assert (INTVAL (x.first)
+			     == sext_hwi (INTVAL (x.first), precision));
 
       return wi::storage_ref (&INTVAL (x.first), 1, precision);
       

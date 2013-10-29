@@ -11280,7 +11280,6 @@ vfp3_const_double_index (rtx x)
   unsigned HOST_WIDE_INT mask;
   int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
   bool fail;
-  wide_int w;
 
   if (!TARGET_VFP3 || !CONST_DOUBLE_P (x))
     return -1;
@@ -11300,7 +11299,7 @@ vfp3_const_double_index (rtx x)
      WARNING: If there's ever a VFP version which uses more than 2 * H_W_I - 1
      bits for the mantissa, this may fail (low bits would be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
+  wide_int w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
   mantissa = w.elt (0);
   mant_hi = w.elt (1);
 

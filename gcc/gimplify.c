@@ -1728,7 +1728,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> labels,
 		  low = CASE_HIGH (labels[i - 1]);
 		  if (!low)
 		    low = CASE_LOW (labels[i - 1]);
-		  if ((wide_int (low) + 1) != high)
+		  if (wi::add (low, 1) != high)
 		    break;
 		}
 	      if (i == len)

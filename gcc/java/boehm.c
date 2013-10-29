@@ -137,7 +137,6 @@ get_boehm_type_descriptor (tree type)
   int last_set_index = 0;
   HOST_WIDE_INT last_view_index = -1;
   int pointer_after_end = 0;
-  wide_int mask;
   tree field, value, value_type;
 
   /* If the GC wasn't requested, just use a null pointer.  */
@@ -145,8 +144,7 @@ get_boehm_type_descriptor (tree type)
     return null_pointer_node;
 
   value_type = java_type_for_mode (ptr_mode, 1);
-
-  mask = wi::zero (TYPE_PRECISION (value_type));
+  wide_int mask = wi::zero (TYPE_PRECISION (value_type));
 
   /* If we have a type of unknown size, use a proc.  */
   if (int_size_in_bytes (type) == -1)

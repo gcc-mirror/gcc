@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "wide-int.h"
 
-
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
 static int list_hash_eq (const void *, const void *);

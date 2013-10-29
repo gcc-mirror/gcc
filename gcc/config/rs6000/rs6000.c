@@ -6103,7 +6103,7 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  dsize = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  if (dsize > 32768)
 	    return false;
-	  
+
 	  return dalign / BITS_PER_UNIT >= dsize;
 	}
     }

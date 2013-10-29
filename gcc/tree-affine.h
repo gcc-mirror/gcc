@@ -60,13 +60,13 @@ typedef struct affine_tree_combination
   tree rest;
 } aff_tree;
 
-widest_int wide_int_ext_for_comb (widest_int, aff_tree *);
+widest_int wide_int_ext_for_comb (const widest_int &, aff_tree *);
 void aff_combination_const (aff_tree *, tree, const widest_int &);
 void aff_combination_elt (aff_tree *, tree, tree);
-void aff_combination_scale (aff_tree *, widest_int);
+void aff_combination_scale (aff_tree *, const widest_int &);
 void aff_combination_mult (aff_tree *, aff_tree *, aff_tree *);
 void aff_combination_add (aff_tree *, aff_tree *);
-void aff_combination_add_elt (aff_tree *, tree, widest_int);
+void aff_combination_add_elt (aff_tree *, tree, const widest_int &);
 void aff_combination_remove_elt (aff_tree *, unsigned);
 void aff_combination_convert (aff_tree *, tree);
 void tree_to_aff_combination (tree, tree, aff_tree *);

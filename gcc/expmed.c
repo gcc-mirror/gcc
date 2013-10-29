@@ -3061,8 +3061,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 #endif
 	{
 	  int p = GET_MODE_PRECISION (mode);
-	  wide_int val = std::make_pair (scalar_op1, mode);
-	  int shift = wi::exact_log2 (val);
+	  int shift = wi::exact_log2 (std::make_pair (scalar_op1, mode));
 	  /* Perfect power of 2.  */
 	  is_neg = false;
 	  if (shift > 0)
@@ -3080,7 +3079,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	      /* Any positive number that fits in a word.  */
 	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
 	    }
-	  else if (wi::sign_mask (val) == 0)
+	  else if (wi::sign_mask (std::make_pair (scalar_op1, mode)) == 0)
 	    {
 	      /* Any positive number that fits in a word.  */
 	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
@@ -3261,7 +3260,6 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
 		   unsigned HOST_WIDE_INT *multiplier_ptr,
 		   int *post_shift_ptr, int *lgup_ptr)
 {
-  wide_int mhigh, mlow;
   int lgup, post_shift;
   int pow, pow2;
 
@@ -3275,11 +3273,11 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
 
   /* mlow = 2^(N + lgup)/d */
   wide_int val = wi::set_bit_in_zero (pow, HOST_BITS_PER_DOUBLE_INT);
-  mlow = wi::udiv_trunc (val, d);
+  wide_int mlow = wi::udiv_trunc (val, d);
 
   /* mhigh = (2^(N + lgup) + 2^(N + lgup - precision))/d */
   val |= wi::set_bit_in_zero (pow2, HOST_BITS_PER_DOUBLE_INT);
-  mhigh = wi::udiv_trunc (val, d);
+  wide_int mhigh = wi::udiv_trunc (val, d);
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -3578,7 +3576,6 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 {
   rtx result, temp, shift, label;
   int logd;
-  wide_int mask;
   int prec = GET_MODE_PRECISION (mode);
 
   logd = floor_log2 (d);
@@ -3640,7 +3637,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
      modulus.  By including the signbit in the operation, many targets
      can avoid an explicit compare operation in the following comparison
      against zero.  */
-  mask = wi::mask (logd, false, GET_MODE_PRECISION (mode));
+  wide_int mask = wi::mask (logd, false, GET_MODE_PRECISION (mode));
   mask = wi::set_bit (mask, prec - 1);
 
   temp = expand_binop (mode, and_optab, op0,

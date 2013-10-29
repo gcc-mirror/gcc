@@ -155,7 +155,7 @@ avr_wide_int_pop_digit (wide_int *cst, unsigned base)
 /* Dump VAL as hex value to FILE.  */
 
 static void
-avr_dump_wide_int_hex (FILE *file, wide_int val)
+avr_dump_wide_int_hex (FILE *file, const wide_int &val)
 {
   unsigned digit[4];
 

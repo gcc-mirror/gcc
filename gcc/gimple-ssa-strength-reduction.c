@@ -910,7 +910,6 @@ slsr_process_ref (gimple gs)
   HOST_WIDE_INT bitsize, bitpos;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  widest_int index;
   slsr_cand_t c;
 
   if (gimple_vdef (gs))
@@ -926,7 +925,7 @@ slsr_process_ref (gimple gs)
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &volatilep, false);
-  index = bitpos;
+  widest_int index = bitpos;
 
   if (!restructure_reference (&base, &offset, &index, &type))
     return;
@@ -1258,7 +1257,8 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
    about BASE_IN into the new candidate.  Return the new candidate.  */
 
 static slsr_cand_t
-create_add_imm_cand (gimple gs, tree base_in, widest_int index_in, bool speed)
+create_add_imm_cand (gimple gs, tree base_in, const widest_int &index_in,
+		     bool speed)
 {
   enum cand_kind kind = CAND_ADD;
   tree base = NULL_TREE, stride = NULL_TREE, ctype = NULL_TREE;
@@ -1358,10 +1358,8 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
     }
   else
     {
-      widest_int index;
-
       /* Record an interpretation for the add-immediate.  */
-      index = wi::to_widest (rhs2);
+      widest_int index = wi::to_widest (rhs2);
       if (subtract_p)
 	index = -index;
 
@@ -1918,12 +1916,10 @@ cand_already_replaced (slsr_cand_t c)
    replace_conditional_candidate.  */
 
 static void
-replace_mult_candidate (slsr_cand_t c, tree basis_name,
-			const widest_int &bump_in)
+replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 {
   tree target_type = TREE_TYPE (gimple_assign_lhs (c->cand_stmt));
   enum tree_code cand_code = gimple_assign_rhs_code (c->cand_stmt);
-  widest_int bump = bump_in;
 
   /* It is highly unlikely, but possible, that the resulting
      bump doesn't fit in a HWI.  Abandon the replacement
@@ -2023,13 +2019,12 @@ static void
 replace_unconditional_candidate (slsr_cand_t c)
 {
   slsr_cand_t basis;
-  widest_int bump;
 
   if (cand_already_replaced (c))
     return;
 
   basis = lookup_cand (c->basis);
-  bump = cand_increment (c) * wi::to_widest (c->stride);
+  widest_int bump = cand_increment (c) * wi::to_widest (c->stride);
 
   replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
@@ -2235,7 +2230,6 @@ replace_conditional_candidate (slsr_cand_t c)
   tree basis_name, name;
   slsr_cand_t basis;
   location_t loc;
-  widest_int bump;
 
   /* Look up the LHS SSA name from C's basis.  This will be the 
      RHS1 of the adds we will introduce to create new phi arguments.  */
@@ -2248,7 +2242,7 @@ replace_conditional_candidate (slsr_cand_t c)
   name = create_phi_basis (c, lookup_cand (c->def_phi)->cand_stmt,
 			   basis_name, loc, KNOWN_STRIDE);
   /* Replace C with an add of the new basis phi and a constant.  */
-  bump = c->index * wi::to_widest (c->stride);
+  widest_int bump = c->index * wi::to_widest (c->stride);
 
   replace_mult_candidate (c, name, bump);
 }
@@ -2380,12 +2374,10 @@ count_candidates (slsr_cand_t c)
    candidates with the same increment, also record T_0 for subsequent use.  */
 
 static void
-record_increment (slsr_cand_t c, const widest_int &increment_in,
-		  bool is_phi_adjust)
+record_increment (slsr_cand_t c, widest_int increment, bool is_phi_adjust)
 {
   bool found = false;
   unsigned i;
-  widest_int increment = increment_in;
 
   /* Treat increments that differ only in sign as identical so as to
      share initializers, unless we are generating pointer arithmetic.  */

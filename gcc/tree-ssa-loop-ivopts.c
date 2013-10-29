@@ -4649,8 +4649,6 @@ may_eliminate_iv (struct ivopts_data *data,
         }
     }
 
-  static int cnt = 0;
-  cnt++;
   cand_value_at (loop, cand, use->stmt, desc->niter, &bnd);
 
   *bound = aff_combination_to_tree (&bnd);

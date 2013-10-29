@@ -2004,11 +2004,9 @@ zero_nonzero_bits_from_vr (const tree expr_type,
   else if (tree_int_cst_sgn (vr->min) >= 0
 	   || tree_int_cst_sgn (vr->max) < 0)
     {
-      wide_int wmin = vr->min;
-      wide_int wmax = vr->max;
-      wide_int xor_mask = wmin ^ wmax;
-      *may_be_nonzero = wmin | wmax;
-      *must_be_nonzero = wmin & wmax;
+      wide_int xor_mask = wi::bit_xor (vr->min, vr->max);
+      *may_be_nonzero = wi::bit_or (vr->min, vr->max);
+      *must_be_nonzero = wi::bit_and (vr->min, vr->max);
       if (xor_mask != 0)
 	{
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
@@ -2396,10 +2394,6 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	{
 	  signop sgn = TYPE_SIGN (expr_type);
 	  unsigned int prec = TYPE_PRECISION (expr_type);
-	  wide_int min0 = wide_int (vr0.min);
-	  wide_int max0 = wide_int (vr0.max);
-	  wide_int min1 = wide_int (vr1.min);
-	  wide_int max1 = wide_int (vr1.max);
 	  wide_int type_min = wi::min_value (TYPE_PRECISION (expr_type), sgn);
 	  wide_int type_max = wi::max_value (TYPE_PRECISION (expr_type), sgn);
 	  wide_int wmin, wmax;
@@ -2408,24 +2402,24 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
 	  if (code == PLUS_EXPR)
 	    {
-	      wmin = min0 + min1;
-	      wmax = max0 + max1;
+	      wmin = wi::add (vr0.min, vr1.min);
+	      wmax = wi::add (vr0.max, vr1.max);
 
 	      /* Check for overflow.  */
-	      if (wi::cmp (min1, 0, sgn) != wi::cmp (wmin, min0, sgn))
-		min_ovf = wi::cmp (min0, wmin, sgn);
-	      if (wi::cmp (max1, 0, sgn) != wi::cmp (wmax, max0, sgn))
-		max_ovf = wi::cmp (max0, wmax, sgn);
+	      if (wi::cmp (vr1.min, 0, sgn) != wi::cmp (wmin, vr0.min, sgn))
+		min_ovf = wi::cmp (vr0.min, wmin, sgn);
+	      if (wi::cmp (vr1.max, 0, sgn) != wi::cmp (wmax, vr0.max, sgn))
+		max_ovf = wi::cmp (vr0.max, wmax, sgn);
 	    }
 	  else /* if (code == MINUS_EXPR) */
 	    {
-	      wmin = min0 - max1;
-	      wmax = max0 - min1;
+	      wmin = wi::sub (vr0.min, vr1.max);
+	      wmax = wi::sub (vr0.max, vr1.min);
 
-	      if (wi::cmp (0, max1, sgn) != wi::cmp (wmin, min0, sgn))
-		min_ovf = wi::cmp (min0, max1, sgn);
-	      if (wi::cmp (0, min1, sgn) != wi::cmp (wmax, max0, sgn))
-		max_ovf = wi::cmp (max0, min1, sgn);
+	      if (wi::cmp (0, vr1.max, sgn) != wi::cmp (wmin, vr0.min, sgn))
+		min_ovf = wi::cmp (vr0.min, vr1.max, sgn);
+	      if (wi::cmp (0, vr1.min, sgn) != wi::cmp (wmax, vr0.max, sgn))
+		max_ovf = wi::cmp (vr0.max, vr1.min, sgn);
 	    }
 
 	  /* For non-wrapping arithmetic look at possibly smaller
@@ -2638,18 +2632,16 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  && range_int_cst_p (&vr1)
 	  && TYPE_OVERFLOW_WRAPS (expr_type))
 	{
-	  wide_int min0, max0, min1, max1;
-	  wide_int prod0, prod1, prod2, prod3;
 	  wide_int sizem1 = wi::mask (prec, false, prec2);
 	  wide_int size = sizem1 + 1;
 
 	  /* Extend the values using the sign of the result to PREC2.
 	     From here on out, everthing is just signed math no matter
 	     what the input types were.  */ 
-	  min0 = wide_int::from (vr0.min, prec2, sign);
-	  max0 = wide_int::from (vr0.max, prec2, sign);
-	  min1 = wide_int::from (vr1.min, prec2, sign);
-	  max1 = wide_int::from (vr1.max, prec2, sign);
+	  wide_int min0 = wide_int::from (vr0.min, prec2, sign);
+	  wide_int max0 = wide_int::from (vr0.max, prec2, sign);
+	  wide_int min1 = wide_int::from (vr1.min, prec2, sign);
+	  wide_int max1 = wide_int::from (vr1.max, prec2, sign);
 
 	  /* Canonicalize the intervals.  */
 	  if (sign == UNSIGNED)
@@ -2667,10 +2659,10 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		}
 	    }
 
-	  prod0 = min0 * min1;
-	  prod1 = min0 * max1;
-	  prod2 = max0 * min1;
-	  prod3 = max0 * max1;
+	  wide_int prod0 = min0 * min1;
+	  wide_int prod1 = min0 * max1;
+	  wide_int prod2 = max0 * min1;
+	  wide_int prod3 = max0 * max1;
 
 	  /* Sort the 4 products so that min is in prod0 and max is in
 	     prod3.  */
@@ -2783,7 +2775,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      int prec = TYPE_PRECISION (expr_type);
 	      int overflow_pos = prec;
 	      int bound_shift;
-	      wide_int bound, complement, low_bound, high_bound;
+	      wide_int low_bound, high_bound;
 	      bool uns = TYPE_UNSIGNED (expr_type);
 	      bool in_bounds = false;
 
@@ -2796,8 +2788,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		 zero, which means vr1 is a singleton range of zero, which
 		 means it should be handled by the previous LSHIFT_EXPR
 		 if-clause.  */
-	      bound = wi::set_bit_in_zero (bound_shift, prec);
-	      complement = ~(bound - 1);
+	      wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
+	      wide_int complement = ~(bound - 1);
 
 	      if (uns)
 		{
@@ -2964,18 +2956,19 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       wide_int may_be_nonzero0, may_be_nonzero1;
       wide_int must_be_nonzero0, must_be_nonzero1;
 
-      int_cst_range0 = zero_nonzero_bits_from_vr (expr_type, &vr0, &may_be_nonzero0,
+      int_cst_range0 = zero_nonzero_bits_from_vr (expr_type, &vr0,
+						  &may_be_nonzero0,
 						  &must_be_nonzero0);
-      int_cst_range1 = zero_nonzero_bits_from_vr (expr_type, &vr1, &may_be_nonzero1,
+      int_cst_range1 = zero_nonzero_bits_from_vr (expr_type, &vr1,
+						  &may_be_nonzero1,
 						  &must_be_nonzero1);
 
       type = VR_RANGE;
       if (code == BIT_AND_EXPR)
 	{
-	  wide_int wmax;
 	  min = wide_int_to_tree (expr_type,
 				  must_be_nonzero0 & must_be_nonzero1);
-	  wmax = may_be_nonzero0 & may_be_nonzero1;
+	  wide_int wmax = may_be_nonzero0 & may_be_nonzero1;
 	  /* If both input ranges contain only negative values we can
 	     truncate the result range maximum to the minimum of the
 	     input range maxima.  */
@@ -2997,10 +2990,9 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	}
       else if (code == BIT_IOR_EXPR)
 	{
-	  wide_int wmin;
 	  max = wide_int_to_tree (expr_type,
 				  may_be_nonzero0 | may_be_nonzero1);
-	  wmin = must_be_nonzero0 | must_be_nonzero1;
+	  wide_int wmin = must_be_nonzero0 | must_be_nonzero1;
 	  /* If the input ranges contain only positive values we can
 	     truncate the minimum of the result range to the maximum
 	     of the input range minima.  */
@@ -3022,11 +3014,11 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	}
       else if (code == BIT_XOR_EXPR)
 	{
-	  wide_int result_zero_bits, result_one_bits;
-	  result_zero_bits = (must_be_nonzero0 & must_be_nonzero1)
-			     | ~(may_be_nonzero0 | may_be_nonzero1);
-	  result_one_bits = must_be_nonzero0.and_not (may_be_nonzero1)
-			    | must_be_nonzero1.and_not (may_be_nonzero0);
+	  wide_int result_zero_bits = ((must_be_nonzero0 & must_be_nonzero1)
+				       | ~(may_be_nonzero0 | may_be_nonzero1));
+	  wide_int result_one_bits
+	    = (must_be_nonzero0.and_not (may_be_nonzero1)
+	       | must_be_nonzero1.and_not (may_be_nonzero0));
 	  max = wide_int_to_tree (expr_type, ~result_zero_bits);
 	  min = wide_int_to_tree (expr_type, result_one_bits);
 	  /* If the range has all positive or all negative values the
@@ -3837,11 +3829,10 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
       if (max_loop_iterations (loop, &nit))
 	{
 	  value_range_t maxvr = VR_INITIALIZER;
-	  widest_int wtmp;
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
 	  
-	  wtmp = wi::mul (wi::to_widest (step), nit, sgn, &overflow);
+	  wide_int wtmp = wi::mul (wi::to_widest (step), nit, sgn, &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
 	     of the induction variable.  For a signed type we have to

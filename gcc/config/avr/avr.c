@@ -11368,7 +11368,7 @@ avr_expand_delay_cycles (rtx operands0)
 /* Return VAL * BASE + DIGIT.  BASE = 0 is shortcut for BASE = 2^{32}   */
 
 static wide_int
-avr_wide_int_push_digit (wide_int val, int base,
+avr_wide_int_push_digit (const wide_int &val, int base,
 			 unsigned HOST_WIDE_INT digit)
 {
   val = 0 == base
@@ -11382,7 +11382,7 @@ avr_wide_int_push_digit (wide_int val, int base,
 /* Compute the image of x under f, i.e. perform   x --> f(x)    */
 
 static int
-avr_map (wide_int f, int x)
+avr_map (const wide_int &f, int x)
 {
   return 0xf & f.lrshift (4*x).to_uhwi ();
 }
@@ -11409,7 +11409,7 @@ enum
   };
 
 static unsigned
-avr_map_metric (wide_int a, int mode)
+avr_map_metric (const wide_int &a, int mode)
 {
   unsigned i, metric = 0;
 
@@ -11507,7 +11507,7 @@ static const avr_map_op_t avr_map_op[] =
    If result.cost < 0 then such a decomposition does not exist.  */
 
 static avr_map_op_t
-avr_map_decompose (wide_int f, const avr_map_op_t *g, bool val_const_p)
+avr_map_decompose (const wide_int &f, const avr_map_op_t *g, bool val_const_p)
 {
   int i;
   bool val_used_p = 0 != avr_map_metric (f, MAP_MASK_PREIMAGE_F);
@@ -11584,7 +11584,7 @@ avr_map_decompose (wide_int f, const avr_map_op_t *g, bool val_const_p)
    is different to its source position.  */
 
 static void
-avr_move_bits (rtx *xop, wide_int map, bool fixp_p, int *plen)
+avr_move_bits (rtx *xop, const wide_int &map, bool fixp_p, int *plen)
 {
   int bit_dest, b;
 
@@ -12228,7 +12228,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         tree tval = arg[2];
         tree tmap;
         tree map_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-        wide_int map;
         bool changed = false;
         unsigned i;
         avr_map_op_t best_g;
@@ -12241,7 +12240,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        map = wide_int::from_tree (arg[0]);
+        wide_int map = wide_int::from_tree (arg[0]);
         tmap = wide_int_to_tree (map_type, map);
 
         if (TREE_CODE (tval) != INTEGER_CST

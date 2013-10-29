@@ -2625,7 +2625,6 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
 {
   tree niter_bound, extreme, delta;
   tree type = TREE_TYPE (base), unsigned_type;
-  widest_int max;
 
   if (TREE_CODE (step) != INTEGER_CST || integer_zerop (step))
     return;
@@ -2666,7 +2665,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
   /* STMT is executed at most NITER_BOUND + 1 times, since otherwise the value
      would get out of the range.  */
   niter_bound = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step);
-  max = derive_constant_upper_bound (niter_bound);
+  widest_int max = derive_constant_upper_bound (niter_bound);
   record_estimate (loop, niter_bound, max, stmt, false, realistic, upper);
 }
 

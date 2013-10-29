@@ -53,8 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline void
 tree_int_to_gmp (tree t, mpz_t res)
 {
-  wide_int wi = t;
-  wi::to_mpz (wi, res, TYPE_SIGN (TREE_TYPE (t)));
+  wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 /* Returns the index of the PHI argument defined in the outermost

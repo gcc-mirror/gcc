@@ -1649,7 +1649,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     {
       wide_int result;
       enum machine_mode imode = op_mode == VOIDmode ? mode : op_mode;
-      wide_int op0 = std::make_pair (op, imode);
+      rtx_mode_t op0 = std::make_pair (op, imode);
 
 #if TARGET_SUPPORTS_WIDE_INT == 0
       /* This assert keeps the simplification from producing a result
@@ -1664,11 +1664,11 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
       switch (code)
 	{
 	case NOT:
-	  result = ~op0;
+	  result = wi::bit_not (op0);
 	  break;
 
 	case NEG:
-	  result = -op0;
+	  result = wi::neg (op0);
 	  break;
 
 	case ABS:
@@ -1700,7 +1700,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case BSWAP:
-	  result = op0.bswap ();
+	  result = wide_int (op0).bswap ();
 	  break;
 
 	case TRUNCATE:
@@ -2013,12 +2013,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  wide_int coeff0;
-	  wide_int coeff1;
 	  rtx lhs = op0, rhs = op1;
 
-	  coeff0 = wi::one (GET_MODE_PRECISION (mode));
-	  coeff1 = wi::one (GET_MODE_PRECISION (mode));
+	  wide_int coeff0 = wi::one (GET_MODE_PRECISION (mode));
+	  wide_int coeff1 = wi::one (GET_MODE_PRECISION (mode));
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
@@ -2190,12 +2188,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  wide_int coeff0;
-	  wide_int negcoeff1;
 	  rtx lhs = op0, rhs = op1;
 
-	  coeff0 = wi::one (GET_MODE_PRECISION (mode));
-	  negcoeff1 = wi::minus_one (GET_MODE_PRECISION (mode));
+	  wide_int coeff0 = wi::one (GET_MODE_PRECISION (mode));
+	  wide_int negcoeff1 = wi::minus_one (GET_MODE_PRECISION (mode));
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
@@ -3705,9 +3701,9 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       && CONST_SCALAR_INT_P (op1))
     {
       wide_int result;
-      wide_int wop0 = std::make_pair (op0, mode);
       bool overflow;
       unsigned int bitsize = GET_MODE_BITSIZE (mode);
+      rtx_mode_t pop0 = std::make_pair (op0, mode);
       rtx_mode_t pop1 = std::make_pair (op1, mode); 
 
 #if TARGET_SUPPORTS_WIDE_INT == 0
@@ -3722,67 +3718,67 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       switch (code)
 	{
 	case MINUS:
-	  result = wop0 - pop1;
+	  result = wi::sub (pop0, pop1);
 	  break;
 
 	case PLUS:
-	  result = wop0 + pop1;
+	  result = wi::add (pop0, pop1);
 	  break;
 
 	case MULT:
-	  result = wop0 * pop1;
+	  result = wi::mul (pop0, pop1);
 	  break;
 
 	case DIV:
-	  result = wi::div_trunc (wop0, pop1, SIGNED, &overflow);
+	  result = wi::div_trunc (pop0, pop1, SIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 	  
 	case MOD:
-	  result = wi::mod_trunc (wop0, pop1, SIGNED, &overflow);
+	  result = wi::mod_trunc (pop0, pop1, SIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 
 	case UDIV:
-	  result = wi::div_trunc (wop0, pop1, UNSIGNED, &overflow);
+	  result = wi::div_trunc (pop0, pop1, UNSIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 
 	case UMOD:
-	  result = wi::mod_trunc (wop0, pop1, UNSIGNED, &overflow);
+	  result = wi::mod_trunc (pop0, pop1, UNSIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 
 	case AND:
-	  result = wop0 & pop1;
+	  result = wi::bit_and (pop0, pop1);
 	  break;
 
 	case IOR:
-	  result = wop0 | pop1;
+	  result = wi::bit_or (pop0, pop1);
 	  break;
 
 	case XOR:
-	  result = wop0 ^ pop1;
+	  result = wi::bit_xor (pop0, pop1);
 	  break;
 
 	case SMIN:
-	  result = wi::smin (wop0, pop1);
+	  result = wi::smin (pop0, pop1);
 	  break;
 
 	case SMAX:
-	  result = wi::smax (wop0, pop1);
+	  result = wi::smax (pop0, pop1);
 	  break;
 
 	case UMIN:
-	  result = wi::umin (wop0, pop1);
+	  result = wi::umin (pop0, pop1);
 	  break;
 
 	case UMAX:
-	  result = wi::umax (wop0, pop1);
+	  result = wi::umax (pop0, pop1);
 	  break;
 
 	case LSHIFTRT:
@@ -3801,23 +3797,23 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    switch (code)
 	      {
 	      case LSHIFTRT:
-		result = wi::lrshift (wop0, wop1, bitsize);
+		result = wi::lrshift (pop0, wop1, bitsize);
 		break;
 		
 	      case ASHIFTRT:
-		result = wi::arshift (wop0, wop1, bitsize);
+		result = wi::arshift (pop0, wop1, bitsize);
 		break;
 		
 	      case ASHIFT:
-		result = wi::lshift (wop0, wop1, bitsize);
+		result = wi::lshift (pop0, wop1, bitsize);
 		break;
 		
 	      case ROTATE:
-		result = wi::lrotate (wop0, wop1);
+		result = wi::lrotate (pop0, wop1);
 		break;
 		
 	      case ROTATERT:
-		result = wi::rrotate (wop0, wop1);
+		result = wi::rrotate (pop0, wop1);
 		break;
 
 	      default:
@@ -4645,16 +4641,15 @@ simplify_const_relational_operation (enum rtx_code code,
 	 largest int representable on the target is as good as
 	 infinite.  */
       enum machine_mode cmode = (mode == VOIDmode) ? MAX_MODE_INT : mode;
-      wide_int wo0;
+      rtx_mode_t ptrueop0 = std::make_pair (trueop0, cmode);
       rtx_mode_t ptrueop1 = std::make_pair (trueop1, cmode);
 
-      wo0 = std::make_pair (trueop0, cmode);
-      if (wo0 == ptrueop1)
+      if (wi::eq_p (ptrueop0, ptrueop1))
 	return comparison_result (code, CMP_EQ);
       else
 	{
-	  int cr = wi::lts_p (wo0, ptrueop1) ? CMP_LT : CMP_GT;
-	  cr |= wi::ltu_p (wo0, ptrueop1) ? CMP_LTU : CMP_GTU;
+	  int cr = wi::lts_p (ptrueop0, ptrueop1) ? CMP_LT : CMP_GT;
+	  cr |= wi::ltu_p (ptrueop0, ptrueop1) ? CMP_LTU : CMP_GTU;
 	  return comparison_result (code, cr);
 	}
     }
@@ -5203,7 +5198,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 
 	case CONST_WIDE_INT:
 	  {
-	    wide_int val = std::make_pair (el, innermode);
+	    rtx_mode_t val = std::make_pair (el, innermode);
 	    unsigned char extend = wi::sign_mask (val);
 
 	    for (i = 0; i < elem_bitsize; i += value_bit) 

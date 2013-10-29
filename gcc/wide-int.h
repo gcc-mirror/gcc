@@ -1282,28 +1282,28 @@ wi::uhwi (unsigned HOST_WIDE_INT val, unsigned int precision)
   return hwi_with_prec (val, precision, UNSIGNED);
 }
 
-/* Return a wide int of -1 with precision PREC.  */
+/* Return a wide int of -1 with precision PRECISION.  */
 inline wi::hwi_with_prec
 wi::minus_one (unsigned int precision)
 {
   return wi::shwi (-1, precision);
 }
 
-/* Return a wide int of 0 with precision PREC.  */
+/* Return a wide int of 0 with precision PRECISION.  */
 inline wi::hwi_with_prec
 wi::zero (unsigned int precision)
 {
   return wi::shwi (0, precision);
 }
 
-/* Return a wide int of 1 with precision PREC.  */
+/* Return a wide int of 1 with precision PRECISION.  */
 inline wi::hwi_with_prec
 wi::one (unsigned int precision)
 {
   return wi::shwi (1, precision);
 }
 
-/* Return a wide int of 2 with precision PREC.  */
+/* Return a wide int of 2 with precision PRECISION.  */
 inline wi::hwi_with_prec
 wi::two (unsigned int precision)
 {
@@ -1337,6 +1337,7 @@ wi::int_traits <wi::hwi_with_prec>::
 decompose (HOST_WIDE_INT *scratch, unsigned int precision,
 	   const wi::hwi_with_prec &x)
 {
+  gcc_checking_assert (precision == x.precision);
   scratch[0] = x.val;
   if (x.sgn == SIGNED || x.val >= 0 || precision <= HOST_BITS_PER_WIDE_INT)
     return wi::storage_ref (scratch, 1, precision);
@@ -1440,8 +1441,7 @@ wi::copy (T1 &x, const T2 &y)
   x.set_len (len, y.is_sign_extended);
 }
 
-/* Return true if X fits in a HOST_WIDE_INT with no loss of
-   precision.  */
+/* Return true if X fits in a HOST_WIDE_INT with no loss of precision.  */
 template <typename T>
 inline bool
 wi::fits_shwi_p (const T &x)
@@ -1476,8 +1476,7 @@ wi::neg_p (const T &x, signop sgn)
   return xi.sign_mask () < 0;
 }
 
-/* Return -1 if the top bit of X is set and 0 if the top bit is
-   clear.  */
+/* Return -1 if the top bit of X is set and 0 if the top bit is clear.  */
 template <typename T>
 inline HOST_WIDE_INT
 wi::sign_mask (const T &x)

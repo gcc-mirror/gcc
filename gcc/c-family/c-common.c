@@ -2454,7 +2454,7 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 
   arg0 = c_common_get_narrower (op0, &unsigned0);
   arg1 = c_common_get_narrower (op1, &unsigned1);
-  
+
   /* UNS is 1 if the operation to be done is an unsigned one.  */
   uns = TYPE_UNSIGNED (result_type);
 
@@ -3487,7 +3487,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (mode == DImode)
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-  
+
 #if HOST_BITS_PER_WIDE_INT >= 64
   if (mode == TYPE_MODE (intTI_type_node))
     return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
@@ -4003,7 +4003,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   /* If one of the operands must be floated, we cannot optimize.  */
   real1 = TREE_CODE (TREE_TYPE (primop0)) == REAL_TYPE;
   real2 = TREE_CODE (TREE_TYPE (primop1)) == REAL_TYPE;
-  
+
   /* If first arg is constant, swap the args (changing operation
      so value is preserved), for canonicalization.  Don't do this if
      the second arg is 0.  */
@@ -4518,7 +4518,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case ERROR_MARK:
       return expr;
-      
+
     case INTEGER_CST:
       return integer_zerop (expr) ? truthvalue_false_node
 				  : truthvalue_true_node;
@@ -4776,7 +4776,7 @@ static GTY((param_is (union tree_node))) htab_t type_hash_table;
 
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
- 
+
 alias_set_type
 c_common_get_alias_set (tree t)
 {
@@ -5642,7 +5642,7 @@ c_common_nodes_and_builtins (void)
 	    (build_decl (UNKNOWN_LOCATION,
 		         TYPE_DECL, get_identifier (pname),
 	  	         ptype));
-	  
+
 	}
     }
 
@@ -7108,7 +7108,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
   tree ident = TREE_VALUE (args);
 
   *no_add_attrs = true;
-  
+
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
@@ -10449,7 +10449,7 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
        bool fn(T* mem, T* desired, T* return, weak, success, failure)
      into
        bool fn ((In *)mem, (In *)expected, (In) *desired, weak, succ, fail)  */
-  
+
   p0 = (*params)[0];
   p1 = (*params)[1];
   p2 = (*params)[2];
@@ -11248,7 +11248,7 @@ do_warn_double_promotion (tree result_type, tree type1, tree type2,
    early on, later parts of the compiler can always do the reverse
    translation and get back the corresponding typedef name.  For
    example, given:
-   
+
 	typedef struct S MY_TYPE;
 	MY_TYPE object;
 

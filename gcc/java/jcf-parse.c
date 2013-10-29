@@ -1040,10 +1040,9 @@ get_constant (JCF *jcf, int index)
     case CONSTANT_Long:
       {
 	unsigned HOST_WIDE_INT num;
-	wide_int val;
 
 	num = JPOOL_UINT (jcf, index);
-	val = wi::lshift (wide_int::from (num, 64, SIGNED), 32);
+	wide_int val = wi::lshift (wide_int::from (num, 64, SIGNED), 32);
 	num = JPOOL_UINT (jcf, index + 1);
 	val |= num;
 

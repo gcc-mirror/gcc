@@ -2345,17 +2345,16 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
     {
       tree xoffset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
-      offset_int woffset;
       if (TREE_CODE (xoffset) != INTEGER_CST)
 	{
 	  *known_p = false;
 	  return;
 	}
 
-      woffset = (wi::to_offset (xoffset)
-		 + wi::udiv_trunc (wi::to_offset (DECL_FIELD_BIT_OFFSET (field)),
-				   BITS_PER_UNIT));
-
+      offset_int woffset
+	= (wi::to_offset (xoffset)
+	   + wi::udiv_trunc (wi::to_offset (DECL_FIELD_BIT_OFFSET (field)),
+			     BITS_PER_UNIT));
       if (!wi::fits_uhwi_p (woffset))
 	{
 	  *known_p = false;

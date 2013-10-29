@@ -477,7 +477,6 @@ chrec_fold_multiply (tree type,
 static tree
 tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  wide_int num, denom, idx, di_res;
   bool overflow;
   unsigned int i;
   tree res;
@@ -489,17 +488,17 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
     return fold_convert (type, n);
 
   /* Numerator = n.  */
-  num = n;
+  wide_int num = n;
 
   /* Check that k <= n.  */
   if (wi::ltu_p (num, k))
     return NULL_TREE;
 
   /* Denominator = 2.  */
-  denom = wi::two (TYPE_PRECISION (TREE_TYPE (n)));
+  wide_int denom = wi::two (TYPE_PRECISION (TREE_TYPE (n)));
 
   /* Index = Numerator-1.  */
-  idx = num - 1;
+  wide_int idx = num - 1;
 
   /* Numerator = Numerator*Index = n*(n-1).  */
   num = wi::smul (num, idx, &overflow);
@@ -521,7 +520,7 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
     }
 
   /* Result = Numerator / Denominator.  */
-  di_res = wi::udiv_trunc (num, denom);
+  wide_int di_res = wi::udiv_trunc (num, denom);
   res = wide_int_to_tree (type, di_res);
   return int_fits_type_p (res, type) ? res : NULL_TREE;
 }

@@ -552,13 +552,12 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
   addr_space_t as = TYPE_ADDR_SPACE (type);
   enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   HOST_WIDE_INT coef;
-  offset_int best_mult, amult, amult_neg;
   unsigned best_mult_cost = 0, acost;
   tree mult_elt = NULL_TREE, elt;
   unsigned i, j;
   enum tree_code op_code;
 
-  best_mult = 0;
+  offset_int best_mult = 0;
   for (i = 0; i < addr->n; i++)
     {
       if (!wi::fits_shwi_p (addr->elts[i].coef))
@@ -584,8 +583,8 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
   /* Collect elements multiplied by best_mult.  */
   for (i = j = 0; i < addr->n; i++)
     {
-      amult = offset_int::from (addr->elts[i].coef, SIGNED);
-      amult_neg = -wi::sext (amult, TYPE_PRECISION (addr->type));
+      offset_int amult = offset_int::from (addr->elts[i].coef, SIGNED);
+      offset_int amult_neg = -wi::sext (amult, TYPE_PRECISION (addr->type));
 
       if (amult == best_mult)
 	op_code = PLUS_EXPR;

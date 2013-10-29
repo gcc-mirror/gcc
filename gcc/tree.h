@@ -5356,9 +5356,9 @@ bool
 wi::fits_to_tree_p (const T &x, const_tree type)
 {
   if (TYPE_SIGN (type) == UNSIGNED)
-    return x == zext (x, TYPE_PRECISION (type));
+    return eq_p (x, zext (x, TYPE_PRECISION (type)));
   else
-    return x == sext (x, TYPE_PRECISION (type));
+    return eq_p (x, sext (x, TYPE_PRECISION (type)));
 }
 
 /* Produce the smallest number that is represented in TYPE.  The precision

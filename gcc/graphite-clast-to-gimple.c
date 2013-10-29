@@ -63,11 +63,10 @@ gmp_cst_to_tree (tree type, mpz_t val)
 {
   tree t = type ? type : integer_type_node;
   mpz_t tmp;
-  wide_int wi;
 
   mpz_init (tmp);
   mpz_set (tmp, val);
-  wi = wi::from_mpz (t, tmp, true);
+  wide_int wi = wi::from_mpz (t, tmp, true);
   mpz_clear (tmp);
 
   return wide_int_to_tree (t, wi);

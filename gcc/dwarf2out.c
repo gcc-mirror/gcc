@@ -347,7 +347,6 @@ dump_struct_debug (tree type, enum debug_info_usage usage,
 
 #endif
 
-
 /* Get the number of host wide ints needed to represent the precision
    of the number.  */
 
@@ -13364,8 +13363,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	      for (i = 0, p = array; i < length; i++, p += elt_size)
 		{
 		  rtx elt = CONST_VECTOR_ELT (rtl, i);
-		  wide_int val = std::make_pair (elt, imode);
-		  insert_wide_int (val, p);
+		  insert_wide_int (std::make_pair (elt, imode), p);
 		}
 	      break;
 
@@ -15110,8 +15108,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
-		wide_int val = std::make_pair (elt, imode);
-		insert_wide_int (val, p);
+		insert_wide_int (std::make_pair (elt, imode), p);
 	      }
 	    break;
 

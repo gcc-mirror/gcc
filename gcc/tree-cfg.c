@@ -1306,12 +1306,12 @@ group_case_labels_stmt (gimple stmt)
 	{
 	  tree merge_case = gimple_switch_label (stmt, i);
 	  basic_block merge_bb = label_to_block (CASE_LABEL (merge_case));
-	  wide_int bhp1 = wide_int (base_high) + 1;
+	  wide_int bhp1 = wi::add (base_high, 1);
 
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_bb == base_bb
-	      && wide_int (CASE_LOW (merge_case)) == bhp1)
+	      && wi::eq_p (CASE_LOW (merge_case), bhp1))
 	    {
 	      base_high = CASE_HIGH (merge_case) ?
 		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);

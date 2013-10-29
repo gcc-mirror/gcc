@@ -115,7 +115,6 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
   unsigned int fbit;
   enum fixed_value_range_code temp;
   bool fail;
-  wide_int w;
 
   f->mode = mode;
   fbit = GET_MODE_FBIT (mode);
@@ -130,7 +129,8 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
 	     "large fixed-point constant implicitly truncated to fixed-point type");
   real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
-  w = real_to_integer (&fixed_value, &fail, GET_MODE_PRECISION (mode));
+  wide_int w = real_to_integer (&fixed_value, &fail,
+				GET_MODE_PRECISION (mode));
   f->data.low = w.elt (0);
   f->data.high = w.elt (1);
 
@@ -1049,14 +1049,14 @@ fixed_convert_from_real (FIXED_VALUE_TYPE *f, enum machine_mode mode,
   unsigned int fbit = GET_MODE_FBIT (mode);
   enum fixed_value_range_code temp;
   bool fail;
-  wide_int w;
 
   real_value = *a;
   f->mode = mode;
   real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
 
-  w = real_to_integer (&fixed_value, &fail, GET_MODE_PRECISION (mode));
+  wide_int w = real_to_integer (&fixed_value, &fail,
+				GET_MODE_PRECISION (mode));
   f->data.low = w.elt (0);
   f->data.high = w.elt (1);
   temp = check_real_for_fixed_mode (&real_value, mode);

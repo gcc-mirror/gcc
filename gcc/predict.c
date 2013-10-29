@@ -1298,7 +1298,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
     {
       int probability;
       bool overflow, overall_overflow = false;
-      widest_int compare_count, tem, loop_count;
+      widest_int compare_count, tem;
 
       widest_int loop_bound = wi::to_widest (loop_bound_var);
       widest_int compare_bound = wi::to_widest (compare_var);
@@ -1308,7 +1308,8 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       /* (loop_bound - base) / compare_step */
       tem = wi::sub (loop_bound, base, SIGNED, &overflow);
       overall_overflow |= overflow;
-      loop_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
+      widest_int loop_count = wi::div_trunc (tem, compare_step, SIGNED,
+					     &overflow);
       overall_overflow |= overflow;
 
       if (!wi::neg_p (compare_step)

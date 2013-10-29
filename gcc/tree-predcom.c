@@ -919,10 +919,9 @@ static void
 add_ref_to_chain (chain_p chain, dref ref)
 {
   dref root = get_chain_root (chain);
-  widest_int dist;
 
   gcc_assert (wi::les_p (root->offset, ref->offset));
-  dist = ref->offset - root->offset;
+  widest_int dist = ref->offset - root->offset;
   if (wi::leu_p (MAX_DISTANCE, dist))
     {
       free (ref);

@@ -874,7 +874,6 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   tree ptrtype1, dbase2;
   HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
   HOST_WIDE_INT doffset1, doffset2;
-  offset_int moff;
 
   gcc_checking_assert ((TREE_CODE (base1) == MEM_REF
 			|| TREE_CODE (base1) == TARGET_MEM_REF)
@@ -884,7 +883,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
-  moff = mem_ref_offset (base1);
+  offset_int moff = mem_ref_offset (base1);
   moff = wi::lshift (moff, (BITS_PER_UNIT == 8
 			    ? 3 : exact_log2 (BITS_PER_UNIT)));
   if (wi::neg_p (moff))

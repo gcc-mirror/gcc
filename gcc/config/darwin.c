@@ -1286,14 +1286,13 @@ darwin_mergeable_constant_section (tree exp,
 
       if (TREE_CODE (size) == INTEGER_CST)
 	{
-	  wide_int wsize = size;
-	  if (wsize == 4)
+	  if (wi::eq_p (size, 4))
 	    return darwin_sections[literal4_section];
-	  else if (wsize == 8)
+	  else if (wi::eq_p (size, 8))
 	    return darwin_sections[literal8_section];
 	  else if (HAVE_GAS_LITERAL16
 		   && TARGET_64BIT
-		   && wsize == 16)
+		   && wi::eq_p (size, 16))
 	    return darwin_sections[literal16_section];
 	}
     }

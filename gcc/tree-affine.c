@@ -33,10 +33,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
 widest_int
-wide_int_ext_for_comb (widest_int cst, aff_tree *comb)
+wide_int_ext_for_comb (const widest_int &cst, aff_tree *comb)
 {
   return wi::sext (cst, TYPE_PRECISION (comb->type));
 }
+
 /* Initializes affine combination COMB so that its value is zero in TYPE.  */
 
 static void
@@ -75,11 +76,11 @@ aff_combination_elt (aff_tree *comb, tree type, tree elt)
 /* Scales COMB by SCALE.  */
 
 void
-aff_combination_scale (aff_tree *comb, widest_int scale)
+aff_combination_scale (aff_tree *comb, const widest_int &scale_in)
 {
   unsigned i, j;
 
-  scale = wide_int_ext_for_comb (scale, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
   if (scale == 1)
     return;
 
@@ -92,9 +93,8 @@ aff_combination_scale (aff_tree *comb, widest_int scale)
   comb->offset = wide_int_ext_for_comb (scale * comb->offset, comb);
   for (i = 0, j = 0; i < comb->n; i++)
     {
-      widest_int new_coef;
-
-      new_coef = wide_int_ext_for_comb (scale * comb->elts[i].coef, comb);
+      widest_int new_coef
+	= wide_int_ext_for_comb (scale * comb->elts[i].coef, comb);
       /* A coefficient may become zero due to overflow.  Remove the zero
 	 elements.  */
       if (new_coef == 0)
@@ -126,21 +126,20 @@ aff_combination_scale (aff_tree *comb, widest_int scale)
 /* Adds ELT * SCALE to COMB.  */
 
 void
-aff_combination_add_elt (aff_tree *comb, tree elt, widest_int scale)
+aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
 {
   unsigned i;
   tree type;
 
-  scale = wide_int_ext_for_comb (scale, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
   if (scale == 0)
     return;
 
   for (i = 0; i < comb->n; i++)
     if (operand_equal_p (comb->elts[i].val, elt, 0))
       {
-	widest_int new_coef;
-
-	new_coef = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb);
+	widest_int new_coef
+	  = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb);
 	if (new_coef != 0)
 	  {
 	    comb->elts[i].coef = new_coef;
@@ -233,10 +232,9 @@ aff_combination_convert (aff_tree *comb, tree type)
   comb->offset = wide_int_ext_for_comb (comb->offset, comb);
   for (i = j = 0; i < comb->n; i++)
     {
-      widest_int new_coef = comb->elts[i].coef;
-      if (new_coef == 0)
+      if (comb->elts[i].coef == 0)
 	continue;
-      comb->elts[j].coef = new_coef;
+      comb->elts[j].coef = comb->elts[i].coef;
       comb->elts[j].val = fold_convert (type, comb->elts[i].val);
       j++;
     }
@@ -368,7 +366,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
    combination COMB.  */
 
 static tree
-add_elt_to_tree (tree expr, tree type, tree elt, widest_int scale,
+add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in,
 		 aff_tree *comb ATTRIBUTE_UNUSED)
 {
   enum tree_code code;
@@ -376,7 +374,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, widest_int scale,
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
 
-  scale = wide_int_ext_for_comb (scale, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
 
   if (scale == -1
       && POINTER_TYPE_P (TREE_TYPE (elt)))
@@ -760,7 +758,7 @@ free_affine_expand_cache (struct pointer_map_t **cache)
    is set to true.  */
 
 static bool
-wide_int_constant_multiple_p (widest_int val, widest_int div,
+wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
 			      bool *mult_set, widest_int *mult)
 {
   widest_int rem, cst;
@@ -911,24 +909,20 @@ bool
 aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
 			   const widest_int &size2)
 {
-  widest_int d, bound;
-
   /* Unless the difference is a constant, we fail.  */
   if (diff->n != 0)
     return false;
 
-  d = diff->offset;
-  if (wi::neg_p (d))
+  if (wi::neg_p (diff->offset))
     {
       /* The second object is before the first one, we succeed if the last
 	 element of the second object is before the start of the first one.  */
-      bound = d + size2 - 1;
-      return wi::neg_p (bound);
+      return wi::neg_p (diff->offset + size2 - 1);
     }
   else
     {
       /* We succeed if the second object starts after the first one ends.  */
-      return wi::les_p (size1, d);
+      return wi::les_p (size1, diff->offset);
     }
 }
 
