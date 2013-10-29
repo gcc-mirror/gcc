@@ -1,3 +1,25 @@
+2013-10-29  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr56812.cc: Adjust with respect to -fvect-cost-model
+	changes.
+	* gcc.dg/vect/bb-slp-32.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/i386-costmodel-vect.exp: Likewise.
+	* gcc.dg/vect/costmodel/ppc/ppc-costmodel-vect.exp: Likewise.
+	* gcc.dg/vect/costmodel/spu/spu-costmodel-vect.exp: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/x86_64-costmodel-vect.exp: Likewise.
+	* gcc.target/powerpc/crypto-builtin-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-5.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-1.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-5.c: Likewise.
+	* gfortran.dg/vect/vect.exp: Likewise.
+
 2013-10-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/gcc-bug-i.c: Add little endian variant.

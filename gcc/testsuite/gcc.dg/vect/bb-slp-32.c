@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-additional-options "-fvect-cost-model" } */
+/* { dg-additional-options "-fvect-cost-model=dynamic" } */
 
 void bar (int *);
 int foo (int *p)

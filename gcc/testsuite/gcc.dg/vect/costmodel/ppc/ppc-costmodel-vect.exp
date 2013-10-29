@@ -33,7 +33,7 @@ if ![is-effective-target powerpc_altivec_ok] {
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model" "-fno-common"
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model=dynamic" "-fno-common"
 
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.

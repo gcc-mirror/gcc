@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_hw_misalign } */
-/* { dg-additional-options "-O3 -funroll-loops -fvect-cost-model" } */
+/* { dg-additional-options "-O3 -funroll-loops -fvect-cost-model=dynamic" } */
 
 class mydata {
 public:
