@@ -1223,20 +1223,20 @@ split_function (struct split_point *split_point)
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */
-  if (DECL_BUILT_IN (node->symbol.decl))
+  if (DECL_BUILT_IN (node->decl))
     {
-      DECL_BUILT_IN_CLASS (node->symbol.decl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (node->symbol.decl) = (enum built_in_function) 0;
+      DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
+      DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
     }
   /* If the original function is declared inline, there is no point in issuing
      a warning for the non-inlinable part.  */
-  DECL_NO_INLINE_WARNING_P (node->symbol.decl) = 1;
+  DECL_NO_INLINE_WARNING_P (node->decl) = 1;
   cgraph_node_remove_callees (cur_node);
-  ipa_remove_all_references (&cur_node->symbol.ref_list);
+  ipa_remove_all_references (&cur_node->ref_list);
   if (!split_part_return_p)
-    TREE_THIS_VOLATILE (node->symbol.decl) = 1;
+    TREE_THIS_VOLATILE (node->decl) = 1;
   if (dump_file)
-    dump_function_to_file (node->symbol.decl, dump_file, dump_flags);
+    dump_function_to_file (node->decl, dump_file, dump_flags);
 
   /* Create the basic block we place call into.  It is the entry basic block
      split after last label.  */
@@ -1261,7 +1261,7 @@ split_function (struct split_point *split_point)
 					false, GSI_CONTINUE_LINKING);
 	args_to_pass[i] = arg;
       }
-  call = gimple_build_call_vec (node->symbol.decl, args_to_pass);
+  call = gimple_build_call_vec (node->decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
   args_to_pass.release ();
 
@@ -1288,7 +1288,7 @@ split_function (struct split_point *split_point)
 	    continue;
 
 	  if (debug_args == NULL)
-	    debug_args = decl_debug_args_insert (node->symbol.decl);
+	    debug_args = decl_debug_args_insert (node->decl);
 	  ddecl = make_node (DEBUG_EXPR_DECL);
 	  DECL_ARTIFICIAL (ddecl) = 1;
 	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
@@ -1314,8 +1314,8 @@ split_function (struct split_point *split_point)
       gimple_stmt_iterator cgsi;
       gimple def_temp;
 
-      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
-      var = BLOCK_VARS (DECL_INITIAL (node->symbol.decl));
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      var = BLOCK_VARS (DECL_INITIAL (node->decl));
       i = vec_safe_length (*debug_args);
       cgsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
       do
@@ -1515,7 +1515,7 @@ execute_split_functions (void)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");
       return 0;
     }
-  if (DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl))
+  if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: disregarding inline limits.\n");
@@ -1549,8 +1549,8 @@ execute_split_functions (void)
   if ((!node->callers
        /* Local functions called once will be completely inlined most of time.  */
        || (!node->callers->next_caller && node->local.local))
-      && !node->symbol.address_taken
-      && (!flag_lto || !node->symbol.externally_visible))
+      && !node->address_taken
+      && (!flag_lto || !node->externally_visible))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not called directly "

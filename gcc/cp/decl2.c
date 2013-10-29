@@ -1747,7 +1747,7 @@ maybe_make_one_only (tree decl)
           struct varpool_node *node = varpool_node_for_decl (decl);
 	  DECL_COMDAT (decl) = 1;
 	  /* Mark it needed so we don't forget to emit it.  */
-          node->symbol.forced_by_abi = true;
+          node->forced_by_abi = true;
 	  TREE_USED (decl) = 1;
 	}
     }
@@ -1845,7 +1845,7 @@ import_export_class (tree ctype)
 static bool
 var_finalized_p (tree var)
 {
-  return varpool_node_for_decl (var)->symbol.definition;
+  return varpool_node_for_decl (var)->definition;
 }
 
 /* DECL is a VAR_DECL or FUNCTION_DECL which, for whatever reason,
@@ -1862,14 +1862,14 @@ mark_needed (tree decl)
 	 functions can be marked reachable, just use the external
 	 definition.  */
       struct cgraph_node *node = cgraph_get_create_node (decl);
-      node->symbol.forced_by_abi = true;
+      node->forced_by_abi = true;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       struct varpool_node *node = varpool_node_for_decl (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
-      node->symbol.forced_by_abi = true;
+      node->forced_by_abi = true;
     }
 }
 
@@ -1979,7 +1979,7 @@ maybe_emit_vtables (tree ctype)
 	{
 	  current = varpool_node_for_decl (vtbl);
 	  if (last)
-	    symtab_add_to_same_comdat_group ((symtab_node) current, (symtab_node) last);
+	    symtab_add_to_same_comdat_group (current, last);
 	  last = current;
 	}
     }
@@ -3744,7 +3744,7 @@ collect_candidates_for_java_method_aliases (void)
 
   FOR_EACH_FUNCTION (node)
     {
-      tree fndecl = node->symbol.decl;
+      tree fndecl = node->decl;
 
       if (DECL_CLASS_SCOPE_P (fndecl)
 	  && TYPE_FOR_JAVA (DECL_CONTEXT (fndecl))
@@ -3777,7 +3777,7 @@ build_java_method_aliases (struct pointer_set_t *candidates)
 
   FOR_EACH_FUNCTION (node)
     {
-      tree fndecl = node->symbol.decl;
+      tree fndecl = node->decl;
 
       if (TREE_ASM_WRITTEN (fndecl)
 	  && pointer_set_contains (candidates, fndecl))
@@ -3958,7 +3958,7 @@ collect_all_refs (const char *source_file)
 static bool
 clear_decl_external (struct cgraph_node *node, void * /*data*/)
 {
-  DECL_EXTERNAL (node->symbol.decl) = 0;
+  DECL_EXTERNAL (node->decl) = 0;
   return false;
 }
 
@@ -4276,7 +4276,7 @@ cp_write_global_declarations (void)
 	      struct cgraph_node *node, *next;
 
 	      node = cgraph_get_node (decl);
-	      if (node->symbol.cpp_implicit_alias)
+	      if (node->cpp_implicit_alias)
 		node = cgraph_alias_target (node);
 
 	      cgraph_for_node_and_aliases (node, clear_decl_external,
@@ -4284,10 +4284,10 @@ cp_write_global_declarations (void)
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
-	      if (node->symbol.same_comdat_group)
-		for (next = cgraph (node->symbol.same_comdat_group);
+	      if (node->same_comdat_group)
+		for (next = cgraph (node->same_comdat_group);
 		     next != node;
-		     next = cgraph (next->symbol.same_comdat_group))
+		     next = cgraph (next->same_comdat_group))
 	          cgraph_for_node_and_aliases (next, clear_decl_external,
 					       NULL, true);
 	    }
@@ -4299,7 +4299,7 @@ cp_write_global_declarations (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
-	      && !cgraph_get_node (decl)->symbol.definition)
+	      && !cgraph_get_node (decl)->definition)
 	    {
 	      /* We will output the function; no longer consider it in this
 		 loop.  */

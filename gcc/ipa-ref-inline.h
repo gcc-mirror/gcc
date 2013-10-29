@@ -54,7 +54,7 @@ ipa_ref_referring_varpool_node (struct ipa_ref *ref)
 static inline struct ipa_ref_list *
 ipa_ref_referring_ref_list (struct ipa_ref *ref)
 {
-  return &ref->referring->symbol.ref_list;
+  return &ref->referring->ref_list;
 }
 
 /* Return reference list REF is in.  */
@@ -62,7 +62,7 @@ ipa_ref_referring_ref_list (struct ipa_ref *ref)
 static inline struct ipa_ref_list *
 ipa_ref_referred_ref_list (struct ipa_ref *ref)
 {
-  return &ref->referred->symbol.ref_list;
+  return &ref->referred->ref_list;
 }
 
 /* Return first reference in LIST or NULL if empty.  */

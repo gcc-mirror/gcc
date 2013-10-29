@@ -1746,7 +1746,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      /* We could also just rescale the frequency, but
 		         doing so would introduce roundoff errors and make
 			 verifier unhappy.  */
-		      new_freq  = compute_call_stmt_bb_frequency (id->dst_node->symbol.decl,
+		      new_freq  = compute_call_stmt_bb_frequency (id->dst_node->decl,
 								  copy_basic_block);
 
 		      /* Speculative calls consist of two edges - direct and indirect.
@@ -1771,7 +1771,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 							       (old_edge->frequency + indirect->frequency)),
 							 CGRAPH_FREQ_MAX);
 			    }
-			  ipa_clone_ref (ref, (symtab_node)id->dst_node, stmt);
+			  ipa_clone_ref (ref, id->dst_node, stmt);
 			}
 		      else
 			{
@@ -1816,7 +1816,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      if ((!edge
 		   || (edge->indirect_inlining_edge
 		       && id->transform_call_graph_edges == CB_CGE_MOVE_CLONES))
-		  && id->dst_node->symbol.definition
+		  && id->dst_node->definition
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
 		  struct cgraph_node *dest = cgraph_get_node (fn);
@@ -1827,21 +1827,21 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		     producing dead clone (for further cloning).  In all
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
-		  gcc_assert (!dest->symbol.definition
-			      || dest->symbol.address_taken
-		  	      || !id->src_node->symbol.definition
-			      || !id->dst_node->symbol.definition);
+		  gcc_assert (!dest->definition
+			      || dest->address_taken
+		  	      || !id->src_node->definition
+			      || !id->dst_node->definition);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		    cgraph_create_edge_including_clones
 		      (id->dst_node, dest, orig_stmt, stmt, bb->count,
-		       compute_call_stmt_bb_frequency (id->dst_node->symbol.decl,
+		       compute_call_stmt_bb_frequency (id->dst_node->decl,
 		       				       copy_basic_block),
 		       CIF_ORIGINALLY_INDIRECT_CALL);
 		  else
 		    cgraph_create_edge (id->dst_node, dest, stmt,
 					bb->count,
 					compute_call_stmt_bb_frequency
-					  (id->dst_node->symbol.decl,
+					  (id->dst_node->decl,
 					   copy_basic_block))->inline_failed
 		      = CIF_ORIGINALLY_INDIRECT_CALL;
 		  if (dump_file)
@@ -3745,7 +3745,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || !(node = cgraph_get_node (decl)) || node->symbol.definition)
+	if (!decl || !(node = cgraph_get_node (decl)) || node->definition)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
@@ -4017,7 +4017,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      If we cannot, then there is no hope of inlining the function.  */
   if (cg_edge->indirect_unknown_callee)
     goto egress;
-  fn = cg_edge->callee->symbol.decl;
+  fn = cg_edge->callee->decl;
   gcc_checking_assert (fn);
 
   /* If FN is a declaration of a function in a nested scope that was
@@ -4077,11 +4077,11 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	}
       goto egress;
     }
-  fn = cg_edge->callee->symbol.decl;
+  fn = cg_edge->callee->decl;
   cgraph_get_body (cg_edge->callee);
 
 #ifdef ENABLE_CHECKING
-  if (cg_edge->callee->symbol.decl != id->dst_node->symbol.decl)
+  if (cg_edge->callee->decl != id->dst_node->decl)
     verify_cgraph_node (cg_edge->callee);
 #endif
 
@@ -4089,9 +4089,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   id->eh_lp_nr = lookup_stmt_eh_lp (stmt);
 
   /* Update the callers EH personality.  */
-  if (DECL_FUNCTION_PERSONALITY (cg_edge->callee->symbol.decl))
-    DECL_FUNCTION_PERSONALITY (cg_edge->caller->symbol.decl)
-      = DECL_FUNCTION_PERSONALITY (cg_edge->callee->symbol.decl);
+  if (DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl))
+    DECL_FUNCTION_PERSONALITY (cg_edge->caller->decl)
+      = DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl);
 
   /* Split the block holding the GIMPLE_CALL.  */
   e = split_block (bb, stmt);
@@ -4339,7 +4339,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      variables in the function when the blocks get blown away as soon as we
      remove the cgraph node.  */
   if (gimple_block (stmt))
-    (*debug_hooks->outlining_inline_function) (cg_edge->callee->symbol.decl);
+    (*debug_hooks->outlining_inline_function) (cg_edge->callee->decl);
 
   /* Update callgraph if needed.  */
   cgraph_remove_node (cg_edge->callee);
@@ -4491,7 +4491,7 @@ optimize_inline_calls (tree fn)
   memset (&id, 0, sizeof (id));
 
   id.src_node = id.dst_node = cgraph_get_node (fn);
-  gcc_assert (id.dst_node->symbol.definition);
+  gcc_assert (id.dst_node->definition);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
   if (current_function_decl)
@@ -5077,7 +5077,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	      struct cgraph_edge *e;
 	      struct cgraph_node *node;
 
-	      ipa_remove_stmt_references ((symtab_node)id->dst_node, gsi_stmt (bsi));
+	      ipa_remove_stmt_references (id->dst_node, gsi_stmt (bsi));
 
 	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
 		  &&(e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
@@ -5091,7 +5091,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 		  && id->dst_node->clones)
 		for (node = id->dst_node->clones; node != id->dst_node;)
 		  {
-		    ipa_remove_stmt_references ((symtab_node)node, gsi_stmt (bsi));
+		    ipa_remove_stmt_references (node, gsi_stmt (bsi));
 		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
 			&& (e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
 		      {
@@ -5414,7 +5414,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   pointer_set_destroy (id.statements_to_fold);
   fold_cond_expr_cond ();
   delete_unreachable_blocks_update_callgraph (&id);
-  if (id.dst_node->symbol.definition)
+  if (id.dst_node->definition)
     cgraph_rebuild_references ();
   update_ssa (TODO_update_ssa);
 

@@ -93,14 +93,14 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       || TREE_CODE (from_decl) != VAR_DECL
       || !DECL_EXTERNAL (from_decl)
       || (flag_ltrans
-	  && symtab_get_node (from_decl)->symbol.in_other_partition))
+	  && symtab_get_node (from_decl)->in_other_partition))
     return true;
   /* We are folding reference from external vtable.  The vtable may reffer
      to a symbol keyed to other compilation unit.  The other compilation
      unit may be in separate DSO and the symbol may be hidden.  */
   if (DECL_VISIBILITY_SPECIFIED (decl)
       && DECL_EXTERNAL (decl)
-      && (!(snode = symtab_get_node (decl)) || !snode->symbol.in_other_partition))
+      && (!(snode = symtab_get_node (decl)) || !snode->in_other_partition))
     return false;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
@@ -131,7 +131,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
          The second is important when devirtualization happens during final
          compilation stage when making a new reference no longer makes callee
          to be compiled.  */
-      if (!node || !node->symbol.definition || node->global.inlined_to)
+      if (!node || !node->definition || node->global.inlined_to)
 	{
 	  gcc_checking_assert (!TREE_ASM_WRITTEN (decl));
 	  return false;
@@ -140,7 +140,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       vnode = varpool_get_node (decl);
-      if (!vnode || !vnode->symbol.definition)
+      if (!vnode || !vnode->definition)
 	{
 	  gcc_checking_assert (!TREE_ASM_WRITTEN (decl));
 	  return false;

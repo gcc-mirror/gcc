@@ -2357,7 +2357,7 @@ mark_decl_referenced (tree decl)
 	 definition.  */
       struct cgraph_node *node = cgraph_get_create_node (decl);
       if (!DECL_EXTERNAL (decl)
-	  && !node->symbol.definition)
+	  && !node->definition)
 	cgraph_mark_force_output_node (node);
     }
   else if (TREE_CODE (decl) == VAR_DECL)
@@ -2365,7 +2365,7 @@ mark_decl_referenced (tree decl)
       struct varpool_node *node = varpool_node_for_decl (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
-      node->symbol.force_output = true;
+      node->force_output = true;
     }
   /* else do nothing - we can get various sorts of CST nodes here,
      which do not need to be marked.  */
@@ -5384,7 +5384,7 @@ find_decl (tree target)
 {
   symtab_node node = symtab_node_for_asm (target);
   if (node)
-    return node->symbol.decl;
+    return node->decl;
   return NULL_TREE;
 }
 
@@ -5669,9 +5669,9 @@ assemble_alias (tree decl, tree target)
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_get_create_node (decl)->symbol.alias = true;
+    cgraph_get_create_node (decl)->alias = true;
   else
-    varpool_node_for_decl (decl)->symbol.alias = true;
+    varpool_node_for_decl (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
@@ -5774,12 +5774,12 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
 	 TM_GETTMCLONE.  If neither of these are true, we didn't generate
 	 a clone, and we didn't call it indirectly... no sense keeping it
 	 in the clone table.  */
-      if (!dst_n || !dst_n->symbol.definition)
+      if (!dst_n || !dst_n->definition)
 	continue;
 
       /* This covers the case where we have optimized the original
 	 function away, and only access the transactional clone.  */
-      if (!src_n || !src_n->symbol.definition)
+      if (!src_n || !src_n->definition)
 	continue;
 
       if (!switched)
@@ -6724,20 +6724,20 @@ default_binds_local_p_1 (const_tree exp, int shlib)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
       struct varpool_node *vnode = varpool_get_node (exp);
-      if (vnode && resolution_local_p (vnode->symbol.resolution))
+      if (vnode && resolution_local_p (vnode->resolution))
 	resolved_locally = true;
       if (vnode
-	  && resolution_to_local_definition_p (vnode->symbol.resolution))
+	  && resolution_to_local_definition_p (vnode->resolution))
 	resolved_to_local_def = true;
     }
   else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
     {
       struct cgraph_node *node = cgraph_get_node (exp);
       if (node
-	  && resolution_local_p (node->symbol.resolution))
+	  && resolution_local_p (node->resolution))
 	resolved_locally = true;
       if (node
-	  && resolution_to_local_definition_p (node->symbol.resolution))
+	  && resolution_to_local_definition_p (node->resolution))
 	resolved_to_local_def = true;
     }
 
@@ -6818,15 +6818,15 @@ decl_binds_to_current_def_p (tree decl)
     {
       struct varpool_node *vnode = varpool_get_node (decl);
       if (vnode
-	  && vnode->symbol.resolution != LDPR_UNKNOWN)
-	return resolution_to_local_definition_p (vnode->symbol.resolution);
+	  && vnode->resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (vnode->resolution);
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_get_node (decl);
       if (node
-	  && node->symbol.resolution != LDPR_UNKNOWN)
-	return resolution_to_local_definition_p (node->symbol.resolution);
+	  && node->resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (node->resolution);
     }
   /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
      binds locally but still can be overwritten), DECL_COMMON (can be merged

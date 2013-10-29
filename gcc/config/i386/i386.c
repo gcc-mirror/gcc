@@ -30154,7 +30154,7 @@ ix86_get_function_versions_dispatcher (void *decl)
   while (default_version_info != NULL)
     {
       if (is_function_default_version
-	    (default_version_info->this_node->symbol.decl))
+	    (default_version_info->this_node->decl))
         break;
       default_version_info = default_version_info->next;
     }
@@ -30184,7 +30184,7 @@ ix86_get_function_versions_dispatcher (void *decl)
       struct cgraph_function_version_info *dispatcher_version_info = NULL;
 
       /* Right now, the dispatching is done via ifunc.  */
-      dispatch_decl = make_dispatcher_decl (default_node->symbol.decl);
+      dispatch_decl = make_dispatcher_decl (default_node->decl);
 
       dispatcher_node = cgraph_get_create_node (dispatch_decl);
       gcc_assert (dispatcher_node != NULL);
@@ -30192,7 +30192,7 @@ ix86_get_function_versions_dispatcher (void *decl)
       dispatcher_version_info
 	= insert_new_cgraph_node_version (dispatcher_node);
       dispatcher_version_info->next = default_version_info;
-      dispatcher_node->symbol.definition = 1;
+      dispatcher_node->definition = 1;
 
       /* Set the dispatcher for all the versions.  */
       it_v = default_version_info;
@@ -30205,7 +30205,7 @@ ix86_get_function_versions_dispatcher (void *decl)
   else
 #endif
     {
-      error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
+      error_at (DECL_SOURCE_LOCATION (default_node->decl),
 		"multiversioning needs ifunc which is not supported "
 		"on this target");
     }
@@ -30344,13 +30344,13 @@ ix86_generate_version_dispatcher_body (void *node_p)
     return node_version_info->dispatcher_resolver;
 
   /* The first version in the chain corresponds to the default version.  */
-  default_ver_decl = node_version_info->next->this_node->symbol.decl;
+  default_ver_decl = node_version_info->next->this_node->decl;
 
   /* node is going to be an alias, so remove the finalized bit.  */
-  node->symbol.definition = false;
+  node->definition = false;
 
   resolver_decl = make_resolver_func (default_ver_decl,
-				      node->symbol.decl, &empty_bb);
+				      node->decl, &empty_bb);
 
   node_version_info->dispatcher_resolver = resolver_decl;
 
@@ -30367,10 +30367,10 @@ ix86_generate_version_dispatcher_body (void *node_p)
 	 not.  This happens for methods in derived classes that override
 	 virtual methods in base classes but are not explicitly marked as
 	 virtual.  */
-      if (DECL_VINDEX (versn->symbol.decl))
+      if (DECL_VINDEX (versn->decl))
 	sorry ("Virtual function multiversioning not supported");
 
-      fn_ver_vec.safe_push (versn->symbol.decl);
+      fn_ver_vec.safe_push (versn->decl);
     }
 
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);

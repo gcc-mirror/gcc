@@ -2602,7 +2602,7 @@ tree_could_trap_p (tree expr)
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
 	  node = cgraph_function_node (cgraph_get_node (expr), NULL);
-	  if (node && node->symbol.in_other_partition)
+	  if (node && node->in_other_partition)
 	    return false;
 	  return true;
 	}
@@ -2618,7 +2618,7 @@ tree_could_trap_p (tree expr)
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
 	  node = varpool_variable_node (varpool_get_node (expr), NULL);
-	  if (node && node->symbol.in_other_partition)
+	  if (node && node->in_other_partition)
 	    return false;
 	  return true;
 	}

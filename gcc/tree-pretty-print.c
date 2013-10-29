@@ -3390,7 +3390,7 @@ dump_function_header (FILE *dump_file, tree fdecl, int flags)
     fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
-      fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->symbol.order,
+      fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->order,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"
                : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED

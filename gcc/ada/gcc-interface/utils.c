@@ -5633,7 +5633,7 @@ gnat_write_global_declarations (void)
       TREE_STATIC (dummy_global) = 1;
       TREE_ASM_WRITTEN (dummy_global) = 1;
       node = varpool_node_for_decl (dummy_global);
-      node->symbol.force_output = 1;
+      node->force_output = 1;
 
       while (!types_used_by_cur_var_decl->is_empty ())
 	{
