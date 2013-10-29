@@ -293,6 +293,15 @@ struct type {
       type_p lang_struct;
 
       type_p base_class; /* the parent class, if any.  */
+
+      /* The following two fields are not serialized in state files, and
+	 are instead reconstructed on load.  */
+
+      /* The head of a singly-linked list of immediate descendents in
+	 the inheritance hierarchy.  */
+      type_p first_subclass;
+      /* The next in that list.  */
+      type_p next_sibling_class;
     } s;
 
     /* when TYPE_SCALAR: */
@@ -424,6 +433,7 @@ extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
 extern void do_scalar_typedef (const char *s, struct fileloc *pos);
 extern type_p resolve_typedef (const char *s, struct fileloc *pos);
+extern void add_subclass (type_p base, type_p subclass);
 extern type_p new_structure (const char *name, enum typekind kind,
 			     struct fileloc *pos, pair_p fields,
 			     options_p o, type_p base);

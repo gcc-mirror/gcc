@@ -497,6 +497,13 @@ The base class and its discriminator must be identified using the ``desc''
 option.  Each concrete subclass must use the ``tag'' option to identify
 which value of the discriminator it corresponds to.
 
+Every class in the hierarchy must have a @code{GTY(())} marker, as
+gengtype will only attempt to parse classes that have such a marker
+@footnote{Classes lacking such a marker will not be identified as being
+part of the hierarchy, and so the marking routines will not handle them,
+leading to a assertion failure within the marking routines due to an
+unknown tag value (assuming that assertions are enabled).}.
+
 @smallexample
 class GTY((desc("%h.kind"), tag("0"))) example_base
 @{

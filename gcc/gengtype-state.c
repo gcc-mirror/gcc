@@ -1615,6 +1615,8 @@ read_state_struct_type (type_p type)
       read_state_lang_bitmap (&(type->u.s.bitmap));
       read_state_type (&(type->u.s.lang_struct));
       read_state_type (&(type->u.s.base_class));
+      if (type->u.s.base_class)
+	add_subclass (type->u.s.base_class, type);
     }
   else
     {
