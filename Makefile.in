@@ -575,7 +575,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)$(HOST_LIB_PATH_libcilkrts)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -596,6 +596,10 @@ TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
 @if target-libgomp
 TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
 @endif target-libgomp
+
+@if target-libcilkrts
+TARGET_LIB_PATH_libcilkrts = $$r/$(TARGET_SUBDIR)/libcilkrts/.libs:
+@endif target-libcilkrts
 
 @if target-libitm
 TARGET_LIB_PATH_libitm = $$r/$(TARGET_SUBDIR)/libitm/.libs:
@@ -942,6 +946,7 @@ configure-target:  \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
+    maybe-configure-target-libcilkrts \
     maybe-configure-target-libgomp \
     maybe-configure-target-libitm \
     maybe-configure-target-libatomic
@@ -1100,6 +1105,7 @@ all-target: maybe-all-target-libada
 @if target-libgomp-no-bootstrap
 all-target: maybe-all-target-libgomp
 @endif target-libgomp-no-bootstrap
+all-target: maybe-all-target-libcilkrts
 all-target: maybe-all-target-libitm
 all-target: maybe-all-target-libatomic
 
@@ -1925,6 +1931,7 @@ mostlyclean-target: maybe-mostlyclean-target-boehm-gc
 mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgomp
+mostlyclean-target: maybe-mostlyclean-target-libcilkrts
 mostlyclean-target: maybe-mostlyclean-target-libitm
 mostlyclean-target: maybe-mostlyclean-target-libatomic
 
@@ -2007,6 +2014,7 @@ clean-target: maybe-clean-target-boehm-gc
 clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgomp
+clean-target: maybe-clean-target-libcilkrts
 clean-target: maybe-clean-target-libitm
 clean-target: maybe-clean-target-libatomic
 
@@ -2089,6 +2097,7 @@ distclean-target: maybe-distclean-target-boehm-gc
 distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgomp
+distclean-target: maybe-distclean-target-libcilkrts
 distclean-target: maybe-distclean-target-libitm
 distclean-target: maybe-distclean-target-libatomic
 
@@ -2171,6 +2180,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-boehm-gc
 maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
+maintainer-clean-target: maybe-maintainer-clean-target-libcilkrts
 maintainer-clean-target: maybe-maintainer-clean-target-libitm
 maintainer-clean-target: maybe-maintainer-clean-target-libatomic
 
@@ -2463,6 +2473,7 @@ install-target:  \
     maybe-install-target-rda \
     maybe-install-target-libada \
     maybe-install-target-libgomp \
+    maybe-install-target-libcilkrts \
     maybe-install-target-libitm \
     maybe-install-target-libatomic
 
@@ -2564,6 +2575,7 @@ install-strip-target:  \
     maybe-install-strip-target-boehm-gc \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
+    maybe-install-strip-target-libcilkrts \
     maybe-install-strip-target-libgomp \
     maybe-install-strip-target-libitm \
     maybe-install-strip-target-libatomic
@@ -41869,6 +41881,983 @@ maintainer-clean-target-libada:
 @endif target-libada
 
 
+.PHONY: configure-target-libcilkrts maybe-configure-target-libcilkrts
+maybe-configure-target-libcilkrts:
+@if gcc-bootstrap
+configure-target-libcilkrts: stage_current
+@endif gcc-bootstrap
+@if target-libcilkrts
+maybe-configure-target-libcilkrts: configure-target-libcilkrts
+configure-target-libcilkrts: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libcilkrts...(1)"; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libcilkrts; \
+	cd "$(TARGET_SUBDIR)/libcilkrts" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1 
+@endif target-libcilkrts
+
+
+.PHONY: configure-stage1-target-libcilkrts maybe-configure-stage1-target-libcilkrts
+maybe-configure-stage1-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stage1-target-libcilkrts: configure-stage1-target-libcilkrts
+configure-stage1-target-libcilkrts:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(2)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+.PHONY: configure-stage2-target-libcilkrts maybe-configure-stage2-target-libcilkrts
+maybe-configure-stage2-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stage2-target-libcilkrts: configure-stage2-target-libcilkrts
+configure-stage2-target-libcilkrts:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(3)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+.PHONY: configure-stage3-target-libcilkrts maybe-configure-stage3-target-libcilkrts
+maybe-configure-stage3-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stage3-target-libcilkrts: configure-stage3-target-libcilkrts
+configure-stage3-target-libcilkrts:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(4)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+.PHONY: configure-stage4-target-libcilkrts maybe-configure-stage4-target-libcilkrts
+maybe-configure-stage4-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stage4-target-libcilkrts: configure-stage4-target-libcilkrts
+configure-stage4-target-libcilkrts:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(4)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+.PHONY: configure-stageprofile-target-libcilkrts maybe-configure-stageprofile-target-libcilkrts
+maybe-configure-stageprofile-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stageprofile-target-libcilkrts: configure-stageprofile-target-libcilkrts
+configure-stageprofile-target-libcilkrts:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(5)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+.PHONY: configure-stagefeedback-target-libcilkrts maybe-configure-stagefeedback-target-libcilkrts
+maybe-configure-stagefeedback-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-configure-stagefeedback-target-libcilkrts: configure-stagefeedback-target-libcilkrts
+configure-stagefeedback-target-libcilkrts:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	echo "Checking multilib configuration for libcilkrts...(6)"; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libcilkrts/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libcilkrts/Makefile; \
+	    mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libcilkrts/multilib.tmp $(TARGET_SUBDIR)/libcilkrts/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libcilkrts/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(TARGET_SUBDIR)/libcilkrts ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libcilkrts ; \
+	cd $(TARGET_SUBDIR)/libcilkrts || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
+	libsrcdir="$$s/libcilkrts"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif target-libcilkrts-bootstrap
+
+
+
+
+
+.PHONY: all-target-libcilkrts maybe-all-target-libcilkrts
+maybe-all-target-libcilkrts:
+@if gcc-bootstrap
+all-target-libcilkrts: stage_current
+@endif gcc-bootstrap
+@if target-libcilkrts
+TARGET-target-libcilkrts=all
+maybe-all-target-libcilkrts: all-target-libcilkrts
+all-target-libcilkrts: configure-target-libcilkrts
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+		$(TARGET-target-libcilkrts))
+@endif target-libcilkrts
+
+
+
+.PHONY: all-stage1-target-libcilkrts maybe-all-stage1-target-libcilkrts
+.PHONY: clean-stage1-target-libcilkrts maybe-clean-stage1-target-libcilkrts
+maybe-all-stage1-target-libcilkrts:
+maybe-clean-stage1-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stage1-target-libcilkrts: all-stage1-target-libcilkrts
+all-stage1: all-stage1-target-libcilkrts
+TARGET-stage1-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stage1-target-libcilkrts: configure-stage1-target-libcilkrts
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-target-libcilkrts)
+
+maybe-clean-stage1-target-libcilkrts: clean-stage1-target-libcilkrts
+clean-stage1: clean-stage1-target-libcilkrts
+clean-stage1-target-libcilkrts:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage1-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+.PHONY: all-stage2-target-libcilkrts maybe-all-stage2-target-libcilkrts
+.PHONY: clean-stage2-target-libcilkrts maybe-clean-stage2-target-libcilkrts
+maybe-all-stage2-target-libcilkrts:
+maybe-clean-stage2-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stage2-target-libcilkrts: all-stage2-target-libcilkrts
+all-stage2: all-stage2-target-libcilkrts
+TARGET-stage2-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stage2-target-libcilkrts: configure-stage2-target-libcilkrts
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-target-libcilkrts)
+
+maybe-clean-stage2-target-libcilkrts: clean-stage2-target-libcilkrts
+clean-stage2: clean-stage2-target-libcilkrts
+clean-stage2-target-libcilkrts:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage2-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+.PHONY: all-stage3-target-libcilkrts maybe-all-stage3-target-libcilkrts
+.PHONY: clean-stage3-target-libcilkrts maybe-clean-stage3-target-libcilkrts
+maybe-all-stage3-target-libcilkrts:
+maybe-clean-stage3-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stage3-target-libcilkrts: all-stage3-target-libcilkrts
+all-stage3: all-stage3-target-libcilkrts
+TARGET-stage3-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stage3-target-libcilkrts: configure-stage3-target-libcilkrts
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-target-libcilkrts)
+
+maybe-clean-stage3-target-libcilkrts: clean-stage3-target-libcilkrts
+clean-stage3: clean-stage3-target-libcilkrts
+clean-stage3-target-libcilkrts:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage3-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+.PHONY: all-stage4-target-libcilkrts maybe-all-stage4-target-libcilkrts
+.PHONY: clean-stage4-target-libcilkrts maybe-clean-stage4-target-libcilkrts
+maybe-all-stage4-target-libcilkrts:
+maybe-clean-stage4-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stage4-target-libcilkrts: all-stage4-target-libcilkrts
+all-stage4: all-stage4-target-libcilkrts
+TARGET-stage4-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stage4-target-libcilkrts: configure-stage4-target-libcilkrts
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-target-libcilkrts)
+
+maybe-clean-stage4-target-libcilkrts: clean-stage4-target-libcilkrts
+clean-stage4: clean-stage4-target-libcilkrts
+clean-stage4-target-libcilkrts:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage4-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+.PHONY: all-stageprofile-target-libcilkrts maybe-all-stageprofile-target-libcilkrts
+.PHONY: clean-stageprofile-target-libcilkrts maybe-clean-stageprofile-target-libcilkrts
+maybe-all-stageprofile-target-libcilkrts:
+maybe-clean-stageprofile-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stageprofile-target-libcilkrts: all-stageprofile-target-libcilkrts
+all-stageprofile: all-stageprofile-target-libcilkrts
+TARGET-stageprofile-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stageprofile-target-libcilkrts: configure-stageprofile-target-libcilkrts
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-target-libcilkrts)
+
+maybe-clean-stageprofile-target-libcilkrts: clean-stageprofile-target-libcilkrts
+clean-stageprofile: clean-stageprofile-target-libcilkrts
+clean-stageprofile-target-libcilkrts:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageprofile-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+.PHONY: all-stagefeedback-target-libcilkrts maybe-all-stagefeedback-target-libcilkrts
+.PHONY: clean-stagefeedback-target-libcilkrts maybe-clean-stagefeedback-target-libcilkrts
+maybe-all-stagefeedback-target-libcilkrts:
+maybe-clean-stagefeedback-target-libcilkrts:
+@if target-libcilkrts-bootstrap
+maybe-all-stagefeedback-target-libcilkrts: all-stagefeedback-target-libcilkrts
+all-stagefeedback: all-stagefeedback-target-libcilkrts
+TARGET-stagefeedback-target-libcilkrts = $(TARGET-target-libcilkrts)
+all-stagefeedback-target-libcilkrts: configure-stagefeedback-target-libcilkrts
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-target-libcilkrts)
+
+maybe-clean-stagefeedback-target-libcilkrts: clean-stagefeedback-target-libcilkrts
+clean-stagefeedback: clean-stagefeedback-target-libcilkrts
+clean-stagefeedback-target-libcilkrts:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stagefeedback-libcilkrts/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libcilkrts && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libcilkrts-bootstrap
+
+
+
+
+
+
+.PHONY: check-target-libcilkrts maybe-check-target-libcilkrts
+maybe-check-target-libcilkrts:
+@if target-libcilkrts
+maybe-check-target-libcilkrts: check-target-libcilkrts
+
+check-target-libcilkrts:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libcilkrts
+
+.PHONY: install-target-libcilkrts maybe-install-target-libcilkrts
+maybe-install-target-libcilkrts:
+@if target-libcilkrts
+maybe-install-target-libcilkrts: install-target-libcilkrts
+
+install-target-libcilkrts: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libcilkrts
+
+.PHONY: install-strip-target-libcilkrts maybe-install-strip-target-libcilkrts
+maybe-install-strip-target-libcilkrts:
+@if target-libcilkrts
+maybe-install-strip-target-libcilkrts: install-strip-target-libcilkrts
+
+install-strip-target-libcilkrts: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libcilkrts
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libcilkrts info-target-libcilkrts
+maybe-info-target-libcilkrts:
+@if target-libcilkrts
+maybe-info-target-libcilkrts: info-target-libcilkrts
+
+info-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-dvi-target-libcilkrts dvi-target-libcilkrts
+maybe-dvi-target-libcilkrts:
+@if target-libcilkrts
+maybe-dvi-target-libcilkrts: dvi-target-libcilkrts
+
+dvi-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-pdf-target-libcilkrts pdf-target-libcilkrts
+maybe-pdf-target-libcilkrts:
+@if target-libcilkrts
+maybe-pdf-target-libcilkrts: pdf-target-libcilkrts
+
+pdf-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-html-target-libcilkrts html-target-libcilkrts
+maybe-html-target-libcilkrts:
+@if target-libcilkrts
+maybe-html-target-libcilkrts: html-target-libcilkrts
+
+html-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-TAGS-target-libcilkrts TAGS-target-libcilkrts
+maybe-TAGS-target-libcilkrts:
+@if target-libcilkrts
+maybe-TAGS-target-libcilkrts: TAGS-target-libcilkrts
+
+TAGS-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-install-info-target-libcilkrts install-info-target-libcilkrts
+maybe-install-info-target-libcilkrts:
+@if target-libcilkrts
+maybe-install-info-target-libcilkrts: install-info-target-libcilkrts
+
+install-info-target-libcilkrts: \
+    configure-target-libcilkrts \
+    info-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-install-pdf-target-libcilkrts install-pdf-target-libcilkrts
+maybe-install-pdf-target-libcilkrts:
+@if target-libcilkrts
+maybe-install-pdf-target-libcilkrts: install-pdf-target-libcilkrts
+
+install-pdf-target-libcilkrts: \
+    configure-target-libcilkrts \
+    pdf-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-install-html-target-libcilkrts install-html-target-libcilkrts
+maybe-install-html-target-libcilkrts:
+@if target-libcilkrts
+maybe-install-html-target-libcilkrts: install-html-target-libcilkrts
+
+install-html-target-libcilkrts: \
+    configure-target-libcilkrts \
+    html-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-installcheck-target-libcilkrts installcheck-target-libcilkrts
+maybe-installcheck-target-libcilkrts:
+@if target-libcilkrts
+maybe-installcheck-target-libcilkrts: installcheck-target-libcilkrts
+
+installcheck-target-libcilkrts: \
+    configure-target-libcilkrts 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-mostlyclean-target-libcilkrts mostlyclean-target-libcilkrts
+maybe-mostlyclean-target-libcilkrts:
+@if target-libcilkrts
+maybe-mostlyclean-target-libcilkrts: mostlyclean-target-libcilkrts
+
+mostlyclean-target-libcilkrts: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-clean-target-libcilkrts clean-target-libcilkrts
+maybe-clean-target-libcilkrts:
+@if target-libcilkrts
+maybe-clean-target-libcilkrts: clean-target-libcilkrts
+
+clean-target-libcilkrts: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-distclean-target-libcilkrts distclean-target-libcilkrts
+maybe-distclean-target-libcilkrts:
+@if target-libcilkrts
+maybe-distclean-target-libcilkrts: distclean-target-libcilkrts
+
+distclean-target-libcilkrts: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libcilkrts
+
+.PHONY: maybe-maintainer-clean-target-libcilkrts maintainer-clean-target-libcilkrts
+maybe-maintainer-clean-target-libcilkrts:
+@if target-libcilkrts
+maybe-maintainer-clean-target-libcilkrts: maintainer-clean-target-libcilkrts
+
+maintainer-clean-target-libcilkrts: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libcilkrts/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libcilkrts" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libcilkrts && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libcilkrts
 
 
 
@@ -45901,6 +46890,7 @@ configure-stage3-target-libvtv: maybe-all-stage3-gcc
 configure-stage4-target-libvtv: maybe-all-stage4-gcc
 configure-stageprofile-target-libvtv: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libvtv: maybe-all-stagefeedback-gcc
+configure-target-libcilkrts: stage_last
 configure-target-libssp: stage_last
 configure-target-newlib: stage_last
 configure-stage1-target-libgcc: maybe-all-stage1-gcc
@@ -45955,6 +46945,7 @@ configure-target-boehm-gc: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
+configure-target-libcilkrts: maybe-all-gcc
 configure-target-libitm: maybe-all-gcc
 configure-target-libatomic: maybe-all-gcc
 @endif gcc-no-bootstrap
@@ -46720,6 +47711,8 @@ configure-stage3-target-libvtv: maybe-all-stage3-target-libstdc++-v3
 configure-stage4-target-libvtv: maybe-all-stage4-target-libstdc++-v3
 configure-stageprofile-target-libvtv: maybe-all-stageprofile-target-libstdc++-v3
 configure-stagefeedback-target-libvtv: maybe-all-stagefeedback-target-libstdc++-v3
+configure-target-libcilkrts: maybe-all-target-libstdc++-v3
+configure-target-libcilkrts: maybe-all-gcc
 all-target-libstdc++-v3: maybe-configure-target-libgomp
 
 all-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
@@ -46735,6 +47728,8 @@ install-target-libsanitizer: maybe-install-target-libstdc++-v3
 install-target-libsanitizer: maybe-install-target-libgcc
 install-target-libvtv: maybe-install-target-libstdc++-v3
 install-target-libvtv: maybe-install-target-libgcc
+install-target-libcilkrts: maybe-install-target-libstdc++-v3
+install-target-libcilkrts: maybe-install-target-libgcc
 install-target-libjava: maybe-install-target-libgcc
 install-target-libitm: maybe-install-target-libgcc
 install-target-libobjc: maybe-install-target-libgcc
@@ -46783,6 +47778,7 @@ configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libsanitizer: maybe-all-target-libgcc
 configure-target-libvtv: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
+configure-target-libcilkrts: maybe-all-target-libgcc
 configure-target-newlib: maybe-all-target-libgcc
 configure-target-libbacktrace: maybe-all-target-libgcc
 configure-target-libquadmath: maybe-all-target-libgcc
@@ -46830,6 +47826,8 @@ configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
 
 
 configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-libcilkrts: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-libcilkrts: maybe-all-target-libstdc++-v3
 
 configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libjava: maybe-all-target-libstdc++-v3

@@ -1,0 +1,84 @@
+Intel(R) Cilk(TM) Plus runtime library
+
+Index:
+1. BUILDING
+2. USING
+3. DOXYGEN DOCUMENTATION
+4. QUESTIONS OR BUGS
+5. CONTRIBUTIONS
+
+#
+#  1. BUILDING:
+#
+
+To distribute applications that use the Intel Cilk Plus language
+extensions to non-development systems, you need to build the Intel
+Cilk Plus runtime library and distribute it with your application.
+
+To build the libcilkrts.so runtime library component, you need the
+autoconf and automake packages, which are available through your
+favorite package manager.  You also need a C/C++ compiler that
+supports the Intel Cilk Plus language extensions, since the runtime
+uses Intel Cilk Plus features internally.  Use either the Intel(R)
+C++ Compiler (icc command) v12.1 or later, or in GCC 4.9 or later
+(gcc command).
+
+Once you have the necessary prerequisites installed, you can use the
+following commands to create the library:
+
+% libtoolize
+% aclocal
+% automake --add-missing
+% autoconf
+% ./configure
+% make
+% make install
+
+This will produce the libcilkrts.so shared object.  To install the
+library in a custom location, set the prefix while running the
+configure script:
+
+% ./configure --prefix=/your/path/to/lib
+
+#
+#  2. USING:
+#
+
+The Intel(R) C++ Compiler will automatically try to bring in the
+Intel Cilk Plus runtime in any program that uses the relevant
+features.  GCC requires explicit linking of both the library and
+its dependencies (libpthread, libdl).  For example:
+
+% gcc foo.c -lcilkrts -lpthread -ldl
+
+#
+#  3. DOXYGEN DOCUMENTATION:
+#
+
+The library source has Doxygen markup.  Generate HTML documentation
+based on the markup by changing directory into runtime and running:
+
+% doxygen doxygen.cfg
+
+#
+#  4. QUESTIONS OR BUGS:
+#
+
+Issues with the Intel Cilk Plus runtime can be addressed in the Intel
+Cilk Plus forums:
+http://software.intel.com/en-us/forums/intel-cilk-plus/
+
+#
+#  5. CONTRIBUTIONS:
+#
+
+The Intel Cilk Plus runtime library is dual licensed. The upstream copy
+of the library is maintained via the BSD-licensed version available at:
+http://cilkplus.org/
+
+Changes to the Intel Cilk Plus runtime are welcome and should be
+contributed to the upstream version via http://cilkplus.org/.
+
+------------------------
+Intel and Cilk are trademarks of Intel Corporation in the U.S. and/or
+other countries.
