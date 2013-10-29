@@ -1,10 +1,10 @@
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran 58793
+	PR fortran/58793
 	* trans-types.c (gfc_typenode_for_spec): Add typenode for
 	BT_HOLLERITH. Note that the length is incorrect but unusable.
 
-	PR fortran 58858
+	PR fortran/58858
 	* target-memory.c (gfc_element_size): Add element sizes for
 	BT_VOID and BT_ASSUMED, using gfc_typenode_for_spec.
 
