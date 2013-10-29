@@ -1,3 +1,8 @@
+2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto/lto-object.c: Add gimple.h to include list.
+	* lto/lto-partition.c: Likewise.
+
 2013-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto.c: Remove tree-flow.h from include list.

@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "hashtab.h"
 #include "flags.h"
+#include "tree-core.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */

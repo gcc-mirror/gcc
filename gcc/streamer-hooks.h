@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_STREAMER_HOOKS_H
 #define GCC_STREAMER_HOOKS_H
 
-#include "tree-core.h"
-
 /* Forward declarations to avoid including unnecessary headers.  */
 struct output_block;
 struct lto_input_block;

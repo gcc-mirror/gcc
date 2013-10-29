@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "ggc.h"
 #include "tree.h" /* Required by langhooks.h.  */
+#include "gimple.h"
 #include "langhooks.h"
 #include "tm.h" /* Required by rtl.h.  */
 #include "rtl.h"
