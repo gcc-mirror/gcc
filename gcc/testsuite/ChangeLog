@@ -1,6 +1,6 @@
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran 57893
+	PR fortran 58793
 	* gfortran.dg/unlimited_polymorphic_13.f90 : Use real variables
 	to determine sizes of real kinds.
 
