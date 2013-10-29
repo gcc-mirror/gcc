@@ -1841,7 +1841,7 @@
 
 ;; Split 'reg + reg + 1' into a sett addc sequence, as it can be scheduled
 ;; better, if the sett insn can be done early.
-(define_insn_and_split "*addc"
+(define_insn_and_split "*addc_r_r_1"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "")
 			  (match_operand:SI 2 "arith_reg_operand" ""))
@@ -1857,7 +1857,7 @@
 
 ;; Left shifts by one are usually done with an add insn to avoid T_REG
 ;; clobbers.  Thus addc can also be used to do something like '(x << 1) + 1'.
-(define_insn_and_split "*addc"
+(define_insn_and_split "*addc_2r_1"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand")
 			  (const_int 2))
@@ -1897,7 +1897,7 @@
 ;; can be scheduled much better since the load of the constant can be
 ;; done earlier, before any comparison insns that store the result in
 ;; the T bit.
-(define_insn_and_split "*addc"
+(define_insn_and_split "*addc_r_1"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(plus:SI (match_operand:SI 1 "t_reg_operand" "")
 		 (match_operand:SI 2 "arith_reg_operand" "")))
@@ -1907,6 +1907,126 @@
   "&& 1"
   [(parallel [(set (match_dup 0)
 		   (plus:SI (plus:SI (match_dup 2) (const_int 0))
+			    (match_dup 1)))
+	      (clobber (reg:SI T_REG))])])
+
+;; Use shlr-addc to do 'reg + (reg & 1)'.
+(define_insn_and_split "*addc_r_lsb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+			 (const_int 1))
+		 (match_operand:SI 2 "arith_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0) (plus:SI (reg:SI T_REG) (match_dup 2)))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[1]));
+})
+
+;; Use shlr-addc to do 'reg + reg + (reg & 1)'.
+(define_insn_and_split "*addc_r_r_lsb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (plus:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+				  (const_int 1))
+			  (match_operand:SI 2 "arith_reg_operand"))
+		 (match_operand:SI 3 "arith_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0) (plus:SI (plus:SI (match_dup 2) (match_dup 3))
+				          (reg:SI T_REG)))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[1]));
+})
+
+;; Canonicalize 'reg + (reg & 1) + reg' into 'reg + reg + (reg & 1)'.
+(define_insn_and_split "*addc_r_lsb_r"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+			 (const_int 1))
+		 (plus:SI (match_operand:SI 2 "arith_reg_operand")
+			  (match_operand:SI 3 "arith_reg_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (plus:SI (and:SI (match_dup 1) (const_int 1))
+				     (match_dup 2))
+			    (match_dup 3)))
+	      (clobber (reg:SI T_REG))])])
+
+;; Canonicalize '2 * reg + (reg & 1)' into 'reg + reg + (reg & 1)'.
+(define_insn_and_split "*addc_2r_lsb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+			 (const_int 1))
+		 (mult:SI (match_operand:SI 2 "arith_reg_operand")
+			  (const_int 2))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (plus:SI (and:SI (match_dup 1) (const_int 1))
+				     (match_dup 2))
+			    (match_dup 2)))
+	      (clobber (reg:SI T_REG))])])
+
+;; Use shll-addc to do 'reg + ((unsigned int)reg >> 31)'.
+(define_insn_and_split "*addc_r_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			      (const_int 31))
+		 (match_operand:SI 2 "arith_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0) (plus:SI (reg:SI T_REG) (match_dup 2)))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[1]));
+})
+
+;; Use shll-addc to do 'reg + reg + ((unsigned int)reg >> 31)'.
+(define_insn_and_split "*addc_r_r_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (plus:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+				       (const_int 31))
+		 	  (match_operand:SI 2 "arith_reg_operand"))
+		 (match_operand:SI 3 "arith_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0) (plus:SI (plus:SI (match_dup 2) (match_dup 3))
+				          (reg:SI T_REG)))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[1]));
+})
+
+;; Canonicalize '2 * reg + ((unsigned int)reg >> 31)'
+;; into 'reg + reg + (reg & 1)'.
+(define_insn_and_split "*addc_2r_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand")
+			  (const_int 2))
+		 (lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
+			      (const_int 31))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (plus:SI (lshiftrt:SI (match_dup 2) (const_int 31))
+				     (match_dup 1))
 			    (match_dup 1)))
 	      (clobber (reg:SI T_REG))])])
 

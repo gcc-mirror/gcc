@@ -1,3 +1,12 @@
+2013-10-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* config/sh/sh.md (*addc): Rename existing variations to ...
+	(*addc_r_r_1, *addc_2r_1, *addc_r_1): ... these.
+	(*addc_r_lsb, *addc_r_r_lsb, *addc_r_lsb_r, *addc_2r_lsb, *addc_r_msb,
+	*addc_r_r_msb, *addc_2r_msb): New insn_and_split patterns.
+	* config/sh/sh.c (addsubcosts): Handle some addc special cases.
+
 2013-10-29  Teresa Johnson  <tejohnson@google.com>
 
 	PR ipa/58862
