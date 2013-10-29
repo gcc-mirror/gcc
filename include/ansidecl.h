@@ -311,6 +311,15 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 3.3 */
 #endif /* ATTRIBUTE_NONNULL */
 
+/* Attribute `returns_nonnull' was valid as of gcc 4.9.  */
+#ifndef ATTRIBUTE_RETURNS_NONNULL
+# if (GCC_VERSION >= 4009)
+#  define ATTRIBUTE_RETURNS_NONNULL __attribute__ ((__returns_nonnull__))
+# else
+#  define ATTRIBUTE_RETURNS_NONNULL
+# endif /* GNUC >= 4.9 */
+#endif /* ATTRIBUTE_RETURNS_NONNULL */
+
 /* Attribute `pure' was valid as of gcc 3.0.  */
 #ifndef ATTRIBUTE_PURE
 # if (GCC_VERSION >= 3000)
