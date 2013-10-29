@@ -87,6 +87,7 @@ data members.
 
 @menu
 * GTY Options::         What goes inside a @code{GTY(())}.
+* Inheritance and GTY:: Adding GTY to a class hierarchy.
 * User GC::		Adding user-provided GC marking routines.
 * GGC Roots::           Making global variables GGC roots.
 * Files::               How the generated files work.
@@ -233,6 +234,10 @@ In this example, the value of BINDING_HAS_LEVEL_P when applied to a
 @code{struct tree_binding *} is presumed to be 0 or 1.  If 1, the type
 mechanism will treat the field @code{level} as being present and if 0,
 will treat the field @code{scope} as being present.
+
+The @code{desc} and @code{tag} options can also be used for inheritance
+to denote which subclass an instance is.  See @ref{Inheritance and GTY}
+for more information.
 
 @findex param_is
 @findex use_param
@@ -469,6 +474,53 @@ The @code{user} option indicates that the code to mark structure
 fields is completely handled by user-provided routines.  See section
 @ref{User GC} for details on what functions need to be provided.
 @end table
+
+@node Inheritance and GTY
+@section Support for inheritance
+gengtype has some support for simple class hierarchies.  You can use
+this to have gengtype autogenerate marking routines, provided:
+
+@itemize @bullet
+@item
+There must be a concrete base class, with a discriminator expression
+that can be used to identify which subclass an instance is.
+@item
+Only single inheritance is used.
+@item
+None of the classes within the hierarchy are templates.
+@end itemize
+
+If your class hierarchy does not fit in this pattern, you must use
+@ref{User GC} instead.
+
+The base class and its discriminator must be identified using the ``desc''
+option.  Each concrete subclass must use the ``tag'' option to identify
+which value of the discriminator it corresponds to.
+
+@smallexample
+class GTY((desc("%h.kind"), tag("0"))) example_base
+@{
+public:
+    int kind;
+    tree a;
+@};
+
+class GTY((tag("1")) some_subclass : public example_base
+@{
+public:
+    tree b;
+@};
+
+class GTY((tag("2")) some_other_subclass : public example_base
+@{
+public:
+    tree c;
+@};
+@end smallexample
+
+The generated marking routines for the above will contain a ``switch''
+on ``kind'', visiting all appropriate fields.  For example, if kind is
+2, it will cast to ``some_other_subclass'' and visit fields a, b, and c.
 
 @node User GC
 @section Support for user-provided GC marking routines
