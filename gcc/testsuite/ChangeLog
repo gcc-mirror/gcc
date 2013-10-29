@@ -1,3 +1,8 @@
+2013-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44350
+	* gfortran.dg/blockdata_8.f90: New.
+
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58793
