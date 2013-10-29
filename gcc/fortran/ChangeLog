@@ -1,3 +1,9 @@
+2013-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44350
+	* parse.c (parse_spec): Add C1116 constraint
+	check for BLOCK DATA.
+
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58793
