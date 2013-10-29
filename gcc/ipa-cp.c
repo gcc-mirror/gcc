@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "gimple.h"
 #include "target.h"
 #include "ipa-prop.h"
 #include "bitmap.h"

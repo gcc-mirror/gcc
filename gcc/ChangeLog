@@ -1,3 +1,41 @@
+2013-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-outof-ssa.h: Remove include files.
+	* tree-outof-ssa.c: Add required include files from tree-outof-ssa.h.
+	* expr.c: Likewise.
+	* tree-ssa-coalesce.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* tree-ssa-ter.c: Likewise.
+	* ipa-prop.h: Remove gimple.h and tree-core.h from include list.
+	* lto-streamer.h: Likewise.
+	* cgraphbuild.c: Add gimple.h to include list.
+	* data-streamer-in.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* tree-streamer.c: Likewise.
+	* lto-compress.c: Likewise.
+	* ipa-reference.c: Likewise.
+	* data-streamer-out.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* cgraphclones.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* data-streamer.c: Likewise.
+	* ipa-split.c: Likewise.
+	* lto-section-in.c: Likewise.
+	* tree-streamer-out.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* symtab.c: Likewise.
+	* opts-global.c: Likewise.
+	* lto-opts.c: Likewise.
+	* lto-section-out.c: Likewise.
+	* lto-streamer.c: Likewise.
+	* rtl.h: Add tree-core.h to include list.
+	* expr.h: Remove tree-core.h from include list.
+	* gimple.h: Likewise.
+	* ipa-utils.h: Likewise.
+	* streamer-hooks.h: Likewise.
+	* streamer-hooks.c: Include input.h.
+
 2013-10-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (cortexa7_extra_costs): New table.

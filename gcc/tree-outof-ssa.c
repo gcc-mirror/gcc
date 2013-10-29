@@ -36,6 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
+#include "tree-ssa-live.h"
+#include "tree-ssa-ter.h"
+#include "tree-ssa-coalesce.h"
 #include "tree-outof-ssa.h"
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code

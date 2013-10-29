@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "value-prof.h"
 #include "target.h"
+#include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "sbitmap.h"
 #include "cfgloop.h"

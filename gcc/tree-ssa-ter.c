@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "tree-ssanames.h"
 #include "dumpfile.h"
+#include "tree-ssa-live.h"
+#include "tree-ssa-ter.h"
 #include "tree-outof-ssa.h"
 #include "flags.h"
 
