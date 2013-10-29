@@ -1,3 +1,8 @@
+2013-10-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/19831
+	* gcc.dg/tree-ssa/alias-25.c: New file.
+
 2013-10-29  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/vect/slp-pr56812.cc: Adjust with respect to -fvect-cost-model
