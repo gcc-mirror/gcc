@@ -1,6 +1,6 @@
 2013-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* expr.c (expand_expr_real_1) <case MEM>: Eliminate small redundancy.
+	* expr.c (expand_expr_real_1) <MEM_EXPR>: Eliminate small redundancy.
 
 2013-10-29  David Malcolm  <dmalcolm@redhat.com>
 
