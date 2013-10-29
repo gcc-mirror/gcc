@@ -277,14 +277,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Functor used to map hash code to bucket index"
 		    " must be default constructible");
 
+      // _Hash_code_base has a protected default constructor, so use this
+      // derived type to tell if it's usable.
+      struct __access_protected_ctor : __hash_code_base { };
+
       // When hash codes are not cached local iterator inherits from
       // __hash_code_base above to compute node bucket index so it has to be
       // default constructible.
       static_assert(__if_hash_not_cached<
-		    is_default_constructible<
-		      // We use _Hashtable_ebo_helper to access the protected
-		      // default constructor.
-		      __detail::_Hashtable_ebo_helper<0, __hash_code_base, true>>>::value,
+		    is_default_constructible<__access_protected_ctor>>::value,
 		    "Cache the hash code or make functors involved in hash code"
 		    " and bucket index computation default constructible");
 
