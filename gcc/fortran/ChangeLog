@@ -1,6 +1,6 @@
 2013-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran 57893
+	PR fortran 58793
 	* trans-types.c (gfc_typenode_for_spec): Add typenode for
 	BT_HOLLERITH. Note that the length is incorrect but unusable.
 
