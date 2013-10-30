@@ -1,3 +1,34 @@
+2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* target.def (builtin_chkp_function): New.
+	(chkp_bound_type): New.
+	(chkp_bound_mode): New.
+	(fn_abi_va_list_bounds_size): New.
+	(load_bounds_for_arg): New.
+	(store_bounds_for_arg): New.
+	* targhooks.h (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_fn_abi_va_list_bounds_size): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode): New.
+	(default_builtin_chkp_function): New.
+	* targhooks.c (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_fn_abi_va_list_bounds_size): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode); New.
+	(default_builtin_chkp_function): New.
+	* doc/tm.texi.in (TARGET_FN_ABI_VA_LIST_BOUNDS_SIZE): New.
+	(TARGET_LOAD_BOUNDS_FOR_ARG): New.
+	(TARGET_STORE_BOUNDS_FOR_ARG): New.
+	(TARGET_BUILTIN_CHKP_FUNCTION): New.
+	(TARGET_CHKP_BOUND_TYPE): New.
+	(TARGET_CHKP_BOUND_MODE): New.
+	* doc/tm.texi: Regenerated.
+	* langhooks.h (lang_hooks): Add chkp_supported field.
+	* langhooks-def.h (LANG_HOOKS_CHKP_SUPPORTED): New.
+	(LANG_HOOKS_INITIALIZER); Add LANG_HOOKS_CHKP_SUPPORTED.
+
 2013-10-29  Andrew Pinski <apinski@cavium.com>
 
 	* tree-ssa-ifcombine.c: Include rtl.h and tm_p.h.
