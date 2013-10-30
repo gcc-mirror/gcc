@@ -1,3 +1,8 @@
+2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/58784
+	* gcc.target/arm/pr58784.c: New.
+
 2013-10-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/alias-24.c: New file.

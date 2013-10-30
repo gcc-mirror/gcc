@@ -1,3 +1,8 @@
+2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/58784
+	* lra.c (check_rtl): Remove address check before LRA work.
+
 2013-10-30  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Look for a
