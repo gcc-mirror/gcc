@@ -1,3 +1,9 @@
+2013-10-30  Cong Hou  <congh@google.com>
+
+	* gcc.target/i386/vect-abs-s8.c: New test.
+	* gcc.target/i386/vect-abs-s16.c: New test.
+	* gcc.target/i386/vect-abs-s32.c: New test.
+
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc.dg/cilk-plus/cilk-plus.exp: Add the libcilkrts library
