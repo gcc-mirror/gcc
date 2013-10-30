@@ -12,7 +12,7 @@ extern int strncmp (const char *, const char *, size_t);
 void
 main_test (void)
 {
-#if !defined(__OPTIMIZE__) || ((defined(__i386__) || defined (__x86_64__)) && !defined(__OPTIMIZE_SIZE__))
+#if !defined(__OPTIMIZE__) || ((defined(__sh__) || defined(__i386__) || defined (__x86_64__)) && !defined(__OPTIMIZE_SIZE__))
   /* These tests work on platforms which support cmpstrsi.  We test it
      at -O0 on all platforms to ensure the strncmp logic is correct.  */
   const char *const s1 = "hello world";

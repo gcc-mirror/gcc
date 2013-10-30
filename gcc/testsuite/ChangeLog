@@ -1,3 +1,9 @@
+2013-10-30  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.c-torture/execute/builtins/strncmp-2.c: Enable for SH.
+	* gcc.target/sh/cmpstr.c: New test.
+	* gcc.target/sh/cmpstrn.c: New test.
+
 2013-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/10474

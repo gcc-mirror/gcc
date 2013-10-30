@@ -12067,6 +12067,20 @@ label:
     FAIL;
 })
 
+(define_expand "cmpstrnsi"
+  [(set (match_operand:SI 0 "register_operand")
+	(compare:SI (match_operand:BLK 1 "memory_operand")
+		    (match_operand:BLK 2 "memory_operand")))
+   (use (match_operand:SI 3 "immediate_operand"))
+   (use (match_operand:SI 4 "immediate_operand"))]
+  "TARGET_SH1"
+{
+  if (! optimize_insn_for_size_p () && sh_expand_cmpnstr (operands))
+    DONE;
+  else
+    FAIL;
+})
+
 
 ;; -------------------------------------------------------------------------
 ;; Floating point instructions.
