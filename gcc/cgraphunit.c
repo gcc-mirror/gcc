@@ -920,7 +920,8 @@ analyze_functions (void)
   struct varpool_node *first_handled_var = first_analyzed_var;
   struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
-  symtab_node node, next;
+  symtab_node node;
+  symtab_node next;
   int i;
   struct ipa_ref *ref;
   bool changed = true;

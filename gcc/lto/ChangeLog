@@ -1,3 +1,11 @@
+2013-10-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-symtab.c (lto_symtab_merge_decls_2): Split symtab_node
+	declarations onto multiple lines to make things easier for
+	rename_symtab.py.
+	(lto_symtab_merge_decls_1): Likewise.
+	(lto_symtab_merge_symbols_1): Likewise.
+
 2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* Make-lang.in (lto/lto-lang.o): Added cilk.h in dependency list.
