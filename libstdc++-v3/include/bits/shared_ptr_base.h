@@ -394,7 +394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       template<typename... _Args>
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
-	: _M_impl(__a), _M_storage()
+	: _M_impl(__a)
 	{
 	  _M_impl._M_ptr = static_cast<_Tp*>(static_cast<void*>(&_M_storage));
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
