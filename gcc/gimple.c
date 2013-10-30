@@ -174,7 +174,7 @@ gimple_build_with_ops_stat (enum gimple_code code, unsigned subcode,
 gimple
 gimple_build_return (tree retval)
 {
-  gimple s = gimple_build_with_ops (GIMPLE_RETURN, ERROR_MARK, 1);
+  gimple s = gimple_build_with_ops (GIMPLE_RETURN, ERROR_MARK, 2);
   if (retval)
     gimple_return_set_retval (s, retval);
   return s;
@@ -363,6 +363,26 @@ gimple_build_call_from_tree (tree t)
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
 
   return call;
+}
+
+
+/* Return index of INDEX's non bound argument of the call.  */
+
+unsigned
+gimple_call_get_nobnd_arg_index (const_gimple gs, unsigned index)
+{
+  unsigned num_args = gimple_call_num_args (gs);
+  for (unsigned n = 0; n < num_args; n++)
+    {
+      if (POINTER_BOUNDS_P (gimple_call_arg (gs, n)))
+	continue;
+      else if (index)
+	index--;
+      else
+	return n;
+    }
+
+  gcc_unreachable ();
 }
 
 
