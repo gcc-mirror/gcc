@@ -1,5 +1,12 @@
 2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* ipa.c (cgraph_build_static_cdtor_1): Support contructors
+	with "chkp ctor" and "bnd_legacy" attributes.
+	* gimplify.c (gimplify_init_constructor): Avoid infinite
+	loop during gimplification of bounds initializer.
+
+2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* c-family/c-common.c (handle_bnd_variable_size_attribute): New.
 	(handle_bnd_legacy): New.
 	(c_common_attribute_table): Add bnd_variable_size and bnd_legacy.
