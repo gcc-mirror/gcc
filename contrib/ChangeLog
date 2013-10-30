@@ -1,3 +1,8 @@
+2013-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	* gcc_update (files_and_dependencies): Add rules for
+	libcilkrts.
+
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc_update (files_and_dependencies): Fix rule for

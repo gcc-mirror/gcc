@@ -1,3 +1,10 @@
+2013-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Add AM_MAINTAINER_MODE.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Regenerate.
+	* Makefile.in: Regenerate.
+
 2013-10-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* libcilkrts/Makefile.am: New file.  Libcilkrts version 3902.
