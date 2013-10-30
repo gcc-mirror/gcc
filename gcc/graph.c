@@ -160,9 +160,9 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
 
-  /* FIXME: pre_and_rev_post_order_compute only works if fun == cfun.  */
-  n = pre_and_rev_post_order_compute (NULL, rpo, true);
-  for (i = 0; i < n; i++)
+  n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, true);
+  for (i = n_basic_blocks_for_function (fun) - n;
+       i < n_basic_blocks_for_function (fun); i++)
     {
       basic_block bb = BASIC_BLOCK (rpo[i]);
       draw_cfg_node (pp, fun->funcdef_no, bb);

@@ -878,20 +878,22 @@ inverted_post_order_compute (int *post_order)
   return post_order_num;
 }
 
-/* Compute the depth first search order and store in the array
-  PRE_ORDER if nonzero, marking the nodes visited in VISITED.  If
-  REV_POST_ORDER is nonzero, return the reverse completion number for each
-  node.  Returns the number of nodes visited.  A depth first search
-  tries to get as far away from the starting point as quickly as
-  possible.
+/* Compute the depth first search order of FN and store in the array
+   PRE_ORDER if nonzero.  If REV_POST_ORDER is nonzero, return the
+   reverse completion number for each node.  Returns the number of nodes
+   visited.  A depth first search tries to get as far away from the starting
+   point as quickly as possible.
 
-  pre_order is a really a preorder numbering of the graph.
-  rev_post_order is really a reverse postorder numbering of the graph.
- */
+   In case the function has unreachable blocks the number of nodes
+   visited does not include them.
+
+   pre_order is a really a preorder numbering of the graph.
+   rev_post_order is really a reverse postorder numbering of the graph.  */
 
 int
-pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
-				bool include_entry_exit)
+pre_and_rev_post_order_compute_fn (struct function *fn,
+				   int *pre_order, int *rev_post_order,
+				   bool include_entry_exit)
 {
   edge_iterator *stack;
   int sp;
@@ -921,7 +923,7 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR->succs);
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->succs);
 
   while (sp)
     {
@@ -935,7 +937,8 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
       dest = ei_edge (ei)->dest;
 
       /* Check if the edge destination has been visited yet.  */
-      if (dest != EXIT_BLOCK_PTR && ! bitmap_bit_p (visited, dest->index))
+      if (dest != EXIT_BLOCK_PTR_FOR_FUNCTION (fn)
+	  && ! bitmap_bit_p (visited, dest->index))
 	{
 	  /* Mark that we have visited the destination.  */
 	  bitmap_set_bit (visited, dest->index);
@@ -956,7 +959,8 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
 	}
       else
 	{
-	  if (ei_one_before_end_p (ei) && src != ENTRY_BLOCK_PTR
+	  if (ei_one_before_end_p (ei)
+	      && src != ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)
 	      && rev_post_order)
 	    /* There are no more successors for the SRC node
 	       so assign its reverse completion number.  */
@@ -979,9 +983,24 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
       pre_order_num++;
       if (rev_post_order)
 	rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
-      /* The number of nodes visited should be the number of blocks.  */
-      gcc_assert (pre_order_num == n_basic_blocks);
     }
+
+  return pre_order_num;
+}
+
+/* Like pre_and_rev_post_order_compute_fn but operating on the
+   current function and asserting that all nodes were visited.  */
+
+int
+pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
+				bool include_entry_exit)
+{
+  int pre_order_num
+    = pre_and_rev_post_order_compute_fn (cfun, pre_order, rev_post_order,
+					 include_entry_exit);
+  if (include_entry_exit)
+    /* The number of nodes visited should be the number of blocks.  */
+    gcc_assert (pre_order_num == n_basic_blocks);
   else
     /* The number of nodes visited should be the number of blocks minus
        the entry and exit blocks which are not visited here.  */
