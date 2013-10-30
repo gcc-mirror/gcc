@@ -176,6 +176,12 @@ along with GCC; see the file COPYING3.  If not see
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_FN_INT_VAR, BT_LAST, \
   	       false, false, false, ATTRS, false, flag_enable_cilkplus) 
 
+/* Builtin used by the implementation of Pointer Bounds Checker.  */
+#undef DEF_CHKP_BUILTIN
+#define DEF_CHKP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+	       true, true, false, ATTRS, true, true)
+
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
    `errno'.  If !flag_errno_math they are instead "const".  */
@@ -864,3 +870,6 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Cilk Plus builtins.  */
 #include "cilkplus.def"
+
+/* Pointer Bounds Checker builtins.  */
+#include "chkp-builtins.def"
