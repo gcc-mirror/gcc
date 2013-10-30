@@ -1,3 +1,18 @@
+2013-10-29  Mike Stump  <mikestump@comcast.net>
+
+	* machmode.def (PARTIAL_INT_MODE): Add precision and name.
+	* genmodes.c (PARTIAL_INT_MODE): Add precision and name.
+	(make_vector_mode): Increase namebuf to 16.
+	(emit_insn_modes_h): When processing BImode, don't
+	also match partial int modes.
+	(emit_class_narrowest_mode): Likewise.
+
+	* config/bfin/bfin-modes.def: Add precision to PDI.
+	* config/m32c/m32c-modes.def: Add precision to PSI.
+	* config/msp430/msp430-modes.def: Add precision to PSI.
+	* config/rs6000/rs6000-modes.def: Add precision to PTI.
+	* config/sh/sh-modes.def: Add precision to PSI and PDI.
+
 2013-10-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236

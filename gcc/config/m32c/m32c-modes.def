@@ -22,7 +22,7 @@
 /*INT_MODE (PI, 3);*/
 
 /* 24-bit pointers, in 32-bit units */
-PARTIAL_INT_MODE (SI);
+PARTIAL_INT_MODE (SI, 24, PSI);
 
 /* 48-bit MULEX result */
 /* INT_MODE (MI, 6); */
