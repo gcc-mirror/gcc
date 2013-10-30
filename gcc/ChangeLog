@@ -1,5 +1,24 @@
 2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* tree-core.h (tree_index): Add TI_POINTER_BOUNDS_TYPE.
+	* tree.h (POINTER_BOUNDS_P): New.
+	(BOUNDED_TYPE_P): New.
+	(BOUNDED_P): New.
+	(pointer_bounds_type_node): New.
+	* tree.c (build_common_tree_nodes): Initialize
+	pointer_bounds_type_node.
+	* gimple.h (gimple_call_get_nobnd_arg_index): New.
+	(gimple_call_num_nobnd_args): New.
+	(gimple_call_nobnd_arg): New.
+	(gimple_return_retbnd): New.
+	(gimple_return_set_retbnd): New
+	* gimple.c (gimple_build_return): Increase number of ops
+	for return statement.
+	(gimple_call_get_nobnd_arg_index): New.
+	* gimple-pretty-print.c (dump_gimple_return): Print second op.
+
+2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* ipa.c (cgraph_build_static_cdtor_1): Support contructors
 	with "chkp ctor" and "bnd_legacy" attributes.
 	* gimplify.c (gimplify_init_constructor): Avoid infinite
