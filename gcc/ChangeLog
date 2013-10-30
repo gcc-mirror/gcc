@@ -1,3 +1,13 @@
+2013-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/10474
+	* ira.c (find_moveable_pseudos): Do not calculate dominance info
+	nor df analysis.
+	(interesting_dest_for_shprep): New function.
+	(split_live_ranges_for_shrink_wrap): Likewise.
+	(ira): Calculate dominance info and df analysis. Call
+	split_live_ranges_for_shrink_wrap.
+
 2013-10-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/58854
