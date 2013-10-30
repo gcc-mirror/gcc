@@ -287,9 +287,9 @@ create_cilk_helper_decl (struct wrapper_data *wd)
 {
   char name[20];
   if (wd->type == CILK_BLOCK_FOR)
-    sprintf (name, "_cilk_for_%ld", cilk_wrapper_count++);
+    sprintf (name, "_cilk_for_" HOST_WIDE_INT_PRINT_DEC, cilk_wrapper_count++);
   else if (wd->type == CILK_BLOCK_SPAWN)
-    sprintf (name, "_cilk_spn_%ld", cilk_wrapper_count++);
+    sprintf (name, "_cilk_spn_" HOST_WIDE_INT_PRINT_DEC, cilk_wrapper_count++);
   else
     gcc_unreachable (); 
   
