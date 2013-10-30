@@ -1,5 +1,8 @@
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_compound_literal): Don't create a static variable
+	inside cp_unevaluated_operand.
+
 	* init.c (push_base_cleanups): Check ANON_AGGR_TYPE_P.
 
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
