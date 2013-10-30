@@ -1,3 +1,10 @@
+2013-10-18  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR rtl-optimization/58369
+	* reload1.c (compute_reload_subreg_offset): New function.
+	(choose_reload_regs): Use it to pass endian-correct
+	offset to subreg_regno_offset.
+
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426

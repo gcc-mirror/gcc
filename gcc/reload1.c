@@ -6371,6 +6371,37 @@ replaced_subreg (rtx x)
 }
 #endif
 
+/* Compute the offset to pass to subreg_regno_offset, for a pseudo of
+   mode OUTERMODE that is available in a hard reg of mode INNERMODE.
+   SUBREG is non-NULL if the pseudo is a subreg whose reg is a pseudo,
+   otherwise it is NULL.  */
+
+static int
+compute_reload_subreg_offset (enum machine_mode outermode,
+			      rtx subreg,
+			      enum machine_mode innermode)
+{
+  int outer_offset;
+  enum machine_mode middlemode;
+
+  if (!subreg)
+    return subreg_lowpart_offset (outermode, innermode);
+
+  outer_offset = SUBREG_BYTE (subreg);
+  middlemode = GET_MODE (SUBREG_REG (subreg));
+
+  /* If SUBREG is paradoxical then return the normal lowpart offset
+     for OUTERMODE and INNERMODE.  Our caller has already checked
+     that OUTERMODE fits in INNERMODE.  */
+  if (outer_offset == 0
+      && GET_MODE_SIZE (outermode) > GET_MODE_SIZE (middlemode))
+    return subreg_lowpart_offset (outermode, innermode);
+
+  /* SUBREG is normal, but may not be lowpart; return OUTER_OFFSET
+     plus the normal lowpart offset for MIDDLEMODE and INNERMODE.  */
+  return outer_offset + subreg_lowpart_offset (middlemode, innermode);
+}
+
 /* Assign hard reg targets for the pseudo-registers we must reload
    into hard regs for this insn.
    Also output the instructions to copy them in and out of the hard regs.
@@ -6508,6 +6539,7 @@ choose_reload_regs (struct insn_chain *chain)
 	      int byte = 0;
 	      int regno = -1;
 	      enum machine_mode mode = VOIDmode;
+	      rtx subreg = NULL_RTX;
 
 	      if (rld[r].in == 0)
 		;
@@ -6528,7 +6560,10 @@ choose_reload_regs (struct insn_chain *chain)
 		  if (regno < FIRST_PSEUDO_REGISTER)
 		    regno = subreg_regno (rld[r].in_reg);
 		  else
-		    byte = SUBREG_BYTE (rld[r].in_reg);
+		    {
+		      subreg = rld[r].in_reg;
+		      byte = SUBREG_BYTE (subreg);
+		    }
 		  mode = GET_MODE (rld[r].in_reg);
 		}
 #ifdef AUTO_INC_DEC
@@ -6566,6 +6601,9 @@ choose_reload_regs (struct insn_chain *chain)
 		  rtx last_reg = reg_last_reload_reg[regno];
 
 		  i = REGNO (last_reg);
+		  byte = compute_reload_subreg_offset (mode,
+						       subreg,
+						       GET_MODE (last_reg));
 		  i += subreg_regno_offset (i, GET_MODE (last_reg), byte, mode);
 		  last_class = REGNO_REG_CLASS (i);
 
