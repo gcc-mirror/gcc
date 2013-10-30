@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       operator()(_Tp* __ptr) const
       {
+	static_assert(!is_void<_Tp>::value,
+		      "can't delete pointer to incomplete type");
 	static_assert(sizeof(_Tp)>0,
 		      "can't delete pointer to incomplete type");
 	delete __ptr;

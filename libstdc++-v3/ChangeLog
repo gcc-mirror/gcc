@@ -1,3 +1,14 @@
+2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr (__shared_ptr): Assert non-void pointer.
+	* include/bits/shared_ptr (default_delete): Likewise.
+	* testsuite/20_util/shared_ptr/cons/58839.cc: Do not use
+	default_delete<void>.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: New.
+	* testsuite/20_util/default_delete/void_neg.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
 2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/58839

@@ -775,6 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _M_ptr(__p), _M_refcount(__p)
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
+	  static_assert( !is_void<_Tp>::value, "incomplete type" );
 	  static_assert( sizeof(_Tp1) > 0, "incomplete type" );
 	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
 	}
