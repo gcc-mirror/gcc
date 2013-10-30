@@ -1,3 +1,16 @@
+2013-10-29  Andrew Pinski <apinski@cavium.com>
+            Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: New test case.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: New test case.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: New test case.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: New test case.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: New test case.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: New test case.
+	* gcc.dg/tree-ssa/phi-opt-9.c: Use a function call to prevent
+	conditional move to be used.
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Remove.
+
 2013-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44350

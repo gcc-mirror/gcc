@@ -5533,6 +5533,20 @@ gsi_start_nondebug_bb (basic_block bb)
   return i;
 }
 
+/* Return a new iterator pointing to the first non-debug non-label statement in
+   basic block BB.  */
+
+static inline gimple_stmt_iterator
+gsi_start_nondebug_after_labels_bb (basic_block bb)
+{
+  gimple_stmt_iterator i = gsi_after_labels (bb);
+
+  if (!gsi_end_p (i) && is_gimple_debug (gsi_stmt (i)))
+    gsi_next_nondebug (&i);
+
+  return i;
+}
+
 /* Return a new iterator pointing to the last non-debug statement in
    basic block BB.  */
 
