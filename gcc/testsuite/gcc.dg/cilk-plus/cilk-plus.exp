@@ -26,7 +26,24 @@ if { ![check_effective_target_cilkplus] } {
 verbose "$tool $libdir" 1
 set library_var [get_multilibs]
 # Pointing the ld_library_path to the Cilk Runtime library binaries. 
-set ld_library_path "${library_var}/libcilkrts/.libs"
+if { $gccpath != "" } {
+  if { [file exists "${gccpath}/libcilkrts/.libs/libcilkrts.a"]
+       || [file exists "${gccpath}/libcilkrts/.libs/libcilkrts.${shlib_ext}"] } {
+      append flags " -B${gccpath}/libcilkrts/ "
+      append flags " -L${gccpath}/libcilkrts/.libs "
+      append ld_library_path ":${gccpath}/libcilkrts/.libs"
+  }
+} else {
+  global tool_root_dir
+
+  set libcilkrts [lookfor_file ${tool_root_dir} libcilkrts]
+  if { $libcilkrts != "" } {
+      append flags "-L${libcilkrts} "
+      append ld_library_path ":${libcilkrts}"
+  }
+}
+
+set_ld_library_path_env_vars
 
 dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
