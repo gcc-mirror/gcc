@@ -4130,7 +4130,7 @@ push_base_cleanups (void)
 	  || TREE_CODE (member) != FIELD_DECL
 	  || DECL_ARTIFICIAL (member))
 	continue;
-      if (ANON_UNION_TYPE_P (this_type))
+      if (ANON_AGGR_TYPE_P (this_type))
 	continue;
       if (type_build_dtor_call (this_type))
 	{

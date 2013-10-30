@@ -1,3 +1,7 @@
+2013-10-30  Jason Merrill  <jason@redhat.com>
+
+	* init.c (push_base_cleanups): Check ANON_AGGR_TYPE_P.
+
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
