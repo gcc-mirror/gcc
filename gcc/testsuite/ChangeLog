@@ -1,3 +1,23 @@
+2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/fma_double_3.c: Use pattern for
+	scan-assembler-times instead of just one insn name.
+	* gcc.target/i386/fma_double_5.c: Ditto.
+	* gcc.target/i386/fma_float_3.c: Ditto.
+	* gcc.target/i386/fma_float_5.c: Ditto.
+	* gcc.target/i386/l_fma_double_1.c: Ditto.
+	* gcc.target/i386/l_fma_double_2.c: Ditto.
+	* gcc.target/i386/l_fma_double_3.c: Ditto.
+	* gcc.target/i386/l_fma_double_4.c: Ditto.
+	* gcc.target/i386/l_fma_double_5.c: Ditto.
+	* gcc.target/i386/l_fma_double_6.c: Ditto.
+	* gcc.target/i386/l_fma_float_1.c: Ditto.
+	* gcc.target/i386/l_fma_float_2.c: Ditto.
+	* gcc.target/i386/l_fma_float_3.c: Ditto.
+	* gcc.target/i386/l_fma_float_4.c: Ditto.
+	* gcc.target/i386/l_fma_float_5.c: Ditto.
+	* gcc.target/i386/l_fma_float_6.c: Ditto.
+
 2013-10-30  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.c-torture/execute/builtins/strncmp-2.c: Enable for SH.

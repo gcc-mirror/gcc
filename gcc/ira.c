@@ -1761,6 +1761,527 @@ setup_prohibited_mode_move_regs (void)
 
 
 
+/* Return TRUE if the operand constraint STR is commutative.  */
+static bool
+commutative_constraint_p (const char *str)
+{
+  int curr_alt, c;
+  bool ignore_p;
+
+  for (ignore_p = false, curr_alt = 0;;)
+    {
+      c = *str;
+      if (c == '\0')
+	break;
+      str += CONSTRAINT_LEN (c, str);
+      if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
+	ignore_p = true;
+      else if (c == ',')
+	{
+	  curr_alt++;
+	  ignore_p = false;
+	}
+      else if (! ignore_p)
+	{
+	  /* Usually `%' is the first constraint character but the
+	     documentation does not require this.  */
+	  if (c == '%')
+	    return true;
+	}
+    }
+  return false;
+}
+
+/* Setup possible alternatives in ALTS for INSN.  */
+void
+ira_setup_alts (rtx insn, HARD_REG_SET &alts)
+{
+  /* MAP nalt * nop -> start of constraints for given operand and
+     alternative */
+  static vec<const char *> insn_constraints;
+  int nop, nalt;
+  bool curr_swapped;
+  const char *p;
+  rtx op;
+  int commutative = -1;
+
+  extract_insn (insn);
+  CLEAR_HARD_REG_SET (alts);
+  insn_constraints.release ();
+  insn_constraints.safe_grow_cleared (recog_data.n_operands
+				      * recog_data.n_alternatives + 1);
+  /* Check that the hard reg set is enough for holding all
+     alternatives.  It is hard to imagine the situation when the
+     assertion is wrong.  */
+  ira_assert (recog_data.n_alternatives
+	      <= (int) MAX (sizeof (HARD_REG_ELT_TYPE) * CHAR_BIT,
+			    FIRST_PSEUDO_REGISTER));
+  for (curr_swapped = false;; curr_swapped = true)
+    {
+      /* Calculate some data common for all alternatives to speed up the
+	 function.  */
+      for (nop = 0; nop < recog_data.n_operands; nop++)
+	{
+	  for (nalt = 0, p = recog_data.constraints[nop];
+	       nalt < recog_data.n_alternatives;
+	       nalt++)
+	    {
+	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
+	      while (*p && *p != ',')
+		p++;
+	      if (*p)
+		p++;
+	    }
+	}
+      for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
+	{
+	  if (! recog_data.alternative_enabled_p[nalt] || TEST_HARD_REG_BIT (alts, nalt))
+	    continue;
+
+	  for (nop = 0; nop < recog_data.n_operands; nop++)
+	    {
+	      int c, len;
+
+	      op = recog_data.operand[nop];
+	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
+	      if (*p == 0 || *p == ',')
+		continue;
+	      
+	      do
+		switch (c = *p, len = CONSTRAINT_LEN (c, p), c)
+		  {
+		  case '#':
+		  case ',':
+		    c = '\0';
+		  case '\0':
+		    len = 0;
+		    break;
+		  
+		  case '?':  case '!': case '*':  case '=':  case '+':
+		    break;
+		    
+		  case '%':
+		    /* We only support one commutative marker, the
+		       first one.  We already set commutative
+		       above.  */
+		    if (commutative < 0)
+		      commutative = nop;
+		    break;
+
+		  case '&':
+		    break;
+		    
+		  case '0':  case '1':  case '2':  case '3':  case '4':
+		  case '5':  case '6':  case '7':  case '8':  case '9':
+		    goto op_success;
+		    break;
+		    
+		  case 'p':
+		  case 'g':
+		  case 'X':
+		  case TARGET_MEM_CONSTRAINT:
+		    goto op_success;
+		    break;
+		    
+		  case '<':
+		    if (MEM_P (op)
+			&& (GET_CODE (XEXP (op, 0)) == PRE_DEC
+			    || GET_CODE (XEXP (op, 0)) == POST_DEC))
+		    goto op_success;
+		    break;
+		    
+		  case '>':
+		    if (MEM_P (op)
+		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
+			  || GET_CODE (XEXP (op, 0)) == POST_INC))
+		      goto op_success;
+		    break;
+		    
+		  case 'E':
+		  case 'F':
+		    if (CONST_DOUBLE_AS_FLOAT_P (op)
+			|| (GET_CODE (op) == CONST_VECTOR
+			    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
+		      goto op_success;
+		    break;
+		    
+		  case 'G':
+		  case 'H':
+		    if (CONST_DOUBLE_AS_FLOAT_P (op)
+			&& CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
+		      goto op_success;
+		    break;
+		    
+		  case 's':
+		    if (CONST_SCALAR_INT_P (op))
+		      break;
+		  case 'i':
+		    if (CONSTANT_P (op))
+		      goto op_success;
+		    break;
+		    
+		  case 'n':
+		    if (CONST_SCALAR_INT_P (op))
+		      goto op_success;
+		    break;
+		    
+		  case 'I':
+		  case 'J':
+		  case 'K':
+		  case 'L':
+		  case 'M':
+		  case 'N':
+		  case 'O':
+		  case 'P':
+		    if (CONST_INT_P (op)
+			&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
+		      goto op_success;
+		    break;
+		    
+		  case 'V':
+		    if (MEM_P (op) && ! offsettable_memref_p (op))
+		      goto op_success;
+		    break;
+		    
+		  case 'o':
+		    goto op_success;
+		    break;
+		    
+		  default:
+		    {
+		      enum reg_class cl;
+		      
+		      cl = (c == 'r' ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
+		      if (cl != NO_REGS)
+			goto op_success;
+#ifdef EXTRA_CONSTRAINT_STR
+		      else if (EXTRA_CONSTRAINT_STR (op, c, p))
+			goto op_success;
+		      else if (EXTRA_MEMORY_CONSTRAINT (c, p))
+			goto op_success;
+		      else if (EXTRA_ADDRESS_CONSTRAINT (c, p))
+			goto op_success;
+#endif
+		      break;
+		    }
+		  }
+	      while (p += len, c);
+	      break;
+	    op_success:
+	      ;
+	    }
+	  if (nop >= recog_data.n_operands)
+	    SET_HARD_REG_BIT (alts, nalt);
+	}
+      if (commutative < 0)
+	break;
+      if (curr_swapped)
+	break;
+      op = recog_data.operand[commutative];
+      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
+      recog_data.operand[commutative + 1] = op;
+
+    }
+}
+
+/* Return the number of the output non-early clobber operand which
+   should be the same in any case as operand with number OP_NUM (or
+   negative value if there is no such operand).  The function takes
+   only really possible alternatives into consideration.  */
+int
+ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
+{
+  int curr_alt, c, original, dup;
+  bool ignore_p, use_commut_op_p;
+  const char *str;
+#ifdef EXTRA_CONSTRAINT_STR
+  rtx op;
+#endif
+
+  if (op_num < 0 || recog_data.n_alternatives == 0)
+    return -1;
+  use_commut_op_p = false;
+  str = recog_data.constraints[op_num];
+  for (;;)
+    {
+#ifdef EXTRA_CONSTRAINT_STR
+      op = recog_data.operand[op_num];
+#endif
+      
+      for (ignore_p = false, original = -1, curr_alt = 0;;)
+	{
+	  c = *str;
+	  if (c == '\0')
+	    break;
+	  if (c == '#' || !TEST_HARD_REG_BIT (alts, curr_alt))
+	    ignore_p = true;
+	  else if (c == ',')
+	    {
+	      curr_alt++;
+	      ignore_p = false;
+	    }
+	  else if (! ignore_p)
+	    switch (c)
+	      {
+		/* We should find duplications only for input operands.  */
+	      case '=':
+	      case '+':
+		goto fail;
+	      case 'X':
+	      case 'p':
+	      case 'g':
+		goto fail;
+	      case 'r':
+	      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	      case 'h': case 'j': case 'k': case 'l':
+	      case 'q': case 't': case 'u':
+	      case 'v': case 'w': case 'x': case 'y': case 'z':
+	      case 'A': case 'B': case 'C': case 'D':
+	      case 'Q': case 'R': case 'S': case 'T': case 'U':
+	      case 'W': case 'Y': case 'Z':
+		{
+		  enum reg_class cl;
+		  
+		  cl = (c == 'r'
+			? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, str));
+		  if (cl != NO_REGS)
+		    {
+		      if (! targetm.class_likely_spilled_p (cl))
+			goto fail;
+		    }
+#ifdef EXTRA_CONSTRAINT_STR
+		  else if (EXTRA_CONSTRAINT_STR (op, c, str))
+		    goto fail;
+#endif
+		  break;
+		}
+		
+	      case '0': case '1': case '2': case '3': case '4':
+	      case '5': case '6': case '7': case '8': case '9':
+		if (original != -1 && original != c)
+		  goto fail;
+		original = c;
+		break;
+	      }
+	  str += CONSTRAINT_LEN (c, str);
+	}
+      if (original == -1)
+	goto fail;
+      dup = -1;
+      for (ignore_p = false, str = recog_data.constraints[original - '0'];
+	   *str != 0;
+	   str++)
+	if (ignore_p)
+	  {
+	    if (*str == ',')
+	      ignore_p = false;
+	  }
+	else if (*str == '#')
+	  ignore_p = true;
+	else if (! ignore_p)
+	  {
+	    if (*str == '=')
+	      dup = original - '0';
+	    /* It is better ignore an alternative with early clobber.  */
+	    else if (*str == '&')
+	      goto fail;
+	  }
+      if (dup >= 0)
+	return dup;
+    fail:
+      if (use_commut_op_p)
+	break;
+      use_commut_op_p = true;
+      if (commutative_constraint_p (recog_data.constraints[op_num]))
+	str = recog_data.constraints[op_num + 1];
+      else if (op_num > 0 && commutative_constraint_p (recog_data.constraints
+						       [op_num - 1]))
+	str = recog_data.constraints[op_num - 1];
+      else
+	break;
+    }
+  return -1;
+}
+
+
+
+/* Search forward to see if the source register of a copy insn dies
+   before either it or the destination register is modified, but don't
+   scan past the end of the basic block.  If so, we can replace the
+   source with the destination and let the source die in the copy
+   insn.
+
+   This will reduce the number of registers live in that range and may
+   enable the destination and the source coalescing, thus often saving
+   one register in addition to a register-register copy.  */
+
+static void
+decrease_live_ranges_number (void)
+{
+  basic_block bb;
+  rtx insn, set, src, dest, dest_death, p, q, note;
+  int sregno, dregno;
+
+  if (! flag_expensive_optimizations)
+    return;
+
+  if (ira_dump_file)
+    fprintf (ira_dump_file, "Starting decreasing number of live ranges...\n");
+
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	set = single_set (insn);
+	if (! set)
+	  continue;
+	src = SET_SRC (set);
+	dest = SET_DEST (set);
+	if (! REG_P (src) || ! REG_P (dest)
+	    || find_reg_note (insn, REG_DEAD, src))
+	  continue;
+	sregno = REGNO (src);
+	dregno = REGNO (dest);
+	
+	/* We don't want to mess with hard regs if register classes
+	   are small.  */
+	if (sregno == dregno
+	    || (targetm.small_register_classes_for_mode_p (GET_MODE (src))
+		&& (sregno < FIRST_PSEUDO_REGISTER
+		    || dregno < FIRST_PSEUDO_REGISTER))
+	    /* We don't see all updates to SP if they are in an
+	       auto-inc memory reference, so we must disallow this
+	       optimization on them.  */
+	    || sregno == STACK_POINTER_REGNUM
+	    || dregno == STACK_POINTER_REGNUM)
+	  continue;
+	
+	dest_death = NULL_RTX;
+
+	for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
+	  {
+	    if (! INSN_P (p))
+	      continue;
+	    if (BLOCK_FOR_INSN (p) != bb)
+	      break;
+	    
+	    if (reg_set_p (src, p) || reg_set_p (dest, p)
+		/* If SRC is an asm-declared register, it must not be
+		   replaced in any asm.  Unfortunately, the REG_EXPR
+		   tree for the asm variable may be absent in the SRC
+		   rtx, so we can't check the actual register
+		   declaration easily (the asm operand will have it,
+		   though).  To avoid complicating the test for a rare
+		   case, we just don't perform register replacement
+		   for a hard reg mentioned in an asm.  */
+		|| (sregno < FIRST_PSEUDO_REGISTER
+		    && asm_noperands (PATTERN (p)) >= 0
+		    && reg_overlap_mentioned_p (src, PATTERN (p)))
+		/* Don't change hard registers used by a call.  */
+		|| (CALL_P (p) && sregno < FIRST_PSEUDO_REGISTER
+		    && find_reg_fusage (p, USE, src))
+		/* Don't change a USE of a register.  */
+		|| (GET_CODE (PATTERN (p)) == USE
+		    && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))
+	      break;
+	    
+	    /* See if all of SRC dies in P.  This test is slightly
+	       more conservative than it needs to be.  */
+	    if ((note = find_regno_note (p, REG_DEAD, sregno))
+		&& GET_MODE (XEXP (note, 0)) == GET_MODE (src))
+	      {
+		int failed = 0;
+		
+		/* We can do the optimization.  Scan forward from INSN
+		   again, replacing regs as we go.  Set FAILED if a
+		   replacement can't be done.  In that case, we can't
+		   move the death note for SRC.  This should be
+		   rare.  */
+		
+		/* Set to stop at next insn.  */
+		for (q = next_real_insn (insn);
+		     q != next_real_insn (p);
+		     q = next_real_insn (q))
+		  {
+		    if (reg_overlap_mentioned_p (src, PATTERN (q)))
+		      {
+			/* If SRC is a hard register, we might miss
+			   some overlapping registers with
+			   validate_replace_rtx, so we would have to
+			   undo it.  We can't if DEST is present in
+			   the insn, so fail in that combination of
+			   cases.  */
+			if (sregno < FIRST_PSEUDO_REGISTER
+			    && reg_mentioned_p (dest, PATTERN (q)))
+			  failed = 1;
+			
+			/* Attempt to replace all uses.  */
+			else if (!validate_replace_rtx (src, dest, q))
+			  failed = 1;
+			
+			/* If this succeeded, but some part of the
+			   register is still present, undo the
+			   replacement.  */
+			else if (sregno < FIRST_PSEUDO_REGISTER
+				 && reg_overlap_mentioned_p (src, PATTERN (q)))
+			  {
+			    validate_replace_rtx (dest, src, q);
+			    failed = 1;
+			  }
+		      }
+		    
+		    /* If DEST dies here, remove the death note and
+		       save it for later.  Make sure ALL of DEST dies
+		       here; again, this is overly conservative.  */
+		    if (! dest_death
+			&& (dest_death = find_regno_note (q, REG_DEAD, dregno)))
+		      {
+			if (GET_MODE (XEXP (dest_death, 0)) == GET_MODE (dest))
+			  remove_note (q, dest_death);
+			else
+			  {
+			    failed = 1;
+			    dest_death = 0;
+			  }
+		      }
+		  }
+		
+		if (! failed)
+		  {
+		    /* Move death note of SRC from P to INSN.  */
+		    remove_note (p, note);
+		    XEXP (note, 1) = REG_NOTES (insn);
+		    REG_NOTES (insn) = note;
+		  }
+		
+		/* DEST is also dead if INSN has a REG_UNUSED note for
+		   DEST.  */
+		if (! dest_death
+		    && (dest_death
+			= find_regno_note (insn, REG_UNUSED, dregno)))
+		  {
+		    PUT_REG_NOTE_KIND (dest_death, REG_DEAD);
+		    remove_note (insn, dest_death);
+		  }
+		
+		/* Put death note of DEST on P if we saw it die.  */
+		if (dest_death)
+		  {
+		    XEXP (dest_death, 1) = REG_NOTES (p);
+		    REG_NOTES (p) = dest_death;
+		  }
+		break;
+	      }
+	    
+	    /* If SRC is a hard register which is set or killed in
+	       some other way, we can't do this optimization.  */
+	    else if (sregno < FIRST_PSEUDO_REGISTER && dead_or_set_p (p, src))
+	      break;
+	  }
+      }
+}
+
+
+
 /* Return nonzero if REGNO is a particularly bad choice for reloading X.  */
 static bool
 ira_bad_reload_regno_1 (int regno, rtx x)
@@ -4655,7 +5176,7 @@ ira (FILE *f)
     }
 
   setup_prohibited_mode_move_regs ();
-
+  decrease_live_ranges_number ();
   df_note_add_problem ();
 
   /* DF_LIVE can't be used in the register allocator, too many other
@@ -4671,6 +5192,7 @@ ira (FILE *f)
   df->changeable_flags |= DF_VERIFY_SCHEDULED;
 #endif
   df_analyze ();
+
   df_clear_flags (DF_NO_INSN_RESCAN);
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();

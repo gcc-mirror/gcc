@@ -1328,7 +1328,6 @@ OBJS = \
 	reg-stack.o \
 	regcprop.o \
 	reginfo.o \
-	regmove.o \
 	regrename.o \
 	regstat.o \
 	reload.o \

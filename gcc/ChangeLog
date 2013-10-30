@@ -1,3 +1,87 @@
+2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* regmove.c: Remove.
+	* tree-pass.h (make_pass_regmove): Remove.
+	* timevar.def (TV_REGMOVE): Remove.
+	* passes.def (pass_regmove): Remove.
+	* opts.c (default_options_table): Remove entry for regmove.
+	* doc/passes.texi: Remove regmove pass description.
+	* doc/invoke.texi (-foptimize-register-move, -fregmove): Remove
+	options.
+	(-fdump-rtl-regmove): Ditto.
+	* common.opt (foptimize-register-move, fregmove): Ignore.
+	* Makefile.in (OBJS): Remove regmove.o.
+	* regmove.c: Remove.
+	* ira-int.h (struct ira_allocno_pref, ira_pref_t): New structure
+	and type.
+	(struct ira_allocno) New member allocno_prefs.
+	(ALLOCNO_PREFS): New macro.
+	(ira_prefs, ira_prefs_num): New external vars.
+	(ira_setup_alts, ira_get_dup_out_num, ira_debug_pref): New
+	prototypes.
+	(ira_debug_prefs, ira_debug_allocno_prefs, ira_create_pref):
+	Ditto.
+	(ira_add_allocno_pref, ira_remove_pref, ira_remove_allocno_prefs):
+	Ditto.
+	(ira_add_allocno_copy_to_list): Remove prototype.
+	(ira_swap_allocno_copy_ends_if_necessary): Ditto.
+	(ira_pref_iterator): New type.
+	(ira_pref_iter_init, ira_pref_iter_cond): New functions.
+	(FOR_EACH_PREF): New macro.
+	* ira.c (commutative_constraint_p): Move from ira-conflicts.c.
+	(ira_get_dup_out_num): Ditto. Rename from get_dup_num.  Modify the
+	code.
+	(ira_setup_alts): New function.
+	(decrease_live_ranges_number): New function.
+	(ira): Call the above function.
+	* ira-build.c (ira_prefs, ira_prefs_num): New global vars.
+	(ira_create_allocno): Initialize allocno prefs.
+	(pref_pool, pref_vec): New static vars.
+	(initiate_prefs, find_allocno_pref, ira_create_pref): New
+	functions.
+	(add_allocno_pref_to_list, ira_add_allocno_pref, print_pref): Ditto.
+	(ira_debug_pref, print_prefs, ira_debug_prefs): Ditto.
+	(print_allocno_prefs, ira_debug_allocno_prefs, finish_pref): Ditto.
+	(ira_remove_pref, ira_remove_allocno_prefs, finish_prefs): Ditto.
+	(ira_add_allocno_copy_to_list): Make static.  Rename to
+	add_allocno_copy_to_list.
+	(ira_swap_allocno_copy_ends_if_necessary): Make static.  Rename to
+	swap_allocno_copy_ends_if_necessary.
+	(remove_unnecessary_allocnos, remove_low_level_allocnos): Call
+	ira_remove_allocno_prefs.
+	(ira_flattening): Ditto.
+	(ira_build): Call initiate_prefs, print_prefs.
+	(ira_destroy): Call finish_prefs.
+	* ira-color.c (struct update_cost_record): New.
+	(struct allocno_color_data): Add new member update_cost_records.
+	(update_cost_record_pool): New static var.
+	(init_update_cost_records, get_update_cost_record): New functions.
+	(free_update_cost_record_list, finish_update_cost_records): Ditto.
+	(struct update_cost_queue_elem): Add member from.
+	(initiate_cost_update): Call init_update_cost_records.
+	(finish_cost_update): Call finish_update_cost_records.
+	(queue_update_cost, get_next_update_cost): Add new param from.
+	(Update_allocno_cost, update_costs_from_allocno): New functions.
+	(update_costs_from_prefs): Ditto.
+	(update_copy_costs): Rename to update_costs_from_copies.
+	(restore_costs_from_copies): New function.
+	(update_conflict_hard_regno_costs): Don't go back.
+	(assign_hard_reg): Call restore_costs_from_copies.  Add printing
+	more debug info.
+	(pop_allocnos): Add priniting more debug info.
+	(color_allocnos): Remove prefs for conflicting hard regs.
+	Call update_costs_from_prefs.
+	* ira-conflicts.c (commutative_constraint_p): Move to ira.c
+	(get_dup_num): Rename, modify, and move to ira.c
+	(process_regs_for_copy): Add prefs.
+	(add_insn_allocno_copies): Put src as first arg of
+	process_regs_for_copy.  Remove dead code.  Call ira_setup_alts.
+	* ira-costs.c (record_reg_classes): Modify and move code into
+	record_operands_costs.
+	(find_costs_and_classes): Create prefs for the hard reg of small
+	reg class.
+	(process_bb_node_for_hard_reg_moves): Add prefs.
+
 2013-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57100
