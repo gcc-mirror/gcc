@@ -82,6 +82,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
+* Pointer Bounds Checker builtins:: Built-in functions for Pointer Bounds Checker.
 * Cilk Plus Builtins::  Built-in functions for the Cilk Plus language extension.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
@@ -7751,6 +7752,176 @@ These have just one additional argument, @var{flag}, right before
 format string @var{fmt}.  If the compiler is able to optimize them to
 @code{fputc} etc.@: functions, it does, otherwise the checking function
 is called and the @var{flag} argument passed to it.
+
+@node Pointer Bounds Checker builtins
+@section Pointer Bounds Checker Built-in Functions
+@findex __builtin___bnd_set_ptr_bounds
+@findex __builtin___bnd_narrow_ptr_bounds
+@findex __builtin___bnd_copy_ptr_bounds
+@findex __builtin___bnd_init_ptr_bounds
+@findex __builtin___bnd_null_ptr_bounds
+@findex __builtin___bnd_store_ptr_bounds
+@findex __builtin___bnd_chk_ptr_lbounds
+@findex __builtin___bnd_chk_ptr_ubounds
+@findex __builtin___bnd_chk_ptr_bounds
+@findex __builtin___bnd_get_ptr_lbound
+@findex __builtin___bnd_get_ptr_ubound
+
+GCC provides a set of built-in functions to control Pointer Bounds Checker
+instrumentation.  Note that all Pointer Bounds Checker builtins are allowed
+to use even if you compile with Pointer Bounds Checker off.  But functions
+behavior may differ in such case.
+
+@deftypefn {Built-in Function} void * __builtin___bnd_set_ptr_bounds (const void * @var{q}, size_t @var{size})
+
+This built-in function returns a new pointer with the value of @var{q}, and
+associate it with the bounds [@var{q}, @var{q}+@var{size}-1].  With Pointer
+Bounds Checker off built-in function just returns the first argument.
+
+@smallexample
+extern void *__wrap_malloc (size_t n)
+@{
+  void *p = (void *)__real_malloc (n);
+  if (!p) return __builtin___bnd_null_ptr_bounds (p);
+  return __builtin___bnd_set_ptr_bounds (p, n);
+@}
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void * __builtin___bnd_narrow_ptr_bounds (const void * @var{p}, const void * @var{q}, size_t  @var{size})
+
+This built-in function returns a new pointer with the value of @var{p}
+and associate it with the narrowed bounds formed by the intersection
+of bounds associated with @var{q} and the [@var{p}, @var{p} + @var{size} - 1].
+With Pointer Bounds Checker off built-in function just returns the first
+argument.
+
+@smallexample
+void init_objects (object *objs, size_t size)
+@{
+  size_t i;
+  /* Initialize objects one-by-one passing pointers with bounds of an object,
+     not the full array of objects.  */
+  for (i = 0; i < size; i++)
+    init_object (__builtin___bnd_narrow_ptr_bounds (objs + i, objs, sizeof(object)));
+@}
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void * __builtin___bnd_copy_ptr_bounds (const void * @var{q}, const void * @var{r})
+
+This built-in function returns a new pointer with the value of @var{q},
+and associate it with the bounds already associated with pointer @var{r}.
+With Pointer Bounds Checker off built-in function just returns the first
+argument.
+
+@smallexample
+/* Here is a way to get pointer to object's field but
+   still with the full object's bounds.  */
+int *field_ptr = __builtin___bnd_copy_ptr_bounds (&objptr->int_filed, objptr);
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void * __builtin___bnd_init_ptr_bounds (const void * @var{q})
+
+This built-in function returns a new pointer with the value of @var{q}, and
+associate it with INIT (allowing full memory access) bounds. With Pointer
+Bounds Checker off built-in function just returns the first argument.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void * __builtin___bnd_null_ptr_bounds (const void * @var{q})
+
+This built-in function returns a new pointer with the value of @var{q}, and
+associate it with NULL (allowing no memory access) bounds. With Pointer
+Bounds Checker off built-in function just returns the first argument.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin___bnd_store_ptr_bounds (const void ** @var{ptr_addr}, const void * @var{ptr_val})
+
+This built-in function stores the bounds associated with pointer @var{ptr_val}
+and location @var{ptr_addr} into Bounds Table.  This can be useful to propagate
+bounds from legacy code without touching the associated pointer's memory when
+pointers were copied as integers.  With Pointer Bounds Checker off built-in
+function call is ignored.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_lbounds (const void * @var{q})
+
+This built-in function checks if the pointer @var{q} is within the lower
+bound of its associated bounds.  With Pointer Bounds Checker off built-in
+function call is ignored.
+
+@smallexample
+extern void *__wrap_memset (void *dst, int c, size_t len)
+@{
+  if (len > 0)
+    @{
+      __builtin___bnd_chk_ptr_lbounds (dst);
+      __builtin___bnd_chk_ptr_ubounds ((char *)dst + len - 1);
+      __real_memset (dst, c, len);
+    @}
+  return dst;
+@}
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_ubounds (const void * @var{q})
+
+This built-in function checks if the pointer @var{q} is within the upper
+bound of its associated bounds.  With Pointer Bounds Checker off built-in
+function call is ignored.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_bounds (const void * @var{q}, size_t @var{size})
+
+This built-in function checks if [@var{q}, @var{q} + @var{size} - 1] is within
+the lower and upper bounds associated with @var{q}.  With Pointer Bounds Checker
+off built-in function call is ignored.
+
+@smallexample
+extern void *__wrap_memcpy (void *dst, const void *src, size_t n)
+@{
+  if (n > 0)
+    @{
+      __bnd_chk_ptr_bounds (dst, n);
+      __bnd_chk_ptr_bounds (src, n);
+      __real_memcpy (dst, src, n);
+    @}
+  return dst;
+@}
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} const void * __builtin___bnd_get_ptr_lbound (const void * @var{q})
+
+This built-in function returns the lower bound (which is a pointer) associated
+with the pointer @var{q}.  This is at least useful for debugging using printf.
+With Pointer Bounds Checker off built-in function returns 0.
+
+@smallexample
+void *lb = __builtin___bnd_get_ptr_lbound (q);
+void *ub = __builtin___bnd_get_ptr_ubound (q);
+printf ("q = %p  lb(q) = %p  ub(q) = %p", q, lb, ub);
+@end smallexample
+
+@end deftypefn
+
+@deftypefn {Built-in Function} const void * __builtin___bnd_get_ptr_ubound (const void * @var{q})
+
+This built-in function returns the upper bound (which is a pointer) associated
+with the pointer @var{q}.  With Pointer Bounds Checker off built-in function
+returns -1.
+
+@end deftypefn
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
