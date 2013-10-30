@@ -26547,6 +26547,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
   num_regs = bit_count (saved_regs_mask);
   if ((offsets->outgoing_args != (1 + num_regs)) || cfun->calls_alloca)
     {
+      emit_insn (gen_blockage ());
       /* Unwind the stack to just below the saved registers.  */
       emit_insn (gen_addsi3 (stack_pointer_rtx,
                              hard_frame_pointer_rtx,

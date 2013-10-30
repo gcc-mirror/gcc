@@ -1,3 +1,8 @@
+2013-10-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/58854
+	* config/arm/arm.c (arm_expand_epilogue_apcs_frame): Emit blockage.
+
 2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-core.h (tree_index): Add TI_POINTER_BOUNDS_TYPE.
