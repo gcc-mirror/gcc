@@ -1,3 +1,10 @@
+2013-10-30  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc/config/sh/sh-mem.cc (sh_expand_cmpnstr): New function.
+	(sh_expand_cmpstr): Handle known align and schedule improvements.
+	* gcc/config/sh/sh-protos.h (sh_expand_cmpstrn): Declare.
+	* gcc/config/sh/sh.md (cmpstrnsi): New pattern.
+
 2013-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/10474
