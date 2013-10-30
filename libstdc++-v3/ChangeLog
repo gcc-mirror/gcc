@@ -1,3 +1,9 @@
+2013-10-30  Chris Studholme  <cvs@cs.utoronto.ca>
+
+	PR libstdc++/58912
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr_inplace): Remove
+	unnecessary initialization of storage buffer.
+
 2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/58839
