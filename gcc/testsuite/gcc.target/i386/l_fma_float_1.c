@@ -8,14 +8,10 @@
 
 #include "l_fma_1.h"
 
-/* { dg-final { scan-assembler-times "vfmadd132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd231ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub231ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmadd132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmadd231ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmsub132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmsub231ps" 4  } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+ps" 8 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+ps" 8 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ps" 8 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ps" 8 } } */
 /* { dg-final { scan-assembler-times "vfmadd\[123\]+ss" 120 } } */
 /* { dg-final { scan-assembler-times "vfmsub\[123\]+ss" 120 } } */
 /* { dg-final { scan-assembler-times "vfnmadd\[123\]+ss" 120 } } */
