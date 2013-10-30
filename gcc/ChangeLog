@@ -1,3 +1,13 @@
+2013-10-29  Andrew Pinski <apinski@cavium.com>
+
+	* tree-ssa-ifcombine.c: Include rtl.h and tm_p.h.
+	(ifcombine_ifandif): Handle cases where
+	maybe_fold_and_comparisons fails, combining the branches
+	anyways.
+	(tree_ssa_ifcombine): Inverse the order of
+	the basic block walk, increases the number of combinings.
+	* gimple.h (gsi_start_nondebug_after_labels_bb): New function.
+
 2013-10-29  Mike Stump  <mikestump@comcast.net>
 
 	* machmode.def (PARTIAL_INT_MODE): Add precision and name.
