@@ -3694,6 +3694,8 @@ stack.
 
 @hook TARGET_FN_ABI_VA_LIST
 
+@hook TARGET_FN_ABI_VA_LIST_BOUNDS_SIZE
+
 @hook TARGET_CANONICAL_VA_LIST_TYPE
 
 @hook TARGET_GIMPLIFY_VA_ARG_EXPR
@@ -4063,6 +4065,10 @@ These machine description macros help implement varargs:
 @hook TARGET_STRICT_ARGUMENT_NAMING
 
 @hook TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+
+@hook TARGET_LOAD_BOUNDS_FOR_ARG
+
+@hook TARGET_STORE_BOUNDS_FOR_ARG
 
 @node Trampolines
 @section Trampolines for Nested Functions
@@ -8183,6 +8189,10 @@ to by @var{ce_info}.
 @hook TARGET_BUILTIN_DECL
 
 @hook TARGET_EXPAND_BUILTIN
+
+@hook TARGET_BUILTIN_CHKP_FUNCTION
+@hook TARGET_CHKP_BOUND_TYPE
+@hook TARGET_CHKP_BOUND_MODE
 
 @hook TARGET_RESOLVE_OVERLOADED_BUILTIN
 
