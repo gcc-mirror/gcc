@@ -1,5 +1,10 @@
 2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Fix
+	and enable VERIFY tests.
+
+2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/shared_ptr (__shared_ptr): Assert non-void pointer.
 	* include/bits/shared_ptr (default_delete): Likewise.
 	* testsuite/20_util/shared_ptr/cons/58839.cc: Do not use
