@@ -2017,10 +2017,8 @@ restore_scratches (void)
 static void
 check_rtl (bool final_p)
 {
-  int i;
   basic_block bb;
   rtx insn;
-  lra_insn_recog_data_t id;
 
   lra_assert (! final_p || reload_completed);
   FOR_EACH_BB (bb)
@@ -2036,31 +2034,13 @@ check_rtl (bool final_p)
 	    lra_assert (constrain_operands (1));
 	    continue;
 	  }
+	/* LRA code is based on assumption that all addresses can be
+	   correctly decomposed.  LRA can generate reloads for
+	   decomposable addresses.  The decomposition code checks the
+	   correctness of the addresses.  So we don't need to check
+	   the addresses here.  */
 	if (insn_invalid_p (insn, false))
 	  fatal_insn_not_found (insn);
-	if (asm_noperands (PATTERN (insn)) >= 0)
-	  continue;
-	id = lra_get_insn_recog_data (insn);
-	/* The code is based on assumption that all addresses in
-	   regular instruction are legitimate before LRA.  The code in
-	   lra-constraints.c is based on assumption that there is no
-	   subreg of memory as an insn operand.	 */
-	for (i = 0; i < id->insn_static_data->n_operands; i++)
-	  {
-	    rtx op = *id->operand_loc[i];
-
-	    if (MEM_P (op)
-		&& (GET_MODE (op) != BLKmode
-		    || GET_CODE (XEXP (op, 0)) != SCRATCH)
-		&& ! memory_address_p (GET_MODE (op), XEXP (op, 0))
-		/* Some ports don't recognize the following addresses
-		   as legitimate.  Although they are legitimate if
-		   they satisfies the constraints and will be checked
-		   by insn constraints which we ignore here.  */
-		&& GET_CODE (XEXP (op, 0)) != UNSPEC
-		&& GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC)
-	      fatal_insn_not_found (insn);
-	  }
       }
 }
 #endif /* #ifdef ENABLE_CHECKING */
