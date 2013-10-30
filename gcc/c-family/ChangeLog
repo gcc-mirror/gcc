@@ -1,3 +1,7 @@
+2013-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* cilk.c (create_cilk_helper_decl): Use HOST_WIDE_INT_PRINT_DEC.
+
 2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.c (c_common_reswords[]): Added _Cilk_spawn and _Cilk_sync
