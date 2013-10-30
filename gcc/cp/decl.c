@@ -6404,11 +6404,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       /* If the VLA bound is larger than half the address space, or less
 	 than zero, throw std::bad_array_length.  */
       tree max = convert (ssizetype, TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
-      /* C++1y says we should throw for length <= 0, but we have
-	 historically supported zero-length arrays.  Let's treat that as an
-	 extension to be disabled by -std=c++NN.  */
-      int lower = flag_iso ? 0 : -1;
-      tree comp = build2 (LT_EXPR, boolean_type_node, max, ssize_int (lower));
+      tree comp = build2 (LT_EXPR, boolean_type_node, max, ssize_int (-1));
       comp = build3 (COND_EXPR, void_type_node, comp,
 		     throw_bad_array_length (), void_zero_node);
       finish_expr_stmt (comp);
