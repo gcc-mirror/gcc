@@ -16560,6 +16560,12 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 	  r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
 	  emit_move_insn (op0, r);
 	}
+      /* Normal *mov<mode>_internal pattern will handle
+	 unaligned loads just fine if misaligned_operand
+	 is true, and without the UNSPEC it can be combined
+	 with arithmetic instructions.  */
+      else if (misaligned_operand (op1, GET_MODE (op1)))
+	emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
       else
 	emit_insn (load_unaligned (op0, op1));
     }
@@ -16634,7 +16640,7 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 void
 ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 {
-  rtx op0, op1, m;
+  rtx op0, op1, orig_op0 = NULL_RTX, m;
   rtx (*load_unaligned) (rtx, rtx);
   rtx (*store_unaligned) (rtx, rtx);
 
@@ -16647,7 +16653,16 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	{
 	case MODE_VECTOR_INT:
 	case MODE_INT:
-	  op0 = gen_lowpart (V16SImode, op0);
+	  if (GET_MODE (op0) != V16SImode)
+	    {
+	      if (!MEM_P (op0))
+		{
+		  orig_op0 = op0;
+		  op0 = gen_reg_rtx (V16SImode);
+		}
+	      else
+		op0 = gen_lowpart (V16SImode, op0);
+	    }
 	  op1 = gen_lowpart (V16SImode, op1);
 	  /* FALLTHRU */
 
@@ -16676,6 +16691,8 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	    emit_insn (store_unaligned (op0, op1));
 	  else
 	    gcc_unreachable ();
+	  if (orig_op0)
+	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
 	  break;
 
 	default:
@@ -16692,12 +16709,23 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	{
 	case MODE_VECTOR_INT:
 	case MODE_INT:
-	  op0 = gen_lowpart (V32QImode, op0);
+	  if (GET_MODE (op0) != V32QImode)
+	    {
+	      if (!MEM_P (op0))
+		{
+		  orig_op0 = op0;
+		  op0 = gen_reg_rtx (V32QImode);
+		}
+	      else
+		op0 = gen_lowpart (V32QImode, op0);
+	    }
 	  op1 = gen_lowpart (V32QImode, op1);
 	  /* FALLTHRU */
 
 	case MODE_VECTOR_FLOAT:
 	  ix86_avx256_split_vector_move_misalign (op0, op1);
+	  if (orig_op0)
+	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
 	  break;
 
 	default:
@@ -16709,15 +16737,30 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
   if (MEM_P (op1))
     {
+      /* Normal *mov<mode>_internal pattern will handle
+	 unaligned loads just fine if misaligned_operand
+	 is true, and without the UNSPEC it can be combined
+	 with arithmetic instructions.  */
+      if (TARGET_AVX
+	  && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	  && misaligned_operand (op1, GET_MODE (op1)))
+	emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
       /* ??? If we have typed data, then it would appear that using
 	 movdqu is the only way to get unaligned data loaded with
 	 integer type.  */
-      if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      else if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	{
-	  op0 = gen_lowpart (V16QImode, op0);
+	  if (GET_MODE (op0) != V16QImode)
+	    {
+	      orig_op0 = op0;
+	      op0 = gen_reg_rtx (V16QImode);
+	    }
 	  op1 = gen_lowpart (V16QImode, op1);
 	  /* We will eventually emit movups based on insn attributes.  */
 	  emit_insn (gen_sse2_loaddquv16qi (op0, op1));
+	  if (orig_op0)
+	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
 	}
       else if (TARGET_SSE2 && mode == V2DFmode)
         {
@@ -16765,9 +16808,16 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
 	      || optimize_insn_for_size_p ())
 	    {
-	      op0 = gen_lowpart (V4SFmode, op0);
+	      if (GET_MODE (op0) != V4SFmode)
+		{
+		  orig_op0 = op0;
+		  op0 = gen_reg_rtx (V4SFmode);
+		}
 	      op1 = gen_lowpart (V4SFmode, op1);
 	      emit_insn (gen_sse_loadups (op0, op1));
+	      if (orig_op0)
+		emit_move_insn (orig_op0,
+				gen_lowpart (GET_MODE (orig_op0), op0));
 	      return;
             }
 
