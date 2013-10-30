@@ -13318,7 +13318,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       RECUR (FOR_INIT_STMT (t));
       finish_for_init_stmt (stmt);
       tmp = RECUR (FOR_COND (t));
-      finish_for_cond (tmp, stmt);
+      finish_for_cond (tmp, stmt, false);
       tmp = RECUR (FOR_EXPR (t));
       finish_for_expr (tmp, stmt);
       RECUR (FOR_BODY (t));
@@ -13333,7 +13333,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
         decl = tsubst (decl, args, complain, in_decl);
         maybe_push_decl (decl);
         expr = RECUR (RANGE_FOR_EXPR (t));
-        stmt = cp_convert_range_for (stmt, decl, expr);
+        stmt = cp_convert_range_for (stmt, decl, expr, RANGE_FOR_IVDEP (t));
         RECUR (RANGE_FOR_BODY (t));
         finish_for_stmt (stmt);
       }
@@ -13342,7 +13342,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case WHILE_STMT:
       stmt = begin_while_stmt ();
       tmp = RECUR (WHILE_COND (t));
-      finish_while_stmt_cond (tmp, stmt);
+      finish_while_stmt_cond (tmp, stmt, false);
       RECUR (WHILE_BODY (t));
       finish_while_stmt (stmt);
       break;
@@ -13352,7 +13352,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       RECUR (DO_BODY (t));
       finish_do_body (stmt);
       tmp = RECUR (DO_COND (t));
-      finish_do_stmt (tmp, stmt);
+      finish_do_stmt (tmp, stmt, false);
       break;
 
     case IF_STMT:

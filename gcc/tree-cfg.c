@@ -307,7 +307,8 @@ replace_loop_annotate ()
       if ((annot_expr_kind) tree_low_cst (gimple_call_arg (stmt, 1), 0)
 	  != annot_expr_ivdep_kind)
 	continue;
-      warning (0, "ignoring %<GCC ivdep%> annotation");
+      warning_at (gimple_location (stmt), 0, "ignoring %<GCC ivdep%> "
+		  "annotation");
       stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				  gimple_call_arg (stmt, 0));
       gsi_replace (&gsi, stmt, true);

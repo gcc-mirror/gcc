@@ -1,3 +1,9 @@
+2013-10-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* gcc/tree-cfg.c (replace_loop_annotate): Replace warning by
+	warning_at.
+
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac (loose_warn): Add -Wno-format if

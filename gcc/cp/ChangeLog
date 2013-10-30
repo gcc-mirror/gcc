@@ -1,3 +1,18 @@
+2013-10-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* cp-tree.h (RANGE_FOR_IVDEP): Define.
+	(cp_convert_range_for, finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Take 'bool ivdep' parameter.
+	* cp-array-notation.c (create_an_loop): Update call.
+	* init.c (build_vec_init): Ditto.
+	* pt.c (tsubst_expr): Ditto.
+	* parser.c (cp_parser_iteration_statement, cp_parser_for,
+	cp_parser_range_for, cp_convert_range_for): Update calls.
+	(cp_parser_pragma): Accept GCC ivdep for 'while' and 'do'.
+	* semantics.c (finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Optionally build ivdep annotation.
+
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Never throw for VLA bound == 0.
