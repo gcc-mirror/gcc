@@ -58,14 +58,33 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#ifdef _WIN32
+
+// Getting a definition for alloca appears to be a pain in the butt.  Here's
+// a variant on what's recommended in the autoconf doc
+#if defined _MSC_VER
+# include <malloc.h>
 # define alloca _alloca
+#elif defined HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
+# endif
+void *alloca (size_t);
+#endif
+
+#ifdef _WIN32
 # define INLINE static __inline
 # pragma warning(disable:1025)  // Don't whine about zero extending result of unary operation
 #else
-# include <alloca.h>
 # define INLINE static inline
 #endif
+
 
 #include "internal/abi.h"
 #include "cilk-abi-vla-internal.h"

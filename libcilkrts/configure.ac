@@ -49,6 +49,7 @@ AC_PROG_CC
 # AC_CONFIG_MACRO_DIR([..])
 AC_CONFIG_FILES([Makefile])
 AM_ENABLE_MULTILIB(, ..)
+AC_FUNC_ALLOCA
 
 # Get target configury.
 . ${srcdir}/configure.tgt
