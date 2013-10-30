@@ -42020,6 +42020,53 @@ ix86_bnd_prefixed_insn_p (rtx insn ATTRIBUTE_UNUSED)
   return false;
 }
 
+void
+ix86_expand_sse2_abs (rtx op0, rtx op1)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx tmp0, tmp1;
+
+  switch (mode)
+    {
+      /* For 32-bit signed integer X, the best way to calculate the absolute
+	 value of X is (((signed) X >> (W-1)) ^ X) - ((signed) X >> (W-1)).  */
+      case V4SImode:
+	tmp0 = expand_simple_binop (mode, ASHIFTRT, op1,
+				    GEN_INT (GET_MODE_BITSIZE
+						 (GET_MODE_INNER (mode)) - 1),
+				    NULL, 0, OPTAB_DIRECT);
+	if (tmp0)
+	  tmp1 = expand_simple_binop (mode, XOR, op1, tmp0,
+				      NULL, 0, OPTAB_DIRECT);
+	if (tmp0 && tmp1)
+	  expand_simple_binop (mode, MINUS, tmp1, tmp0,
+			       op0, 0, OPTAB_DIRECT);
+	break;
+
+      /* For 16-bit signed integer X, the best way to calculate the absolute
+	 value of X is max (X, -X), as SSE2 provides the PMAXSW insn.  */
+      case V8HImode:
+	tmp0 = expand_unop (mode, neg_optab, op1, NULL_RTX, 0);
+	if (tmp0)
+	  expand_simple_binop (mode, SMAX, op1, tmp0, op0, 0,
+			       OPTAB_DIRECT);
+	break;
+
+      /* For 8-bit signed integer X, the best way to calculate the absolute
+	 value of X is min ((unsigned char) X, (unsigned char) (-X)),
+	 as SSE2 provides the PMINUB insn.  */
+      case V16QImode:
+	tmp0 = expand_unop (mode, neg_optab, op1, NULL_RTX, 0);
+	if (tmp0)
+	  expand_simple_binop (V16QImode, UMIN, op1, tmp0, op0, 0,
+			       OPTAB_DIRECT);
+	break;
+
+      default:
+	break;
+    }
+}
+
 /* Expand an insert into a vector register through pinsr insn.
    Return true if successful.  */
 
