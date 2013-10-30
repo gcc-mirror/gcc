@@ -442,7 +442,8 @@ symtab_add_to_same_comdat_group (symtab_node new_node,
 void
 symtab_dissolve_same_comdat_group_list (symtab_node node)
 {
-  symtab_node n = node, next;
+  symtab_node n = node;
+  symtab_node next;
 
   if (!node->same_comdat_group)
     return;
@@ -1129,7 +1130,8 @@ symtab_semantically_equivalent_p (symtab_node a,
 				  symtab_node b)
 {
   enum availability avail;
-  symtab_node ba, bb;
+  symtab_node ba;
+  symtab_node bb;
 
   /* Equivalent functions are equivalent.  */
   if (a->decl == b->decl)

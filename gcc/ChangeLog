@@ -1,3 +1,12 @@
+2013-10-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraphunit.c (analyze_functions): Split symtab_node
+	declarations onto multiple lines to make things easier
+	for rename_symtab.py.
+
+	* symtab.c (symtab_dissolve_same_comdat_group_list): Likewise.
+	(symtab_semantically_equivalent_p): Likewise.
+
 2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/58784

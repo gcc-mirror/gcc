@@ -361,7 +361,8 @@ lto_symtab_resolve_symbols (symtab_node first)
 static void
 lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
 {
-  symtab_node prevailing, e;
+  symtab_node prevailing;
+  symtab_node e;
   vec<tree> mismatches = vNULL;
   unsigned i;
   tree decl;
@@ -413,7 +414,8 @@ lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
 static void
 lto_symtab_merge_decls_1 (symtab_node first)
 {
-  symtab_node e, prevailing;
+  symtab_node e;
+  symtab_node prevailing;
   bool diagnosed_p = false;
 
   if (cgraph_dump_file)
@@ -536,7 +538,8 @@ lto_symtab_merge_decls (void)
 static void
 lto_symtab_merge_symbols_1 (symtab_node prevailing)
 {
-  symtab_node e, next;
+  symtab_node e;
+  symtab_node next;
 
   /* Replace the cgraph node of each entry with the prevailing one.  */
   for (e = prevailing->next_sharing_asm_name; e;
