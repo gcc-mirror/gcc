@@ -1,3 +1,8 @@
+2013-10-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Look for a
+	POINTER_PLUS_EXPR in the defining statement.
+
 2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* regmove.c: Remove.
