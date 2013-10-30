@@ -566,7 +566,7 @@ ao_ref_alias_set (ao_ref *ref)
 void
 ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
-  HOST_WIDE_INT t1, t2;
+  HOST_WIDE_INT t1, t2, extra_offset = 0;
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -574,6 +574,14 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
       if (gimple_assign_single_p (stmt)
 	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	ptr = gimple_assign_rhs1 (stmt);
+      else if (is_gimple_assign (stmt)
+	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	       && host_integerp (gimple_assign_rhs2 (stmt), 0)
+	       && (t1 = int_cst_value (gimple_assign_rhs2 (stmt))) >= 0)
+	{
+	  ptr = gimple_assign_rhs1 (stmt);
+	  extra_offset = BITS_PER_UNIT * t1;
+	}
     }
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
@@ -585,10 +593,12 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 			  ptr, null_pointer_node);
       ref->offset = 0;
     }
+  ref->offset += extra_offset;
   if (size
       && host_integerp (size, 0)
-      && TREE_INT_CST_LOW (size) * 8 / 8 == TREE_INT_CST_LOW (size))
-    ref->max_size = ref->size = TREE_INT_CST_LOW (size) * 8;
+      && TREE_INT_CST_LOW (size) * BITS_PER_UNIT / BITS_PER_UNIT
+	 == TREE_INT_CST_LOW (size))
+    ref->max_size = ref->size = TREE_INT_CST_LOW (size) * BITS_PER_UNIT;
   else
     ref->max_size = ref->size = -1;
   ref->ref_alias_set = 0;
