@@ -823,14 +823,6 @@ RTL expressions for the instructions by substitution, simplifies the
 result using algebra, and then attempts to match the result against
 the machine description.  The code is located in @file{combine.c}.
 
-@item Register movement
-
-This pass looks for cases where matching constraints would force an
-instruction to need a reload, and this reload would be a
-register-to-register move.  It then attempts to change the registers
-used by the instruction to avoid the move instruction.  The code is
-located in @file{regmove.c}.
-
 @item Mode switching optimization
 
 This pass looks for instructions that require the processor to be in a
@@ -868,11 +860,6 @@ them by an equivalent expression (e.g.@: a constant) or by placing
 them on the stack.  This is done in several subpasses:
 
 @itemize @bullet
-@item
-Register move optimizations.  This pass makes some simple RTL code
-transformations which improve the subsequent register allocation.  The
-source file is @file{regmove.c}.
-
 @item
 The integrated register allocator (@acronym{IRA}).  It is called
 integrated because coalescing, register live range splitting, and hard

@@ -13,7 +13,7 @@ typedef double adouble __attribute__((aligned(sizeof (double))));
 /* { dg-final { scan-assembler-times "vfmsub132pd" 8  } } */
 /* { dg-final { scan-assembler-times "vfnmadd132pd" 8  } } */
 /* { dg-final { scan-assembler-times "vfnmsub132pd" 8  } } */
-/* { dg-final { scan-assembler-times "vfmadd132sd" 56 } } */
-/* { dg-final { scan-assembler-times "vfmsub132sd" 56 } } */
-/* { dg-final { scan-assembler-times "vfnmadd132sd" 56 } } */
-/* { dg-final { scan-assembler-times "vfnmsub132sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+sd" 56 } } */

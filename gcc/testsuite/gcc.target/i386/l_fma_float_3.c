@@ -16,11 +16,7 @@
 /* { dg-final { scan-assembler-times "vfnmadd231ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmsub132ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmsub231ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd132ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfmadd213ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfmsub132ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfmsub213ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfnmadd132ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfnmadd213ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfnmsub132ss" 60  } } */
-/* { dg-final { scan-assembler-times "vfnmsub213ss" 60  } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+ss" 120  } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+ss" 120  } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+ss" 120  } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+ss" 120  } } */

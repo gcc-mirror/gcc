@@ -388,13 +388,13 @@ Objective-C and Objective-C++ Dialects}.
 -fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
--fomit-frame-pointer -foptimize-register-move -foptimize-sibling-calls @gol
+-fomit-frame-pointer -foptimize-sibling-calls @gol
 -fpartial-inlining -fpeel-loops -fpredictive-commoning @gol
 -fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
--freciprocal-math -free -fregmove -frename-registers -freorder-blocks @gol
+-freciprocal-math -free -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
 -frounding-math -fsched2-use-superblocks -fsched-pressure @gol
@@ -5822,10 +5822,6 @@ Dump after post-reload optimizations.
 @opindex fdump-rtl-pro_and_epilogue
 Dump after generating the function prologues and epilogues.
 
-@item -fdump-rtl-regmove
-@opindex fdump-rtl-regmove
-Dump after the register move pass.
-
 @item -fdump-rtl-sched1
 @itemx -fdump-rtl-sched2
 @opindex fdump-rtl-sched1
@@ -6738,7 +6734,6 @@ also turns on the following optimization flags:
 -foptimize-sibling-calls @gol
 -fpartial-inlining @gol
 -fpeephole2 @gol
--fregmove @gol
 -freorder-blocks  -freorder-functions @gol
 -frerun-cse-after-loop  @gol
 -fsched-interblock  -fsched-spec @gol
@@ -7261,20 +7256,6 @@ helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
 Enabled for x86 at levels @option{-O2}, @option{-O3}.
-
-@item -foptimize-register-move
-@itemx -fregmove
-@opindex foptimize-register-move
-@opindex fregmove
-Attempt to reassign register numbers in move instructions and as
-operands of other simple instructions in order to maximize the amount of
-register tying.  This is especially helpful on machines with two-operand
-instructions.
-
-Note @option{-fregmove} and @option{-foptimize-register-move} are the same
-optimization.
-
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fira-algorithm=@var{algorithm}
 Use the specified coloring algorithm for the integrated register

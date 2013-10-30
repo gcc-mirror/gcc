@@ -1597,8 +1597,8 @@ Common Joined RejectNegative Var(common_deferred_options) Defer
 -fopt-info[-<type>=filename]	Dump compiler optimization details
 
 foptimize-register-move
-Common Report Var(flag_regmove) Optimization
-Do the full register move optimization pass
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 foptimize-sibling-calls
 Common Report Var(flag_optimize_sibling_calls) Optimization
@@ -1735,8 +1735,8 @@ Common Report Var(flag_pcc_struct_return,0) Optimization
 Return small aggregates in registers
 
 fregmove
-Common Report Var(flag_regmove) Optimization
-Enables a register move optimization
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
