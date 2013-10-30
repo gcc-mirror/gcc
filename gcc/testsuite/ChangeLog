@@ -1,3 +1,8 @@
+2013-10-30  Mikael Pettersson  <mikpe@it.uu.se>
+
+	* PR rtl-optimization/58369
+	* g++.dg/torture/pr58369.C: New test.
+
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
