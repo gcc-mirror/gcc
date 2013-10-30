@@ -1,3 +1,12 @@
+2013-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/58545
+	* reload1.c (update_eliminables_and_spill): New function, broken
+	out of reload.
+	(reload): Use it.  Check for frame size change after frame
+	size alignment, and call update_eliminables_and_spill first
+	if continue-ing.
+
 2013-10-30  Cong Hou  <congh@google.com>
 
 	PR target/58762

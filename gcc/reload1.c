@@ -373,6 +373,7 @@ static void init_eliminable_invariants (rtx, bool);
 static void init_elim_table (void);
 static void free_reg_equiv (void);
 static void update_eliminables (HARD_REG_SET *);
+static bool update_eliminables_and_spill (void);
 static void elimination_costs_in_insn (rtx);
 static void spill_hard_reg (unsigned int, int);
 static int finish_spills (int);
@@ -913,9 +914,6 @@ reload (rtx first, int global)
       if (caller_save_needed)
 	setup_save_areas ();
 
-      /* If we allocated another stack slot, redo elimination bookkeeping.  */
-      if (something_was_spilled || starting_frame_size != get_frame_size ())
-	continue;
       if (starting_frame_size && crtl->stack_alignment_needed)
 	{
 	  /* If we have a stack frame, we must align it now.  The
@@ -927,8 +925,12 @@ reload (rtx first, int global)
 	     STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
-	  if (starting_frame_size != get_frame_size ())
-	    continue;
+	}
+      /* If we allocated another stack slot, redo elimination bookkeeping.  */
+      if (something_was_spilled || starting_frame_size != get_frame_size ())
+	{
+	  update_eliminables_and_spill ();
+	  continue;
 	}
 
       if (caller_save_needed)
@@ -962,30 +964,11 @@ reload (rtx first, int global)
       else if (!verify_initial_elim_offsets ())
 	something_changed = 1;
 
-      {
-	HARD_REG_SET to_spill;
-	CLEAR_HARD_REG_SET (to_spill);
-	update_eliminables (&to_spill);
-	AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
-
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (TEST_HARD_REG_BIT (to_spill, i))
-	    {
-	      spill_hard_reg (i, 1);
-	      did_spill = 1;
-
-	      /* Regardless of the state of spills, if we previously had
-		 a register that we thought we could eliminate, but now can
-		 not eliminate, we must run another pass.
-
-		 Consider pseudos which have an entry in reg_equiv_* which
-		 reference an eliminable register.  We must make another pass
-		 to update reg_equiv_* so that we do not substitute in the
-		 old value from when we thought the elimination could be
-		 performed.  */
-	      something_changed = 1;
-	    }
-      }
+      if (update_eliminables_and_spill ())
+	{
+	  did_spill = 1;
+	  something_changed = 1;
+	}
 
       select_reload_regs ();
       if (failure)
@@ -4029,6 +4012,38 @@ update_eliminables (HARD_REG_SET *pset)
      the hard frame pointer.  */
   if (frame_pointer_needed && ! previous_frame_pointer_needed)
     SET_HARD_REG_BIT (*pset, HARD_FRAME_POINTER_REGNUM);
+}
+
+/* Call update_eliminables an spill any registers we can't eliminate anymore.
+   Return true iff a register was spilled.  */
+
+static bool
+update_eliminables_and_spill (void)
+{
+  int i;
+  bool did_spill = false;
+  HARD_REG_SET to_spill;
+  CLEAR_HARD_REG_SET (to_spill);
+  update_eliminables (&to_spill);
+  AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (to_spill, i))
+      {
+	spill_hard_reg (i, 1);
+	did_spill = true;
+
+	/* Regardless of the state of spills, if we previously had
+	   a register that we thought we could eliminate, but now can
+	   not eliminate, we must run another pass.
+
+	   Consider pseudos which have an entry in reg_equiv_* which
+	   reference an eliminable register.  We must make another pass
+	   to update reg_equiv_* so that we do not substitute in the
+	   old value from when we thought the elimination could be
+	   performed.  */
+      }
+  return did_spill;
 }
 
 /* Return true if X is used as the target register of an elimination.  */

@@ -1,3 +1,8 @@
+2013-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/58545
+	* gcc.target/avr/pr58545.c: New test.
+
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	Revert:
