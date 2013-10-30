@@ -44,7 +44,20 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <alloca.h>
+#if defined HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
+# endif
+void *alloca (size_t);
+#endif
+
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -150,7 +163,8 @@ NORETURN cilk_fiber_sysdep::jump_to_resume_other_sysdep(cilk_fiber_sysdep* other
     __cilkrts_bug("Should not get here");
 }
 
-
+#pragma GCC push_options
+#pragma GCC optimize ("-O0")
 NORETURN cilk_fiber_sysdep::run()
 {
     // Only fibers created from a pool have a proc method to run and execute. 
@@ -214,6 +228,7 @@ NORETURN cilk_fiber_sysdep::run()
     // User proc should never return.
     __cilkrts_bug("Should not get here");
 }
+#pragma GCC pop_options
 
 void cilk_fiber_sysdep::make_stack(size_t stack_size)
 {

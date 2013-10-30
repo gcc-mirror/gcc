@@ -1,3 +1,12 @@
+2013-10-30  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* configure: Reconfigured.
+	* configure.ac: Add AC_FUNC_ALLOCA.
+	* runtime/sysdep-unix.c: Added check for alloca.h before 
+	including it.
+	* config/x86/cilk-abi-vla.c: Likewise.
+	* runtime/cilk_fiber-unix.cpp: Likewise.
+
 2013-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	* configure.ac: Add AM_MAINTAINER_MODE.
