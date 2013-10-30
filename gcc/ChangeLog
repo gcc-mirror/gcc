@@ -1,3 +1,8 @@
+2013-10-30  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac (loose_warn): Add -Wno-format if
+	--disable-build-format-warnings.
+
 2013-10-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* cgraphunit.c (analyze_functions): Split symtab_node
