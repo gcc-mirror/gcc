@@ -2138,7 +2138,7 @@ attributes are currently defined for functions on all targets:
 @code{returns_nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
-@code{no_sanitize_undefined},
+@code{no_sanitize_undefined}, @code{bnd_legacy},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -3548,6 +3548,12 @@ The @code{no_address_safety_analysis} is a deprecated alias of the
 The @code{no_sanitize_undefined} attribute on functions is used
 to inform the compiler that it should not check for undefined behavior
 in the function when compiling with the @option{-fsanitize=undefined} option.
+
+@item bnd_legacy
+@cindex @code{bnd_legacy} function attribute
+The @code{bnd_legacy} attribute on functions is used to inform
+compiler that function should not be instrumented when compiled
+with @option{-fcheck-pointers} option.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
@@ -5321,12 +5327,12 @@ placed in either the @code{.bss_below100} section or the
 The keyword @code{__attribute__} allows you to specify special
 attributes of @code{struct} and @code{union} types when you define
 such types.  This keyword is followed by an attribute specification
-inside double parentheses.  Seven attributes are currently defined for
+inside double parentheses.  Eight attributes are currently defined for
 types: @code{aligned}, @code{packed}, @code{transparent_union},
-@code{unused}, @code{deprecated}, @code{visibility}, and
-@code{may_alias}.  Other attributes are defined for functions
-(@pxref{Function Attributes}) and for variables (@pxref{Variable
-Attributes}).
+@code{unused}, @code{deprecated}, @code{visibility}, @code{may_alias}
+and @code{bnd_variable_size}.  Other attributes are defined for
+functions (@pxref{Function Attributes}) and for variables
+(@pxref{Variable Attributes}).
 
 You may also specify any one of these attributes with @samp{__}
 preceding and following its keyword.  This allows you to use these
@@ -5617,6 +5623,35 @@ particular, if a class is thrown as an exception in one shared object
 and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
+
+@item bnd_variable_size
+When applied to a structure field, this attribute tells Pointer
+Bounds Checker that the size of this field should not be computed
+using static type information.  It may be used to mark variable
+sized static array fields placed at the end of a structure.
+
+@smallexample
+struct S
+@{
+  int size;
+  char data[1];
+@}
+S *p = (S *)malloc (sizeof(S) + 100);
+p->data[10] = 0; //Bounds violation
+@end smallexample
+
+By using an attribute for a field we may avoid bound violation
+we most probably do not want to see:
+
+@smallexample
+struct S
+@{
+  int size;
+  char data[1] __attribute__((bnd_variable_size));
+@}
+S *p = (S *)malloc (sizeof(S) + 100);
+p->data[10] = 0; //OK
+@end smallexample
 
 @end table
 

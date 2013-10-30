@@ -375,6 +375,8 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -759,6 +761,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
+  { "bnd_variable_size",      0, 0, true,  false, false,
+			      handle_bnd_variable_size_attribute, false },
+  { "bnd_legacy",             0, 0, true, false, false,
+			      handle_bnd_legacy, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -8015,6 +8021,38 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_variable_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_variable_size_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_legacy" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_legacy (tree *node, tree name, tree ARG_UNUSED (args),
+		   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

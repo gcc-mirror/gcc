@@ -1,3 +1,11 @@
+2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* c-family/c-common.c (handle_bnd_variable_size_attribute): New.
+	(handle_bnd_legacy): New.
+	(c_common_attribute_table): Add bnd_variable_size and bnd_legacy.
+	* doc/extend.texi: Document bnd_variable_size and bnd_legacy
+	attributes.
+
 2013-10-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* builtin-types.def (BT_FN_VOID_CONST_PTR): New.
