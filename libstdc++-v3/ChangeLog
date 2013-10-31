@@ -1,3 +1,8 @@
+2013-10-31  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.ac: Add header checks for fenv.h and complex.h.
+	* configure: Regenerate.
+
 2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
         Implement C++14 digit separators.
