@@ -1,3 +1,9 @@
+2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+        Implement C++14 digit separators.
+	* c-lex.c (interpret_float): Remove digit separators from scratch string
+	before building real literal.
+
 2013-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* cilk.c (create_cilk_helper_decl): Use HOST_WIDE_INT_PRINT_DEC.

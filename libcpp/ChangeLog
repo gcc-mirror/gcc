@@ -1,3 +1,16 @@
+2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+        Implement C++14 digit separators.
+	* include/cpplib.h (cpp_options): Add digit_separators flag.
+	* internal.h (DIGIT_SEP(c)): New macro.
+	* expr.c (cpp_classify_number): Check improper placement of digit sep;
+	(cpp_interpret_integer): Skip over digit separators.
+	* init.c (lang_flags): Add digit_separators flag; (lang_defaults): Add
+	digit separator flags per language; (cpp_set_lang): Set
+	digit_separators
+	* lex.c (lex_number): Add digits separator to allowable characters for
+	C++14.
+
 2013-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (PICFLAG): New.

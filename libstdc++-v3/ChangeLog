@@ -1,3 +1,9 @@
+2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+        Implement C++14 digit separators.
+	* include/include/bits/parse_numbers.h: Change struct _Digit<_Base, '`'>
+	to struct _Digit<_Base, '\''>.
+
 2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/default_delete/48631_neg.cc: Tweak dg-prune.
