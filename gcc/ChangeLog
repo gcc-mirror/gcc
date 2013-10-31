@@ -1,3 +1,11 @@
+2013-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	Manual part of renaming of symtab_node_base to symtab_node.
+
+	* ipa-ref.h (symtab_node): Remove typedef to pointer type, as it
+	clashes with the preferred name for the base class.
+	(const_symtab_node): Remove redundant typedef.
+
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* optabs.c (expand_vec_perm): Avoid vector mode punning
