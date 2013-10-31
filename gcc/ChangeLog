@@ -1,3 +1,13 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-cfg.c (assert_unreachable_fallthru_edge_p): New function.
+	* tree-cfg.h (assert_unreachable_fallthru_edge_p): New prototype.
+	* tree-vrp.c (all_imm_uses_in_stmt_or_feed_cond): New function.
+	(remove_range_assertions): If ASSERT_EXPR_VAR has no other immediate
+	uses but in the condition and ASSERT_EXPR and the other successor of
+	the predecessor bb is __builtin_unreachable (), set_range_info of the
+	ASSERT_EXPR_VAR to the range info of the ASSERT_EXPR's lhs.
+
 2013-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/58934
