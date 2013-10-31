@@ -822,6 +822,20 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mlarge -msmall -mrelax}
 
+@emph{NDS32 Options}
+@gccoptlist{-mbig-endian -mlittle-endian @gol
+-mreduced-regs -mfull-regs @gol
+-mcmov -mno-cmov @gol
+-mperf-ext -mno-perf-ext @gol
+-mv3push -mno-v3push @gol
+-m16bit -mno-16bit @gol
+-mgp-direct -mno-gp-direct @gol
+-misr-vector-size=@var{num} @gol
+-mcache-block-size=@var{num} @gol
+-march=@var{arch} @gol
+-mforce-fp-as-gp -mforbid-fp-as-gp @gol
+-mex9 -mctor-dtor -mrelax}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -10991,6 +11005,7 @@ platform.
 * MN10300 Options::
 * Moxie Options::
 * MSP430 Options::
+* NDS32 Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -17789,6 +17804,108 @@ Use small-model addressing (16-bit pointers, 16-bit @code{size_t}).
 This option is passed to the assembler and linker, and allows the
 linker to perform certain optimizations that cannot be done until
 the final link.
+
+@end table
+
+@node NDS32 Options
+@subsection NDS32 Options
+@cindex NDS32 Options
+
+These options are defined for NDS32 implementations:
+
+@table @gcctabopt
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate code in big-endian mode.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate code in little-endian mode.
+
+@item -mreduced-regs
+@opindex mreduced-regs
+Use reduced-set registers for register allocation.
+
+@item -mfull-regs
+@opindex mfull-regs
+Use full-set registers for register allocation.
+
+@item -mcmov
+@opindex mcmov
+Generate conditional move instructions.
+
+@item -mno-cmov
+@opindex mno-cmov
+Do not generate conditional move instructions.
+
+@item -mperf-ext
+@opindex mperf-ext
+Generate performance extension instructions.
+
+@item -mno-perf-ext
+@opindex mno-perf-ext
+Do not generate performance extension instructions.
+
+@item -mv3push
+@opindex mv3push
+Generate v3 push25/pop25 instructions.
+
+@item -mno-v3push
+@opindex mno-v3push
+Do not generate v3 push25/pop25 instructions.
+
+@item -m16-bit
+@opindex m16-bit
+Generate 16-bit instructions.
+
+@item -mno-16-bit
+@opindex mno-16-bit
+Do not generate 16-bit instructions.
+
+@item -mgp-direct
+@opindex mgp-direct
+Generate GP base instructions directly.
+
+@item -mno-gp-direct
+@opindex mno-gp-direct
+Do no generate GP base instructions directly.
+
+@item -misr-vector-size=@var{num}
+@opindex misr-vector-size
+Specify the size of each interrupt vector, which must be 4 or 16.
+
+@item -mcache-block-size=@var{num}
+@opindex mcache-block-size
+Specify the size of each cache block,
+which must be a power of 2 between 4 and 512.
+
+@item -march=@var{arch}
+@opindex march
+Specify the name of the target architecture.
+
+@item -mforce-fp-as-gp
+@opindex mforce-fp-as-gp
+Prevent $fp being allocated during register allocation so that compiler
+is able to force performing fp-as-gp optimization.
+
+@item -mforbid-fp-as-gp
+@opindex mforbid-fp-as-gp
+Forbid using $fp to access static and global variables.
+This option strictly forbids fp-as-gp optimization
+regardless of @option{-mforce-fp-as-gp}.
+
+@item -mex9
+@opindex mex9
+Use special directives to guide linker doing ex9 optimization.
+
+@item -mctor-dtor
+@opindex mctor-dtor
+Enable constructor/destructor feature.
+
+@item -mrelax
+@opindex mrelax
+Guide linker to relax instructions.
 
 @end table
 

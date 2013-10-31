@@ -1,3 +1,7 @@
+2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config-list.mk (nds32le-elf, nds32be-elf): Add nds32 target.
+
 2013-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc_update (files_and_dependencies): Add rules for

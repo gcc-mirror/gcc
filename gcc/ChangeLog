@@ -1,3 +1,34 @@
+2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config.gcc (nds32*-*-*): Add nds32 target.
+	* config/nds32/nds32.c: New file.
+	* config/nds32/nds32.h: New file.
+	* config/nds32/nds32.md: New file.
+	* config/nds32/constants.md: New file.
+	* config/nds32/constraints.md: New file.
+	* config/nds32/iterators.md: New file.
+	* config/nds32/nds32-doubleword.md: New file.
+	* config/nds32/nds32-intrinsic.md: New file.
+	* config/nds32/nds32_intrinsic.h: New file.
+	* config/nds32/nds32-modes.def: New file.
+	* config/nds32/nds32-multiple.md: New file.
+	* config/nds32/nds32.opt: New file.
+	* config/nds32/nds32-opts.h: New file.
+	* config/nds32/nds32-protos.h: New file.
+	* config/nds32/nds32-peephole2.md: New file.
+	* config/nds32/pipelines.md: New file.
+	* config/nds32/predicates.md: New file.
+	* config/nds32/t-mlibs: New file.
+	* common/config/nds32: New directory and files.
+
+	* doc/invoke.texi (NDS32 options): Document nds32 specific options.
+	* doc/md.texi (NDS32 family): Document nds32 specific constraints.
+	* doc/install.texi (Cross-Compiler-Specific Options): Document
+	--with-nds32-lib for nds32 target.
+	* doc/extend.texi (Function Attributes, Target Builtins): Document
+	nds32 specific attributes.
+
 2013-10-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints (process_alt_operands): Use the result

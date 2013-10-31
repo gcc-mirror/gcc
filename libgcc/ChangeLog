@@ -1,3 +1,9 @@
+2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config.host (nds32*-elf*): Add nds32 target.
+	* config/nds32 : New directory and files.
+
 2013-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	For CRIS ports, switch to soft-fp.  Improve arit.c and longlong.h.
