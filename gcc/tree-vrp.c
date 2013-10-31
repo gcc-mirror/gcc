@@ -6486,6 +6486,60 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
   return true;
 }
 
+/* Handle
+   _4 = x_3 & 31;
+   if (_4 != 0)
+     goto <bb 6>;
+   else
+     goto <bb 7>;
+   <bb 6>:
+   __builtin_unreachable ();
+   <bb 7>:
+   x_5 = ASSERT_EXPR <x_3, ...>;
+   If x_3 has no other immediate uses (checked by caller),
+   var is the x_3 var from ASSERT_EXPR, we can clear low 5 bits
+   from the non-zero bitmask.  */
+
+static void
+maybe_set_nonzero_bits (basic_block bb, tree var)
+{
+  edge e = single_pred_edge (bb);
+  basic_block cond_bb = e->src;
+  gimple stmt = last_stmt (cond_bb);
+  tree cst;
+
+  if (stmt == NULL
+      || gimple_code (stmt) != GIMPLE_COND
+      || gimple_cond_code (stmt) != ((e->flags & EDGE_TRUE_VALUE)
+				     ? EQ_EXPR : NE_EXPR)
+      || TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME
+      || !integer_zerop (gimple_cond_rhs (stmt)))
+    return;
+
+  stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
+  if (!is_gimple_assign (stmt)
+      || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR
+      || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST)
+    return;
+  if (gimple_assign_rhs1 (stmt) != var)
+    {
+      gimple stmt2;
+
+      if (TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME)
+	return;
+      stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      if (!gimple_assign_cast_p (stmt2)
+	  || gimple_assign_rhs1 (stmt2) != var
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
+	  || (TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (stmt)))
+			      != TYPE_PRECISION (TREE_TYPE (var))))
+	return;
+    }
+  cst = gimple_assign_rhs2 (stmt);
+  set_nonzero_bits (var, (get_nonzero_bits (var)
+			  & ~tree_to_double_int (cst)));
+}
+
 /* Convert range assertion expressions into the implied copies and
    copy propagate away the copies.  Doing the trivial copy propagation
    here avoids the need to run the full copy propagation pass after
@@ -6566,8 +6620,11 @@ remove_range_assertions (void)
 		if (is_unreachable
 		    && all_imm_uses_in_stmt_or_feed_cond (var, stmt,
 							  single_pred (bb)))
-		  set_range_info (var, SSA_NAME_RANGE_INFO (lhs)->min,
-				  SSA_NAME_RANGE_INFO (lhs)->max);
+		  {
+		    set_range_info (var, SSA_NAME_RANGE_INFO (lhs)->min,
+				    SSA_NAME_RANGE_INFO (lhs)->max);
+		    maybe_set_nonzero_bits (bb, var);
+		  }
 	      }
 
 	    /* Propagate the RHS into every use of the LHS.  */
