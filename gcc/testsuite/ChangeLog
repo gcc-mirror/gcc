@@ -1,5 +1,7 @@
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/vect/vect-align-3.c: New test.
+
 	* g++.dg/warn/pr33738.C (main): Initialize a2 again to make sure
 	we warn about it already during VRP1 pass.
 
