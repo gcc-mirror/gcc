@@ -1,5 +1,9 @@
 2013-10-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58162
+	* parser.c (cp_parser_late_parse_one_default_arg): Set
+	TARGET_EXPR_DIRECT_INIT_P.
+
 	* class.c (type_build_ctor_call): Return early in C++98 mode.
 	(type_build_dtor_call): Likewise.
 
