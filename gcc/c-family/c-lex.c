@@ -774,8 +774,19 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  memcpy (copy, token->val.str.text, copylen);
-  copy[copylen] = '\0';
+  if (cxx_dialect > cxx11)
+    {
+      size_t maxlen = 0;
+      for (size_t i = 0; i < copylen; ++i)
+        if (token->val.str.text[i] != '\'')
+          copy[maxlen++] = token->val.str.text[i];
+      copy[maxlen] = '\0';
+    }
+  else
+    {
+      memcpy (copy, token->val.str.text, copylen);
+      copy[copylen] = '\0';
+    }
 
   real_from_string3 (&real, copy, TYPE_MODE (const_type));
   if (const_type != type)

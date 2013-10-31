@@ -59,6 +59,8 @@ struct cset_converter
     || (((prevc) == 'p' || (prevc) == 'P') \
         && CPP_OPTION (pfile, extended_numbers))))
 
+#define DIGIT_SEP(c) ((c) == '\'' && CPP_OPTION (pfile, digit_separators))
+
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base)
