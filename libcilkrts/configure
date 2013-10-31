@@ -681,6 +681,9 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+LIBSTDCXX_RAW_CXX_LDFLAGS
+LIBSTDCXX_RAW_CXX_CXXFLAGS
+target_noncanonical
 target_os
 target_vendor
 target_cpu
@@ -2365,6 +2368,36 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
+
+target_alias=${target_alias-$host_alias}
+
+ case ${build_alias} in
+  "") build_noncanonical=${build} ;;
+  *) build_noncanonical=${build_alias} ;;
+esac
+
+ case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+
+ case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
+
+
+
+
+
+  LIBSTDCXX_RAW_CXX_CXXFLAGS="\
+    -I\$(top_builddir)/../libstdc++-v3/include \
+    -I\$(top_builddir)/../libstdc++-v3/include/\$(target_noncanonical) \
+    -I\$(top_srcdir)/../libstdc++-v3/libsupc++"
+  LIBSTDCXX_RAW_CXX_LDFLAGS="\
+    \$(top_builddir)/../libstdc++-v3/src/libstdc++.la"
+
+
 
 am__api_version='1.11'
 
@@ -4878,7 +4911,7 @@ case ${enable_version_specific_runtime_libs} in
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
     toolexecdir='$(libdir)/gcc/$(target_alias)'
-   toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
     ;;
   no)
     if test -n "$with_cross_host" &&
@@ -11024,7 +11057,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11027 "configure"
+#line 11060 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11130,7 +11163,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11133 "configure"
+#line 11166 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
