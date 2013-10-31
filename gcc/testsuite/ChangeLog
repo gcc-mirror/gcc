@@ -1,3 +1,8 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/pr33738.C (main): Initialize a2 again to make sure
+	we warn about it already during VRP1 pass.
+
 2013-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/58934

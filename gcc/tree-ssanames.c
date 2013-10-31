@@ -189,11 +189,30 @@ set_range_info (tree name, double_int min, double_int max)
     {
       ri = ggc_alloc_cleared_range_info_def ();
       SSA_NAME_RANGE_INFO (name) = ri;
+      ri->nonzero_bits = double_int::mask (TYPE_PRECISION (TREE_TYPE (name)));
     }
 
   /* Set the values.  */
   ri->min = min;
   ri->max = max;
+
+  /* If it is a range, try to improve nonzero_bits from the min/max.  */
+  if (min.cmp (max, TYPE_UNSIGNED (TREE_TYPE (name))) != 1)
+    {
+      int prec = TYPE_PRECISION (TREE_TYPE (name));
+      double_int xorv;
+
+      min = min.zext (prec);
+      max = max.zext (prec);
+      xorv = min ^ max;
+      if (xorv.high)
+	xorv = double_int::mask (2 * HOST_BITS_PER_WIDE_INT
+				 - clz_hwi (xorv.high));
+      else if (xorv.low)
+	xorv = double_int::mask (HOST_BITS_PER_WIDE_INT
+				 - clz_hwi (xorv.low));
+      ri->nonzero_bits = ri->nonzero_bits & (min | xorv);
+    }
 }
 
 
@@ -231,6 +250,47 @@ get_range_info (tree name, double_int *min, double_int *max)
     *max = ri->max;
   }
   return range_type;
+}
+
+/* Change non-zero bits bitmask of NAME.  */
+
+void
+set_nonzero_bits (tree name, double_int mask)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  if (SSA_NAME_RANGE_INFO (name) == NULL)
+    set_range_info (name,
+		    tree_to_double_int (TYPE_MIN_VALUE (TREE_TYPE (name))),
+		    tree_to_double_int (TYPE_MAX_VALUE (TREE_TYPE (name))));
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  ri->nonzero_bits
+    = mask & double_int::mask (TYPE_PRECISION (TREE_TYPE (name)));
+}
+
+/* Return a double_int with potentially non-zero bits in SSA_NAME
+   NAME, or double_int_minus_one if unknown.  */
+
+double_int
+get_nonzero_bits (tree name)
+{
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+      if (pi && pi->align)
+	{
+	  double_int al = double_int::from_uhwi (pi->align - 1);
+	  return ((double_int::mask (TYPE_PRECISION (TREE_TYPE (name))) & ~al)
+		  | double_int::from_uhwi (pi->misalign));
+	}
+      return double_int_minus_one;
+    }
+
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+	      > 2 * HOST_BITS_PER_WIDE_INT))
+    return double_int_minus_one;
+
+  return ri->nonzero_bits;
 }
 
 /* We no longer need the SSA_NAME expression VAR, release it so that
