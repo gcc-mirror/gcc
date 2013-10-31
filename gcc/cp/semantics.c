@@ -8289,12 +8289,18 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
       return t;
     }
 
-  /* Shortcut trivial copy constructor/op=.  */
-  if (call_expr_nargs (t) == 2 && trivial_fn_p (fun))
+  /* Shortcut trivial constructor/op=.  */
+  if (trivial_fn_p (fun))
     {
-      tree arg = convert_from_reference (get_nth_callarg (t, 1));
-      return cxx_eval_constant_expression (old_call, arg, allow_non_constant,
-					   addr, non_constant_p, overflow_p);
+      if (call_expr_nargs (t) == 2)
+	{
+	  tree arg = convert_from_reference (get_nth_callarg (t, 1));
+	  return cxx_eval_constant_expression (old_call, arg, allow_non_constant,
+					       addr, non_constant_p, overflow_p);
+	}
+      else if (TREE_CODE (t) == AGGR_INIT_EXPR
+	       && AGGR_INIT_ZERO_FIRST (t))
+	return build_zero_init (DECL_CONTEXT (fun), NULL_TREE, false);
     }
 
   /* If in direct recursive call, optimize definition search.  */

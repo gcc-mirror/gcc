@@ -1,5 +1,10 @@
 2013-10-31  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (cxx_eval_call_expression): Handle trivial
+	value-initialization.
+	* typeck2.c (store_init_value): Call maybe_constant_init after
+	cxx_constant_value.
+
 	* decl.c (cxx_maybe_build_cleanup): Always set LOOKUP_NONVIRTUAL.
 	* decl2.c (build_cleanup): Just call cxx_maybe_build_cleanup.
 
