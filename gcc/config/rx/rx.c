@@ -2273,6 +2273,14 @@ static GTY(()) tree rx_builtins[(int) RX_BUILTIN_max];
 static void
 rx_init_builtins (void)
 {
+#define ADD_RX_BUILTIN0(UC_NAME, LC_NAME, RET_TYPE)		\
+   rx_builtins[RX_BUILTIN_##UC_NAME] =					\
+   add_builtin_function ("__builtin_rx_" LC_NAME,			\
+			build_function_type_list (RET_TYPE##_type_node, \
+						  NULL_TREE),		\
+			RX_BUILTIN_##UC_NAME,				\
+			BUILT_IN_MD, NULL, NULL_TREE)
+
 #define ADD_RX_BUILTIN1(UC_NAME, LC_NAME, RET_TYPE, ARG_TYPE)		\
    rx_builtins[RX_BUILTIN_##UC_NAME] =					\
    add_builtin_function ("__builtin_rx_" LC_NAME,			\
@@ -2303,7 +2311,7 @@ rx_init_builtins (void)
 			RX_BUILTIN_##UC_NAME,				\
 			BUILT_IN_MD, NULL, NULL_TREE)
 
-  ADD_RX_BUILTIN1 (BRK,     "brk",     void,  void);
+  ADD_RX_BUILTIN0 (BRK,     "brk",     void);
   ADD_RX_BUILTIN1 (CLRPSW,  "clrpsw",  void,  integer);
   ADD_RX_BUILTIN1 (SETPSW,  "setpsw",  void,  integer);
   ADD_RX_BUILTIN1 (INT,     "int",     void,  integer);
@@ -2311,18 +2319,18 @@ rx_init_builtins (void)
   ADD_RX_BUILTIN2 (MACLO,   "maclo",   void,  intSI, intSI);
   ADD_RX_BUILTIN2 (MULHI,   "mulhi",   void,  intSI, intSI);
   ADD_RX_BUILTIN2 (MULLO,   "mullo",   void,  intSI, intSI);
-  ADD_RX_BUILTIN1 (MVFACHI, "mvfachi", intSI, void);
-  ADD_RX_BUILTIN1 (MVFACMI, "mvfacmi", intSI, void);
+  ADD_RX_BUILTIN0 (MVFACHI, "mvfachi", intSI);
+  ADD_RX_BUILTIN0 (MVFACMI, "mvfacmi", intSI);
   ADD_RX_BUILTIN1 (MVTACHI, "mvtachi", void,  intSI);
   ADD_RX_BUILTIN1 (MVTACLO, "mvtaclo", void,  intSI);
-  ADD_RX_BUILTIN1 (RMPA,    "rmpa",    void,  void);
+  ADD_RX_BUILTIN0 (RMPA,    "rmpa",    void);
   ADD_RX_BUILTIN1 (MVFC,    "mvfc",    intSI, integer);
   ADD_RX_BUILTIN2 (MVTC,    "mvtc",    void,  integer, integer);
   ADD_RX_BUILTIN1 (MVTIPL,  "mvtipl",  void,  integer);
   ADD_RX_BUILTIN1 (RACW,    "racw",    void,  integer);
   ADD_RX_BUILTIN1 (ROUND,   "round",   intSI, float);
   ADD_RX_BUILTIN1 (REVW,    "revw",    intSI, intSI);
-  ADD_RX_BUILTIN1 (WAIT,    "wait",    void,  void);
+  ADD_RX_BUILTIN0 (WAIT,    "wait",    void);
 }
 
 /* Return the RX builtin for CODE.  */
