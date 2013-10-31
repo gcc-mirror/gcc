@@ -11504,6 +11504,14 @@ c_finish_omp_clauses (tree clauses)
 			"%qE is not a variable in %<aligned%> clause", t);
 	      remove = true;
 	    }
+	  else if (!POINTER_TYPE_P (TREE_TYPE (t))
+		   && TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE in %<aligned%> clause is neither a pointer nor "
+			"an array", t);
+	      remove = true;
+	    }
 	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),

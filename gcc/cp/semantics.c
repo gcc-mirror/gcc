@@ -5467,6 +5467,19 @@ finish_omp_clauses (tree clauses)
 		error ("%qE is not a variable in %<aligned%> clause", t);
 	      remove = true;
 	    }
+	  else if (!type_dependent_expression_p (t)
+		   && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE
+		   && (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE
+		       || (!POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (t)))
+			   && (TREE_CODE (TREE_TYPE (TREE_TYPE (t)))
+			       != ARRAY_TYPE))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE in %<aligned%> clause is neither a pointer nor "
+			"an array nor a reference to pointer or array", t);
+	      remove = true;
+	    }
 	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
 	    {
 	      error ("%qD appears more than once in %<aligned%> clauses", t);

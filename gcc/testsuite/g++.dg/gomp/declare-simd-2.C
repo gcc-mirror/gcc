@@ -64,4 +64,22 @@ struct D
   int e;
 };
 
+#pragma omp declare simd aligned (a, b, c, d)
+int fn13 (int *a, int b[64], int *&c, int (&d)[64]);
+
+#pragma omp declare simd aligned (a)	// { dg-error "neither a pointer nor an array" }
+int fn14 (int a);
+
+#pragma omp declare simd aligned (b)	// { dg-error "neither a pointer nor an array" }
+int fn14 (int &b);
+
+#pragma omp declare simd aligned (c)	// { dg-error "neither a pointer nor an array" }
+int fn14 (float c);
+
+#pragma omp declare simd aligned (d)	// { dg-error "neither a pointer nor an array" }
+int fn14 (double &d);
+
+#pragma omp declare simd aligned (e)	// { dg-error "neither a pointer nor an array" }
+int fn14 (D e);
+
 // { dg-error "has no member" "" { target *-*-* } 61 }
