@@ -47,6 +47,9 @@ AM_CFLAGS = $(GENERAL_FLAGS) -std=c99
 AM_CPPFLAGS = $(GENERAL_FLAGS)
 AM_LDFLAGS = -lpthread -ldl
 
+# May be used by toolexeclibdir.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 # Target list.
 toolexeclib_LTLIBRARIES = libcilkrts.la
 

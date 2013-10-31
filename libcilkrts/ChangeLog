@@ -1,3 +1,13 @@
+2013-10-31  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR other/58925
+	* configure.ac: Added target_alias and GCC_LIBSTDCXX_RAW_CXX_FLAGS
+	fields.
+	* configure: Regenerated.
+	* aclocal.m4: Likewise.
+	* Makefile.in: Likewise.
+	* Makefile.am: Added gcc_version field.
+
 2013-10-30  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* configure.ac: Changed a case statement to include i386.

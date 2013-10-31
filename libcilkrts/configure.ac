@@ -37,6 +37,9 @@ AC_PREREQ([2.64])
 # Needed to define ${target}.  Needs to be very early to avoid annoying
 # warning about calling AC_ARG_PROGRAM before AC_CANONICAL_SYSTEM
 AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$host_alias}
+AC_SUBST(target_alias)
+GCC_LIBSTDCXX_RAW_CXX_FLAGS
 AM_INIT_AUTOMAKE(foreign no-dist)
 
 AM_MAINTAINER_MODE
@@ -86,7 +89,7 @@ case ${enable_version_specific_runtime_libs} in
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
     toolexecdir='$(libdir)/gcc/$(target_alias)'
-   toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
     ;;
   no)
     if test -n "$with_cross_host" &&
