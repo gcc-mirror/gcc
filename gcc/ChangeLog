@@ -1,3 +1,8 @@
+2013-10-30  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (ADD_RX_BUILTIN0): New macro, used for builtins
+	that take no arguments.
+
 2013-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/58545
