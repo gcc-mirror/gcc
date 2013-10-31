@@ -6459,6 +6459,33 @@ check_all_array_refs (void)
     }
 }
 
+/* Return true if all imm uses of VAR are either in STMT, or
+   feed (optionally through a chain of single imm uses) GIMPLE_COND
+   in basic block COND_BB.  */
+
+static bool
+all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
+{
+  use_operand_p use_p, use2_p;
+  imm_use_iterator iter;
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
+    if (USE_STMT (use_p) != stmt)
+      {
+	gimple use_stmt = USE_STMT (use_p);
+	if (is_gimple_debug (use_stmt))
+	  continue;
+	while (is_gimple_assign (use_stmt)
+	       && single_imm_use (gimple_assign_lhs (use_stmt),
+				  &use2_p, &use_stmt))
+	  ;
+	if (gimple_code (use_stmt) != GIMPLE_COND
+	    || gimple_bb (use_stmt) != cond_bb)
+	  return false;
+      }
+  return true;
+}
+
 /* Convert range assertion expressions into the implied copies and
    copy propagate away the copies.  Doing the trivial copy propagation
    here avoids the need to run the full copy propagation pass after
@@ -6488,12 +6515,16 @@ remove_range_assertions (void)
 {
   basic_block bb;
   gimple_stmt_iterator si;
+  /* 1 if looking at ASSERT_EXPRs immediately at the beginning of
+     a basic block preceeded by GIMPLE_COND branching to it and
+     __builtin_trap, -1 if not yet checked, 0 otherwise.  */
+  int is_unreachable;
 
   /* Note that the BSI iterator bump happens at the bottom of the
      loop and no bump is necessary if we're removing the statement
      referenced by the current BSI.  */
   FOR_EACH_BB (bb)
-    for (si = gsi_start_bb (bb); !gsi_end_p (si);)
+    for (si = gsi_after_labels (bb), is_unreachable = -1; !gsi_end_p (si);)
       {
 	gimple stmt = gsi_stmt (si);
 	gimple use_stmt;
@@ -6501,6 +6532,7 @@ remove_range_assertions (void)
 	if (is_gimple_assign (stmt)
 	    && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
 	  {
+	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
 	    tree var;
 	    tree cond = fold (ASSERT_EXPR_COND (rhs));
@@ -6509,22 +6541,49 @@ remove_range_assertions (void)
 
 	    gcc_assert (cond != boolean_false_node);
 
-	    /* Propagate the RHS into every use of the LHS.  */
 	    var = ASSERT_EXPR_VAR (rhs);
-	    FOR_EACH_IMM_USE_STMT (use_stmt, iter,
-				   gimple_assign_lhs (stmt))
+	    gcc_assert (TREE_CODE (var) == SSA_NAME);
+
+	    if (!POINTER_TYPE_P (TREE_TYPE (lhs))
+		&& SSA_NAME_RANGE_INFO (lhs))
+	      {
+		if (is_unreachable == -1)
+		  {
+		    is_unreachable = 0;
+		    if (single_pred_p (bb)
+			&& assert_unreachable_fallthru_edge_p
+						    (single_pred_edge (bb)))
+		      is_unreachable = 1;
+		  }
+		/* Handle
+		   if (x_7 >= 10 && x_7 < 20)
+		     __builtin_unreachable ();
+		   x_8 = ASSERT_EXPR <x_7, ...>;
+		   if the only uses of x_7 are in the ASSERT_EXPR and
+		   in the condition.  In that case, we can copy the
+		   range info from x_8 computed in this pass also
+		   for x_7.  */
+		if (is_unreachable
+		    && all_imm_uses_in_stmt_or_feed_cond (var, stmt,
+							  single_pred (bb)))
+		  set_range_info (var, SSA_NAME_RANGE_INFO (lhs)->min,
+				  SSA_NAME_RANGE_INFO (lhs)->max);
+	      }
+
+	    /* Propagate the RHS into every use of the LHS.  */
+	    FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		{
-		  SET_USE (use_p, var);
-		  gcc_assert (TREE_CODE (var) == SSA_NAME);
-		}
+		SET_USE (use_p, var);
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);
 	    release_defs (stmt);
 	  }
 	else
-	  gsi_next (&si);
+	  {
+	    gsi_next (&si);
+	    is_unreachable = 0;
+	  }
       }
 }
 
