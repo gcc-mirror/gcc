@@ -1,3 +1,13 @@
+2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58932
+	Revert:
+	2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58466
+	* pt.c (most_specialized_class): Bump processing_template_decl for
+	get_class_bindings.
+
 2013-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58581
