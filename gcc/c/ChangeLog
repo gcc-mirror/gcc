@@ -1,3 +1,8 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Diagnose aligned clause
+	with decl that is not pointer nor array.
+
 2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-decl.c (finish_function): Added a call for insert_cilk_frame when

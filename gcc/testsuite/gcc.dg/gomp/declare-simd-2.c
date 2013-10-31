@@ -22,3 +22,20 @@ int fn5 (int a);
 
 #pragma omp declare simd inbranch notinbranch /* { dg-error "clause is incompatible with" } */
 int fn6 (int);
+
+#pragma omp declare simd aligned (a, b)
+int fn7 (int *a, int b[64]);
+
+#pragma omp declare simd aligned (a)    /* { dg-error "neither a pointer nor an array" } */
+int fn8 (int a);
+
+#pragma omp declare simd aligned (c)    /* { dg-error "neither a pointer nor an array" } */
+int fn9 (float c);
+
+#pragma omp declare simd aligned (d)    /* { dg-error "neither a pointer nor an array" } */
+int fn10 (double d);
+
+struct D { int d; };
+
+#pragma omp declare simd aligned (e)    /* { dg-error "neither a pointer nor an array" } */
+int fn11 (struct D e);   

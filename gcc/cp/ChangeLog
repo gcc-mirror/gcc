@@ -1,3 +1,8 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Diagnose aligned clause
+	with decl that is not pointer nor array nor reference to those.
+
 2013-10-31  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (cxx_eval_call_expression): Handle trivial

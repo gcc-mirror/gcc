@@ -1,3 +1,11 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/simd-1.C: New test.
+	* g++.dg/gomp/declare-simd-1.C (f32): Fix up aligned clause argument.
+	* g++.dg/gomp/declare-simd-2.C (fn13, fn14): Add new tests.
+	* gcc.dg/gomp/declare-simd-2.c (fn7, fn8, fn9, fn10, fn11): Likewise.
+	* c-c++-common/gomp/simd6.c: New test.
+
 2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++14 digit separators.
