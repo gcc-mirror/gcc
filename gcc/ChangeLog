@@ -1,3 +1,24 @@
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* optabs.c (expand_vec_perm): Avoid vector mode punning
+	SUBREGs in SET_DEST.
+	* expmed.c (store_bit_field_1): Likewise.
+	* config/i386/sse.md (movdi_to_sse, vec_pack_sfix_trunc_v2df,
+	vec_pack_sfix_v2df, vec_shl_<mode>, vec_shr_<mode>,
+	vec_interleave_high<mode>, vec_interleave_low<mode>): Likewise.
+	* config/i386/i386.c (ix86_expand_vector_move_misalign,
+	ix86_expand_sse_movcc, ix86_expand_int_vcond, ix86_expand_vec_perm,
+	ix86_expand_sse_unpack, ix86_expand_args_builtin,
+	ix86_expand_vector_init_duplicate, ix86_expand_vector_set,
+	emit_reduc_half, expand_vec_perm_blend, expand_vec_perm_pshufb,
+	expand_vec_perm_interleave2, expand_vec_perm_pshufb2,
+	expand_vec_perm_vpshufb2_vpermq,
+	expand_vec_perm_vpshufb2_vpermq_even_odd, expand_vec_perm_even_odd_1,
+	expand_vec_perm_broadcast_1, expand_vec_perm_vpshufb4_vpermq2,
+	ix86_expand_sse2_mulv4si3, ix86_expand_pinsr): Likewise.
+	(expand_vec_perm_palignr): Likewise.  Modify a copy of *d rather
+	than *d itself.
+
 2013-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_sse2_abs): Rename function arguments.
