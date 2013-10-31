@@ -10696,11 +10696,6 @@ preferably to other optimizations by means of pragma @code{Loop_Optimize}:
 placed immediately within the loop will convey the appropriate hint to the
 compiler for this loop.
 
-You can obtain information about the vectorization performed by the compiler
-by specifying @option{-ftree-vectorizer-verbose=N}.  For more details of
-this switch, see @ref{Debugging Options,,Options for Debugging Your Program
-or GCC, gcc, Using the GNU Compiler Collection (GCC)}.
-
 @node Other Optimization Switches
 @subsection Other Optimization Switches
 @cindex Optimization Switches

@@ -232,40 +232,6 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
     }
 }
 
-/* Handle -ftree-vectorizer-verbose=ARG by remapping it to -fopt-info.
-   It remaps the old verbosity values as following:
-
-   REPORT_NONE ==> No dump is output
-   REPORT_VECTORIZED_LOCATIONS ==> "-optimized"
-   REPORT_UNVECTORIZED_LOCATIONS ==> "-missed"
-
-   Any higher verbosity levels get mapped to "-all" flags.  */
-
-static void
-dump_remap_tree_vectorizer_verbose (const char *arg)
-{
-  int value = atoi (arg);
-  const char *remapped_opt_info = NULL;
-
-  switch (value)
-    {
-    case 0:
-      break;
-    case 1:
-      remapped_opt_info = "optimized";
-      break;
-    case 2:
-      remapped_opt_info = "missed";
-      break;
-    default:
-      remapped_opt_info = "all";
-      break;
-    }
-
-  if (remapped_opt_info)
-    opt_info_switch_p (remapped_opt_info);
-}
-
 /* Language mask determined at initialization.  */
 static unsigned int initial_lang_mask;
 
@@ -455,10 +421,6 @@ handle_common_deferred_options (void)
 	case OPT_fstack_limit_symbol_:
 	  stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt->arg));
 	  break;
-
-        case OPT_ftree_vectorizer_verbose_:
-	  dump_remap_tree_vectorizer_verbose (opt->arg);
-          break;
 
 	default:
 	  gcc_unreachable ();

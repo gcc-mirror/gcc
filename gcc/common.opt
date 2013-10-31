@@ -2276,8 +2276,8 @@ Common Report Var(flag_tree_vectorize) Optimization
 Enable vectorization on trees
 
 ftree-vectorizer-verbose=
-Common RejectNegative Joined UInteger Var(common_deferred_options) Defer
--ftree-vectorizer-verbose=<number>	This switch is deprecated. Use -fopt-info instead.
+Common Joined RejectNegative Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ftree-loop-vectorize
 Common Report Var(flag_tree_loop_vectorize) Optimization

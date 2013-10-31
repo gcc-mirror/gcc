@@ -1,3 +1,7 @@
+2013-10-30  Sharad Singhai  <singhai@google.com>
+
+	* gnat_ugn.texi: Remove option description for PR middle-end/58134.
+
 2013-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/trans.c (finalize_nrv): Update for conversion of

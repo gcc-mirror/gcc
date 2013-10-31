@@ -321,7 +321,6 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-vtable-verify @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
--ftree-vectorizer-verbose=@var{n} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns=@var{file} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
@@ -6360,24 +6359,6 @@ in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
 ignored. Thus only the @file{vec.miss} is produced which cotaints
 dumps from the vectorizer about missed opportunities.
-
-@item -ftree-vectorizer-verbose=@var{n}
-@opindex ftree-vectorizer-verbose
-This option is deprecated and is implemented in terms of
-@option{-fopt-info}. Please use @option{-fopt-info-@var{kind}} form
-instead, where @var{kind} is one of the valid opt-info options. It
-prints additional optimization information.  For @var{n}=0 no
-diagnostic information is reported.  If @var{n}=1 the vectorizer
-reports each loop that got vectorized, and the total number of loops
-that got vectorized.  If @var{n}=2 the vectorizer reports locations
-which could not be vectorized and the reasons for those. For any
-higher verbosity levels all the analysis and transformation
-information from the vectorizer is reported.
-
-Note that the information output by @option{-ftree-vectorizer-verbose}
-option is sent to @file{stderr}. If the equivalent form
-@option{-fopt-info-@var{options}=@var{filename}} is used then the
-output is sent into @var{filename} instead.
 
 @item -frandom-seed=@var{string}
 @opindex frandom-seed
