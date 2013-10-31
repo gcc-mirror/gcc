@@ -1,3 +1,7 @@
+2013-10-31  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/lp1243022.c: New test.
+
 2013-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/58545

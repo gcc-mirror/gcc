@@ -1,3 +1,7 @@
+2013-10-31  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* lower-subreg.c (resolve_simple_move): Copy REG_INC note.
+
 2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/58933
