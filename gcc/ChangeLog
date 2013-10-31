@@ -1,5 +1,20 @@
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-pretty-print.c (dump_ssaname_info): Print newline also
+	in case of VR_VARYING.  Print get_nonzero_bits if not all ones.
+	* tree-ssanames.h (struct range_info_def): Add nonzero_bits field.
+	(set_nonzero_bits, get_nonzero_bits): New prototypes.
+	* tree-ssa-ccp.c (get_default_value): Use get_range_info to see if
+	a default def isn't partially constant.
+	(ccp_finalize): If after IPA, set_range_info if integral SSA_NAME
+	is known to be partially zero.
+	(evaluate_stmt): If we'd return otherwise VARYING, use get_range_info
+	to see if a default def isn't partially constant.
+	* tree-ssanames.c (set_range_info): Initialize nonzero_bits upon
+	creation of a range, if VR_RANGE, try to improve nonzero_bits from
+	the range.
+	(set_nonzero_bits, get_nonzero_bits): New functions.
+
 	* tree-cfg.c (assert_unreachable_fallthru_edge_p): New function.
 	* tree-cfg.h (assert_unreachable_fallthru_edge_p): New prototype.
 	* tree-vrp.c (all_imm_uses_in_stmt_or_feed_cond): New function.

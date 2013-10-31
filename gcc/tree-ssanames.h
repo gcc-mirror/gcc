@@ -52,6 +52,8 @@ struct GTY (()) range_info_def {
   double_int min;
   /* Maximum for value range.  */
   double_int max;
+  /* Non-zero bits - bits not set are guaranteed to be always zero.  */
+  double_int nonzero_bits;
 };
 
 
@@ -68,10 +70,11 @@ struct GTY (()) range_info_def {
 enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree ssa, double_int min, double_int max);
+extern void set_range_info (tree, double_int, double_int);
 /* Gets the value range from SSA.  */
-extern enum value_range_type  get_range_info (tree name, double_int *min,
-					      double_int *max);
+extern enum value_range_type get_range_info (tree, double_int *, double_int *);
+extern void set_nonzero_bits (tree, double_int);
+extern double_int get_nonzero_bits (tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);
 extern void ssanames_print_statistics (void);
