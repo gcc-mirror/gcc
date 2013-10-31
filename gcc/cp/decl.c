@@ -14298,9 +14298,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
   type = TREE_TYPE (decl);
   if (type_build_dtor_call (type))
     {
-      int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
-      bool has_vbases = (TREE_CODE (type) == RECORD_TYPE
-			 && CLASSTYPE_VBASECLASSES (type));
+      int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR;
       tree addr;
       tree call;
 
@@ -14308,10 +14306,6 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
 	addr = decl;
       else
 	addr = build_address (decl);
-
-      /* Optimize for space over speed here.  */
-      if (!has_vbases || flag_expensive_optimizations)
-	flags |= LOOKUP_NONVIRTUAL;
 
       call = build_delete (TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0, complain);

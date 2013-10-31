@@ -1,5 +1,8 @@
 2013-10-31  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cxx_maybe_build_cleanup): Always set LOOKUP_NONVIRTUAL.
+	* decl2.c (build_cleanup): Just call cxx_maybe_build_cleanup.
+
 	PR c++/58162
 	* parser.c (cp_parser_late_parse_one_default_arg): Set
 	TARGET_EXPR_DIRECT_INIT_P.
