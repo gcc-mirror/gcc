@@ -1,6 +1,6 @@
 2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-        Implement C++14 digit separators.
+	Implement C++14 digit separators.
 	* g++.dg/cpp1y/digit-sep.C: New.
 	* g++.dg/cpp1y/digit-sep-neg.C: New.
 	* g++.dg/cpp1y/digit-sep-cxx11-neg.C: New.
@@ -29,19 +29,6 @@
 	2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58466
-The Velvet Underground and Nico Full album vinyl LP
-vinylanalog vinylanalog·13 videos
-581
-150,561
-Like 1,087     Dislike 6
-
-Published on Jun 18, 2013
-
-The Velvet Underground and Nico legendary debut record produced by Andy Warhol (1967) presented in a non-modified recording of Verve V6-5008 vinyl LP. All efforts were made to realistically reproduce the natural vinyl stereo LP sound, so record levels were restrained and album noise is present.
-
-NOTE: THIS VIDEO IS FOR EDUCATION PURPOSES. ANY AND ALL COPYRIGHTS BELONG TO THE RIGHTFUL ARTISTS AND OWNERS.
-
-
 	* g++.dg/cpp0x/variadic145.C: New.
 
 	* g++.dg/cpp0x/sfinae49.C: New.
@@ -80,7 +67,7 @@ NOTE: THIS VIDEO IS FOR EDUCATION PURPOSES. ANY AND ALL COPYRIGHTS BELONG TO THE
 
 2013-10-30  Mikael Pettersson  <mikpe@it.uu.se>
 
-	* PR rtl-optimization/58369
+	PR rtl-optimization/58369
 	* g++.dg/torture/pr58369.C: New test.
 
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
@@ -133,7 +120,7 @@ NOTE: THIS VIDEO IS FOR EDUCATION PURPOSES. ANY AND ALL COPYRIGHTS BELONG TO THE
 	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
 
 2013-10-29  Andrew Pinski <apinski@cavium.com>
-            Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: New test case.
 	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: New test case.
@@ -2429,6 +2416,7 @@ NOTE: THIS VIDEO IS FOR EDUCATION PURPOSES. ANY AND ALL COPYRIGHTS BELONG TO THE
 
 2013-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR rtl-optimization/58079
 	* gcc.dg/torture/pr58079.c: New test.
 
 2013-08-07  Eric Botcazou  <ebotcazou@adacore.com>

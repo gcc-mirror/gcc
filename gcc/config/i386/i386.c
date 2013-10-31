@@ -42020,51 +42020,54 @@ ix86_bnd_prefixed_insn_p (rtx insn ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Calculate integer abs() using only SSE2 instructions.  */
+
 void
-ix86_expand_sse2_abs (rtx op0, rtx op1)
+ix86_expand_sse2_abs (rtx target, rtx input)
 {
-  enum machine_mode mode = GET_MODE (op0);
-  rtx tmp0, tmp1;
+  enum machine_mode mode = GET_MODE (target);
+  rtx tmp0, tmp1, x;
 
   switch (mode)
     {
       /* For 32-bit signed integer X, the best way to calculate the absolute
 	 value of X is (((signed) X >> (W-1)) ^ X) - ((signed) X >> (W-1)).  */
       case V4SImode:
-	tmp0 = expand_simple_binop (mode, ASHIFTRT, op1,
+	tmp0 = expand_simple_binop (mode, ASHIFTRT, input,
 				    GEN_INT (GET_MODE_BITSIZE
-						 (GET_MODE_INNER (mode)) - 1),
+					     (GET_MODE_INNER (mode)) - 1),
 				    NULL, 0, OPTAB_DIRECT);
-	if (tmp0)
-	  tmp1 = expand_simple_binop (mode, XOR, op1, tmp0,
-				      NULL, 0, OPTAB_DIRECT);
-	if (tmp0 && tmp1)
-	  expand_simple_binop (mode, MINUS, tmp1, tmp0,
-			       op0, 0, OPTAB_DIRECT);
+	tmp1 = expand_simple_binop (mode, XOR, tmp0, input,
+				    NULL, 0, OPTAB_DIRECT);
+	x = expand_simple_binop (mode, MINUS, tmp1, tmp0,
+				 target, 0, OPTAB_DIRECT);
 	break;
 
       /* For 16-bit signed integer X, the best way to calculate the absolute
 	 value of X is max (X, -X), as SSE2 provides the PMAXSW insn.  */
       case V8HImode:
-	tmp0 = expand_unop (mode, neg_optab, op1, NULL_RTX, 0);
-	if (tmp0)
-	  expand_simple_binop (mode, SMAX, op1, tmp0, op0, 0,
-			       OPTAB_DIRECT);
+	tmp0 = expand_unop (mode, neg_optab, input, NULL_RTX, 0);
+
+	x = expand_simple_binop (mode, SMAX, tmp0, input,
+				 target, 0, OPTAB_DIRECT);
 	break;
 
       /* For 8-bit signed integer X, the best way to calculate the absolute
 	 value of X is min ((unsigned char) X, (unsigned char) (-X)),
 	 as SSE2 provides the PMINUB insn.  */
       case V16QImode:
-	tmp0 = expand_unop (mode, neg_optab, op1, NULL_RTX, 0);
-	if (tmp0)
-	  expand_simple_binop (V16QImode, UMIN, op1, tmp0, op0, 0,
-			       OPTAB_DIRECT);
+	tmp0 = expand_unop (mode, neg_optab, input, NULL_RTX, 0);
+
+	x = expand_simple_binop (V16QImode, UMIN, tmp0, input,
+				 target, 0, OPTAB_DIRECT);
 	break;
 
       default:
-	break;
+	gcc_unreachable ();
     }
+
+  if (x != target)
+    emit_move_insn (target, x);
 }
 
 /* Expand an insert into a vector register through pinsr insn.
