@@ -421,6 +421,10 @@ mips*-*-*)
 	extra_headers="loongson.h"
 	extra_options="${extra_options} g.opt mips/mips-tables.opt"
 	;;
+nds32*)
+	cpu_type=nds32
+	extra_headers="nds32_intrinsic.h"
+	;;
 picochip-*-*)
         cpu_type=picochip
         ;;
@@ -2091,6 +2095,18 @@ msp430*-*-*)
 	target_has_targetm_common=no
 	tmake_file="${tmake_file} msp430/t-msp430"
 	;;
+nds32le-*-*)
+	target_cpu_default="0"
+	tm_defines="${tm_defines}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="nds32/t-mlibs"
+	;;
+nds32be-*-*)
+	target_cpu_default="0|MASK_BIG_ENDIAN"
+	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="nds32/t-mlibs"
+	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
@@ -3749,6 +3765,39 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown synci type used in --with-synci" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
+	nds32*-*-*)
+		supported_defaults="arch nds32_lib"
+
+		# process --with-arch
+		case "${with_arch}" in
+		"" | v2 | v3 | v3m)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v3 v3m" 1>&2
+			exit 1
+			;;
+		esac
+
+		# process --with-nds32-lib
+		case "${with_nds32_lib}" in
+		"")
+			# the default library is newlib
+			with_nds32_lib=newlib
+			;;
+		newlib)
+			# OK
+			;;
+		mculib)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib" 1>&2
 			exit 1
 			;;
 		esac

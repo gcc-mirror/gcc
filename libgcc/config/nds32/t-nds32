@@ -1,0 +1,58 @@
+# Rules of libgcc and crtstuff of Andes NDS32 cpu for GNU compiler
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+# Contributed by Andes Technology Corporation.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+# Note:
+#   Because GCC has its own make rules for crtbegin.o and crtend.o,
+#   we cannot use crtbegin.o and crtend.o rules.
+#   So we create crtbegin1.o and crtend1.o instead.
+#   Make sure the linker script include these two objects
+#   for building .ctors/.dtors sections.
+
+# Use -DCRT_BEGIN to create beginning parts of .init and .fini content
+# Make sure you are building crtbegin1.o with -O0 optimization,
+# otherwise the static function will be optimized out
+crtbegin1.o: $(srcdir)/config/nds32/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(INCLUDES) \
+	$(CFLAGS) \
+	-DCRT_BEGIN \
+	-finhibit-size-directive -fno-inline-functions \
+	-O0 -c $(srcdir)/config/nds32/initfini.c -o crtbegin1.o
+
+# Use -DCRT_END to create ending parts of .init and .fini content
+# Make sure you are building crtend1.o with -O0 optimization,
+# otherwise the static function will be optimized out
+crtend1.o: $(srcdir)/config/nds32/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(INCLUDES) \
+	$(CFLAGS) \
+	-DCRT_END \
+	-finhibit-size-directive -fno-inline-functions \
+	-O0 -c $(srcdir)/config/nds32/initfini.c -o crtend1.o
+
+# Use this rule if and only if your crt0.o does not come from library
+# Also, be sure to add 'crtzero.o' in extra_parts in libgcc/config.host
+# and change STARTFILE_SPEC in nds32.h
+#
+#crtzero.o: $(srcdir)/config/nds32/crtzero.S $(GCC_PASSES) $(CONFIG_H)
+#	$(GCC_FOR_TARGET) $(INCLUDES) \
+#	-c $(srcdir)/config/nds32/crtzero.S -o crtzero.o
+
+
+# ------------------------------------------------------------------------

@@ -143,6 +143,9 @@ mips*-*-*)
 	cpu_type=mips
 	tmake_file=mips/t-mips
 	;;
+nds32*-*)
+	cpu_type=nds32
+	;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	;;
@@ -849,6 +852,29 @@ moxie-*-rtems*)
 	;;
 msp430*-*-elf)
 	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
+	;;
+nds32*-elf*)
+	# Basic makefile fragment and extra_parts for crt stuff.
+	# We also append c-isr library implementation.
+	tmake_file="${tmake_file} nds32/t-nds32 nds32/t-nds32-isr"
+	extra_parts="crtbegin1.o crtend1.o libnds32_isr.a"
+	# Append library definition makefile fragment according to --with-nds32-lib=X setting.
+	case "${with_nds32_lib}" in
+	"" | newlib)
+		# Append library definition makefile fragment t-nds32-newlib.
+		# Append 'soft-fp' software floating point make rule fragment provided by gcc.
+		tmake_file="${tmake_file} nds32/t-nds32-newlib t-softfp-sfdf t-softfp"
+		;;
+	mculib)
+		# Append library definition makefile fragment t-nds32-mculib.
+		# The software floating point library is included in mculib.
+		tmake_file="${tmake_file} nds32/t-nds32-mculib"
+		;;
+	*)
+		echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib" 1>&2
+		exit 1
+		;;
+	esac
 	;;
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"
