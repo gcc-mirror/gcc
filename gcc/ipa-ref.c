@@ -34,8 +34,8 @@ static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
    of the use and STMT the statement (if it exists).  */
 
 struct ipa_ref *
-ipa_record_reference (symtab_node referring_node,
-		      symtab_node referred_node,
+ipa_record_reference (symtab_node *referring_node,
+		      symtab_node *referred_node,
 		      enum ipa_ref_use use_type, gimple stmt)
 {
   struct ipa_ref *ref, *ref2;
@@ -76,7 +76,7 @@ ipa_record_reference (symtab_node referring_node,
    reference or NULL if none was created.  */
 
 struct ipa_ref *
-ipa_maybe_record_reference (symtab_node referring_node, tree val,
+ipa_maybe_record_reference (symtab_node *referring_node, tree val,
 			    enum ipa_ref_use use_type, gimple stmt)
 {
   STRIP_NOPS (val);
@@ -86,7 +86,7 @@ ipa_maybe_record_reference (symtab_node referring_node, tree val,
   if (val && (TREE_CODE (val) == FUNCTION_DECL
 	       || TREE_CODE (val) == VAR_DECL))
     {
-      symtab_node referred = symtab_get_node (val);
+      symtab_node *referred = symtab_get_node (val);
       gcc_checking_assert (referred);
       return ipa_record_reference (referring_node, referred,
 				   use_type, stmt);
@@ -186,7 +186,7 @@ ipa_dump_referring (FILE * file, struct ipa_ref_list *list)
 
 struct ipa_ref *
 ipa_clone_ref (struct ipa_ref *ref,
-	       symtab_node dest_node,
+	       symtab_node *dest_node,
 	       gimple stmt)
 {
   bool speculative = ref->speculative;
@@ -204,7 +204,7 @@ ipa_clone_ref (struct ipa_ref *ref,
 /* Clone all references from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
 
 void
-ipa_clone_references (symtab_node dest_node,
+ipa_clone_references (symtab_node *dest_node,
 		      struct ipa_ref_list *src)
 {
   struct ipa_ref *ref, *ref2;
@@ -225,7 +225,7 @@ ipa_clone_references (symtab_node dest_node,
 /* Clone all referring from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
 
 void
-ipa_clone_referring (symtab_node dest_node,
+ipa_clone_referring (symtab_node *dest_node,
 		    struct ipa_ref_list *src)
 {
   struct ipa_ref *ref, *ref2;
@@ -268,7 +268,7 @@ ipa_ref_has_aliases_p (struct ipa_ref_list *ref_list)
    and associated with statement STMT.  */
 
 struct ipa_ref *
-ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
+ipa_find_reference (symtab_node *referring_node, symtab_node *referred_node,
 		    gimple stmt, unsigned int lto_stmt_uid)
 {
   struct ipa_ref *r = NULL;
@@ -288,7 +288,7 @@ ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
    STMT.  */
 
 void
-ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
+ipa_remove_stmt_references (symtab_node *referring_node, gimple stmt)
 {
   struct ipa_ref *r = NULL;
   int i;
@@ -304,7 +304,7 @@ ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
    with callgraph edges associated with them.  */
 
 void
-ipa_clear_stmts_in_references (symtab_node referring_node)
+ipa_clear_stmts_in_references (symtab_node *referring_node)
 {
   struct ipa_ref *r = NULL;
   int i;

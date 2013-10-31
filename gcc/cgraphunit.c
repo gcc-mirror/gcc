@@ -225,7 +225,7 @@ static GTY (()) tree vtable_entry_type;
    either outside this translation unit, something magic in the system
    configury */
 bool
-decide_is_symbol_needed (symtab_node node)
+decide_is_symbol_needed (symtab_node *node)
 {
   tree decl = node->decl;
 
@@ -263,13 +263,13 @@ decide_is_symbol_needed (symtab_node node)
 
 /* Head of the queue of nodes to be processed while building callgraph */
 
-static symtab_node first = (symtab_node)(void *)1;
+static symtab_node *first = (symtab_node *)(void *)1;
 
 /* Add NODE to queue starting at FIRST. 
    The queue is linked via AUX pointers and terminated by pointer to 1.  */
 
 static void
-enqueue_node (symtab_node node)
+enqueue_node (symtab_node *node)
 {
   if (node->aux)
     return;
@@ -387,7 +387,7 @@ cgraph_reset_node (struct cgraph_node *node)
 /* Return true when there are references to NODE.  */
 
 static bool
-referred_to_p (symtab_node node)
+referred_to_p (symtab_node *node)
 {
   struct ipa_ref *ref;
 
@@ -671,14 +671,14 @@ analyze_function (struct cgraph_node *node)
 void
 cgraph_process_same_body_aliases (void)
 {
-  symtab_node node;
+  symtab_node *node;
   FOR_EACH_SYMBOL (node)
     if (node->cpp_implicit_alias && !node->analyzed)
       symtab_resolve_alias
         (node,
 	 TREE_CODE (node->alias_target) == VAR_DECL
-	 ? (symtab_node)varpool_node_for_decl (node->alias_target)
-	 : (symtab_node)cgraph_get_create_node (node->alias_target));
+	 ? (symtab_node *)varpool_node_for_decl (node->alias_target)
+	 : (symtab_node *)cgraph_get_create_node (node->alias_target));
   cpp_implicit_aliases_done = true;
 }
 
@@ -920,8 +920,8 @@ analyze_functions (void)
   struct varpool_node *first_handled_var = first_analyzed_var;
   struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
-  symtab_node node;
-  symtab_node next;
+  symtab_node *node;
+  symtab_node *next;
   int i;
   struct ipa_ref *ref;
   bool changed = true;
@@ -977,11 +977,11 @@ analyze_functions (void)
 
       /* Lower representation, build callgraph edges and references for all trivially
          needed symbols and all symbols referred by them.  */
-      while (first != (symtab_node)(void *)1)
+      while (first != (symtab_node *)(void *)1)
 	{
 	  changed = true;
 	  node = first;
-	  first = (symtab_node)first->aux;
+	  first = (symtab_node *)first->aux;
 	  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
 	  if (cnode && cnode->definition)
 	    {
@@ -1040,7 +1040,7 @@ analyze_functions (void)
 
 	  if (node->same_comdat_group)
 	    {
-	      symtab_node next;
+	      symtab_node *next;
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
@@ -1126,7 +1126,7 @@ handle_alias_pairs (void)
   
   for (i = 0; alias_pairs && alias_pairs->iterate (i, &p);)
     {
-      symtab_node target_node = symtab_node_for_asm (p->target);
+      symtab_node *target_node = symtab_node_for_asm (p->target);
 
       /* Weakrefs with target not defined in current unit are easy to handle:
 	 they behave just as external variables except we need to note the
@@ -1134,7 +1134,7 @@ handle_alias_pairs (void)
       if (!target_node
 	  && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL)
 	{
-	  symtab_node node = symtab_get_node (p->decl);
+	  symtab_node *node = symtab_get_node (p->decl);
 	  if (node)
 	    {
 	      node->alias_target = p->target;
@@ -1147,7 +1147,7 @@ handle_alias_pairs (void)
       else if (!target_node)
 	{
 	  error ("%q+D aliased to undefined symbol %qE", p->decl, p->target);
-	  symtab_node node = symtab_get_node (p->decl);
+	  symtab_node *node = symtab_get_node (p->decl);
 	  if (node)
 	    node->alias = false;
 	  alias_pairs->unordered_remove (i);
@@ -2049,7 +2049,7 @@ get_alias_symbol (tree decl)
 static void
 output_weakrefs (void)
 {
-  symtab_node node;
+  symtab_node *node;
   FOR_EACH_SYMBOL (node)
     if (node->alias
         && !TREE_ASM_WRITTEN (node->decl)
@@ -2171,7 +2171,7 @@ compile (void)
      level by physically rewritting the IL.  At the moment we can only redirect
      calls, so we need infrastructure for renaming references as well.  */
 #ifndef ASM_OUTPUT_WEAKREF
-  symtab_node node;
+  symtab_node *node;
 
   FOR_EACH_SYMBOL (node)
     if (node->alias

@@ -223,7 +223,7 @@ mark_address (gimple stmt, tree addr, void *data)
     {
       struct cgraph_node *node = cgraph_get_create_real_symbol_node (addr);
       cgraph_mark_address_taken_node (node);
-      ipa_record_reference ((symtab_node)data,
+      ipa_record_reference ((symtab_node *)data,
 			    node,
 			    IPA_REF_ADDR, stmt);
     }
@@ -232,7 +232,7 @@ mark_address (gimple stmt, tree addr, void *data)
     {
       struct varpool_node *vnode = varpool_node_for_decl (addr);
 
-      ipa_record_reference ((symtab_node)data,
+      ipa_record_reference ((symtab_node *)data,
 			    vnode,
 			    IPA_REF_ADDR, stmt);
     }
@@ -252,7 +252,7 @@ mark_load (gimple stmt, tree t, void *data)
 	 directly manipulated in the code.  Pretend that it's an address.  */
       struct cgraph_node *node = cgraph_get_create_real_symbol_node (t);
       cgraph_mark_address_taken_node (node);
-      ipa_record_reference ((symtab_node)data,
+      ipa_record_reference ((symtab_node *)data,
 			    node,
 			    IPA_REF_ADDR, stmt);
     }
@@ -261,7 +261,7 @@ mark_load (gimple stmt, tree t, void *data)
     {
       struct varpool_node *vnode = varpool_node_for_decl (t);
 
-      ipa_record_reference ((symtab_node)data,
+      ipa_record_reference ((symtab_node *)data,
 			    vnode,
 			    IPA_REF_LOAD, stmt);
     }
@@ -279,7 +279,7 @@ mark_store (gimple stmt, tree t, void *data)
     {
       struct varpool_node *vnode = varpool_node_for_decl (t);
 
-      ipa_record_reference ((symtab_node)data,
+      ipa_record_reference ((symtab_node *)data,
 			    vnode,
 			    IPA_REF_STORE, stmt);
      }

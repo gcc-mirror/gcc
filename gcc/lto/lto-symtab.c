@@ -113,7 +113,7 @@ lto_varpool_replace_node (struct varpool_node *vnode,
    should be emitted.  */
 
 static bool
-lto_symtab_merge (symtab_node prevailing, symtab_node entry)
+lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
 {
   tree prevailing_decl = prevailing->decl;
   tree decl = entry->decl;
@@ -216,7 +216,7 @@ lto_symtab_merge (symtab_node prevailing, symtab_node entry)
    entry.  */
 
 static bool
-lto_symtab_resolve_replaceable_p (symtab_node e)
+lto_symtab_resolve_replaceable_p (symtab_node *e)
 {
   if (DECL_EXTERNAL (e->decl)
       || DECL_COMDAT (e->decl)
@@ -236,7 +236,7 @@ lto_symtab_resolve_replaceable_p (symtab_node e)
    handle renaming of static later in partitioning).  */
 
 static bool
-lto_symtab_symbol_p (symtab_node e)
+lto_symtab_symbol_p (symtab_node *e)
 {
   if (!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
     return false;
@@ -246,7 +246,7 @@ lto_symtab_symbol_p (symtab_node e)
 /* Return true if the symtab entry E can be the prevailing one.  */
 
 static bool
-lto_symtab_resolve_can_prevail_p (symtab_node e)
+lto_symtab_resolve_can_prevail_p (symtab_node *e)
 {
   if (!lto_symtab_symbol_p (e))
     return false;
@@ -263,11 +263,11 @@ lto_symtab_resolve_can_prevail_p (symtab_node e)
 /* Resolve the symbol with the candidates in the chain *SLOT and store
    their resolutions.  */
 
-static symtab_node
-lto_symtab_resolve_symbols (symtab_node first)
+static symtab_node *
+lto_symtab_resolve_symbols (symtab_node *first)
 {
-  symtab_node e;
-  symtab_node prevailing = NULL;
+  symtab_node *e;
+  symtab_node *prevailing = NULL;
 
   /* Always set e->node so that edges are updated to reflect decl merging. */
   for (e = first; e; e = e->next_sharing_asm_name)
@@ -359,10 +359,10 @@ lto_symtab_resolve_symbols (symtab_node first)
    do not issue further diagnostics.*/
 
 static void
-lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
+lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 {
-  symtab_node prevailing;
-  symtab_node e;
+  symtab_node *prevailing;
+  symtab_node *e;
   vec<tree> mismatches = vNULL;
   unsigned i;
   tree decl;
@@ -412,10 +412,10 @@ lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
 
 static void
-lto_symtab_merge_decls_1 (symtab_node first)
+lto_symtab_merge_decls_1 (symtab_node *first)
 {
-  symtab_node e;
-  symtab_node prevailing;
+  symtab_node *e;
+  symtab_node *prevailing;
   bool diagnosed_p = false;
 
   if (cgraph_dump_file)
@@ -522,7 +522,7 @@ lto_symtab_merge_decls_1 (symtab_node first)
 void
 lto_symtab_merge_decls (void)
 {
-  symtab_node node;
+  symtab_node *node;
 
   /* Populate assembler name hash.   */
   symtab_initialize_asm_name_hash ();
@@ -536,10 +536,10 @@ lto_symtab_merge_decls (void)
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
 
 static void
-lto_symtab_merge_symbols_1 (symtab_node prevailing)
+lto_symtab_merge_symbols_1 (symtab_node *prevailing)
 {
-  symtab_node e;
-  symtab_node next;
+  symtab_node *e;
+  symtab_node *next;
 
   /* Replace the cgraph node of each entry with the prevailing one.  */
   for (e = prevailing->next_sharing_asm_name; e;
@@ -565,7 +565,7 @@ lto_symtab_merge_symbols_1 (symtab_node prevailing)
 void
 lto_symtab_merge_symbols (void)
 {
-  symtab_node node;
+  symtab_node *node;
 
   if (!flag_ltrans)
     {
@@ -587,11 +587,11 @@ lto_symtab_merge_symbols (void)
 	{
 	  cgraph_node *cnode, *cnode2;
 	  varpool_node *vnode;
-	  symtab_node node2;
+	  symtab_node *node2;
 
 	  if (!node->analyzed && node->alias_target)
 	    {
-	      symtab_node tgt = symtab_node_for_asm (node->alias_target);
+	      symtab_node *tgt = symtab_node_for_asm (node->alias_target);
 	      gcc_assert (node->weakref);
 	      if (tgt)
 		symtab_resolve_alias (node, tgt);
@@ -639,7 +639,7 @@ lto_symtab_merge_symbols (void)
 tree
 lto_symtab_prevailing_decl (tree decl)
 {
-  symtab_node ret;
+  symtab_node *ret;
 
   /* Builtins and local symbols are their own prevailing decl.  */
   if ((!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl)) || is_builtin_fn (decl))

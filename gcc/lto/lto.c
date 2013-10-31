@@ -2479,14 +2479,14 @@ lto_wpa_write_files (void)
 	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
 	       lsei_next_in_partition (&lsei))
 	    {
-	      symtab_node node = lsei_node (lsei);
+	      symtab_node *node = lsei_node (lsei);
 	      fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
 	    }
 	  fprintf (cgraph_dump_file, "\n  Symbols in boundary: ");
 	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
 	       lsei_next (&lsei))
 	    {
-	      symtab_node node = lsei_node (lsei);
+	      symtab_node *node = lsei_node (lsei);
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
 	          fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
@@ -2750,7 +2750,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   int count = 0;
   struct lto_file_decl_data **decl_data;
   void **res;
-  symtab_node snode;
+  symtab_node *snode;
 
   init_cgraph ();
 
@@ -3074,7 +3074,7 @@ print_lto_report_1 (void)
 static void
 do_whole_program_analysis (void)
 {
-  symtab_node node;
+  symtab_node *node;
 
   timevar_start (TV_PHASE_OPT_GEN);
 

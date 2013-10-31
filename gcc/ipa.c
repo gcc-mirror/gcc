@@ -107,7 +107,7 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
    reachable.  */
 
 static void
-enqueue_node (symtab_node node, symtab_node *first,
+enqueue_node (symtab_node *node, symtab_node **first,
 	      struct pointer_set_t *reachable)
 {
   /* Node is still in queue; do nothing.  */
@@ -125,7 +125,7 @@ enqueue_node (symtab_node node, symtab_node *first,
 
 static void
 process_references (struct ipa_ref_list *list,
-		    symtab_node *first,
+		    symtab_node **first,
 		    bool before_inlining_p,
 		    struct pointer_set_t *reachable)
 {
@@ -133,7 +133,7 @@ process_references (struct ipa_ref_list *list,
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
     {
-      symtab_node node = ref->referred;
+      symtab_node *node = ref->referred;
 
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
@@ -161,7 +161,7 @@ process_references (struct ipa_ref_list *list,
 static void
 walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 			       struct cgraph_edge *edge,
-			       symtab_node *first,
+			       symtab_node **first,
 			       pointer_set_t *reachable, bool before_inlining_p)
 {
   unsigned int i;
@@ -287,7 +287,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 bool
 symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
-  symtab_node first = (symtab_node) (void *) 1;
+  symtab_node *first = (symtab_node *) (void *) 1;
   struct cgraph_node *node, *next;
   struct varpool_node *vnode, *vnext;
   bool changed = false;
@@ -339,12 +339,12 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       }
 
   /* Perform reachability analysis.  */
-  while (first != (symtab_node) (void *) 1)
+  while (first != (symtab_node *) (void *) 1)
     {
       bool in_boundary_p = !pointer_set_contains (reachable, first);
-      symtab_node node = first;
+      symtab_node *node = first;
 
-      first = (symtab_node)first->aux;
+      first = (symtab_node *)first->aux;
 
       /* If we are processing symbol in boundary, mark its AUX pointer for
 	 possible later re-processing in enqueue_node.  */
@@ -363,7 +363,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	     all other in the same comdat group to be also reachable.  */
 	  if (node->same_comdat_group)
 	    {
-	      symtab_node next;
+	      symtab_node *next;
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
@@ -640,7 +640,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 
 /* Return true when there is a reference to node and it is not vtable.  */
 static bool
-address_taken_from_non_vtable_p (symtab_node node)
+address_taken_from_non_vtable_p (symtab_node *node)
 {
   int i;
   struct ipa_ref *ref;
@@ -661,7 +661,7 @@ address_taken_from_non_vtable_p (symtab_node node)
 /* A helper for comdat_can_be_unshared_p.  */
 
 static bool
-comdat_can_be_unshared_p_1 (symtab_node node)
+comdat_can_be_unshared_p_1 (symtab_node *node)
 {
   /* When address is taken, we don't know if equality comparison won't
      break eventually. Exception are virutal functions, C++
@@ -704,13 +704,13 @@ comdat_can_be_unshared_p_1 (symtab_node node)
    but in C++ there is no way to compare their addresses for equality.  */
 
 static bool
-comdat_can_be_unshared_p (symtab_node node)
+comdat_can_be_unshared_p (symtab_node *node)
 {
   if (!comdat_can_be_unshared_p_1 (node))
     return false;
   if (node->same_comdat_group)
     {
-      symtab_node next;
+      symtab_node *next;
 
       /* If more than one function is in the same COMDAT group, it must
          be shared even if just one function in the comdat group has
@@ -859,7 +859,7 @@ varpool_externally_visible_p (struct varpool_node *vnode)
  */
 
 bool
-can_replace_by_local_alias (symtab_node node)
+can_replace_by_local_alias (symtab_node *node)
 {
   return (symtab_node_availability (node) > AVAIL_OVERWRITABLE
 	  && !symtab_can_be_discarded (node));
@@ -919,7 +919,7 @@ function_and_variable_visibility (bool whole_program)
       if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
 	{
 #ifdef ENABLE_CHECKING
-	  symtab_node n;
+	  symtab_node *n;
 
 	  for (n = node->same_comdat_group;
 	       n != node;

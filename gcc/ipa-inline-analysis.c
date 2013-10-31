@@ -4055,7 +4055,7 @@ inline_write_summary (void)
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
       if (cnode && cnode->definition && !cnode->alias)
 	count++;
@@ -4064,7 +4064,7 @@ inline_write_summary (void)
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
       if (cnode && (node = cnode)->definition && !node->alias)
 	{

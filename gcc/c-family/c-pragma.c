@@ -307,7 +307,7 @@ maybe_apply_pending_pragma_weaks (void)
   tree alias_id, id, decl;
   int i;
   pending_weak *pe;
-  symtab_node target;
+  symtab_node *target;
 
   if (!pending_weaks)
     return;

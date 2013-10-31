@@ -5382,7 +5382,7 @@ weak_finish_1 (tree decl)
 static tree
 find_decl (tree target)
 {
-  symtab_node node = symtab_node_for_asm (target);
+  symtab_node *node = symtab_node_for_asm (target);
   if (node)
     return node->decl;
   return NULL_TREE;

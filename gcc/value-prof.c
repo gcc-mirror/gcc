@@ -1209,8 +1209,8 @@ init_node_map (bool local)
 			   n->profile_id,
 			   cgraph_node_name (n),
 			   n->order,
-			   symtab_node_name (*(symtab_node*)val),
-			   (*(symtab_node *)val)->order);
+			   symtab_node_name (*(symtab_node **)val),
+			   (*(symtab_node **)val)->order);
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
