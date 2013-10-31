@@ -1,3 +1,8 @@
+2013-10-31  Jason Merrill  <jason@redhat.com>
+
+	* class.c (type_build_ctor_call): Return early in C++98 mode.
+	(type_build_dtor_call): Likewise.
+
 2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58932

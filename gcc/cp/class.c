@@ -5163,6 +5163,8 @@ type_build_ctor_call (tree t)
     return false;
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (inner))
     return true;
+  if (cxx_dialect < cxx11)
+    return false;
   /* A user-declared constructor might be private, and a constructor might
      be trivial but deleted.  */
   for (tree fns = lookup_fnfields_slot (inner, complete_ctor_identifier);
@@ -5187,6 +5189,8 @@ type_build_dtor_call (tree t)
   inner = strip_array_types (t);
   if (!CLASS_TYPE_P (inner) || ANON_AGGR_TYPE_P (inner)
       || !COMPLETE_TYPE_P (inner))
+    return false;
+  if (cxx_dialect < cxx11)
     return false;
   /* A user-declared destructor might be private, and a destructor might
      be trivial but deleted.  */
