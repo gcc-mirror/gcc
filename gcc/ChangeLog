@@ -1,3 +1,10 @@
+2013-10-31  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/58543
+	* asan.c (asan_clear_shadow): Allocate a new vreg for temporary
+	shadow pointer to avoid clobbering the main one.
+
 2013-10-31  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* lower-subreg.c (resolve_simple_move): Copy REG_INC note.
