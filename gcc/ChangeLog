@@ -1,5 +1,8 @@
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vrp.c (maybe_set_nonzero_bits): New function.
+	(remove_range_assertions): Call it.
+
 	* tree.c (tree_ctz): New function.
 	* tree.h (tree_ctz): New prototype.
 	* tree-ssanames.h (get_range_info, get_nonzero_bits): Change
