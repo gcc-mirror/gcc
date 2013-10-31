@@ -1466,23 +1466,32 @@ process_alt_operands (int only_alternative)
      function.	*/
   for (nop = 0; nop < n_operands; nop++)
     {
+      rtx reg;
+
       op = no_subreg_reg_operand[nop] = *curr_id->operand_loc[nop];
       /* The real hard regno of the operand after the allocation.  */
       hard_regno[nop] = get_hard_regno (op);
 
-      operand_reg[nop] = op;
-      biggest_mode[nop] = GET_MODE (operand_reg[nop]);
-      if (GET_CODE (operand_reg[nop]) == SUBREG)
+      operand_reg[nop] = reg = op;
+      biggest_mode[nop] = GET_MODE (op);
+      if (GET_CODE (op) == SUBREG)
 	{
-	  operand_reg[nop] = SUBREG_REG (operand_reg[nop]);
+	  operand_reg[nop] = reg = SUBREG_REG (op);
 	  if (GET_MODE_SIZE (biggest_mode[nop])
-	      < GET_MODE_SIZE (GET_MODE (operand_reg[nop])))
-	    biggest_mode[nop] = GET_MODE (operand_reg[nop]);
+	      < GET_MODE_SIZE (GET_MODE (reg)))
+	    biggest_mode[nop] = GET_MODE (reg);
 	}
-      if (REG_P (operand_reg[nop]))
-	no_subreg_reg_operand[nop] = operand_reg[nop];
-      else
+      if (! REG_P (reg))
 	operand_reg[nop] = NULL_RTX;
+      else if (REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	       || ((int) REGNO (reg)
+		   == lra_get_elimination_hard_regno (REGNO (reg))))
+	no_subreg_reg_operand[nop] = reg;
+      else
+	operand_reg[nop] = no_subreg_reg_operand[nop]
+	  /* Just use natural mode for elimination result.  It should
+	     be enough for extra constraints hooks.  */
+	  = regno_reg_rtx[hard_regno[nop]];
     }
 
   /* The constraints are made of several alternatives.	Each operand's

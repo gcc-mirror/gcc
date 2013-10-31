@@ -1,3 +1,8 @@
+2013-10-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints (process_alt_operands): Use the result
+	elimination register for operand when matching constraints.
+
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vrp.c (maybe_set_nonzero_bits): New function.
