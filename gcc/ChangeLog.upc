@@ -1,3 +1,10 @@
+2013-10-31 Gary Funck  <gary@intrepid.com>
+
+	Released GUPC 4.9.0.1 based on version 203902.
+	This release version was committed on 2013-10-21.
+	* DEV-PHASE: Bump to 4.9.0.2.
+	* DATESTAMP: Bump date stamp.
+
 2013-10-28 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204119 into gupc branch.
