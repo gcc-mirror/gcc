@@ -1,5 +1,20 @@
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.c (tree_ctz): New function.
+	* tree.h (tree_ctz): New prototype.
+	* tree-ssanames.h (get_range_info, get_nonzero_bits): Change
+	first argument from tree to const_tree.
+	* tree-ssanames.c (get_range_info, get_nonzero_bits): Likewise.
+	* tree-vectorizer.h (vect_generate_tmps_on_preheader): New prototype.
+	* tree-vect-loop-manip.c (vect_generate_tmps_on_preheader): No longer
+	static.
+	* expr.c (highest_pow2_factor): Reimplemented using tree_ctz.
+	* tree-vect-loop.c (vect_analyze_loop_operations,
+	vect_transform_loop): Don't force scalar loop for bound just because
+	number of iterations is unknown, only do it if it is not known to be
+	a multiple of vectorization_factor.
+	* builtins.c (get_object_alignment_2): Use tree_ctz on offset.
+
 	* gimple-pretty-print.c (dump_ssaname_info): Print newline also
 	in case of VR_VARYING.  Print get_nonzero_bits if not all ones.
 	* tree-ssanames.h (struct range_info_def): Add nonzero_bits field.

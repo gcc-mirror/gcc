@@ -72,9 +72,10 @@ enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 /* Sets the value range to SSA.  */
 extern void set_range_info (tree, double_int, double_int);
 /* Gets the value range from SSA.  */
-extern enum value_range_type get_range_info (tree, double_int *, double_int *);
+extern enum value_range_type get_range_info (const_tree, double_int *,
+					     double_int *);
 extern void set_nonzero_bits (tree, double_int);
-extern double_int get_nonzero_bits (tree);
+extern double_int get_nonzero_bits (const_tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);
 extern void ssanames_print_statistics (void);

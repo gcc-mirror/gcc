@@ -7283,74 +7283,14 @@ safe_from_p (const_rtx x, tree exp, int top_p)
 unsigned HOST_WIDE_INT
 highest_pow2_factor (const_tree exp)
 {
-  unsigned HOST_WIDE_INT c0, c1;
-
-  switch (TREE_CODE (exp))
-    {
-    case INTEGER_CST:
-      /* We can find the lowest bit that's a one.  If the low
-	 HOST_BITS_PER_WIDE_INT bits are zero, return BIGGEST_ALIGNMENT.
-	 We need to handle this case since we can find it in a COND_EXPR,
-	 a MIN_EXPR, or a MAX_EXPR.  If the constant overflows, we have an
-	 erroneous program, so return BIGGEST_ALIGNMENT to avoid any
-	 later ICE.  */
-      if (TREE_OVERFLOW (exp))
-	return BIGGEST_ALIGNMENT;
-      else
-	{
-	  /* Note: tree_low_cst is intentionally not used here,
-	     we don't care about the upper bits.  */
-	  c0 = TREE_INT_CST_LOW (exp);
-	  c0 &= -c0;
-	  return c0 ? c0 : BIGGEST_ALIGNMENT;
-	}
-      break;
-
-    case PLUS_EXPR:  case MINUS_EXPR:  case MIN_EXPR:  case MAX_EXPR:
-      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
-      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
-      return MIN (c0, c1);
-
-    case MULT_EXPR:
-      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
-      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
-      return c0 * c1;
-
-    case ROUND_DIV_EXPR:  case TRUNC_DIV_EXPR:  case FLOOR_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-      if (integer_pow2p (TREE_OPERAND (exp, 1))
-	  && host_integerp (TREE_OPERAND (exp, 1), 1))
-	{
-	  c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
-	  c1 = tree_low_cst (TREE_OPERAND (exp, 1), 1);
-	  return MAX (1, c0 / c1);
-	}
-      break;
-
-    case BIT_AND_EXPR:
-      /* The highest power of two of a bit-and expression is the maximum of
-	 that of its operands.  We typically get here for a complex LHS and
-	 a constant negative power of two on the RHS to force an explicit
-	 alignment, so don't bother looking at the LHS.  */
-      return highest_pow2_factor (TREE_OPERAND (exp, 1));
-
-    CASE_CONVERT:
-    case SAVE_EXPR:
-      return highest_pow2_factor (TREE_OPERAND (exp, 0));
-
-    case COMPOUND_EXPR:
-      return highest_pow2_factor (TREE_OPERAND (exp, 1));
-
-    case COND_EXPR:
-      c0 = highest_pow2_factor (TREE_OPERAND (exp, 1));
-      c1 = highest_pow2_factor (TREE_OPERAND (exp, 2));
-      return MIN (c0, c1);
-
-    default:
-      break;
-    }
-
-  return 1;
+  unsigned HOST_WIDE_INT ret;
+  int trailing_zeros = tree_ctz (exp);
+  if (trailing_zeros >= HOST_BITS_PER_WIDE_INT)
+    return BIGGEST_ALIGNMENT;
+  ret = (unsigned HOST_WIDE_INT) 1 << trailing_zeros;
+  if (ret > BIGGEST_ALIGNMENT)
+    return BIGGEST_ALIGNMENT;
+  return ret;
 }
 
 /* Similar, except that the alignment requirements of TARGET are
