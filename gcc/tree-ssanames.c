@@ -221,7 +221,7 @@ set_range_info (tree name, double_int min, double_int max)
    is used to determine if MIN and MAX are valid values.  */
 
 enum value_range_type
-get_range_info (tree name, double_int *min, double_int *max)
+get_range_info (const_tree name, double_int *min, double_int *max)
 {
   enum value_range_type range_type;
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -271,7 +271,7 @@ set_nonzero_bits (tree name, double_int mask)
    NAME, or double_int_minus_one if unknown.  */
 
 double_int
-get_nonzero_bits (tree name)
+get_nonzero_bits (const_tree name)
 {
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {

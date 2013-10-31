@@ -314,7 +314,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
   tree offset;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  unsigned int inner, align = BITS_PER_UNIT;
+  unsigned int align = BITS_PER_UNIT;
   bool known_alignment = false;
 
   /* Get the innermost object and the constant (bitpos) and possibly
@@ -423,50 +423,16 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 
   /* If there is a non-constant offset part extract the maximum
      alignment that can prevail.  */
-  inner = ~0U;
-  while (offset)
+  if (offset)
     {
-      tree next_offset;
-
-      if (TREE_CODE (offset) == PLUS_EXPR)
+      int trailing_zeros = tree_ctz (offset);
+      if (trailing_zeros < HOST_BITS_PER_INT)
 	{
-	  next_offset = TREE_OPERAND (offset, 0);
-	  offset = TREE_OPERAND (offset, 1);
+	  unsigned int inner = (1U << trailing_zeros) * BITS_PER_UNIT;
+	  if (inner)
+	    align = MIN (align, inner);
 	}
-      else
-	next_offset = NULL;
-      if (host_integerp (offset, 1))
-	{
-	  /* Any overflow in calculating offset_bits won't change
-	     the alignment.  */
-	  unsigned offset_bits
-	    = ((unsigned) tree_low_cst (offset, 1) * BITS_PER_UNIT);
-
-	  if (offset_bits)
-	    inner = MIN (inner, (offset_bits & -offset_bits));
-	}
-      else if (TREE_CODE (offset) == MULT_EXPR
-	       && host_integerp (TREE_OPERAND (offset, 1), 1))
-	{
-	  /* Any overflow in calculating offset_factor won't change
-	     the alignment.  */
-	  unsigned offset_factor
-	    = ((unsigned) tree_low_cst (TREE_OPERAND (offset, 1), 1)
-	       * BITS_PER_UNIT);
-
-	  if (offset_factor)
-	    inner = MIN (inner, (offset_factor & -offset_factor));
-	}
-      else
-	{
-	  inner = MIN (inner, BITS_PER_UNIT);
-	  break;
-	}
-      offset = next_offset;
     }
-  /* Alignment is innermost object alignment adjusted by the constant
-     and non-constant offset parts.  */
-  align = MIN (align, inner);
 
   *alignp = align;
   *bitposp = bitpos & (*alignp - 1);

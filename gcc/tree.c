@@ -2214,6 +2214,119 @@ tree_floor_log2 (const_tree expr)
 	  : floor_log2 (low));
 }
 
+/* Return number of known trailing zero bits in EXPR, or, if the value of
+   EXPR is known to be zero, the precision of it's type.  */
+
+unsigned int
+tree_ctz (const_tree expr)
+{
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (expr))
+      && !POINTER_TYPE_P (TREE_TYPE (expr)))
+    return 0;
+
+  unsigned int ret1, ret2, prec = TYPE_PRECISION (TREE_TYPE (expr));
+  switch (TREE_CODE (expr))
+    {
+    case INTEGER_CST:
+      ret1 = tree_to_double_int (expr).trailing_zeros ();
+      return MIN (ret1, prec);
+    case SSA_NAME:
+      ret1 = get_nonzero_bits (expr).trailing_zeros ();
+      return MIN (ret1, prec);
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      if (ret1 == 0)
+	return ret1;
+      ret2 = tree_ctz (TREE_OPERAND (expr, 1));
+      return MIN (ret1, ret2);
+    case POINTER_PLUS_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      ret2 = tree_ctz (TREE_OPERAND (expr, 1));
+      /* Second operand is sizetype, which could be in theory
+	 wider than pointer's precision.  Make sure we never
+	 return more than prec.  */
+      ret2 = MIN (ret2, prec);
+      return MIN (ret1, ret2);
+    case BIT_AND_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      ret2 = tree_ctz (TREE_OPERAND (expr, 1));
+      return MAX (ret1, ret2);
+    case MULT_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      ret2 = tree_ctz (TREE_OPERAND (expr, 1));
+      return MIN (ret1 + ret2, prec);
+    case LSHIFT_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      if (host_integerp (TREE_OPERAND (expr, 1), 1)
+	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
+	      < (unsigned HOST_WIDE_INT) prec))
+	{
+	  ret2 = tree_low_cst (TREE_OPERAND (expr, 1), 1);
+	  return MIN (ret1 + ret2, prec);
+	}
+      return ret1;
+    case RSHIFT_EXPR:
+      if (host_integerp (TREE_OPERAND (expr, 1), 1)
+	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
+	      < (unsigned HOST_WIDE_INT) prec))
+	{
+	  ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+	  ret2 = tree_low_cst (TREE_OPERAND (expr, 1), 1);
+	  if (ret1 > ret2)
+	    return ret1 - ret2;
+	}
+      return 0;
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+	  && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) == 1)
+	{
+	  int l = tree_log2 (TREE_OPERAND (expr, 1));
+	  if (l >= 0)
+	    {
+	      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+	      ret2 = l;
+	      if (ret1 > ret2)
+		return ret1 - ret2;
+	    }
+	}
+      return 0;
+    CASE_CONVERT:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 0));
+      if (ret1 && ret1 == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (expr, 0))))
+	ret1 = prec;
+      return MIN (ret1, prec);
+    case SAVE_EXPR:
+      return tree_ctz (TREE_OPERAND (expr, 0));
+    case COND_EXPR:
+      ret1 = tree_ctz (TREE_OPERAND (expr, 1));
+      if (ret1 == 0)
+	return 0;
+      ret2 = tree_ctz (TREE_OPERAND (expr, 2));
+      return MIN (ret1, ret2);
+    case COMPOUND_EXPR:
+      return tree_ctz (TREE_OPERAND (expr, 1));
+    case ADDR_EXPR:
+      ret1 = get_pointer_alignment (CONST_CAST_TREE (expr));
+      if (ret1 > BITS_PER_UNIT)
+	{
+	  ret1 = ctz_hwi (ret1 / BITS_PER_UNIT);
+	  return MIN (ret1, prec);
+	}
+      return 0;
+    default:
+      return 0;
+    }
+}
+
 /* Return 1 if EXPR is the real constant zero.  Trailing zeroes matter for
    decimal float constants, so don't return 1 for them.  */
 

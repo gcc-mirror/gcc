@@ -1437,7 +1437,7 @@ vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq seq)
  and places them at the loop preheader edge or in COND_EXPR_STMT_LIST
  if that is non-NULL.  */
 
-static void
+void
 vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 				 tree *ni_name_ptr,
 				 tree *ratio_mult_vf_name_ptr,

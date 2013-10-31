@@ -4564,6 +4564,7 @@ extern void get_type_static_bounds (const_tree, mpz_t, mpz_t);
 extern bool variably_modified_type_p (tree, tree);
 extern int tree_log2 (const_tree);
 extern int tree_floor_log2 (const_tree);
+extern unsigned int tree_ctz (const_tree);
 extern int simple_cst_equal (const_tree, const_tree);
 extern hashval_t iterative_hash_expr (const_tree, hashval_t);
 extern hashval_t iterative_hash_exprs_commutative (const_tree,

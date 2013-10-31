@@ -901,6 +901,8 @@ extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
 extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
+extern void vect_generate_tmps_on_preheader (loop_vec_info, tree *, tree *,
+					     tree *, gimple_seq);
 extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree *,
 					    unsigned int, bool);
 extern void vect_do_peeling_for_alignment (loop_vec_info, unsigned int, bool);
