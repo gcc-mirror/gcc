@@ -115,7 +115,7 @@ case "${target}" in
     config_dir="x86"
     ;;
 
-  i[456]86-*-*)
+  i?86-*-*)
     config_dir="x86"
     ;;
 

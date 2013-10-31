@@ -4907,7 +4907,7 @@ case "${target}" in
     config_dir="x86"
     ;;
 
-  i45686-*-*)
+  i?86-*-*)
     config_dir="x86"
     ;;
 

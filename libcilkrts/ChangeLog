@@ -1,5 +1,10 @@
 2013-10-30  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	* configure.ac: Changed a case statement to include i386.
+	* configure: Regenerated.
+
+2013-10-30  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
 	* configure: Reconfigured.
 	* configure.ac: Add AC_FUNC_ALLOCA.
 	* runtime/sysdep-unix.c: Added check for alloca.h before 
