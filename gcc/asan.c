@@ -898,7 +898,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
 
   gcc_assert ((len & 3) == 0);
   top_label = gen_label_rtx ();
-  addr = force_reg (Pmode, XEXP (shadow_mem, 0));
+  addr = copy_to_mode_reg (Pmode, XEXP (shadow_mem, 0));
   shadow_mem = adjust_automodify_address (shadow_mem, SImode, addr, 0);
   end = force_reg (Pmode, plus_constant (Pmode, addr, len));
   emit_label (top_label);
