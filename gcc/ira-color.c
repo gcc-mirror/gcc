@@ -1217,7 +1217,7 @@ static struct update_cost_queue_elem *update_cost_queue_elems;
 static int update_cost_check;
 
 /* Allocate and initialize data necessary for function
-   update_costs_from_copiess.  */
+   update_costs_from_copies.  */
 static void
 initiate_cost_update (void)
 {
@@ -1399,16 +1399,16 @@ update_costs_from_prefs (ira_allocno_t allocno)
 /* Update (decrease if DECR_P) the cost of allocnos connected to
    ALLOCNO through copies to increase chances to remove some copies as
    the result of subsequent assignment.  ALLOCNO was just assigned to
-   a hard register.  */
+   a hard register.  Record cost updates if RECORD_P is true.  */
 static void
-update_costs_from_copies (ira_allocno_t allocno, bool decr_p)
+update_costs_from_copies (ira_allocno_t allocno, bool decr_p, bool record_p)
 {
   int hard_regno;
 
   hard_regno = ALLOCNO_HARD_REGNO (allocno);
   ira_assert (hard_regno >= 0 && ALLOCNO_CLASS (allocno) != NO_REGS);
   start_update_cost ();
-  update_costs_from_allocno (allocno, hard_regno, 1, decr_p, true);
+  update_costs_from_allocno (allocno, hard_regno, 1, decr_p, record_p);
 }
 
 /* Restore costs of allocnos connected to ALLOCNO by copies as it was
@@ -1849,11 +1849,12 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
       for (i = hard_regno_nregs[best_hard_regno][mode] - 1; i >= 0; i--)
 	allocated_hardreg_p[best_hard_regno + i] = true;
     }
-  restore_costs_from_copies (a);
+  if (! retry_p)
+    restore_costs_from_copies (a);
   ALLOCNO_HARD_REGNO (a) = best_hard_regno;
   ALLOCNO_ASSIGNED_P (a) = true;
   if (best_hard_regno >= 0)
-    update_costs_from_copies (a, true);
+    update_costs_from_copies (a, true, ! retry_p);
   ira_assert (ALLOCNO_CLASS (a) == aclass);
   /* We don't need updated costs anymore: */
   ira_free_allocno_updated_costs (a);
@@ -2942,7 +2943,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
 	    ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 	    if (hard_regno >= 0)
-	      update_costs_from_copies (subloop_allocno, true);
+	      update_costs_from_copies (subloop_allocno, true, true);
 	    /* We don't need updated costs anymore: */
 	    ira_free_allocno_updated_costs (subloop_allocno);
 	  }
@@ -2986,7 +2987,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
-		    update_costs_from_copies (subloop_allocno, true);
+		    update_costs_from_copies (subloop_allocno, true, true);
 		  /* We don't need updated costs anymore: */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
@@ -3002,7 +3003,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
 		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
 		  if (hard_regno >= 0)
-		    update_costs_from_copies (subloop_allocno, true);
+		    update_costs_from_copies (subloop_allocno, true, true);
 		  /* We don't need updated costs anymore: */
 		  ira_free_allocno_updated_costs (subloop_allocno);
 		}
@@ -3983,7 +3984,7 @@ ira_mark_allocation_change (int regno)
 	       ? ALLOCNO_CLASS_COST (a)
 	       : ALLOCNO_HARD_REG_COSTS (a)
 	         [ira_class_hard_reg_index[aclass][old_hard_regno]]);
-      update_costs_from_copies (a, false);
+      update_costs_from_copies (a, false, false);
     }
   ira_overall_cost -= cost;
   ALLOCNO_HARD_REGNO (a) = hard_regno;
@@ -3998,7 +3999,7 @@ ira_mark_allocation_change (int regno)
 	       ? ALLOCNO_CLASS_COST (a)
 	       : ALLOCNO_HARD_REG_COSTS (a)
 	         [ira_class_hard_reg_index[aclass][hard_regno]]);
-      update_costs_from_copies (a, true);
+      update_costs_from_copies (a, true, false);
     }
   else
     /* Reload changed class of the allocno.  */
