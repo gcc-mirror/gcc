@@ -1,3 +1,13 @@
+2013-10-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/58933
+	* ira-color.c (update_costs_from_copies): Add new parameter.  Use
+	it for calling update_costs_from_allocno.
+	(assign_hard_reg): Call restore_costs_from_copies only for
+	!retry_p.  Pass new argument to update_costs_from_copies.
+	(color_pass): Pass new argument to update_costs_from_copies.
+	(ira_mark_allocation_change): Ditto.
+
 2013-10-30  Sharad Singhai  <singhai@google.com>
 
 	PR middle-end/58134
