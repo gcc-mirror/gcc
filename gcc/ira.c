@@ -4514,6 +4514,9 @@ find_moveable_pseudos (void)
   pseudo_replaced_reg.release ();
   pseudo_replaced_reg.safe_grow_cleared (max_regs);
 
+  df_analyze ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
   i = 0;
   bitmap_initialize (&live, 0);
   bitmap_initialize (&used, 0);
@@ -4833,196 +4836,7 @@ find_moveable_pseudos (void)
   regstat_free_ri ();
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
-}
-
-
-/* If insn is interesting for parameter range-splitting shring-wrapping
-   preparation, i.e. it is a single set from a hard register to a pseudo, which
-   is live at CALL_DOM, return the destination.  Otherwise return NULL.  */
-
-static rtx
-interesting_dest_for_shprep (rtx insn, basic_block call_dom)
-{
-  rtx set = single_set (insn);
-  if (!set)
-    return NULL;
-  rtx src = SET_SRC (set);
-  rtx dest = SET_DEST (set);
-  if (!REG_P (src) || !HARD_REGISTER_P (src)
-      || !REG_P (dest) || HARD_REGISTER_P (dest)
-      || (call_dom && !bitmap_bit_p (df_get_live_in (call_dom), REGNO (dest))))
-    return NULL;
-  return dest;
-}
-
-/* Split live ranges of pseudos that are loaded from hard registers in the
-   first BB in a BB that dominates all non-sibling call if such a BB can be
-   found and is not in a loop.  Return true if the function has made any
-   changes.  */
-
-static bool
-split_live_ranges_for_shrink_wrap (void)
-{
-  basic_block bb, call_dom = NULL;
-  basic_block first = single_succ (ENTRY_BLOCK_PTR);
-  rtx insn, last_interesting_insn = NULL;
-  bitmap_head need_new, reachable;
-  vec<basic_block> queue;
-
-  if (!flag_shrink_wrap)
-    return false;
-
-  bitmap_initialize (&need_new, 0);
-  bitmap_initialize (&reachable, 0);
-  queue.create (n_basic_blocks);
-
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-      if (CALL_P (insn) && !SIBLING_CALL_P (insn))
-	{
-	  if (bb == first)
-	    {
-	      bitmap_clear (&need_new);
-	      bitmap_clear (&reachable);
-	      queue.release ();
-	      return false;
-	    }
-
-	  bitmap_set_bit (&need_new, bb->index);
-	  bitmap_set_bit (&reachable, bb->index);
-	  queue.quick_push (bb);
-	  break;
-	}
-
-  if (queue.is_empty ())
-    {
-      bitmap_clear (&need_new);
-      bitmap_clear (&reachable);
-      queue.release ();
-      return false;
-    }
-
-  while (!queue.is_empty ())
-    {
-      edge e;
-      edge_iterator ei;
-
-      bb = queue.pop ();
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
-	    && bitmap_set_bit (&reachable, e->dest->index))
-	  queue.quick_push (e->dest);
-    }
-  queue.release ();
-
-  FOR_BB_INSNS (first, insn)
-    {
-      rtx dest = interesting_dest_for_shprep (insn, NULL);
-      if (!dest)
-	continue;
-
-      if (DF_REG_DEF_COUNT (REGNO (dest)) > 1)
-	{
-	  bitmap_clear (&need_new);
-	  bitmap_clear (&reachable);
-	  return false;
-	}
-
-      for (df_ref use = DF_REG_USE_CHAIN (REGNO(dest));
-	   use;
-	   use = DF_REF_NEXT_REG (use))
-	{
-	  if (NONDEBUG_INSN_P (DF_REF_INSN (use))
-	      && GET_CODE (DF_REF_REG (use)) == SUBREG)
-	    {
-	      /* This is necessary to avoid hitting an assert at
-		 postreload.c:2294 in libstc++ testcases on x86_64-linux.  I'm
-		 not really sure what the probblem actually is there.  */
-	      bitmap_clear (&need_new);
-	      bitmap_clear (&reachable);
-	      return false;
-	    }
-
-	  int ubbi = DF_REF_BB (use)->index;
-	  if (bitmap_bit_p (&reachable, ubbi))
-	    bitmap_set_bit (&need_new, ubbi);
-	}
-      last_interesting_insn = insn;
-    }
-
-  bitmap_clear (&reachable);
-  if (!last_interesting_insn)
-    {
-      bitmap_clear (&need_new);
-      return false;
-    }
-
-  call_dom = nearest_common_dominator_for_set (CDI_DOMINATORS, &need_new);
-  bitmap_clear (&need_new);
-  if (call_dom == first)
-    return false;
-
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  while (bb_loop_depth (call_dom) > 0)
-    call_dom = get_immediate_dominator (CDI_DOMINATORS, call_dom);
-  loop_optimizer_finalize ();
-
-  if (call_dom == first)
-    return false;
-
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-  if (dominated_by_p (CDI_POST_DOMINATORS, first, call_dom))
-    {
-      free_dominance_info (CDI_POST_DOMINATORS);
-      return false;
-    }
-  free_dominance_info (CDI_POST_DOMINATORS);
-
-  if (dump_file)
-    fprintf (dump_file, "Will split live ranges of parameters at BB %i\n",
-	     call_dom->index);
-
-  bool ret = false;
-  FOR_BB_INSNS (first, insn)
-    {
-      rtx dest = interesting_dest_for_shprep (insn, call_dom);
-      if (!dest)
-	continue;
-
-      rtx newreg = NULL_RTX;
-      df_ref use, next;
-      for (use = DF_REG_USE_CHAIN (REGNO(dest)); use; use = next)
-	{
-	  rtx uin = DF_REF_INSN (use);
-	  next = DF_REF_NEXT_REG (use);
-
-	  basic_block ubb = BLOCK_FOR_INSN (uin);
-	  if (ubb == call_dom
-	      || dominated_by_p (CDI_DOMINATORS, ubb, call_dom))
-	    {
-	      if (!newreg)
-		newreg = ira_create_new_reg (dest);
-	      validate_change (uin, DF_REF_LOC (use), newreg, true);
-	    }
-	}
-
-      if (newreg)
-	{
-	  rtx new_move = gen_move_insn (newreg, dest);
-	  emit_insn_after (new_move, bb_note (call_dom));
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Split live-range of register ");
-	      print_rtl_single (dump_file, dest);
-	    }
-	  ret = true;
-	}
-
-      if (insn == last_interesting_insn)
-	break;
-    }
-  apply_change_group ();
-  return ret;
+  free_dominance_info (CDI_DOMINATORS);
 }
 
 /* Perform the second half of the transformation started in
@@ -5234,16 +5048,7 @@ ira (FILE *f)
      allocation because of -O0 usage or because the function is too
      big.  */
   if (ira_conflicts_p)
-    {
-      df_analyze ();
-      calculate_dominance_info (CDI_DOMINATORS);
-
-      find_moveable_pseudos ();
-      if (split_live_ranges_for_shrink_wrap ())
-	df_analyze ();
-
-      free_dominance_info (CDI_DOMINATORS);
-    }
+    find_moveable_pseudos ();
 
   max_regno_before_ira = max_reg_num ();
   ira_setup_eliminable_regset (true);

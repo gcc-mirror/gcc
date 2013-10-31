@@ -1,3 +1,13 @@
+2013-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/58934
+	Revert:
+	2013-10-30  Martin Jambor  <mjambor@suse.cz>
+	PR rtl-optimization/10474
+	* gcc.dg/pr10474.c: New testcase.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Likewise.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+
 2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58932
