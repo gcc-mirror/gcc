@@ -1,3 +1,14 @@
+2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58932
+	Revert:
+	2013-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58466
+	* g++.dg/cpp0x/variadic145.C: New.
+
+	* g++.dg/cpp0x/sfinae49.C: New.
+
 2013-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58581
