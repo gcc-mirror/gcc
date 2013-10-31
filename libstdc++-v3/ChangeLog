@@ -1,3 +1,8 @@
+2013-10-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/cons/58839.cc: Do not use
+	default_delete<void>.
+
 2013-10-30  Chris Studholme  <cvs@cs.utoronto.ca>
 
 	PR libstdc++/58912

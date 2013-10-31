@@ -22,8 +22,12 @@
 
 // libstdc++/58839
 
+struct D {
+  void operator()(void*) const noexcept { }
+};
+
 void test01()
 {
-  std::unique_ptr<void> y;
+  std::unique_ptr<void, D> y;
   std::shared_ptr<void> x = std::move(y);
 }
