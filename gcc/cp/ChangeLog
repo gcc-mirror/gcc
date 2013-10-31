@@ -1,3 +1,8 @@
+2013-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58581
+	* call.c (build_over_call): Check return value of mark_used.
+
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't create a static variable

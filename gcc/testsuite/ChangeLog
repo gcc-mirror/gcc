@@ -1,3 +1,8 @@
+2013-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58581
+	* g++.dg/cpp0x/deleted1.C: New.
+
 2013-10-31  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/arm/lp1243022.c: New test.
