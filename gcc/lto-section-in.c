@@ -428,7 +428,7 @@ lto_free_function_in_decl_state (struct lto_in_decl_state *state)
    release trees needed by the NODE's body.  */
 
 void
-lto_free_function_in_decl_state_for_node (symtab_node node)
+lto_free_function_in_decl_state_for_node (symtab_node *node)
 {
   struct lto_in_decl_state temp;
   void **slot;

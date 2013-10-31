@@ -41,7 +41,7 @@ enum symtab_type
    The symtab_node is inherited by cgraph and varpol nodes.  */
 class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
 	   chain_next ("%h.next"), chain_prev ("%h.previous")))
-  symtab_node_base
+  symtab_node
 {
 public:
   /* Type of the symbol.  */
@@ -113,8 +113,8 @@ public:
   tree decl;
 
   /* Linked list of symbol table entries starting with symtab_nodes.  */
-  symtab_node next;
-  symtab_node previous;
+  symtab_node *next;
+  symtab_node *previous;
 
   /* Linked list of symbols with the same asm name.  There may be multiple
      entries for single symbol name during LTO, because symbols are renamed
@@ -125,11 +125,11 @@ public:
 
      There are also several long standing bugs where frontends and builtin
      code produce duplicated decls.  */
-  symtab_node next_sharing_asm_name;
-  symtab_node previous_sharing_asm_name;
+  symtab_node *next_sharing_asm_name;
+  symtab_node *previous_sharing_asm_name;
 
   /* Circular list of nodes in the same comdat group if non-NULL.  */
-  symtab_node same_comdat_group;
+  symtab_node *same_comdat_group;
 
   /* Vectors of referring and referenced entities.  */
   struct ipa_ref_list ref_list;
@@ -254,7 +254,7 @@ struct GTY(()) cgraph_clone_info
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node_base {
+struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node {
 public:
   struct cgraph_edge *callees;
   struct cgraph_edge *callers;
@@ -514,7 +514,7 @@ typedef struct cgraph_edge *cgraph_edge_p;
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node_base {
+class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node {
 public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
@@ -536,7 +536,7 @@ struct GTY(()) asm_node {
 template <>
 template <>
 inline bool
-is_a_helper <cgraph_node>::test (symtab_node_base *p)
+is_a_helper <cgraph_node>::test (symtab_node *p)
 {
   return p->type == SYMTAB_FUNCTION;
 }
@@ -546,12 +546,12 @@ is_a_helper <cgraph_node>::test (symtab_node_base *p)
 template <>
 template <>
 inline bool
-is_a_helper <varpool_node>::test (symtab_node_base *p)
+is_a_helper <varpool_node>::test (symtab_node *p)
 {
   return p->type == SYMTAB_VARIABLE;
 }
 
-extern GTY(()) symtab_node symtab_nodes;
+extern GTY(()) symtab_node *symtab_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern GTY(()) int cgraph_edge_max_uid;
@@ -582,37 +582,37 @@ extern GTY(()) int symtab_order;
 extern bool cpp_implicit_aliases_done;
 
 /* In symtab.c  */
-void symtab_register_node (symtab_node);
-void symtab_unregister_node (symtab_node);
-void symtab_remove_node (symtab_node);
-symtab_node symtab_get_node (const_tree);
-symtab_node symtab_node_for_asm (const_tree asmname);
-const char * symtab_node_asm_name (symtab_node);
-const char * symtab_node_name (symtab_node);
-void symtab_insert_node_to_hashtable (symtab_node);
-void symtab_add_to_same_comdat_group (symtab_node, symtab_node);
-void symtab_dissolve_same_comdat_group_list (symtab_node node);
+void symtab_register_node (symtab_node *);
+void symtab_unregister_node (symtab_node *);
+void symtab_remove_node (symtab_node *);
+symtab_node *symtab_get_node (const_tree);
+symtab_node *symtab_node_for_asm (const_tree asmname);
+const char * symtab_node_asm_name (symtab_node *);
+const char * symtab_node_name (symtab_node *);
+void symtab_insert_node_to_hashtable (symtab_node *);
+void symtab_add_to_same_comdat_group (symtab_node *, symtab_node *);
+void symtab_dissolve_same_comdat_group_list (symtab_node *node);
 void dump_symtab (FILE *);
 void debug_symtab (void);
-void dump_symtab_node (FILE *, symtab_node);
-void debug_symtab_node (symtab_node);
-void dump_symtab_base (FILE *, symtab_node);
+void dump_symtab_node (FILE *, symtab_node *);
+void debug_symtab_node (symtab_node *);
+void dump_symtab_base (FILE *, symtab_node *);
 void verify_symtab (void);
-void verify_symtab_node (symtab_node);
-bool verify_symtab_base (symtab_node);
-bool symtab_used_from_object_file_p (symtab_node);
+void verify_symtab_node (symtab_node *);
+bool verify_symtab_base (symtab_node *);
+bool symtab_used_from_object_file_p (symtab_node *);
 void symtab_make_decl_local (tree);
-symtab_node symtab_alias_ultimate_target (symtab_node,
+symtab_node *symtab_alias_ultimate_target (symtab_node *,
 					  enum availability *avail = NULL);
-bool symtab_resolve_alias (symtab_node node, symtab_node target);
-void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target);
-bool symtab_for_node_and_aliases (symtab_node,
-				  bool (*) (symtab_node, void *),
+bool symtab_resolve_alias (symtab_node *node, symtab_node *target);
+void fixup_same_cpp_alias_visibility (symtab_node *node, symtab_node *target);
+bool symtab_for_node_and_aliases (symtab_node *,
+				  bool (*) (symtab_node *, void *),
 				  void *,
 				  bool);
-symtab_node symtab_nonoverwritable_alias (symtab_node);
-enum availability symtab_node_availability (symtab_node);
-bool symtab_semantically_equivalent_p (symtab_node, symtab_node);
+symtab_node *symtab_nonoverwritable_alias (symtab_node *);
+enum availability symtab_node_availability (symtab_node *);
+bool symtab_semantically_equivalent_p (symtab_node *, symtab_node *);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -738,7 +738,7 @@ void compile (void);
 void init_cgraph (void);
 bool cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);
-void fixup_same_cpp_alias_visibility (symtab_node, symtab_node target, tree);
+void fixup_same_cpp_alias_visibility (symtab_node *, symtab_node *target, tree);
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
@@ -842,13 +842,13 @@ bool varpool_for_node_and_aliases (struct varpool_node *,
 			           void *, bool);
 void varpool_add_new_variable (tree);
 void symtab_initialize_asm_name_hash (void);
-void symtab_prevail_in_asm_name_hash (symtab_node node);
+void symtab_prevail_in_asm_name_hash (symtab_node *node);
 void varpool_remove_initializer (struct varpool_node *);
 
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *
-cgraph (symtab_node node)
+cgraph (symtab_node *node)
 {
   gcc_checking_assert (!node || node->type == SYMTAB_FUNCTION);
   return (struct cgraph_node *)node;
@@ -856,7 +856,7 @@ cgraph (symtab_node node)
 
 /* Return varpool node for given symbol and check it is a variable.  */
 static inline struct varpool_node *
-varpool (symtab_node node)
+varpool (symtab_node *node)
 {
   gcc_checking_assert (!node || node->type == SYMTAB_VARIABLE);
   return (struct varpool_node *)node;
@@ -915,7 +915,7 @@ varpool_node_name (struct varpool_node *node)
 static inline struct varpool_node *
 varpool_first_variable (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     if (varpool_node *vnode = dyn_cast <varpool_node> (node))
       return vnode;
@@ -926,7 +926,7 @@ varpool_first_variable (void)
 static inline struct varpool_node *
 varpool_next_variable (struct varpool_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     if (varpool_node *vnode1 = dyn_cast <varpool_node> (node1))
       return vnode1;
@@ -942,7 +942,7 @@ varpool_next_variable (struct varpool_node *node)
 static inline struct varpool_node *
 varpool_first_static_initializer (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     {
       varpool_node *vnode = dyn_cast <varpool_node> (node);
@@ -956,7 +956,7 @@ varpool_first_static_initializer (void)
 static inline struct varpool_node *
 varpool_next_static_initializer (struct varpool_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     {
       varpool_node *vnode1 = dyn_cast <varpool_node> (node1);
@@ -975,7 +975,7 @@ varpool_next_static_initializer (struct varpool_node *node)
 static inline struct varpool_node *
 varpool_first_defined_variable (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     {
       varpool_node *vnode = dyn_cast <varpool_node> (node);
@@ -989,7 +989,7 @@ varpool_first_defined_variable (void)
 static inline struct varpool_node *
 varpool_next_defined_variable (struct varpool_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     {
       varpool_node *vnode1 = dyn_cast <varpool_node> (node1);
@@ -1007,7 +1007,7 @@ varpool_next_defined_variable (struct varpool_node *node)
 static inline struct cgraph_node *
 cgraph_first_defined_function (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     {
       cgraph_node *cn = dyn_cast <cgraph_node> (node);
@@ -1021,7 +1021,7 @@ cgraph_first_defined_function (void)
 static inline struct cgraph_node *
 cgraph_next_defined_function (struct cgraph_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     {
       cgraph_node *cn1 = dyn_cast <cgraph_node> (node1);
@@ -1040,7 +1040,7 @@ cgraph_next_defined_function (struct cgraph_node *node)
 static inline struct cgraph_node *
 cgraph_first_function (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     if (cgraph_node *cn = dyn_cast <cgraph_node> (node))
       return cn;
@@ -1051,7 +1051,7 @@ cgraph_first_function (void)
 static inline struct cgraph_node *
 cgraph_next_function (struct cgraph_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     if (cgraph_node *cn1 = dyn_cast <cgraph_node> (node1))
       return cn1;
@@ -1078,7 +1078,7 @@ cgraph_function_with_gimple_body_p (struct cgraph_node *node)
 static inline struct cgraph_node *
 cgraph_first_function_with_gimple_body (void)
 {
-  symtab_node node;
+  symtab_node *node;
   for (node = symtab_nodes; node; node = node->next)
     {
       cgraph_node *cn = dyn_cast <cgraph_node> (node);
@@ -1092,7 +1092,7 @@ cgraph_first_function_with_gimple_body (void)
 static inline struct cgraph_node *
 cgraph_next_function_with_gimple_body (struct cgraph_node *node)
 {
-  symtab_node node1 = node->next;
+  symtab_node *node1 = node->next;
   for (; node1; node1 = node1->next)
     {
       cgraph_node *cn1 = dyn_cast <cgraph_node> (node1);
@@ -1291,8 +1291,8 @@ htab_t constant_pool_htab (void);
 
 /* Return node that alias N is aliasing.  */
 
-static inline symtab_node
-symtab_alias_target (symtab_node n)
+static inline symtab_node *
+symtab_alias_target (symtab_node *n)
 {
   struct ipa_ref *ref;
   ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
@@ -1380,7 +1380,7 @@ cgraph_mark_force_output_node (struct cgraph_node *node)
    or abstract function kept for debug info purposes only.  */
 
 static inline bool
-symtab_real_symbol_p (symtab_node node)
+symtab_real_symbol_p (symtab_node *node)
 {
   struct cgraph_node *cnode;
 
@@ -1397,7 +1397,7 @@ symtab_real_symbol_p (symtab_node node)
 /* Return true if NODE can be discarded by linker from the binary.  */
 
 static inline bool
-symtab_can_be_discarded (symtab_node node)
+symtab_can_be_discarded (symtab_node *node)
 {
   return (DECL_EXTERNAL (node->decl)
 	  || (DECL_ONE_ONLY (node->decl)

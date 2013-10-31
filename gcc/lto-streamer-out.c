@@ -1982,7 +1982,7 @@ lto_output (void)
   /* Process only the functions with bodies.  */
   for (i = 0; i < n_nodes; i++)
     {
-      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *node = dyn_cast <cgraph_node> (snode);
       if (node
 	  && lto_symtab_encoder_encode_body_p (encoder, node)
@@ -2290,7 +2290,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
 /* Return true if NODE should appear in the plugin symbol table.  */
 
 bool
-output_symbol_p (symtab_node node)
+output_symbol_p (symtab_node *node)
 {
   struct cgraph_node *cnode;
   if (!symtab_real_symbol_p (node))
@@ -2352,7 +2352,7 @@ produce_symtab (struct output_block *ob)
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node node = lsei_node (lsei);
+      symtab_node *node = lsei_node (lsei);
 
       if (!output_symbol_p (node) || DECL_EXTERNAL (node->decl))
 	continue;
@@ -2361,7 +2361,7 @@ produce_symtab (struct output_block *ob)
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      symtab_node node = lsei_node (lsei);
+      symtab_node *node = lsei_node (lsei);
 
       if (!output_symbol_p (node) || !DECL_EXTERNAL (node->decl))
 	continue;

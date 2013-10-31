@@ -2512,7 +2512,7 @@ ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
    successfully found and removed.  */
 
 static bool
-remove_described_reference (symtab_node symbol, struct ipa_cst_ref_desc *rdesc)
+remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
 {
   struct ipa_ref *to_del;
   struct cgraph_edge *origin;
@@ -2577,7 +2577,7 @@ try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
       && (rdesc = jfunc_rdesc_usable (jfunc))
       && --rdesc->refcount == 0)
     {
-      symtab_node symbol = cgraph_node_for_jfunc (jfunc);
+      symtab_node *symbol = cgraph_node_for_jfunc (jfunc);
       if (!symbol)
 	return false;
 
@@ -3097,7 +3097,7 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	  else if (src->caller == dst->caller)
 	    {
 	      struct ipa_ref *ref;
-	      symtab_node n = cgraph_node_for_jfunc (src_jf);
+	      symtab_node *n = cgraph_node_for_jfunc (src_jf);
 	      gcc_checking_assert (n);
 	      ref = ipa_find_reference (src->caller, n,
 					src->call_stmt, src->lto_stmt_uid);

@@ -234,7 +234,7 @@ debug_varpool (void)
 struct varpool_node *
 varpool_node_for_asm (tree asmname)
 {
-  if (symtab_node node = symtab_node_for_asm (asmname))
+  if (symtab_node *node = symtab_node_for_asm (asmname))
     return dyn_cast <varpool_node> (node);
   else
     return NULL;
@@ -512,7 +512,7 @@ varpool_remove_unreferenced_decls (void)
 
       if (node->same_comdat_group)
 	{
-	  symtab_node next;
+	  symtab_node *next;
 	  for (next = node->same_comdat_group;
 	       next != node;
 	       next = next->same_comdat_group)

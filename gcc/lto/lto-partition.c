@@ -47,12 +47,12 @@ enum symbol_class
 
 vec<ltrans_partition> ltrans_partitions;
 
-static void add_symbol_to_partition (ltrans_partition part, symtab_node node);
+static void add_symbol_to_partition (ltrans_partition part, symtab_node *node);
 
 /* Classify symbol NODE.  */
 
 enum symbol_class
-get_symbol_class (symtab_node node)
+get_symbol_class (symtab_node *node)
 {
   /* Inline clones are always duplicated.
      This include external delcarations.   */
@@ -131,14 +131,14 @@ free_ltrans_partitions (void)
 /* Return true if symbol is already in some partition.  */
 
 static inline bool
-symbol_partitioned_p (symtab_node node)
+symbol_partitioned_p (symtab_node *node)
 {
   return node->aux;
 }
 
 /* Add references into the partition.  */
 static void
-add_references_to_partition (ltrans_partition part, symtab_node node)
+add_references_to_partition (ltrans_partition part, symtab_node *node)
 {
   int i;
   struct ipa_ref *ref;
@@ -165,12 +165,12 @@ add_references_to_partition (ltrans_partition part, symtab_node node)
    of adding NODE to PART.  */
 
 static bool
-add_symbol_to_partition_1 (ltrans_partition part, symtab_node node)
+add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 {
   enum symbol_class c = get_symbol_class (node);
   int i;
   struct ipa_ref *ref;
-  symtab_node node1;
+  symtab_node *node1;
 
   /* If NODE is already there, we have nothing to do.  */
   if (lto_symtab_encoder_in_partition_p (part->encoder, node))
@@ -241,8 +241,8 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node node)
    internal label, thunk, alias or so), return the outer symbol. 
    When add_symbol_to_partition_1 is called on the outer symbol it must
    eventually add NODE, too.  */
-static symtab_node
-contained_in_symbol (symtab_node node)
+static symtab_node *
+contained_in_symbol (symtab_node *node)
 {
   /* Weakrefs are never contained in anything.  */
   if (node->weakref)
@@ -263,9 +263,9 @@ contained_in_symbol (symtab_node node)
    of other symbol definition, add the other symbol, too.  */
 
 static void
-add_symbol_to_partition (ltrans_partition part, symtab_node node)
+add_symbol_to_partition (ltrans_partition part, symtab_node *node)
 {
-  symtab_node node1;
+  symtab_node *node1;
 
   /* Verify that we do not try to duplicate something that can not be.  */
   gcc_checking_assert (get_symbol_class (node) == SYMBOL_DUPLICATE
@@ -294,7 +294,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
 {
   while (lto_symtab_encoder_size (partition->encoder) > (int)n_nodes)
     {
-      symtab_node node = lto_symtab_encoder_deref (partition->encoder,
+      symtab_node *node = lto_symtab_encoder_deref (partition->encoder,
 						   n_nodes);
 
       /* After UNDO we no longer know what was visited.  */
@@ -315,7 +315,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
 void
 lto_1_to_1_map (void)
 {
-  symtab_node node;
+  symtab_node *node;
   struct lto_file_decl_data *file_data;
   struct pointer_map_t *pmap;
   ltrans_partition partition;
@@ -372,7 +372,7 @@ lto_1_to_1_map (void)
 void
 lto_max_map (void)
 {
-  symtab_node node;
+  symtab_node *node;
   ltrans_partition partition;
   int npartitions = 0;
 
@@ -545,7 +545,7 @@ lto_balanced_map (void)
 	  struct ipa_ref_list *refs;
 	  int j;
 	  struct ipa_ref *ref;
-	  symtab_node snode = lto_symtab_encoder_deref (partition->encoder,
+	  symtab_node *snode = lto_symtab_encoder_deref (partition->encoder,
 							last_visited_node);
 
 	  if (cgraph_node *node = dyn_cast <cgraph_node> (snode))
@@ -763,7 +763,7 @@ lto_balanced_map (void)
 */
 
 static bool
-privatize_symbol_name (symtab_node node)
+privatize_symbol_name (symtab_node *node)
 {
   tree decl = node->decl;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
@@ -806,7 +806,7 @@ privatize_symbol_name (symtab_node node)
 /* Promote variable VNODE to be static.  */
 
 static void
-promote_symbol (symtab_node node)
+promote_symbol (symtab_node *node)
 {
   /* We already promoted ... */
   if (DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
@@ -832,7 +832,7 @@ promote_symbol (symtab_node node)
    FIXME: we should really not use named sections for inline clones and master clones.  */
 
 static bool
-may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node node)
+may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node *node)
 {
   struct cgraph_node *cnode = dyn_cast <cgraph_node> (node);
   if (!cnode)
@@ -852,10 +852,10 @@ may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node node)
    asm statemnets referring to them by symbol name.  */
 
 static void
-rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
+rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 {
   tree decl = node->decl;
-  symtab_node s;
+  symtab_node *s;
   tree name = DECL_ASSEMBLER_NAME (decl);
 
   /* See if this is static symbol. */
@@ -935,7 +935,7 @@ lto_promote_cross_file_statics (void)
       for (lsei = lsei_start (encoder); !lsei_end_p (lsei);
 	   lsei_next (&lsei))
         {
-          symtab_node node = lsei_node (lsei);
+          symtab_node *node = lsei_node (lsei);
 
 	  /* If symbol is static, rename it if its assembler name clash with
 	     anything else in this unit.  */
@@ -961,7 +961,7 @@ lto_promote_cross_file_statics (void)
 void
 lto_promote_statics_nonwpa (void)
 {
-  symtab_node node;
+  symtab_node *node;
   FOR_EACH_SYMBOL (node)
     rename_statics (NULL, node);
 }

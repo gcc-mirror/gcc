@@ -66,7 +66,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 {
   struct varpool_node *vnode;
   struct cgraph_node *node;
-  symtab_node snode;
+  symtab_node *snode;
 
   if (DECL_ABSTRACT (decl))
     return false;

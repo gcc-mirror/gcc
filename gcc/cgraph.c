@@ -64,7 +64,7 @@ static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
 static inline void cgraph_edge_remove_callee (struct cgraph_edge *e);
 
 /* Queue of cgraph nodes scheduled to be lowered.  */
-symtab_node x_cgraph_nodes_queue;
+symtab_node *x_cgraph_nodes_queue;
 #define cgraph_nodes_queue ((struct cgraph_node *)x_cgraph_nodes_queue)
 
 /* Number of nodes in existence.  */
@@ -647,7 +647,7 @@ struct cgraph_node *
 cgraph_node_for_asm (tree asmname)
 {
   /* We do not want to look at inline clones.  */
-  for (symtab_node node = symtab_node_for_asm (asmname);
+  for (symtab_node *node = symtab_node_for_asm (asmname);
        node;
        node = node->next_sharing_asm_name)
     {
