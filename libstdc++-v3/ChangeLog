@@ -1,3 +1,7 @@
+2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/default_delete/48631_neg.cc: Tweak dg-prune.
+
 2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Fix
