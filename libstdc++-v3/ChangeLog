@@ -1,3 +1,13 @@
+2013-10-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple (_Index_tuple, _Build_index_tuple): Move to
+	<utility>.
+	* include/std/utility (integer_sequence, make_integer_sequence,
+	index_sequence, make_index_sequence, index_sequence_for): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/integer_sequence/intseq.cc: New.
+	* testsuite/20_util/integer_sequence/requirements/typedefs.cc: New.
+
 2013-10-31  Steve Ellcey  <sellcey@mips.com>
 
 	* configure.ac: Add header checks for fenv.h and complex.h.
