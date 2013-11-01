@@ -3793,22 +3793,39 @@ make_string_pack (tree value)
   tree charvec;
   tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
   const char *str = TREE_STRING_POINTER (value);
-  int i, len = TREE_STRING_LENGTH (value) - 1;
+  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value))));
+  int len = TREE_STRING_LENGTH (value) / sz - 1;
   tree argvec = make_tree_vec (2);
 
-  tree string_char_type_node = TREE_TYPE (TREE_TYPE (value));
+  tree str_char_type_node = TREE_TYPE (TREE_TYPE (value));
+  str_char_type_node = TYPE_MAIN_VARIANT (str_char_type_node);
 
   /* First template parm is character type.  */
-  TREE_VEC_ELT (argvec, 0) = string_char_type_node;
+  TREE_VEC_ELT (argvec, 0) = str_char_type_node;
 
   /* Fill in CHARVEC with all of the parameters.  */
   charvec = make_tree_vec (len);
-  for (i = 0; i < len; ++i)
-    TREE_VEC_ELT (charvec, i) = build_int_cst (string_char_type_node, str[i]);
+  if (sz == 1)
+    {
+      for (int i = 0; i < len; ++i)
+	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, str[i]);
+    }
+  else if (sz == 2)
+    {
+      const uint16_t *num = (const uint16_t *)str;
+      for (int i = 0; i < len; ++i)
+	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, num[i]);
+    }
+  else if (sz == 4)
+    {
+      const uint32_t *num = (const uint32_t *)str;
+      for (int i = 0; i < len; ++i)
+	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, num[i]);
+    }
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, charvec);
-  TREE_TYPE (argpack) = string_char_type_node;
+  TREE_TYPE (argpack) = str_char_type_node;
 
   TREE_VEC_ELT (argvec, 1) = argpack;
 
