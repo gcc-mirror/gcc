@@ -5188,12 +5188,16 @@ finish_omp_clauses (tree clauses)
 	  if (t == NULL_TREE)
 	    t = integer_one_node;
 	  if (t == error_mark_node)
-	    remove = true;
+	    {
+	      remove = true;
+	      break;
+	    }
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
 	      error ("linear step expression must be integral");
 	      remove = true;
+	      break;
 	    }
 	  else
 	    {
@@ -5210,7 +5214,10 @@ finish_omp_clauses (tree clauses)
 					   MINUS_EXPR, sizetype, t,
 					   OMP_CLAUSE_DECL (c));
 		      if (t == error_mark_node)
-			remove = true;
+			{
+			  remove = true;
+			  break;
+			}
 		    }
 		}
 	      OMP_CLAUSE_LINEAR_STEP (c) = t;
@@ -5626,8 +5633,9 @@ finish_omp_clauses (tree clauses)
 	      else
 		error ("%qE is not an argument in %<uniform%> clause", t);
 	      remove = true;
+	      break;
 	    }
-	  break;
+	  goto check_dup_generic;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:

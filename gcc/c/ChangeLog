@@ -1,3 +1,11 @@
+2013-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses) <case OMP_CLAUSE_UNIFORM>: Go to
+	check_dup_generic at the end, unless remove is true.
+	(c_finish_omp_clauses) <case OMP_CLAUSE_REDUCTION>: Add break; after
+	remove = true;.
+	(c_finish_omp_clauses) <case OMP_CLAUSE_COPYIN>: Likewise.
+
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Diagnose aligned clause
