@@ -2421,7 +2421,6 @@ prepare_initializers (struct loop *loop, vec<chain_p> chains)
 static bool
 tree_predictive_commoning_loop (struct loop *loop)
 {
-  vec<loop_p> loop_nest;
   vec<data_reference_p> datarefs;
   vec<ddr_p> dependences;
   struct component *components;
@@ -2437,15 +2436,14 @@ tree_predictive_commoning_loop (struct loop *loop)
 
   /* Find the data references and split them into components according to their
      dependence relations.  */
-  datarefs.create (10);
+  stack_vec<loop_p, 3> loop_nest;
   dependences.create (10);
-  loop_nest.create (3);
+  datarefs.create (10);
   if (! compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
 					   &dependences))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Cannot analyze data dependencies\n");
-      loop_nest.release ();
       free_data_refs (datarefs);
       free_dependence_relations (dependences);
       return false;

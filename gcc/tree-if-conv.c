@@ -1165,7 +1165,6 @@ if_convertible_loop_p (struct loop *loop)
   bool res = false;
   vec<data_reference_p> refs;
   vec<ddr_p> ddrs;
-  vec<loop_p> loop_nest;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -1199,7 +1198,7 @@ if_convertible_loop_p (struct loop *loop)
 
   refs.create (5);
   ddrs.create (25);
-  loop_nest.create (3);
+  stack_vec<loop_p, 3> loop_nest;
   res = if_convertible_loop_p_1 (loop, &loop_nest, &refs, &ddrs);
 
   if (flag_tree_loop_if_convert_stores)

@@ -1,3 +1,8 @@
+2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* semantics.c (build_anon_member_initialization): Convert fields to be
+        a stack_vec.
+
 2013-11-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58834

@@ -395,7 +395,6 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 static bool
 loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 {
-  vec<loop_p> loop_nest;
   vec<ddr_p> dependence_relations;
   vec<data_reference_p> datarefs;
   lambda_trans_matrix trans;
@@ -412,9 +411,9 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 
   /* Check for problems with dependences.  If the loop can be reversed,
      the iterations are independent.  */
+  stack_vec<loop_p, 3> loop_nest;
   datarefs.create (10);
-  dependence_relations.create (10 * 10);
-  loop_nest.create (3);
+  dependence_relations.create (100);
   if (! compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
 					   &dependence_relations))
     {
@@ -440,7 +439,6 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 	     "  FAILED: data dependencies exist across iterations\n");
 
  end:
-  loop_nest.release ();
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 
@@ -741,8 +739,7 @@ static void
 eliminate_local_variables (edge entry, edge exit)
 {
   basic_block bb;
-  vec<basic_block> body;
-  body.create (3);
+  stack_vec<basic_block, 3> body;
   unsigned i;
   gimple_stmt_iterator gsi;
   bool has_debug_stmt = false;
@@ -772,7 +769,6 @@ eliminate_local_variables (edge entry, edge exit)
 	    eliminate_local_variables_stmt (entry, &gsi, decl_address);
 
   decl_address.dispose ();
-  body.release ();
 }
 
 /* Returns true if expression EXPR is not defined between ENTRY and
@@ -1297,8 +1293,7 @@ separate_decls_in_region (edge entry, edge exit,
   tree type, type_name, nvar;
   gimple_stmt_iterator gsi;
   struct clsn_data clsn_data;
-  vec<basic_block> body;
-  body.create (3);
+  stack_vec<basic_block, 3> body;
   basic_block bb;
   basic_block entry_bb = bb1;
   basic_block exit_bb = exit->dest;
@@ -1355,8 +1350,6 @@ separate_decls_in_region (edge entry, edge exit,
 	      gsi_next (&gsi);
 	    }
 	}
-
-  body.release ();
 
   if (name_copies.elements () == 0 && reduction_list.elements () == 0)
     {
