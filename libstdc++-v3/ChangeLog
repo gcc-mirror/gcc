@@ -1,3 +1,54 @@
+2013-10-31  Michael Brune  <lucdanton@free.fr>
+
+	* include/bits/enable_special_members.h: New.
+	* include/experimental/optional: New.
+	* include/Makefile.am: Handle include/experimental.
+	* include/Makefile.in: Regenerate.
+	* testsuite/libstdc++-dg/conformance.exp: Run tests from
+	testsuite/experimental sub-directory.
+	* testsuite/experimental/optional/assignment/1.cc: New.
+	* testsuite/experimental/optional/assignment/2.cc: New.
+	* testsuite/experimental/optional/assignment/3.cc: New.
+	* testsuite/experimental/optional/assignment/4.cc: New.
+	* testsuite/experimental/optional/assignment/5.cc: New.
+	* testsuite/experimental/optional/assignment/6.cc: New.
+	* testsuite/experimental/optional/cons/copy.cc: New.
+	* testsuite/experimental/optional/cons/default.cc: New.
+	* testsuite/experimental/optional/cons/move.cc: New.
+	* testsuite/experimental/optional/cons/value.cc: New.
+	* testsuite/experimental/optional/constexpr/cons/default.cc: New.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: New.
+	* testsuite/experimental/optional/constexpr/in_place.cc: New.
+	* testsuite/experimental/optional/constexpr/make_optional.cc: New.
+	* testsuite/experimental/optional/constexpr/nullopt.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/1.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/4.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/5.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/1.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/2.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/3.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/4.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/5.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/6.cc: New.
+	* testsuite/experimental/optional/in_place.cc: New.
+	* testsuite/experimental/optional/make_optional.cc: New.
+	* testsuite/experimental/optional/nullopt.cc: New.
+	* testsuite/experimental/optional/observers/1.cc: New.
+	* testsuite/experimental/optional/observers/2.cc: New.
+	* testsuite/experimental/optional/observers/3.cc: New.
+	* testsuite/experimental/optional/observers/4.cc: New.
+	* testsuite/experimental/optional/observers/5.cc: New.
+	* testsuite/experimental/optional/relops/1.cc: New.
+	* testsuite/experimental/optional/relops/2.cc: New.
+	* testsuite/experimental/optional/relops/3.cc: New.
+	* testsuite/experimental/optional/relops/4.cc: New.
+	* testsuite/experimental/optional/relops/5.cc: New.
+	* testsuite/experimental/optional/relops/6.cc: New.
+	* testsuite/experimental/optional/requirements.cc: New.
+	* testsuite/experimental/optional/swap/1.cc: New.
+
 2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_function.h (logical_not<void>): Add noexcept.
