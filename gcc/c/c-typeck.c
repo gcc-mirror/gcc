@@ -11316,6 +11316,7 @@ c_finish_omp_clauses (tree clauses)
 			    "%qE has invalid type for %<reduction(%s)%>",
 			    t, r_name);
 		  remove = true;
+		  break;
 		}
 	    }
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
@@ -11323,6 +11324,7 @@ c_finish_omp_clauses (tree clauses)
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"user defined reduction not found for %qD", t);
 	      remove = true;
+	      break;
 	    }
 	  else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
@@ -11406,6 +11408,7 @@ c_finish_omp_clauses (tree clauses)
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE must be %<threadprivate%> for %<copyin%>", t);
 	      remove = true;
+	      break;
 	    }
 	  goto check_dup_generic;
 
@@ -11615,8 +11618,9 @@ c_finish_omp_clauses (tree clauses)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qE is not an argument in %<uniform%> clause", t);
 	      remove = true;
+	      break;
 	    }
-	  break;
+	  goto check_dup_generic;
 
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)

@@ -82,4 +82,17 @@ int fn14 (double &d);
 #pragma omp declare simd aligned (e)	// { dg-error "neither a pointer nor an array" }
 int fn14 (D e);
 
+#pragma omp declare simd linear(a:7) uniform(a)	// { dg-error "appears more than once" }
+int f15 (int a);
+#pragma omp declare simd linear(a) linear(a)	// { dg-error "appears more than once" }
+int f16 (int a);
+#pragma omp declare simd linear(a) linear(a:7)	// { dg-error "appears more than once" }
+int f17 (int a);
+#pragma omp declare simd linear(a:6) linear(a:6)// { dg-error "appears more than once" }
+int f18 (int a);
+#pragma omp declare simd uniform(a) uniform(a)	// { dg-error "appears more than once" }
+int f19 (int a);
+#pragma omp declare simd uniform(a) aligned (a: 32)
+int f20 (int *a);
+
 // { dg-error "has no member" "" { target *-*-* } 61 }

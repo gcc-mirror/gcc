@@ -1,3 +1,10 @@
+2013-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/declare-simd-2.c (f12, f13, f14, f15, f16, f17): New
+	tests.
+	* g++.dg/gomp/declare-simd-2.C (f15, f16, f17, f18, f19, f20): New
+	tests.
+
 2013-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57893
