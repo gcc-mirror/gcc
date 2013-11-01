@@ -1,3 +1,14 @@
+2013-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (HAVE_AS_IX86_INTERUNIT_MOVQ): Always define as 0/1.
+	* configure: Regenerate.
+	* config/i386/i386.md (*movdi_internal): Change
+	HAVE_AS_IX86_INTERUNIT_MOVQ to runtime check.
+	(*movdf_internal): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Ditto.
+	* config/i386/sse.md (vec_concatv2di): Output interunit movq
+	for HAVE_AS_IX86_INTERUNIT_MOVQ targets.
+
 2013-10-31  Robert Suchanek  <Robert.Suchanek@imgtec.com>
 
 	* lra-spills.c (assign_spill_hard_regs): Remove statement terminator

@@ -3754,9 +3754,10 @@ foo:	nop
       gcc_cv_as_ix86_interunit_movq,,,
       [.code64
        movq %mm0, %rax
-       movq %rax, %xmm0],,
-      [AC_DEFINE(HAVE_AS_IX86_INTERUNIT_MOVQ, 1,
-        [Define if your assembler supports interunit movq mnemonic.])])
+       movq %rax, %xmm0])
+    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_INTERUNIT_MOVQ,
+      [`if test $gcc_cv_as_ix86_interunit_movq = yes; then echo 1; else echo 0; fi`],
+      [Define if your assembler supports interunit movq mnemonic.])
 
     gcc_GAS_CHECK_FEATURE([hle prefixes],
       gcc_cv_as_ix86_hle,,,
