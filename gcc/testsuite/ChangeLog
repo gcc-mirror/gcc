@@ -1,3 +1,8 @@
+2013-11-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/58834
+	* g++.dg/ext/pr58834.C: New file.
+
 2013-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/declare-simd-2.c (f12, f13, f14, f15, f16, f17): New

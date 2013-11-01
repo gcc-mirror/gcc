@@ -20506,7 +20506,7 @@ type_dependent_expression_p (tree expression)
   if (!processing_template_decl)
     return false;
 
-  if (expression == error_mark_node)
+  if (expression == NULL_TREE || expression == error_mark_node)
     return false;
 
   /* An unresolved name is always dependent.  */
