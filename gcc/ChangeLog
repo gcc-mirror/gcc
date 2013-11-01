@@ -1,3 +1,8 @@
+2013-10-31  Robert Suchanek  <Robert.Suchanek@imgtec.com>
+
+	* lra-spills.c (assign_spill_hard_regs): Remove statement terminator
+	after comment.
+
 2013-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	Automated part of renaming of symtab_node_base to symtab_node.

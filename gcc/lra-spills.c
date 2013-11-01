@@ -334,8 +334,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
       for (nr = 0;
 	   nr < hard_regno_nregs[hard_regno][lra_reg_info[regno].biggest_mode];
 	   nr++)
-	/* Just loop.  */;
-      df_set_regs_ever_live (hard_regno + nr, true);
+	/* Just loop.  */
+	df_set_regs_ever_live (hard_regno + nr, true);
     }
   bitmap_clear (&ok_insn_bitmap);
   free (reserved_hard_regs);
