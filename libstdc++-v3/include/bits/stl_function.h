@@ -554,7 +554,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       template <typename _Tp>
 	auto
-	operator()(_Tp&& __t) const -> decltype(!std::forward<_Tp>(__t))
+	operator()(_Tp&& __t) const
+	noexcept(noexcept(!std::forward<_Tp>(__t)))
+	-> decltype(!std::forward<_Tp>(__t))
 	{ return !std::forward<_Tp>(__t); }
 
       typedef __is_transparent is_transparent;

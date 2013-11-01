@@ -1,3 +1,7 @@
+2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_function.h (logical_not<void>): Add noexcept.
+
 2013-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58952
