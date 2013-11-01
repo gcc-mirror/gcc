@@ -1,4 +1,4 @@
-2013-10-31  Michael Brune  <lucdanton@free.fr>
+2013-11-01  Michael Brune  <lucdanton@free.fr>
 
 	* include/bits/enable_special_members.h: New.
 	* include/experimental/optional: New.
