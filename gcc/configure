@@ -24802,11 +24802,12 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_interunit_movq" >&5
 $as_echo "$gcc_cv_as_ix86_interunit_movq" >&6; }
-if test $gcc_cv_as_ix86_interunit_movq = yes; then
 
-$as_echo "#define HAVE_AS_IX86_INTERUNIT_MOVQ 1" >>confdefs.h
 
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_INTERUNIT_MOVQ `if test $gcc_cv_as_ix86_interunit_movq = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for hle prefixes" >&5
 $as_echo_n "checking assembler for hle prefixes... " >&6; }

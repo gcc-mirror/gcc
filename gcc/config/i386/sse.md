@@ -9489,7 +9489,7 @@
   "@
    pinsrq\t{$1, %2, %0|%0, %2, 1}
    vpinsrq\t{$1, %2, %1, %0|%0, %1, %2, 1}
-   %vmovd\t{%1, %0|%0, %1}
+   * return HAVE_AS_IX86_INTERUNIT_MOVQ ? \"%vmovq\t{%1, %0|%0, %1}\" : \"%vmovd\t{%1, %0|%0, %1}\";
    %vmovq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}

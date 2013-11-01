@@ -99,11 +99,10 @@
       return "pxor\t%0, %0";
 
     case TYPE_MMXMOV:
-#ifndef HAVE_AS_IX86_INTERUNIT_MOVQ
       /* Handle broken assemblers that require movd instead of movq.  */
-      if (GENERAL_REG_P (operands[0]) || GENERAL_REG_P (operands[1]))
+      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
+	  && (GENERAL_REG_P (operands[0]) || GENERAL_REG_P (operands[1])))
 	return "movd\t{%1, %0|%0, %1}";
-#endif
       return "movq\t{%1, %0|%0, %1}";
 
     case TYPE_SSECVT:
@@ -119,15 +118,13 @@
       switch (get_attr_mode (insn))
 	{
 	case MODE_DI:
-#ifndef HAVE_AS_IX86_INTERUNIT_MOVQ
 	  /* Handle broken assemblers that require movd instead of movq.  */
-	  if (GENERAL_REG_P (operands[0]) || GENERAL_REG_P (operands[1]))
+	  if (!HAVE_AS_IX86_INTERUNIT_MOVQ
+	      && (GENERAL_REG_P (operands[0]) || GENERAL_REG_P (operands[1])))
 	    return "%vmovd\t{%1, %0|%0, %1}";
-#endif
 	  return "%vmovq\t{%1, %0|%0, %1}";
 	case MODE_TI:
 	  return "%vmovdqa\t{%1, %0|%0, %1}";
-
 	case MODE_XI:
 	  return "vmovdqa64\t{%g1, %g0|%g0, %g1}";
 
