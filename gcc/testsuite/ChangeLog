@@ -1,3 +1,9 @@
+2013-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57893
+	* gfortran.dg/unlimited_polymorphic_13.f90 : Break up select
+	type block.
+
 2013-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/simd-1.C: New test.

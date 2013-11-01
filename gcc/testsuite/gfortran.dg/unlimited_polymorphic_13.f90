@@ -37,14 +37,22 @@ contains
     end select
 
     if (storage_size(o) /= sz) call abort()
+
+! Break up the SELECT TYPE to pre-empt collisions in the value of 'cn'
     select type (o)
       type is (complex(c1))
         if (storage_size(o) /= sz) call abort()
+    end select
+    select type (o)
       type is (complex(c2))
         if (storage_size(o) /= sz) call abort()
+    end select
+    select type (o)
       type is (complex(c3))
         if (storage_size(o) /= sz) call abort()
-      type is (complex(c4))
+     end select
+    select type (o)
+     type is (complex(c4))
         if (storage_size(o) /= sz) call abort()
     end select
   end subroutine s
