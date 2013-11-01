@@ -1,3 +1,7 @@
+2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+* MAINTAINERS (Write After Approval): Add myself.
+
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS): Pass
