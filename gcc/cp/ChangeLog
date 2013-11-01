@@ -1,3 +1,9 @@
+2013-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58708
+	* parser.c (make_string_pack): Discover non-const type and size
+	of character and build parm pack with correct type and chars.
+
 2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* semantics.c (build_anon_member_initialization): Convert fields to be
