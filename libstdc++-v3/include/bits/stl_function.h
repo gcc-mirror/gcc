@@ -56,6 +56,10 @@
 #ifndef _STL_FUNCTION_H
 #define _STL_FUNCTION_H 1
 
+#if __cplusplus > 201103L
+#include <bits/move.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -135,6 +139,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  @{
    */
+
+#if __cplusplus > 201103L
+  struct __is_transparent;  // undefined
+
+  template<typename _Tp = void>
+    struct plus;
+
+  template<typename _Tp = void>
+    struct minus;
+
+  template<typename _Tp = void>
+    struct multiplies;
+
+  template<typename _Tp = void>
+    struct divides;
+
+  template<typename _Tp = void>
+    struct modulus;
+
+  template<typename _Tp = void>
+    struct negate;
+#endif
+
   /// One of the @link arithmetic_functors math functors@endlink.
   template<typename _Tp>
     struct plus : public binary_function<_Tp, _Tp, _Tp>
@@ -188,6 +215,91 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return -__x; }
     };
+
+#if __cplusplus > 201103L
+  template<>
+    struct plus<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) + std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) + std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) + std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link arithmetic_functors math functors@endlink.
+  template<>
+    struct minus<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) - std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) - std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) - std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link arithmetic_functors math functors@endlink.
+  template<>
+    struct multiplies<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) * std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) * std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) * std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link arithmetic_functors math functors@endlink.
+  template<>
+    struct divides<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) / std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) / std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) / std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link arithmetic_functors math functors@endlink.
+  template<>
+    struct modulus<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) % std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) % std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) % std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link arithmetic_functors math functors@endlink.
+  template<>
+    struct negate<void>
+    {
+      template <typename _Tp>
+	auto
+	operator()(_Tp&& __t) const
+	noexcept(noexcept(-std::forward<_Tp>(__t)))
+	-> decltype(-std::forward<_Tp>(__t))
+	{ return -std::forward<_Tp>(__t); }
+
+      typedef __is_transparent is_transparent;
+    };
+#endif
   /** @}  */
 
   // 20.3.3 comparisons
@@ -199,6 +311,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  @{
    */
+#if __cplusplus > 201103L
+  template<typename _Tp = void>
+    struct equal_to;
+
+  template<typename _Tp = void>
+    struct not_equal_to;
+
+  template<typename _Tp = void>
+    struct greater;
+
+  template<typename _Tp = void>
+    struct less;
+
+  template<typename _Tp = void>
+    struct greater_equal;
+
+  template<typename _Tp = void>
+    struct less_equal;
+#endif
+
   /// One of the @link comparison_functors comparison functors@endlink.
   template<typename _Tp>
     struct equal_to : public binary_function<_Tp, _Tp, bool>
@@ -252,6 +384,92 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x <= __y; }
     };
+
+#if __cplusplus > 201103L
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct equal_to<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) == std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) == std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) == std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct not_equal_to<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) != std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) != std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) != std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct greater<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) > std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) > std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) > std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct less<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) < std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) < std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) < std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct greater_equal<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) >= std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) >= std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) >= std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link comparison_functors comparison functors@endlink.
+  template<>
+    struct less_equal<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) <= std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) <= std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) <= std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+#endif
   /** @}  */
 
   // 20.3.4 logical operations
@@ -263,6 +481,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  @{
    */
+#if __cplusplus > 201103L
+  template<typename _Tp = void>
+    struct logical_and;
+
+  template<typename _Tp = void>
+    struct logical_or;
+
+  template<typename _Tp = void>
+    struct logical_not;
+#endif
+
   /// One of the @link logical_functors Boolean operations functors@endlink.
   template<typename _Tp>
     struct logical_and : public binary_function<_Tp, _Tp, bool>
@@ -289,7 +518,63 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return !__x; }
     };
+
+#if __cplusplus > 201103L
+  /// One of the @link logical_functors Boolean operations functors@endlink.
+  template<>
+    struct logical_and<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) && std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) && std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) && std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link logical_functors Boolean operations functors@endlink.
+  template<>
+    struct logical_or<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) || std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) || std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) || std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  /// One of the @link logical_functors Boolean operations functors@endlink.
+  template<>
+    struct logical_not<void>
+    {
+      template <typename _Tp>
+	auto
+	operator()(_Tp&& __t) const -> decltype(!std::forward<_Tp>(__t))
+	{ return !std::forward<_Tp>(__t); }
+
+      typedef __is_transparent is_transparent;
+    };
+#endif
   /** @}  */
+
+#if __cplusplus > 201103L
+  template<typename _Tp = void>
+    struct bit_and;
+
+  template<typename _Tp = void>
+    struct bit_or;
+
+  template<typename _Tp = void>
+    struct bit_xor;
+
+  template<typename _Tp = void>
+    struct bit_not;
+#endif
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 660. Missing Bitwise Operations.
@@ -316,6 +601,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x ^ __y; }
     };
+
+  template<typename _Tp>
+    struct bit_not : public unary_function<_Tp, _Tp>
+    {
+      _Tp
+      operator()(const _Tp& __x) const
+      { return ~__x; }
+    };
+
+#if __cplusplus > 201103L
+  template <>
+    struct bit_and<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) & std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) & std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) & std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  template <>
+    struct bit_or<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) | std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) | std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) | std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  template <>
+    struct bit_xor<void>
+    {
+      template <typename _Tp, typename _Up>
+	auto
+	operator()(_Tp&& __t, _Up&& __u) const
+	noexcept(noexcept(std::forward<_Tp>(__t) ^ std::forward<_Up>(__u)))
+	-> decltype(std::forward<_Tp>(__t) ^ std::forward<_Up>(__u))
+	{ return std::forward<_Tp>(__t) ^ std::forward<_Up>(__u); }
+
+      typedef __is_transparent is_transparent;
+    };
+
+  template <>
+    struct bit_not<void>
+    {
+      template <typename _Tp>
+	auto
+	operator()(_Tp&& __t) const
+	noexcept(noexcept(~std::forward<_Tp>(__t)))
+	-> decltype(~std::forward<_Tp>(__t))
+	{ return ~std::forward<_Tp>(__t); }
+
+      typedef __is_transparent is_transparent;
+    };
+#endif
 
   // 20.3.5 negators
   /** @defgroup negators Negators

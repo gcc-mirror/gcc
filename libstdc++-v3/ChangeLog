@@ -1,3 +1,15 @@
+2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	N3421 C++1y Transparent functors
+	* include/bits/stl_function.h (plus<void>, minus<void>,
+	multiplies<void>, divides<void>, modulus<void>, negate<void>,
+	equal_to<void>, not_equal_to<void>, greater<void>, less<void>,
+	greater_equal<void>, less_equal<void>, logical_and<void>,
+	logical_or<void>, logical_not<void>, bit_and<void>, bit_or<void>,
+	bit_xor<void>, bit_not<void>): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/function_objects/comparisons_void.cc: New.
+
 2013-10-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple (_Index_tuple, _Build_index_tuple): Move to
