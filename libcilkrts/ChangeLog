@@ -15,6 +15,7 @@
 
 2013-10-30  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	PR bootstrap/58918
 	* configure: Reconfigured.
 	* configure.ac: Add AC_FUNC_ALLOCA.
 	* runtime/sysdep-unix.c: Added check for alloca.h before 
