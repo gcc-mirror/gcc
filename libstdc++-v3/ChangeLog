@@ -1,3 +1,8 @@
+2013-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58952
+	* include/c_global/cstdio: Undef getchar.
+
 2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	N3421 C++1y Transparent functors
