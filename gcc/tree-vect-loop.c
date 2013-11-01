@@ -591,8 +591,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   basic_block bb = loop->header;
   tree init, step;
-  vec<gimple> worklist;
-  worklist.create (64);
+  stack_vec<gimple, 64> worklist;
   gimple_stmt_iterator gsi;
   bool double_reduc;
 
@@ -723,8 +722,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "Unknown def-use cycle pattern.\n");
     }
-
-  worklist.release ();
 }
 
 

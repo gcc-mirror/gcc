@@ -1680,7 +1680,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   data_reference_p then_dr, else_dr;
   int i, j;
   tree then_lhs, else_lhs;
-  vec<gimple> then_stores, else_stores;
   basic_block blocks[3];
 
   if (MAX_STORES_TO_SINK == 0)
@@ -1707,8 +1706,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     }
 
   /* Find pairs of stores with equal LHS.  */
-  then_stores.create (1);
-  else_stores.create (1);
+  stack_vec<gimple, 1> then_stores, else_stores;
   FOR_EACH_VEC_ELT (then_datarefs, i, then_dr)
     {
       if (DR_IS_READ (then_dr))
@@ -1746,8 +1744,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     {
       free_data_refs (then_datarefs);
       free_data_refs (else_datarefs);
-      then_stores.release ();
-      else_stores.release ();
       return false;
     }
 
@@ -1763,8 +1759,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       free_dependence_relations (else_ddrs);
       free_data_refs (then_datarefs);
       free_data_refs (else_datarefs);
-      then_stores.release ();
-      else_stores.release ();
       return false;
     }
   blocks[0] = then_bb;
@@ -1790,8 +1784,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
           free_dependence_relations (else_ddrs);
 	  free_data_refs (then_datarefs);
 	  free_data_refs (else_datarefs);
-          then_stores.release ();
-          else_stores.release ();
           return false;
         }
     }
@@ -1814,8 +1806,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
           free_dependence_relations (else_ddrs);
 	  free_data_refs (then_datarefs);
 	  free_data_refs (else_datarefs);
-          then_stores.release ();
-          else_stores.release ();
           return false;
         }
     }
@@ -1833,8 +1823,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   free_dependence_relations (else_ddrs);
   free_data_refs (then_datarefs);
   free_data_refs (else_datarefs);
-  then_stores.release ();
-  else_stores.release ();
 
   return ok;
 }

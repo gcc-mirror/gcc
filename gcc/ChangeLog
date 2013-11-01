@@ -1,3 +1,38 @@
+2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* function.c (reorder_blocks): Convert block_stack to a stack_vec.
+	* gimplify.c (gimplify_compound_lval): Likewise.
+	* graphite-clast-to-gimple.c (gloog): Likewise.
+	* graphite-dependences.c (loop_is_parallel_p): Likewise.
+	* graphite-scop-detection.c (scopdet_basic_block_info): Likewise.
+	(limit_scop); Likewise.
+	(build_scops): Likewise.
+	(dot_scop): Likewise.
+	* graphite-sese-to-poly.c (sese_dom_walker): Likewise.
+	(build_scop_drs): Likewise.
+	(insert_stmts): Likewise.
+	(insert_out_of_ssa_copy): Likewise.
+	(remove_phi): Likewise.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Likewise.
+	* hw-doloop.c (discover_loop): Likewise.
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Likewise.
+	* tree-dfa.c (dump_enumerated_decls): Likewise.
+	* tree-if-conv.c (if_convertable_loop_p): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (build_rdg): Likewise.
+	(rdg_flag_vertex_and_dependent): Likewise.
+	(distribute_loop): Likewise.
+	* tree-parloops.c (loop_parallel_p): Likewise.
+	(eliminate_local_variables): Likewise.
+	(separate_decls_in_region): Likewise.
+	* tree-predcom.c (tree_predictive_commoning_loop): Likewise.
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Likewise.
+	* tree-ssa-uncprop.c (uncprop_dom_walker): Likewise.
+	* tree-vect-loop.c (vect_analyze_scaler_cycles_1): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog): Likewise.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Likewise.
+	(vectorizable_condition): Likewise.
+
 2013-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (HAVE_AS_IX86_INTERUNIT_MOVQ): Always define as 0/1.

@@ -4128,12 +4128,11 @@ void
 reorder_blocks (void)
 {
   tree block = DECL_INITIAL (current_function_decl);
-  vec<tree> block_stack;
 
   if (block == NULL_TREE)
     return;
 
-  block_stack.create (10);
+  stack_vec<tree, 10> block_stack;
 
   /* Reset the TREE_ASM_WRITTEN bit for all blocks.  */
   clear_block_marks (block);
@@ -4145,8 +4144,6 @@ reorder_blocks (void)
   /* Recreate the block tree from the note nesting.  */
   reorder_blocks_1 (get_insns (), block, &block_stack);
   BLOCK_SUBBLOCKS (block) = blocks_nreverse_all (BLOCK_SUBBLOCKS (block));
-
-  block_stack.release ();
 }
 
 /* Helper function for reorder_blocks.  Reset TREE_ASM_WRITTEN.  */
