@@ -70,27 +70,17 @@ along with GCC; see the file COPYING3.  If not see
      been no effort by the front ends to convert most addressing
      arithmetic to canonical types.
 
-     In the offset_int, all numbers are represented as signed numbers.
-     There are enough bits in the internal representation so that no
-     infomation is lost by representing them this way.
-
      3) widest_int.  This representation is an approximation of
      infinite precision math.  However, it is not really infinite
      precision math as in the GMP library.  It is really finite
      precision math where the precision is 4 times the size of the
      largest integer that the target port can represent.
 
-     Like the offset_ints, all numbers are inherently signed.
+     widest_int is supposed to be wider than any number that it needs to
+     store, meaning that there is always at least one leading sign bit.
+     All widest_int values are therefore signed.
 
      There are several places in the GCC where this should/must be used:
-
-     * Code that does widening conversions.  The canonical way that
-       this is performed is to sign or zero extend the input value to
-       the max width based on the sign of the type of the source and
-       then to truncate that value to the target type.  This is in
-       preference to using the sign of the target type to extend the
-       value directly (which gets the wrong value for the conversion
-       of large unsigned numbers to larger signed types).
 
      * Code that does induction variable optimizations.  This code
        works with induction variables of many different types at the
@@ -122,17 +112,17 @@ along with GCC; see the file COPYING3.  If not see
    two, the default is the prefered representation.
 
    All three flavors of wide_int are represented as a vector of
-   HOST_WIDE_INTs.  The vector contains enough elements to hold a
-   value of MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT which is
-   a derived for each host/target combination.  The values are stored
-   in the vector with the least significant HOST_BITS_PER_WIDE_INT
-   bits of the value stored in element 0.
+   HOST_WIDE_INTs.  The default and widest_int vectors contain enough elements
+   to hold a value of MAX_BITSIZE_MODE_ANY_INT bits.  offset_int contains only
+   enough elements to hold ADDR_MAX_PRECISION bits.  The values are stored
+   in the vector with the least significant HOST_BITS_PER_WIDE_INT bits
+   in element 0.
 
-   A wide_int contains three fields: the vector (VAL), precision and a
-   length (LEN).  The length is the number of HWIs needed to
-   represent the value.  For the widest_int and the offset_int,
-   the precision is a constant that cannot be changed.  For the
-   default wide_int, the precision is set from the constructor.
+   The default wide_int contains three fields: the vector (VAL),
+   the precision and a length (LEN).  The length is the number of HWIs
+   needed to represent the value.  widest_int and offset_int have a
+   constant precision that cannot be changed, so they only store the
+   VAL and LEN fields.
 
    Since most integers used in a compiler are small values, it is
    generally profitable to use a representation of the value that is
@@ -143,48 +133,7 @@ along with GCC; see the file COPYING3.  If not see
    as long as they can be reconstructed from the top bit that is being
    represented.
 
-   There are constructors to create the various forms of wide_int from
-   trees, rtl and constants.  For trees and constants, you can simply say:
-
-             tree t = ...;
-	     wide_int x = t;
-	     wide_int y = 6;
-
-   However, a little more syntax is required for rtl constants since
-   they do have an explicit precision.  To make an rtl into a
-   wide_int, you have to pair it with a mode.  The canonical way to do
-   this is with std::make_pair as in:
-
-             rtx r = ...
-	     wide_int x = std::make_pair (r, mode);
-
-   Wide ints sometimes have a value with the precision of 0.  These
-   come from two separate sources:
-
-   * The front ends do sometimes produce values that really have a
-     precision of 0.  The only place where these seem to come in are
-     the MIN and MAX value for types with a precision of 0.  Asside
-     from the computation of these MIN and MAX values, there appears
-     to be no other use of true precision 0 numbers so the overloading
-     of precision 0 does not appear to be an issue.  These appear to
-     be associated with 0 width bit fields.  They are harmless, but
-     there are several paths through the wide int code to support this
-     without having to special case the front ends.
-
-   * When a constant that has an integer type is converted to a
-     wide_int it comes in with precision 0.  For these constants the
-     top bit does accurately reflect the sign of that constant; this
-     is an exception to the normal rule that the signedness is not
-     represented.  When used in a binary operation, the wide_int
-     implementation properly extends these constants so that they
-     properly match the other operand of the computation.  This allows
-     you write:
-
-                tree t = ...
-                wide_int x = t + 6;
-
-     assuming t is a int_cst.
-
+   The precision and length of a wide_int are always greater than 0.
    Any bits in a wide_int above the precision are sign-extended from the
    most significant bit.  For example, a 4-bit value 0x8 is represented as
    VAL = { 0xf...fff8 }.  However, as an optimization, we allow other integer
@@ -193,23 +142,79 @@ along with GCC; see the file COPYING3.  If not see
    so that the INTEGER_CST representation can be used both in TYPE_PRECISION
    and in wider precisions.
 
-   Precision 0 is allowed for the special case of zero-width bitfields.
-   They always have a VAL of { 0 } and a LEN of 1.
+   There are constructors to create the various forms of wide_int from
+   trees, rtl and constants.  For trees you can simply say:
 
-   Many binary operations require that the precisions of the two
-   operands be the same.  However, the API tries to keep this relaxed
-   as much as possible.  In particular:
+	     tree t = ...;
+	     wide_int x = t;
 
-   * shifts do not care about the precision of the second operand.
+   However, a little more syntax is required for rtl constants since
+   they do have an explicit precision.  To make an rtl into a
+   wide_int, you have to pair it with a mode.  The canonical way to do
+   this is with std::make_pair as in:
 
-   * values that come in from gcc source constants or variables are
-     not checked as long one of the two operands has a precision.
-     This is allowed because it is always known whether to sign or zero
-     extend these values.
+	     rtx r = ...
+	     wide_int x = std::make_pair (r, mode);
 
-   * order comparisons do not require that the operands be the same
-     length.  This allows wide ints to be used in hash tables where
-     all of the values may not be the same precision.  */
+   Similarly, a wide_int can only be constructed from a host value if
+   the target precision is given explicitly, such as in:
+
+	     wide_int x = wi::shwi (c, prec); // sign-extend X if necessary
+	     wide_int y = wi::uhwi (c, prec); // zero-extend X if necessary
+
+   However, offset_int and widest_int have an inherent precision and so
+   can be initialized directly from a host value:
+
+	     offset_int x = (int) c;          // sign-extend C
+	     widest_int x = (unsigned int) c; // zero-extend C
+
+   It is also possible to do arithmetic directly on trees, rtxes and
+   constants.  For example:
+
+	     wi::add (t1, t2);	  // add equal-sized INTEGER_CSTs t1 and t2
+	     wi::add (t1, 1);     // add 1 to INTEGER_CST t1
+	     wi::add (r1, r2);    // add equal-sized rtx constants r1 and r2
+	     wi::lshift (1, 100); // 1 << 100 as a widest_int
+
+   Many binary operations place restrictions on the combinations of inputs,
+   using the following rules:
+
+   - {tree, rtx, wide_int} op {tree, rtx, wide_int} -> wide_int
+       The inputs must be the same precision.  The result is a wide_int
+       of the same precision
+
+   - {tree, rtx, wide_int} op (un)signed HOST_WIDE_INT -> wide_int
+     (un)signed HOST_WIDE_INT op {tree, rtx, wide_int} -> wide_int
+       The HOST_WIDE_INT is extended or truncated to the precision of
+       the other input.  The result is a wide_int of the same precision
+       as that input.
+
+   - (un)signed HOST_WIDE_INT op (un)signed HOST_WIDE_INT -> widest_int
+       The inputs are extended to widest_int precision and produce a
+       widest_int result.
+
+   - offset_int op offset_int -> offset_int
+     offset_int op (un)signed HOST_WIDE_INT -> offset_int
+     (un)signed HOST_WIDE_INT op offset_int -> offset_int
+
+   - widest_int op widest_int -> widest_int
+     widest_int op (un)signed HOST_WIDE_INT -> widest_int
+     (un)signed HOST_WIDE_INT op widest_int -> widest_int
+
+   Other combinations like:
+
+   - widest_int op offset_int and
+   - wide_int op offset_int
+
+   are not allowed.  The inputs should instead be extended or truncated
+   so that they match.
+
+   The inputs to comparison functions like wi::eq_p and wi::lts_p
+   follow the same compatibility rules, although their return types
+   are different.  Unary functions on X produce the same result as
+   a binary operation X + X.  Shift functions X op Y also produce
+   the same result as X + X; the precision of the shift amount Y
+   can be arbitrarily different from X.  */
 
 
 #include <utility>
