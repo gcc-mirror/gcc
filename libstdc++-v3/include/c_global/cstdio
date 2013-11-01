@@ -69,6 +69,7 @@ extern "C" char* gets (char* __s) __attribute__((deprecated));
 #undef ftell
 #undef fwrite
 #undef getc
+#undef getchar
 #if __cplusplus <= 201103L
 # undef gets
 #endif
