@@ -2250,8 +2250,8 @@ wi::div_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
   remainder.set_len (remainder_len);
-  if (wi::neg_p (quotient, sgn) && remainder != 0)
-    return quotient + 1;
+  if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn) && remainder != 0)
+    return quotient - 1;
   return quotient;
 }
 
@@ -2292,7 +2292,7 @@ wi::div_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
   remainder.set_len (remainder_len);
-  if (!wi::neg_p (quotient, sgn) && remainder != 0)
+  if (wi::neg_p (x, sgn) == wi::neg_p (y, sgn) && remainder != 0)
     return quotient + 1;
   return quotient;
 }
@@ -2322,10 +2322,10 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
     {
       if (sgn == SIGNED)
 	{
-	  if (wi::gts_p (wi::lrshift (wi::abs (y), 1),
-			 wi::abs (remainder)))
+	  if (wi::ges_p (wi::abs (remainder),
+			 wi::lrshift (wi::abs (y), 1)))
 	    {
-	      if (wi::neg_p (quotient))
+	      if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn))
 		return quotient - 1;
 	      else
 		return quotient + 1;
@@ -2333,16 +2333,15 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 	}
       else
 	{
-	  if (wi::gtu_p (wi::lrshift (y, 1), remainder))
+	  if (wi::geu_p (remainder, wi::lrshift (y, 1)))
 	    return quotient + 1;
 	}
     }
   return quotient;
 }
 
-/* Return X / Y, rouding towards nearest with ties away from zero.
-   Treat X and Y as having the signedness given by SGN.  Store the
-   remainder in *REMAINDER_PTR.  */
+/* Return X / Y, rouding towards 0.  Treat X and Y as having the
+   signedness given by SGN.  Store the remainder in *REMAINDER_PTR.  */
 template <typename T1, typename T2>
 inline WI_BINARY_RESULT (T1, T2)
 wi::divmod_trunc (const T1 &x, const T2 &y, signop sgn,
@@ -2425,7 +2424,7 @@ wi::mod_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 				     overflow));
   remainder.set_len (remainder_len);
 
-  if (wi::neg_p (quotient, sgn) && remainder != 0)
+  if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn) && remainder != 0)
     return remainder + y;
   return remainder;
 }
@@ -2461,7 +2460,7 @@ wi::mod_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 				     overflow));
   remainder.set_len (remainder_len);
 
-  if (!wi::neg_p (quotient, sgn) && remainder != 0)
+  if (wi::neg_p (x, sgn) == wi::neg_p (y, sgn) && remainder != 0)
     return remainder - y;
   return remainder;
 }
@@ -2491,10 +2490,10 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
     {
       if (sgn == SIGNED)
 	{
-	  if (wi::gts_p (wi::lrshift (wi::abs (y), 1),
-			 wi::abs (remainder)))
+	  if (wi::ges_p (wi::abs (remainder),
+			 wi::lrshift (wi::abs (y), 1)))
 	    {
-	      if (wi::neg_p (quotient))
+	      if (wi::neg_p (x, sgn) != wi::neg_p (y, sgn))
 		return remainder + y;
 	      else
 		return remainder - y;
@@ -2502,7 +2501,7 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 	}
       else
 	{
-	  if (wi::gtu_p (wi::lrshift (y, 1), remainder))
+	  if (wi::geu_p (remainder, wi::lrshift (y, 1)))
 	    return remainder - y;
 	}
     }
