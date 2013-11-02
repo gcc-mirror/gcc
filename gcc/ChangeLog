@@ -1,3 +1,12 @@
+2013-11-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (pre_delete): Remove references to regmove from comments.
+	* recog.c: (validate_replace_rtx_1): Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/v850/v850.h: Likewise, and remove unused ENABLE_REGMOVE_PASS.
+	* common/config/m32r/m32r-common.c: Don't manipulate OPT_fregmove.
+	* common/config/mmix/mmix-common.c: Likewise.
+
 2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* function.c (reorder_blocks): Convert block_stack to a stack_vec.
