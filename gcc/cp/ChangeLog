@@ -1,3 +1,12 @@
+2013-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29234
+	PR c++/56037
+	* parser.c (cp_parser_cast_expression): If we aren't looking at
+	a cast-expression don't call cp_parser_type_id.
+	(cp_parser_postfix_expression): Likewise for compound-literal.
+	(cp_parser_tokens_start_cast_expression): Adjust.
+
 2013-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/58708

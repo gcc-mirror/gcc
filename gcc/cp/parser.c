@@ -5817,31 +5817,45 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	  {
 	    tree initializer = NULL_TREE;
-	    bool saved_in_type_id_in_expr_p;
+	    bool compound_literal_p;
 
 	    cp_parser_parse_tentatively (parser);
 	    /* Consume the `('.  */
 	    cp_lexer_consume_token (parser->lexer);
-	    /* Parse the type.  */
-	    saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-	    parser->in_type_id_in_expr_p = true;
-	    type = cp_parser_type_id (parser);
-	    parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
-	    /* Look for the `)'.  */
-	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+
+	    /* Avoid calling cp_parser_type_id pointlessly, see comment
+	       in cp_parser_cast_expression about c++/29234.  */
+	    cp_lexer_save_tokens (parser->lexer);
+
+	    compound_literal_p
+	      = (cp_parser_skip_to_closing_parenthesis (parser, false, false,
+							/*consume_paren=*/true)
+		 && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE));
+
+	    /* Roll back the tokens we skipped.  */
+	    cp_lexer_rollback_tokens (parser->lexer);
+
+	    if (!compound_literal_p)
+	      cp_parser_simulate_error (parser);
+	    else
+	      {
+		/* Parse the type.  */
+		bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+		parser->in_type_id_in_expr_p = true;
+		type = cp_parser_type_id (parser);
+		parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+		/* Look for the `)'.  */
+		cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	      }
+
 	    /* If things aren't going well, there's no need to
 	       keep going.  */
 	    if (!cp_parser_error_occurred (parser))
 	      {
-		if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-		  {
-		    bool non_constant_p;
-		    /* Parse the brace-enclosed initializer list.  */
-		    initializer = cp_parser_braced_list (parser,
-							 &non_constant_p);
-		  }
-		else
-		  cp_parser_simulate_error (parser);
+		bool non_constant_p;
+		/* Parse the brace-enclosed initializer list.  */
+		initializer = cp_parser_braced_list (parser,
+						     &non_constant_p);
 	      }
 	    /* If that worked, we're definitely looking at a
 	       compound-literal expression.  */
@@ -7509,6 +7523,7 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
     case CPP_CLOSE_SQUARE:
     case CPP_CLOSE_PAREN:
     case CPP_CLOSE_BRACE:
+    case CPP_OPEN_BRACE:
     case CPP_DOT:
     case CPP_DOT_STAR:
     case CPP_DEREF:
@@ -7576,7 +7591,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
     {
       tree type = NULL_TREE;
       tree expr = NULL_TREE;
-      bool compound_literal_p;
+      bool cast_expression_p;
       const char *saved_message;
 
       /* There's no way to know yet whether or not this is a cast.
@@ -7599,26 +7614,38 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	 will commit to the parse at that point, because we cannot
 	 undo the action that is done when creating a new class.  So,
 	 then we cannot back up and do a postfix-expression.
+	 Another tricky case is the following (c++/29234):
+
+         struct S { void operator () (); };
+
+         void foo ()
+         {
+           ( S()() );
+         }
+
+	 As a type-id we parse the parenthesized S()() as a function
+	 returning a function, groktypename complains and we cannot
+	 back up in this case either.
 
 	 Therefore, we scan ahead to the closing `)', and check to see
-	 if the token after the `)' is a `{'.  If so, we are not
-	 looking at a cast-expression.
+	 if the tokens after the `)' can start a cast-expression.  Otherwise
+	 we are dealing with an unary-expression, a postfix-expression
+	 or something else.
 
 	 Save tokens so that we can put them back.  */
       cp_lexer_save_tokens (parser->lexer);
-      /* Skip tokens until the next token is a closing parenthesis.
-	 If we find the closing `)', and the next token is a `{', then
-	 we are looking at a compound-literal.  */
-      compound_literal_p
+
+      /* We may be looking at a cast-expression.  */
+      cast_expression_p
 	= (cp_parser_skip_to_closing_parenthesis (parser, false, false,
 						  /*consume_paren=*/true)
-	   && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE));
+	   && cp_parser_tokens_start_cast_expression (parser));
+
       /* Roll back the tokens we skipped.  */
       cp_lexer_rollback_tokens (parser->lexer);
-      /* If we were looking at a compound-literal, simulate an error
-	 so that the call to cp_parser_parse_definitely below will
-	 fail.  */
-      if (compound_literal_p)
+      /* If we aren't looking at a cast-expression, simulate an error so
+	 that the call to cp_parser_parse_definitely below will fail.  */
+      if (!cast_expression_p)
 	cp_parser_simulate_error (parser);
       else
 	{
@@ -7637,8 +7664,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
       /* At this point this can only be either a cast or a
 	 parenthesized ctor such as `(T ())' that looks like a cast to
 	 function returning T.  */
-      if (!cp_parser_error_occurred (parser)
-	  && cp_parser_tokens_start_cast_expression (parser))
+      if (!cp_parser_error_occurred (parser))
 	{
 	  cp_parser_parse_definitely (parser);
 	  expr = cp_parser_cast_expression (parser,
