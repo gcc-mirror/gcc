@@ -1,3 +1,8 @@
+2013-11-01  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* gcc.dg/cilk-plus/cilk-plus.exp: Loaded libcilkrts library path and
+	passed it in as one of the options to all Cilk keywords test.
+
 2013-11-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/58708
