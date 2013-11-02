@@ -2044,7 +2044,7 @@ wi::exact_log2 (const wide_int_ref &x)
 
   /* Get a zero-extended form of block CRUX.  */
   unsigned HOST_WIDE_INT hwi = x.val[crux];
-  if (crux * HOST_BITS_PER_WIDE_INT > x.precision)
+  if ((crux + 1) * HOST_BITS_PER_WIDE_INT > x.precision)
     hwi = zext_hwi (hwi, x.precision % HOST_BITS_PER_WIDE_INT);
 
   /* Now it's down to whether HWI is a power of 2.  */
