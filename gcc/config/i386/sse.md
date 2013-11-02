@@ -11462,7 +11462,7 @@
      [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
       (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
 	[(unspec:P
-	   [(match_operand:P 2 "vsib_address_operand" "p")
+	   [(match_operand:P 2 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 1 "register_operand" "v")
 	    (match_operand:SI 3 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
@@ -11489,7 +11489,7 @@
      [(const_int -1)
       (match_operator:<ssescalarmode> 4 "vsib_mem_operator"
 	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "p")
+	   [(match_operand:P 1 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 0 "register_operand" "v")
 	    (match_operand:SI 2 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
@@ -11533,7 +11533,7 @@
      [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
       (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
 	[(unspec:P
-	   [(match_operand:P 2 "vsib_address_operand" "p")
+	   [(match_operand:P 2 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 1 "register_operand" "v")
 	    (match_operand:SI 3 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
@@ -11560,7 +11560,7 @@
      [(const_int -1)
       (match_operator:<ssescalarmode> 4 "vsib_mem_operator"
 	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "p")
+	   [(match_operand:P 1 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 0 "register_operand" "v")
 	    (match_operand:SI 2 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
@@ -13650,7 +13650,7 @@
 	  [(match_operand:VEC_GATHER_MODE 2 "register_operand" "0")
 	   (match_operator:<ssescalarmode> 7 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 3 "vsib_address_operand" "p")
+		[(match_operand:P 3 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXSI> 4 "register_operand" "x")
 		 (match_operand:SI 6 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])
@@ -13670,7 +13670,7 @@
 	  [(pc)
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 2 "vsib_address_operand" "p")
+		[(match_operand:P 2 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXSI> 3 "register_operand" "x")
 		 (match_operand:SI 5 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])
@@ -13712,7 +13712,7 @@
 	  [(match_operand:<VEC_GATHER_SRCDI> 2 "register_operand" "0")
 	   (match_operator:<ssescalarmode> 7 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 3 "vsib_address_operand" "p")
+		[(match_operand:P 3 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXDI> 4 "register_operand" "x")
 		 (match_operand:SI 6 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])
@@ -13732,7 +13732,7 @@
 	  [(pc)
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 2 "vsib_address_operand" "p")
+		[(match_operand:P 2 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "x")
 		 (match_operand:SI 5 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])
@@ -13757,7 +13757,7 @@
 	    [(match_operand:<VEC_GATHER_SRCDI> 2 "register_operand" "0")
 	     (match_operator:<ssescalarmode> 7 "vsib_mem_operator"
 	       [(unspec:P
-		  [(match_operand:P 3 "vsib_address_operand" "p")
+		  [(match_operand:P 3 "vsib_address_operand" "Tv")
 		   (match_operand:<VEC_GATHER_IDXDI> 4 "register_operand" "x")
 		   (match_operand:SI 6 "const1248_operand" "n")]
 		  UNSPEC_VSIBADDR)])
@@ -13780,7 +13780,7 @@
 	    [(pc)
 	     (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	       [(unspec:P
-		  [(match_operand:P 2 "vsib_address_operand" "p")
+		  [(match_operand:P 2 "vsib_address_operand" "Tv")
 		   (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "x")
 		   (match_operand:SI 5 "const1248_operand" "n")]
 		  UNSPEC_VSIBADDR)])
@@ -13822,7 +13822,7 @@
 	   (match_operand:<avx512fmaskmode> 7 "register_operand" "2")
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 4 "vsib_address_operand" "p")
+		[(match_operand:P 4 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXSI> 3 "register_operand" "v")
 		 (match_operand:SI 5 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])]
@@ -13841,7 +13841,7 @@
 	   (match_operand:<avx512fmaskmode> 6 "register_operand" "1")
 	   (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 3 "vsib_address_operand" "p")
+		[(match_operand:P 3 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXSI> 2 "register_operand" "v")
 		 (match_operand:SI 4 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])]
@@ -13880,7 +13880,7 @@
 	   (match_operand:QI 7 "register_operand" "2")
 	   (match_operator:<ssescalarmode> 6 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 4 "vsib_address_operand" "p")
+		[(match_operand:P 4 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXDI> 3 "register_operand" "v")
 		 (match_operand:SI 5 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])]
@@ -13899,7 +13899,7 @@
 	   (match_operand:QI 6 "register_operand" "1")
 	   (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
 	     [(unspec:P
-		[(match_operand:P 3 "vsib_address_operand" "p")
+		[(match_operand:P 3 "vsib_address_operand" "Tv")
 		 (match_operand:<VEC_GATHER_IDXDI> 2 "register_operand" "v")
 		 (match_operand:SI 4 "const1248_operand" "n")]
 		UNSPEC_VSIBADDR)])]
@@ -13936,7 +13936,7 @@
 (define_insn "*avx512f_scattersi<mode>"
   [(set (match_operator:VI48F_512 5 "vsib_mem_operator"
 	  [(unspec:P
-	     [(match_operand:P 0 "vsib_address_operand" "p")
+	     [(match_operand:P 0 "vsib_address_operand" "Tv")
 	      (match_operand:<VEC_GATHER_IDXSI> 2 "register_operand" "v")
 	      (match_operand:SI 4 "const1248_operand" "n")]
 	     UNSPEC_VSIBADDR)])
@@ -13972,7 +13972,7 @@
 (define_insn "*avx512f_scatterdi<mode>"
   [(set (match_operator:VI48F_512 5 "vsib_mem_operator"
 	  [(unspec:P
-	     [(match_operand:P 0 "vsib_address_operand" "p")
+	     [(match_operand:P 0 "vsib_address_operand" "Tv")
 	      (match_operand:V8DI 2 "register_operand" "v")
 	      (match_operand:SI 4 "const1248_operand" "n")]
 	     UNSPEC_VSIBADDR)])
