@@ -3678,7 +3678,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	      if (!op0_is_abs)
 		op0_piece
 		  = expand_binop (imode, and_optab, op0_piece,
-				  immed_wide_int_const (-mask, imode),
+				  immed_wide_int_const (~mask, imode),
 				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	      op1 = expand_binop (imode, and_optab,
 				  operand_subword_force (op1, i, mode),
@@ -3708,7 +3708,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       op0 = gen_lowpart (imode, op0);
       if (!op0_is_abs)
 	op0 = expand_binop (imode, and_optab, op0,
-			    immed_wide_int_const (-mask, imode),
+			    immed_wide_int_const (~mask, imode),
 			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
       temp = expand_binop (imode, ior_optab, op0, op1,
 			   gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
