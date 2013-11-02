@@ -1008,9 +1008,12 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 	   The following code ignores overflow; perhaps a C standard
 	   interpretation ruling is needed.  */
 	res = wi::rshift (arg1, arg2, sign,
-			  GET_MODE_BITSIZE (TYPE_MODE (type)));
+			  SHIFT_COUNT_TRUNCATED
+			  ? GET_MODE_BITSIZE (TYPE_MODE (type)) : 0);
       else
-	res = wi::lshift (arg1, arg2, GET_MODE_BITSIZE (TYPE_MODE (type)));
+	res = wi::lshift (arg1, arg2,
+			  SHIFT_COUNT_TRUNCATED
+			  ? GET_MODE_BITSIZE (TYPE_MODE (type)) : 0);
       break;
       
     case RROTATE_EXPR:
@@ -6870,7 +6873,8 @@ fold_sign_changed_comparison (location_t loc, enum tree_code code, tree type,
     return NULL_TREE;
 
   if (TREE_CODE (arg1) == INTEGER_CST)
-    arg1 = force_fit_type (inner_type, arg1, 0, TREE_OVERFLOW (arg1));
+    arg1 = force_fit_type (inner_type, wi::to_widest (arg1), 0,
+			   TREE_OVERFLOW (arg1));
   else
     arg1 = fold_convert_loc (loc, inner_type, arg1);
 
@@ -8081,7 +8085,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	  if (change)
 	    {
-	      tem = force_fit_type (type, and1, 0, TREE_OVERFLOW (and1));
+	      tem = force_fit_type (type, wi::to_widest (and1), 0,
+				    TREE_OVERFLOW (and1));
 	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
 				      fold_convert_loc (loc, type, and0), tem);
 	    }
@@ -14098,12 +14103,13 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		(inner_width, outer_width - inner_width, false, 
 		 TYPE_PRECISION (TREE_TYPE (arg1)));
 
-	      if (mask == arg1)
+	      wide_int common = mask & arg1;
+	      if (common == mask)
 		{
 		  tem_type = signed_type_for (TREE_TYPE (tem));
 		  tem = fold_convert_loc (loc, tem_type, tem);
 		}
-	      else if ((mask & arg1) == 0)
+	      else if (common == 0)
 		{
 		  tem_type = unsigned_type_for (TREE_TYPE (tem));
 		  tem = fold_convert_loc (loc, tem_type, tem);
