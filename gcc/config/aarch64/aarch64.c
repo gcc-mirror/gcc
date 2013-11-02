@@ -6030,9 +6030,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -6060,9 +6058,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -6092,9 +6088,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -7433,7 +7427,7 @@ aarch64_float_const_representable_p (rtx x)
   int exponent;
   unsigned HOST_WIDE_INT mantissa, mask;
   REAL_VALUE_TYPE r, m;
-  bool &fail
+  bool fail;
 
   if (!CONST_DOUBLE_P (x))
     return false;
@@ -7457,7 +7451,7 @@ aarch64_float_const_representable_p (rtx x)
      WARNING: If we ever have a representation using more than 2 * H_W_I - 1
      bits for the mantissa, this can fail (low bits will be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
+  wide_int w = real_to_integer (&m, &fail, HOST_BITS_PER_WIDE_INT * 2);
 
   /* If the low part of the mantissa has bits set we cannot represent
      the value.  */

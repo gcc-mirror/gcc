@@ -4678,9 +4678,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -4708,9 +4706,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -4740,9 +4736,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -11299,7 +11293,7 @@ vfp3_const_double_index (rtx x)
      WARNING: If there's ever a VFP version which uses more than 2 * H_W_I - 1
      bits for the mantissa, this may fail (low bits would be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  wide_int w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
+  wide_int w = real_to_integer (&m, &fail, HOST_BITS_PER_WIDE_INT * 2);
   mantissa = w.elt (0);
   mant_hi = w.elt (1);
 
