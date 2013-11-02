@@ -1,3 +1,18 @@
+2013-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Ts, Tv): New address constrains.
+	* config/i386/i386.md (*lea<mode>, *<mode>_<bndcheck>): Use Ts
+	constraint for address_no_seg_operand.
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>_mask)
+	(*avx512pf_gatherpf<mode>, *avx512pf_scatterpf<mode>_mask)
+	(*avx512pf_scatterpf<mode>, *avx2_gathersi<mode>)
+	(*avx2_gathersi<mode>_2, *avx2_gatherdi<mode>, *avx2_gatherdi<mode>_2)
+	(*avx2_gatherdi<mode>_3, *avx2_gatherdi<mode>_4)
+	(*avx512f_gathersi<mode>, *avx512f_gathersi<mode>_2)
+	(*avx512f_gatherdi<mode>, *avx512f_gatherdi<mode>_2)
+	(*avx512f_scattersi<mode> *avx512f_scatterdi<mode>): Use Tv
+	constraint for vsib_address_operand.
+
 2013-11-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (pre_delete): Remove references to regmove from comments.

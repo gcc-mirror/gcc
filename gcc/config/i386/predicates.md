@@ -912,6 +912,10 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const0_operand")))
 
+;; Return true for RTX codes that force SImode address.
+(define_predicate "SImode_address_operand"
+  (match_code "subreg,zero_extend,and"))
+
 ;; Return true if op if a valid address for LEA, and does not contain
 ;; a segment override.  Defined as a special predicate to allow
 ;; mode-less const_int operands pass to address_operand.
@@ -925,10 +929,6 @@
   gcc_assert (ok);
   return parts.seg == SEG_DEFAULT;
 })
-
-;; Return true for RTX codes that force SImode address.
-(define_predicate "SImode_address_operand"
-  (match_code "subreg,zero_extend,and"))
 
 ;; Return true if op if a valid base register, displacement or
 ;; sum of base register and displacement for VSIB addressing.
