@@ -1,3 +1,10 @@
+2013-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29234
+	PR c++/56037
+	* g++.dg/parse/pr29234.C: New.
+	* g++.dg/parse/pr56037.C: Likewise.
+
 2013-11-01  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* gcc.dg/cilk-plus/cilk-plus.exp: Loaded libcilkrts library path and
