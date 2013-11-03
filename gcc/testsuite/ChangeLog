@@ -1,3 +1,10 @@
+2013-11-03  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/arm/neon-vcond-gt.c: Scan for vbsl or vbit or vbif.
+	* gcc.target/arm/neon-vcond-ltgt.c: Scan for vbsl or vbit or vbif.
+	* gcc.target/arm/neon-vcond-unordered.c: Scan for vbsl or vbit or
+	vbif.
+
 2013-11-03  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/ubsan/cxx1y-vla.C: New test.
