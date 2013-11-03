@@ -712,13 +712,12 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
     return x;
 
   if (CONST_SCALAR_INT_P (x) 
-      && GET_MODE_CLASS (mode) == MODE_INT
-      && (oldmode == VOIDmode || GET_MODE_CLASS (oldmode) == MODE_INT))
+      && GET_MODE_CLASS (mode) == MODE_INT)
     {
       /* If the caller did not tell us the old mode, then there is
 	 not much to do with respect to canonization.  We have to assume
 	 that all the bits are significant.  */
-      if (oldmode == VOIDmode)
+      if (GET_MODE_CLASS (oldmode) != MODE_INT)
 	oldmode = MAX_MODE_INT;
       wide_int w = wide_int::from (std::make_pair (x, oldmode),
 				   GET_MODE_PRECISION (mode),
