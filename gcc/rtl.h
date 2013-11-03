@@ -1408,7 +1408,9 @@ namespace wi
   {
     static const enum precision_type precision_type = VAR_PRECISION;
     static const bool host_dependent_precision = false;
-    static const bool is_sign_extended = true;
+    /* This ought to be true, except for the special case that BImode
+       is canonicalized to STORE_FLAG_VALUE, which might be 1.  */
+    static const bool is_sign_extended = false;
     static unsigned int get_precision (const rtx_mode_t &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
 				      const rtx_mode_t &);
@@ -1432,7 +1434,8 @@ wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
     case CONST_INT:
       if (precision < HOST_BITS_PER_WIDE_INT)
 	gcc_checking_assert (INTVAL (x.first)
-			     == sext_hwi (INTVAL (x.first), precision));
+			     == sext_hwi (INTVAL (x.first), precision)
+			     || (precision == 1 && INTVAL (x.first) == 1));
 
       return wi::storage_ref (&INTVAL (x.first), 1, precision);
       
