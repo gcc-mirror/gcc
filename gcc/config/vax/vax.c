@@ -643,7 +643,7 @@ vax_float_literal (rtx c)
     {
       int x = 1 << i;
       bool ok;
-      REAL_VALUE_FROM_INT (s, x, 0, mode);
+      REAL_VALUE_FROM_INT (s, x, mode);
 
       if (REAL_VALUES_EQUAL (r, s))
 	return true;
