@@ -1,3 +1,9 @@
+2013-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38313
+	* parser.c (cp_parser_constructor_declarator_p): Check that the
+	class-name matches current_class_type.
+
 2013-11-03  Marek Polacek  <polacek@redhat.com>
 
 	* decl.c (cp_finish_decl): Move C++1y bounds checking...

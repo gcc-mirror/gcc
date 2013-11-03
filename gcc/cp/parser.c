@@ -22211,6 +22211,7 @@ static bool
 cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 {
   bool constructor_p;
+  bool outside_class_specifier_p;
   tree nested_name_specifier;
   cp_token *next_token;
 
@@ -22243,11 +22244,14 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 					    /*check_dependency_p=*/false,
 					    /*type_p=*/false,
 					    /*is_declaration=*/false));
+
+  outside_class_specifier_p = (!at_class_scope_p ()
+			       || !TYPE_BEING_DEFINED (current_class_type)
+			       || friend_p);
+
   /* Outside of a class-specifier, there must be a
      nested-name-specifier.  */
-  if (!nested_name_specifier &&
-      (!at_class_scope_p () || !TYPE_BEING_DEFINED (current_class_type)
-       || friend_p))
+  if (!nested_name_specifier && outside_class_specifier_p)
     constructor_p = false;
   else if (nested_name_specifier == error_mark_node)
     constructor_p = false;
@@ -22286,8 +22290,16 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 					/*check_dependency_p=*/false,
 					/*class_head_p=*/false,
 					/*is_declaration=*/false);
-      /* If there was no class-name, then this is not a constructor.  */
-      constructor_p = !cp_parser_error_occurred (parser);
+      /* If there was no class-name, then this is not a constructor.
+	 Otherwise, if we are in a class-specifier and we aren't
+	 handling a friend declaration, check that its type matches
+	 current_class_type (c++/38313).  Note: error_mark_node
+	 is left alone for error recovery purposes.  */
+      constructor_p = (!cp_parser_error_occurred (parser)
+		       && (outside_class_specifier_p
+			   || type_decl == error_mark_node
+			   || same_type_p (current_class_type,
+					   TREE_TYPE (type_decl))));
 
       /* If we're still considering a constructor, we have to see a `(',
 	 to begin the parameter-declaration-clause, followed by either a
