@@ -1,3 +1,9 @@
+2013-11-03  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c: Don't include hash-table.h.
+	(ubsan_instrument_vla): New function.
+	* c-ubsan.h: Declare it.
+
 2013-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	Automated part of renaming of symtab_node_base to symtab_node.

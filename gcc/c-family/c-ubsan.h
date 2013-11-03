@@ -23,5 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 extern tree ubsan_instrument_division (location_t, tree, tree);
 extern tree ubsan_instrument_shift (location_t, enum tree_code, tree, tree);
+extern tree ubsan_instrument_vla (location_t, tree);
 
 #endif  /* GCC_C_UBSAN_H  */

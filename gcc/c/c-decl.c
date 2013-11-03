@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-ubsan.h"
 #include "c-lang.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
@@ -5411,6 +5412,16 @@ grokdeclarator (const struct c_declarator *declarator,
 		       with known value.  */
 		    this_size_varies = size_varies = true;
 		    warn_variable_length_array (name, size);
+		    if (flag_sanitize & SANITIZE_VLA
+		        && decl_context == NORMAL)
+		      {
+			/* Evaluate the array size only once.  */
+			size = c_save_expr (size);
+			size = c_fully_fold (size, false, NULL);
+		        size = fold_build2 (COMPOUND_EXPR, TREE_TYPE (size),
+					    ubsan_instrument_vla (loc, size),
+					    size);
+		      }
 		  }
 
 		if (integer_zerop (size) && !this_size_varies)

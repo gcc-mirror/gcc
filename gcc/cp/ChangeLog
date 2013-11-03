@@ -1,3 +1,10 @@
+2013-11-03  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (cp_finish_decl): Move C++1y bounds checking...
+	(compute_array_index_type): ...here.  Add VLA instrumentation.
+	Call stabilize_vla_size.
+	(grokdeclarator): Don't call stabilize_vla_size here.
+
 2013-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29234

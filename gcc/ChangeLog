@@ -1,3 +1,12 @@
+2013-11-03  Marek Polacek  <polacek@redhat.com>
+
+	Implement -fsanitize=vla-bound.
+	* opts.c (common_handle_option): Handle vla-bound.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE):
+	Define.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_VLA.
+	* asan.c (initialize_sanitizer_builtins): Build BT_FN_VOID_PTR_PTR.
+
 2013-11-02  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Adjust for
