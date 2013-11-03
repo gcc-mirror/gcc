@@ -1,3 +1,11 @@
+2013-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2013-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/58690
+	* gcc.target/i386/pr58690.c: New test
+
 2013-11-02  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
