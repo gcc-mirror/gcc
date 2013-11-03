@@ -10621,26 +10621,26 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
 	  bool overflow, overall_overflow = false;
-	  wide_int result = wide_int::from_tree (arg2);
+	  wide_int result = arg2;
 	  wide_int tmp;
 	  unsigned i;
 
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      wide_int e0 = wide_int::from_tree (VECTOR_CST_ELT (arg0, i));
-	      wide_int e1 = wide_int::from_tree (VECTOR_CST_ELT (arg1, i));
+	      tree e0 = VECTOR_CST_ELT (arg0, i);
+	      tree e1 = VECTOR_CST_ELT (arg1, i);
 
-	      tmp = e1.neg (&overflow);
+	      tmp = wi::neg (e1, &overflow);
 	      overall_overflow |= overall_overflow;
-	      tmp = e0.add (tmp, SIGNED, &overflow);
+	      tmp = wi::add (e0, tmp, SIGNED, &overflow);
 	      overall_overflow |= overall_overflow;
-	      if (tmp.neg_p ())
+	      if (wi::neg_p (tmp))
 		{
-		  tmp = tmp.neg (&overflow);
+		  tmp = wi::neg (tmp, &overflow);
 		  overall_overflow |= overall_overflow;
 		}
 
-	      result = result.add (tmp, SIGNED, &overflow);
+	      result = wi::add (result, tmp, SIGNED, &overflow);
 	      overall_overflow |= overall_overflow;
 	    }
 
