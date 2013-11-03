@@ -1,3 +1,8 @@
+2013-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtfastmath.c: Compile only for !_SOFT_FLOAT.
+	* config/i386/crtprec.c: Ditto.
+
 2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Shiva Chen  <shiva0217@gmail.com>
 
@@ -154,8 +159,8 @@
 	(__gcov_indirect_call_counters): Likewise.
 
 2013-08-16  Maciej W. Rozycki  <macro@codesourcery.com>
-            Catherine Moore  <clm@codesourcery.com>
-            Richard Sandiford <rdsandiford@googlemail.com>
+	    Catherine Moore  <clm@codesourcery.com>
+	    Richard Sandiford <rdsandiford@googlemail.com>
 
 	* config/mips/mips16.S (CE_STARTFN, CE_ENDFN): New macros.
 	(RET_FUNCTION): Use them in place of STARTFN and ENDFN.
