@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-target.h"
+#include "c-family/c-ubsan.h"
 #include "diagnostic.h"
 #include "intl.h"
 #include "debug.h"
@@ -6399,17 +6400,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	   && TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
     error ("non-static data member %qD has Java class type", decl);
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
-    {
-      /* If the VLA bound is larger than half the address space, or less
-	 than zero, throw std::bad_array_length.  */
-      tree max = convert (ssizetype, TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
-      tree comp = build2 (LT_EXPR, boolean_type_node, max, ssize_int (-1));
-      comp = build3 (COND_EXPR, void_type_node, comp,
-		     throw_bad_array_length (), void_zero_node);
-      finish_expr_stmt (comp);
-    }
-
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_EXPR for a
      reference temp is added before the DECL_EXPR for the reference itself.  */
@@ -8379,6 +8369,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	{
 	  /* A variable sized array.  */
 	  itype = variable_size (itype);
+
 	  if (TREE_CODE (itype) != SAVE_EXPR)
 	    {
 	      /* Look for SIZEOF_EXPRs in itype and fold them, otherwise
@@ -8389,6 +8380,32 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 					       fold_sizeof_expr_r, &found);
 	      if (found)
 		itype = variable_size (fold (newitype));
+	    }
+
+	  stabilize_vla_size (itype);
+
+	  if (cxx_dialect >= cxx1y)
+	    {
+	      /* If the VLA bound is larger than half the address space,
+	         or less than zero, throw std::bad_array_length.  */
+	      tree comp = build2 (LT_EXPR, boolean_type_node, itype,
+				  ssize_int (-1));
+	      comp = build3 (COND_EXPR, void_type_node, comp,
+			     throw_bad_array_length (), void_zero_node);
+	      finish_expr_stmt (comp);
+	    }
+	  else if (flag_sanitize & SANITIZE_VLA)
+	    {
+	      /* From C++1y onwards, we throw an exception on a negative
+		 length size of an array; see above.  */
+
+	      /* We have to add 1 -- in the ubsan routine we generate
+		 LE_EXPR rather than LT_EXPR.  */
+	      tree t = fold_build2 (PLUS_EXPR, TREE_TYPE (itype), itype,
+				    build_one_cst (TREE_TYPE (itype)));
+	      t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t),
+			       ubsan_instrument_vla (input_location, t), t);
+	      finish_expr_stmt (t);
 	    }
 	}
       /* Make sure that there was no overflow when creating to a signed
@@ -9790,12 +9807,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      && (decl_context == NORMAL || decl_context == FIELD)
 	      && at_function_scope_p ()
 	      && variably_modified_type_p (type, NULL_TREE))
-	    {
-	      /* First break out any side-effects.  */
-	      stabilize_vla_size (TYPE_SIZE (type));
-	      /* And then force evaluation of the SAVE_EXPR.  */
-	      finish_expr_stmt (TYPE_SIZE (type));
-	    }
+	    /* Force evaluation of the SAVE_EXPR.  */
+	    finish_expr_stmt (TYPE_SIZE (type));
 
 	  if (declarator->kind == cdk_reference)
 	    {
@@ -9885,14 +9898,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  gcc_unreachable ();
 	}
     }
-
-  /* We need to stabilize side-effects in VLA sizes for regular array
-     declarations too, not just pointers to arrays.  */
-  if (type != error_mark_node && !TYPE_NAME (type)
-      && (decl_context == NORMAL || decl_context == FIELD)
-      && at_function_scope_p ()
-      && variably_modified_type_p (type, NULL_TREE))
-    stabilize_vla_size (TYPE_SIZE (type));
 
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */

@@ -1,3 +1,11 @@
+2013-11-03  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ubsan/cxx1y-vla.C: New test.
+	* c-c++-common/ubsan/vla-3.c: New test.
+	* c-c++-common/ubsan/vla-2.c: New test.
+	* c-c++-common/ubsan/vla-4.c: New test.
+	* c-c++-common/ubsan/vla-1.c: New test.
+
 2013-11-02  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.dg/vmx/vec-set.c: New.

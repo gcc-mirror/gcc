@@ -1444,6 +1444,7 @@ common_handle_option (struct gcc_options *opts,
 	      { "undefined", SANITIZE_UNDEFINED, sizeof "undefined" - 1 },
 	      { "unreachable", SANITIZE_UNREACHABLE,
 		sizeof "unreachable" - 1 },
+	      { "vla-bound", SANITIZE_VLA, sizeof "vla-bound" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;

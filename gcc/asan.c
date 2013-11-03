@@ -2021,6 +2021,9 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR
     = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR_PTR
+    = build_function_type_list (void_type_node, ptr_type_node,
+				ptr_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR_PTR_PTR
     = build_function_type_list (void_type_node, ptr_type_node,
 				ptr_type_node, ptr_type_node, NULL_TREE);
