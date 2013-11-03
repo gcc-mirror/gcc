@@ -1,3 +1,8 @@
+2013-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38313
+	* g++.dg/lookup/name-clash10.C: New.
+
 2013-11-03  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.target/arm/neon-vcond-gt.c: Scan for vbsl or vbit or vbif.
