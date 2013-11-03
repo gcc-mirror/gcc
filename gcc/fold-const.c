@@ -14360,7 +14360,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
-	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i, mask;
 	  unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
 	  bool need_mask_canon = false;
 	  bool all_in_vec0 = true;
@@ -14368,23 +14368,22 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  bool maybe_identity = true;
 	  bool single_arg = (op0 == op1);
 	  bool changed = false;
-	  int nelts_cnt = single_arg ? nelts : nelts * 2;
 
+	  mask = single_arg ? (nelts - 1) : (2 * nelts - 1);
 	  gcc_assert (nelts == VECTOR_CST_NELTS (arg2));
 	  for (i = 0; i < nelts; i++)
 	    {
 	      tree val = VECTOR_CST_ELT (arg2, i);
-
 	      if (TREE_CODE (val) != INTEGER_CST)
 		return NULL_TREE;
 
 	      /* Make sure that the perm value is in an acceptable
 		 range.  */
 	      wide_int t = val;
-	      if (wi::gtu_p (t, nelts_cnt))
+	      if (wi::gtu_p (t, mask))
 		{
 		  need_mask_canon = true;
-		  sel[i] = t.to_uhwi () & (nelts_cnt - 1);
+		  sel[i] = t.to_uhwi () & mask;
 		}
 	      else
 		sel[i] = t.to_uhwi ();
