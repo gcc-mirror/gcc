@@ -748,17 +748,15 @@ unsigned int
 wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
 		  bool negate, unsigned int prec)
 {
-  gcc_assert (start < 4 * MAX_BITSIZE_MODE_ANY_INT);
-
-  if (start + width > prec)
-    width = prec - start;
-  unsigned int end = start + width;
-
-  if (width == 0)
+  if (start >= prec || width == 0)
     {
       val[0] = negate ? -1 : 0;
       return 1;
     }
+
+  if (width > prec - start)
+    width = prec - start;
+  unsigned int end = start + width;
 
   unsigned int i = 0;
   while (i < start / HOST_BITS_PER_WIDE_INT)
