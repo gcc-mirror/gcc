@@ -1,13 +1,3 @@
-2013-10-28  Tom de Vries  <tom@codesourcery.com>
-
-	* cfgexpand.c (gimple_expand_cfg): Remove test for parm_birth_insn.
-	Don't commit insertions after NOTE_INSN_FUNCTION_BEG.
-
-2013-10-28  Tom de Vries  <tom@codesourcery.com>
-
-	* cfgexpand.c (gimple_expand_cfg): Remove test for parm_birth_insn.
-	Don't commit insertions after NOTE_INSN_FUNCTION_BEG.
-
 2013-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
