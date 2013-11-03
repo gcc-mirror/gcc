@@ -1,3 +1,7 @@
+2013-11-02  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/vec-set.c: New.
+
 2013-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29234

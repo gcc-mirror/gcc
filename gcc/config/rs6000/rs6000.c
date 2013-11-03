@@ -5529,10 +5529,27 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
     XVECEXP (mask, 0, elt*width + i)
       = GEN_INT (i + 0x10);
   x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
-  x = gen_rtx_UNSPEC (mode,
-		      gen_rtvec (3, target, reg,
-				 force_reg (V16QImode, x)),
-		      UNSPEC_VPERM);
+
+  if (BYTES_BIG_ENDIAN)
+    x = gen_rtx_UNSPEC (mode,
+			gen_rtvec (3, target, reg,
+				   force_reg (V16QImode, x)),
+			UNSPEC_VPERM);
+  else 
+    {
+      /* Invert selector.  */
+      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
+					 gen_rtx_CONST_INT (QImode, -1));
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_move_insn (tmp, splat);
+      x = gen_rtx_MINUS (V16QImode, tmp, force_reg (V16QImode, x));
+      emit_move_insn (tmp, x);
+
+      /* Permute with operands reversed and adjusted selector.  */
+      x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
+			  UNSPEC_VPERM);
+    }
+
   emit_insn (gen_rtx_SET (VOIDmode, target, x));
 }
 
