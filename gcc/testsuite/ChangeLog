@@ -1,3 +1,8 @@
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58771
+	* gfortran.dg/derived_external_function_1.f90 : New test
+
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58978
