@@ -1,6 +1,6 @@
 /* Test __builtin_complex errors.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c1x -pedantic-errors" } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
 
 typedef double D;
 

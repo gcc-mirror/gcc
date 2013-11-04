@@ -9665,6 +9665,7 @@ main (int argc, char **argv)
 		"#include \"system.h\"\n"
 		"#include \"coretypes.h\"\n"
 		"#include \"tm.h\"\n"
+		"#include \"tree.h\"\n"
 		"#include \"rtl.h\"\n"
 		"#include \"tm_p.h\"\n"
 		"#include \"insn-config.h\"\n"

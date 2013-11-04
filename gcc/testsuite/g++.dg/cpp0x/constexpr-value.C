@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct HopefullyLiteral {
   HopefullyLiteral() = default; // Should be a constexpr c'tor as of 12.1/6 and 8.4.2/4

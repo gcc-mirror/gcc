@@ -4386,7 +4386,7 @@
 	* config/sh/sh.c (sh_can_use_simple_return_p): Enable with
 	-freorder-blocks-and-partition.
 
-2012-11-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-11-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* rtl.h (CONST_SCALAR_INT_P): New macro.
 	* cfgexpand.c (expand_debug_locations): Changed to use
@@ -4712,7 +4712,7 @@
 	longer static.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Use it.
 
-2012-11-06  Sterling Augustine <saugustine@google.com>
+2012-11-06  Sterling Augustine  <saugustine@google.com>
 
 	* dwarf2out.c (output_comdat_type_unit): Check for OBJECT_FORMAT_ELF.
 
@@ -4751,7 +4751,7 @@
 	* tree-ssa-tail-merge.c (find_duplicate): Do not consider
 	is_tm_ending_fndecl calls as mergable.
 
-2012-11-06  Sterling Augustine <saugustine@google.com>
+2012-11-06  Sterling Augustine  <saugustine@google.com>
 	    Cary Coutant <ccoutant@google.com>
 
 	* common.opt (gno-split-dwarf, gsplit-dwarf): New switches.
@@ -10738,7 +10738,7 @@
 	* config/i386/i386.c (ix86_rtx_costs): Limit > UNITS_PER_WORD
 	AND/IOR/XOR cost calculation to MODE_INT class modes.
 
-2012-09-18 Thomas Quinot  <quinot@adacore.com>
+2012-09-18  Thomas Quinot  <quinot@adacore.com>
 
 	* doc/invoke.texi: Document -fada-spec-parent.
 
@@ -12749,7 +12749,7 @@
 	New constraints.
 	* config/avr/avr.h (LONG_LONG_ACCUM_TYPE_SIZE): Define.
 
-2012-08-23  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-08-23  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* alias.c (rtx_equal_for_memref_p): Convert constant cases.
 	* combine.c (find_single_use_1, mark_used_regs_combine): Convert
@@ -15922,7 +15922,7 @@
 	alignment requirements given the known alignment of dynamic_offset.
 	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
 
-2012-08-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-08-02  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* cfgexpand.c (expand_debug_locations):  Encapsulate test for
 	CONST_DOUBLE in macro.
@@ -20452,7 +20452,7 @@
 	* var-tracking.c (vt_add_function_parameter): Use a preserved
 	VALUE for the MEM address of an incoming parameter.
 
-2012-06-26  Sterling Augustine <saugustine@google.com>
+2012-06-26  Sterling Augustine  <saugustine@google.com>
 
 	* dwarf2out.c (output_pubnames): Add check for DW_TAG_enumerator.
 	(prune_unused_types): Likewise.
@@ -22305,7 +22305,7 @@
 	Place new pass_jump2 after pass_stack_adjustments.
 	* tree-pass.h (pass_jump): Declare.
 
-2012-06-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-06-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* simplify-rtx.c (simplify_const_binary_operation): Fixed shift
 	count trucation.
@@ -22716,7 +22716,7 @@
 	* config/sparc/sparc-protos.h (sparc_initial_elimination_offset):
 	Prototype it.
 
-2012-06-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+2012-06-02  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* expmed.c (expand_mult, choose_multiplier): Change
 	"2 * HOST_BITS_PER_WIDE_INT" to "HOST_BITS_PER_DOUBLE_INT".

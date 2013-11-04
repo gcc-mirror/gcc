@@ -18,6 +18,7 @@ int main() {
  if (a2 == -1) {	// { dg-warning "always false due" }
     link_error ();
  }
+ a2 = static_cast<Alpha>(GetM1());
  if (-1 == a2) {	// { dg-warning "always false due" }
     link_error ();
  }

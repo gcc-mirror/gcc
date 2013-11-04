@@ -205,7 +205,7 @@ f30 (int x)
 template <int N>
 struct C
 {
-  #pragma omp declare simd simdlen (N) aligned (a : N * sizeof (int)) linear (c : N) notinbranch
+  #pragma omp declare simd simdlen (N) aligned (b : N * sizeof (int)) linear (c : N) notinbranch
   int f32 (int a, int *b, int c);
 };
 

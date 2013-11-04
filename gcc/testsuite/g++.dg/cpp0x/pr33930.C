@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 typedef const int* type;
 
 float& foo( const type& ggg );

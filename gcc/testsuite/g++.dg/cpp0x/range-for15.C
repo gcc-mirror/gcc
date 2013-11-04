@@ -2,7 +2,7 @@
 // and begin/end as member (non-)virtual functions
 
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 unsigned int g;
 

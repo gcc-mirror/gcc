@@ -1,15 +1,9 @@
 /* { dg-do compile } */
 
-struct tracepoint {
-    int dummy;
-    int state;
-};
-static struct tracepoint tp;
-
 void
 test (void)
 {
-    __asm__ ("@ %c0" : : "i" (&tp));
+    __asm__ ("@ %c0" : : "S" (test));
 }
 
-/* { dg-final { scan-assembler "@ tp" } } */
+/* { dg-final { scan-assembler "@ test" } } */

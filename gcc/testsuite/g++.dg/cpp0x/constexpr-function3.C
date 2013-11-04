@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 // From N2235
 

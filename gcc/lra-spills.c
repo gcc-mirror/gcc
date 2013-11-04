@@ -334,8 +334,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
       for (nr = 0;
 	   nr < hard_regno_nregs[hard_regno][lra_reg_info[regno].biggest_mode];
 	   nr++)
-	/* Just loop.  */;
-      df_set_regs_ever_live (hard_regno + nr, true);
+	/* Just loop.  */
+	df_set_regs_ever_live (hard_regno + nr, true);
     }
   bitmap_clear (&ok_insn_bitmap);
   free (reserved_hard_regs);
@@ -618,6 +618,33 @@ alter_subregs (rtx *loc, bool final_p)
   return res;
 }
 
+/* Return true if REGNO is used for return in the current
+   function.  */
+static bool
+return_regno_p (unsigned int regno)
+{
+  rtx outgoing = crtl->return_rtx;
+
+  if (! outgoing)
+    return false;
+
+  if (REG_P (outgoing))
+    return REGNO (outgoing) == regno;
+  else if (GET_CODE (outgoing) == PARALLEL)
+    {
+      int i;
+
+      for (i = 0; i < XVECLEN (outgoing, 0); i++)
+	{
+	  rtx x = XEXP (XVECEXP (outgoing, 0, i), 0);
+
+	  if (REG_P (x) && REGNO (x) == regno)
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Final change of pseudos got hard registers into the corresponding
    hard registers and removing temporary clobbers.  */
 void
@@ -648,6 +675,24 @@ lra_final_code_change (void)
 	      continue;
 	    }
 
+	  /* IRA can generate move insns involving pseudos.  It is
+	     better remove them earlier to speed up compiler a bit.
+	     It is also better to do it here as they might not pass
+	     final RTL check in LRA, (e.g. insn moving a control
+	     register into itself).  So remove an useless move insn
+	     unless next insn is USE marking the return reg (we should
+	     save this as some subsequent optimizations assume that
+	     such original insns are saved).  */
+	  if (NONJUMP_INSN_P (insn) && GET_CODE (pat) == SET
+	      && REG_P (SET_SRC (pat)) && REG_P (SET_DEST (pat))
+	      && REGNO (SET_SRC (pat)) == REGNO (SET_DEST (pat))
+	      && ! return_regno_p (REGNO (SET_SRC (pat))))
+	    {
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	      continue;
+	    }
+	
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 enum class E1 : int; // { dg-error "previous definition" }
 enum E1 : int;  // { dg-error "scoped/unscoped mismatch" }

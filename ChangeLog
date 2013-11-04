@@ -1,3 +1,36 @@
+2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+* MAINTAINERS (Write After Approval): Add myself.
+
+2013-10-30  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS): Pass
+	--disable-build-format-warnings.
+
+2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* Makefile.def: Add libcilkrts to target_modules.  Make libcilkrts 
+	depend on libstdc++ and libgcc.
+	* configure: Regenerate.
+	* configure.ac: Added libcilkrts to target binaries.  Also, restrict
+	libcilkrts for POSIX and i*86, and x86_64 architectures.
+	* Makefile.in: Added libcilkrts related fields to support building it.
+
+2013-10-26  Jeff Law  <law@redhat.com>
+
+	* Makefile.def (target_modules): Remove libmudflap
+	(languages): Remove check-target-libmudflap).
+	* Makefile.in: Rebuilt.
+	* Makefile.tpl (check-target-libmudflap-c++): Remove.
+	* configure.ac (target_libraries): Remove target-libmudflap.
+	Remove checks which disabled libmudflap on some systems.
+	* configure: Rebuilt.
+	* libmudflap: Directory removed.
+
+2013-10-21  Cong Hou  <congh@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2013-10-16  Mike Stump  <mikestump@comcast.net>
 
 	* .dir-locals.el: Add.
@@ -366,7 +399,7 @@
 	* configure.ac: add --disable-libstdcxx configure option
 	and handle defaulted state only for VxWorks, ARM-wince-pe and AVR.
 
-2012-10-30 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2012-10-30  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
@@ -806,7 +839,7 @@
 	* Makefile.def (install-strip-gcc): Depend on install-strip-lto-plugin.
 	* Makefile.in: Regenerate.
 
-2011-12-28  Oleg Endo <olegendo@gcc.gnu.org>
+2011-12-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
@@ -907,7 +940,7 @@
 
 	* config.sub: Import these changes from the config project:
 
-	2011-10-08  Joern Rennecke <joern.rennecke@embecosm.com>
+	2011-10-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Ben Elliston  <bje@gnu.org>
 
 	* config.sub (epiphany): New.

@@ -1,5 +1,5 @@
 // PR c++/48531
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<class T,
   class = decltype(T())

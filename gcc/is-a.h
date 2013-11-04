@@ -31,7 +31,7 @@ bool is_a <TYPE> (pointer)
 
     Tests whether the pointer actually points to a more derived TYPE.
 
-    Suppose you have a symtab_node_def *ptr, AKA symtab_node ptr.  You can test
+    Suppose you have a symtab_node *ptr, AKA symtab_node *ptr.  You can test
     whether it points to a 'derived' cgraph_node as follows.
 
       if (is_a <cgraph_node> (ptr))
@@ -110,9 +110,9 @@ example,
   template <>
   template <>
   inline bool
-  is_a_helper <cgraph_node>::test (symtab_node_def *p)
+  is_a_helper <cgraph_node>::test (symtab_node *p)
   {
-    return p->symbol.type == SYMTAB_FUNCTION;
+    return p->type == SYMTAB_FUNCTION;
   }
 
 If a simple reinterpret_cast between the pointer types is incorrect, then you
@@ -122,7 +122,7 @@ when needed may result in a crash.  For example,
   template <>
   template <>
   inline bool
-  is_a_helper <cgraph_node>::cast (symtab_node_def *p)
+  is_a_helper <cgraph_node>::cast (symtab_node *p)
   {
     return &p->x_function;
   }

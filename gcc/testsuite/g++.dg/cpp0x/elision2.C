@@ -1,5 +1,5 @@
 // Core 1148: should be able to move from value parameter on return
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct A
 {

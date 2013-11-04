@@ -449,6 +449,10 @@ mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
 -mlong-double-<n>	Specify size of long double (64 or 128 bits)
 
+mlra
+Target Report Var(rs6000_lra_flag) Init(0) Save
+Use LRA instead of reload
+
 msched-costly-dep=
 Target RejectNegative Joined Var(rs6000_sched_costly_dep_str)
 Determine which dependences between insns are considered costly

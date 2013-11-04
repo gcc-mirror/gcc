@@ -7,6 +7,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-ftrapv" } */
+/* { dg-require-effective-target trapping } */
 
 __attribute__((noinline)) int
 mulv(int a, int b)

@@ -2,7 +2,7 @@
 // with member begin/end
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 //These should not be used
 template<typename T> int *begin(T &t)

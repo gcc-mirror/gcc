@@ -60,6 +60,7 @@ if {[info exists tests_file] && [file exists $tests_file]} {
     lappend subdirs "$srcdir/tr1"
     lappend subdirs "$srcdir/tr2"
     lappend subdirs "$srcdir/decimal"
+    lappend subdirs "$srcdir/experimental"
     verbose "subdirs are $subdirs"
 
     # Find all the tests.

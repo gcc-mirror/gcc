@@ -4209,6 +4209,13 @@ notice_update_cc (rtx exp, rtx insn)
       && cc_status.value2
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     cc_status.value2 = 0;
+  /* Check for PRE_DEC in dest modifying a register used in src.  */
+  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM
+      && GET_CODE (XEXP (cc_status.value1, 0)) == PRE_DEC
+      && cc_status.value2
+      && reg_overlap_mentioned_p (XEXP (XEXP (cc_status.value1, 0), 0),
+				  cc_status.value2))
+    cc_status.value2 = 0;
   if (((cc_status.value1 && FP_REG_P (cc_status.value1))
        || (cc_status.value2 && FP_REG_P (cc_status.value2))))
     cc_status.flags = CC_IN_68881;

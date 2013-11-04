@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-times "cmp" 4 } } */
+/* { dg-final { scan-assembler-not "cmp" } } */
 
 extern void abort (void);
 int c;
@@ -34,39 +34,10 @@ void pluscconly##t##C (T a, T b)	\
 }
 #define PLUSCCONLY(T, t) PLUSCCONLY1(T, t, a) PLUSCCONLY1(T, t, b)
 
-#define MINUSCC(T, t)	\
-T minuscc##t (T a, T b)	\
-{	\
-  T difference = a - b;	\
-  if (difference > a)	\
-    abort ();		\
-  return difference;	\
-}
-
-#define DECCC(T, t)	\
-T deccc##t (T a, T b)	\
-{	\
-  T difference = a - b;	\
-  if (difference > a)	\
-    c --;		\
-  return difference;	\
-}
-
-#define MINUSCCONLY(T, t)	\
-void minuscconly##t (T a, T b)	\
-{	\
-  T difference = a - b;	\
-  if (difference > a)	\
-    abort ();		\
-}
-
 #define TEST(T, t)	\
   PLUSCC(T, t)		\
   PLUSCCONLY(T, t)	\
-  INCCC(T, t)		\
-  MINUSCC(T, t)		\
-  MINUSCCONLY(T, t)	\
-  DECCC(T, t)
+  INCCC(T, t)
 
 TEST (unsigned long,  l)
 TEST (unsigned int,   i)
@@ -84,14 +55,3 @@ unsigned long pluscczext##C (unsigned int a, unsigned int b)	\
 
 PLUSCCZEXT(a)
 PLUSCCZEXT(b)
-
-#define MINUSCCZEXT	\
-unsigned long minuscczext (unsigned int a, unsigned int b)	\
-{	\
-  unsigned int difference = a - b;	\
-  if (difference > a)		\
-    abort ();			\
-  return difference;		\
-}
-
-MINUSCCZEXT

@@ -11415,7 +11415,7 @@
 	* sem_ch8.adb (Is_Primitive_Operator_In_Use): Always check In_Use on
 	the Base_Type.
 
-2011-08-03  Joel Brobecker  <brobecker@adacore.com brobecker>
+2011-08-03  Joel Brobecker  <brobecker@adacore.com>
 
 	* g-sha256.ads, g-sha512.ads, g-sha1.ads, g-sha224.ads, g-sha384.ads,
 	g-sehash.ads: Fix typo. Update header.

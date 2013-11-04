@@ -2998,6 +2998,15 @@ cv_to_string (tree p, int v)
   return pp_ggc_formatted_text (cxx_pp);
 }
 
+static const char *
+eh_spec_to_string (tree p, int /*v*/)
+{
+  int flags = 0;
+  reinit_cxx_pp ();
+  dump_exception_spec (cxx_pp, p, flags);
+  return pp_ggc_formatted_text (cxx_pp);
+}
+
 /* Langhook for print_error_function.  */
 void
 cxx_print_error_function (diagnostic_context *context, const char *file,
@@ -3379,8 +3388,10 @@ maybe_print_constexpr_context (diagnostic_context *context)
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
    %Q	assignment operator.
+   %S   substitution (template + args)
    %T   type.
-   %V   cv-qualifier.  */
+   %V   cv-qualifier.
+   %X   exception-specification.  */
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose)
@@ -3427,6 +3438,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'S': result = subst_to_string (next_tree);		break;
     case 'T': result = type_to_string (next_tree, verbose);	break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
+    case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
     case 'K':
       percent_K_format (text);

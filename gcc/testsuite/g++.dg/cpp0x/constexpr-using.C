@@ -1,5 +1,5 @@
 // Core issue 898
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 namespace N { const int i = 42; }
 namespace M { const int j = 42; }

@@ -1972,6 +1972,15 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return 0;
     }
 
+  if (actual->ts.type == BT_ASSUMED && formal->ts.type != BT_ASSUMED)
+    {
+      if (where)
+	gfc_error ("Assumed-type actual argument at %L requires that dummy "
+		   "argument '%s' is of assumed type", &actual->where,
+		   formal->name);
+      return 0;
+    }
+
   /* F2008, 12.5.2.5; IR F08/0073.  */
   if (formal->ts.type == BT_CLASS && formal->attr.class_ok
       && actual->expr_type != EXPR_NULL

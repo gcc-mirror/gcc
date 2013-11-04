@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // Contributed by Eric Niebler
 template<typename T, typename U>
 struct pair

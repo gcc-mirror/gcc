@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // We decided in Rapperswil that it's OK if any value of decide can produce
 // a constant expression.
 

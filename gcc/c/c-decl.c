@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-ubsan.h"
 #include "c-lang.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
@@ -56,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
+#include "cilk.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -5410,6 +5412,16 @@ grokdeclarator (const struct c_declarator *declarator,
 		       with known value.  */
 		    this_size_varies = size_varies = true;
 		    warn_variable_length_array (name, size);
+		    if (flag_sanitize & SANITIZE_VLA
+		        && decl_context == NORMAL)
+		      {
+			/* Evaluate the array size only once.  */
+			size = c_save_expr (size);
+			size = c_fully_fold (size, false, NULL);
+		        size = fold_build2 (COMPOUND_EXPR, TREE_TYPE (size),
+					    ubsan_instrument_vla (loc, size),
+					    size);
+		      }
 		  }
 
 		if (integer_zerop (size) && !this_size_varies)
@@ -8447,6 +8459,12 @@ finish_function (void)
 
   /* Tie off the statement tree for this function.  */
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+
+  /* If the function has _Cilk_spawn in front of a function call inside it
+     i.e. it is a spawning function, then add the appropriate Cilk plus
+     functions inside.  */
+  if (fn_contains_cilk_spawn_p (cfun))
+    cfun->cilk_frame_decl = insert_cilk_frame (fndecl);
 
   finish_fname_decls ();
 

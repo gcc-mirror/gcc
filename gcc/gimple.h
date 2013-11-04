@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "ggc.h"
 #include "basic-block.h"
-#include "tree.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -919,6 +918,7 @@ extern tree get_initialized_tmp_var (tree, gimple_seq *, gimple_seq *);
 extern tree get_formal_tmp_var (tree, gimple_seq *);
 extern void declare_vars (tree, gimple, bool);
 extern void annotate_all_with_location (gimple_seq, location_t);
+extern unsigned gimple_call_get_nobnd_arg_index (const_gimple, unsigned);
 
 /* Validation of GIMPLE expressions.  Note that these predicates only check
    the basic form of the expression, they don't recurse to make sure that
@@ -2411,6 +2411,32 @@ gimple_call_arg (const_gimple gs, unsigned index)
 {
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   return gimple_op (gs, index + 3);
+}
+
+
+/* Return the number of arguments used by call statement GS
+   ignoring bound ones.  */
+
+static inline unsigned
+gimple_call_num_nobnd_args (const_gimple gs)
+{
+  unsigned num_args = gimple_call_num_args (gs);
+  unsigned res = num_args;
+  for (unsigned n = 0; n < num_args; n++)
+    if (POINTER_BOUNDS_P (gimple_call_arg (gs, n)))
+      res--;
+  return res;
+}
+
+
+/* Return INDEX's call argument ignoring bound ones.  */
+static inline tree
+gimple_call_nobnd_arg (const_gimple gs, unsigned index)
+{
+  /* No bound args may exist if pointers checker is off.  */
+  if (!flag_check_pointer_bounds)
+    return gimple_call_arg (gs, index);
+  return gimple_call_arg (gs, gimple_call_get_nobnd_arg_index (gs, index));
 }
 
 
@@ -5220,6 +5246,26 @@ gimple_return_set_retval (gimple gs, tree retval)
 }
 
 
+/* Return the return bounds for GIMPLE_RETURN GS.  */
+
+static inline tree
+gimple_return_retbnd (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_RETURN);
+  return gimple_op (gs, 1);
+}
+
+
+/* Set RETVAL to be the return bounds for GIMPLE_RETURN GS.  */
+
+static inline void
+gimple_return_set_retbnd (gimple gs, tree retval)
+{
+  GIMPLE_CHECK (gs, GIMPLE_RETURN);
+  gimple_set_op (gs, 1, retval);
+}
+
+
 /* Returns true when the gimple statement STMT is any of the OpenMP types.  */
 
 #define CASE_GIMPLE_OMP				\
@@ -5527,6 +5573,20 @@ static inline gimple_stmt_iterator
 gsi_start_nondebug_bb (basic_block bb)
 {
   gimple_stmt_iterator i = gsi_start_bb (bb);
+
+  if (!gsi_end_p (i) && is_gimple_debug (gsi_stmt (i)))
+    gsi_next_nondebug (&i);
+
+  return i;
+}
+
+/* Return a new iterator pointing to the first non-debug non-label statement in
+   basic block BB.  */
+
+static inline gimple_stmt_iterator
+gsi_start_nondebug_after_labels_bb (basic_block bb)
+{
+  gimple_stmt_iterator i = gsi_after_labels (bb);
 
   if (!gsi_end_p (i) && is_gimple_debug (gsi_stmt (i)))
     gsi_next_nondebug (&i);

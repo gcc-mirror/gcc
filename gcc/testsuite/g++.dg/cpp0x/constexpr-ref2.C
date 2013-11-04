@@ -1,5 +1,5 @@
 // Negative reference variable tests.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 extern int *p;
 constexpr int& ri = *p;		// { dg-error "p" }

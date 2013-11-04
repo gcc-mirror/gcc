@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 template<typename T, typename U>
 struct is_same
 {

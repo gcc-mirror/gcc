@@ -28,6 +28,13 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// See below __regex_algo_impl to get what this is talking about. The default
+// value 1 indicated a conservative optimization without giving up worst case
+// performance.
+#ifndef _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
+#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 1
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -61,14 +68,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto& __it : __res)
 	__it.matched = false;
 
-      auto __executor = __get_executor<_BiIter, _Alloc, _CharT, _TraitsT,
-	   __policy>(__s, __e, __res, __re, __flags);
-
+      // This function decide which executor to use under given circumstances.
+      // The _S_auto policy now is the following: if a NFA has no
+      // back-references and has more than _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
+      // quantifiers (*, +, ?), the BFS executor will be used, other wise
+      // DFS executor. This is because DFS executor has a exponential upper
+      // bound, but better best-case performace. Meanwhile, BFS executor can
+      // effectively prevent from exponential-long time matching (which must
+      // contains many quantifiers), but it's slower in average.
+      //
+      // For simple regex, BFS executor could be 2 or more times slower than
+      // DFS executor.
+      //
+      // Of course, BFS executor cannot handle back-references.
       bool __ret;
-      if (__match_mode)
-	__ret = __executor->_M_match();
+      if (!__re._M_automaton->_M_has_backref
+	  && (__policy == _RegexExecutorPolicy::_S_alternate
+	      || __re._M_automaton->_M_quant_count
+		> _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT))
+	{
+	  _Executor<_BiIter, _Alloc, _TraitsT, false>
+	    __executor(__s, __e, __m, __re, __flags);
+	  if (__match_mode)
+	    __ret = __executor._M_match();
+	  else
+	    __ret = __executor._M_search();
+	}
       else
-	__ret = __executor->_M_search();
+	{
+	  _Executor<_BiIter, _Alloc, _TraitsT, true>
+	    __executor(__s, __e, __m, __re, __flags);
+	  if (__match_mode)
+	    __ret = __executor._M_match();
+	  else
+	    __ret = __executor._M_search();
+	}
       if (__ret)
 	{
 	  for (auto __it : __res)

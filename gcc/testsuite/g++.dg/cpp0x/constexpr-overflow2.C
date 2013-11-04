@@ -1,5 +1,5 @@
 // PR c++/47504
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 char constexpr sub(char arg)
 { return char(arg - char(1)); }

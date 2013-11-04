@@ -1,5 +1,5 @@
 // PR c++/47453
-// { dg-options "-std=c++0x -pedantic-errors" }
+// { dg-options "-std=c++11 -pedantic-errors" }
 
 // invalid
 int a({0});			// { dg-error "" }

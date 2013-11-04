@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<int... Indexes>
   struct _Index_tuple { };
 

@@ -1,6 +1,6 @@
 // PR c++/49136
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct S
 {

@@ -394,6 +394,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   unsigned int max_digit, result, radix;
   enum {NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON} float_flag;
   bool seen_digit;
+  bool seen_digit_sep;
 
   if (ud_suffix)
     *ud_suffix = NULL;
@@ -408,6 +409,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   max_digit = 0;
   radix = 10;
   seen_digit = false;
+  seen_digit_sep = false;
 
   /* First, interpret the radix.  */
   if (*str == '0')
@@ -416,16 +418,27 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
       str++;
 
       /* Require at least one hex digit to classify it as hex.  */
-      if ((*str == 'x' || *str == 'X')
-	  && (str[1] == '.' || ISXDIGIT (str[1])))
+      if (*str == 'x' || *str == 'X')
 	{
-	  radix = 16;
-	  str++;
+	  if (str[1] == '.' || ISXDIGIT (str[1]))
+	    {
+	      radix = 16;
+	      str++;
+	    }
+	  else if (DIGIT_SEP (str[1]))
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "digit separator after base indicator");
 	}
-      else if ((*str == 'b' || *str == 'B') && (str[1] == '0' || str[1] == '1'))
+      else if (*str == 'b' || *str == 'B')
 	{
-	  radix = 2;
-	  str++;
+	  if (str[1] == '0' || str[1] == '1')
+	    {
+	      radix = 2;
+	      str++;
+	    }
+	  else if (DIGIT_SEP (str[1]))
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "digit separator after base indicator");
 	}
     }
 
@@ -436,13 +449,24 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
       if (ISDIGIT (c) || (ISXDIGIT (c) && radix == 16))
 	{
+	  seen_digit_sep = false;
 	  seen_digit = true;
 	  c = hex_value (c);
 	  if (c > max_digit)
 	    max_digit = c;
 	}
+      else if (DIGIT_SEP (c))
+	{
+	  if (seen_digit_sep)
+	    SYNTAX_ERROR_AT (virtual_location, "adjacent digit separators");
+	  seen_digit_sep = true;
+	}
       else if (c == '.')
 	{
+	  if (seen_digit_sep || DIGIT_SEP (*str))
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "digit separator adjacent to decimal point");
+	  seen_digit_sep = false;
 	  if (float_flag == NOT_FLOAT)
 	    float_flag = AFTER_POINT;
 	  else
@@ -452,6 +476,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
       else if ((radix <= 10 && (c == 'e' || c == 'E'))
 	       || (radix == 16 && (c == 'p' || c == 'P')))
 	{
+	  if (seen_digit_sep || DIGIT_SEP (*str))
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "digit separator adjacent to exponent");
 	  float_flag = AFTER_EXPON;
 	  break;
 	}
@@ -462,6 +489,10 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  break;
 	}
     }
+
+  if (seen_digit_sep && float_flag != AFTER_EXPON)
+    SYNTAX_ERROR_AT (virtual_location,
+		     "digit separator outside digit sequence");
 
   /* The suffix may be for decimal fixed-point constants without exponent.  */
   if (radix != 16 && float_flag == NOT_FLOAT)
@@ -520,15 +551,27 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
 	  /* Exponent is decimal, even if string is a hex float.  */
 	  if (!ISDIGIT (*str))
-	    SYNTAX_ERROR_AT (virtual_location, "exponent has no digits");
-
+	    {
+	      if (DIGIT_SEP (*str))
+		SYNTAX_ERROR_AT (virtual_location,
+				 "digit separator adjacent to exponent");
+	      else
+		SYNTAX_ERROR_AT (virtual_location, "exponent has no digits");
+	    }
 	  do
-	    str++;
-	  while (ISDIGIT (*str));
+	    {
+	      seen_digit_sep = DIGIT_SEP (*str);
+	      str++;
+	    }
+	  while (ISDIGIT (*str) || DIGIT_SEP (*str));
 	}
       else if (radix == 16)
 	SYNTAX_ERROR_AT (virtual_location,
 			 "hexadecimal floating constants require an exponent");
+
+      if (seen_digit_sep)
+	SYNTAX_ERROR_AT (virtual_location,
+			 "digit separator outside digit sequence");
 
       result = interpret_float_suffix (pfile, str, limit - str);
       if (result == 0)
@@ -723,6 +766,8 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 
 	  if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
 	    c = hex_value (c);
+	  else if (DIGIT_SEP (c))
+	    continue;
 	  else
 	    break;
 

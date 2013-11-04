@@ -150,7 +150,8 @@ namespace __gnu_test
       auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
 	   _RegexExecutorPolicy::_S_alternate, true>
 	(__s, __e, __mm, __re, __flags);
-      if (__res1 == __res2 && __m == __mm)
+      // __m is unspecified if return value is false.
+      if (__res1 == __res2 && (!__res1 || __m == __mm))
 	return __res1;
       throw(std::exception());
     }

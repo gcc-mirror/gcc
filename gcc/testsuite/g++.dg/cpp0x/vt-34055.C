@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // PR c++/34055
 template<typename...> struct A;
 

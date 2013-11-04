@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // Contributed by Sylvain Pion
 static int rvalue_constructions = 0;
 

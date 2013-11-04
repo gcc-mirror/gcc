@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // Test user-defined literals.
 // Test warning on declaration without leading underscore.

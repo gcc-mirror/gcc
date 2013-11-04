@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x -w -ftrack-macro-expansion=0" }
+// { dg-options "-std=c++11 -w -ftrack-macro-expansion=0" }
 
 #include <limits.h>
 extern constexpr int max_s = INT_MAX + 1;  // { dg-error "" }

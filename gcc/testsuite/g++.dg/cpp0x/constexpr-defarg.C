@@ -1,5 +1,5 @@
 // PR c++/46335
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct T { };
 struct A {

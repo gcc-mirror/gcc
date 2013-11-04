@@ -3130,22 +3130,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
 
     inline basic_string<char>
-    operator"" s(const char* __str, size_t __len)
+    operator""s(const char* __str, size_t __len)
     { return basic_string<char>{__str, __len}; }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
     inline basic_string<wchar_t>
-    operator"" s(const wchar_t* __str, size_t __len)
+    operator""s(const wchar_t* __str, size_t __len)
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
     inline basic_string<char16_t>
-    operator"" s(const char16_t* __str, size_t __len)
+    operator""s(const char16_t* __str, size_t __len)
     { return basic_string<char16_t>{__str, __len}; }
 
     inline basic_string<char32_t>
-    operator"" s(const char32_t* __str, size_t __len)
+    operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
 #endif
 

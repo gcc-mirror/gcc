@@ -19,19 +19,6 @@ V b4(V x)
   return __builtin_shuffle(x, (V){ 4,5,6,7, 4,5,6,7, 4,5,6,7, 4,5,6,7, });
 }
 
-V p2(V x, V y)
-{
-  return __builtin_shuffle(x, y,
-	(V){ 1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31 });
-
-}
-
-V p4(V x, V y)
-{
-  return __builtin_shuffle(x, y,
-	(V){ 2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 });
-}
-
 V h1(V x, V y)
 {
   return __builtin_shuffle(x, y,
@@ -72,5 +59,3 @@ V l4(V x, V y)
 /* { dg-final { scan-assembler "vspltb" } } */
 /* { dg-final { scan-assembler "vsplth" } } */
 /* { dg-final { scan-assembler "vspltw" } } */
-/* { dg-final { scan-assembler "vpkuhum" } } */
-/* { dg-final { scan-assembler "vpkuwum" } } */

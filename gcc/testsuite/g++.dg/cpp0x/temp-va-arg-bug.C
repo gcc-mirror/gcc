@@ -1,5 +1,5 @@
-// { dg-options "--std=c++0x" }
-// { dg-options "-Wno-abi --std=c++0x" { target arm_eabi } }
+// { dg-options "--std=c++11" }
+// { dg-options "-Wno-abi --std=c++11" { target arm_eabi } }
 #include <stdarg.h>
 
 struct S { };

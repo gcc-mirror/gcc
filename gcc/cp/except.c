@@ -868,17 +868,21 @@ build_throw (tree exp)
 
       throw_type = build_eh_type_type (prepare_eh_type (TREE_TYPE (object)));
 
-      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))
+      cleanup = NULL_TREE;
+      if (type_build_dtor_call (TREE_TYPE (object)))
 	{
-	  cleanup = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
+	  tree fn = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
 				     complete_dtor_identifier, 0);
-	  cleanup = BASELINK_FUNCTIONS (cleanup);
-	  mark_used (cleanup);
-	  cxx_mark_addressable (cleanup);
-	  /* Pretend it's a normal function.  */
-	  cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);
+	  fn = BASELINK_FUNCTIONS (fn);
+	  mark_used (fn);
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))
+	    {
+	      cxx_mark_addressable (fn);
+	      /* Pretend it's a normal function.  */
+	      cleanup = build1 (ADDR_EXPR, cleanup_type, fn);
+	    }
 	}
-      else
+      if (cleanup == NULL_TREE)
 	cleanup = build_int_cst (cleanup_type, 0);
 
       /* ??? Indicate that this function call throws throw_type.  */

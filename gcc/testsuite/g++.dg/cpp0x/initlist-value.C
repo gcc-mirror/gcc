@@ -1,5 +1,5 @@
 // Test for value-initialization via {}
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 // { dg-do run }
 
 void * operator new (__SIZE_TYPE__, void *p) { return p; }

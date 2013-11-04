@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<typename _Tp, _Tp v>
   struct A3

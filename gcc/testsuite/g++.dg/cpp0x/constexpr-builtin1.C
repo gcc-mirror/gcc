@@ -1,5 +1,5 @@
 // PR c++/49813
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 inline constexpr bool
 isinf(long double __x)

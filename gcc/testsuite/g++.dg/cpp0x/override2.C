@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "--std=c++0x" }
+// { dg-options "--std=c++11" }
 struct B1 {};
 
 struct B2 final {};

@@ -1,5 +1,5 @@
 // Negative test for defaulted/deleted fns.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 void f();			// { dg-error "previous" }
 void f() = delete;		// { dg-error "deleted" }
@@ -62,7 +62,7 @@ int main()
 {
   F f;
   F f2(f);			// { dg-error "use" }
-  B* b = new const B;		// { dg-error "uninitialized const" }
+  const B* b = new const B;		// { dg-error "uninitialized const" }
   U u;				// { dg-error "deleted" }
 }
 

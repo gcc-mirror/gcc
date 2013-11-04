@@ -43,11 +43,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "basic-block.h"
-#include "tree-ssa.h"
+#include "tree-ssanames.h"
+#include "tree-dfa.h"
 #include "value-prof.h"
 #include "diagnostic-core.h"
 #include "builtins.h"
 #include "ubsan.h"
+#include "cilk.h"
 
 
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
@@ -234,6 +236,10 @@ is_builtin_name (const char *name)
     return true;
   if (strncmp (name, "__atomic_", 9) == 0)
     return true;
+  if (flag_enable_cilkplus 
+      && (!strcmp (name, "__cilkrts_detach")   
+	  || !strcmp (name, "__cilkrts_pop_frame")))
+    return true;
   return false;
 }
 
@@ -308,7 +314,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
   tree offset;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  unsigned int inner, align = BITS_PER_UNIT;
+  unsigned int align = BITS_PER_UNIT;
   bool known_alignment = false;
 
   /* Get the innermost object and the constant (bitpos) and possibly
@@ -417,50 +423,16 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 
   /* If there is a non-constant offset part extract the maximum
      alignment that can prevail.  */
-  inner = ~0U;
-  while (offset)
+  if (offset)
     {
-      tree next_offset;
-
-      if (TREE_CODE (offset) == PLUS_EXPR)
+      int trailing_zeros = tree_ctz (offset);
+      if (trailing_zeros < HOST_BITS_PER_INT)
 	{
-	  next_offset = TREE_OPERAND (offset, 0);
-	  offset = TREE_OPERAND (offset, 1);
+	  unsigned int inner = (1U << trailing_zeros) * BITS_PER_UNIT;
+	  if (inner)
+	    align = MIN (align, inner);
 	}
-      else
-	next_offset = NULL;
-      if (tree_fits_uhwi_p (offset))
-	{
-	  /* Any overflow in calculating offset_bits won't change
-	     the alignment.  */
-	  unsigned offset_bits
-	    = ((unsigned) tree_to_uhwi (offset) * BITS_PER_UNIT);
-
-	  if (offset_bits)
-	    inner = MIN (inner, (offset_bits & -offset_bits));
-	}
-      else if (TREE_CODE (offset) == MULT_EXPR
-	       && tree_fits_uhwi_p (TREE_OPERAND (offset, 1)))
-	{
-	  /* Any overflow in calculating offset_factor won't change
-	     the alignment.  */
-	  unsigned offset_factor
-	    = ((unsigned) tree_to_uhwi (TREE_OPERAND (offset, 1))
-	       * BITS_PER_UNIT);
-
-	  if (offset_factor)
-	    inner = MIN (inner, (offset_factor & -offset_factor));
-	}
-      else
-	{
-	  inner = MIN (inner, BITS_PER_UNIT);
-	  break;
-	}
-      offset = next_offset;
     }
-  /* Alignment is innermost object alignment adjusted by the constant
-     and non-constant offset parts.  */
-  align = MIN (align, inner);
 
   *alignp = align;
   *bitposp = bitpos & (*alignp - 1);
@@ -4239,110 +4211,6 @@ expand_builtin_va_start (tree exp)
   return const0_rtx;
 }
 
-
-/* Return a dummy expression of type TYPE in order to keep going after an
-   error.  */
-
-static tree
-dummy_object (tree type)
-{
-  tree t = build_int_cst (build_pointer_type (type), 0);
-  return build2 (MEM_REF, type, t, t);
-}
-
-/* Gimplify __builtin_va_arg, aka VA_ARG_EXPR, which is not really a
-   builtin function, but a very special sort of operator.  */
-
-enum gimplify_status
-gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
-{
-  tree promoted_type, have_va_type;
-  tree valist = TREE_OPERAND (*expr_p, 0);
-  tree type = TREE_TYPE (*expr_p);
-  tree t;
-  location_t loc = EXPR_LOCATION (*expr_p);
-
-  /* Verify that valist is of the proper type.  */
-  have_va_type = TREE_TYPE (valist);
-  if (have_va_type == error_mark_node)
-    return GS_ERROR;
-  have_va_type = targetm.canonical_va_list_type (have_va_type);
-
-  if (have_va_type == NULL_TREE)
-    {
-      error_at (loc, "first argument to %<va_arg%> not of type %<va_list%>");
-      return GS_ERROR;
-    }
-
-  /* Generate a diagnostic for requesting data of a type that cannot
-     be passed through `...' due to type promotion at the call site.  */
-  if ((promoted_type = lang_hooks.types.type_promotes_to (type))
-	   != type)
-    {
-      static bool gave_help;
-      bool warned;
-
-      /* Unfortunately, this is merely undefined, rather than a constraint
-	 violation, so we cannot make this an error.  If this call is never
-	 executed, the program is still strictly conforming.  */
-      warned = warning_at (loc, 0,
-	  		   "%qT is promoted to %qT when passed through %<...%>",
-			   type, promoted_type);
-      if (!gave_help && warned)
-	{
-	  gave_help = true;
-	  inform (loc, "(so you should pass %qT not %qT to %<va_arg%>)",
-		  promoted_type, type);
-	}
-
-      /* We can, however, treat "undefined" any way we please.
-	 Call abort to encourage the user to fix the program.  */
-      if (warned)
-	inform (loc, "if this code is reached, the program will abort");
-      /* Before the abort, allow the evaluation of the va_list
-	 expression to exit or longjmp.  */
-      gimplify_and_add (valist, pre_p);
-      t = build_call_expr_loc (loc,
-			       builtin_decl_implicit (BUILT_IN_TRAP), 0);
-      gimplify_and_add (t, pre_p);
-
-      /* This is dead code, but go ahead and finish so that the
-	 mode of the result comes out right.  */
-      *expr_p = dummy_object (type);
-      return GS_ALL_DONE;
-    }
-  else
-    {
-      /* Make it easier for the backends by protecting the valist argument
-	 from multiple evaluations.  */
-      if (TREE_CODE (have_va_type) == ARRAY_TYPE)
-	{
-	  /* For this case, the backends will be expecting a pointer to
-	     TREE_TYPE (abi), but it's possible we've
-	     actually been given an array (an actual TARGET_FN_ABI_VA_LIST).
-	     So fix it.  */
-	  if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
-	    {
-	      tree p1 = build_pointer_type (TREE_TYPE (have_va_type));
-	      valist = fold_convert_loc (loc, p1,
-					 build_fold_addr_expr_loc (loc, valist));
-	    }
-
-	  gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
-	}
-      else
-	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
-
-      if (!targetm.gimplify_va_arg_expr)
-	/* FIXME: Once most targets are converted we should merely
-	   assert this is non-null.  */
-	return GS_ALL_DONE;
-
-      *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
-      return GS_OK;
-    }
-}
-
 /* Expand EXP, a call to __builtin_va_end.  */
 
 static rtx
@@ -4470,10 +4338,6 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
   unsigned int align;
   bool alloca_with_align = (DECL_FUNCTION_CODE (get_callee_fndecl (exp))
 			    == BUILT_IN_ALLOCA_WITH_ALIGN);
-
-  /* Emit normal call if we use mudflap.  */
-  if (flag_mudflap)
-    return NULL_RTX;
 
   valid_arglist
     = (alloca_with_align
@@ -5754,7 +5618,18 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
-      && fcode != BUILT_IN_FREE)
+      && fcode != BUILT_IN_FREE
+      && fcode != BUILT_IN_CHKP_SET_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_INIT_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_NULL_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_COPY_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_NARROW_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_STORE_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_LBOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_UBOUNDS
+      && fcode != BUILT_IN_CHKP_CHECK_PTR_BOUNDS
+      && fcode != BUILT_IN_CHKP_GET_PTR_LBOUND
+      && fcode != BUILT_IN_CHKP_GET_PTR_UBOUND)
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
@@ -6797,6 +6672,59 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_SET_THREAD_POINTER:
       expand_builtin_set_thread_pointer (exp);
       return const0_rtx;
+
+    case BUILT_IN_CILK_DETACH:
+      expand_builtin_cilk_detach (exp);
+      return const0_rtx;
+      
+    case BUILT_IN_CILK_POP_FRAME:
+      expand_builtin_cilk_pop_frame (exp);
+      return const0_rtx;
+
+    case BUILT_IN_CHKP_INIT_PTR_BOUNDS:
+    case BUILT_IN_CHKP_NULL_PTR_BOUNDS:
+    case BUILT_IN_CHKP_COPY_PTR_BOUNDS:
+      return expand_normal (CALL_EXPR_ARG (exp, 0));
+
+    case BUILT_IN_CHKP_CHECK_PTR_LBOUNDS:
+    case BUILT_IN_CHKP_CHECK_PTR_UBOUNDS:
+    case BUILT_IN_CHKP_CHECK_PTR_BOUNDS:
+    case BUILT_IN_CHKP_SET_PTR_BOUNDS:
+    case BUILT_IN_CHKP_NARROW_PTR_BOUNDS:
+    case BUILT_IN_CHKP_STORE_PTR_BOUNDS:
+    case BUILT_IN_CHKP_GET_PTR_LBOUND:
+    case BUILT_IN_CHKP_GET_PTR_UBOUND:
+      /* We allow user CHKP builtins if Pointer Bounds
+	 Checker is off.  */
+      if (!flag_check_pointer_bounds)
+	{
+	  if (fcode == BUILT_IN_CHKP_SET_PTR_BOUNDS
+	      || fcode == BUILT_IN_CHKP_NARROW_PTR_BOUNDS)
+	    return expand_normal (CALL_EXPR_ARG (exp, 0));
+	  else if (fcode == BUILT_IN_CHKP_GET_PTR_LBOUND)
+	    return expand_normal (size_zero_node);
+	  else if (fcode == BUILT_IN_CHKP_GET_PTR_UBOUND)
+	    return expand_normal (size_int (-1));
+	  else
+	    return const0_rtx;
+	}
+      /* FALLTHROUGH */
+
+    case BUILT_IN_CHKP_BNDMK:
+    case BUILT_IN_CHKP_BNDSTX:
+    case BUILT_IN_CHKP_BNDCL:
+    case BUILT_IN_CHKP_BNDCU:
+    case BUILT_IN_CHKP_BNDLDX:
+    case BUILT_IN_CHKP_BNDRET:
+    case BUILT_IN_CHKP_INTERSECT:
+    case BUILT_IN_CHKP_ARG_BND:
+    case BUILT_IN_CHKP_NARROW:
+    case BUILT_IN_CHKP_EXTRACT_LOWER:
+    case BUILT_IN_CHKP_EXTRACT_UPPER:
+      /* Software implementation of pointers checker is NYI.
+	 Target support is required.  */
+      error ("Your target platform does not support -fcheck-pointers");
+      break;
 
     default:	/* just do library call, if unknown builtin */
       break;

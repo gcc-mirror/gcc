@@ -18677,6 +18677,25 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Check for fenv.h and complex.h before GLIBCXX_CHECK_C99_TR1
+# so that the check is done with the C compiler (not C++).
+# Checking with C++ can break a canadian cross build if either
+# file does not exist in C but does in C++.
+for ac_header in fenv.h complex.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
 # For C99 support to TR1.
 
 

@@ -18,9 +18,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* The SH uses a partial integer mode to represent the FPSCR register.  */
-PARTIAL_INT_MODE (SI);
+PARTIAL_INT_MODE (SI, 22, PSI);
 /* PDI mode is used to represent a function address in a target register.  */
-PARTIAL_INT_MODE (DI);
+PARTIAL_INT_MODE (DI, 64, PDI);
 
 /* Vector modes.  */
 VECTOR_MODE  (INT, QI, 2);    /*                 V2QI */

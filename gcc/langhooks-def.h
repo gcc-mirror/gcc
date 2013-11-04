@@ -118,6 +118,7 @@ extern bool lhd_omp_mappable_type (tree);
 #define LANG_HOOKS_BLOCK_MAY_FALLTHRU	hook_bool_const_tree_true
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
 #define LANG_HOOKS_DEEP_UNSHARING	false
+#define LANG_HOOKS_CHKP_SUPPORTED	false
 
 /* Attribute hooks.  */
 #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
@@ -214,6 +215,18 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_OMP_CLAUSE_DTOR hook_tree_tree_tree_null
 #define LANG_HOOKS_OMP_FINISH_CLAUSE hook_void_tree
 
+extern void lhd_install_body_with_frame_cleanup (tree, tree);
+extern bool lhd_cilk_detect_spawn (tree *);
+#define LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP lhd_cilk_detect_spawn
+#define LANG_HOOKS_CILKPLUS_FRAME_CLEANUP lhd_install_body_with_frame_cleanup
+#define LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN lhd_gimplify_expr
+
+#define LANG_HOOKS_CILKPLUS {			\
+  LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP,	\
+  LANG_HOOKS_CILKPLUS_FRAME_CLEANUP,		\
+  LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN            \
+}
+
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
   LANG_HOOKS_PUSHDECL, \
@@ -291,6 +304,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \
   LANG_HOOKS_DECLS, \
   LANG_HOOKS_FOR_TYPES_INITIALIZER, \
+  LANG_HOOKS_CILKPLUS, \
   LANG_HOOKS_LTO, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS, \
@@ -305,7 +319,8 @@ extern void lhd_end_section (void);
   LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS, \
   LANG_HOOKS_BLOCK_MAY_FALLTHRU, \
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \
-  LANG_HOOKS_DEEP_UNSHARING \
+  LANG_HOOKS_DEEP_UNSHARING, \
+  LANG_HOOKS_CHKP_SUPPORTED \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

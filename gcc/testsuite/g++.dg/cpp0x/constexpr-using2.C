@@ -1,5 +1,5 @@
 // PR c++/49520
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 namespace x { void foo(); }
 

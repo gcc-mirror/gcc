@@ -1,5 +1,5 @@
 // PR c++/40689
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 class X
 {

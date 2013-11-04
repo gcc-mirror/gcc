@@ -1,5 +1,5 @@
 // Test that -Wnoexcept works with templates
-// { dg-options "-std=c++0x -Wnoexcept" }
+// { dg-options "-std=c++11 -Wnoexcept" }
 
 template <class T>
 T f (T t) { return t; }		// { dg-warning "does not throw" }

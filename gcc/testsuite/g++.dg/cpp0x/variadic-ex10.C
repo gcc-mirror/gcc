@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<typename... Types> struct Tuple { };
 
 Tuple<> t0; // Types contains no arguments

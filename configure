@@ -2772,10 +2772,10 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
+		target-libcilkrts \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
-		target-libmudflap \
 		target-libsanitizer \
 		target-libvtv \
 		target-libssp \
@@ -3128,22 +3128,6 @@ if test x$enable_static_libjava != xyes ; then
 fi
 
 
-# Disable libmudflap on some systems.
-if test x$enable_libmudflap = x ; then
-    case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
-        # Enable libmudflap by default in GNU and friends.
-	;;
-    *-*-freebsd*)
-        # Enable libmudflap by default in FreeBSD.
-	;;
-    *)
-        # Disable it by default everywhere else.
-	noconfigdirs="$noconfigdirs target-libmudflap"
-	;;
-    esac
-fi
-
 # Disable libgomp on non POSIX hosted systems.
 if test x$enable_libgomp = x ; then
     # Enable libgomp by default on hosted POSIX systems.
@@ -3174,6 +3158,25 @@ $as_echo_n "checking for libatomic support... " >&6; }
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	    noconfigdirs="$noconfigdirs target-libatomic"
+	else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	fi
+    fi
+fi
+
+# Disable libcilkrts on unsupported systems.
+if test -d ${srcdir}/libcilkrts; then
+    if test x$enable_libcilkrts = x; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcilkrts support" >&5
+$as_echo_n "checking for libcilkrts support... " >&6; }
+	if (srcdir=${srcdir}/libcilkrts; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	    noconfigdirs="$noconfigdirs target-libcilkrts"
 	else
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }

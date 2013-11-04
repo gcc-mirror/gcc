@@ -333,6 +333,7 @@ complete_mode (struct mode_data *m)
       break;
 
     case MODE_INT:
+    case MODE_POINTER_BOUNDS:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
     case MODE_FRACT:
@@ -534,6 +535,19 @@ make_special_mode (enum mode_class cl, const char *name,
   new_mode (cl, name, file, line);
 }
 
+#define POINTER_BOUNDS_MODE(N, Y) \
+  make_pointer_bounds_mode (#N, Y, __FILE__, __LINE__)
+
+static void ATTRIBUTE_UNUSED
+make_pointer_bounds_mode (const char *name,
+			  unsigned int bytesize,
+			  const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (MODE_POINTER_BOUNDS, name, file, line);
+  m->bytesize = bytesize;
+}
+
+
 #define INT_MODE(N, Y) FRACTIONAL_INT_MODE (N, -1U, Y)
 #define FRACTIONAL_INT_MODE(N, B, Y) \
   make_int_mode (#N, B, Y, __FILE__, __LINE__)
@@ -630,10 +644,10 @@ reset_float_format (const char *name, const char *format,
   m->format = format;
 }
 
-/* Partial integer modes are specified by relation to a full integer mode.
-   For now, we do not attempt to narrow down their bit sizes.  */
-#define PARTIAL_INT_MODE(M) \
-  make_partial_integer_mode (#M, "P" #M, -1U, __FILE__, __LINE__)
+/* Partial integer modes are specified by relation to a full integer
+   mode.  */
+#define PARTIAL_INT_MODE(M,PREC,NAME)				\
+  make_partial_integer_mode (#M, #NAME, PREC, __FILE__, __LINE__)
 static void ATTRIBUTE_UNUSED
 make_partial_integer_mode (const char *base, const char *name,
 			   unsigned int precision,
@@ -670,7 +684,7 @@ make_vector_mode (enum mode_class bclass,
   struct mode_data *v;
   enum mode_class vclass = vector_class (bclass);
   struct mode_data *component = find_mode (base);
-  char namebuf[8];
+  char namebuf[16];
 
   if (vclass == MODE_RANDOM)
     return;
@@ -918,7 +932,7 @@ enum machine_mode\n{");
 	 end will try to use it for bitfields in structures and the
 	 like, which we do not want.  Only the target md file should
 	 generate BImode widgets.  */
-      if (first && first->precision == 1)
+      if (first && first->precision == 1 && c == MODE_INT)
 	first = first->next;
 
       if (first && last)
@@ -1188,7 +1202,7 @@ emit_class_narrowest_mode (void)
     /* Bleah, all this to get the comment right for MIN_MODE_INT.  */
     tagged_printf ("MIN_%s", mode_class_names[c],
 		   modes[c]
-		   ? (modes[c]->precision != 1
+		   ? ((c != MODE_INT || modes[c]->precision != 1)
 		      ? modes[c]->name
 		      : (modes[c]->next
 			 ? modes[c]->next->name

@@ -30,12 +30,17 @@
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "sbitmap.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "vec.h"
 #include "value-prof.h"
-#include "gimple.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].

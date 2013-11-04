@@ -25,8 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple-pretty-print.h"
-#include "tree-ssa.h"
 #include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-ssanames.h"
+#include "tree-into-ssa.h"
 #include "tree-pass.h"
 #include "flags.h"
 
@@ -710,7 +713,6 @@ shrink_wrap_one_built_in_call (gimple bi_call)
   basic_block bi_call_bb, join_tgt_bb, guard_bb, guard_bb0;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
-  vec<gimple> conds;
   unsigned tn_cond_stmts, nconds;
   unsigned ci;
   gimple cond_expr = NULL;
@@ -718,7 +720,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
   tree bi_call_label_decl;
   gimple bi_call_label;
 
-  conds.create (12);
+  stack_vec<gimple, 12> conds;
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
 
   /* This can happen if the condition generator decides
@@ -726,10 +728,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
      return false and do not do any transformation for
      the call.  */
   if (nconds == 0)
-    {
-      conds.release ();
-      return false;
-    }
+    return false;
 
   bi_call_bb = gimple_bb (bi_call);
 
@@ -740,10 +739,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
 	 it could e.g. have EH edges.  */
       join_tgt_in_edge_from_call = find_fallthru_edge (bi_call_bb->succs);
       if (join_tgt_in_edge_from_call == NULL)
-	{
-	  conds.release ();
-	  return false;
-	}
+        return false;
     }
   else
     join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
@@ -829,7 +825,6 @@ shrink_wrap_one_built_in_call (gimple bi_call)
       guard_bb_in_edge->count = guard_bb->count - bi_call_in_edge->count;
     }
 
-  conds.release ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       location_t loc;

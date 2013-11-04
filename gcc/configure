@@ -737,7 +737,7 @@ LDEXP_LIB
 EXTRA_GCC_LIBS
 GNAT_LIBEXC
 COLLECT2_LIBS
-CCDEPMODE
+CXXDEPMODE
 DEPDIR
 am__leading_dot
 CXXCPP
@@ -875,6 +875,7 @@ with_demangler_in_ld
 with_gnu_as
 with_as
 enable_largefile
+enable_build_format_warnings
 enable_werror_always
 enable_checking
 enable_coverage
@@ -1569,6 +1570,8 @@ Optional Features:
                           for creating source tarballs for users without
                           texinfo bison or flex
   --disable-largefile     omit support for large files
+  --disable-build-format-warnings
+                          don't use -Wformat while building GCC
   --enable-werror-always  enable -Werror despite compiler version
   --enable-checking[=LIST]
                           enable expensive run-time checks. With LIST, enable
@@ -6270,9 +6273,22 @@ fi
 # * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
+# In stage 1, disable -Wformat warnings from old GCCs about new % codes
+# Check whether --enable-build-format-warnings was given.
+if test "${enable_build_format_warnings+set}" = set; then :
+  enableval=$enable_build_format_warnings;
+else
+  enable_build_format_warnings=yes
+fi
+
+if test $enable_build_format_warnings = no; then :
+  wf_opt=-Wno-format
+else
+  wf_opt=
+fi
 loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -8766,12 +8782,12 @@ ac_config_commands="$ac_config_commands depdir"
 ac_config_commands="$ac_config_commands gccdepdir"
 
 
-depcc="$CC"   am_compiler_list=
+depcc="$CXX"  am_compiler_list=
 
 am_depcomp=$ac_aux_dir/depcomp
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dependency style of $depcc" >&5
 $as_echo_n "checking dependency style of $depcc... " >&6; }
-if test "${am_cv_CC_dependencies_compiler_type+set}" = set; then :
+if test "${am_cv_CXX_dependencies_compiler_type+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   if test -f "$am_depcomp"; then
@@ -8793,7 +8809,7 @@ else
   # directory.
   mkdir sub
 
-  am_cv_CC_dependencies_compiler_type=none
+  am_cv_CXX_dependencies_compiler_type=none
   if test "$am_compiler_list" = ""; then
      am_compiler_list=`sed -n 's/^\([a-zA-Z0-9]*\))$/\1/p' < ./depcomp`
   fi
@@ -8838,7 +8854,7 @@ else
       #   icc: Command line remark: option '-MP' not supported
       if (grep 'ignoring option' conftest.err ||
           grep 'not supported' conftest.err) >/dev/null 2>&1; then :; else
-        am_cv_CC_dependencies_compiler_type=$depmode
+        am_cv_CXX_dependencies_compiler_type=$depmode
 	$as_echo "$as_me:$LINENO: success" >&5
         break
       fi
@@ -8850,15 +8866,15 @@ else
   cd ..
   rm -rf conftest.dir
 else
-  am_cv_CC_dependencies_compiler_type=none
+  am_cv_CXX_dependencies_compiler_type=none
 fi
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_CC_dependencies_compiler_type" >&5
-$as_echo "$am_cv_CC_dependencies_compiler_type" >&6; }
-if test x${am_cv_CC_dependencies_compiler_type-none} = xnone
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_CXX_dependencies_compiler_type" >&5
+$as_echo "$am_cv_CXX_dependencies_compiler_type" >&6; }
+if test x${am_cv_CXX_dependencies_compiler_type-none} = xnone
 then as_fn_error "no usable dependency style found" "$LINENO" 5
-else CCDEPMODE=depmode=$am_cv_CC_dependencies_compiler_type
+else CXXDEPMODE=depmode=$am_cv_CXX_dependencies_compiler_type
 
 fi
 
@@ -17897,7 +17913,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17900 "configure"
+#line 17916 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18003,7 +18019,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18006 "configure"
+#line 18022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24786,11 +24802,12 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_interunit_movq" >&5
 $as_echo "$gcc_cv_as_ix86_interunit_movq" >&6; }
-if test $gcc_cv_as_ix86_interunit_movq = yes; then
 
-$as_echo "#define HAVE_AS_IX86_INTERUNIT_MOVQ 1" >>confdefs.h
 
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_INTERUNIT_MOVQ `if test $gcc_cv_as_ix86_interunit_movq = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for hle prefixes" >&5
 $as_echo_n "checking assembler for hle prefixes... " >&6; }

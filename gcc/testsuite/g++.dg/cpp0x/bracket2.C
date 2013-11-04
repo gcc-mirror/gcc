@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<int i> class X { /* ... */ };
 X< 1>2 > x1;    // // { dg-error "numeric constant" }

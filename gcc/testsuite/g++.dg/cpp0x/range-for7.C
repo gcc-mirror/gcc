@@ -1,7 +1,7 @@
 // PR c++/46056
 // Check that range-based for loop calls destructors 
 // when required
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 extern "C" void abort();
 

@@ -3796,6 +3796,18 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      return true;
 	    }
 	}
+      /* (AND (NOT op0) (NOT op1) is a nor operation that can be done in
+	 a single instruction.  */
+      if (!TARGET_MIPS16
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && GET_CODE (XEXP (x, 1)) == NOT)
+	{
+	  cost = GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 2 : 1;
+          *total = (COSTS_N_INSNS (cost)
+		    + set_src_cost (XEXP (XEXP (x, 0), 0), speed)
+		    + set_src_cost (XEXP (XEXP (x, 1), 0), speed));
+	  return true;
+	}
 	    
       /* Fall through.  */
 

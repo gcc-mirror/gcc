@@ -1265,6 +1265,7 @@ the byte offset of the field, but should not be used directly; call
 @tindex SAVE_EXPR
 @tindex TARGET_EXPR
 @tindex VA_ARG_EXPR
+@tindex ANNOTATE_EXPR
 
 @table @code
 @item NEGATE_EXPR
@@ -1678,7 +1679,12 @@ mechanism.  It represents expressions like @code{va_arg (ap, type)}.
 Its @code{TREE_TYPE} yields the tree representation for @code{type} and
 its sole argument yields the representation for @code{ap}.
 
+@item ANNOTATE_EXPR
+This node is used to attach markers to an expression. The first operand
+is the annotated expression, the second is an @code{INTEGER_CST} with
+a value from @code{enum annot_expr_kind}.
 @end table
+
 
 @node Vectors
 @subsection Vectors
@@ -3145,6 +3151,30 @@ several statements chained together.
 
 Used to represent a @code{break} statement.  There are no additional
 fields.
+
+@item CILK_SPAWN_STMT
+
+Used to represent a spawning function in the Cilk Plus language extension.  
+This tree has one field that holds the name of the spawning function.
+@code{_Cilk_spawn} can be written in C in the following way:
+
+@smallexample
+@code{_Cilk_spawn} <function_name> (<parameters>);
+@end smallexample
+
+Detailed description for usage and functionality of @code{_Cilk_spawn} can be 
+found at http://www.cilkplus.org
+
+@item CILK_SYNC_STMT
+
+This statement is part of the Cilk Plus language extension.  It indicates that
+the current function cannot continue in parallel with its spawned children.  
+There are no additional fields.  @code{_Cilk_sync} can be written in C in the 
+following way:
+
+@smallexample
+@code{_Cilk_sync};
+@end smallexample
 
 @item CLEANUP_STMT
 

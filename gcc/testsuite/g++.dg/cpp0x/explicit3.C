@@ -1,5 +1,5 @@
 // Test for "contextually converted to bool"
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct A
 {

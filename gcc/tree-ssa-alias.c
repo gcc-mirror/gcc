@@ -34,11 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "dumpfile.h"
 #include "gimple.h"
-#include "tree-ssa.h"
+#include "gimple-ssa.h"
+#include "tree-ssanames.h"
+#include "tree-dfa.h"
 #include "tree-inline.h"
 #include "params.h"
 #include "vec.h"
-#include "bitmap.h"
 #include "pointer-set.h"
 #include "alloc-pool.h"
 #include "tree-ssa-alias.h"
@@ -565,8 +566,24 @@ ao_ref_alias_set (ao_ref *ref)
 void
 ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
-  HOST_WIDE_INT t1, t2;
+  HOST_WIDE_INT t1, t2, extra_offset = 0;
   ref->ref = NULL_TREE;
+  if (TREE_CODE (ptr) == SSA_NAME)
+    {
+      gimple stmt = SSA_NAME_DEF_STMT (ptr);
+      if (gimple_assign_single_p (stmt)
+	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	ptr = gimple_assign_rhs1 (stmt);
+      else if (is_gimple_assign (stmt)
+	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	       && tree_fits_shwi_p (gimple_assign_rhs2 (stmt))
+	       && (t1 = int_cst_value (gimple_assign_rhs2 (stmt))) >= 0)
+	{
+	  ptr = gimple_assign_rhs1 (stmt);
+	  extra_offset = BITS_PER_UNIT * t1;
+	}
+    }
+
   if (TREE_CODE (ptr) == ADDR_EXPR)
     ref->base = get_ref_base_and_extent (TREE_OPERAND (ptr, 0),
 					 &ref->offset, &t1, &t2);
@@ -576,10 +593,11 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 			  ptr, null_pointer_node);
       ref->offset = 0;
     }
+  ref->offset += extra_offset;
   if (size
       && tree_fits_shwi_p (size)
-      && tree_to_shwi (size) * 8 / 8 == tree_to_shwi (size))
-    ref->max_size = ref->size = tree_to_shwi (size) * 8;
+      && tree_to_shwi (size) * BITS_PER_UNIT / BITS_PER_UNIT == tree_to_shwi (size))
+    ref->max_size = ref->size = tree_to_shwi (size) * BITS_PER_UNIT;
   else
     ref->max_size = ref->size = -1;
   ref->ref_alias_set = 0;
@@ -727,11 +745,8 @@ aliasing_component_refs_p (tree ref1,
 static bool
 nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
 {
-  vec<tree, va_stack> component_refs1;
-  vec<tree, va_stack> component_refs2;
-
-  vec_stack_alloc (tree, component_refs1, 16);
-  vec_stack_alloc (tree, component_refs2, 16);
+  stack_vec<tree, 16> component_refs1;
+  stack_vec<tree, 16> component_refs2;
 
   /* Create the stack of handled components for REF1.  */
   while (handled_component_p (ref1))
@@ -2054,6 +2069,16 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
+	  case BUILT_IN_FREE:
+	    {
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      tree base = ao_ref_base (ref);
+	      if (base && TREE_CODE (base) == MEM_REF
+		  && TREE_OPERAND (base, 0) == ptr)
+		return true;
+	      break;
+	    }
+
 	  case BUILT_IN_MEMCPY:
 	  case BUILT_IN_MEMPCPY:
 	  case BUILT_IN_MEMMOVE:

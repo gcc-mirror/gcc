@@ -9,19 +9,11 @@ typedef double adouble __attribute__((aligned(sizeof (double))));
 
 #include "l_fma_3.h"
 
-/* { dg-final { scan-assembler-times "vfmadd132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd231pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub231pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmadd132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmadd231pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmsub132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfnmsub231pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd132sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfmadd213sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfmsub132sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfmsub213sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfnmadd132sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfnmadd213sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfnmsub132sd" 28 } } */
-/* { dg-final { scan-assembler-times "vfnmsub213sd" 28 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+pd" 8 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+pd" 8 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+pd" 8 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+pd" 8 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfnmadd\[123\]+sd" 56 } } */
+/* { dg-final { scan-assembler-times "vfnmsub\[123\]+sd" 56 } } */

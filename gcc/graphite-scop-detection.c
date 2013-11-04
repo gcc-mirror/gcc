@@ -31,6 +31,15 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
+#include "tree-ssa-loop.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
@@ -466,8 +475,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 
     case GBB_LOOP_SING_EXIT_HEADER:
       {
-	vec<sd_region> regions;
-	regions.create (3);
+	stack_vec<sd_region, 3> regions;
 	struct scopdet_info sinfo;
 	edge exit_e = single_exit (loop);
 
@@ -532,8 +540,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
       {
         /* XXX: For now we just do not join loops with multiple exits.  If the
            exits lead to the same bb it may be possible to join the loop.  */
-        vec<sd_region> regions;
-	regions.create (3);
+        stack_vec<sd_region, 3> regions;
         vec<edge> exits = get_loop_exit_edges (loop);
         edge e;
         int i;
@@ -576,8 +583,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
       }
     case GBB_COND_HEADER:
       {
-	vec<sd_region> regions;
-	regions.create (3);
+	stack_vec<sd_region, 3> regions;
 	struct scopdet_info sinfo;
 	vec<basic_block> dominated;
 	int i;
@@ -1180,8 +1186,7 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 static void
 limit_scops (vec<scop_p> *scops)
 {
-  vec<sd_region> regions;
-  regions.create (3);
+  stack_vec<sd_region, 3> regions;
 
   int i;
   scop_p scop;
@@ -1216,7 +1221,6 @@ limit_scops (vec<scop_p> *scops)
 
   create_sese_edges (regions);
   build_graphite_scops (regions, scops);
-  regions.release ();
 }
 
 /* Returns true when P1 and P2 are close phis with the same
@@ -1395,8 +1399,7 @@ void
 build_scops (vec<scop_p> *scops)
 {
   struct loop *loop = current_loops->tree_root;
-  vec<sd_region> regions;
-  regions.create (3);
+  stack_vec<sd_region, 3> regions;
 
   canonicalize_loop_closed_ssa_form ();
   build_scops_1 (single_succ (ENTRY_BLOCK_PTR), ENTRY_BLOCK_PTR->loop_father,
@@ -1586,7 +1589,7 @@ dot_all_scops (vec<scop_p> scops)
 DEBUG_FUNCTION void
 dot_scop (scop_p scop)
 {
-  vec<scop_p> scops = vNULL;
+  stack_vec<scop_p, 1> scops;
 
   if (scop)
     scops.safe_push (scop);
@@ -1606,8 +1609,6 @@ dot_scop (scop_p scop)
 #else
   dot_all_scops_1 (stderr, scops);
 #endif
-
-  scops.release ();
 }
 
 #endif

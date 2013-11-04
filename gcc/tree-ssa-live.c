@@ -27,14 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "sbitmap.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-dfa.h"
 #include "timevar.h"
 #include "dumpfile.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "flags.h"
-#include "gimple.h"
 
 #ifdef ENABLE_CHECKING
 static void  verify_live_on_entry (tree_live_info_p);

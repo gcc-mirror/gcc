@@ -7,6 +7,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "tree.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "gimple.h"

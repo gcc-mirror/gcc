@@ -1,5 +1,5 @@
 // PR c++/51507
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<typename ...>
 struct foo { typedef void type; };

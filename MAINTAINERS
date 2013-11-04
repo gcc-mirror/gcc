@@ -239,7 +239,6 @@ tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
 code sinking		Daniel Berlin		dberlin@dberlin.org
-mudflap			Frank Ch. Eigler	fche@redhat.com
 tree browser/unparser	Sebastian Pop		sebastian.pop@amd.com
 scev, data dependence	Daniel Berlin		dberlin@dberlin.org
 scev, data dependence	Sebastian Pop		sebastian.pop@amd.com
@@ -406,6 +405,7 @@ Fergus Henderson				fjh@cs.mu.oz.au
 Stuart Henderson				shenders@gcc.gnu.org
 Matthew Hiller					hiller@redhat.com
 Manfred Hollstein				mh@suse.com
+Cong Hou					congh@google.com
 Falk Hueffner					falk@debian.org
 Andrew John Hughes				gnu_andrew@member.fsf.org
 Andy Hutchinson					hutchinsonandy@aim.com
@@ -514,6 +514,7 @@ Matthew Sachs					msachs@apple.com
 Hariharan Sandanagobalane			hariharan.gcc@gmail.com
 Iain Sandoe					iain@codesourcery.com
 Duncan Sands					baldrick@gcc.gnu.org
+Trevor Saunders				tsaunders@mozilla.com
 William Schmidt 				wschmidt@linux.vnet.ibm.com
 Tilo Schwarz					tilo@tilo-schwarz.de
 Dodji Seketeli					dodji@gcc.gnu.org

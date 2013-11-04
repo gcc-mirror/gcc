@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-iterator.h"
 #include "hashtab.h"
-#include "tree-mudflap.h"
 #include "opts.h"
 #include "cgraph.h"
 #include "target-def.h"
@@ -377,6 +376,8 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -411,6 +412,8 @@ const struct c_common_resword c_common_reswords[] =
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
+  { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
+  { "_Cilk_sync",       RID_CILK_SYNC,  0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY | D_EXT },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY | D_EXT },
@@ -759,6 +762,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
+  { "bnd_variable_size",      0, 0, true,  false, false,
+			      handle_bnd_variable_size_attribute, false },
+  { "bnd_legacy",             0, 0, true, false, false,
+			      handle_bnd_legacy, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -5214,8 +5221,8 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 
   build_common_builtin_nodes ();
 
-  if (flag_mudflap)
-    mudflap_init ();
+  if (flag_enable_cilkplus)
+    cilk_init_builtins ();
 }
 
 /* Like get_identifier, but avoid warnings about null arguments when
@@ -8000,6 +8007,38 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
+/* Handle a "bnd_variable_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_variable_size_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "bnd_legacy" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_bnd_legacy (tree *node, tree name, tree ARG_UNUSED (args),
+		   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "warn_unused" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -9875,6 +9914,11 @@ invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
     case RO_ARROW:
       error_at (loc,
 		"invalid type argument of %<->%> (have %qT)",
+		type);
+      break;
+    case RO_ARROW_STAR:
+      error_at (loc,
+		"invalid type argument of %<->*%> (have %qT)",
 		type);
       break;
     case RO_IMPLICIT_CONVERSION:

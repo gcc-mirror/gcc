@@ -88,6 +88,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
@@ -1158,7 +1165,6 @@ if_convertible_loop_p (struct loop *loop)
   bool res = false;
   vec<data_reference_p> refs;
   vec<ddr_p> ddrs;
-  vec<loop_p> loop_nest;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -1192,7 +1198,7 @@ if_convertible_loop_p (struct loop *loop)
 
   refs.create (5);
   ddrs.create (25);
-  loop_nest.create (3);
+  stack_vec<loop_p, 3> loop_nest;
   res = if_convertible_loop_p_1 (loop, &loop_nest, &refs, &ddrs);
 
   if (flag_tree_loop_if_convert_stores)

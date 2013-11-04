@@ -1,5 +1,5 @@
 // Test for explicit conversion ops in various conversion situations.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 typedef void (*pfn)();
 

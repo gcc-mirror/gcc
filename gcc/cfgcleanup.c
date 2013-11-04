@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "tree.h"
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "insn-config.h"

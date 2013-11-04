@@ -13,7 +13,7 @@
 	* inclhack.def (cdef_cplusplus): removed, per Bug 51776
 	* tests/base/sys/cdefs.h (CDEF_CPLUSPLUS_CHECK): obsolete
 
-2013-05-23  Alexander Ivchenko <alexander.ivchenko@intel.com>
+2013-05-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* inclhack.def (complier_h_tradcpp): New.
 	* fixincl.x: Rebuilt.

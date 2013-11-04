@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 template<typename... T> struct A
 {
   template<T> struct B {}; // { dg-error "not expanded|T" }

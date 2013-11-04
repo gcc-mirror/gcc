@@ -1,6 +1,6 @@
 // PR c++/48570
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 extern "C" void abort ();
 constexpr wchar_t foo (int i) { return L"0123"[i]; }

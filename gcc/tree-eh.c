@@ -27,13 +27,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "except.h"
 #include "pointer-set.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "gimple.h"
 #include "target.h"
 #include "cfgloop.h"
 #include "gimple-low.h"
@@ -2595,7 +2602,7 @@ tree_could_trap_p (tree expr)
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
 	  node = cgraph_function_node (cgraph_get_node (expr), NULL);
-	  if (node && node->symbol.in_other_partition)
+	  if (node && node->in_other_partition)
 	    return false;
 	  return true;
 	}
@@ -2611,7 +2618,7 @@ tree_could_trap_p (tree expr)
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
 	  node = varpool_variable_node (varpool_get_node (expr), NULL);
-	  if (node && node->symbol.in_other_partition)
+	  if (node && node->in_other_partition)
 	    return false;
 	  return true;
 	}

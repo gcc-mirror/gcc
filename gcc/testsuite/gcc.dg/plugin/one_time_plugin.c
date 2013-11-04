@@ -3,6 +3,7 @@
 #include "gcc-plugin.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "tm.h"
 #include "toplev.h"
 #include "gimple.h"

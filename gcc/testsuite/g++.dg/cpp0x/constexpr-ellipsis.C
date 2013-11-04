@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 constexpr int ellipsis(...) { return 1; }
 
 constexpr int ellipsis_c = ellipsis(); // OK

@@ -1,5 +1,5 @@
 // PR c++/50870
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 struct impl
 {

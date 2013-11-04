@@ -91,25 +91,25 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
-/* Nonzero if CODE represents an exceptional code.  */
+/* Nonzero if NODE represents an exceptional code.  */
 
-#define EXCEPTIONAL_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_exceptional)
+#define EXCEPTIONAL_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_exceptional)
 
-/* Nonzero if CODE represents a constant.  */
+/* Nonzero if NODE represents a constant.  */
 
-#define CONSTANT_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_constant)
+#define CONSTANT_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_constant)
 
-/* Nonzero if CODE represents a type.  */
+/* Nonzero if NODE represents a type.  */
 
-#define TYPE_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_type)
+#define TYPE_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_type)
 
-/* Nonzero if CODE represents a declaration.  */
+/* Nonzero if NODE represents a declaration.  */
 
-#define DECL_P(CODE)\
-        (TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_declaration)
+#define DECL_P(NODE)\
+        (TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_declaration)
 
 /* True if NODE designates a variable declaration.  */
 #define VAR_P(NODE) \
@@ -120,52 +120,52 @@ along with GCC; see the file COPYING3.  If not see
 #define VAR_OR_FUNCTION_DECL_P(DECL)\
   (TREE_CODE (DECL) == VAR_DECL || TREE_CODE (DECL) == FUNCTION_DECL)
 
-/* Nonzero if CODE represents a INDIRECT_REF.  Keep these checks in
+/* Nonzero if NODE represents a INDIRECT_REF.  Keep these checks in
    ascending code order.  */
 
-#define INDIRECT_REF_P(CODE)\
-  (TREE_CODE (CODE) == INDIRECT_REF)
+#define INDIRECT_REF_P(NODE)\
+  (TREE_CODE (NODE) == INDIRECT_REF)
 
-/* Nonzero if CODE represents a reference.  */
+/* Nonzero if NODE represents a reference.  */
 
-#define REFERENCE_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_reference)
+#define REFERENCE_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_reference)
 
-/* Nonzero if CODE represents a comparison.  */
+/* Nonzero if NODE represents a comparison.  */
 
-#define COMPARISON_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_comparison)
+#define COMPARISON_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_comparison)
 
-/* Nonzero if CODE represents a unary arithmetic expression.  */
+/* Nonzero if NODE represents a unary arithmetic expression.  */
 
-#define UNARY_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_unary)
+#define UNARY_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_unary)
 
-/* Nonzero if CODE represents a binary arithmetic expression.  */
+/* Nonzero if NODE represents a binary arithmetic expression.  */
 
-#define BINARY_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_binary)
+#define BINARY_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_binary)
 
-/* Nonzero if CODE represents a statement expression.  */
+/* Nonzero if NODE represents a statement expression.  */
 
-#define STATEMENT_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_statement)
+#define STATEMENT_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_statement)
 
-/* Nonzero if CODE represents a function call-like expression with a
+/* Nonzero if NODE represents a function call-like expression with a
    variable-length operand vector.  */
 
-#define VL_EXP_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_vl_exp)
+#define VL_EXP_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_vl_exp)
 
-/* Nonzero if CODE represents any other expression.  */
+/* Nonzero if NODE represents any other expression.  */
 
-#define EXPRESSION_CLASS_P(CODE)\
-	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_expression)
+#define EXPRESSION_CLASS_P(NODE)\
+	(TREE_CODE_CLASS (TREE_CODE (NODE)) == tcc_expression)
 
-/* Returns nonzero iff CODE represents a type or declaration.  */
+/* Returns nonzero iff NODE represents a type or declaration.  */
 
-#define IS_TYPE_OR_DECL_P(CODE)\
-	(TYPE_P (CODE) || DECL_P (CODE))
+#define IS_TYPE_OR_DECL_P(NODE)\
+	(TYPE_P (NODE) || DECL_P (NODE))
 
 /* Returns nonzero iff CLASS is the tree-code class of an
    expression.  */
@@ -552,6 +552,21 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Nonzero if this type is a complete type.  */
 #define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
 
+/* Nonzero if this type is a pointer bounds type.  */
+#define POINTER_BOUNDS_TYPE_P(NODE) \
+  (TREE_CODE (NODE) == POINTER_BOUNDS_TYPE)
+
+/* Nonzero if this node has a pointer bounds type.  */
+#define POINTER_BOUNDS_P(NODE) \
+  (POINTER_BOUNDS_TYPE_P (TREE_TYPE (NODE)))
+
+/* Nonzero if this type supposes bounds existence.  */
+#define BOUNDED_TYPE_P(type) (POINTER_TYPE_P (type))
+
+/* Nonzero for objects with bounded type.  */
+#define BOUNDED_P(node) \
+  BOUNDED_TYPE_P (TREE_TYPE (node))
+
 /* Nonzero if this type is the (possibly qualified) void type.  */
 #define VOID_TYPE_P(NODE) (TREE_CODE (NODE) == VOID_TYPE)
 
@@ -798,6 +813,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    expansion as the return slot for a call that returns in memory.  */
 #define CALL_EXPR_RETURN_SLOT_OPT(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.private_flag)
+
+/* Cilk keywords accessors.  */
+#define CILK_SPAWN_FN(NODE) TREE_OPERAND (CILK_SPAWN_STMT_CHECK (NODE), 0)
 
 /* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true
@@ -3387,6 +3405,8 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define complex_double_type_node	global_trees[TI_COMPLEX_DOUBLE_TYPE]
 #define complex_long_double_type_node	global_trees[TI_COMPLEX_LONG_DOUBLE_TYPE]
 
+#define pointer_bounds_type_node        global_trees[TI_POINTER_BOUNDS_TYPE]
+
 #define void_type_node			global_trees[TI_VOID_TYPE]
 /* The C type `void *'.  */
 #define ptr_type_node			global_trees[TI_PTR_TYPE]
@@ -4681,8 +4701,6 @@ extern tree build_call_expr_loc (location_t, tree, int, ...);
 extern tree build_call_expr (tree, int, ...);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree c_strlen (tree, int);
-extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
-extern tree build_va_arg_indirect_ref (tree);
 extern tree build_string_literal (int, const char *);
 extern bool validate_arglist (const_tree, ...);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
@@ -4719,6 +4737,7 @@ extern void get_type_static_bounds (const_tree, mpz_t, mpz_t);
 extern bool variably_modified_type_p (tree, tree);
 extern int tree_log2 (const_tree);
 extern int tree_floor_log2 (const_tree);
+extern unsigned int tree_ctz (const_tree);
 extern int simple_cst_equal (const_tree, const_tree);
 extern hashval_t iterative_hash_expr (const_tree, hashval_t);
 extern hashval_t iterative_hash_exprs_commutative (const_tree,

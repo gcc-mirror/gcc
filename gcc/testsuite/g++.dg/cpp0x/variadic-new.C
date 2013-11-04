@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // Contributed by Peter Dimov
 // PR c++/32597
 #include <assert.h>

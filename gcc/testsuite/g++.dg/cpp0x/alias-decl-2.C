@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template<class T> struct S0 {};
 template<class T> using AS0 = S0<T>;

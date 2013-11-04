@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "gfortran.h"
 #include "constructor.h"
+#include "target-memory.h"
 
 /* Inserts a derived type component reference in a data reference chain.
     TS: base type of the ref chain so far, in which we will pick the component
@@ -618,7 +619,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       if (!ts->u.derived->attr.unlimited_polymorphic)
 	fclass->attr.abstract = ts->u.derived->attr.abstract;
       fclass->f2k_derived = gfc_get_namespace (NULL, 0);
-      if (!gfc_add_flavor (&fclass->attr, FL_DERIVED, NULL, 
+      if (!gfc_add_flavor (&fclass->attr, FL_DERIVED, NULL,
 			   &gfc_current_locus))
 	return false;
 
@@ -2135,7 +2136,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL, 
+	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
 			       &gfc_current_locus))
 	    goto cleanup;
 	  vtab->attr.target = 1;
@@ -2152,7 +2153,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
 
 	      gfc_get_symbol (name, ns, &vtype);
-	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL, 
+	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL,
 				   &gfc_current_locus))
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
@@ -2456,7 +2457,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL, 
+	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
 			       &gfc_current_locus))
 	    goto cleanup;
 	  vtab->attr.target = 1;
@@ -2473,9 +2474,10 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      int hash;
 	      gfc_namespace *sub_ns;
 	      gfc_namespace *contained;
+	      gfc_expr *e;
 
 	      gfc_get_symbol (name, ns, &vtype);
-	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL, 
+	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL,
 				   &gfc_current_locus))
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
@@ -2498,12 +2500,16 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
 	      c->attr.access = ACCESS_PRIVATE;
-	      if (ts->type == BT_CHARACTER)
-		c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
-						   NULL, charlen*ts->kind);
-	      else
-		c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
-						   NULL, ts->kind);
+
+	      /* Build a minimal expression to make use of
+		 target-memory.c/gfc_element_size for 'size'. */
+	      e = gfc_get_expr ();
+	      e->ts = *ts;
+	      e->expr_type = EXPR_VARIABLE;
+	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
+						 NULL,
+						 (int)gfc_element_size (e));
+	      gfc_free_expr (e);
 
 	      /* Add component _extends.  */
 	      if (!gfc_add_component (vtype, "_extends", &c))

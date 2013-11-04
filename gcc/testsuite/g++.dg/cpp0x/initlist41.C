@@ -1,5 +1,5 @@
 // PR c++/44703
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 #include <initializer_list>
 

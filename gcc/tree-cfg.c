@@ -30,6 +30,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ggc.h"
 #include "gimple-pretty-print.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "cgraph.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
+#include "tree-into-ssa.h"
+#include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
@@ -241,6 +252,72 @@ build_gimple_cfg (gimple_seq seq)
   discriminator_per_locus.dispose ();
 }
 
+
+/* Search for ANNOTATE call with annot_expr_ivdep_kind; if found, remove
+   it and set loop->safelen to INT_MAX.  We assume that the annotation
+   comes immediately before the condition.  */
+
+static void
+replace_loop_annotate ()
+{
+  struct loop *loop;
+  loop_iterator li;
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      gsi = gsi_last_bb (loop->header);
+      stmt = gsi_stmt (gsi);
+      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+	{
+	  gsi_prev_nondebug (&gsi);
+	  if (gsi_end_p (gsi))
+	    continue;
+	  stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+		continue;
+	  if (!gimple_call_internal_p (stmt)
+		  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    continue;
+	  if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
+	      != annot_expr_ivdep_kind)
+	    continue;
+	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      gimple_call_arg (stmt, 0));
+	  gsi_replace (&gsi, stmt, true);
+	  loop->safelen = INT_MAX;
+	}
+    }
+
+  /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
+  FOR_EACH_BB (bb)
+    {
+      gsi = gsi_last_bb (bb);
+      stmt = gsi_stmt (gsi);
+      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+	gsi_prev_nondebug (&gsi);
+      if (gsi_end_p (gsi))
+	continue;
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) != GIMPLE_CALL)
+	continue;
+      if (!gimple_call_internal_p (stmt)
+	  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	continue;
+      if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
+	  != annot_expr_ivdep_kind)
+	continue;
+      warning_at (gimple_location (stmt), 0, "ignoring %<GCC ivdep%> "
+		  "annotation");
+      stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				  gimple_call_arg (stmt, 0));
+      gsi_replace (&gsi, stmt, true);
+    }
+}
+
+
 static unsigned int
 execute_build_cfg (void)
 {
@@ -255,6 +332,7 @@ execute_build_cfg (void)
     }
   cleanup_tree_cfg ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  replace_loop_annotate ();
   return 0;
 }
 
@@ -303,6 +381,50 @@ computed_goto_p (gimple t)
 {
   return (gimple_code (t) == GIMPLE_GOTO
 	  && TREE_CODE (gimple_goto_dest (t)) != LABEL_DECL);
+}
+
+/* Returns true for edge E where e->src ends with a GIMPLE_COND and
+   the other edge points to a bb with just __builtin_unreachable ().
+   I.e. return true for C->M edge in:
+   <bb C>:
+   ...
+   if (something)
+     goto <bb N>;
+   else
+     goto <bb M>;
+   <bb N>:
+   __builtin_unreachable ();
+   <bb M>:  */
+
+bool
+assert_unreachable_fallthru_edge_p (edge e)
+{
+  basic_block pred_bb = e->src;
+  gimple last = last_stmt (pred_bb);
+  if (last && gimple_code (last) == GIMPLE_COND)
+    {
+      basic_block other_bb = EDGE_SUCC (pred_bb, 0)->dest;
+      if (other_bb == e->dest)
+	other_bb = EDGE_SUCC (pred_bb, 1)->dest;
+      if (EDGE_COUNT (other_bb->succs) == 0)
+	{
+	  gimple_stmt_iterator gsi = gsi_after_labels (other_bb);
+	  gimple stmt;
+
+	  if (gsi_end_p (gsi))
+	    return false;
+	  stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    {
+	      gsi_next_nondebug (&gsi);
+	      if (gsi_end_p (gsi))
+		return false;
+	      stmt = gsi_stmt (gsi);
+	    }
+	  return gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE);
+	}
+    }
+  return false;
 }
 
 

@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/39637
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<class... Types>
 void

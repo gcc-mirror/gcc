@@ -1,5 +1,5 @@
 /* { dg-do run} */
-/* { dg-options "-O2 -fdump-tree-reassoc1-details" } */
+/* { dg-options "-O2" } */
 
 #define LENGTH 4
 void abort (void);
@@ -30,8 +30,3 @@ int main() {
     abort ();
   return 0;
 }
-
-/* Verify one stmt has been moved to another BB to ensure correct dependences.  */
-/* { dg-final { scan-tree-dump-times "to a different BB" 1 "reassoc1"} }*/
-/* { dg-final { scan-tree-dump-times "within same BB" 2 "reassoc1"} }*/
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

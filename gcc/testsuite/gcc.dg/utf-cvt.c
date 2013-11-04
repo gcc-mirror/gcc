@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the char16_t and char32_t promotion rules. */
 /* { dg-do compile } */
-/* { dg-excess-errors "short and int are 16bit" { target { "avr-*-*" } } } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-std=gnu99 -Wall -Wconversion -Wsign-conversion" } */
 
 typedef __CHAR16_TYPE__ char16_t;

@@ -1,0 +1,369 @@
+/*
+ *************************************************************************
+ *
+ *  @copyright
+ *  Copyright (C) 2009-2013, Intel Corporation
+ *  All rights reserved.
+ *  
+ *  @copyright
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *  
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution.
+ *    * Neither the name of Intel Corporation nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
+ *  
+ *  @copyright
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *  HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ *  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ *  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ **************************************************************************/
+
+CILKABI0
+{
+  global:
+    __cilkrts_bind_thread;
+    __cilkrts_cilk_for_32;
+    __cilkrts_cilk_for_64;
+    __cilkrts_debugger_notification;
+    __cilkrts_dump_stats;
+    __cilkrts_end_cilk;
+    __cilkrts_enter_frame;
+    __cilkrts_enter_frame_fast;
+    __cilkrts_get_force_reduce;
+    __cilkrts_get_nworkers;
+    __cilkrts_get_tls_worker;
+    __cilkrts_get_tls_worker_fast;
+    __cilkrts_get_total_workers;
+    __cilkrts_get_worker_number;
+    __cilkrts_global_state;
+    __cilkrts_hyper_create;
+    __cilkrts_hyper_destroy;
+    __cilkrts_hyper_lookup;
+    __cilkrts_hyperobject_alloc;
+    __cilkrts_hyperobject_dealloc;
+    __cilkrts_hyperobject_noop_destroy;
+    __cilkrts_init;
+    __cilkrts_irml_version;
+    __cilkrts_leave_frame;
+    __cilkrts_metacall;
+    __cilkrts_rethrow;
+    __cilkrts_return_exception;
+    __cilkrts_set_param;
+    __cilkrts_sync;
+    __cilkrts_synched;
+    __cilkrts_worker_stub;
+  local: *;
+};
+
+CILKABI1
+{
+  global:
+    __cilkrts_bind_thread_1;
+    __cilkrts_bump_loop_rank;
+    __cilkrts_bump_loop_rank_internal;
+    __cilkrts_bump_worker_rank;
+    __cilkrts_bump_worker_rank_internal;
+    __cilkrts_enter_frame_1;
+    __cilkrts_enter_frame_fast_1;
+    __cilkrts_get_pedigree_info;
+    __cilkrts_get_pedigree_internal;
+    __cilkrts_get_sf;
+    __cilkrts_get_stack_size;
+    __cilkrts_get_worker_rank;
+    __cilkrts_save_fp_ctrl_state;
+    __cilkrts_stack_alloc;
+    __cilkrts_stack_free;
+    __cilkrts_watch_stack;
+} CILKABI0;
+
+CILKLIB1.02
+{
+  global:
+    cilk_c_reducer_max_identity_char;
+    cilk_c_reducer_max_identity_double;
+    cilk_c_reducer_max_identity_float;
+    cilk_c_reducer_max_identity_int;
+    cilk_c_reducer_max_identity_long;
+    cilk_c_reducer_max_identity_longdouble;
+    cilk_c_reducer_max_identity_longlong;
+    cilk_c_reducer_max_identity_schar;
+    cilk_c_reducer_max_identity_short;
+    cilk_c_reducer_max_identity_uchar;
+    cilk_c_reducer_max_identity_uint;
+    cilk_c_reducer_max_identity_ulong;
+    cilk_c_reducer_max_identity_ulonglong;
+    cilk_c_reducer_max_identity_unsigned;
+    cilk_c_reducer_max_identity_ushort;
+    cilk_c_reducer_max_identity_wchar_t;
+    cilk_c_reducer_max_index_identity_char;
+    cilk_c_reducer_max_index_identity_double;
+    cilk_c_reducer_max_index_identity_float;
+    cilk_c_reducer_max_index_identity_int;
+    cilk_c_reducer_max_index_identity_long;
+    cilk_c_reducer_max_index_identity_longdouble;
+    cilk_c_reducer_max_index_identity_longlong;
+    cilk_c_reducer_max_index_identity_schar;
+    cilk_c_reducer_max_index_identity_short;
+    cilk_c_reducer_max_index_identity_uchar;
+    cilk_c_reducer_max_index_identity_uint;
+    cilk_c_reducer_max_index_identity_ulong;
+    cilk_c_reducer_max_index_identity_ulonglong;
+    cilk_c_reducer_max_index_identity_unsigned;
+    cilk_c_reducer_max_index_identity_ushort;
+    cilk_c_reducer_max_index_identity_wchar_t;
+    cilk_c_reducer_max_index_reduce_char;
+    cilk_c_reducer_max_index_reduce_double;
+    cilk_c_reducer_max_index_reduce_float;
+    cilk_c_reducer_max_index_reduce_int;
+    cilk_c_reducer_max_index_reduce_long;
+    cilk_c_reducer_max_index_reduce_longdouble;
+    cilk_c_reducer_max_index_reduce_longlong;
+    cilk_c_reducer_max_index_reduce_schar;
+    cilk_c_reducer_max_index_reduce_short;
+    cilk_c_reducer_max_index_reduce_uchar;
+    cilk_c_reducer_max_index_reduce_uint;
+    cilk_c_reducer_max_index_reduce_ulong;
+    cilk_c_reducer_max_index_reduce_ulonglong;
+    cilk_c_reducer_max_index_reduce_unsigned;
+    cilk_c_reducer_max_index_reduce_ushort;
+    cilk_c_reducer_max_index_reduce_wchar_t;
+    cilk_c_reducer_max_reduce_char;
+    cilk_c_reducer_max_reduce_double;
+    cilk_c_reducer_max_reduce_float;
+    cilk_c_reducer_max_reduce_int;
+    cilk_c_reducer_max_reduce_long;
+    cilk_c_reducer_max_reduce_longdouble;
+    cilk_c_reducer_max_reduce_longlong;
+    cilk_c_reducer_max_reduce_schar;
+    cilk_c_reducer_max_reduce_short;
+    cilk_c_reducer_max_reduce_uchar;
+    cilk_c_reducer_max_reduce_uint;
+    cilk_c_reducer_max_reduce_ulong;
+    cilk_c_reducer_max_reduce_ulonglong;
+    cilk_c_reducer_max_reduce_unsigned;
+    cilk_c_reducer_max_reduce_ushort;
+    cilk_c_reducer_max_reduce_wchar_t;
+    cilk_c_reducer_min_identity_char;
+    cilk_c_reducer_min_identity_double;
+    cilk_c_reducer_min_identity_float;
+    cilk_c_reducer_min_identity_int;
+    cilk_c_reducer_min_identity_long;
+    cilk_c_reducer_min_identity_longdouble;
+    cilk_c_reducer_min_identity_longlong;
+    cilk_c_reducer_min_identity_schar;
+    cilk_c_reducer_min_identity_short;
+    cilk_c_reducer_min_identity_uchar;
+    cilk_c_reducer_min_identity_uint;
+    cilk_c_reducer_min_identity_ulong;
+    cilk_c_reducer_min_identity_ulonglong;
+    cilk_c_reducer_min_identity_unsigned;
+    cilk_c_reducer_min_identity_ushort;
+    cilk_c_reducer_min_identity_wchar_t;
+    cilk_c_reducer_min_index_identity_char;
+    cilk_c_reducer_min_index_identity_double;
+    cilk_c_reducer_min_index_identity_float;
+    cilk_c_reducer_min_index_identity_int;
+    cilk_c_reducer_min_index_identity_long;
+    cilk_c_reducer_min_index_identity_longdouble;
+    cilk_c_reducer_min_index_identity_longlong;
+    cilk_c_reducer_min_index_identity_schar;
+    cilk_c_reducer_min_index_identity_short;
+    cilk_c_reducer_min_index_identity_uchar;
+    cilk_c_reducer_min_index_identity_uint;
+    cilk_c_reducer_min_index_identity_ulong;
+    cilk_c_reducer_min_index_identity_ulonglong;
+    cilk_c_reducer_min_index_identity_unsigned;
+    cilk_c_reducer_min_index_identity_ushort;
+    cilk_c_reducer_min_index_identity_wchar_t;
+    cilk_c_reducer_min_index_reduce_char;
+    cilk_c_reducer_min_index_reduce_double;
+    cilk_c_reducer_min_index_reduce_float;
+    cilk_c_reducer_min_index_reduce_int;
+    cilk_c_reducer_min_index_reduce_long;
+    cilk_c_reducer_min_index_reduce_longdouble;
+    cilk_c_reducer_min_index_reduce_longlong;
+    cilk_c_reducer_min_index_reduce_schar;
+    cilk_c_reducer_min_index_reduce_short;
+    cilk_c_reducer_min_index_reduce_uchar;
+    cilk_c_reducer_min_index_reduce_uint;
+    cilk_c_reducer_min_index_reduce_ulong;
+    cilk_c_reducer_min_index_reduce_ulonglong;
+    cilk_c_reducer_min_index_reduce_unsigned;
+    cilk_c_reducer_min_index_reduce_ushort;
+    cilk_c_reducer_min_index_reduce_wchar_t;
+    cilk_c_reducer_min_reduce_char;
+    cilk_c_reducer_min_reduce_double;
+    cilk_c_reducer_min_reduce_float;
+    cilk_c_reducer_min_reduce_int;
+    cilk_c_reducer_min_reduce_long;
+    cilk_c_reducer_min_reduce_longdouble;
+    cilk_c_reducer_min_reduce_longlong;
+    cilk_c_reducer_min_reduce_schar;
+    cilk_c_reducer_min_reduce_short;
+    cilk_c_reducer_min_reduce_uchar;
+    cilk_c_reducer_min_reduce_uint;
+    cilk_c_reducer_min_reduce_ulong;
+    cilk_c_reducer_min_reduce_ulonglong;
+    cilk_c_reducer_min_reduce_unsigned;
+    cilk_c_reducer_min_reduce_ushort;
+    cilk_c_reducer_min_reduce_wchar_t;
+    cilk_c_reducer_opadd_identity_char;
+    cilk_c_reducer_opadd_identity_double;
+    cilk_c_reducer_opadd_identity_float;
+    cilk_c_reducer_opadd_identity_int;
+    cilk_c_reducer_opadd_identity_long;
+    cilk_c_reducer_opadd_identity_longdouble;
+    cilk_c_reducer_opadd_identity_longlong;
+    cilk_c_reducer_opadd_identity_schar;
+    cilk_c_reducer_opadd_identity_short;
+    cilk_c_reducer_opadd_identity_uchar;
+    cilk_c_reducer_opadd_identity_uint;
+    cilk_c_reducer_opadd_identity_ulong;
+    cilk_c_reducer_opadd_identity_ulonglong;
+    cilk_c_reducer_opadd_identity_unsigned;
+    cilk_c_reducer_opadd_identity_ushort;
+    cilk_c_reducer_opadd_identity_wchar_t;
+    cilk_c_reducer_opadd_reduce_char;
+    cilk_c_reducer_opadd_reduce_double;
+    cilk_c_reducer_opadd_reduce_float;
+    cilk_c_reducer_opadd_reduce_int;
+    cilk_c_reducer_opadd_reduce_long;
+    cilk_c_reducer_opadd_reduce_longdouble;
+    cilk_c_reducer_opadd_reduce_longlong;
+    cilk_c_reducer_opadd_reduce_schar;
+    cilk_c_reducer_opadd_reduce_short;
+    cilk_c_reducer_opadd_reduce_uchar;
+    cilk_c_reducer_opadd_reduce_uint;
+    cilk_c_reducer_opadd_reduce_ulong;
+    cilk_c_reducer_opadd_reduce_ulonglong;
+    cilk_c_reducer_opadd_reduce_unsigned;
+    cilk_c_reducer_opadd_reduce_ushort;
+    cilk_c_reducer_opadd_reduce_wchar_t;
+    cilk_c_reducer_opand_identity_char;
+    cilk_c_reducer_opand_identity_int;
+    cilk_c_reducer_opand_identity_long;
+    cilk_c_reducer_opand_identity_longlong;
+    cilk_c_reducer_opand_identity_schar;
+    cilk_c_reducer_opand_identity_short;
+    cilk_c_reducer_opand_identity_uchar;
+    cilk_c_reducer_opand_identity_uint;
+    cilk_c_reducer_opand_identity_ulong;
+    cilk_c_reducer_opand_identity_ulonglong;
+    cilk_c_reducer_opand_identity_unsigned;
+    cilk_c_reducer_opand_identity_ushort;
+    cilk_c_reducer_opand_identity_wchar_t;
+    cilk_c_reducer_opand_reduce_char;
+    cilk_c_reducer_opand_reduce_int;
+    cilk_c_reducer_opand_reduce_long;
+    cilk_c_reducer_opand_reduce_longlong;
+    cilk_c_reducer_opand_reduce_schar;
+    cilk_c_reducer_opand_reduce_short;
+    cilk_c_reducer_opand_reduce_uchar;
+    cilk_c_reducer_opand_reduce_uint;
+    cilk_c_reducer_opand_reduce_ulong;
+    cilk_c_reducer_opand_reduce_ulonglong;
+    cilk_c_reducer_opand_reduce_unsigned;
+    cilk_c_reducer_opand_reduce_ushort;
+    cilk_c_reducer_opand_reduce_wchar_t;
+    cilk_c_reducer_opmul_identity_char;
+    cilk_c_reducer_opmul_identity_double;
+    cilk_c_reducer_opmul_identity_float;
+    cilk_c_reducer_opmul_identity_int;
+    cilk_c_reducer_opmul_identity_long;
+    cilk_c_reducer_opmul_identity_longdouble;
+    cilk_c_reducer_opmul_identity_longlong;
+    cilk_c_reducer_opmul_identity_schar;
+    cilk_c_reducer_opmul_identity_short;
+    cilk_c_reducer_opmul_identity_uchar;
+    cilk_c_reducer_opmul_identity_uint;
+    cilk_c_reducer_opmul_identity_ulong;
+    cilk_c_reducer_opmul_identity_ulonglong;
+    cilk_c_reducer_opmul_identity_unsigned;
+    cilk_c_reducer_opmul_identity_ushort;
+    cilk_c_reducer_opmul_identity_wchar_t;
+    cilk_c_reducer_opmul_reduce_char;
+    cilk_c_reducer_opmul_reduce_double;
+    cilk_c_reducer_opmul_reduce_float;
+    cilk_c_reducer_opmul_reduce_int;
+    cilk_c_reducer_opmul_reduce_long;
+    cilk_c_reducer_opmul_reduce_longdouble;
+    cilk_c_reducer_opmul_reduce_longlong;
+    cilk_c_reducer_opmul_reduce_schar;
+    cilk_c_reducer_opmul_reduce_short;
+    cilk_c_reducer_opmul_reduce_uchar;
+    cilk_c_reducer_opmul_reduce_uint;
+    cilk_c_reducer_opmul_reduce_ulong;
+    cilk_c_reducer_opmul_reduce_ulonglong;
+    cilk_c_reducer_opmul_reduce_unsigned;
+    cilk_c_reducer_opmul_reduce_ushort;
+    cilk_c_reducer_opmul_reduce_wchar_t;
+    cilk_c_reducer_opor_identity_char;
+    cilk_c_reducer_opor_identity_int;
+    cilk_c_reducer_opor_identity_long;
+    cilk_c_reducer_opor_identity_longlong;
+    cilk_c_reducer_opor_identity_schar;
+    cilk_c_reducer_opor_identity_short;
+    cilk_c_reducer_opor_identity_uchar;
+    cilk_c_reducer_opor_identity_uint;
+    cilk_c_reducer_opor_identity_ulong;
+    cilk_c_reducer_opor_identity_ulonglong;
+    cilk_c_reducer_opor_identity_unsigned;
+    cilk_c_reducer_opor_identity_ushort;
+    cilk_c_reducer_opor_identity_wchar_t;
+    cilk_c_reducer_opor_reduce_char;
+    cilk_c_reducer_opor_reduce_int;
+    cilk_c_reducer_opor_reduce_long;
+    cilk_c_reducer_opor_reduce_longlong;
+    cilk_c_reducer_opor_reduce_schar;
+    cilk_c_reducer_opor_reduce_short;
+    cilk_c_reducer_opor_reduce_uchar;
+    cilk_c_reducer_opor_reduce_uint;
+    cilk_c_reducer_opor_reduce_ulong;
+    cilk_c_reducer_opor_reduce_ulonglong;
+    cilk_c_reducer_opor_reduce_unsigned;
+    cilk_c_reducer_opor_reduce_ushort;
+    cilk_c_reducer_opor_reduce_wchar_t;
+    cilk_c_reducer_opxor_identity_char;
+    cilk_c_reducer_opxor_identity_int;
+    cilk_c_reducer_opxor_identity_long;
+    cilk_c_reducer_opxor_identity_longlong;
+    cilk_c_reducer_opxor_identity_schar;
+    cilk_c_reducer_opxor_identity_short;
+    cilk_c_reducer_opxor_identity_uchar;
+    cilk_c_reducer_opxor_identity_uint;
+    cilk_c_reducer_opxor_identity_ulong;
+    cilk_c_reducer_opxor_identity_ulonglong;
+    cilk_c_reducer_opxor_identity_unsigned;
+    cilk_c_reducer_opxor_identity_ushort;
+    cilk_c_reducer_opxor_identity_wchar_t;
+    cilk_c_reducer_opxor_reduce_char;
+    cilk_c_reducer_opxor_reduce_int;
+    cilk_c_reducer_opxor_reduce_long;
+    cilk_c_reducer_opxor_reduce_longlong;
+    cilk_c_reducer_opxor_reduce_schar;
+    cilk_c_reducer_opxor_reduce_short;
+    cilk_c_reducer_opxor_reduce_uchar;
+    cilk_c_reducer_opxor_reduce_uint;
+    cilk_c_reducer_opxor_reduce_ulong;
+    cilk_c_reducer_opxor_reduce_ulonglong;
+    cilk_c_reducer_opxor_reduce_unsigned;
+    cilk_c_reducer_opxor_reduce_ushort;
+    cilk_c_reducer_opxor_reduce_wchar_t;
+};

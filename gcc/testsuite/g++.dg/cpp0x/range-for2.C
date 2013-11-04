@@ -3,7 +3,7 @@
 // with begin/end in an associated namespace
 
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct iterator
 {

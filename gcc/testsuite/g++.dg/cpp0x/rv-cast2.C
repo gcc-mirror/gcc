@@ -1,5 +1,5 @@
 // Test for const_cast to reference (5.2.11/4).
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <class T> T&& xval();
 template <class T> T& lval();

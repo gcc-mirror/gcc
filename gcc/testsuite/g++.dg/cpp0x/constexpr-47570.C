@@ -1,5 +1,5 @@
 // PR c++/47570
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 unsigned int constexpr one()
 { return 1; }

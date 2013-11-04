@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<class X, class Y, class... Z> X f(Y); // { dg-message "note" }
 void g() 
 { 

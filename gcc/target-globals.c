@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "insn-config.h"
 #include "machmode.h"
+#include "tree.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "target-globals.h"

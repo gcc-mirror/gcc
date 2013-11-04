@@ -1,5 +1,5 @@
 // Circular implicit declarations were causing errors
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct Ray;
 

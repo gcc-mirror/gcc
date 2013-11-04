@@ -1,3 +1,14 @@
+2013-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtfastmath.c: Compile only for !_SOFT_FLOAT.
+	* config/i386/crtprec.c: Ditto.
+
+2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config.host (nds32*-elf*): Add nds32 target.
+	* config/nds32 : New directory and files.
+
 2013-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	For CRIS ports, switch to soft-fp.  Improve arit.c and longlong.h.
@@ -148,8 +159,8 @@
 	(__gcov_indirect_call_counters): Likewise.
 
 2013-08-16  Maciej W. Rozycki  <macro@codesourcery.com>
-            Catherine Moore  <clm@codesourcery.com>
-            Richard Sandiford <rdsandiford@googlemail.com>
+	    Catherine Moore  <clm@codesourcery.com>
+	    Richard Sandiford <rdsandiford@googlemail.com>
 
 	* config/mips/mips16.S (CE_STARTFN, CE_ENDFN): New macros.
 	(RET_FUNCTION): Use them in place of STARTFN and ENDFN.
@@ -479,7 +490,7 @@
 	* config/sh/lib1funcs.S (udivsi3_i4i, sdivsi3_i4i): Add __SH2A__ to
 	inclusion list.
 
-2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-03-04  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/crti.S: Setup stack protection at entry
 
@@ -590,7 +601,7 @@
 	_divQQ,  _divHQ,  _divHA,  _divSA,
 	_divUQQ, _divUHQ, _divUHA, _divUSA.
 
-2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
+2013-01-26  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config.host(microblaze*-linux*): tmake_file: Remove
 	t-slibgcc-nolc-override, add t-slibgcc-libgcc.
@@ -598,7 +609,7 @@
 	to exclude functions from being built with libgcc.c and use
 	the microblaze assembly.
 
-2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-01-26  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config.host (microblaze*-*-*): Rename microblaze*-*-elf, update
 	extra_parts.

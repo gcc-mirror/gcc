@@ -22,6 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
 
@@ -183,11 +189,29 @@ set_range_info (tree name, widest_int min, widest_int max)
     {
       ri = ggc_alloc_cleared_range_info_def ();
       SSA_NAME_RANGE_INFO (name) = ri;
+      ri->nonzero_bits = wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (name)),
+						false);
     }
 
   /* Set the values.  */
   ri->min = min;
   ri->max = max;
+
+  /* If it is a range, try to improve nonzero_bits from the min/max.  */
+  if (wi::cmp (min, max, TYPE_SIGN (TREE_TYPE (name))) != 1)
+    {
+      int prec = TYPE_PRECISION (TREE_TYPE (name));
+      widest_int xorv;
+
+      min = wi::zext (min, prec);
+      max = wi::zext (max, prec);
+      xorv = min ^ max;
+      if (xorv != 0)
+	xorv = wi::mask <widest_int> (MAX_BITSIZE_MODE_ANY_INT
+				      - wi::clz (xorv),
+				      false);
+      ri->nonzero_bits = ri->nonzero_bits & (min | xorv);
+    }
 }
 
 
@@ -196,7 +220,7 @@ set_range_info (tree name, widest_int min, widest_int max)
    is used to determine if MIN and MAX are valid values.  */
 
 enum value_range_type
-get_range_info (tree name, widest_int *min, widest_int *max)
+get_range_info (const_tree name, widest_int *min, widest_int *max)
 {
   enum value_range_type range_type;
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -225,6 +249,49 @@ get_range_info (tree name, widest_int *min, widest_int *max)
     *max = ri->max;
   }
   return range_type;
+}
+
+/* Change non-zero bits bitmask of NAME.  */
+
+void
+set_nonzero_bits (tree name, widest_int mask)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  if (SSA_NAME_RANGE_INFO (name) == NULL)
+    set_range_info (name,
+		    wi::to_widest (TYPE_MIN_VALUE (TREE_TYPE (name))),
+		    wi::to_widest (TYPE_MAX_VALUE (TREE_TYPE (name))));
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  ri->nonzero_bits
+    = mask & wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (name)),
+				    false);
+}
+
+/* Return a widest_int with potentially non-zero bits in SSA_NAME
+   NAME, or -1 if unknown.  */
+
+widest_int
+get_nonzero_bits (const_tree name)
+{
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+      if (pi && pi->align)
+	{
+	  widest_int al = pi->align - 1;
+	  return ((wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (name)),
+					  false) & ~al)
+		  | pi->misalign);
+	}
+      return -1;
+    }
+
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+	      > 2 * HOST_BITS_PER_WIDE_INT))
+    return -1;
+
+  return ri->nonzero_bits;
 }
 
 /* We no longer need the SSA_NAME expression VAR, release it so that

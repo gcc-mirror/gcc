@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template<typename Fun, typename... Args> // { dg-error "template parameter" }
 struct call;

@@ -1,0 +1,212 @@
+# Rules of c-isr library stuff of Andes NDS32 cpu for GNU compiler
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+# Contributed by Andes Technology Corporation.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+###############################################################################
+# Makfile fragment rules for libnds32_isr.a to support ISR attribute extension
+###############################################################################
+
+# basic flags setting
+ISR_CFLAGS = $(CFLAGS) -c
+
+# the object files we would like to create
+LIBNDS32_ISR_16B_OBJS = \
+		vec_vid00.o vec_vid01.o vec_vid02.o vec_vid03.o \
+		vec_vid04.o vec_vid05.o vec_vid06.o vec_vid07.o \
+		vec_vid08.o vec_vid09.o vec_vid10.o vec_vid11.o \
+		vec_vid12.o vec_vid13.o vec_vid14.o vec_vid15.o \
+		vec_vid16.o vec_vid17.o vec_vid18.o vec_vid19.o \
+		vec_vid20.o vec_vid21.o vec_vid22.o vec_vid23.o \
+		vec_vid24.o vec_vid25.o vec_vid26.o vec_vid27.o \
+		vec_vid28.o vec_vid29.o vec_vid30.o vec_vid31.o \
+		vec_vid32.o vec_vid33.o vec_vid34.o vec_vid35.o \
+		vec_vid36.o vec_vid37.o vec_vid38.o vec_vid39.o \
+		vec_vid40.o vec_vid41.o vec_vid42.o vec_vid43.o \
+		vec_vid44.o vec_vid45.o vec_vid46.o vec_vid47.o \
+		vec_vid48.o vec_vid49.o vec_vid50.o vec_vid51.o \
+		vec_vid52.o vec_vid53.o vec_vid54.o vec_vid55.o \
+		vec_vid56.o vec_vid57.o vec_vid58.o vec_vid59.o \
+		vec_vid60.o vec_vid61.o vec_vid62.o vec_vid63.o \
+		vec_vid64.o vec_vid65.o vec_vid66.o vec_vid67.o \
+		vec_vid68.o vec_vid69.o vec_vid70.o vec_vid71.o \
+		vec_vid72.o \
+		excp_isr_ps_nn.o excp_isr_ps_ns.o excp_isr_ps_nr.o \
+		excp_isr_sa_nn.o excp_isr_sa_ns.o excp_isr_sa_nr.o \
+		intr_isr_ps_nn.o intr_isr_ps_ns.o intr_isr_ps_nr.o \
+		intr_isr_sa_nn.o intr_isr_sa_ns.o intr_isr_sa_nr.o \
+		reset.o
+
+LIBNDS32_ISR_4B_OBJS = \
+		vec_vid00_4b.o vec_vid01_4b.o vec_vid02_4b.o vec_vid03_4b.o \
+		vec_vid04_4b.o vec_vid05_4b.o vec_vid06_4b.o vec_vid07_4b.o \
+		vec_vid08_4b.o vec_vid09_4b.o vec_vid10_4b.o vec_vid11_4b.o \
+		vec_vid12_4b.o vec_vid13_4b.o vec_vid14_4b.o vec_vid15_4b.o \
+		vec_vid16_4b.o vec_vid17_4b.o vec_vid18_4b.o vec_vid19_4b.o \
+		vec_vid20_4b.o vec_vid21_4b.o vec_vid22_4b.o vec_vid23_4b.o \
+		vec_vid24_4b.o vec_vid25_4b.o vec_vid26_4b.o vec_vid27_4b.o \
+		vec_vid28_4b.o vec_vid29_4b.o vec_vid30_4b.o vec_vid31_4b.o \
+		vec_vid32_4b.o vec_vid33_4b.o vec_vid34_4b.o vec_vid35_4b.o \
+		vec_vid36_4b.o vec_vid37_4b.o vec_vid38_4b.o vec_vid39_4b.o \
+		vec_vid40_4b.o vec_vid41_4b.o vec_vid42_4b.o vec_vid43_4b.o \
+		vec_vid44_4b.o vec_vid45_4b.o vec_vid46_4b.o vec_vid47_4b.o \
+		vec_vid48_4b.o vec_vid49_4b.o vec_vid50_4b.o vec_vid51_4b.o \
+		vec_vid52_4b.o vec_vid53_4b.o vec_vid54_4b.o vec_vid55_4b.o \
+		vec_vid56_4b.o vec_vid57_4b.o vec_vid58_4b.o vec_vid59_4b.o \
+		vec_vid60_4b.o vec_vid61_4b.o vec_vid62_4b.o vec_vid63_4b.o \
+		vec_vid64_4b.o vec_vid65_4b.o vec_vid66_4b.o vec_vid67_4b.o \
+		vec_vid68_4b.o vec_vid69_4b.o vec_vid70_4b.o vec_vid71_4b.o \
+		vec_vid72_4b.o \
+		excp_isr_ps_nn_4b.o excp_isr_ps_ns_4b.o excp_isr_ps_nr_4b.o \
+		excp_isr_sa_nn_4b.o excp_isr_sa_ns_4b.o excp_isr_sa_nr_4b.o \
+		intr_isr_ps_nn_4b.o intr_isr_ps_ns_4b.o intr_isr_ps_nr_4b.o \
+		intr_isr_sa_nn_4b.o intr_isr_sa_ns_4b.o intr_isr_sa_nr_4b.o \
+		reset_4b.o
+
+LIBNDS32_ISR_COMMON_OBJS = \
+		jmptbl_vid00.o jmptbl_vid01.o jmptbl_vid02.o jmptbl_vid03.o \
+		jmptbl_vid04.o jmptbl_vid05.o jmptbl_vid06.o jmptbl_vid07.o \
+		jmptbl_vid08.o jmptbl_vid09.o jmptbl_vid10.o jmptbl_vid11.o \
+		jmptbl_vid12.o jmptbl_vid13.o jmptbl_vid14.o jmptbl_vid15.o \
+		jmptbl_vid16.o jmptbl_vid17.o jmptbl_vid18.o jmptbl_vid19.o \
+		jmptbl_vid20.o jmptbl_vid21.o jmptbl_vid22.o jmptbl_vid23.o \
+		jmptbl_vid24.o jmptbl_vid25.o jmptbl_vid26.o jmptbl_vid27.o \
+		jmptbl_vid28.o jmptbl_vid29.o jmptbl_vid30.o jmptbl_vid31.o \
+		jmptbl_vid32.o jmptbl_vid33.o jmptbl_vid34.o jmptbl_vid35.o \
+		jmptbl_vid36.o jmptbl_vid37.o jmptbl_vid38.o jmptbl_vid39.o \
+		jmptbl_vid40.o jmptbl_vid41.o jmptbl_vid42.o jmptbl_vid43.o \
+		jmptbl_vid44.o jmptbl_vid45.o jmptbl_vid46.o jmptbl_vid47.o \
+		jmptbl_vid48.o jmptbl_vid49.o jmptbl_vid50.o jmptbl_vid51.o \
+		jmptbl_vid52.o jmptbl_vid53.o jmptbl_vid54.o jmptbl_vid55.o \
+		jmptbl_vid56.o jmptbl_vid57.o jmptbl_vid58.o jmptbl_vid59.o \
+		jmptbl_vid60.o jmptbl_vid61.o jmptbl_vid62.o jmptbl_vid63.o \
+		jmptbl_vid64.o jmptbl_vid65.o jmptbl_vid66.o jmptbl_vid67.o \
+		jmptbl_vid68.o jmptbl_vid69.o jmptbl_vid70.o jmptbl_vid71.o \
+		jmptbl_vid72.o \
+		nmih.o \
+		wrh.o
+
+LIBNDS32_ISR_COMPLETE_OBJS = $(LIBNDS32_ISR_16B_OBJS) $(LIBNDS32_ISR_4B_OBJS) $(LIBNDS32_ISR_COMMON_OBJS)
+
+
+# Build common objects for ISR library
+nmih.o: $(srcdir)/config/nds32/isr-library/nmih.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/nmih.S -o nmih.o
+
+wrh.o: $(srcdir)/config/nds32/isr-library/wrh.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/wrh.S -o wrh.o
+
+jmptbl_vid%.o: $(srcdir)/config/nds32/isr-library/jmptbl_vid%.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $< -o $@
+
+
+
+# Build 16b version objects for ISR library. (no "_4b" postfix string)
+vec_vid%.o: $(srcdir)/config/nds32/isr-library/vec_vid%.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $< -o $@
+
+excp_isr_ps_nn.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_ps_nn.o
+
+excp_isr_ps_ns.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_ps_ns.o
+
+excp_isr_ps_nr.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_ps_nr.o
+
+excp_isr_sa_nn.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_sa_nn.o
+
+excp_isr_sa_ns.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_sa_ns.o
+
+excp_isr_sa_nr.o: $(srcdir)/config/nds32/isr-library/excp_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/excp_isr.S -o excp_isr_sa_nr.o
+
+intr_isr_ps_nn.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_ps_nn.o
+
+intr_isr_ps_ns.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_ps_ns.o
+
+intr_isr_ps_nr.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_ps_nr.o
+
+intr_isr_sa_nn.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_sa_nn.o
+
+intr_isr_sa_ns.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_sa_ns.o
+
+intr_isr_sa_nr.o: $(srcdir)/config/nds32/isr-library/intr_isr.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/intr_isr.S -o intr_isr_sa_nr.o
+
+reset.o: $(srcdir)/config/nds32/isr-library/reset.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/reset.S -o reset.o
+
+# Build 4b version objects for ISR library.
+vec_vid%_4b.o: $(srcdir)/config/nds32/isr-library/vec_vid%_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $< -o $@
+
+excp_isr_ps_nn_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_ps_nn_4b.o
+
+excp_isr_ps_ns_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_ps_ns_4b.o
+
+excp_isr_ps_nr_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_ps_nr_4b.o
+
+excp_isr_sa_nn_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_sa_nn_4b.o
+
+excp_isr_sa_ns_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_sa_ns_4b.o
+
+excp_isr_sa_nr_4b.o: $(srcdir)/config/nds32/isr-library/excp_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/excp_isr_4b.S -o excp_isr_sa_nr_4b.o
+
+intr_isr_ps_nn_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_ps_nn_4b.o
+
+intr_isr_ps_ns_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_ps_ns_4b.o
+
+intr_isr_ps_nr_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_ps_nr_4b.o
+
+intr_isr_sa_nn_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_sa_nn_4b.o
+
+intr_isr_sa_ns_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_sa_ns_4b.o
+
+intr_isr_sa_nr_4b.o: $(srcdir)/config/nds32/isr-library/intr_isr_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) -DNDS32_SAVE_ALL_REGS -DNDS32_NESTED_READY $(srcdir)/config/nds32/isr-library/intr_isr_4b.S -o intr_isr_sa_nr_4b.o
+
+reset_4b.o: $(srcdir)/config/nds32/isr-library/reset_4b.S
+	$(GCC_FOR_TARGET) $(ISR_CFLAGS) $(srcdir)/config/nds32/isr-library/reset_4b.S -o reset_4b.o
+
+
+# The rule to create libnds32_isr.a file
+libnds32_isr.a: $(LIBNDS32_ISR_COMPLETE_OBJS)
+	$(AR) rc libnds32_isr.a $(LIBNDS32_ISR_COMPLETE_OBJS)
+
+
+# ------------------------------------------------------------------------

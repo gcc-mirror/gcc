@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "tree.h"
 #include "regs.h"
 #include "obstack.h"
 #include "basic-block.h"
@@ -30,7 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "tree-ssa-loop-niter.h"
 
 
 /* Apply FLAGS to the loop state.  */

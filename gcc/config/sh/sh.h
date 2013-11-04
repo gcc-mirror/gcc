@@ -405,16 +405,21 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 
 /* Target machine storage layout.  */
 
+#define TARGET_BIG_ENDIAN (!TARGET_LITTLE_ENDIAN)
+
+#define SH_REG_MSW_OFFSET (TARGET_LITTLE_ENDIAN ? 1 : 0)
+#define SH_REG_LSW_OFFSET (TARGET_LITTLE_ENDIAN ? 0 : 1)
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
-#define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
+#define BYTES_BIG_ENDIAN TARGET_BIG_ENDIAN
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
-#define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
+#define WORDS_BIG_ENDIAN TARGET_BIG_ENDIAN
 
 #define MAX_BITS_PER_WORD 64
 
@@ -1437,7 +1442,7 @@ struct sh_args {
 #define SHCOMPACT_FORCE_ON_STACK(MODE,TYPE) \
   ((MODE) == BLKmode \
    && TARGET_SHCOMPACT \
-   && ! TARGET_LITTLE_ENDIAN \
+   && TARGET_BIG_ENDIAN \
    && int_size_in_bytes (TYPE) > 4 \
    && int_size_in_bytes (TYPE) < 8)
 

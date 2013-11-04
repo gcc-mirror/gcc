@@ -5983,7 +5983,7 @@
 	PR c++/52637
 	* g++.dg/debug/localclass1.C: New.
 
-2012-06-16 Ville Voutilainen <ville.voutilainen@gmail.com>
+2012-06-16  Ville Voutilainen <ville.voutilainen@gmail.com>
 
 	* g++.dg/cpp0x/override4.C: New.
 

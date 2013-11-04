@@ -1,5 +1,5 @@
 // PR c++/48281
-// { dg-options "-std=c++0x -O2" }
+// { dg-options "-std=c++11 -O2" }
 // { dg-do run }
 
 #include <initializer_list>

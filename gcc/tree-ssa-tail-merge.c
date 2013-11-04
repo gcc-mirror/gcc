@@ -194,8 +194,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "flags.h"
 #include "function.h"
-#include "tree-ssa.h"
-#include "bitmap.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa-alias.h"
 #include "params.h"
 #include "hash-table.h"
@@ -300,7 +304,8 @@ stmt_local_def (gimple stmt)
   tree val;
   def_operand_p def_p;
 
-  if (gimple_has_side_effects (stmt))
+  if (gimple_has_side_effects (stmt)
+      || gimple_vdef (stmt) != NULL_TREE)
     return false;
 
   def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
@@ -1462,7 +1467,7 @@ static void
 replace_block_by (basic_block bb1, basic_block bb2)
 {
   edge pred_edge;
-  edge e1;
+  edge e1, e2;
   edge_iterator ei;
   unsigned int i;
   gimple bb2_phi;
@@ -1497,15 +1502,21 @@ replace_block_by (basic_block bb1, basic_block bb2)
   bb2->count += bb1->count;
 
   /* Merge the outgoing edge counts from bb1 onto bb2.  */
+  gcov_type out_sum = 0;
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
-      edge e2;
       e2 = find_edge (bb2, e1->dest);
       gcc_assert (e2);
       e2->count += e1->count;
-      /* Recompute the probability from the new merged edge count (bb2->count
-         was updated above).  */
-      e2->probability = GCOV_COMPUTE_SCALE (e2->count, bb2->count);
+      out_sum += e2->count;
+    }
+  /* Recompute the edge probabilities from the new merged edge count.
+     Use the sum of the new merged edge counts computed above instead
+     of bb2's merged count, in case there are profile count insanities
+     making the bb count inconsistent with the edge weights.  */
+  FOR_EACH_EDGE (e2, ei, bb2->succs)
+    {
+      e2->probability = GCOV_COMPUTE_SCALE (e2->count, out_sum);
     }
 
   /* Do updates that use bb1, before deleting bb1.  */

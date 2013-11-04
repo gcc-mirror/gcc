@@ -128,7 +128,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
-#include "tree-ssa.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "value-prof.h"
@@ -267,6 +272,19 @@ get_default_value (tree var)
 	{
 	  val.lattice_val = VARYING;
 	  val.mask = -1;
+	  if (flag_tree_bit_ccp)
+	    {
+	      widest_int nonzero_bits = get_nonzero_bits (var);
+	      widest_int mask
+		= wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (var)), false);
+	      if (nonzero_bits != -1 && nonzero_bits != mask)
+		{
+		  val.lattice_val = CONSTANT;
+		  val.value = build_zero_cst (TREE_TYPE (var));
+		  /* CCP wants the bits above precision set.  */
+		  val.mask = nonzero_bits | ~mask;
+		}
+	    }
 	}
     }
   else if (is_gimple_assign (stmt))
@@ -832,7 +850,8 @@ ccp_finalize (void)
   do_dbg_cnt ();
 
   /* Derive alignment and misalignment information from partially
-     constant pointers in the lattice.  */
+     constant pointers in the lattice or nonzero bits from partially
+     constant integers.  */
   for (i = 1; i < num_ssa_names; ++i)
     {
       tree name = ssa_name (i);
@@ -840,7 +859,11 @@ ccp_finalize (void)
       unsigned int tem, align;
 
       if (!name
-	  || !POINTER_TYPE_P (TREE_TYPE (name)))
+	  || (!POINTER_TYPE_P (TREE_TYPE (name))
+	      && (!INTEGRAL_TYPE_P (TREE_TYPE (name))
+		  /* Don't record nonzero bits before IPA to avoid
+		     using too much memory.  */
+		  || first_pass_instance)))
 	continue;
 
       val = get_value (name);
@@ -848,13 +871,24 @@ ccp_finalize (void)
 	  || TREE_CODE (val->value) != INTEGER_CST)
 	continue;
 
-      /* Trailing constant bits specify the alignment, trailing value
-	 bits the misalignment.  */
-      tem = val->mask.to_uhwi ();
-      align = (tem & -tem);
-      if (align > 1)
-	set_ptr_info_alignment (get_ptr_info (name), align,
-				tree_to_hwi (val->value) & (align - 1));
+      if (POINTER_TYPE_P (TREE_TYPE (name)))
+	{
+	  /* Trailing mask bits specify the alignment, trailing value
+	     bits the misalignment.  */
+	  tem = val->mask.to_uhwi ();
+	  align = (tem & -tem);
+	  if (align > 1)
+	    set_ptr_info_alignment (get_ptr_info (name), align,
+				    (tree_to_hwi (val->value)
+				     & (align - 1)));
+	}
+      else
+	{
+	  widest_int nonzero_bits = val->mask;
+	  nonzero_bits = nonzero_bits | wi::to_widest (val->value);
+	  nonzero_bits &= get_nonzero_bits (name);
+	  set_nonzero_bits (name, nonzero_bits);
+	}
     }
 
   /* Perform substitutions based on the known constant values.  */
@@ -1710,6 +1744,39 @@ evaluate_stmt (gimple stmt)
 	    }
 	}
       is_constant = (val.lattice_val == CONSTANT);
+    }
+
+  if (flag_tree_bit_ccp
+      && ((is_constant && TREE_CODE (val.value) == INTEGER_CST)
+	  || (!is_constant && likelyvalue != UNDEFINED))
+      && gimple_get_lhs (stmt)
+      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME)
+    {
+      tree lhs = gimple_get_lhs (stmt);
+      widest_int nonzero_bits = get_nonzero_bits (lhs);
+      widest_int mask = wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (lhs)), false);
+      if (nonzero_bits != -1 && nonzero_bits != mask)
+	{
+	  if (!is_constant)
+	    {
+	      val.lattice_val = CONSTANT;
+	      val.value = build_zero_cst (TREE_TYPE (lhs));
+	      /* CCP wants the bits above precision set.  */
+	      val.mask = nonzero_bits | ~mask;
+	      is_constant = true;
+	    }
+	  else
+	    {
+	      widest_int valv = wi::to_widest (val.value);
+	      if ((valv & ~nonzero_bits & mask) != 0)
+		val.value = wide_int_to_tree (TREE_TYPE (lhs),
+					      valv & nonzero_bits);
+	      if (nonzero_bits == 0)
+		val.mask = 0;
+	      else
+		val.mask = val.mask & (nonzero_bits | ~mask);
+	    }
+	}
     }
 
   if (!is_constant)

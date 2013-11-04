@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x -Wzero-as-null-pointer-constant" }
+// { dg-options "-std=c++11 -Wzero-as-null-pointer-constant" }
 
 struct A;
 

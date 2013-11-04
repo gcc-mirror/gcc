@@ -1,6 +1,6 @@
 // PR c++/47388
 // { dg-do compile }
-// { dg-options "-fno-for-scope -std=c++0x" }
+// { dg-options "-fno-for-scope -std=c++11" }
 
 template <int>
 void

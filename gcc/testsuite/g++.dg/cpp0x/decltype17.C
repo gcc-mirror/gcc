@@ -1,5 +1,5 @@
 // PR c++/36628
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 #include <typeinfo>

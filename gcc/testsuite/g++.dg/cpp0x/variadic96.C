@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/41785
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct a {};
 

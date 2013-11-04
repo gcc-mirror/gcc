@@ -103,10 +103,6 @@ The runtime support library for transactional memory.
 @item libjava
 The Java runtime library.
 
-@item libmudflap
-The @code{libmudflap} library, used for instrumenting pointer and array
-dereferencing operations.
-
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 

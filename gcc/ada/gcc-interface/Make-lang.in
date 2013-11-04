@@ -110,7 +110,7 @@ ADA_DEPS=case $@ in \
             *sdefault.o);; \
             *)a="`echo $@ | sed -e 's/.o$$/.ali/'`"; \
                 echo "$@: `cat $$a | \
-                sed -ne "s;^D \([a-z0-9_\.-]*\).*;ada/\1;gp" | \
+                sed -ne 's;^D \([a-z0-9_\.-]*\).*;ada/\1;gp' | \
                 tr -d '\015' | tr '\n' ' '`" > $(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@));; \
          esac;
 

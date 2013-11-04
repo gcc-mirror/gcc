@@ -1,6 +1,6 @@
 // PR c++/51489
 // DR 1313
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct array
 {

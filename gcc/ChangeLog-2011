@@ -9270,7 +9270,7 @@
 	(sms_schedule): Adjust call to generate_reg_moves.
 	Don't call free_undo_replace_buff.
 
-2011-10-10  Matthias Klose <doko@ubuntu.com>
+2011-10-10  Matthias Klose  <doko@ubuntu.com>
 
 	* common/config/m32c: Remove empty directory.
 
@@ -13777,11 +13777,11 @@
 	* doc/extend.texi: Document AVX2 built-in functions.
 	* doc/invoke.texi: Document -mavx2.
 
-2011-08-22  Matthias Klose <doko@debian.org>
+2011-08-22  Matthias Klose  <doko@debian.org>
 
 	Revert:
 	2011-07-11  Arthur Loiret  <aloiret@debian.org>
-		    Matthias Klose <doko@debian.org>
+		    Matthias Klose  <doko@debian.org>
 	* config/mips/t-linux64 (MULTILIB_DIRNAMES): Set to 'n32 . 64' if
 	tm_defines contains MIPS_ABI_DEFAULT ABI_32, to follow the glibc
 	convention.
@@ -18472,7 +18472,7 @@
 	PR middle-end/49736
 	* expr.c (all_zeros_p): Undo bogus part of last change.
 
-2011-07-14  Matthias Klose <doko@ubuntu.com>
+2011-07-14  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/extend.texi (optimize attribute): Fix typo.
 
@@ -18928,7 +18928,7 @@
 	--enable-targets=all.
 
 2011-07-11  Arthur Loiret  <aloiret@debian.org>
-	    Matthias Klose <doko@debian.org>
+	    Matthias Klose  <doko@debian.org>
 
 	* config.gcc (mips*-*-linux*): If 'enabled_targets' is 'all', build
 	a tri-arch compiler defaulting to 32-bit (ABI o32). In this case:

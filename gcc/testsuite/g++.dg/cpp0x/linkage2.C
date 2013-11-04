@@ -4,7 +4,7 @@
 //   o the variable or function is not used (3.2 [basic.def.odr]) or is
 //   defined in the same translation unit.
 
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <typename T> struct B {
   void g(T){}

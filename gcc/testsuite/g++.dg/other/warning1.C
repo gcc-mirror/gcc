@@ -7,8 +7,8 @@ extern "C" int printf(const char *, ...);
 
 struct S
 {
-  static const float inf = 1.0f / 0.0f; // { dg-warning "1.0|float|initializ" }
-  static const float nan = 0.0f / 0.0f; // { dg-warning "0.0|float|initializ" }
+  static const float inf = 1.0f / 0.0f; // { dg-error "1.0|float|initializ" }
+  static const float nan = 0.0f / 0.0f; // { dg-error "0.0|float|initializ" }
 };
 
 int main()

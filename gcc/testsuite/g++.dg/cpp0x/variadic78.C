@@ -1,6 +1,6 @@
 // PR c++/33496
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<int M, int N> struct pair
 {

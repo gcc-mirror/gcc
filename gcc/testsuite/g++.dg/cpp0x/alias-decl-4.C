@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // [temp.alias]/3:
 // The type-id in an alias template declaration shall not refer

@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 //  Make sure embedded quotes are not a problem for string and char literals.
 

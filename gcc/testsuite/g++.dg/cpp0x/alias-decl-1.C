@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // These also represent tests for printing alias declarations and
 // their instantiations.

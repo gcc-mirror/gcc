@@ -7003,12 +7003,10 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       tree gnu_union_type, gnu_union_name;
       tree this_first_free_pos, gnu_variant_list = NULL_TREE;
       bool union_field_needs_strict_alignment = false;
-      vec <vinfo_t, va_stack> variant_types;
+      stack_vec <vinfo_t, 16> variant_types;
       vinfo_t *gnu_variant;
       unsigned int variants_align = 0;
       unsigned int i;
-
-      vec_stack_alloc (vinfo_t, variant_types, 16);
 
       if (TREE_CODE (gnu_name) == TYPE_DECL)
 	gnu_name = DECL_NAME (gnu_name);
@@ -7204,9 +7202,6 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  DECL_CHAIN (gnu_field) = gnu_variant_list;
 	  gnu_variant_list = gnu_field;
 	}
-
-      /* We are done with the variants.  */
-      variant_types.release ();
 
       /* Only make the QUAL_UNION_TYPE if there are non-empty variants.  */
       if (gnu_variant_list)

@@ -539,6 +539,10 @@ namespace __gnu_test
       return ItType<T>(pos, &bounds);
     }
 
+    const T&
+    val(int pos)
+    { return (bounds.first)[pos]; }
+
     ItType<T>
     begin()
     { return it(bounds.first); }

@@ -1,5 +1,5 @@
 // PR c++/40306, c++/40307
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // { dg-do run }
 
 template< typename T >

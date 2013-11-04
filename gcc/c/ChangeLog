@@ -1,3 +1,57 @@
+2013-11-03  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Add VLA instrumentation.
+
+2013-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses) <case OMP_CLAUSE_UNIFORM>: Go to
+	check_dup_generic at the end, unless remove is true.
+	(c_finish_omp_clauses) <case OMP_CLAUSE_REDUCTION>: Add break; after
+	remove = true;.
+	(c_finish_omp_clauses) <case OMP_CLAUSE_COPYIN>: Likewise.
+
+2013-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Diagnose aligned clause
+	with decl that is not pointer nor array.
+
+2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-decl.c (finish_function): Added a call for insert_cilk_frame when
+	a spawning function is found.
+	* c-objc-common.h (LANG_HOOKS_CILKPLUS_GIMPLIFY_SPAWN): New #define.
+	(LANG_HOOKS_CILKPLUS_FRAME_CLEANUP): Likewise.
+	(LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP): Likewise.
+	* c-parser.c (c_parser_statement_after_labels): Added RID_CILK_SYNC
+	case.
+	(c_parser_postfix_expression): Added RID_CILK_SPAWN case.
+	* c-typeck.c (build_compound_expr): Reject _Cilk_spawn in a comma
+	expr.
+	(c_finish_return): Added a check to reject _Cilk_spawn in return
+	expression.
+	(build_cilk_spawn): New function.
+	(build_cilk_sync): Likewise.
+	* Makefile.in (c-decl.o): Added cilk.h in dependency list.
+	
+2013-10-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_while_statement, c_parser_while_statement,
+	c_parser_pragma): Add GCC ivdep support to 'do' and 'while'.
+	(c_parser_statement_after_labels): Update calls.
+
+2013-10-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/33426
+	* c-parser.c (c_parser_pragma, c_parser_for_statement):
+	Handle PRAGMA_IVDEP.
+	(c_parser_statement_after_labels): Update call.
+
+2013-10-24  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_struct_declaration): Add a comment.
+	(c_parser_declarator): Don't allow _Alignas here.
+
 2013-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-parser.c: Include omp-low.h.
@@ -220,7 +274,7 @@
 	PR c++/57793
 	* c-decl.c (finish_struct): Check for too-large class.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* c-typeck.c (set_init_index): When folding, check for index overflow.

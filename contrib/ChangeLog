@@ -1,3 +1,12 @@
+2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config-list.mk (nds32le-elf, nds32be-elf): Add nds32 target.
+
+2013-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	* gcc_update (files_and_dependencies): Add rules for
+	libcilkrts.
+
 2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc_update (files_and_dependencies): Fix rule for
@@ -23,7 +32,7 @@
 
 	* gcc_update (configure): Update to handle svn 1.8.1.
 
-2013-08-03  Caroline Tice4  <cmtice@google.com>
+2013-08-03  Caroline Tice  <cmtice@google.com>
 
 	* gcc_update: Add libvtv files.
 	

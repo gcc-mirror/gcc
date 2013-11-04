@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "flags.h"
 #include "rtl.h"
+#include "tree.h"
 #include "function.h"
 #include "basic-block.h"
 #include "dwarf2.h"

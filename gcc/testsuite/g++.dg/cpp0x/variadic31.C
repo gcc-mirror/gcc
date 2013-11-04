@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -g" }
+// { dg-options "-std=gnu++11 -g" }
 template<typename... T>
 void eat(T...) { }
 

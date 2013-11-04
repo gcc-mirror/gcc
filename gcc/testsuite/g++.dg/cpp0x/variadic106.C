@@ -1,5 +1,5 @@
 // Origin: PR c++/47326
-// { dg-options  "-std=c++0x" }
+// { dg-options  "-std=c++11" }
 // { dg-do compile }
 
 template <int _N>

@@ -1,5 +1,5 @@
 // PR c++/47336
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template <typename T>
 void g(T t)

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do run }
 // A basic implementation of TR1's mem_fn using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>

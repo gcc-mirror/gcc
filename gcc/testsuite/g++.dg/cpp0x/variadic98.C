@@ -1,6 +1,6 @@
 // PR c++/42358
 // { dg-do assemble }
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__ size_t;

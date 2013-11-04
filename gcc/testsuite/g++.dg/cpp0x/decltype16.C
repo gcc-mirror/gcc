@@ -1,5 +1,5 @@
 // PR c++/39070
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 template<typename X> struct junk {
    template<typename Z> static Z y();

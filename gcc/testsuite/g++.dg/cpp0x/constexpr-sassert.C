@@ -1,5 +1,5 @@
 // Allow static_assert in constexpr constructors, too.
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<typename T>
 struct A

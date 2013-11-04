@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 //This instatiation is ok
 template<typename T> struct S1

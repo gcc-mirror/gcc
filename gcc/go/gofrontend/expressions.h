@@ -232,19 +232,21 @@ class Expression
 		    Named_object* function, Location);
 
   // Make an index or slice expression.  This is a parser expression
-  // which represents LEFT[START:END].  END may be NULL, meaning an
-  // index rather than a slice.  At parse time we may not know the
-  // type of LEFT.  After parsing this is lowered to an array index, a
-  // string index, or a map index.
+  // which represents LEFT[START:END:CAP].  END may be NULL, meaning an
+  // index rather than a slice.  CAP may be NULL, meaning we use the default
+  // capacity of LEFT. At parse time we may not know the type of LEFT.
+  // After parsing this is lowered to an array index, a string index,
+  // or a map index.
   static Expression*
   make_index(Expression* left, Expression* start, Expression* end,
-	     Location);
+             Expression* cap, Location);
 
   // Make an array index expression.  END may be NULL, in which case
-  // this is an lvalue.
+  // this is an lvalue.  CAP may be NULL, in which case it defaults
+  // to cap(ARRAY).
   static Expression*
   make_array_index(Expression* array, Expression* start, Expression* end,
-		   Location);
+                   Expression* cap, Location);
 
   // Make a string index expression.  END may be NULL.  This is never
   // an lvalue.
@@ -1672,9 +1674,9 @@ class Index_expression : public Parser_expression
 {
  public:
   Index_expression(Expression* left, Expression* start, Expression* end,
-		   Location location)
+                   Expression* cap, Location location)
     : Parser_expression(EXPRESSION_INDEX, location),
-      left_(left), start_(start), end_(end), is_lvalue_(false)
+      left_(left), start_(start), end_(end), cap_(cap), is_lvalue_(false)
   { }
 
   // Record that this expression is an lvalue.
@@ -1683,10 +1685,11 @@ class Index_expression : public Parser_expression
   { this->is_lvalue_ = true; }
 
   // Dump an index expression, i.e. an expression of the form
-  // expr[expr] or expr[expr:expr], to a dump context.
+  // expr[expr], expr[expr:expr], or expr[expr:expr:expr] to a dump context.
   static void
   dump_index_expression(Ast_dump_context*, const Expression* expr, 
-                        const Expression* start, const Expression* end);
+                        const Expression* start, const Expression* end,
+                        const Expression* cap);
 
  protected:
   int
@@ -1702,6 +1705,9 @@ class Index_expression : public Parser_expression
 				(this->end_ == NULL
 				 ? NULL
 				 : this->end_->copy()),
+				(this->cap_ == NULL
+				 ? NULL
+				 : this->cap_->copy()),
 				this->location());
   }
 
@@ -1723,6 +1729,10 @@ class Index_expression : public Parser_expression
   // The second index.  This is NULL for an index, non-NULL for a
   // slice.
   Expression* end_;
+  // The capacity argument.  This is NULL for indices and slices that use the
+  // default capacity, non-NULL for indices and slices that specify the
+  // capacity.
+  Expression* cap_;
   // Whether this is being used as an l-value.  We set this during the
   // parse because map index expressions need to know.
   bool is_lvalue_;

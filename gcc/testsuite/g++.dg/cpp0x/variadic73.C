@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 struct A {};
 struct B {};
 struct C {};

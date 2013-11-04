@@ -1,7 +1,7 @@
 // PR c++/37962
 // Negative test for auto
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 #include <typeinfo>
 #include <stdarg.h>

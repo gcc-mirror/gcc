@@ -19,7 +19,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* PDImode for the 40-bit accumulators.  */
-PARTIAL_INT_MODE (DI);
+PARTIAL_INT_MODE (DI, 40, PDI);
 
 /* Two of those - covering both accumulators for vector multiplications.  */
 VECTOR_MODE (INT, PDI, 2);

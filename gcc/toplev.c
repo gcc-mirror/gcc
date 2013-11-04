@@ -68,7 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "value-prof.h"
 #include "alloc-pool.h"
-#include "tree-mudflap.h"
 #include "asan.h"
 #include "tsan.h"
 #include "gimple.h"
@@ -395,15 +394,15 @@ wrapup_global_declaration_2 (tree decl)
 
       if (!node && flag_ltrans)
 	needed = false;
-      else if (node && node->symbol.definition)
+      else if (node && node->definition)
 	needed = false;
-      else if (node && node->symbol.alias)
+      else if (node && node->alias)
 	needed = false;
       else if (!cgraph_global_info_ready
 	       && (TREE_USED (decl)
 		   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 	/* needed */;
-      else if (node && node->symbol.analyzed)
+      else if (node && node->analyzed)
 	/* needed */;
       else if (DECL_COMDAT (decl))
 	needed = false;
@@ -568,10 +567,6 @@ compile_file (void)
      basically finished.  */
   if (in_lto_p || !flag_lto || flag_fat_lto_objects)
     {
-      /* Likewise for mudflap static object registrations.  */
-      if (flag_mudflap)
-	mudflap_finish_file ();
-
       /* File-scope initialization for AddressSanitizer.  */
       if (flag_sanitize & SANITIZE_ADDRESS)
         asan_finish_file ();
@@ -1287,8 +1282,14 @@ process_options (void)
 	   "and -ftree-loop-linear)");
 #endif
 
-  if (flag_mudflap && flag_lto)
-    sorry ("mudflap cannot be used together with link-time optimization");
+  if (flag_check_pointer_bounds)
+    {
+      if (targetm.chkp_bound_mode () == VOIDmode)
+	error ("-fcheck-pointers is not supported for this target");
+
+      if (!lang_hooks.chkp_supported)
+	flag_check_pointer_bounds = 0;
+    }
 
   /* One region RA really helps to decrease the code size.  */
   if (flag_ira_region == IRA_REGION_AUTODETECT)

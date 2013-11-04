@@ -448,6 +448,8 @@ enum tree_index {
   TI_FILEPTR_TYPE,
   TI_POINTER_SIZED_TYPE,
 
+  TI_POINTER_BOUNDS_TYPE,
+
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
@@ -645,6 +647,10 @@ enum tree_node_kind {
   lang_type,
   omp_clause_kind,
   all_kinds
+};
+
+enum annot_expr_kind {
+  annot_expr_ivdep_kind
 };
 
 

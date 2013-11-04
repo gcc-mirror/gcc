@@ -1,5 +1,5 @@
 // PR c++/49921
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 struct Local
 {

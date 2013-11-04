@@ -6620,8 +6620,8 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 	  icode = direct_optab_handler (vec_perm_const_optab, qimode);
 	  if (icode != CODE_FOR_nothing)
 	    {
-	      tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
-				       gen_lowpart (qimode, v0),
+	      tmp = mode != qimode ? gen_reg_rtx (qimode) : target;
+	      tmp = expand_vec_perm_1 (icode, tmp, gen_lowpart (qimode, v0),
 				       gen_lowpart (qimode, v1), sel_qi);
 	      if (tmp)
 		return gen_lowpart (mode, tmp);
@@ -6670,7 +6670,7 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 	}
       tmp = gen_rtx_CONST_VECTOR (qimode, vec);
       sel = gen_lowpart (qimode, sel);
-      sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
+      sel = expand_vec_perm (qimode, gen_reg_rtx (qimode), sel, tmp, NULL);
       gcc_assert (sel != NULL);
 
       /* Add the byte offset to each byte element.  */
@@ -6685,8 +6685,8 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
       gcc_assert (sel_qi != NULL);
     }
 
-  tmp = expand_vec_perm_1 (icode, gen_lowpart (qimode, target),
-			   gen_lowpart (qimode, v0),
+  tmp = mode != qimode ? gen_reg_rtx (qimode) : target;
+  tmp = expand_vec_perm_1 (icode, tmp, gen_lowpart (qimode, v0),
 			   gen_lowpart (qimode, v1), sel_qi);
   if (tmp)
     tmp = gen_lowpart (mode, tmp);
@@ -7036,8 +7036,7 @@ maybe_emit_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
-      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
-      create_convert_operand_to (&ops[2], val, mode, true);
+      create_input_operand (&ops[2], val, mode);
       create_integer_operand (&ops[3], model);
       if (maybe_expand_insn (icode, 4, ops))
 	return ops[0].value;
@@ -7076,8 +7075,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
       struct expand_operand ops[3];
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
-      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
-      create_convert_operand_to (&ops[2], val, mode, true);
+      create_input_operand (&ops[2], val, mode);
       if (maybe_expand_insn (icode, 3, ops))
 	return ops[0].value;
     }
@@ -7119,8 +7117,6 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
     {
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	val = convert_modes (mode, GET_MODE (val), val, 1);
       if (expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
 	return target;
     }
@@ -7332,8 +7328,8 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
       create_output_operand (&ops[0], target_bool, bool_mode);
       create_output_operand (&ops[1], target_oval, mode);
       create_fixed_operand (&ops[2], mem);
-      create_convert_operand_to (&ops[3], expected, mode, true);
-      create_convert_operand_to (&ops[4], desired, mode, true);
+      create_input_operand (&ops[3], expected, mode);
+      create_input_operand (&ops[4], desired, mode);
       create_integer_operand (&ops[5], is_weak);
       create_integer_operand (&ops[6], succ_model);
       create_integer_operand (&ops[7], fail_model);
@@ -7354,8 +7350,8 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
 
       create_output_operand (&ops[0], target_oval, mode);
       create_fixed_operand (&ops[1], mem);
-      create_convert_operand_to (&ops[2], expected, mode, true);
-      create_convert_operand_to (&ops[3], desired, mode, true);
+      create_input_operand (&ops[2], expected, mode);
+      create_input_operand (&ops[3], desired, mode);
       if (!maybe_expand_insn (icode, 4, ops))
 	return false;
 

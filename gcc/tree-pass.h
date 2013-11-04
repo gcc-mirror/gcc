@@ -338,8 +338,6 @@ extern void register_pass (register_pass_info *);
 extern void register_pass (opt_pass* pass, pass_positioning_ops pos,
 			   const char* ref_pass_name, int ref_pass_inst_number);
 
-extern gimple_opt_pass *make_pass_mudflap_1 (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_mudflap_2 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan (gcc::context *ctxt);
@@ -526,7 +524,6 @@ extern rtl_opt_pass *make_pass_if_after_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_ree (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_partition_blocks (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_match_asm_constraints (gcc::context *ctxt);
-extern rtl_opt_pass *make_pass_regmove (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_all_insns (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_fast_rtl_byte_dce (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_lower_subreg2 (gcc::context *ctxt);

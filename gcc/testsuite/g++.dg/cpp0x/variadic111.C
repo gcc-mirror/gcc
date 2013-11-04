@@ -1,5 +1,5 @@
 // PR c++/48424
-// { dg-options "-std=c++0x -fabi-version=0" }
+// { dg-options "-std=c++11 -fabi-version=0" }
 
 template<typename... Args1>
 struct S

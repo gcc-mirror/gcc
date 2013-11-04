@@ -1,4 +1,4 @@
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 int x, &&y = static_cast<int &&>(x);
 typedef decltype((y)) myInt;  // `y' is a parenthesized id-expression of type int that is an lvalue

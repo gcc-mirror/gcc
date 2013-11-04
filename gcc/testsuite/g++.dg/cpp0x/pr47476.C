@@ -1,6 +1,6 @@
 // PR c++/47476
 // { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 int
 foo (int a, int b)

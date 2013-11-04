@@ -3152,7 +3152,7 @@ Parse::selector(Expression* left, bool* is_type_switch)
 }
 
 // Index          = "[" Expression "]" .
-// Slice          = "[" Expression ":" [ Expression ] "]" .
+// Slice          = "[" Expression ":" [ Expression ] [ ":" Expression ] "]" .
 
 Expression*
 Parse::index(Expression* expr)
@@ -3178,14 +3178,31 @@ Parse::index(Expression* expr)
       // We use nil to indicate a missing high expression.
       if (this->advance_token()->is_op(OPERATOR_RSQUARE))
 	end = Expression::make_nil(this->location());
+      else if (this->peek_token()->is_op(OPERATOR_COLON))
+	{
+	  error_at(this->location(), "middle index required in 3-index slice");
+	  end = Expression::make_error(this->location());
+	}
       else
 	end = this->expression(PRECEDENCE_NORMAL, false, true, NULL, NULL);
+    }
+
+  Expression* cap = NULL;
+  if (this->peek_token()->is_op(OPERATOR_COLON))
+    {
+      if (this->advance_token()->is_op(OPERATOR_RSQUARE))
+	{
+	  error_at(this->location(), "final index required in 3-index slice");
+	  cap = Expression::make_error(this->location());
+	}
+      else
+        cap = this->expression(PRECEDENCE_NORMAL, false, true, NULL, NULL);
     }
   if (!this->peek_token()->is_op(OPERATOR_RSQUARE))
     error_at(this->location(), "missing %<]%>");
   else
     this->advance_token();
-  return Expression::make_index(expr, start, end, location);
+  return Expression::make_index(expr, start, end, cap, location);
 }
 
 // Call           = "(" [ ArgumentList [ "," ] ] ")" .

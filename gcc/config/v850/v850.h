@@ -954,10 +954,6 @@ extern tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 
 #define FILE_ASM_OP "\t.file\n"
 
-/* Enable the register move pass to improve code.  */
-#define ENABLE_REGMOVE_PASS
-
-
 /* Implement ZDA, TDA, and SDA */
 
 #define EP_REGNUM 30	/* ep register number */

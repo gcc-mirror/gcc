@@ -109,6 +109,12 @@ expand_STORE_LANES (gimple stmt)
   expand_insn (get_multi_vector_move (type, vec_store_lanes_optab), 2, ops);
 }
 
+static void
+expand_ANNOTATE (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void

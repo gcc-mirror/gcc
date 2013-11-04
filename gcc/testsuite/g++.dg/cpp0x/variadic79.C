@@ -1,6 +1,6 @@
 // PR c++/33213
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 template<template<typename> class...> struct A;
 

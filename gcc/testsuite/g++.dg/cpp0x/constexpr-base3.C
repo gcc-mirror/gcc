@@ -1,6 +1,6 @@
 // PR c++/46526
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 struct Base
 {

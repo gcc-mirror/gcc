@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<typename... T> int foo(const T&) // { dg-error "not expanded with|T" }
 {
  union { T t; }; // { dg-error "not expanded with|T" }

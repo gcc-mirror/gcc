@@ -28,6 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "tree-cfg.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
+#include "tree-ssanames.h"
+#include "tree-ssa-loop-manip.h"
+#include "tree-into-ssa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
@@ -107,7 +115,7 @@ typedef struct
    with a PHI DEF that would soon become non-dominant, and when we got
    to the suitable one, it wouldn't have anything to substitute any
    more.  */
-static vec<adjust_info, va_stack> adjust_vec;
+static vec<adjust_info, va_heap> adjust_vec;
 
 /* Adjust any debug stmts that referenced AI->from values to use the
    loop-closed AI->to, if the references are dominated by AI->bb and
@@ -1125,7 +1133,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (MAY_HAVE_DEBUG_STMTS)
     {
       gcc_assert (!adjust_vec.exists ());
-      vec_stack_alloc (adjust_info, adjust_vec, 32);
+      adjust_vec.create (32);
     }
 
   if (e == exit_e)
@@ -1429,7 +1437,7 @@ vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq seq)
  and places them at the loop preheader edge or in COND_EXPR_STMT_LIST
  if that is non-NULL.  */
 
-static void
+void
 vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 				 tree *ni_name_ptr,
 				 tree *ratio_mult_vf_name_ptr,

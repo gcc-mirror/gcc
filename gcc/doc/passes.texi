@@ -124,13 +124,45 @@ true, then we expand them using either @code{expand_array_notation_exprs} or
 inside conditions, they are transformed using the function 
 @code{fix_conditional_array_notations}.  The C language-specific routines are 
 located in @file{c/c-array-notation.c} and the equivalent C++ routines are in 
-file @file{cp/cp-array-notation.c}.  Common routines such as functions to 
-initialize builtin functions are stored in @file{array-notation-common.c}.
+the file @file{cp/cp-array-notation.c}.  Common routines such as functions to 
+initialize built-in functions are stored in @file{array-notation-common.c}.
+
+@item Cilk keywords:
+@itemize @bullet 
+@item @code{_Cilk_spawn}:
+The @code{_Cilk_spawn} keyword is parsed and the function it contains is marked 
+as a spawning function.  The spawning function is called the spawner.  At 
+the end of the parsing phase, appropriate built-in functions are 
+added to the spawner that are defined in the Cilk runtime.  The appropriate 
+locations of these functions, and the internal structures are detailed in 
+@code{cilk_init_builtins} in the file @file{cilk-common.c}.  The pointers to 
+Cilk functions and fields of internal structures are described 
+in @file{cilk.h}.  The built-in functions are described in 
+@file{cilk-builtins.def}.
+
+During gimplification, a new "spawn-helper" function is created.  
+The spawned function is replaced with a spawn helper function in the spawner.  
+The spawned function-call is moved into the spawn helper.  The main function
+that does these transformations is @code{gimplify_cilk_spawn} in
+@file{c-family/cilk.c}.  In the spawn-helper, the gimplification function 
+@code{gimplify_call_expr}, inserts a function call @code{__cilkrts_detach}.
+This function is expanded by @code{builtin_expand_cilk_detach} located in
+@file{c-family/cilk.c}.
+
+@item @code{_Cilk_sync}:
+@code{_Cilk_sync} is parsed like a keyword.  During gimplification, 
+the function @code{gimplify_cilk_sync} in @file{c-family/cilk.c}, will replace
+this keyword with a set of functions that are stored in the Cilk runtime.  
+One of the internal functions inserted during gimplification, 
+@code{__cilkrts_pop_frame} must be expanded by the compiler and is 
+done by @code{builtin_expand_cilk_pop_frame} in @file{cilk-common.c}.
+
+@end itemize
 @end itemize
 
-Detailed information about Cilk Plus and language specification is provided in 
-@w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning that the current 
-implementation follows ABI 0.9.
+Documentation about Cilk Plus and language specification is provided under the
+"Learn" section in @w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning
+that the current implementation follows ABI 1.1.
 
 @node Gimplification pass
 @section Gimplification pass
@@ -224,20 +256,6 @@ assorted simplistic cleanups.  The idea is to get rid of the obvious
 stuff quickly rather than wait until later when it's more work to get
 rid of it.  This pass is located in @file{tree-cfg.c} and described by
 @code{pass_remove_useless_stmts}.
-
-@item Mudflap declaration registration
-
-If mudflap (@pxref{Optimize Options,,-fmudflap -fmudflapth
--fmudflapir,gcc,Using the GNU Compiler Collection (GCC)}) is
-enabled, we generate code to register some variable declarations with
-the mudflap runtime.  Specifically, the runtime tracks the lifetimes of
-those variable declarations that have their addresses taken, or whose
-bounds are unknown at compile time (@code{extern}).  This pass generates
-new exception handling constructs (@code{try}/@code{finally}), and so
-must run before those are lowered.  In addition, the pass enqueues
-declarations of static variables whose lifetimes extend to the entire
-program.  The pass is located in @file{tree-mudflap.c} and is described
-by @code{pass_mudflap_1}.
 
 @item OpenMP lowering
 
@@ -576,18 +594,6 @@ run last so that we have as much time as possible to prove that the
 statement is not reachable.  It is located in @file{tree-cfg.c} and
 is described by @code{pass_warn_function_return}.
 
-@item Mudflap statement annotation
-
-If mudflap is enabled, we rewrite some memory accesses with code to
-validate that the memory access is correct.  In particular, expressions
-involving pointer dereferences (@code{INDIRECT_REF}, @code{ARRAY_REF},
-etc.) are replaced by code that checks the selected address range
-against the mudflap runtime's database of valid regions.  This check
-includes an inline lookup into a direct-mapped cache, based on
-shift/mask operations of the pointer value, with a fallback function
-call into the runtime.  The pass is located in @file{tree-mudflap.c} and
-is described by @code{pass_mudflap_2}.
-
 @item Leave static single assignment form
 
 This pass rewrites the function such that it is in normal form.  At
@@ -817,14 +823,6 @@ RTL expressions for the instructions by substitution, simplifies the
 result using algebra, and then attempts to match the result against
 the machine description.  The code is located in @file{combine.c}.
 
-@item Register movement
-
-This pass looks for cases where matching constraints would force an
-instruction to need a reload, and this reload would be a
-register-to-register move.  It then attempts to change the registers
-used by the instruction to avoid the move instruction.  The code is
-located in @file{regmove.c}.
-
 @item Mode switching optimization
 
 This pass looks for instructions that require the processor to be in a
@@ -862,11 +860,6 @@ them by an equivalent expression (e.g.@: a constant) or by placing
 them on the stack.  This is done in several subpasses:
 
 @itemize @bullet
-@item
-Register move optimizations.  This pass makes some simple RTL code
-transformations which improve the subsequent register allocation.  The
-source file is @file{regmove.c}.
-
 @item
 The integrated register allocator (@acronym{IRA}).  It is called
 integrated because coalescing, register live range splitting, and hard
@@ -968,10 +961,7 @@ This pass outputs the assembler code for the function.  The source files
 are @file{final.c} plus @file{insn-output.c}; the latter is generated
 automatically from the machine description by the tool @file{genoutput}.
 The header file @file{conditions.h} is used for communication between
-these files.  If mudflap is enabled, the queue of deferred declarations
-and any addressed constants (e.g., string literals) is processed by
-@code{mudflap_finish_file} into a synthetic constructor function
-containing calls into the mudflap runtime.
+these files.
 
 @item Debugging information output
 

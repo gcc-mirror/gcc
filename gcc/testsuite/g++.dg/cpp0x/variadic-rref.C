@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 // PR c++/33939
 template<typename T>
 struct refs_only;

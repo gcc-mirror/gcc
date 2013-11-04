@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hard-reg-set.h"
+#include "tree.h"
 #include "rtl.h"
 #include "expr.h"
 #include "tm_p.h"

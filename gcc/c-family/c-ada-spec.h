@@ -29,13 +29,14 @@ typedef enum {
   IS_CONSTRUCTOR,
   IS_DESTRUCTOR,
   IS_COPY_CONSTRUCTOR,
-  IS_TEMPLATE
+  IS_TEMPLATE,
+  IS_TRIVIAL
 } cpp_operation;
 
 extern location_t decl_sloc (const_tree, bool);
 extern void collect_ada_nodes (tree, const char *);
 extern void collect_source_ref (const char *);
 extern void dump_ada_specs (void (*)(const char *),
-			    int (*)(tree, cpp_operation));
+			    int (*)(const_tree, cpp_operation));
 
 #endif /* ! C_ADA_SPEC_H */

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 template<int I, typename... Args>
 void get_ith(const Args&... args); // { dg-message "note" }
 

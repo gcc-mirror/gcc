@@ -1,5 +1,5 @@
 // PR c++/46420
-// { dg-options -std=c++0x }
+// { dg-options -std=c++11 }
 
 template<typename> class vector { };
 struct A{};
