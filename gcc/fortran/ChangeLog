@@ -1,3 +1,7 @@
+2013-11-04  Ian Lance Taylor  <iant@google.com>
+
+	* f95-lang.c (ATTR_LEAF_LIST): Define.
+
 2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58771
