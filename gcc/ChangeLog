@@ -1,3 +1,17 @@
+2013-11-04  Wei Mi  <wmi@google.com>
+
+	* gcc/config/i386/i386-c.c (ix86_target_macros_internal): Separate
+	PROCESSOR_COREI7_AVX out from PROCESSOR_COREI7.
+	* gcc/config/i386/i386.c (ix86_option_override_internal): Ditto.
+	(ix86_issue_rate): Ditto.
+	(ix86_adjust_cost): Ditto.
+	(ia32_multipass_dfa_lookahead): Ditto.
+	(ix86_sched_init_global): Ditto.
+	(get_builtin_code_for_version): Ditto.
+	* gcc/config/i386/i386.h (enum target_cpu_default): Ditto.
+	(enum processor_type): Ditto.
+	* gcc/config/i386/x86-tune.def (DEF_TUNE): Ditto.
+
 2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58967
