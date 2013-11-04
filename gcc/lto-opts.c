@@ -77,7 +77,7 @@ lto_write_options (void)
 
   obstack_init (&temporary_obstack);
 
-  /* Output options that affect GIMPLE IL semantics and are implicitely
+  /* Output options that affect GIMPLE IL semantics and are implicitly
      enabled by the frontend.
      This for now includes an explicit set of options that we also handle
      explicitly in lto-wrapper.c.  In the end the effects on GIMPLE IL
@@ -88,8 +88,13 @@ lto_write_options (void)
   if (global_options.x_flag_exceptions)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 				   "-fexceptions");
+  /* -fnon-call-exceptions changes the generation of exception
+      regions.  It is enabled implicitly by the Go frontend.  */
+  if (global_options.x_flag_non_call_exceptions)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   "-fnon-call-exceptions");
 
-  /* Output explicitely passed options.  */
+  /* Output explicitly passed options.  */
   for (i = 1; i < save_decoded_options_count; ++i)
     {
       struct cl_decoded_option *option = &save_decoded_options[i];
