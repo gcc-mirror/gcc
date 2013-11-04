@@ -300,12 +300,12 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
 /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-          m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM | m_GENERIC)
+          m_COREI7 | m_COREI7_AVX | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-          m_COREI7 | m_BDVER | m_SLM | m_GENERIC)
+          m_COREI7 | m_COREI7_AVX | m_BDVER | m_SLM | m_GENERIC)
 
 /* Use packed single precision instructions where posisble.  I.e. movups instead
    of movupd.  */
