@@ -1,3 +1,9 @@
+2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58967
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Remove
+	!lra_in_progress for mode sizes bigger word.
+
 2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (vec_widen_umult_hi_v16qi): Swap
