@@ -1,5 +1,8 @@
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* optabs.c (expand_vec_perm): Revert one incorrect line from
+	2013-10-31 change.
+
 	PR tree-optimization/58978
 	* tree-vrp.c (all_imm_uses_in_stmt_or_feed_cond): Don't modify
 	use_stmt by single_imm_use directly.  Only call single_imm_use
