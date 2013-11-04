@@ -1041,6 +1041,19 @@ scheduling one insn causes other insns to become ready in the same\n\
 cycle.  These other insns can then be taken into account properly.",
  int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
 
+DEFHOOK
+(macro_fusion_p,
+ "This hook is used to check whether target platform supports macro fusion.",
+ bool, (void), NULL)
+
+DEFHOOK
+(macro_fusion_pair_p,
+ "This hook is used to check whether two insns could be macro fused for\n\
+target microarchitecture. If this hook returns true for the given insn pair\n\
+(@var{condgen} and @var{condjmp}), scheduler will put them into a sched\n\
+group, and they will not be scheduled apart.",
+ bool, (rtx condgen, rtx condjmp), NULL)
+
 /* The following member value is a pointer to a function called
    after evaluation forward dependencies of insns in chain given
    by two parameter values (head and tail correspondingly).  */

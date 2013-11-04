@@ -1,3 +1,20 @@
+2013-11-04  Wei Mi  <wmi@google.com>
+
+	* gcc/config/i386/i386.c (memory_address_length): Extract a part
+	of code to rip_relative_addr_p.
+	(rip_relative_addr_p): New Function.
+	(ix86_macro_fusion_p): Ditto.
+	(ix86_macro_fusion_pair_p): Ditto.
+	* gcc/config/i386/i386.h: Add new tune features about macro-fusion.
+	* gcc/config/i386/x86-tune.def (DEF_TUNE): Ditto.
+	* gcc/doc/tm.texi: Generated.
+	* gcc/doc/tm.texi.in: Ditto.
+	* gcc/haifa-sched.c (try_group_insn): New Function.
+	(group_insns_for_macro_fusion): Ditto.
+	(sched_init): Call group_insns_for_macro_fusion.
+	* gcc/target.def: Add two hooks: macro_fusion_p and
+	macro_fusion_pair_p.
+
 2013-11-04  Kostya Serebryany  <kcc@google.com>
 
 	Update to match the changed asan API.
