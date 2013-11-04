@@ -876,6 +876,7 @@ with_demangler_in_ld
 with_gnu_as
 with_as
 enable_largefile
+enable_build_format_warnings
 enable_werror_always
 enable_checking
 enable_coverage
@@ -1575,6 +1576,8 @@ Optional Features:
                           for creating source tarballs for users without
                           texinfo bison or flex
   --disable-largefile     omit support for large files
+  --disable-build-format-warnings
+                          don't use -Wformat while building GCC
   --enable-werror-always  enable -Werror despite compiler version
   --enable-checking[=LIST]
                           enable expensive run-time checks. With LIST, enable
@@ -6290,9 +6293,22 @@ fi
 # * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
+# In stage 1, disable -Wformat warnings from old GCCs about new % codes
+# Check whether --enable-build-format-warnings was given.
+if test "${enable_build_format_warnings+set}" = set; then :
+  enableval=$enable_build_format_warnings;
+else
+  enable_build_format_warnings=yes
+fi
+
+if test $enable_build_format_warnings = no; then :
+  wf_opt=-Wno-format
+else
+  wf_opt=
+fi
 loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -18162,7 +18178,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18165 "configure"
+#line 18181 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18268,7 +18284,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18271 "configure"
+#line 18287 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25051,11 +25067,12 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_interunit_movq" >&5
 $as_echo "$gcc_cv_as_ix86_interunit_movq" >&6; }
-if test $gcc_cv_as_ix86_interunit_movq = yes; then
 
-$as_echo "#define HAVE_AS_IX86_INTERUNIT_MOVQ 1" >>confdefs.h
 
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_INTERUNIT_MOVQ `if test $gcc_cv_as_ix86_interunit_movq = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for hle prefixes" >&5
 $as_echo_n "checking assembler for hle prefixes... " >&6; }

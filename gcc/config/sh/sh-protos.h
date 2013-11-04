@@ -117,6 +117,7 @@ extern void output_pic_addr_const (FILE *, rtx);
 extern bool expand_block_move (rtx *);
 extern void prepare_move_operands (rtx[], enum machine_mode mode);
 extern bool sh_expand_cmpstr (rtx *);
+extern bool sh_expand_cmpnstr (rtx *);
 extern enum rtx_code prepare_cbranch_operands (rtx *, enum machine_mode mode,
 					       enum rtx_code comparison);
 extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);

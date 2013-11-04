@@ -308,7 +308,7 @@ maybe_apply_pending_pragma_weaks (void)
   tree alias_id, id, decl;
   int i;
   pending_weak *pe;
-  symtab_node target;
+  symtab_node *target;
 
   if (!pending_weaks)
     return;
@@ -323,7 +323,7 @@ maybe_apply_pending_pragma_weaks (void)
 
       target = symtab_node_for_asm (id);
       decl = build_decl (UNKNOWN_LOCATION,
-			 target ? TREE_CODE (target->symbol.decl) : FUNCTION_DECL,
+			 target ? TREE_CODE (target->decl) : FUNCTION_DECL,
 			 alias_id, default_function_type);
 
       DECL_ARTIFICIAL (decl) = 1;

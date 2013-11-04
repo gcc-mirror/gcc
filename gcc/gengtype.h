@@ -293,6 +293,15 @@ struct type {
       type_p lang_struct;
 
       type_p base_class; /* the parent class, if any.  */
+
+      /* The following two fields are not serialized in state files, and
+	 are instead reconstructed on load.  */
+
+      /* The head of a singly-linked list of immediate descendents in
+	 the inheritance hierarchy.  */
+      type_p first_subclass;
+      /* The next in that list.  */
+      type_p next_sibling_class;
     } s;
 
     /* when TYPE_SCALAR: */
@@ -424,6 +433,7 @@ extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
 extern void do_scalar_typedef (const char *s, struct fileloc *pos);
 extern type_p resolve_typedef (const char *s, struct fileloc *pos);
+extern void add_subclass (type_p base, type_p subclass);
 extern type_p new_structure (const char *name, enum typekind kind,
 			     struct fileloc *pos, pair_p fields,
 			     options_p o, type_p base);
@@ -505,5 +515,13 @@ void dbgprint_count_type_at (const char *, int, const char *, type_p);
 #define DBGPRINTF(Fmt,...) do {/*nodbgrintf*/} while (0)
 #define DBGPRINT_COUNT_TYPE(Msg,Ty) do{/*nodbgprint_count_type*/}while (0)
 #endif /*ENABLE_CHECKING */
+
+#define FOR_ALL_INHERITED_FIELDS(TYPE, FIELD_VAR) \
+  for (type_p sub = (TYPE); sub; sub = sub->u.s.base_class) \
+    for (FIELD_VAR = sub->u.s.fields; FIELD_VAR; FIELD_VAR = FIELD_VAR->next)
+
+extern bool
+opts_have (options_p opts, const char *str);
+
 
 #endif

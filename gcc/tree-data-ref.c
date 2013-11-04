@@ -4325,7 +4325,7 @@ typedef struct data_ref_loc_d
    true if STMT clobbers memory, false otherwise.  */
 
 static bool
-get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_stack> *references)
+get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
 {
   bool clobbers_memory = false;
   data_ref_loc ref;
@@ -4417,17 +4417,13 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
 			      vec<data_reference_p> *datarefs)
 {
   unsigned i;
-  vec<data_ref_loc, va_stack> references;
+  stack_vec<data_ref_loc, 2> references;
   data_ref_loc *ref;
   bool ret = true;
   data_reference_p dr;
 
-  vec_stack_alloc (data_ref_loc, references, 2);
   if (get_references_in_stmt (stmt, &references))
-    {
-      references.release ();
-      return false;
-    }
+    return false;
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
@@ -4451,17 +4447,13 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
 				       vec<data_reference_p> *datarefs)
 {
   unsigned i;
-  vec<data_ref_loc, va_stack> references;
+  stack_vec<data_ref_loc, 2> references;
   data_ref_loc *ref;
   bool ret = true;
   data_reference_p dr;
 
-  vec_stack_alloc (data_ref_loc, references, 2);
   if (get_references_in_stmt (stmt, &references))
-    {
-      references.release ();
-      return false;
-    }
+    return false;
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {

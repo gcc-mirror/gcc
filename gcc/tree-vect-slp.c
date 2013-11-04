@@ -1934,7 +1934,7 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
 
 static unsigned
 vect_bb_slp_scalar_cost (basic_block bb,
-			 slp_tree node, vec<bool, va_stack> life)
+			 slp_tree node, vec<bool, va_heap> *life)
 {
   unsigned scalar_cost = 0;
   unsigned i;
@@ -1948,7 +1948,7 @@ vect_bb_slp_scalar_cost (basic_block bb,
       def_operand_p def_p;
       stmt_vec_info stmt_info;
 
-      if (life[i])
+      if ((*life)[i])
 	continue;
 
       /* If there is a non-vectorized use of the defs then the scalar
@@ -1965,11 +1965,11 @@ vect_bb_slp_scalar_cost (basic_block bb,
 		|| gimple_bb (use_stmt) != bb
 		|| !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt)))
 	      {
-		life[i] = true;
+		(*life)[i] = true;
 		BREAK_FROM_IMM_USE_STMT (use_iter);
 	      }
 	}
-      if (life[i])
+      if ((*life)[i])
 	continue;
 
       stmt_info = vinfo_for_stmt (stmt);
@@ -2023,13 +2023,11 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   /* Calculate scalar cost.  */
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
-      vec<bool, va_stack> life;
-      vec_stack_alloc (bool, life, SLP_INSTANCE_GROUP_SIZE (instance));
-      life.quick_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
+      stack_vec<bool, 20> life;
+      life.safe_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
       scalar_cost += vect_bb_slp_scalar_cost (BB_VINFO_BB (bb_vinfo),
 					      SLP_INSTANCE_TREE (instance),
-					      life);
-      life.release ();
+					      &life);
     }
 
   /* Complete the target-specific cost calculation.  */

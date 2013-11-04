@@ -1380,7 +1380,7 @@ upc_genericize_fndecl (tree fndecl)
   upc_genericize_function_tree (fndecl);
   cgn = cgraph_get_create_node (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    upc_genericize_fndecl (cgn->symbol.decl);
+    upc_genericize_fndecl (cgn->decl);
 }
 
 /* Convert the tree representation of FNDECL built by the UPC front-end

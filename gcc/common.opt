@@ -874,6 +874,11 @@ fbounds-check
 Common Report Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays
 
+fcheck-pointer-bounds
+Common Report Var(flag_check_pointer_bounds)
+Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
+control instrumentation.  Currently available for C, C++ and ObjC.
+
 fbranch-count-reg
 Common Report Var(flag_branch_on_count_reg) Init(1) Optimization
 Replace add, compare, branch with branch on count register
@@ -1592,8 +1597,8 @@ Common Joined RejectNegative Var(common_deferred_options) Defer
 -fopt-info[-<type>=filename]	Dump compiler optimization details
 
 foptimize-register-move
-Common Report Var(flag_regmove) Optimization
-Do the full register move optimization pass
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 foptimize-sibling-calls
 Common Report Var(flag_optimize_sibling_calls) Optimization
@@ -1730,8 +1735,8 @@ Common Report Var(flag_pcc_struct_return,0) Optimization
 Return small aggregates in registers
 
 fregmove
-Common Report Var(flag_regmove) Optimization
-Enables a register move optimization
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
@@ -2271,8 +2276,8 @@ Common Report Var(flag_tree_vectorize) Optimization
 Enable vectorization on trees
 
 ftree-vectorizer-verbose=
-Common RejectNegative Joined UInteger Var(common_deferred_options) Defer
--ftree-vectorizer-verbose=<number>	This switch is deprecated. Use -fopt-info instead.
+Common Joined RejectNegative Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ftree-loop-vectorize
 Common Report Var(flag_tree_loop_vectorize) Optimization

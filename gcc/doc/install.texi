@@ -1862,6 +1862,11 @@ This option is only supported for the AVR target.  It is not supported for
 RTEMS configurations, which currently use newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
 
+@item --with-nds32-lib=@var{library}
+Specifies that @var{library} setting is used for building @file{libgcc.a}.
+Currently, the valid @var{library} is @samp{newlib} or @samp{mculib}.
+This option is only supported for the NDS32 target.
+
 @item --with-build-time-tools=@var{dir}
 Specifies where to find the set of target tools (assembler, linker, etc.)
 that will be used while building GCC itself.  This option can be useful

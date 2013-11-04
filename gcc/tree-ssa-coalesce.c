@@ -33,7 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "tree-ssanames.h"
 #include "hash-table.h"
-#include "tree-outof-ssa.h"
+#include "tree-ssa-live.h"
+#include "tree-ssa-coalesce.h"
 #include "diagnostic-core.h"
 
 

@@ -373,6 +373,7 @@ static void init_eliminable_invariants (rtx, bool);
 static void init_elim_table (void);
 static void free_reg_equiv (void);
 static void update_eliminables (HARD_REG_SET *);
+static bool update_eliminables_and_spill (void);
 static void elimination_costs_in_insn (rtx);
 static void spill_hard_reg (unsigned int, int);
 static int finish_spills (int);
@@ -913,9 +914,6 @@ reload (rtx first, int global)
       if (caller_save_needed)
 	setup_save_areas ();
 
-      /* If we allocated another stack slot, redo elimination bookkeeping.  */
-      if (something_was_spilled || starting_frame_size != get_frame_size ())
-	continue;
       if (starting_frame_size && crtl->stack_alignment_needed)
 	{
 	  /* If we have a stack frame, we must align it now.  The
@@ -927,8 +925,12 @@ reload (rtx first, int global)
 	     STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
-	  if (starting_frame_size != get_frame_size ())
-	    continue;
+	}
+      /* If we allocated another stack slot, redo elimination bookkeeping.  */
+      if (something_was_spilled || starting_frame_size != get_frame_size ())
+	{
+	  update_eliminables_and_spill ();
+	  continue;
 	}
 
       if (caller_save_needed)
@@ -962,30 +964,11 @@ reload (rtx first, int global)
       else if (!verify_initial_elim_offsets ())
 	something_changed = 1;
 
-      {
-	HARD_REG_SET to_spill;
-	CLEAR_HARD_REG_SET (to_spill);
-	update_eliminables (&to_spill);
-	AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
-
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (TEST_HARD_REG_BIT (to_spill, i))
-	    {
-	      spill_hard_reg (i, 1);
-	      did_spill = 1;
-
-	      /* Regardless of the state of spills, if we previously had
-		 a register that we thought we could eliminate, but now can
-		 not eliminate, we must run another pass.
-
-		 Consider pseudos which have an entry in reg_equiv_* which
-		 reference an eliminable register.  We must make another pass
-		 to update reg_equiv_* so that we do not substitute in the
-		 old value from when we thought the elimination could be
-		 performed.  */
-	      something_changed = 1;
-	    }
-      }
+      if (update_eliminables_and_spill ())
+	{
+	  did_spill = 1;
+	  something_changed = 1;
+	}
 
       select_reload_regs ();
       if (failure)
@@ -4031,6 +4014,38 @@ update_eliminables (HARD_REG_SET *pset)
     SET_HARD_REG_BIT (*pset, HARD_FRAME_POINTER_REGNUM);
 }
 
+/* Call update_eliminables an spill any registers we can't eliminate anymore.
+   Return true iff a register was spilled.  */
+
+static bool
+update_eliminables_and_spill (void)
+{
+  int i;
+  bool did_spill = false;
+  HARD_REG_SET to_spill;
+  CLEAR_HARD_REG_SET (to_spill);
+  update_eliminables (&to_spill);
+  AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (to_spill, i))
+      {
+	spill_hard_reg (i, 1);
+	did_spill = true;
+
+	/* Regardless of the state of spills, if we previously had
+	   a register that we thought we could eliminate, but now can
+	   not eliminate, we must run another pass.
+
+	   Consider pseudos which have an entry in reg_equiv_* which
+	   reference an eliminable register.  We must make another pass
+	   to update reg_equiv_* so that we do not substitute in the
+	   old value from when we thought the elimination could be
+	   performed.  */
+      }
+  return did_spill;
+}
+
 /* Return true if X is used as the target register of an elimination.  */
 
 bool
@@ -6371,6 +6386,37 @@ replaced_subreg (rtx x)
 }
 #endif
 
+/* Compute the offset to pass to subreg_regno_offset, for a pseudo of
+   mode OUTERMODE that is available in a hard reg of mode INNERMODE.
+   SUBREG is non-NULL if the pseudo is a subreg whose reg is a pseudo,
+   otherwise it is NULL.  */
+
+static int
+compute_reload_subreg_offset (enum machine_mode outermode,
+			      rtx subreg,
+			      enum machine_mode innermode)
+{
+  int outer_offset;
+  enum machine_mode middlemode;
+
+  if (!subreg)
+    return subreg_lowpart_offset (outermode, innermode);
+
+  outer_offset = SUBREG_BYTE (subreg);
+  middlemode = GET_MODE (SUBREG_REG (subreg));
+
+  /* If SUBREG is paradoxical then return the normal lowpart offset
+     for OUTERMODE and INNERMODE.  Our caller has already checked
+     that OUTERMODE fits in INNERMODE.  */
+  if (outer_offset == 0
+      && GET_MODE_SIZE (outermode) > GET_MODE_SIZE (middlemode))
+    return subreg_lowpart_offset (outermode, innermode);
+
+  /* SUBREG is normal, but may not be lowpart; return OUTER_OFFSET
+     plus the normal lowpart offset for MIDDLEMODE and INNERMODE.  */
+  return outer_offset + subreg_lowpart_offset (middlemode, innermode);
+}
+
 /* Assign hard reg targets for the pseudo-registers we must reload
    into hard regs for this insn.
    Also output the instructions to copy them in and out of the hard regs.
@@ -6508,6 +6554,7 @@ choose_reload_regs (struct insn_chain *chain)
 	      int byte = 0;
 	      int regno = -1;
 	      enum machine_mode mode = VOIDmode;
+	      rtx subreg = NULL_RTX;
 
 	      if (rld[r].in == 0)
 		;
@@ -6528,7 +6575,10 @@ choose_reload_regs (struct insn_chain *chain)
 		  if (regno < FIRST_PSEUDO_REGISTER)
 		    regno = subreg_regno (rld[r].in_reg);
 		  else
-		    byte = SUBREG_BYTE (rld[r].in_reg);
+		    {
+		      subreg = rld[r].in_reg;
+		      byte = SUBREG_BYTE (subreg);
+		    }
 		  mode = GET_MODE (rld[r].in_reg);
 		}
 #ifdef AUTO_INC_DEC
@@ -6566,6 +6616,9 @@ choose_reload_regs (struct insn_chain *chain)
 		  rtx last_reg = reg_last_reload_reg[regno];
 
 		  i = REGNO (last_reg);
+		  byte = compute_reload_subreg_offset (mode,
+						       subreg,
+						       GET_MODE (last_reg));
 		  i += subreg_regno_offset (i, GET_MODE (last_reg), byte, mode);
 		  last_class = REGNO_REG_CLASS (i);
 

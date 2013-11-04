@@ -1099,6 +1099,12 @@ gfc_typenode_for_spec (gfc_typespec * spec)
 	basetype = gfc_get_character_type (spec->kind, spec->u.cl);
       break;
 
+    case BT_HOLLERITH:
+      /* Since this cannot be used, return a length one character.  */
+      basetype = gfc_get_character_type_len (gfc_default_character_kind,
+					     gfc_index_one_node);
+      break;
+
     case BT_DERIVED:
     case BT_CLASS:
       basetype = gfc_get_derived_type (spec->u.derived);

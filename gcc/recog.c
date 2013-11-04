@@ -726,7 +726,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
   /* Call ourself recursively to perform the replacements.
      We must not replace inside already replaced expression, otherwise we
      get infinite recursion for replacements like (reg X)->(subreg (reg X))
-     done by regmove, so we must special case shared ASM_OPERANDS.  */
+     so we must special case shared ASM_OPERANDS.  */
 
   if (GET_CODE (x) == PARALLEL)
     {
@@ -762,6 +762,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
   if (num_changes == prev_changes)
     return;
 
+  /* ??? The regmove is no more, so is this aberration still necessary?  */
   /* Allow substituted expression to have different mode.  This is used by
      regmove to change mode of pseudo register.  */
   if (fmt[0] == 'e' && GET_MODE (XEXP (x, 0)) != VOIDmode)

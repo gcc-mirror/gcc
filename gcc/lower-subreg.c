@@ -967,7 +967,20 @@ resolve_simple_move (rtx set, rtx insn)
       rtx reg;
 
       reg = gen_reg_rtx (orig_mode);
+
+#ifdef AUTO_INC_DEC
+      {
+	rtx move = emit_move_insn (reg, src);
+	if (MEM_P (src))
+	  {
+	    rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
+	    if (note)
+	      add_reg_note (move, REG_INC, XEXP (note, 0));
+	  }
+      }
+#else
       emit_move_insn (reg, src);
+#endif
       src = reg;
     }
 
@@ -1057,6 +1070,16 @@ resolve_simple_move (rtx set, rtx insn)
 	mdest = simplify_gen_subreg (orig_mode, dest, GET_MODE (dest), 0);
       minsn = emit_move_insn (real_dest, mdest);
 
+#ifdef AUTO_INC_DEC
+  if (MEM_P (real_dest)
+      && !(resolve_reg_p (real_dest) || resolve_subreg_p (real_dest)))
+    {
+      rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
+      if (note)
+	add_reg_note (minsn, REG_INC, XEXP (note, 0));
+    }
+#endif
+
       smove = single_set (minsn);
       gcc_assert (smove != NULL_RTX);
 
@@ -1070,7 +1093,7 @@ resolve_simple_move (rtx set, rtx insn)
 
   emit_insn_before (insns, insn);
 
-  /* If we get here via self-recutsion, then INSN is not yet in the insns
+  /* If we get here via self-recursion, then INSN is not yet in the insns
      chain and delete_insn will fail.  We only want to remove INSN from the
      current sequence.  See PR56738.  */
   if (in_sequence_p ())

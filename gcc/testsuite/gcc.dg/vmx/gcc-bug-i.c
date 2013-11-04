@@ -13,12 +13,27 @@
 #define DO_INLINE __attribute__ ((always_inline))
 #define DONT_INLINE __attribute__ ((noinline))
 
+#ifdef __LITTLE_ENDIAN__
+static inline DO_INLINE int inline_me(vector signed short data)
+{
+  union {vector signed short v; signed short s[8];} u;
+  signed short x;
+  unsigned char x1, x2;
+
+  u.v = data;
+  x = u.s[7];
+  x1 = (x >> 8) & 0xff;
+  x2 = x & 0xff;
+  return ((x2 << 8) | x1);
+}
+#else
 static inline DO_INLINE int inline_me(vector signed short data) 
 {
   union {vector signed short v; signed short s[8];} u;
   u.v = data;
   return u.s[7];
 }
+#endif
 
 static DONT_INLINE int foo(vector signed short data)
 {

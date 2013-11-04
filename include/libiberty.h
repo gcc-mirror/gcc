@@ -107,7 +107,7 @@ extern int countargv (char**);
    is 1, we found it so don't provide any declaration at all.  */
 #if !HAVE_DECL_BASENAME
 #if defined (__GNU_LIBRARY__ ) || defined (__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__) || defined (__CYGWIN__) || defined (__CYGWIN32__) || defined (__MINGW32__) || defined (HAVE_DECL_BASENAME)
-extern char *basename (const char *);
+extern char *basename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 #else
 /* Do not allow basename to be used if there is no prototype seen.  We
    either need to use the above prototype or have one from
@@ -118,18 +118,18 @@ extern char *basename (const char *);
 
 /* A well-defined basename () that is always compiled in.  */
 
-extern const char *lbasename (const char *);
+extern const char *lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 
 /* Same, but assumes DOS semantics (drive name, backslash is also a
    dir separator) regardless of host.  */
 
-extern const char *dos_lbasename (const char *);
+extern const char *dos_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 
 /* Same, but assumes Unix semantics (absolute paths always start with
    a slash, only forward slash is accepted as dir separator)
    regardless of host.  */
 
-extern const char *unix_lbasename (const char *);
+extern const char *unix_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 
 /* A well-defined realpath () that is always compiled in.  */
 
@@ -139,7 +139,7 @@ extern char *lrealpath (const char *);
    the last argument of this function, to terminate the list of
    strings.  Allocates memory using xmalloc.  */
 
-extern char *concat (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_SENTINEL;
+extern char *concat (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_SENTINEL;
 
 /* Concatenate an arbitrary number of strings.  You must pass NULL as
    the last argument of this function, to terminate the list of
@@ -148,7 +148,7 @@ extern char *concat (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_SENTINEL;
    pointer to be freed after the new string is created, similar to the
    way xrealloc works.  */
 
-extern char *reconcat (char *, const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_SENTINEL;
+extern char *reconcat (char *, const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_SENTINEL;
 
 /* Determine the length of concatenating an arbitrary number of
    strings.  You must pass NULL as the last argument of this function,
@@ -161,14 +161,14 @@ extern unsigned long concat_length (const char *, ...) ATTRIBUTE_SENTINEL;
    to terminate the list of strings.  The supplied memory is assumed
    to be large enough.  */
 
-extern char *concat_copy (char *, const char *, ...) ATTRIBUTE_SENTINEL;
+extern char *concat_copy (char *, const char *, ...) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1) ATTRIBUTE_SENTINEL;
 
 /* Concatenate an arbitrary number of strings into a GLOBAL area of
    memory.  You must pass NULL as the last argument of this function,
    to terminate the list of strings.  The supplied memory is assumed
    to be large enough.  */
 
-extern char *concat_copy2 (const char *, ...) ATTRIBUTE_SENTINEL;
+extern char *concat_copy2 (const char *, ...) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_SENTINEL;
 
 /* This is the global area used by concat_copy2.  */
 
@@ -226,7 +226,7 @@ extern char *make_relative_prefix_ignore_links (const char *, const char *,
 
 /* Choose a temporary directory to use for scratch files.  */
 
-extern char *choose_temp_base (void) ATTRIBUTE_MALLOC;
+extern char *choose_temp_base (void) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Return a temporary file name or NULL if unable to create one.  */
 
@@ -256,7 +256,7 @@ extern int strtoerrno (const char *);
 
 /* ANSI's strerror(), but more robust.  */
 
-extern char *xstrerror (int);
+extern char *xstrerror (int) ATTRIBUTE_RETURNS_NONNULL;
 
 /* Return the maximum signal number for which strsignal will return a
    string.  */
@@ -298,30 +298,30 @@ extern void xmalloc_failed (size_t) ATTRIBUTE_NORETURN;
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */
 
-extern void *xmalloc (size_t) ATTRIBUTE_MALLOC;
+extern void *xmalloc (size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Reallocate memory without fail.  This works like xmalloc.  Note,
    realloc type functions are not suitable for attribute malloc since
    they may return the same address across multiple calls. */
 
-extern void *xrealloc (void *, size_t);
+extern void *xrealloc (void *, size_t) ATTRIBUTE_RETURNS_NONNULL;
 
 /* Allocate memory without fail and set it to zero.  This works like
    xmalloc.  */
 
-extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
+extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Copy a string into a memory buffer without fail.  */
 
-extern char *xstrdup (const char *) ATTRIBUTE_MALLOC;
+extern char *xstrdup (const char *) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Copy at most N characters from string into a buffer without fail.  */
 
-extern char *xstrndup (const char *, size_t) ATTRIBUTE_MALLOC;
+extern char *xstrndup (const char *, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Copy an existing memory buffer to a new memory buffer without fail.  */
 
-extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC;
+extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 /* Physical memory routines.  Return values are in BYTES.  */
 extern double physmem_total (void);
@@ -399,7 +399,7 @@ extern void hex_init (void);
    Returns NULL on error.  */
 
 extern struct pex_obj *pex_init (int flags, const char *pname,
-				 const char *tempbase);
+				 const char *tempbase) ATTRIBUTE_RETURNS_NONNULL;
 
 /* Flags for pex_run.  These are bits to be or'ed together.  */
 

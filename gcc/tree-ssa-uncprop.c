@@ -361,15 +361,7 @@ record_equiv (tree value, tree equivalence)
 class uncprop_dom_walker : public dom_walker
 {
 public:
-  uncprop_dom_walker (cdi_direction direction)
-    : dom_walker (direction)
-  {
-    m_equiv_stack.create (2);
-  }
-  ~uncprop_dom_walker ()
-  {
-    m_equiv_stack.release ();
-  }
+  uncprop_dom_walker (cdi_direction direction) : dom_walker (direction) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -380,7 +372,7 @@ private:
      leading to this block.  If no such edge equivalency exists, then we
      record NULL.  These equivalences are live until we leave the dominator
      subtree rooted at the block where we record the equivalency.  */
-  vec<tree> m_equiv_stack;
+  stack_vec<tree, 2> m_equiv_stack;
 };
 
 /* Main driver for un-cprop.  */

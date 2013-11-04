@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_IPA_UTILS_H
 #define GCC_IPA_UTILS_H
-#include "tree-core.h"
 #include "cgraph.h"
 
 struct ipa_dfs_info {

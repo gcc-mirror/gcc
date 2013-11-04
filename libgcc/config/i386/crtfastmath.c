@@ -21,6 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _SOFT_FLOAT
 #define MXCSR_DAZ (1 << 6)	/* Enable denormals are zero mode */
 #define MXCSR_FTZ (1 << 15)	/* Enable flush to zero mode */
 
@@ -134,3 +135,4 @@ set_fast_math (void)
   __builtin_ia32_ldmxcsr (mxcsr);
 #endif
 }
+#endif

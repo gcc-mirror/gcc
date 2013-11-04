@@ -10,6 +10,6 @@ avx_test (char **cp, char **ep)
     *ap++ = *cp++;
 }
 
-/* { dg-final { scan-assembler-not "avx_loaddqu256" } } */
-/* { dg-final { scan-assembler "sse2_loaddqu" } } */
+/* { dg-final { scan-assembler-not "(avx_loaddqu256|vmovdqu\[^\n\r]*movv32qi_internal)" } } */
+/* { dg-final { scan-assembler "(sse2_loaddqu|vmovdqu\[^\n\r]*movv16qi_internal)" } } */
 /* { dg-final { scan-assembler "vinsert.128" } } */

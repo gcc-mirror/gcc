@@ -1231,27 +1231,18 @@ class sese_dom_walker : public dom_walker
 {
 public:
   sese_dom_walker (cdi_direction, sese);
-  ~sese_dom_walker ();
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
-  vec<gimple> m_conditions, m_cases;
+  stack_vec<gimple, 3> m_conditions, m_cases;
   sese m_region;
 };
 
 sese_dom_walker::sese_dom_walker (cdi_direction direction, sese region)
   : dom_walker (direction), m_region (region)
 {
-  m_conditions.create (3);
-  m_cases.create (3);
-}
-
-sese_dom_walker::~sese_dom_walker ()
-{
-  m_conditions.release ();
-  m_cases.release ();
 }
 
 /* Call-back for dom_walk executed before visiting the dominated
@@ -1890,8 +1881,7 @@ build_scop_drs (scop_p scop)
   int i, j;
   poly_bb_p pbb;
   data_reference_p dr;
-  vec<data_reference_p> drs;
-  drs.create (3);
+  stack_vec<data_reference_p, 3> drs;
 
   /* Remove all the PBBs that do not have data references: these basic
      blocks are not handled in the polyhedral representation.  */
@@ -1989,8 +1979,7 @@ insert_stmts (scop_p scop, gimple stmt, gimple_seq stmts,
 	      gimple_stmt_iterator insert_gsi)
 {
   gimple_stmt_iterator gsi;
-  vec<gimple> x;
-  x.create (3);
+  stack_vec<gimple, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1998,7 +1987,6 @@ insert_stmts (scop_p scop, gimple stmt, gimple_seq stmts,
 
   gsi_insert_seq_before (&insert_gsi, stmts, GSI_SAME_STMT);
   analyze_drs_in_stmts (scop, gsi_bb (insert_gsi), x);
-  x.release ();
 }
 
 /* Insert the assignment "RES := EXPR" just after AFTER_STMT.  */
@@ -2010,8 +1998,7 @@ insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple after_stmt)
   gimple_stmt_iterator gsi;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
   gimple stmt = gimple_build_assign (unshare_expr (res), var);
-  vec<gimple> x;
-  x.create (3);
+  stack_vec<gimple, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2029,7 +2016,6 @@ insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple after_stmt)
     }
 
   analyze_drs_in_stmts (scop, gimple_bb (after_stmt), x);
-  x.release ();
 }
 
 /* Creates a poly_bb_p for basic_block BB from the existing PBB.  */
@@ -2067,8 +2053,7 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
   gimple stmt = gimple_build_assign (unshare_expr (res), var);
   basic_block bb;
-  vec<gimple> x;
-  x.create (3);
+  stack_vec<gimple, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2085,7 +2070,6 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
     new_pbb_from_pbb (scop, pbb_from_bb (e->src), bb);
 
   analyze_drs_in_stmts (scop, bb, x);
-  x.release ();
 }
 
 /* Creates a zero dimension array of the same type as VAR.  */
@@ -2881,8 +2865,7 @@ remove_phi (gimple phi)
   tree def;
   use_operand_p use_p;
   gimple_stmt_iterator gsi;
-  vec<gimple> update;
-  update.create (3);
+  stack_vec<gimple, 3> update;
   unsigned int i;
   gimple stmt;
 
@@ -2900,8 +2883,6 @@ remove_phi (gimple phi)
 
   FOR_EACH_VEC_ELT (update, i, stmt)
     update_stmt (stmt);
-
-  update.release ();
 
   gsi = gsi_for_phi_node (phi);
   remove_phi_node (&gsi, false);
@@ -3042,18 +3023,14 @@ rewrite_commutative_reductions_out_of_ssa_close_phi (scop_p scop,
 						     gimple close_phi)
 {
   bool res;
-  vec<gimple> in;
-  in.create (10);
-  vec<gimple> out;
-  out.create (10);
+  stack_vec<gimple, 10> in;
+  stack_vec<gimple, 10> out;
 
   detect_commutative_reduction (scop, close_phi, &in, &out);
   res = in.length () > 1;
   if (res)
     translate_scalar_reduction_to_array (scop, in, out);
 
-  in.release ();
-  out.release ();
   return res;
 }
 

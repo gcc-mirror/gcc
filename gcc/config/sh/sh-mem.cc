@@ -200,22 +200,25 @@ sh_expand_cmpstr (rtx *operands)
   rtx L_return = gen_label_rtx ();
   rtx L_loop_byte = gen_label_rtx ();
   rtx L_end_loop_byte = gen_label_rtx ();
-  rtx L_loop_long = gen_label_rtx ();
-  rtx L_end_loop_long = gen_label_rtx ();
 
   rtx jump, addr1, addr2;
   int prob_unlikely = REG_BR_PROB_BASE / 10;
   int prob_likely = REG_BR_PROB_BASE / 4;
 
-  emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
-  emit_move_insn (tmp0, GEN_INT (3));
+  rtx L_loop_long = gen_label_rtx ();
+  rtx L_end_loop_long = gen_label_rtx ();
 
-  emit_insn (gen_tstsi_t (tmp0, tmp1));
+  int align = INTVAL (operands[3]);
 
   emit_move_insn (tmp0, const0_rtx);
 
-  jump = emit_jump_insn (gen_branch_false (L_loop_byte));
-  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+  if (align < 4)
+    {
+      emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
+      emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
 
   addr1 = adjust_automodify_address (s1, SImode, s1_addr, 0);
   addr2 = adjust_automodify_address (s2, SImode, s2_addr, 0);
@@ -250,7 +253,7 @@ sh_expand_cmpstr (rtx *operands)
   add_int_reg_note (jump, REG_BR_PROB, prob_likely);
   /* end loop.  */
 
-  /* Fallthu, check if one of the word is greater.  */
+  /* Fallthu, substract words.  */
   if (TARGET_LITTLE_ENDIAN)
     {
       rtx low_1 = gen_lowpart (HImode, tmp1);
@@ -267,14 +270,14 @@ sh_expand_cmpstr (rtx *operands)
   jump = emit_jump_insn (gen_jump_compact (L_return));
   emit_barrier_after (jump);
 
-  /* start byte loop.  */
-  addr1 = adjust_automodify_address (s1, QImode, s1_addr, 0);
-  addr2 = adjust_automodify_address (s2, QImode, s2_addr, 0);
-
   emit_label (L_end_loop_long);
 
   emit_move_insn (s1_addr, plus_constant (Pmode, s1_addr, -4));
   emit_move_insn (s2_addr, plus_constant (Pmode, s2_addr, -4));
+
+  /* start byte loop.  */
+  addr1 = adjust_automodify_address (s1, QImode, s1_addr, 0);
+  addr2 = adjust_automodify_address (s2, QImode, s2_addr, 0);
 
   emit_label (L_loop_byte);
 
@@ -289,13 +292,16 @@ sh_expand_cmpstr (rtx *operands)
   add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
 
   emit_insn (gen_cmpeqsi_t (tmp1, tmp2));
-  emit_jump_insn (gen_branch_true (L_loop_byte));
+  if (flag_delayed_branch)
+    emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
+  jump = emit_jump_insn (gen_branch_true (L_loop_byte));
   add_int_reg_note (jump, REG_BR_PROB, prob_likely);
   /* end loop.  */
 
   emit_label (L_end_loop_byte);
 
-  emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
+  if (! flag_delayed_branch)
+    emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
   emit_insn (gen_zero_extendqisi2 (tmp1, gen_lowpart (QImode, tmp1)));
 
   emit_label (L_return);
@@ -305,3 +311,166 @@ sh_expand_cmpstr (rtx *operands)
   return true;
 }
 
+/* Emit code to perform a strncmp.
+
+   OPERANDS[0] is the destination.
+   OPERANDS[1] is the first string.
+   OPERANDS[2] is the second string.
+   OPERANDS[3] is the length.
+   OPERANDS[4] is the align.  */
+bool
+sh_expand_cmpnstr (rtx *operands)
+{
+  rtx s1 = copy_rtx (operands[1]);
+  rtx s2 = copy_rtx (operands[2]);
+
+  rtx s1_addr = copy_addr_to_reg (XEXP (s1, 0));
+  rtx s2_addr = copy_addr_to_reg (XEXP (s2, 0));
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (SImode);
+  rtx tmp2 = gen_reg_rtx (SImode);
+
+  rtx L_return = gen_label_rtx ();
+  rtx L_loop_byte = gen_label_rtx ();
+  rtx L_end_loop_byte = gen_label_rtx ();
+
+  rtx jump, addr1, addr2;
+  int prob_unlikely = REG_BR_PROB_BASE / 10;
+  int prob_likely = REG_BR_PROB_BASE / 4;
+
+  rtx len = force_reg (SImode, operands[3]);
+  int constp = (CONST_INT_P (operands[3]));
+  int bytes = (constp ? INTVAL (operands[3]) : 0);
+  int witers = bytes / 4;
+
+  /* We could still loop on a register count. Not found very
+     convincing to optimize yet.  */
+  if (! constp)
+    return false;
+
+  if (witers > 1)
+    {
+      rtx L_loop_long = gen_label_rtx ();
+      rtx L_end_loop_long = gen_label_rtx ();
+      rtx tmp3 = gen_reg_rtx (SImode);
+      rtx lenw = gen_reg_rtx (SImode);
+      int align = INTVAL (operands[4]);
+
+      emit_move_insn (tmp0, const0_rtx);
+
+      if (align < 4)
+	{
+	  emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
+	  emit_insn (gen_tstsi_t (GEN_INT (3), tmp1));
+	  jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+	  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+	}
+
+      addr1 = adjust_automodify_address (s1, SImode, s1_addr, 0);
+      addr2 = adjust_automodify_address (s2, SImode, s2_addr, 0);
+
+      /* words count.  */
+      emit_insn (gen_lshrsi3 (lenw, len, GEN_INT (2)));
+
+      /*start long loop.  */
+      emit_label (L_loop_long);
+
+      /* tmp2 is aligned, OK to load.  */
+      emit_move_insn (tmp2, addr2);
+      emit_move_insn (s2_addr, plus_constant (Pmode, s2_addr, 4));
+
+      /* tmp1 is aligned, OK to load.  */
+      emit_move_insn (tmp1, addr1);
+      emit_move_insn (s1_addr, plus_constant (Pmode, s1_addr, 4));
+
+      /* Is there a 0 byte ?  */
+      emit_insn (gen_andsi3 (tmp3, tmp2, tmp1));
+
+      emit_insn (gen_cmpstr_t (tmp0, tmp3));
+      jump = emit_jump_insn (gen_branch_true (L_end_loop_long));
+      add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+
+      emit_insn (gen_cmpeqsi_t (tmp1, tmp2));
+      jump = emit_jump_insn (gen_branch_false (L_end_loop_long));
+      add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+
+      if (TARGET_SH2)
+	emit_insn (gen_dect (lenw, lenw));
+      else
+	{
+	  emit_insn (gen_addsi3 (lenw, lenw, GEN_INT (-1)));
+	  emit_insn (gen_tstsi_t (lenw, lenw));
+	}
+      jump = emit_jump_insn (gen_branch_false (L_loop_long));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+
+      /* end loop.  Reached max iterations.  */
+      if (bytes % 4 == 0)
+	{
+	  /* Done.  */
+	  jump = emit_jump_insn (gen_jump_compact (L_return));
+	  emit_barrier_after (jump);
+	}
+      else
+	{
+	  /* Remaining bytes to read.   */
+	  emit_move_insn (len, GEN_INT (bytes % 4));
+	  jump = emit_jump_insn (gen_jump_compact (L_loop_byte));
+	  emit_barrier_after (jump);
+	}
+
+      emit_label (L_end_loop_long);
+
+      /* Remaining bytes to read.   */
+      emit_move_insn (len, GEN_INT (4));
+
+      /* Found last word.  Restart it byte per byte. */
+      emit_move_insn (s1_addr, plus_constant (Pmode, s1_addr, -4));
+      emit_move_insn (s2_addr, plus_constant (Pmode, s2_addr, -4));
+    }
+
+    addr1 = adjust_automodify_address (s1, QImode, s1_addr, 0);
+    addr2 = adjust_automodify_address (s2, QImode, s2_addr, 0);
+
+    emit_label (L_loop_byte);
+
+    emit_insn (gen_extendqisi2 (tmp2, addr2));
+    emit_move_insn (s2_addr, plus_constant (Pmode, s2_addr, 1));
+
+    emit_insn (gen_extendqisi2 (tmp1, addr1));
+    emit_move_insn (s1_addr, plus_constant (Pmode, s1_addr, 1));
+
+    emit_insn (gen_cmpeqsi_t (tmp2, const0_rtx));
+    jump = emit_jump_insn (gen_branch_true (L_end_loop_byte));
+    add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+
+    emit_insn (gen_cmpeqsi_t (tmp1, tmp2));
+    if (flag_delayed_branch)
+      emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
+    jump = emit_jump_insn (gen_branch_false (L_end_loop_byte));
+    add_int_reg_note (jump, REG_BR_PROB, prob_unlikely);
+
+    if (TARGET_SH2)
+      emit_insn (gen_dect (len, len));
+    else
+      {
+	emit_insn (gen_addsi3 (len, len, GEN_INT (-1)));
+	emit_insn (gen_tstsi_t (len, len));
+      }
+
+    jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+    add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    /* end byte loop.  */
+
+    emit_label (L_end_loop_byte);
+
+    if (! flag_delayed_branch)
+      emit_insn (gen_zero_extendqisi2 (tmp2, gen_lowpart (QImode, tmp2)));
+    emit_insn (gen_zero_extendqisi2 (tmp1, gen_lowpart (QImode, tmp1)));
+
+    emit_label (L_return);
+
+    emit_insn (gen_subsi3 (operands[0], tmp1, tmp2));
+
+    return true;
+}

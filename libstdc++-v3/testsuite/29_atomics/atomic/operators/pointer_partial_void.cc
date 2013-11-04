@@ -42,28 +42,28 @@ int main(void)
   a++;
   void* vp3(a);
   dist = reinterpret_cast<char*>(vp2) - reinterpret_cast<char*>(vp3);
-  // VERIFY ( std::abs(dist) == sizeof(void*));
+  VERIFY ( std::abs(dist) == 1 );
 
   // operator--
   void* vp4(a);
   a--;
   void* vp5(a);
   dist = reinterpret_cast<char*>(vp4) - reinterpret_cast<char*>(vp5);
-  // VERIFY ( std::abs(dist) == sizeof(void*));
+  VERIFY ( std::abs(dist) == 1 );
 
   // operator+=
   void* vp6(a);
   a+=n;
   void* vp7(a);
   dist = reinterpret_cast<char*>(vp6) - reinterpret_cast<char*>(vp7);
-  // VERIFY ( std::abs(dist) == sizeof(void*) * n);
+  VERIFY ( std::abs(dist) == n );
 
   // operator-=
   void* vp8(a);
   a-=n;
   void* vp9(a);
   dist = reinterpret_cast<char*>(vp8) - reinterpret_cast<char*>(vp9);
-  //VERIFY ( std::abs(dist) == sizeof(void*) * n);
+  VERIFY ( std::abs(dist) == n );
 
   return 0;
 }

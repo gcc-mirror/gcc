@@ -185,7 +185,7 @@ ipa_profile_generate_summary (void)
 				      10);
   
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-    FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->symbol.decl))
+    FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
       {
 	int time = 0;
 	int size = 0;
@@ -197,7 +197,7 @@ ipa_profile_generate_summary (void)
 	      {
 		histogram_value h;
 		h = gimple_histogram_value_of_type
-		      (DECL_STRUCT_FUNCTION (node->symbol.decl),
+		      (DECL_STRUCT_FUNCTION (node->decl),
 		       stmt, HIST_TYPE_INDIR_CALL);
 		/* No need to do sanity check: gimple_ic_transform already
 		   takes away bad histograms.  */
@@ -219,7 +219,7 @@ ipa_profile_generate_summary (void)
 			    e->indirect_info->common_target_probability = REG_BR_PROB_BASE;
 			  }
 		      }
-		    gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->symbol.decl),
+		    gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->decl),
 						    stmt, h);
 		  }
 	      }
@@ -325,7 +325,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	  /* It makes sense to put main() together with the static constructors.
 	     It will be executed for sure, but rest of functions called from
 	     main are definitely not at startup only.  */
-	  if (MAIN_NAME_P (DECL_NAME (edge->caller->symbol.decl)))
+	  if (MAIN_NAME_P (DECL_NAME (edge->caller->decl)))
 	    d->only_called_at_startup = 0;
           d->only_called_at_exit &= edge->caller->only_called_at_exit;
 	}
@@ -401,10 +401,10 @@ ipa_propagate_frequency (struct cgraph_node *node)
   /* We can not propagate anything useful about externally visible functions
      nor about virtuals.  */
   if (!node->local.local
-      || node->symbol.alias
-      || (flag_devirtualize && DECL_VIRTUAL_P (node->symbol.decl)))
+      || node->alias
+      || (flag_devirtualize && DECL_VIRTUAL_P (node->decl)))
     return false;
-  gcc_assert (node->symbol.analyzed);
+  gcc_assert (node->analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
 
@@ -589,8 +589,8 @@ ipa_profile (void)
 		    {
 		      fprintf (dump_file, "Indirect call -> direct call from"
 			       " other module %s/%i => %s/%i, prob %3.2f\n",
-			       xstrdup (cgraph_node_name (n)), n->symbol.order,
-			       xstrdup (cgraph_node_name (n2)), n2->symbol.order,
+			       xstrdup (cgraph_node_name (n)), n->order,
+			       xstrdup (cgraph_node_name (n2)), n2->order,
 			       e->indirect_info->common_target_probability
 			       / (float)REG_BR_PROB_BASE);
 		    }
@@ -611,7 +611,7 @@ ipa_profile (void)
 		    }
 		  else if (cgraph_function_body_availability (n2)
 			   <= AVAIL_OVERWRITABLE
-			   && symtab_can_be_discarded ((symtab_node) n2))
+			   && symtab_can_be_discarded (n2))
 		    {
 		      nuseless++;
 		      if (dump_file)
@@ -625,11 +625,11 @@ ipa_profile (void)
 			 control flow goes to this particular implementation
 			 of N2.  Speculate on the local alias to allow inlining.
 		       */
-		      if (!symtab_can_be_discarded ((symtab_node) n2))
+		      if (!symtab_can_be_discarded (n2))
 			{
 			  cgraph_node *alias;
 			  alias = cgraph (symtab_nonoverwritable_alias
-					   ((symtab_node)n2));
+					   (n2));
 			  if (alias)
 			    n2 = alias;
 			}
@@ -677,13 +677,13 @@ ipa_profile (void)
       if (order[i]->local.local && ipa_propagate_frequency (order[i]))
 	{
 	  for (e = order[i]->callees; e; e = e->next_callee)
-	    if (e->callee->local.local && !e->callee->symbol.aux)
+	    if (e->callee->local.local && !e->callee->aux)
 	      {
 	        something_changed = true;
-	        e->callee->symbol.aux = (void *)1;
+	        e->callee->aux = (void *)1;
 	      }
 	}
-      order[i]->symbol.aux = NULL;
+      order[i]->aux = NULL;
     }
 
   while (something_changed)
@@ -691,16 +691,16 @@ ipa_profile (void)
       something_changed = false;
       for (i = order_pos - 1; i >= 0; i--)
 	{
-	  if (order[i]->symbol.aux && ipa_propagate_frequency (order[i]))
+	  if (order[i]->aux && ipa_propagate_frequency (order[i]))
 	    {
 	      for (e = order[i]->callees; e; e = e->next_callee)
-		if (e->callee->local.local && !e->callee->symbol.aux)
+		if (e->callee->local.local && !e->callee->aux)
 		  {
 		    something_changed = true;
-		    e->callee->symbol.aux = (void *)1;
+		    e->callee->aux = (void *)1;
 		  }
 	    }
-	  order[i]->symbol.aux = NULL;
+	  order[i]->aux = NULL;
 	}
     }
   free (order);

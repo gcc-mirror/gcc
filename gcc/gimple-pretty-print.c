@@ -539,11 +539,12 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 static void
 dump_gimple_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
-  tree t;
+  tree t, t2;
 
   t = gimple_return_retval (gs);
+  t2 = gimple_return_retbnd (gs);
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, t);
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T %T>", gs, t, t2);
   else
     {
       pp_string (buffer, "return");
@@ -551,6 +552,11 @@ dump_gimple_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 	{
 	  pp_space (buffer);
 	  dump_generic_node (buffer, t, spc, flags, false);
+	}
+      if (t2)
+	{
+	  pp_string (buffer, ", ");
+	  dump_generic_node (buffer, t2, spc, flags, false);
 	}
       pp_semicolon (buffer);
     }
@@ -1731,7 +1737,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
   if (!POINTER_TYPE_P (TREE_TYPE (node))
       && SSA_NAME_RANGE_INFO (node))
     {
-      double_int min, max;
+      double_int min, max, nonzero_bits;
       value_range_type range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)
@@ -1744,8 +1750,20 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
 	  pp_printf (buffer, ", ");
 	  pp_double_int (buffer, max, TYPE_UNSIGNED (TREE_TYPE (node)));
 	  pp_printf (buffer, "]");
-	  newline_and_indent (buffer, spc);
 	}
+      nonzero_bits = get_nonzero_bits (node);
+      if (nonzero_bits != double_int_minus_one
+	  && (nonzero_bits
+	      != double_int::mask (TYPE_PRECISION (TREE_TYPE (node)))))
+	{
+	  pp_string (buffer, " NONZERO ");
+	  sprintf (pp_buffer (buffer)->digit_buffer,
+		   HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		   (unsigned HOST_WIDE_INT) nonzero_bits.high,
+		   nonzero_bits.low);
+	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	}
+      newline_and_indent (buffer, spc);
     }
 }
 

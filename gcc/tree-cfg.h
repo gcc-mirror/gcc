@@ -51,6 +51,7 @@ extern bool is_ctrl_stmt (gimple);
 extern bool is_ctrl_altering_stmt (gimple);
 extern bool simple_goto_p (gimple);
 extern bool stmt_ends_bb_p (gimple);
+extern bool assert_unreachable_fallthru_edge_p (edge);
 extern void delete_tree_cfg_annotations (void);
 extern gimple first_stmt (basic_block);
 extern gimple last_stmt (basic_block);

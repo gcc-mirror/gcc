@@ -554,12 +554,12 @@ unsigned
 coverage_compute_profile_id (struct cgraph_node *n)
 {
   expanded_location xloc
-    = expand_location (DECL_SOURCE_LOCATION (n->symbol.decl));
+    = expand_location (DECL_SOURCE_LOCATION (n->decl));
   unsigned chksum = xloc.line;
 
   chksum = coverage_checksum_string (chksum, xloc.file);
   chksum = coverage_checksum_string
-    (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->symbol.decl)));
+    (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
   if (first_global_object_name)
     chksum = coverage_checksum_string
       (chksum, first_global_object_name);

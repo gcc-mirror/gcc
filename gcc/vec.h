@@ -101,8 +101,6 @@ along with GCC; see the file COPYING3.  If not see
 	- Heap: allocation is done using malloc/free.  This is the
 	  default allocation strategy.
 
-  	- Stack: allocation is done using alloca.
-
   	- GC: allocation is done using ggc_alloc/ggc_free.
 
   	- GC atomic: same as GC with the exception that the elements
@@ -233,9 +231,9 @@ struct vec_prefix
   friend struct va_gc;
   friend struct va_gc_atomic;
   friend struct va_heap;
-  friend struct va_stack;
 
-  unsigned m_alloc;
+  unsigned m_alloc : 31;
+  unsigned m_has_auto_buf : 1;
   unsigned m_num;
 };
 
@@ -255,8 +253,7 @@ struct vl_ptr { };
    va_heap	- Allocation uses malloc/free.
    va_gc	- Allocation uses ggc_alloc.
    va_gc_atomic	- Same as GC, but individual elements of the array
-		  do not need to be marked during collection.
-   va_stack	- Allocation uses alloca.  */
+		  do not need to be marked during collection.  */
 
 /* Allocator type for heap vectors.  */
 struct va_heap
@@ -401,107 +398,6 @@ struct va_gc_atomic : va_gc
 };
 
 
-/* Allocator type for stack vectors.  */
-struct va_stack
-{
-  /* Use vl_ptr as the default layout for stack vectors.  */
-  typedef vl_ptr default_layout;
-
-  template<typename T>
-  static void alloc (vec<T, va_stack, vl_ptr>&, unsigned,
-		     vec<T, va_stack, vl_embed> *);
-
-  template <typename T>
-  static void reserve (vec<T, va_stack, vl_embed> *&, unsigned, bool
-		       CXX_MEM_STAT_INFO);
-
-  template <typename T>
-  static void release (vec<T, va_stack, vl_embed> *&);
-};
-
-/* Helper functions to keep track of vectors allocated on the stack.  */
-void register_stack_vec (void *);
-int stack_vec_register_index (void *);
-void unregister_stack_vec (unsigned);
-
-/* Allocate a vector V which uses alloca for the initial allocation.
-   SPACE is space allocated using alloca.  NELEMS is the number of
-   entries allocated.  */
-
-template<typename T>
-void
-va_stack::alloc (vec<T, va_stack, vl_ptr> &v, unsigned nelems,
-		 vec<T, va_stack, vl_embed> *space)
-{
-  v.m_vec = space;
-  register_stack_vec (static_cast<void *> (v.m_vec));
-  v.m_vec->embedded_init (nelems, 0);
-}
-
-
-/* Reserve NELEMS slots for a vector initially allocated on the stack.
-   When this happens, we switch back to heap allocation.  We remove
-   the vector from stack_vecs, if it is there, since we no longer need
-   to avoid freeing it.  If EXACT is true, grow exactly, otherwise
-   grow exponentially.  */
-
-template<typename T>
-void
-va_stack::reserve (vec<T, va_stack, vl_embed> *&v, unsigned nelems, bool exact
-		   MEM_STAT_DECL)
-{
-  int ix = stack_vec_register_index (static_cast<void *> (v));
-  if (ix >= 0)
-    unregister_stack_vec (ix);
-  else
-    {
-      /* V is already on the heap.  */
-      va_heap::reserve (reinterpret_cast<vec<T, va_heap, vl_embed> *&> (v),
-			nelems, exact PASS_MEM_STAT);
-      return;
-    }
-
-  /* Move VEC_ to the heap.  */
-  nelems += v->m_vecpfx.m_num;
-  vec<T, va_stack, vl_embed> *oldvec = v;
-  v = NULL;
-  va_heap::reserve (reinterpret_cast<vec<T, va_heap, vl_embed> *&>(v), nelems,
-		    exact PASS_MEM_STAT);
-  if (v && oldvec)
-    {
-      v->m_vecpfx.m_num = oldvec->length ();
-      memcpy (v->m_vecdata,
-	      oldvec->m_vecdata,
-	      oldvec->length () * sizeof (T));
-    }
-}
-
-
-/* Free a vector allocated on the stack.  Don't actually free it if we
-   find it in the hash table.  */
-
-template<typename T>
-void
-va_stack::release (vec<T, va_stack, vl_embed> *&v)
-{
-  if (v == NULL)
-    return;
-
-  int ix = stack_vec_register_index (static_cast<void *> (v));
-  if (ix >= 0)
-    {
-      unregister_stack_vec (ix);
-      v = NULL;
-    }
-  else
-    {
-      /* The vector was not on the list of vectors allocated on the stack, so it
-	 must be allocated on the heap.  */
-      va_heap::release (reinterpret_cast<vec<T, va_heap, vl_embed> *&> (v));
-    }
-}
-
-
 /* Generic vector template.  Default values for A and L indicate the
    most commonly used strategies.
 
@@ -597,7 +493,6 @@ public:
   friend struct va_gc;
   friend struct va_gc_atomic;
   friend struct va_heap;
-  friend struct va_stack;
 
   /* FIXME - These fields should be private, but we need to cater to
 	     compilers that have stricter notions of PODness for types.  */
@@ -1112,6 +1007,7 @@ inline void
 vec<T, A, vl_embed>::embedded_init (unsigned alloc, unsigned num)
 {
   m_vecpfx.m_alloc = alloc;
+  m_vecpfx.m_has_auto_buf = 0;
   m_vecpfx.m_num = num;
 }
 
@@ -1218,8 +1114,8 @@ gt_pch_nx (vec<T, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
    As long as we use C++03, we cannot have constructors nor
    destructors in classes that are stored in unions.  */
 
-template<typename T, typename A>
-struct vec<T, A, vl_ptr>
+template<typename T>
+struct vec<T, va_heap, vl_ptr>
 {
 public:
   /* Memory allocation and deallocation for the embedded vector.
@@ -1284,23 +1180,39 @@ public:
   void qsort (int (*) (const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
 
-  template<typename T1>
-  friend void va_stack::alloc (vec<T1, va_stack, vl_ptr>&, unsigned,
-			       vec<T1, va_stack, vl_embed> *);
+  bool using_auto_storage () const;
 
   /* FIXME - This field should be private, but we need to cater to
 	     compilers that have stricter notions of PODness for types.  */
-  vec<T, A, vl_embed> *m_vec;
+  vec<T, va_heap, vl_embed> *m_vec;
 };
 
 
-/* Empty specialization for GC allocation.  This will prevent GC
-   vectors from using the vl_ptr layout.  FIXME: This is needed to
-   circumvent limitations in the GTY machinery.  */
-
-template<typename T>
-struct vec<T, va_gc, vl_ptr>
+/* stack_vec is a subclass of vec containing N elements of internal storage.
+  You probably only want to allocate this on the stack because if the array
+  ends up being larger or much smaller than N it will be wasting space. */
+template<typename T, size_t N>
+class stack_vec : public vec<T, va_heap>
 {
+public:
+  stack_vec ()
+  {
+    m_header.m_alloc = N;
+    m_header.m_has_auto_buf = 1;
+    m_header.m_num = 0;
+    this->m_vec = reinterpret_cast<vec<T, va_heap, vl_embed> *> (&m_header);
+  }
+
+  ~stack_vec ()
+  {
+    this->release ();
+  }
+
+private:
+  friend class vec<T, va_heap, vl_ptr>;
+
+  vec_prefix m_header;
+  T m_data[N];
 };
 
 
@@ -1343,45 +1255,6 @@ vec_free (vec<T> *&v)
 }
 
 
-/* Allocate a new stack vector with space for exactly NELEMS objects.
-   If NELEMS is zero, NO vector is created.
-
-   For the stack allocator, no memory is really allocated.  The vector
-   is initialized to be at address SPACE and contain NELEMS slots.
-   Memory allocation actually occurs in the expansion of VEC_alloc.
-
-   Usage notes:
-
-   * This does not allocate an instance of vec<T, A>.  It allocates the
-     actual vector of elements (i.e., vec<T, A, vl_embed>) inside a
-     vec<T, A> instance.
-
-   * This allocator must always be a macro:
-
-     We support a vector which starts out with space on the stack and
-     switches to heap space when forced to reallocate.  This works a
-     little differently.  In the case of stack vectors, vec_alloc will
-     expand to a call to vec_alloc_1 that calls XALLOCAVAR to request
-     the initial allocation.  This uses alloca to get the initial
-     space. Since alloca can not be usefully called in an inline
-     function, vec_alloc must always be a macro.
-
-     Important limitations of stack vectors:
-
-     - Only the initial allocation will be made using alloca, so pass
-       a reasonable estimate that doesn't use too much stack space;
-       don't pass zero.
-
-     - Don't return a stack-allocated vector from the function which
-       allocated it.  */
-
-#define vec_stack_alloc(T,V,N)						\
-  do {									\
-    typedef vec<T, va_stack, vl_embed> stackv;				\
-    va_stack::alloc (V, N, XALLOCAVAR (stackv, stackv::embedded_size (N)));\
-  } while (0)
-
-
 /* Return iteration condition and update PTR to point to the IX'th
    element of this vector.  Use this to iterate over the elements of a
    vector as follows,
@@ -1389,9 +1262,9 @@ vec_free (vec<T> *&v)
      for (ix = 0; v.iterate (ix, &ptr); ix++)
        continue;  */
 
-template<typename T, typename A>
+template<typename T>
 inline bool
-vec<T, A, vl_ptr>::iterate (unsigned ix, T *ptr) const
+vec<T, va_heap, vl_ptr>::iterate (unsigned ix, T *ptr) const
 {
   if (m_vec)
     return m_vec->iterate (ix, ptr);
@@ -1412,9 +1285,9 @@ vec<T, A, vl_ptr>::iterate (unsigned ix, T *ptr) const
 
    This variant is for vectors of objects.  */
 
-template<typename T, typename A>
+template<typename T>
 inline bool
-vec<T, A, vl_ptr>::iterate (unsigned ix, T **ptr) const
+vec<T, va_heap, vl_ptr>::iterate (unsigned ix, T **ptr) const
 {
   if (m_vec)
     return m_vec->iterate (ix, ptr);
@@ -1451,11 +1324,11 @@ vec<T, A, vl_ptr>::iterate (unsigned ix, T **ptr) const
 
 /* Return a copy of this vector.  */
 
-template<typename T, typename A>
-inline vec<T, A, vl_ptr>
-vec<T, A, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
+template<typename T>
+inline vec<T, va_heap, vl_ptr>
+vec<T, va_heap, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
 {
-  vec<T, A, vl_ptr> new_vec = vNULL;
+  vec<T, va_heap, vl_ptr> new_vec = vNULL;
   if (length ())
     new_vec.m_vec = m_vec->copy ();
   return new_vec;
@@ -1471,14 +1344,34 @@ vec<T, A, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
    Note that this can cause the embedded vector to be reallocated.
    Returns true iff reallocation actually occurred.  */
 
-template<typename T, typename A>
+template<typename T>
 inline bool
-vec<T, A, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
 {
-  bool extend = nelems ? !space (nelems) : false;
-  if (extend)
-    A::reserve (m_vec, nelems, exact PASS_MEM_STAT);
-  return extend;
+  if (!nelems || space (nelems))
+    return false;
+
+  /* For now play a game with va_heap::reserve to hide our auto storage if any,
+     this is necessary because it doesn't have enough information to know the
+     embedded vector is in auto storage, and so should not be freed.  */
+  vec<T, va_heap, vl_embed> *oldvec = m_vec;
+  unsigned int oldsize = 0;
+  bool handle_auto_vec = m_vec && using_auto_storage ();
+  if (handle_auto_vec)
+    {
+      m_vec = NULL;
+      oldsize = oldvec->length ();
+      nelems += oldsize;
+    }
+
+  va_heap::reserve (m_vec, nelems, exact PASS_MEM_STAT);
+  if (handle_auto_vec)
+    {
+      memcpy (m_vec->address (), oldvec->address (), sizeof (T) * oldsize);
+      m_vec->m_vecpfx.m_num = oldsize;
+    }
+
+  return true;
 }
 
 
@@ -1487,9 +1380,9 @@ vec<T, A, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
    embedded vector to be reallocated.  Returns true iff reallocation
    actually occurred.  */
 
-template<typename T, typename A>
+template<typename T>
 inline bool
-vec<T, A, vl_ptr>::reserve_exact (unsigned nelems MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::reserve_exact (unsigned nelems MEM_STAT_DECL)
 {
   return reserve (nelems, true PASS_MEM_STAT);
 }
@@ -1500,9 +1393,9 @@ vec<T, A, vl_ptr>::reserve_exact (unsigned nelems MEM_STAT_DECL)
    unconditionally allocated from scratch.  The old one, if it
    existed, is lost.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::create (unsigned nelems MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::create (unsigned nelems MEM_STAT_DECL)
 {
   m_vec = NULL;
   if (nelems > 0)
@@ -1512,23 +1405,30 @@ vec<T, A, vl_ptr>::create (unsigned nelems MEM_STAT_DECL)
 
 /* Free the memory occupied by the embedded vector.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::release (void)
+vec<T, va_heap, vl_ptr>::release (void)
 {
-  if (m_vec)
-    A::release (m_vec);
-}
+  if (!m_vec)
+    return;
 
+  if (using_auto_storage ())
+    {
+      static_cast<stack_vec<T, 1> *> (this)->m_header.m_num = 0;
+      return;
+    }
+
+  va_heap::release (m_vec);
+}
 
 /* Copy the elements from SRC to the end of this vector as if by memcpy.
    SRC and this vector must be allocated with the same memory
    allocation mechanism. This vector is assumed to have sufficient
    headroom available.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::splice (vec<T, A, vl_ptr> &src)
+vec<T, va_heap, vl_ptr>::splice (vec<T, va_heap, vl_ptr> &src)
 {
   if (src.m_vec)
     m_vec->splice (*(src.m_vec));
@@ -1540,9 +1440,10 @@ vec<T, A, vl_ptr>::splice (vec<T, A, vl_ptr> &src)
    If there is not enough headroom in this vector, it will be reallocated
    as needed.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::safe_splice (vec<T, A, vl_ptr> &src MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_splice (vec<T, va_heap, vl_ptr> &src
+				      MEM_STAT_DECL)
 {
   if (src.length ())
     {
@@ -1556,9 +1457,9 @@ vec<T, A, vl_ptr>::safe_splice (vec<T, A, vl_ptr> &src MEM_STAT_DECL)
    sufficient space in the vector.  Return a pointer to the slot
    where OBJ was inserted.  */
 
-template<typename T, typename A>
+template<typename T>
 inline T *
-vec<T, A, vl_ptr>::quick_push (const T &obj)
+vec<T, va_heap, vl_ptr>::quick_push (const T &obj)
 {
   return m_vec->quick_push (obj);
 }
@@ -1568,9 +1469,9 @@ vec<T, A, vl_ptr>::quick_push (const T &obj)
    the embedded vector, if needed.  Return a pointer to the slot where
    OBJ was inserted.  */
 
-template<typename T, typename A>
+template<typename T>
 inline T *
-vec<T, A, vl_ptr>::safe_push (const T &obj MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_push (const T &obj MEM_STAT_DECL)
 {
   reserve (1, false PASS_MEM_STAT);
   return quick_push (obj);
@@ -1579,9 +1480,9 @@ vec<T, A, vl_ptr>::safe_push (const T &obj MEM_STAT_DECL)
 
 /* Pop and return the last element off the end of the vector.  */
 
-template<typename T, typename A>
+template<typename T>
 inline T &
-vec<T, A, vl_ptr>::pop (void)
+vec<T, va_heap, vl_ptr>::pop (void)
 {
   return m_vec->pop ();
 }
@@ -1590,9 +1491,9 @@ vec<T, A, vl_ptr>::pop (void)
 /* Set the length of the vector to LEN.  The new length must be less
    than or equal to the current length.  This is an O(1) operation.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::truncate (unsigned size)
+vec<T, va_heap, vl_ptr>::truncate (unsigned size)
 {
   if (m_vec)
     m_vec->truncate (size);
@@ -1605,9 +1506,9 @@ vec<T, A, vl_ptr>::truncate (unsigned size)
    longer than the current length.  The new elements are
    uninitialized.  Reallocate the internal vector, if needed.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
   gcc_checking_assert (oldlen <= len);
@@ -1620,9 +1521,9 @@ vec<T, A, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
    long or longer than the current length.  The new elements are
    initialized to zero.  Reallocate the internal vector, if needed.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
   safe_grow (len PASS_MEM_STAT);
@@ -1633,9 +1534,9 @@ vec<T, A, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 /* Same as vec::safe_grow but without reallocation of the internal vector.
    If the vector cannot be extended, a runtime assertion will be triggered.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::quick_grow (unsigned len)
+vec<T, va_heap, vl_ptr>::quick_grow (unsigned len)
 {
   gcc_checking_assert (m_vec);
   m_vec->quick_grow (len);
@@ -1646,9 +1547,9 @@ vec<T, A, vl_ptr>::quick_grow (unsigned len)
    internal vector. If the vector cannot be extended, a runtime
    assertion will be triggered.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::quick_grow_cleared (unsigned len)
+vec<T, va_heap, vl_ptr>::quick_grow_cleared (unsigned len)
 {
   gcc_checking_assert (m_vec);
   m_vec->quick_grow_cleared (len);
@@ -1658,9 +1559,9 @@ vec<T, A, vl_ptr>::quick_grow_cleared (unsigned len)
 /* Insert an element, OBJ, at the IXth position of this vector.  There
    must be sufficient space.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::quick_insert (unsigned ix, const T &obj)
+vec<T, va_heap, vl_ptr>::quick_insert (unsigned ix, const T &obj)
 {
   m_vec->quick_insert (ix, obj);
 }
@@ -1669,9 +1570,9 @@ vec<T, A, vl_ptr>::quick_insert (unsigned ix, const T &obj)
 /* Insert an element, OBJ, at the IXth position of the vector.
    Reallocate the embedded vector, if necessary.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::safe_insert (unsigned ix, const T &obj MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_insert (unsigned ix, const T &obj MEM_STAT_DECL)
 {
   reserve (1, false PASS_MEM_STAT);
   quick_insert (ix, obj);
@@ -1682,9 +1583,9 @@ vec<T, A, vl_ptr>::safe_insert (unsigned ix, const T &obj MEM_STAT_DECL)
    remaining elements is preserved.  This is an O(N) operation due to
    a memmove.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::ordered_remove (unsigned ix)
+vec<T, va_heap, vl_ptr>::ordered_remove (unsigned ix)
 {
   m_vec->ordered_remove (ix);
 }
@@ -1693,9 +1594,9 @@ vec<T, A, vl_ptr>::ordered_remove (unsigned ix)
 /* Remove an element from the IXth position of this vector.  Ordering
    of remaining elements is destroyed.  This is an O(1) operation.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::unordered_remove (unsigned ix)
+vec<T, va_heap, vl_ptr>::unordered_remove (unsigned ix)
 {
   m_vec->unordered_remove (ix);
 }
@@ -1704,9 +1605,9 @@ vec<T, A, vl_ptr>::unordered_remove (unsigned ix)
 /* Remove LEN elements starting at the IXth.  Ordering is retained.
    This is an O(N) operation due to memmove.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::block_remove (unsigned ix, unsigned len)
+vec<T, va_heap, vl_ptr>::block_remove (unsigned ix, unsigned len)
 {
   m_vec->block_remove (ix, len);
 }
@@ -1715,9 +1616,9 @@ vec<T, A, vl_ptr>::block_remove (unsigned ix, unsigned len)
 /* Sort the contents of this vector with qsort.  CMP is the comparison
    function to pass to qsort.  */
 
-template<typename T, typename A>
+template<typename T>
 inline void
-vec<T, A, vl_ptr>::qsort (int (*cmp) (const void *, const void *))
+vec<T, va_heap, vl_ptr>::qsort (int (*cmp) (const void *, const void *))
 {
   if (m_vec)
     m_vec->qsort (cmp);
@@ -1729,12 +1630,25 @@ vec<T, A, vl_ptr>::qsort (int (*cmp) (const void *, const void *))
    function that returns true if the first argument is strictly less
    than the second.  */
 
-template<typename T, typename A>
+template<typename T>
 inline unsigned
-vec<T, A, vl_ptr>::lower_bound (T obj, bool (*lessthan)(const T &, const T &))
+vec<T, va_heap, vl_ptr>::lower_bound (T obj,
+				      bool (*lessthan)(const T &, const T &))
     const
 {
   return m_vec ? m_vec->lower_bound (obj, lessthan) : 0;
+}
+
+template<typename T>
+inline bool
+vec<T, va_heap, vl_ptr>::using_auto_storage () const
+{
+  if (!m_vec->m_vecpfx.m_has_auto_buf)
+    return false;
+
+  const vec_prefix *auto_header
+    = &static_cast<const stack_vec<T, 1> *> (this)->m_header;
+  return reinterpret_cast<vec_prefix *> (m_vec) == auto_header;
 }
 
 #if (GCC_VERSION >= 3000)

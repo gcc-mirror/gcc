@@ -340,7 +340,7 @@ new_emutls_decl (tree decl, tree alias_of)
   else 
     varpool_create_variable_alias (to,
 				   varpool_node_for_asm
-				    (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->symbol.decl);
+				    (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->decl);
   return to;
 }
 
@@ -368,7 +368,7 @@ emutls_decl (tree decl)
 
   i = emutls_index (decl);
   var = control_vars[i];
-  return var->symbol.decl;
+  return var->decl;
 }
 
 /* Generate a call statement to initialize CONTROL_DECL for TLS_DECL.
@@ -430,7 +430,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
       gimple x;
 
       cvar = control_vars[index];
-      cdecl = cvar->symbol.decl;
+      cdecl = cvar->decl;
       TREE_ADDRESSABLE (cdecl) = 1;
 
       addr = create_tmp_var (build_pointer_type (TREE_TYPE (decl)), NULL);
@@ -447,7 +447,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */
-      ipa_record_reference ((symtab_node)d->cfun_node, (symtab_node)cvar, IPA_REF_ADDR, x);
+      ipa_record_reference (d->cfun_node, cvar, IPA_REF_ADDR, x);
 
       /* Record this ssa_name for possible use later in the basic block.  */
       access_vars[index] = addr;
@@ -620,7 +620,7 @@ lower_emutls_function_body (struct cgraph_node *node)
   struct lower_emutls_data d;
   bool any_edge_inserts = false;
 
-  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
   d.cfun_node = node;
   d.builtin_decl = builtin_decl_explicit (BUILT_IN_EMUTLS_GET_ADDRESS);
@@ -702,29 +702,29 @@ create_emultls_var (struct varpool_node *var, void *data)
   tree cdecl;
   struct varpool_node *cvar;
 
-  cdecl = new_emutls_decl (var->symbol.decl,
-			   var->symbol.alias && var->symbol.analyzed
-			   ? varpool_alias_target (var)->symbol.decl : NULL);
+  cdecl = new_emutls_decl (var->decl,
+			   var->alias && var->analyzed
+			   ? varpool_alias_target (var)->decl : NULL);
 
   cvar = varpool_get_node (cdecl);
   control_vars.quick_push (cvar);
 
-  if (!var->symbol.alias)
+  if (!var->alias)
     {
       /* Make sure the COMMON block control variable gets initialized.
 	 Note that there's no point in doing this for aliases; we only
 	 need to do this once for the main variable.  */
-      emutls_common_1 (var->symbol.decl, cdecl, (tree *)data);
+      emutls_common_1 (var->decl, cdecl, (tree *)data);
     }
-  if (var->symbol.alias && !var->symbol.analyzed)
-    cvar->symbol.alias = true;
+  if (var->alias && !var->analyzed)
+    cvar->alias = true;
 
   /* Indicate that the value of the TLS variable may be found elsewhere,
      preventing the variable from re-appearing in the GIMPLE.  We cheat
      and use the control variable here (rather than a full call_expr),
      which is special-cased inside the DWARF2 output routines.  */
-  SET_DECL_VALUE_EXPR (var->symbol.decl, cdecl);
-  DECL_HAS_VALUE_EXPR_P (var->symbol.decl) = 1;
+  SET_DECL_VALUE_EXPR (var->decl, cdecl);
+  DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
   return false;
 }
 
@@ -743,12 +743,12 @@ ipa_lower_emutls (void)
 
   /* Examine all global variables for TLS variables.  */
   FOR_EACH_VARIABLE (var)
-    if (DECL_THREAD_LOCAL_P (var->symbol.decl))
+    if (DECL_THREAD_LOCAL_P (var->decl))
       {
-	gcc_checking_assert (TREE_STATIC (var->symbol.decl)
-			     || DECL_EXTERNAL (var->symbol.decl));
+	gcc_checking_assert (TREE_STATIC (var->decl)
+			     || DECL_EXTERNAL (var->decl));
 	varpool_node_set_add (tls_vars, var);
-	if (var->symbol.alias && var->symbol.definition)
+	if (var->alias && var->definition)
 	  varpool_node_set_add (tls_vars, varpool_variable_node (var, NULL));
       }
 
@@ -772,9 +772,9 @@ ipa_lower_emutls (void)
     {
       var = tls_vars->nodes[i];
 
-      if (var->symbol.alias && !var->symbol.analyzed)
+      if (var->alias && !var->analyzed)
 	any_aliases = true;
-      else if (!var->symbol.alias)
+      else if (!var->alias)
 	varpool_for_node_and_aliases (var, create_emultls_var, &ctor_body, true);
     }
 

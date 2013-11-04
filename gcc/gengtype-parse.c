@@ -793,7 +793,7 @@ struct_field_seq (void)
 
 /* Return true if OPTS contain the option named STR.  */
 
-static bool
+bool
 opts_have (options_p opts, const char *str)
 {
   for (options_p opt = opts; opt; opt = opt->next)

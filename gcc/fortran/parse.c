@@ -2628,6 +2628,33 @@ loop:
 	default:
 	  break;
       }
+  else if (gfc_current_state () == COMP_BLOCK_DATA)
+    /* Fortran 2008, C1116.  */
+    switch (st)
+      {
+        case ST_DATA_DECL:
+	case ST_COMMON:
+	case ST_DATA:
+	case ST_TYPE:
+	case ST_END_BLOCK_DATA:
+	case ST_ATTR_DECL:
+	case ST_EQUIVALENCE:
+	case ST_PARAMETER:
+	case ST_IMPLICIT:
+	case ST_IMPLICIT_NONE:
+	case ST_DERIVED_DECL:
+	case ST_USE:
+	  break;
+
+	case ST_NONE:
+	  break;
+	  
+	default:
+	  gfc_error ("%s statement is not allowed inside of BLOCK DATA at %C",
+		     gfc_ascii_statement (st));
+	  reject_statement ();
+	  break;
+      }
   
   /* If we find a statement that can not be followed by an IMPLICIT statement
      (and thus we can expect to see none any further), type the function result

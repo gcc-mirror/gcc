@@ -1652,8 +1652,7 @@ debug_generated_program (scop_p scop)
 bool
 gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
 {
-  vec<tree> newivs;
-  newivs.create (10);
+  stack_vec<tree, 10> newivs;
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;
@@ -1711,7 +1710,6 @@ gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
 
   newivs_index.dispose ();
   params_index.dispose ();
-  newivs.release ();
   cloog_clast_free (clast);
   timevar_pop (TV_GRAPHITE_CODE_GEN);
 

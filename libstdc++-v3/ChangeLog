@@ -1,3 +1,133 @@
+2013-11-01  Michael Brune  <lucdanton@free.fr>
+
+	* include/bits/enable_special_members.h: New.
+	* include/experimental/optional: New.
+	* include/Makefile.am: Handle include/experimental.
+	* include/Makefile.in: Regenerate.
+	* testsuite/libstdc++-dg/conformance.exp: Run tests from
+	testsuite/experimental sub-directory.
+	* testsuite/experimental/optional/assignment/1.cc: New.
+	* testsuite/experimental/optional/assignment/2.cc: New.
+	* testsuite/experimental/optional/assignment/3.cc: New.
+	* testsuite/experimental/optional/assignment/4.cc: New.
+	* testsuite/experimental/optional/assignment/5.cc: New.
+	* testsuite/experimental/optional/assignment/6.cc: New.
+	* testsuite/experimental/optional/cons/copy.cc: New.
+	* testsuite/experimental/optional/cons/default.cc: New.
+	* testsuite/experimental/optional/cons/move.cc: New.
+	* testsuite/experimental/optional/cons/value.cc: New.
+	* testsuite/experimental/optional/constexpr/cons/default.cc: New.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: New.
+	* testsuite/experimental/optional/constexpr/in_place.cc: New.
+	* testsuite/experimental/optional/constexpr/make_optional.cc: New.
+	* testsuite/experimental/optional/constexpr/nullopt.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/1.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/4.cc: New.
+	* testsuite/experimental/optional/constexpr/observers/5.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/1.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/2.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/3.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/4.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/5.cc: New.
+	* testsuite/experimental/optional/constexpr/relops/6.cc: New.
+	* testsuite/experimental/optional/in_place.cc: New.
+	* testsuite/experimental/optional/make_optional.cc: New.
+	* testsuite/experimental/optional/nullopt.cc: New.
+	* testsuite/experimental/optional/observers/1.cc: New.
+	* testsuite/experimental/optional/observers/2.cc: New.
+	* testsuite/experimental/optional/observers/3.cc: New.
+	* testsuite/experimental/optional/observers/4.cc: New.
+	* testsuite/experimental/optional/observers/5.cc: New.
+	* testsuite/experimental/optional/relops/1.cc: New.
+	* testsuite/experimental/optional/relops/2.cc: New.
+	* testsuite/experimental/optional/relops/3.cc: New.
+	* testsuite/experimental/optional/relops/4.cc: New.
+	* testsuite/experimental/optional/relops/5.cc: New.
+	* testsuite/experimental/optional/relops/6.cc: New.
+	* testsuite/experimental/optional/requirements.cc: New.
+	* testsuite/experimental/optional/swap/1.cc: New.
+
+2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_function.h (logical_not<void>): Add noexcept.
+
+2013-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58952
+	* include/c_global/cstdio: Undef getchar.
+
+2013-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	N3421 C++1y Transparent functors
+	* include/bits/stl_function.h (plus<void>, minus<void>,
+	multiplies<void>, divides<void>, modulus<void>, negate<void>,
+	equal_to<void>, not_equal_to<void>, greater<void>, less<void>,
+	greater_equal<void>, less_equal<void>, logical_and<void>,
+	logical_or<void>, logical_not<void>, bit_and<void>, bit_or<void>,
+	bit_xor<void>, bit_not<void>): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/function_objects/comparisons_void.cc: New.
+
+2013-10-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple (_Index_tuple, _Build_index_tuple): Move to
+	<utility>.
+	* include/std/utility (integer_sequence, make_integer_sequence,
+	index_sequence, make_index_sequence, index_sequence_for): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/integer_sequence/intseq.cc: New.
+	* testsuite/20_util/integer_sequence/requirements/typedefs.cc: New.
+
+2013-10-31  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.ac: Add header checks for fenv.h and complex.h.
+	* configure: Regenerate.
+
+2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+        Implement C++14 digit separators.
+	* include/include/bits/parse_numbers.h: Change struct _Digit<_Base, '`'>
+	to struct _Digit<_Base, '\''>.
+
+2013-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/default_delete/48631_neg.cc: Tweak dg-prune.
+
+2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Fix
+	and enable VERIFY tests.
+
+2013-10-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr (__shared_ptr): Assert non-void pointer.
+	* include/bits/shared_ptr (default_delete): Likewise.
+	* testsuite/20_util/shared_ptr/cons/58839.cc: Do not use
+	default_delete<void>.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: New.
+	* testsuite/20_util/default_delete/void_neg.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
+2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/58839
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr<T>::__shared_ptr(unique_ptr<U,D>&&)): Only use addressof
+	when unique_ptr<U,D>::pointer is not a built-in pointer type.
+	* testsuite/20_util/shared_ptr/cons/58839.cc: New.
+	* testsuite/20_util/enable_shared_from_this/members/assign.cc: New.
+	* testsuite/20_util/enable_shared_from_this/members/unique_ptr.cc: New.
+
+2013-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable.cc (__access_protected_ctor): Define and use
+	new type instead of _Hashtable_ebo_helper.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Adjust line number.
+
 2013-10-28  Tim Shen  <timshen91@gmail.com>
 
 	* regex_executor.tcc: Add comments.

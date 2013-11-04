@@ -25,7 +25,7 @@ global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model" \
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model=unlimited" \
   "-fdump-tree-vect-details"
 
 # If the target system supports vector instructions, the default action
@@ -68,7 +68,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-real8*.\[fF\]{,90,
 
 # -fvect-cost-model tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-fvect-cost-model"
+lappend DEFAULT_VECTCFLAGS "-fvect-cost-model=dynamic"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/cost-model-*.\[fF\]{,90,95,03,08} ]]  \
         "" $DEFAULT_VECTCFLAGS
 

@@ -25,22 +25,10 @@ Boston, MA 02110-1301, USA.  */
   @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
-@code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
-available.  The argument list is terminated by the first @code{NULL}
-pointer encountered.  Pointers to empty strings are ignored.
+@code{xmalloc}ed memory.  The argument list is terminated by the first
+@code{NULL} pointer encountered.  Pointers to empty strings are ignored.
 
 @end deftypefn
-
-NOTES
-
-	This function uses xmalloc() which is expected to be a front end
-	function to malloc() that deals with low memory situations.  In
-	typical use, if malloc() returns NULL then xmalloc() diverts to an
-	error handler routine which never returns, and thus xmalloc will
-	never return a NULL pointer.  If the client application wishes to
-	deal with low memory situations itself, it should supply an xmalloc
-	that just directly invokes malloc and blindly returns whatever
-	malloc returns.
 
 */
 

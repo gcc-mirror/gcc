@@ -624,13 +624,28 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  || (bitsize % BITS_PER_WORD == 0 && bitnum % BITS_PER_WORD == 0)))
     {
       /* Use the subreg machinery either to narrow OP0 to the required
-	 words or to cope with mode punning between equal-sized modes.  */
-      rtx sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
-				     bitnum / BITS_PER_UNIT);
-      if (sub)
+	 words or to cope with mode punning between equal-sized modes.
+	 In the latter case, use subreg on the rhs side, not lhs.  */
+      rtx sub;
+
+      if (bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
 	{
-	  emit_move_insn (sub, value);
-	  return true;
+	  sub = simplify_gen_subreg (GET_MODE (op0), value, fieldmode, 0);
+	  if (sub)
+	    {
+	      emit_move_insn (op0, sub);
+	      return true;
+	    }
+	}
+      else
+	{
+	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
+				     bitnum / BITS_PER_UNIT);
+	  if (sub)
+	    {
+	      emit_move_insn (sub, value);
+	      return true;
+	    }
 	}
     }
 

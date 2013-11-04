@@ -121,11 +121,11 @@ along with GCC; see the file COPYING3.  If not see
 	to FORMAT.  Use in an ARCH-modes.def to reset the format
 	of one of the float modes defined in this file.
 
-     PARTIAL_INT_MODE (MODE);
+     PARTIAL_INT_MODE (MODE, PRECISION, NAME);
         declares a mode of class PARTIAL_INT with the same size as
-	MODE (which must be an INT mode).  The name of the new mode
-	is made by prefixing a P to the name MODE.  This statement
-	may grow a PRECISION argument in the future.
+	MODE (which must be an INT mode) and precision PREC.
+	Optionally, NAME is the new name of the mode.  NAME is the
+	name of the mode.
 
      VECTOR_MODE (CLASS, MODE, COUNT);
         Declare a vector mode whose component mode is MODE (of class

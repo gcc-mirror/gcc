@@ -21,6 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _SOFT_FLOAT
 #if __PREC == 32
  #define X87CW		(0 << 8)	/* Single precision (24 bits) */
 #elif __PREC == 64
@@ -45,3 +46,4 @@ set_precision (void)
 
   asm volatile ("fldcw\t%0" : : "m" (cwd));
 }
+#endif

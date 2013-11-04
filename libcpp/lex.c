@@ -1274,7 +1274,8 @@ lex_number (cpp_reader *pfile, cpp_string *number,
       cur = pfile->buffer->cur;
 
       /* N.B. ISIDNUM does not include $.  */
-      while (ISIDNUM (*cur) || *cur == '.' || VALID_SIGN (*cur, cur[-1]))
+      while (ISIDNUM (*cur) || *cur == '.' || DIGIT_SEP (*cur)
+	     || VALID_SIGN (*cur, cur[-1]))
 	{
 	  cur++;
 	  NORMALIZE_STATE_UPDATE_IDNUM (nst);

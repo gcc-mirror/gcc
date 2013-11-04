@@ -307,7 +307,8 @@ replace_loop_annotate ()
       if ((annot_expr_kind) tree_low_cst (gimple_call_arg (stmt, 1), 0)
 	  != annot_expr_ivdep_kind)
 	continue;
-      warning (0, "ignoring %<GCC ivdep%> annotation");
+      warning_at (gimple_location (stmt), 0, "ignoring %<GCC ivdep%> "
+		  "annotation");
       stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				  gimple_call_arg (stmt, 0));
       gsi_replace (&gsi, stmt, true);
@@ -378,6 +379,50 @@ computed_goto_p (gimple t)
 {
   return (gimple_code (t) == GIMPLE_GOTO
 	  && TREE_CODE (gimple_goto_dest (t)) != LABEL_DECL);
+}
+
+/* Returns true for edge E where e->src ends with a GIMPLE_COND and
+   the other edge points to a bb with just __builtin_unreachable ().
+   I.e. return true for C->M edge in:
+   <bb C>:
+   ...
+   if (something)
+     goto <bb N>;
+   else
+     goto <bb M>;
+   <bb N>:
+   __builtin_unreachable ();
+   <bb M>:  */
+
+bool
+assert_unreachable_fallthru_edge_p (edge e)
+{
+  basic_block pred_bb = e->src;
+  gimple last = last_stmt (pred_bb);
+  if (last && gimple_code (last) == GIMPLE_COND)
+    {
+      basic_block other_bb = EDGE_SUCC (pred_bb, 0)->dest;
+      if (other_bb == e->dest)
+	other_bb = EDGE_SUCC (pred_bb, 1)->dest;
+      if (EDGE_COUNT (other_bb->succs) == 0)
+	{
+	  gimple_stmt_iterator gsi = gsi_after_labels (other_bb);
+	  gimple stmt;
+
+	  if (gsi_end_p (gsi))
+	    return false;
+	  stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    {
+	      gsi_next_nondebug (&gsi);
+	      if (gsi_end_p (gsi))
+		return false;
+	      stmt = gsi_stmt (gsi);
+	    }
+	  return gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE);
+	}
+    }
+  return false;
 }
 
 

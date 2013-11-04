@@ -3,7 +3,7 @@
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-times "rotr" 2 } } */
-/* { dg-final { scan-assembler-times "rotl" 2 } } */
+/* { dg-final { scan-assembler-times "rotl" 3 } } */
 
 int
 test_00 (int a)
@@ -27,4 +27,10 @@ int
 test_03 (int a)
 {
   return ((a >> 1) & 0x7FFFFFFF) | (a << 31);
+}
+
+int
+test_04 (int a)
+{
+  return a + a + ((a >> 31) & 1);
 }

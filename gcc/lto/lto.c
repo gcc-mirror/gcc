@@ -171,7 +171,7 @@ has_analyzed_clone_p (struct cgraph_node *node)
   if (node)
     while (node != orig)
       {
-	if (node->symbol.analyzed)
+	if (node->analyzed)
 	  return true;
 	if (node->clones)
 	  node = node->clones;
@@ -195,10 +195,10 @@ lto_materialize_function (struct cgraph_node *node)
 {
   tree decl;
 
-  decl = node->symbol.decl;
+  decl = node->decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
-  if ((cgraph_function_with_gimple_body_p (node) && node->symbol.analyzed)
+  if ((cgraph_function_with_gimple_body_p (node) && node->analyzed)
       || node->used_as_abstract_origin
       || has_analyzed_clone_p (node))
     {
@@ -2398,9 +2398,9 @@ cmp_partitions_order (const void *a, const void *b)
   int ordera = -1, orderb = -1;
 
   if (lto_symtab_encoder_size (pa->encoder))
-    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->symbol.order;
+    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->order;
   if (lto_symtab_encoder_size (pb->encoder))
-    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->symbol.order;
+    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->order;
   return orderb - ordera;
 }
 
@@ -2479,14 +2479,14 @@ lto_wpa_write_files (void)
 	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
 	       lsei_next_in_partition (&lsei))
 	    {
-	      symtab_node node = lsei_node (lsei);
+	      symtab_node *node = lsei_node (lsei);
 	      fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
 	    }
 	  fprintf (cgraph_dump_file, "\n  Symbols in boundary: ");
 	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
 	       lsei_next (&lsei))
 	    {
-	      symtab_node node = lsei_node (lsei);
+	      symtab_node *node = lsei_node (lsei);
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
 	          fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
@@ -2750,7 +2750,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   int count = 0;
   struct lto_file_decl_data **decl_data;
   void **res;
-  symtab_node snode;
+  symtab_node *snode;
 
   init_cgraph ();
 
@@ -2873,11 +2873,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   FOR_EACH_SYMBOL (snode)
     if (symtab_real_symbol_p (snode)
-	&& snode->symbol.lto_file_data
-	&& snode->symbol.lto_file_data->resolution_map
-	&& (res = pointer_map_contains (snode->symbol.lto_file_data->resolution_map,
-					snode->symbol.decl)))
-      snode->symbol.resolution
+	&& snode->lto_file_data
+	&& snode->lto_file_data->resolution_map
+	&& (res = pointer_map_contains (snode->lto_file_data->resolution_map,
+					snode->decl)))
+      snode->resolution
 	= (enum ld_plugin_symbol_resolution)(size_t)*res;
   for (i = 0; all_file_decl_data[i]; i++)
     if (all_file_decl_data[i]->resolution_map)
@@ -2979,7 +2979,7 @@ materialize_cgraph (void)
 
   FOR_EACH_FUNCTION (node)
     {
-      if (node->symbol.lto_file_data)
+      if (node->lto_file_data)
 	{
 	  lto_materialize_function (node);
 	  lto_stats.num_input_cgraph_nodes++;
@@ -3074,7 +3074,7 @@ print_lto_report_1 (void)
 static void
 do_whole_program_analysis (void)
 {
-  symtab_node node;
+  symtab_node *node;
 
   timevar_start (TV_PHASE_OPT_GEN);
 
@@ -3126,7 +3126,7 @@ do_whole_program_analysis (void)
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */
   FOR_EACH_SYMBOL (node)
-    node->symbol.aux = NULL;
+    node->aux = NULL;
 
   lto_stats.num_cgraph_partitions += ltrans_partitions.length ();
   timevar_pop (TV_WHOPR_PARTITIONING);
@@ -3288,7 +3288,7 @@ lto_main (void)
 
 	  /* Record the global variables.  */
 	  FOR_EACH_DEFINED_VARIABLE (vnode)
-	    vec_safe_push (lto_global_var_decls, vnode->symbol.decl);
+	    vec_safe_push (lto_global_var_decls, vnode->decl);
 	}
     }
 

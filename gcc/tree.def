@@ -1271,6 +1271,12 @@ DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
    Operand 1 is the annotation id. */
 DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 2)
 
+/* Cilk spawn statement
+   Operand 0 is the CALL_EXPR.  */
+DEFTREECODE (CILK_SPAWN_STMT, "cilk_spawn_stmt", tcc_statement, 1)
+
+/* Cilk Sync statement: Does not have any operands.  */
+DEFTREECODE (CILK_SYNC_STMT, "cilk_sync_stmt", tcc_statement, 0)
 
 /*
 Local variables:

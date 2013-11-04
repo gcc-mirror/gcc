@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <zlib.h>
 #include "coretypes.h"
 #include "tree.h"
+#include "gimple.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"
 #include "lto-streamer.h"

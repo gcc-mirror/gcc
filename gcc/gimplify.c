@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "omp-low.h"
 #include "gimple-low.h"
+#include "cilk.h"
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
@@ -980,7 +981,7 @@ unshare_body (tree fndecl)
 
   if (cgn)
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-      unshare_body (cgn->symbol.decl);
+      unshare_body (cgn->decl);
 }
 
 /* Callback for walk_tree to unmark the visited trees rooted at *TP.
@@ -1023,7 +1024,7 @@ unvisit_body (tree fndecl)
 
   if (cgn)
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-      unvisit_body (cgn->symbol.decl);
+      unvisit_body (cgn->decl);
 }
 
 /* Unconditionally make an unshared copy of EXPR.  This is used when using
@@ -1311,6 +1312,15 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   if (ret_expr == error_mark_node)
     return GS_ERROR;
+
+  /* Implicit _Cilk_sync must be inserted right before any return statement 
+     if there is a _Cilk_spawn in the function.  If the user has provided a 
+     _Cilk_sync, the optimizer should remove this duplicate one.  */
+  if (fn_contains_cilk_spawn_p (cfun))
+    {
+      tree impl_sync = build0 (CILK_SYNC_STMT, void_type_node);
+      gimplify_and_add (impl_sync, pre_p);
+    }
 
   if (!ret_expr
       || TREE_CODE (ret_expr) == RESULT_DECL
@@ -2135,7 +2145,6 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			fallback_t fallback)
 {
   tree *p;
-  vec<tree> expr_stack;
   enum gimplify_status ret = GS_ALL_DONE, tret;
   int i;
   location_t loc = EXPR_LOCATION (*expr_p);
@@ -2143,7 +2152,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* Create a stack of the subexpressions so later we can walk them in
      order from inner to outer.  */
-  expr_stack.create (10);
+  stack_vec<tree, 10> expr_stack;
 
   /* We can handle anything that get_inner_reference can deal with.  */
   for (p = expr_p; ; p = &TREE_OPERAND (*p, 0))
@@ -2500,6 +2509,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      every call_expr be annotated with file and line.  */
   if (! EXPR_HAS_LOCATION (*expr_p))
     SET_EXPR_LOCATION (*expr_p, input_location);
+
+  if (fn_contains_cilk_spawn_p (cfun)
+      && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p) 
+      && !seen_error ())
+    return (enum gimplify_status) 
+      lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p, NULL);
 
   /* This may be a call to a builtin function.
 
@@ -4067,10 +4082,19 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   individual element initialization.  Also don't do this for small
 	   all-zero initializers (which aren't big enough to merit
 	   clearing), and don't try to make bitwise copies of
-	   TREE_ADDRESSABLE types.  */
+	   TREE_ADDRESSABLE types.
+
+	   We cannot apply such transformation when compiling chkp static
+	   initializer because creation of initializer image in the memory
+	   will require static initialization of bounds for it.  It should
+	   result in another gimplification of similar initializer and we
+	   may fall into infinite loop.  */
 	if (valid_const_initializer
 	    && !(cleared || num_nonzero_elements == 0)
-	    && !TREE_ADDRESSABLE (type))
+	    && !TREE_ADDRESSABLE (type)
+	    && (!current_function_decl
+		|| !lookup_attribute ("chkp ctor",
+				      DECL_ATTRIBUTES (current_function_decl))))
 	  {
 	    HOST_WIDE_INT size = int_size_in_bytes (type);
 	    unsigned int align;
@@ -4717,6 +4741,12 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
+  
+  if (fn_contains_cilk_spawn_p (cfun)
+      && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p) 
+      && !seen_error ())
+    return (enum gimplify_status) 
+      lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p, post_p);
 
   /* Trying to simplify a clobber using normal logic doesn't work,
      so handle it here.  */
@@ -7663,6 +7693,19 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    }
 	  break;
 
+	case CILK_SPAWN_STMT:
+	  gcc_assert 
+	    (fn_contains_cilk_spawn_p (cfun) 
+	     && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p));
+	  if (!seen_error ())
+	    {
+	      ret = (enum gimplify_status)
+		lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p,
+							 post_p);
+	      break;
+	    }
+	  /* If errors are seen, then just process it as a CALL_EXPR.  */
+
 	case CALL_EXPR:
 	  ret = gimplify_call_expr (expr_p, pre_p, fallback != fb_none);
 
@@ -8298,6 +8341,22 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    break;
 	  }
 
+	case CILK_SYNC_STMT:
+	  {
+	    if (!fn_contains_cilk_spawn_p (cfun))
+	      {
+		error_at (EXPR_LOCATION (*expr_p),
+			  "expected %<_Cilk_spawn%> before %<_Cilk_sync%>");
+		ret = GS_ERROR;
+	      }
+	    else
+	      {
+		gimplify_cilk_sync (expr_p, pre_p);
+		ret = GS_ALL_DONE;
+	      }
+	    break;
+	  }
+	
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {

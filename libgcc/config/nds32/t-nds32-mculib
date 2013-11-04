@@ -1,0 +1,77 @@
+# Rules of mculib library makefile of Andes NDS32 cpu for GNU compiler
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+# Contributed by Andes Technology Corporation.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compiler flags to use when compiling 'libgcc2.c'
+HOST_LIBGCC2_CFLAGS = -Os
+
+
+LIB1ASMSRC   = nds32/lib1asmsrc-mculib.S
+
+LIB1ASMFUNCS =   \
+	_addsub_sf   \
+	_sf_to_si    \
+	_divsi3      \
+	_divdi3      \
+	_modsi3      \
+	_moddi3      \
+	_mulsi3      \
+	_udivsi3     \
+	_udivdi3     \
+	_udivmoddi4  \
+	_umodsi3     \
+	_umoddi3     \
+	_muldi3      \
+	_addsub_df   \
+	_mul_sf      \
+	_mul_df      \
+	_div_sf      \
+	_div_df      \
+	_negate_sf   \
+	_negate_df   \
+	_sf_to_df    \
+	_df_to_sf    \
+	_df_to_si    \
+	_fixsfdi     \
+	_fixdfdi     \
+	_fixunssfsi  \
+	_fixunsdfsi  \
+	_fixunssfdi  \
+	_fixunsdfdi  \
+	_si_to_sf    \
+	_si_to_df    \
+	_floatdisf   \
+	_floatdidf   \
+	_floatunsisf \
+	_floatunsidf \
+	_floatundisf \
+	_floatundidf \
+	_compare_sf  \
+	_compare_df  \
+	_unord_sf    \
+	_unord_df
+
+# List of functions not to build from libgcc2.c.
+LIB2FUNCS_EXCLUDE = _clzsi2 _clzdi2
+
+# List of extra C and assembler files(*.S) to add to static libgcc2.
+LIB2ADD_ST += $(srcdir)/config/nds32/lib2csrc-mculib/_clzsi2.c
+LIB2ADD_ST += $(srcdir)/config/nds32/lib2csrc-mculib/_clzdi2.c
+
+# ------------------------------------------------------------------------

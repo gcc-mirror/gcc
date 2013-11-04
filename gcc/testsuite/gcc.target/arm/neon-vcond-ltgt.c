@@ -15,4 +15,4 @@ void foo (int ilast,float* w, float* w2)
 
 /* { dg-final { scan-assembler-times "vcgt\\.f32\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+" 2 } } */
 /* { dg-final { scan-assembler "vorr\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+" } } */
-/* { dg-final { scan-assembler "vbsl\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+" } } */
+/* { dg-final { scan-assembler "vbsl|vbit|vbif\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+,\[\\t \]*q\[0-9\]+" } } */
