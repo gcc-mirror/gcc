@@ -3789,7 +3789,7 @@ build_java_method_aliases (struct pointer_set_t *candidates)
 /* Return C++ property of T, based on given operation OP.  */
 
 static int
-cpp_check (tree t, cpp_operation op)
+cpp_check (const_tree t, cpp_operation op)
 {
   switch (op)
     {
@@ -3803,6 +3803,8 @@ cpp_check (tree t, cpp_operation op)
 	return DECL_COPY_CONSTRUCTOR_P (t);
       case IS_TEMPLATE:
 	return TREE_CODE (t) == TEMPLATE_DECL;
+      case IS_TRIVIAL:
+	return trivial_type_p (t);
       default:
         return 0;
     }
