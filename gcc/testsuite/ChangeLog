@@ -1,3 +1,11 @@
+2013-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/iec-559-macros-1.c, gcc.dg/iec-559-macros-2.c,
+	gcc.dg/iec-559-macros-3.c, gcc.dg/iec-559-macros-4.c,
+	gcc.dg/iec-559-macros-5.c, gcc.dg/iec-559-macros-6.c,
+	gcc.dg/iec-559-macros-7.c, gcc.dg/iec-559-macros-8.c,
+	gcc.dg/iec-559-macros-9.c: New tests.
+
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58946

@@ -744,6 +744,8 @@ Define this macro to 1 if your target needs this facility.  The default
 is 0.
 @end defmac
 
+@hook TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
+
 @node Per-Function Data
 @section Defining data structures for per-function information.
 @cindex per-function data

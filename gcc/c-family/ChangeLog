@@ -1,3 +1,9 @@
+2013-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (cpp_iec_559_value, cpp_iec_559_complex_value):
+	New functions.
+	(c_cpp_builtins): Define __GCC_IEC_559 and __GCC_IEC_559_COMPLEX.
+
 2013-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.h (cpp_operation): Add IS_TRIVIAL.

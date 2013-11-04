@@ -768,6 +768,10 @@ Define this macro to 1 if your target needs this facility.  The default
 is 0.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P (void)
+Returns true if the target supports IEEE 754 floating-point exceptions and rounding modes, false otherwise.  This is intended to relate to the @code{float} and @code{double} types, but not necessarily @code{long double}. By default, returns true if the @code{adddf3} instruction pattern is available and false otherwise, on the assumption that hardware floating point supports exceptions and rounding modes but software floating point does not.
+@end deftypefn
+
 @node Per-Function Data
 @section Defining data structures for per-function information.
 @cindex per-function data

@@ -436,6 +436,19 @@ targhook_float_words_big_endian (void)
   return !!FLOAT_WORDS_BIG_ENDIAN;
 }
 
+/* True if the target supports floating-point exceptions and rounding
+   modes.  */
+
+bool
+default_float_exceptions_rounding_supported_p (void)
+{
+#ifdef HAVE_adddf3
+  return HAVE_adddf3;
+#else
+  return false;
+#endif
+}
+
 /* True if the target supports decimal floating point.  */
 
 bool
