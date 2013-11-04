@@ -14,99 +14,148 @@
 
 #include "asan_allocator.h"
 #include "asan_internal.h"
+#include "asan_fake_stack.h"
 #include "asan_stack.h"
 #include "asan_stats.h"
 #include "sanitizer_common/sanitizer_libc.h"
+#include "sanitizer_common/sanitizer_thread_registry.h"
 
 namespace __asan {
 
 const u32 kInvalidTid = 0xffffff;  // Must fit into 24 bits.
+const u32 kMaxNumberOfThreads = (1 << 22);  // 4M
 
 class AsanThread;
 
 // These objects are created for every thread and are never deleted,
 // so we can find them by tid even if the thread is long dead.
-class AsanThreadSummary {
+class AsanThreadContext : public ThreadContextBase {
  public:
-  explicit AsanThreadSummary(LinkerInitialized) { }  // for T0.
-  void Init(u32 parent_tid, StackTrace *stack) {
-    parent_tid_ = parent_tid;
-    announced_ = false;
-    tid_ = kInvalidTid;
-    if (stack) {
-      internal_memcpy(&stack_, stack, sizeof(*stack));
-    }
-    thread_ = 0;
-    name_[0] = 0;
+  explicit AsanThreadContext(int tid)
+      : ThreadContextBase(tid),
+        announced(false),
+        thread(0) {
+    internal_memset(&stack, 0, sizeof(stack));
   }
-  u32 tid() { return tid_; }
-  void set_tid(u32 tid) { tid_ = tid; }
-  u32 parent_tid() { return parent_tid_; }
-  bool announced() { return announced_; }
-  void set_announced(bool announced) { announced_ = announced; }
-  StackTrace *stack() { return &stack_; }
-  AsanThread *thread() { return thread_; }
-  void set_thread(AsanThread *thread) { thread_ = thread; }
-  static void TSDDtor(void *tsd);
-  void set_name(const char *name) {
-    internal_strncpy(name_, name, sizeof(name_) - 1);
-  }
-  const char *name() { return name_; }
+  bool announced;
+  StackTrace stack;
+  AsanThread *thread;
 
- private:
-  u32 tid_;
-  u32 parent_tid_;
-  bool announced_;
-  StackTrace stack_;
-  AsanThread *thread_;
-  char name_[128];
+  void OnCreated(void *arg);
+  void OnFinished();
 };
 
-// AsanThreadSummary objects are never freed, so we need many of them.
-COMPILER_CHECK(sizeof(AsanThreadSummary) <= 4094);
+// AsanThreadContext objects are never freed, so we need many of them.
+COMPILER_CHECK(sizeof(AsanThreadContext) <= 4096);
 
 // AsanThread are stored in TSD and destroyed when the thread dies.
 class AsanThread {
  public:
-  explicit AsanThread(LinkerInitialized);  // for T0.
-  static AsanThread *Create(u32 parent_tid, thread_callback_t start_routine,
-                            void *arg, StackTrace *stack);
+  static AsanThread *Create(thread_callback_t start_routine, void *arg);
+  static void TSDDtor(void *tsd);
   void Destroy();
 
   void Init();  // Should be called from the thread itself.
-  thread_return_t ThreadStart();
+  thread_return_t ThreadStart(uptr os_id);
 
   uptr stack_top() { return stack_top_; }
   uptr stack_bottom() { return stack_bottom_; }
-  uptr stack_size() { return stack_top_ - stack_bottom_; }
-  u32 tid() { return summary_->tid(); }
-  AsanThreadSummary *summary() { return summary_; }
-  void set_summary(AsanThreadSummary *summary) { summary_ = summary; }
+  uptr stack_size() { return stack_size_; }
+  uptr tls_begin() { return tls_begin_; }
+  uptr tls_end() { return tls_end_; }
+  u32 tid() { return context_->tid; }
+  AsanThreadContext *context() { return context_; }
+  void set_context(AsanThreadContext *context) { context_ = context; }
 
-  const char *GetFrameNameByAddr(uptr addr, uptr *offset);
+  const char *GetFrameNameByAddr(uptr addr, uptr *offset, uptr *frame_pc);
 
   bool AddrIsInStack(uptr addr) {
     return addr >= stack_bottom_ && addr < stack_top_;
   }
 
-  FakeStack &fake_stack() { return fake_stack_; }
+  void DeleteFakeStack() {
+    if (!fake_stack_) return;
+    FakeStack *t = fake_stack_;
+    fake_stack_ = 0;
+    SetTLSFakeStack(0);
+    t->Destroy();
+  }
+
+  bool has_fake_stack() {
+    return (reinterpret_cast<uptr>(fake_stack_) > 1);
+  }
+
+  FakeStack *fake_stack() {
+    if (!__asan_option_detect_stack_use_after_return)
+      return 0;
+    if (!has_fake_stack())
+      return AsyncSignalSafeLazyInitFakeStack();
+    return fake_stack_;
+  }
+
+  // True is this thread is currently unwinding stack (i.e. collecting a stack
+  // trace). Used to prevent deadlocks on platforms where libc unwinder calls
+  // malloc internally. See PR17116 for more details.
+  bool isUnwinding() const { return unwinding; }
+  void setUnwinding(bool b) { unwinding = b; }
+
   AsanThreadLocalMallocStorage &malloc_storage() { return malloc_storage_; }
   AsanStats &stats() { return stats_; }
 
  private:
-  void SetThreadStackTopAndBottom();
-  void ClearShadowForThreadStack();
-  AsanThreadSummary *summary_;
+  AsanThread() : unwinding(false) {}
+  void SetThreadStackAndTls();
+  void ClearShadowForThreadStackAndTLS();
+  FakeStack *AsyncSignalSafeLazyInitFakeStack();
+
+  AsanThreadContext *context_;
   thread_callback_t start_routine_;
   void *arg_;
   uptr  stack_top_;
   uptr  stack_bottom_;
+  // stack_size_ == stack_top_ - stack_bottom_;
+  // It needs to be set in a async-signal-safe manner.
+  uptr  stack_size_;
+  uptr tls_begin_;
+  uptr tls_end_;
 
-  FakeStack fake_stack_;
+  FakeStack *fake_stack_;
   AsanThreadLocalMallocStorage malloc_storage_;
   AsanStats stats_;
+  bool unwinding;
 };
 
+// ScopedUnwinding is a scope for stacktracing member of a context
+class ScopedUnwinding {
+ public:
+  explicit ScopedUnwinding(AsanThread *t) : thread(t) {
+    t->setUnwinding(true);
+  }
+  ~ScopedUnwinding() { thread->setUnwinding(false); }
+
+ private:
+  AsanThread *thread;
+};
+
+struct CreateThreadContextArgs {
+  AsanThread *thread;
+  StackTrace *stack;
+};
+
+// Returns a single instance of registry.
+ThreadRegistry &asanThreadRegistry();
+
+// Must be called under ThreadRegistryLock.
+AsanThreadContext *GetThreadContextByTidLocked(u32 tid);
+
+// Get the current thread. May return 0.
+AsanThread *GetCurrentThread();
+void SetCurrentThread(AsanThread *t);
+u32 GetCurrentTidOrInvalid();
+AsanThread *FindThreadByStackAddress(uptr addr);
+
+// Used to handle fork().
+void EnsureMainThreadIDIsCorrect();
 }  // namespace __asan
 
 #endif  // ASAN_THREAD_H

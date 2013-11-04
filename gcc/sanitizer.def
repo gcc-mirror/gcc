@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    for other FEs by asan.c.  */
 
 /* Address Sanitizer */
-DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_INIT, "__asan_init_v1",
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_INIT, "__asan_init_v3",
 		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)
 /* Do not reorder the BUILT_IN_ASAN_REPORT* builtins, e.g. cfgcleanup.c
    relies on this order.  */

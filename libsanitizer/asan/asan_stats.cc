@@ -12,13 +12,18 @@
 #include "asan_interceptors.h"
 #include "asan_internal.h"
 #include "asan_stats.h"
-#include "asan_thread_registry.h"
+#include "asan_thread.h"
+#include "sanitizer_common/sanitizer_mutex.h"
 #include "sanitizer_common/sanitizer_stackdepot.h"
 
 namespace __asan {
 
 AsanStats::AsanStats() {
-  CHECK(REAL(memset) != 0);
+  Clear();
+}
+
+void AsanStats::Clear() {
+  CHECK(REAL(memset));
   REAL(memset)(this, 0, sizeof(AsanStats));
 }
 
@@ -51,11 +56,73 @@ void AsanStats::Print() {
              malloc_large, malloc_small_slow);
 }
 
+void AsanStats::MergeFrom(const AsanStats *stats) {
+  uptr *dst_ptr = reinterpret_cast<uptr*>(this);
+  const uptr *src_ptr = reinterpret_cast<const uptr*>(stats);
+  uptr num_fields = sizeof(*this) / sizeof(uptr);
+  for (uptr i = 0; i < num_fields; i++)
+    dst_ptr[i] += src_ptr[i];
+}
+
 static BlockingMutex print_lock(LINKER_INITIALIZED);
+
+static AsanStats unknown_thread_stats(LINKER_INITIALIZED);
+static AsanStats dead_threads_stats(LINKER_INITIALIZED);
+static BlockingMutex dead_threads_stats_lock(LINKER_INITIALIZED);
+// Required for malloc_zone_statistics() on OS X. This can't be stored in
+// per-thread AsanStats.
+static uptr max_malloced_memory;
+
+static void MergeThreadStats(ThreadContextBase *tctx_base, void *arg) {
+  AsanStats *accumulated_stats = reinterpret_cast<AsanStats*>(arg);
+  AsanThreadContext *tctx = static_cast<AsanThreadContext*>(tctx_base);
+  if (AsanThread *t = tctx->thread)
+    accumulated_stats->MergeFrom(&t->stats());
+}
+
+static void GetAccumulatedStats(AsanStats *stats) {
+  stats->Clear();
+  {
+    ThreadRegistryLock l(&asanThreadRegistry());
+    asanThreadRegistry()
+        .RunCallbackForEachThreadLocked(MergeThreadStats, stats);
+  }
+  stats->MergeFrom(&unknown_thread_stats);
+  {
+    BlockingMutexLock lock(&dead_threads_stats_lock);
+    stats->MergeFrom(&dead_threads_stats);
+  }
+  // This is not very accurate: we may miss allocation peaks that happen
+  // between two updates of accumulated_stats_. For more accurate bookkeeping
+  // the maximum should be updated on every malloc(), which is unacceptable.
+  if (max_malloced_memory < stats->malloced) {
+    max_malloced_memory = stats->malloced;
+  }
+}
+
+void FlushToDeadThreadStats(AsanStats *stats) {
+  BlockingMutexLock lock(&dead_threads_stats_lock);
+  dead_threads_stats.MergeFrom(stats);
+  stats->Clear();
+}
+
+void FillMallocStatistics(AsanMallocStats *malloc_stats) {
+  AsanStats stats;
+  GetAccumulatedStats(&stats);
+  malloc_stats->blocks_in_use = stats.mallocs;
+  malloc_stats->size_in_use = stats.malloced;
+  malloc_stats->max_size_in_use = max_malloced_memory;
+  malloc_stats->size_allocated = stats.mmaped;
+}
+
+AsanStats &GetCurrentThreadStats() {
+  AsanThread *t = GetCurrentThread();
+  return (t) ? t->stats() : unknown_thread_stats;
+}
 
 static void PrintAccumulatedStats() {
   AsanStats stats;
-  asanThreadRegistry().GetAccumulatedStats(&stats);
+  GetAccumulatedStats(&stats);
   // Use lock to keep reports from mixing up.
   BlockingMutexLock lock(&print_lock);
   stats.Print();
@@ -71,15 +138,33 @@ static void PrintAccumulatedStats() {
 using namespace __asan;  // NOLINT
 
 uptr __asan_get_current_allocated_bytes() {
-  return asanThreadRegistry().GetCurrentAllocatedBytes();
+  AsanStats stats;
+  GetAccumulatedStats(&stats);
+  uptr malloced = stats.malloced;
+  uptr freed = stats.freed;
+  // Return sane value if malloced < freed due to racy
+  // way we update accumulated stats.
+  return (malloced > freed) ? malloced - freed : 1;
 }
 
 uptr __asan_get_heap_size() {
-  return asanThreadRegistry().GetHeapSize();
+  AsanStats stats;
+  GetAccumulatedStats(&stats);
+  return stats.mmaped - stats.munmaped;
 }
 
 uptr __asan_get_free_bytes() {
-  return asanThreadRegistry().GetFreeBytes();
+  AsanStats stats;
+  GetAccumulatedStats(&stats);
+  uptr total_free = stats.mmaped
+                  - stats.munmaped
+                  + stats.really_freed
+                  + stats.really_freed_redzones;
+  uptr total_used = stats.malloced
+                  + stats.malloced_redzones;
+  // Return sane value if total_free < total_used due to racy
+  // way we update accumulated stats.
+  return (total_free > total_used) ? total_free - total_used : 1;
 }
 
 uptr __asan_get_unmapped_bytes() {

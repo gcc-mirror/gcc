@@ -32,7 +32,11 @@ extern "C" {
 
 typedef unsigned long jptr;  // NOLINT
 
-// Must be called before any other callback from Java.
+// Must be called before any other callback from Java, right after dlopen
+// of JVM shared lib. If libjvm_path is specified, then all interceptors
+// coming directly from JVM will be ignored.
+void __tsan_java_preinit(const char *libjvm_path) INTERFACE_ATTRIBUTE;
+// Must be called after __tsan_java_preinit but before any other callback.
 void __tsan_java_init(jptr heap_begin, jptr heap_size) INTERFACE_ATTRIBUTE;
 // Must be called when the application exits.
 // Not necessary the last callback (concurrently running threads are OK).
@@ -53,8 +57,7 @@ void __tsan_java_move(jptr src, jptr dst, jptr size) INTERFACE_ATTRIBUTE;
 
 // Mutex lock.
 // Addr is any unique address associated with the mutex.
-// Must not be called on recursive reentry.
-// Object.wait() is handled as a pair of unlock/lock.
+// Can be called on recursive reentry.
 void __tsan_java_mutex_lock(jptr addr) INTERFACE_ATTRIBUTE;
 // Mutex unlock.
 void __tsan_java_mutex_unlock(jptr addr) INTERFACE_ATTRIBUTE;
@@ -62,6 +65,16 @@ void __tsan_java_mutex_unlock(jptr addr) INTERFACE_ATTRIBUTE;
 void __tsan_java_mutex_read_lock(jptr addr) INTERFACE_ATTRIBUTE;
 // Mutex read unlock.
 void __tsan_java_mutex_read_unlock(jptr addr) INTERFACE_ATTRIBUTE;
+// Recursive mutex lock, intended for handling of Object.wait().
+// The 'rec' value must be obtained from the previous
+// __tsan_java_mutex_unlock_rec().
+void __tsan_java_mutex_lock_rec(jptr addr, int rec) INTERFACE_ATTRIBUTE;
+// Recursive mutex unlock, intended for handling of Object.wait().
+// The return value says how many times this thread called lock()
+// w/o a pairing unlock() (i.e. how many recursive levels it unlocked).
+// It must be passed back to __tsan_java_mutex_lock_rec() to restore
+// the same recursion level.
+int __tsan_java_mutex_unlock_rec(jptr addr) INTERFACE_ATTRIBUTE;
 
 #ifdef __cplusplus
 }  // extern "C"

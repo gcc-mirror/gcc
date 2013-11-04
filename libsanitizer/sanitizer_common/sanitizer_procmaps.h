@@ -17,40 +17,50 @@
 
 namespace __sanitizer {
 
-#ifdef _WIN32
+#if SANITIZER_WINDOWS
 class MemoryMappingLayout {
  public:
-  MemoryMappingLayout() {}
+  explicit MemoryMappingLayout(bool cache_enabled) {
+    (void)cache_enabled;
+  }
   bool GetObjectNameAndOffset(uptr addr, uptr *offset,
-                              char filename[], uptr filename_size) {
+                              char filename[], uptr filename_size,
+                              uptr *protection) {
     UNIMPLEMENTED();
   }
 };
 
-#else  // _WIN32
-#if defined(__linux__)
+#else  // SANITIZER_WINDOWS
+#if SANITIZER_LINUX
 struct ProcSelfMapsBuff {
   char *data;
   uptr mmaped_size;
   uptr len;
 };
-#endif  // defined(__linux__)
+#endif  // SANITIZER_LINUX
 
 class MemoryMappingLayout {
  public:
-  MemoryMappingLayout();
+  explicit MemoryMappingLayout(bool cache_enabled);
   bool Next(uptr *start, uptr *end, uptr *offset,
-            char filename[], uptr filename_size);
+            char filename[], uptr filename_size, uptr *protection);
   void Reset();
   // Gets the object file name and the offset in that object for a given
   // address 'addr'. Returns true on success.
   bool GetObjectNameAndOffset(uptr addr, uptr *offset,
-                              char filename[], uptr filename_size);
+                              char filename[], uptr filename_size,
+                              uptr *protection);
   // In some cases, e.g. when running under a sandbox on Linux, ASan is unable
   // to obtain the memory mappings. It should fall back to pre-cached data
   // instead of aborting.
   static void CacheMemoryMappings();
   ~MemoryMappingLayout();
+
+  // Memory protection masks.
+  static const uptr kProtectionRead = 1;
+  static const uptr kProtectionWrite = 2;
+  static const uptr kProtectionExecute = 4;
+  static const uptr kProtectionShared = 8;
 
  private:
   void LoadFromCache();
@@ -58,10 +68,12 @@ class MemoryMappingLayout {
   // Quite slow, because it iterates through the whole process map for each
   // lookup.
   bool IterateForObjectNameAndOffset(uptr addr, uptr *offset,
-                                     char filename[], uptr filename_size) {
+                                     char filename[], uptr filename_size,
+                                     uptr *protection) {
     Reset();
     uptr start, end, file_offset;
-    for (int i = 0; Next(&start, &end, &file_offset, filename, filename_size);
+    for (int i = 0; Next(&start, &end, &file_offset, filename, filename_size,
+                         protection);
          i++) {
       if (addr >= start && addr < end) {
         // Don't subtract 'start' for the first entry:
@@ -84,17 +96,18 @@ class MemoryMappingLayout {
     return false;
   }
 
-# if defined __linux__
+# if SANITIZER_LINUX
   ProcSelfMapsBuff proc_self_maps_;
   char *current_;
 
   // Static mappings cache.
   static ProcSelfMapsBuff cached_proc_self_maps_;
   static StaticSpinMutex cache_lock_;  // protects cached_proc_self_maps_.
-# elif defined __APPLE__
+# elif SANITIZER_MAC
   template<u32 kLCSegment, typename SegmentCommand>
   bool NextSegmentLoad(uptr *start, uptr *end, uptr *offset,
-                       char filename[], uptr filename_size);
+                       char filename[], uptr filename_size,
+                       uptr *protection);
   int current_image_;
   u32 current_magic_;
   u32 current_filetype_;
@@ -103,7 +116,18 @@ class MemoryMappingLayout {
 # endif
 };
 
-#endif  // _WIN32
+typedef void (*fill_profile_f)(uptr start, uptr rss, bool file,
+                               /*out*/uptr *stats, uptr stats_size);
+
+// Parse the contents of /proc/self/smaps and generate a memory profile.
+// |cb| is a tool-specific callback that fills the |stats| array containing
+// |stats_size| elements.
+void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size);
+
+// Returns code range for the specified module.
+bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end);
+
+#endif  // SANITIZER_WINDOWS
 
 }  // namespace __sanitizer
 
