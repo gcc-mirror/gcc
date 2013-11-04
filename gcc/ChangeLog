@@ -1,5 +1,15 @@
 2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/vsx.md (*vsx_le_perm_store_<mode> for VSX_D):
+	Replace the define_insn_and_split with a define_insn and two
+	define_splits, with the split after reload re-permuting the source
+	register to its original value.
+	(*vsx_le_perm_store_<mode> for VSX_W): Likewise.
+	(*vsx_le_perm_store_v8hi): Likewise.
+	(*vsx_le_perm_store_v16qi): Likewise.
+
+2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/vector.md (vec_pack_trunc_v2df):  Adjust for
 	little endian.
 
