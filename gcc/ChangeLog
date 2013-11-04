@@ -1,3 +1,8 @@
+2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_pack_trunc_v2df):  Adjust for
+	little endian.
+
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58946
