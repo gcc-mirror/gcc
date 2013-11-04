@@ -1,3 +1,36 @@
+2013-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (cpp_operation): Add IS_TRIVIAL.
+	(dump_ada_specs): Adjust prototype of second callback.
+	* c-ada-spec.c (cpp_check): New global variable.
+	(dump_ada_nodes): Remove cpp_check parameter and do not pass it down.
+	(print_generic_ada_decl): Likewise.
+	(has_static_fields): Change return type to bool and add guard.
+	(has_nontrivial_methods): New predicate.
+	(is_tagged_type): Change return type to bool.
+	(separate_class_package): Call has_nontrivial_methods.
+	(pp_ada_tree_identifier): Minor tweaks.
+	(dump_ada_function_declaration): Adjust calls to dump_generic_ada_node.
+	(dump_ada_array_domains): Likewise.
+	(dump_ada_array_type): Likewise.
+	(dump_template_types): Remove cpp_check parameter and do not pass it to
+	dump_generic_ada_node.
+	(dump_ada_template): Likewise.
+	(dump_generic_ada_node): Remove cpp_check parameter and do not pass it
+	recursively.
+	(print_ada_methods): Change return type to integer.  Remove cpp_check
+	parameter and do not pass it down.
+	(dump_nested_types): Remove cpp_check parameter and do not pass it to
+	dump_generic_ada_node.
+	(print_ada_declaration): Likewise.  Test RECORD_OR_UNION_TYPE_P before
+	accessing methods.
+	(print_ada_struct_decl): Remove cpp_check parameter and do not pass it
+	down.  Use has_nontrivial_methods to recognize C++ classes.  Use return
+	value of print_ada_methods.
+	(dump_ads): Rename cpp_check parameter to check and adjust prototype.
+	Set cpp_check to it before invoking dump_ada_nodes.
+	(dump_ada_specs): Likewise.
+
 2013-11-03  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c: Don't include hash-table.h.
