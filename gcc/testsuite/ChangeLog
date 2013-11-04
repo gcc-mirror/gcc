@@ -1,3 +1,8 @@
+2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58968
+	* gfortran.dg/pr58968.f: New
+
 2013-11-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58979
