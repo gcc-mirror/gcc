@@ -2185,7 +2185,10 @@
   
   emit_insn (gen_vec_widen_umult_even_v16qi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_umult_odd_v16qi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrghh (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2202,7 +2205,10 @@
   
   emit_insn (gen_vec_widen_umult_even_v16qi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_umult_odd_v16qi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrglh (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2219,7 +2225,10 @@
   
   emit_insn (gen_vec_widen_smult_even_v16qi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_smult_odd_v16qi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrghh (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2236,7 +2245,10 @@
   
   emit_insn (gen_vec_widen_smult_even_v16qi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_smult_odd_v16qi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrglh (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2253,7 +2265,10 @@
   
   emit_insn (gen_vec_widen_umult_even_v8hi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_umult_odd_v8hi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrghw (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghw (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrghw (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2270,7 +2285,10 @@
   
   emit_insn (gen_vec_widen_umult_even_v8hi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_umult_odd_v8hi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrglw (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglw (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrglw (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2287,7 +2305,10 @@
   
   emit_insn (gen_vec_widen_smult_even_v8hi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_smult_odd_v8hi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrghw (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghw (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrghw (operands[0], vo, ve));
   DONE;
 }")
 
@@ -2304,7 +2325,10 @@
   
   emit_insn (gen_vec_widen_smult_even_v8hi (ve, operands[1], operands[2]));
   emit_insn (gen_vec_widen_smult_odd_v8hi (vo, operands[1], operands[2]));
-  emit_insn (gen_altivec_vmrglw (operands[0], ve, vo));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglw (operands[0], ve, vo));
+  else
+    emit_insn (gen_altivec_vmrglw (operands[0], vo, ve));
   DONE;
 }")
 

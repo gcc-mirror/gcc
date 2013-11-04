@@ -1,3 +1,15 @@
+2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_widen_umult_hi_v16qi): Swap
+	arguments to merge instruction for little endian.
+	(vec_widen_umult_lo_v16qi): Likewise.
+	(vec_widen_smult_hi_v16qi): Likewise.
+	(vec_widen_smult_lo_v16qi): Likewise.
+	(vec_widen_umult_hi_v8hi): Likewise.
+	(vec_widen_umult_lo_v8hi): Likewise.
+	(vec_widen_smult_hi_v8hi): Likewise.
+	(vec_widen_smult_lo_v8hi): Likewise.
+
 2013-11-04  Ian Lance Taylor  <iant@google.com>
 
 	* builtins.def (ATTR_NOTHROWCALL_LEAF_LIST): Define.
