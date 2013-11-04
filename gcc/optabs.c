@@ -6674,7 +6674,7 @@ expand_vec_perm (enum machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 	}
       tmp = gen_rtx_CONST_VECTOR (qimode, vec);
       sel = gen_lowpart (qimode, sel);
-      sel = expand_vec_perm (qimode, gen_reg_rtx (qimode), sel, tmp, NULL);
+      sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
       gcc_assert (sel != NULL);
 
       /* Add the byte offset to each byte element.  */
