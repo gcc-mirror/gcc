@@ -62,6 +62,9 @@
 #   include <vxWorks.h>   
 #   include <vxCpuLib.h>   
 #   include <taskLib.h>   
+// Solaris
+#elif defined __sun__ && defined __svr4__
+#   include <sched.h>
 #else
 #   error "Unsupported OS"
 #endif
@@ -346,7 +349,7 @@ static int linux_get_affinity_count (int tid)
 
 COMMON_SYSDEP int __cilkrts_hardware_cpu_count(void)
 {
-#if defined ANDROID
+#if defined ANDROID || (defined(__sun__) && defined(__svr4__))
     return sysconf (_SC_NPROCESSORS_ONLN);
 #elif defined __MIC__
     /// HACK: Usually, the 3rd and 4th hyperthreads are not beneficial
@@ -401,9 +404,9 @@ COMMON_SYSDEP void __cilkrts_yield(void)
     // giving up the processor and latency starting up when work becomes
     // available
     _mm_delay_32(1024);
-#elif defined(ANDROID)
-    // On Android, call sched_yield to yield quantum.  I'm not sure why we
-    // don't do this on Linux also.
+#elif defined(ANDROID) || (defined(__sun__) && defined(__svr4__))
+    // On Android and Solaris, call sched_yield to yield quantum.  I'm not
+    // sure why we don't do this on Linux also.
     sched_yield();
 #else
     // On Linux, call pthread_yield (which in turn will call sched_yield)
