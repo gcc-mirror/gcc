@@ -1,3 +1,9 @@
+2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58968
+	* lra-spills.c (return_regno_p): New function.
+	(lra_final_code_change): Use it.
+
 2013-11-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi (__GCC_IEC_559, __GCC_IEC_559_COMPLEX): Document
