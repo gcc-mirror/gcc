@@ -1819,7 +1819,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (REAL_VALUES_LESS (t, x))
 	    return immed_wide_int_const (wmax, mode);
 
-	  return immed_wide_int_const (real_to_integer (&t, &fail, width), mode);
+	  return immed_wide_int_const (real_to_integer (&x, &fail, width),
+				       mode);
 	  break;
 
 	default:
