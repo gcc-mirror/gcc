@@ -1,3 +1,9 @@
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57445
+	* trans-expr.c (gfc_conv_class_to_class): Remove spurious
+	assert.
+
 2013-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44350
