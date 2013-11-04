@@ -10,9 +10,7 @@
 // Shadow memory poisoning by ASan RTL and by user application.
 //===----------------------------------------------------------------------===//
 
-#include "asan_interceptors.h"
-#include "asan_internal.h"
-#include "asan_mapping.h"
+#include "asan_poisoning.h"
 #include "sanitizer_common/sanitizer_libc.h"
 
 namespace __asan {
@@ -20,11 +18,11 @@ namespace __asan {
 void PoisonShadow(uptr addr, uptr size, u8 value) {
   if (!flags()->poison_heap) return;
   CHECK(AddrIsAlignedByGranularity(addr));
+  CHECK(AddrIsInMem(addr));
   CHECK(AddrIsAlignedByGranularity(addr + size));
-  uptr shadow_beg = MemToShadow(addr);
-  uptr shadow_end = MemToShadow(addr + size - SHADOW_GRANULARITY) + 1;
-  CHECK(REAL(memset) != 0);
-  REAL(memset)((void*)shadow_beg, value, shadow_end - shadow_beg);
+  CHECK(AddrIsInMem(addr + size - SHADOW_GRANULARITY));
+  CHECK(REAL(memset));
+  FastPoisonShadow(addr, size, value);
 }
 
 void PoisonShadowPartialRightRedzone(uptr addr,
@@ -33,19 +31,9 @@ void PoisonShadowPartialRightRedzone(uptr addr,
                                      u8 value) {
   if (!flags()->poison_heap) return;
   CHECK(AddrIsAlignedByGranularity(addr));
-  u8 *shadow = (u8*)MemToShadow(addr);
-  for (uptr i = 0; i < redzone_size;
-       i += SHADOW_GRANULARITY, shadow++) {
-    if (i + SHADOW_GRANULARITY <= size) {
-      *shadow = 0;  // fully addressable
-    } else if (i >= size) {
-      *shadow = (SHADOW_GRANULARITY == 128) ? 0xff : value;  // unaddressable
-    } else {
-      *shadow = size - i;  // first size-i bytes are addressable
-    }
-  }
+  CHECK(AddrIsInMem(addr));
+  FastPoisonShadowPartialRightRedzone(addr, size, redzone_size, value);
 }
-
 
 struct ShadowSegmentEndpoint {
   u8 *chunk;
@@ -177,6 +165,55 @@ uptr __asan_region_is_poisoned(uptr beg, uptr size) {
       return beg;
   UNREACHABLE("mem_is_zero returned false, but poisoned byte was not found");
   return 0;
+}
+
+#define CHECK_SMALL_REGION(p, size, isWrite)                  \
+  do {                                                        \
+    uptr __p = reinterpret_cast<uptr>(p);                     \
+    uptr __size = size;                                       \
+    if (UNLIKELY(__asan::AddressIsPoisoned(__p) ||            \
+        __asan::AddressIsPoisoned(__p + __size - 1))) {       \
+      GET_CURRENT_PC_BP_SP;                                   \
+      uptr __bad = __asan_region_is_poisoned(__p, __size);    \
+      __asan_report_error(pc, bp, sp, __bad, isWrite, __size);\
+    }                                                         \
+  } while (false);                                            \
+
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+u16 __sanitizer_unaligned_load16(const uu16 *p) {
+  CHECK_SMALL_REGION(p, sizeof(*p), false);
+  return *p;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+u32 __sanitizer_unaligned_load32(const uu32 *p) {
+  CHECK_SMALL_REGION(p, sizeof(*p), false);
+  return *p;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+u64 __sanitizer_unaligned_load64(const uu64 *p) {
+  CHECK_SMALL_REGION(p, sizeof(*p), false);
+  return *p;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+void __sanitizer_unaligned_store16(uu16 *p, u16 x) {
+  CHECK_SMALL_REGION(p, sizeof(*p), true);
+  *p = x;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+void __sanitizer_unaligned_store32(uu32 *p, u32 x) {
+  CHECK_SMALL_REGION(p, sizeof(*p), true);
+  *p = x;
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+void __sanitizer_unaligned_store64(uu64 *p, u64 x) {
+  CHECK_SMALL_REGION(p, sizeof(*p), true);
+  *p = x;
 }
 
 // This is a simplified version of __asan_(un)poison_memory_region, which

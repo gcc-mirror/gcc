@@ -1,3 +1,17 @@
+2013-11-04  Kostya Serebryany  <kcc@google.com>
+
+	Update to match the changed asan API.
+	* asan.c (asan_function_start): New function.
+	(asan_emit_stack_protection): Update the string stored in the
+	stack red zone to match new API.  Store the PC of the current
+	function in the red zone.
+	(asan_global_struct): Update the __asan_global definition to match
+	the new API.
+	(asan_add_global): Ditto.
+	* asan.h (asan_function_start): New prototype.
+	* final.c (final_start_function): Call asan_function_start.
+	* sanitizer.def (BUILT_IN_ASAN_INIT): Rename __asan_init_v1 to __asan_init_v3.
+
 2013-11-04  Wei Mi  <wmi@google.com>
 
 	* gcc/config/i386/i386-c.c (ix86_target_macros_internal): Separate

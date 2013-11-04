@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef TREE_ASAN
 #define TREE_ASAN
 
+extern void asan_function_start (void);
 extern void asan_finish_file (void);
 extern rtx asan_emit_stack_protection (rtx, HOST_WIDE_INT *, tree *, int);
 extern bool asan_protect_global (tree);

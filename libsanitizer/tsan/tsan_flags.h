@@ -50,8 +50,14 @@ struct Flags {
   const char *strip_path_prefix;
   // Suppressions filename.
   const char *suppressions;
+  // Print matched suppressions at exit.
+  bool print_suppressions;
+  // Print matched "benign" races at exit.
+  bool print_benign;
   // Override exit status if something was reported.
   int exitcode;
+  // Exit after first reported error.
+  bool halt_on_error;
   // Write logs to "log_path.pid".
   // The special values are "stdout" and "stderr".
   // The default is "stderr".
@@ -65,6 +71,8 @@ struct Flags {
   const char *profile_memory;
   // Flush shadow memory every X ms.
   int flush_memory_ms;
+  // Flush symbolizer caches every X ms.
+  int flush_symbolizer_ms;
   // Stops on start until __tsan_resume() is called (for debugging).
   bool stop_on_start;
   // Controls whether RunningOnValgrind() returns true or false.
@@ -82,6 +90,8 @@ struct Flags {
   // 1 - reasonable level of synchronization (write->read)
   // 2 - global synchronization of all IO operations
   int io_sync;
+  // If false, the allocator will crash instead of returning 0 on out-of-memory.
+  bool allocator_may_return_null;
 };
 
 Flags *flags();

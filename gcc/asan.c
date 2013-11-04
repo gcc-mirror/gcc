@@ -59,11 +59,13 @@ along with GCC; see the file COPYING3.  If not see
 	 if ((X & 7) + N - 1 > ShadowValue)
 	   __asan_report_loadN(X);
    Stores are instrumented similarly, but using __asan_report_storeN functions.
-   A call too __asan_init() is inserted to the list of module CTORs.
+   A call too __asan_init_vN() is inserted to the list of module CTORs.
+   N is the version number of the AddressSanitizer API. The changes between the
+   API versions are listed in libsanitizer/asan/asan_interface_internal.h.
 
    The run-time library redefines malloc (so that redzone are inserted around
    the allocated memory) and free (so that reuse of free-ed memory is delayed),
-   provides __asan_report* and __asan_init functions.
+   provides __asan_report* and __asan_init_vN functions.
 
    Read more:
    http://code.google.com/p/address-sanitizer/wiki/AddressSanitizerAlgorithm
@@ -125,9 +127,11 @@ along with GCC; see the file COPYING3.  If not see
 
 	where '(...){n}' means the content inside the parenthesis occurs 'n'
 	times, with 'n' being the number of variables on the stack.
+     
+     3/ The following 8 bytes contain the PC of the current function which
+     will be used by the run-time library to print an error message.
 
-      3/ The following 16 bytes of the red zone have no particular
-      format.
+     4/ The following 8 bytes are reserved for internal use by the run-time.
 
    The shadow memory for that stack layout is going to look like this:
 
@@ -204,6 +208,9 @@ along with GCC; see the file COPYING3.  If not see
 
        // Name of the global variable.
        const void *__name;
+
+       // Name of the module where the global variable is declared.
+       const void *__module_name;
 
        // This is always set to NULL for now.
        uptr __has_dynamic_init;
@@ -914,6 +921,15 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   add_int_reg_note (jump, REG_BR_PROB, REG_BR_PROB_BASE * 80 / 100);
 }
 
+void
+asan_function_start (void)
+{
+  section *fnsec = function_section (current_function_decl);
+  switch_to_section (fnsec);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LASANPC",
+                         current_function_funcdef_no);
+}
+
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
    directly, epilogue sequence returned.  BASE is the register holding the
    stack base, against which OFFSETS array offsets are relative to, OFFSETS
@@ -929,12 +945,13 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 			    int length)
 {
   rtx shadow_base, shadow_mem, ret, mem;
+  char buf[30];
   unsigned char shadow_bytes[4];
   HOST_WIDE_INT base_offset = offsets[length - 1], offset, prev_offset;
   HOST_WIDE_INT last_offset, last_size;
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
-  tree str_cst;
+  tree str_cst, decl, id;
 
   if (shadow_ptr_types[0] == NULL_TREE)
     asan_init_shadow_ptr_types ();
@@ -942,11 +959,6 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   /* First of all, prepare the description string.  */
   pretty_printer asan_pp;
 
-  if (DECL_NAME (current_function_decl))
-    pp_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
-  else
-    pp_string (&asan_pp, "<unknown>");
-  pp_space (&asan_pp);
   pp_decimal_int (&asan_pp, length / 2 - 1);
   pp_space (&asan_pp);
   for (l = length - 2; l; l -= 2)
@@ -976,6 +988,20 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   emit_move_insn (mem, gen_int_mode (ASAN_STACK_FRAME_MAGIC, ptr_mode));
   mem = adjust_address (mem, VOIDmode, GET_MODE_SIZE (ptr_mode));
   emit_move_insn (mem, expand_normal (str_cst));
+  mem = adjust_address (mem, VOIDmode, GET_MODE_SIZE (ptr_mode));
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LASANPC", current_function_funcdef_no);
+  id = get_identifier (buf);
+  decl = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+                    VAR_DECL, id, char_type_node);
+  SET_DECL_ASSEMBLER_NAME (decl, id);
+  TREE_ADDRESSABLE (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  TREE_USED (decl) = 1;
+  emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
 			      GEN_INT (ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
@@ -1924,20 +1950,21 @@ transform_statements (void)
      uptr __size;
      uptr __size_with_redzone;
      const void *__name;
+     const void *__module_name;
      uptr __has_dynamic_init;
    } type.  */
 
 static tree
 asan_global_struct (void)
 {
-  static const char *field_names[5]
+  static const char *field_names[6]
     = { "__beg", "__size", "__size_with_redzone",
-	"__name", "__has_dynamic_init" };
-  tree fields[5], ret;
+	"__name", "__module_name", "__has_dynamic_init" };
+  tree fields[6], ret;
   int i;
 
   ret = make_node (RECORD_TYPE);
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 6; i++)
     {
       fields[i]
 	= build_decl (UNKNOWN_LOCATION, FIELD_DECL,
@@ -1962,20 +1989,19 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 {
   tree init, uptr = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
   unsigned HOST_WIDE_INT size;
-  tree str_cst, refdecl = decl;
+  tree str_cst, module_name_cst, refdecl = decl;
   vec<constructor_elt, va_gc> *vinner = NULL;
 
-  pretty_printer asan_pp;
+  pretty_printer asan_pp, module_name_pp;
 
   if (DECL_NAME (decl))
     pp_tree_identifier (&asan_pp, DECL_NAME (decl));
   else
     pp_string (&asan_pp, "<unknown>");
-  pp_space (&asan_pp);
-  pp_left_paren (&asan_pp);
-  pp_string (&asan_pp, main_input_filename);
-  pp_right_paren (&asan_pp);
   str_cst = asan_pp_string (&asan_pp);
+
+  pp_string (&module_name_pp, main_input_filename);
+  module_name_cst = asan_pp_string (&module_name_pp);
 
   if (asan_needs_local_alias (decl))
     {
@@ -2004,6 +2030,8 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, str_cst));
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  fold_convert (const_ptr_type_node, module_name_cst));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, 0));
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
@@ -2158,7 +2186,7 @@ add_string_csts (void **slot, void *data)
 static GTY(()) tree asan_ctor_statements;
 
 /* Module-level instrumentation.
-   - Insert __asan_init() into the list of CTORs.
+   - Insert __asan_init_vN() into the list of CTORs.
    - TODO: insert redzones around globals.
  */
 

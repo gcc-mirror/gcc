@@ -15,32 +15,31 @@ toolexeclib_LTLIBRARIES = libasan.la
 nodist_toolexeclib_HEADERS = libasan_preinit.o
 
 asan_files = \
-	asan_allocator.cc \
 	asan_allocator2.cc \
-	asan_interceptors.cc \
-	asan_mac.cc \
-	asan_malloc_mac.cc \
-	asan_new_delete.cc \
-	asan_posix.cc \
-	asan_rtl.cc \
-	asan_stats.cc \
-	asan_thread_registry.cc \
+	asan_dll_thunk.cc \
 	asan_fake_stack.cc \
 	asan_globals.cc \
+	asan_interceptors.cc \
 	asan_linux.cc \
+	asan_mac.cc \
 	asan_malloc_linux.cc \
+	asan_malloc_mac.cc \
 	asan_malloc_win.cc \
+	asan_new_delete.cc \
 	asan_poisoning.cc \
+	asan_posix.cc \
 	asan_report.cc \
+	asan_rtl.cc \
 	asan_stack.cc \
+	asan_stats.cc \
 	asan_thread.cc \
 	asan_win.cc
 
 libasan_la_SOURCES = $(asan_files)
 if USING_MAC_INTERPOSE
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/lsan/libsanitizer_lsan.la
 else
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/lsan/libsanitizer_lsan.la $(top_builddir)/interception/libinterception.la
 endif
 libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 

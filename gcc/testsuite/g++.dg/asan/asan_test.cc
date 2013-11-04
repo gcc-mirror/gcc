@@ -204,16 +204,6 @@ TEST(AddressSanitizer, BitFieldNegativeTest) {
   delete Ident(x);
 }
 
-TEST(AddressSanitizer, OutOfMemoryTest) {
-  size_t size = SANITIZER_WORDSIZE == 64 ? (size_t)(1ULL << 48) : (0xf0000000);
-  EXPECT_EQ(0, realloc(0, size));
-  EXPECT_EQ(0, realloc(0, ~Ident(0)));
-  EXPECT_EQ(0, malloc(size));
-  EXPECT_EQ(0, malloc(~Ident(0)));
-  EXPECT_EQ(0, calloc(1, size));
-  EXPECT_EQ(0, calloc(1, ~Ident(0)));
-}
-
 #if ASAN_NEEDS_SEGV
 namespace {
 
@@ -495,42 +485,6 @@ TEST(AddressSanitizer, ManyStackObjectsTest) {
   Ident(XXX);
   Ident(YYY);
   EXPECT_DEATH(Ident(ZZZ)[-1] = 0, ASAN_PCRE_DOTALL "XXX.*YYY.*ZZZ");
-}
-
-NOINLINE static void Frame0(int frame, char *a, char *b, char *c) {
-  char d[4] = {0};
-  char *D = Ident(d);
-  switch (frame) {
-    case 3: a[5]++; break;
-    case 2: b[5]++; break;
-    case 1: c[5]++; break;
-    case 0: D[5]++; break;
-  }
-}
-NOINLINE static void Frame1(int frame, char *a, char *b) {
-  char c[4] = {0}; Frame0(frame, a, b, c);
-  break_optimization(0);
-}
-NOINLINE static void Frame2(int frame, char *a) {
-  char b[4] = {0}; Frame1(frame, a, b);
-  break_optimization(0);
-}
-NOINLINE static void Frame3(int frame) {
-  char a[4] = {0}; Frame2(frame, a);
-  break_optimization(0);
-}
-
-TEST(AddressSanitizer, GuiltyStackFrame0Test) {
-  EXPECT_DEATH(Frame3(0), "located .*in frame <.*Frame0");
-}
-TEST(AddressSanitizer, GuiltyStackFrame1Test) {
-  EXPECT_DEATH(Frame3(1), "located .*in frame <.*Frame1");
-}
-TEST(AddressSanitizer, GuiltyStackFrame2Test) {
-  EXPECT_DEATH(Frame3(2), "located .*in frame <.*Frame2");
-}
-TEST(AddressSanitizer, GuiltyStackFrame3Test) {
-  EXPECT_DEATH(Frame3(3), "located .*in frame <.*Frame3");
 }
 
 NOINLINE void LongJmpFunc1(jmp_buf buf) {
