@@ -6472,13 +6472,14 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     if (USE_STMT (use_p) != stmt)
       {
-	gimple use_stmt = USE_STMT (use_p);
+	gimple use_stmt = USE_STMT (use_p), use_stmt2;
 	if (is_gimple_debug (use_stmt))
 	  continue;
 	while (is_gimple_assign (use_stmt)
+	       && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
 	       && single_imm_use (gimple_assign_lhs (use_stmt),
-				  &use2_p, &use_stmt))
-	  ;
+				  &use2_p, &use_stmt2))
+	  use_stmt = use_stmt2;
 	if (gimple_code (use_stmt) != GIMPLE_COND
 	    || gimple_bb (use_stmt) != cond_bb)
 	  return false;
