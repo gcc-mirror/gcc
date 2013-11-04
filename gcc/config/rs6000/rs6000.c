@@ -6405,7 +6405,7 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_NUNITS (mode) != 1)
 	return false;
-      if (! lra_in_progress && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	  && !(/* ??? Assume floating point reg based on mode?  */
 	       TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT
 	       && (mode == DFmode || mode == DDmode)))
