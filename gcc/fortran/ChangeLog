@@ -1,5 +1,11 @@
 2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/58771
+	* trans-io.c (transfer_expr): If the backend_decl for a derived
+	type is missing, build it with gfc_typenode_for_spec.
+
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/57445
 	* trans-expr.c (gfc_conv_class_to_class): Remove spurious
 	assert.
