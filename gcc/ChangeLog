@@ -1,3 +1,10 @@
+2013-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58946
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Update all
+	bbs with bbinfo[idx].op != NULL before all blocks with
+	bbinfo[idx].op == NULL.
+
 2013-11-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/avr/avr-log.c (avr_double_int_pop_digit): Delete.
