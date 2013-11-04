@@ -24523,6 +24523,42 @@ ix86_instantiate_decls (void)
       instantiate_decl_rtl (s->rtl);
 }
 
+/* Check whether x86 address PARTS is a pc-relative address.  */
+
+static bool
+rip_relative_addr_p (struct ix86_address *parts)
+{
+  rtx base, index, disp;
+
+  base = parts->base;
+  index = parts->index;
+  disp = parts->disp;
+
+  if (disp && !base && !index)
+    {
+      if (TARGET_64BIT)
+	{
+	  rtx symbol = disp;
+
+	  if (GET_CODE (disp) == CONST)
+	    symbol = XEXP (disp, 0);
+	  if (GET_CODE (symbol) == PLUS
+	      && CONST_INT_P (XEXP (symbol, 1)))
+	    symbol = XEXP (symbol, 0);
+
+	  if (GET_CODE (symbol) == LABEL_REF
+	      || (GET_CODE (symbol) == SYMBOL_REF
+		  && SYMBOL_REF_TLS_MODEL (symbol) == 0)
+	      || (GET_CODE (symbol) == UNSPEC
+		  && (XINT (symbol, 1) == UNSPEC_GOTPCREL
+		      || XINT (symbol, 1) == UNSPEC_PCREL
+		      || XINT (symbol, 1) == UNSPEC_GOTNTPOFF)))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Calculate the length of the memory address in the instruction encoding.
    Includes addr32 prefix, does not include the one-byte modrm, opcode,
    or other prefixes.  We never generate addr32 prefix for LEA insn.  */
@@ -24594,25 +24630,8 @@ memory_address_length (rtx addr, bool lea)
   else if (disp && !base && !index)
     {
       len += 4;
-      if (TARGET_64BIT)
-	{
-	  rtx symbol = disp;
-
-	  if (GET_CODE (disp) == CONST)
-	    symbol = XEXP (disp, 0);
-	  if (GET_CODE (symbol) == PLUS
-	      && CONST_INT_P (XEXP (symbol, 1)))
-	    symbol = XEXP (symbol, 0);
-
-	  if (GET_CODE (symbol) != LABEL_REF
-	      && (GET_CODE (symbol) != SYMBOL_REF
-		  || SYMBOL_REF_TLS_MODEL (symbol) != 0)
-	      && (GET_CODE (symbol) != UNSPEC
-		  || (XINT (symbol, 1) != UNSPEC_GOTPCREL
-		      && XINT (symbol, 1) != UNSPEC_PCREL
-		      && XINT (symbol, 1) != UNSPEC_GOTNTPOFF)))
-	    len++;
-	}
+      if (rip_relative_addr_p (&parts))
+	len++;
     }
   else
     {
@@ -25202,6 +25221,119 @@ ia32_multipass_dfa_lookahead (void)
     default:
       return 0;
     }
+}
+
+/* Return true if target platform supports macro-fusion.  */
+
+static bool
+ix86_macro_fusion_p ()
+{
+  return TARGET_FUSE_CMP_AND_BRANCH;
+}
+
+/* Check whether current microarchitecture support macro fusion
+   for insn pair "CONDGEN + CONDJMP". Refer to
+   "Intel Architectures Optimization Reference Manual". */
+
+static bool
+ix86_macro_fusion_pair_p (rtx condgen, rtx condjmp)
+{
+  rtx src, dest;
+  rtx single_set = single_set (condgen);
+  enum rtx_code ccode;
+  rtx compare_set = NULL_RTX, test_if, cond;
+  rtx alu_set = NULL_RTX, addr = NULL_RTX;
+
+  if (get_attr_type (condgen) != TYPE_TEST
+      && get_attr_type (condgen) != TYPE_ICMP
+      && get_attr_type (condgen) != TYPE_INCDEC
+      && get_attr_type (condgen) != TYPE_ALU)
+    return false;
+
+  if (single_set == NULL_RTX
+      && !TARGET_FUSE_ALU_AND_BRANCH)
+    return false;
+
+  if (single_set != NULL_RTX)
+    compare_set = single_set;
+  else
+    {
+      int i;
+      rtx pat = PATTERN (condgen);
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
+	  {
+	    rtx set_src = SET_SRC (XVECEXP (pat, 0, i));
+	    if (GET_CODE (set_src) == COMPARE)
+	      compare_set = XVECEXP (pat, 0, i);
+	    else
+	      alu_set = XVECEXP (pat, 0, i);
+	  }
+    }
+  if (compare_set == NULL_RTX)
+    return false;
+  src = SET_SRC (compare_set);
+  if (GET_CODE (src) != COMPARE)
+    return false;
+
+  /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
+     supported.  */
+  if ((MEM_P (XEXP (src, 0))
+       && CONST_INT_P (XEXP (src, 1)))
+      || (MEM_P (XEXP (src, 1))
+	  && CONST_INT_P (XEXP (src, 0))))
+    return false;
+
+  /* No fusion for RIP-relative address.  */
+  if (MEM_P (XEXP (src, 0)))
+    addr = XEXP (XEXP (src, 0), 0);
+  else if (MEM_P (XEXP (src, 1)))
+    addr = XEXP (XEXP (src, 1), 0);
+
+  if (addr) {
+    ix86_address parts;
+    int ok = ix86_decompose_address (addr, &parts);
+    gcc_assert (ok);
+
+    if (rip_relative_addr_p (&parts))
+      return false;
+  }
+
+  test_if = SET_SRC (pc_set (condjmp));
+  cond = XEXP (test_if, 0);
+  ccode = GET_CODE (cond);
+  /* Check whether conditional jump use Sign or Overflow Flags.  */
+  if (!TARGET_FUSE_CMP_AND_BRANCH_SOFLAGS
+      && (ccode == GE
+          || ccode == GT
+	  || ccode == LE
+	  || ccode == LT))
+    return false;
+
+  /* Return true for TYPE_TEST and TYPE_ICMP.  */
+  if (get_attr_type (condgen) == TYPE_TEST
+      || get_attr_type (condgen) == TYPE_ICMP)
+    return true;
+
+  /* The following is the case that macro-fusion for alu + jmp.  */
+  if (!TARGET_FUSE_ALU_AND_BRANCH || !alu_set)
+    return false;
+
+  /* No fusion for alu op with memory destination operand.  */
+  dest = SET_DEST (alu_set);
+  if (MEM_P (dest))
+    return false;
+
+  /* Macro-fusion for inc/dec + unsigned conditional jump is not
+     supported.  */
+  if (get_attr_type (condgen) == TYPE_INCDEC
+      && (ccode == GEU
+	  || ccode == GTU
+	  || ccode == LEU
+	  || ccode == LTU))
+    return false;
+
+  return true;
 }
 
 /* Try to reorder ready list to take advantage of Atom pipelined IMUL
@@ -43487,6 +43619,10 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   ia32_multipass_dfa_lookahead
+#undef TARGET_SCHED_MACRO_FUSION_P
+#define TARGET_SCHED_MACRO_FUSION_P ix86_macro_fusion_p
+#undef TARGET_SCHED_MACRO_FUSION_PAIR_P
+#define TARGET_SCHED_MACRO_FUSION_PAIR_P ix86_macro_fusion_pair_p
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall

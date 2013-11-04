@@ -92,11 +92,29 @@ DEF_TUNE (X86_TUNE_MOVX, "movx",
 DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
           m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
 
-/* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
-   with a subsequent conditional jump instruction into a single
-   compare-and-branch uop.
+/* X86_TUNE_FUSE_CMP_AND_BRANCH_32: Fuse compare with a subsequent
+   conditional jump instruction for 32 bit TARGET.
    FIXME: revisit for generic.  */
-DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch", m_BDVER | m_CORE_ALL)
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_32, "fuse_cmp_and_branch_32",
+          m_CORE_ALL | m_BDVER)
+
+/* X86_TUNE_FUSE_CMP_AND_BRANCH_64: Fuse compare with a subsequent
+   conditional jump instruction for TARGET_64BIT.
+   FIXME: revisit for generic.  */
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_64, "fuse_cmp_and_branch_64",
+          m_COREI7 | m_COREI7_AVX | m_HASWELL | m_BDVER)
+
+/* X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS: Fuse compare with a
+   subsequent conditional jump instruction when the condition jump
+   check sign flag (SF) or overflow flag (OF).  */
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
+          m_COREI7 | m_COREI7_AVX | m_HASWELL | m_BDVER)
+
+/* X86_TUNE_FUSE_ALU_AND_BRANCH: Fuse alu with a subsequent conditional
+   jump instruction when the alu instruction produces the CCFLAG consumed by
+   the conditional jump instruction. */
+DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
+          m_COREI7_AVX | m_HASWELL)
 
 /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
    during reassociation of integer computation.  */
