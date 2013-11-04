@@ -1,3 +1,26 @@
+2013-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/cpp.texi (__GCC_IEC_559, __GCC_IEC_559_COMPLEX): Document
+	macros.
+	* target.def (float_exceptions_rounding_supported_p): New hook.
+	* targhooks.c (default_float_exceptions_rounding_supported_p): New
+	function.
+	* targhooks.h (default_float_exceptions_rounding_supported_p):
+	Declare.
+	* doc/tm.texi.in (TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P):
+	New @hook.
+	* doc/tm.texi: Regenerate.
+	* config.gcc (powerpc*-*-linux*): Set extra_objs.
+	* config/rs6000/rs6000-linux.c: New file.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_linux_float_exceptions_rounding_supported_p): Declare.
+	* config/rs6000/linux.h
+	(TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P): New macro.
+	* config/rs6000/linux64.h
+	(TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P): Likewise.
+	* config/rs6000/t-linux (rs6000-linux.o): New rule.
+	* config/rs6000/t-linux64 (rs6000-linux.o): Likewise.
+
 2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (*vsx_le_perm_store_<mode> for VSX_D):

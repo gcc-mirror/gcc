@@ -683,6 +683,92 @@ cpp_atomic_builtins (cpp_reader *pfile)
 			(have_swap[psize]? 2 : 1));
 }
 
+/* Return the value for __GCC_IEC_559.  */
+static int
+cpp_iec_559_value (void)
+{
+  /* The default is support for IEEE 754-2008.  */
+  int ret = 2;
+
+  /* float and double must be binary32 and binary64.  If they are but
+     with reversed NaN convention, at most IEEE 754-1985 is
+     supported.  */
+  const struct real_format *ffmt
+    = REAL_MODE_FORMAT (TYPE_MODE (float_type_node));
+  const struct real_format *dfmt
+    = REAL_MODE_FORMAT (TYPE_MODE (double_type_node));
+  if (!ffmt->qnan_msb_set || !dfmt->qnan_msb_set)
+    ret = 1;
+  if (ffmt->b != 2
+      || ffmt->p != 24
+      || ffmt->pnan != 24
+      || ffmt->emin != -125
+      || ffmt->emax != 128
+      || ffmt->signbit_rw != 31
+      || ffmt->round_towards_zero
+      || !ffmt->has_sign_dependent_rounding
+      || !ffmt->has_nans
+      || !ffmt->has_inf
+      || !ffmt->has_denorm
+      || !ffmt->has_signed_zero
+      || dfmt->b != 2
+      || dfmt->p != 53
+      || dfmt->pnan != 53
+      || dfmt->emin != -1021
+      || dfmt->emax != 1024
+      || dfmt->signbit_rw != 63
+      || dfmt->round_towards_zero
+      || !dfmt->has_sign_dependent_rounding
+      || !dfmt->has_nans
+      || !dfmt->has_inf
+      || !dfmt->has_denorm
+      || !dfmt->has_signed_zero)
+    ret = 0;
+
+  /* In strict C standards conformance mode, consider unpredictable
+     excess precision to mean lack of IEEE 754 support.  ??? The same
+     should apply to unpredictable contraction, but at present
+     standards conformance options do not enable conforming
+     contraction.  For C++, and outside strict conformance mode, do
+     not consider these options to mean lack of IEEE 754 support.  */
+  if (flag_iso
+      && !c_dialect_cxx ()
+      && TARGET_FLT_EVAL_METHOD != 0
+      && flag_excess_precision != EXCESS_PRECISION_STANDARD)
+    ret = 0;
+
+  /* Various options are contrary to IEEE 754 semantics.  */
+  if (flag_unsafe_math_optimizations
+      || flag_associative_math
+      || flag_reciprocal_math
+      || flag_finite_math_only
+      || !flag_signed_zeros
+      || flag_single_precision_constant)
+    ret = 0;
+
+  /* If the target does not support IEEE 754 exceptions and rounding
+     modes, consider IEEE 754 support to be absent.  */
+  if (!targetm.float_exceptions_rounding_supported_p ())
+    ret = 0;
+
+  return ret;
+}
+
+/* Return the value for __GCC_IEC_559_COMPLEX.  */
+static int
+cpp_iec_559_complex_value (void)
+{
+  /* The value is no bigger than that of __GCC_IEC_559.  */
+  int ret = cpp_iec_559_value ();
+
+  /* Some options are contrary to the required default state of the
+     CX_LIMITED_RANGE pragma.  */
+  if (flag_complex_method != 2)
+    ret = 0;
+
+  return ret;
+}
+
 /* Hook that registers front end and target-specific built-ins.  */
 void
 c_cpp_builtins (cpp_reader *pfile)
@@ -759,6 +845,13 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* stdint.h and the testsuite need to know these.  */
   builtin_define_stdint_macros ();
+
+  /* Provide information for library headers to determine whether to
+     define macros such as __STDC_IEC_559__ and
+     __STDC_IEC_559_COMPLEX__.  */
+  builtin_define_with_int_value ("__GCC_IEC_559", cpp_iec_559_value ());
+  builtin_define_with_int_value ("__GCC_IEC_559_COMPLEX",
+				 cpp_iec_559_complex_value ());
 
   /* float.h needs to know this.  */
   builtin_define_with_int_value ("__FLT_EVAL_METHOD__",

@@ -1935,6 +1935,18 @@ DEFHOOK_UNDOC
  bool, (void),
  targhook_float_words_big_endian)
 
+DEFHOOK
+(float_exceptions_rounding_supported_p,
+ "Returns true if the target supports IEEE 754 floating-point exceptions\
+ and rounding modes, false otherwise.  This is intended to relate to the\
+ @code{float} and @code{double} types, but not necessarily @code{long double}.\
+ By default, returns true if the @code{adddf3} instruction pattern is\
+ available and false otherwise, on the assumption that hardware floating\
+ point supports exceptions and rounding modes but software floating point\
+ does not.",
+ bool, (void),
+ default_float_exceptions_rounding_supported_p)
+
 /* True if the target supports decimal floating point.  */
 DEFHOOK
 (decimal_float_supported_p,

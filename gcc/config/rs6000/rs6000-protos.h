@@ -212,4 +212,6 @@ void rs6000_final_prescan_insn (rtx, rtx *operand, int num_operands);
 extern bool rs6000_hard_regno_mode_ok_p[][FIRST_PSEUDO_REGISTER];
 extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];
+
+extern bool rs6000_linux_float_exceptions_rounding_supported_p (void);
 #endif  /* rs6000-protos.h */

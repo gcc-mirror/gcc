@@ -145,3 +145,9 @@
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
+
+/* Software floating point support for exceptions and rounding modes
+   depends on the C library in use.  */
+#undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
+#define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \
+  rs6000_linux_float_exceptions_rounding_supported_p
