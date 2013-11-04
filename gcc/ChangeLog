@@ -1,3 +1,14 @@
+2013-11-04  Ian Lance Taylor  <iant@google.com>
+
+	* builtins.def (ATTR_NOTHROWCALL_LEAF_LIST): Define.
+	* sync-builtins.def: Use ATTR_NOTHROWCALL_LEAF_LIST for all sync
+	builtins that take pointers.
+	* lto-opts.c (lto_write_options): Write -fnon-call-exceptions
+	if set.
+	* lto-wrapper.c (merge_and_complain): Collect
+	OPT_fnon_call_exceptions.
+	(run_gcc): Pass -fnon-call-exceptions.
+
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* optabs.c (expand_vec_perm): Revert one incorrect line from
