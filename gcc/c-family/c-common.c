@@ -9934,6 +9934,11 @@ invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
 		"invalid type argument of %<->%> (have %qT)",
 		type);
       break;
+    case RO_ARROW_STAR:
+      error_at (loc,
+		"invalid type argument of %<->*%> (have %qT)",
+		type);
+      break;
     case RO_IMPLICIT_CONVERSION:
       error_at (loc,
 		"invalid type argument of implicit conversion (have %qT)",
