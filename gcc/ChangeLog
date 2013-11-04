@@ -1,5 +1,10 @@
 2013-11-04  Wei Mi  <wmi@google.com>
 
+	* sched-rgn.c (add_branch_dependences): Keep insns in
+	a SCHED_GROUP at the end of BB to remain their location.
+
+2013-11-04  Wei Mi  <wmi@google.com>
+
 	* gcc/config/i386/i386.c (memory_address_length): Extract a part
 	of code to rip_relative_addr_p.
 	(rip_relative_addr_p): New Function.

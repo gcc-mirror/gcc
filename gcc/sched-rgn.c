@@ -2443,6 +2443,8 @@ add_branch_dependences (rtx head, rtx tail)
      cc0 setters remain at the end because they can't be moved away from
      their cc0 user.
 
+     Predecessors of SCHED_GROUP_P instructions at the end remain at the end.
+
      COND_EXEC insns cannot be moved past a branch (see e.g. PR17808).
 
      Insns setting TARGET_CLASS_LIKELY_SPILLED_P registers (usually return
@@ -2465,7 +2467,8 @@ add_branch_dependences (rtx head, rtx tail)
 #endif
 		 || (!reload_completed
 		     && sets_likely_spilled (PATTERN (insn)))))
-	 || NOTE_P (insn))
+	 || NOTE_P (insn)
+	 || (last != 0 && SCHED_GROUP_P (last)))
     {
       if (!NOTE_P (insn))
 	{
