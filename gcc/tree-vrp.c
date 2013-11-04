@@ -1617,16 +1617,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       /* Make sure to not set TREE_OVERFLOW on the final type
 	 conversion.  We are willingly interpreting large positive
 	 unsigned values as negative singed values here.  */
-      min = force_fit_type (TREE_TYPE (var),
-			    wide_int::from (min,
-					    TYPE_PRECISION (TREE_TYPE (var)),
-					    TYPE_SIGN (TREE_TYPE (min))),
-			    0, false);
-      max = force_fit_type (TREE_TYPE (var),
-			    wide_int::from (max,
-					    TYPE_PRECISION (TREE_TYPE (var)),
-					    TYPE_SIGN (TREE_TYPE (max))),
-			    0, false);
+      min = force_fit_type (TREE_TYPE (var), wi::to_widest (min), 0, false);
+      max = force_fit_type (TREE_TYPE (var), wi::to_widest (max), 0, false);
 
       /* We can transform a max, min range to an anti-range or
          vice-versa.  Use set_and_canonicalize_value_range which does
@@ -3235,20 +3227,12 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	  if (is_overflow_infinity (vr0.min))
 	    new_min = negative_overflow_infinity (outer_type);
 	  else
-	    new_min = force_fit_type (outer_type,
-				      wide_int::from
-				        (vr0.min,
-					 TYPE_PRECISION (outer_type),
-					 TYPE_SIGN (TREE_TYPE (vr0.min))),
+	    new_min = force_fit_type (outer_type, wi::to_widest (vr0.min),
 				      0, false);
 	  if (is_overflow_infinity (vr0.max))
 	    new_max = positive_overflow_infinity (outer_type);
 	  else
-	    new_max = force_fit_type (outer_type,
-				      wide_int::from
-				        (vr0.max,
-					 TYPE_PRECISION (outer_type),
-					 TYPE_SIGN (TREE_TYPE (vr0.max))),
+	    new_max = force_fit_type (outer_type, wi::to_widest (vr0.max),
 				      0, false);
 	  set_and_canonicalize_value_range (vr, vr0.type,
 					    new_min, new_max, NULL);
