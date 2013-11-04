@@ -2657,6 +2657,7 @@ maybe_optimize_range_tests (gimple stmt)
   edge e;
   vec<operand_entry_t> ops = vNULL;
   vec<inter_bb_range_test_entry> bbinfo = vNULL;
+  bool any_changes = false;
 
   /* Consider only basic blocks that end with GIMPLE_COND or
      a cast statement satisfying final_range_test_p.  All
@@ -2870,41 +2871,31 @@ maybe_optimize_range_tests (gimple stmt)
 	break;
     }
   if (ops.length () > 1)
+    any_changes = optimize_range_tests (ERROR_MARK, &ops);
+  if (any_changes)
     {
       unsigned int idx;
-      bool any_changes = optimize_range_tests (ERROR_MARK, &ops);
-      for (bb = last_bb, idx = 0; any_changes; bb = single_pred (bb), idx++)
+      /* update_ops relies on has_single_use predicates returning the
+	 same values as it did during get_ops earlier.  Additionally it
+	 never removes statements, only adds new ones and it should walk
+	 from the single imm use and check the predicate already before
+	 making those changes.
+	 On the other side, the handling of GIMPLE_COND directly can turn
+	 previously multiply used SSA_NAMEs into single use SSA_NAMEs, so
+	 it needs to be done in a separate loop afterwards.  */
+      for (bb = last_bb, idx = 0; ; bb = single_pred (bb), idx++)
 	{
-	  if (bbinfo[idx].first_idx < bbinfo[idx].last_idx)
+	  if (bbinfo[idx].first_idx < bbinfo[idx].last_idx
+	      && bbinfo[idx].op != NULL_TREE)
 	    {
-	      gimple stmt = last_stmt (bb);
 	      tree new_op;
 
-	      if (bbinfo[idx].op == NULL_TREE)
-		{
-		  if (ops[bbinfo[idx].first_idx]->op != NULL_TREE)
-		    {
-		      if (integer_zerop (ops[bbinfo[idx].first_idx]->op))
-			gimple_cond_make_false (stmt);
-		      else if (integer_onep (ops[bbinfo[idx].first_idx]->op))
-			gimple_cond_make_true (stmt);
-		      else
-			{
-			  gimple_cond_set_code (stmt, NE_EXPR);
-			  gimple_cond_set_lhs (stmt,
-					       ops[bbinfo[idx].first_idx]->op);
-			  gimple_cond_set_rhs (stmt, boolean_false_node);
-			}
-		      update_stmt (stmt);
-		    }
-		  bbinfo[idx].op = new_op = boolean_false_node;
-		}
-	      else
-		new_op = update_ops (bbinfo[idx].op,
-				     (enum tree_code)
-				     ops[bbinfo[idx].first_idx]->rank,
-				     ops, &bbinfo[idx].first_idx,
-				     loop_containing_stmt (stmt));
+	      stmt = last_stmt (bb);
+	      new_op = update_ops (bbinfo[idx].op,
+				   (enum tree_code)
+				   ops[bbinfo[idx].first_idx]->rank,
+				   ops, &bbinfo[idx].first_idx,
+				   loop_containing_stmt (stmt));
 	      if (new_op == NULL_TREE)
 		{
 		  gcc_assert (bb == last_bb);
@@ -2952,6 +2943,28 @@ maybe_optimize_range_tests (gimple stmt)
 			  gcc_unreachable ();
 		    }
 		}
+	    }
+	  if (bb == first_bb)
+	    break;
+	}
+      for (bb = last_bb, idx = 0; ; bb = single_pred (bb), idx++)
+	{
+	  if (bbinfo[idx].first_idx < bbinfo[idx].last_idx
+	      && bbinfo[idx].op == NULL_TREE
+	      && ops[bbinfo[idx].first_idx]->op != NULL_TREE)
+	    {
+	      stmt = last_stmt (bb);
+	      if (integer_zerop (ops[bbinfo[idx].first_idx]->op))
+		gimple_cond_make_false (stmt);
+	      else if (integer_onep (ops[bbinfo[idx].first_idx]->op))
+		gimple_cond_make_true (stmt);
+	      else
+		{
+		  gimple_cond_set_code (stmt, NE_EXPR);
+		  gimple_cond_set_lhs (stmt, ops[bbinfo[idx].first_idx]->op);
+		  gimple_cond_set_rhs (stmt, boolean_false_node);
+		}
+	      update_stmt (stmt);
 	    }
 	  if (bb == first_bb)
 	    break;
