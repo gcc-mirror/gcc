@@ -1,3 +1,10 @@
+2013-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58978
+	* tree-vrp.c (all_imm_uses_in_stmt_or_feed_cond): Don't modify
+	use_stmt by single_imm_use directly.  Only call single_imm_use
+	on SSA_NAMEs.
+
 2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58968
