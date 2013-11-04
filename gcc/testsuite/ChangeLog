@@ -1,3 +1,8 @@
+2013-11-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58979
+	* g++.dg/diagnostic/pr58979.C: New test.
+
 2013-11-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/iec-559-macros-1.c, gcc.dg/iec-559-macros-2.c,

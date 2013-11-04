@@ -1,3 +1,8 @@
+2013-11-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/58979
+	* c-common.c (invalid_indirection_error): Handle RO_ARROW_STAR case.
+
 2013-11-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (cpp_iec_559_value, cpp_iec_559_complex_value):
