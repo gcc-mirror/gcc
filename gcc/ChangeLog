@@ -1,3 +1,15 @@
+2013-11-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/avr/avr-log.c (avr_double_int_pop_digit): Delete.
+	(avr_dump_double_int_hex): Likewise.
+	(avr_log_vadump): Remove %D and %X handling.
+	* config/avr/avr.c (avr_double_int_push_digit): Delete.
+	(avr_map_op_t): Change map from double_int to unsigned int.
+	(avr_map_op): Update accordingly.
+	(avr_map, avr_map_metric, avr_has_nibble_0xf, avr_map_decompose)
+	(avr_move_bits, avr_out_insert_bits, avr_fold_builtin): Operate on
+	unsigned ints rather than double_ints.
+
 2013-11-03  Marek Polacek  <polacek@redhat.com>
 
 	Implement -fsanitize=vla-bound.

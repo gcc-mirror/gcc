@@ -11365,26 +11365,12 @@ avr_expand_delay_cycles (rtx operands0)
 }
 
 
-/* Return VAL * BASE + DIGIT.  BASE = 0 is shortcut for BASE = 2^{32}   */
-
-static double_int
-avr_double_int_push_digit (double_int val, int base,
-                           unsigned HOST_WIDE_INT digit)
-{
-  val = 0 == base
-    ? val.llshift (32, 64)
-    : val * double_int::from_uhwi (base);
-
-  return val + double_int::from_uhwi (digit);
-}
-
-
 /* Compute the image of x under f, i.e. perform   x --> f(x)    */
 
 static int
-avr_map (double_int f, int x)
+avr_map (unsigned int f, int x)
 {
-  return 0xf & f.lrshift (4*x, 64).to_uhwi ();
+  return x < 8 ? (f >> (4 * x)) & 0xf : 0;
 }
 
 
@@ -11409,7 +11395,7 @@ enum
   };
 
 static unsigned
-avr_map_metric (double_int a, int mode)
+avr_map_metric (unsigned int a, int mode)
 {
   unsigned i, metric = 0;
 
@@ -11442,7 +11428,8 @@ avr_map_metric (double_int a, int mode)
 bool
 avr_has_nibble_0xf (rtx ival)
 {
-  return 0 != avr_map_metric (rtx_to_double_int (ival), MAP_MASK_PREIMAGE_F);
+  unsigned int map = UINTVAL (ival) & GET_MODE_MASK (SImode);
+  return 0 != avr_map_metric (map, MAP_MASK_PREIMAGE_F);
 }
 
 
@@ -11476,7 +11463,7 @@ typedef struct
   int cost;
 
   /* The composition F o G^-1 (*, arg) for some function F */
-  double_int map;
+  unsigned int map;
 
   /* For debug purpose only */
   const char *str;
@@ -11484,21 +11471,21 @@ typedef struct
 
 static const avr_map_op_t avr_map_op[] =
   {
-    { LROTATE_EXPR, 0, 0x76543210, 0, { 0, 0 }, "id" },
-    { LROTATE_EXPR, 1, 0x07654321, 2, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 2, 0x10765432, 4, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 3, 0x21076543, 4, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 4, 0x32107654, 1, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 5, 0x43210765, 3, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 6, 0x54321076, 5, { 0, 0 }, "<<<" },
-    { LROTATE_EXPR, 7, 0x65432107, 3, { 0, 0 }, "<<<" },
-    { RSHIFT_EXPR, 1, 0x6543210c, 1, { 0, 0 }, ">>" },
-    { RSHIFT_EXPR, 1, 0x7543210c, 1, { 0, 0 }, ">>" },
-    { RSHIFT_EXPR, 2, 0x543210cc, 2, { 0, 0 }, ">>" },
-    { RSHIFT_EXPR, 2, 0x643210cc, 2, { 0, 0 }, ">>" },
-    { RSHIFT_EXPR, 2, 0x743210cc, 2, { 0, 0 }, ">>" },
-    { LSHIFT_EXPR, 1, 0xc7654321, 1, { 0, 0 }, "<<" },
-    { LSHIFT_EXPR, 2, 0xcc765432, 2, { 0, 0 }, "<<" }
+    { LROTATE_EXPR, 0, 0x76543210, 0, 0, "id" },
+    { LROTATE_EXPR, 1, 0x07654321, 2, 0, "<<<" },
+    { LROTATE_EXPR, 2, 0x10765432, 4, 0, "<<<" },
+    { LROTATE_EXPR, 3, 0x21076543, 4, 0, "<<<" },
+    { LROTATE_EXPR, 4, 0x32107654, 1, 0, "<<<" },
+    { LROTATE_EXPR, 5, 0x43210765, 3, 0, "<<<" },
+    { LROTATE_EXPR, 6, 0x54321076, 5, 0, "<<<" },
+    { LROTATE_EXPR, 7, 0x65432107, 3, 0, "<<<" },
+    { RSHIFT_EXPR, 1, 0x6543210c, 1, 0, ">>" },
+    { RSHIFT_EXPR, 1, 0x7543210c, 1, 0, ">>" },
+    { RSHIFT_EXPR, 2, 0x543210cc, 2, 0, ">>" },
+    { RSHIFT_EXPR, 2, 0x643210cc, 2, 0, ">>" },
+    { RSHIFT_EXPR, 2, 0x743210cc, 2, 0, ">>" },
+    { LSHIFT_EXPR, 1, 0xc7654321, 1, 0, "<<" },
+    { LSHIFT_EXPR, 2, 0xcc765432, 2, 0, "<<" }
   };
 
 
@@ -11507,12 +11494,12 @@ static const avr_map_op_t avr_map_op[] =
    If result.cost < 0 then such a decomposition does not exist.  */
 
 static avr_map_op_t
-avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
+avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 {
   int i;
   bool val_used_p = 0 != avr_map_metric (f, MAP_MASK_PREIMAGE_F);
   avr_map_op_t f_ginv = *g;
-  double_int ginv = double_int::from_uhwi (g->ginv);
+  unsigned int ginv = g->ginv;
 
   f_ginv.cost = -1;
 
@@ -11532,7 +11519,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
             return f_ginv;
         }
 
-      f_ginv.map = avr_double_int_push_digit (f_ginv.map, 16, x);
+      f_ginv.map = (f_ginv.map << 4) + x;
     }
 
   /* Step 2:  Compute the cost of the operations.
@@ -11557,7 +11544,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
          are mapped to 0 and used operands are reloaded to xop[0].  */
 
       xop[0] = all_regs_rtx[24];
-      xop[1] = gen_int_mode (f_ginv.map.to_uhwi (), SImode);
+      xop[1] = gen_int_mode (f_ginv.map, SImode);
       xop[2] = all_regs_rtx[25];
       xop[3] = val_used_p ? xop[0] : const0_rtx;
 
@@ -11584,7 +11571,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
    is different to its source position.  */
 
 static void
-avr_move_bits (rtx *xop, double_int map, bool fixp_p, int *plen)
+avr_move_bits (rtx *xop, unsigned int map, bool fixp_p, int *plen)
 {
   int bit_dest, b;
 
@@ -11637,7 +11624,7 @@ avr_move_bits (rtx *xop, double_int map, bool fixp_p, int *plen)
 const char*
 avr_out_insert_bits (rtx *op, int *plen)
 {
-  double_int map = rtx_to_double_int (op[1]);
+  unsigned int map = UINTVAL (op[1]) & GET_MODE_MASK (SImode);
   unsigned mask_fixed;
   bool fixp_p = true;
   rtx xop[4];
@@ -11651,9 +11638,7 @@ avr_out_insert_bits (rtx *op, int *plen)
   if (plen)
     *plen = 0;
   else if (flag_print_asm_name)
-    fprintf (asm_out_file,
-             ASM_COMMENT_START "map = 0x%08" HOST_LONG_FORMAT "x\n",
-             map.to_uhwi () & GET_MODE_MASK (SImode));
+    fprintf (asm_out_file, ASM_COMMENT_START "map = 0x%08x\n", map);
 
   /* If MAP has fixed points it might be better to initialize the result
      with the bits to be inserted instead of moving all bits by hand.  */
@@ -12228,7 +12213,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         tree tval = arg[2];
         tree tmap;
         tree map_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-        double_int map;
+        unsigned int map;
         bool changed = false;
         unsigned i;
         avr_map_op_t best_g;
@@ -12241,8 +12226,8 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        map = tree_to_double_int (arg[0]);
-        tmap = double_int_to_tree (map_type, map);
+        tmap = double_int_to_tree (map_type, tree_to_double_int (arg[0]));
+        map = TREE_INT_CST_LOW (tmap);
 
         if (TREE_CODE (tval) != INTEGER_CST
             && 0 == avr_map_metric (map, MAP_MASK_PREIMAGE_F))
@@ -12308,7 +12293,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         /* Try to decomposing map to reduce overall cost.  */
 
         if (avr_log.builtin)
-          avr_edump ("\n%?: %X\n%?: ROL cost: ", map);
+          avr_edump ("\n%?: %x\n%?: ROL cost: ", map);
 
         best_g = avr_map_op[0];
         best_g.cost = 1000;
@@ -12333,7 +12318,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         /* Apply operation G to the 2nd argument.  */
 
         if (avr_log.builtin)
-          avr_edump ("%?: using OP(%s%d, %X) cost %d\n",
+          avr_edump ("%?: using OP(%s%d, %x) cost %d\n",
                      best_g.str, best_g.arg, best_g.map, best_g.cost);
 
         /* Do right-shifts arithmetically: They copy the MSB instead of
@@ -12346,7 +12331,8 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
         /* Use map o G^-1 instead of original map to undo the effect of G.  */
 
-        tmap = double_int_to_tree (map_type, best_g.map);
+        tmap = double_int_to_tree (map_type,
+				   double_int::from_uhwi (best_g.map));
 
         return build_call_expr (fndecl, 3, tmap, tbits, tval);
       } /* AVR_BUILTIN_INSERT_BITS */

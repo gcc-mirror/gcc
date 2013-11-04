@@ -49,8 +49,6 @@
   C: enum rtx_code
   m: enum machine_mode
   R: enum reg_class
-  D: double_int (signed decimal)
-  X: double_int (unsigned hex)
   L: insn list
   H: location_t
 
@@ -138,45 +136,6 @@ avr_log_set_caller_f (const char *caller)
 }
 
 
-/* Copy-paste from double-int.c:double_int_split_digit (it's static there).
-   Splits last digit of *CST (taken as unsigned) in BASE and returns it.  */
-
-static unsigned
-avr_double_int_pop_digit (double_int *cst, unsigned base)
-{
-  double_int drem;
-
-  *cst = cst->udivmod (double_int::from_uhwi (base), (int) FLOOR_DIV_EXPR,
-                       &drem);
-
-  return (unsigned) drem.to_uhwi();
-}
-
-
-/* Dump VAL as hex value to FILE.  */
-
-static void
-avr_dump_double_int_hex (FILE *file, double_int val)
-{
-  unsigned digit[4];
-
-  digit[0] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[1] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[2] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[3] = avr_double_int_pop_digit (&val, 1 << 16);
-
-  fprintf (file, "0x");
-
-  if (digit[3] | digit[2])
-    fprintf (file, "%04x%04x", digit[3], digit[2]);
-
-  if (digit[3] | digit[2] | digit[1] | digit[0])
-    fprintf (file, "%04x%04x", digit[1], digit[0]);
-  else
-    fprintf (file, "0");
-}
-
-
 /* Worker function implementing the %-codes and forwarding to
    respective print/dump function.  */
 
@@ -229,14 +188,6 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
 
             case 'd':
               fprintf (file, "%d", va_arg (ap, int));
-              break;
-
-            case 'D':
-              dump_double_int (file, va_arg (ap, double_int), false);
-              break;
-
-            case 'X':
-              avr_dump_double_int_hex (file, va_arg (ap, double_int));
               break;
 
             case 'x':
