@@ -1,3 +1,9 @@
+2013-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_float_exceptions_rounding_supported_p):
+	New function.
+	(TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P): Define.
+
 2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/58958

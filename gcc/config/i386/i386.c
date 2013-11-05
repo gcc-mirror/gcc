@@ -43519,6 +43519,18 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   return val;
 }
 
+/* Implement TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P.  */
+
+static bool
+ix86_float_exceptions_rounding_supported_p (void)
+{
+  /* For x87 floating point with standard excess precision handling,
+     there is no adddf3 pattern (since x87 floating point only has
+     XFmode operations) so the default hook implementation gets this
+     wrong.  */
+  return TARGET_80387 || TARGET_SSE_MATH;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
@@ -43894,6 +43906,10 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
+
+#undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
+#define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \
+  ix86_float_exceptions_rounding_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
