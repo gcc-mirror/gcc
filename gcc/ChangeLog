@@ -1,3 +1,13 @@
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/58981
+	* doc/md.texi (@code{movmem@var{m}}): Specify Pmode as mode of
+	pattern, instead of word_mode.
+
+	* expr.c (emit_block_move_via_movmem): Don't use mode wider than
+	Pmode for size.
+	(set_storage_via_setmem): Likewise.
+
 2013-11-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-outof-ssa.c (queue_phi_copy_p): Combine phi_ssa_name_p from 
