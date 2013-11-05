@@ -1,3 +1,9 @@
+2013-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58868
+	* decl.c (check_initializer): Don't use build_vec_init for arrays
+	of trivial type.
+
 2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58724
