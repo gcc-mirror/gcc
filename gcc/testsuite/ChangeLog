@@ -1,3 +1,8 @@
+2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58984
+	* gcc.c-torture/execute/pr58984.c: New test.
+
 2013-11-05  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/ext/sync-4.C: Require sync_long_long_runtime support.
