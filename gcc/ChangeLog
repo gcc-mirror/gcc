@@ -1,5 +1,10 @@
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/58492
+	* passes.def (all_passes): Start with pass_fixup_cfg again.
+
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58955
 	* tree-loop-distribution.c (pg_add_dependence_edges): Fix
 	edge direction.
