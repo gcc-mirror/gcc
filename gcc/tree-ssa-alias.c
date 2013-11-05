@@ -559,7 +559,7 @@ ao_ref_alias_set (ao_ref *ref)
 }
 
 /* Init an alias-oracle reference representation from a gimple pointer
-   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE the the
+   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE then the
    size is assumed to be unknown.  The access is assumed to be only
    to or after of the pointer target, not before it.  */
 
@@ -576,11 +576,11 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 	ptr = gimple_assign_rhs1 (stmt);
       else if (is_gimple_assign (stmt)
 	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
-	       && host_integerp (gimple_assign_rhs2 (stmt), 0)
-	       && (t1 = int_cst_value (gimple_assign_rhs2 (stmt))) >= 0)
+	       && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST)
 	{
 	  ptr = gimple_assign_rhs1 (stmt);
-	  extra_offset = BITS_PER_UNIT * t1;
+	  extra_offset = BITS_PER_UNIT
+			 * int_cst_value (gimple_assign_rhs2 (stmt));
 	}
     }
 
