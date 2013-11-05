@@ -1,3 +1,8 @@
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58941
+	* gcc.dg/torture/pr58941.c: New testcase.
+
 2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/58958

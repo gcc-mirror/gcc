@@ -1,3 +1,11 @@
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58941
+	* tree-dfa.c (get_ref_base_and_extent): Merge common code
+	in MEM_REF and TARGET_MEM_REF handling.  Make sure to
+	process trailing array detection before diving into the
+	view-converted object (and possibly apply some extra offset).
+
 2013-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (ix86_float_exceptions_rounding_supported_p):
