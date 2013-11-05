@@ -7328,6 +7328,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON spu_canonicalize_comparison
 
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-spu.h"

@@ -23,6 +23,7 @@
 #define GCC_HOOKS_H
 
 #include "machmode.h"
+#include "wide-int.h"
 
 extern bool hook_bool_void_false (void);
 extern bool hook_bool_void_true (void);
@@ -60,6 +61,9 @@ extern bool hook_bool_rtx_int_int_int_intp_bool_false (rtx, int, int, int,
 extern bool hook_bool_tree_tree_false (tree, tree);
 extern bool hook_bool_tree_tree_true (tree, tree);
 extern bool hook_bool_tree_bool_false (tree, bool);
+extern bool hook_bool_wint_wint_uint_bool_true (const widest_int &,
+						const widest_int &,
+						unsigned int, bool);
 
 extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);

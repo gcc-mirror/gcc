@@ -331,6 +331,13 @@ hook_bool_rtx_int_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
   return false;
 }
 
+bool
+hook_bool_wint_wint_uint_bool_true (const widest_int &, const widest_int &,
+				    unsigned int, bool)
+{
+  return true;
+}
+
 /* Generic hook that takes an rtx and returns it.  */
 rtx
 hook_rtx_rtx_identity (rtx x)

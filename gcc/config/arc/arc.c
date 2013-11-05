@@ -388,6 +388,8 @@ static bool arc_return_in_memory (const_tree, const_tree);
 static void arc_init_simd_builtins (void);
 static bool arc_vector_mode_supported_p (enum machine_mode);
 
+static bool arc_can_use_doloop_p (const widest_int &, const widest_int &,
+				  unsigned int, bool);
 static const char *arc_invalid_within_doloop (const_rtx);
 
 static void output_short_suffix (FILE *file);
@@ -492,6 +494,9 @@ static void arc_finalize_pic (void);
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arc_vector_mode_supported_p
+
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P arc_can_use_doloop_p
 
 #undef TARGET_INVALID_WITHIN_DOLOOP
 #define TARGET_INVALID_WITHIN_DOLOOP arc_invalid_within_doloop
@@ -5638,6 +5643,22 @@ arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
 	      || TREE_ADDRESSABLE (type)));
 }
 
+/* Implement TARGET_CAN_USE_DOLOOP_P.  */
+
+static bool
+arc_can_use_doloop_p (const widest_int &iterations, const widest_int &,
+		      unsigned int loop_depth, bool entered_at_top)
+{
+  if (loop_depth > 1)
+    return false;
+  /* Setting up the loop with two sr instructions costs 6 cycles.  */
+  if (TARGET_ARC700
+      && !entered_at_top
+      && wi::gtu_p (iterations, 0)
+      && wi::leu_p (iterations, flag_pic ? 6 : 3))
+    return false;
+  return true;
+}
 
 /* NULL if INSN insn is valid within a low-overhead loop.
    Otherwise return why doloop cannot be applied.  */

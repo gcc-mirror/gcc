@@ -4706,16 +4706,10 @@
 })
 
 ; operand 0 is the loop count pseudo register
-; operand 1 is the number of loop iterations or 0 if it is unknown
-; operand 2 is the maximum number of loop iterations
-; operand 3 is the number of levels of enclosed loops
-; operand 4 is the loop end pattern
+; operand 1 is the loop end pattern
 (define_expand "doloop_begin"
   [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand:QI 1 "const_int_operand" ""))
-   (use (match_operand:QI 2 "const_int_operand" ""))
-   (use (match_operand:QI 3 "const_int_operand" ""))
-   (use (match_operand 4 "" ""))]
+   (use (match_operand 1 "" ""))]
   ""
 {
   /* Using the INSN_UID of the loop end pattern to identify it causes
@@ -4725,10 +4719,8 @@
      still be able to tell what kind of number this is.  */
   static HOST_WIDE_INT loop_end_id = 0;
 
-  if (INTVAL (operands[3]) > 1)
-    FAIL;
   rtx id = GEN_INT (--loop_end_id);
-  XEXP (XVECEXP (PATTERN (operands[4]), 0, 4), 0) = id;
+  XEXP (XVECEXP (PATTERN (operands[1]), 0, 4), 0) = id;
   emit_insn (gen_doloop_begin_i (operands[0], const0_rtx, id,
 				 const0_rtx, const0_rtx));
   DONE;
@@ -4907,11 +4899,7 @@
 )
 
 ; operand 0 is the loop count pseudo register
-; operand 1 is the number of loop iterations or 0 if it is unknown
-; operand 2 is the maximum number of loop iterations
-; operand 3 is the number of levels of enclosed loops
-; operand 4 is the label to jump to at the top of the loop
-; operand 5 is nonzero if the loop is entered at its top.
+; operand 1 is the label to jump to at the top of the loop
 ; Use this for the ARC600 and ARC700.  For ARCtangent-A5, this is unsafe
 ; without further checking for nearby branches etc., and without proper
 ; annotation of shift patterns that clobber lp_count
@@ -4919,24 +4907,14 @@
 ; single insn - loop setup is expensive then.
 (define_expand "doloop_end"
   [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand:QI 1 "const_int_operand" ""))
-   (use (match_operand:QI 2 "const_int_operand" ""))
-   (use (match_operand:QI 3 "const_int_operand" ""))
-   (use (label_ref (match_operand 4 "" "")))
-   (use (match_operand:QI 5 "const_int_operand" ""))]
+   (use (label_ref (match_operand 1 "" "")))]
   "TARGET_ARC600 || TARGET_ARC700"
 {
-  if (INTVAL (operands[3]) > 1)
-    FAIL;
-  /* Setting up the loop with two sr isntructions costs 6 cycles.  */
-  if (TARGET_ARC700 && !INTVAL (operands[5])
-      && INTVAL (operands[1]) && INTVAL (operands[1]) <= (flag_pic ? 6 : 3))
-    FAIL;
   /* We could do smaller bivs with biv widening, and wider bivs by having
      a high-word counter in an outer loop - but punt on this for now.  */
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
-  emit_jump_insn (gen_doloop_end_i (operands[0], operands[4], const0_rtx));
+  emit_jump_insn (gen_doloop_end_i (operands[0], operands[1], const0_rtx));
   DONE;
 })
 

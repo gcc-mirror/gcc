@@ -1593,6 +1593,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
+
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
 
 /* Processor table.  */
