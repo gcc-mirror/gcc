@@ -1038,6 +1038,7 @@ extern gimple_predicate rhs_predicate_for (tree);
 extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool nonfreeing_call_p (gimple);
+extern bool infer_nonnull_range (gimple, tree);
 
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);

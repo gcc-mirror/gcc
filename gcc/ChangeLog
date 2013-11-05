@@ -1,3 +1,26 @@
+2013-11-05  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-ssa-isolate-paths.o
+	* common.opt (-fisolate-erroneous-paths): Add option and
+	documentation.
+	* gimple-ssa-isolate-paths.c: New file.
+	* gimple.c (check_loadstore): New function.
+	(infer_nonnull_range): Moved into gimple.c from tree-vrp.c
+	Verify OP is in the argument list and the argument corresponding
+	to OP is a pointer type.  Use operand_equal_p rather than
+	pointer equality when testing if OP is on the nonnull list.
+	Use check_loadstore rather than count_ptr_derefs.  Handle
+	GIMPLE_RETURN statements.
+	* tree-vrp.c (infer_nonnull_range): Remove.
+	* gimple.h (infer_nonnull_range): Declare.
+	* opts.c (default_options_table): Add OPT_fisolate_erroneous_paths.
+	* passes.def: Add pass_isolate_erroneous_paths.
+	* timevar.def (TV_ISOLATE_ERRONEOUS_PATHS): New timevar.
+	* tree-pass.h (make_pass_isolate_erroneous_paths): Declare.
+	* tree-ssa.c (struct count_ptr_d): Remove.
+	(count_ptr_derefs, count_uses_and_derefs): Remove.
+	* tree-ssa.h (count_uses_and_derefs): Remove.
+
 2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58997
