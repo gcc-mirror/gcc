@@ -1,3 +1,13 @@
+2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58984
+	* ipa-prop.c (ipa_load_from_parm_agg_1): Add SIZE_P argument,
+	set *SIZE_P if non-NULL on success.
+	(ipa_load_from_parm_agg, ipa_analyze_indirect_call_uses): Adjust
+	callers.
+	(ipcp_transform_function): Likewise.  Punt if size of access
+	is different from TYPE_SIZE on v->value's type.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-fopenmp-simd): Document new option.
