@@ -1,3 +1,12 @@
+2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-c.c (ix86_target_macros): Define _SOFT_FLOAT
+	for !TARGET_80387.
+	* config/i386/rtemself.h (TARGET_OS_CPP_BUILTINS): Do not define
+	_SOFT_FLOAT here.
+	(LONG_DOUBLE_TYPE_SIZE): New define.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Ditto.
+
 2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58724
@@ -123,7 +132,8 @@
 	(asan_add_global): Ditto.
 	* asan.h (asan_function_start): New prototype.
 	* final.c (final_start_function): Call asan_function_start.
-	* sanitizer.def (BUILT_IN_ASAN_INIT): Rename __asan_init_v1 to __asan_init_v3.
+	* sanitizer.def (BUILT_IN_ASAN_INIT): Rename __asan_init_v1
+	to __asan_init_v3.
 
 2013-11-04  Wei Mi  <wmi@google.com>
 
@@ -162,10 +172,8 @@
 	* builtins.def (ATTR_NOTHROWCALL_LEAF_LIST): Define.
 	* sync-builtins.def: Use ATTR_NOTHROWCALL_LEAF_LIST for all sync
 	builtins that take pointers.
-	* lto-opts.c (lto_write_options): Write -fnon-call-exceptions
-	if set.
-	* lto-wrapper.c (merge_and_complain): Collect
-	OPT_fnon_call_exceptions.
+	* lto-opts.c (lto_write_options): Write -fnon-call-exceptions if set.
+	* lto-wrapper.c (merge_and_complain): Collect OPT_fnon_call_exceptions.
 	(run_gcc): Pass -fnon-call-exceptions.
 
 2013-11-04  Jakub Jelinek  <jakub@redhat.com>
@@ -186,13 +194,11 @@
 
 2013-11-04  Joseph Myers  <joseph@codesourcery.com>
 
-	* doc/cpp.texi (__GCC_IEC_559, __GCC_IEC_559_COMPLEX): Document
-	macros.
+	* doc/cpp.texi (__GCC_IEC_559, __GCC_IEC_559_COMPLEX): Document macros.
 	* target.def (float_exceptions_rounding_supported_p): New hook.
 	* targhooks.c (default_float_exceptions_rounding_supported_p): New
 	function.
-	* targhooks.h (default_float_exceptions_rounding_supported_p):
-	Declare.
+	* targhooks.h (default_float_exceptions_rounding_supported_p): Declare.
 	* doc/tm.texi.in (TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P):
 	New @hook.
 	* doc/tm.texi: Regenerate.
@@ -245,8 +251,7 @@
 
 	Implement -fsanitize=vla-bound.
 	* opts.c (common_handle_option): Handle vla-bound.
-	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE):
-	Define.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE): Define.
 	* flag-types.h (enum sanitize_code): Add SANITIZE_VLA.
 	* asan.c (initialize_sanitizer_builtins): Build BT_FN_VOID_PTR_PTR.
 

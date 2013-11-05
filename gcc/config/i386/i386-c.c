@@ -474,6 +474,9 @@ ix86_target_macros (void)
       builtin_define_std ("i386");
     }
 
+  if (!TARGET_80387)
+    cpp_define (parse_in, "_SOFT_FLOAT");
+
   if (TARGET_LONG_DOUBLE_64)
     cpp_define (parse_in, "__LONG_DOUBLE_64__");
 
