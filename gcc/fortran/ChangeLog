@@ -1,3 +1,9 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (fopenmp-simd): New option.
+	* gfortran.h (gfc_option_t): Add gfc_flag_openmp_simd.
+	* options.c (gfc_handle_option): Handle it.
+
 2013-11-04  Ian Lance Taylor  <iant@google.com>
 
 	* f95-lang.c (ATTR_LEAF_LIST): Define.

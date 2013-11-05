@@ -1,3 +1,10 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fopenmp-simd): Document new option.
+	* gimplify.c (gimplify_body): Accept -fopenmp-simd.
+	* omp-low.c (execute_expand_omp, execute_lower_omp): Ditto.
+	* tree.c (attribute_value_equal): Ditto.
+
 2013-11-04  Wei Mi  <wmi@google.com>
 
 	* sched-rgn.c (add_branch_dependences): Keep insns in

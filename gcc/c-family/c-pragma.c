@@ -1170,31 +1170,35 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "cancel", PRAGMA_OMP_CANCEL },
   { "cancellation", PRAGMA_OMP_CANCELLATION_POINT },
   { "critical", PRAGMA_OMP_CRITICAL },
-  { "declare", PRAGMA_OMP_DECLARE_REDUCTION },
-  { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
-  { "for", PRAGMA_OMP_FOR },
   { "master", PRAGMA_OMP_MASTER },
   { "ordered", PRAGMA_OMP_ORDERED },
-  { "parallel", PRAGMA_OMP_PARALLEL },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
-  { "simd", PRAGMA_OMP_SIMD },
   { "single", PRAGMA_OMP_SINGLE },
-  { "target", PRAGMA_OMP_TARGET },
-  { "task", PRAGMA_OMP_TASK },
   { "taskgroup", PRAGMA_OMP_TASKGROUP },
   { "taskwait", PRAGMA_OMP_TASKWAIT },
   { "taskyield", PRAGMA_OMP_TASKYIELD },
-  { "teams", PRAGMA_OMP_TEAMS },
   { "threadprivate", PRAGMA_OMP_THREADPRIVATE }
+};
+static const struct omp_pragma_def omp_pragmas_simd[] = {
+  { "declare", PRAGMA_OMP_DECLARE_REDUCTION },
+  { "distribute", PRAGMA_OMP_DISTRIBUTE },
+  { "for", PRAGMA_OMP_FOR },
+  { "parallel", PRAGMA_OMP_PARALLEL },
+  { "simd", PRAGMA_OMP_SIMD },
+  { "target", PRAGMA_OMP_TARGET },
+  { "task", PRAGMA_OMP_TASK },
+  { "teams", PRAGMA_OMP_TEAMS },
 };
 
 void
 c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 {
   const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);
+  const int n_omp_pragmas_simd = sizeof (omp_pragmas_simd)
+				 / sizeof (*omp_pragmas);
   int i;
 
   for (i = 0; i < n_omp_pragmas; ++i)
@@ -1202,6 +1206,14 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
       {
 	*space = "omp";
 	*name = omp_pragmas[i].name;
+	return;
+      }
+
+  for (i = 0; i < n_omp_pragmas_simd; ++i)
+    if (omp_pragmas_simd[i].id == id)
+      {
+	*space = "omp";
+	*name = omp_pragmas_simd[i].name;
 	return;
       }
 
@@ -1356,6 +1368,16 @@ init_pragma (void)
       for (i = 0; i < n_omp_pragmas; ++i)
 	cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas[i].name,
 				      omp_pragmas[i].id, true, true);
+    }
+  if (flag_openmp || flag_openmp_simd)
+    {
+      const int n_omp_pragmas_simd = sizeof (omp_pragmas_simd)
+				     / sizeof (*omp_pragmas);
+      int i;
+
+      for (i = 0; i < n_omp_pragmas_simd; ++i)
+	cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas_simd[i].name,
+				      omp_pragmas_simd[i].id, true, true);
     }
 
   if (!flag_preprocess_only)

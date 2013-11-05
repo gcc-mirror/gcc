@@ -8871,7 +8871,7 @@ gimplify_body (tree fndecl, bool do_parms)
       nonlocal_vlas = NULL;
     }
 
-  if (flag_openmp && gimplify_omp_ctxp)
+  if ((flag_openmp || flag_openmp_simd) && gimplify_omp_ctxp)
     {
       delete_omp_context (gimplify_omp_ctxp);
       gimplify_omp_ctxp = NULL;

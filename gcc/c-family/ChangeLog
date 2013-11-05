@@ -1,3 +1,11 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* c.opt (fopenmp-simd): New option.
+	* c-pragma.c (omp_pragmas): Move pragmas which can contain simd to ...
+	(omp_pragmas): ... this new struct.
+	(c_pp_lookup_pragma): Also walk omp_pragmas.
+	(init_pragma): Init pragmas for -fopenmp-simd.
+
 2013-11-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/58979

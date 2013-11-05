@@ -168,8 +168,8 @@ in the following sections.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding -fopenmp -fms-extensions -fplan9-extensions @gol
--trigraphs  -traditional  -traditional-cpp @gol
+-fhosted  -ffreestanding -fopenmp -fopenmp-simd -fms-extensions @gol
+-fplan9-extensions -trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -1839,7 +1839,16 @@ Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
-have support for @option{-pthread}.
+have support for @option{-pthread}. @option{-fopenmp} implies
+@option{-fopenmp-simd}.
+
+@item -fopenmp-simd
+@opindex fopenmp-simd
+@cindex OpenMP SIMD
+@cindex SIMD
+Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
+in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
+are ignored.
 
 @item -fcilkplus
 @opindex fcilkplus

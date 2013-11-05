@@ -1,3 +1,9 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* parser.c (cp_parser_omp_for, cp_parser_omp_parallel,
+	cp_parser_omp_distribute, cp_parser_omp_teams, cp_parser_omp_target,
+	cp_parser_omp_declare): Handle -fopenmp-simd.
+
 2013-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check): Change type of first parameter and deal with

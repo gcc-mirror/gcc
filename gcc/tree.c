@@ -4814,7 +4814,7 @@ attribute_value_equal (const_tree attr1, const_tree attr2)
     return (simple_cst_list_equal (TREE_VALUE (attr1),
 				   TREE_VALUE (attr2)) == 1);
 
-  if (flag_openmp
+  if ((flag_openmp || flag_openmp_simd)
       && TREE_VALUE (attr1) && TREE_VALUE (attr2)
       && TREE_CODE (TREE_VALUE (attr1)) == OMP_CLAUSE
       && TREE_CODE (TREE_VALUE (attr2)) == OMP_CLAUSE)
