@@ -1,3 +1,15 @@
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/experimental/optional: Use __and_<> and __not_<> in
+	conditions. Style fixes.
+	(__constexpr_addressof, swap): Make inline.
+	* testsuite/experimental/optional/cons/copy.cc: Adjust constants for
+	32-bit targets.
+	* testsuite/experimental/optional/cons/move.cc: Likewise.
+	* testsuite/experimental/optional/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: Likewise.
+
 2013-11-01  Michael Brune  <lucdanton@free.fr>
 
 	* include/bits/enable_special_members.h: New.
