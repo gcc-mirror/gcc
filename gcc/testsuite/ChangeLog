@@ -1,3 +1,9 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* g++.dg/warn/wdate-time.C: New.
+	* gcc.dg/wdate-time.c: New.
+	* gfortran.dg/wdate-time.F90: New.
+
 2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/58989
