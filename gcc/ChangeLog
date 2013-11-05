@@ -1,3 +1,7 @@
+2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/t-rtems (MULTILIB_MATCHES): Fix option typos.
+
 2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58984
