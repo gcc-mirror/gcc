@@ -63,11 +63,12 @@ int main()
   }
 
   {
-    std::experimental::optional<long> o { std::experimental::in_place, 0x1234ABCDF1E2D3C4 };
+    const long val = 0x1234ABCD;
+    std::experimental::optional<long> o { std::experimental::in_place, val};
     auto moved_to = std::move(o);
     VERIFY( moved_to );
-    VERIFY( *moved_to == 0x1234ABCDF1E2D3C4 );
-    VERIFY( o && *o == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *moved_to == val );
+    VERIFY( o && *o == val );
   }
 
   {
