@@ -1,4 +1,9 @@
 2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document aligned_union as
+	missing.
+
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/experimental/optional: Use __and_<> and __not_<> in
