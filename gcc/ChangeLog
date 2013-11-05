@@ -1,5 +1,9 @@
 2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/t-rtems (MULTILIB_MATCHES): Fix option typos.
+
+2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386-c.c (ix86_target_macros): Define _SOFT_FLOAT
 	for !TARGET_80387.
 	* config/i386/rtemself.h (TARGET_OS_CPP_BUILTINS): Do not define
