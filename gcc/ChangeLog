@@ -1,3 +1,8 @@
+2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-alias.h (ranges_overlap_p): Handle negative offsets.
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Likewise.
+
 2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58984

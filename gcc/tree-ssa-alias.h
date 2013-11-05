@@ -146,18 +146,18 @@ extern GTY(()) struct pt_solution ipa_escaped_pt;
    range is open-ended.  Otherwise return false.  */
 
 static inline bool
-ranges_overlap_p (unsigned HOST_WIDE_INT pos1,
+ranges_overlap_p (HOST_WIDE_INT pos1,
 		  unsigned HOST_WIDE_INT size1,
-		  unsigned HOST_WIDE_INT pos2,
+		  HOST_WIDE_INT pos2,
 		  unsigned HOST_WIDE_INT size2)
 {
   if (pos1 >= pos2
       && (size2 == (unsigned HOST_WIDE_INT)-1
-	  || pos1 < (pos2 + size2)))
+	  || pos1 < (pos2 + (HOST_WIDE_INT) size2)))
     return true;
   if (pos2 >= pos1
       && (size1 == (unsigned HOST_WIDE_INT)-1
-	  || pos2 < (pos1 + size1)))
+	  || pos2 < (pos1 + (HOST_WIDE_INT) size1)))
     return true;
 
   return false;
