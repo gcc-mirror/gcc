@@ -5683,6 +5683,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	  && !(init && BRACE_ENCLOSED_INITIALIZER_P (init)
 	       && CP_AGGREGATE_TYPE_P (type)
 	       && (CLASS_TYPE_P (type)
+		   || !TYPE_NEEDS_CONSTRUCTING (type)
 		   || type_has_extended_temps (type))))
 	{
 	  init_code = build_aggr_init_full_exprs (decl, init, flags);
