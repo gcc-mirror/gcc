@@ -187,9 +187,7 @@ vec_prefix::calculate_allocation (vec_prefix *pfx, unsigned reserve,
       num = pfx->m_num;
     }
   else if (!reserve)
-    /* If there's no vector, and we've not requested anything, then we
-       will create a NULL vector.  */
-    return 0;
+    gcc_unreachable ();
 
   /* We must have run out of room.  */
   gcc_assert (alloc - num < reserve);
