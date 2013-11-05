@@ -1069,6 +1069,10 @@ fopenmp
 C ObjC C++ ObjC++ Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
 
+fopenmp-simd
+C ObjC C++ ObjC++ Var(flag_openmp_simd)
+Enable OpenMP's SIMD directives
+
 foperator-names
 C++ ObjC++
 Recognize C++ keywords like \"compl\" and \"xor\"

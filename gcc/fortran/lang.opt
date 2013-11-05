@@ -517,6 +517,10 @@ fopenmp
 Fortran
 ; Documented in C
 
+fopenmp-simd
+Fortran
+; Documented in C
+
 fpack-derived
 Fortran
 Try to lay out derived types as compactly as possible
