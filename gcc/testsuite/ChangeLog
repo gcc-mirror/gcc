@@ -1,5 +1,10 @@
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/58492
+	* gcc.dg/ipa/pr58492.c: New testcase.
+
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58955
 	* gcc.dg/torture/pr58955-1.c: New testcase.
 	* gcc.dg/torture/pr58955-2.c: Likewise.
