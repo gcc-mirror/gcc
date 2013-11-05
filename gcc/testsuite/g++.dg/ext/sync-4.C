@@ -1,4 +1,5 @@
 /* { dg-do run { target hppa*-*-hpux* *-*-linux* *-*-gnu* powerpc*-*-darwin* *-*-darwin[912]* } } */
+/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 
 /* Verify that the builtin functions are correctly marked as trapping
