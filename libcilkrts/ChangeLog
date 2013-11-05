@@ -1,3 +1,9 @@
+2013-11-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR bootstrap/58951
+	* Makefile.am (AM_LDFLAGS): Removed -ldl flag.
+	* Makefile.in: Regenerate.
+
 2013-11-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* runtime/os-unix.c [__sun__ && __svr4__]: Include <sched.h>.
