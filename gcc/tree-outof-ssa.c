@@ -548,6 +548,23 @@ eliminate_name (elim_graph g, int T)
   elim_graph_add_node (g, T);
 }
 
+/* Return true if this phi argument T should have a copy queued when using
+   var_map MAP.  PHI nodes should contain only ssa_names and invariants.  A
+   test for ssa_name is definitely simpler, but don't let invalid contents
+   slip through in the meantime.  */
+
+static inline bool
+queue_phi_copy_p (var_map map, tree t)
+{
+  if (TREE_CODE (t) == SSA_NAME)
+    { 
+      if (var_to_partition (map, t) == NO_PARTITION)
+        return true;
+      return false;
+    }
+  gcc_checking_assert (is_gimple_min_invariant (t));
+  return true;
+}
 
 /* Build elimination graph G for basic block BB on incoming PHI edge
    G->e.  */
@@ -577,9 +594,7 @@ eliminate_build (elim_graph g)
       /* If this argument is a constant, or a SSA_NAME which is being
 	 left in SSA form, just queue a copy to be emitted on this
 	 edge.  */
-      if (!phi_ssa_name_p (Ti)
-	  || (TREE_CODE (Ti) == SSA_NAME
-	      && var_to_partition (g->map, Ti) == NO_PARTITION))
+      if (queue_phi_copy_p (g->map, Ti))
         {
 	  /* Save constant copies until all other copies have been emitted
 	     on this edge.  */

@@ -3633,19 +3633,6 @@ gimple_phi_set_arg (gimple gs, unsigned index, struct phi_arg_d * phiarg)
   gs->gimple_phi.args[index] = *phiarg;
 }
 
-/* PHI nodes should contain only ssa_names and invariants.  A test
-   for ssa_name is definitely simpler; don't let invalid contents
-   slip in in the meantime.  */
-
-static inline bool
-phi_ssa_name_p (const_tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    return true;
-  gcc_checking_assert (is_gimple_min_invariant (t));
-  return false;
-}
-
 /* Return the PHI nodes for basic block BB, or NULL if there are no
    PHI nodes.  */
 
