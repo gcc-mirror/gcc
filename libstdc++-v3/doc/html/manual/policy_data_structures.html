@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 22. Policy-Based Data Structures</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="extensions.html" title="Part III.  Extensions" /><link rel="prev" href="bk01pt03ch21s02.html" title="Implementation" /><link rel="next" href="policy_data_structures_using.html" title="Using" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 22. Policy-Based Data Structures</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><th width="60%" align="center">Part III. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 22. Policy-Based Data Structures</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="extensions.html" title="Part III.  Extensions" /><link rel="prev" href="bk01pt03ch21s02.html" title="Implementation" /><link rel="next" href="policy_data_structures_using.html" title="Using" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 22. Policy-Based Data Structures</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><th width="60%" align="center">Part III. 
   Extensions
   
-</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_using.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 22. Policy-Based Data Structures"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.containers.pbds"></a>Chapter 22. Policy-Based Data Structures</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro">Intro</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues">Performance Issues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.priority_queue">Priority Que</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation">Goals</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.associative">Associative</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.iterators">Iterators</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.functions">Functional</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.priority_queue">Priority Queues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.binary_heap">Binary Heaps</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_using.html">Using</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.organization">Organization</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial">Tutorial</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.basic">Basic Use</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.configuring">
+</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_using.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.containers.pbds"></a>Chapter 22. Policy-Based Data Structures</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="policy_data_structures.html#pbds.intro">Intro</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues">Performance Issues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.issues.priority_queue">Priority Que</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation">Goals</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.associative">Associative</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.iterators">Iterators</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.associative.functions">Functional</a></span></dt></dl></dd><dt><span class="section"><a href="policy_data_structures.html#pbds.intro.motivation.priority_queue">Priority Queues</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.policy">Policy Choices</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.underlying">Underlying Data Structures</a></span></dt><dt><span class="section"><a href="policy_data_structures.html#motivation.priority_queue.binary_heap">Binary Heaps</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_using.html">Using</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.organization">Organization</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial">Tutorial</a></span></dt><dd><dl><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.basic">Basic Use</a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.configuring">
 	    Configuring via Template Parameters
 	  </a></span></dt><dt><span class="section"><a href="policy_data_structures_using.html#pbds.using.tutorial.traits">
 	    Querying Container Attributes
@@ -65,7 +64,7 @@
 	  Text <code class="function">modify</code> Up
 	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_modify_down">
 	  Text <code class="function">modify</code> Down
-	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance.observations">Observations</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.priority_queue">Priority_Queue</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_ack.html">Acknowledgments</a></span></dt><dt><span class="bibliography"><a href="policy_data_structures.html#pbds.biblio">Bibliography</a></span></dt></dl></div><div class="section" title="Intro"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.intro"></a>Intro</h2></div></div></div><p>
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance.observations">Observations</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.priority_queue">Priority_Queue</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_ack.html">Acknowledgments</a></span></dt><dt><span class="bibliography"><a href="policy_data_structures.html#pbds.biblio">Bibliography</a></span></dt></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.intro"></a>Intro</h2></div></div></div><p>
       This is a library of policy-based elementary data structures:
       associative containers and priority queues. It is designed for
       high-performance, flexibility, semantic safety, and conformance to
@@ -73,7 +72,7 @@
       <code class="literal">std::tr1</code> (except for some points where it differs
       by design).
     </p><p>
-    </p><div class="section" title="Performance Issues"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.issues"></a>Performance Issues</h3></div></div></div><p>
+    </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.issues"></a>Performance Issues</h3></div></div></div><p>
       </p><p>
 	An attempt is made to categorize the wide variety of possible
 	container designs in terms of performance-impacting factors. These
@@ -93,7 +92,7 @@
       </p><p>
 	Specific issues found while unraveling performance factors in the
 	design of associative containers and priority queues follow.
-      </p><div class="section" title="Associative"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.associative"></a>Associative</h4></div></div></div><p>
+      </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.associative"></a>Associative</h4></div></div></div><p>
 	  Associative containers depend on their composite policies to a very
 	  large extent. Implicitly hard-wiring policies can hamper their
 	  performance and limit their functionality. An efficient hash-based
@@ -134,7 +133,7 @@
 	  is a red-black tree, then splitting a reference to the container is
 	  exception-free; if it is an ordered-vector tree, exceptions can be
 	  thrown.
-	</p></div><div class="section" title="Priority Que"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.priority_queue"></a>Priority Que</h4></div></div></div><p>
+	</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.issues.priority_queue"></a>Priority Que</h4></div></div></div><p>
 	  Priority queues are useful when one needs to efficiently access a
 	  minimum (or maximum) value as the set of values changes.
 	</p><p>
@@ -176,7 +175,7 @@
 	  expense of more difference in the the kinds of operations that the
 	  underlying data structure can support. These differences pose a
 	  challenge when creating a uniform interface for priority queues.
-	</p></div></div><div class="section" title="Goals"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.motivation"></a>Goals</h3></div></div></div><p>
+	</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.intro.motivation"></a>Goals</h3></div></div></div><p>
 	Many fine associative-container libraries were already written,
 	most notably, the C++ standard's associative containers. Why
 	then write another library? This section shows some possible
@@ -187,8 +186,8 @@
 	only then adding hash-based containers, which are fundamentally
 	different), did not standardize priority queues as containers,
 	and (in our opinion) overloads the iterator concept.
-      </p><div class="section" title="Associative"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.associative"></a>Associative</h4></div></div></div><p>
-	</p><div class="section" title="Policy Choices"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.policy"></a>Policy Choices</h5></div></div></div><p>
+      </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.associative"></a>Associative</h4></div></div></div><p>
+	</p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.policy"></a>Policy Choices</h5></div></div></div><p>
 	    Associative containers require a relatively large number of
 	    policies to function efficiently in various settings. In some
 	    cases this is needed for making their common operations more
@@ -249,7 +248,7 @@
 		these invariants, one must supply some policy that is aware
 		of these changes.  Without this, it would be better to use a
 		linked list (in itself very efficient for these purposes).
-	      </p></li></ol></div><div class="figure"><a id="idp17575248"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
+	      </p></li></ol></div><div class="figure"><a id="idm269984634416"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
 	    The standard C++ library contains associative containers based on
 	    red-black trees and collision-chaining hash tables. These are
 	    very useful, but they are not ideal for all types of
@@ -257,7 +256,7 @@
 	  </p><p>
 	    The figure below shows the different underlying data structures
 	    currently supported in this library.
-	  </p><div class="figure"><a id="idp17581968"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idm269984627696"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    A shows a collision-chaining hash-table, B shows a probing
 	    hash-table, C shows a red-black tree, D shows a splay tree, E shows
 	    a tree based on an ordered vector(implicit in the order of the
@@ -334,7 +333,7 @@
 	    library iterators, for example) can ease generic manipulation of
 	    associative containers based on different underlying data
 	    structures.
-	  </p></div><div class="section" title="Iterators"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.iterators"></a>Iterators</h5></div></div></div><p>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.iterators"></a>Iterators</h5></div></div></div><p>
 	    Iterators are centric to the design of the standard library
 	    containers, because of the container/algorithm/iterator
 	    decomposition that allows an algorithm to operate on a range
@@ -359,7 +358,7 @@
 	    "ds_gen.html#find_range"&gt;Design::Associative
 	    Containers::Data-Structure Genericity::Point-Type and Range-Type
 	    Methods</span></em>.
-	  </p><div class="section" title="Using Point Iterators for Range Operations"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.using"></a>Using Point Iterators for Range Operations</h6></div></div></div><p>
+	  </p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.using"></a>Using Point Iterators for Range Operations</h6></div></div></div><p>
 	      Suppose <code class="classname">cntnr</code> is some associative
 	      container, and say <code class="varname">c</code> is an object of
 	      type <code class="classname">cntnr</code>. Then what will be the outcome
@@ -376,7 +375,7 @@
 	      no guarantee that the elements traversed will coincide with the
 	      <span class="emphasis"><em>logical</em></span> elements between 1 and 5, as in
 	      label B.
-	    </p><div class="figure"><a id="idp17613664"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idm269984596064"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
 	      In our opinion, this problem is not caused just because
 	      red-black trees are order preserving while
 	      collision-chaining hash tables are (generally) not - it
@@ -397,7 +396,7 @@
 	      Consequently, applying an algorithm to a sequence obtained from most
 	      containers may or may not make sense, but applying it to a
 	      sub-sequence of a self-organizing container does not.
-	    </p></div><div class="section" title="Cost to Point Iterators to Enable Range Operations"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.cost"></a>Cost to Point Iterators to Enable Range Operations</h6></div></div></div><p>
+	    </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.cost"></a>Cost to Point Iterators to Enable Range Operations</h6></div></div></div><p>
 	      Suppose <code class="varname">c</code> is some collision-chaining
 	      hash-based container object, and one calls
 	    </p><pre class="programlisting">c.find(3)</pre><p>
@@ -427,11 +426,11 @@
 	      list, as in the graphic below, label B.  Here the iterators are as
 	      light as can be, but the hash-table's operations are more
 	      complicated.
-	    </p><div class="figure"><a id="idp17628576"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idm269984581152"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
 	      It should be noted that containers based on collision-chaining
 	      hash-tables are not the only ones with this type of behavior;
 	      many other self-organizing data structures display it as well.
-	    </p></div><div class="section" title="Invalidation Guarantees"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.invalidation"></a>Invalidation Guarantees</h6></div></div></div><p>Consider the following snippet:</p><pre class="programlisting">
+	    </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="associative.iterators.invalidation"></a>Invalidation Guarantees</h6></div></div></div><p>Consider the following snippet:</p><pre class="programlisting">
 	      it = c.find(3);
 	      c.erase(5);
 	    </pre><p>
@@ -443,7 +442,7 @@
 	      container. The graphic below shows three cases: A1 and A2 show
 	      a red-black tree; B1 and B2 show a probing hash-table; C1 and C2
 	      show a collision-chaining hash table.
-	    </p><div class="figure"><a id="idp17637776"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
+	    </p><div class="figure"><a id="idm269984571888"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
 		  Erasing 5 from A1 yields A2. Clearly, an iterator to 3 can
 		  be de-referenced and incremented. The sequence of iterators
 		  changed, but in a way that is well-defined by the interface.
@@ -465,7 +464,7 @@
 	      to express whether <code class="varname">it</code> is valid or not. This
 	      is true also for <code class="function">insert</code>. Again, the
 	      iterator concept seems overloaded.
-	    </p></div></div><div class="section" title="Functional"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.functions"></a>Functional</h5></div></div></div><p>
+	    </p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.functions"></a>Functional</h5></div></div></div><p>
 	  </p><p>
 	    The design of the functional overlay to the underlying data
 	    structures differs slightly from some of the conventions used in
@@ -476,7 +475,7 @@
 	    rubric, the standard associative containers lack some useful
 	    methods, and provide other methods which would be better
 	    removed.
-	  </p><div class="section" title="erase"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.erase"></a><code class="function">erase</code></h6></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
+	  </p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.erase"></a><code class="function">erase</code></h6></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
 		  Order-preserving standard associative containers provide the
 		  method
 		</p><pre class="programlisting">
@@ -548,7 +547,7 @@
 		  is almost certain to do something
 		  different than erasing all elements whose keys are between 2
 		  and 5, and is likely to produce other undefined behavior.
-		</p></li></ol></div></div><div class="section" title="split and join"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.split"></a>
+		</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.split"></a>
 		<code class="function">split</code> and <code class="function">join</code>
 	      </h6></div></div></div><p>
 	      It is well-known that tree-based and trie-based container
@@ -559,7 +558,7 @@
 	      choices for tree-based container methods, especially, since as
 	      noted just before, they are efficient replacements for erasing
 	      sub-sequences.
-	    </p></div><div class="section" title="insert"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.insert"></a>
+	    </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.insert"></a>
 		<code class="function">insert</code>
 	      </h6></div></div></div><p>
 	      The standard associative containers provide methods of the form
@@ -575,7 +574,7 @@
 	      similar to constructors taking a range given by a pair of
 	      iterators; the constructors, however, are transactional, whereas
 	      the insert methods are not; this is possibly confusing.
-	    </p></div><div class="section" title="operator== and operator&lt;="><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.compare"></a>
+	    </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="motivation.associative.functions.compare"></a>
 		<code class="function">operator==</code> and <code class="function">operator&lt;=</code>
 	      </h6></div></div></div><p>
 	      Associative containers are parametrized by policies allowing to
@@ -595,7 +594,7 @@
 	      equivalence; also, are two containers considered equivalent if
 	      they store the same values in different order? this is an
 	      arbitrary decision.
-	    </p></div></div></div><div class="section" title="Priority Queues"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.priority_queue"></a>Priority Queues</h4></div></div></div><div class="section" title="Policy Choices"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.policy"></a>Policy Choices</h5></div></div></div><p>
+	    </p></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.intro.motivation.priority_queue"></a>Priority Queues</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.policy"></a>Policy Choices</h5></div></div></div><p>
 	    Priority queues are containers that allow efficiently inserting
 	    values and accessing the maximal value (in the sense of the
 	    container's comparison functor). Their interface
@@ -672,14 +671,14 @@
 		    comparing the iterator returned by <code class="function">find</code> to the
 		    iterator returned by <code class="function">end</code>, and not by comparing a
 		    pointer returned by <code class="function">find</code> to <span class="type">NULL</span>.
-		  </p></li></ol></div></li></ol></div></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
+		  </p></li></ol></div></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
 	    There are three main implementations of priority queues: the
 	    first employs a binary heap, typically one which uses a
 	    sequence; the second uses a tree (or forest of trees), which is
 	    typically less structured than an associative container's tree;
 	    the third simply uses an associative container. These are
 	    shown in the figure below with labels A1 and A2, B, and C.
-	  </p><div class="figure"><a id="idp17705360"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idm269984504224"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    No single implementation can completely replace any of the
 	    others. Some have better <code class="function">push</code>
 	    and <code class="function">pop</code> amortized performance, some have
@@ -694,7 +693,7 @@
 	    important for priority queues, since the invalidation guarantees
 	    of one of the most useful data structures - binary heaps - is
 	    markedly different than those of most of the others.
-	  </p></div><div class="section" title="Binary Heaps"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.binary_heap"></a>Binary Heaps</h5></div></div></div><p>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.priority_queue.binary_heap"></a>Binary Heaps</h5></div></div></div><p>
 	    Binary heaps are one of the most useful underlying
 	    data structures for priority queues. They are very efficient in
 	    terms of memory (since they don't require per-value structure
@@ -771,7 +770,7 @@
 		<code class="classname">std::priority_queue</code>, however, this will generally
 		change the order of growth of the entire sequence of
 		operations.
-	      </p></li></ol></div></div></div></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.biblio"></a>Bibliography</h2></div></div></div><div class="biblioentry" title="STL Exception Handling Contract"><a id="biblio.abrahams97exception"></a><p>[biblio.abrahams97exception] <span class="title"><em>
+	      </p></li></ol></div></div></div></div></div><div class="bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.biblio"></a>Bibliography</h2></div></div></div><div class="biblioentry"><a id="biblio.abrahams97exception"></a><p>[biblio.abrahams97exception] <span class="title"><em>
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1075.pdf" target="_top">
 	  STL Exception Handling Contract
 	</a>
@@ -781,7 +780,7 @@
 	    Abrahams
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  ISO SC22/WG21
-	. </span></span></p></div><div class="biblioentry" title="Modern C++ Design: Generic Programming and Design Patterns Applied"><a id="biblio.alexandrescu01modern"></a><p>[biblio.alexandrescu01modern] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.alexandrescu01modern"></a><p>[biblio.alexandrescu01modern] <span class="title"><em>
 	Modern C++ Design: Generic Programming and Design Patterns Applied
       </em>. </span><span class="date">
 	2001
@@ -791,7 +790,7 @@
 	    Alexandrescu
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="MTF, Bit, and COMB: A Guide to Deterministic and Randomized Algorithms for the List Update Problem"><a id="biblio.andrew04mtf"></a><p>[biblio.andrew04mtf] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.andrew04mtf"></a><p>[biblio.andrew04mtf] <span class="title"><em>
 	MTF, Bit, and COMB: A Guide to Deterministic and Randomized
 	Algorithms for the List Update Problem
       </em>. </span><span class="authorgroup"><span class="firstname">
@@ -802,7 +801,7 @@
 	      D.
 	    </span> <span class="surname">
 	      Gleich
-	    </span>. </span></p></div><div class="biblioentry" title="Why You Shouldn't Use set - and What You Should Use Instead"><a id="biblio.austern00noset"></a><p>[biblio.austern00noset] <span class="title"><em>
+	    </span>. </span></p></div><div class="biblioentry"><a id="biblio.austern00noset"></a><p>[biblio.austern00noset] <span class="title"><em>
 	Why You Shouldn't Use set - and What You Should Use Instead
       </em>. </span><span class="date">
 	April, 2000
@@ -812,7 +811,7 @@
 	    Austern
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  C++ Report
-	. </span></span></p></div><div class="biblioentry" title="A Proposal to Add Hashtables to the Standard Library"><a id="biblio.austern01htprop"></a><p>[biblio.austern01htprop] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.austern01htprop"></a><p>[biblio.austern01htprop] <span class="title"><em>
 	<a class="link" href="http://www.open-std.org/JTC1/sc22/wg21/docs/papers/2001/n1326.html" target="_top">
 	  A Proposal to Add Hashtables to the Standard Library
 	</a>
@@ -824,7 +823,7 @@
 	    Austern
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  ISO SC22/WG21
-	. </span></span></p></div><div class="biblioentry" title="Segmented iterators and hierarchical algorithms"><a id="biblio.austern98segmentedit"></a><p>[biblio.austern98segmentedit] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.austern98segmentedit"></a><p>[biblio.austern98segmentedit] <span class="title"><em>
 	Segmented iterators and hierarchical algorithms
       </em>. </span><span class="date">
 	April, 1998
@@ -834,7 +833,7 @@
 	    Austern
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Generic Programming
-	. </span></span></p></div><div class="biblioentry" title="Boost Timer Library"><a id="biblio.dawestimer"></a><p>[biblio.dawestimer] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.dawestimer"></a><p>[biblio.dawestimer] <span class="title"><em>
 	<a class="link" href="www.boost.org/doc/libs/release/libs/timer/" target="_top">
 	  Boost Timer Library
 	</a>
@@ -844,7 +843,7 @@
 	    Dawes
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Boost
-	. </span></span></p></div><div class="biblioentry" title="Boost Pool Library"><a id="biblio.clearypool"></a><p>[biblio.clearypool] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.clearypool"></a><p>[biblio.clearypool] <span class="title"><em>
 	<a class="link" href="www.boost.org/doc/libs/release/libs/pool/" target="_top">
 	  Boost Pool Library
 	</a>
@@ -854,7 +853,7 @@
 	    Cleary
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Boost
-	. </span></span></p></div><div class="biblioentry" title="Boost Type Traits Library"><a id="biblio.maddocktraits"></a><p>[biblio.maddocktraits] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.maddocktraits"></a><p>[biblio.maddocktraits] <span class="title"><em>
 	<a class="link" href="www.boost.org/doc/libs/release/libs/type_traits/" target="_top">
 	  Boost Type Traits Library
 	</a>
@@ -868,7 +867,7 @@
 	      Cleary
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Boost
-	. </span></span></p></div><div class="biblioentry" title="Worst-case efficient priority queues"><a id="biblio.brodal96priority"></a><p>[biblio.brodal96priority] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.brodal96priority"></a><p>[biblio.brodal96priority] <span class="title"><em>
 	<a class="link" href="https://dl.acm.org/citation.cfm?id=313883" target="_top">
 	  Worst-case efficient priority queues
 	</a>
@@ -876,7 +875,7 @@
 	    Gerth
 	  </span> <span class="surname">
 	    Stolting Brodal
-	  </span>. </span></p></div><div class="biblioentry" title="Efficient C++ Programming Techniques"><a id="biblio.bulkamayheweff"></a><p>[biblio.bulkamayheweff] <span class="title"><em>
+	  </span>. </span></p></div><div class="biblioentry"><a id="biblio.bulkamayheweff"></a><p>[biblio.bulkamayheweff] <span class="title"><em>
 	Efficient C++ Programming Techniques
       </em>. </span><span class="date">
 	1997
@@ -890,7 +889,7 @@
 	      Mayhew
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Introduction to Algorithms, 2nd edition"><a id="biblio.clrs2001"></a><p>[biblio.clrs2001] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.clrs2001"></a><p>[biblio.clrs2001] <span class="title"><em>
 	Introduction to Algorithms, 2nd edition
       </em>. </span><span class="date">
 	2001
@@ -912,7 +911,7 @@
 	      Stein
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  MIT Press
-	. </span></span></p></div><div class="biblioentry" title="Balls and bins: A study in negative dependence"><a id="biblio.dubhashi98neg"></a><p>[biblio.dubhashi98neg] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.dubhashi98neg"></a><p>[biblio.dubhashi98neg] <span class="title"><em>
 	Balls and bins: A study in negative dependence
       </em>. </span><span class="date">
 	1998
@@ -926,7 +925,7 @@
 	      Ranjan
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Random Structures and Algorithms 13
-	. </span></span></p></div><div class="biblioentry" title="Extendible hashing - a fast access method for dynamic files"><a id="biblio.fagin79extendible"></a><p>[biblio.fagin79extendible] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.fagin79extendible"></a><p>[biblio.fagin79extendible] <span class="title"><em>
 	Extendible hashing - a fast access method for dynamic files
       </em>. </span><span class="date">
 	1979
@@ -948,7 +947,7 @@
 	      Strong
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  ACM Trans. Database Syst. 4
-	. </span></span></p></div><div class="biblioentry" title="Ptset: Sets of integers implemented as Patricia trees"><a id="biblio.filliatre2000ptset"></a><p>[biblio.filliatre2000ptset] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.filliatre2000ptset"></a><p>[biblio.filliatre2000ptset] <span class="title"><em>
 	<a class="link" href="http://cristal.inria.fr/~frisch/icfp06_contest/advtr/applyOmatic/ptset.ml" target="_top">
 	  Ptset: Sets of integers implemented as Patricia trees
 	</a>
@@ -958,7 +957,7 @@
 	    Jean-Christophe
 	  </span> <span class="surname">
 	    Filliatre
-	  </span>. </span></p></div><div class="biblioentry" title="The pairing heap: a new form of self-adjusting heap"><a id="biblio.fredman86pairing"></a><p>[biblio.fredman86pairing] <span class="title"><em>
+	  </span>. </span></p></div><div class="biblioentry"><a id="biblio.fredman86pairing"></a><p>[biblio.fredman86pairing] <span class="title"><em>
 	<a class="link" href="http://www.cs.cmu.edu/~sleator/papers/pairing-heaps.pdf" target="_top">
 	  The pairing heap: a new form of self-adjusting heap
 	</a>
@@ -980,7 +979,7 @@
 	      R. E.
 	    </span> <span class="surname">
 	      Tarjan
-	    </span>. </span></p></div><div class="biblioentry" title="Design Patterns - Elements of Reusable Object-Oriented Software"><a id="biblio.gof"></a><p>[biblio.gof] <span class="title"><em>
+	    </span>. </span></p></div><div class="biblioentry"><a id="biblio.gof"></a><p>[biblio.gof] <span class="title"><em>
 	Design Patterns - Elements of Reusable Object-Oriented Software
       </em>. </span><span class="date">
 	1995
@@ -1002,7 +1001,7 @@
 	      Vlissides
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Order-preserving key transformations"><a id="biblio.garg86order"></a><p>[biblio.garg86order] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.garg86order"></a><p>[biblio.garg86order] <span class="title"><em>
 	Order-preserving key transformations
       </em>. </span><span class="date">
 	1986
@@ -1016,7 +1015,7 @@
 	      Gotlieb
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Trans. Database Syst. 11
-	. </span></span></p></div><div class="biblioentry" title="Making a real hash of things"><a id="biblio.hyslop02making"></a><p>[biblio.hyslop02making] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.hyslop02making"></a><p>[biblio.hyslop02making] <span class="title"><em>
 	Making a real hash of things
       </em>. </span><span class="date">
 	May 2002
@@ -1030,7 +1029,7 @@
 	      Sutter
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  C++ Report
-	. </span></span></p></div><div class="biblioentry" title="The C++ Standard Library - A Tutorial and Reference"><a id="biblio.jossutis01stl"></a><p>[biblio.jossutis01stl] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.jossutis01stl"></a><p>[biblio.jossutis01stl] <span class="title"><em>
 	The C++ Standard Library - A Tutorial and Reference
       </em>. </span><span class="date">
 	2001
@@ -1040,7 +1039,7 @@
 	    Jossutis
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="New Heap Data Structures"><a id="biblio.kt99fat_heaps"></a><p>[biblio.kt99fat_heaps] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.kt99fat_heaps"></a><p>[biblio.kt99fat_heaps] <span class="title"><em>
 	<a class="link" href="http://www.cs.princeton.edu/research/techreps/TR-597-99" target="_top">
 	  New Heap Data Structures
 	</a>
@@ -1054,7 +1053,7 @@
 	      Robert E.
 	    </span> <span class="surname">
 	      Tarjan
-	    </span>. </span></p></div><div class="biblioentry" title="Are Set Iterators Mutable or Immutable?"><a id="biblio.kleft00sets"></a><p>[biblio.kleft00sets] <span class="title"><em>
+	    </span>. </span></p></div><div class="biblioentry"><a id="biblio.kleft00sets"></a><p>[biblio.kleft00sets] <span class="title"><em>
 	Are Set Iterators Mutable or Immutable?
       </em>. </span><span class="date">
 	October 2000
@@ -1068,7 +1067,7 @@
 	      Kleft
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  C/C++ Users Jornal
-	. </span></span></p></div><div class="biblioentry" title="The Art of Computer Programming - Sorting and Searching"><a id="biblio.knuth98sorting"></a><p>[biblio.knuth98sorting] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.knuth98sorting"></a><p>[biblio.knuth98sorting] <span class="title"><em>
 	The Art of Computer Programming - Sorting and Searching
       </em>. </span><span class="date">
 	1998
@@ -1078,7 +1077,7 @@
 	    Knuth
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Data abstraction and hierarchy"><a id="biblio.liskov98data"></a><p>[biblio.liskov98data] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.liskov98data"></a><p>[biblio.liskov98data] <span class="title"><em>
 	Data abstraction and hierarchy
       </em>. </span><span class="date">
 	May 1998
@@ -1088,7 +1087,7 @@
 	    Liskov
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  SIGPLAN Notices 23
-	. </span></span></p></div><div class="biblioentry" title="Linear hashing: A new tool for file and table addressing"><a id="biblio.litwin80lh"></a><p>[biblio.litwin80lh] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.litwin80lh"></a><p>[biblio.litwin80lh] <span class="title"><em>
 	Linear hashing: A new tool for file and table addressing
       </em>. </span><span class="date">
 	June 1980
@@ -1098,8 +1097,8 @@
 	    Litwin
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Proceedings of International Conference on Very Large Data Bases
-	. </span></span></p></div><div class="biblioentry" title="Deamortization - Part 2: Binomial Heaps"><a id="biblio.maverik_lowerbounds"></a><p>[biblio.maverik_lowerbounds] <span class="title"><em>
-	<a class="link" href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps" target="_top">
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.maverik_lowerbounds"></a><p>[biblio.maverik_lowerbounds] <span class="title"><em>
+	<a class="link" href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps/" target="_top">
 	  Deamortization - Part 2: Binomial Heaps
 	</a>
       </em>. </span><span class="date">
@@ -1108,7 +1107,7 @@
 	    Maverik
 	  </span> <span class="surname">
 	    Woo
-	  </span>. </span></p></div><div class="biblioentry" title="More Effective C++: 35 New Ways to Improve Your Programs and Designs"><a id="biblio.meyers96more"></a><p>[biblio.meyers96more] <span class="title"><em>
+	  </span>. </span></p></div><div class="biblioentry"><a id="biblio.meyers96more"></a><p>[biblio.meyers96more] <span class="title"><em>
 	More Effective C++: 35 New Ways to Improve Your Programs and Designs
       </em>. </span><span class="date">
 	1996
@@ -1118,7 +1117,7 @@
 	    Meyers
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="How Non-Member Functions Improve Encapsulation"><a id="biblio.meyers00nonmember"></a><p>[biblio.meyers00nonmember] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.meyers00nonmember"></a><p>[biblio.meyers00nonmember] <span class="title"><em>
 	How Non-Member Functions Improve Encapsulation
       </em>. </span><span class="date">
 	2000
@@ -1128,7 +1127,7 @@
 	    Meyers
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  C/C++ Users Journal
-	. </span></span></p></div><div class="biblioentry" title="Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library"><a id="biblio.meyers01stl"></a><p>[biblio.meyers01stl] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.meyers01stl"></a><p>[biblio.meyers01stl] <span class="title"><em>
 	Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library
       </em>. </span><span class="date">
 	2001
@@ -1138,7 +1137,7 @@
 	    Meyers
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Class Template, Member Template - or Both?"><a id="biblio.meyers02both"></a><p>[biblio.meyers02both] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.meyers02both"></a><p>[biblio.meyers02both] <span class="title"><em>
 	Class Template, Member Template - or Both?
       </em>. </span><span class="date">
 	2003
@@ -1148,7 +1147,7 @@
 	    Meyers
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  C/C++ Users Journal
-	. </span></span></p></div><div class="biblioentry" title="Randomized Algorithms"><a id="biblio.motwani95random"></a><p>[biblio.motwani95random] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.motwani95random"></a><p>[biblio.motwani95random] <span class="title"><em>
 	Randomized Algorithms
       </em>. </span><span class="date">
 	2003
@@ -1162,13 +1161,13 @@
 	      Raghavan
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Cambridge University Press
-	. </span></span></p></div><div class="biblioentry" title="COM: Component Model Object Technologies"><a id="biblio.mscom"></a><p>[biblio.mscom] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.mscom"></a><p>[biblio.mscom] <span class="title"><em>
 	<a class="link" href="https://www.microsoft.com/com/" target="_top">
 	  COM: Component Model Object Technologies
 	</a>
       </em>. </span><span class="publisher"><span class="publishername">
 	  Microsoft
-	. </span></span></p></div><div class="biblioentry" title="Rationale for Adding Hash Tables to the C++ Standard Template Library"><a id="biblio.musser95rationale"></a><p>[biblio.musser95rationale] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.musser95rationale"></a><p>[biblio.musser95rationale] <span class="title"><em>
 	Rationale for Adding Hash Tables to the C++ Standard Template Library
       </em>. </span><span class="date">
 	1995
@@ -1176,7 +1175,7 @@
 	    David R.
 	  </span> <span class="surname">
 	    Musser
-	  </span>. </span></p></div><div class="biblioentry" title="STL Tutorial and Reference Guide"><a id="biblio.musser96stltutorial"></a><p>[biblio.musser96stltutorial] <span class="title"><em>
+	  </span>. </span></p></div><div class="biblioentry"><a id="biblio.musser96stltutorial"></a><p>[biblio.musser96stltutorial] <span class="title"><em>
 	STL Tutorial and Reference Guide
       </em>. </span><span class="date">
 	1996
@@ -1190,8 +1189,8 @@
 	      Saini
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Priority Queues and the STL"><a id="biblio.nelson96stlpq"></a><p>[biblio.nelson96stlpq] <span class="title"><em>
-	<a class="link" href="http://www.dogma.net/markn/articles/pq_stl/priority.htm" target="_top">Priority Queues and the STL
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.nelson96stlpq"></a><p>[biblio.nelson96stlpq] <span class="title"><em>
+	<a class="link" href="http://marknelson.us/1996/01/01/priority-queues/" target="_top">Priority Queues and the STL
 	</a>
       </em>. </span><span class="date">
 	January 1996
@@ -1201,7 +1200,7 @@
 	    Nelson
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Dr. Dobbs Journal
-	. </span></span></p></div><div class="biblioentry" title="Fast mergeable integer maps"><a id="biblio.okasaki98mereable"></a><p>[biblio.okasaki98mereable] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.okasaki98mereable"></a><p>[biblio.okasaki98mereable] <span class="title"><em>
 	Fast mergeable integer maps
       </em>. </span><span class="date">
 	September 1998
@@ -1215,7 +1214,7 @@
 	      Gill
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  In Workshop on ML
-	. </span></span></p></div><div class="biblioentry" title="Standard Template Library Programmer's Guide"><a id="biblio.sgi_stl"></a><p>[biblio.sgi_stl] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.sgi_stl"></a><p>[biblio.sgi_stl] <span class="title"><em>
 	<a class="link" href="http://www.sgi.com/tech/stl/" target="_top">
 	  Standard Template Library Programmer's Guide
 	</a>
@@ -1225,11 +1224,11 @@
 	    Austern
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  SGI
-	. </span></span></p></div><div class="biblioentry" title="select"><a id="biblio.select_man"></a><p>[biblio.select_man] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.select_man"></a><p>[biblio.select_man] <span class="title"><em>
 	<a class="link" href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html" target="_top">
 	  select
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="Amortized Efficiency of List Update Problems"><a id="biblio.sleator84amortized"></a><p>[biblio.sleator84amortized] <span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry"><a id="biblio.sleator84amortized"></a><p>[biblio.sleator84amortized] <span class="title"><em>
 	Amortized Efficiency of List Update Problems
       </em>. </span><span class="date">
 	1984
@@ -1243,7 +1242,7 @@
 	      Tarjan
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  ACM Symposium on Theory of Computing
-	. </span></span></p></div><div class="biblioentry" title="Self-Adjusting Binary Search Trees"><a id="biblio.sleator85self"></a><p>[biblio.sleator85self] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.sleator85self"></a><p>[biblio.sleator85self] <span class="title"><em>
 	Self-Adjusting Binary Search Trees
       </em>. </span><span class="date">
 	1985
@@ -1257,7 +1256,7 @@
 	      Tarjan
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  ACM Symposium on Theory of Computing
-	. </span></span></p></div><div class="biblioentry" title="The Standard Template Library"><a id="biblio.stepanov94standard"></a><p>[biblio.stepanov94standard] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.stepanov94standard"></a><p>[biblio.stepanov94standard] <span class="title"><em>
 	The Standard Template Library
       </em>. </span><span class="date">
 	1984
@@ -1269,7 +1268,7 @@
 	      M.
 	    </span> <span class="surname">
 	      Lee
-	    </span>. </span></p></div><div class="biblioentry" title="The C++ Programming Langugage"><a id="biblio.stroustrup97cpp"></a><p>[biblio.stroustrup97cpp] <span class="title"><em>
+	    </span>. </span></p></div><div class="biblioentry"><a id="biblio.stroustrup97cpp"></a><p>[biblio.stroustrup97cpp] <span class="title"><em>
 	The C++ Programming Langugage
       </em>. </span><span class="date">
 	1997
@@ -1279,7 +1278,7 @@
 	    Stroustrup
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="C++ Templates: The Complete Guide"><a id="biblio.vandevoorde2002cpptemplates"></a><p>[biblio.vandevoorde2002cpptemplates] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.vandevoorde2002cpptemplates"></a><p>[biblio.vandevoorde2002cpptemplates] <span class="title"><em>
 	C++ Templates: The Complete Guide
       </em>. </span><span class="date">
 	2002
@@ -1293,7 +1292,7 @@
 	      Josuttis
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Addison-Wesley Publishing Company
-	. </span></span></p></div><div class="biblioentry" title="Thirty Years Among the Dead"><a id="biblio.wickland96thirty"></a><p>[biblio.wickland96thirty] <span class="title"><em>
+	. </span></span></p></div><div class="biblioentry"><a id="biblio.wickland96thirty"></a><p>[biblio.wickland96thirty] <span class="title"><em>
 	<a class="link" href="http://myweb.wvnet.edu/~gsa00121/books/amongdead30.zip" target="_top">
 	  Thirty Years Among the Dead
 	</a>

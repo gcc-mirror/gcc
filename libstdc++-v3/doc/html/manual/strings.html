@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 7.  Strings</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="traits.html" title="Traits" /><link rel="next" href="localization.html" title="Chapter 8.  Localization" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 7.  Strings</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="traits.html" title="Traits" /><link rel="next" href="localization.html" title="Chapter 8.  Localization" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. 
   Strings
   
 </th></tr><tr><td width="20%" align="left"><a accesskey="p" href="traits.html">Prev</a> </td><th width="60%" align="center">Part II. 
     Standard Contents
-  </th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 7.  Strings"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings"></a>Chapter 7. 
+  </th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings"></a>Chapter 7. 
   Strings
-  <a id="idp15576144" class="indexterm"></a>
-</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section" title="String Classes"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.strings.string"></a>String Classes</h2></div></div></div><div class="section" title="Simple Transformations"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"></a>Simple Transformations</h3></div></div></div><p>
+  <a id="idm269986623744" class="indexterm"></a>
+</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.strings.string"></a>String Classes</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"></a>Simple Transformations</h3></div></div></div><p>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code class="code">string</code> instance, such as
       "convert to all upper case." The word transformations
@@ -89,7 +88,7 @@
    str.erase(notwhite+1); </pre><p>Obviously, the calls to <code class="code">find</code> could be inserted directly
       into the calls to <code class="code">erase</code>, in case your compiler does not
       optimize named temporaries out of existence.
-   </p></div><div class="section" title="Case Sensitivity"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.case"></a>Case Sensitivity</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.case"></a>Case Sensitivity</h3></div></div></div><p>
     </p><p>The well-known-and-if-it-isn't-well-known-it-ought-to-be
       <a class="link" href="http://www.gotw.ca/gotw/" target="_top">Guru of the Week</a>
       discussions held on Usenet covered this topic in January of 1998.
@@ -126,7 +125,7 @@
       <a class="link" href="http://www.unicode.org/reports/tr21/tr21-5.html" target="_top">Unicode
       Technical Report discussing case handling</a>, which provides some
       very good information.
-   </p></div><div class="section" title="Arbitrary Character Types"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.character_types"></a>Arbitrary Character Types</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.character_types"></a>Arbitrary Character Types</h3></div></div></div><p>
     </p><p>The <code class="code">std::basic_string</code> is tantalizingly general, in that
       it is parameterized on the type of the characters which it holds.
       In theory, you could whip up a Unicode character class and instantiate
@@ -180,7 +179,7 @@
       nice-looking first attempt</a> turned out to <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html" target="_top">not
       be conforming C++</a>, due to the rule that CharT must be a POD.
       (See how tricky this is?)
-   </p></div><div class="section" title="Tokenizing"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.token"></a>Tokenizing</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.token"></a>Tokenizing</h3></div></div></div><p>
     </p><p>The Standard C (and C++) function <code class="code">strtok()</code> leaves a lot to
       be desired in terms of user-friendliness.  It's unintuitive, it
       destroys the character string on which it operates, and it requires
@@ -256,7 +255,7 @@ stringtok(Container &amp;container, string const &amp;in,
       tokenizing as well.  Build an istringstream from the input text,
       and then use std::getline with varying delimiters (the three-argument
       signature) to extract tokens into a string.
-   </p></div><div class="section" title="Shrink to Fit"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.shrink"></a>Shrink to Fit</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.shrink"></a>Shrink to Fit</h3></div></div></div><p>
     </p><p>From GCC 3.4 calling <code class="code">s.reserve(res)</code> on a
       <code class="code">string s</code> with <code class="code">res &lt; s.capacity()</code> will
       reduce the string's capacity to <code class="code">std::max(s.size(), res)</code>.
@@ -272,7 +271,7 @@ stringtok(Container &amp;container, string const &amp;in,
    </p><p>In <a class="link" href="status.html#status.iso.2011" title="C++ 2011">C++11</a> mode you can call
       <code class="code">s.shrink_to_fit()</code> to achieve the same effect as
       <code class="code">s.reserve(s.size())</code>.
-   </p></div><div class="section" title="CString (MFC)"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.Cstring"></a>CString (MFC)</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.Cstring"></a>CString (MFC)</h3></div></div></div><p>
     </p><p>A common lament seen in various newsgroups deals with the Standard
       string class as opposed to the Microsoft Foundation Class called
       CString.  Often programmers realize that a standard portable
@@ -282,7 +281,7 @@ stringtok(Container &amp;container, string const &amp;in,
    </p><p>Things are not as bad as they seem.  In
       <a class="link" href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html" target="_top">this
       message</a>, Joe Buck points out a few very important things:
-   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>The Standard <code class="code">string</code> supports all the operations
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The Standard <code class="code">string</code> supports all the operations
 	     that CString does, with three exceptions.
 	 </p></li><li class="listitem"><p>Two of those exceptions (whitespace trimming and case
 	     conversion) are trivial to implement.  In fact, we do so
@@ -340,7 +339,7 @@ stringtok(Container &amp;container, string const &amp;in,
    performance is O(n).
    </pre><p>Joe Buck also pointed out some other things to keep in mind when
       comparing CString and the Standard string class:
-   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>CString permits access to its internal representation; coders
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>CString permits access to its internal representation; coders
 	     who exploited that may have problems moving to <code class="code">string</code>.
 	 </p></li><li class="listitem"><p>Microsoft ships the source to CString (in the files
 	     MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation

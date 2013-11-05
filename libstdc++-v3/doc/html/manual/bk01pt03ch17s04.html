@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="debug_mode.html" title="Chapter 17. Debug Mode" /><link rel="prev" href="bk01pt03ch17s03.html" title="Using" /><link rel="next" href="parallel_mode.html" title="Chapter 18. Parallel Mode" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Debug Mode</th><td width="20%" align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr></table><hr /></div><div class="section" title="Design"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.debug_mode.design"></a>Design</h2></div></div></div><p>
-  </p><div class="section" title="Goals"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.goals"></a>Goals</h3></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="debug_mode.html" title="Chapter 17. Debug Mode" /><link rel="prev" href="bk01pt03ch17s03.html" title="Using" /><link rel="next" href="parallel_mode.html" title="Chapter 18. Parallel Mode" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Debug Mode</th><td width="20%" align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.debug_mode.design"></a>Design</h2></div></div></div><p>
+  </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.goals"></a>Goals</h3></div></div></div><p>
     </p><p> The libstdc++ debug mode replaces unsafe (but efficient) standard
   containers and iterators with semantically equivalent safe standard
   containers and iterators to aid in debugging user programs. The
-  following goals directed the design of the libstdc++ debug mode:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Correctness</em></span>: the libstdc++ debug mode must not change
+  following goals directed the design of the libstdc++ debug mode:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Correctness</em></span>: the libstdc++ debug mode must not change
     the semantics of the standard library for all cases specified in
     the ANSI/ISO C++ standard. The essence of this constraint is that
     any valid C++ program should behave in the same manner regardless
@@ -89,10 +88,10 @@
 	(performance regression) or allocating extra memory associated
 	with each iterator with <code class="code">new</code> (changes the program
 	semantics).</p></li></ol></div><p>
-    </p></li></ul></div></div><div class="section" title="Methods"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.methods"></a>Methods</h3></div></div></div><p>
+    </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.methods"></a>Methods</h3></div></div></div><p>
     </p><p>This section provides an overall view of the design of the
   libstdc++ debug mode and details the relationship between design
-  decisions and the stated design goals.</p><div class="section" title="The Wrapper Model"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.wrappers"></a>The Wrapper Model</h4></div></div></div><p>The libstdc++ debug mode uses a wrapper model where the
+  decisions and the stated design goals.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.wrappers"></a>The Wrapper Model</h4></div></div></div><p>The libstdc++ debug mode uses a wrapper model where the
   debugging versions of library components (e.g., iterators and
   containers) form a layer on top of the release versions of the
   library components. The debugging components first verify that the
@@ -109,19 +108,19 @@
   their associated containers, which are necessary to detect certain
   types of standard library usage errors such as dereferencing
   past-the-end iterators or inserting into a container using an
-  iterator from a different container.</p><div class="section" title="Safe Iterators"><div class="titlepage"><div><div><h5 class="title"><a id="debug_mode.design.methods.safe_iter"></a>Safe Iterators</h5></div></div></div><p>Iterator wrappers provide a debugging layer over any iterator that
+  iterator from a different container.</p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="debug_mode.design.methods.safe_iter"></a>Safe Iterators</h5></div></div></div><p>Iterator wrappers provide a debugging layer over any iterator that
   is attached to a particular container, and will manage the
   information detailing the iterator's state (singular,
   dereferenceable, etc.) and tracking the container to which the
   iterator is attached. Because iterators have a well-defined, common
   interface the iterator wrapper is implemented with the iterator
   adaptor class template <code class="code">__gnu_debug::_Safe_iterator</code>,
-  which takes two template parameters:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><code class="code">Iterator</code>: The underlying iterator type, which must
+  which takes two template parameters:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="code">Iterator</code>: The underlying iterator type, which must
     be either the <code class="code">iterator</code> or <code class="code">const_iterator</code>
     typedef from the sequence type this iterator can reference.</p></li><li class="listitem"><p><code class="code">Sequence</code>: The type of sequence that this iterator
   references. This sequence must be a safe sequence (discussed below)
   whose <code class="code">iterator</code> or <code class="code">const_iterator</code> typedef
-  is the type of the safe iterator.</p></li></ul></div></div><div class="section" title="Safe Sequences (Containers)"><div class="titlepage"><div><div><h5 class="title"><a id="debug_mode.design.methods.safe_seq"></a>Safe Sequences (Containers)</h5></div></div></div><p>Container wrappers provide a debugging layer over a particular
+  is the type of the safe iterator.</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="debug_mode.design.methods.safe_seq"></a>Safe Sequences (Containers)</h5></div></div></div><p>Container wrappers provide a debugging layer over a particular
   container type. Because containers vary greatly in the member
   functions they support and the semantics of those member functions
   (especially in the area of iterator invalidation), container
@@ -157,7 +156,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
 
     // duplicate std::list interface with debugging semantics
   };
-</pre></div></div><div class="section" title="Precondition Checking"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.precond"></a>Precondition Checking</h4></div></div></div><p>The debug mode operates primarily by checking the preconditions of
+</pre></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.precond"></a>Precondition Checking</h4></div></div></div><p>The debug mode operates primarily by checking the preconditions of
   all standard library operations that it supports. Preconditions that
   are always checked (regardless of whether or not we are in debug
   mode) are checked via the <code class="code">__check_xxx</code> macros defined
@@ -184,7 +183,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   cousin <code class="code">_GLIBCXX_DEBUG_PEDASSERT</code>, or the assertion
   check macro that supports more advance formulation of error
   messages, <code class="code">_GLIBCXX_DEBUG_VERIFY</code>. These macros are
-  documented more thoroughly in the debug mode source code.</p></div><div class="section" title="Release- and debug-mode coexistence"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.coexistence"></a>Release- and debug-mode coexistence</h4></div></div></div><p>The libstdc++ debug mode is the first debug mode we know of that
+  documented more thoroughly in the debug mode source code.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.coexistence"></a>Release- and debug-mode coexistence</h4></div></div></div><p>The libstdc++ debug mode is the first debug mode we know of that
   is able to provide the "Per-use recompilation" (4) guarantee, that
   allows release-compiled and debug-compiled code to be linked and
   executed together without causing unpredictable behavior. This
@@ -200,7 +199,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   recompilation but have had to give up some checking of the
   <code class="code">std::basic_string</code> class template (namely, safe
   iterators).
-</p><div class="section" title="Compile-time coexistence of release- and debug-mode components"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.compile"></a>Compile-time coexistence of release- and debug-mode components</h5></div></div></div><p>Both the release-mode components and the debug-mode
+</p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.compile"></a>Compile-time coexistence of release- and debug-mode components</h5></div></div></div><p>Both the release-mode components and the debug-mode
   components need to exist within a single translation unit so that
   the debug versions can wrap the release versions. However, only one
   of these components should be user-visible at any particular
@@ -254,7 +253,7 @@ namespace std
   // namespace __debug __attribute__ ((strong));
   inline namespace __debug { }
 }
-</pre></div><div class="section" title="Link- and run-time coexistence of release- and debug-mode components"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.link"></a>Link- and run-time coexistence of release- and
+</pre></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.link"></a>Link- and run-time coexistence of release- and
     debug-mode components</h5></div></div></div><p>Because each component has a distinct and separate release and
 debug implementation, there is no issue with link-time
 coexistence: the separate namespaces result in different mangled
@@ -316,10 +315,10 @@ test02()
   changes. The effect on users is expected to be minimal, as there are
   simple alternatives (e.g., <code class="code">__gnu_debug::basic_string</code>),
   and the usability benefit we gain from the ability to mix debug- and
-  release-compiled translation units is enormous.</p></div><div class="section" title="Alternatives for Coexistence"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.alt"></a>Alternatives for Coexistence</h5></div></div></div><p>The coexistence scheme above was chosen over many alternatives,
+  release-compiled translation units is enormous.</p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.alt"></a>Alternatives for Coexistence</h5></div></div></div><p>The coexistence scheme above was chosen over many alternatives,
   including language-only solutions and solutions that also required
   extensions to the C++ front end. The following is a partial list of
-  solutions, with justifications for our rejection of each.</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Completely separate debug/release libraries</em></span>: This is by
+  solutions, with justifications for our rejection of each.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Completely separate debug/release libraries</em></span>: This is by
   far the simplest implementation option, where we do not allow any
   coexistence of debug- and release-compiled translation units in a
   program. This solution has an extreme negative affect on usability,
@@ -388,11 +387,11 @@ test02()
   that breaks user specialization), and additional testcases will be
   added as we are able to identify other typical problem cases. These
   test cases will serve as a benchmark by which we can compare debug
-  mode implementations.</p></div></div></div><div class="section" title="Other Implementations"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.other"></a>Other Implementations</h3></div></div></div><p>
+  mode implementations.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.other"></a>Other Implementations</h3></div></div></div><p>
     </p><p> There are several existing implementations of debug modes for C++
   standard library implementations, although none of them directly
   supports debugging for programs using libstdc++. The existing
-  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html" target="_top">SafeSTL</a>:
+  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a class="link" href="http://www.cs.sjsu.edu/faculty/horstman/safestl.html" target="_top">SafeSTL</a>:
   SafeSTL was the original debugging version of the Standard Template
   Library (STL), implemented by Cay S. Horstmann on top of the
   Hewlett-Packard STL. Though it inspired much work in this area, it

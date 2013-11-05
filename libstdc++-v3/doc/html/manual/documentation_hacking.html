@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Writing and Generating Documentation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="ISO C++, documentation, style, docbook, doxygen" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="next" href="internals.html" title="Porting to New Hardware or Operating Systems" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Writing and Generating Documentation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Writing and Generating Documentation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, documentation, style, docbook, doxygen" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="next" href="internals.html" title="Porting to New Hardware or Operating Systems" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Writing and Generating Documentation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
-</th><td width="20%" align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr></table><hr /></div><div class="section" title="Writing and Generating Documentation"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.doc"></a>Writing and Generating Documentation</h2></div></div></div><div class="section" title="Introduction"><div class="titlepage"><div><div><h3 class="title"><a id="doc.intro"></a>Introduction</h3></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.doc"></a>Writing and Generating Documentation</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.intro"></a>Introduction</h3></div></div></div><p>
       Documentation for the GNU C++ Library is created from three
       independent sources: a manual, a FAQ, and an API reference.
     </p><p>
@@ -27,7 +26,7 @@
       as per
       <a class="link" href="http://www.gnu.org/prep/standards/standards.html#Documentation" target="_top">
       GNU Manuals</a>.
-    </p></div><div class="section" title="Generating Documentation"><div class="titlepage"><div><div><h3 class="title"><a id="doc.generation"></a>Generating Documentation</h3></div></div></div><p>
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.generation"></a>Generating Documentation</h3></div></div></div><p>
       Certain Makefile rules are required by the GNU Coding
       Standards. These standard rules generate HTML, PDF, XML, or man
       files. For each of the generative rules, there is an additional
@@ -53,7 +52,7 @@
       <code class="literal">BUILD_PDF</code>, and <code class="literal">BUILD_EPUB</code>.
     </p><p>
       Supported Makefile rules:
-    </p><div class="variablelist"><dl><dt><span class="term">
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
 	  <span class="emphasis"><em>make html</em></span>
 	, </span><span class="term">
 	  <span class="emphasis"><em>make install-html</em></span>
@@ -113,7 +112,7 @@
       supported, and are always aliased to dummy rules. These
       unsupported formats are: <span class="emphasis"><em>info</em></span>,
       <span class="emphasis"><em>ps</em></span>, and <span class="emphasis"><em>dvi</em></span>.
-    </p></div><div class="section" title="Doxygen"><div class="titlepage"><div><div><h3 class="title"><a id="doc.doxygen"></a>Doxygen</h3></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idp22126320"></a><p class="title"><strong>Table B.1. Doxygen Prerequisites</strong></p><div class="table-contents"><table summary="Doxygen Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">coreutils</td><td align="center">8.5</td><td align="center">all</td></tr><tr><td align="center">bash</td><td align="center">4.1</td><td align="center">all</td></tr><tr><td align="center">doxygen</td><td align="center">1.7.6.1</td><td align="center">all</td></tr><tr><td align="center">graphviz</td><td align="center">2.26</td><td align="center">graphical hierarchies</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr></tbody></table></div></div><br class="table-break" /><p>
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.doxygen"></a>Doxygen</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idm269980088096"></a><p class="title"><strong>Table B.1. Doxygen Prerequisites</strong></p><div class="table-contents"><table summary="Doxygen Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">coreutils</td><td align="center">8.5</td><td align="center">all</td></tr><tr><td align="center">bash</td><td align="center">4.1</td><td align="center">all</td></tr><tr><td align="center">doxygen</td><td align="center">1.7.6.1</td><td align="center">all</td></tr><tr><td align="center">graphviz</td><td align="center">2.26</td><td align="center">graphical hierarchies</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr></tbody></table></div></div><br class="table-break" /><p>
 	Prerequisite tools are Bash 2.0 or later,
 	<a class="link" href="http://www.doxygen.org/" target="_top">Doxygen</a>, and
 	the <a class="link" href="http://www.gnu.org/software/coreutils/" target="_top">GNU
@@ -135,7 +134,7 @@
 	capacity. Specifically, the <code class="literal">pool_size</code>
 	variable in the configuration file <code class="filename">texmf.cnf</code> may
 	need to be increased by a minimum factor of two.
-      </p></div><div class="section" title="Generating the Doxygen Files"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"></a>Generating the Doxygen Files</h4></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"></a>Generating the Doxygen Files</h4></div></div></div><p>
 	The following Makefile rules run Doxygen to generate HTML
 	docs, XML docs, XML docs as a single file, PDF docs, and the
 	man pages. These rules are not conditional! If the required
@@ -167,7 +166,7 @@
 	If you wish to tweak the Doxygen settings, do so by editing
 	<code class="filename">doc/doxygen/user.cfg.in</code>. Notes to fellow
 	library hackers are written in triple-# comments.
-      </p></div><div class="section" title="Debugging Generation"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.debug"></a>Debugging Generation</h4></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.debug"></a>Debugging Generation</h4></div></div></div><p>
 	  Sometimes, mis-configuration of the pre-requisite tools can
 	  lead to errors when attempting to build the
 	  documentation. Here are some of the obvious errors, and ways
@@ -182,7 +181,7 @@
 	  contents of the following build directory:
 	  <code class="filename">build/target/libstdc++-v3/doc/doxygen/latex</code>.
 	  Pay attention to three files enclosed within, annotated as follows.
-	</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
    <span class="emphasis"><em>refman.tex</em></span>
   </p><p>
     The actual latex file, or partial latex file. This is generated
@@ -211,7 +210,7 @@
 	  directories of header files, until the offending header is
 	  identified. Then, read the latex log files to try and find
 	  surround text, and look for that in the offending header.
-	</p></div><div class="section" title="Markup"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.markup"></a>Markup</h4></div></div></div><p>
+	</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.markup"></a>Markup</h4></div></div></div><p>
 	In general, libstdc++ files should be formatted according to
 	the rules found in the
 	<a class="link" href="source_code_style.html" title="Coding Style">Coding Standard</a>. Before
@@ -233,9 +232,8 @@
 	member functions.
       </p><p>
 	Some commentary to accompany
-	the first list in the <a class="link" href="http://www.stack.nl/~dimitri/doxygen/docblocks.html" target="_top">Special
-	Documentation Blocks</a> section of
-	the Doxygen manual:
+	the first list in the <a class="link" href="http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html" target="_top">Special
+	Documentation Blocks</a> section of the Doxygen manual:
       </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>For longer comments, use the Javadoc style...</p></li><li class="listitem"><p>
 	    ...not the Qt style. The intermediate *'s are preferred.
 	  </p></li><li class="listitem"><p>
@@ -311,7 +309,7 @@
 	writing Doxygen comments. Single and double quotes, and
 	separators in filenames are two common trouble spots. When in
 	doubt, consult the following table.
-      </p><div class="table"><a id="idp22201984"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section" title="Docbook"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idp22221360"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
+      </p><div class="table"><a id="idm269980012416"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idm269979992976"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
 	Editing the DocBook sources requires an XML editor. Many
 	exist: some notable options
 	include <span class="command"><strong>emacs</strong></span>, <span class="application">Kate</span>,
@@ -358,7 +356,7 @@
 	XML to Texinfo is required. The default choice is <a class="link" href="http://docbook2x.sourceforge.net/" target="_top">docbook2X</a>.
       </p><p>
 	For epub output, the <a class="link" href="http://sourceforge.net/projects/docbook/files/epub3/" target="_top">stylesheets</a> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <a class="link" href="https://code.google.com/p/epubcheck/" target="_top">epubcheck</a> is necessary.
-      </p></div><div class="section" title="Generating the DocBook Files"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"></a>Generating the DocBook Files</h4></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"></a>Generating the DocBook Files</h4></div></div></div><p>
 	The following Makefile rules generate (in order): an HTML
 	version of all the DocBook documentation, a PDF version of the
 	same, and a single XML document.  These rules are not
@@ -383,7 +381,7 @@
 	<strong class="userinput"><code>
 make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</code> doc-html-docbook
 	</code></strong>
-      </pre></div><div class="section" title="Debugging Generation"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.debug"></a>Debugging Generation</h4></div></div></div><p>
+      </pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.debug"></a>Debugging Generation</h4></div></div></div><p>
 	  Sometimes, mis-configuration of the pre-requisite tools can
 	  lead to errors when attempting to build the
 	  documentation. Here are some of the obvious errors, and ways
@@ -398,7 +396,7 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
 	  contents of the following build directory:
 	  <code class="filename">build/target/libstdc++-v3/doc/docbook/latex</code>.
 	  Pay attention to three files enclosed within, annotated as follows.
-	</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
    <span class="emphasis"><em>spine.tex</em></span>
   </p><p>
     The actual latex file, or partial latex file. This is generated
@@ -435,7 +433,7 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
 	  commenting out each of the largest parts of the
 	  <code class="filename">spine.xml</code> file, section by section,
 	  until the offending section is identified.
-	</p></div><div class="section" title="Editing and Validation"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.validation"></a>Editing and Validation</h4></div></div></div><p>
+	</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.validation"></a>Editing and Validation</h4></div></div></div><p>
 	After editing the xml sources, please make sure that the XML
 	documentation and markup is still valid. This can be
 	done easily, with the following validation rule:
@@ -455,7 +453,7 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
 	validation on the entire manual fails.
       </p><p>
 	All Docbook xml sources should always validate. No excuses!
-      </p></div><div class="section" title="File Organization and Basics"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.examples"></a>File Organization and Basics</h4></div></div></div><div class="literallayout"><p><br />
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.examples"></a>File Organization and Basics</h4></div></div></div><div class="literallayout"><p><br />
       <span class="emphasis"><em>Which files are important</em></span><br />
 <br />
       All Docbook files are in the directory<br />
@@ -515,17 +513,17 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
       &lt;/book&gt;<br />
 <br />
       &lt;/set&gt;<br />
-    </p></div></div><div class="section" title="Markup By Example"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"></a>Markup By Example</h4></div></div></div><p>
+    </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"></a>Markup By Example</h4></div></div></div><p>
 	Complete details on Docbook markup can be found in the DocBook
 	Element Reference,
 	<a class="link" href="http://www.docbook.org/tdg/en/html/part2.html" target="_top">online</a>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
-      </p><div class="table"><a id="idp22298992"></a><p class="title"><strong>Table B.4. HTML to Docbook XML Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
+      </p><div class="table"><a id="idm269979915344"></a><p class="title"><strong>Table B.4. HTML to Docbook XML Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
 	&lt;literallayout&gt;</td></tr><tr><td align="left">&lt;ul&gt;</td><td align="left">&lt;itemizedlist&gt;</td></tr><tr><td align="left">&lt;ol&gt;</td><td align="left">&lt;orderedlist&gt;</td></tr><tr><td align="left">&lt;il&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;dl&gt;</td><td align="left">&lt;variablelist&gt;</td></tr><tr><td align="left">&lt;dt&gt;</td><td align="left">&lt;term&gt;</td></tr><tr><td align="left">&lt;dd&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;a href=""&gt;</td><td align="left">&lt;ulink url=""&gt;</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">&lt;literal&gt;, &lt;programlisting&gt;</td></tr><tr><td align="left">&lt;strong&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">"</td><td align="left">&lt;quote&gt;</td></tr></tbody></table></div></div><br class="table-break" /><p>
   And examples of detailed markup for which there are no real HTML
   equivalents are listed in the table below.
-</p><div class="table"><a id="idp22323136"></a><p class="title"><strong>Table B.5. Docbook XML Element Use</strong></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
+</p><div class="table"><a id="idm269979891200"></a><p class="title"><strong>Table B.5. Docbook XML Element Use</strong></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
 	<p>&lt;function&gt;clear()&lt;/function&gt;</p>
 	<p>&lt;function&gt;fs.clear()&lt;/function&gt;</p>
       </td></tr><tr><td align="left">&lt;type&gt;</td><td align="left">&lt;type&gt;long long&lt;/type&gt;</td></tr><tr><td align="left">&lt;varname&gt;</td><td align="left">&lt;varname&gt;fs&lt;/varname&gt;</td></tr><tr><td align="left">&lt;literal&gt;</td><td align="left">

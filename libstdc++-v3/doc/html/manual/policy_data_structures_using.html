@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Using</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="next" href="policy_data_structures_design.html" title="Design" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Using</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_design.html">Next</a></td></tr></table><hr /></div><div class="section" title="Using"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.pbds.using"></a>Using</h2></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.prereq"></a>Prerequisites</h3></div></div></div><p>The library contains only header files, and does not require any
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Using</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="next" href="policy_data_structures_design.html" title="Design" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Using</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_design.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.pbds.using"></a>Using</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.prereq"></a>Prerequisites</h3></div></div></div><p>The library contains only header files, and does not require any
       other libraries except the standard C++ library . All classes are
       defined in namespace <code class="code">__gnu_pbds</code>. The library internally
       uses macros beginning with <code class="code">PB_DS</code>, but
@@ -11,11 +10,11 @@
 	Further dependencies are necessary to create the visual output
 	for the performance tests. To create these graphs, an
 	additional package is needed: <span class="command"><strong>pychart</strong></span>.
-      </p></div><div class="section" title="Organization"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.organization"></a>Organization</h3></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.organization"></a>Organization</h3></div></div></div><p>
 	The various data structures are organized as follows.
-      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	    Branch-Based
-	  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 		<code class="classname">basic_branch</code>
 		is an abstract base class for branched-based
 		associative-containers
@@ -29,7 +28,7 @@
 		associative-containers
 	      </p></li></ul></div></li><li class="listitem"><p>
 	    Hash-Based
-	  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 		<code class="classname">basic_hash_table</code>
 		is an abstract base class for hash-based
 		associative-containers
@@ -43,12 +42,12 @@
 		associative-containers
 	      </p></li></ul></div></li><li class="listitem"><p>
 	    List-Based
-	  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 		<code class="classname">list_update</code>
 		list-based update-policy associative container
 	      </p></li></ul></div></li><li class="listitem"><p>
 	    Heap-Based
-	  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 		<code class="classname">priority_queue</code>
 		A priority queue.
 	      </p></li></ul></div></li></ul></div><p>
@@ -62,7 +61,7 @@
 	In addition, there are the following diagnostics classes,
 	used to report errors specific to this library's data
 	structures.
-      </p><div class="figure"><a id="idp17768064"></a><p class="title"><strong>Figure 22.7. Exception Hierarchy</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_exception_hierarchy.png" align="middle" alt="Exception Hierarchy" /></div></div></div><br class="figure-break" /></div><div class="section" title="Tutorial"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.tutorial"></a>Tutorial</h3></div></div></div><div class="section" title="Basic Use"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.basic"></a>Basic Use</h4></div></div></div><p>
+      </p><div class="figure"><a id="idm269984441456"></a><p class="title"><strong>Figure 22.7. Exception Hierarchy</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_exception_hierarchy.png" align="middle" alt="Exception Hierarchy" /></div></div></div><br class="figure-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.tutorial"></a>Tutorial</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.basic"></a>Basic Use</h4></div></div></div><p>
 	  For the most part, the policy-based containers containers in
 	  namespace <code class="literal">__gnu_pbds</code> have the same interface as
 	  the equivalent containers in the standard C++ library, except for
@@ -186,7 +185,7 @@
 	</pre><p>
 	  so all hash-based associative containers inherit the same
 	  hash-functor accessor methods.
-	</p></div><div class="section" title="Configuring via Template Parameters"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.configuring"></a>
+	</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.configuring"></a>
 	    Configuring via Template Parameters
 	  </h4></div></div></div><p>
 	  In general, each of this library's containers is
@@ -240,7 +239,7 @@
 	by one of them.</p><p>Note that as opposed to the
 	<code class="classname">std::priority_queue</code>,
 	<code class="classname">__gnu_pbds::priority_queue</code> is not a
-	sequence-adapter; it is a regular container.</p></div><div class="section" title="Querying Container Attributes"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.traits"></a>
+	sequence-adapter; it is a regular container.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.traits"></a>
 	    Querying Container Attributes
 	  </h4></div></div></div><p></p><p>A containers underlying data structure
 	affect their performance; Unfortunately, they can also affect
@@ -278,7 +277,7 @@
 	</pre><p>is the container's invalidation guarantee. Invalidation
 	guarantees are especially important regarding priority queues,
 	since in this library's design, iterators are practically the
-	only way to manipulate them.</p></div><div class="section" title="Point and Range Iteration"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.point_range_iteration"></a>
+	only way to manipulate them.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.point_range_iteration"></a>
 	    Point and Range Iteration
 	  </h4></div></div></div><p></p><p>This library differentiates between two types of methods
 	and iterators: point-type, and range-type. For example,
@@ -377,11 +376,11 @@
 	</pre><p>
 	  gives one of three pre-determined types that answer this
 	  query.
-	</p></div></div><div class="section" title="Examples"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.examples"></a>Examples</h3></div></div></div><p>
+	</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.examples"></a>Examples</h3></div></div></div><p>
 	Additional code examples are provided in the source
 	distribution, as part of the regression and performance
 	testsuite.
-      </p><div class="section" title="Intermediate Use"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.basic"></a>Intermediate Use</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+      </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.basic"></a>Intermediate Use</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	      Basic use of maps:
 	      <code class="filename">basic_map.cc</code>
 	    </p></li><li class="listitem"><p>
@@ -405,7 +404,7 @@
 	    </p></li><li class="listitem"><p>
 	      Conditionally erasing values from a priority queue:
 	      <code class="filename">priority_queue_erase_if.cc</code>
-	    </p></li></ul></div></div><div class="section" title="Querying with container_traits"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.query"></a>Querying with <code class="classname">container_traits</code> </h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	    </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.query"></a>Querying with <code class="classname">container_traits</code> </h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	      Using <code class="classname">container_traits</code> to query
 	      about underlying data structure behavior:
 	      <code class="filename">assoc_container_traits.cc</code>
@@ -416,7 +415,7 @@
 	      Using <code class="classname">container_traits</code>
 	      to query about underlying data structure behavior:
 	      <code class="filename">priority_queue_container_traits.cc</code>
-	    </p></li></ul></div></div><div class="section" title="By Container Method"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.container"></a>By Container Method</h4></div></div></div><p></p><div class="section" title="Hash-Based"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.hash"></a>Hash-Based</h5></div></div></div><div class="section" title="size Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.resize"></a>size Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	    </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.examples.container"></a>By Container Method</h4></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.hash"></a>Hash-Based</h5></div></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.resize"></a>size Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		  Setting the initial size of a hash-based container
 		  object:
 		  <code class="filename">hash_initial_size.cc</code>
@@ -434,7 +433,7 @@
 		</p></li><li class="listitem"><p>
 		  Changing the load factors of a hash-based container
 		  object: <code class="filename">hash_load_set_change.cc</code>
-		</p></li></ul></div></div><div class="section" title="Hashing Function Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.hashor"></a>Hashing Function Related</h6></div></div></div><p></p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.hash.hashor"></a>Hashing Function Related</h6></div></div></div><p></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		  Using a modulo range-hashing function for the case of an
 		  unknown skewed key distribution:
 		  <code class="filename">hash_mod.cc</code>
@@ -448,7 +447,7 @@
 		</p></li><li class="listitem"><p>
 		  Writing a ranged-hash functor:
 		  <code class="filename">ranged_hash.cc</code>
-		</p></li></ul></div></div></div><div class="section" title="Branch-Based"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.branch"></a>Branch-Based</h5></div></div></div><div class="section" title="split or join Related"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.split"></a>split or join Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.branch"></a>Branch-Based</h5></div></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.split"></a>split or join Related</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		  Joining two tree-based container objects:
 		  <code class="filename">tree_join.cc</code>
 		</p></li><li class="listitem"><p>
@@ -458,21 +457,21 @@
 		  Order statistics while joining two tree-based container
 		  objects:
 		  <code class="filename">tree_order_statistics_join.cc</code>
-		</p></li></ul></div></div><div class="section" title="Node Invariants"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.invariants"></a>Node Invariants</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.invariants"></a>Node Invariants</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		  Using trees for order statistics:
 		  <code class="filename">tree_order_statistics.cc</code>
 		</p></li><li class="listitem"><p>
 		  Augmenting trees to support operations on line
 		  intervals:
 		  <code class="filename">tree_intervals.cc</code>
-		</p></li></ul></div></div><div class="section" title="trie"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.trie"></a>trie</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="pbds.using.examples.container.branch.trie"></a>trie</h6></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		  Using a PATRICIA trie for DNA strings:
 		  <code class="filename">trie_dna.cc</code>
 		</p></li><li class="listitem"><p>
 		  Using a PATRICIA
 		  trie for finding all entries whose key matches a given prefix:
 		  <code class="filename">trie_prefix_search.cc</code>
-		</p></li></ul></div></div></div><div class="section" title="Priority Queues"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.priority_queue"></a>Priority Queues</h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="pbds.using.examples.container.priority_queue"></a>Priority Queues</h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 		Cross referencing an associative container and a priority
 		queue: <code class="filename">priority_queue_xref.cc</code>
 	      </p></li><li class="listitem"><p>

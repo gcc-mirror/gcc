@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Facets</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="localization.html" title="Chapter 8.  Localization" /><link rel="prev" href="localization.html" title="Chapter 8.  Localization" /><link rel="next" href="containers.html" title="Chapter 9.  Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Facets</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Chapter 8. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Facets</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="localization.html" title="Chapter 8.  Localization" /><link rel="prev" href="localization.html" title="Chapter 8.  Localization" /><link rel="next" href="containers.html" title="Chapter 9.  Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Facets</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Chapter 8. 
   Localization
   
-</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="section" title="Facets"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.localization.facet"></a>Facets</h2></div></div></div><div class="section" title="ctype"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.ctype"></a>ctype</h3></div></div></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.impl"></a>Implementation</h4></div></div></div><div class="section" title="Specializations"><div class="titlepage"><div><div><h5 class="title"><a id="idp15752864"></a>Specializations</h5></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.localization.facet"></a>Facets</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.ctype"></a>ctype</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.impl"></a>Implementation</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="idm269986448912"></a>Specializations</h5></div></div></div><p>
 For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
@@ -28,7 +27,7 @@ to wchar_t and wcsrtombs for conversions between wchar_t and char.
 </p><p>
 Neither of these two required specializations deals with Unicode
 characters.
-</p></div></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
    How to deal with the global locale issue?
    </p></li><li class="listitem"><p>
    How to deal with different types than char, wchar_t? </p></li><li class="listitem"><p>
@@ -50,30 +49,30 @@ characters.
    </p></li><li class="listitem"><p>
        Rename abstract base class. See if just smash-overriding is a
        better approach. Clarify, add sanity to naming.
-     </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idp15767920"></a><p><span class="citetitle"><em class="citetitle">
+     </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269986433920"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
-    </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6  Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="idp15772672"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6  Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="idm269986429168"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idp15775760"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269986426080"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idp15778048"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269986423792"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)"><a id="idp15780320"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269986421520"></a><p><span class="title"><em>
 	<a class="link" href="http://www.unix.org/version3/ieee_std.html" target="_top">
 	The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
 	</a>
       </em>. </span><span class="copyright">Copyright © 1999 
-      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span></p></div><div class="biblioentry"><a id="idp15783568"></a><p><span class="citetitle"><em class="citetitle">
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span></p></div><div class="biblioentry"><a id="idm269986418272"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idp15788192"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269986413648"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div></div></div><div class="section" title="codecvt"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.codecvt"></a>codecvt</h3></div></div></div><p>
+      . </span></span></p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.codecvt"></a>codecvt</h3></div></div></div><p>
 The standard class codecvt attempts to address conversions between
 different character encoding schemes. In particular, the standard
 attempts to detail conversions between the implementation-defined wide
@@ -87,7 +86,7 @@ including Unicode and UTF8. Design issues and requirements are
 addressed, and examples of correct usage for both the required
 specializations for wide and narrow characters and the
 implementation-provided extended functionality are given.
-</p><div class="section" title="Requirements"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.req"></a>Requirements</h4></div></div></div><p>
+</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.req"></a>Requirements</h4></div></div></div><p>
 Around page 425 of the C++ Standard, this charming heading comes into view:
 </p><div class="blockquote"><blockquote class="blockquote"><p>
 22.2.1.5 - Template class codecvt
@@ -133,7 +132,7 @@ third template parameter, stateT.</p><p>
 Two: The required conversions, by specifying mbstate_t as the third
 template parameter, imply an implementation strategy that is mostly
 (or wholly) based on the underlying C library, and the functions
-mcsrtombs and wcsrtombs in particular.</p></div><div class="section" title="Design"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.design"></a>Design</h4></div></div></div><div class="section" title="wchar_t Size"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.wchar_t_size"></a><span class="type">wchar_t</span> Size</h5></div></div></div><p>
+mcsrtombs and wcsrtombs in particular.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.design"></a>Design</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.wchar_t_size"></a><span class="type">wchar_t</span> Size</h5></div></div></div><p>
       The simple implementation detail of wchar_t's size seems to
       repeatedly confound people. Many systems use a two byte,
       unsigned integral type to represent wide characters, and use an
@@ -145,7 +144,7 @@ mcsrtombs and wcsrtombs in particular.</p></div><div class="section" title="Desi
       size for the type wchar_t.
     </p><p>
       Thus, portable C++ code cannot assume a byte size (or endianness) either.
-    </p></div><div class="section" title="Support for Unicode"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.unicode"></a>Support for Unicode</h5></div></div></div><p>
+    </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.unicode"></a>Support for Unicode</h5></div></div></div><p>
     Probably the most frequently asked question about code conversion
     is: "So dudes, what's the deal with Unicode strings?"
     The dude part is optional, but apparently the usefulness of
@@ -162,7 +161,7 @@ mcsrtombs and wcsrtombs in particular.</p></div><div class="section" title="Desi
     needed is some kind of generalized type that accounts for the
     issues that abstract encodings will need. The minimum information
     that is required includes:
-  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	Identifiers for each of the codesets involved in the
 	conversion. For example, using the iconv family of functions
 	from the Single Unix Specification (what used to be called
@@ -213,7 +212,7 @@ mechanism may be required.
  Some way to enforce strict type checking on the internal and
   external types. As part of this, the size of the internal and
   external types will need to be known.
-</p></li></ul></div></div><div class="section" title="Other Issues"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.issues"></a>Other Issues</h5></div></div></div><p>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="codecvt.design.issues"></a>Other Issues</h5></div></div></div><p>
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they
 affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
@@ -245,7 +244,7 @@ For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
-</p></div></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.impl"></a>Implementation</h4></div></div></div><p>
+</p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.impl"></a>Implementation</h4></div></div></div><p>
 The two required specializations are implemented as follows:
 </p><p>
 <code class="code">
@@ -347,7 +346,7 @@ Definitions for all the required codecvt member functions are provided
 for this specialization, and usage of codecvt&lt;internal character type,
 external character type, encoding_state&gt; is consistent with other
 codecvt usage.
-</p></div><div class="section" title="Use"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.use"></a>Use</h4></div></div></div><p>A conversions involving string literal.</p><pre class="programlisting">
+</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.use"></a>Use</h4></div></div></div><p>A conversions involving string literal.</p><pre class="programlisting">
   typedef codecvt_base::result                  result;
   typedef unsigned short                        unicode_t;
   typedef unicode_t                             int_type;
@@ -384,14 +383,14 @@ codecvt usage.
   VERIFY( !int_traits::compare(i_arr, i_lit, size) );
   VERIFY( efrom_next == e_lit + size );
   VERIFY( ito_next == i_arr + size );
-</pre></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
    a. things that are sketchy, or remain unimplemented:
       do_encoding, max_length and length member functions
       are only weakly implemented. I have no idea how to do
       this correctly, and in a generic manner.  Nathan?
 </p></li><li class="listitem"><p>
    b. conversions involving std::string
-  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
       how should operators != and == work for string of
       different/same encoding?
       </p></li><li class="listitem"><p>
@@ -401,7 +400,7 @@ codecvt usage.
       conversions between narrow, wide, and unicode strings
       </p></li></ul></div></li><li class="listitem"><p>
    c. conversions involving std::filebuf and std::ostream
-</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
       how to initialize the state object in a
       standards-conformant manner?
       </p></li><li class="listitem"><p>
@@ -410,50 +409,50 @@ codecvt usage.
       </p></li><li class="listitem"><p>
       wchar_t/char internal buffers and conversions between
       internal/external buffers?
-      </p></li></ul></div></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idp15866336"></a><p><span class="citetitle"><em class="citetitle">
+      </p></li></ul></div></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269986335856"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
     </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">
       Chapters 6 Character Set Handling and 7 Locales and Internationalization
-    . </span></p></div><div class="biblioentry"><a id="idp15871088"></a><p><span class="citetitle"><em class="citetitle">
+    . </span></p></div><div class="biblioentry"><a id="idm269986331104"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idp15874176"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269986328016"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idp15876464"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269986325728"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)"><a id="idp15878736"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269986323456"></a><p><span class="title"><em>
 	<a class="link" href="http://www.opengroup.org/austin" target="_top">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</a>
       </em>. </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry"><a id="idp15881968"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></p></div><div class="biblioentry"><a id="idm269986320224"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idp15886592"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269986315600"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry" title="A brief description of Normative Addendum 1"><a id="idp15892256"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="idm269986309936"></a><p><span class="title"><em>
 	<a class="link" href="http://www.lysator.liu.se/c/na1.html" target="_top">
       A brief description of Normative Addendum 1
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Clive</span> <span class="surname">Feather</span>. </span><span class="pagenums">Extended Character Sets. </span></p></div><div class="biblioentry" title="The Unicode HOWTO"><a id="idp15895504"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Clive</span> <span class="surname">Feather</span>. </span><span class="pagenums">Extended Character Sets. </span></p></div><div class="biblioentry"><a id="idm269986306688"></a><p><span class="title"><em>
 	<a class="link" href="http://tldp.org/HOWTO/Unicode-HOWTO.html" target="_top">
 	  The Unicode HOWTO
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Bruno</span> <span class="surname">Haible</span>. </span></p></div><div class="biblioentry" title="UTF-8 and Unicode FAQ for Unix/Linux"><a id="idp15898288"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Bruno</span> <span class="surname">Haible</span>. </span></p></div><div class="biblioentry"><a id="idm269986303904"></a><p><span class="title"><em>
 	<a class="link" href="http://www.cl.cam.ac.uk/~mgk25/unicode.html" target="_top">
       UTF-8 and Unicode FAQ for Unix/Linux
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Markus</span> <span class="surname">Khun</span>. </span></p></div></div></div><div class="section" title="messages"><div class="titlepage"><div><div><h3 class="title"><a id="manual.localization.facet.messages"></a>messages</h3></div></div></div><p>
+      </em>. </span><span class="author"><span class="firstname">Markus</span> <span class="surname">Khun</span>. </span></p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.localization.facet.messages"></a>messages</h3></div></div></div><p>
 The std::messages facet implements message retrieval functionality
 equivalent to Java's java.text.MessageFormat .using either GNU gettext
 or IEEE 1003.1-200 functions.
-</p><div class="section" title="Requirements"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.req"></a>Requirements</h4></div></div></div><p>
+</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.req"></a>Requirements</h4></div></div></div><p>
 The std::messages facet is probably the most vaguely defined facet in
 the standard library. It's assumed that this facility was built into
 the standard library in order to convert string literals from one
@@ -502,7 +501,7 @@ be found, returns dfault.
 -6- Effects: Releases unspecified resources associated with cat.
 -7- Notes: The limit on such resources, if any, is implementation-defined.
 </em></span>
-</p></blockquote></div></div><div class="section" title="Design"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.design"></a>Design</h4></div></div></div><p>
+</p></blockquote></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.design"></a>Design</h4></div></div></div><p>
 A couple of notes on the standard.
 </p><p>
 First, why is <code class="code">messages_base::catalog</code> specified as a typedef
@@ -535,7 +534,7 @@ It is implicitly assumed that the locale for the default message
 string in 'get' is in the "C" locale. Thus, all source code is assumed
 to be written in English, so translations are always from "en_US" to
 other, explicitly named locales.
-</p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.impl"></a>Implementation</h4></div></div></div><div class="section" title="Models"><div class="titlepage"><div><div><h5 class="title"><a id="messages.impl.models"></a>Models</h5></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.impl"></a>Implementation</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="messages.impl.models"></a>Models</h5></div></div></div><p>
     This is a relatively simple class, on the face of it. The standard
     specifies very little in concrete terms, so generic
     implementations that are conforming yet do very little are the
@@ -546,7 +545,7 @@ other, explicitly named locales.
   </p><p>
     Three different mechanisms have been provided, selectable via
     configure flags:
-  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
        generic
      </p><p>
        This model does very little, and is what is used by default.
@@ -576,7 +575,7 @@ A new, standards-conformant non-virtual member function signature was
 added for 'open' so that a directory could be specified with a given
 message catalog. This simplifies calling conventions for the gnu
 model.
-</p></div><div class="section" title="The GNU Model"><div class="titlepage"><div><div><h5 class="title"><a id="messages.impl.gnu"></a>The GNU Model</h5></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="messages.impl.gnu"></a>The GNU Model</h5></div></div></div><p>
     The messages facet, because it is retrieving and converting
     between characters sets, depends on the ctype and perhaps the
     codecvt facet in a given locale. In addition, underlying "C"
@@ -588,7 +587,7 @@ model.
     Making the message catalogs can be initially tricky, but become
     quite simple with practice. For complete info, see the gettext
     documentation. Here's an idea of what is required:
-  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
        Make a source file with the required string literals that need
        to be translated. See <code class="code">intl/string_literals.cc</code> for
        an example.
@@ -619,7 +618,7 @@ model.
    <code class="code">
    use_facet&lt;messages&lt;char&gt; &gt;(loc_de).open("libstdc++", locale(), dir);
    </code>
-   </p></li></ul></div></div></div><div class="section" title="Use"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.use"></a>Use</h4></div></div></div><p>
+   </p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.use"></a>Use</h4></div></div></div><p>
    A simple example using the GNU model of message conversion.
  </p><pre class="programlisting">
 #include &lt;iostream&gt;
@@ -641,9 +640,9 @@ void test01()
   cout &lt;&lt; "thank you in german:" &lt;&lt; s02 &lt;&lt; '\n';
   mssg_de.close(cat_de);
 }
-</pre></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
     Things that are sketchy, or remain unimplemented:
-  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 	  _M_convert_from_char, _M_convert_to_char are in flux,
 	  depending on how the library ends up doing character set
 	  conversions. It might not be possible to do a real character
@@ -691,39 +690,39 @@ void test01()
    model. As of this writing, it is unknown how to query to see
    if a specified message catalog exists using the gettext
    package.
-   </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idp15979248"></a><p><span class="citetitle"><em class="citetitle">
+   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269986223488"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
     </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling, and 7 Locales and Internationalization
-    . </span></p></div><div class="biblioentry"><a id="idp15984000"></a><p><span class="citetitle"><em class="citetitle">
+    . </span></p></div><div class="biblioentry"><a id="idm269986218736"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idp15987088"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269986215648"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idp15989376"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269986213360"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)"><a id="idp15991648"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269986211088"></a><p><span class="title"><em>
 	<a class="link" href="http://www.opengroup.org/austin" target="_top">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</a>
       </em>. </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry"><a id="idp15994880"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></p></div><div class="biblioentry"><a id="idm269986207856"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idp15999504"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269986203232"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry" title="API Specifications, Java Platform"><a id="idp16005168"></a><p><span class="title"><em>
-	<a class="link" href="http://java.sun.com/reference/api/index.html" target="_top">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269986197568"></a><p><span class="title"><em>
+	<a class="link" href="http://www.oracle.com/technetwork/java/api/index.html" target="_top">
 	API Specifications, Java Platform
 	</a>
       </em>. </span><span class="pagenums">java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle
-    . </span></p></div><div class="biblioentry" title="GNU gettext tools, version 0.10.38, Native Language Support Library and Tools."><a id="idp16007504"></a><p><span class="title"><em>
+    . </span></p></div><div class="biblioentry"><a id="idm269986195232"></a><p><span class="title"><em>
 	<a class="link" href="http://www.gnu.org/software/gettext" target="_top">
       GNU gettext tools, version 0.10.38, Native Language Support
       Library and Tools.

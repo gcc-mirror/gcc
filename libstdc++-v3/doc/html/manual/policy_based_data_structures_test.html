@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section" title="Testing"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section" title="Regression"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;&#9;ISO C++&#10;      , &#10;&#9;policy&#10;      , &#10;&#9;container&#10;      , &#10;&#9;data&#10;      , &#10;&#9;structure&#10;      , &#10;&#9;associated&#10;      , &#10;&#9;tree&#10;      , &#10;&#9;trie&#10;      , &#10;&#9;hash&#10;      , &#10;&#9;metaprogramming&#10;      " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
     For a given container type in this library, the test creates
     an object of the container type and an object of the
     corresponding standard type (e.g., <code class="classname">std::set</code>). It
@@ -23,9 +22,9 @@
     configured to use this allocator.</p><p>For granularity, the test is split into the
     several sources, each checking only some containers.</p><p>For more details, consult the files in
     <code class="filename">testsuite/ext/pb_ds/regression</code>.
-    </p></div><div class="section" title="Performance"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.performance"></a>Performance</h3></div></div></div><div class="section" title="Hash-Based"><div class="titlepage"><div><div><h4 class="title"><a id="performance.hash"></a>Hash-Based</h4></div></div></div><p></p><div class="section" title="Text find"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.text_find"></a>
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.performance"></a>Performance</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="performance.hash"></a>Hash-Based</h4></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.text_find"></a>
 	  Text <code class="function">find</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>
 	    This test inserts a number of values with keys from an
@@ -41,7 +40,7 @@
 	    <code class="filename">filethirty_years_among_the_dead_preproc.txt</code>
 	  </p><p>The test checks the effect of different range-hashing
 	  functions, trigger policies, and cache-hashing policies.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for the native
 	  and collision-chaining hash types the the function
@@ -144,7 +143,7 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.text_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this setting, the range-hashing scheme affects performance
 	  more than other policies. As the results show, containers using
@@ -159,9 +158,9 @@
 	  library's implementation. (Unfortunately, it was not possible to run
 	  the tests with <code class="classname">std::tr1::unordered_map</code> 's
 	  <code class="classname">cache_hash_code = true</code> , as it appeared to
-	  malfuntion.)</p></div></div><div class="section" title="Integer find"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_find"></a>
+	  malfuntion.)</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_find"></a>
 	  Integer <code class="function">find</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with uniform
 	  integer keys into a container, then performs a series of finds
@@ -172,7 +171,7 @@
 	    <code class="filename">performance/ext/pb_ds/random_int_find_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying
 	  hash-tables,
-	  range-hashing functions, and trigger policies.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.results"></a>
+	  range-hashing functions, and trigger policies.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>
 	    There are two sets of results for this type, one for
@@ -345,7 +344,7 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this setting, the choice of underlying hash-table affects
 	  performance most, then the range-hashing scheme and, only finally,
@@ -361,9 +360,9 @@
 	  above graphics should be noted that
 	  <code class="classname">std::tr1::unordered_map</code> are hard-wired
 	  currently to mod-based schemes.
-	  </p></div></div><div class="section" title="Integer Subscript find"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_subscript_find"></a>
+	  </p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_subscript_find"></a>
 	  Integer Subscript <code class="function">find</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with uniform
 	  integer keys into a container, then performs a series of finds
@@ -373,7 +372,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/random_int_subscript_find_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying
-	  hash-tables, range-hashing functions, and trigger policies.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.results"></a>
+	  hash-tables, range-hashing functions, and trigger policies.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>
 	    There are two sets of results for this type, one for
@@ -545,12 +544,12 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>This test shows similar results to Hash-Based
-	  Integer <code class="classname">find</code> Find Timing test.</p></div></div><div class="section" title="Integer Subscript insert"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_subscript_insert"></a>
+	  Integer <code class="classname">find</code> Find Timing test.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.int_subscript_insert"></a>
 	  Integer Subscript <code class="function">insert</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with uniform i.i.d.
 	  integer keys into a container, using
@@ -560,7 +559,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/random_int_subscript_insert_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying
-	  hash-tables.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.results"></a>
+	  hash-tables.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.results"></a>
 	    Results
 	  </h6></div></div></div><p>
 	    There are two sets of results for this type, one for
@@ -732,7 +731,7 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.int_subscript_insert.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this setting, as in Hash-Based Text
 	  <code class="function">find</code> Find Timing test and Hash-Based
@@ -761,9 +760,9 @@
 	    <code class="function">find</code> Find Timing Test and Hash-Based
 	    Integer <code class="function">find</code> Find Timing Test.
 	    Unsurprisingly, however, containers with lower α<sub>max</sub> perform worse in this case,
-	  since more re-hashes are performed.</p></div></div><div class="section" title="Integer find with Skewed-Distribution"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.zlob_int_find"></a>
+	  since more re-hashes are performed.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.zlob_int_find"></a>
 	  Integer <code class="function">find</code> with Skewed-Distribution
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with a markedly
 	  non-uniform integer keys into a container, then performs
@@ -774,7 +773,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc</code>
 	  </p><p>The test checks the effect of different range-hashing
-	  functions and trigger policies.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.results"></a>
+	  functions and trigger policies.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for the native, collision-chaining, and general-probing hash types.
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_hash_zlob_int_find.png" align="middle" /></div></div><p>
@@ -857,7 +856,7 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.zlob_int_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this setting, the distribution of keys is so skewed that
 	  the underlying hash-table type affects performance marginally.
@@ -884,9 +883,9 @@
 	  performance is bad, a χ<sup>2</sup> test can be used
 	  to check how to transform it into a more uniform
 	  distribution.</p><p>For this reason, this library's default range-hashing
-	  function is mask-based.</p></div></div><div class="section" title="Erase Memory Use"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.erase_mem"></a>
+	  function is mask-based.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.hash.erase_mem"></a>
 	  Erase Memory Use
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of uniform integer keys
 	  into a container, then erases all keys except one. It measures
@@ -894,7 +893,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc</code>
 	  </p><p>The test checks how containers adjust internally as their
-	  logical size decreases.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.results"></a>
+	  logical size decreases.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for the native, collision-chaining, and general-probing hash types.
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_hash_int_erase_mem.png" align="middle" /></div></div><p>
@@ -977,7 +976,7 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="hash.erase_mem.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>The standard's hash-based containers act very differently than trees in
 	  this respect. When erasing numerous keys from an standard
@@ -985,9 +984,9 @@
 	  depending on whether the container is tree-based or hash-based.
 	  This is a fundamental consequence of the standard's interface for
 	  associative containers, and it is not due to a specific
-	  implementation.</p></div></div></div><div class="section" title="Branch-Based"><div class="titlepage"><div><div><h4 class="title"><a id="performance.branch"></a>Branch-Based</h4></div></div></div><p></p><div class="section" title="Text insert"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_insert"></a>
+	  implementation.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="performance.branch"></a>Branch-Based</h4></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_insert"></a>
 	  Text <code class="function">insert</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an arbitrary
 	  text ([ wickland96thirty ]) into a container
@@ -997,7 +996,7 @@
 	  data structures.</p><p>
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/tree_text_insert_timing.cc</code>
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.results"></a>
 	    Results
 	  </h6></div></div></div><p>The three graphics below show the results for the native
 	  tree and this library's node-based trees, the native tree and
@@ -1078,7 +1077,7 @@
 		    <code class="classname">Node_update</code>
 		  </td><td align="left">
 		    <code class="classname">null_node_update</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>Observing the first graphic implies that for this setting, a splay tree
 	  (<code class="classname">tree</code> with <code class="classname">Tag
@@ -1098,9 +1097,9 @@
 	  encountered, a new "hash-table" is built A large fan-out PATRICIA
 	  trie, however, doe does well in look-ups (see Branch-Based
 	  Text <code class="function">find</code> Find Timing Test). It may be
-	  beneficial in semi-static settings.</p></div></div><div class="section" title="Text find"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_find"></a>
+	  beneficial in semi-static settings.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_find"></a>
 	  Text <code class="function">find</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([wickland96thirty]) into
@@ -1111,7 +1110,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/text_find_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying
-	  data structures.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.results"></a>
+	  data structures.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native tree type and several other tree types.
@@ -1170,7 +1169,7 @@
 		    <code class="classname">Node_Update</code>
 		  </td><td align="left">
 		    <code class="classname">null_node_update</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>For this setting, a splay tree (<code class="classname">tree</code>
 	  with <code class="classname">Tag
@@ -1203,9 +1202,9 @@
 	  by a sub-trie. A large-fan-out PATRICIA trie does not do well on
 	  modifications (see Tree-Based and Trie-Based
 	  Text Insert Timing Test). Therefore, it is possibly beneficial in
-	  semi-static settings.</p></div></div><div class="section" title="Text find with Locality-of-Reference"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_lor_find"></a>
+	  semi-static settings.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.text_lor_find"></a>
 	  Text <code class="function">find</code> with Locality-of-Reference
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -1219,7 +1218,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/tree_text_lor_find_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying
-	  data structures in a locality-of-reference setting.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.results"></a>
+	  data structures in a locality-of-reference setting.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native tree type and several other tree types.
@@ -1278,7 +1277,7 @@
 		    <code class="classname">Node_Update</code>
 		  </td><td align="left">
 		    <code class="classname">null_node_update</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>For this setting, an ordered-vector tree
 	  (<code class="classname">tree</code> with <code class="classname">Tag</code>
@@ -1288,9 +1287,9 @@
 	  tree all share approximately the same performance.</p><p>A splay tree (<code class="classname">tree</code>
 	  with <code class="classname">Tag</code> = <code class="classname">splay_tree_tag</code>) does
 	  much better, since each (successful) find "bubbles" the
-	  corresponding node to the root of the tree.</p></div></div><div class="section" title="split and join"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.split_join"></a>
+	  corresponding node to the root of the tree.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.split_join"></a>
 	  <code class="function">split</code> and <code class="function">join</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test a container, inserts into a number of values, splits
 	  the container at the median, and joins the two containers. (If the
@@ -1307,7 +1306,7 @@
 	  implication, this test checks the most efficient way to erase a
 	  sub-sequence from a tree-like-based container, since this can
 	  always be performed by a small sequence of splits and joins.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native tree type and several other tree types.
@@ -1366,7 +1365,7 @@
 		    <code class="classname">Node_Update</code>
 		  </td><td align="left">
 		    <code class="classname">null_node_update</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.split_join.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this test, the native red-black trees must be split and
 	  joined externally, through a sequence of <code class="function">erase</code> and
@@ -1393,9 +1392,9 @@
 	  via <code class="classname">container_traits</code>).</p><p>It is important to note that <code class="function">split</code> and
 	  <code class="function">join</code> are not esoteric methods - they are the most
 	  efficient means of erasing a contiguous range of values from a
-	  tree based container.</p></div></div><div class="section" title="Order-Statistics"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.order_statistics"></a>
+	  tree based container.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.branch.order_statistics"></a>
 	  Order-Statistics
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test creates a container, inserts random integers into the
 	  the container, and then checks the order-statistics of the
@@ -1410,7 +1409,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/tree_order_statistics_timing.cc</code>
 	  </p><p>The test checks the performance difference of policies based
-	  on node-invariant as opposed to a external functions.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.results"></a>
+	  on node-invariant as opposed to a external functions.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native tree type and several other tree types.
@@ -1445,7 +1444,7 @@
 		    <code class="classname">Node_Update</code>
 		  </td><td align="left">
 		    <code class="classname">tree_order_statistics_node_update</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.order_statistics.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this test, the native red-black tree can support
 	  order-statistics queries only externally, by performing a
@@ -1462,9 +1461,9 @@
 	  tree (<code class="classname">tree</code>
 	  with <code class="classname">Tag =</code> <code class="classname">rb_tree_tag</code> ) is
 	  logarithmic in the number of elements. Consequently, the splay
-	  tree has worse performance than the red-black tree.</p></div></div></div><div class="section" title="Multimap"><div class="titlepage"><div><div><h4 class="title"><a id="performance.multimap"></a>Multimap</h4></div></div></div><p></p><div class="section" title="Text find with Small Secondary-to-Primary Key Ratios"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_find_small"></a>
+	  tree has worse performance than the red-black tree.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="performance.multimap"></a>Multimap</h4></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_find_small"></a>
 	  Text <code class="function">find</code> with Small Secondary-to-Primary Key Ratios 
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -1483,7 +1482,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_find_timing_small.cc</code>
 	  </p><p>The test checks the find-time scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -1631,12 +1630,12 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_small.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div><div class="section" title="Text find with Large Secondary-to-Primary Key Ratios"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_find_large"></a>
+	  Considerations.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_find_large"></a>
 	  Text <code class="function">find</code> with Large Secondary-to-Primary Key Ratios 
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -1654,7 +1653,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_find_timing_large.cc</code>
 	  </p><p>The test checks the find-time scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -1802,13 +1801,13 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_find_large.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div><div class="section" title="Text insert with Small Secondary-to-Primary Key Ratios"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_small"></a>
+	  Considerations.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_small"></a>
 	  Text <code class="function">insert</code> with Small
 	  Secondary-to-Primary Key Ratios
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -1828,7 +1827,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_insert_timing_small.cc</code>
 	  </p><p>The test checks the insert-time scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -1976,13 +1975,13 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_small.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div><div class="section" title="Text insert with Small Secondary-to-Primary Key Ratios"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_large"></a>
+	  Considerations.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_large"></a>
 	  Text <code class="function">insert</code> with Small
 	  Secondary-to-Primary Key Ratios
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -2002,7 +2001,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_insert_timing_large.cc</code>
 	  </p><p>The test checks the insert-time scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -2150,13 +2149,13 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_large.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div><div class="section" title="Text insert with Small Secondary-to-Primary Key Ratios Memory Use"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_mem_small"></a>
+	  Considerations.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_mem_small"></a>
 	  Text <code class="function">insert</code> with Small
 	  Secondary-to-Primary Key Ratios Memory Use
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -2171,7 +2170,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_insert_mem_usage_small.cc</code>
 	  </p><p>The test checks the memory scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -2319,13 +2318,13 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_small.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div><div class="section" title="Text insert with Small Secondary-to-Primary Key Ratios Memory Use"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_mem_large"></a>
+	  Considerations.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.multimap.text_insert_mem_large"></a>
 	  Text <code class="function">insert</code> with Small
 	  Secondary-to-Primary Key Ratios Memory Use
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
@@ -2340,7 +2339,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/multimap_text_insert_mem_usage_large.cc</code>
 	  </p><p>The test checks the memory scalability of different
-	  "multimap" designs.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.results"></a>
+	  "multimap" designs.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic below show the results for "multimaps" which
 	  use a tree-based container for primary keys.
@@ -2488,12 +2487,12 @@
 		  </td><td align="left">
 		    <code class="classname">hash_load_check_resize_trigger</code> with
 		    α<sub>min</sub> = 1/8 and α<sub>max</sub> = 1/2
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="multimap.text_insert_mem_large.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>See Observations::Mapping-Semantics
-	  Considerations.</p></div></div></div><div class="section" title="Priority Queue"><div class="titlepage"><div><div><h4 class="title"><a id="performance.priority_queue"></a>Priority Queue</h4></div></div></div><div class="section" title="Text push"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_push"></a>
+	  Considerations.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="performance.priority_queue"></a>Priority Queue</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_push"></a>
 	  Text <code class="function">push</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -2504,7 +2503,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_text_push_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.results"></a>
 	    Results
 	  </h6></div></div></div><p>The two graphics below show the results for the native
 	  priority_queues and this library's priority_queues.
@@ -2609,7 +2608,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>Pairing heaps (<code class="classname">priority_queue</code> with
 	  <code class="classname">Tag</code> = <code class="classname">pairing_heap_tag</code>)
@@ -2627,9 +2626,9 @@
 	  operation, and the deque implementation is possibly hampered by
 	  its need to manipulate a relatively-complex type (deques
 	  support a O(1) <code class="function">push_front</code>, even though it is
-	  not used by <code class="classname">std::priority_queue</code>.)</p></div></div><div class="section" title="Text push and pop"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_push_pop"></a>
+	  not used by <code class="classname">std::priority_queue</code>.)</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_push_pop"></a>
 	  Text <code class="function">push</code> and <code class="function">pop</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -2640,7 +2639,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_text_push_pop_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.results"></a>
 	    Results
 	  </h6></div></div></div><p>The two graphics below show the results for the native
 	  priority_queues and this library's priority_queues.
@@ -2737,7 +2736,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_push_pop.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>These results are very similar to Priority Queue Text
 	  <code class="function">push</code> Timing Test. As stated there, pairing heaps
@@ -2757,9 +2756,9 @@
 	  of <code class="function">push</code> operations, pairing heaps are better
 	  in this case. See Priority Queue Random
 	  Integer <code class="function">push</code> and <code class="function">pop</code>
-	  Timing Test for a case which is different.</p></div></div><div class="section" title="Integer push"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.int_push"></a>
+	  Timing Test for a case which is different.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.int_push"></a>
 	  Integer <code class="function">push</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with integer keys
 	  into a container using <code class="function">push</code>. It
@@ -2769,7 +2768,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_random_int_push_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.results"></a>
 	    Results
 	  </h6></div></div></div><p>The two graphics below show the results for the native
 	  priority_queues and this library's priority_queues.
@@ -2866,7 +2865,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">binary_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>Binary heaps are the most suited for sequences of
 	  <code class="function">push</code> and <code class="function">pop</code> operations of primitive types
@@ -2875,9 +2874,9 @@
 	  such types in arrays, they outperform even pairing heaps. (See
 	  Priority
 	  Queue Text <code class="function">push</code> Timing Test for the case of
-	  non-primitive types.)</p></div></div><div class="section" title="Integer push"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.int_push_pop"></a>
+	  non-primitive types.)</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.int_push_pop"></a>
 	  Integer <code class="function">push</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with integer keys
 	  into a container using <code class="function">push</code> , then removes them
@@ -2888,7 +2887,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_random_int_push_pop_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native priority_queue type instantiated with different underlying
@@ -2953,7 +2952,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.int_push_pop.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>Binary heaps are the most suited for sequences of
 	  <code class="function">push</code> and <code class="function">pop</code> operations of primitive types
@@ -2975,9 +2974,9 @@
 	    the number of
 	    <code class="function">pop</code> operations is at most that of <code class="function">push</code>
 	    operations, the test here is the "best" for the standard's
-	    priority queue.</p></li></ol></div></div></div><div class="section" title="Text pop Memory Use"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_pop"></a>
+	    priority queue.</p></li></ol></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_pop"></a>
 	  Text <code class="function">pop</code> Memory Use
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -2988,7 +2987,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_text_pop_mem_usage.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native priority_queue type instantiated with different underlying
@@ -3053,7 +3052,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_pop.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>The priority queue implementations (excluding the standard's) use
 	  memory proportionally to the number of values they hold:
@@ -3066,9 +3065,9 @@
 	  impede performance compared to the standard's priority
 	  queues.</p><p>See Hash-Based Erase
 	  Memory Use Test for a similar phenomenon regarding priority
-	  queues.</p></div></div><div class="section" title="Text join"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_join"></a>
+	  queues.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_join"></a>
 	  Text <code class="function">join</code>
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -3081,7 +3080,7 @@
 	    <code class="filename">performance/ext/pb_ds/priority_queue_text_join_timing.cc</code>
 	  </p><p>The test checks the effect of different underlying data
 	  structures.
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.results"></a>
 	    Results
 	  </h6></div></div></div><p>The graphic immediately below shows the results for the
 	  native priority_queue type instantiated with different underlying
@@ -3146,7 +3145,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_join.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>In this test the node-based heaps perform <code class="function">join</code> in
 	  either logarithmic or constant time. The binary heap requires
@@ -3158,9 +3157,9 @@
 	  and <code class="function">size()</code> (since they are enough to expose
 	  the underlying array), but this is impossible for
 	  a <code class="classname">std::deque</code>-based standard priority queue.
-	  Without heapify, the cost is super-linear.</p></div></div><div class="section" title="Text modify Up"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_modify_up"></a>
+	  Without heapify, the cost is super-linear.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_modify_up"></a>
 	  Text <code class="function">modify</code> Up
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -3178,7 +3177,7 @@
 	  arbitrary value larger (in the sense of the priority queue's
 	  comparison functor) corresponds to decrease-key in standard graph
 	  algorithms [clrs2001].
-	  </p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.results"></a>
+	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.results"></a>
 	    Results
 	  </h6></div></div></div><p>The two graphics below show the results for the native
 	  priority_queues and this library's priority_queues.
@@ -3267,7 +3266,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_up.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>As noted above, increasing an arbitrary value (in the sense of
 	  the priority queue's comparison functor) is very common in
@@ -3295,9 +3294,9 @@
 	  finding the appropriate value, then use the range-type iterator
 	  for the <code class="function">modify</code> operation.</p><p>The explanation for the standard's priority queues' performance
 	  is similar to that in Priority Queue Text
-	  <code class="function">join</code> Timing Test.</p></div></div><div class="section" title="Text modify Down"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_modify_down"></a>
+	  <code class="function">join</code> Timing Test.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="performance.priority_queue.text_modify_down"></a>
 	  Text <code class="function">modify</code> Down
-	</h5></div></div></div><p></p><div class="section" title="Description"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.info"></a>
+	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
@@ -3311,7 +3310,7 @@
 	    It uses the test file:
 	    <code class="filename">performance/ext/pb_ds/priority_queue_text_modify_down_timing.cc</code>
 	  </p><p>The main purpose of this test is to contrast Priority Queue
-	  Text <code class="classname">modify</code> Up Timing Test.</p></div><div class="section" title="Results"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.results"></a>
+	  Text <code class="classname">modify</code> Up Timing Test.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.results"></a>
 	    Results
 	  </h6></div></div></div><p>The two graphics below show the results for the native
 	  priority_queues and this library's priority_queues.
@@ -3400,7 +3399,7 @@
 		    <code class="classname">Tag</code>
 		  </td><td align="left">
 		    <code class="classname">pairing_heap_tag</code>
-		  </td></tr></tbody></table></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.observations"></a>
+		  </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="priority_queue.text_modify_down.observations"></a>
 	    Observations
 	  </h6></div></div></div><p>Most points in these results are similar to Priority Queue
 	  Text <code class="function">modify</code> Up Timing Test.</p><p>It is interesting to note, however, that as opposed to that
@@ -3415,7 +3414,7 @@
 	  (in the sense of the priority queue's comparison functor), and
 	  so Priority Queue
 	  Text <code class="classname">modify</code> Up Timing Test - is more interesting
-	  than this test.</p></div></div></div><div class="section" title="Observations"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.test.performance.observations"></a>Observations</h4></div></div></div><div class="section" title="Associative"><div class="titlepage"><div><div><h5 class="title"><a id="observations.associative"></a>Associative</h5></div></div></div><div class="section" title="Underlying Data-Structure Families"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.underlying"></a>
+	  than this test.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.test.performance.observations"></a>Observations</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="observations.associative"></a>Associative</h5></div></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.underlying"></a>
 	    Underlying Data-Structure Families
 	  </h6></div></div></div><p>In general, hash-based containers have better timing performance
 	  than containers based on different underlying-data structures. The
@@ -3424,7 +3423,7 @@
 	  order-preservation, or the ability to utilize node invariants. If
 	  memory-use is the major factor, an ordered-vector tree gives
 	  optimal results (albeit with high modificiation costs), and a
-	  list-based container gives reasonable results.</p></div><div class="section" title="Hash-Based Containers"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.hash"></a>
+	  list-based container gives reasonable results.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.hash"></a>
 	    Hash-Based Containers
 	  </h6></div></div></div><p>Hash-based containers are typically either collision
 	  chaining or probing. Collision-chaining
@@ -3439,7 +3438,7 @@
 	  useful also in multithreaded applications where each thread
 	  manipulates a hash-based container: in the standard, allocators have
 	  class-wise semantics (see [meyers96more] - Item 10); a
-	  probing container might incur less contention in this case.</p></div><div class="section" title="Hash Policies"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.hash_policies"></a>
+	  probing container might incur less contention in this case.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.hash_policies"></a>
 	    Hash Policies
 	  </h6></div></div></div><p>In hash-based containers, the range-hashing scheme seems to
 	  affect performance more than other considerations. In most
@@ -3458,7 +3457,7 @@
 	  function.</p><p>An orthogonal consideration is the trigger policy. This
 	  presents difficult tradeoffs. E.g., different load
 	  factors in a load-check trigger policy yield a
-	  space/amortized-cost tradeoff.</p></div><div class="section" title="Branch-Based Containers"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.branch"></a>
+	  space/amortized-cost tradeoff.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.branch"></a>
 	    Branch-Based Containers
 	  </h6></div></div></div><p>In general, there are several families of tree-based
 	  underlying data structures: balanced node-based trees
@@ -3505,7 +3504,7 @@
 	  maintaining such trees is higher than that of balanced trees.
 	  Moderate-fan-out trees might be useful for sequences where each
 	  element has a limited number of choices, e.g., DNA
-	  strings.</p></div><div class="section" title="Mapping-Semantics"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.mapping_semantics"></a>
+	  strings.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.associative.mapping_semantics"></a>
 	    Mapping-Semantics
 	  </h6></div></div></div><p>Different mapping semantics were discussed in the introduction and design sections.Here
 	  the focus will be on the case where a keys can be composed into
@@ -3585,7 +3584,7 @@
 	  but with very high constants; using 1 with a tree-based
 	  container, the cost is Θ(nlog(mn)). Using 2, 3,
 	  and 4, the expected cost is Θ(n), but typically
-	  with far lower costs than 1. 5 is similar to 1.</p></div></div><div class="section" title="Priority_Queue"><div class="titlepage"><div><div><h5 class="title"><a id="observations.priority_queue"></a>Priority_Queue</h5></div></div></div><div class="section" title="Complexity"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.complexity"></a>Complexity</h6></div></div></div><p>The following table shows the complexities of the different
+	  with far lower costs than 1. 5 is similar to 1.</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="observations.priority_queue"></a>Priority_Queue</h5></div></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.complexity"></a>Complexity</h6></div></div></div><p>The following table shows the complexities of the different
 	  underlying data structures in terms of orders of growth. It is
 	  interesting to note that this table implies something about the
 	  constants of the operations as well (see Amortized <code class="function">push</code>
@@ -3709,7 +3708,7 @@
 	  of the priority queue's comparison functor), then the amortized
 	  time is O(1), but if II) it decreases it, then the
 	  amortized time is the same as the worst case time. Note that
-	  for most algorithms, I) is important and II) is not.</p></div><div class="section" title="Amortized push and pop operations"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.amortized_ops"></a>
+	  for most algorithms, I) is important and II) is not.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.amortized_ops"></a>
 	    Amortized <code class="function">push</code>
 	    and <code class="function">pop</code> operations
 	  </h6></div></div></div><p>In many cases, a priority queue is needed primarily for
@@ -3739,7 +3738,7 @@
 	    Queue Random Integer <code class="function">push</code> Timing Test and
 	    Priority
 	    Queue Random Integer <code class="function">push</code> and <code class="function">pop</code> Timing
-	    Test.</p></li></ol></div></div><div class="section" title="Graph Algorithms"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.graphs"></a>
+	    Test.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="observations.priority_queue.graphs"></a>
 	    Graph Algorithms
 	  </h6></div></div></div><p>In some graph algorithms, a decrease-key operation is
 	  required [clrs2001];

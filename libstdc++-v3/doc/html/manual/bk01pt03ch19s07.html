@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Diagnostics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="profile_mode.html" title="Chapter 19. Profile Mode" /><link rel="prev" href="bk01pt03ch19s06.html" title="Developer Information" /><link rel="next" href="mt_allocator.html" title="Chapter 20. The mt_allocator" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch19s06.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="mt_allocator.html">Next</a></td></tr></table><hr /></div><div class="section" title="Diagnostics"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.diagnostics"></a>Diagnostics</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Diagnostics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="profile_mode.html" title="Chapter 19. Profile Mode" /><link rel="prev" href="bk01pt03ch19s06.html" title="Developer Information" /><link rel="next" href="mt_allocator.html" title="Chapter 20. The mt_allocator" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt03ch19s06.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="mt_allocator.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.diagnostics"></a>Diagnostics</h2></div></div></div><p>
   The table below presents all the diagnostics we intend to implement.
   Each diagnostic has a corresponding compile time switch
   <code class="code">-D_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
@@ -18,7 +17,7 @@
   A high accuracy means that the diagnostic is unlikely to be wrong.
   These grades are not perfect.  They are just meant to guide users with
   specific needs or time budgets.
-  </p><div class="table"><a id="idp17050544"></a><p class="title"><strong>Table 19.2. Profile Diagnostics</strong></p><div class="table-contents"><table summary="Profile Diagnostics" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th><td class="auto-generated"> </td></tr></thead><tbody><tr><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.containers" title="Containers">
+  </p><div class="table"><a id="idm269985157968"></a><p class="title"><strong>Table 19.2. Profile Diagnostics</strong></p><div class="table-contents"><table summary="Profile Diagnostics" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th><td class="auto-generated"> </td></tr></thead><tbody><tr><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.containers" title="Containers">
     CONTAINERS</a></td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.hashtable_too_small" title="Hashtable Too Small">
     HASHTABLE_TOO_SMALL</a></td><td align="left">10</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.hashtable_too_large" title="Hashtable Too Large">
     HASHTABLE_TOO_LARGE</a></td><td align="left">5</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.inefficient_hash" title="Inefficient Hash">
@@ -35,7 +34,7 @@
     LOCALITY</a></td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.locality.sw_prefetch" title="Need Software Prefetch">
     SOFTWARE_PREFETCH</a></td><td align="left">8</td><td align="left">8</td><td align="left"> </td><td align="left">5</td><td align="left">no</td></tr><tr><td align="left"> </td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.locality.linked" title="Linked Structure Locality">
     RBTREE_LOCALITY</a></td><td align="left">4</td><td align="left">8</td><td align="left"> </td><td align="left">5</td><td align="left">no</td></tr><tr><td align="left"> </td><td align="left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.mthread.false_share" title="False Sharing">
-    FALSE_SHARING</a></td><td align="left">8</td><td align="left">10</td><td align="left"> </td><td align="left">10</td><td align="left">no</td></tr></tbody></table></div></div><br class="table-break" /><div class="section" title="Diagnostic Template"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.template"></a>Diagnostic Template</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+    FALSE_SHARING</a></td><td align="left">8</td><td align="left">10</td><td align="left"> </td><td align="left">10</td><td align="left">no</td></tr></tbody></table></div></div><br class="table-break" /><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.template"></a>Diagnostic Template</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>  What problem will it diagnose?
   </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>.
@@ -52,10 +51,10 @@ program code
 ...
 advice sample
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Containers"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.containers"></a>Containers</h3></div></div></div><p>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.containers"></a>Containers</h3></div></div></div><p>
 <span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_CONTAINERS</code>.
-</p><div class="section" title="Hashtable Too Small"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_small"></a>Hashtable Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_small"></a>Hashtable Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TOO_SMALL</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with many
   rehash operations, small construction size and large destruction size.
@@ -81,7 +80,7 @@ advice sample
 
 foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1025530 rehash operations.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Hashtable Too Large"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_large"></a>Hashtable Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_large"></a>Hashtable Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TOO_LARGE</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables which are
   never filled up because fewer elements than reserved are ever
@@ -110,7 +109,7 @@ foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1
 foo.cc:1: advice: Changing initial unordered_set size from 100 to 10 saves N
 bytes of memory and M iteration steps.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Inefficient Hash"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.inefficient_hash"></a>Inefficient Hash</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.inefficient_hash"></a>Inefficient Hash</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_INEFFICIENT_HASH</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with polarized
   distribution.
@@ -141,7 +140,7 @@ class dumb_hash {
     hs.find(i);
   }
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Vector Too Small"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_small"></a>Vector Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_small"></a>Vector Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TOO_SMALL</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>Detect vectors with many
   resize operations, small construction size and large destruction size..
@@ -166,7 +165,7 @@ class dumb_hash {
 foo.cc:1: advice: Changing initial vector size from 10 to 1000000 saves
 copying 4000000 bytes and 20 memory allocations and deallocations.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Vector Too Large"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_large"></a>Vector Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_large"></a>Vector Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TOO_LARGE</code>
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>Detect vectors which are
   never filled up because fewer elements than reserved are ever
@@ -192,7 +191,7 @@ copying 4000000 bytes and 20 memory allocations and deallocations.
 foo.cc:1: advice: Changing initial vector size from 100 to 10 saves N
 bytes of memory and may reduce the number of cache and TLB misses.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Vector to Hashtable"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_hashtable"></a>Vector to Hashtable</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_hashtable"></a>Vector to Hashtable</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TO_HASHTABLE</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect uses of
   <code class="code">vector</code> that can be substituted with <code class="code">unordered_set</code>
@@ -223,7 +222,7 @@ bytes of memory and may reduce the number of cache and TLB misses.
 foo.cc:1: advice: Changing "vector" to "unordered_set" will save about 500,000
 comparisons.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Hashtable to Vector"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_to_vector"></a>Hashtable to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_to_vector"></a>Hashtable to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TO_VECTOR</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect uses of
   <code class="code">unordered_set</code> that can be substituted with <code class="code">vector</code>
@@ -252,7 +251,7 @@ comparisons.
 foo.cc:1: advice: Changing "unordered_set" to "vector" will save about N
 indirections and may achieve better data locality.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Vector to List"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_list"></a>Vector to List</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_list"></a>Vector to List</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TO_LIST</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where
   <code class="code">vector</code> could be substituted with <code class="code">list</code> for
@@ -282,7 +281,7 @@ indirections and may achieve better data locality.
 foo.cc:1: advice: Changing "vector" to "list" will save about 5,000,000
 operations.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="List to Vector"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_vector"></a>List to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_vector"></a>List to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_LIST_TO_VECTOR</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where
   <code class="code">list</code> could be substituted with <code class="code">vector</code> for
@@ -309,7 +308,7 @@ operations.
 foo.cc:1: advice: Changing "list" to "vector" will save about 1000000 indirect
 memory references.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="List to Forward List (Slist)"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_slist"></a>List to Forward List (Slist)</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_slist"></a>List to Forward List (Slist)</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_LIST_TO_SLIST</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where
   <code class="code">list</code> could be substituted with <code class="code">forward_list</code> for
@@ -339,7 +338,7 @@ memory references.
 
 foo.cc:1: advice: Change "list" to "forward_list".
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Ordered to Unordered Associative Container"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"></a>Ordered to Unordered Associative Container</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"></a>Ordered to Unordered Associative Container</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_ORDERED_TO_UNORDERED</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>  Detect cases where ordered
   associative containers can be replaced with unordered ones.
@@ -366,16 +365,16 @@ foo.cc:1: advice: Change "list" to "forward_list".
 7    sum += *s.find(i);
 8  }
 </pre><p>
-</p></li></ul></div></div></div><div class="section" title="Algorithms"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.algorithms"></a>Algorithms</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.algorithms"></a>Algorithms</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_ALGORITHMS</code>.
-  </p><div class="section" title="Sort Algorithm Performance"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.algorithms.sort"></a>Sort Algorithm Performance</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.algorithms.sort"></a>Sort Algorithm Performance</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_SORT</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Give measure of sort algorithm
   performance based on actual input.  For instance, advise Radix Sort over
   Quick Sort for a particular call context.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   See papers:
-  <a class="link" href="http://portal.acm.org/citation.cfm?doid=1065944.1065981" target="_top">
+  <a class="link" href="https://dl.acm.org/citation.cfm?doid=1065944.1065981" target="_top">
   A framework for adaptive algorithm selection in STAPL</a> and
   <a class="link" href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227" target="_top">
   Optimizing Sorting with Machine Learning Algorithms</a>.
@@ -389,9 +388,9 @@ foo.cc:1: advice: Change "list" to "forward_list".
   Runtime(algo) for algo in [radix, quick, merge, ...]</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 </pre><p>
-</p></li></ul></div></div></div><div class="section" title="Data Locality"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.locality"></a>Data Locality</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.locality"></a>Data Locality</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_LOCALITY</code>.
-  </p><div class="section" title="Need Software Prefetch"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.sw_prefetch"></a>Need Software Prefetch</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.sw_prefetch"></a>Need Software Prefetch</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_SOFTWARE_PREFETCH</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Discover sequences of indirect
   memory accesses that are not regular, thus cannot be predicted by
@@ -434,7 +433,7 @@ foo.cc:1: advice: Change "list" to "forward_list".
 
 foo.cc:7: advice: Insert prefetch instruction.
 </pre><p>
-</p></li></ul></div></div><div class="section" title="Linked Structure Locality"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.linked"></a>Linked Structure Locality</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.linked"></a>Linked Structure Locality</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_RBTREE_LOCALITY</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Give measure of locality of
   objects stored in linked structures (lists, red-black trees and hashtables)
@@ -479,13 +478,13 @@ foo.cc:7: advice: Insert prefetch instruction.
 foo.cc:5: advice: High scatter score NNN for set built here.  Consider changing
 the allocation sequence or switching to a structure conscious allocator.
 </pre><p>
-</p></li></ul></div></div></div><div class="section" title="Multithreaded Data Access"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.mthread"></a>Multithreaded Data Access</h3></div></div></div><p>
+</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.mthread"></a>Multithreaded Data Access</h3></div></div></div><p>
   The diagnostics in this group are not meant to be implemented short term.
   They require compiler support to know when container elements are written
   to.  Instrumentation can only tell us when elements are referenced.
   </p><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_MULTITHREADED</code>.
-  </p><div class="section" title="Data Dependence Violations at Container Level"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.ddtest"></a>Data Dependence Violations at Container Level</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.ddtest"></a>Data Dependence Violations at Container Level</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_DDTEST</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect container elements
   that are referenced from multiple threads in the parallel region or
@@ -501,7 +500,7 @@ the allocation sequence or switching to a structure conscious allocator.
   Keep a shadow for each container.  Record iterator dereferences and
   container member accesses.  Issue advice for elements referenced by
   multiple threads.
-  See paper: <a class="link" href="http://portal.acm.org/citation.cfm?id=207110.207148" target="_top">
+  See paper: <a class="link" href="https://dl.acm.org/citation.cfm?id=207110.207148" target="_top">
   The LRPD test: speculative run-time parallelization of loops with
   privatization and reduction parallelization</a>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
@@ -509,7 +508,7 @@ the allocation sequence or switching to a structure conscious allocator.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 </pre><p>
-</p></li></ul></div></div><div class="section" title="False Sharing"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.false_share"></a>False Sharing</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.false_share"></a>False Sharing</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_FALSE_SHARING</code>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect elements in the
   same container which share a cache line, are written by at least one
@@ -542,7 +541,7 @@ OMP_NUM_THREADS=2 ./a.out
 foo.cc:1: advice: Change container structure or padding to avoid false
 sharing in multithreaded access at foo.cc:4.  Detected N shared cache lines.
 </pre><p>
-</p></li></ul></div></div></div><div class="section" title="Statistics"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.statistics"></a>Statistics</h3></div></div></div><p>
+</p></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.statistics"></a>Statistics</h3></div></div></div><p>
 <span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_STATISTICS</code>.
 </p><p>

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Linking</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_namespaces.html" title="Namespaces" /><link rel="next" href="using_concurrency.html" title="Concurrency" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Linking</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr></table><hr /></div><div class="section" title="Linking"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.linkage"></a>Linking</h2></div></div></div><div class="section" title="Almost Nothing"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.freestanding"></a>Almost Nothing</h3></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Linking</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_namespaces.html" title="Namespaces" /><link rel="next" href="using_concurrency.html" title="Concurrency" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Linking</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.linkage"></a>Linking</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.freestanding"></a>Almost Nothing</h3></div></div></div><p>
 	Or as close as it gets: freestanding. This is a minimal
 	configuration, with only partial support for the standard
 	library. Assume only the following header files can be used:
-      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	    <code class="filename">cstdarg</code>
 	  </p></li><li class="listitem"><p>
 	  <code class="filename">cstddef</code>
@@ -22,12 +21,12 @@
 	  <code class="filename">typeinfo</code>
 	  </p></li></ul></div><p>
 	In addition, throw in
-      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	  <code class="filename">cxxabi.h</code>.
 	  </p></li></ul></div><p>
 	In the
 	C++11 <a class="link" href="using.html#manual.intro.using.flags" title="Command Options">dialect</a> add
-      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	  <code class="filename">initializer_list</code>
 	  </p></li><li class="listitem"><p>
 	  <code class="filename">type_traits</code>
@@ -40,7 +39,7 @@
 	No attempt is made to verify that only the minimal subset
 	identified above is actually used at compile time. Violations
 	are diagnosed as undefined symbols at link time.
-      </p></div><div class="section" title="Finding Dynamic or Shared Libraries"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.dynamic"></a>Finding Dynamic or Shared Libraries</h3></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.dynamic"></a>Finding Dynamic or Shared Libraries</h3></div></div></div><p>
       If the only library built is the static library
       (<code class="filename">libstdc++.a</code>), or if
       specifying static linking, this section is can be skipped.  But
@@ -63,7 +62,7 @@ A quick read of the relevant part of the GCC
     </p><p>
       Methods vary for different platforms and different styles, and
       are printed to the screen during installation. To summarize:
-    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
 	  At runtime set <code class="literal">LD_LIBRARY_PATH</code> in your
 	  environment correctly, so that the shared library for
 	  libstdc++ can be found and loaded.  Be certain that you
@@ -75,7 +74,7 @@ A quick read of the relevant part of the GCC
 	  <span class="command"><strong>g++</strong></span>, which will in turn pass them on to
 	  the linker.  The exact format of the options is dependent on
 	  which linker you use:
-	</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
 	      GNU ld (default on GNU/Linux):
               <code class="literal">-Wl,-rpath,</code><code class="filename">destdir/lib</code>
 	    </p></li><li class="listitem"><p>

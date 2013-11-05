@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Macros</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_headers.html" title="Headers" /><link rel="next" href="using_namespaces.html" title="Namespaces" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Macros</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr></table><hr /></div><div class="section" title="Macros"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.macros"></a>Macros</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Macros</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_headers.html" title="Headers" /><link rel="next" href="using_namespaces.html" title="Namespaces" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Macros</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.macros"></a>Macros</h2></div></div></div><p>
      All library macros begin with <code class="code">_GLIBCXX_</code>.
    </p><p>
      Furthermore, all pre-processor macros, switches, and
@@ -18,7 +17,7 @@
       those macros listed below are offered for consideration by the
       general public.
    </p><p>Below is the macro which users may check for library version
-      information. </p><div class="variablelist"><dl><dt><span class="term"><code class="code">__GLIBCXX__</code></span></dt><dd><p>The current version of
+      information. </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">__GLIBCXX__</code></span></dt><dd><p>The current version of
     libstdc++ in compressed ISO date format, form of an unsigned
     long. For details on the value of this particular macro for a
     particular release, please consult this <a class="link" href="abi.html" title="ABI Policy and Guidelines">
@@ -40,7 +39,7 @@
   Experimenting with different values with the expectation of
   consistent linkage requires changing the config headers before
   building/installing the library.
-   </p><div class="variablelist"><dl><dt><span class="term"><code class="code">_GLIBCXX_USE_DEPRECATED</code></span></dt><dd><p>
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">_GLIBCXX_USE_DEPRECATED</code></span></dt><dd><p>
 	Defined by default. Not configurable. ABI-changing. Turning this off
 	removes older ARM-style iostreams code, and other anachronisms
 	from the API.  This macro is dependent on the version of the

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Debugging Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_exceptions.html" title="Exceptions" /><link rel="next" href="bk01pt02.html" title="Part II.  Standard Contents" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt02.html">Next</a></td></tr></table><hr /></div><div class="section" title="Debugging Support"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.debug"></a>Debugging Support</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Debugging Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_exceptions.html" title="Exceptions" /><link rel="next" href="bk01pt02.html" title="Part II.  Standard Contents" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt02.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.debug"></a>Debugging Support</h2></div></div></div><p>
   There are numerous things that can be done to improve the ease with
   which C++ binaries are debugged when using the GNU tool chain. Here
   are some of them.
-</p><div class="section" title="Using g++"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compiler"></a>Using <span class="command"><strong>g++</strong></span></h3></div></div></div><p>
+</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compiler"></a>Using <span class="command"><strong>g++</strong></span></h3></div></div></div><p>
     Compiler flags determine how debug information is transmitted
     between compilation and debug or analysis tools.
   </p><p>
@@ -31,7 +30,7 @@
   Many other options are available: please see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options" target="_top">"Options
   for Debugging Your Program"</a> in Using the GNU Compiler
   Collection (GCC) for a complete list.
-</p></div><div class="section" title="Debug Versions of Library Binary Files"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"></a>Debug Versions of Library Binary Files</h3></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"></a>Debug Versions of Library Binary Files</h3></div></div></div><p>
   If you would like debug symbols in libstdc++, there are two ways to
   build libstdc++ with debug flags. The first is to run make from the
   toplevel in a freshly-configured tree with
@@ -52,7 +51,7 @@
 </pre><p>
   This quick and dirty approach is often sufficient for quick
   debugging tasks, when you cannot or don't want to recompile your
-  application to use the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>.</p></div><div class="section" title="Memory Leak Hunting"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
+  application to use the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
   There are various third party memory tracing and debug utilities
   that can be used to provide detailed memory allocation information
   about C++ code. An exhaustive list of tools is not going to be
@@ -121,7 +120,7 @@
   up the runtime environment, library, and test file, might be:
 </p><pre class="programlisting">
    valgrind -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes a.out
-</pre></div><div class="section" title="Data Race Hunting"><div class="titlepage"><div><div><h3 class="title"><a id="debug.races"></a>Data Race Hunting</h3></div></div></div><p>
+</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.races"></a>Data Race Hunting</h3></div></div></div><p>
   All synchronization primitives used in the library internals need to be
   understood by race detectors so that they do not produce false reports.
 </p><p>
@@ -161,7 +160,7 @@
   DRD</a>,
   <a class="link" href="http://valgrind.org/docs/manual/hg-manual.html" target="_top"> 
   Helgrind</a>, and
-  <a class="link" href="http://code.google.com/p/data-race-test" target="_top"> 
+  <a class="link" href="http://code.google.com/p/data-race-test/" target="_top"> 
   ThreadSanitizer</a>.
 </p><p>
   With DRD, Helgrind and ThreadSanitizer you will need to define
@@ -171,7 +170,7 @@
   #define _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)  ANNOTATE_HAPPENS_AFTER(A)
 </pre><p>
   Refer to the documentation of each particular tool for details.
-</p></div><div class="section" title="Using gdb"><div class="titlepage"><div><div><h3 class="title"><a id="debug.gdb"></a>Using <span class="command"><strong>gdb</strong></span></h3></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.gdb"></a>Using <span class="command"><strong>gdb</strong></span></h3></div></div></div><p>
   </p><p>
   Many options are available for GDB itself: please see <a class="link" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/" target="_top">
   "GDB features for C++" </a> in the GDB documentation. Also
@@ -224,16 +223,16 @@
   on-line versions of the GDB user manual in GDB's homepage, at
   <a class="link" href="http://sourceware.org/gdb/" target="_top"> "GDB: The GNU Project
   Debugger" </a>.
-</p></div><div class="section" title="Tracking uncaught exceptions"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
   The <a class="link" href="termination.html#support.termination.verbose" title="Verbose Terminate Handler">verbose
   termination handler</a> gives information about uncaught
   exceptions which are killing the program.  It is described in the
   linked-to page.
-</p></div><div class="section" title="Debug Mode"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">Debug Mode</a>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">Debug Mode</a>
   has compile and run-time checks for many containers.
-  </p></div><div class="section" title="Compile Time Checking"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile-Time
+  </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile-Time
   Checks</a> Extension has compile-time checks for many algorithms.
-  </p></div><div class="section" title="Profile-based Performance Analysis"><div class="titlepage"><div><div><h3 class="title"><a id="debug.profile_mode"></a>Profile-based Performance Analysis</h3></div></div></div><p> The <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">Profile-based
+  </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.profile_mode"></a>Profile-based Performance Analysis</h3></div></div></div><p> The <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">Profile-based
   Performance Analysis</a> Extension has performance checks for many
   algorithms.
   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exceptions </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. 

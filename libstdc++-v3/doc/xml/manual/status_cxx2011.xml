@@ -885,10 +885,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.9.7.6</entry>
       <entry>Other transformations</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>aligned_union</code>.</entry>
     </row>
     <row>
       <entry>20.10</entry>

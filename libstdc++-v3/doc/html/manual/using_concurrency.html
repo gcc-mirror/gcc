@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Concurrency</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_dynamic_or_shared.html" title="Linking" /><link rel="next" href="using_exceptions.html" title="Exceptions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_dynamic_or_shared.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr></table><hr /></div><div class="section" title="Concurrency"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.concurrency"></a>Concurrency</h2></div></div></div><p>This section discusses issues surrounding the proper compilation
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Concurrency</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_dynamic_or_shared.html" title="Linking" /><link rel="next" href="using_exceptions.html" title="Exceptions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_dynamic_or_shared.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.concurrency"></a>Concurrency</h2></div></div></div><p>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
       library.  This information is GCC-specific since the C++
       standard does not address matters of multithreaded applications.
-   </p><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.prereq"></a>Prerequisites</h3></div></div></div><p>All normal disclaimers aside, multithreaded C++ application are
+   </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.prereq"></a>Prerequisites</h3></div></div></div><p>All normal disclaimers aside, multithreaded C++ application are
       only supported when libstdc++ and all user code was built with
       compilers which report (via <code class="code"> gcc/g++ -v </code>) the same thread
       model and that model is not <span class="emphasis"><em>single</em></span>.  As long as your
@@ -33,7 +32,7 @@
       -pthread is honored.  Some other ports use other switches.
       AFAIK, none of this is properly documented anywhere other than
       in ``gcc -dumpspecs'' (look at lib and cpp entries).
-   </p></div><div class="section" title="Thread Safety"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"></a>Thread Safety</h3></div></div></div><p>
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"></a>Thread Safety</h3></div></div></div><p>
 In the terms of the 2011 C++ standard a thread-safe program is one which
 does not perform any conflicting non-atomic operations on memory locations
 and so does not contain any data races.
@@ -45,7 +44,7 @@ of the <a class="link" href="http://www.sgi.com/tech/stl/thread_safety.html" tar
 prior to the 2011 standard.
 </p><p>The library strives to be thread-safe when all of the following
 	 conditions are met:
-      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>The system's libc is itself thread-safe,
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The system's libc is itself thread-safe,
        </p></li><li class="listitem"><p>
 	   The compiler in use reports a thread model other than
 	   'single'. This can be tested via output from <code class="code">gcc
@@ -156,9 +155,9 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html" target="_top">Threads
       and memory model for C++</a> pages, particularly the <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/threadsintro.html" target="_top">introduction</a> 
       and <a class="link" href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html" target="_top">FAQ</a>.
-      </p></div><div class="section" title="Atomics"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
-    </p></div><div class="section" title="IO"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.
-   </p><div class="section" title="Structure"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"></a>Structure</h4></div></div></div><p>A wrapper
+      </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.
+   </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"></a>Structure</h4></div></div></div><p>A wrapper
       type called <code class="code">__basic_file</code> provides our abstraction layer
       for the <code class="code">std::filebuf</code> classes.  Nearly all decisions dealing
       with actual input and output must be made in <code class="code">__basic_file</code>.
@@ -166,7 +165,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       but is not used in the current code.  Providing locking at any higher
       level is akin to providing locking within containers, and is not done
       for the same reasons (see the links above).
-   </p></div><div class="section" title="Defaults"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.defaults"></a>Defaults</h4></div></div></div><p>The __basic_file type is simply a collection of small wrappers around
+   </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.defaults"></a>Defaults</h4></div></div></div><p>The __basic_file type is simply a collection of small wrappers around
       the C stdio layer (again, see the link under Structure).  We do no
       locking ourselves, but simply pass through to calls to <code class="code">fopen</code>,
       <code class="code">fwrite</code>, and so forth.
@@ -188,7 +187,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       contained in the stream formatting classes (e.g., setting up callbacks
       inside an <code class="code">std::ofstream</code>), you need to guard such accesses
       like any other critical shared resource.
-   </p></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.future"></a>Future</h4></div></div></div><p> A
+   </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.future"></a>Future</h4></div></div></div><p> A
       second choice may be available for I/O implementations:  libio.  This is
       disabled by default, and in fact will not currently work due to other
       issues.  It will be revisited, however.
@@ -213,10 +212,10 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       version will see calls from libstdc++ directly into the glibc already
       installed.  For other platforms, a copy of the libio subsection will
       be built and included in libstdc++.
-   </p></div><div class="section" title="Alternatives"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.alt"></a>Alternatives</h4></div></div></div><p>Don't forget that other cstdio implementations are possible.  You could
+   </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.alt"></a>Alternatives</h4></div></div></div><p>Don't forget that other cstdio implementations are possible.  You could
       easily write one to perform your own forms of locking, to solve your
       "interesting" problems.
-   </p></div></div><div class="section" title="Containers"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.containers"></a>Containers</h3></div></div></div><p>This section discusses issues surrounding the design of
+   </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.containers"></a>Containers</h3></div></div></div><p>This section discusses issues surrounding the design of
       multithreaded applications which use Standard C++ containers.
       All information in this section is current as of the gcc 3.0
       release and all later point releases.  Although earlier gcc

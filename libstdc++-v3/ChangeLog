@@ -1,3 +1,10 @@
+2013-11-05 Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document aligned_union as
+	missing.
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/html/*: Regenerate.
+
 2013-10-30  Chris Studholme  <cvs@cs.utoronto.ca>
 
 	PR libstdc++/58912
