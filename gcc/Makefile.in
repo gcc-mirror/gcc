@@ -1230,6 +1230,7 @@ OBJS = \
 	ggc-common.o \
 	gimple.o \
 	gimple-builder.o \
+	gimple-expr.o \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-low.o \
