@@ -4275,6 +4275,12 @@ the One Definition Rule; for example, it is usually not useful to mark
 an inline method as hidden without marking the whole class as hidden.
 
 A C++ namespace declaration can also have the visibility attribute.
+
+@smallexample
+namespace nspace1 __attribute__ ((visibility ("protected")))
+@{ /* @r{Do something.} */; @}
+@end smallexample
+
 This attribute applies only to the particular namespace body, not to
 other definitions of the same namespace; it is equivalent to using
 @samp{#pragma GCC visibility} before and after the namespace

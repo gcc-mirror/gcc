@@ -1,3 +1,9 @@
+2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58724
+	* doc/extend.texi [visibility ("visibility_type")]: Add example
+	about visibility attribute on namespace declaration.
+
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/58492
@@ -27,7 +33,7 @@
 
 2013-11-05  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-outof-ssa.c (queue_phi_copy_p): Combine phi_ssa_name_p from 
+	* tree-outof-ssa.c (queue_phi_copy_p): Combine phi_ssa_name_p from
 	gimple.h and the rest of the condition in eliminate_build.
 	(eliminate_build): Call new routine.
 	* gimple.h (phi_ssa_name_p): Delete.
