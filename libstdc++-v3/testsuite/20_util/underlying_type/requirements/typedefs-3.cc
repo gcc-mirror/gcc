@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++1y" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2009-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2003 }
+//
+// NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
-#include <utility>
+#include <type_traits>
 
-void test01()
-{
-  std::declval<int>();		// { dg-error "required from here" }
-}
+using namespace std;
+
+enum E : long { };
+
+static_assert( is_same<typename underlying_type<E>::type,
+                       underlying_type_t<E>>(),
+               "underlying_type_t" );

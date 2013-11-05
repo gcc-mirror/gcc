@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++1y" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2013 Free Software Foundation, Inc.
+
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2003 }
+#include <type_traits>
 
-#include <utility>
+using namespace std;
 
-void test01()
-{
-  std::declval<int>();		// { dg-error "required from here" }
-}
+template<typename Trait, typename Result>
+  using test = is_same<typename Trait::type, Result>;
+
+static_assert( test<make_signed<const int>, make_signed_t<const int>>(),
+               "make_signed_t<const int>" );
+
+static_assert( test<make_signed<unsigned>, make_signed_t<unsigned>>(),
+               "make_signed_t<unsigned>" );
+
+static_assert( test<make_signed<char>, make_signed_t<char>>(),
+               "make_signed_t<char>" );

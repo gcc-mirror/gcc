@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2013 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++1y" }
+
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2003 }
+#include <type_traits>
 
-#include <utility>
+using namespace std;
 
-void test01()
-{
-  std::declval<int>();		// { dg-error "required from here" }
-}
+static_assert( is_same<enable_if<true>::type, enable_if_t<true>>(),
+               "enable_if_t<true>" );
+struct X;
+static_assert( is_same<enable_if<true, X>::type, enable_if_t<true, X>>(),
+               "enable_if_t<true, X>" );
