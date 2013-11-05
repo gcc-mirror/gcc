@@ -1,3 +1,20 @@
+2013-11-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+
+	* rtlanal.c (tablejump_p): Expect a JUMP_TABLE_DATA to always follow
+	immediately after a label for a tablejump pattern.
+
+	* config/arm/arm.c (is_jump_table): Remove.
+	(create_fix_barrier): Use tablejump_p instead.
+	(arm_reorg): Likewise.
+	(thumb1_output_casesi): Expect JUMP_TABLE_DATA to always be NEXT_INSN.
+	(thumb2_output_casesi): Likewise.
+	* config/aarch64/aarch64.c (aarch64_output_casesi): Likewise.
+	* config/sh/sh.md (casesi_worker_1, casesi_worker_2,
+	casesi_shift_media, casesi_load_media): Likewise.
+	* config/iq2000/iq2000.md: Likewise (in anonymous define_insn).
+	* config/microblaze/microblaze.md: Likewise.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-Wdate-time): Document.
