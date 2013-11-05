@@ -283,11 +283,7 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
 {
   unsigned alloc
     = vec_prefix::calculate_allocation (v ? &v->m_vecpfx : 0, reserve, exact);
-  if (!alloc)
-    {
-      release (v);
-      return;
-    }
+  gcc_assert (alloc);
 
   if (GATHER_STATISTICS && v)
     v->m_vecpfx.release_overhead ();

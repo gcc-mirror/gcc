@@ -1,3 +1,12 @@
+2013-11-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* vec.c (vec_prefix::calculate_allocation): Don't try to handle the
+	case of no prefix and reserving zero slots, because when that's the
+	case we'll never get here.
+	* vec.h (va_heap::reserve): Don't try and handle
+	vec_prefix::calculate_allocation returning zero because that should
+	never happen.
+
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58941
