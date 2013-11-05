@@ -1,3 +1,9 @@
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58955
+	* tree-loop-distribution.c (pg_add_dependence_edges): Fix
+	edge direction.
+
 2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vector.md (vec_pack_sfix_trunc_v2df): Adjust for
