@@ -3347,3 +3347,84 @@ nonfreeing_call_p (gimple call)
 
   return false;
 }
+
+/* Callback for walk_stmt_load_store_ops.
+ 
+   Return TRUE if OP will dereference the tree stored in DATA, FALSE
+   otherwise.
+
+   This routine only makes a superficial check for a dereference.  Thus
+   it must only be used if it is safe to return a false negative.  */
+static bool
+check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+      && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
+    return true;
+  return false;
+}
+
+/* If OP can be inferred to be non-zero after STMT executes, return true.  */
+
+bool
+infer_nonnull_range (gimple stmt, tree op)
+{
+  /* We can only assume that a pointer dereference will yield
+     non-NULL if -fdelete-null-pointer-checks is enabled.  */
+  if (!flag_delete_null_pointer_checks
+      || !POINTER_TYPE_P (TREE_TYPE (op))
+      || gimple_code (stmt) == GIMPLE_ASM)
+    return false;
+
+  if (walk_stmt_load_store_ops (stmt, (void *)op,
+				check_loadstore, check_loadstore))
+    return true;
+
+  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
+    {
+      tree fntype = gimple_call_fntype (stmt);
+      tree attrs = TYPE_ATTRIBUTES (fntype);
+      for (; attrs; attrs = TREE_CHAIN (attrs))
+	{
+	  attrs = lookup_attribute ("nonnull", attrs);
+
+	  /* If "nonnull" wasn't specified, we know nothing about
+	     the argument.  */
+	  if (attrs == NULL_TREE)
+	    return false;
+
+	  /* If "nonnull" applies to all the arguments, then ARG
+	     is non-null if it's in the argument list.  */
+	  if (TREE_VALUE (attrs) == NULL_TREE)
+	    {
+	      for (unsigned int i = 0; i < gimple_call_num_args (stmt); i++)
+		{
+		  if (operand_equal_p (op, gimple_call_arg (stmt, i), 0)
+		      && POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (stmt, i))))
+		    return true;
+		}
+	      return false;
+	    }
+
+	  /* Now see if op appears in the nonnull list.  */
+	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
+	    {
+	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
+	      tree arg = gimple_call_arg (stmt, idx);
+	      if (operand_equal_p (op, arg, 0))
+		return true;
+	    }
+	}
+    }
+
+  /* If this function is marked as returning non-null, then we can
+     infer OP is non-null if it is used in the return statement.  */
+  if (gimple_code (stmt) == GIMPLE_RETURN
+      && gimple_return_retval (stmt)
+      && operand_equal_p (gimple_return_retval (stmt), op, 0)
+      && lookup_attribute ("returns_nonnull",
+			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+    return true;
+
+  return false;
+}

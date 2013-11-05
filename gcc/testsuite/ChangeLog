@@ -1,3 +1,11 @@
+2013-10-05  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr38984.c: Add -fno-isolate-erroneous-paths.
+	* gcc.dg/tree-ssa/isolate-1.c: New test.
+	* gcc.dg/tree-ssa/isolate-2.c: New test.
+	* gcc.dg/tree-ssa/isolate-3.c: New test.
+	* gcc.dg/tree-ssa/isolate-4.c: New test.
+
 2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58997
