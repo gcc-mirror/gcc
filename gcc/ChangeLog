@@ -1,3 +1,37 @@
+2013-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h: Move some prototypes to gimple-expr.h and add to include
+	list.
+	(extract_ops_from_tree, gimple_call_addr_fndecl, is_gimple_reg_type):
+	Move to gimple-expr.h.
+	* gimple-expr.h: New file.  Relocate some prototypes from gimple.h.
+	(types_compatible_p, is_gimple_reg_type, is_gimple_variable,
+	is_gimple_id, virtual_operand_p, is_gimple_addressable,
+	is_gimple_constant, extract_ops_from_tree, gimple_call_addr_fndecl):
+	Relocate here.
+	* gimple.c (extract_ops_from_tree_1, gimple_cond_get_ops_from_tree,
+	gimple_set_body, gimple_body, gimple_has_body_p, is_gimple_lvalue,
+	is_gimple_condexpr, is_gimple_addressable, is_gimple_constant,
+	is_gimple_address, is_gimple_invariant_address,
+	is_gimple_ip_invariant_address, is_gimple_min_invariant,
+	is_gimple_ip_invariant, is_gimple_variable, is_gimple_id,
+	virtual_operand_p, is_gimple_reg, is_gimple_val, is_gimple_asm_val,
+	is_gimple_min_lval, is_gimple_call_addr, is_gimple_mem_ref_addr,
+	gimple_decl_printable_name, useless_type_conversion_p,
+	types_compatible_p, gimple_can_coalesce_p, copy_var_decl): Move to 
+	gimple-expr.[ch].
+	* gimple-expr.c: New File.
+	(useless_type_conversion_p, gimple_set_body, gimple_body,
+	gimple_has_body_p, gimple_decl_printable_name, copy_var_decl,
+	gimple_can_coalesce_p, extract_ops_from_tree_1, 
+	gimple_cond_get_ops_from_tree, is_gimple_lvalue, is_gimple_condexpr,
+	is_gimple_address, is_gimple_invariant_address,
+	is_gimple_ip_invariant_address, is_gimple_min_invariant,
+	is_gimple_ip_invariant, is_gimple_reg, is_gimple_val,
+	is_gimple_asm_val, is_gimple_min_lval, is_gimple_call_addr,
+	is_gimple_mem_ref_addr): Relocate here.
+	* Makefile.in (OBJS): Add gimple-expr.o.
+
 2013-11-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype-parse.c (struct_field_seq): Support empty structs.

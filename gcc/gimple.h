@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
+#include "gimple-expr.h"
 
 typedef gimple gimple_seq_node;
 
@@ -745,8 +746,6 @@ gimple gimple_build_return (tree);
 gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
 #define gimple_build_assign(l,r) gimple_build_assign_stat (l, r MEM_STAT_INFO)
 
-void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *, tree *);
-
 gimple
 gimple_build_assign_with_ops (enum tree_code, tree,
 			      tree, tree CXX_MEM_STAT_INFO);
@@ -809,9 +808,6 @@ gimple gimple_build_predict (enum br_predictor, enum prediction);
 enum gimple_statement_structure_enum gss_for_assign (enum tree_code);
 void sort_case_labels (vec<tree> );
 void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
-void gimple_set_body (tree, gimple_seq);
-gimple_seq gimple_body (tree);
-bool gimple_has_body_p (tree);
 gimple_seq gimple_seq_alloc (void);
 void gimple_seq_free (gimple_seq);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
@@ -832,7 +828,6 @@ tree gimple_get_lhs (const_gimple);
 void gimple_set_lhs (gimple, tree);
 void gimple_replace_lhs (gimple, tree);
 gimple gimple_copy (gimple);
-void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *, tree *);
 gimple gimple_build_cond_from_tree (tree, tree, tree);
 void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
@@ -844,48 +839,6 @@ bool empty_body_p (gimple_seq);
 unsigned get_gimple_rhs_num_ops (enum tree_code);
 #define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
-const char *gimple_decl_printable_name (tree, int);
-
-/* Returns true iff T is a virtual ssa name decl.  */
-extern bool virtual_operand_p (tree);
-/* Returns true iff T is a scalar register variable.  */
-extern bool is_gimple_reg (tree);
-/* Returns true iff T is any sort of variable.  */
-extern bool is_gimple_variable (tree);
-/* Returns true iff T is any sort of symbol.  */
-extern bool is_gimple_id (tree);
-/* Returns true iff T is a variable or an INDIRECT_REF (of a variable).  */
-extern bool is_gimple_min_lval (tree);
-/* Returns true iff T is something whose address can be taken.  */
-extern bool is_gimple_addressable (tree);
-/* Returns true iff T is any valid GIMPLE lvalue.  */
-extern bool is_gimple_lvalue (tree);
-
-/* Returns true iff T is a GIMPLE address.  */
-bool is_gimple_address (const_tree);
-/* Returns true iff T is a GIMPLE invariant address.  */
-bool is_gimple_invariant_address (const_tree);
-/* Returns true iff T is a GIMPLE invariant address at interprocedural
-   level.  */
-bool is_gimple_ip_invariant_address (const_tree);
-/* Returns true iff T is a valid GIMPLE constant.  */
-bool is_gimple_constant (const_tree);
-/* Returns true iff T is a GIMPLE restricted function invariant.  */
-extern bool is_gimple_min_invariant (const_tree);
-/* Returns true iff T is a GIMPLE restricted interprecodural invariant.  */
-extern bool is_gimple_ip_invariant (const_tree);
-/* Returns true iff T is a GIMPLE rvalue.  */
-extern bool is_gimple_val (tree);
-/* Returns true iff T is a GIMPLE asm statement input.  */
-extern bool is_gimple_asm_val (tree);
-/* Returns true iff T is a valid address operand of a MEM_REF.  */
-bool is_gimple_mem_ref_addr (tree);
-
-/* Returns true iff T is a valid if-statement condition.  */
-extern bool is_gimple_condexpr (tree);
-
-/* Returns true iff T is a valid call address expression.  */
-extern bool is_gimple_call_addr (tree);
 
 /* Return TRUE iff stmt is a call to a built-in function.  */
 extern bool is_gimple_builtin_call (gimple stmt);
@@ -906,8 +859,6 @@ extern bool gimple_ior_addresses_taken (bitmap, gimple);
 extern bool gimple_call_builtin_p (gimple, enum built_in_class);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
-extern bool useless_type_conversion_p (tree, tree);
-extern bool types_compatible_p (tree, tree);
 
 /* In gimplify.c  */
 extern tree create_tmp_var_raw (tree, const char *);
@@ -1086,9 +1037,7 @@ extern tree gimple_boolify (tree);
 extern gimple_predicate rhs_predicate_for (tree);
 extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
-extern bool gimple_can_coalesce_p (tree, tree);
 extern bool nonfreeing_call_p (gimple);
-extern tree copy_var_decl (tree, tree, tree);
 
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);
@@ -2042,18 +1991,6 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
   gimple_assign_set_rhs_with_ops_1 (gsi, code, op1, op2, NULL);
 }
 
-/* A wrapper around extract_ops_from_tree_1, for callers which expect
-   to see only a maximum of two operands.  */
-
-static inline void
-extract_ops_from_tree (tree expr, enum tree_code *code, tree *op0,
-		       tree *op1)
-{
-  tree op2;
-  extract_ops_from_tree_1 (expr, code, op0, op1, &op2);
-  gcc_assert (op2 == NULL_TREE);
-}
-
 /* Returns true if GS is a nontemporal move.  */
 
 static inline bool
@@ -2315,25 +2252,6 @@ gimple_call_set_internal_fn (gimple gs, enum internal_fn fn)
   gs->gimple_call.u.internal_fn = fn;
 }
 
-
-/* Given a valid GIMPLE_CALL function address return the FUNCTION_DECL
-   associated with the callee if known.  Otherwise return NULL_TREE.  */
-
-static inline tree
-gimple_call_addr_fndecl (const_tree fn)
-{
-  if (fn && TREE_CODE (fn) == ADDR_EXPR)
-    {
-      tree fndecl = TREE_OPERAND (fn, 0);
-      if (TREE_CODE (fndecl) == MEM_REF
-	  && TREE_CODE (TREE_OPERAND (fndecl, 0)) == ADDR_EXPR
-	  && integer_zerop (TREE_OPERAND (fndecl, 1)))
-	fndecl = TREE_OPERAND (TREE_OPERAND (fndecl, 0), 0);
-      if (TREE_CODE (fndecl) == FUNCTION_DECL)
-	return fndecl;
-    }
-  return NULL_TREE;
-}
 
 /* If a given GIMPLE_CALL's callee is a FUNCTION_DECL, return it.
    Otherwise return NULL.  This function is analogous to
@@ -5383,14 +5301,6 @@ gimple_expr_type (const_gimple stmt)
     return boolean_type_node;
   else
     return void_type_node;
-}
-
-/* Return true if TYPE is a suitable type for a scalar register variable.  */
-
-static inline bool
-is_gimple_reg_type (tree type)
-{
-  return !AGGREGATE_TYPE_P (type);
 }
 
 /* Return a new iterator pointing to GIMPLE_SEQ's first statement.  */
