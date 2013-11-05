@@ -240,7 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
--Wconversion -Wcoverage-mismatch  -Wdelete-incomplete -Wno-cpp  @gol
+-Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wdisabled-optimization  @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
@@ -4525,6 +4525,13 @@ types. @option{-Wconversion-null} is enabled by default.
 @opindex Wno-zero-as-null-pointer-constant
 Warn when a literal '0' is used as null pointer constant.  This can
 be useful to facilitate the conversion to @code{nullptr} in C++11.
+
+@item -Wdate-time
+@opindex Wdate-time
+@opindex Wno-date-time
+Warn when macros @code{__TIME__}, @code{__DATE__} or @code{__TIMESTAMP__}
+are encountered as they might prevent bit-wise-identical reproducable
+compilations.
 
 @item -Wdelete-incomplete @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-incomplete

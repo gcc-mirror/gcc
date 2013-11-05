@@ -232,6 +232,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 
     case BT_TIMESTAMP:
       {
+	if (CPP_OPTION (pfile, warn_date_time))
+	  cpp_warning (pfile, CPP_W_DATE_TIME, "Macro \"%s\" might prevent "
+		       "reproduce builds", NODE_NAME (node));
+
 	cpp_buffer *pbuffer = cpp_get_buffer (pfile);
 	if (pbuffer->timestamp == NULL)
 	  {
@@ -325,6 +329,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 
     case BT_DATE:
     case BT_TIME:
+      if (CPP_OPTION (pfile, warn_date_time))
+	cpp_warning (pfile, CPP_W_DATE_TIME, "Macro \"%s\" might prevent "
+		     "reproduce builds", NODE_NAME (node));
       if (pfile->date == NULL)
 	{
 	  /* Allocate __DATE__ and __TIME__ strings from permanent

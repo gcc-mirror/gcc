@@ -1,6 +1,14 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* include/cpplib.h (CPP_W_DATE_TIME): Added.
+	(cpp_options): Add warn_date_time.
+	* init.c (cpp_create_reader): Init it.
+	* macro.c (_cpp_builtin_macro_text): Warn when
+	__DATE__/__TIME__/__TIMESTAMP__ is used.
+
 2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-        Implement C++14 digit separators.
+	Implement C++14 digit separators.
 	* include/cpplib.h (cpp_options): Add digit_separators flag.
 	* internal.h (DIGIT_SEP(c)): New macro.
 	* expr.c (cpp_classify_number): Check improper placement of digit sep;

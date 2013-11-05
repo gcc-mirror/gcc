@@ -640,6 +640,10 @@ Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
+Wdate-time
+Common Var(cpp_warn_date_time) Warning
+Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage
+
 Wproperty-assign-default
 ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
 Warn if a property for an Objective-C object has no assign semantics specified

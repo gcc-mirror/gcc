@@ -1,3 +1,10 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (-Wdate-time): New option
+	* cpp.c (gfc_cpp_option_data): Add warn_date_time.
+	(gfc_cpp_init_options, gfc_cpp_handle_option,
+	gfc_cpp_post_options): Handle it and pass on to libcpp.
+
 2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/58989

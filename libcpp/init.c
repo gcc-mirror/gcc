@@ -193,6 +193,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, canonical_system_headers)
       = ENABLE_CANONICAL_SYSTEM_HEADERS;
   CPP_OPTION (pfile, ext_numeric_literals) = 1;
+  CPP_OPTION (pfile, warn_date_time) = 0;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
