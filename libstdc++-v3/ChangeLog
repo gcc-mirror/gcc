@@ -1,5 +1,40 @@
 2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	N3655 C++1y TransformationTraits Redux
+	* include/std/type_traits (remove_const_t, remove_volatile_t,
+	remove_cv_t, add_const_t, add_volatile_t, add_cv_t, remove_reference_t,
+	add_lvalue_reference_t, add_rvalue_reference_t, make_signed_t,
+	make_unsigned_t, remove_extent_t, remove_all_extents_t,
+	remove_pointer_t, add_pointer_t, aligned_storage_t, decay_t,
+	enable_if_t, conditional_t, common_type_t, underlying_type_t,
+	result_of_t): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/add_lvalue_reference/requirements/typedefs-3.cc:
+	New.
+	* testsuite/20_util/add_rvalue_reference/requirements/typedefs-3.cc:
+	New.
+	* testsuite/20_util/common_type/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/conditional/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/decay/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/enable_if/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/remove_reference/requirements/typedefs.cc: New.
+	* testsuite/20_util/result_of/requirements/typedefs.cc: New.
+	* testsuite/20_util/underlying_type/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/common_type/requirements/typedefs-2.cc: Change to
+	compile-only test.
+	* testsuite/20_util/decay/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Document aligned_union as
 	missing.
 
