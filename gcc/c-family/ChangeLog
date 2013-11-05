@@ -1,3 +1,8 @@
+2013-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (cpp_iec_559_value): Test
+	flag_excess_precision_cmdline not flag_excess_precision.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* c.opt (fopenmp-simd): New option.

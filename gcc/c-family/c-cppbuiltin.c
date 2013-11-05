@@ -734,7 +734,7 @@ cpp_iec_559_value (void)
   if (flag_iso
       && !c_dialect_cxx ()
       && TARGET_FLT_EVAL_METHOD != 0
-      && flag_excess_precision != EXCESS_PRECISION_STANDARD)
+      && flag_excess_precision_cmdline != EXCESS_PRECISION_STANDARD)
     ret = 0;
 
   /* Various options are contrary to IEEE 754 semantics.  */
