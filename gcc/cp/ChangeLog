@@ -1,3 +1,8 @@
+2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58724
+	* name-lookup.c (handle_namespace_attrs): Use get_attribute_name.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* parser.c (cp_parser_omp_for, cp_parser_omp_parallel,

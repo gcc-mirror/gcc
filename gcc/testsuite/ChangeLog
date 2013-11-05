@@ -1,3 +1,8 @@
+2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58724
+	* g++.dg/cpp0x/gen-attrs-56.C: New.
+
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/58492
