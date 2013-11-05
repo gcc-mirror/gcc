@@ -1,3 +1,9 @@
+2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/58989
+	* check.c (gfc_check_reshape): ensure that shape is a constant
+	expression.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* lang.opt (fopenmp-simd): New option.
