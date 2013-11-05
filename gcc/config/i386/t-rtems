@@ -18,11 +18,10 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-MULTILIB_OPTIONS = mtune=i486/mtune=pentium/mtune=pentiumpro \
-msoft-float
+MULTILIB_OPTIONS = mtune=i486/mtune=pentium/mtune=pentiumpro msoft-float
 MULTILIB_DIRNAMES= m486 mpentium mpentiumpro soft-float
-MULTILIB_MATCHES = msoft-float=mno-m80387
-MULTILIB_MATCHES += mtune?pentium=mtune?k6 mtune?pentiumpro=mtune?mathlon
+MULTILIB_MATCHES = msoft-float=mno-80387
+MULTILIB_MATCHES += mtune?pentium=mtune?k6 mtune?pentiumpro=mtune?athlon
 MULTILIB_EXCEPTIONS = \
 mtune=pentium/*msoft-float* \
 mtune=pentiumpro/*msoft-float*

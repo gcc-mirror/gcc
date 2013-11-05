@@ -1,3 +1,7 @@
+2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/t-rtems (MULTILIB_MATCHES): Fix option typos.
+
 2013-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
