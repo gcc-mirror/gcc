@@ -1,3 +1,9 @@
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58955
+	* gcc.dg/torture/pr58955-1.c: New testcase.
+	* gcc.dg/torture/pr58955-2.c: Likewise.
+
 2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/58981
