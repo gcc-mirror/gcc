@@ -566,7 +566,7 @@ ao_ref_alias_set (ao_ref *ref)
 void
 ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
-  HOST_WIDE_INT t1, t2, extra_offset = 0;
+  HOST_WIDE_INT t, extra_offset = 0;
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -585,8 +585,17 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
     }
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    ref->base = get_ref_base_and_extent (TREE_OPERAND (ptr, 0),
-					 &ref->offset, &t1, &t2);
+    {
+      ref->base = get_addr_base_and_unit_offset (TREE_OPERAND (ptr, 0), &t);
+      if (ref->base)
+	ref->offset = BITS_PER_UNIT * t;
+      else
+	{
+	  size = NULL_TREE;
+	  ref->offset = 0;
+	  ref->base = get_base_address (TREE_OPERAND (ptr, 0));
+	}
+    }
   else
     {
       ref->base = build2 (MEM_REF, char_type_node,

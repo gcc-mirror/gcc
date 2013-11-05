@@ -1,5 +1,10 @@
 2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/58958
+	* gcc.dg/tree-ssa/pr58958.c: New file.
+
+2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/alias-26.c: New file.
 
 2013-11-05  Jakub Jelinek  <jakub@redhat.com>

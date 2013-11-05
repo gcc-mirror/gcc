@@ -1,5 +1,11 @@
 2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/58958
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Use
+	get_addr_base_and_unit_offset instead of get_ref_base_and_extent.
+
+2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
 	* tree-ssa-alias.h (ranges_overlap_p): Handle negative offsets.
 	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Likewise.
 
