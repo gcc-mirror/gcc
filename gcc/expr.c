@@ -1297,11 +1297,12 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
 	     here because if SIZE is less than the mode mask, as it is
 	     returned by the macro, it will definitely be less than the
-	     actual mode mask.  */
+	     actual mode mask.  Since SIZE is within the Pmode address
+	     space, we limit MODE to Pmode.  */
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
-	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD))
+	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
 	  struct expand_operand ops[6];
 	  unsigned int nops;
@@ -2879,14 +2880,15 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
       enum insn_code code = direct_optab_handler (setmem_optab, mode);
 
       if (code != CODE_FOR_nothing
-	  /* We don't need MODE to be narrower than
-	     BITS_PER_HOST_WIDE_INT here because if SIZE is less than
-	     the mode mask, as it is returned by the macro, it will
-	     definitely be less than the actual mode mask.  */
+	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
+	     here because if SIZE is less than the mode mask, as it is
+	     returned by the macro, it will definitely be less than the
+	     actual mode mask.  Since SIZE is within the Pmode address
+	     space, we limit MODE to Pmode.  */
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
-	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD))
+	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
 	  struct expand_operand ops[6];
 	  unsigned int nops;

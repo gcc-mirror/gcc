@@ -1,3 +1,8 @@
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/58981
+	* gcc.dg/pr58981.c: New test.
+
 2013-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58941
