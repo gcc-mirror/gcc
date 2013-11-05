@@ -1,3 +1,7 @@
+2013-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (struct_field_seq): Support empty structs.
+
 2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/t-rtems (MULTILIB_MATCHES): Fix option typos.
