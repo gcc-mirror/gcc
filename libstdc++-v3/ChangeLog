@@ -3,6 +3,9 @@
 	* doc/xml/manual/status_cxx2011.xml: Document aligned_union as
 	missing.
 
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/html/*: Regenerate.
+
 2013-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58952
