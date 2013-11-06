@@ -1,3 +1,10 @@
+2013-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h (block_in_transaction): Move to basic-block.h and rename.
+	(gimple_in_transaction): Use bb_in_transaction.
+	* basic-block.h (bb_in_transaction): Relocate here and rename.
+	* tree-ssa-loop-im.c (execute_sm): Use bb_in_transaction.
+
 2013-11-06  Richard Biener  <rguenther@suse.de>
 
 	* tree.c (drop_tree_overflow): New function.
