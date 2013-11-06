@@ -1,3 +1,8 @@
+2013-11-05  Wei Mi  <wmi@google.com>
+
+	PR regression/58985
+	* testsuite/gcc.dg/pr57518.c: Add subreg in regexp pattern.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* g++.dg/warn/wdate-time.C: New.
