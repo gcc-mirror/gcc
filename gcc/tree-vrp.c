@@ -892,8 +892,8 @@ static inline bool
 range_int_cst_singleton_p (value_range_t *vr)
 {
   return (range_int_cst_p (vr)
-	  && !TREE_OVERFLOW (vr->min)
-	  && !TREE_OVERFLOW (vr->max)
+	  && !is_overflow_infinity (vr->min)
+	  && !is_overflow_infinity (vr->max)
 	  && tree_int_cst_equal (vr->min, vr->max));
 }
 
@@ -1741,7 +1741,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == LT_EXPR
 	   && compare_values (max, min) == 0)
-	  || (CONSTANT_CLASS_P (max) && TREE_OVERFLOW (max)))
+	  || is_overflow_infinity (max))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1781,7 +1781,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == GT_EXPR
 	   && compare_values (min, max) == 0)
-	  || (CONSTANT_CLASS_P (min) && TREE_OVERFLOW (min)))
+	  || is_overflow_infinity (min))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1998,8 +1998,8 @@ zero_nonzero_bits_from_vr (value_range_t *vr,
   *may_be_nonzero = double_int_minus_one;
   *must_be_nonzero = double_int_zero;
   if (!range_int_cst_p (vr)
-      || TREE_OVERFLOW (vr->min)
-      || TREE_OVERFLOW (vr->max))
+      || is_overflow_infinity (vr->min)
+      || is_overflow_infinity (vr->max))
     return false;
 
   if (range_int_cst_singleton_p (vr))
@@ -3623,13 +3623,13 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		maxi = tree_floor_log2 (vr0->max) + 1;
 	    }
 	  goto bitop_builtin;
@@ -3664,7 +3664,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->min) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1 - tree_floor_log2 (vr0->min);
 		  if (maxi != prec)
@@ -3672,7 +3672,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		}
 	      else if (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)
-		       && !TREE_OVERFLOW (vr0->min))
+		       && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1;
 		  mini = 0;
@@ -3683,7 +3683,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result minimum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  mini = prec - 1 - tree_floor_log2 (vr0->max);
 		  if (mini == prec)
@@ -3726,7 +3726,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  mini = 0;
 		  maxi = prec - 1;
@@ -3735,7 +3735,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 we can decrease the result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  maxi = tree_floor_log2 (vr0->max);
 		  /* For vr0 [0, 0] give up.  */
@@ -4619,10 +4619,8 @@ register_new_assert_for (tree name, tree expr,
   /* Never build an assert comparing against an integer constant with
      TREE_OVERFLOW set.  This confuses our undefined overflow warning
      machinery.  */
-  if (TREE_CODE (val) == INTEGER_CST
-      && TREE_OVERFLOW (val))
-    val = build_int_cst_wide (TREE_TYPE (val),
-			      TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val));
+  if (TREE_OVERFLOW_P (val))
+    val = drop_tree_overflow (val);
 
   /* The new assertion A will be inserted at BB or E.  We need to
      determine if the new location is dominated by a previously
@@ -8320,10 +8318,7 @@ vrp_visit_phi_node (gimple phi)
 	  else
 	    {
 	      if (is_overflow_infinity (arg))
-		{
-		  arg = copy_node (arg);
-		  TREE_OVERFLOW (arg) = 0;
-		}
+		arg = drop_tree_overflow (arg);
 
 	      vr_arg.type = VR_RANGE;
 	      vr_arg.min = arg;

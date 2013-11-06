@@ -12542,4 +12542,23 @@ get_tree_code_name (enum tree_code code)
   return tree_code_name[code];
 }
 
+/* Drops the TREE_OVERFLOW flag from T.  */
+
+tree
+drop_tree_overflow (tree t)
+{
+  gcc_checking_assert (TREE_OVERFLOW (t));
+
+  /* For tree codes with a sharing machinery re-build the result.  */
+  if (TREE_CODE (t) == INTEGER_CST)
+    return build_int_cst_wide (TREE_TYPE (t),
+			       TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t));
+
+  /* Otherwise, as all tcc_constants are possibly shared, copy the node
+     and drop the flag.  */
+  t = copy_node (t);
+  TREE_OVERFLOW (t) = 0;
+  return t;
+}
+
 #include "gt-tree.h"

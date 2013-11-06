@@ -4800,6 +4800,7 @@ extern tree get_base_address (tree t);
 extern void mark_addressable (tree);
 
 /* In tree.c.  */
+extern tree drop_tree_overflow (tree);
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
 extern int tree_map_base_marked_p (const void *);
