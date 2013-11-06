@@ -1,6 +1,21 @@
 2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/59018
+	* sanitizer_common/sanitizer_platform_limits_linux.cc
+	(struct_kernel_stat64_sz): Initialize to 0 if __x86_64__ is
+	defined.
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer_dirent): Use 64-bit d_ino/d_off if __x86_64__ is
+	defined.
+	(__sanitizer___kernel_uid_t): Typedef as unsigned if __x86_64__
+	is defined.
+	(__sanitizer___kernel_gid_t): Likewise.
+	(__sanitizer___kernel_off_t): Typedef as long long if __x86_64__
+	is defined.
+
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/59018
 	* sanitizer_common/sanitizer_linux.cc (internal_clone): Allocate
 	2 64-bit integers to save and restore fn and arg.  Properly load
 	newtls/child_tidptr into r8/r10.
