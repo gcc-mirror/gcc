@@ -10657,8 +10657,12 @@ ix86_expand_prologue (void)
 
       if (STACK_CHECK_MOVING_SP)
 	{
-	  ix86_adjust_stack_and_probe (allocate);
-	  allocate = 0;
+	  if (!(crtl->is_leaf && !cfun->calls_alloca
+		&& allocate <= PROBE_INTERVAL))
+	    {
+	      ix86_adjust_stack_and_probe (allocate);
+	      allocate = 0;
+	    }
 	}
       else
 	{
@@ -10668,9 +10672,26 @@ ix86_expand_prologue (void)
 	    size = 0x80000000 - STACK_CHECK_PROTECT - 1;
 
 	  if (TARGET_STACK_PROBE)
-	    ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+	    {
+	      if (crtl->is_leaf && !cfun->calls_alloca)
+		{
+		  if (size > PROBE_INTERVAL)
+		    ix86_emit_probe_stack_range (0, size);
+		}
+	      else
+		ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+	    }
 	  else
-	    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	    {
+	      if (crtl->is_leaf && !cfun->calls_alloca)
+		{
+		  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+		    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT,
+						 size - STACK_CHECK_PROTECT);
+		}
+	      else
+		ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	    }
 	}
     }
 

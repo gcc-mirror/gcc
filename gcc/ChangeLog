@@ -1,3 +1,14 @@
+2013-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): Optimize stack checking for
+	leaf functions without dynamic stack allocation.
+	* config/ia64/ia64.c (ia64_emit_probe_stack_range): Adjust.
+	(ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+
 2013-11-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h
@@ -28,12 +39,12 @@
 
 2013-11-06  Christian Bruel  <christian.bruel@st.com>
 
-	* gcc/config/sh/sh-mem.cc (sh_expand_cmpnstr, sh_expand_cmpstr):
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr, sh_expand_cmpstr):
 	Factorize probabilities, Use adjust_address instead of
 	adjust_automodify_address when possible. Enable for optimize.
 	(sh_expand_strlen): New function.
-	* gcc/config/sh/sh-protos.h (sh_expand_strlen): Declare.
-	* gcc/config/sh/sh.md (strlensi): New pattern.
+	* config/sh/sh-protos.h (sh_expand_strlen): Declare.
+	* config/sh/sh.md (strlensi): New pattern.
 	(UNSPEC_BUILTIN_STRLEN): Define.
 
 2013-11-06  Jakub Jelinek  <jakub@redhat.com>
@@ -305,19 +316,19 @@
 
 2013-11-04  Wei Mi  <wmi@google.com>
 
-	* gcc/config/i386/i386.c (memory_address_length): Extract a part
+	* config/i386/i386.c (memory_address_length): Extract a part
 	of code to rip_relative_addr_p.
 	(rip_relative_addr_p): New Function.
 	(ix86_macro_fusion_p): Ditto.
 	(ix86_macro_fusion_pair_p): Ditto.
-	* gcc/config/i386/i386.h: Add new tune features about macro-fusion.
-	* gcc/config/i386/x86-tune.def (DEF_TUNE): Ditto.
-	* gcc/doc/tm.texi: Generated.
-	* gcc/doc/tm.texi.in: Ditto.
-	* gcc/haifa-sched.c (try_group_insn): New Function.
+	* config/i386/i386.h: Add new tune features about macro-fusion.
+	* config/i386/x86-tune.def (DEF_TUNE): Ditto.
+	* doc/tm.texi: Generated.
+	* doc/tm.texi.in: Ditto.
+	* haifa-sched.c (try_group_insn): New Function.
 	(group_insns_for_macro_fusion): Ditto.
 	(sched_init): Call group_insns_for_macro_fusion.
-	* gcc/target.def: Add two hooks: macro_fusion_p and
+	* target.def: Add two hooks: macro_fusion_p and
 	macro_fusion_pair_p.
 
 2013-11-04  Kostya Serebryany  <kcc@google.com>
@@ -337,17 +348,17 @@
 
 2013-11-04  Wei Mi  <wmi@google.com>
 
-	* gcc/config/i386/i386-c.c (ix86_target_macros_internal): Separate
+	* config/i386/i386-c.c (ix86_target_macros_internal): Separate
 	PROCESSOR_COREI7_AVX out from PROCESSOR_COREI7.
-	* gcc/config/i386/i386.c (ix86_option_override_internal): Ditto.
+	* config/i386/i386.c (ix86_option_override_internal): Ditto.
 	(ix86_issue_rate): Ditto.
 	(ix86_adjust_cost): Ditto.
 	(ia32_multipass_dfa_lookahead): Ditto.
 	(ix86_sched_init_global): Ditto.
 	(get_builtin_code_for_version): Ditto.
-	* gcc/config/i386/i386.h (enum target_cpu_default): Ditto.
+	* config/i386/i386.h (enum target_cpu_default): Ditto.
 	(enum processor_type): Ditto.
-	* gcc/config/i386/x86-tune.def (DEF_TUNE): Ditto.
+	* config/i386/x86-tune.def (DEF_TUNE): Ditto.
 
 2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -903,7 +914,7 @@
 2013-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
-	* gcc/tree-cfg.c (replace_loop_annotate): Replace warning by
+	* tree-cfg.c (replace_loop_annotate): Replace warning by
 	warning_at.
 
 2013-10-30  Jason Merrill  <jason@redhat.com>
@@ -1024,10 +1035,10 @@
 
 2013-10-30  Christian Bruel  <christian.bruel@st.com>
 
-	* gcc/config/sh/sh-mem.cc (sh_expand_cmpnstr): New function.
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr): New function.
 	(sh_expand_cmpstr): Handle known align and schedule improvements.
-	* gcc/config/sh/sh-protos.h (sh_expand_cmpstrn): Declare.
-	* gcc/config/sh/sh.md (cmpstrnsi): New pattern.
+	* config/sh/sh-protos.h (sh_expand_cmpstrn): Declare.
+	* config/sh/sh.md (cmpstrnsi): New pattern.
 
 2013-10-30  Martin Jambor  <mjambor@suse.cz>
 
@@ -2303,7 +2314,7 @@
 
 2013-10-24  Joern Rennecke  <joern.rennecke@embecosm.com>
 
-	* gcc/config/arc/arc.c (arc_ccfsm_post_advance): Also handle
+	* config/arc/arc.c (arc_ccfsm_post_advance): Also handle
 	TYPE_UNCOND_BRANCH.
 	(arc_ifcvt) <case 1 and 2>: Check that arc_ccfsm_post_advance
 	changes statep->state.
@@ -2335,12 +2346,12 @@
 2013-10-25  Christian Bruel  <christian.bruel@st.com>
 
 	* config.gcc (sh-*): Add sh-mem.o to extra_obj.
-	* gcc/config/sh/t-sh (sh-mem.o): New rule.
-	* gcc/config/sh/sh-mem.cc (expand_block_move): Moved here.
+	* config/sh/t-sh (sh-mem.o): New rule.
+	* config/sh/sh-mem.cc (expand_block_move): Moved here.
 	(sh_expand_cmpstr): New function.
-	* gcc/config/sh/sh.c (force_into, expand_block_move): Move to sh-mem.c.
-	* gcc/config/sh/sh-protos.h (sh_expand_cmpstr): Declare.
-	* gcc/config/sh/sh.md (cmpstrsi, cmpstr_t): New patterns.
+	* config/sh/sh.c (force_into, expand_block_move): Move to sh-mem.c.
+	* config/sh/sh-protos.h (sh_expand_cmpstr): Declare.
+	* config/sh/sh.md (cmpstrsi, cmpstr_t): New patterns.
 	(rotlhi3_8): Rename.
 
 2013-10-24  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
@@ -3184,7 +3195,7 @@
 
 2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* gcc/config/rs6000/vector.md (vec_unpacks_hi_v4sf): Correct for
+	* config/rs6000/vector.md (vec_unpacks_hi_v4sf): Correct for
 	endianness.
 	(vec_unpacks_lo_v4sf): Likewise.
 	(vec_unpacks_float_hi_v4si): Likewise.
@@ -3970,8 +3981,8 @@
 	(anddi3_insn): Update type attribute.
 	(xordi3_insn): Likewise.
 	(one_cmpldi2): Likewise.
-	* gcc/config/arm/vfp.md (movhf_vfp_neon): Update type attribute.
-	* gcc/config/arm/neon.md (neon_mov): Update type attribute.
+	* config/arm/vfp.md (movhf_vfp_neon): Update type attribute.
+	* config/arm/neon.md (neon_mov): Update type attribute.
 	(*movmisalign<mode>_neon_store): Likewise.
 	(*movmisalign<mode>_neon_load): Likewise.
 	(vec_set<mode>_internal): Likewise.
