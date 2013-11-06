@@ -3409,7 +3409,7 @@ infer_nonnull_range (gimple stmt, tree op)
 	  /* Now see if op appears in the nonnull list.  */
 	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
 	    {
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
+	      int idx = tree_to_hwi (TREE_VALUE (t)) - 1;
 	      tree arg = gimple_call_arg (stmt, idx);
 	      if (operand_equal_p (op, arg, 0))
 		return true;
