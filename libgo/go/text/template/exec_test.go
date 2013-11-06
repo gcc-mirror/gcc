@@ -24,7 +24,7 @@ type T struct {
 	U16         uint16
 	X           string
 	FloatZero   float64
-	ComplexZero float64
+	ComplexZero complex128
 	// Nested structs.
 	U *U
 	// Struct with String method.
@@ -57,6 +57,7 @@ type T struct {
 	Err error
 	// Pointers
 	PI  *int
+	PS  *string
 	PSI *[]int
 	NIL *int
 	// Function (not method)
@@ -64,6 +65,7 @@ type T struct {
 	VariadicFunc    func(...string) string
 	VariadicFuncInt func(int, ...string) string
 	NilOKFunc       func(*int) bool
+	ErrFunc         func() (string, error)
 	// Template to test evaluation of templates.
 	Tmpl *Template
 	// Unexported field; cannot be accessed by template.
@@ -124,11 +126,13 @@ var tVal = &T{
 	Str:               bytes.NewBuffer([]byte("foozle")),
 	Err:               errors.New("erroozle"),
 	PI:                newInt(23),
+	PS:                newString("a string"),
 	PSI:               newIntSlice(21, 22, 23),
 	BinaryFunc:        func(a, b string) string { return fmt.Sprintf("[%s=%s]", a, b) },
 	VariadicFunc:      func(s ...string) string { return fmt.Sprint("<", strings.Join(s, "+"), ">") },
 	VariadicFuncInt:   func(a int, s ...string) string { return fmt.Sprint(a, "=<", strings.Join(s, "+"), ">") },
 	NilOKFunc:         func(s *int) bool { return s == nil },
+	ErrFunc:           func() (string, error) { return "bla", nil },
 	Tmpl:              Must(New("x").Parse("test template")), // "x" is the value of .X
 }
 
@@ -141,9 +145,11 @@ var iVal I = tVal
 
 // Helpers for creation.
 func newInt(n int) *int {
-	p := new(int)
-	*p = n
-	return p
+	return &n
+}
+
+func newString(s string) *string {
+	return &s
 }
 
 func newIntSlice(n ...int) *[]int {
@@ -280,6 +286,7 @@ var execTests = []execTest{
 
 	// Pointers.
 	{"*int", "{{.PI}}", "23", tVal, true},
+	{"*string", "{{.PS}}", "a string", tVal, true},
 	{"*[]int", "{{.PSI}}", "[21 22 23]", tVal, true},
 	{"*[]int[1]", "{{index .PSI 1}}", "22", tVal, true},
 	{"NIL", "{{.NIL}}", "<nil>", tVal, true},
@@ -322,6 +329,7 @@ var execTests = []execTest{
 	{"if .BinaryFunc call", "{{ if .BinaryFunc}}{{call .BinaryFunc `1` `2`}}{{end}}", "[1=2]", tVal, true},
 	{"if not .BinaryFunc call", "{{ if not .BinaryFunc}}{{call .BinaryFunc `1` `2`}}{{else}}No{{end}}", "No", tVal, true},
 	{"Interface Call", `{{stringer .S}}`, "foozle", map[string]interface{}{"S": bytes.NewBufferString("foozle")}, true},
+	{".ErrFunc", "{{call .ErrFunc}}", "bla", tVal, true},
 
 	// Erroneous function calls (check args).
 	{".BinaryFuncTooFew", "{{call .BinaryFunc `1`}}", "", tVal, false},
@@ -366,6 +374,8 @@ var execTests = []execTest{
 	{"if map not unset", "{{if not .MXI.none}}ZERO{{else}}NON-ZERO{{end}}", "ZERO", tVal, true},
 	{"if $x with $y int", "{{if $x := true}}{{with $y := .I}}{{$x}},{{$y}}{{end}}{{end}}", "true,17", tVal, true},
 	{"if $x with $x int", "{{if $x := true}}{{with $x := .I}}{{$x}},{{end}}{{$x}}{{end}}", "17,true", tVal, true},
+	{"if else if", "{{if false}}FALSE{{else if true}}TRUE{{end}}", "TRUE", tVal, true},
+	{"if else chain", "{{if eq 1 3}}1{{else if eq 2 3}}2{{else if eq 3 3}}3{{end}}", "3", tVal, true},
 
 	// Print etc.
 	{"print", `{{print "hello, print"}}`, "hello, print", tVal, true},
@@ -388,6 +398,7 @@ var execTests = []execTest{
 		"&lt;script&gt;alert(&#34;XSS&#34;);&lt;/script&gt;", nil, true},
 	{"html pipeline", `{{printf "<script>alert(\"XSS\");</script>" | html}}`,
 		"&lt;script&gt;alert(&#34;XSS&#34;);&lt;/script&gt;", nil, true},
+	{"html", `{{html .PS}}`, "a string", tVal, true},
 
 	// JavaScript.
 	{"js", `{{js .}}`, `It\'d be nice.`, `It'd be nice.`, true},
@@ -858,5 +869,113 @@ func TestMessageForExecuteEmpty(t *testing.T) {
 	err = tmpl.ExecuteTemplate(&b, "secondary", 0)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+type cmpTest struct {
+	expr  string
+	truth string
+	ok    bool
+}
+
+var cmpTests = []cmpTest{
+	{"eq true true", "true", true},
+	{"eq true false", "false", true},
+	{"eq 1+2i 1+2i", "true", true},
+	{"eq 1+2i 1+3i", "false", true},
+	{"eq 1.5 1.5", "true", true},
+	{"eq 1.5 2.5", "false", true},
+	{"eq 1 1", "true", true},
+	{"eq 1 2", "false", true},
+	{"eq `xy` `xy`", "true", true},
+	{"eq `xy` `xyz`", "false", true},
+	{"eq .Xuint .Xuint", "true", true},
+	{"eq .Xuint .Yuint", "false", true},
+	{"eq 3 4 5 6 3", "true", true},
+	{"eq 3 4 5 6 7", "false", true},
+	{"ne true true", "false", true},
+	{"ne true false", "true", true},
+	{"ne 1+2i 1+2i", "false", true},
+	{"ne 1+2i 1+3i", "true", true},
+	{"ne 1.5 1.5", "false", true},
+	{"ne 1.5 2.5", "true", true},
+	{"ne 1 1", "false", true},
+	{"ne 1 2", "true", true},
+	{"ne `xy` `xy`", "false", true},
+	{"ne `xy` `xyz`", "true", true},
+	{"ne .Xuint .Xuint", "false", true},
+	{"ne .Xuint .Yuint", "true", true},
+	{"lt 1.5 1.5", "false", true},
+	{"lt 1.5 2.5", "true", true},
+	{"lt 1 1", "false", true},
+	{"lt 1 2", "true", true},
+	{"lt `xy` `xy`", "false", true},
+	{"lt `xy` `xyz`", "true", true},
+	{"lt .Xuint .Xuint", "false", true},
+	{"lt .Xuint .Yuint", "true", true},
+	{"le 1.5 1.5", "true", true},
+	{"le 1.5 2.5", "true", true},
+	{"le 2.5 1.5", "false", true},
+	{"le 1 1", "true", true},
+	{"le 1 2", "true", true},
+	{"le 2 1", "false", true},
+	{"le `xy` `xy`", "true", true},
+	{"le `xy` `xyz`", "true", true},
+	{"le `xyz` `xy`", "false", true},
+	{"le .Xuint .Xuint", "true", true},
+	{"le .Xuint .Yuint", "true", true},
+	{"le .Yuint .Xuint", "false", true},
+	{"gt 1.5 1.5", "false", true},
+	{"gt 1.5 2.5", "false", true},
+	{"gt 1 1", "false", true},
+	{"gt 2 1", "true", true},
+	{"gt 1 2", "false", true},
+	{"gt `xy` `xy`", "false", true},
+	{"gt `xy` `xyz`", "false", true},
+	{"gt .Xuint .Xuint", "false", true},
+	{"gt .Xuint .Yuint", "false", true},
+	{"gt .Yuint .Xuint", "true", true},
+	{"ge 1.5 1.5", "true", true},
+	{"ge 1.5 2.5", "false", true},
+	{"ge 2.5 1.5", "true", true},
+	{"ge 1 1", "true", true},
+	{"ge 1 2", "false", true},
+	{"ge 2 1", "true", true},
+	{"ge `xy` `xy`", "true", true},
+	{"ge `xy` `xyz`", "false", true},
+	{"ge `xyz` `xy`", "true", true},
+	{"ge .Xuint .Xuint", "true", true},
+	{"ge .Xuint .Yuint", "false", true},
+	{"ge .Yuint .Xuint", "true", true},
+	// Errors
+	{"eq `xy` 1", "", false},    // Different types.
+	{"lt true true", "", false}, // Unordered types.
+	{"lt 1+0i 1+0i", "", false}, // Unordered types.
+}
+
+func TestComparison(t *testing.T) {
+	b := new(bytes.Buffer)
+	var cmpStruct = struct {
+		Xuint, Yuint uint
+	}{3, 4}
+	for _, test := range cmpTests {
+		text := fmt.Sprintf("{{if %s}}true{{else}}false{{end}}", test.expr)
+		tmpl, err := New("empty").Parse(text)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b.Reset()
+		err = tmpl.Execute(b, &cmpStruct)
+		if test.ok && err != nil {
+			t.Errorf("%s errored incorrectly: %s", test.expr, err)
+			continue
+		}
+		if !test.ok && err == nil {
+			t.Errorf("%s did not error", test.expr)
+			continue
+		}
+		if b.String() != test.truth {
+			t.Errorf("%s: want %s; got %s", test.expr, test.truth, b.String())
+		}
 	}
 }

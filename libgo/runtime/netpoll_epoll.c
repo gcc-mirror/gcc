@@ -94,24 +94,24 @@ runtime_netpollinit(void)
 }
 
 int32
-runtime_netpollopen(int32 fd, PollDesc *pd)
+runtime_netpollopen(uintptr fd, PollDesc *pd)
 {
 	EpollEvent ev;
 	int32 res;
 
 	ev.events = EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET;
 	ev.data.ptr = (void*)pd;
-	res = runtime_epollctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+	res = runtime_epollctl(epfd, EPOLL_CTL_ADD, (int32)fd, &ev);
 	return -res;
 }
 
 int32
-runtime_netpollclose(int32 fd)
+runtime_netpollclose(uintptr fd)
 {
 	EpollEvent ev;
 	int32 res;
 
-	res = runtime_epollctl(epfd, EPOLL_CTL_DEL, fd, &ev);
+	res = runtime_epollctl(epfd, EPOLL_CTL_DEL, (int32)fd, &ev);
 	return -res;
 }
 

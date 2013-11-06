@@ -110,7 +110,7 @@ var bslice = barray[:]
 
 var b byte
 
-var fmttests = []struct {
+var fmtTests = []struct {
 	fmt string
 	val interface{}
 	out string
@@ -227,6 +227,8 @@ var fmttests = []struct {
 	{"%+.3g", -1.0, "-1"},
 	{"% .3g", -1.0, "-1"},
 	{"% .3g", 1.0, " 1"},
+	{"%b", float32(1.0), "8388608p-23"},
+	{"%b", 1.0, "4503599627370496p-52"},
 
 	// complex values
 	{"%+.3e", 0i, "(+0.000e+00+0.000e+00i)"},
@@ -247,6 +249,8 @@ var fmttests = []struct {
 	{"% .3E", -1 - 2i, "(-1.000E+00-2.000E+00i)"},
 	{"%+.3g", complex64(1 + 2i), "(+1+2i)"},
 	{"%+.3g", complex128(1 + 2i), "(+1+2i)"},
+	{"%b", complex64(1 + 2i), "(8388608p-23+8388608p-22i)"},
+	{"%b", 1 + 2i, "(4503599627370496p-52+4503599627370496p-51i)"},
 
 	// erroneous formats
 	{"", 2, "%!(EXTRA int=2)"},
@@ -493,6 +497,17 @@ var fmttests = []struct {
 	// Used to crash because nByte didn't allow for a sign.
 	{"%b", int64(-1 << 63), "-1000000000000000000000000000000000000000000000000000000000000000"},
 
+	// Used to panic.
+	{"%0100d", 1, "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"},
+	{"%0100d", -1, "-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"},
+	{"%0.100f", 1.0, "1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"},
+	{"%0.100f", -1.0, "-1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"},
+
+	// Zero padding floats used to put the minus sign in the middle.
+	{"%020f", -1.0, "-000000000001.000000"},
+	{"%20f", -1.0, "           -1.000000"},
+	{"%0100f", -1.0, "-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001.000000"},
+
 	// Complex fmt used to leave the plus flag set for future entries in the array
 	// causing +2+0i and +3+0i instead of 2+0i and 3+0i.
 	{"%v", []complex64{1, 2, 3}, "[(1+0i) (2+0i) (3+0i)]"},
@@ -503,7 +518,7 @@ var fmttests = []struct {
 }
 
 func TestSprintf(t *testing.T) {
-	for _, tt := range fmttests {
+	for _, tt := range fmtTests {
 		s := Sprintf(tt.fmt, tt.val)
 		if i := strings.Index(tt.out, "PTR"); i >= 0 {
 			pattern := "PTR"
@@ -535,6 +550,55 @@ func TestSprintf(t *testing.T) {
 			} else {
 				t.Errorf("Sprintf(%q, %v) = %q want %q", tt.fmt, tt.val, s, tt.out)
 			}
+		}
+	}
+}
+
+type SE []interface{} // slice of empty; notational compactness.
+
+var reorderTests = []struct {
+	fmt string
+	val SE
+	out string
+}{
+	{"%[1]d", SE{1}, "1"},
+	{"%[2]d", SE{2, 1}, "1"},
+	{"%[2]d %[1]d", SE{1, 2}, "2 1"},
+	{"%[2]*[1]d", SE{2, 5}, "    2"},
+	{"%6.2f", SE{12.0}, " 12.00"}, // Explicit version of next line.
+	{"%[3]*.[2]*[1]f", SE{12.0, 2, 6}, " 12.00"},
+	{"%[1]*.[2]*[3]f", SE{6, 2, 12.0}, " 12.00"},
+	{"%10f", SE{12.0}, " 12.000000"},
+	{"%[1]*[3]f", SE{10, 99, 12.0}, " 12.000000"},
+	{"%.6f", SE{12.0}, "12.000000"}, // Explicit version of next line.
+	{"%.[1]*[3]f", SE{6, 99, 12.0}, "12.000000"},
+	{"%6.f", SE{12.0}, "    12"}, //  // Explicit version of next line; empty precision means zero.
+	{"%[1]*.[3]f", SE{6, 3, 12.0}, "    12"},
+	// An actual use! Print the same arguments twice.
+	{"%d %d %d %#[1]o %#o %#o", SE{11, 12, 13}, "11 12 13 013 014 015"},
+
+	// Erroneous cases.
+	{"%[d", SE{2, 1}, "%!d(BADINDEX)"},
+	{"%]d", SE{2, 1}, "%!](int=2)d%!(EXTRA int=1)"},
+	{"%[]d", SE{2, 1}, "%!d(BADINDEX)"},
+	{"%[-3]d", SE{2, 1}, "%!d(BADINDEX)"},
+	{"%[99]d", SE{2, 1}, "%!d(BADINDEX)"},
+	{"%[3]", SE{2, 1}, "%!(NOVERB)"},
+	{"%[1].2d", SE{5, 6}, "%!d(BADINDEX)"},
+	{"%[1]2d", SE{2, 1}, "%!d(BADINDEX)"},
+	{"%3.[2]d", SE{7}, "%!d(BADINDEX)"},
+	{"%.[2]d", SE{7}, "%!d(BADINDEX)"},
+	{"%d %d %d %#[1]o %#o %#o %#o", SE{11, 12, 13}, "11 12 13 013 014 015 %!o(MISSING)"},
+	{"%[5]d %[2]d %d", SE{1, 2, 3}, "%!d(BADINDEX) 2 3"},
+	{"%d %[3]d %d", SE{1, 2}, "1 %!d(BADINDEX) 2"}, // Erroneous index does not affect sequence.
+}
+
+func TestReorder(t *testing.T) {
+	for _, tt := range reorderTests {
+		s := Sprintf(tt.fmt, tt.val...)
+		if s != tt.out {
+			t.Errorf("Sprintf(%q, %v) = <%s> want <%s>", tt.fmt, tt.val, s, tt.out)
+		} else {
 		}
 	}
 }
@@ -607,6 +671,9 @@ var mallocTest = []struct {
 var _ bytes.Buffer
 
 func TestCountMallocs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	if runtime.GOMAXPROCS(0) > 1 {
 		t.Skip("skipping; GOMAXPROCS>1")
 	}
@@ -832,16 +899,16 @@ var panictests = []struct {
 }{
 	// String
 	{"%s", (*Panic)(nil), "<nil>"}, // nil pointer special case
-	{"%s", Panic{io.ErrUnexpectedEOF}, "%s(PANIC=unexpected EOF)"},
-	{"%s", Panic{3}, "%s(PANIC=3)"},
+	{"%s", Panic{io.ErrUnexpectedEOF}, "%!s(PANIC=unexpected EOF)"},
+	{"%s", Panic{3}, "%!s(PANIC=3)"},
 	// GoString
 	{"%#v", (*Panic)(nil), "<nil>"}, // nil pointer special case
-	{"%#v", Panic{io.ErrUnexpectedEOF}, "%v(PANIC=unexpected EOF)"},
-	{"%#v", Panic{3}, "%v(PANIC=3)"},
+	{"%#v", Panic{io.ErrUnexpectedEOF}, "%!v(PANIC=unexpected EOF)"},
+	{"%#v", Panic{3}, "%!v(PANIC=3)"},
 	// Format
 	{"%s", (*PanicF)(nil), "<nil>"}, // nil pointer special case
-	{"%s", PanicF{io.ErrUnexpectedEOF}, "%s(PANIC=unexpected EOF)"},
-	{"%s", PanicF{3}, "%s(PANIC=3)"},
+	{"%s", PanicF{io.ErrUnexpectedEOF}, "%!s(PANIC=unexpected EOF)"},
+	{"%s", PanicF{3}, "%!s(PANIC=3)"},
 }
 
 func TestPanics(t *testing.T) {
@@ -861,7 +928,7 @@ type Recur struct {
 	failed *bool
 }
 
-func (r Recur) String() string {
+func (r *Recur) String() string {
 	if recurCount++; recurCount > 10 {
 		*r.failed = true
 		return "FAIL"
@@ -874,13 +941,13 @@ func (r Recur) String() string {
 
 func TestBadVerbRecursion(t *testing.T) {
 	failed := false
-	r := Recur{3, &failed}
+	r := &Recur{3, &failed}
 	Sprintf("recur@%p value: %d\n", &r, r.i)
 	if failed {
 		t.Error("fail with pointer")
 	}
 	failed = false
-	r = Recur{4, &failed}
+	r = &Recur{4, &failed}
 	Sprintf("recur@%p, value: %d\n", r, r.i)
 	if failed {
 		t.Error("fail with value")

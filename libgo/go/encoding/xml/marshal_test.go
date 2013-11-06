@@ -276,6 +276,54 @@ type Strings struct {
 	X []string `xml:"A>B,omitempty"`
 }
 
+type PointerFieldsTest struct {
+	XMLName  Name    `xml:"dummy"`
+	Name     *string `xml:"name,attr"`
+	Age      *uint   `xml:"age,attr"`
+	Empty    *string `xml:"empty,attr"`
+	Contents *string `xml:",chardata"`
+}
+
+type ChardataEmptyTest struct {
+	XMLName  Name    `xml:"test"`
+	Contents *string `xml:",chardata"`
+}
+
+type MyMarshalerTest struct {
+}
+
+var _ Marshaler = (*MyMarshalerTest)(nil)
+
+func (m *MyMarshalerTest) MarshalXML(e *Encoder, start StartElement) error {
+	e.EncodeToken(start)
+	e.EncodeToken(CharData([]byte("hello world")))
+	e.EncodeToken(EndElement{start.Name})
+	return nil
+}
+
+type MyMarshalerAttrTest struct {
+}
+
+var _ MarshalerAttr = (*MyMarshalerAttrTest)(nil)
+
+func (m *MyMarshalerAttrTest) MarshalXMLAttr(name Name) (Attr, error) {
+	return Attr{name, "hello world"}, nil
+}
+
+type MarshalerStruct struct {
+	Foo MyMarshalerAttrTest `xml:",attr"`
+}
+
+func ifaceptr(x interface{}) interface{} {
+	return &x
+}
+
+var (
+	nameAttr     = "Sarah"
+	ageAttr      = uint(12)
+	contentsAttr = "lorem ipsum"
+)
+
 // Unless explicitly stated as such (or *Plain), all of the
 // tests below are two-way tests. When introducing new tests,
 // please try to make them two-way as well to ensure that
@@ -312,6 +360,7 @@ var marshalTests = []struct {
 	{Value: &Plain{NamedType("potato")}, ExpectXML: `<Plain><V>potato</V></Plain>`},
 	{Value: &Plain{[]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
 	{Value: &Plain{[3]int{1, 2, 3}}, ExpectXML: `<Plain><V>1</V><V>2</V><V>3</V></Plain>`},
+	{Value: ifaceptr(true), MarshalOnly: true, ExpectXML: `<bool>true</bool>`},
 
 	// Test time.
 	{
@@ -673,6 +722,20 @@ var marshalTests = []struct {
 		ExpectXML: `<OmitAttrTest></OmitAttrTest>`,
 	},
 
+	// pointer fields
+	{
+		Value:       &PointerFieldsTest{Name: &nameAttr, Age: &ageAttr, Contents: &contentsAttr},
+		ExpectXML:   `<dummy name="Sarah" age="12">lorem ipsum</dummy>`,
+		MarshalOnly: true,
+	},
+
+	// empty chardata pointer field
+	{
+		Value:       &ChardataEmptyTest{},
+		ExpectXML:   `<test></test>`,
+		MarshalOnly: true,
+	},
+
 	// omitempty on fields
 	{
 		Value: &OmitFieldTest{
@@ -811,6 +874,15 @@ var marshalTests = []struct {
 		ExpectXML: `<Strings><A></A></Strings>`,
 		Value:     &Strings{},
 	},
+	// Custom marshalers.
+	{
+		ExpectXML: `<MyMarshalerTest>hello world</MyMarshalerTest>`,
+		Value:     &MyMarshalerTest{},
+	},
+	{
+		ExpectXML: `<MarshalerStruct Foo="hello world"></MarshalerStruct>`,
+		Value:     &MarshalerStruct{},
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -835,6 +907,10 @@ func TestMarshal(t *testing.T) {
 
 type AttrParent struct {
 	X string `xml:"X>Y,attr"`
+}
+
+type BadAttr struct {
+	Name []string `xml:"name,attr"`
 }
 
 var marshalErrorTests = []struct {
@@ -868,6 +944,10 @@ var marshalErrorTests = []struct {
 	{
 		Value: &AttrParent{},
 		Err:   `xml: X>Y chain not valid with attr flag`,
+	},
+	{
+		Value: BadAttr{[]string{"X", "Y"}},
+		Err:   `xml: unsupported type: []string`,
 	},
 }
 
@@ -1009,6 +1089,23 @@ func TestMarshalWriteIOErrors(t *testing.T) {
 	}
 }
 
+func TestMarshalFlush(t *testing.T) {
+	var buf bytes.Buffer
+	enc := NewEncoder(&buf)
+	if err := enc.EncodeToken(CharData("hello world")); err != nil {
+		t.Fatalf("enc.EncodeToken: %v", err)
+	}
+	if buf.Len() > 0 {
+		t.Fatalf("enc.EncodeToken caused actual write: %q", buf.Bytes())
+	}
+	if err := enc.Flush(); err != nil {
+		t.Fatalf("enc.Flush: %v", err)
+	}
+	if buf.String() != "hello world" {
+		t.Fatalf("after enc.Flush, buf.String() = %q, want %q", buf.String(), "hello world")
+	}
+}
+
 func BenchmarkMarshal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Marshal(atomValue)
@@ -1019,5 +1116,36 @@ func BenchmarkUnmarshal(b *testing.B) {
 	xml := []byte(atomXml)
 	for i := 0; i < b.N; i++ {
 		Unmarshal(xml, &Feed{})
+	}
+}
+
+// golang.org/issue/6556
+func TestStructPointerMarshal(t *testing.T) {
+	type A struct {
+		XMLName string `xml:"a"`
+		B       []interface{}
+	}
+	type C struct {
+		XMLName Name
+		Value   string `xml:"value"`
+	}
+
+	a := new(A)
+	a.B = append(a.B, &C{
+		XMLName: Name{Local: "c"},
+		Value:   "x",
+	})
+
+	b, err := Marshal(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if x := string(b); x != "<a><c><value>x</value></c></a>" {
+		t.Fatal(x)
+	}
+	var v A
+	err = Unmarshal(b, &v)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

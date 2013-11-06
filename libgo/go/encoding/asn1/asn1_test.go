@@ -12,6 +12,32 @@ import (
 	"time"
 )
 
+type boolTest struct {
+	in  []byte
+	ok  bool
+	out bool
+}
+
+var boolTestData = []boolTest{
+	{[]byte{0x00}, true, false},
+	{[]byte{0xff}, true, true},
+	{[]byte{0x00, 0x00}, false, false},
+	{[]byte{0xff, 0xff}, false, false},
+	{[]byte{0x01}, false, false},
+}
+
+func TestParseBool(t *testing.T) {
+	for i, test := range boolTestData {
+		ret, err := parseBool(test.in)
+		if (err == nil) != test.ok {
+			t.Errorf("#%d: Incorrect error result (did fail? %v, expected: %v)", i, err == nil, test.ok)
+		}
+		if test.ok && ret != test.out {
+			t.Errorf("#%d: Bad result: %v (expected %v)", i, ret, test.out)
+		}
+	}
+}
+
 type int64Test struct {
 	in  []byte
 	ok  bool
@@ -183,6 +209,7 @@ var objectIdentifierTestData = []objectIdentifierTest{
 	{[]byte{85}, true, []int{2, 5}},
 	{[]byte{85, 0x02}, true, []int{2, 5, 2}},
 	{[]byte{85, 0x02, 0xc0, 0x00}, true, []int{2, 5, 2, 0x2000}},
+	{[]byte{0x81, 0x34, 0x03}, true, []int{2, 100, 3}},
 	{[]byte{85, 0x02, 0xc0, 0x80, 0x80, 0x80, 0x80}, false, []int{}},
 }
 
@@ -378,7 +405,7 @@ var unmarshalTestData = []struct {
 	{[]byte{0x30, 0x03, 0x81, 0x01, 0x01}, &TestContextSpecificTags{1}},
 	{[]byte{0x30, 0x08, 0xa1, 0x03, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02}, &TestContextSpecificTags2{1, 2}},
 	{[]byte{0x01, 0x01, 0x00}, newBool(false)},
-	{[]byte{0x01, 0x01, 0x01}, newBool(true)},
+	{[]byte{0x01, 0x01, 0xff}, newBool(true)},
 	{[]byte{0x30, 0x0b, 0x13, 0x03, 0x66, 0x6f, 0x6f, 0x02, 0x01, 0x22, 0x02, 0x01, 0x33}, &TestElementsAfterString{"foo", 0x22, 0x33}},
 	{[]byte{0x30, 0x05, 0x02, 0x03, 0x12, 0x34, 0x56}, &TestBigInt{big.NewInt(0x123456)}},
 }

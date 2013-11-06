@@ -240,11 +240,11 @@ func marshalBitString(out *forkableWriter, b BitString) (err error) {
 }
 
 func marshalObjectIdentifier(out *forkableWriter, oid []int) (err error) {
-	if len(oid) < 2 || oid[0] > 6 || oid[1] >= 40 {
+	if len(oid) < 2 || oid[0] > 2 || (oid[0] < 2 && oid[1] >= 40) {
 		return StructuralError{"invalid object identifier"}
 	}
 
-	err = out.WriteByte(byte(oid[0]*40 + oid[1]))
+	err = marshalBase128Int(out, int64(oid[0]*40+oid[1]))
 	if err != nil {
 		return
 	}
@@ -304,7 +304,7 @@ func marshalUTCTime(out *forkableWriter, t time.Time) (err error) {
 	case 2000 <= year && year < 2050:
 		err = marshalTwoDigits(out, int(year-2000))
 	default:
-		return StructuralError{"Cannot represent time as UTCTime"}
+		return StructuralError{"cannot represent time as UTCTime"}
 	}
 	if err != nil {
 		return
@@ -441,11 +441,11 @@ func marshalBody(out *forkableWriter, value reflect.Value, params fieldParameter
 			return
 		}
 
-		var params fieldParameters
+		var fp fieldParameters
 		for i := 0; i < v.Len(); i++ {
 			var pre *forkableWriter
 			pre, out = out.fork()
-			err = marshalField(pre, v.Index(i), params)
+			err = marshalField(pre, v.Index(i), fp)
 			if err != nil {
 				return
 			}
@@ -501,7 +501,7 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 	class := classUniversal
 
 	if params.stringType != 0 && tag != tagPrintableString {
-		return StructuralError{"Explicit string type given to non-string member"}
+		return StructuralError{"explicit string type given to non-string member"}
 	}
 
 	if tag == tagPrintableString {
@@ -525,7 +525,7 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 
 	if params.set {
 		if tag != tagSequence {
-			return StructuralError{"Non sequence tagged as set"}
+			return StructuralError{"non sequence tagged as set"}
 		}
 		tag = tagSet
 	}

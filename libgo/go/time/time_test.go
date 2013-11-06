@@ -413,6 +413,8 @@ var formatTests = []FormatTest{
 	{"am/pm", "3pm", "9pm"},
 	{"AM/PM", "3PM", "9PM"},
 	{"two-digit year", "06 01 02", "09 02 04"},
+	// Three-letter months and days must not be followed by lower-case letter.
+	{"Janet", "Hi Janet, the Month is January", "Hi Janet, the Month is February"},
 	// Time stamps, Fractional seconds.
 	{"Stamp", Stamp, "Feb  4 21:00:57"},
 	{"StampMilli", StampMilli, "Feb  4 21:00:57.012"},
@@ -505,6 +507,11 @@ var parseTests = []ParseTest{
 	// Leading zeros in other places should not be taken as fractional seconds.
 	{"zero1", "2006.01.02.15.04.05.0", "2010.02.04.21.00.57.0", false, false, 1, 1},
 	{"zero2", "2006.01.02.15.04.05.00", "2010.02.04.21.00.57.01", false, false, 1, 2},
+	// Month and day names only match when not followed by a lower-case letter.
+	{"Janet", "Hi Janet, the Month is January: Jan _2 15:04:05 2006", "Hi Janet, the Month is February: Feb  4 21:00:57 2010", false, true, 1, 0},
+
+	// GMT with offset.
+	{"GMT-8", UnixDate, "Fri Feb  5 05:00:57 GMT-8 2010", true, true, 1, 0},
 
 	// Accept any number of fractional second digits (including none) for .999...
 	// In Go 1, .999... was completely ignored in the format, meaning the first two
@@ -659,6 +666,38 @@ func TestFormatAndParse(t *testing.T) {
 	}
 }
 
+type ParseTimeZoneTest struct {
+	value  string
+	length int
+	ok     bool
+}
+
+var parseTimeZoneTests = []ParseTimeZoneTest{
+	{"gmt hi there", 0, false},
+	{"GMT hi there", 3, true},
+	{"GMT+12 hi there", 6, true},
+	{"GMT+00 hi there", 3, true}, // 0 or 00 is not a legal offset.
+	{"GMT-5 hi there", 5, true},
+	{"GMT-51 hi there", 3, true},
+	{"ChST hi there", 4, true},
+	{"MSDx", 3, true},
+	{"MSDY", 0, false}, // four letters must end in T.
+	{"ESAST hi", 5, true},
+	{"ESASTT hi", 0, false}, // run of upper-case letters too long.
+	{"ESATY hi", 0, false},  // five letters must end in T.
+}
+
+func TestParseTimeZone(t *testing.T) {
+	for _, test := range parseTimeZoneTests {
+		length, ok := ParseTimeZone(test.value)
+		if ok != test.ok {
+			t.Errorf("expected %t for %q got %t", test.ok, test.value, ok)
+		} else if length != test.length {
+			t.Errorf("expected %d for %q got %d", test.length, test.value, length)
+		}
+	}
+}
+
 type ParseErrorTest struct {
 	format string
 	value  string
@@ -778,6 +817,44 @@ func TestMinutesInTimeZone(t *testing.T) {
 	_, offset := time.Zone()
 	if offset != expected {
 		t.Errorf("ZoneOffset = %d, want %d", offset, expected)
+	}
+}
+
+type SecondsTimeZoneOffsetTest struct {
+	format         string
+	value          string
+	expectedoffset int
+}
+
+var secondsTimeZoneOffsetTests = []SecondsTimeZoneOffsetTest{
+	{"2006-01-02T15:04:05-070000", "1871-01-01T05:33:02-003408", -(34*60 + 8)},
+	{"2006-01-02T15:04:05-07:00:00", "1871-01-01T05:33:02-00:34:08", -(34*60 + 8)},
+	{"2006-01-02T15:04:05-070000", "1871-01-01T05:33:02+003408", 34*60 + 8},
+	{"2006-01-02T15:04:05-07:00:00", "1871-01-01T05:33:02+00:34:08", 34*60 + 8},
+	{"2006-01-02T15:04:05Z070000", "1871-01-01T05:33:02-003408", -(34*60 + 8)},
+	{"2006-01-02T15:04:05Z07:00:00", "1871-01-01T05:33:02+00:34:08", 34*60 + 8},
+}
+
+func TestParseSecondsInTimeZone(t *testing.T) {
+	// should accept timezone offsets with seconds like: Zone America/New_York   -4:56:02 -      LMT     1883 Nov 18 12:03:58
+	for _, test := range secondsTimeZoneOffsetTests {
+		time, err := Parse(test.format, test.value)
+		if err != nil {
+			t.Fatal("error parsing date:", err)
+		}
+		_, offset := time.Zone()
+		if offset != test.expectedoffset {
+			t.Errorf("ZoneOffset = %d, want %d", offset, test.expectedoffset)
+		}
+	}
+}
+
+func TestFormatSecondsInTimeZone(t *testing.T) {
+	d := Date(1871, 9, 17, 20, 4, 26, 0, FixedZone("LMT", -(34*60+8)))
+	timestr := d.Format("2006-01-02T15:04:05Z070000")
+	expected := "1871-09-17T20:04:26-003408"
+	if timestr != expected {
+		t.Errorf("Got %s, want %s", timestr, expected)
 	}
 }
 
@@ -1106,9 +1183,9 @@ var invalidEncodingTests = []struct {
 	bytes []byte
 	want  string
 }{
-	{[]byte{}, "Time.GobDecode: no data"},
-	{[]byte{0, 2, 3}, "Time.GobDecode: unsupported version"},
-	{[]byte{1, 2, 3}, "Time.GobDecode: invalid length"},
+	{[]byte{}, "Time.UnmarshalBinary: no data"},
+	{[]byte{0, 2, 3}, "Time.UnmarshalBinary: unsupported version"},
+	{[]byte{1, 2, 3}, "Time.UnmarshalBinary: invalid length"},
 }
 
 func TestInvalidTimeGob(t *testing.T) {
@@ -1118,6 +1195,10 @@ func TestInvalidTimeGob(t *testing.T) {
 		if err == nil || err.Error() != tt.want {
 			t.Errorf("time.GobDecode(%#v) error = %v, want %v", tt.bytes, err, tt.want)
 		}
+		err = ignored.UnmarshalBinary(tt.bytes)
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("time.UnmarshalBinary(%#v) error = %v, want %v", tt.bytes, err, tt.want)
+		}
 	}
 }
 
@@ -1125,10 +1206,10 @@ var notEncodableTimes = []struct {
 	time Time
 	want string
 }{
-	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 1)), "Time.GobEncode: zone offset has fractional minute"},
-	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -1*60)), "Time.GobEncode: unexpected zone offset"},
-	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -32769*60)), "Time.GobEncode: unexpected zone offset"},
-	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 32768*60)), "Time.GobEncode: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 1)), "Time.MarshalBinary: zone offset has fractional minute"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -1*60)), "Time.MarshalBinary: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", -32769*60)), "Time.MarshalBinary: unexpected zone offset"},
+	{Date(0, 1, 2, 3, 4, 5, 6, FixedZone("", 32768*60)), "Time.MarshalBinary: unexpected zone offset"},
 }
 
 func TestNotGobEncodableTime(t *testing.T) {
@@ -1136,6 +1217,10 @@ func TestNotGobEncodableTime(t *testing.T) {
 		_, err := tt.time.GobEncode()
 		if err == nil || err.Error() != tt.want {
 			t.Errorf("%v GobEncode error = %v, want %v", tt.time, err, tt.want)
+		}
+		_, err = tt.time.MarshalBinary()
+		if err == nil || err.Error() != tt.want {
+			t.Errorf("%v MarshalBinary error = %v, want %v", tt.time, err, tt.want)
 		}
 	}
 }
@@ -1233,6 +1318,8 @@ var parseDurationTests = []struct {
 	{"39h9m14.425s", true, 39*Hour + 9*Minute + 14*Second + 425*Millisecond},
 	// large value
 	{"52763797000ns", true, 52763797000 * Nanosecond},
+	// more than 9 digits after decimal point, see http://golang.org/issue/6617
+	{"0.3333333333333333333h", true, 20 * Minute},
 
 	// errors
 	{"", false, 0},
@@ -1300,6 +1387,9 @@ var mallocTest = []struct {
 }
 
 func TestCountMallocs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	if runtime.GOMAXPROCS(0) > 1 {
 		t.Skip("skipping; GOMAXPROCS>1")
 	}
@@ -1324,6 +1414,40 @@ func TestLoadFixed(t *testing.T) {
 	name, offset := Now().In(loc).Zone()
 	if name != "GMT+1" || offset != -1*60*60 {
 		t.Errorf("Now().In(loc).Zone() = %q, %d, want %q, %d", name, offset, "GMT+1", -1*60*60)
+	}
+}
+
+const (
+	minDuration Duration = -1 << 63
+	maxDuration Duration = 1<<63 - 1
+)
+
+var subTests = []struct {
+	t Time
+	u Time
+	d Duration
+}{
+	{Time{}, Time{}, Duration(0)},
+	{Date(2009, 11, 23, 0, 0, 0, 1, UTC), Date(2009, 11, 23, 0, 0, 0, 0, UTC), Duration(1)},
+	{Date(2009, 11, 23, 0, 0, 0, 0, UTC), Date(2009, 11, 24, 0, 0, 0, 0, UTC), -24 * Hour},
+	{Date(2009, 11, 24, 0, 0, 0, 0, UTC), Date(2009, 11, 23, 0, 0, 0, 0, UTC), 24 * Hour},
+	{Date(-2009, 11, 24, 0, 0, 0, 0, UTC), Date(-2009, 11, 23, 0, 0, 0, 0, UTC), 24 * Hour},
+	{Time{}, Date(2109, 11, 23, 0, 0, 0, 0, UTC), Duration(minDuration)},
+	{Date(2109, 11, 23, 0, 0, 0, 0, UTC), Time{}, Duration(maxDuration)},
+	{Time{}, Date(-2109, 11, 23, 0, 0, 0, 0, UTC), Duration(maxDuration)},
+	{Date(-2109, 11, 23, 0, 0, 0, 0, UTC), Time{}, Duration(minDuration)},
+	{Date(2290, 1, 1, 0, 0, 0, 0, UTC), Date(2000, 1, 1, 0, 0, 0, 0, UTC), 290*365*24*Hour + 71*24*Hour},
+	{Date(2300, 1, 1, 0, 0, 0, 0, UTC), Date(2000, 1, 1, 0, 0, 0, 0, UTC), Duration(maxDuration)},
+	{Date(2000, 1, 1, 0, 0, 0, 0, UTC), Date(2290, 1, 1, 0, 0, 0, 0, UTC), -290*365*24*Hour - 71*24*Hour},
+	{Date(2000, 1, 1, 0, 0, 0, 0, UTC), Date(2300, 1, 1, 0, 0, 0, 0, UTC), Duration(minDuration)},
+}
+
+func TestSub(t *testing.T) {
+	for i, st := range subTests {
+		got := st.t.Sub(st.u)
+		if got != st.d {
+			t.Errorf("#%d: Sub(%v, %v): got %v; want %v", i, st.t, st.u, got, st.d)
+		}
 	}
 }
 

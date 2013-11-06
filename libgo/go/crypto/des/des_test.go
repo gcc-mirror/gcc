@@ -1504,20 +1504,63 @@ func TestSubstitutionTableKnownAnswerDecrypt(t *testing.T) {
 	}
 }
 
-func ExampleNewTripleDESCipher() {
-	// NewTripleDESCipher can also be used when EDE2 is required by
-	// duplicating the first 8 bytes of the 16-byte key.
-	ede2Key := []byte("example key 1234")
-
-	var tripleDESKey []byte
-	tripleDESKey = append(tripleDESKey, ede2Key[:16]...)
-	tripleDESKey = append(tripleDESKey, ede2Key[:8]...)
-
-	_, err := NewTripleDESCipher(tripleDESKey)
-	if err != nil {
-		panic(err)
+func TestInitialPermute(t *testing.T) {
+	for i := uint(0); i < 64; i++ {
+		bit := uint64(1) << i
+		got := permuteInitialBlock(bit)
+		want := uint64(1) << finalPermutation[63-i]
+		if got != want {
+			t.Errorf("permute(%x) = %x, want %x", bit, got, want)
+		}
 	}
+}
 
-	// See crypto/cipher for how to use a cipher.Block for encryption and
-	// decryption.
+func TestFinalPermute(t *testing.T) {
+	for i := uint(0); i < 64; i++ {
+		bit := uint64(1) << i
+		got := permuteFinalBlock(bit)
+		want := uint64(1) << initialPermutation[63-i]
+		if got != want {
+			t.Errorf("permute(%x) = %x, want %x", bit, got, want)
+		}
+	}
+}
+
+func TestExpandBlock(t *testing.T) {
+	for i := uint(0); i < 32; i++ {
+		bit := uint32(1) << i
+		got := expandBlock(bit)
+		want := permuteBlock(uint64(bit), expansionFunction[:])
+		if got != want {
+			t.Errorf("expand(%x) = %x, want %x", bit, got, want)
+		}
+	}
+}
+
+func BenchmarkEncrypt(b *testing.B) {
+	tt := encryptDESTests[0]
+	c, err := NewCipher(tt.key)
+	if err != nil {
+		b.Fatal("NewCipher:", err)
+	}
+	out := make([]byte, len(tt.in))
+	b.SetBytes(int64(len(out)))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		c.Encrypt(out, tt.in)
+	}
+}
+
+func BenchmarkDecrypt(b *testing.B) {
+	tt := encryptDESTests[0]
+	c, err := NewCipher(tt.key)
+	if err != nil {
+		b.Fatal("NewCipher:", err)
+	}
+	out := make([]byte, len(tt.out))
+	b.SetBytes(int64(len(out)))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		c.Decrypt(out, tt.out)
+	}
 }

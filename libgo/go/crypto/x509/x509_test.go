@@ -237,6 +237,11 @@ func TestCertificateParse(t *testing.T) {
 	if err := certs[0].VerifyHostname("mail.google.com"); err != nil {
 		t.Error(err)
 	}
+
+	const expectedExtensions = 4
+	if n := len(certs[0].Extensions); n != expectedExtensions {
+		t.Errorf("want %d extensions, got %d", expectedExtensions, n)
+	}
 }
 
 var certBytes = "308203223082028ba00302010202106edf0d9499fd4533dd1297fc42a93be1300d06092a864886" +
@@ -308,7 +313,8 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 	}
 
 	testExtKeyUsage := []ExtKeyUsage{ExtKeyUsageClientAuth, ExtKeyUsageServerAuth}
-	testUnknownExtKeyUsage := []asn1.ObjectIdentifier{[]int{1, 2, 3}, []int{3, 2, 1}}
+	testUnknownExtKeyUsage := []asn1.ObjectIdentifier{[]int{1, 2, 3}, []int{2, 59, 1}}
+	extraExtensionData := []byte("extra extension")
 
 	for _, test := range tests {
 		commonName := "test.example.com"
@@ -330,12 +336,30 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 			BasicConstraintsValid: true,
 			IsCA: true,
 
+			OCSPServer:            []string{"http://ocsp.example.com"},
+			IssuingCertificateURL: []string{"http://crt.example.com/ca1.crt"},
+
 			DNSNames:       []string{"test.example.com"},
 			EmailAddresses: []string{"gopher@golang.org"},
 			IPAddresses:    []net.IP{net.IPv4(127, 0, 0, 1).To4(), net.ParseIP("2001:4860:0:2001::68")},
 
 			PolicyIdentifiers:   []asn1.ObjectIdentifier{[]int{1, 2, 3}},
 			PermittedDNSDomains: []string{".example.com", "example.com"},
+
+			CRLDistributionPoints: []string{"http://crl1.example.com/ca1.crl", "http://crl2.example.com/ca1.crl"},
+
+			ExtraExtensions: []pkix.Extension{
+				{
+					Id:    []int{1, 2, 3, 4},
+					Value: extraExtensionData,
+				},
+				// This extension should override the SubjectKeyId, above.
+				{
+					Id:       oidExtensionSubjectKeyId,
+					Critical: false,
+					Value:    []byte{0x04, 0x04, 4, 3, 2, 1},
+				},
+			},
 		}
 
 		derBytes, err := CreateCertificate(random, &template, &template, test.pub, test.priv)
@@ -374,6 +398,14 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 			t.Errorf("%s: unknown extkeyusage wasn't correctly copied from the template. Got %v, want %v", test.name, cert.UnknownExtKeyUsage, testUnknownExtKeyUsage)
 		}
 
+		if !reflect.DeepEqual(cert.OCSPServer, template.OCSPServer) {
+			t.Errorf("%s: OCSP servers differ from template. Got %v, want %v", test.name, cert.OCSPServer, template.OCSPServer)
+		}
+
+		if !reflect.DeepEqual(cert.IssuingCertificateURL, template.IssuingCertificateURL) {
+			t.Errorf("%s: Issuing certificate URLs differ from template. Got %v, want %v", test.name, cert.IssuingCertificateURL, template.IssuingCertificateURL)
+		}
+
 		if !reflect.DeepEqual(cert.DNSNames, template.DNSNames) {
 			t.Errorf("%s: SAN DNS names differ from template. Got %v, want %v", test.name, cert.DNSNames, template.DNSNames)
 		}
@@ -384,6 +416,18 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 
 		if !reflect.DeepEqual(cert.IPAddresses, template.IPAddresses) {
 			t.Errorf("%s: SAN IPs differ from template. Got %v, want %v", test.name, cert.IPAddresses, template.IPAddresses)
+		}
+
+		if !reflect.DeepEqual(cert.CRLDistributionPoints, template.CRLDistributionPoints) {
+			t.Errorf("%s: CRL distribution points differ from template. Got %v, want %v", test.name, cert.CRLDistributionPoints, template.CRLDistributionPoints)
+		}
+
+		if !bytes.Equal(cert.SubjectKeyId, []byte{4, 3, 2, 1}) {
+			t.Errorf("%s: ExtraExtensions didn't override SubjectKeyId", test.name)
+		}
+
+		if bytes.Index(derBytes, extraExtensionData) == -1 {
+			t.Errorf("%s: didn't find extra extension in DER output", test.name)
 		}
 
 		if test.checkSig {

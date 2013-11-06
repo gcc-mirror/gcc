@@ -24,3 +24,39 @@ func TestUncompressedSource(t *testing.T) {
 		t.Errorf("output[0] = %x, want 0x11", output[0])
 	}
 }
+
+// The following test should not panic.
+func TestIssue5915(t *testing.T) {
+	bits := []int{4, 0, 0, 6, 4, 3, 2, 3, 3, 4, 4, 5, 0, 0, 0, 0, 5, 5, 6,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 8, 6, 0, 11, 0, 8, 0, 6, 6, 10, 8}
+	h := new(huffmanDecoder)
+	ok := h.init(bits)
+	if ok == true {
+		t.Fatalf("Given sequence of bits is bad, and should not succeed.")
+	}
+}
+
+// The following test should not panic.
+func TestIssue5962(t *testing.T) {
+	bits := []int{4, 0, 0, 6, 4, 3, 2, 3, 3, 4, 4, 5, 0, 0, 0, 0,
+		5, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11}
+	h := new(huffmanDecoder)
+	ok := h.init(bits)
+	if ok == true {
+		t.Fatalf("Given sequence of bits is bad, and should not succeed.")
+	}
+}
+
+// The following test should not panic.
+func TestIssue6255(t *testing.T) {
+	bits1 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11}
+	bits2 := []int{11, 13}
+	h := new(huffmanDecoder)
+	if !h.init(bits1) {
+		t.Fatalf("Given sequence of bits is good and should succeed.")
+	}
+	if h.init(bits2) {
+		t.Fatalf("Given sequence of bits is bad and should not succeed.")
+	}
+}

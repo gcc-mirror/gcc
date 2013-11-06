@@ -13,7 +13,6 @@ import (
 	"bufio"
 	"compress/gzip"
 	"crypto/tls"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -109,9 +108,11 @@ func ProxyFromEnvironment(req *Request) (*url.URL, error) {
 	}
 	proxyURL, err := url.Parse(proxy)
 	if err != nil || !strings.HasPrefix(proxyURL.Scheme, "http") {
-		if u, err := url.Parse("http://" + proxy); err == nil {
-			proxyURL = u
-			err = nil
+		// proxy was bogus. Try prepending "http://" to it and
+		// see if that parses correctly. If not, we fall
+		// through and complain about the original one.
+		if proxyURL, err := url.Parse("http://" + proxy); err == nil {
+			return proxyURL, nil
 		}
 	}
 	if err != nil {
@@ -215,6 +216,7 @@ func (t *Transport) CloseIdleConnections() {
 	t.idleMu.Lock()
 	m := t.idleConn
 	t.idleConn = nil
+	t.idleConnCh = nil
 	t.idleMu.Unlock()
 	if m == nil {
 		return
@@ -270,7 +272,9 @@ func (cm *connectMethod) proxyAuth() string {
 		return ""
 	}
 	if u := cm.proxyURL.User; u != nil {
-		return "Basic " + base64.URLEncoding.EncodeToString([]byte(u.String()))
+		username := u.Username()
+		password, _ := u.Password()
+		return "Basic " + basicAuth(username, password)
 	}
 	return ""
 }
@@ -293,8 +297,10 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 		max = DefaultMaxIdleConnsPerHost
 	}
 	t.idleMu.Lock()
+
+	waitingDialer := t.idleConnCh[key]
 	select {
-	case t.idleConnCh[key] <- pconn:
+	case waitingDialer <- pconn:
 		// We're done with this pconn and somebody else is
 		// currently waiting for a conn of this type (they're
 		// actively dialing, but this conn is ready
@@ -303,6 +309,11 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 		t.idleMu.Unlock()
 		return true
 	default:
+		if waitingDialer != nil {
+			// They had populated this, but their dial won
+			// first, so we can clean up this map entry.
+			delete(t.idleConnCh, key)
+		}
 	}
 	if t.idleConn == nil {
 		t.idleConn = make(map[string][]*persistConn)
@@ -322,7 +333,13 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 	return true
 }
 
+// getIdleConnCh returns a channel to receive and return idle
+// persistent connection for the given connectMethod.
+// It may return nil, if persistent connections are not being used.
 func (t *Transport) getIdleConnCh(cm *connectMethod) chan *persistConn {
+	if t.DisableKeepAlives {
+		return nil
+	}
 	key := cm.key()
 	t.idleMu.Lock()
 	defer t.idleMu.Unlock()
@@ -498,8 +515,8 @@ func (t *Transport) dialConn(cm *connectMethod) (*persistConn, error) {
 		if err = conn.(*tls.Conn).Handshake(); err != nil {
 			return nil, err
 		}
-		if t.TLSClientConfig == nil || !t.TLSClientConfig.InsecureSkipVerify {
-			if err = conn.(*tls.Conn).VerifyHostname(cm.tlsHost()); err != nil {
+		if !cfg.InsecureSkipVerify {
+			if err = conn.(*tls.Conn).VerifyHostname(cfg.ServerName); err != nil {
 				return nil, err
 			}
 		}
@@ -831,10 +848,15 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 	// uncompress the gzip stream if we were the layer that
 	// requested it.
 	requestedGzip := false
-	if !pc.t.DisableCompression && req.Header.Get("Accept-Encoding") == "" {
+	if !pc.t.DisableCompression && req.Header.Get("Accept-Encoding") == "" && req.Method != "HEAD" {
 		// Request gzip only, not deflate. Deflate is ambiguous and
 		// not as universally supported anyway.
 		// See: http://www.gzip.org/zlib/zlib_faq.html#faq38
+		//
+		// Note that we don't request this for HEAD requests,
+		// due to a bug in nginx:
+		//   http://trac.nginx.org/nginx/ticket/358
+		//   http://golang.org/issue/5522
 		requestedGzip = true
 		req.extraHeaders().Set("Accept-Encoding", "gzip")
 	}

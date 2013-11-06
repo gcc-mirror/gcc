@@ -33,6 +33,8 @@ var valids = []string{
 	`package p; func f() { if ; true {} };`,
 	`package p; func f() { switch ; {} };`,
 	`package p; func f() { for _ = range "foo" + "bar" {} };`,
+	`package p; func f() { var s []int; g(s[:], s[i:], s[:j], s[i:j], s[i:j:k], s[:j:k]) };`,
+	`package p; var ( _ = (struct {*T}).m; _ = (interface {T}).m )`,
 }
 
 func TestValid(t *testing.T) {
@@ -46,7 +48,6 @@ var invalids = []string{
 	`package p; func f() { if { /* ERROR "expected operand" */ } };`,
 	`package p; func f() { if ; { /* ERROR "expected operand" */ } };`,
 	`package p; func f() { if f(); { /* ERROR "expected operand" */ } };`,
-	`package p; const c; /* ERROR "expected '='" */`,
 	`package p; func f() { if _ /* ERROR "expected condition" */ = range x; true {} };`,
 	`package p; func f() { switch _ /* ERROR "expected condition" */ = range x; true {} };`,
 	`package p; func f() { for _ = range x ; /* ERROR "expected '{'" */ ; {} };`,
@@ -74,6 +75,9 @@ var invalids = []string{
 	`package p; func f() { if x := g(); x = /* ERROR "expected '=='" */ 0 {}};`,
 	`package p; func f() { _ = x = /* ERROR "expected '=='" */ 0 {}};`,
 	`package p; func f() { _ = 1 == func()int { var x bool; x = x = /* ERROR "expected '=='" */ true; return x }() };`,
+	`package p; func f() { var s []int; _ = s[] /* ERROR "expected operand" */ };`,
+	`package p; func f() { var s []int; _ = s[::: /* ERROR "expected ']'" */ ] };`,
+	`package p; func f() { var s []int; _ = s[i:j:k: /* ERROR "expected ']'" */ l] };`,
 }
 
 func TestInvalid(t *testing.T) {

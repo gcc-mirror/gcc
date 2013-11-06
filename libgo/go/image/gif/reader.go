@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package gif implements a GIF image decoder.
+// Package gif implements a GIF image decoder and encoder.
 //
 // The GIF specification is at http://www.w3.org/Graphics/GIF/spec-gif89a.txt.
 package gif
@@ -20,6 +20,7 @@ import (
 var (
 	errNotEnough = errors.New("gif: not enough image data")
 	errTooMuch   = errors.New("gif: too much image data")
+	errBadPixel  = errors.New("gif: invalid pixel value")
 )
 
 // If the io.Reader does not also have ReadByte, then decode will introduce its own buffering.
@@ -189,6 +190,7 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 			// A wonderfully Go-like piece of magic.
 			br := &blockReader{r: d.r}
 			lzwr := lzw.NewReader(br, lzw.LSB, int(litWidth))
+			defer lzwr.Close()
 			if _, err = io.ReadFull(lzwr, m.Pix); err != nil {
 				if err != io.ErrUnexpectedEOF {
 					return err
@@ -208,6 +210,15 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 					return err
 				}
 				return errTooMuch
+			}
+
+			// Check that the color indexes are inside the palette.
+			if len(m.Palette) < 256 {
+				for _, pixel := range m.Pix {
+					if int(pixel) >= len(m.Palette) {
+						return errBadPixel
+					}
+				}
 			}
 
 			// Undo the interlacing if necessary.

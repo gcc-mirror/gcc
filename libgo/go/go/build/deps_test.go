@@ -82,24 +82,27 @@ var pkgDeps = map[string][]string{
 	// L3 adds reflection and some basic utility packages
 	// and interface definitions, but nothing that makes
 	// system calls.
-	"crypto":          {"L2", "hash"}, // interfaces
-	"crypto/cipher":   {"L2"},         // interfaces
-	"encoding/base32": {"L2"},
-	"encoding/base64": {"L2"},
-	"encoding/binary": {"L2", "reflect"},
-	"hash":            {"L2"}, // interfaces
-	"hash/adler32":    {"L2", "hash"},
-	"hash/crc32":      {"L2", "hash"},
-	"hash/crc64":      {"L2", "hash"},
-	"hash/fnv":        {"L2", "hash"},
-	"image":           {"L2", "image/color"}, // interfaces
-	"image/color":     {"L2"},                // interfaces
-	"reflect":         {"L2"},
+	"crypto":              {"L2", "hash"},          // interfaces
+	"crypto/cipher":       {"L2", "crypto/subtle"}, // interfaces
+	"crypto/subtle":       {},
+	"encoding/base32":     {"L2"},
+	"encoding/base64":     {"L2"},
+	"encoding/binary":     {"L2", "reflect"},
+	"hash":                {"L2"}, // interfaces
+	"hash/adler32":        {"L2", "hash"},
+	"hash/crc32":          {"L2", "hash"},
+	"hash/crc64":          {"L2", "hash"},
+	"hash/fnv":            {"L2", "hash"},
+	"image":               {"L2", "image/color"}, // interfaces
+	"image/color":         {"L2"},                // interfaces
+	"image/color/palette": {"L2", "image/color"},
+	"reflect":             {"L2"},
 
 	"L3": {
 		"L2",
 		"crypto",
 		"crypto/cipher",
+		"crypto/subtle",
 		"encoding/base32",
 		"encoding/base64",
 		"encoding/binary",
@@ -110,6 +113,7 @@ var pkgDeps = map[string][]string{
 		"hash/fnv",
 		"image",
 		"image/color",
+		"image/color/palette",
 		"reflect",
 	},
 
@@ -183,26 +187,27 @@ var pkgDeps = map[string][]string{
 	"compress/gzip":       {"L4", "compress/flate"},
 	"compress/lzw":        {"L4"},
 	"compress/zlib":       {"L4", "compress/flate"},
-	"database/sql":        {"L4", "database/sql/driver"},
+	"database/sql":        {"L4", "container/list", "database/sql/driver"},
 	"database/sql/driver": {"L4", "time"},
 	"debug/dwarf":         {"L4"},
 	"debug/elf":           {"L4", "OS", "debug/dwarf"},
 	"debug/gosym":         {"L4"},
 	"debug/macho":         {"L4", "OS", "debug/dwarf"},
 	"debug/pe":            {"L4", "OS", "debug/dwarf"},
+	"encoding":            {"L4"},
 	"encoding/ascii85":    {"L4"},
 	"encoding/asn1":       {"L4", "math/big"},
 	"encoding/csv":        {"L4"},
-	"encoding/gob":        {"L4", "OS"},
+	"encoding/gob":        {"L4", "OS", "encoding"},
 	"encoding/hex":        {"L4"},
-	"encoding/json":       {"L4"},
+	"encoding/json":       {"L4", "encoding"},
 	"encoding/pem":        {"L4"},
-	"encoding/xml":        {"L4"},
+	"encoding/xml":        {"L4", "encoding"},
 	"flag":                {"L4", "OS"},
 	"go/build":            {"L4", "OS", "GOPARSER"},
 	"html":                {"L4"},
 	"image/draw":          {"L4"},
-	"image/gif":           {"L4", "compress/lzw"},
+	"image/gif":           {"L4", "compress/lzw", "image/color/palette", "image/draw"},
 	"image/jpeg":          {"L4"},
 	"image/png":           {"L4", "compress/zlib"},
 	"index/suffixarray":   {"L4", "regexp"},
@@ -228,7 +233,8 @@ var pkgDeps = map[string][]string{
 	// that shows up in programs that use cgo.
 	"C": {},
 
-	"os/user": {"L4", "CGO", "syscall"},
+	// Plan 9 alone needs io/ioutil and os.
+	"os/user": {"L4", "CGO", "io/ioutil", "os", "syscall"},
 
 	// Basic networking.
 	// Because net must be used by any package that wants to
@@ -248,15 +254,10 @@ var pkgDeps = map[string][]string{
 	"net/mail":      {"L4", "NET", "OS"},
 	"net/textproto": {"L4", "OS", "net"},
 
-	// Support libraries for crypto that aren't L2.
-	"CRYPTO-SUPPORT": {
-		"crypto/subtle",
-	},
-
 	// Core crypto.
 	"crypto/aes":    {"L3"},
 	"crypto/des":    {"L3"},
-	"crypto/hmac":   {"L3", "CRYPTO-SUPPORT"},
+	"crypto/hmac":   {"L3"},
 	"crypto/md5":    {"L3"},
 	"crypto/rc4":    {"L3"},
 	"crypto/sha1":   {"L3"},
@@ -264,7 +265,6 @@ var pkgDeps = map[string][]string{
 	"crypto/sha512": {"L3"},
 
 	"CRYPTO": {
-		"CRYPTO-SUPPORT",
 		"crypto/aes",
 		"crypto/des",
 		"crypto/hmac",
@@ -359,7 +359,7 @@ func allowed(pkg string) map[string]bool {
 }
 
 var bools = []bool{false, true}
-var geese = []string{"darwin", "freebsd", "linux", "netbsd", "openbsd", "plan9", "windows"}
+var geese = []string{"darwin", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "plan9", "windows"}
 var goarches = []string{"386", "amd64", "arm"}
 
 type osPkg struct {
@@ -390,6 +390,9 @@ func TestDependencies(t *testing.T) {
 			p, err := ctxt.Import(pkg, "", 0)
 			if err != nil {
 				if allowedErrors[osPkg{ctxt.GOOS, pkg}] {
+					continue
+				}
+				if !ctxt.CgoEnabled && pkg == "runtime/cgo" {
 					continue
 				}
 				// Some of the combinations we try might not

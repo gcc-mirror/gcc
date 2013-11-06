@@ -12,8 +12,13 @@ package time
 #include "malloc.h"
 #include "race.h"
 
+enum {
+	debug = 0,
+};
+
 static Timers timers;
 static void addtimer(Timer*);
+static void dumptimers(const char*);
 
 // Package time APIs.
 // Godoc uses the comments in package time, not these.
@@ -92,6 +97,11 @@ addtimer(Timer *t)
 	int32 n;
 	Timer **nt;
 
+	// when must never be negative; otherwise timerproc will overflow
+	// during its delta calculation and never expire other timers.
+	if(t->when < 0)
+		t->when = (int64)((1ULL<<63)-1);
+
 	if(timers.len >= timers.cap) {
 		// Grow slice.
 		n = 16;
@@ -121,7 +131,12 @@ addtimer(Timer *t)
 		timers.timerproc = __go_go(timerproc, nil);
 		timers.timerproc->issystem = true;
 	}
+	if(debug)
+		dumptimers("addtimer");
 }
+
+// Used to force a dereference before the lock is acquired.
+static int32 gi;
 
 // Delete timer t from the heap.
 // Do not need to update the timerproc:
@@ -130,6 +145,11 @@ bool
 runtime_deltimer(Timer *t)
 {
 	int32 i;
+
+	// Dereference t so that any panic happens before the lock is held.
+	// Discard result, because t might be moving in the heap.
+	i = t->i;
+	gi = i;
 
 	runtime_lock(&timers);
 
@@ -152,6 +172,8 @@ runtime_deltimer(Timer *t)
 		siftup(i);
 		siftdown(i);
 	}
+	if(debug)
+		dumptimers("deltimer");
 	runtime_unlock(&timers);
 	return true;
 }
@@ -170,6 +192,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 
 	for(;;) {
 		runtime_lock(&timers);
+		timers.sleeping = false;
 		now = runtime_nanotime();
 		for(;;) {
 			if(timers.len == 0) {
@@ -210,9 +233,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 		timers.sleeping = true;
 		runtime_noteclear(&timers.waitnote);
 		runtime_unlock(&timers);
-		runtime_entersyscallblock();
-		runtime_notetsleep(&timers.waitnote, delta);
-		runtime_exitsyscall();
+		runtime_notetsleepg(&timers.waitnote, delta);
 	}
 }
 
@@ -222,18 +243,20 @@ static void
 siftup(int32 i)
 {
 	int32 p;
+	int64 when;
 	Timer **t, *tmp;
 
 	t = timers.t;
+	when = t[i]->when;
+	tmp = t[i];
 	while(i > 0) {
-		p = (i-1)/2;  // parent
-		if(t[i]->when >= t[p]->when)
+		p = (i-1)/4;  // parent
+		if(when >= t[p]->when)
 			break;
-		tmp = t[i];
 		t[i] = t[p];
-		t[p] = tmp;
 		t[i]->i = i;
-		t[p]->i = p;
+		t[p] = tmp;
+		tmp->i = p;
 		i = p;
 	}
 }
@@ -241,27 +264,59 @@ siftup(int32 i)
 static void
 siftdown(int32 i)
 {
-	int32 c, len;
+	int32 c, c3, len;
+	int64 when, w, w3;
 	Timer **t, *tmp;
 
 	t = timers.t;
 	len = timers.len;
+	when = t[i]->when;
+	tmp = t[i];
 	for(;;) {
-		c = i*2 + 1;  // left child
+		c = i*4 + 1;  // left child
+		c3 = c + 2;  // mid child
 		if(c >= len) {
 			break;
 		}
-		if(c+1 < len && t[c+1]->when < t[c]->when)
+		w = t[c]->when;
+		if(c+1 < len && t[c+1]->when < w) {
+			w = t[c+1]->when;
 			c++;
-		if(t[c]->when >= t[i]->when)
+		}
+		if(c3 < len) {
+			w3 = t[c3]->when;
+			if(c3+1 < len && t[c3+1]->when < w3) {
+				w3 = t[c3+1]->when;
+				c3++;
+			}
+			if(w3 < w) {
+				w = w3;
+				c = c3;
+			}
+		}
+		if(w >= when)
 			break;
-		tmp = t[i];
 		t[i] = t[c];
-		t[c] = tmp;
 		t[i]->i = i;
-		t[c]->i = c;
+		t[c] = tmp;
+		tmp->i = c;
 		i = c;
 	}
+}
+
+static void
+dumptimers(const char *msg)
+{
+	Timer *t;
+	int32 i;
+
+	runtime_printf("timers: %s\n", msg);
+	for(i = 0; i < timers.len; i++) {
+		t = timers.t[i];
+		runtime_printf("\t%d\t%p:\ti %d when %D period %D fn %p\n",
+				i, t, t->i, t->when, t->period, t->fv->fn);
+	}
+	runtime_printf("\n");
 }
 
 void

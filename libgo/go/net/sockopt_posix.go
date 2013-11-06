@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux netbsd openbsd windows
-
-// Socket options
+// +build darwin dragonfly freebsd linux netbsd openbsd windows
 
 package net
 
@@ -103,7 +101,7 @@ done:
 }
 
 func setReadBuffer(fd *netFD, bytes int) error {
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
@@ -111,7 +109,7 @@ func setReadBuffer(fd *netFD, bytes int) error {
 }
 
 func setWriteBuffer(fd *netFD, bytes int) error {
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
@@ -119,19 +117,11 @@ func setWriteBuffer(fd *netFD, bytes int) error {
 }
 
 func setKeepAlive(fd *netFD, keepalive bool) error {
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_KEEPALIVE, boolint(keepalive)))
-}
-
-func setNoDelay(fd *netFD, noDelay bool) error {
-	if err := fd.incref(false); err != nil {
-		return err
-	}
-	defer fd.decref()
-	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, boolint(noDelay)))
 }
 
 func setLinger(fd *netFD, sec int) error {
@@ -143,7 +133,7 @@ func setLinger(fd *netFD, sec int) error {
 		l.Onoff = 0
 		l.Linger = 0
 	}
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()

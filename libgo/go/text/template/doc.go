@@ -44,7 +44,8 @@ data, defined in detail below.
 */
 //	{{/* a comment */}}
 //		A comment; discarded. May contain newlines.
-//		Comments do not nest.
+//		Comments do not nest and must start and end at the
+//		delimiters, as shown here.
 /*
 
 	{{pipeline}}
@@ -61,6 +62,12 @@ data, defined in detail below.
 	{{if pipeline}} T1 {{else}} T0 {{end}}
 		If the value of the pipeline is empty, T0 is executed;
 		otherwise, T1 is executed.  Dot is unaffected.
+
+	{{if pipeline}} T1 {{else if pipeline}} T0 {{end}}
+		To simplify the appearance of if-else chains, the else action
+		of an if may include another if directly; the effect is exactly
+		the same as writing
+			{{if pipeline}} T1 {{else}}{{if pipeline}} T0 {{end}}{{end}}
 
 	{{range pipeline}} T1 {{end}}
 		The value of the pipeline must be an array, slice, map, or channel.
@@ -300,8 +307,41 @@ Predefined global functions are named as follows.
 		Returns the escaped value of the textual representation of
 		its arguments in a form suitable for embedding in a URL query.
 
-The boolean functions take any zero value to be false and a non-zero value to
-be true.
+The boolean functions take any zero value to be false and a non-zero
+value to be true.
+
+There is also a set of binary comparison operators defined as
+functions:
+
+	eq
+		Returns the boolean truth of arg1 == arg2
+	ne
+		Returns the boolean truth of arg1 != arg2
+	lt
+		Returns the boolean truth of arg1 < arg2
+	le
+		Returns the boolean truth of arg1 <= arg2
+	gt
+		Returns the boolean truth of arg1 > arg2
+	ge
+		Returns the boolean truth of arg1 >= arg2
+
+For simpler multi-way equality tests, eq (only) accepts two or more
+arguments and compares the second and subsequent to the first,
+returning in effect
+
+	arg1==arg2 || arg1==arg3 || arg1==arg4 ...
+
+(Unlike with || in Go, however, eq is a function call and all the
+arguments will be evaluated.)
+
+The comparison functions work on basic types only (or named basic
+types, such as "type Celsius float32"). They implement the Go rules
+for comparison of values, except that size and exact type are
+ignored, so any integer value may be compared with any other integer
+value, any unsigned integer value may be compared with any other
+unsigned integer value, and so on. However, as usual, one may not
+compare an int with a float32 and so on.
 
 Associated templates
 

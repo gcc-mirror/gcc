@@ -6,6 +6,7 @@ package gob
 
 import (
 	"bytes"
+	"encoding"
 	"math"
 	"reflect"
 	"unsafe"
@@ -338,14 +339,14 @@ type encEngine struct {
 const singletonField = 0
 
 // encodeSingle encodes a single top-level non-struct value.
-func (enc *Encoder) encodeSingle(b *bytes.Buffer, engine *encEngine, basep uintptr) {
+func (enc *Encoder) encodeSingle(b *bytes.Buffer, engine *encEngine, basep unsafe.Pointer) {
 	state := enc.newEncoderState(b)
 	state.fieldnum = singletonField
 	// There is no surrounding struct to frame the transmission, so we must
 	// generate data even if the item is zero.  To do this, set sendZero.
 	state.sendZero = true
 	instr := &engine.instr[singletonField]
-	p := unsafe.Pointer(basep) // offset will be zero
+	p := basep // offset will be zero
 	if instr.indir > 0 {
 		if p = encIndirect(p, instr.indir); p == nil {
 			return
@@ -356,12 +357,12 @@ func (enc *Encoder) encodeSingle(b *bytes.Buffer, engine *encEngine, basep uintp
 }
 
 // encodeStruct encodes a single struct value.
-func (enc *Encoder) encodeStruct(b *bytes.Buffer, engine *encEngine, basep uintptr) {
+func (enc *Encoder) encodeStruct(b *bytes.Buffer, engine *encEngine, basep unsafe.Pointer) {
 	state := enc.newEncoderState(b)
 	state.fieldnum = -1
 	for i := 0; i < len(engine.instr); i++ {
 		instr := &engine.instr[i]
-		p := unsafe.Pointer(basep + instr.offset)
+		p := unsafe.Pointer(uintptr(basep) + instr.offset)
 		if instr.indir > 0 {
 			if p = encIndirect(p, instr.indir); p == nil {
 				continue
@@ -373,22 +374,22 @@ func (enc *Encoder) encodeStruct(b *bytes.Buffer, engine *encEngine, basep uintp
 }
 
 // encodeArray encodes the array whose 0th element is at p.
-func (enc *Encoder) encodeArray(b *bytes.Buffer, p uintptr, op encOp, elemWid uintptr, elemIndir int, length int) {
+func (enc *Encoder) encodeArray(b *bytes.Buffer, p unsafe.Pointer, op encOp, elemWid uintptr, elemIndir int, length int) {
 	state := enc.newEncoderState(b)
 	state.fieldnum = -1
 	state.sendZero = true
 	state.encodeUint(uint64(length))
 	for i := 0; i < length; i++ {
 		elemp := p
-		up := unsafe.Pointer(elemp)
 		if elemIndir > 0 {
-			if up = encIndirect(up, elemIndir); up == nil {
+			up := encIndirect(elemp, elemIndir)
+			if up == nil {
 				errorf("encodeArray: nil element")
 			}
-			elemp = uintptr(up)
+			elemp = up
 		}
-		op(nil, state, unsafe.Pointer(elemp))
-		p += uintptr(elemWid)
+		op(nil, state, elemp)
+		p = unsafe.Pointer(uintptr(p) + elemWid)
 	}
 	enc.freeEncoderState(state)
 }
@@ -401,7 +402,7 @@ func encodeReflectValue(state *encoderState, v reflect.Value, op encOp, indir in
 	if !v.IsValid() {
 		errorf("encodeReflectValue: nil element")
 	}
-	op(nil, state, unsafe.Pointer(unsafeAddr(v)))
+	op(nil, state, unsafeAddr(v))
 }
 
 // encodeMap encodes a map as unsigned count followed by key:value pairs.
@@ -474,7 +475,7 @@ func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv reflect.Value) {
 	enc.freeEncoderState(state)
 }
 
-// isZero returns whether the value is the zero of its type.
+// isZero reports whether the value is the zero of its type.
 func isZero(val reflect.Value) bool {
 	switch val.Kind() {
 	case reflect.Array:
@@ -511,10 +512,20 @@ func isZero(val reflect.Value) bool {
 
 // encGobEncoder encodes a value that implements the GobEncoder interface.
 // The data is sent as a byte array.
-func (enc *Encoder) encodeGobEncoder(b *bytes.Buffer, v reflect.Value) {
+func (enc *Encoder) encodeGobEncoder(b *bytes.Buffer, ut *userTypeInfo, v reflect.Value) {
 	// TODO: should we catch panics from the called method?
-	// We know it's a GobEncoder, so just call the method directly.
-	data, err := v.Interface().(GobEncoder).GobEncode()
+
+	var data []byte
+	var err error
+	// We know it's one of these.
+	switch ut.externalEnc {
+	case xGob:
+		data, err = v.Interface().(GobEncoder).GobEncode()
+	case xBinary:
+		data, err = v.Interface().(encoding.BinaryMarshaler).MarshalBinary()
+	case xText:
+		data, err = v.Interface().(encoding.TextMarshaler).MarshalText()
+	}
 	if err != nil {
 		error_(err)
 	}
@@ -550,7 +561,7 @@ var encOpTable = [...]encOp{
 func (enc *Encoder) encOpFor(rt reflect.Type, inProgress map[reflect.Type]*encOp) (*encOp, int) {
 	ut := userType(rt)
 	// If the type implements GobEncoder, we handle it without further processing.
-	if ut.isGobEncoder {
+	if ut.externalEnc != 0 {
 		return enc.gobEncodeOpFor(ut)
 	}
 	// If this type is already in progress, it's a recursive type (e.g. map[string]*T).
@@ -575,21 +586,21 @@ func (enc *Encoder) encOpFor(rt reflect.Type, inProgress map[reflect.Type]*encOp
 				break
 			}
 			// Slices have a header; we decode it to find the underlying array.
-			elemOp, indir := enc.encOpFor(t.Elem(), inProgress)
+			elemOp, elemIndir := enc.encOpFor(t.Elem(), inProgress)
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				slice := (*reflect.SliceHeader)(p)
 				if !state.sendZero && slice.Len == 0 {
 					return
 				}
 				state.update(i)
-				state.enc.encodeArray(state.b, slice.Data, *elemOp, t.Elem().Size(), indir, int(slice.Len))
+				state.enc.encodeArray(state.b, unsafe.Pointer(slice.Data), *elemOp, t.Elem().Size(), elemIndir, int(slice.Len))
 			}
 		case reflect.Array:
 			// True arrays have size in the type.
-			elemOp, indir := enc.encOpFor(t.Elem(), inProgress)
+			elemOp, elemIndir := enc.encOpFor(t.Elem(), inProgress)
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				state.update(i)
-				state.enc.encodeArray(state.b, uintptr(p), *elemOp, t.Elem().Size(), indir, t.Len())
+				state.enc.encodeArray(state.b, p, *elemOp, t.Elem().Size(), elemIndir, t.Len())
 			}
 		case reflect.Map:
 			keyOp, keyIndir := enc.encOpFor(t.Key(), inProgress)
@@ -615,7 +626,7 @@ func (enc *Encoder) encOpFor(rt reflect.Type, inProgress map[reflect.Type]*encOp
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				state.update(i)
 				// indirect through info to delay evaluation for recursive structs
-				state.enc.encodeStruct(state.b, info.encoder, uintptr(p))
+				state.enc.encodeStruct(state.b, info.encoder, p)
 			}
 		case reflect.Interface:
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
@@ -661,7 +672,7 @@ func (enc *Encoder) gobEncodeOpFor(ut *userTypeInfo) (*encOp, int) {
 			return
 		}
 		state.update(i)
-		state.enc.encodeGobEncoder(state.b, v)
+		state.enc.encodeGobEncoder(state.b, ut, v)
 	}
 	return &op, int(ut.encIndir) // encIndir: op will get called with p == address of receiver.
 }
@@ -672,14 +683,13 @@ func (enc *Encoder) compileEnc(ut *userTypeInfo) *encEngine {
 	engine := new(encEngine)
 	seen := make(map[reflect.Type]*encOp)
 	rt := ut.base
-	if ut.isGobEncoder {
+	if ut.externalEnc != 0 {
 		rt = ut.user
 	}
-	if !ut.isGobEncoder &&
-		srt.Kind() == reflect.Struct {
+	if ut.externalEnc == 0 && srt.Kind() == reflect.Struct {
 		for fieldNum, wireFieldNum := 0, 0; fieldNum < srt.NumField(); fieldNum++ {
 			f := srt.Field(fieldNum)
-			if !isExported(f.Name) {
+			if !isSent(&f) {
 				continue
 			}
 			op, indir := enc.encOpFor(f.Type, seen)
@@ -736,13 +746,13 @@ func (enc *Encoder) encode(b *bytes.Buffer, value reflect.Value, ut *userTypeInf
 	defer catchError(&enc.err)
 	engine := enc.lockAndGetEncEngine(ut)
 	indir := ut.indir
-	if ut.isGobEncoder {
+	if ut.externalEnc != 0 {
 		indir = int(ut.encIndir)
 	}
 	for i := 0; i < indir; i++ {
 		value = reflect.Indirect(value)
 	}
-	if !ut.isGobEncoder && value.Type().Kind() == reflect.Struct {
+	if ut.externalEnc == 0 && value.Type().Kind() == reflect.Struct {
 		enc.encodeStruct(b, engine, unsafeAddr(value))
 	} else {
 		enc.encodeSingle(b, engine, unsafeAddr(value))

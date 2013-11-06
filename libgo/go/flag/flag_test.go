@@ -92,10 +92,54 @@ func TestEverything(t *testing.T) {
 	}
 }
 
+func TestGet(t *testing.T) {
+	ResetForTesting(nil)
+	Bool("test_bool", true, "bool value")
+	Int("test_int", 1, "int value")
+	Int64("test_int64", 2, "int64 value")
+	Uint("test_uint", 3, "uint value")
+	Uint64("test_uint64", 4, "uint64 value")
+	String("test_string", "5", "string value")
+	Float64("test_float64", 6, "float64 value")
+	Duration("test_duration", 7, "time.Duration value")
+
+	visitor := func(f *Flag) {
+		if len(f.Name) > 5 && f.Name[0:5] == "test_" {
+			g, ok := f.Value.(Getter)
+			if !ok {
+				t.Errorf("Visit: value does not satisfy Getter: %T", f.Value)
+				return
+			}
+			switch f.Name {
+			case "test_bool":
+				ok = g.Get() == true
+			case "test_int":
+				ok = g.Get() == int(1)
+			case "test_int64":
+				ok = g.Get() == int64(2)
+			case "test_uint":
+				ok = g.Get() == uint(3)
+			case "test_uint64":
+				ok = g.Get() == uint64(4)
+			case "test_string":
+				ok = g.Get() == "5"
+			case "test_float64":
+				ok = g.Get() == float64(6)
+			case "test_duration":
+				ok = g.Get() == time.Duration(7)
+			}
+			if !ok {
+				t.Errorf("Visit: bad value %T(%v) for %s", g.Get(), g.Get(), f.Name)
+			}
+		}
+	}
+	VisitAll(visitor)
+}
+
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
-	if CommandLine().Parse([]string{"-x"}) == nil {
+	if CommandLine.Parse([]string{"-x"}) == nil {
 		t.Error("parse did not fail for unknown flag")
 	}
 	if !called {
@@ -171,7 +215,7 @@ func testParse(f *FlagSet, t *testing.T) {
 
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
-	testParse(CommandLine(), t)
+	testParse(CommandLine, t)
 }
 
 func TestFlagSetParse(t *testing.T) {
@@ -267,7 +311,7 @@ func TestChangingArgs(t *testing.T) {
 	defer func() { os.Args = oldArgs }()
 	os.Args = []string{"cmd", "-before", "subcmd", "-after", "args"}
 	before := Bool("before", false, "")
-	if err := CommandLine().Parse(os.Args[1:]); err != nil {
+	if err := CommandLine.Parse(os.Args[1:]); err != nil {
 		t.Fatal(err)
 	}
 	cmd := Arg(0)

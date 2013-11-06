@@ -342,7 +342,9 @@ func (p *addrParser) consumePhrase() (phrase string, err error) {
 			word, err = p.consumeQuotedString()
 		} else {
 			// atom
-			word, err = p.consumeAtom(false)
+			// We actually parse dot-atom here to be more permissive
+			// than what RFC 5322 specifies.
+			word, err = p.consumeAtom(true)
 		}
 
 		// RFC 2047 encoded-word starts with =?, ends with ?=, and has two other ?s.
@@ -519,7 +521,7 @@ func isAtext(c byte, dot bool) bool {
 	return bytes.IndexByte(atextChars, c) >= 0
 }
 
-// isQtext returns true if c is an RFC 5322 qtest character.
+// isQtext returns true if c is an RFC 5322 qtext character.
 func isQtext(c byte) bool {
 	// Printable US-ASCII, excluding backslash or quote.
 	if c == '\\' || c == '"' {

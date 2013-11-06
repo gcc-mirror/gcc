@@ -58,7 +58,7 @@ func (p *ProcessState) SystemTime() time.Duration {
 	return p.systemTime()
 }
 
-// Exited returns whether the program has exited.
+// Exited reports whether the program has exited.
 func (p *ProcessState) Exited() bool {
 	return p.exited()
 }
@@ -106,6 +106,9 @@ func Hostname() (name string, err error) {
 // directory, Readdir returns the FileInfo read until that point
 // and a non-nil error.
 func (f *File) Readdir(n int) (fi []FileInfo, err error) {
+	if f == nil {
+		return nil, ErrInvalid
+	}
 	return f.readdir(n)
 }
 
@@ -122,5 +125,8 @@ func (f *File) Readdir(n int) (fi []FileInfo, err error) {
 // directory, Readdirnames returns the names read until that point and
 // a non-nil error.
 func (f *File) Readdirnames(n int) (names []string, err error) {
+	if f == nil {
+		return nil, ErrInvalid
+	}
 	return f.readdirnames(n)
 }
