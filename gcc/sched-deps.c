@@ -1938,8 +1938,8 @@ create_insn_reg_use (int regno, rtx insn)
   return use;
 }
 
-/* Allocate and return reg_set_data structure for REGNO and INSN.  */
-static struct reg_set_data *
+/* Allocate reg_set_data structure for REGNO and INSN.  */
+static void
 create_insn_reg_set (int regno, rtx insn)
 {
   struct reg_set_data *set;
@@ -1949,7 +1949,6 @@ create_insn_reg_set (int regno, rtx insn)
   set->insn = insn;
   set->next_insn_set = INSN_REG_SET_LIST (insn);
   INSN_REG_SET_LIST (insn) = set;
-  return set;
 }
 
 /* Set up insn register uses for INSN and dependency context DEPS.  */

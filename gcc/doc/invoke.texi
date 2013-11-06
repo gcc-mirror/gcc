@@ -377,7 +377,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
--fivopts -fkeep-inline-functions -fkeep-static-consts @gol
+-fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
@@ -7267,6 +7267,12 @@ helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
 Enabled for x86 at levels @option{-O2}, @option{-O3}.
+
+@item -flive-range-shrinkage
+@opindex flive-range-shrinkage
+Attempt to decrease register pressure through register live range
+shrinkage.  This is helpful for fast processors with small or moderate
+size register sets.
 
 @item -fira-algorithm=@var{algorithm}
 Use the specified coloring algorithm for the integrated register

@@ -1,3 +1,29 @@
+2013-11-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* tree-pass.h (make_pass_live_range_shrinkage): New external.
+	* timevar.def (TV_LIVE_RANGE_SHRINKAGE): New.
+	* sched-rgn.c (gate_handle_live_range_shrinkage): New.
+	(rest_of_handle_live_range_shrinkage): Ditto
+	(class pass_live_range_shrinkage): Ditto.
+	(pass_data_live_range_shrinkage): Ditto.
+	(make_pass_live_range_shrinkage): Ditto.
+	* sched-int.h (initialize_live_range_shrinkage): New prototype.
+	(finish_live_range_shrinkage): Ditto.
+	* sched-deps.c (create_insn_reg_set): Make void return value.
+	* passes.def: Add pass_live_range_shrinkage.
+	* ira.c (update_equiv_regs): Don't move if
+	flag_live_range_shrinkage.
+	* haifa-sched.c (live_range_shrinkage_p): New.
+	(initialize_live_range_shrinkage, finish_live_range_shrinkage):
+	New functions.
+	(rank_for_schedule): Add code for pressure relief through live
+	range shrinkage.
+	(schedule_insn): Print more debug info.
+	(sched_init): Setup SCHED_PRESSURE_WEIGHTED for pressure relief
+	through live range shrinkage.
+	* doc/invoke.texi (-flive-range-shrinkage): New.
+	* common.opt (flive-range-shrinkage): New.
+
 2013-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59021
