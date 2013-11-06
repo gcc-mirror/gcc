@@ -28,19 +28,18 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define FP_NO_EXCEPTIONS
 #include "soft-fp.h"
 #include "quad.h"
 
 TFtype
-__floatunsitf(USItype i)
+__floatunsitf (USItype i)
 {
-  FP_DECL_EX;
-  FP_DECL_Q(A);
+  FP_DECL_Q (A);
   TFtype a;
 
-  FP_FROM_INT_Q(A, i, SI_BITS, USItype);
-  FP_PACK_RAW_Q(a, A);
-  FP_HANDLE_EXCEPTIONS;
+  FP_FROM_INT_Q (A, i, SI_BITS, USItype);
+  FP_PACK_RAW_Q (a, A);
 
   return a;
 }

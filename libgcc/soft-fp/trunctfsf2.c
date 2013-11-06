@@ -32,21 +32,22 @@
 #include "single.h"
 #include "quad.h"
 
-SFtype __trunctfsf2(TFtype a)
+SFtype
+__trunctfsf2 (TFtype a)
 {
   FP_DECL_EX;
-  FP_DECL_Q(A);
-  FP_DECL_S(R);
+  FP_DECL_Q (A);
+  FP_DECL_S (R);
   SFtype r;
 
   FP_INIT_ROUNDMODE;
-  FP_UNPACK_SEMIRAW_Q(A, a);
+  FP_UNPACK_SEMIRAW_Q (A, a);
 #if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
-  FP_TRUNC(S,Q,1,4,R,A);
+  FP_TRUNC (S, Q, 1, 4, R, A);
 #else
-  FP_TRUNC(S,Q,1,2,R,A);
+  FP_TRUNC (S, Q, 1, 2, R, A);
 #endif
-  FP_PACK_SEMIRAW_S(r, R);
+  FP_PACK_SEMIRAW_S (r, R);
   FP_HANDLE_EXCEPTIONS;
 
   return r;
