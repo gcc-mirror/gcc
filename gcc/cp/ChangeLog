@@ -1,3 +1,9 @@
+2013-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/11006
+	* init.c (build_new_1): Don't call build_java_class_ref on non-class
+	types.
+
 2013-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58868

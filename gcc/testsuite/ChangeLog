@@ -1,3 +1,8 @@
+2013-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/11006
+	* g++.dg/other/java3.C: New.
+
 2013-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59021
