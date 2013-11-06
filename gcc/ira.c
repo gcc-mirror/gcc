@@ -3794,11 +3794,12 @@ update_equiv_regs (void)
 
 		  if (! reg_equiv[regno].replace
 		      || reg_equiv[regno].loop_depth < loop_depth
-		      /* There is no sense to move insns if we did
-			 register pressure-sensitive scheduling was
-			 done because it will not improve allocation
-			 but worsen insn schedule with a big
-			 probability.  */
+		      /* There is no sense to move insns if live range
+			 shrinkage or register pressure-sensitive
+			 scheduling were done because it will not
+			 improve allocation but worsen insn schedule
+			 with a big probability.  */
+		      || flag_live_range_shrinkage
 		      || (flag_sched_pressure && flag_schedule_insns))
 		    continue;
 

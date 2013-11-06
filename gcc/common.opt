@@ -1738,6 +1738,10 @@ fregmove
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
+flive-range-shrinkage
+Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
+Relief of register pressure through live range shrinkage
+
 frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
 Perform a register renaming optimization pass
