@@ -1,3 +1,8 @@
+2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/30807
+	* gcc.target/sh/torture/pr30807.c: New.
+
 2013-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/11006
