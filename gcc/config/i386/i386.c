@@ -24830,12 +24830,12 @@ ix86_issue_rate (void)
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_GENERIC:
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
       return 3;
 
+    case PROCESSOR_BDVER1:
+    case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
     case PROCESSOR_COREI7_AVX:
@@ -25211,6 +25211,13 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_PENTIUMPRO:
     case PROCESSOR_K6:
       return 1;
+
+    case PROCESSOR_BDVER1:
+    case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
+      /* We use lookahead value 4 for BD both before and after reload
+	 schedules. Plan is to have value 8 included for O3. */
+        return 4;
 
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:

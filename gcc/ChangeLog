@@ -1,3 +1,12 @@
+2013-11-06  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/bdver3.md : Added two additional decoder units 
+	to support issue rate of 4 and remodeled vector unit.
+	* config/i386/i386.c (ix86_issue_rate): Issue rate for BD
+	architectures is set to 4.
+	* config/i386/i386.c (ia32_multipass_dfa_lookahead): DFA
+	lookahead is set to 4 for BD architectures.
+
 2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal):

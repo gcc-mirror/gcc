@@ -34,20 +34,22 @@
 
 (define_cpu_unit "bdver3-decode0" "bdver3")
 (define_cpu_unit "bdver3-decode1" "bdver3")
-(define_cpu_unit "bdver3-decodev" "bdver3")
+(define_cpu_unit "bdver3-decode2" "bdver3")
+(define_cpu_unit "bdver3-decode3" "bdver3")
 
 ;; Double decoded instructions take two cycles whereas
 ;; direct instructions take one cycle.
-;; Therefore four direct instructions can be decoded by
-;; two decoders in two cycles.
 ;; Vectorpath instructions are single issue instructions.
-;; So, we have separate unit for vector instructions.
-(exclusion_set "bdver3-decodev" "bdver3-decode0,bdver3-decode1")
+;; So, we engage all units vector instructions.
+(define_reservation "bdver3-vector" "bdver3-decode0+bdver3-decode1+bdver3-decode2+bdver3-decode3")
 
-(define_reservation "bdver3-vector" "bdver3-decodev")
-(define_reservation "bdver3-direct" "(bdver3-decode0|bdver3-decode1)")
+;; Direct instructions can be issued to any of the four decoders
+(define_reservation "bdver3-direct" "(bdver3-decode0|bdver3-decode1|bdver3-decode2|bdver3-decode3)")
+
 ;; Double instructions take two cycles to decode.
-(define_reservation "bdver3-double" "(bdver3-decode0|bdver3-decode1)*2")
+(define_reservation "bdver3-double" "(bdver3-decode0,bdver3-decode0)|
+               (bdver3-decode1,bdver3-decode1)| (bdver3-decode2,bdver3-decode2)|
+               (bdver3-decode3,bdver3-decode3)")
 
 (define_cpu_unit "bdver3-ieu0" "bdver3_ieu")
 (define_cpu_unit "bdver3-ieu1" "bdver3_ieu")
