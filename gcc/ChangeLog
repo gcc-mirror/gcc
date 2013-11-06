@@ -11,8 +11,7 @@
 
 2013-11-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* config/aarch64/arm_neon.h
-	(__ST2_LANE_FUNC): Better model data size.
+	* config/aarch64/arm_neon.h (__ST2_LANE_FUNC): Better model data size.
 	(__ST3_LANE_FUNC): Likewise.
 	(__ST4_LANE_FUNC): Likewise.
 
@@ -109,7 +108,6 @@
 	* config/i386/i386-protos.h (ix86_emit_cfi): Declare.
 
 2013-11-05  Steven Bosscher  <steven@gcc.gnu.org>
-
 
 	* rtlanal.c (tablejump_p): Expect a JUMP_TABLE_DATA to always follow
 	immediately after a label for a tablejump pattern.
