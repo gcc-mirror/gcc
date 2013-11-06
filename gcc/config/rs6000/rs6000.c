@@ -3221,11 +3221,6 @@ rs6000_option_override_internal (bool global_init_p)
 	}
       else if (TARGET_PAIRED_FLOAT)
 	msg = N_("-mvsx and -mpaired are incompatible");
-      /* The hardware will allow VSX and little endian, but until we make sure
-	 things like vector select, etc. work don't allow VSX on little endian
-	 systems at this point.  */
-      else if (!BYTES_BIG_ENDIAN)
-	msg = N_("-mvsx used with little endian code");
       else if (TARGET_AVOID_XFORM > 0)
 	msg = N_("-mvsx needs indexed addressing");
       else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
