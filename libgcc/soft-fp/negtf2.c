@@ -31,17 +31,16 @@
 #include "soft-fp.h"
 #include "quad.h"
 
-TFtype __negtf2(TFtype a)
+TFtype
+__negtf2 (TFtype a)
 {
-  FP_DECL_EX;
-  FP_DECL_Q(A); FP_DECL_Q(R);
+  FP_DECL_Q (A);
+  FP_DECL_Q (R);
   TFtype r;
 
-  FP_UNPACK_Q(A, a);
-  FP_NEG_Q(R, A);
-  FP_PACK_Q(r, R);
-  FP_CLEAR_EXCEPTIONS;
-  FP_HANDLE_EXCEPTIONS;
+  FP_UNPACK_RAW_Q (A, a);
+  FP_NEG_Q (R, A);
+  FP_PACK_RAW_Q (r, R);
 
   return r;
 }

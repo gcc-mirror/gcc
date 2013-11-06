@@ -1,3 +1,10 @@
+2013-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-cmp-invalid.c,
+	gcc.dg/torture/float128-div-underflow.c,
+	gcc.dg/torture/float128-extend-nan.c,
+	gcc.dg/torture/fp-int-convert-float128-timode-3.c: New tests.
+
 2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr51244-11.c: Remove target line.
