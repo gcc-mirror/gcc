@@ -12202,9 +12202,9 @@ label:
   [(set_attr "type" "fpscr_toggle")])
 
 (define_expand "addsf3"
-  [(set (match_operand:SF 0 "arith_reg_operand" "")
-	(plus:SF (match_operand:SF 1 "arith_reg_operand" "")
-		 (match_operand:SF 2 "arith_reg_operand" "")))]
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(plus:SF (match_operand:SF 1 "fp_arith_reg_operand")
+		 (match_operand:SF 2 "fp_arith_reg_operand")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
 {
   if (TARGET_SH2E)
@@ -12451,9 +12451,9 @@ label:
   [(set_attr "type" "fparith_media")])
 
 (define_expand "divsf3"
-  [(set (match_operand:SF 0 "arith_reg_operand" "")
-	(div:SF (match_operand:SF 1 "arith_reg_operand" "")
-		(match_operand:SF 2 "arith_reg_operand" "")))]
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(div:SF (match_operand:SF 1 "fp_arith_reg_operand")
+		(match_operand:SF 2 "fp_arith_reg_operand")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
 {
   if (TARGET_SH2E)
@@ -12472,9 +12472,9 @@ label:
   [(set_attr "type" "fdiv_media")])
 
 (define_insn "divsf3_i"
-  [(set (match_operand:SF 0 "arith_reg_dest" "=f")
-	(div:SF (match_operand:SF 1 "arith_reg_operand" "0")
-		 (match_operand:SF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:SF 0 "fp_arith_reg_dest" "=f")
+	(div:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")
+		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH2E"
   "fdiv	%2,%0"
@@ -12758,9 +12758,9 @@ label:
    (set_attr "fp_mode" "single")])
 
 (define_insn "rsqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "immediate_operand" "i")
-		(sqrt:SF (match_operand:SF 2 "register_operand" "0"))))
+		(sqrt:SF (match_operand:SF 2 "fp_arith_reg_operand" "0"))))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_FPU_ANY && TARGET_FSRRA
    && operands[1] == CONST1_RTX (SFmode)"
@@ -13074,8 +13074,8 @@ label:
 
 (define_insn "cmpgtdf_t"
   [(set (reg:SI T_REG)
-	(gt:SI (match_operand:DF 0 "arith_reg_operand" "f")
-	       (match_operand:DF 1 "arith_reg_operand" "f")))
+	(gt:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
+	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/gt	%1,%0"
@@ -13084,8 +13084,8 @@ label:
 
 (define_insn "cmpeqdf_t"
   [(set (reg:SI T_REG)
-	(eq:SI (match_operand:DF 0 "arith_reg_operand" "f")
-	       (match_operand:DF 1 "arith_reg_operand" "f")))
+	(eq:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
+	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/eq	%1,%0"
@@ -13095,8 +13095,8 @@ label:
 (define_insn "*ieee_ccmpeqdf_t"
   [(set (reg:SI T_REG)
 	(ior:SI (reg:SI T_REG)
-		(eq:SI (match_operand:DF 0 "arith_reg_operand" "f")
-		       (match_operand:DF 1 "arith_reg_operand" "f"))))
+		(eq:SI (match_operand:DF 0 "fp_arith_reg_operand" "f")
+		       (match_operand:DF 1 "fp_arith_reg_operand" "f"))))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_DOUBLE)"
 {
@@ -13154,10 +13154,9 @@ label:
   DONE;
 })
 
-
 (define_expand "negdf2"
-  [(set (match_operand:DF 0 "arith_reg_operand" "")
-	(neg:DF (match_operand:DF 1 "arith_reg_operand" "")))]
+  [(set (match_operand:DF 0 "fp_arith_reg_operand")
+	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
@@ -13184,8 +13183,8 @@ label:
    (set_attr "fp_mode" "double")])
 
 (define_expand "sqrtdf2"
-  [(set (match_operand:DF 0 "arith_reg_operand" "")
-	(sqrt:DF (match_operand:DF 1 "arith_reg_operand" "")))]
+  [(set (match_operand:DF 0 "fp_arith_reg_operand")
+	(sqrt:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
@@ -13212,8 +13211,8 @@ label:
    (set_attr "fp_mode" "double")])
 
 (define_expand "absdf2"
-  [(set (match_operand:DF 0 "arith_reg_operand" "")
-	(abs:DF (match_operand:DF 1 "arith_reg_operand" "")))]
+  [(set (match_operand:DF 0 "fp_arith_reg_operand")
+	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
 {
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
