@@ -1,3 +1,10 @@
+2013-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58970
+	* expr.c (get_bit_range): Handle *offset == NULL_TREE.
+	(expand_assignment): If *bitpos is negative, set *offset
+	and adjust *bitpos, so that it is not negative.
+
 2013-11-06  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/bdver3.md : Added two additional decoder units 

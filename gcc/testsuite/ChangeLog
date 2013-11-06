@@ -1,3 +1,8 @@
+2013-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58970
+	* gcc.c-torture/compile/pr58970.c: New test.
+
 2013-11-05  Wei Mi  <wmi@google.com>
 
 	PR regression/58985
