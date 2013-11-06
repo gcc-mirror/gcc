@@ -1,3 +1,10 @@
+2013-11-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(__ST2_LANE_FUNC): Better model data size.
+	(__ST3_LANE_FUNC): Likewise.
+	(__ST4_LANE_FUNC): Likewise.
+
 2013-11-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.h (TARGET_CPU_CPP_BUILTINS): Define the
