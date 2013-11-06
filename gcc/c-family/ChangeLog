@@ -1,3 +1,10 @@
+2013-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_post_options): Set -ffp-contract=off in C
+	standards modes.
+	* c-cppbuiltin.c (cpp_iec_559_value): Consider -ffp-contract=fast
+	to mean lack of IEEE 754 support.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* c.opt (-Wdate-time): New option

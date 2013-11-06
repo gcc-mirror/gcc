@@ -1,3 +1,7 @@
+2013-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/c99-contract-1.c: New test.
+
 2013-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58653

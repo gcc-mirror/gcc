@@ -827,6 +827,15 @@ c_common_post_options (const char **pfilename)
 				     ? EXCESS_PRECISION_STANDARD
 				     : EXCESS_PRECISION_FAST);
 
+  /* ISO C restricts floating-point expression contraction to within
+     source-language expressions (-ffp-contract=on, currently an alias
+     for -ffp-contract=off).  */
+  if (flag_iso
+      && !c_dialect_cxx ()
+      && (global_options_set.x_flag_fp_contract_mode
+	  == (enum fp_contract_mode) 0))
+    flag_fp_contract_mode = FP_CONTRACT_OFF;
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)
