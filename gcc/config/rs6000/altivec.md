@@ -651,7 +651,7 @@
    convert_move (small_swap, swap, 0);
  
    low_product = gen_reg_rtx (V4SImode);
-   emit_insn (gen_vec_widen_umult_odd_v8hi (low_product, one, two));
+   emit_insn (gen_altivec_vmulouh (low_product, one, two));
  
    high_product = gen_reg_rtx (V4SImode);
    emit_insn (gen_altivec_vmsumuhm (high_product, one, small_swap, zero));
@@ -678,13 +678,18 @@
    emit_insn (gen_vec_widen_smult_even_v8hi (even, operands[1], operands[2]));
    emit_insn (gen_vec_widen_smult_odd_v8hi (odd, operands[1], operands[2]));
 
-   emit_insn (gen_altivec_vmrghw (high, even, odd));
-   emit_insn (gen_altivec_vmrglw (low, even, odd));
-
    if (BYTES_BIG_ENDIAN)
-     emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+     {
+       emit_insn (gen_altivec_vmrghw (high, even, odd));
+       emit_insn (gen_altivec_vmrglw (low, even, odd));
+       emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+     }
    else
-     emit_insn (gen_altivec_vpkuwum (operands[0], low, high));
+     {
+       emit_insn (gen_altivec_vmrghw (high, odd, even));
+       emit_insn (gen_altivec_vmrglw (low, odd, even));
+       emit_insn (gen_altivec_vpkuwum (operands[0], low, high));
+     } 
 
    DONE;
 }")
