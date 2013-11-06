@@ -561,47 +561,6 @@ func align(x, n uintptr) uintptr {
 	return (x + n - 1) &^ (n - 1)
 }
 
-// frameSize returns the sizes of the argument and result frame
-// for a function of the given type. The rcvr bool specifies whether
-// a one-word receiver should be included in the total.
-func frameSize(t *rtype, rcvr bool) (total, in, outOffset, out uintptr) {
-	if rcvr {
-		// extra word for receiver interface word
-		total += ptrSize
-	}
-
-	nin := t.NumIn()
-	in = -total
-	for i := 0; i < nin; i++ {
-		tv := t.In(i)
-		total = align(total, uintptr(tv.Align()))
-		total += tv.Size()
-	}
-	in += total
-	total = align(total, ptrSize)
-	nout := t.NumOut()
-	outOffset = total
-	out = -total
-	for i := 0; i < nout; i++ {
-		tv := t.Out(i)
-		total = align(total, uintptr(tv.Align()))
-		total += tv.Size()
-	}
-	out += total
-
-	// total must be > 0 in order for &args[0] to be valid.
-	// the argument copying is going to round it up to
-	// a multiple of ptrSize anyway, so make it ptrSize to begin with.
-	if total < ptrSize {
-		total = ptrSize
-	}
-
-	// round to pointer
-	total = align(total, ptrSize)
-
-	return
-}
-
 // funcName returns the name of f, for use in error messages.
 func funcName(f func([]Value) []Value) string {
 	pc := *(*uintptr)(unsafe.Pointer(&f))
@@ -894,10 +853,7 @@ func (v Value) CanInterface() bool {
 // Interface returns v's current value as an interface{}.
 // It is equivalent to:
 //	var i interface{} = (v's underlying value)
-// If v is a method obtained by invoking Value.Method
-// (as opposed to Type.Method), Interface cannot return an
-// interface value, so it panics.
-// It also panics if the Value was obtained by accessing
+// It panics if the Value was obtained by accessing
 // unexported struct fields.
 func (v Value) Interface() (i interface{}) {
 	return valueInterface(v, true)
@@ -935,7 +891,8 @@ func valueInterface(v Value, safe bool) interface{} {
 	eface.typ = toType(v.typ).common()
 	eface.word = v.iword()
 
-	if v.flag&flagIndir != 0 && v.kind() != Ptr && v.kind() != UnsafePointer {
+	// Don't need to allocate if v is not addressable or fits in one word.
+	if v.flag&flagAddr != 0 && v.kind() != Ptr && v.kind() != UnsafePointer {
 		// eface.word is a pointer to the actual data,
 		// which might be changed.  We need to return
 		// a pointer to unchanging data, so make a copy.
@@ -1411,6 +1368,19 @@ func (v Value) SetLen(n int) {
 	s.Len = n
 }
 
+// SetCap sets v's capacity to n.
+// It panics if v's Kind is not Slice or if n is smaller than the length or
+// greater than the capacity of the slice.
+func (v Value) SetCap(n int) {
+	v.mustBeAssignable()
+	v.mustBe(Slice)
+	s := (*SliceHeader)(v.val)
+	if n < int(s.Len) || n > int(s.Cap) {
+		panic("reflect: slice capacity out of range in SetCap")
+	}
+	s.Cap = n
+}
+
 // SetMapIndex sets the value associated with key in the map v to val.
 // It panics if v's Kind is not Map.
 // If val is the zero Value, SetMapIndex deletes the key from the map.
@@ -1467,17 +1437,18 @@ func (v Value) SetString(x string) {
 	*(*string)(v.val) = x
 }
 
-// Slice returns a slice of v.
-// It panics if v's Kind is not Array, Slice or String, or if v is an unaddressable array.
-func (v Value) Slice(beg, end int) Value {
+// Slice returns v[i:j].
+// It panics if v's Kind is not Array, Slice or String, or if v is an unaddressable array,
+// or if the indexes are out of bounds.
+func (v Value) Slice(i, j int) Value {
 	var (
 		cap  int
 		typ  *sliceType
 		base unsafe.Pointer
 	)
-	switch k := v.kind(); k {
+	switch kind := v.kind(); kind {
 	default:
-		panic(&ValueError{"reflect.Value.Slice", k})
+		panic(&ValueError{"reflect.Value.Slice", kind})
 
 	case Array:
 		if v.flag&flagAddr == 0 {
@@ -1496,17 +1467,17 @@ func (v Value) Slice(beg, end int) Value {
 
 	case String:
 		s := (*StringHeader)(v.val)
-		if beg < 0 || end < beg || end > s.Len {
+		if i < 0 || j < i || j > s.Len {
 			panic("reflect.Value.Slice: string slice index out of bounds")
 		}
 		var x string
 		val := (*StringHeader)(unsafe.Pointer(&x))
-		val.Data = s.Data + uintptr(beg)
-		val.Len = end - beg
+		val.Data = s.Data + uintptr(i)
+		val.Len = j - i
 		return Value{v.typ, unsafe.Pointer(&x), v.flag}
 	}
 
-	if beg < 0 || end < beg || end > cap {
+	if i < 0 || j < i || j > cap {
 		panic("reflect.Value.Slice: slice index out of bounds")
 	}
 
@@ -1515,9 +1486,56 @@ func (v Value) Slice(beg, end int) Value {
 
 	// Reinterpret as *SliceHeader to edit.
 	s := (*SliceHeader)(unsafe.Pointer(&x))
-	s.Data = uintptr(base) + uintptr(beg)*typ.elem.Size()
-	s.Len = end - beg
-	s.Cap = cap - beg
+	s.Data = uintptr(base) + uintptr(i)*typ.elem.Size()
+	s.Len = j - i
+	s.Cap = cap - i
+
+	fl := v.flag&flagRO | flagIndir | flag(Slice)<<flagKindShift
+	return Value{typ.common(), unsafe.Pointer(&x), fl}
+}
+
+// Slice3 is the 3-index form of the slice operation: it returns v[i:j:k].
+// It panics if v's Kind is not Array or Slice, or if v is an unaddressable array,
+// or if the indexes are out of bounds.
+func (v Value) Slice3(i, j, k int) Value {
+	var (
+		cap  int
+		typ  *sliceType
+		base unsafe.Pointer
+	)
+	switch kind := v.kind(); kind {
+	default:
+		panic(&ValueError{"reflect.Value.Slice3", kind})
+
+	case Array:
+		if v.flag&flagAddr == 0 {
+			panic("reflect.Value.Slice: slice of unaddressable array")
+		}
+		tt := (*arrayType)(unsafe.Pointer(v.typ))
+		cap = int(tt.len)
+		typ = (*sliceType)(unsafe.Pointer(tt.slice))
+		base = v.val
+
+	case Slice:
+		typ = (*sliceType)(unsafe.Pointer(v.typ))
+		s := (*SliceHeader)(v.val)
+		base = unsafe.Pointer(s.Data)
+		cap = s.Cap
+	}
+
+	if i < 0 || j < i || k < j || k > cap {
+		panic("reflect.Value.Slice3: slice index out of bounds")
+	}
+
+	// Declare slice so that the garbage collector
+	// can see the base pointer in it.
+	var x []unsafe.Pointer
+
+	// Reinterpret as *SliceHeader to edit.
+	s := (*SliceHeader)(unsafe.Pointer(&x))
+	s.Data = uintptr(base) + uintptr(i)*typ.elem.Size()
+	s.Len = j - i
+	s.Cap = k - i
 
 	fl := v.flag&flagRO | flagIndir | flag(Slice)<<flagKindShift
 	return Value{typ.common(), unsafe.Pointer(&x), fl}

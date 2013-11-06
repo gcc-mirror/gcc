@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd
 
 package signal
 
@@ -36,8 +36,8 @@ func TestSignal(t *testing.T) {
 	Notify(c, syscall.SIGHUP)
 	defer Stop(c)
 
-	t.Logf("sighup...")
 	// Send this process a SIGHUP
+	t.Logf("sighup...")
 	syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
 	waitSig(t, c, syscall.SIGHUP)
 
@@ -45,18 +45,18 @@ func TestSignal(t *testing.T) {
 	c1 := make(chan os.Signal, 1)
 	Notify(c1)
 
-	t.Logf("sigwinch...")
 	// Send this process a SIGWINCH
+	t.Logf("sigwinch...")
 	syscall.Kill(syscall.Getpid(), syscall.SIGWINCH)
 	waitSig(t, c1, syscall.SIGWINCH)
 
 	// Send two more SIGHUPs, to make sure that
 	// they get delivered on c1 and that not reading
 	// from c does not block everything.
-	t.Logf("sigwinch...")
+	t.Logf("sighup...")
 	syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
 	waitSig(t, c1, syscall.SIGHUP)
-	t.Logf("sigwinch...")
+	t.Logf("sighup...")
 	syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
 	waitSig(t, c1, syscall.SIGHUP)
 

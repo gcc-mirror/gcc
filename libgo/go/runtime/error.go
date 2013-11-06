@@ -106,6 +106,22 @@ func NewErrorString(s string, ret *interface{}) {
 	*ret = errorString(s)
 }
 
+// An errorCString represents a runtime error described by a single C string.
+type errorCString uintptr
+
+func (e errorCString) RuntimeError() {}
+
+func cstringToGo(uintptr) string
+
+func (e errorCString) Error() string {
+	return "runtime error: " + cstringToGo(uintptr(e))
+}
+
+// For calling from C.
+func NewErrorCString(s uintptr, ret *interface{}) {
+	*ret = errorCString(s)
+}
+
 type stringer interface {
 	String() string
 }

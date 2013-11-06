@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd
 
 package syscall
 
@@ -24,7 +24,10 @@ func c_syscall32(trap int32, a1, a2, a3, a4, a5, a6 int32) int32
 //extern syscall
 func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64
 
-const darwinAMD64 = runtime.GOOS == "darwin" && runtime.GOARCH == "amd64"
+const (
+	darwin64Bit = runtime.GOOS == "darwin" && sizeofPtr == 8
+	netbsd32Bit = runtime.GOOS == "netbsd" && sizeofPtr == 4
+)
 
 // Do a system call.  We look at the size of uintptr to see how to pass
 // the arguments, so that we don't pass a 64-bit value when the function
@@ -182,8 +185,13 @@ func (s Signal) String() string {
 
 func Read(fd int, p []byte) (n int, err error) {
 	n, err = read(fd, p)
-	if raceenabled && err == nil {
-		raceAcquire(unsafe.Pointer(&ioSync))
+	if raceenabled {
+		if n > 0 {
+			raceWriteRange(unsafe.Pointer(&p[0]), n)
+		}
+		if err == nil {
+			raceAcquire(unsafe.Pointer(&ioSync))
+		}
 	}
 	return
 }
@@ -192,7 +200,11 @@ func Write(fd int, p []byte) (n int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
 	}
-	return write(fd, p)
+	n, err = write(fd, p)
+	if raceenabled && n > 0 {
+		raceReadRange(unsafe.Pointer(&p[0]), n)
+	}
+	return
 }
 
 var ioSync int64

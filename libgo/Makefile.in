@@ -105,6 +105,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgohashdir)" \
 	"$(DESTDIR)$(toolexeclibgohtmldir)" \
 	"$(DESTDIR)$(toolexeclibgoimagedir)" \
+	"$(DESTDIR)$(toolexeclibgoimagecolordir)" \
 	"$(DESTDIR)$(toolexeclibgoindexdir)" \
 	"$(DESTDIR)$(toolexeclibgoiodir)" \
 	"$(DESTDIR)$(toolexeclibgologdir)" \
@@ -132,12 +133,12 @@ libgobegin_a_OBJECTS = $(am_libgobegin_a_OBJECTS)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
-	errors.lo expvar.lo flag.lo fmt.lo hash.lo html.lo image.lo \
-	io.lo log.lo math.lo mime.lo net.lo os.lo path.lo \
+	encoding.lo errors.lo expvar.lo flag.lo fmt.lo hash.lo html.lo \
+	image.lo io.lo log.lo math.lo mime.lo net.lo os.lo path.lo \
 	reflect-go.lo reflect/makefunc.lo regexp.lo runtime-go.lo \
-	sort.lo strconv.lo strings.lo sync.lo syscall.lo \
-	syscall/errno.lo syscall/signame.lo syscall/wait.lo testing.lo \
-	time-go.lo unicode.lo archive/tar.lo archive/zip.lo \
+	sort.lo strconv.lo strings.lo strings/index.lo sync.lo \
+	syscall.lo syscall/errno.lo syscall/signame.lo syscall/wait.lo \
+	testing.lo time-go.lo unicode.lo archive/tar.lo archive/zip.lo \
 	compress/bzip2.lo compress/flate.lo compress/gzip.lo \
 	compress/lzw.lo compress/zlib.lo container/heap.lo \
 	container/list.lo container/ring.lo crypto/aes.lo \
@@ -157,13 +158,13 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
 	net/http/cookiejar.lo net/http/fcgi.lo net/http/httptest.lo \
 	net/http/httputil.lo net/http/pprof.lo image/color.lo \
-	image/draw.lo image/gif.lo image/jpeg.lo image/png.lo \
-	index/suffixarray.lo io/ioutil.lo log/syslog.lo \
-	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
-	mime/multipart.lo net/http.lo net/mail.lo net/rpc.lo \
-	net/smtp.lo net/textproto.lo net/url.lo old/regexp.lo \
-	old/template.lo os/exec.lo $(am__DEPENDENCIES_1) os/signal.lo \
-	os/user.lo path/filepath.lo regexp/syntax.lo \
+	image/color/palette.lo image/draw.lo image/gif.lo \
+	image/jpeg.lo image/png.lo index/suffixarray.lo io/ioutil.lo \
+	log/syslog.lo log/syslog/syslog_c.lo math/big.lo math/cmplx.lo \
+	math/rand.lo mime/multipart.lo net/http.lo net/mail.lo \
+	net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
+	old/regexp.lo old/template.lo os/exec.lo $(am__DEPENDENCIES_1) \
+	os/signal.lo os/user.lo path/filepath.lo regexp/syntax.lo \
 	net/rpc/jsonrpc.lo runtime/debug.lo runtime/pprof.lo \
 	sync/atomic.lo sync/atomic_c.lo text/scanner.lo \
 	text/tabwriter.lo text/template.lo text/template/parse.lo \
@@ -260,16 +261,16 @@ DATA = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgodebug_DATA) $(toolexeclibgoencoding_DATA) \
 	$(toolexeclibgoexp_DATA) $(toolexeclibgogo_DATA) \
 	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
-	$(toolexeclibgoimage_DATA) $(toolexeclibgoindex_DATA) \
-	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoold_DATA) \
-	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
-	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
-	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
-	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA)
+	$(toolexeclibgoimage_DATA) $(toolexeclibgoimagecolor_DATA) \
+	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
+	$(toolexeclibgoold_DATA) $(toolexeclibgoos_DATA) \
+	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
+	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
+	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
+	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -443,7 +444,8 @@ WARN_CFLAGS = $(WARN_FLAGS) $(WERROR)
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 ACLOCAL_AMFLAGS = -I ./config -I ../config
-AM_CFLAGS = -fexceptions -fplan9-extensions $(SPLIT_STACK) $(WARN_CFLAGS) \
+AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
+	$(SPLIT_STACK) $(WARN_CFLAGS) \
 	$(STRINGOPS_FLAG) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
@@ -506,6 +508,7 @@ toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
 	crypto.gox \
+	encoding.gox \
 	errors.gox \
 	expvar.gox \
 	flag.gox \
@@ -639,6 +642,10 @@ toolexeclibgoimage_DATA = \
 	image/gif.gox \
 	image/jpeg.gox \
 	image/png.gox
+
+toolexeclibgoimagecolordir = $(toolexeclibgoimagedir)/color
+toolexeclibgoimagecolor_DATA = \
+	image/color/palette.gox
 
 toolexeclibgoindexdir = $(toolexeclibgodir)/index
 toolexeclibgoindex_DATA = \
@@ -865,6 +872,9 @@ go_bytes_c_files = \
 go_crypto_files = \
 	go/crypto/crypto.go
 
+go_encoding_files = \
+	go/encoding/encoding.go
+
 go_errors_files = \
 	go/errors/errors.go
 
@@ -955,7 +965,7 @@ go_mime_files = \
 # By default use select with pipes.  Most systems should have
 # something better.
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_select.go
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_bsd.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = 
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = 
 @LIBGO_IS_RTEMS_TRUE@go_net_fd_os_file = go/net/fd_select.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = 
@@ -986,17 +996,19 @@ go_mime_files = \
 @LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sockoptip_file = go/net/sockoptip_linux.go go/net/sockoptip_posix.go
 @LIBGO_IS_LINUX_TRUE@go_net_sockoptip_file = go/net/sockoptip_linux.go go/net/sockoptip_posix.go
-@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_stub.go
+@LIBGO_IS_DRAGONFLY_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_stub.go
+@LIBGO_IS_DRAGONFLY_TRUE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_dragonfly.go
 @LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_freebsd.go
 @LIBGO_IS_LINUX_TRUE@go_net_sendfile_file = go/net/sendfile_linux.go
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@go_net_interface_file = go/net/interface_stub.go
+@LIBGO_IS_DRAGONFLY_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@go_net_interface_file = go/net/interface_stub.go
+@LIBGO_IS_DRAGONFLY_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@go_net_interface_file = go/net/interface_dragonfly.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@go_net_interface_file = go/net/interface_netbsd.go
 @LIBGO_IS_LINUX_TRUE@go_net_interface_file = go/net/interface_linux.go
 @LIBGO_IS_LINUX_FALSE@go_net_cloexec_file = go/net/sys_cloexec.go
 @LIBGO_IS_LINUX_TRUE@go_net_cloexec_file = go/net/sock_cloexec.go
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_LINUX_FALSE@go_net_poll_file = go/net/fd_poll_unix.go
-@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_poll_file = go/net/fd_poll_runtime.go
-@LIBGO_IS_LINUX_TRUE@go_net_poll_file = go/net/fd_poll_runtime.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_OPENBSD_FALSE@go_net_tcpsockopt_file = go/net/tcpsockopt_unix.go
+@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_OPENBSD_FALSE@go_net_tcpsockopt_file = go/net/tcpsockopt_darwin.go
+@LIBGO_IS_OPENBSD_TRUE@go_net_tcpsockopt_file = go/net/tcpsockopt_openbsd.go
 go_net_files = \
 	go/net/cgo_unix.go \
 	$(go_net_cgo_file) \
@@ -1007,6 +1019,7 @@ go_net_files = \
 	go/net/dnsconfig_unix.go \
 	go/net/dnsmsg.go \
 	$(go_net_newpollserver_file) \
+	go/net/fd_mutex.go \
 	go/net/fd_unix.go \
 	$(go_net_fd_os_file) \
 	go/net/file_unix.go \
@@ -1024,18 +1037,21 @@ go_net_files = \
 	go/net/net.go \
 	go/net/parse.go \
 	go/net/pipe.go \
-	$(go_net_poll_file) \
+	go/net/fd_poll_runtime.go \
 	go/net/port.go \
 	go/net/port_unix.go \
+	go/net/race0.go \
 	$(go_net_sendfile_file) \
+	go/net/singleflight.go \
 	go/net/sock_posix.go \
-	go/net/sock_unix.go \
 	$(go_net_sock_file) \
 	go/net/sockopt_posix.go \
 	$(go_net_sockopt_file) \
 	$(go_net_sockoptip_file) \
 	go/net/tcpsock.go \
 	go/net/tcpsock_posix.go \
+	go/net/tcpsockopt_posix.go \
+	$(go_net_tcpsockopt_file) \
 	go/net/udpsock.go \
 	go/net/udpsock_posix.go \
 	go/net/unixsock.go \
@@ -1046,12 +1062,15 @@ go_net_files = \
 @LIBGO_IS_386_TRUE@@LIBGO_IS_SOLARIS_TRUE@go_os_dir_file = go/os/dir_largefile.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_dir_file = go/os/dir_regfile.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_dir_file = go/os/dir_largefile.go
+@LIBGO_IS_DARWIN_FALSE@go_os_getwd_file = 
+@LIBGO_IS_DARWIN_TRUE@go_os_getwd_file = go/os/getwd_darwin.go
 @LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_bsd.go
 @LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_TRUE@go_os_sys_file = go/os/sys_linux.go
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_DRAGONFLY_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_DRAGONFLY_TRUE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_dragonfly.go
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimespec.go
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimespec.go
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimespec.go
@@ -1066,7 +1085,7 @@ go_os_files = \
 	go/os/doc.go \
 	go/os/env.go \
 	go/os/error.go \
-	go/os/error_posix.go \
+	go/os/error_unix.go \
 	go/os/exec.go \
 	go/os/exec_posix.go \
 	go/os/exec_unix.go \
@@ -1074,6 +1093,7 @@ go_os_files = \
 	go/os/file_posix.go \
 	go/os/file_unix.go \
 	go/os/getwd.go \
+	$(go_os_getwd_file) \
 	go/os/path.go \
 	go/os/path_unix.go \
 	$(go_os_pipe_file) \
@@ -1149,7 +1169,11 @@ go_strings_files = \
 	go/strings/reader.go \
 	go/strings/replace.go \
 	go/strings/search.go \
-	go/strings/strings.go
+	go/strings/strings.go \
+	go/strings/strings_decl.go
+
+go_strings_c_files = \
+	go/strings/indexbyte.c
 
 go_sync_files = \
 	go/sync/cond.go \
@@ -1173,6 +1197,7 @@ go_syslog_c_files = \
 go_testing_files = \
 	go/testing/allocs.go \
 	go/testing/benchmark.go \
+	go/testing/cover.go \
 	go/testing/example.go \
 	go/testing/testing.go
 
@@ -1208,6 +1233,7 @@ go_archive_tar_files = \
 
 go_archive_zip_files = \
 	go/archive/zip/reader.go \
+	go/archive/zip/register.go \
 	go/archive/zip/struct.go \
 	go/archive/zip/writer.go
 
@@ -1259,6 +1285,7 @@ go_crypto_cipher_files = \
 	go/crypto/cipher/cfb.go \
 	go/crypto/cipher/cipher.go \
 	go/crypto/cipher/ctr.go \
+	go/crypto/cipher/gcm.go \
 	go/crypto/cipher/io.go \
 	go/crypto/cipher/ofb.go
 
@@ -1275,7 +1302,8 @@ go_crypto_ecdsa_files = \
 
 go_crypto_elliptic_files = \
 	go/crypto/elliptic/elliptic.go \
-	go/crypto/elliptic/p224.go
+	go/crypto/elliptic/p224.go \
+	go/crypto/elliptic/p256.go
 
 go_crypto_hmac_files = \
 	go/crypto/hmac/hmac.go
@@ -1295,6 +1323,7 @@ go_crypto_rc4_files = \
 
 go_crypto_rsa_files = \
 	go/crypto/rsa/pkcs1v15.go \
+	go/crypto/rsa/pss.go \
 	go/crypto/rsa/rsa.go
 
 go_crypto_sha1_files = \
@@ -1509,11 +1538,15 @@ go_image_color_files = \
 	go/image/color/color.go \
 	go/image/color/ycbcr.go
 
+go_image_color_palette_files = \
+	go/image/color/palette/palette.go
+
 go_image_draw_files = \
 	go/image/draw/draw.go
 
 go_image_gif_files = \
-	go/image/gif/reader.go
+	go/image/gif/reader.go \
+	go/image/gif/writer.go
 
 go_image_jpeg_files = \
 	go/image/jpeg/fdct.go \
@@ -1849,6 +1882,7 @@ libgo_go_objs = \
 	bytes.lo \
 	bytes/index.lo \
 	crypto.lo \
+	encoding.lo \
 	errors.lo \
 	expvar.lo \
 	flag.lo \
@@ -1870,6 +1904,7 @@ libgo_go_objs = \
 	sort.lo \
 	strconv.lo \
 	strings.lo \
+	strings/index.lo \
 	sync.lo \
 	syscall.lo \
 	syscall/errno.lo \
@@ -1946,6 +1981,7 @@ libgo_go_objs = \
 	net/http/httputil.lo \
 	net/http/pprof.lo \
 	image/color.lo \
+	image/color/palette.lo \
 	image/draw.lo \
 	image/gif.lo \
 	image/jpeg.lo \
@@ -3518,6 +3554,26 @@ uninstall-toolexeclibgoimageDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(toolexeclibgoimagedir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(toolexeclibgoimagedir)" && rm -f $$files
+install-toolexeclibgoimagecolorDATA: $(toolexeclibgoimagecolor_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgoimagecolordir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoimagecolordir)"
+	@list='$(toolexeclibgoimagecolor_DATA)'; test -n "$(toolexeclibgoimagecolordir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoimagecolordir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoimagecolordir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgoimagecolorDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgoimagecolor_DATA)'; test -n "$(toolexeclibgoimagecolordir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoimagecolordir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoimagecolordir)" && rm -f $$files
 install-toolexeclibgoindexDATA: $(toolexeclibgoindex_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibgoindexdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoindexdir)"
@@ -4019,7 +4075,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoolddir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoolddir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -4092,6 +4148,7 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
 	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
 	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
@@ -4159,6 +4216,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
+	uninstall-toolexeclibgoimagecolorDATA \
 	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
 	uninstall-toolexeclibgologDATA uninstall-toolexeclibgomathDATA \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
@@ -4203,6 +4261,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
 	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
 	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
@@ -4234,6 +4293,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
+	uninstall-toolexeclibgoimagecolorDATA \
 	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
 	uninstall-toolexeclibgologDATA uninstall-toolexeclibgomathDATA \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
@@ -4390,6 +4450,15 @@ crypto.lo: $(go_crypto_files)
 crypto/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: crypto/check
+
+@go_include@ encoding.lo.dep
+encoding.lo.dep: $(go_encoding_files)
+	$(BUILDDEPS)
+encoding.lo: $(go_encoding_files)
+	$(BUILDPACKAGE)
+encoding/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: encoding/check
 
 @go_include@ errors.lo.dep
 errors.lo.dep: $(go_errors_files)
@@ -4572,6 +4641,9 @@ strings.lo.dep: $(go_strings_files)
 	$(BUILDDEPS)
 strings.lo: $(go_strings_files)
 	$(BUILDPACKAGE)
+strings/index.lo: $(go_strings_c_files)
+	@$(MKDIR_P) strings
+	$(LTCOMPILE) -c -o strings/index.lo $(srcdir)/go/strings/indexbyte.c
 strings/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: strings/check
@@ -5179,6 +5251,15 @@ image/color/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: image/color/check
 
+@go_include@ image/color/palette.lo.dep
+image/color/palette.lo.dep: $(go_image_color_palette_files)
+	$(BUILDDEPS)
+image/color/palette.lo: $(go_image_color_palette_files)
+	$(BUILDPACKAGE)
+image/color/palette/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: image/color/palette/check
+
 @go_include@ image/draw.lo.dep
 image/draw.lo.dep: $(go_image_draw_files)
 	$(BUILDDEPS)
@@ -5586,6 +5667,8 @@ bytes.gox: bytes.lo
 	$(BUILDGOX)
 crypto.gox: crypto.lo
 	$(BUILDGOX)
+encoding.gox: encoding.lo
+	$(BUILDGOX)
 errors.gox: errors.lo
 	$(BUILDGOX)
 expvar.gox: expvar.lo
@@ -5781,6 +5864,9 @@ image/gif.gox: image/gif.lo
 image/jpeg.gox: image/jpeg.lo
 	$(BUILDGOX)
 image/png.gox: image/png.lo
+	$(BUILDGOX)
+
+image/color/palette.gox: image/color/palette.lo
 	$(BUILDGOX)
 
 index/suffixarray.gox: index/suffixarray.lo

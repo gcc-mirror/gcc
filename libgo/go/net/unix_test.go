@@ -107,7 +107,7 @@ func TestReadUnixgramWithZeroBytesBuffer(t *testing.T) {
 	}
 }
 
-func TestUnixAutobind(t *testing.T) {
+func TestUnixgramAutobind(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("skipping: autobind is linux only")
 	}
@@ -139,8 +139,21 @@ func TestUnixAutobind(t *testing.T) {
 	}
 }
 
+func TestUnixAutobindClose(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("skipping: autobind is linux only")
+	}
+	laddr := &UnixAddr{Name: "", Net: "unix"}
+	ln, err := ListenUnix("unix", laddr)
+	if err != nil {
+		t.Fatalf("ListenUnix failed: %v", err)
+	}
+	ln.Close()
+}
+
 func TestUnixConnLocalAndRemoteNames(t *testing.T) {
 	for _, laddr := range []string{"", testUnixAddr()} {
+		laddr := laddr
 		taddr := testUnixAddr()
 		ta, err := ResolveUnixAddr("unix", taddr)
 		if err != nil {
@@ -196,6 +209,7 @@ func TestUnixConnLocalAndRemoteNames(t *testing.T) {
 
 func TestUnixgramConnLocalAndRemoteNames(t *testing.T) {
 	for _, laddr := range []string{"", testUnixAddr()} {
+		laddr := laddr
 		taddr := testUnixAddr()
 		ta, err := ResolveUnixAddr("unixgram", taddr)
 		if err != nil {
@@ -212,7 +226,6 @@ func TestUnixgramConnLocalAndRemoteNames(t *testing.T) {
 
 		var la *UnixAddr
 		if laddr != "" {
-			var err error
 			if la, err = ResolveUnixAddr("unixgram", laddr); err != nil {
 				t.Fatalf("ResolveUnixAddr failed: %v", err)
 			}

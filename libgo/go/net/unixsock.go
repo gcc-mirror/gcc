@@ -24,8 +24,8 @@ func (a *UnixAddr) String() string {
 }
 
 func (a *UnixAddr) toAddr() Addr {
-	if a == nil { // nil *UnixAddr
-		return nil // nil interface
+	if a == nil {
+		return nil
 	}
 	return a
 }

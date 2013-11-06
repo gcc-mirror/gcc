@@ -54,7 +54,6 @@ var (
 	float32Val           float32
 	float64Val           float64
 	stringVal            string
-	stringVal1           string
 	bytesVal             []byte
 	runeVal              rune
 	complex64Val         complex64
@@ -191,6 +190,10 @@ var scanTests = []ScanTest{
 	{"-3.45e1-3i\n", &complex64Val, complex64(-3.45e1 - 3i)},
 	{"-.45e1-1e2i\n", &complex128Val, complex128(-.45e1 - 100i)},
 	{"hello\n", &stringVal, "hello"},
+
+	// Carriage-return followed by newline. (We treat \r\n as \n always.)
+	{"hello\r\n", &stringVal, "hello"},
+	{"27\r\n", &uint8Val, uint8(27)},
 
 	// Renamed types
 	{"true\n", &renamedBoolVal, renamedBool(true)},

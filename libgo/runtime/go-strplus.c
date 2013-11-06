@@ -21,7 +21,7 @@ __go_string_plus (String s1, String s2)
     return s1;
 
   len = s1.len + s2.len;
-  retdata = runtime_mallocgc (len, FlagNoPointers, 1, 0);
+  retdata = runtime_mallocgc (len, 0, FlagNoScan | FlagNoZero);
   __builtin_memcpy (retdata, s1.str, s1.len);
   __builtin_memcpy (retdata + s1.len, s2.str, s2.len);
   ret.str = retdata;

@@ -26,6 +26,7 @@ type multiSorter struct {
 
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.
 func (ms *multiSorter) Sort(changes []Change) {
+	ms.changes = changes
 	sort.Sort(ms)
 }
 
@@ -33,8 +34,7 @@ func (ms *multiSorter) Sort(changes []Change) {
 // Call its Sort method to sort the data.
 func OrderedBy(less ...lessFunc) *multiSorter {
 	return &multiSorter{
-		changes: changes,
-		less:    less,
+		less: less,
 	}
 }
 
@@ -108,11 +108,10 @@ func Example_sortMultiKeys() {
 	OrderedBy(user).Sort(changes)
 	fmt.Println("By user:", changes)
 
-	// multiSorter implements the Sort interface, so we can also do this.
-	sort.Sort(OrderedBy(user, increasingLines))
+	// More examples.
+	OrderedBy(user, increasingLines).Sort(changes)
 	fmt.Println("By user,<lines:", changes)
 
-	// More examples.
 	OrderedBy(user, decreasingLines).Sort(changes)
 	fmt.Println("By user,>lines:", changes)
 
@@ -123,10 +122,10 @@ func Example_sortMultiKeys() {
 	fmt.Println("By language,<lines,user:", changes)
 
 	// Output:
-	//By user: [{dmr C 100} {glenda Go 200} {gri Smalltalk 80} {gri Go 100} {ken Go 200} {ken C 150} {r Go 100} {r C 150} {rsc Go 200}]
-	//By user,<lines: [{dmr C 100} {glenda Go 200} {gri Smalltalk 80} {gri Go 100} {ken C 150} {ken Go 200} {r Go 100} {r C 150} {rsc Go 200}]
-	//By user,>lines: [{dmr C 100} {glenda Go 200} {gri Go 100} {gri Smalltalk 80} {ken Go 200} {ken C 150} {r C 150} {r Go 100} {rsc Go 200}]
-	//By language,<lines: [{dmr C 100} {ken C 150} {r C 150} {gri Go 100} {r Go 100} {ken Go 200} {glenda Go 200} {rsc Go 200} {gri Smalltalk 80}]
-	//By language,<lines,user: [{dmr C 100} {ken C 150} {r C 150} {gri Go 100} {r Go 100} {glenda Go 200} {ken Go 200} {rsc Go 200} {gri Smalltalk 80}]
+	// By user: [{dmr C 100} {glenda Go 200} {gri Smalltalk 80} {gri Go 100} {ken Go 200} {ken C 150} {r Go 100} {r C 150} {rsc Go 200}]
+	// By user,<lines: [{dmr C 100} {glenda Go 200} {gri Smalltalk 80} {gri Go 100} {ken C 150} {ken Go 200} {r Go 100} {r C 150} {rsc Go 200}]
+	// By user,>lines: [{dmr C 100} {glenda Go 200} {gri Go 100} {gri Smalltalk 80} {ken Go 200} {ken C 150} {r C 150} {r Go 100} {rsc Go 200}]
+	// By language,<lines: [{dmr C 100} {ken C 150} {r C 150} {gri Go 100} {r Go 100} {ken Go 200} {glenda Go 200} {rsc Go 200} {gri Smalltalk 80}]
+	// By language,<lines,user: [{dmr C 100} {ken C 150} {r C 150} {gri Go 100} {r Go 100} {glenda Go 200} {ken Go 200} {rsc Go 200} {gri Smalltalk 80}]
 
 }

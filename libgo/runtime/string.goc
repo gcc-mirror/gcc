@@ -21,6 +21,18 @@ runtime_findnull(const byte *s)
 	return __builtin_strlen((const char*) s);
 }
 
+intgo
+runtime_findnullw(const uint16 *s)
+{
+	intgo l;
+
+	if(s == nil)
+		return 0;
+	for(l=0; s[l]!=0; l++)
+		;
+	return l;
+}
+
 static String
 gostringsize(intgo l, byte** pmem)
 {
@@ -32,7 +44,7 @@ gostringsize(intgo l, byte** pmem)
 		return runtime_emptystring;
 	}
 	// leave room for NUL for C runtime (e.g., callers of getenv)
-	mem = runtime_mallocgc(l+1, FlagNoPointers, 1, 0);
+	mem = runtime_mallocgc(l+1, 0, FlagNoScan|FlagNoZero);
 	s.str = mem;
 	s.len = l;
 	mem[l] = 0;
@@ -61,6 +73,15 @@ runtime_gostringnocopy(const byte *str)
 	s.str = str;
 	s.len = runtime_findnull(str);
 	return s;
+}
+
+String runtime_cstringToGo(byte*)
+  __asm__ (GOSYM_PREFIX "runtime.cstringToGo");
+
+String
+runtime_cstringToGo(byte *str)
+{
+	return runtime_gostringnocopy(str);
 }
 
 enum

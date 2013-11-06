@@ -124,11 +124,12 @@ TestAtomic64(void)
 	z64 = 42;
 	x64 = 0;
 	PREFETCH(&z64);
-	if(runtime_cas64(&z64, &x64, 1))
+	if(runtime_cas64(&z64, x64, 1))
 		runtime_throw("cas64 failed");
-	if(x64 != 42)
+	if(x64 != 0)
 		runtime_throw("cas64 failed");
-	if(!runtime_cas64(&z64, &x64, 1))
+	x64 = 42;
+	if(!runtime_cas64(&z64, x64, 1))
 		runtime_throw("cas64 failed");
 	if(x64 != 42 || z64 != 1)
 		runtime_throw("cas64 failed");
@@ -278,4 +279,80 @@ runtime_signalstack(byte *p, int32 n)
 		st.ss_flags = SS_DISABLE;
 	if(sigaltstack(&st, nil) < 0)
 		*(int *)0xf1 = 0xf1;
+}
+
+DebugVars	runtime_debug;
+
+static struct {
+	const char* name;
+	int32*	value;
+} dbgvar[] = {
+	{"gctrace", &runtime_debug.gctrace},
+	{"schedtrace", &runtime_debug.schedtrace},
+	{"scheddetail", &runtime_debug.scheddetail},
+};
+
+void
+runtime_parsedebugvars(void)
+{
+	const byte *p;
+	intgo i, n;
+
+	p = runtime_getenv("GODEBUG");
+	if(p == nil)
+		return;
+	for(;;) {
+		for(i=0; i<(intgo)nelem(dbgvar); i++) {
+			n = runtime_findnull((const byte*)dbgvar[i].name);
+			if(runtime_mcmp(p, dbgvar[i].name, n) == 0 && p[n] == '=')
+				*dbgvar[i].value = runtime_atoi(p+n+1);
+		}
+		p = (const byte *)runtime_strstr((const char *)p, ",");
+		if(p == nil)
+			break;
+		p++;
+	}
+}
+
+// Poor mans 64-bit division.
+// This is a very special function, do not use it if you are not sure what you are doing.
+// int64 division is lowered into _divv() call on 386, which does not fit into nosplit functions.
+// Handles overflow in a time-specific manner.
+int32
+runtime_timediv(int64 v, int32 div, int32 *rem)
+{
+	int32 res, bit;
+
+	if(v >= (int64)div*0x7fffffffLL) {
+		if(rem != nil)
+			*rem = 0;
+		return 0x7fffffff;
+	}
+	res = 0;
+	for(bit = 30; bit >= 0; bit--) {
+		if(v >= ((int64)div<<bit)) {
+			v = v - ((int64)div<<bit);
+			res += 1<<bit;
+		}
+	}
+	if(rem != nil)
+		*rem = v;
+	return res;
+}
+
+// Setting the max stack size doesn't really do anything for gccgo.
+
+uintptr runtime_maxstacksize = 1<<20; // enough until runtime.main sets it for real
+
+intgo runtime_debug_setMaxStack(intgo)
+	__asm__ (GOSYM_PREFIX "runtime_debug.setMaxStack");
+
+intgo
+runtime_debug_setMaxStack(intgo in)
+{
+	intgo out;
+
+	out = runtime_maxstacksize;
+	runtime_maxstacksize = in;
+	return out;
 }

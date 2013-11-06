@@ -107,9 +107,7 @@ func signal_recv() (m uint32) {
 				new = HASWAITER;
 			if(runtime_cas(&sig.state, old, new)) {
 				if (new == HASWAITER) {
-					runtime_entersyscallblock();
-					runtime_notesleep(&sig);
-					runtime_exitsyscall();
+					runtime_notetsleepg(&sig, -1);
 					runtime_noteclear(&sig);
 				}
 				break;
@@ -156,4 +154,11 @@ func signal_disable(s uint32) {
 		return;
 	sig.wanted[s/32] &= ~(1U<<(s&31));
 	runtime_sigdisable(s);
+}
+
+// This runs on a foreign stack, without an m or a g.  No stack split.
+void
+runtime_badsignal(int sig)
+{
+	__go_sigsend(sig);
 }

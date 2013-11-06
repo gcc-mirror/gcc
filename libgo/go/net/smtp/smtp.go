@@ -41,12 +41,13 @@ type Client struct {
 }
 
 // Dial returns a new Client connected to an SMTP server at addr.
+// The addr must include a port number.
 func Dial(addr string) (*Client, error) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
-	host := addr[:strings.Index(addr, ":")]
+	host, _, _ := net.SplitHostPort(addr)
 	return NewClient(conn, host)
 }
 
@@ -61,6 +62,11 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	}
 	c := &Client{Text: text, conn: conn, serverName: host, localName: "localhost"}
 	return c, nil
+}
+
+// Close closes the connection.
+func (c *Client) Close() error {
+	return c.Text.Close()
 }
 
 // hello runs a hello exchange if needed.
@@ -190,7 +196,9 @@ func (c *Client) Auth(a Auth) error {
 		default:
 			err = &textproto.Error{Code: code, Msg: msg64}
 		}
-		resp, err = a.Next(msg, code == 334)
+		if err == nil {
+			resp, err = a.Next(msg, code == 334)
+		}
 		if err != nil {
 			// abort the AUTH
 			c.cmd(501, "*")
@@ -256,15 +264,17 @@ func (c *Client) Data() (io.WriteCloser, error) {
 	return &dataCloser{c, c.Text.DotWriter()}, nil
 }
 
-// SendMail connects to the server at addr, switches to TLS if possible,
-// authenticates with mechanism a if possible, and then sends an email from
-// address from, to addresses to, with message msg.
+// SendMail connects to the server at addr, switches to TLS if
+// possible, authenticates with the optional mechanism a if possible,
+// and then sends an email from address from, to addresses to, with
+// message msg.
 func SendMail(addr string, a Auth, from string, to []string, msg []byte) error {
 	c, err := Dial(addr)
 	if err != nil {
 		return err
 	}
-	if err := c.hello(); err != nil {
+	defer c.Close()
+	if err = c.hello(); err != nil {
 		return err
 	}
 	if ok, _ := c.Extension("STARTTLS"); ok {

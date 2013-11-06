@@ -20,8 +20,10 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -35,6 +37,8 @@ const (
 type wantRange struct {
 	start, end int64 // range [start,end)
 }
+
+var itoa = strconv.Itoa
 
 var ServeFileRangeTests = []struct {
 	r      string
@@ -50,7 +54,11 @@ var ServeFileRangeTests = []struct {
 	{r: "bytes=0-0,-2", code: StatusPartialContent, ranges: []wantRange{{0, 1}, {testFileLen - 2, testFileLen}}},
 	{r: "bytes=0-1,5-8", code: StatusPartialContent, ranges: []wantRange{{0, 2}, {5, 9}}},
 	{r: "bytes=0-1,5-", code: StatusPartialContent, ranges: []wantRange{{0, 2}, {5, testFileLen}}},
+	{r: "bytes=5-1000", code: StatusPartialContent, ranges: []wantRange{{5, testFileLen}}},
 	{r: "bytes=0-,1-,2-,3-,4-", code: StatusOK}, // ignore wasteful range request
+	{r: "bytes=0-" + itoa(testFileLen-2), code: StatusPartialContent, ranges: []wantRange{{0, testFileLen - 1}}},
+	{r: "bytes=0-" + itoa(testFileLen-1), code: StatusPartialContent, ranges: []wantRange{{0, testFileLen}}},
+	{r: "bytes=0-" + itoa(testFileLen), code: StatusPartialContent, ranges: []wantRange{{0, testFileLen}}},
 }
 
 func TestServeFile(t *testing.T) {
@@ -259,6 +267,9 @@ func TestFileServerImplicitLeadingSlash(t *testing.T) {
 }
 
 func TestDirJoin(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping test on windows")
+	}
 	wfi, err := os.Stat("/etc/hosts")
 	if err != nil {
 		t.Skip("skipping test; no /etc/hosts file")
@@ -309,24 +320,29 @@ func TestServeFileContentType(t *testing.T) {
 	defer afterTest(t)
 	const ctype = "icecream/chocolate"
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
-		if r.FormValue("override") == "1" {
+		switch r.FormValue("override") {
+		case "1":
 			w.Header().Set("Content-Type", ctype)
+		case "2":
+			// Explicitly inhibit sniffing.
+			w.Header()["Content-Type"] = []string{}
 		}
 		ServeFile(w, r, "testdata/file")
 	}))
 	defer ts.Close()
-	get := func(override, want string) {
+	get := func(override string, want []string) {
 		resp, err := Get(ts.URL + "?override=" + override)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if h := resp.Header.Get("Content-Type"); h != want {
-			t.Errorf("Content-Type mismatch: got %q, want %q", h, want)
+		if h := resp.Header["Content-Type"]; !reflect.DeepEqual(h, want) {
+			t.Errorf("Content-Type mismatch: got %v, want %v", h, want)
 		}
 		resp.Body.Close()
 	}
-	get("0", "text/plain; charset=utf-8")
-	get("1", ctype)
+	get("0", []string{"text/plain; charset=utf-8"})
+	get("1", []string{ctype})
+	get("2", nil)
 }
 
 func TestServeFileMimeType(t *testing.T) {
@@ -567,7 +583,10 @@ func TestServeContent(t *testing.T) {
 	defer ts.Close()
 
 	type testCase struct {
-		file             string
+		// One of file or content must be set:
+		file    string
+		content io.ReadSeeker
+
 		modtime          time.Time
 		serveETag        string // optional
 		serveContentType string // optional
@@ -615,6 +634,14 @@ func TestServeContent(t *testing.T) {
 			},
 			wantStatus: 304,
 		},
+		"not_modified_etag_no_seek": {
+			content:   panicOnSeek{nil}, // should never be called
+			serveETag: `"foo"`,
+			reqHeader: map[string]string{
+				"If-None-Match": `"foo"`,
+			},
+			wantStatus: 304,
+		},
 		"range_good": {
 			file:      "testdata/style.css",
 			serveETag: `"A"`,
@@ -638,15 +665,21 @@ func TestServeContent(t *testing.T) {
 		},
 	}
 	for testName, tt := range tests {
-		f, err := os.Open(tt.file)
-		if err != nil {
-			t.Fatalf("test %q: %v", testName, err)
+		var content io.ReadSeeker
+		if tt.file != "" {
+			f, err := os.Open(tt.file)
+			if err != nil {
+				t.Fatalf("test %q: %v", testName, err)
+			}
+			defer f.Close()
+			content = f
+		} else {
+			content = tt.content
 		}
-		defer f.Close()
 
 		servec <- serveParam{
 			name:        filepath.Base(tt.file),
-			content:     f,
+			content:     content,
 			modtime:     tt.modtime,
 			etag:        tt.serveETag,
 			contentType: tt.serveContentType,
@@ -768,3 +801,5 @@ func TestLinuxSendfileChild(*testing.T) {
 		panic(err)
 	}
 }
+
+type panicOnSeek struct{ io.ReadSeeker }

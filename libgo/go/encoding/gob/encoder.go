@@ -6,7 +6,6 @@ package gob
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"reflect"
 	"sync"
@@ -52,10 +51,6 @@ func (enc *Encoder) pushWriter(w io.Writer) {
 // popWriter pops the innermost writer.
 func (enc *Encoder) popWriter() {
 	enc.w = enc.w[0 : len(enc.w)-1]
-}
-
-func (enc *Encoder) badType(rt reflect.Type) {
-	enc.setError(errors.New("gob: can't encode type " + rt.String()))
 }
 
 func (enc *Encoder) setError(err error) {
@@ -135,7 +130,7 @@ func (enc *Encoder) sendActualType(w io.Writer, state *encoderState, ut *userTyp
 // sendType sends the type info to the other side, if necessary.
 func (enc *Encoder) sendType(w io.Writer, state *encoderState, origt reflect.Type) (sent bool) {
 	ut := userType(origt)
-	if ut.isGobEncoder {
+	if ut.externalEnc != 0 {
 		// The rules are different: regardless of the underlying type's representation,
 		// we need to tell the other side that the base type is a GobEncoder.
 		return enc.sendActualType(w, state, ut, ut.base)
@@ -163,8 +158,7 @@ func (enc *Encoder) sendType(w io.Writer, state *encoderState, origt reflect.Typ
 		// structs must be sent so we know their fields.
 		break
 	case reflect.Chan, reflect.Func:
-		// Probably a bad field in a struct.
-		enc.badType(rt)
+		// If we get here, it's a field of a struct; ignore it.
 		return
 	}
 
@@ -184,7 +178,7 @@ func (enc *Encoder) sendTypeDescriptor(w io.Writer, state *encoderState, ut *use
 	// Make sure the type is known to the other side.
 	// First, have we already sent this type?
 	rt := ut.base
-	if ut.isGobEncoder {
+	if ut.externalEnc != 0 {
 		rt = ut.user
 	}
 	if _, alreadySent := enc.sent[rt]; !alreadySent {

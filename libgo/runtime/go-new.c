@@ -12,11 +12,11 @@
 void *
 __go_new (uintptr_t size)
 {
-  return runtime_mallocgc (size, 0, 1, 1);
+  return runtime_mallocgc (size, 0, 0);
 }
 
 void *
 __go_new_nopointers (uintptr_t size)
 {
-  return runtime_mallocgc (size, FlagNoPointers, 1, 1);
+  return runtime_mallocgc (size, 0, FlagNoScan);
 }

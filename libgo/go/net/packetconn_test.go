@@ -21,6 +21,45 @@ func strfunc(s string) func() string {
 	}
 }
 
+func packetConnTestData(t *testing.T, net string, i int) ([]byte, func()) {
+	switch net {
+	case "udp":
+		return []byte("UDP PACKETCONN TEST"), nil
+	case "ip":
+		if skip, skipmsg := skipRawSocketTest(t); skip {
+			return nil, func() {
+				t.Logf(skipmsg)
+			}
+		}
+		b, err := (&icmpMessage{
+			Type: icmpv4EchoRequest, Code: 0,
+			Body: &icmpEcho{
+				ID: os.Getpid() & 0xffff, Seq: i + 1,
+				Data: []byte("IP PACKETCONN TEST"),
+			},
+		}).Marshal()
+		if err != nil {
+			return nil, func() {
+				t.Fatalf("icmpMessage.Marshal failed: %v", err)
+			}
+		}
+		return b, nil
+	case "unixgram":
+		switch runtime.GOOS {
+		case "plan9", "windows":
+			return nil, func() {
+				t.Logf("skipping %q test on %q", net, runtime.GOOS)
+			}
+		default:
+			return []byte("UNIXGRAM PACKETCONN TEST"), nil
+		}
+	default:
+		return nil, func() {
+			t.Logf("skipping %q test", net)
+		}
+	}
+}
+
 var packetConnTests = []struct {
 	net   string
 	addr1 func() string
@@ -42,37 +81,10 @@ func TestPacketConn(t *testing.T) {
 	}
 
 	for i, tt := range packetConnTests {
-		var wb []byte
 		netstr := strings.Split(tt.net, ":")
-		switch netstr[0] {
-		case "udp":
-			wb = []byte("UDP PACKETCONN TEST")
-		case "ip":
-			switch runtime.GOOS {
-			case "plan9":
-				continue
-			}
-			if os.Getuid() != 0 {
-				continue
-			}
-			var err error
-			wb, err = (&icmpMessage{
-				Type: icmpv4EchoRequest, Code: 0,
-				Body: &icmpEcho{
-					ID: os.Getpid() & 0xffff, Seq: i + 1,
-					Data: []byte("IP PACKETCONN TEST"),
-				},
-			}).Marshal()
-			if err != nil {
-				t.Fatalf("icmpMessage.Marshal failed: %v", err)
-			}
-		case "unixgram":
-			switch runtime.GOOS {
-			case "plan9", "windows":
-				continue
-			}
-			wb = []byte("UNIXGRAM PACKETCONN TEST")
-		default:
+		wb, skipOrFatalFn := packetConnTestData(t, netstr[0], i)
+		if skipOrFatalFn != nil {
+			skipOrFatalFn()
 			continue
 		}
 
@@ -127,35 +139,9 @@ func TestConnAndPacketConn(t *testing.T) {
 	for i, tt := range packetConnTests {
 		var wb []byte
 		netstr := strings.Split(tt.net, ":")
-		switch netstr[0] {
-		case "udp":
-			wb = []byte("UDP PACKETCONN TEST")
-		case "ip":
-			switch runtime.GOOS {
-			case "plan9":
-				continue
-			}
-			if os.Getuid() != 0 {
-				continue
-			}
-			var err error
-			wb, err = (&icmpMessage{
-				Type: icmpv4EchoRequest, Code: 0,
-				Body: &icmpEcho{
-					ID: os.Getpid() & 0xffff, Seq: i + 1,
-					Data: []byte("IP PACKETCONN TEST"),
-				},
-			}).Marshal()
-			if err != nil {
-				t.Fatalf("icmpMessage.Marshal failed: %v", err)
-			}
-		case "unixgram":
-			switch runtime.GOOS {
-			case "plan9", "windows":
-				continue
-			}
-			wb = []byte("UNIXGRAM PACKETCONN TEST")
-		default:
+		wb, skipOrFatalFn := packetConnTestData(t, netstr[0], i)
+		if skipOrFatalFn != nil {
+			skipOrFatalFn()
 			continue
 		}
 
@@ -186,7 +172,7 @@ func TestConnAndPacketConn(t *testing.T) {
 		}
 		rb1 := make([]byte, 128)
 		if _, _, err := c1.ReadFrom(rb1); err != nil {
-			t.Fatalf("PacetConn.ReadFrom failed: %v", err)
+			t.Fatalf("PacketConn.ReadFrom failed: %v", err)
 		}
 		var dst Addr
 		switch netstr[0] {

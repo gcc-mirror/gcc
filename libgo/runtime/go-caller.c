@@ -228,3 +228,23 @@ runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)
     runtime_memclr (&ret, sizeof ret);
   return ret;
 }
+
+/* Return the name of a function.  */
+String runtime_funcname_go (Func *f)
+  __asm__ (GOSYM_PREFIX "runtime.funcname_go");
+
+String
+runtime_funcname_go (Func *f)
+{
+  return f->name;
+}
+
+/* Return the entry point of a function.  */
+uintptr runtime_funcentry_go(Func *f)
+  __asm__ (GOSYM_PREFIX "runtime.funcentry_go");
+
+uintptr
+runtime_funcentry_go (Func *f)
+{
+  return f->entry;
+}

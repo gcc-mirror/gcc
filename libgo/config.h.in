@@ -147,6 +147,9 @@
 /* Define to 1 if you have the `mknodat' function. */
 #undef HAVE_MKNODAT
 
+/* Define to 1 if you have the <netinet/icmp6.h> header file. */
+#undef HAVE_NETINET_ICMP6_H
+
 /* Define to 1 if you have the <netinet/if_ether.h> header file. */
 #undef HAVE_NETINET_IF_ETHER_H
 

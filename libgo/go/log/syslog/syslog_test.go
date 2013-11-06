@@ -122,7 +122,9 @@ func TestWithSimulated(t *testing.T) {
 
 	for _, tr := range transport {
 		done := make(chan string)
-		addr, _, _ := startServer(tr, "", done)
+		addr, sock, srvWG := startServer(tr, "", done)
+		defer srvWG.Wait()
+		defer sock.Close()
 		if tr == "unix" || tr == "unixgram" {
 			defer os.Remove(addr)
 		}
@@ -142,7 +144,8 @@ func TestWithSimulated(t *testing.T) {
 func TestFlap(t *testing.T) {
 	net := "unix"
 	done := make(chan string)
-	addr, sock, _ := startServer(net, "", done)
+	addr, sock, srvWG := startServer(net, "", done)
+	defer srvWG.Wait()
 	defer os.Remove(addr)
 	defer sock.Close()
 
@@ -158,7 +161,8 @@ func TestFlap(t *testing.T) {
 	check(t, msg, <-done)
 
 	// restart the server
-	_, sock2, _ := startServer(net, addr, done)
+	_, sock2, srvWG2 := startServer(net, addr, done)
+	defer srvWG2.Wait()
 	defer sock2.Close()
 
 	// and try retransmitting
@@ -249,12 +253,14 @@ func TestWrite(t *testing.T) {
 	} else {
 		for _, test := range tests {
 			done := make(chan string)
-			addr, sock, _ := startServer("udp", "", done)
+			addr, sock, srvWG := startServer("udp", "", done)
+			defer srvWG.Wait()
 			defer sock.Close()
 			l, err := Dial("udp", addr, test.pri, test.pre)
 			if err != nil {
 				t.Fatalf("syslog.Dial() failed: %v", err)
 			}
+			defer l.Close()
 			_, err = io.WriteString(l, test.msg)
 			if err != nil {
 				t.Fatalf("WriteString() failed: %v", err)
@@ -271,7 +277,8 @@ func TestWrite(t *testing.T) {
 }
 
 func TestConcurrentWrite(t *testing.T) {
-	addr, sock, _ := startServer("udp", "", make(chan string))
+	addr, sock, srvWG := startServer("udp", "", make(chan string, 1))
+	defer srvWG.Wait()
 	defer sock.Close()
 	w, err := Dial("udp", addr, LOG_USER|LOG_ERR, "how's it going?")
 	if err != nil {
@@ -281,12 +288,12 @@ func TestConcurrentWrite(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			err := w.Info("test")
 			if err != nil {
 				t.Errorf("Info() failed: %v", err)
 				return
 			}
-			wg.Done()
 		}()
 	}
 	wg.Wait()
@@ -296,8 +303,10 @@ func TestConcurrentReconnect(t *testing.T) {
 	crashy = true
 	defer func() { crashy = false }()
 
+	const N = 10
+	const M = 100
 	net := "unix"
-	done := make(chan string)
+	done := make(chan string, N*M)
 	addr, sock, srvWG := startServer(net, "", done)
 	defer os.Remove(addr)
 
@@ -310,7 +319,7 @@ func TestConcurrentReconnect(t *testing.T) {
 			// we are looking for 500 out of 1000 events
 			// here because lots of log messages are lost
 			// in buffers (kernel and/or bufio)
-			if ct > 500 {
+			if ct > N*M/2 {
 				break
 			}
 		}
@@ -318,21 +327,22 @@ func TestConcurrentReconnect(t *testing.T) {
 	}()
 
 	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
+	wg.Add(N)
+	for i := 0; i < N; i++ {
 		go func() {
+			defer wg.Done()
 			w, err := Dial(net, addr, LOG_USER|LOG_ERR, "tag")
 			if err != nil {
 				t.Fatalf("syslog.Dial() failed: %v", err)
 			}
-			for i := 0; i < 100; i++ {
+			defer w.Close()
+			for i := 0; i < M; i++ {
 				err := w.Info("test")
 				if err != nil {
 					t.Errorf("Info() failed: %v", err)
 					return
 				}
 			}
-			wg.Done()
 		}()
 	}
 	wg.Wait()
