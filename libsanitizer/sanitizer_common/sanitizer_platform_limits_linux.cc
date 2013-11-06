@@ -31,7 +31,7 @@ namespace __sanitizer {
   unsigned struct_io_event_sz = sizeof(struct io_event);
   unsigned struct_iocb_sz = sizeof(struct iocb);
 
-#ifndef _LP64
+#if !defined(_LP64) && !defined(__x86_64__)
   unsigned struct_kernel_stat64_sz = sizeof(struct stat64);
 #else
   unsigned struct_kernel_stat64_sz = 0;
