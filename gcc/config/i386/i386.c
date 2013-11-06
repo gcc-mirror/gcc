@@ -15708,7 +15708,7 @@ ix86_avx_u128_mode_needed (rtx insn)
 	      rtx arg = XEXP (XEXP (link, 0), 0);
 
 	      if (ix86_check_avx256_register (&arg, NULL))
-		return AVX_U128_ANY;
+		return AVX_U128_DIRTY;
 	    }
 	}
 
@@ -15828,8 +15828,8 @@ ix86_avx_u128_mode_after (int mode, rtx insn)
     {
       bool avx_reg256_found = false;
       note_stores (pat, ix86_check_avx256_stores, &avx_reg256_found);
-      if (!avx_reg256_found)
-	return AVX_U128_CLEAN;
+
+      return avx_reg256_found ? AVX_U128_DIRTY : AVX_U128_CLEAN;
     }
 
   /* Otherwise, return current mode.  Remember that if insn
