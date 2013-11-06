@@ -1,3 +1,10 @@
+2013-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58653
+	* tree-predcom.c (ref_at_iteration): Rewrite to generate
+	a MEM_REF.
+	(prepare_initializers_chain): Adjust.
+
 2013-11-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple.h (block_in_transaction): Move to basic-block.h and rename.
