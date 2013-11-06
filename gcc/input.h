@@ -37,7 +37,8 @@ extern char builtins_location_check[(BUILTINS_LOCATION
 				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
 extern expanded_location expand_location (source_location);
-extern const char *location_get_source_line (expanded_location xloc);
+extern const char *location_get_source_line (expanded_location xloc,
+					     int *line_size);
 extern expanded_location expand_location_to_spelling_point (source_location);
 extern source_location expansion_point_location_if_in_system_header (source_location);
 

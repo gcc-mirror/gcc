@@ -1,3 +1,8 @@
+2013-11-06  Dodji Seketeli  <dodji@redhat.com>
+
+	preprocessor/58580
+	* c-c++-common/cpp/warning-zero-in-literals-1.c: New test file.
+
 2013-11-06  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/sh/strlen.c: New test.
