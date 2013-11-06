@@ -254,7 +254,15 @@ MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430bt5190
 MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430fr5949
 MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430fr5969
 MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430sl5438a
-  
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x241x
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x26x
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x461x1
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x46x
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x471x3
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x471x6
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430x471x7
+MULTILIB_MATCHES += mmcu?msp430x=mmcu?msp430xg46x
+
 
 MULTILIB_EXCEPTIONS = mlarge
 

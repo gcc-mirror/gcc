@@ -31,6 +31,7 @@ extern bool msp430x;
     {                                           \
       builtin_define ("NO_TRAMPOLINES");        \
       builtin_define ("__MSP430__"); 		\
+      builtin_define (msp430_mcu_name ());	\
       if (msp430x)				\
 	{					\
 	  builtin_define ("__MSP430X__");	\
@@ -70,10 +71,11 @@ extern bool msp430x;
 %{msim:-lsim}						\
 %{!msim:-lnosys}					\
 --end-group					   	\
-%{!T*: %{msim: %{mlarge:%Tmsp430xl-sim.ld}%{!mlarge:%Tmsp430-sim.ld}}%{!msim:%Tmsp430.ld}}	\
+%{!T*:%{!msim:%{mmcu=*:--script=%*/memory.ld --script=%*/peripherals.ld}}}	\
+%{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}} \
+%{!T*:%{msim:%{mlarge:%Tmsp430xl-sim.ld}%{!mlarge:%Tmsp430-sim.ld}}} \
 "
 
-
 /* Storage Layout */
 
 #define BITS_BIG_ENDIAN 		0
