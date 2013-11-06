@@ -1,3 +1,8 @@
+2013-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59021
+	* gcc.target/i386/pr59021.c: New test.
+
 2013-11-06  James Lemke  <jwlemke@codesourcery.com>
 
 	* lib/gcc-defs.exp (dg-additional-files-options): Extend regsub for
