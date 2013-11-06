@@ -1,6 +1,13 @@
 2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/59018
+	* sanitizer_common/sanitizer_platform_limits_posix.cc
+	(struct_user_fpxregs_struct_sz): Initialize to 0 if __x86_64__ is
+	defined.
+
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/59018
 	* sanitizer_common/sanitizer_platform_limits_linux.cc
 	(struct_kernel_stat64_sz): Initialize to 0 if __x86_64__ is
 	defined.
