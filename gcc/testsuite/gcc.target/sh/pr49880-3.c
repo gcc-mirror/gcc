@@ -1,5 +1,5 @@
 /* Check that the option -mdiv=call-table works.  */
-/* { dg-do link { target "sh*-*-*" } } */
+/* { dg-do link }  */
 /* { dg-options "-mdiv=call-table" }  */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 

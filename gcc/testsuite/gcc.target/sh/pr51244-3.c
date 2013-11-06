@@ -1,6 +1,6 @@
 /* Check that when taking the complement of the T bit on SH2A, 
    the movrt instruction is being generated.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "movrt" 4 } } */

@@ -8,7 +8,7 @@
    branch condition.  The tested function contains two other tst insns.  If
    everything goes as expected we will be seeing only those other two tst
    insns.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "tst" 2 } } */

@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-Os" } */
 
 typedef unsigned short __u16;

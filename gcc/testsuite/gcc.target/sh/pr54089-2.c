@@ -9,7 +9,7 @@
 	mov	r4,r0
 	rts
 	rotcr	r0  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*"} { "-m3* -m2a* -m4*" } }  */
 /* { dg-final { scan-assembler-not "neg" } } */

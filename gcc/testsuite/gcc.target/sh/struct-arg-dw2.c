@@ -1,6 +1,6 @@
 /* Verify that we don't generate frame related insn against stack adjustment
    for the object sent partially in registers. */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-g" } */
 /* { dg-final { scan-assembler-not "\t.cfi_def_cfa_offset 16" } } */
 

@@ -2,7 +2,7 @@
    base address is adjusted only once.  On SH2A this test is skipped because
    there is a 4 byte mov.w insn that can handle larger displacements.  Thus
    on SH2A the base address will not be adjusted in this case.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
 /* { dg-final { scan-assembler-times "add" 2 } } */

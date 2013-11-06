@@ -1,6 +1,6 @@
 /* Check that a comparison 'unsigned int <= 0x7FFFFFFF' results in code
    utilizing the cmp/pz instruction.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "not\[ \t\]" } } */

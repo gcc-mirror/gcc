@@ -1,6 +1,6 @@
 /* Check that the rotcr instruction is generated when shifting the
    negated T bit on non-SH2A.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } }  */
 /* { dg-final { scan-assembler-times "rotcr" 1 } } */

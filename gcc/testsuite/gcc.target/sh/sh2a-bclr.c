@@ -1,6 +1,6 @@
 /* Testcase to check generation of a SH2A specific instruction
    'BCLR #imm3,Rn'.  */
-/* { dg-do assemble {target sh*-*-*}}  */
+/* { dg-do assemble }  */
 /* { dg-options "-O1" }  */
 /* { dg-skip-if "" { "sh*-*-*" } "*" "-m2a -m2a-nofpu -m2a-single -m2a-single-only" }  */
 /* { dg-final { scan-assembler "bclr"} }  */

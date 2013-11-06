@@ -1,7 +1,7 @@
 /* Check that thread pointer relative memory accesses are converted to
    gbr displacement address modes.  If we see a gbr register store
    instruction something is not working properly.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "stc\tgbr" 0 } } */

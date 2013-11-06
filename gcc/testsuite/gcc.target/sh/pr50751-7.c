@@ -1,7 +1,7 @@
 /* Check that mov.b and mov.w displacement insns are generated.
    If this is working properly, there should be no base address adjustments
    outside the mov insns.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-not "add|sub" } } */

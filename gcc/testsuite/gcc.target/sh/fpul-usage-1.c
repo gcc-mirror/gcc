@@ -1,6 +1,6 @@
 /* Check that the FPUL register is used when reading a float as an int and
    vice versa, as opposed to pushing and popping the values over the stack.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler "fpul" } } */

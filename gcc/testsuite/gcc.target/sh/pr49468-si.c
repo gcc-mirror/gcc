@@ -1,6 +1,6 @@
 /* Check that 32 bit integer abs is generated as neg instruction and
    conditional branch instead of default branch-free code.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "neg" 2 } } */

@@ -1,7 +1,7 @@
 /* Check that storing the (negated) T bit as all ones or zeros in a reg
    uses the subc instruction.  On SH2A a sequence with the movrt instruction
    is also OK instead of subc.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-not "movt|tst|negc" } } */

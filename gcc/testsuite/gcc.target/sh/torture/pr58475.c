@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 
 int
 kerninfo(int __bsx, double tscale)

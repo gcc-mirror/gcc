@@ -1,6 +1,6 @@
 /* Check that only the fcmp/gt instruction is generated when specifying
    -fno-finite-math-only and -mno-ieee.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1 -fno-finite-math-only -mno-ieee" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2" "-m3" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-not "fcmp/eq" } } */

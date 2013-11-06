@@ -1,6 +1,6 @@
 /* PR target/50749: Verify that post-increment addressing is generated
    inside a loop.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-times "mov.b\t@r\[0-9]\+\\+,r\[0-9]\+" 3 { xfail *-*-*} } } */
 /* { dg-final { scan-assembler-times "mov.w\t@r\[0-9]\+\\+,r\[0-9]\+" 3 { xfail *-*-*} } } */
