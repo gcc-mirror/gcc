@@ -1,3 +1,8 @@
+2013-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* macro.c (_cpp_builtin_macro_text): Correct
+	wording of two warnings.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* include/cpplib.h (CPP_W_DATE_TIME): Added.

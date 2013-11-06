@@ -1,3 +1,7 @@
+2013-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (Wdate-time): Fix typo.
+
 2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (addsf3, divsf3, divsf3_i, rsqrtsf2, cmpgtdf_t,

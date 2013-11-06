@@ -1,3 +1,9 @@
+2013-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* g++.dg/warn/wdate-time.C: Update dg-error pattern.
+	* gcc.dg/wdate-time.c: Ditto.
+	* gfortran.dg/wdate-time.F90: Ditto.
+
 2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/30807

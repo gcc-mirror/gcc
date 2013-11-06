@@ -4530,7 +4530,7 @@ be useful to facilitate the conversion to @code{nullptr} in C++11.
 @opindex Wdate-time
 @opindex Wno-date-time
 Warn when macros @code{__TIME__}, @code{__DATE__} or @code{__TIMESTAMP__}
-are encountered as they might prevent bit-wise-identical reproducable
+are encountered as they might prevent bit-wise-identical reproducible
 compilations.
 
 @item -Wdelete-incomplete @r{(C++ and Objective-C++ only)}
