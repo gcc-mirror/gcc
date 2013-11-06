@@ -259,12 +259,13 @@ diagnostic_build_prefix (diagnostic_context *context,
    MAX_WIDTH by some margin, then adjust the start of the line such
    that the COLUMN is smaller than MAX_WIDTH minus the margin.  The
    margin is either 10 characters or the difference between the column
-   and the length of the line, whatever is smaller.  */
+   and the length of the line, whatever is smaller.  The length of
+   LINE is given by LINE_WIDTH.  */
 static const char *
-adjust_line (const char *line, int max_width, int *column_p)
+adjust_line (const char *line, int line_width,
+	     int max_width, int *column_p)
 {
   int right_margin = 10;
-  int line_width = strlen (line);
   int column = *column_p;
 
   right_margin = MIN (line_width - column, right_margin);
@@ -284,6 +285,7 @@ diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
 {
   const char *line;
+  int line_width;
   char *buffer;
   expanded_location s;
   int max_width;
@@ -297,22 +299,25 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = diagnostic->location;
   s = expand_location_to_spelling_point (diagnostic->location);
-  line = location_get_source_line (s);
+  line = location_get_source_line (s, &line_width);
   if (line == NULL)
     return;
 
   max_width = context->caret_max_width;
-  line = adjust_line (line, max_width, &(s.column));
+  line = adjust_line (line, line_width, max_width, &(s.column));
 
   pp_newline (context->printer);
   saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
   pp_space (context->printer);
-  while (max_width > 0 && *line != '\0')
+  while (max_width > 0 && line_width > 0)
     {
       char c = *line == '\t' ? ' ' : *line;
+      if (c == '\0')
+	c = ' ';
       pp_character (context->printer, c);
       max_width--;
+      line_width--;
       line++;
     }
   pp_newline (context->printer);

@@ -87,53 +87,114 @@ expand_location_1 (source_location loc,
   return xloc;
 }
 
-/* Reads one line from file into a static buffer.  */
+/* This function reads a line that might contain bytes whose value is
+   zero.  It returns the number of bytes read.  The 'end-of-line'
+   character found at the end of the line is not contained in the
+   returned buffer.  Note that this function has been adapted from
+   getline() and _IO_getdelim() GNU C library functions.  It's been
+   duplicated here because the getline() function is not necessarily
+   present on all platforms.
+
+   LINEPTR points to a buffer that is to contain the line read.
+
+   N points to the size of the the LINEPTR buffer.
+
+   FP points to the file to consider.  */
+
+static ssize_t
+get_line (char **lineptr, size_t *n, FILE *fp)
+{
+  ssize_t cur_len = 0, len;
+  char buf[16384];
+
+  if (lineptr == NULL || n == NULL)
+    return -1;
+
+  if (*lineptr == NULL || *n == 0)
+    {
+      *n = 120;
+      *lineptr = XNEWVEC (char, *n);
+    }
+
+  len = fread (buf, 1, sizeof buf, fp);
+  if (ferror (fp))
+    return -1;
+
+  for (;;)
+    {
+      size_t needed;
+      char *t = (char*) memchr (buf, '\n', len);
+      if (t != NULL) len = (t - buf);
+      if (__builtin_expect (len >= SSIZE_MAX - cur_len, 0))
+	return -1;
+      needed = cur_len + len + 1;
+      if (needed > *n)
+	{
+	  char *new_lineptr;
+	  if (needed < 2 * *n)
+	    needed = 2 * *n;
+	  new_lineptr = XRESIZEVEC (char, *lineptr, needed);
+	  *lineptr = new_lineptr;
+	  *n = needed;
+	}
+      memcpy (*lineptr + cur_len, buf, len);
+      cur_len += len;
+      if (t != NULL)
+	break;
+      len = fread (buf, 1, sizeof buf, fp);
+      if (ferror (fp))
+	return -1;
+      if (len == 0)
+	break;
+    }
+
+  if (cur_len)
+    (*lineptr)[cur_len] = '\0';
+  return cur_len;
+}
+
+/* Reads one line from FILE into a static buffer.  If LINE_LENGTH is
+ *non-null LINE_LENGTH, will be set by this function to the length of
+ *the returned line.  Note that the returned line can contain several
+ *zero bytes.  Also note that the returned string is allocated in
+ *static storage that is going to be re-used by subsequent invocations
+ *of read_line.  */
 static const char *
-read_line (FILE *file)
+read_line (FILE *file, int *line_length)
 {
   static char *string;
   static size_t string_len;
-  size_t pos = 0;
-  char *ptr;
+  int len;
 
-  if (!string_len)
-    {
-      string_len = 200;
-      string = XNEWVEC (char, string_len);
-    }
-
-  while ((ptr = fgets (string + pos, string_len - pos, file)))
-    {
-      size_t len = strlen (string + pos);
-
-      if (string[pos + len - 1] == '\n')
-	{
-	  string[pos + len - 1] = 0;
-	  return string;
-	}
-      pos += len;
-      string = XRESIZEVEC (char, string, string_len * 2);
-      string_len *= 2;
-    }
-      
-  return pos ? string : NULL;
+  len = get_line (&string, &string_len, file);
+  if (line_length)
+    *line_length = len;
+  return len ? string : NULL;
 }
 
 /* Return the physical source line that corresponds to xloc in a
    buffer that is statically allocated.  The newline is replaced by
-   the null character.  */
+   the null character.  Note that the line can contain several null
+   characters, so LINE_LEN, if non-null, points to the actual length
+   of the line.  */
 
 const char *
-location_get_source_line (expanded_location xloc)
+location_get_source_line (expanded_location xloc,
+			  int *line_len)
 {
-  const char *buffer;
-  int lines = 1;
+  const char *buffer = NULL, *ptr;
+  int lines = 0, len = 0;
   FILE *stream = xloc.file ? fopen (xloc.file, "r") : NULL;
   if (!stream)
     return NULL;
 
-  while ((buffer = read_line (stream)) && lines < xloc.line)
-    lines++;
+  while ((ptr = read_line (stream, &len)) && lines < xloc.line)
+    {
+      buffer = ptr;
+      lines++;
+      if (line_len)
+	*line_len = len;
+    }
 
   fclose (stream);
   return buffer;
