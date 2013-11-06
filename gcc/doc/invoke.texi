@@ -10874,6 +10874,22 @@ appears somewhere in @code{X}, then @code{X} is substituted once
 for each matching switch, with the @code{%*} replaced by the part of
 that switch matching the @code{*}.
 
+If @code{%*} appears as the last part of a spec sequence then a space
+will be added after the end of the last substitution.  If there is more
+text in the sequence however then a space will not be generated.  This
+allows the @code{%*} substitution to be used as part of a larger
+string.  For example, a spec string like this:
+
+@smallexample
+%@{mcu=*:--script=%*/memory.ld@}
+@end smallexample
+
+when matching an option like @code{-mcu=newchip} will produce:
+
+@smallexample
+--script=newchip/memory.ld
+@end smallexample
+
 @item %@{.@code{S}:@code{X}@}
 Substitutes @code{X}, if processing a file with suffix @code{S}.
 
@@ -17791,10 +17807,6 @@ These options are defined for the MSP430:
 
 @table @gcctabopt
 
-@item -msim
-@opindex msim
-Link the simulator runtime libraries.
-
 @item -masm-hex
 @opindex masm-hex
 Force assembly output to always use hex constants.  Normally such
@@ -17803,9 +17815,25 @@ testsuite and/or aesthetic purposes.
 
 @item -mmcu=
 @opindex mmcu=
-Select the MCU to target.  Note that there are two ``generic'' MCUs,
-@code{msp430} and @code{msp430x}, which should be used most of the
-time.  This option is also passed to the assembler.
+Select the MCU to target.  If the MCU supports the MSP430X ISA or the
+MSP430Xv2 ISA then gcc will make use of the extra instructions.  A C
+preprocessor symbol will be defined based upon the MCU name, converted
+to upper case and pre- and post- fixed with @code{__}.
+
+In addition two scripts will be added to the linker command line:
+@code{memory.ld} and @code{peripherals.ld}, with a search path based
+upon the MCU name.
+
+Note that there are three ``generic'' MCUs: @code{msp430},
+@code{msp430x} and @code{msp430xv2}, which can be used if a specific
+MCU is not being targeted.
+
+This option is also passed on to the assembler.
+
+@item -msim
+@opindex msim
+Link to the simulator runtime libraries and linker script.  Overrides
+any scripts that would be selected by the @option{-mmcu=} option.
 
 @item -mlarge
 @opindex mlarge

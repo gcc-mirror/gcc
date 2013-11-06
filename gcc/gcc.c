@@ -388,7 +388,8 @@ or with constant text in a single argument.
  %2	process CC1PLUS_SPEC as a spec.
  %*	substitute the variable part of a matched option.  (See below.)
 	Note that each comma in the substituted string is replaced by
-	a single space.
+	a single space.  A space is appended after the last substition
+	unless there is more text in current sequence.
  %<S    remove all occurrences of -S from the command line.
         Note - this command is position dependent.  % commands in the
         spec string before this one will see -S, % commands in the
@@ -422,7 +423,9 @@ or with constant text in a single argument.
           once, no matter how many such switches appeared.  However,
           if %* appears somewhere in X, then X will be substituted
           once for each matching switch, with the %* replaced by the
-          part of that switch that matched the '*'.
+          part of that switch that matched the '*'.  A space will be
+	  appended after the last substition unless there is more
+	  text in current sequence.
  %{.S:X}  substitutes X, if processing a file with suffix S.
  %{!.S:X} substitutes X, if NOT processing a file with suffix S.
  %{,S:X}  substitutes X, if processing a file which will use spec S.
@@ -5352,7 +5355,17 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      {
 		if (soft_matched_part[0])
 		  do_spec_1 (soft_matched_part, 1, NULL);
-		do_spec_1 (" ", 0, NULL);
+		/* Only insert a space after the substitution if it is at the
+		   end of the current sequence.  So if:
+
+		     "%{foo=*:bar%*}%{foo=*:one%*two}"
+
+		   matches -foo=hello then it will produce:
+		   
+		     barhello onehellotwo
+		*/
+		if (*p == 0 || *p == '}')
+		  do_spec_1 (" ", 0, NULL);
 	      }
 	    else
 	      /* Catch the case where a spec string contains something like
