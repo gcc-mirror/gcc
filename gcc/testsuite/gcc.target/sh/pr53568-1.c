@@ -1,6 +1,6 @@
 /* Check that the bswap32 pattern is generated as swap.b and swap.w
    instructions.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "swap.w" 7 } } */

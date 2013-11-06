@@ -9,7 +9,7 @@
 	bf/s	.L35
    where the negated T bit store did not combine properly.  Since there are
    other movt insns we only check for the xor and the extu.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "xor|extu" } } */

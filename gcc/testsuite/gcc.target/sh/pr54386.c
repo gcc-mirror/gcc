@@ -1,5 +1,5 @@
 /* Check that the inlined mem load is not handled as unaligned load.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "shll|extu|or" } } */

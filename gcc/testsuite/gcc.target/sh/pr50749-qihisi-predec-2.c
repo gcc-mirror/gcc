@@ -1,6 +1,6 @@
 /* PR target/50749: Verify that subsequent pre-decrement addressings
    are generated.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-times "mov.b\tr\[0-9]\+,@-r\[0-9]\+" 5 { xfail *-*-*} } } */
 /* { dg-final { scan-assembler-times "mov.w\tr\[0-9]\+,@-r\[0-9]\+" 5 { xfail *-*-*} } } */

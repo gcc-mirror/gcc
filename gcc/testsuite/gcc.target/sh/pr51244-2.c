@@ -2,7 +2,7 @@
    instruction pattern, the constant -1 is loaded only once.
    On SH2A this test is skipped because the movrt instruction is used
    to get the complement of the T bit.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
 /* { dg-final { scan-assembler-times "mov\t#-1" 1 } } */

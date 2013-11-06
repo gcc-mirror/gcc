@@ -1,6 +1,6 @@
 /* Check that loads/stores from/to volatile mems don't result in redundant
    sign/zero extensions.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "exts|extu" } } */

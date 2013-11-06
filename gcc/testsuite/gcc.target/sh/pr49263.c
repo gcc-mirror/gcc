@@ -2,7 +2,7 @@
    allows it.  Under some circumstances another compare instruction might
    be selected, which is also fine.  Any AND instructions are considered
    counter productive and fail the test.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not "and" } } */
 
