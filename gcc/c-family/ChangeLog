@@ -1,3 +1,7 @@
+2013-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* c-common.c (reason_option_codes_t): Add CPP_W_DATE_TIME.
+
 2013-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_post_options): Set -ffp-contract=off in C
