@@ -1,3 +1,13 @@
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/59018
+	* sanitizer_common/sanitizer_linux.cc (internal_mmap,
+	internal_munmap, internal_open, internal_read, internal_write,
+	internal_stat, internal_lstat, internal_fstat, internal_readlink,
+	internal_unlink, internal_execve, NanoTime, BlockingMutex::Lock,
+	BlockingMutex::Unlock, internal_ptrace, internal_getdents,
+	internal_sigaltstack): Cast pointers to uptr for 64-bit syscalls.
+
 2013-11-04  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r191666.
