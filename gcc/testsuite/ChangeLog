@@ -1,3 +1,15 @@
+2013-11-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/CK/fib.c: Reduced the iteration from
+	40 to 30.  Replaced iteration variable with a #define.  Instead of
+	returning non-zero value for error, called __builtin_abort ().  Fixed
+	a bug of calling fib_serial in serial case instead of fib.
+	* c-c++-common/cilk-plus/CK/fib_init_expr_xy.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_return.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_sync.c: Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Removed duplicate/un-necessary
+	compiler flag testing.
+
 2013-11-06  Dodji Seketeli  <dodji@redhat.com>
 
 	preprocessor/58580
