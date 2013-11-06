@@ -1433,9 +1433,11 @@ wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
     {
     case CONST_INT:
       if (precision < HOST_BITS_PER_WIDE_INT)
+	/* Nonzero BImodes are stored as STORE_FLAG_VALUE, which on many
+	   targets is 1 rather than -1.  */
 	gcc_checking_assert (INTVAL (x.first)
 			     == sext_hwi (INTVAL (x.first), precision)
-			     || (precision == 1 && INTVAL (x.first) == 1));
+			     || (x.second == BImode && INTVAL (x.first) == 1));
 
       return wi::storage_ref (&INTVAL (x.first), 1, precision);
       
