@@ -1750,15 +1750,13 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "adddi3"
-  [(set (match_operand:DI 0 "arith_reg_operand" "")
-	(plus:DI (match_operand:DI 1 "arith_reg_operand" "")
-		 (match_operand:DI 2 "arith_operand" "")))]
+  [(set (match_operand:DI 0 "arith_reg_operand")
+	(plus:DI (match_operand:DI 1 "arith_reg_operand")
+		 (match_operand:DI 2 "arith_operand")))]
   ""
 {
   if (TARGET_SH1)
     {
-      if (!can_create_pseudo_p () && ! arith_reg_operand (operands[2], DImode))
-	FAIL;
       operands[2] = force_reg (DImode, operands[2]);
       emit_insn (gen_adddi3_compact (operands[0], operands[1], operands[2]));
       DONE;
@@ -1797,22 +1795,22 @@
    (set_attr "highpart" "ignore")])
 
 (define_insn_and_split "adddi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
-	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
-		 (match_operand:DI 2 "arith_reg_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(plus:DI (match_operand:DI 1 "arith_reg_operand")
+		 (match_operand:DI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "&& reload_completed"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  rtx high0 = gen_highpart (SImode, operands[0]);
-  rtx high2 = gen_highpart (SImode, operands[2]);
-  rtx low0 = gen_lowpart (SImode, operands[0]);
-
   emit_insn (gen_clrt ());
-  emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_addc (high0, high0, high2));
+  emit_insn (gen_addc (gen_lowpart (SImode, operands[0]),
+		       gen_lowpart (SImode, operands[1]),
+		       gen_lowpart (SImode, operands[2])));
+  emit_insn (gen_addc (gen_highpart (SImode, operands[0]),
+		       gen_highpart (SImode, operands[1]),
+		       gen_highpart (SImode, operands[2])));
   DONE;
 })
 
@@ -2111,22 +2109,22 @@
    (set_attr "highpart" "ignore")])
 
 (define_insn_and_split "subdi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
-	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
-		 (match_operand:DI 2 "arith_reg_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(minus:DI (match_operand:DI 1 "arith_reg_operand")
+		 (match_operand:DI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "&& reload_completed"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  rtx high0 = gen_highpart (SImode, operands[0]);
-  rtx high2 = gen_highpart (SImode, operands[2]);
-  rtx low0 = gen_lowpart (SImode, operands[0]);
-
   emit_insn (gen_clrt ());
-  emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_subc (high0, high0, high2));
+  emit_insn (gen_subc (gen_lowpart (SImode, operands[0]),
+		       gen_lowpart (SImode, operands[1]),
+		       gen_lowpart (SImode, operands[2])));
+  emit_insn (gen_subc (gen_highpart (SImode, operands[0]),
+		       gen_highpart (SImode, operands[1]),
+		       gen_highpart (SImode, operands[2])));
   DONE;
 })
 
@@ -5570,8 +5568,8 @@ label:
   "sub	r63, %1, %0"
   [(set_attr "type" "arith_media")])
 
-;; Don't expand immediately because otherwise neg:DI (abs:DI) will not be
-;; combined.
+;; Don't split into individual negc insns immediately so that neg:DI (abs:DI)
+;; can be combined.
 (define_expand "negdi2"
   [(parallel [(set (match_operand:DI 0 "arith_reg_dest")
 		   (neg:DI (match_operand:DI 1 "arith_reg_operand")))
@@ -5579,12 +5577,12 @@ label:
   "TARGET_SH1")
 
 (define_insn_and_split "*negdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
-	(neg:DI (match_operand:DI 1 "arith_reg_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(neg:DI (match_operand:DI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "&& reload_completed"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
   emit_insn (gen_clrt ());
