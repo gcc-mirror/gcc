@@ -2970,7 +2970,7 @@ gpl.pod: gpl_v3.texi
 
 mostlyclean: lang.mostlyclean
 	-rm -f $(MOSTLYCLEANFILES)
-	-rm -f *$(objext)
+	-rm -f *$(objext) c-family/*$(objext)
 	-rm -f *$(coverageexts)
 # Delete build programs
 	-rm -f build/*
