@@ -8341,7 +8341,6 @@
 	dll-export inline-functions.
 	* config/i386/winnt.c (i386_pe_determine_dllexport_p): Likewise.
 
-
 2013-09-13  Jeff Law  <law@redhat.com>
 
 	PR middle-end/58387
@@ -23953,7 +23952,6 @@
 	(debug_ivtype_map_1): Removed unused.
 	(debug_ivtype_elt): Remove unused.
 	(eq_ivtype_map_elts): Remove unused.
-
 
 2013-04-02  Kai Tietz  <ktietz@redhat.com>
 
