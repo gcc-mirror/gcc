@@ -1,3 +1,9 @@
+2013-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58653
+	* gcc.dg/tree-ssa/predcom-6.c: New testcase.
+	* gcc.dg/tree-ssa/predcom-7.c: Likewise.
+
 2013-11-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/CK/fib.c: Reduced the iteration from
