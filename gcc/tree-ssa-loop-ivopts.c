@@ -934,7 +934,6 @@ alloc_iv (tree base, tree step)
   iv->have_use_for = false;
   iv->use_id = 0;
   iv->ssa_name = NULL_TREE;
-print_generic_expr (stdout, iv->base, TDF_SLIM);
 
   return iv;
 }
