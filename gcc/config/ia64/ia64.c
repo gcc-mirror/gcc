@@ -3206,61 +3206,54 @@ gen_fr_restore_x (rtx dest, rtx src, rtx offset ATTRIBUTE_UNUSED)
 #define BACKING_STORE_SIZE(N) ((N) > 0 ? ((N) + (N)/63 + 1) * 8 : 0)
 
 /* Emit code to probe a range of stack addresses from FIRST to FIRST+SIZE,
-   inclusive.  These are offsets from the current stack pointer.  SOL is the
-   size of local registers.  ??? This clobbers r2 and r3.  */
+   inclusive.  These are offsets from the current stack pointer.  BS_SIZE
+   is the size of the backing store.  ??? This clobbers r2 and r3.  */
 
 static void
-ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size, int sol)
+ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
+			     int bs_size)
 {
- /* On the IA-64 there is a second stack in memory, namely the Backing Store
-    of the Register Stack Engine.  We also need to probe it after checking
-    that the 2 stacks don't overlap.  */
-  const int bs_size = BACKING_STORE_SIZE (sol);
   rtx r2 = gen_rtx_REG (Pmode, GR_REG (2));
   rtx r3 = gen_rtx_REG (Pmode, GR_REG (3));
+  rtx p6 = gen_rtx_REG (BImode, PR_REG (6));
 
-  /* Detect collision of the 2 stacks if necessary.  */
-  if (bs_size > 0 || size > 0)
-    {
-      rtx p6 = gen_rtx_REG (BImode, PR_REG (6));
+  /* On the IA-64 there is a second stack in memory, namely the Backing Store
+     of the Register Stack Engine.  We also need to probe it after checking
+     that the 2 stacks don't overlap.  */
+  emit_insn (gen_bsp_value (r3));
+  emit_move_insn (r2, GEN_INT (-(first + size)));
 
-      emit_insn (gen_bsp_value (r3));
-      emit_move_insn (r2, GEN_INT (-(first + size)));
+  /* Compare current value of BSP and SP registers.  */
+  emit_insn (gen_rtx_SET (VOIDmode, p6,
+			  gen_rtx_fmt_ee (LTU, BImode,
+					  r3, stack_pointer_rtx)));
 
-      /* Compare current value of BSP and SP registers.  */
-      emit_insn (gen_rtx_SET (VOIDmode, p6,
-			      gen_rtx_fmt_ee (LTU, BImode,
-					      r3, stack_pointer_rtx)));
+  /* Compute the address of the probe for the Backing Store (which grows
+     towards higher addresses).  We probe only at the first offset of
+     the next page because some OS (eg Linux/ia64) only extend the
+     backing store when this specific address is hit (but generate a SEGV
+     on other address).  Page size is the worst case (4KB).  The reserve
+     size is at least 4096 - (96 + 2) * 8 = 3312 bytes, which is enough.
+     Also compute the address of the last probe for the memory stack
+     (which grows towards lower addresses).  */
+  emit_insn (gen_rtx_SET (VOIDmode, r3, plus_constant (Pmode, r3, 4095)));
+  emit_insn (gen_rtx_SET (VOIDmode, r2,
+			  gen_rtx_PLUS (Pmode, stack_pointer_rtx, r2)));
 
-      /* Compute the address of the probe for the Backing Store (which grows
-	 towards higher addresses).  We probe only at the first offset of
-	 the next page because some OS (eg Linux/ia64) only extend the
-	 backing store when this specific address is hit (but generate a SEGV
-	 on other address).  Page size is the worst case (4KB).  The reserve
-	 size is at least 4096 - (96 + 2) * 8 = 3312 bytes, which is enough.
-	 Also compute the address of the last probe for the memory stack
-	 (which grows towards lower addresses).  */
-      emit_insn (gen_rtx_SET (VOIDmode, r3, plus_constant (Pmode, r3, 4095)));
-      emit_insn (gen_rtx_SET (VOIDmode, r2,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx, r2)));
-
-      /* Compare them and raise SEGV if the former has topped the latter.  */
-      emit_insn (gen_rtx_COND_EXEC (VOIDmode,
-				    gen_rtx_fmt_ee (NE, VOIDmode, p6,
-						    const0_rtx),
-				    gen_rtx_SET (VOIDmode, p6,
-						 gen_rtx_fmt_ee (GEU, BImode,
-								 r3, r2))));
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      gen_rtx_ZERO_EXTRACT (DImode, r3, GEN_INT (12),
-						    const0_rtx),
-			      const0_rtx));
-      emit_insn (gen_rtx_COND_EXEC (VOIDmode,
-				    gen_rtx_fmt_ee (NE, VOIDmode, p6,
-						    const0_rtx),
-				    gen_rtx_TRAP_IF (VOIDmode, const1_rtx,
-						     GEN_INT (11))));
-    }
+  /* Compare them and raise SEGV if the former has topped the latter.  */
+  emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+				gen_rtx_fmt_ee (NE, VOIDmode, p6, const0_rtx),
+				gen_rtx_SET (VOIDmode, p6,
+					     gen_rtx_fmt_ee (GEU, BImode,
+							     r3, r2))));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  gen_rtx_ZERO_EXTRACT (DImode, r3, GEN_INT (12),
+						const0_rtx),
+			  const0_rtx));
+  emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+				gen_rtx_fmt_ee (NE, VOIDmode, p6, const0_rtx),
+				gen_rtx_TRAP_IF (VOIDmode, const1_rtx,
+						 GEN_INT (11))));
 
   /* Probe the Backing Store if necessary.  */
   if (bs_size > 0)
@@ -3444,10 +3437,23 @@ ia64_expand_prologue (void)
     current_function_static_stack_size = current_frame_info.total_size;
 
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
-    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT,
-				 current_frame_info.total_size,
-				 current_frame_info.n_input_regs
-				   + current_frame_info.n_local_regs);
+    {
+      HOST_WIDE_INT size = current_frame_info.total_size;
+      int bs_size = BACKING_STORE_SIZE (current_frame_info.n_input_regs
+					  + current_frame_info.n_local_regs);
+
+      if (crtl->is_leaf && !cfun->calls_alloca)
+	{
+	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT,
+					 size - STACK_CHECK_PROTECT,
+					 bs_size);
+	  else if (size + bs_size > STACK_CHECK_PROTECT)
+	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, 0, bs_size);
+	}
+      else if (size + bs_size > 0)
+	ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, size, bs_size);
+    }
 
   if (dump_file) 
     {
