@@ -1,5 +1,19 @@
 2013-11-06  Nick Clifton  <nickc@redhat.com>
 
+	* config/msp430/msp430.h (TARGET_CPU_CPP_BUILTINS): Define the
+	name returned by msp430_mcu_name.
+	(LIB_SPEC): If a -T option has not been specified then set a
+	default, mcu-specific, linker script.
+	* config/msp430/t-msp430 (MULTILIB_MATCHES): Add more mcu names.
+	* config/msp430/msp430.c (msp430x_names): Likewise.
+	Alpha sort the names for ease of comparison.
+	(msp430_mcu_name): New function:  Returns a string suitable for
+	use as a C preprocessor symbol based upon the name of the MCU
+	being targeted.
+	(msp430_option_override): Accept msp430x and msp430xv2 as generic
+	mcu names.
+	* config/msp430/msp430-protos.h (msp430_mcu_name): Prototype.
+
 	* gcc.c (do_spec_1): Do not insert a space after a %* substitution
 	unless it is the last part of a spec substring.
 	* doc/invoke.texi (Spec Files): Document space insertion
@@ -24,7 +38,7 @@
 
 2013-11-06  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-	* config/i386/bdver3.md : Added two additional decoder units 
+	* config/i386/bdver3.md : Added two additional decoder units
 	to support issue rate of 4 and remodeled vector unit.
 	* config/i386/i386.c (ix86_issue_rate): Issue rate for BD
 	architectures is set to 4.

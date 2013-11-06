@@ -35,6 +35,7 @@ void	msp430_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 int	msp430_initial_elimination_offset (int, int);
 bool    msp430_is_interrupt_func (void);
 const char * msp430x_logical_shift_right (rtx);
+const char * msp430_mcu_name (void);
 bool	msp430_modes_tieable_p (enum machine_mode, enum machine_mode);
 void	msp430_output_labelref (FILE *, const char *);
 void	msp430_register_pragmas (void);
