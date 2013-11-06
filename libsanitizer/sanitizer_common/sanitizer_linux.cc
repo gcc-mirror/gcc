@@ -772,9 +772,11 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
   if (!fn || !child_stack)
     return -EINVAL;
   CHECK_EQ(0, (uptr)child_stack % 16);
-  child_stack = (char *)child_stack - 2 * sizeof(void *);
-  ((void **)child_stack)[0] = (void *)(uptr)fn;
-  ((void **)child_stack)[1] = arg;
+  child_stack = (char *)child_stack - 2 * sizeof(unsigned long long);
+  ((unsigned long long *)child_stack)[0] = (uptr)fn;
+  ((unsigned long long *)child_stack)[1] = (uptr)arg;
+  register void *r8 __asm__ ("r8") = newtls;
+  register int *r10 __asm__ ("r10") = child_tidptr;
   __asm__ __volatile__(
                        /* %rax = syscall(%rax = __NR_clone,
                         *                %rdi = flags,
@@ -783,8 +785,6 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                         *                %r8  = new_tls,
                         *                %r10 = child_tidptr)
                         */
-                       "movq   %6,%%r8\n"
-                       "movq   %7,%%r10\n"
                        ".cfi_endproc\n"
                        "syscall\n"
 
@@ -816,9 +816,9 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                          "S"(child_stack),
                          "D"(flags),
                          "d"(parent_tidptr),
-                         "r"(newtls),
-                         "r"(child_tidptr)
-                       : "rsp", "memory", "r8", "r10", "r11", "rcx");
+                         "r"(r8),
+                         "r"(r10)
+                       : "rsp", "memory", "r11", "rcx");
   return res;
 }
 #endif  // defined(__x86_64__)

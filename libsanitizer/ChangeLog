@@ -1,6 +1,13 @@
 2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/59018
+	* sanitizer_common/sanitizer_linux.cc (internal_clone): Allocate
+	2 64-bit integers to save and restore fn and arg.  Properly load
+	newtls/child_tidptr into r8/r10.
+
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/59018
 	* sanitizer_common/sanitizer_linux.cc (internal_mmap,
 	internal_munmap, internal_open, internal_read, internal_write,
 	internal_stat, internal_lstat, internal_fstat, internal_readlink,
