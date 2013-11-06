@@ -1,3 +1,8 @@
+2013-11-06  Jeff Law  <law@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* gdbinit.in: Disable strict type checking.
+
 2013-11-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* tree-pass.h (make_pass_live_range_shrinkage): New external.

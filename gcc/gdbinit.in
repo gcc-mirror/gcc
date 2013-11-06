@@ -205,6 +205,11 @@ set complaints 0
 b exit
 b abort
 
+# Disable strict type checking.  This allows developers to (for example)
+# make inferior calls without casting absolute address to a suitable
+# pointer type.
+set check type off
+
 # Skip all inline functions in tree.h.
 # These are used in accessor macros.
 # Note that this is added at the end because older gdb versions
