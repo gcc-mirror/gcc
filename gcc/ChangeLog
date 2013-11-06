@@ -1,5 +1,11 @@
 2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Remove restriction against use of VSX instructions when generating
+	code for little endian mode.
+
+2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/altivec.md (mulv4si3): Ensure we generate vmulouh
 	for both big and little endian.
 	(mulv8hi3): Swap input operands for merge high and merge low
