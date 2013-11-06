@@ -1,3 +1,10 @@
+2013-11-06  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c (do_spec_1): Do not insert a space after a %* substitution
+	unless it is the last part of a spec substring.
+	* doc/invoke.texi (Spec Files): Document space insertion
+	behaviour of %*.
+
 2013-11-06  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc/config/sh/sh-mem.cc (sh_expand_cmpnstr, sh_expand_cmpstr):
