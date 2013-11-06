@@ -1,3 +1,16 @@
+2013-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (drop_tree_overflow): New function.
+	* tree.h (drop_tree_overflow): Declare.
+	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW.
+	* tree-vrp.c (range_int_cst_singleton_p): Use
+	is_overflow_infinity instead of testing TREE_OVERFLOW.
+	(extract_range_from_assert): Likewise.
+	(zero_nonzero_bits_from_vr): Likewise.
+	(extract_range_basic): Likewise.
+	(register_new_assert_for): Use drop_tree_overflow.
+	(vrp_visit_phi_node): Likewise.
+
 2013-11-06  Dodji Seketeli  <dodji@redhat.com>
 
 	preprocessor/58580
