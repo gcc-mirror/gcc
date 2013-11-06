@@ -68,8 +68,10 @@ class SpinMutex : public StaticSpinMutex {
 class BlockingMutex {
  public:
   explicit BlockingMutex(LinkerInitialized);
+  BlockingMutex();
   void Lock();
   void Unlock();
+  void CheckLocked();
  private:
   uptr opaque_storage_[10];
   uptr owner_;  // for debugging

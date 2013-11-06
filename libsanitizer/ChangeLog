@@ -1,3 +1,19 @@
+2013-11-04  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r191666.
+	* merge.sh: Added lsan.
+	* configure.ac (AC_CONFIG_FILES): Added lsan.
+	* Makefile.am (SUBDIRS): Added lsan.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new fles.
+	* asan/Makefile.am (asan_files): Added new files.
+	(libasan_la_LIBADD): Added a dependency on lsan.
+	* lsan/Makefile.am: New file.
+	* asan/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

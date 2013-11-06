@@ -430,10 +430,21 @@
   const char *xchg = "xchg{<imodesuffix>}\t%%<regprefix>bx, %5";
 
   if (swap)
-    output_asm_insn (xchg, operands);
+    {
+      output_asm_insn (xchg, operands);
+      if (ix86_emit_cfi ())
+	{
+	  output_asm_insn (".cfi_remember_state", operands);
+	  output_asm_insn (".cfi_register\t%%<regprefix>bx, %5", operands);
+	}
+    }
   output_asm_insn ("lock{%;} %K7cmpxchg<doublemodesuffix>b\t%2", operands);
   if (swap)
-    output_asm_insn (xchg, operands);
+    {
+      output_asm_insn (xchg, operands);
+      if (ix86_emit_cfi ())
+	output_asm_insn (".cfi_restore_state", operands);
+    }
 
   return "";
 })

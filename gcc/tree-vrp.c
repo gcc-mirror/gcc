@@ -4402,57 +4402,6 @@ fp_predicate (gimple stmt)
   return FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)));
 }
 
-
-/* If OP can be inferred to be non-zero after STMT executes, return true.  */
-
-static bool
-infer_nonnull_range (gimple stmt, tree op)
-{
-  /* We can only assume that a pointer dereference will yield
-     non-NULL if -fdelete-null-pointer-checks is enabled.  */
-  if (!flag_delete_null_pointer_checks
-      || !POINTER_TYPE_P (TREE_TYPE (op))
-      || gimple_code (stmt) == GIMPLE_ASM)
-    return false;
-
-  unsigned num_uses, num_loads, num_stores;
-
-  count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
-  if (num_loads + num_stores > 0)
-    return true;
-
-  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
-    {
-      tree fntype = gimple_call_fntype (stmt);
-      tree attrs = TYPE_ATTRIBUTES (fntype);
-      for (; attrs; attrs = TREE_CHAIN (attrs))
-	{
-	  attrs = lookup_attribute ("nonnull", attrs);
-
-	  /* If "nonnull" wasn't specified, we know nothing about
-	     the argument.  */
-	  if (attrs == NULL_TREE)
-	    return false;
-
-	  /* If "nonnull" applies to all the arguments, then ARG
-	     is non-null.  */
-	  if (TREE_VALUE (attrs) == NULL_TREE)
-	    return true;
-
-	  /* Now see if op appears in the nonnull list.  */
-	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
-	    {
-	      int idx = tree_to_shwi (TREE_VALUE (t)) - 1;
-	      tree arg = gimple_call_arg (stmt, idx);
-	      if (op == arg)
-		return true;
-	    }
-	}
-    }
-
-  return false;
-}
-
 /* If the range of values taken by OP can be inferred after STMT executes,
    return the comparison code (COMP_CODE_P) and value (VAL_P) that
    describes the inferred range.  Return true if a range could be
@@ -6399,13 +6348,14 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     if (USE_STMT (use_p) != stmt)
       {
-	gimple use_stmt = USE_STMT (use_p);
+	gimple use_stmt = USE_STMT (use_p), use_stmt2;
 	if (is_gimple_debug (use_stmt))
 	  continue;
 	while (is_gimple_assign (use_stmt)
+	       && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
 	       && single_imm_use (gimple_assign_lhs (use_stmt),
-				  &use2_p, &use_stmt))
-	  ;
+				  &use2_p, &use_stmt2))
+	  use_stmt = use_stmt2;
 	if (gimple_code (use_stmt) != GIMPLE_COND
 	    || gimple_bb (use_stmt) != cond_bb)
 	  return false;

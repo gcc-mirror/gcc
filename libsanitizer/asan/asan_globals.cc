@@ -12,11 +12,14 @@
 #include "asan_interceptors.h"
 #include "asan_internal.h"
 #include "asan_mapping.h"
+#include "asan_poisoning.h"
 #include "asan_report.h"
 #include "asan_stack.h"
 #include "asan_stats.h"
 #include "asan_thread.h"
+#include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_mutex.h"
+#include "sanitizer_common/sanitizer_placement_new.h"
 
 namespace __asan {
 
@@ -30,20 +33,37 @@ struct ListOfGlobals {
 static BlockingMutex mu_for_globals(LINKER_INITIALIZED);
 static LowLevelAllocator allocator_for_globals;
 static ListOfGlobals *list_of_all_globals;
-static ListOfGlobals *list_of_dynamic_init_globals;
 
-void PoisonRedZones(const Global &g)  {
+static const int kDynamicInitGlobalsInitialCapacity = 512;
+struct DynInitGlobal {
+  Global g;
+  bool initialized;
+};
+typedef InternalMmapVector<DynInitGlobal> VectorOfGlobals;
+// Lazy-initialized and never deleted.
+static VectorOfGlobals *dynamic_init_globals;
+
+ALWAYS_INLINE void PoisonShadowForGlobal(const Global *g, u8 value) {
+  FastPoisonShadow(g->beg, g->size_with_redzone, value);
+}
+
+ALWAYS_INLINE void PoisonRedZones(const Global &g) {
   uptr aligned_size = RoundUpTo(g.size, SHADOW_GRANULARITY);
-  PoisonShadow(g.beg + aligned_size, g.size_with_redzone - aligned_size,
-               kAsanGlobalRedzoneMagic);
+  FastPoisonShadow(g.beg + aligned_size, g.size_with_redzone - aligned_size,
+                   kAsanGlobalRedzoneMagic);
   if (g.size != aligned_size) {
-    // partial right redzone
-    PoisonShadowPartialRightRedzone(
+    FastPoisonShadowPartialRightRedzone(
         g.beg + RoundDownTo(g.size, SHADOW_GRANULARITY),
         g.size % SHADOW_GRANULARITY,
         SHADOW_GRANULARITY,
         kAsanGlobalRedzoneMagic);
   }
+}
+
+static void ReportGlobal(const Global &g, const char *prefix) {
+  Report("%s Global: beg=%p size=%zu/%zu name=%s module=%s dyn_init=%zu\n",
+         prefix, (void*)g.beg, g.size, g.size_with_redzone, g.name,
+         g.module_name, g.has_dynamic_init);
 }
 
 bool DescribeAddressIfGlobal(uptr addr, uptr size) {
@@ -53,8 +73,7 @@ bool DescribeAddressIfGlobal(uptr addr, uptr size) {
   for (ListOfGlobals *l = list_of_all_globals; l; l = l->next) {
     const Global &g = *l->g;
     if (flags()->report_globals >= 2)
-      Report("Search Global: beg=%p size=%zu name=%s\n",
-             (void*)g.beg, g.size, (char*)g.name);
+      ReportGlobal(g, "Search");
     res |= DescribeAddressRelativeToGlobal(addr, size, g);
   }
   return res;
@@ -66,24 +85,26 @@ bool DescribeAddressIfGlobal(uptr addr, uptr size) {
 static void RegisterGlobal(const Global *g) {
   CHECK(asan_inited);
   if (flags()->report_globals >= 2)
-    Report("Added Global: beg=%p size=%zu/%zu name=%s dyn.init=%zu\n",
-           (void*)g->beg, g->size, g->size_with_redzone, g->name,
-           g->has_dynamic_init);
+    ReportGlobal(*g, "Added");
   CHECK(flags()->report_globals);
   CHECK(AddrIsInMem(g->beg));
   CHECK(AddrIsAlignedByGranularity(g->beg));
   CHECK(AddrIsAlignedByGranularity(g->size_with_redzone));
-  PoisonRedZones(*g);
+  if (flags()->poison_heap)
+    PoisonRedZones(*g);
   ListOfGlobals *l =
       (ListOfGlobals*)allocator_for_globals.Allocate(sizeof(ListOfGlobals));
   l->g = g;
   l->next = list_of_all_globals;
   list_of_all_globals = l;
   if (g->has_dynamic_init) {
-    l = (ListOfGlobals*)allocator_for_globals.Allocate(sizeof(ListOfGlobals));
-    l->g = g;
-    l->next = list_of_dynamic_init_globals;
-    list_of_dynamic_init_globals = l;
+    if (dynamic_init_globals == 0) {
+      void *mem = allocator_for_globals.Allocate(sizeof(VectorOfGlobals));
+      dynamic_init_globals = new(mem)
+          VectorOfGlobals(kDynamicInitGlobalsInitialCapacity);
+    }
+    DynInitGlobal dyn_global = { *g, false };
+    dynamic_init_globals->push_back(dyn_global);
   }
 }
 
@@ -93,34 +114,26 @@ static void UnregisterGlobal(const Global *g) {
   CHECK(AddrIsInMem(g->beg));
   CHECK(AddrIsAlignedByGranularity(g->beg));
   CHECK(AddrIsAlignedByGranularity(g->size_with_redzone));
-  PoisonShadow(g->beg, g->size_with_redzone, 0);
+  if (flags()->poison_heap)
+    PoisonShadowForGlobal(g, 0);
   // We unpoison the shadow memory for the global but we do not remove it from
   // the list because that would require O(n^2) time with the current list
   // implementation. It might not be worth doing anyway.
 }
 
-// Poison all shadow memory for a single global.
-static void PoisonGlobalAndRedzones(const Global *g) {
-  CHECK(asan_inited);
-  CHECK(flags()->check_initialization_order);
-  CHECK(AddrIsInMem(g->beg));
-  CHECK(AddrIsAlignedByGranularity(g->beg));
-  CHECK(AddrIsAlignedByGranularity(g->size_with_redzone));
-  if (flags()->report_globals >= 3)
-    Printf("DynInitPoison  : %s\n", g->name);
-  PoisonShadow(g->beg, g->size_with_redzone, kAsanInitializationOrderMagic);
-}
-
-static void UnpoisonGlobal(const Global *g) {
-  CHECK(asan_inited);
-  CHECK(flags()->check_initialization_order);
-  CHECK(AddrIsInMem(g->beg));
-  CHECK(AddrIsAlignedByGranularity(g->beg));
-  CHECK(AddrIsAlignedByGranularity(g->size_with_redzone));
-  if (flags()->report_globals >= 3)
-    Printf("DynInitUnpoison: %s\n", g->name);
-  PoisonShadow(g->beg, g->size_with_redzone, 0);
-  PoisonRedZones(*g);
+void StopInitOrderChecking() {
+  BlockingMutexLock lock(&mu_for_globals);
+  if (!flags()->check_initialization_order || !dynamic_init_globals)
+    return;
+  flags()->check_initialization_order = false;
+  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+    DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
+    const Global *g = &dyn_g.g;
+    // Unpoison the whole global.
+    PoisonShadowForGlobal(g, 0);
+    // Poison redzones back.
+    PoisonRedZones(*g);
+  }
 }
 
 }  // namespace __asan
@@ -151,31 +164,47 @@ void __asan_unregister_globals(__asan_global *globals, uptr n) {
 // when all dynamically initialized globals are unpoisoned.  This method
 // poisons all global variables not defined in this TU, so that a dynamic
 // initializer can only touch global variables in the same TU.
-void __asan_before_dynamic_init(uptr first_addr, uptr last_addr) {
-  if (!flags()->check_initialization_order) return;
-  CHECK(list_of_dynamic_init_globals);
+void __asan_before_dynamic_init(const char *module_name) {
+  if (!flags()->check_initialization_order ||
+      !flags()->poison_heap)
+    return;
+  bool strict_init_order = flags()->strict_init_order;
+  CHECK(dynamic_init_globals);
+  CHECK(module_name);
+  CHECK(asan_inited);
   BlockingMutexLock lock(&mu_for_globals);
-  bool from_current_tu = false;
-  // The list looks like:
-  // a => ... => b => last_addr => ... => first_addr => c => ...
-  // The globals of the current TU reside between last_addr and first_addr.
-  for (ListOfGlobals *l = list_of_dynamic_init_globals; l; l = l->next) {
-    if (l->g->beg == last_addr)
-      from_current_tu = true;
-    if (!from_current_tu)
-      PoisonGlobalAndRedzones(l->g);
-    if (l->g->beg == first_addr)
-      from_current_tu = false;
+  if (flags()->report_globals >= 3)
+    Printf("DynInitPoison module: %s\n", module_name);
+  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+    DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
+    const Global *g = &dyn_g.g;
+    if (dyn_g.initialized)
+      continue;
+    if (g->module_name != module_name)
+      PoisonShadowForGlobal(g, kAsanInitializationOrderMagic);
+    else if (!strict_init_order)
+      dyn_g.initialized = true;
   }
-  CHECK(!from_current_tu);
 }
 
 // This method runs immediately after dynamic initialization in each TU, when
 // all dynamically initialized globals except for those defined in the current
 // TU are poisoned.  It simply unpoisons all dynamically initialized globals.
 void __asan_after_dynamic_init() {
-  if (!flags()->check_initialization_order) return;
+  if (!flags()->check_initialization_order ||
+      !flags()->poison_heap)
+    return;
+  CHECK(asan_inited);
   BlockingMutexLock lock(&mu_for_globals);
-  for (ListOfGlobals *l = list_of_dynamic_init_globals; l; l = l->next)
-    UnpoisonGlobal(l->g);
+  // FIXME: Optionally report that we're unpoisoning globals from a module.
+  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+    DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
+    const Global *g = &dyn_g.g;
+    if (!dyn_g.initialized) {
+      // Unpoison the whole global.
+      PoisonShadowForGlobal(g, 0);
+      // Poison redzones back.
+      PoisonRedZones(*g);
+    }
+  }
 }

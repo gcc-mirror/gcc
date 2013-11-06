@@ -6574,6 +6574,17 @@ scheduling one insn causes other insns to become ready in the same
 cycle.  These other insns can then be taken into account properly.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_P (void)
+This hook is used to check whether target platform supports macro fusion.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx @var{condgen}, rtx @var{condjmp})
+This hook is used to check whether two insns could be macro fused for
+target microarchitecture. If this hook returns true for the given insn pair
+(@var{condgen} and @var{condjmp}), scheduler will put them into a sched
+group, and they will not be scheduled apart.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx @var{head}, rtx @var{tail})
 This hook is called after evaluation forward dependencies of insns in
 chain given by two parameter values (@var{head} and @var{tail}

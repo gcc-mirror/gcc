@@ -178,7 +178,6 @@ particular release.
 
 
     <row>
-      <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3658.html">
 	  N3658
@@ -202,7 +201,6 @@ particular release.
 
 
     <row>
-      <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2012/n3421.htm">
 	  N3421
@@ -227,26 +225,24 @@ particular release.
 
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3672.html">
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3793.html">
 	  N3672
 	</link>
       </entry>
       <entry>A proposal to add a utility class to represent optional objects</entry>
-      <entry>N</entry>
-      <entry/>
+      <entry>Y</entry>
+      <entry>Moved from C++14 to Library Fundamentals TS</entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3655.pdf">
 	  N3655
 	</link>
       </entry>
       <entry>TransformationTraits Redux</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -259,7 +255,7 @@ particular release.
       </entry>
       <entry>C++ Dynamic Arrays</entry>
       <entry>N</entry>
-      <entry/>
+      <entry>Moved from C++14 to Library Fundamentals TS</entry>
     </row>
 
     <row>

@@ -9,53 +9,49 @@
 // run-time libraries and implements POSIX-specific functions from
 // sanitizer_libc.h.
 //===----------------------------------------------------------------------===//
-#if defined(__linux__) || defined(__APPLE__)
+
+#include "sanitizer_platform.h"
+#if SANITIZER_LINUX || SANITIZER_MAC
 
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 #include "sanitizer_procmaps.h"
+#include "sanitizer_stacktrace.h"
 
-#include <errno.h>
-#include <pthread.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/mman.h>
-#include <sys/resource.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 namespace __sanitizer {
 
 // ------------- sanitizer_common.h
-uptr GetPageSize() {
-  return sysconf(_SC_PAGESIZE);
-}
-
 uptr GetMmapGranularity() {
   return GetPageSize();
 }
 
-int GetPid() {
-  return getpid();
-}
-
-u32 GetUid() {
-  return getuid();
-}
-
-uptr GetThreadSelf() {
-  return (uptr)pthread_self();
+uptr GetMaxVirtualAddress() {
+#if SANITIZER_WORDSIZE == 64
+# if defined(__powerpc64__)
+  // On PowerPC64 we have two different address space layouts: 44- and 46-bit.
+  // We somehow need to figure our which one we are using now and choose
+  // one of 0x00000fffffffffffUL and 0x00003fffffffffffUL.
+  // Note that with 'ulimit -s unlimited' the stack is moved away from the top
+  // of the address space, so simply checking the stack address is not enough.
+  return (1ULL << 44) - 1;  // 0x00000fffffffffffUL
+# else
+  return (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
+# endif
+#else  // SANITIZER_WORDSIZE == 32
+  // FIXME: We can probably lower this on Android?
+  return (1ULL << 32) - 1;  // 0xffffffff;
+#endif  // SANITIZER_WORDSIZE
 }
 
 void *MmapOrDie(uptr size, const char *mem_type) {
   size = RoundUpTo(size, GetPageSizeCached());
-  void *res = internal_mmap(0, size,
+  uptr res = internal_mmap(0, size,
                             PROT_READ | PROT_WRITE,
                             MAP_PRIVATE | MAP_ANON, -1, 0);
-  if (res == (void*)-1) {
+  int reserrno;
+  if (internal_iserror(res, &reserrno)) {
     static int recursion_count;
     if (recursion_count) {
       // The Report() and CHECK calls below may call mmap recursively and fail.
@@ -64,18 +60,18 @@ void *MmapOrDie(uptr size, const char *mem_type) {
       Die();
     }
     recursion_count++;
-    Report("ERROR: %s failed to allocate 0x%zx (%zd) bytes of %s: %s\n",
-           SanitizerToolName, size, size, mem_type, strerror(errno));
+    Report("ERROR: %s failed to allocate 0x%zx (%zd) bytes of %s: %d\n",
+           SanitizerToolName, size, size, mem_type, reserrno);
     DumpProcessMap();
     CHECK("unable to mmap" && 0);
   }
-  return res;
+  return (void *)res;
 }
 
 void UnmapOrDie(void *addr, uptr size) {
   if (!addr || !size) return;
-  int res = internal_munmap(addr, size);
-  if (res != 0) {
+  uptr res = internal_munmap(addr, size);
+  if (internal_iserror(res)) {
     Report("ERROR: %s failed to deallocate 0x%zx (%zd) bytes at address %p\n",
            SanitizerToolName, size, size, addr);
     CHECK("unable to unmap" && 0);
@@ -84,54 +80,53 @@ void UnmapOrDie(void *addr, uptr size) {
 
 void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
   uptr PageSize = GetPageSizeCached();
-  void *p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
+  uptr p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
       RoundUpTo(size, PageSize),
       PROT_READ | PROT_WRITE,
       MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
       -1, 0);
-  if (p == (void*)-1)
+  int reserrno;
+  if (internal_iserror(p, &reserrno))
     Report("ERROR: "
            "%s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
-           SanitizerToolName, size, size, fixed_addr, errno);
-  return p;
+           SanitizerToolName, size, size, fixed_addr, reserrno);
+  return (void *)p;
 }
 
 void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
   uptr PageSize = GetPageSizeCached();
-  void *p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
+  uptr p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
       RoundUpTo(size, PageSize),
       PROT_READ | PROT_WRITE,
       MAP_PRIVATE | MAP_ANON | MAP_FIXED,
       -1, 0);
-  if (p == (void*)-1) {
+  int reserrno;
+  if (internal_iserror(p, &reserrno)) {
     Report("ERROR:"
            " %s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
-           SanitizerToolName, size, size, fixed_addr, errno);
+           SanitizerToolName, size, size, fixed_addr, reserrno);
     CHECK("unable to mmap" && 0);
   }
-  return p;
+  return (void *)p;
 }
 
 void *Mprotect(uptr fixed_addr, uptr size) {
-  return internal_mmap((void*)fixed_addr, size,
-                       PROT_NONE,
-                       MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
-                       -1, 0);
-}
-
-void FlushUnneededShadowMemory(uptr addr, uptr size) {
-  madvise((void*)addr, size, MADV_DONTNEED);
+  return (void *)internal_mmap((void*)fixed_addr, size,
+                               PROT_NONE,
+                               MAP_PRIVATE | MAP_ANON | MAP_FIXED |
+                               MAP_NORESERVE, -1, 0);
 }
 
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {
-  fd_t fd = OpenFile(file_name, false);
-  CHECK_NE(fd, kInvalidFd);
+  uptr openrv = OpenFile(file_name, false);
+  CHECK(!internal_iserror(openrv));
+  fd_t fd = openrv;
   uptr fsize = internal_filesize(fd);
   CHECK_NE(fsize, (uptr)-1);
   CHECK_GT(fsize, 0);
   *buff_size = RoundUpTo(fsize, GetPageSizeCached());
-  void *map = internal_mmap(0, *buff_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  return (map == MAP_FAILED) ? 0 : map;
+  uptr map = internal_mmap(0, *buff_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  return internal_iserror(map) ? 0 : (void *)map;
 }
 
 
@@ -147,10 +142,11 @@ static inline bool IntervalsAreSeparate(uptr start1, uptr end1,
 // several worker threads on Mac, which aren't expected to map big chunks of
 // memory).
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
-  MemoryMappingLayout procmaps;
+  MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   uptr start, end;
-  while (procmaps.Next(&start, &end,
-                       /*offset*/0, /*filename*/0, /*filename_size*/0)) {
+  while (proc_maps.Next(&start, &end,
+                        /*offset*/0, /*filename*/0, /*filename_size*/0,
+                        /*protection*/0)) {
     if (!IntervalsAreSeparate(start, end, range_start, range_end))
       return false;
   }
@@ -158,13 +154,13 @@ bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
 }
 
 void DumpProcessMap() {
-  MemoryMappingLayout proc_maps;
+  MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   uptr start, end;
   const sptr kBufSize = 4095;
   char *filename = (char*)MmapOrDie(kBufSize, __FUNCTION__);
   Report("Process memory map follows:\n");
   while (proc_maps.Next(&start, &end, /* file_offset */0,
-                        filename, kBufSize)) {
+                        filename, kBufSize, /* protection */0)) {
     Printf("\t%p-%p\t%s\n", (void*)start, (void*)end, filename);
   }
   Report("End of process memory map.\n");
@@ -175,54 +171,77 @@ const char *GetPwd() {
   return GetEnv("PWD");
 }
 
-void DisableCoreDumper() {
-  struct rlimit nocore;
-  nocore.rlim_cur = 0;
-  nocore.rlim_max = 0;
-  setrlimit(RLIMIT_CORE, &nocore);
+char *FindPathToBinary(const char *name) {
+  const char *path = GetEnv("PATH");
+  if (!path)
+    return 0;
+  uptr name_len = internal_strlen(name);
+  InternalScopedBuffer<char> buffer(kMaxPathLength);
+  const char *beg = path;
+  while (true) {
+    const char *end = internal_strchrnul(beg, ':');
+    uptr prefix_len = end - beg;
+    if (prefix_len + name_len + 2 <= kMaxPathLength) {
+      internal_memcpy(buffer.data(), beg, prefix_len);
+      buffer[prefix_len] = '/';
+      internal_memcpy(&buffer[prefix_len + 1], name, name_len);
+      buffer[prefix_len + 1 + name_len] = '\0';
+      if (FileExists(buffer.data()))
+        return internal_strdup(buffer.data());
+    }
+    if (*end == '\0') break;
+    beg = end + 1;
+  }
+  return 0;
 }
 
-bool StackSizeIsUnlimited() {
-  struct rlimit rlim;
-  CHECK_EQ(0, getrlimit(RLIMIT_STACK, &rlim));
-  return (rlim.rlim_cur == (uptr)-1);
-}
-
-void SetStackSizeLimitInBytes(uptr limit) {
-  struct rlimit rlim;
-  rlim.rlim_cur = limit;
-  rlim.rlim_max = limit;
-  if (setrlimit(RLIMIT_STACK, &rlim)) {
-    Report("ERROR: %s setrlimit() failed %d\n", SanitizerToolName, errno);
+void MaybeOpenReportFile() {
+  if (!log_to_file || (report_fd_pid == internal_getpid())) return;
+  InternalScopedBuffer<char> report_path_full(4096);
+  internal_snprintf(report_path_full.data(), report_path_full.size(),
+                    "%s.%d", report_path_prefix, internal_getpid());
+  uptr openrv = OpenFile(report_path_full.data(), true);
+  if (internal_iserror(openrv)) {
+    report_fd = kStderrFd;
+    log_to_file = false;
+    Report("ERROR: Can't open file: %s\n", report_path_full.data());
     Die();
   }
-  CHECK(!StackSizeIsUnlimited());
+  if (report_fd != kInvalidFd) {
+    // We're in the child. Close the parent's log.
+    internal_close(report_fd);
+  }
+  report_fd = openrv;
+  report_fd_pid = internal_getpid();
 }
 
-void SleepForSeconds(int seconds) {
-  sleep(seconds);
+void RawWrite(const char *buffer) {
+  static const char *kRawWriteError =
+      "RawWrite can't output requested buffer!\n";
+  uptr length = (uptr)internal_strlen(buffer);
+  MaybeOpenReportFile();
+  if (length != internal_write(report_fd, buffer, length)) {
+    internal_write(report_fd, kRawWriteError, internal_strlen(kRawWriteError));
+    Die();
+  }
 }
 
-void SleepForMillis(int millis) {
-  usleep(millis * 1000);
-}
-
-void Abort() {
-  abort();
-}
-
-int Atexit(void (*function)(void)) {
-#ifndef SANITIZER_GO
-  return atexit(function);
-#else
-  return 0;
-#endif
-}
-
-int internal_isatty(fd_t fd) {
-  return isatty(fd);
+bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
+  uptr s, e, off, prot;
+  InternalMmapVector<char> fn(4096);
+  fn.push_back(0);
+  MemoryMappingLayout proc_maps(/*cache_enabled*/false);
+  while (proc_maps.Next(&s, &e, &off, &fn[0], fn.capacity(), &prot)) {
+    if ((prot & MemoryMappingLayout::kProtectionExecute) != 0
+        && internal_strcmp(module, &fn[0]) == 0) {
+      *start = s;
+      *end = e;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace __sanitizer
 
-#endif  // __linux__ || __APPLE_
+#endif  // SANITIZER_LINUX || SANITIZER_MAC

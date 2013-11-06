@@ -11616,6 +11616,8 @@ c_parser_omp_for (location_t loc, c_parser *parser,
 	    cclauses = cclauses_buf;
 
 	  c_parser_consume_token (parser);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return c_parser_omp_simd (loc, parser, p_name, mask, cclauses);
 	  block = c_begin_compound_stmt (true);
 	  ret = c_parser_omp_simd (loc, parser, p_name, mask, cclauses);
 	  block = c_end_compound_stmt (loc, block, true);
@@ -11629,6 +11631,11 @@ c_parser_omp_for (location_t loc, c_parser *parser,
 	  add_stmt (ret);
 	  return ret;
 	}
+    }
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      c_parser_skip_to_pragma_eol (parser);
+      return NULL_TREE;
     }
 
   clauses = c_parser_omp_all_clauses (parser, mask, p_name, cclauses == NULL);
@@ -11825,6 +11832,8 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
 	cclauses = cclauses_buf;
 
       c_parser_consume_token (parser);
+      if (!flag_openmp)  /* flag_openmp_simd  */
+	return c_parser_omp_for (loc, parser, p_name, mask, cclauses);
       block = c_begin_omp_parallel ();
       c_parser_omp_for (loc, parser, p_name, mask, cclauses);
       stmt
@@ -11836,6 +11845,11 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
   else if (cclauses)
     {
       error_at (loc, "expected %<for%> after %qs", p_name);
+      c_parser_skip_to_pragma_eol (parser);
+      return NULL_TREE;
+    }
+  else if (!flag_openmp)  /* flag_openmp_simd  */
+    {
       c_parser_skip_to_pragma_eol (parser);
       return NULL_TREE;
     }
@@ -12069,6 +12083,14 @@ c_parser_omp_distribute (location_t loc, c_parser *parser,
 	  if (cclauses == NULL)
 	    cclauses = cclauses_buf;
 	  c_parser_consume_token (parser);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    {
+	      if (simd)
+		return c_parser_omp_simd (loc, parser, p_name, mask, cclauses);
+	      else
+		return c_parser_omp_parallel (loc, parser, p_name, mask,
+					      cclauses);
+	    }
 	  block = c_begin_compound_stmt (true);
 	  if (simd)
 	    ret = c_parser_omp_simd (loc, parser, p_name, mask, cclauses);
@@ -12085,6 +12107,11 @@ c_parser_omp_distribute (location_t loc, c_parser *parser,
 	  add_stmt (ret);
 	  return ret;
 	}
+    }
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      c_parser_skip_to_pragma_eol (parser);
+      return NULL_TREE;
     }
 
   clauses = c_parser_omp_all_clauses (parser, mask, p_name, cclauses == NULL);
@@ -12134,6 +12161,8 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 	    cclauses = cclauses_buf;
 
 	  c_parser_consume_token (parser);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return c_parser_omp_distribute (loc, parser, p_name, mask, cclauses);
 	  block = c_begin_compound_stmt (true);
 	  ret = c_parser_omp_distribute (loc, parser, p_name, mask, cclauses);
 	  block = c_end_compound_stmt (loc, block, true);
@@ -12146,6 +12175,11 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 	  OMP_TEAMS_BODY (ret) = block;
 	  return add_stmt (ret);
 	}
+    }
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      c_parser_skip_to_pragma_eol (parser);
+      return NULL_TREE;
     }
 
   clauses = c_parser_omp_all_clauses (parser, mask, p_name, cclauses == NULL);
@@ -12258,24 +12292,16 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
     {
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
 
-      if (strcmp (p, "data") == 0)
-	{
-	  c_parser_consume_token (parser);
-	  c_parser_omp_target_data (loc, parser);
-	  return true;
-	}
-      else if (strcmp (p, "update") == 0)
-	{
-	  c_parser_consume_token (parser);
-	  return c_parser_omp_target_update (loc, parser, context);
-	}
-      else if (strcmp (p, "teams") == 0)
+      if (strcmp (p, "teams") == 0)
 	{
 	  tree cclauses[C_OMP_CLAUSE_SPLIT_COUNT];
 	  char p_name[sizeof ("#pragma omp target teams distribute "
 			      "parallel for simd")];
 
 	  c_parser_consume_token (parser);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return c_parser_omp_teams (loc, parser, p_name,
+				       OMP_TARGET_CLAUSE_MASK, cclauses);
 	  strcpy (p_name, "#pragma omp target");
 	  keep_next_level ();
 	  tree block = c_begin_compound_stmt (true);
@@ -12290,6 +12316,22 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
 	  OMP_TARGET_BODY (stmt) = block;
 	  add_stmt (stmt);
 	  return true;
+	}
+      else if (!flag_openmp)  /* flag_openmp_simd  */
+	{
+	  c_parser_skip_to_pragma_eol (parser);
+	  return NULL_TREE;
+	}
+      else if (strcmp (p, "data") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  c_parser_omp_target_data (loc, parser);
+	  return true;
+	}
+      else if (strcmp (p, "update") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  return c_parser_omp_target_update (loc, parser, context);
 	}
     }
 
@@ -12916,6 +12958,11 @@ c_parser_omp_declare (c_parser *parser, enum pragma_context context)
 	{
 	  c_parser_consume_token (parser);
 	  c_parser_omp_declare_reduction (parser, context);
+	  return;
+	}
+      if (!flag_openmp)  /* flag_openmp_simd  */
+	{
+	  c_parser_skip_to_pragma_eol (parser);
 	  return;
 	}
       if (strcmp (p, "target") == 0)

@@ -47,6 +47,20 @@
 // || `[0x24000000, 0x27ffffff]` || ShadowGap  ||
 // || `[0x20000000, 0x23ffffff]` || LowShadow  ||
 // || `[0x00000000, 0x1fffffff]` || LowMem     ||
+//
+// Default Linux/MIPS mapping:
+// || `[0x2aaa8000, 0xffffffff]` || HighMem    ||
+// || `[0x0fffd000, 0x2aaa7fff]` || HighShadow ||
+// || `[0x0bffd000, 0x0fffcfff]` || ShadowGap  ||
+// || `[0x0aaa8000, 0x0bffcfff]` || LowShadow  ||
+// || `[0x00000000, 0x0aaa7fff]` || LowMem     ||
+
+static const u64 kDefaultShadowScale = 3;
+static const u64 kDefaultShadowOffset32 = 1ULL << 29;
+static const u64 kDefaultShadowOffset64 = 1ULL << 44;
+static const u64 kDefaultShort64bitShadowOffset = 0x7FFF8000;  // < 2G.
+static const u64 kPPC64_ShadowOffset64 = 1ULL << 41;
+static const u64 kMIPS32_ShadowOffset32 = 0x0aaa8000;
 
 #if ASAN_FLEXIBLE_MAPPING_AND_OFFSET == 1
 extern SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_scale;
@@ -54,22 +68,23 @@ extern SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_offset;
 # define SHADOW_SCALE (__asan_mapping_scale)
 # define SHADOW_OFFSET (__asan_mapping_offset)
 #else
-# if ASAN_ANDROID
-#  define SHADOW_SCALE (3)
+# define SHADOW_SCALE kDefaultShadowScale
+# if SANITIZER_ANDROID
 #  define SHADOW_OFFSET (0)
 # else
-#  define SHADOW_SCALE (3)
 #  if SANITIZER_WORDSIZE == 32
-#   define SHADOW_OFFSET (1 << 29)
+#   if defined(__mips__)
+#     define SHADOW_OFFSET kMIPS32_ShadowOffset32
+#   else
+#     define SHADOW_OFFSET kDefaultShadowOffset32
+#   endif
 #  else
 #   if defined(__powerpc64__)
-#    define SHADOW_OFFSET (1ULL << 41)
+#    define SHADOW_OFFSET kPPC64_ShadowOffset64
+#   elif SANITIZER_MAC
+#    define SHADOW_OFFSET kDefaultShadowOffset64
 #   else
-#    if ASAN_MAC
-#     define SHADOW_OFFSET (1ULL << 44)
-#    else
-#     define SHADOW_OFFSET 0x7fff8000ULL
-#    endif
+#    define SHADOW_OFFSET kDefaultShort64bitShadowOffset
 #   endif
 #  endif
 # endif
@@ -131,7 +146,6 @@ static uptr kHighMemEnd = 0x7fffffffffffULL;
 static uptr kMidMemBeg =    0x3000000000ULL;
 static uptr kMidMemEnd =    0x4fffffffffULL;
 #else
-SANITIZER_INTERFACE_ATTRIBUTE
 extern uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init.
 #endif
 

@@ -168,8 +168,8 @@ in the following sections.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding -fopenmp -fms-extensions -fplan9-extensions @gol
--trigraphs  -traditional  -traditional-cpp @gol
+-fhosted  -ffreestanding -fopenmp -fopenmp-simd -fms-extensions @gol
+-fplan9-extensions -trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -240,7 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
--Wconversion -Wcoverage-mismatch  -Wdelete-incomplete -Wno-cpp  @gol
+-Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wdisabled-optimization  @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
@@ -1839,7 +1839,16 @@ Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
-have support for @option{-pthread}.
+have support for @option{-pthread}. @option{-fopenmp} implies
+@option{-fopenmp-simd}.
+
+@item -fopenmp-simd
+@opindex fopenmp-simd
+@cindex OpenMP SIMD
+@cindex SIMD
+Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
+in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
+are ignored.
 
 @item -fcilkplus
 @opindex fcilkplus
@@ -4516,6 +4525,13 @@ types. @option{-Wconversion-null} is enabled by default.
 @opindex Wno-zero-as-null-pointer-constant
 Warn when a literal '0' is used as null pointer constant.  This can
 be useful to facilitate the conversion to @code{nullptr} in C++11.
+
+@item -Wdate-time
+@opindex Wdate-time
+@opindex Wno-date-time
+Warn when macros @code{__TIME__}, @code{__DATE__} or @code{__TIMESTAMP__}
+are encountered as they might prevent bit-wise-identical reproducable
+compilations.
 
 @item -Wdelete-incomplete @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-incomplete

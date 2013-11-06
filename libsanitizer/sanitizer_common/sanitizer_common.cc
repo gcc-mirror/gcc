@@ -15,6 +15,7 @@
 namespace __sanitizer {
 
 const char *SanitizerToolName = "SanitizerTool";
+uptr SanitizerVerbosity = 0;
 
 uptr GetPageSizeCached() {
   static uptr PageSize;
@@ -23,20 +24,27 @@ uptr GetPageSizeCached() {
   return PageSize;
 }
 
-static bool log_to_file = false;  // Set to true by __sanitizer_set_report_path
 
 // By default, dump to stderr. If |log_to_file| is true and |report_fd_pid|
 // isn't equal to the current PID, try to obtain file descriptor by opening
 // file "report_path_prefix.<PID>".
-static fd_t report_fd = kStderrFd;
-static char report_path_prefix[4096];  // Set via __sanitizer_set_report_path.
+fd_t report_fd = kStderrFd;
+
+// Set via __sanitizer_set_report_path.
+bool log_to_file = false;
+char report_path_prefix[sizeof(report_path_prefix)];
+
 // PID of process that opened |report_fd|. If a fork() occurs, the PID of the
 // child thread will be different from |report_fd_pid|.
-static int report_fd_pid = 0;
+uptr report_fd_pid = 0;
 
-static void (*DieCallback)(void);
-void SetDieCallback(void (*callback)(void)) {
+static DieCallbackType DieCallback;
+void SetDieCallback(DieCallbackType callback) {
   DieCallback = callback;
+}
+
+DieCallbackType GetDieCallback() {
+  return DieCallback;
 }
 
 void NORETURN Die() {
@@ -61,41 +69,6 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
   Die();
 }
 
-static void MaybeOpenReportFile() {
-  if (!log_to_file || (report_fd_pid == GetPid())) return;
-  InternalScopedBuffer<char> report_path_full(4096);
-  internal_snprintf(report_path_full.data(), report_path_full.size(),
-                    "%s.%d", report_path_prefix, GetPid());
-  fd_t fd = OpenFile(report_path_full.data(), true);
-  if (fd == kInvalidFd) {
-    report_fd = kStderrFd;
-    log_to_file = false;
-    Report("ERROR: Can't open file: %s\n", report_path_full.data());
-    Die();
-  }
-  if (report_fd != kInvalidFd) {
-    // We're in the child. Close the parent's log.
-    internal_close(report_fd);
-  }
-  report_fd = fd;
-  report_fd_pid = GetPid();
-}
-
-bool PrintsToTty() {
-  MaybeOpenReportFile();
-  return internal_isatty(report_fd);
-}
-
-void RawWrite(const char *buffer) {
-  static const char *kRawWriteError = "RawWrite can't output requested buffer!";
-  uptr length = (uptr)internal_strlen(buffer);
-  MaybeOpenReportFile();
-  if (length != internal_write(report_fd, buffer, length)) {
-    internal_write(report_fd, kRawWriteError, internal_strlen(kRawWriteError));
-    Die();
-  }
-}
-
 uptr ReadFileToBuffer(const char *file_name, char **buff,
                       uptr *buff_size, uptr max_len) {
   uptr PageSize = GetPageSizeCached();
@@ -105,8 +78,9 @@ uptr ReadFileToBuffer(const char *file_name, char **buff,
   *buff_size = 0;
   // The files we usually open are not seekable, so try different buffer sizes.
   for (uptr size = kMinFileLen; size <= max_len; size *= 2) {
-    fd_t fd = OpenFile(file_name, /*write*/ false);
-    if (fd == kInvalidFd) return 0;
+    uptr openrv = OpenFile(file_name, /*write*/ false);
+    if (internal_iserror(openrv)) return 0;
+    fd_t fd = openrv;
     UnmapOrDie(*buff, *buff_size);
     *buff = (char*)MmapOrDie(size, __FUNCTION__);
     *buff_size = size;
@@ -128,45 +102,15 @@ uptr ReadFileToBuffer(const char *file_name, char **buff,
   return read_len;
 }
 
-// We don't want to use std::sort to avoid including <algorithm>, as
-// we may end up with two implementation of std::sort - one in instrumented
-// code, and the other in runtime.
-// qsort() from stdlib won't work as it calls malloc(), which results
-// in deadlock in ASan allocator.
-// We re-implement in-place sorting w/o recursion as straightforward heapsort.
+typedef bool UptrComparisonFunction(const uptr &a, const uptr &b);
+
+template<class T>
+static inline bool CompareLess(const T &a, const T &b) {
+  return a < b;
+}
+
 void SortArray(uptr *array, uptr size) {
-  if (size < 2)
-    return;
-  // Stage 1: insert elements to the heap.
-  for (uptr i = 1; i < size; i++) {
-    uptr j, p;
-    for (j = i; j > 0; j = p) {
-      p = (j - 1) / 2;
-      if (array[j] > array[p])
-        Swap(array[j], array[p]);
-      else
-        break;
-    }
-  }
-  // Stage 2: swap largest element with the last one,
-  // and sink the new top.
-  for (uptr i = size - 1; i > 0; i--) {
-    Swap(array[0], array[i]);
-    uptr j, max_ind;
-    for (j = 0; j < i; j = max_ind) {
-      uptr left = 2 * j + 1;
-      uptr right = 2 * j + 2;
-      max_ind = j;
-      if (left < i && array[left] > array[max_ind])
-        max_ind = left;
-      if (right < i && array[right] > array[max_ind])
-        max_ind = right;
-      if (max_ind != j)
-        Swap(array[j], array[max_ind]);
-      else
-        break;
-    }
-  }
+  InternalSort<uptr*, UptrComparisonFunction>(&array, size, CompareLess);
 }
 
 // We want to map a chunk of address space aligned to 'alignment'.
@@ -198,6 +142,27 @@ void ReportErrorSummary(const char *error_type, const char *file,
                     SanitizerToolName, error_type,
                     file ? file : "??", line, function ? function : "??");
   __sanitizer_report_error_summary(buff.data());
+}
+
+LoadedModule::LoadedModule(const char *module_name, uptr base_address) {
+  full_name_ = internal_strdup(module_name);
+  base_address_ = base_address;
+  n_ranges_ = 0;
+}
+
+void LoadedModule::addAddressRange(uptr beg, uptr end) {
+  CHECK_LT(n_ranges_, kMaxNumberOfAddressRanges);
+  ranges_[n_ranges_].beg = beg;
+  ranges_[n_ranges_].end = end;
+  n_ranges_++;
+}
+
+bool LoadedModule::containsAddress(uptr address) const {
+  for (uptr i = 0; i < n_ranges_; i++) {
+    if (ranges_[i].beg <= address && address < ranges_[i].end)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace __sanitizer

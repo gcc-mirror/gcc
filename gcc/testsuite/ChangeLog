@@ -1,3 +1,107 @@
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* g++.dg/warn/wdate-time.C: New.
+	* gcc.dg/wdate-time.c: New.
+	* gfortran.dg/wdate-time.F90: New.
+
+2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/58989
+	* gfortran.dg/reshape_6.f90: New test.
+
+2013-10-05  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr38984.c: Add -fno-isolate-erroneous-paths.
+	* gcc.dg/tree-ssa/isolate-1.c: New test.
+	* gcc.dg/tree-ssa/isolate-2.c: New test.
+	* gcc.dg/tree-ssa/isolate-3.c: New test.
+	* gcc.dg/tree-ssa/isolate-4.c: New test.
+
+2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58997
+	* gcc.c-torture/compile/pr58997.c: New test.
+
+2013-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58724
+	* g++.dg/cpp0x/gen-attrs-56.C: New.
+
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/58492
+	* gcc.dg/ipa/pr58492.c: New testcase.
+
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58955
+	* gcc.dg/torture/pr58955-1.c: New testcase.
+	* gcc.dg/torture/pr58955-2.c: Likewise.
+
+2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/58981
+	* gcc.dg/pr58981.c: New test.
+
+2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58941
+	* gcc.dg/torture/pr58941.c: New testcase.
+
+2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/58958
+	* gcc.dg/tree-ssa/pr58958.c: New file.
+
+2013-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/alias-26.c: New file.
+
+2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58984
+	* gcc.c-torture/execute/pr58984.c: New test.
+
+2013-11-05  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/ext/sync-4.C: Require sync_long_long_runtime support.
+
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* g++.dg/gomp/openmp-simd-1.C: New.
+	* g++.dg/gomp/openmp-simd-2.C: New.
+	* gcc.dg/gomp/openmp-simd-1.c: New.
+	* gcc.dg/gomp/openmp-simd-2.c: New.
+
+2013-11-04  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/superblock.c: Require scheduling support.
+
+2013-11-04  Kostya Serebryany  <kcc@google.com>
+
+	* g++.dg/asan/asan_test.cc: Update the test
+	to match the fresh asan run-time.
+	* c-c++-common/asan/stack-overflow-1.c: Ditto.
+
+2013-11-04  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/ext/sync-4.C: New test.
+
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58771
+	* gfortran.dg/derived_external_function_1.f90 : New test
+
+2013-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58978
+	* gcc.c-torture/compile/pr58978.c: New test.
+
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57445
+	* gfortran.dg/optional_class_1.f90 : New test
+
 2013-11-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58968

@@ -2742,10 +2742,9 @@ tablejump_p (const_rtx insn, rtx *labelp, rtx *tablep)
 
   label = JUMP_LABEL (insn);
   if (label != NULL_RTX && !ANY_RETURN_P (label)
-      && (table = next_active_insn (label)) != NULL_RTX
+      && (table = NEXT_INSN (label)) != NULL_RTX
       && JUMP_TABLE_DATA_P (table))
     {
-      gcc_assert (table == NEXT_INSN (label));
       if (labelp)
 	*labelp = label;
       if (tablep)

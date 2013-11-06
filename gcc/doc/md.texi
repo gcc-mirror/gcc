@@ -5291,12 +5291,13 @@ are the first two operands, and both are @code{mem:BLK}s with an
 address in mode @code{Pmode}.
 
 The number of bytes to move is the third operand, in mode @var{m}.
-Usually, you specify @code{word_mode} for @var{m}.  However, if you can
+Usually, you specify @code{Pmode} for @var{m}.  However, if you can
 generate better code knowing the range of valid lengths is smaller than
-those representable in a full word, you should provide a pattern with a
+those representable in a full Pmode pointer, you should provide
+a pattern with a
 mode corresponding to the range of values you can handle efficiently
 (e.g., @code{QImode} for values in the range 0--127; note we avoid numbers
-that appear negative) and also a pattern with @code{word_mode}.
+that appear negative) and also a pattern with @code{Pmode}.
 
 The fourth operand is the known shared alignment of the source and
 destination, in the form of a @code{const_int} rtx.  Thus, if the

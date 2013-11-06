@@ -89,7 +89,7 @@ AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
 
 AC_CONFIG_FILES([Makefile])
 
-AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common asan ubsan], [DIR/Makefile ]),
+AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common lsan asan ubsan], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF

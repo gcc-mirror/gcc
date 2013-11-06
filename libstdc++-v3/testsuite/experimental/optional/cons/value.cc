@@ -66,51 +66,51 @@ int main()
   // [20.5.4.1] Constructors
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o { i };
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o = i;
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o = { i };
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o { std::move(i) };
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o = std::move(i);
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {
-    auto i = 0x1234ABCDF1E2D3C4;
+    auto i = 0x1234ABCD;
     std::experimental::optional<long> o = { std::move(i) };
     VERIFY( o );
-    VERIFY( *o == 0x1234ABCDF1E2D3C4 );
-    VERIFY( i == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *o == 0x1234ABCD );
+    VERIFY( i == 0x1234ABCD );
   }
 
   {

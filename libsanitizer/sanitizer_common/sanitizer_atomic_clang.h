@@ -39,7 +39,17 @@ INLINE typename T::Type atomic_load(
       | memory_order_acquire | memory_order_seq_cst));
   DCHECK(!((uptr)a % sizeof(*a)));
   typename T::Type v;
-  // FIXME(dvyukov): 64-bit load is not atomic on 32-bits.
+  // FIXME:
+  // 64-bit atomic operations are not atomic on 32-bit platforms.
+  // The implementation lacks necessary memory fences on ARM/PPC.
+  // We would like to use compiler builtin atomic operations,
+  // but they are mostly broken:
+  // - they lead to vastly inefficient code generation
+  // (http://llvm.org/bugs/show_bug.cgi?id=17281)
+  // - 64-bit atomic operations are not implemented on x86_32
+  // (http://llvm.org/bugs/show_bug.cgi?id=15034)
+  // - they are not implemented on ARM
+  // error: undefined reference to '__atomic_load_4'
   if (mo == memory_order_relaxed) {
     v = a->val_dont_use;
   } else {
@@ -55,7 +65,6 @@ INLINE void atomic_store(volatile T *a, typename T::Type v, memory_order mo) {
   DCHECK(mo & (memory_order_relaxed | memory_order_release
       | memory_order_seq_cst));
   DCHECK(!((uptr)a % sizeof(*a)));
-  // FIXME(dvyukov): 64-bit store is not atomic on 32-bits.
   if (mo == memory_order_relaxed) {
     a->val_dont_use = v;
   } else {
@@ -111,12 +120,14 @@ INLINE bool atomic_compare_exchange_strong(volatile T *a,
 
 template<typename T>
 INLINE bool atomic_compare_exchange_weak(volatile T *a,
-                                           typename T::Type *cmp,
-                                           typename T::Type xchg,
-                                           memory_order mo) {
+                                         typename T::Type *cmp,
+                                         typename T::Type xchg,
+                                         memory_order mo) {
   return atomic_compare_exchange_strong(a, cmp, xchg, mo);
 }
 
 }  // namespace __sanitizer
+
+#undef ATOMIC_ORDER
 
 #endif  // SANITIZER_ATOMIC_CLANG_H

@@ -2286,6 +2286,7 @@ typedef struct
   int flag_cray_pointer;
   int flag_d_lines;
   int gfc_flag_openmp;
+  int gfc_flag_openmp_simd;
   int flag_sign_zero;
   int flag_stack_arrays;
   int flag_module_private;

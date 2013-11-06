@@ -24,8 +24,11 @@
 #ifndef TSAN_RTL_H
 #define TSAN_RTL_H
 
-#include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_allocator.h"
+#include "sanitizer_common/sanitizer_allocator_internal.h"
+#include "sanitizer_common/sanitizer_common.h"
+#include "sanitizer_common/sanitizer_suppressions.h"
+#include "sanitizer_common/sanitizer_thread_registry.h"
 #include "tsan_clock.h"
 #include "tsan_defs.h"
 #include "tsan_flags.h"
@@ -44,15 +47,73 @@ namespace __tsan {
 
 // Descriptor of user's memory block.
 struct MBlock {
-  Mutex mtx;
-  uptr size;
-  u32 alloc_tid;
-  u32 alloc_stack_id;
-  SyncVar *head;
+  /*
+  u64 mtx : 1;  // must be first
+  u64 lst : 44;
+  u64 stk : 31;  // on word boundary
+  u64 tid : kTidBits;
+  u64 siz : 128 - 1 - 31 - 44 - kTidBits;  // 39
+  */
+  u64 raw[2];
 
-  MBlock()
-    : mtx(MutexTypeMBlock, StatMtxMBlock) {
+  void Init(uptr siz, u32 tid, u32 stk) {
+    raw[0] = raw[1] = 0;
+    raw[1] |= (u64)siz << ((1 + 44 + 31 + kTidBits) % 64);
+    raw[1] |= (u64)tid << ((1 + 44 + 31) % 64);
+    raw[0] |= (u64)stk << (1 + 44);
+    raw[1] |= (u64)stk >> (64 - 44 - 1);
+    DCHECK_EQ(Size(), siz);
+    DCHECK_EQ(Tid(), tid);
+    DCHECK_EQ(StackId(), stk);
   }
+
+  u32 Tid() const {
+    return GetLsb(raw[1] >> ((1 + 44 + 31) % 64), kTidBits);
+  }
+
+  uptr Size() const {
+    return raw[1] >> ((1 + 31 + 44 + kTidBits) % 64);
+  }
+
+  u32 StackId() const {
+    return (raw[0] >> (1 + 44)) | GetLsb(raw[1] << (64 - 44 - 1), 31);
+  }
+
+  SyncVar *ListHead() const {
+    return (SyncVar*)(GetLsb(raw[0] >> 1, 44) << 3);
+  }
+
+  void ListPush(SyncVar *v) {
+    SyncVar *lst = ListHead();
+    v->next = lst;
+    u64 x = (u64)v ^ (u64)lst;
+    x = (x >> 3) << 1;
+    raw[0] ^= x;
+    DCHECK_EQ(ListHead(), v);
+  }
+
+  SyncVar *ListPop() {
+    SyncVar *lst = ListHead();
+    SyncVar *nxt = lst->next;
+    lst->next = 0;
+    u64 x = (u64)lst ^ (u64)nxt;
+    x = (x >> 3) << 1;
+    raw[0] ^= x;
+    DCHECK_EQ(ListHead(), nxt);
+    return lst;
+  }
+
+  void ListReset() {
+    SyncVar *lst = ListHead();
+    u64 x = (u64)lst;
+    x = (x >> 3) << 1;
+    raw[0] ^= x;
+    DCHECK_EQ(ListHead(), 0);
+  }
+
+  void Lock();
+  void Unlock();
+  typedef GenericScopedLock<MBlock> ScopedLock;
 };
 
 #ifndef TSAN_GO
@@ -63,22 +124,11 @@ const uptr kAllocatorSpace = 0x7d0000000000ULL;
 #endif
 const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
 
-struct TsanMapUnmapCallback {
-  void OnMap(uptr p, uptr size) const { }
-  void OnUnmap(uptr p, uptr size) const {
-    // We are about to unmap a chunk of user memory.
-    // Mark the corresponding shadow memory as not needed.
-    uptr shadow_beg = MemToShadow(p);
-    uptr shadow_end = MemToShadow(p + size);
-    CHECK(IsAligned(shadow_end|shadow_beg, GetPageSizeCached()));
-    FlushUnneededShadowMemory(shadow_beg, shadow_end - shadow_beg);
-  }
-};
-
+struct MapUnmapCallback;
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, sizeof(MBlock),
-    DefaultSizeClassMap> PrimaryAllocator;
+    DefaultSizeClassMap, MapUnmapCallback> PrimaryAllocator;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
-typedef LargeMmapAllocator<TsanMapUnmapCallback> SecondaryAllocator;
+typedef LargeMmapAllocator<MapUnmapCallback> SecondaryAllocator;
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
     SecondaryAllocator> Allocator;
 Allocator *allocator();
@@ -86,6 +136,8 @@ Allocator *allocator();
 
 void TsanCheckFailed(const char *file, int line, const char *cond,
                      u64 v1, u64 v2);
+
+const u64 kShadowRodata = (u64)-1;  // .rodata shadow marker
 
 // FastState (from most significant bit):
 //   ignore          : 1
@@ -332,6 +384,12 @@ class Shadow : public FastState {
 
 struct SignalContext;
 
+struct JmpBuf {
+  uptr sp;
+  uptr mangled_sp;
+  uptr *shadow_stack_pos;
+};
+
 // This struct is stored in TLS.
 struct ThreadState {
   FastState fast_state;
@@ -354,7 +412,6 @@ struct ThreadState {
   uptr *shadow_stack_pos;
   u64 *racy_shadow_addr;
   u64 racy_state[2];
-  Trace trace;
 #ifndef TSAN_GO
   // C/C++ uses embed shadow stack of fixed size.
   uptr shadow_stack[kShadowStackSize];
@@ -367,6 +424,8 @@ struct ThreadState {
   ThreadClock clock;
 #ifndef TSAN_GO
   AllocatorCache alloc_cache;
+  InternalAllocatorCache internal_alloc_cache;
+  Vector<JmpBuf> jmp_bufs;
 #endif
   u64 stat[StatCnt];
   const int tid;
@@ -375,6 +434,7 @@ struct ThreadState {
   bool in_symbolizer;
   bool is_alive;
   bool is_freeing;
+  bool is_vptr_access;
   const uptr stk_addr;
   const uptr stk_size;
   const uptr tls_addr;
@@ -408,41 +468,30 @@ INLINE ThreadState *cur_thread() {
 }
 #endif
 
-enum ThreadStatus {
-  ThreadStatusInvalid,   // Non-existent thread, data is invalid.
-  ThreadStatusCreated,   // Created but not yet running.
-  ThreadStatusRunning,   // The thread is currently running.
-  ThreadStatusFinished,  // Joinable thread is finished but not yet joined.
-  ThreadStatusDead       // Joined, but some info (trace) is still alive.
-};
-
-// An info about a thread that is hold for some time after its termination.
-struct ThreadDeadInfo {
-  Trace trace;
-};
-
-struct ThreadContext {
-  const int tid;
-  int unique_id;  // Non-rolling thread id.
-  uptr os_id;  // pid
-  uptr user_id;  // Some opaque user thread id (e.g. pthread_t).
+class ThreadContext : public ThreadContextBase {
+ public:
+  explicit ThreadContext(int tid);
+  ~ThreadContext();
   ThreadState *thr;
-  ThreadStatus status;
-  bool detached;
-  int reuse_count;
+#ifdef TSAN_GO
+  StackTrace creation_stack;
+#else
+  u32 creation_stack_id;
+#endif
   SyncClock sync;
   // Epoch at which the thread had started.
   // If we see an event from the thread stamped by an older epoch,
   // the event is from a dead thread that shared tid with this thread.
   u64 epoch0;
   u64 epoch1;
-  StackTrace creation_stack;
-  int creation_tid;
-  ThreadDeadInfo *dead_info;
-  ThreadContext *dead_next;  // In dead thread list.
-  char *name;  // As annotated by user.
 
-  explicit ThreadContext(int tid);
+  // Override superclass callbacks.
+  void OnDead();
+  void OnJoined(void *arg);
+  void OnFinished();
+  void OnStarted(void *arg);
+  void OnCreated(void *arg);
+  void OnReset();
 };
 
 struct RacyStacks {
@@ -464,6 +513,7 @@ struct RacyAddress {
 struct FiredSuppression {
   ReportType type;
   uptr pc;
+  Suppression *supp;
 };
 
 struct Context {
@@ -476,20 +526,14 @@ struct Context {
   Mutex report_mtx;
   int nreported;
   int nmissed_expected;
+  atomic_uint64_t last_symbolize_time_ns;
 
-  Mutex thread_mtx;
-  unsigned thread_seq;
-  unsigned unique_thread_seq;
-  int alive_threads;
-  int max_alive_threads;
-  ThreadContext *threads[kMaxTid];
-  int dead_list_size;
-  ThreadContext* dead_list_head;
-  ThreadContext* dead_list_tail;
+  ThreadRegistry *thread_registry;
 
   Vector<RacyStacks> racy_stacks;
   Vector<RacyAddress> racy_addresses;
-  Vector<FiredSuppression> fired_suppressions;
+  // Number of fired suppressions may be large enough.
+  InternalMmapVector<FiredSuppression> fired_suppressions;
 
   Flags flags;
 
@@ -520,6 +564,7 @@ class ScopedReport {
   void AddMutex(const SyncVar *s);
   void AddLocation(uptr addr, uptr size);
   void AddSleep(u32 stack_id);
+  void SetCount(int count);
 
   const ReportDesc *GetReport() const;
 
@@ -537,13 +582,18 @@ void RestoreStack(int tid, const u64 epoch, StackTrace *stk, MutexSet *mset);
 
 void StatAggregate(u64 *dst, u64 *src);
 void StatOutput(u64 *stat);
-void ALWAYS_INLINE INLINE StatInc(ThreadState *thr, StatType typ, u64 n = 1) {
+void ALWAYS_INLINE StatInc(ThreadState *thr, StatType typ, u64 n = 1) {
   if (kCollectStats)
     thr->stat[typ] += n;
+}
+void ALWAYS_INLINE StatSet(ThreadState *thr, StatType typ, u64 n) {
+  if (kCollectStats)
+    thr->stat[typ] = n;
 }
 
 void MapShadow(uptr addr, uptr size);
 void MapThreadTrace(uptr addr, uptr size);
+void DontNeedShadowFor(uptr addr, uptr size);
 void InitializeShadowMemory();
 void InitializeInterceptors();
 void InitializeDynamicAnnotations();
@@ -552,11 +602,13 @@ void ReportRace(ThreadState *thr);
 bool OutputReport(Context *ctx,
                   const ScopedReport &srep,
                   const ReportStack *suppress_stack1 = 0,
-                  const ReportStack *suppress_stack2 = 0);
+                  const ReportStack *suppress_stack2 = 0,
+                  const ReportLocation *suppress_loc = 0);
 bool IsFiredSuppression(Context *ctx,
                         const ScopedReport &srep,
                         const StackTrace &trace);
 bool IsExpectedReport(uptr addr, uptr size);
+void PrintMatchedBenignRaces();
 bool FrameIsInternal(const ReportStack *frame);
 ReportStack *SkipTsanInternalFrames(ReportStack *ent);
 
@@ -592,28 +644,30 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     uptr size, bool is_write);
 void MemoryAccessRangeStep(ThreadState *thr, uptr pc, uptr addr,
     uptr size, uptr step, bool is_write);
+void UnalignedMemoryAccess(ThreadState *thr, uptr pc, uptr addr,
+    int size, bool kAccessIsWrite, bool kIsAtomic);
 
 const int kSizeLog1 = 0;
 const int kSizeLog2 = 1;
 const int kSizeLog4 = 2;
 const int kSizeLog8 = 3;
 
-void ALWAYS_INLINE INLINE MemoryRead(ThreadState *thr, uptr pc,
+void ALWAYS_INLINE MemoryRead(ThreadState *thr, uptr pc,
                                      uptr addr, int kAccessSizeLog) {
   MemoryAccess(thr, pc, addr, kAccessSizeLog, false, false);
 }
 
-void ALWAYS_INLINE INLINE MemoryWrite(ThreadState *thr, uptr pc,
+void ALWAYS_INLINE MemoryWrite(ThreadState *thr, uptr pc,
                                       uptr addr, int kAccessSizeLog) {
   MemoryAccess(thr, pc, addr, kAccessSizeLog, true, false);
 }
 
-void ALWAYS_INLINE INLINE MemoryReadAtomic(ThreadState *thr, uptr pc,
+void ALWAYS_INLINE MemoryReadAtomic(ThreadState *thr, uptr pc,
                                            uptr addr, int kAccessSizeLog) {
   MemoryAccess(thr, pc, addr, kAccessSizeLog, false, true);
 }
 
-void ALWAYS_INLINE INLINE MemoryWriteAtomic(ThreadState *thr, uptr pc,
+void ALWAYS_INLINE MemoryWriteAtomic(ThreadState *thr, uptr pc,
                                             uptr addr, int kAccessSizeLog) {
   MemoryAccess(thr, pc, addr, kAccessSizeLog, true, true);
 }
@@ -621,7 +675,8 @@ void ALWAYS_INLINE INLINE MemoryWriteAtomic(ThreadState *thr, uptr pc,
 void MemoryResetRange(ThreadState *thr, uptr pc, uptr addr, uptr size);
 void MemoryRangeFreed(ThreadState *thr, uptr pc, uptr addr, uptr size);
 void MemoryRangeImitateWrite(ThreadState *thr, uptr pc, uptr addr, uptr size);
-void IgnoreCtl(ThreadState *thr, bool write, bool begin);
+void ThreadIgnoreBegin(ThreadState *thr);
+void ThreadIgnoreEnd(ThreadState *thr);
 
 void FuncEntry(ThreadState *thr, uptr pc);
 void FuncExit(ThreadState *thr);
@@ -640,8 +695,8 @@ void ProcessPendingSignals(ThreadState *thr);
 void MutexCreate(ThreadState *thr, uptr pc, uptr addr,
                  bool rw, bool recursive, bool linker_init);
 void MutexDestroy(ThreadState *thr, uptr pc, uptr addr);
-void MutexLock(ThreadState *thr, uptr pc, uptr addr);
-void MutexUnlock(ThreadState *thr, uptr pc, uptr addr);
+void MutexLock(ThreadState *thr, uptr pc, uptr addr, int rec = 1);
+int  MutexUnlock(ThreadState *thr, uptr pc, uptr addr, bool all = false);
 void MutexReadLock(ThreadState *thr, uptr pc, uptr addr);
 void MutexReadUnlock(ThreadState *thr, uptr pc, uptr addr);
 void MutexReadOrWriteUnlock(ThreadState *thr, uptr pc, uptr addr);
@@ -677,9 +732,10 @@ void TraceSwitch(ThreadState *thr);
 uptr TraceTopPC(ThreadState *thr);
 uptr TraceSize();
 uptr TraceParts();
+Trace *ThreadTrace(int tid);
 
 extern "C" void __tsan_trace_switch();
-void ALWAYS_INLINE INLINE TraceAddEvent(ThreadState *thr, FastState fs,
+void ALWAYS_INLINE TraceAddEvent(ThreadState *thr, FastState fs,
                                         EventType typ, u64 addr) {
   DCHECK_GE((int)typ, 0);
   DCHECK_LE((int)typ, 7);
