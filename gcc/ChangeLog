@@ -1,5 +1,11 @@
 2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (addsf3, divsf3, divsf3_i, rsqrtsf2, cmpgtdf_t,
+	cmpeqdf_t, *ieee_ccmpeqdf_t, negdf2, sqrtdf2, absdf2): Use
+	fp_arith_reg_operand instead of arith_reg_operand.
+
+2013-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (adddi3): Remove empty constraints.
 	Remove can_create_pseudo_p and arith_reg_operand check.
 	(adddi3_compact, subdi3_compact, *negdi2): Remove constraints.
