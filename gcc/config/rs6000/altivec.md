@@ -972,7 +972,111 @@
   "vmrgow %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
-(define_insn "vec_widen_umult_even_v16qi"
+(define_expand "vec_widen_umult_even_v16qi"
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V16QI 1 "register_operand" ""))
+   (use (match_operand:V16QI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmuleub (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmuloub (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_even_v16qi"
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V16QI 1 "register_operand" ""))
+   (use (match_operand:V16QI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmulesb (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulosb (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_umult_even_v8hi"
+  [(use (match_operand:V4SI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:V8HI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmuleuh (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulouh (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_even_v8hi"
+  [(use (match_operand:V4SI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:V8HI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmulesh (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulosh (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_umult_odd_v16qi"
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V16QI 1 "register_operand" ""))
+   (use (match_operand:V16QI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmuloub (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmuleub (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_odd_v16qi"
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V16QI 1 "register_operand" ""))
+   (use (match_operand:V16QI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmulosb (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulesb (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_umult_odd_v8hi"
+  [(use (match_operand:V4SI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:V8HI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmulouh (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmuleuh (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_odd_v8hi"
+  [(use (match_operand:V4SI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:V8HI 2 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmulosh (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulesh (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "altivec_vmuleub"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
                       (match_operand:V16QI 2 "register_operand" "v")]
@@ -981,34 +1085,7 @@
   "vmuleub %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
-(define_insn "vec_widen_smult_even_v16qi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
-                      (match_operand:V16QI 2 "register_operand" "v")]
-		     UNSPEC_VMULESB))]
-  "TARGET_ALTIVEC"
-  "vmulesb %0,%1,%2"
-  [(set_attr "type" "veccomplex")])
-
-(define_insn "vec_widen_umult_even_v8hi"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
-                      (match_operand:V8HI 2 "register_operand" "v")]
-		     UNSPEC_VMULEUH))]
-  "TARGET_ALTIVEC"
-  "vmuleuh %0,%1,%2"
-  [(set_attr "type" "veccomplex")])
-
-(define_insn "vec_widen_smult_even_v8hi"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
-                      (match_operand:V8HI 2 "register_operand" "v")]
-		     UNSPEC_VMULESH))]
-  "TARGET_ALTIVEC"
-  "vmulesh %0,%1,%2"
-  [(set_attr "type" "veccomplex")])
-
-(define_insn "vec_widen_umult_odd_v16qi"
+(define_insn "altivec_vmuloub"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
                       (match_operand:V16QI 2 "register_operand" "v")]
@@ -1017,7 +1094,16 @@
   "vmuloub %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
-(define_insn "vec_widen_smult_odd_v16qi"
+(define_insn "altivec_vmulesb"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
+                      (match_operand:V16QI 2 "register_operand" "v")]
+		     UNSPEC_VMULESB))]
+  "TARGET_ALTIVEC"
+  "vmulesb %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulosb"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
                       (match_operand:V16QI 2 "register_operand" "v")]
@@ -1026,7 +1112,16 @@
   "vmulosb %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
-(define_insn "vec_widen_umult_odd_v8hi"
+(define_insn "altivec_vmuleuh"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
+                      (match_operand:V8HI 2 "register_operand" "v")]
+		     UNSPEC_VMULEUH))]
+  "TARGET_ALTIVEC"
+  "vmuleuh %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulouh"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
                       (match_operand:V8HI 2 "register_operand" "v")]
@@ -1035,7 +1130,16 @@
   "vmulouh %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
-(define_insn "vec_widen_smult_odd_v8hi"
+(define_insn "altivec_vmulesh"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
+                      (match_operand:V8HI 2 "register_operand" "v")]
+		     UNSPEC_VMULESH))]
+  "TARGET_ALTIVEC"
+  "vmulesh %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulosh"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
                       (match_operand:V8HI 2 "register_operand" "v")]
