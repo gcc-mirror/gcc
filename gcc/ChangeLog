@@ -1,5 +1,12 @@
 2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/altivec.md (mulv4si3): Ensure we generate vmulouh
+	for both big and little endian.
+	(mulv8hi3): Swap input operands for merge high and merge low
+	instructions for little endian.
+
+2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/altivec.md (vec_widen_umult_even_v16qi): Change
 	define_insn to define_expand that uses even patterns for big
 	endian and odd patterns for little endian.
