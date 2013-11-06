@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_backref,
       _S_opcode_line_begin_assertion,
       _S_opcode_line_end_assertion,
-      _S_opcode_word_boundry,
+      _S_opcode_word_boundary,
       _S_opcode_subexpr_lookahead,
       _S_opcode_subexpr_begin,
       _S_opcode_subexpr_end,
@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _StateIdT  _M_quant_index;
 	  // for _S_opcode_alternative or _S_opcode_subexpr_lookahead
 	  _StateIdT  _M_alt;
-	  // for _S_opcode_word_boundry or _S_opcode_subexpr_lookahead or
+	  // for _S_opcode_word_boundary or _S_opcode_subexpr_lookahead or
 	  // quantifiers(ungreedy if set true)
 	  bool       _M_neg;
 	};
@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT
       _M_insert_word_bound(bool __neg)
       {
-	_StateT __tmp(_S_opcode_word_boundry);
+	_StateT __tmp(_S_opcode_word_boundary);
 	__tmp._M_neg = __neg;
 	return _M_insert_state(__tmp);
       }

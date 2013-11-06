@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ostr << __id << " [label=\"" << __id << "\\nLINE_END \"];\n"
 		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
 	  break;
-	case _S_opcode_word_boundry:
+	case _S_opcode_word_boundary:
 	  __ostr << __id << " [label=\"" << __id << "\\nWORD_BOUNDRY "
 		 << _M_neg << "\"];\n"
 		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";

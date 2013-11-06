@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      _M_word_boundry(_State<_CharT, _TraitsT> __state) const;
+      _M_word_boundary(_State<_CharT, _TraitsT> __state) const;
 
       bool
       _M_lookahead(_State<_CharT, _TraitsT> __state);

@@ -1,3 +1,12 @@
+2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to
+	_S_opcode_word_boundary.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_word_boundry):
+	Rename to _M_word_boundary.
+	* include/bits/regex_executor.tcc: Likewise.
+
 2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	N3655 C++1y TransformationTraits Redux
