@@ -17344,6 +17344,14 @@ ix86_split_idivmod (enum machine_mode mode, rtx operands[],
   emit_label (end_label);
 }
 
+/* Whether it is OK to emit CFI directives when emitting asm code.  */
+
+bool
+ix86_emit_cfi ()
+{
+  return dwarf2out_do_cfi_asm ();
+}
+
 #define LEA_MAX_STALL (3)
 #define LEA_SEARCH_THRESHOLD (LEA_MAX_STALL << 1)
 

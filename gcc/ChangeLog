@@ -1,3 +1,10 @@
+2013-11-05  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/sync.md (atomic_compare_and_swap<dwi>_doubleword):
+	If possible, add .cfi directives to record change to bx.
+	* config/i386/i386.c (ix86_emit_cfi): New function.
+	* config/i386/i386-protos.h (ix86_emit_cfi): Declare.
+
 2013-11-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 
