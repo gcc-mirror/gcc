@@ -161,6 +161,9 @@
   ;; (unspec [OFFSET ANCHOR] UNSPEC_PCREL_SYMOFF) == OFFSET - (ANCHOR - .).
   (UNSPEC_PCREL_SYMOFF	46)
 
+  ;; Misc builtins
+  (UNSPEC_BUILTIN_STRLEN 47)
+
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
   (UNSPECV_ALIGN	1)
@@ -12059,7 +12062,7 @@ label:
 	(compare:SI (match_operand:BLK 1 "memory_operand")
 		    (match_operand:BLK 2 "memory_operand")))
    (use (match_operand 3 "immediate_operand"))]
-  "TARGET_SH1"
+  "TARGET_SH1 && optimize"
 {
   if (! optimize_insn_for_size_p () && sh_expand_cmpstr (operands))
     DONE;
@@ -12073,12 +12076,26 @@ label:
 		    (match_operand:BLK 2 "memory_operand")))
    (use (match_operand:SI 3 "immediate_operand"))
    (use (match_operand:SI 4 "immediate_operand"))]
-  "TARGET_SH1"
+  "TARGET_SH1 && optimize"
 {
   if (! optimize_insn_for_size_p () && sh_expand_cmpnstr (operands))
     DONE;
   else
     FAIL;
+})
+
+(define_expand "strlensi"
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec:SI [(match_operand:BLK 1 "memory_operand")
+		   (match_operand:SI 2 "immediate_operand")
+		   (match_operand:SI 3 "immediate_operand")]
+		  UNSPEC_BUILTIN_STRLEN))]
+  "TARGET_SH1 && optimize"
+{
+ if (! optimize_insn_for_size_p () && sh_expand_strlen (operands))
+   DONE;
+ else
+   FAIL;
 })
 
 

@@ -1,3 +1,13 @@
+2013-11-06  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc/config/sh/sh-mem.cc (sh_expand_cmpnstr, sh_expand_cmpstr):
+	Factorize probabilities, Use adjust_address instead of
+	adjust_automodify_address when possible. Enable for optimize.
+	(sh_expand_strlen): New function.
+	* gcc/config/sh/sh-protos.h (sh_expand_strlen): Declare.
+	* gcc/config/sh/sh.md (strlensi): New pattern.
+	(UNSPEC_BUILTIN_STRLEN): Define.
+
 2013-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58970

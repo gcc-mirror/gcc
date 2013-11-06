@@ -1,3 +1,7 @@
+2013-11-06  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/strlen.c: New test.
+
 2013-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58970
