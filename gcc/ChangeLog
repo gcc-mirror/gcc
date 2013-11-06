@@ -80,27 +80,6 @@
 	(register_new_assert_for): Use drop_tree_overflow.
 	(vrp_visit_phi_node): Likewise.
 
-2013-11-06  Dodji Seketeli  <dodji@redhat.com>
-
-	preprocessor/58580
-	* input.h (location_get_source_line): Take an additional line_size
-	parameter.
-	* input.c (get_line): New static function definition.
-	(read_line): Take an additional line_length output parameter to be
-	set to the size of the line.  Use the new get_line function do the
-	actual line reading.
-	(location_get_source_line): Take an additional output line_len
-	parameter.  Update the use of read_line to pass it the line_len
-	parameter.
-	* diagnostic.c (adjust_line): Take an additional input parameter
-	for the length of the line, rather than calculating it with
-	strlen.
-	(diagnostic_show_locus): Adjust the use of
-	location_get_source_line and adjust_line with respect to their new
-	signature.  While displaying a line now, do not stop at the first
-	null byte.  Rather, display the zero byte as a space and keep
-	going until we reach the size of the line.
-
 2013-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Optimize stack
