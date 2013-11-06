@@ -1,3 +1,7 @@
+2013-11-06  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/mismatch-decl-1.c: New test.
+
 2013-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/torture/float128-cmp-invalid.c,

@@ -1,3 +1,8 @@
+2013-11-06  DJ Delorie  <dj@redhat.com>
+
+	* c-decl.c (locate_old_decl): If a previous conflicting decl is
+	both explicit and builtin, print the location of the explicit one.
+
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
 	* c-parser.c (c_parser_omp_for, c_parser_omp_parallel,
