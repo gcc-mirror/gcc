@@ -1273,7 +1273,7 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 	  /* Pick up each vector id value.  */
 	  id = TREE_VALUE (id_list);
 	  /* Add vector_number_offset to get actual vector number.  */
-	  vector_id = TREE_INT_CST_LOW (id) + vector_number_offset;
+	  vector_id = tree_to_uhwi (id) + vector_number_offset;
 
 	  /* Enable corresponding vector and set function name.  */
 	  nds32_isr_vectors[vector_id].category = (intr)
@@ -1315,7 +1315,7 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 
       /* The total vectors = interrupt + exception numbers + reset.
          There are 8 exception and 1 reset in nds32 architecture.  */
-      nds32_isr_vectors[0].total_n_vectors = TREE_INT_CST_LOW (id) + 8 + 1;
+      nds32_isr_vectors[0].total_n_vectors = tree_to_uhwi (id) + 8 + 1;
       strcpy (nds32_isr_vectors[0].func_name, func_name);
 
       /* Retrieve nmi and warm function.  */
@@ -3145,8 +3145,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 	      id = TREE_VALUE (id_list);
 	      /* Issue error if it is not a valid integer value.  */
 	      if (TREE_CODE (id) != INTEGER_CST
-		  || TREE_INT_CST_LOW (id) < lower_bound
-		  || TREE_INT_CST_LOW (id) > upper_bound)
+		  || wi::ltu_p (id, lower_bound)
+		  || wi::gtu_p (id, upper_bound))
 		error ("invalid id value for interrupt/exception attribute");
 
 	      /* Advance to next id.  */
@@ -3173,8 +3173,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 
 	  /* 3. Check valid integer value for reset.  */
 	  if (TREE_CODE (id) != INTEGER_CST
-	      || TREE_INT_CST_LOW (id) < lower_bound
-	      || TREE_INT_CST_LOW (id) > upper_bound)
+	      || wi::ltu_p (id, lower_bound)
+	      || wi::gtu_p (id, upper_bound))
 	    error ("invalid id value for reset attribute");
 
 	  /* 4. Check valid function for nmi/warm.  */
