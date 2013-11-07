@@ -1,3 +1,8 @@
+2013-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58176
+	* g++.dg/cpp0x/nullptr30.C: New.
+
 2013-11-07  Yury Gribov  <y.gribov@samsung.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
