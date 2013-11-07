@@ -29,6 +29,7 @@
 #define LIBGOMP_G_H 1
 
 #include <stdbool.h>
+#include <stddef.h>
 
 /* barrier.c */
 
