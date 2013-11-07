@@ -1,3 +1,8 @@
+2013-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_reload_address):
+	Explain why plus_constant is not used.
+
 2013-11-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (canonicalize_float_value): Rename to ...
