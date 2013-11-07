@@ -1,3 +1,11 @@
+2013-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Handle
+	FP_EX_DENORM.  Store result to volatile location after SSE division
+	to close interrupt window.  Remove unneeded fwait after x87
+	division since interrupt window will be closed by emitted fstp.
+	Rewrite FP_EX_INEXACT handling.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
