@@ -4,6 +4,7 @@
 	FP_EX_DENORM.  Store result to volatile location after SSE division
 	to close interrupt window.  Remove unneeded fwait after x87
 	division since interrupt window will be closed by emitted fstp.
+	Rewrite FP_EX_INEXACT handling.
 
 2013-11-06  Joseph Myers  <joseph@codesourcery.com>
 

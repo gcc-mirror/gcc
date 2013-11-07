@@ -48,7 +48,7 @@ __sfp_handle_exceptions (int _fex)
     {
       float f = 0.0f;
 #ifdef __x86_64__
-      volatile float r;
+      volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
       r = f; /* Needed to trigger exception.   */
 #else
@@ -68,7 +68,7 @@ __sfp_handle_exceptions (int _fex)
     {
       float f = 1.0f, g = 0.0f;
 #ifdef __x86_64__
-      volatile float r;
+      volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
       r = f; /* Needed to trigger exception.   */
 #else
@@ -94,11 +94,15 @@ __sfp_handle_exceptions (int _fex)
     }
   if (_fex & FP_EX_INEXACT)
     {
-      struct fenv temp;
-      asm volatile ("fnstenv\t%0" : "=m" (temp));
-      temp.__status_word |= FP_EX_INEXACT;
-      asm volatile ("fldenv\t%0" : : "m" (temp));
-      asm volatile ("fwait");
+      float f = 1.0f, g = 3.0f;
+#ifdef __x86_64__
+      volatile float r __attribute__ ((unused));
+      asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
+      r = f; /* Needed to trigger exception.   */
+#else
+      asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
+      /* No need for fwait, exception is triggered by emitted fstp.  */
+#endif
     }
 };
 #endif
