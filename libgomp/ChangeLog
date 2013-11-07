@@ -1,3 +1,9 @@
+2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.spec.in: Update comment about libgomp's dependencies.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
 2013-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	* libgomp.texi: (Runtime Library Routines): Update references for
