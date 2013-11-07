@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-loop2_unroll -fno-peel-loops -fdisable-tree-cunroll=foo -fdisable-tree-cunrolli=foo -fenable-rtl-loop2_unroll" } */
+/* { dg-options "-O2 -fdump-rtl-loop2_unroll -fno-peel-loops -fno-tree-vrp -fdisable-tree-cunroll=foo -fdisable-tree-cunrolli=foo -fenable-rtl-loop2_unroll" } */
 
 unsigned a[100], b[100];
 inline void bar()
