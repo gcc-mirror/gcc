@@ -1272,20 +1272,15 @@ bit_value_binop_1 (enum tree_code code, tree type,
 		  else
 		    code = RSHIFT_EXPR;
 		}
-	      int shift_precision = SHIFT_COUNT_TRUNCATED ? width : 0;
 	      if (code == RSHIFT_EXPR)
 		{
-		  *mask = wi::rshift (wi::ext (r1mask, width, sgn),
-				      shift, sgn, shift_precision);
-		  *val = wi::rshift (wi::ext (r1val, width, sgn),
-				     shift, sgn, shift_precision);
+		  *mask = wi::rshift (wi::ext (r1mask, width, sgn), shift, sgn);
+		  *val = wi::rshift (wi::ext (r1val, width, sgn), shift, sgn);
 		}
 	      else
 		{
-		  *mask = wi::ext (wi::lshift (r1mask, shift, shift_precision),
-				   width, sgn);
-		  *val = wi::ext (wi::lshift (r1val, shift, shift_precision),
-				  width, sgn);
+		  *mask = wi::ext (wi::lshift (r1mask, shift), width, sgn);
+		  *val = wi::ext (wi::lshift (r1val, shift), width, sgn);
 		}
 	    }
 	}

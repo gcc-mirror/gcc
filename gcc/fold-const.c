@@ -1007,13 +1007,9 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 	/* It's unclear from the C standard whether shifts can overflow.
 	   The following code ignores overflow; perhaps a C standard
 	   interpretation ruling is needed.  */
-	res = wi::rshift (arg1, arg2, sign,
-			  SHIFT_COUNT_TRUNCATED
-			  ? GET_MODE_BITSIZE (TYPE_MODE (type)) : 0);
+	res = wi::rshift (arg1, arg2, sign);
       else
-	res = wi::lshift (arg1, arg2,
-			  SHIFT_COUNT_TRUNCATED
-			  ? GET_MODE_BITSIZE (TYPE_MODE (type)) : 0);
+	res = wi::lshift (arg1, arg2);
       break;
       
     case RROTATE_EXPR:
