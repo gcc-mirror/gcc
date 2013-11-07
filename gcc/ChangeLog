@@ -1,5 +1,8 @@
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* doc/sourcebuild.texi (Top Level) <lto-plugin>: GNU ld can use
+	linker plugins, too.
+
 	* config/arc/arc.h (LINK_COMMAND_SPEC): For
 	-ftree-parallelize-loops=*, link to libgomp and its dependencies.
 	* config/ia64/hpux.h (LIB_SPEC): Likewise.
