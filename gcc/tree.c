@@ -2098,7 +2098,7 @@ integer_onep (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return wi::eq_p (expr, 1);
+      return wi::eq_p (wi::to_widest (expr), 1);
     case COMPLEX_CST:
       return (integer_onep (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
