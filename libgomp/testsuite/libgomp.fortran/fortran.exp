@@ -15,6 +15,9 @@ set quadmath_library_path "../libquadmath/.libs"
 # Initialize dg.
 dg-init
 
+# Turn on OpenMP.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
+
 if { $blddir != "" } {
     lappend ALWAYS_CFLAGS "additional_flags=-fintrinsic-modules-path=${blddir}"
     # Look for a static libgfortran first.

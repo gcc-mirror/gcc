@@ -169,9 +169,6 @@ proc libgomp_init { args } {
 
     # Disable color diagnostics
     lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
-
-    # And, gee, turn on OpenMP.
-    lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 }
 
 #
