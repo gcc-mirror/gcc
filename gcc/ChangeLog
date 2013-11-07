@@ -1,3 +1,8 @@
+2013-11-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (arc_ifcvt): Use commutativity, e.g.:
+	reg_a := reg_b + reg_a  ==>  reg_a := reg_a + reg_b
+
 2013-11-07  Jeff Law  <law@redhat.com>
 
 	* doc/invoke.texi (-fisolate-erroneous-paths): Document.
