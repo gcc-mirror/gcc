@@ -2,7 +2,7 @@
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/59029
-	* gcc/asan.c (get_mem_refs_of_builtin_call): Allow
+	* asan.c (get_mem_refs_of_builtin_call): Allow
 	integer literals as addresses in instrumented builtins.
 
 2013-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
