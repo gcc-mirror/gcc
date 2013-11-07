@@ -1,3 +1,13 @@
+2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/arc/arc.h (LINK_COMMAND_SPEC): For
+	-ftree-parallelize-loops=*, link to libgomp and its dependencies.
+	* config/ia64/hpux.h (LIB_SPEC): Likewise.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+	* config/pa/pa64-hpux.h (LIB_SPEC): Likewise.
+	* gcc.c (GOMP_SELF_SPECS): Update comment about libgomp's
+	dependencies.
+
 2013-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-loop-niter.c: Include tree-ssanames.h.

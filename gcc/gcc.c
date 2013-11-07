@@ -924,7 +924,7 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #define DRIVER_SELF_SPECS ""
 #endif
 
-/* Adding -fopenmp should imply pthreads.  This is particularly important
+/* Linking to libgomp implies pthreads.  This is particularly important
    for targets that use different start files and suchlike.  */
 #ifndef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS "%{fopenmp|ftree-parallelize-loops=*: -pthread}"
