@@ -1,3 +1,7 @@
+2013-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-dfa.c (get_ref_base_and_extent): Fix casting.
+
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59034
