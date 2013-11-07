@@ -68,6 +68,7 @@ runtime_MHeap_Init(MHeap *h)
 void
 runtime_MHeap_MapSpans(MHeap *h)
 {
+	uintptr pagesize;
 	uintptr n;
 
 	// Map spans array, PageSize at a time.
@@ -76,6 +77,8 @@ runtime_MHeap_MapSpans(MHeap *h)
 		n -= (uintptr)h->arena_start;
 	n = n / PageSize * sizeof(h->spans[0]);
 	n = ROUND(n, PageSize);
+	pagesize = getpagesize();
+	n = ROUND(n, pagesize);
 	if(h->spans_mapped >= n)
 		return;
 	runtime_SysMap((byte*)h->spans + h->spans_mapped, n - h->spans_mapped, &mstats.other_sys);
