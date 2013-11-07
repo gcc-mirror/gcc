@@ -1,3 +1,11 @@
+2013-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+        * gcc.dg/unroll_1.c: Add -fno-tree-vrp to dg-options.
+        * gcc.dg/unroll_2.c: Likewise.
+        * gcc.dg/unroll_3.c: Likewise.
+        * gcc.dg/unroll_4.c: Likewise.
+	* gcc.dg/vrp90.c: New test.
+
 2013-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58176

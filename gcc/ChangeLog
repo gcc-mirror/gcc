@@ -1,3 +1,9 @@
+2013-11-07  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.c (find_assert_locations): Pre-seed live bitmaps for loop
+	latches from header PHI arguments from the latch edge.
+
 2013-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58176
