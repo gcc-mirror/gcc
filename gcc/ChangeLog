@@ -1,3 +1,10 @@
+2013-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-loop-niter.c: Include tree-ssanames.h.
+	(determine_value_range): Add loop argument.  Use get_range_info to
+	improve range.
+	(bound_difference): Adjust caller.
+
 2013-11-07  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
