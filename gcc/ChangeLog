@@ -1,3 +1,9 @@
+2013-11-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (alloc_iv): Lower address expressions.
+	* tree-affine.c (get_inner_reference_aff): Return base.
+	* tree-affine.h (get_inner_reference_aff): Change prototype.
+
 2013-11-06  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (Wdate-time): Fix typo.
