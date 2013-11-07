@@ -715,7 +715,7 @@ get_mem_refs_of_builtin_call (const gimple call,
 	   instrument_derefs.  */
 	if (TREE_CODE (dest) == ADDR_EXPR)
 	  dest = TREE_OPERAND (dest, 0);
-	else if (TREE_CODE (dest) == SSA_NAME)
+	else if (TREE_CODE (dest) == SSA_NAME || TREE_CODE (dest) == INTEGER_CST)
 	  dest = build2 (MEM_REF, TREE_TYPE (TREE_TYPE (dest)),
 			 dest, build_int_cst (TREE_TYPE (dest), 0));
 	else

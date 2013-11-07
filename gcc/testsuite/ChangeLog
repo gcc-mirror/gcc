@@ -1,3 +1,9 @@
+2013-11-07  Yury Gribov  <y.gribov@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59029
+	* c-c++-common/asan/pr59029.c: New test.
+
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59034
