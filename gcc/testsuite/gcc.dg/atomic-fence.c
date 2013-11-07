@@ -6,6 +6,7 @@
 
 /* Test that __atomic_{thread,signal}_fence builtins execute.  */
 
+int
 main ()
 {
   __atomic_thread_fence (__ATOMIC_RELAXED);

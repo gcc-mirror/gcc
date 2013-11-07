@@ -10,6 +10,7 @@ extern void abort(void);
 
 __int128_t v, count;
 
+int
 main ()
 {
   v = 0;

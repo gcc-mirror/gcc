@@ -1,5 +1,30 @@
 2013-11-07  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/atomic-compare-exchange-1.c,
+	gcc.dg/atomic-compare-exchange-2.c,
+	gcc.dg/atomic-compare-exchange-3.c,
+	gcc.dg/atomic-compare-exchange-4.c,
+	gcc.dg/atomic-compare-exchange-5.c, gcc.dg/atomic-exchange-1.c,
+	gcc.dg/atomic-exchange-2.c, gcc.dg/atomic-exchange-3.c,
+	gcc.dg/atomic-exchange-4.c, gcc.dg/atomic-exchange-5.c,
+	gcc.dg/atomic-fence.c, gcc.dg/atomic-flag.c,
+	gcc.dg/atomic-generic.c, gcc.dg/atomic-invalid.c,
+	gcc.dg/atomic-load-1.c, gcc.dg/atomic-load-2.c,
+	gcc.dg/atomic-load-3.c, gcc.dg/atomic-load-4.c,
+	gcc.dg/atomic-load-5.c, gcc.dg/atomic-lockfree.c,
+	gcc.dg/atomic-noinline.c, gcc.dg/atomic-op-1.c,
+	gcc.dg/atomic-op-2.c, gcc.dg/atomic-op-3.c, gcc.dg/atomic-op-4.c,
+	gcc.dg/atomic-op-5.c, gcc.dg/atomic-param.c,
+	gcc.dg/atomic-store-1.c, gcc.dg/atomic-store-2.c,
+	gcc.dg/atomic-store-3.c, gcc.dg/atomic-store-4.c,
+	gcc.dg/atomic-store-5.c: Declare main as returning int.
+	* gcc.dg/atomic-exchange-1.c, gcc.dg/atomic-exchange-2.c,
+	gcc.dg/atomic-exchange-3.c, gcc.dg/atomic-exchange-4.c,
+	gcc.dg/atomic-exchange-5.c: Separate increments of count from
+	expression using value of count.
+
+2013-11-07  Joseph Myers  <joseph@codesourcery.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_fenv_exceptions): New function.
 	* lib/atomic-dg.exp, gcc.dg/atomic/atomic.exp: New files.
