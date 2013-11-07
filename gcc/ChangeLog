@@ -1,3 +1,8 @@
+2013-11-07  Mike Stump  <mikestump@comcast.net>
+
+	* config/pdp11/pdp11.c: Include dbxout.h.
+	* config/picochip/picochip.c: Likewise.
+
 2013-11-07  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/56764
