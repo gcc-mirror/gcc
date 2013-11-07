@@ -1,3 +1,9 @@
+2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59034
+	* gcc.target/i386/pr59034-1.c: New test.
+	* gcc.target/i386/pr59034-2.c: Likewise.
+
 2013-11-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/loop-2.c: Refine check condition.
