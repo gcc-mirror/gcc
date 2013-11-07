@@ -283,8 +283,7 @@ gate_isolate_erroneous_paths (void)
 {
   /* If we do not have a suitable builtin function for the trap statement,
      then do not perform the optimization.  */
-  return (flag_isolate_erroneous_paths != 0
-	  && builtin_decl_explicit (BUILT_IN_TRAP) != NULL);
+  return (flag_isolate_erroneous_paths != 0);
 }
 
 namespace {

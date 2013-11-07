@@ -1,3 +1,11 @@
+2013-11-07  Jeff Law  <law@redhat.com>
+
+	* doc/invoke.texi (-fisolate-erroneous-paths): Document.
+
+	* gimple-ssa-isolate-paths.c (gate_isolate_erroneous_paths):
+	No longer check if we have __builtin_trap, assume it's
+	available.
+
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/sourcebuild.texi (Top Level) <lto-plugin>: GNU ld can use
