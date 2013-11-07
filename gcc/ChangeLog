@@ -1,3 +1,13 @@
+2013-11-07  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/56764
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
+	Combine alias checks if it is possible to amortize the runtime
+	overhead.  Return the number of alias checks after merging.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Use the function vect_create_cond_for_alias_checks () to check
+	the number of alias checks.
+
 2013-11-07  Jeff Law  <law@redhat.com>
 
 	* varpool.c (ctor_for_folding): Fix typo in comment.

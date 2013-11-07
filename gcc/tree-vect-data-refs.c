@@ -135,41 +135,6 @@ vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
 }
 
 
-/* Check if data references pointed by DR_I and DR_J are same or
-   belong to same interleaving group.  Return FALSE if drs are
-   different, otherwise return TRUE.  */
-
-static bool
-vect_same_range_drs (data_reference_p dr_i, data_reference_p dr_j)
-{
-  gimple stmt_i = DR_STMT (dr_i);
-  gimple stmt_j = DR_STMT (dr_j);
-
-  if (operand_equal_p (DR_REF (dr_i), DR_REF (dr_j), 0)
-      || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_i))
-	    && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_j))
-	    && (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_i))
-		== GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_j)))))
-    return true;
-  else
-    return false;
-}
-
-/* If address ranges represented by DDR_I and DDR_J are equal,
-   return TRUE, otherwise return FALSE.  */
-
-static bool
-vect_vfa_range_equal (ddr_p ddr_i, ddr_p ddr_j)
-{
-  if ((vect_same_range_drs (DDR_A (ddr_i), DDR_A (ddr_j))
-       && vect_same_range_drs (DDR_B (ddr_i), DDR_B (ddr_j)))
-      || (vect_same_range_drs (DDR_A (ddr_i), DDR_B (ddr_j))
-	  && vect_same_range_drs (DDR_B (ddr_i), DDR_A (ddr_j))))
-    return true;
-  else
-    return false;
-}
-
 /* Insert DDR into LOOP_VINFO list of ddrs that may alias and need to be
    tested at run-time.  Return TRUE if DDR was successfully inserted.
    Return false if versioning is not supported.  */
@@ -2654,69 +2619,320 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   return true;
 }
 
+
+/* Operator == between two dr_addr_with_seg_len objects.
+
+   This equality operator is used to make sure two data refs
+   are the same one so that we will consider to combine the
+   aliasing checks of those two pairs of data dependent data
+   refs.  */
+
+static bool
+operator == (const dr_addr_with_seg_len& d1,
+	     const dr_addr_with_seg_len& d2)
+{
+  return operand_equal_p (d1.basic_addr, d2.basic_addr, 0)
+	 && compare_tree (d1.offset, d2.offset) == 0
+	 && compare_tree (d1.seg_len, d2.seg_len) == 0;
+}
+
+/* Function comp_dr_addr_with_seg_len_pair.
+
+   Comparison function for sorting objects of dr_addr_with_seg_len_pair_t
+   so that we can combine aliasing checks in one scan.  */
+
+static int
+comp_dr_addr_with_seg_len_pair (const void *p1_, const void *p2_)
+{
+  const dr_addr_with_seg_len_pair_t* p1 =
+    (const dr_addr_with_seg_len_pair_t *) p1_;
+  const dr_addr_with_seg_len_pair_t* p2 =
+    (const dr_addr_with_seg_len_pair_t *) p2_;
+
+  const dr_addr_with_seg_len &p11 = p1->first,
+			     &p12 = p1->second,
+			     &p21 = p2->first,
+			     &p22 = p2->second;
+
+  int comp_res = compare_tree (p11.basic_addr, p21.basic_addr);
+  if (comp_res != 0)
+    return comp_res;
+
+  comp_res = compare_tree (p12.basic_addr, p22.basic_addr);
+  if (comp_res != 0)
+    return comp_res;
+
+  if (TREE_CODE (p11.offset) != INTEGER_CST
+      || TREE_CODE (p21.offset) != INTEGER_CST)
+    {
+      comp_res = compare_tree (p11.offset, p21.offset);
+      if (comp_res != 0)
+	return comp_res;
+    }
+  if (tree_int_cst_compare (p11.offset, p21.offset) < 0)
+    return -1;
+  if (tree_int_cst_compare (p11.offset, p21.offset) > 0)
+    return 1;
+  if (TREE_CODE (p12.offset) != INTEGER_CST
+      || TREE_CODE (p22.offset) != INTEGER_CST)
+    {
+      comp_res = compare_tree (p12.offset, p22.offset);
+      if (comp_res != 0)
+	return comp_res;
+    }
+  if (tree_int_cst_compare (p12.offset, p22.offset) < 0)
+    return -1;
+  if (tree_int_cst_compare (p12.offset, p22.offset) > 0)
+    return 1;
+
+  return 0;
+}
+
+template <class T> static void
+swap (T& a, T& b)
+{
+  T c (a);
+  a = b;
+  b = c;
+}
+
+/* Function vect_vfa_segment_size.
+
+   Create an expression that computes the size of segment
+   that will be accessed for a data reference.  The functions takes into
+   account that realignment loads may access one more vector.
+
+   Input:
+     DR: The data reference.
+     LENGTH_FACTOR: segment length to consider.
+
+   Return an expression whose value is the size of segment which will be
+   accessed by DR.  */
+
+static tree
+vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
+{
+  tree segment_length;
+
+  if (integer_zerop (DR_STEP (dr)))
+    segment_length = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
+  else
+    segment_length = size_binop (MULT_EXPR,
+                                 fold_convert (sizetype, DR_STEP (dr)),
+                                 fold_convert (sizetype, length_factor));
+
+  if (vect_supportable_dr_alignment (dr, false)
+        == dr_explicit_realign_optimized)
+    {
+      tree vector_size = TYPE_SIZE_UNIT
+			  (STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr))));
+
+      segment_length = size_binop (PLUS_EXPR, segment_length, vector_size);
+    }
+  return segment_length;
+}
+
 /* Function vect_prune_runtime_alias_test_list.
 
    Prune a list of ddrs to be tested at run-time by versioning for alias.
+   Merge several alias checks into one if possible.
    Return FALSE if resulting list of ddrs is longer then allowed by
    PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS, otherwise return TRUE.  */
 
 bool
 vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 {
-  vec<ddr_p>  ddrs =
+  vec<ddr_p> may_alias_ddrs =
     LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
-  unsigned i, j;
+  vec<dr_addr_with_seg_len_pair_t>& comp_alias_ddrs =
+    LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
+  int vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
+
+  ddr_p ddr;
+  unsigned int i;
+  tree length_factor;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "=== vect_prune_runtime_alias_test_list ===\n");
 
-  for (i = 0; i < ddrs.length (); )
+  if (may_alias_ddrs.is_empty ())
+    return true;
+
+  /* Basically, for each pair of dependent data refs store_ptr_0
+     and load_ptr_0, we create an expression:
+
+     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
+     || (load_ptr_0 + load_segment_length_0) <= store_ptr_0))
+
+     for aliasing checks.  However, in some cases we can decrease
+     the number of checks by combining two checks into one.  For
+     example, suppose we have another pair of data refs store_ptr_0
+     and load_ptr_1, and if the following condition is satisfied:
+
+     load_ptr_0 < load_ptr_1  &&
+     load_ptr_1 - load_ptr_0 - load_segment_length_0 < store_segment_length_0
+
+     (this condition means, in each iteration of vectorized loop,
+     the accessed memory of store_ptr_0 cannot be between the memory
+     of load_ptr_0 and load_ptr_1.)
+
+     we then can use only the following expression to finish the
+     alising checks between store_ptr_0 & load_ptr_0 and
+     store_ptr_0 & load_ptr_1:
+
+     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
+     || (load_ptr_1 + load_segment_length_1 <= store_ptr_0))
+
+     Note that we only consider that load_ptr_0 and load_ptr_1 have the
+     same basic address.  */
+
+  comp_alias_ddrs.create (may_alias_ddrs.length ());
+
+  /* First, we collect all data ref pairs for aliasing checks.  */
+  FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
-      bool found;
-      ddr_p ddr_i;
+      struct data_reference *dr_a, *dr_b;
+      gimple dr_group_first_a, dr_group_first_b;
+      tree segment_length_a, segment_length_b;
+      gimple stmt_a, stmt_b;
 
-      ddr_i = ddrs[i];
-      found = false;
-
-      for (j = 0; j < i; j++)
-        {
-	  ddr_p ddr_j = ddrs[j];
-
-	  if (vect_vfa_range_equal (ddr_i, ddr_j))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-		                   "found equal ranges ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
-		                     DR_REF (DDR_A (ddr_i)));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
-		                     DR_REF (DDR_B (ddr_i)));
-		  dump_printf (MSG_NOTE,  " and ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
-		                     DR_REF (DDR_A (ddr_j)));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
-		                     DR_REF (DDR_B (ddr_j)));
-		  dump_printf (MSG_NOTE, "\n");
-		}
-	      found = true;
-	      break;
-	    }
+      dr_a = DDR_A (ddr);
+      stmt_a = DR_STMT (DDR_A (ddr));
+      dr_group_first_a = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_a));
+      if (dr_group_first_a)
+	{
+	  stmt_a = dr_group_first_a;
+	  dr_a = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt_a));
 	}
 
-      if (found)
-      {
-	ddrs.ordered_remove (i);
-	continue;
-      }
-      i++;
+      dr_b = DDR_B (ddr);
+      stmt_b = DR_STMT (DDR_B (ddr));
+      dr_group_first_b = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_b));
+      if (dr_group_first_b)
+	{
+	  stmt_b = dr_group_first_b;
+	  dr_b = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt_b));
+	}
+
+      if (!operand_equal_p (DR_STEP (dr_a), DR_STEP (dr_b), 0))
+	length_factor = scalar_loop_iters;
+      else
+	length_factor = size_int (vect_factor);
+      segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
+      segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
+
+      dr_addr_with_seg_len_pair_t dr_with_seg_len_pair
+	  (dr_addr_with_seg_len
+	       (dr_a, DR_BASE_ADDRESS (dr_a),
+		size_binop (PLUS_EXPR, DR_OFFSET (dr_a), DR_INIT (dr_a)),
+		segment_length_a),
+	   dr_addr_with_seg_len
+	       (dr_b, DR_BASE_ADDRESS (dr_b),
+		size_binop (PLUS_EXPR, DR_OFFSET (dr_b), DR_INIT (dr_b)),
+		segment_length_b));
+
+      if (compare_tree (dr_with_seg_len_pair.first.basic_addr,
+			dr_with_seg_len_pair.second.basic_addr) > 0)
+	swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
+
+      comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
 
-  if (ddrs.length () >
-       (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
+  /* Second, we sort the collected data ref pairs so that we can scan
+     them once to combine all possible aliasing checks.  */
+  comp_alias_ddrs.qsort (comp_dr_addr_with_seg_len_pair);
+
+  /* Third, we scan the sorted dr pairs and check if we can combine
+     alias checks of two neighbouring dr pairs.  */
+  for (size_t i = 1; i < comp_alias_ddrs.length (); ++i)
+    {
+      /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */
+      dr_addr_with_seg_len *dr_a1 = &comp_alias_ddrs[i-1].first,
+			   *dr_b1 = &comp_alias_ddrs[i-1].second,
+			   *dr_a2 = &comp_alias_ddrs[i].first,
+			   *dr_b2 = &comp_alias_ddrs[i].second;
+
+      /* Remove duplicate data ref pairs.  */
+      if (*dr_a1 == *dr_a2 && *dr_b1 == *dr_b2)
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "found equal ranges ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 DR_REF (dr_a1->dr));
+	      dump_printf (MSG_NOTE,  ", ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 DR_REF (dr_b1->dr));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 DR_REF (dr_a2->dr));
+	      dump_printf (MSG_NOTE,  ", ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 DR_REF (dr_b2->dr));
+	      dump_printf (MSG_NOTE, "\n");
+	    }
+
+	  comp_alias_ddrs.ordered_remove (i--);
+	  continue;
+	}
+
+      if (*dr_a1 == *dr_a2 || *dr_b1 == *dr_b2)
+	{
+	  /* We consider the case that DR_B1 and DR_B2 are same memrefs,
+	     and DR_A1 and DR_A2 are two consecutive memrefs.  */
+	  if (*dr_a1 == *dr_a2)
+	    {
+	      swap (dr_a1, dr_b1);
+	      swap (dr_a2, dr_b2);
+	    }
+
+	  if (!operand_equal_p (dr_a1->basic_addr, dr_a2->basic_addr, 0)
+	      || !host_integerp (dr_a1->offset, 0)
+	      || !host_integerp (dr_a2->offset, 0))
+	    continue;
+
+	  HOST_WIDE_INT diff = TREE_INT_CST_LOW (dr_a2->offset) -
+			       TREE_INT_CST_LOW (dr_a1->offset);
+
+
+	  /* Now we check if the following condition is satisfied:
+
+	     DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
+
+	     where DIFF = DR_A2->OFFSET - DR_A1->OFFSET.  However,
+	     SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
+	     have to make a best estimation.  We can get the minimum value
+	     of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,
+	     then either of the following two conditions can guarantee the
+	     one above:
+
+	     1: DIFF <= MIN_SEG_LEN_B
+	     2: DIFF - SEGMENT_LENGTH_A < MIN_SEG_LEN_B
+
+	     */
+
+	  HOST_WIDE_INT
+	  min_seg_len_b = (TREE_CODE (dr_b1->seg_len) == INTEGER_CST) ?
+			      TREE_INT_CST_LOW (dr_b1->seg_len) :
+			      vect_factor;
+
+	  if (diff <= min_seg_len_b
+	      || (TREE_CODE (dr_a1->seg_len) == INTEGER_CST
+		  && diff - (HOST_WIDE_INT) TREE_INT_CST_LOW (dr_a1->seg_len) <
+		     min_seg_len_b))
+	    {
+	      dr_a1->seg_len = size_binop (PLUS_EXPR,
+					   dr_a2->seg_len, size_int (diff));
+	      comp_alias_ddrs.ordered_remove (i--);
+	    }
+	}
+    }
+
+  if ((int) comp_alias_ddrs.length () >
+      PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
     {
       if (dump_enabled_p ())
 	{
@@ -2724,8 +2940,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	                   "disable versioning for alias - max number of "
 	                   "generated checks exceeded.\n");
 	}
-
-      LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).truncate (0);
 
       return false;
     }
