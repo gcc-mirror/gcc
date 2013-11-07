@@ -1,5 +1,7 @@
 2013-11-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/tree-ssa/loop-39.c: New test.
+
         * gcc.dg/unroll_1.c: Add -fno-tree-vrp to dg-options.
         * gcc.dg/unroll_2.c: Likewise.
         * gcc.dg/unroll_3.c: Likewise.
