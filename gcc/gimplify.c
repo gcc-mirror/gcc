@@ -9191,8 +9191,6 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 		temp = make_ssa_name (temp, NULL);
 	      gimple_set_lhs (stmt, temp);
 	      post_stmt = gimple_build_assign (lhs, temp);
-	      if (TREE_CODE (lhs) == SSA_NAME)
-		SSA_NAME_DEF_STMT (lhs) = post_stmt;
 	    }
 	}
       break;

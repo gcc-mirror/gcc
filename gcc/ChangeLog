@@ -1,3 +1,27 @@
+2013-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimplify.c (gimple_regimplify_operands): Do not set
+	SSA_NAME_DEF_STMT.
+	* graphite-sese-to-poly.c (remove_simple_copy_phi): Same.
+	(rewrite_close_phi_out_of_ssa): Same.
+	(rewrite_phi_out_of_ssa): Same.
+	(rewrite_degenerate_phi): Same.
+	(handle_scalar_deps_crossing_scop_limits): Same.
+	* tree-if-conv.c (predicate_scalar_phi): Same.
+	* tree-parloops.c (create_loads_for_reductions): Same.
+	(create_final_loads_for_reduction): Same.
+	(create_loads_and_stores_for_name): Same.
+	(transform_to_exit_first_loop): Same.
+	(create_parallel_loop): Same.
+	* tree-ssa-loop-im.c
+	(move_computations_dom_walker::before_dom_children): Same.
+	* tree-ssa-loop-manip.c (rewrite_phi_with_iv): Same.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Same.
+	* tree-ssa-propagate.c (substitute_and_fold): Same.
+	* tree-vect-loop.c (vect_finalize_reduction): Same.
+	* tree-vect-stmts.c (vectorizable_call): Same.
+
 2013-11-07  Mike Stump  <mikestump@comcast.net>
 
 	* config/pdp11/pdp11.c: Include dbxout.h.

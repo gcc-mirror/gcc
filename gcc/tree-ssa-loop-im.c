@@ -1238,7 +1238,6 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
 						   gimple_phi_result (stmt),
 						   arg, NULL_TREE);
-	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
 	}
       else
 	{
@@ -1254,7 +1253,6 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
 						   gimple_phi_result (stmt),
 						   t, arg0, arg1);
-	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
 	  todo_ |= TODO_cleanup_cfg;
 	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
