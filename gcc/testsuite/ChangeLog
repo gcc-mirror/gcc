@@ -1,3 +1,7 @@
+2013-11-07  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-alias-check.c: New.
+
 2013-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/loop-39.c: New test.
