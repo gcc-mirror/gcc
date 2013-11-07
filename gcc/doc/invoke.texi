@@ -377,6 +377,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
+-fisolate-erroneous-paths
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
@@ -6742,6 +6743,7 @@ also turns on the following optimization flags:
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-sra @gol
+-fisolate-erroneous-paths @gol
 -foptimize-sibling-calls @gol
 -fpartial-inlining @gol
 -fpeephole2 @gol
@@ -7634,6 +7636,11 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
+
+@item -fisolate-erroneous-paths
+Detect paths which trigger erroneous or undefined behaviour.  Isolate those
+paths from the main control flow and turn the statement with erroneous or
+undefined behaviour into a trap.
 
 @item -ftree-sink
 @opindex ftree-sink
