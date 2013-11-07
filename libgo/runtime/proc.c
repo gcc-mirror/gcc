@@ -2098,7 +2098,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 		__splitstack_block_signals_context(&newg->stack_context[0],
 						   &dont_block_signals, nil);
 #else
-		*ret_stack = runtime_mallocgc(stacksize, FlagNoProfiling|FlagNoGC, 0, 0);
+		*ret_stack = runtime_mallocgc(stacksize, 0, FlagNoProfiling|FlagNoGC);
 		*ret_stacksize = stacksize;
 		newg->gcinitial_sp = *ret_stack;
 		newg->gcstack_size = stacksize;
