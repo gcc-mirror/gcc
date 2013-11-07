@@ -1,3 +1,48 @@
+2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* tree-core.h (enum cv_qualifier): Add TYPE_QUAL_ATOMIC.
+	(enum tree_index): Add TI_ATOMICQI_TYPE, TI_ATOMICHI_TYPE,
+	TI_ATOMICSI_TYPE, TI_ATOMICDI_TYPE and TI_ATOMICTI_TYPE.
+	(struct tree_base): Add atomic_flag field.
+	* tree.h (TYPE_ATOMIC): New accessor macro.
+	(TYPE_QUALS, TYPE_QUALS_NO_ADDR_SPACE): Add TYPE_QUAL_ATOMIC.
+	(TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC): New macro.
+	(atomicQI_type_node, atomicHI_type_node, atomicSI_type_node)
+	(atomicDI_type_node, atomicTI_type_node): New macros for type
+	nodes.
+	* tree.c (set_type_quals): Set TYPE_ATOMIC.
+	(find_atomic_core_type): New function.
+	(build_qualified_type): Adjust alignment for qualified types.
+	(build_atomic_base): New function
+	(build_common_tree_nodes): Build atomicQI_type_node,
+	atomicHI_type_node, atomicSI_type_node, atomicDI_type_node and
+	atomicTI_type_node.
+	* print-tree.c (print_node): Print atomic qualifier.
+	* tree-pretty-print.c (dump_generic_node): Print atomic type
+	attribute.
+	* target.def (atomic_assign_expand_fenv): New hook.
+	* doc/tm.texi.in (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New @hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_atomic_assign_expand_fenv): New function.
+	* targhooks.h (default_atomic_assign_expand_fenv): Declare.
+	* sync-builtins.def (__atomic_feraiseexcept): New built-in
+	function.
+	* config/i386/i386-builtin-types.def (VOID_FTYPE_PUSHORT): New
+	function type.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_FNSTENV, IX86_BUILTIN_FLDENV, IX86_BUILTIN_FNSTSW and
+	IX86_BUILTIN_FNCLEX.
+	(bdesc_special_args): Add __builtin_ia32_fnstenv,
+	__builtin_ia32_fldenv, __builtin_ia32_fnstsw and
+	__builtin_ia32_fnclex.
+	(ix86_expand_builtin): Handle the new built-in functions.
+	(ix86_atomic_assign_expand_fenv): New function.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New macro.
+	* config/i386/i386.md (UNSPECV_FNSTENV, UNSPECV_FLDENV)
+	(UNSPECV_FNSTSW, UNSPECV_FNCLEX): New unspecs.
+	(fnstenv, fldenv, fnstsw, fnclex): New insns.
+
 2013-11-07  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add fp64 directory.

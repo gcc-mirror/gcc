@@ -1600,6 +1600,13 @@ default_canonicalize_comparison (int *, rtx *, rtx *, bool)
 {
 }
 
+/* Default implementation of TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+void
+default_atomic_assign_expand_fenv (tree *, tree *, tree *)
+{
+}
+
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif

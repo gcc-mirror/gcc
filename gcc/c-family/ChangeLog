@@ -1,3 +1,15 @@
+2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (enum rid): Add RID_ATOMIC.
+	* c-common.c (c_common_reswords): Add _Atomic.
+	(sync_resolve_params): Use TYPE_MAIN_VARIANT on pointer argument.
+	(keyword_is_type_qualifier): Accept RID_ATOMIC.
+	* c-format.c (check_format_types): Check for extra _Atomic
+	qualifiers in format argument.
+	* c-pretty-print.c (pp_c_cv_qualifiers): Handle atomic qualifier.
+	(pp_c_type_qualifier_list): Mention _Atomic in comment.
+
 2013-11-06  Tobias Burnus  <burnus@net-b.de>
 
 	* c-common.c (reason_option_codes_t): Add CPP_W_DATE_TIME.

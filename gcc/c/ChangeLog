@@ -1,3 +1,72 @@
+2013-11-07  Joseph Myers  <joseph@codesourcery.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-aux-info.c (gen_type): Handle atomic qualifier.
+	* c-decl.c (validate_proto_after_old_defn): Do not remove atomic
+	qualifiers when compating types.
+	(shadow_tag_warned): Handle atomic_p in declspecs.
+	(quals_from_declspecs): Likewise.
+	(start_decl): Use c_type_promotes_to when promoting argument
+	types.
+	(grokdeclarator): Handle _Atomic.
+	(get_parm_info): Diagnose any qualifier on "void" as only
+	parameter.
+	(store_parm_decls_oldstyle): Do not remove atomic qualifiers when
+	comparing types.  Use c_type_promotes_to when promoting argument
+	types.
+	(finish_function): Use c_type_promotes_to when promoting argument
+	types.
+	(build_null_declspecs): Handle atomic_p in declspecs.
+	(declspecs_add_qual): Handle RID_ATOMIC.
+	* c-parser.c (c_token_starts_typename, c_token_is_qualifier)
+	(c_token_starts_declspecs): Handle RID_ATOMIC.
+	(c_parser_declspecs): Handle atomic type specifiers and
+	qualifiers.
+	(c_parser_typeof_specifier): Remove const and _Atomic qualifiers
+	from types of expressions with atomic type.
+	(c_parser_direct_declarator_inner): Use convert_lvalue_to_rvalue.
+	(c_parser_attribute_any_word): Handle RID_ATOMIC.
+	(c_parser_initializer, c_parser_initelt, c_parser_initval)
+	(c_parser_statement_after_labels, c_parser_switch_statement)
+	(c_parser_for_statement, c_parser_expr_no_commas)
+	(c_parser_conditional_expression, c_parser_binary_expression)
+	(c_parser_cast_expression, c_parser_unary_expression)
+	(c_parser_postfix_expression)
+	(c_parser_postfix_expression_after_primary, c_parser_expression):
+	Use convert_lvalue_to_rvalue.
+	(c_parser_expression_conv, c_parser_expr_list): Document
+	conversion of lvalues to rvalues.  Use convert_lvalue_to_rvalue.
+	(c_parser_objc_synchronized_statement): Use
+	convert_lvalue_to_rvalue.
+	(c_parser_objc_selector): Handle RID_ATOMIC.
+	(c_parser_objc_receiver, c_parser_array_notation): Use
+	convert_lvalue_to_rvalue.
+	* c-tree.h (ctsk_typeof): Adjust comment to mention use for
+	_Atomic (type-name).
+	(struct c_declspecs): Add atomic_p field.
+	(convert_lvalue_to_rvalue): Declare.
+	* c-typeck.c (c_type_promotes_to): Promote atomic types to
+	corresponding atomic types.
+	(qualify_type): Don't add _Atomic qualifiers from second argument.
+	(comp_target_types): Do not allow _Atomic mismatches.
+	(type_lists_compatible_p): Do not remove atomic qualifiers when
+	comparing types.
+	(really_atomic_lvalue, convert_lvalue_to_rvalue)
+	(build_atomic_assign): New functions.
+	(build_unary_op): Use build_atomic_assign for atomic increment and
+	decrement.
+	(build_conditional_expr): Do not treat _Atomic void as a qualified
+	version of void.
+	(build_modify_expr): Use build_atomic_assign for atomic LHS.
+	(find_anonymous_field_with_type, convert_to_anonymous_field)
+	(convert_for_assignment): Do not remove atomic qualifiers when
+	comparing types.
+	(digest_init): Do not accept initialization of arrays of atomic
+	elements by string constants.
+	(build_asm_expr): Use convert_lvalue_to_rvalue.
+	(build_binary_op): Do not treat _Atomic void as a qualified
+	version of void.
+
 2013-11-06  DJ Delorie  <dj@redhat.com>
 
 	* c-decl.c (locate_old_decl): If a previous conflicting decl is

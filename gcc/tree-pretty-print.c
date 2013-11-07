@@ -878,6 +878,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	unsigned int quals = TYPE_QUALS (node);
 	enum tree_code_class tclass;
 
+	if (quals & TYPE_QUAL_ATOMIC)
+	  pp_string (buffer, "atomic ");
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (buffer, "const ");
 	else if (quals & TYPE_QUAL_VOLATILE)
@@ -1179,6 +1181,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       {
 	unsigned int quals = TYPE_QUALS (node);
 
+	if (quals & TYPE_QUAL_ATOMIC)
+	  pp_string (buffer, "atomic ");
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (buffer, "const ");
 	if (quals & TYPE_QUAL_VOLATILE)

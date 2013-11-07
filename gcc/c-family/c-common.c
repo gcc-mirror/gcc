@@ -409,6 +409,7 @@ const struct c_common_resword c_common_reswords[] =
 {
   { "_Alignas",		RID_ALIGNAS,   D_CONLY },
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
+  { "_Atomic",		RID_ATOMIC,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
@@ -10172,6 +10173,7 @@ sync_resolve_params (location_t loc, tree orig_function, tree function,
      call to check_function_arguments what ever type the user used.  */
   function_args_iter_next (&iter);
   ptype = TREE_TYPE (TREE_TYPE ((*params)[0]));
+  ptype = TYPE_MAIN_VARIANT (ptype);
 
   /* For the rest of the values, we need to cast these to FTYPE, so that we
      don't get warnings for passing pointer types, etc.  */
@@ -11568,6 +11570,7 @@ keyword_is_type_qualifier (enum rid keyword)
     case RID_CONST:
     case RID_VOLATILE:
     case RID_RESTRICT:
+    case RID_ATOMIC:
       return true;
     default:
       return false;

@@ -148,7 +148,7 @@ AC_SUBST(enable_static)
 AM_MAINTAINER_MODE
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=1:0:0
+libtool_VERSION=2:0:1
 AC_SUBST(libtool_VERSION)
 
 # Get target configury.
@@ -165,6 +165,7 @@ CFLAGS="$save_CFLAGS -fno-sync-libcalls $XCFLAGS"
 AC_STDC_HEADERS
 ACX_HEADER_STRING
 GCC_HEADER_STDINT(gstdint.h)
+AC_CHECK_HEADERS([fenv.h])
 
 # Check for common type sizes
 LIBAT_FORALL_MODES([LIBAT_HAVE_INT_MODE])

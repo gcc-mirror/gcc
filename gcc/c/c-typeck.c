@@ -265,17 +265,24 @@ c_incomplete_type_error (const_tree value, const_tree type)
 tree
 c_type_promotes_to (tree type)
 {
-  if (TYPE_MAIN_VARIANT (type) == float_type_node)
-    return double_type_node;
+  tree ret = NULL_TREE;
 
-  if (c_promoting_integer_type_p (type))
+  if (TYPE_MAIN_VARIANT (type) == float_type_node)
+    ret = double_type_node;
+  else if (c_promoting_integer_type_p (type))
     {
       /* Preserve unsignedness if not really getting any wider.  */
       if (TYPE_UNSIGNED (type)
 	  && (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
-	return unsigned_type_node;
-      return integer_type_node;
+	ret = unsigned_type_node;
+      else
+	ret = integer_type_node;
     }
+
+  if (ret != NULL_TREE)
+    return (TYPE_ATOMIC (type)
+	    ? c_build_qualified_type (ret, TYPE_QUAL_ATOMIC)
+	    : ret);
 
   return type;
 }
@@ -327,7 +334,7 @@ qualify_type (tree type, tree like)
 
   return c_build_qualified_type (type,
 				 TYPE_QUALS_NO_ADDR_SPACE (type)
-				 | TYPE_QUALS_NO_ADDR_SPACE (like)
+				 | TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (like)
 				 | ENCODE_QUAL_ADDR_SPACE (as_common));
 }
 
@@ -1214,9 +1221,13 @@ comp_target_types (location_t location, tree ttl, tree ttr)
   /* Do not lose qualifiers on element types of array types that are
      pointer targets by taking their TYPE_MAIN_VARIANT.  */
   if (TREE_CODE (mvl) != ARRAY_TYPE)
-    mvl = TYPE_MAIN_VARIANT (mvl);
+    mvl = (TYPE_ATOMIC (mvl)
+	   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl), TYPE_QUAL_ATOMIC)
+	   : TYPE_MAIN_VARIANT (mvl));
   if (TREE_CODE (mvr) != ARRAY_TYPE)
-    mvr = TYPE_MAIN_VARIANT (mvr);
+    mvr = (TYPE_ATOMIC (mvr)
+	   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr), TYPE_QUAL_ATOMIC)
+	   : TYPE_MAIN_VARIANT (mvr));
   enum_and_int_p = false;
   val = comptypes_check_enum_int (mvl, mvr, &enum_and_int_p);
 
@@ -1633,9 +1644,15 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
       mv1 = a1 = TREE_VALUE (args1);
       mv2 = a2 = TREE_VALUE (args2);
       if (mv1 && mv1 != error_mark_node && TREE_CODE (mv1) != ARRAY_TYPE)
-	mv1 = TYPE_MAIN_VARIANT (mv1);
+	mv1 = (TYPE_ATOMIC (mv1)
+	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv1),
+					 TYPE_QUAL_ATOMIC)
+	       : TYPE_MAIN_VARIANT (mv1));
       if (mv2 && mv2 != error_mark_node && TREE_CODE (mv2) != ARRAY_TYPE)
-	mv2 = TYPE_MAIN_VARIANT (mv2);
+	mv2 = (TYPE_ATOMIC (mv2)
+	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv2),
+					 TYPE_QUAL_ATOMIC)
+	       : TYPE_MAIN_VARIANT (mv2));
       /* A null pointer instead of a type
 	 means there is supposed to be an argument
 	 but nothing is specified about what type it has.
@@ -1678,7 +1695,10 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 		  tree mv3 = TREE_TYPE (memb);
 		  if (mv3 && mv3 != error_mark_node
 		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = TYPE_MAIN_VARIANT (mv3);
+		    mv3 = (TYPE_ATOMIC (mv3)
+			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
+						     TYPE_QUAL_ATOMIC)
+			   : TYPE_MAIN_VARIANT (mv3));
 		  if (comptypes_internal (mv3, mv2, enum_and_int_p,
 					  different_types_p))
 		    break;
@@ -1700,7 +1720,10 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 		  tree mv3 = TREE_TYPE (memb);
 		  if (mv3 && mv3 != error_mark_node
 		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = TYPE_MAIN_VARIANT (mv3);
+		    mv3 = (TYPE_ATOMIC (mv3)
+			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
+						     TYPE_QUAL_ATOMIC)
+			   : TYPE_MAIN_VARIANT (mv3));
 		  if (comptypes_internal (mv3, mv1, enum_and_int_p,
 					  different_types_p))
 		    break;
@@ -1911,6 +1934,84 @@ default_function_array_read_conversion (location_t loc, struct c_expr exp)
 {
   mark_exp_read (exp.value);
   return default_function_array_conversion (loc, exp);
+}
+
+/* Return whether EXPR should be treated as an atomic lvalue for the
+   purposes of load and store handling.  */
+
+static bool
+really_atomic_lvalue (tree expr)
+{
+  if (expr == error_mark_node || TREE_TYPE (expr) == error_mark_node)
+    return false;
+  if (!TYPE_ATOMIC (TREE_TYPE (expr)))
+    return false;
+  if (!lvalue_p (expr))
+    return false;
+
+  /* Ignore _Atomic on register variables, since their addresses can't
+     be taken so (a) atomicity is irrelevant and (b) the normal atomic
+     sequences wouldn't work.  Ignore _Atomic on structures containing
+     bit-fields, since accessing elements of atomic structures or
+     unions is undefined behavior (C11 6.5.2.3#5), but it's unclear if
+     it's undefined at translation time or execution time, and the
+     normal atomic sequences again wouldn't work.  */
+  while (handled_component_p (expr))
+    {
+      if (TREE_CODE (expr) == COMPONENT_REF
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
+	return false;
+      expr = TREE_OPERAND (expr, 0);
+    }
+  if (DECL_P (expr) && C_DECL_REGISTER (expr))
+    return false;
+  return true;
+}
+
+/* Convert expression EXP (location LOC) from lvalue to rvalue,
+   including converting functions and arrays to pointers if CONVERT_P.
+   If READ_P, also mark the expression as having been read.  */
+
+struct c_expr
+convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
+			  bool convert_p, bool read_p)
+{
+  if (read_p)
+    mark_exp_read (exp.value);
+  if (convert_p)
+    exp = default_function_array_conversion (loc, exp);
+  if (really_atomic_lvalue (exp.value))
+    {
+      vec<tree, va_gc> *params;
+      tree nonatomic_type, tmp, tmp_addr, fndecl, func_call;
+      tree expr_type = TREE_TYPE (exp.value);
+      tree expr_addr = build_unary_op (loc, ADDR_EXPR, exp.value, 0);
+      tree seq_cst = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+
+      gcc_assert (TYPE_ATOMIC (expr_type));
+
+      /* Expansion of a generic atomic load may require an addition
+	 element, so allocate enough to prevent a resize.  */
+      vec_alloc (params, 4);
+
+      /* Remove the qualifiers for the rest of the expressions and
+	 create the VAL temp variable to hold the RHS.  */
+      nonatomic_type = build_qualified_type (expr_type, TYPE_UNQUALIFIED);
+      tmp = create_tmp_var (nonatomic_type, NULL);
+      tmp_addr = build_unary_op (loc, ADDR_EXPR, tmp, 0);
+      TREE_ADDRESSABLE (tmp) = 1;
+
+      /* Issue __atomic_load (&expr, &tmp, SEQ_CST);  */
+      fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
+      params->quick_push (expr_addr);
+      params->quick_push (tmp_addr);
+      params->quick_push (seq_cst);
+      func_call = build_function_call_vec (loc, fndecl, params, NULL);
+
+      /* Return tmp which contains the value loaded.  */
+      exp.value = build2 (COMPOUND_EXPR, nonatomic_type, func_call, tmp);
+    }
+  return exp;
 }
 
 /* EXP is an expression of integer type.  Apply the integer promotions
@@ -3435,6 +3536,215 @@ pointer_diff (location_t loc, tree op0, tree op1)
   return convert (restype, result);
 }
 
+/* Expand atomic compound assignments into an approriate sequence as
+   specified by the C11 standard section 6.5.16.2.   
+    given 
+       _Atomic T1 E1
+       T2 E2
+       E1 op= E2
+
+  This sequence is used for all types for which these operations are
+  supported.
+
+  In addition, built-in versions of the 'fe' prefixed routines may
+  need to be invoked for floating point (real, complex or vector) when
+  floating-point exceptions are supported.  See 6.5.16.2 footnote 113.
+
+  T1 newval;
+  T1 old;
+  T1 *addr
+  T2 val
+  fenv_t fenv
+
+  addr = &E1;
+  val = (E2);
+  __atomic_load (addr, &old, SEQ_CST);
+  feholdexcept (&fenv);
+loop:
+    newval = old op val;
+    if (__atomic_compare_exchange_strong (addr, &old, &newval, SEQ_CST,
+					  SEQ_CST))
+      goto done;
+    feclearexcept (FE_ALL_EXCEPT);
+    goto loop:
+done:
+  feupdateenv (&fenv);
+
+  Also note that the compiler is simply issuing the generic form of
+  the atomic operations.  This requires temp(s) and has their address
+  taken.  The atomic processing is smart enough to figure out when the
+  size of an object can utilize a lock-free version, and convert the
+  built-in call to the appropriate lock-free routine.  The optimizers
+  will then dispose of any temps that are no longer required, and
+  lock-free implementations are utilized as long as there is target
+  support for the required size.
+
+  If the operator is NOP_EXPR, then this is a simple assignment, and
+  an __atomic_store is issued to perform the assignment rather than
+  the above loop.
+
+*/
+
+/* Build an atomic assignment at LOC, expanding into the proper
+   sequence to store LHS MODIFYCODE= RHS.  Return a value representing
+   the result of the operation, unless RETURN_OLD_P in which case
+   return the old value of LHS (this is only for postincrement and
+   postdecrement).  */
+static tree
+build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
+		     tree rhs, bool return_old_p)
+{
+  tree fndecl, func_call;
+  vec<tree, va_gc> *params;
+  tree val, nonatomic_lhs_type, nonatomic_rhs_type, newval, newval_addr;
+  tree old, old_addr;
+  tree compound_stmt;
+  tree stmt, goto_stmt;
+  tree loop_label, loop_decl, done_label, done_decl;
+
+  tree lhs_type = TREE_TYPE (lhs);
+  tree lhs_addr = build_unary_op (loc, ADDR_EXPR, lhs, 0);
+  tree seq_cst = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+  tree rhs_type = TREE_TYPE (rhs);
+
+  gcc_assert (TYPE_ATOMIC (lhs_type));
+
+  if (return_old_p)
+    gcc_assert (modifycode == PLUS_EXPR || modifycode == MINUS_EXPR);
+
+  /* Allocate enough vector items for a compare_exchange.  */
+  vec_alloc (params, 6);
+
+  /* Create a compound statement to hold the sequence of statements
+     with a loop.  */
+  compound_stmt = c_begin_compound_stmt (false);
+
+  /* Fold the RHS if it hasn't already been folded.  */
+  if (modifycode != NOP_EXPR)
+    rhs = c_fully_fold (rhs, false, NULL);
+
+  /* Remove the qualifiers for the rest of the expressions and create
+     the VAL temp variable to hold the RHS.  */
+  nonatomic_lhs_type = build_qualified_type (lhs_type, TYPE_UNQUALIFIED);
+  nonatomic_rhs_type = build_qualified_type (rhs_type, TYPE_UNQUALIFIED);
+  val = create_tmp_var (nonatomic_rhs_type, NULL);
+  TREE_ADDRESSABLE (val) = 1;
+  rhs = build2 (MODIFY_EXPR, nonatomic_rhs_type, val, rhs);
+  SET_EXPR_LOCATION (rhs, loc);
+  add_stmt (rhs);
+
+  /* NOP_EXPR indicates it's a straight store of the RHS. Simply issue
+     an atomic_store.  */
+  if (modifycode == NOP_EXPR)
+    {
+      /* Build __atomic_store (&lhs, &val, SEQ_CST)  */
+      rhs = build_unary_op (loc, ADDR_EXPR, val, 0);
+      fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_STORE);
+      params->quick_push (lhs_addr);
+      params->quick_push (rhs);
+      params->quick_push (seq_cst);
+      func_call = build_function_call_vec (loc, fndecl, params, NULL);
+      add_stmt (func_call);
+
+      /* Finish the compound statement.  */
+      compound_stmt = c_end_compound_stmt (loc, compound_stmt, false);
+
+      /* VAL is the value which was stored, return a COMPOUND_STMT of
+	 the statement and that value.  */
+      return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt, val);
+    }
+
+  /* Create the variables and labels required for the op= form.  */
+  old = create_tmp_var (nonatomic_lhs_type, NULL);
+  old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);
+  TREE_ADDRESSABLE (val) = 1;
+
+  newval = create_tmp_var (nonatomic_lhs_type, NULL);
+  newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
+  TREE_ADDRESSABLE (newval) = 1;
+
+  loop_decl = create_artificial_label (loc);
+  loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);
+
+  done_decl = create_artificial_label (loc);
+  done_label = build1 (LABEL_EXPR, void_type_node, done_decl);
+
+  /* __atomic_load (addr, &old, SEQ_CST).  */
+  fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
+  params->quick_push (lhs_addr);
+  params->quick_push (old_addr);
+  params->quick_push (seq_cst);
+  func_call = build_function_call_vec (loc, fndecl, params, NULL);
+  add_stmt (func_call);
+  params->truncate (0);
+
+  /* Create the expressions for floating-point environment
+     manipulation, if required.  */
+  bool need_fenv = (flag_trapping_math
+		    && (FLOAT_TYPE_P (lhs_type) || FLOAT_TYPE_P (rhs_type)));
+  tree hold_call = NULL_TREE, clear_call = NULL_TREE, update_call = NULL_TREE;
+  if (need_fenv)
+    targetm.atomic_assign_expand_fenv (&hold_call, &clear_call, &update_call);
+
+  if (hold_call)
+    add_stmt (hold_call);
+
+  /* loop:  */
+  add_stmt (loop_label);
+
+  /* newval = old + val;  */
+  rhs = build_binary_op (loc, modifycode, old, val, 1);
+  rhs = convert_for_assignment (loc, nonatomic_lhs_type, rhs, NULL_TREE,
+				ic_assign, false, NULL_TREE,
+				NULL_TREE, 0);
+  if (rhs != error_mark_node)
+    {
+      rhs = build2 (MODIFY_EXPR, nonatomic_lhs_type, newval, rhs);
+      SET_EXPR_LOCATION (rhs, loc);
+      add_stmt (rhs);
+    }
+
+  /* if (__atomic_compare_exchange (addr, &old, &new, false, SEQ_CST, SEQ_CST))
+       goto done;  */
+  fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_COMPARE_EXCHANGE);
+  params->quick_push (lhs_addr);
+  params->quick_push (old_addr);
+  params->quick_push (newval_addr);
+  params->quick_push (integer_zero_node);
+  params->quick_push (seq_cst);
+  params->quick_push (seq_cst);
+  func_call = build_function_call_vec (loc, fndecl, params, NULL);
+
+  goto_stmt = build1 (GOTO_EXPR, void_type_node, done_decl);
+  SET_EXPR_LOCATION (goto_stmt, loc);
+
+  stmt = build3 (COND_EXPR, void_type_node, func_call, goto_stmt, NULL_TREE);
+  SET_EXPR_LOCATION (stmt, loc);
+  add_stmt (stmt);
+  
+  if (clear_call)
+    add_stmt (clear_call);
+
+  /* goto loop;  */
+  goto_stmt  = build1 (GOTO_EXPR, void_type_node, loop_decl);
+  SET_EXPR_LOCATION (goto_stmt, loc);
+  add_stmt (goto_stmt);
+ 
+  /* done:  */
+  add_stmt (done_label);
+
+  if (update_call)
+    add_stmt (update_call);
+
+  /* Finish the compound statement.  */
+  compound_stmt = c_end_compound_stmt (loc, compound_stmt, false);
+
+  /* NEWVAL is the value that was successfully stored, return a
+     COMPOUND_EXPR of the statement and the appropriate value.  */
+  return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt,
+		 return_old_p ? old : newval);
+}
+
 /* Construct and perhaps optimize a tree representation
    for a unary operation.  CODE, a tree_code, specifies the operation
    and XARG is the operand.
@@ -3635,6 +3945,9 @@ build_unary_op (location_t location,
       /* Ensure the argument is fully folded inside any SAVE_EXPR.  */
       arg = c_fully_fold (arg, false, NULL);
 
+      bool atomic_op;
+      atomic_op = really_atomic_lvalue (arg);
+
       /* Increment or decrement the real part of the value,
 	 and don't change the imaginary part.  */
       if (typecode == COMPLEX_TYPE)
@@ -3644,21 +3957,25 @@ build_unary_op (location_t location,
 	  pedwarn (location, OPT_Wpedantic,
 		   "ISO C does not support %<++%> and %<--%> on complex types");
 
-	  arg = stabilize_reference (arg);
-	  real = build_unary_op (EXPR_LOCATION (arg), REALPART_EXPR, arg, 1);
-	  imag = build_unary_op (EXPR_LOCATION (arg), IMAGPART_EXPR, arg, 1);
-	  real = build_unary_op (EXPR_LOCATION (arg), code, real, 1);
-	  if (real == error_mark_node || imag == error_mark_node)
-	    return error_mark_node;
-	  ret = build2 (COMPLEX_EXPR, TREE_TYPE (arg),
-			real, imag);
-	  goto return_build_unary_op;
+	  if (!atomic_op)
+	    {
+	      arg = stabilize_reference (arg);
+	      real = build_unary_op (EXPR_LOCATION (arg), REALPART_EXPR, arg, 1);
+	      imag = build_unary_op (EXPR_LOCATION (arg), IMAGPART_EXPR, arg, 1);
+	      real = build_unary_op (EXPR_LOCATION (arg), code, real, 1);
+	      if (real == error_mark_node || imag == error_mark_node)
+		return error_mark_node;
+	      ret = build2 (COMPLEX_EXPR, TREE_TYPE (arg),
+			    real, imag);
+	      goto return_build_unary_op;
+	    }
 	}
 
       /* Report invalid types.  */
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
-	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
+	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
+	  && typecode != COMPLEX_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -3748,6 +4065,24 @@ build_unary_op (location_t location,
 			    ((code == PREINCREMENT_EXPR
 			      || code == POSTINCREMENT_EXPR)
 			     ? lv_increment : lv_decrement));
+
+	/* If the argument is atomic, use the special code sequences for
+	   atomic compound assignment.  */
+	if (atomic_op)
+	  {
+	    arg = stabilize_reference (arg);
+	    ret = build_atomic_assign (location, arg,
+				       ((code == PREINCREMENT_EXPR
+					 || code == POSTINCREMENT_EXPR)
+					? PLUS_EXPR
+					: MINUS_EXPR),
+				       (FRACT_MODE_P (TYPE_MODE (argtype))
+					? inc
+					: integer_one_node),
+				       (code == POSTINCREMENT_EXPR
+					|| code == POSTDECREMENT_EXPR));
+	    goto return_build_unary_op;
+	  }
 
 	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
 	  val = boolean_increment (code, arg);
@@ -4259,7 +4594,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		    "used in conditional expression");
 	  return error_mark_node;
 	}
-      else if (VOID_TYPE_P (TREE_TYPE (type1)))
+      else if (VOID_TYPE_P (TREE_TYPE (type1))
+	       && !TYPE_ATOMIC (TREE_TYPE (type1)))
 	{
 	  if (TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
@@ -4268,7 +4604,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type1),
 							  TREE_TYPE (type2)));
 	}
-      else if (VOID_TYPE_P (TREE_TYPE (type2)))
+      else if (VOID_TYPE_P (TREE_TYPE (type2))
+	       && !TYPE_ATOMIC (TREE_TYPE (type2)))
 	{
 	  if (TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
@@ -4850,6 +5187,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
   bool npc;
+  bool is_atomic_op;
 
   /* Types that aren't fully specified cannot be used in assignments.  */
   lhs = require_complete_type (lhs);
@@ -4861,6 +5199,8 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   /* For ObjC properties, defer this check.  */
   if (!objc_is_property_ref (lhs) && !lvalue_or_else (location, lhs, lv_assign))
     return error_mark_node;
+
+  is_atomic_op = really_atomic_lvalue (lhs);
 
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
     {
@@ -4892,12 +5232,17 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
     {
       lhs = c_fully_fold (lhs, false, NULL);
       lhs = stabilize_reference (lhs);
-      newrhs = build_binary_op (location,
-				modifycode, lhs, rhs, 1);
 
-      /* The original type of the right hand side is no longer
-	 meaningful.  */
-      rhs_origtype = NULL_TREE;
+      /* Construct the RHS for any non-atomic compound assignemnt. */
+      if (!is_atomic_op)
+        {
+	  newrhs = build_binary_op (location,
+				    modifycode, lhs, rhs, 1);
+
+	  /* The original type of the right hand side is no longer
+	     meaningful.  */
+	  rhs_origtype = NULL_TREE;
+	}
     }
 
   if (c_dialect_objc ())
@@ -4959,23 +5304,39 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 			? rhs_origtype
 			: TREE_TYPE (rhs));
       if (checktype != error_mark_node
-	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (lhs_origtype))
+	  && (TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (lhs_origtype)
+	      || (is_atomic_op && modifycode != NOP_EXPR)))
 	warning_at (location, OPT_Wc___compat,
 		    "enum conversion in assignment is invalid in C++");
+    }
+
+  /* If the lhs is atomic, remove that qualifier.  */
+  if (is_atomic_op)
+    {
+      lhstype = build_qualified_type (lhstype, 
+				      (TYPE_QUALS (lhstype)
+				       & ~TYPE_QUAL_ATOMIC));
+      olhstype = build_qualified_type (olhstype, 
+				       (TYPE_QUALS (lhstype)
+					& ~TYPE_QUAL_ATOMIC));
     }
 
   /* Convert new value to destination type.  Fold it first, then
      restore any excess precision information, for the sake of
      conversion warnings.  */
 
-  npc = null_pointer_constant_p (newrhs);
-  newrhs = c_fully_fold (newrhs, false, NULL);
-  if (rhs_semantic_type)
-    newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
-  newrhs = convert_for_assignment (location, lhstype, newrhs, rhs_origtype,
-				   ic_assign, npc, NULL_TREE, NULL_TREE, 0);
-  if (TREE_CODE (newrhs) == ERROR_MARK)
-    return error_mark_node;
+  if (!(is_atomic_op && modifycode != NOP_EXPR))
+    {
+      npc = null_pointer_constant_p (newrhs);
+      newrhs = c_fully_fold (newrhs, false, NULL);
+      if (rhs_semantic_type)
+	newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
+      newrhs = convert_for_assignment (location, lhstype, newrhs, rhs_origtype,
+				       ic_assign, npc, NULL_TREE,
+				       NULL_TREE, 0);
+      if (TREE_CODE (newrhs) == ERROR_MARK)
+	return error_mark_node;
+    }
 
   /* Emit ObjC write barrier, if necessary.  */
   if (c_dialect_objc () && flag_objc_gc)
@@ -4990,9 +5351,14 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   /* Scan operands.  */
 
-  result = build2 (MODIFY_EXPR, lhstype, lhs, newrhs);
-  TREE_SIDE_EFFECTS (result) = 1;
-  protected_set_expr_location (result, location);
+  if (is_atomic_op)
+    result = build_atomic_assign (location, lhs, modifycode, newrhs, false);
+  else
+    {
+      result = build2 (MODIFY_EXPR, lhstype, lhs, newrhs);
+      TREE_SIDE_EFFECTS (result) = 1;
+      protected_set_expr_location (result, location);
+    }
 
   /* If we got the LHS in a different type for storing in,
      convert the result back to the nominal type of LHS
@@ -5024,8 +5390,12 @@ find_anonymous_field_with_type (tree struct_type, tree type)
        field != NULL_TREE;
        field = TREE_CHAIN (field))
     {
+      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
+			? c_build_qualified_type (TREE_TYPE (field),
+						  TYPE_QUAL_ATOMIC)
+			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
       if (DECL_NAME (field) == NULL
-	  && comptypes (type, TYPE_MAIN_VARIANT (TREE_TYPE (field))))
+	  && comptypes (type, fieldtype))
 	{
 	  if (found)
 	    return false;
@@ -5063,7 +5433,10 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
 	      || TREE_CODE (rhs_struct_type) == UNION_TYPE);
 
   gcc_assert (POINTER_TYPE_P (type));
-  lhs_main_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+  lhs_main_type = (TYPE_ATOMIC (TREE_TYPE (type))
+		   ? c_build_qualified_type (TREE_TYPE (type),
+					     TYPE_QUAL_ATOMIC)
+		   : TYPE_MAIN_VARIANT (TREE_TYPE (type)));
 
   found_field = NULL_TREE;
   found_sub_field = false;
@@ -5075,7 +5448,11 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
 	  || (TREE_CODE (TREE_TYPE (field)) != RECORD_TYPE
 	      && TREE_CODE (TREE_TYPE (field)) != UNION_TYPE))
 	continue;
-      if (comptypes (lhs_main_type, TYPE_MAIN_VARIANT (TREE_TYPE (field))))
+      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
+			? c_build_qualified_type (TREE_TYPE (field),
+						  TYPE_QUAL_ATOMIC)
+			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
+      if (comptypes (lhs_main_type, fieldtype))
 	{
 	  if (found_field != NULL_TREE)
 	    return NULL_TREE;
@@ -5365,17 +5742,18 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		 and vice versa; otherwise, targets must be the same.
 		 Meanwhile, the lhs target must have all the qualifiers of
 		 the rhs.  */
-	      if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
+	      if ((VOID_TYPE_P (ttl) && !TYPE_ATOMIC (ttl))
+		  || (VOID_TYPE_P (ttr) && !TYPE_ATOMIC (ttr))
 		  || comp_target_types (location, memb_type, rhstype))
 		{
+		  int lquals = TYPE_QUALS (ttl) & ~TYPE_QUAL_ATOMIC;
+		  int rquals = TYPE_QUALS (ttr) & ~TYPE_QUAL_ATOMIC;
 		  /* If this type won't generate any warnings, use it.  */
-		  if (TYPE_QUALS (ttl) == TYPE_QUALS (ttr)
+		  if (lquals == rquals
 		      || ((TREE_CODE (ttr) == FUNCTION_TYPE
 			   && TREE_CODE (ttl) == FUNCTION_TYPE)
-			  ? ((TYPE_QUALS (ttl) | TYPE_QUALS (ttr))
-			     == TYPE_QUALS (ttr))
-			  : ((TYPE_QUALS (ttl) | TYPE_QUALS (ttr))
-			     == TYPE_QUALS (ttl))))
+			  ? ((lquals | rquals) == rquals)
+			  : ((lquals | rquals) == lquals)))
 		    break;
 
 		  /* Keep looking for a better type, but remember this one.  */
@@ -5466,9 +5844,15 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       addr_space_t asr;
 
       if (TREE_CODE (mvl) != ARRAY_TYPE)
-	mvl = TYPE_MAIN_VARIANT (mvl);
+	mvl = (TYPE_ATOMIC (mvl)
+	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl),
+					 TYPE_QUAL_ATOMIC)
+	       : TYPE_MAIN_VARIANT (mvl));
       if (TREE_CODE (mvr) != ARRAY_TYPE)
-	mvr = TYPE_MAIN_VARIANT (mvr);
+	mvr = (TYPE_ATOMIC (mvr)
+	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr),
+					 TYPE_QUAL_ATOMIC)
+	       : TYPE_MAIN_VARIANT (mvr));
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = vector_targets_convertible_p (ttl, ttr);
 
@@ -5569,13 +5953,15 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       /* Any non-function converts to a [const][volatile] void *
 	 and vice versa; otherwise, targets must be the same.
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
-      if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
+      if ((VOID_TYPE_P (ttl) && !TYPE_ATOMIC (ttl))
+	  || (VOID_TYPE_P (ttr) && !TYPE_ATOMIC (ttr))
 	  || (target_cmp = comp_target_types (location, type, rhstype))
 	  || is_opaque_pointer
 	  || ((c_common_unsigned_type (mvl)
 	       == c_common_unsigned_type (mvr))
-	      && c_common_signed_type (mvl)
-		 == c_common_signed_type (mvr)))
+	      && (c_common_signed_type (mvl)
+		  == c_common_signed_type (mvr))
+	      && TYPE_ATOMIC (mvl) == TYPE_ATOMIC (mvr)))
 	{
 	  if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -5598,8 +5984,9 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
-	      if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
-		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
+	      /* Assignments between atomic and non-atomic objects are OK.  */
+	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
+		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
 		{
 		  WARN_FOR_QUALIFIERS (location, 0,
 				       G_("passing argument %d of %qE discards "
@@ -6072,7 +6459,11 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
   if (code == ARRAY_TYPE && inside_init
       && TREE_CODE (inside_init) == STRING_CST)
     {
-      tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      tree typ1
+	= (TYPE_ATOMIC (TREE_TYPE (type))
+	   ? c_build_qualified_type (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
+				     TYPE_QUAL_ATOMIC)
+	   : TYPE_MAIN_VARIANT (TREE_TYPE (type)));
       /* Note that an array could be both an array of character type
 	 and an array of wchar_t if wchar_t is signed char or unsigned
 	 char.  */
@@ -8610,7 +9001,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	      struct c_expr expr;
 	      memset (&expr, 0, sizeof (expr));
 	      expr.value = input;
-	      expr = default_function_array_conversion (loc, expr);
+	      expr = convert_lvalue_to_rvalue (loc, expr, true, false);
 	      input = c_fully_fold (expr.value, false, NULL);
 
 	      if (input != error_mark_node && VOID_TYPE_P (TREE_TYPE (input)))
@@ -10096,13 +10487,13 @@ build_binary_op (location_t location, enum tree_code code,
 			"disjoint address spaces");
 	      return error_mark_node;
 	    }
-	  else if (VOID_TYPE_P (tt0))
+	  else if (VOID_TYPE_P (tt0) && !TYPE_ATOMIC (tt0))
 	    {
 	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE)
 		pedwarn (location, OPT_Wpedantic, "ISO C forbids "
 			 "comparison of %<void *%> with function pointer");
 	    }
-	  else if (VOID_TYPE_P (tt1))
+	  else if (VOID_TYPE_P (tt1) && !TYPE_ATOMIC (tt1))
 	    {
 	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE)
 		pedwarn (location, OPT_Wpedantic, "ISO C forbids "
