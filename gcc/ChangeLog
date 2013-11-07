@@ -1,5 +1,15 @@
 2013-11-07  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (canonicalize_float_value): Rename to ...
+	(canonicalize_value): ... this.  Also handle stripping of
+	TREE_OVERFLOW.
+	(get_value, set_lattice_value, get_value_for_expr): Adjust.
+	* gimple-fold.c (canonicalize_constructor_val): Strip
+	TREE_OVERFLOW.
+	* tree-ssa-threadedge.c (set_ssa_name_value): Likewise.
+
+2013-11-07  Richard Biener  <rguenther@suse.de>
+
 	* tree-dfa.c (get_ref_base_and_extent): Fix casting.
 
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>

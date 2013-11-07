@@ -205,6 +205,8 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	cval = fold_convert (TREE_TYPE (orig_cval), cval);
       return cval;
     }
+  if (TREE_OVERFLOW_P (cval))
+    return drop_tree_overflow (cval);
   return orig_cval;
 }
 
