@@ -1288,7 +1288,6 @@ rewrite_phi_with_iv (loop_p loop,
 				  GSI_SAME_STMT);
   stmt = gimple_build_assign (res, val);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-  SSA_NAME_DEF_STMT (res) = stmt;
 }
 
 /* Rewrite all the phi nodes of LOOP in function of the main induction
