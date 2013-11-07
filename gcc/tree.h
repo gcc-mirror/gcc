@@ -1598,6 +1598,9 @@ extern enum machine_mode vector_type_mode (const_tree);
 /* Nonzero in a type considered volatile as a whole.  */
 #define TYPE_VOLATILE(NODE) (TYPE_CHECK (NODE)->base.volatile_flag)
 
+/* Nonzero in a type considered atomic as a whole.  */
+#define TYPE_ATOMIC(NODE) (TYPE_CHECK (NODE)->base.u.bits.atomic_flag)
+
 /* Means this type is const-qualified.  */
 #define TYPE_READONLY(NODE) (TYPE_CHECK (NODE)->base.readonly_flag)
 
@@ -1627,11 +1630,20 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_QUALS(NODE)					\
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
 	  | (ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (NODE)))))
 
 /* The same as TYPE_QUALS without the address space qualifications.  */
 #define TYPE_QUALS_NO_ADDR_SPACE(NODE)				\
+  ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
+	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
+
+/* The same as TYPE_QUALS without the address space and atomic 
+   qualifications.  */
+#define TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC(NODE)		\
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
@@ -3175,6 +3187,12 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define unsigned_intSI_type_node	global_trees[TI_UINTSI_TYPE]
 #define unsigned_intDI_type_node	global_trees[TI_UINTDI_TYPE]
 #define unsigned_intTI_type_node	global_trees[TI_UINTTI_TYPE]
+
+#define atomicQI_type_node	global_trees[TI_ATOMICQI_TYPE]
+#define atomicHI_type_node	global_trees[TI_ATOMICHI_TYPE]
+#define atomicSI_type_node	global_trees[TI_ATOMICSI_TYPE]
+#define atomicDI_type_node	global_trees[TI_ATOMICDI_TYPE]
+#define atomicTI_type_node	global_trees[TI_ATOMICTI_TYPE]
 
 #define uint16_type_node		global_trees[TI_UINT16_TYPE]
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]

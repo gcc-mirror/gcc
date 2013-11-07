@@ -1,3 +1,16 @@
+2013-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_fenv_exceptions): New function.
+	* lib/atomic-dg.exp, gcc.dg/atomic/atomic.exp: New files.
+	* gcc.dg/atomic/c11-atomic-exec-1.c,
+	gcc.dg/atomic/c11-atomic-exec-2.c,
+	gcc.dg/atomic/c11-atomic-exec-3.c,
+	gcc.dg/atomic/c11-atomic-exec-4.c,
+	gcc.dg/atomic/c11-atomic-exec-5.c, gcc.dg/c11-atomic-1.c,
+	gcc.dg/c11-atomic-2.c, gcc.dg/c11-atomic-3.c,
+	gcc.dg/c90-atomic-1.c, gcc.dg/c99-atomic-1.c: New tests.
+
 2013-11-07  Cong Hou  <congh@google.com>
 
 	* gcc.dg/vect/vect-alias-check.c: New.

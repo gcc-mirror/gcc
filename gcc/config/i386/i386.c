@@ -26993,6 +26993,11 @@ enum ix86_builtins
   IX86_BUILTIN_LFENCE,
   IX86_BUILTIN_PAUSE,
 
+  IX86_BUILTIN_FNSTENV,
+  IX86_BUILTIN_FLDENV,
+  IX86_BUILTIN_FNSTSW,
+  IX86_BUILTIN_FNCLEX,
+
   IX86_BUILTIN_BSRSI,
   IX86_BUILTIN_BSRDI,
   IX86_BUILTIN_RDPMC,
@@ -27968,6 +27973,12 @@ static const struct builtin_description bdesc_special_args[] =
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  /* 80387 (for use internally for atomic compound assignment).  */
+  { 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { 0, CODE_FOR_fldenv, "__builtin_ia32_fldenv", IX86_BUILTIN_FLDENV, UNKNOWN, (int) VOID_FTYPE_PCVOID },
+  { 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) VOID_FTYPE_PUSHORT },
+  { 0, CODE_FOR_fnclex, "__builtin_ia32_fnclex", IX86_BUILTIN_FNCLEX, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
   { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
@@ -32930,6 +32941,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_FXRSTOR:
     case IX86_BUILTIN_FXSAVE64:
     case IX86_BUILTIN_FXRSTOR64:
+    case IX86_BUILTIN_FNSTENV:
+    case IX86_BUILTIN_FLDENV:
+    case IX86_BUILTIN_FNSTSW:
+      mode0 = BLKmode;
       switch (fcode)
 	{
 	case IX86_BUILTIN_FXSAVE:
@@ -32944,6 +32959,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	case IX86_BUILTIN_FXRSTOR64:
 	  icode = CODE_FOR_fxrstor64;
 	  break;
+	case IX86_BUILTIN_FNSTENV:
+	  icode = CODE_FOR_fnstenv;
+	  break;
+	case IX86_BUILTIN_FLDENV:
+	  icode = CODE_FOR_fldenv;
+	  break;
+	case IX86_BUILTIN_FNSTSW:
+	  icode = CODE_FOR_fnstsw;
+	  mode0 = HImode;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -32956,7 +32981,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  op0 = convert_memory_address (Pmode, op0);
 	  op0 = copy_addr_to_reg (op0);
 	}
-      op0 = gen_rtx_MEM (BLKmode, op0);
+      op0 = gen_rtx_MEM (mode0, op0);
 
       pat = GEN_FCN (icode) (op0);
       if (pat)
@@ -43566,6 +43591,103 @@ ix86_float_exceptions_rounding_supported_p (void)
   return TARGET_80387 || TARGET_SSE_MATH;
 }
 
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  if (!TARGET_80387 && !TARGET_SSE_MATH)
+    return;
+  tree exceptions_var = create_tmp_var (integer_type_node, NULL);
+  if (TARGET_80387)
+    {
+      tree fenv_index_type = build_index_type (size_int (6));
+      tree fenv_type = build_array_type (unsigned_type_node, fenv_index_type);
+      tree fenv_var = create_tmp_var (fenv_type, NULL);
+      mark_addressable (fenv_var);
+      tree fenv_ptr = build_pointer_type (fenv_type);
+      tree fenv_addr = build1 (ADDR_EXPR, fenv_ptr, fenv_var);
+      fenv_addr = fold_convert (ptr_type_node, fenv_addr);
+      tree fnstenv = ix86_builtins[IX86_BUILTIN_FNSTENV];
+      tree fldenv = ix86_builtins[IX86_BUILTIN_FLDENV];
+      tree fnstsw = ix86_builtins[IX86_BUILTIN_FNSTSW];
+      tree fnclex = ix86_builtins[IX86_BUILTIN_FNCLEX];
+      tree hold_fnstenv = build_call_expr (fnstenv, 1, fenv_addr);
+      tree hold_fnclex = build_call_expr (fnclex, 0);
+      *hold = build2 (COMPOUND_EXPR, void_type_node, hold_fnstenv,
+		      hold_fnclex);
+      *clear = build_call_expr (fnclex, 0);
+      tree sw_var = create_tmp_var (short_unsigned_type_node, NULL);
+      mark_addressable (sw_var);
+      tree su_ptr = build_pointer_type (short_unsigned_type_node);
+      tree sw_addr = build1 (ADDR_EXPR, su_ptr, sw_var);
+      tree fnstsw_call = build_call_expr (fnstsw, 1, sw_addr);
+      tree exceptions_x87 = fold_convert (integer_type_node, sw_var);
+      tree update_mod = build2 (MODIFY_EXPR, integer_type_node,
+				exceptions_var, exceptions_x87);
+      *update = build2 (COMPOUND_EXPR, integer_type_node,
+			fnstsw_call, update_mod);
+      tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
+      *update = build2 (COMPOUND_EXPR, void_type_node, *update, update_fldenv);
+    }
+  if (TARGET_SSE_MATH)
+    {
+      tree mxcsr_orig_var = create_tmp_var (unsigned_type_node, NULL);
+      tree mxcsr_mod_var = create_tmp_var (unsigned_type_node, NULL);
+      tree stmxcsr = ix86_builtins[IX86_BUILTIN_STMXCSR];
+      tree ldmxcsr = ix86_builtins[IX86_BUILTIN_LDMXCSR];
+      tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);
+      tree hold_assign_orig = build2 (MODIFY_EXPR, unsigned_type_node,
+				      mxcsr_orig_var, stmxcsr_hold_call);
+      tree hold_mod_val = build2 (BIT_IOR_EXPR, unsigned_type_node,
+				  mxcsr_orig_var,
+				  build_int_cst (unsigned_type_node, 0x1f80));
+      hold_mod_val = build2 (BIT_AND_EXPR, unsigned_type_node, hold_mod_val,
+			     build_int_cst (unsigned_type_node, 0xffffffc0));
+      tree hold_assign_mod = build2 (MODIFY_EXPR, unsigned_type_node,
+				     mxcsr_mod_var, hold_mod_val);
+      tree ldmxcsr_hold_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
+      tree hold_all = build2 (COMPOUND_EXPR, unsigned_type_node,
+			      hold_assign_orig, hold_assign_mod);
+      hold_all = build2 (COMPOUND_EXPR, void_type_node, hold_all,
+			 ldmxcsr_hold_call);
+      if (*hold)
+	*hold = build2 (COMPOUND_EXPR, void_type_node, *hold, hold_all);
+      else
+	*hold = hold_all;
+      tree ldmxcsr_clear_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
+      if (*clear)
+	*clear = build2 (COMPOUND_EXPR, void_type_node, *clear,
+			 ldmxcsr_clear_call);
+      else
+	*clear = ldmxcsr_clear_call;
+      tree stxmcsr_update_call = build_call_expr (stmxcsr, 0);
+      tree exceptions_sse = fold_convert (integer_type_node,
+					  stxmcsr_update_call);
+      if (*update)
+	{
+	  tree exceptions_mod = build2 (BIT_IOR_EXPR, integer_type_node,
+					exceptions_var, exceptions_sse);
+	  tree exceptions_assign = build2 (MODIFY_EXPR, integer_type_node,
+					   exceptions_var, exceptions_mod);
+	  *update = build2 (COMPOUND_EXPR, integer_type_node, *update,
+			    exceptions_assign);
+	}
+      else
+	*update = build2 (MODIFY_EXPR, integer_type_node,
+			  exceptions_var, exceptions_sse);
+      tree ldmxcsr_update_call = build_call_expr (ldmxcsr, 1, mxcsr_orig_var);
+      *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+			ldmxcsr_update_call);
+    }
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept,
+						    1, exceptions_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    atomic_feraiseexcept_call);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
@@ -43676,6 +43798,9 @@ ix86_float_exceptions_rounding_supported_p (void)
 
 #undef TARGET_MEMMODEL_CHECK
 #define TARGET_MEMMODEL_CHECK ix86_memmodel_check
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV ix86_atomic_assign_expand_fenv
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS

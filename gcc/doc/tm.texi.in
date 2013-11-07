@@ -8404,3 +8404,5 @@ and the associated definitions of those functions.
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 
 @hook TARGET_HAS_IFUNC_P
+
+@hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV

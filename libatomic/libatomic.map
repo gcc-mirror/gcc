@@ -95,3 +95,7 @@ LIBATOMIC_1.0 {
   local:
 	*;
 };
+LIBATOMIC_1.1 {
+  global:
+	__atomic_feraiseexcept;
+} LIBATOMIC_1.0;

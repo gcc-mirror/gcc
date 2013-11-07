@@ -67,7 +67,8 @@ endif
 libatomic_version_info = -version-info $(libtool_VERSION)
 
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script)
-libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c
+libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c \
+	fenv.c
 
 SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
 SIZES = @SIZES@

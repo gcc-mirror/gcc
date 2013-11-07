@@ -90,14 +90,14 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 am_libatomic_la_OBJECTS = gload.lo gstore.lo gcas.lo gexch.lo \
-	glfree.lo lock.lo init.lo
+	glfree.lo lock.lo init.lo fenv.lo
 libatomic_la_OBJECTS = $(am_libatomic_la_OBJECTS)
 libatomic_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libatomic_la_LDFLAGS) $(LDFLAGS) -o $@
 libatomic_convenience_la_DEPENDENCIES = $(libatomic_la_LIBADD)
 am__objects_1 = gload.lo gstore.lo gcas.lo gexch.lo glfree.lo lock.lo \
-	init.lo
+	init.lo fenv.lo
 am_libatomic_convenience_la_OBJECTS = $(am__objects_1)
 libatomic_convenience_la_OBJECTS =  \
 	$(am_libatomic_convenience_la_OBJECTS)
@@ -286,7 +286,9 @@ noinst_LTLIBRARIES = libatomic_convenience.la
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = libatomic.map-sun
 libatomic_version_info = -version-info $(libtool_VERSION)
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script)
-libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c
+libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c \
+	fenv.c
+
 SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
 EXTRA_libatomic_la_SOURCES = $(addsuffix _n.c,$(SIZEOBJS))
 libatomic_la_DEPENDENCIES = $(libatomic_la_LIBADD) $(libatomic_version_dep)
@@ -425,6 +427,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gcas.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gexch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glfree.Plo@am__quote@
