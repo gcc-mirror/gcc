@@ -1,3 +1,9 @@
+2013-11-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/loop-2.c: Refine check condition.
+	* gcc.dg/tree-ssa/ivopt_infer_2.c: Ditto.
+	* gcc.dg/tree-ssa/ivopt_mult_3.c: Ditto.
+
 2013-11-06  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/mismatch-decl-1.c: New test.
