@@ -1,3 +1,9 @@
+2013-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.c (FP_HANDLE_EXCEPTIONS): Handle
+	FP_EX_DENORM.
+	* config/i386/64/sfp-machine.c (FP_HANDLE_EXCEPTIONS): Ditto.
+
 2013-08-01  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
 	Backport from trunk: Fix licenses on several libgcc files.
@@ -10,7 +16,7 @@
 
 	Backport from mainline:
 	2013-06-08  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilepro/atomic.h: Don't include stdint.h or features.h.
 	Replace int64_t with long long.  Add __extension__ where
 	appropriate.
@@ -50,7 +56,8 @@
 
 	PR target/49880
 	* config/sh/lib1funcs.S (sdivsi3_i4, udivsi3_i4): Enable for SH2A.
-	(sdivsi3, udivsi3): Remove SH4 check and always compile these functions.
+	(sdivsi3, udivsi3): Remove SH4 check and always compile these
+	functions.
 
 2013-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
 

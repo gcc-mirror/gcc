@@ -89,6 +89,14 @@ struct fenv
 	float f = 0.0;							\
 	__asm__ __volatile__ (ASM_INVALID : : "x" (f));			\
       }									\
+    if (_fex & FP_EX_DENORM)						\
+      {									\
+	struct fenv temp;						\
+	__asm__ __volatile__ ("fnstenv %0" : "=m" (temp));		\
+	temp.__status_word |= FP_EX_DENORM;				\
+	__asm__ __volatile__ ("fldenv %0" : : "m" (temp));		\
+	__asm__ __volatile__ ("fwait");					\
+      }									\
     if (_fex & FP_EX_DIVZERO)						\
       {									\
 	float f = 1.0, g = 0.0;						\
