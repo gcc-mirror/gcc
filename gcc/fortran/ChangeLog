@@ -1,3 +1,8 @@
+2013-11-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58471
+	* primary.c (gfc_expr_attr): Check for result symbol.
+
 2013-11-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.texi: Fix typo.
