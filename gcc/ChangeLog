@@ -1,3 +1,7 @@
+2013-11-07  Jeff Law  <law@redhat.com>
+
+	* varpool.c (ctor_for_folding): Fix typo in comment.
+
 2013-11-07  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_ifcvt): Use commutativity, e.g.:

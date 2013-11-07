@@ -304,7 +304,7 @@ ctor_for_folding (tree decl)
       return DECL_INITIAL (real_decl);
     }
 
-  /* If thre is no constructor, we have nothing to do.  */
+  /* If there is no constructor, we have nothing to do.  */
   if (DECL_INITIAL (real_decl) == error_mark_node)
     return error_mark_node;
 
