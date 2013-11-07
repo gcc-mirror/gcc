@@ -1,5 +1,7 @@
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp_g.h: Include <stddef.h> for size_t.
+
 	* libgomp.spec.in: Update comment about libgomp's dependencies.
 	* configure.ac: Likewise.
 	* configure: Regenerate.
