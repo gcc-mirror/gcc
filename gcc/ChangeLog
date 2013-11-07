@@ -1,3 +1,10 @@
+2013-11-07  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add fp64 directory.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Add -mfp64 flag.
+	(MULTILIB_DIRNAMES): Add fp64 directory.
+	(MULTILIB_EXCEPTIONS): Add new exclusions.
+
 2013-11-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimplify.c (gimple_regimplify_operands): Do not set
