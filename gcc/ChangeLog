@@ -1,3 +1,8 @@
+2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Don't set
+	misaligned_prologue_used when it has been set.
+
 2013-11-07  Yury Gribov  <y.gribov@samsung.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

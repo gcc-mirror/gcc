@@ -23796,7 +23796,6 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (misaligned_prologue_used)
     {
       /* Misaligned move prologue handled small blocks by itself.  */
-      misaligned_prologue_used = true;
       expand_set_or_movmem_prologue_epilogue_by_misaligned_moves
 	   (dst, src, &destreg, &srcreg,
 	    move_mode, promoted_val, vec_promoted_val,
