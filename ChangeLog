@@ -1,7 +1,9 @@
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
-	* Makefile.tpl: Fix typo.
 	* Makefile.in: Regenerate.
+
+	* Makefile.tpl: Fix typo.
+	* Makefile.in: Regenerate partially.
 
 2013-11-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
