@@ -1,3 +1,9 @@
+2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59034
+	* config/i386/i386.md (push peepholer/splitter): Use Pmode
+	with stack_pointer_rtx.
+
 2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/t-rtems (MULTILIB_MATCHES): Fix option typos.
