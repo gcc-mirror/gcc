@@ -147,11 +147,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_assertion()
     {
       if (_M_match_token(_ScannerT::_S_token_line_begin))
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
-	      _M_insert_line_begin()));
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_line_begin()));
       else if (_M_match_token(_ScannerT::_S_token_line_end))
-	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
-	      _M_insert_line_end()));
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_line_end()));
       else if (_M_match_token(_ScannerT::_S_token_word_bound))
 	// _M_value[0] == 'n' means it's negtive, say "not word boundary".
 	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
@@ -305,7 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _M_traits, _M_flags);
 	  __matcher._M_add_character_class(_M_value);
 	  _M_stack.push(_StateSeqT(_M_nfa,
-		_M_nfa._M_insert_matcher(__matcher)));
+		_M_nfa._M_insert_matcher(std::move(__matcher))));
 	}
       else if (_M_match_token(_ScannerT::_S_token_subexpr_no_group_begin))
 	{
@@ -343,7 +341,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _BMatcherT __matcher(__neg, _M_traits, _M_flags);
       while (!_M_match_token(_ScannerT::_S_token_bracket_end))
 	_M_expression_term(__matcher);
-      _M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_matcher(__matcher)));
+      _M_stack.push(_StateSeqT(_M_nfa,
+			       _M_nfa._M_insert_matcher(std::move(__matcher))));
       return true;
     }
 
@@ -432,8 +431,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _TraitsT>
-    bool _BracketMatcher<_CharT, _TraitsT>::
-    operator()(_CharT __ch) const
+    bool
+    _BracketMatcher<_CharT, _TraitsT>::operator()(_CharT __ch) const
     {
       bool __ret = false;
       if (_M_traits.isctype(__ch, _M_class_set)

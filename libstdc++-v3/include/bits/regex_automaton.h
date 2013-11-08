@@ -65,81 +65,114 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_accept,
   };
 
-  template<typename _CharT, typename _TraitsT>
-    class _State
+  struct _State_base
+  {
+    _Opcode      _M_opcode;           // type of outgoing transition
+    _StateIdT    _M_next;             // outgoing transition
+    union // Since they are mutually exclusive.
     {
-    public:
-      typedef _Matcher<_CharT>           _MatcherT;
-
-      _Opcode      _M_opcode;           // type of outgoing transition
-      _StateIdT    _M_next;             // outgoing transition
-      union // Since they are mutually exclusive.
+      size_t _M_subexpr;        // for _S_opcode_subexpr_*
+      size_t _M_backref_index;  // for _S_opcode_backref
+      struct
       {
-	size_t _M_subexpr;        // for _S_opcode_subexpr_*
-	size_t _M_backref_index;  // for _S_opcode_backref
-	struct
-	{
-	  // for _S_opcode_alternative.
-	  _StateIdT  _M_quant_index;
-	  // for _S_opcode_alternative or _S_opcode_subexpr_lookahead
-	  _StateIdT  _M_alt;
-	  // for _S_opcode_word_boundary or _S_opcode_subexpr_lookahead or
-	  // quantifiers(ungreedy if set true)
-	  bool       _M_neg;
-	};
+	// for _S_opcode_alternative.
+	_StateIdT  _M_quant_index;
+	// for _S_opcode_alternative or _S_opcode_subexpr_lookahead
+	_StateIdT  _M_alt;
+	// for _S_opcode_word_boundary or _S_opcode_subexpr_lookahead or
+	// quantifiers (ungreedy if set true)
+	bool       _M_neg;
       };
-      _MatcherT      _M_matches;        // for _S_opcode_match
-
-      explicit _State(_Opcode  __opcode)
-      : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
-      { }
-
-#ifdef _GLIBCXX_DEBUG
-      std::ostream&
-      _M_print(std::ostream& ostr) const;
-
-      // Prints graphviz dot commands for state.
-      std::ostream&
-      _M_dot(std::ostream& __ostr, _StateIdT __id) const;
-#endif
     };
 
+    explicit _State_base(_Opcode __opcode)
+    : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
+    { }
+
+  protected:
+    ~_State_base() = default;
+
+  public:
+#ifdef _GLIBCXX_DEBUG
+    std::ostream&
+    _M_print(std::ostream& ostr) const;
+
+    // Prints graphviz dot commands for state.
+    std::ostream&
+    _M_dot(std::ostream& __ostr, _StateIdT __id) const;
+#endif
+  };
+
   template<typename _CharT, typename _TraitsT>
-    class _NFA
-    : public std::vector<_State<_CharT, _TraitsT>>
+    struct _State : _State_base
     {
-    public:
-      typedef _State<_CharT, _TraitsT>            _StateT;
-      typedef const _Matcher<_CharT>&             _MatcherT;
-      typedef size_t                              _SizeT;
-      typedef regex_constants::syntax_option_type _FlagT;
+      typedef _Matcher<_CharT>           _MatcherT;
 
-      _NFA(_FlagT __f)
-      : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-      _M_quant_count(0), _M_has_backref(false)
-      { }
+      _MatcherT      _M_matches;        // for _S_opcode_match
 
-      _FlagT
-      _M_options() const
-      { return _M_flags; }
+      explicit _State(_Opcode __opcode) : _State_base(__opcode) { }
+    };
 
-      _StateIdT
-      _M_start() const
-      { return _M_start_state; }
+  struct _NFA_base
+  {
+    typedef size_t                              _SizeT;
+    typedef regex_constants::syntax_option_type _FlagT;
 
-      const _StateSet&
-      _M_final_states() const
-      { return _M_accepting_states; }
+    explicit
+    _NFA_base(_FlagT __f)
+    : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
+    _M_quant_count(0), _M_has_backref(false)
+    { }
 
-      _SizeT
-      _M_sub_count() const
-      { return _M_subexpr_count; }
+    _NFA_base(_NFA_base&&) = default;
+
+  protected:
+    ~_NFA_base() = default;
+
+  public:
+    _FlagT
+    _M_options() const
+    { return _M_flags; }
+
+    _StateIdT
+    _M_start() const
+    { return _M_start_state; }
+
+    const _StateSet&
+    _M_final_states() const
+    { return _M_accepting_states; }
+
+    _SizeT
+    _M_sub_count() const
+    { return _M_subexpr_count; }
+
+    std::vector<size_t>       _M_paren_stack;
+    _StateSet                 _M_accepting_states;
+    _FlagT                    _M_flags;
+    _StateIdT                 _M_start_state;
+    _SizeT                    _M_subexpr_count;
+    _SizeT                    _M_quant_count;
+    bool                      _M_has_backref;
+  };
+
+  template<typename _CharT, typename _TraitsT>
+    struct _NFA
+    : _NFA_base, std::vector<_State<_CharT, _TraitsT>>
+    {
+      typedef _State<_CharT, _TraitsT>		_StateT;
+      typedef _Matcher<_CharT>			_MatcherT;
+
+      using _NFA_base::_NFA_base;
+
+      // for performance reasons _NFA objects should only be moved not copied
+      _NFA(const _NFA&) = delete;
+      _NFA(_NFA&&) = default;
 
       _StateIdT
       _M_insert_accept()
       {
 	auto __ret = _M_insert_state(_StateT(_S_opcode_accept));
-	_M_accepting_states.insert(__ret);
+	this->_M_accepting_states.insert(__ret);
 	return __ret;
       }
 
@@ -149,38 +182,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_StateT __tmp(_S_opcode_alternative);
 	// It labels every quantifier to make greedy comparison easier in BFS
 	// approach.
-	__tmp._M_quant_index = _M_quant_count++;
+	__tmp._M_quant_index = this->_M_quant_count++;
 	__tmp._M_next = __next;
 	__tmp._M_alt = __alt;
 	__tmp._M_neg = __neg;
-	return _M_insert_state(__tmp);
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
       _M_insert_matcher(_MatcherT __m)
       {
 	_StateT __tmp(_S_opcode_match);
-	__tmp._M_matches = __m;
-	return _M_insert_state(__tmp);
+	__tmp._M_matches = std::move(__m);
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
       _M_insert_subexpr_begin()
       {
-	auto __id = _M_subexpr_count++;
-	_M_paren_stack.push_back(__id);
+	auto __id = this->_M_subexpr_count++;
+	this->_M_paren_stack.push_back(__id);
 	_StateT __tmp(_S_opcode_subexpr_begin);
 	__tmp._M_subexpr = __id;
-	return _M_insert_state(__tmp);
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
       _M_insert_subexpr_end()
       {
 	_StateT __tmp(_S_opcode_subexpr_end);
-	__tmp._M_subexpr = _M_paren_stack.back();
-	_M_paren_stack.pop_back();
-	return _M_insert_state(__tmp);
+	__tmp._M_subexpr = this->_M_paren_stack.back();
+	this->_M_paren_stack.pop_back();
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
@@ -199,7 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_StateT __tmp(_S_opcode_word_boundary);
 	__tmp._M_neg = __neg;
-	return _M_insert_state(__tmp);
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
@@ -208,7 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_StateT __tmp(_S_opcode_subexpr_lookahead);
 	__tmp._M_alt = __alt;
 	__tmp._M_neg = __neg;
-	return _M_insert_state(__tmp);
+	return _M_insert_state(std::move(__tmp));
       }
 
       _StateIdT
@@ -218,7 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT
       _M_insert_state(_StateT __s)
       {
-	this->push_back(__s);
+	this->push_back(std::move(__s));
 	return this->size()-1;
       }
 
@@ -230,14 +263,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::ostream&
       _M_dot(std::ostream& __ostr) const;
 #endif
-
-      std::vector<size_t>       _M_paren_stack;
-      _StateSet                 _M_accepting_states;
-      _FlagT                    _M_flags;
-      _StateIdT                 _M_start_state;
-      _SizeT                    _M_subexpr_count;
-      _SizeT                    _M_quant_count;
-      bool                      _M_has_backref;
     };
 
   /// Describes a sequence of one or more %_State, its current start
@@ -251,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       _StateSeq(_RegexT& __nfa, _StateIdT __s)
-      : _StateSeq(__nfa, __s, __s)
+      : _M_nfa(__nfa), _M_start(__s), _M_end(__s)
       { }
 
       _StateSeq(_RegexT& __nfa, _StateIdT __s, _StateIdT __end)
