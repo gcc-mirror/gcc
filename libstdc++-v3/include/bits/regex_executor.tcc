@@ -143,8 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_lookahead(_State<_Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-		 _CharT, _TraitsT> __state)
+    _M_lookahead(_State<_TraitsT> __state)
     {
       _ResultsVec __what(_M_cur_results.size());
       auto __sub = std::unique_ptr<_Executor>(new _Executor(_M_current,
@@ -348,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_word_boundary(_State<_CharT, _TraitsT> __state) const
+    _M_word_boundary(_State<_TraitsT> __state) const
     {
       // By definition.
       bool __ans = false;
