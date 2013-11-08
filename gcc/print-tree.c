@@ -962,30 +962,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   fprintf (file, ">");
 }
 
-/* Print the tree vector VEC in full on file FILE, preceded by PREFIX,
-   starting in column INDENT.  */
-
-void
-print_vec_tree (FILE *file, const char *prefix, vec<tree, va_gc> *vec, int indent)
-{
-  tree elt;
-  unsigned ix;
-
-  /* Indent to the specified column, since this is the long form.  */
-  indent_to (file, indent);
-
-  /* Print the slot this node is in, and its code, and address.  */
-  fprintf (file, "%s <VEC", prefix);
-  dump_addr (file, " ", vec->address ());
-
-  FOR_EACH_VEC_ELT (*vec, ix, elt)
-    {
-      char temp[10];
-      sprintf (temp, "elt %d", ix);
-      print_node (file, temp, elt, indent + 4);
-    }
-}
-
 
 /* Print the node NODE on standard error, for debugging.
    Most nodes referred to by this one are printed recursively

@@ -4630,17 +4630,6 @@ mem_ref_refers_to_non_mem_p (tree ref)
   return addr_expr_of_non_mem_decl_p_1 (base, false);
 }
 
-/* Return TRUE iff OP is an ADDR_EXPR of a DECL that's not
-   addressable.  This is very much like mem_ref_refers_to_non_mem_p,
-   but instead of the MEM_REF, it takes its base, and it doesn't
-   assume a DECL is in memory just because its RTL is not set yet.  */
-
-bool
-addr_expr_of_non_mem_decl_p (tree op)
-{
-  return addr_expr_of_non_mem_decl_p_1 (op, true);
-}
-
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
    is true, try generating a nontemporal store.  */
 
@@ -5752,6 +5741,23 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
   else
     store_field (target, bitsize, bitpos, 0, 0, mode, exp, alias_set, false);
 }
+
+
+/* Returns the number of FIELD_DECLs in TYPE.  */
+
+static int
+fields_length (const_tree type)
+{
+  tree t = TYPE_FIELDS (type);
+  int count = 0;
+
+  for (; t; t = DECL_CHAIN (t))
+    if (TREE_CODE (t) == FIELD_DECL)
+      ++count;
+
+  return count;
+}
+
 
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM; we know it cannot conflict, since

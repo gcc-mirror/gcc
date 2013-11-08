@@ -277,6 +277,111 @@ clone_function_name (tree decl, const char *suffix)
   return get_identifier (tmp_name);
 }
 
+/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP and the
+   return value if SKIP_RETURN is true.  */
+
+static tree
+build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
+			       bool skip_return)
+{
+  tree new_type = NULL;
+  tree args, new_args = NULL, t;
+  tree new_reversed;
+  int i = 0;
+
+  for (args = TYPE_ARG_TYPES (orig_type); args && args != void_list_node;
+       args = TREE_CHAIN (args), i++)
+    if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
+      new_args = tree_cons (NULL_TREE, TREE_VALUE (args), new_args);
+
+  new_reversed = nreverse (new_args);
+  if (args)
+    {
+      if (new_reversed)
+        TREE_CHAIN (new_args) = void_list_node;
+      else
+	new_reversed = void_list_node;
+    }
+
+  /* Use copy_node to preserve as much as possible from original type
+     (debug info, attribute lists etc.)
+     Exception is METHOD_TYPEs must have THIS argument.
+     When we are asked to remove it, we need to build new FUNCTION_TYPE
+     instead.  */
+  if (TREE_CODE (orig_type) != METHOD_TYPE
+      || !args_to_skip
+      || !bitmap_bit_p (args_to_skip, 0))
+    {
+      new_type = build_distinct_type_copy (orig_type);
+      TYPE_ARG_TYPES (new_type) = new_reversed;
+    }
+  else
+    {
+      new_type
+        = build_distinct_type_copy (build_function_type (TREE_TYPE (orig_type),
+							 new_reversed));
+      TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
+    }
+
+  if (skip_return)
+    TREE_TYPE (new_type) = void_type_node;
+
+  /* This is a new type, not a copy of an old type.  Need to reassociate
+     variants.  We can handle everything except the main variant lazily.  */
+  t = TYPE_MAIN_VARIANT (orig_type);
+  if (t != orig_type)
+    {
+      t = build_function_type_skip_args (t, args_to_skip, skip_return);
+      TYPE_MAIN_VARIANT (new_type) = t;
+      TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
+      TYPE_NEXT_VARIANT (t) = new_type;
+    }
+  else
+    {
+      TYPE_MAIN_VARIANT (new_type) = new_type;
+      TYPE_NEXT_VARIANT (new_type) = NULL;
+    }
+
+  return new_type;
+}
+
+/* Build variant of function decl ORIG_DECL skipping ARGS_TO_SKIP and the
+   return value if SKIP_RETURN is true.
+
+   Arguments from DECL_ARGUMENTS list can't be removed now, since they are
+   linked by TREE_CHAIN directly.  The caller is responsible for eliminating
+   them when they are being duplicated (i.e. copy_arguments_for_versioning).  */
+
+static tree
+build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
+			       bool skip_return)
+{
+  tree new_decl = copy_node (orig_decl);
+  tree new_type;
+
+  new_type = TREE_TYPE (orig_decl);
+  if (prototype_p (new_type)
+      || (skip_return && !VOID_TYPE_P (TREE_TYPE (new_type))))
+    new_type
+      = build_function_type_skip_args (new_type, args_to_skip, skip_return);
+  TREE_TYPE (new_decl) = new_type;
+
+  /* For declarations setting DECL_VINDEX (i.e. methods)
+     we expect first argument to be THIS pointer.   */
+  if (args_to_skip && bitmap_bit_p (args_to_skip, 0))
+    DECL_VINDEX (new_decl) = NULL_TREE;
+
+  /* When signature changes, we need to clear builtin info.  */
+  if (DECL_BUILT_IN (new_decl)
+      && args_to_skip
+      && !bitmap_empty_p (args_to_skip))
+    {
+      DECL_BUILT_IN_CLASS (new_decl) = NOT_BUILT_IN;
+      DECL_FUNCTION_CODE (new_decl) = (enum built_in_function) 0;
+    }
+  return new_decl;
+}
+
 /* Create callgraph node clone with new declaration.  The actual body will
    be copied later at compilation stage.
 

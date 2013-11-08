@@ -235,6 +235,18 @@ eliminate_constant_term (rtx x, rtx *constptr)
   return x;
 }
 
+/* Returns a tree for the size of EXP in bytes.  */
+
+static tree
+tree_expr_size (const_tree exp)
+{
+  if (DECL_P (exp)
+      && DECL_SIZE_UNIT (exp) != 0)
+    return DECL_SIZE_UNIT (exp);
+  else
+    return size_in_bytes (TREE_TYPE (exp));
+}
+
 /* Return an rtx for the size in bytes of the value of EXP.  */
 
 rtx

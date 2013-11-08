@@ -172,6 +172,129 @@
 	No longer check if we have __builtin_trap, assume it's
 	available.
 
+2013-11-07  Diego Novillo  <dnovillo@google.com>
+
+	* attribs.c (lookup_scoped_attribute_spec): Make static.
+	(get_attribute_namespace): Likewise.
+	* builtins.c (more_const_call_expr_args_p): Move from
+	tree.h.
+	(validate_arglist): Move earlier in the file. Make static.
+	(expand_stack_restore): Move from stmt.c
+	(expand_stack_save): Move from stmt.c
+	(rewrite_call_expr_array): Move earlier in the file.
+	(rewrite_call_expr_valist): Likewise.
+	* cfgexpand.c: Include hard-reg-set.h before tree.h
+	Include recog.h.
+	Include output.h.
+	(expand_asm_loc): Move from stmt.c.
+	(n_occurrences): Move from stmt.c.
+	(check_operand_nalternatives): Move from stmt.c.
+	(tree_conflicts_with_clobbers_p): Move from stmt.c.
+	(expand_asm_operands): Move from stmt.c
+	(expand_asm_stmt): Move from stmt.c
+	(expand_computed_goto): Move from stmt.c
+	(expand_goto): Move from stmt.c
+	(expand_null_return_1): Move from stmt.c
+	(expand_null_return): Move from stmt.c
+	(expand_value_return): Move from stmt.c
+	(expand_return): Move from stmt.c
+	(expand_main_function): Move from function.c
+	(stack_protect_prologue): Move from function.c
+	* cgraphclones.c (build_function_type_skip_args): Move from tree.c.
+	(build_function_decl_skip_args): Move from tree.c.
+	* explow.c (tree_expr_size): Move from tree.c.
+	* expr.c (addr_expr_of_non_mem_decl_p): Remove.
+	(fields_length): Move from tree.c.
+	* fold-const.c (size_low_cst): Move from tree.c.
+	(tree_expr_nonzero_warnv_p): Make static. Move earlier in the file.
+	(tree_expr_nonzero_p): Make static. Move earlier in the file.
+	(fold_build3_initializer_loc): Remove.
+	(tree_invalid_nonnegative_warnv_p): Make static.
+	* function.c (expand_main_function): Move to cfgexpand.c.
+	(stack_protect_prologue): Move to cfgexpand.c.
+	(set_insn_locations): Move earlier in the file.
+	* gimple-fold.c: Include langhooks.h.
+	(truth_type_for): Move from tree.c.
+	* print-tree.c (print_vec_tree): Remove.
+	* stmt.c (expand_computed_goto): Move to cfgexpand.c.
+	(expand_goto): Move to cfgexpand.c.
+	(n_occurrences): Move to cfgexpand.c.
+	(expand_asm_loc): Move to cfgexpand.c
+	(tree_conflicts_with_clobbers_p): Move to cfgexpand.c.
+	(expand_asm_operands): Move to cfgexpand.c.
+	(expand_asm_stmt): Move to cfgexpand.c.
+	(check_operand_nalternatives): Move to cfgexpand.c
+	(expand_null_return): Move to cfgexpand.c.
+	(expand_value_return): Move to cfgexpand.c.
+	(expand_null_return_1): Move to cfgexpand.c.
+	(expand_return): Move to cfgexpand.c.
+	(expand_stack_save): Move to builtins.c.
+	(expand_stack_restore): Move to builtins.c
+	* symtab.c: Include output.h.
+	(decl_assembler_name_hash): Move from tree.c.
+	(decl_assembler_name_equal): Move from tree.c.
+	* trans-mem.c (is_tm_safe_or_pure): Move from tree.h.
+	* tree-eh.c (in_array_bounds_p): Move from tree.c.
+	(range_in_array_bounds_p): Move from tree.c.
+	* tree-object-size.c (fini_object_sizes): Make static.
+	* tree-ssa-dom.c (iterative_hash_exprs_commutative): Move from tree.h.
+	* tree-vrp.c (ssa_name_nonnegative_p): Remove.
+	* tree.c (decl_assembler_name_equal): Move to symtab.c.
+	(tree_expr_size): Move to explow.c.
+	(decl_assembler_name_hash): Move to symtab.c.
+	(real_twop): Remove.
+	(tree_expr_size): Move to explow.c.
+	(stabilize_reference_1): Move earlier in the file. Make static.
+	(omp_remove_redundant_declare_simd_attrs): Remove.
+	(simple_cst_list_equal): Move earlier in the file. Make static.
+	(size_low_cst): Move to fold-const.c.
+	(build_type_no_quals): Remove.
+	(build_function_type_skip_args): Move to cgraphclones.c.
+	(build_function_decl_skip_args): Move to cgraphclones.c.
+	(in_array_bounds_p): Move to tree-eh.c.
+	(range_in_array_bounds_p): Move to tree-eh.c.
+	(truth_type_for): Move to gimple-fold.c.
+	(list_equal_p): remove.
+	* tree.h (decl_assembler_name_equal): Remove.
+	(decl_assembler_name_hash): Remove.
+	(truth_type_for): Remove.
+	(build_type_no_quals): Remove.
+	(build_function_decl_skip_args): Remove.
+	(in_array_bounds_p): Remove.
+	(range_in_array_bounds_p): Remove.
+	(size_low_cst): Remove.
+	(omp_remove_redundant_declare_simd_attrs): Remove.
+	(tree_expr_size): Remove.
+	(fields_length): Remove.
+	(stabilize_reference_1): Remove.
+	(expand_goto): Remove.
+	(expand_stack_save): Remove.
+	(expand_stack_restore): Remove.
+	(expand_return): Remove.
+	(fold_build3_initializer_loc): Remove.
+	(tree_expr_nonzero_p): Remove.
+	(tree_invalid_nonnegative_warnv_p): Remove.
+	(tree_expr_nonzero_warnv_p): Remove.
+	(fold_builtin_snprintf_chk): Remove.
+	(validate_arglist): Remove.
+	(iterative_hash_exprs_commutative): Move to tree-ssa-dom.c.
+	(simple_cst_list_equal): Remove.
+	(real_twop): Remove.
+	(expand_main_function): Remove.
+	(stack_protect_prologue): Remove.
+	(print_vec_tree): Remove.
+	(lookup_scoped_attribute_spec): Remove.
+	(get_attribute_namespace): Remove.
+	(expand_computed_goto): Remove.
+	(expand_asm_stmt): Remove.
+	(list_equal_p): Remove.
+	(ssa_name_nonnegative_p): Remove.
+	(fini_object_sizes): Remove.
+	(addr_expr_of_non_mem_decl_p): Remove.
+	(is_tm_safe_or_pure): Move to trans-mem.c.
+	(more_const_call_expr_args_p): Remove.
+	(save_vtable_map_decl): Remove.
+
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/sourcebuild.texi (Top Level) <lto-plugin>: GNU ld can use
