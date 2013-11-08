@@ -43,12 +43,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _BracketMatcher;
 
   /// Builds an NFA from an input iterator interval.
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     class _Compiler
     {
     public:
       typedef typename _TraitsT::string_type      _StringT;
-      typedef _NFA<_CharT, _TraitsT>              _RegexT;
+      typedef _NFA<_TraitsT>              	  _RegexT;
       typedef regex_constants::syntax_option_type _FlagT;
 
       _Compiler(_FwdIter __b, _FwdIter __e,
@@ -59,9 +59,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return make_shared<_RegexT>(std::move(_M_nfa)); }
 
     private:
+      typedef typename _TraitsT::char_type		      _CharT;
       typedef _Scanner<_FwdIter>                              _ScannerT;
       typedef typename _ScannerT::_TokenT                     _TokenT;
-      typedef _StateSeq<_CharT, _TraitsT>                     _StateSeqT;
+      typedef _StateSeq<_TraitsT>                     	      _StateSeqT;
       typedef std::stack<_StateSeqT, std::vector<_StateSeqT>> _StackT;
       typedef _BracketMatcher<_CharT, _TraitsT>               _BMatcherT;
       typedef std::ctype<_CharT>                              _CtypeT;
@@ -128,6 +129,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StringT        _M_value;
       _StackT         _M_stack;
     };
+
+  template<typename _FwdIter, typename _TraitsT>
+    inline std::shared_ptr<_NFA<_TraitsT>>
+    __compile_nfa(_FwdIter __first, _FwdIter __last, const _TraitsT& __traits,
+		  regex_constants::syntax_option_type __flags)
+    {
+      using _Cmplr = _Compiler<_FwdIter, _TraitsT>;
+      return _Cmplr(__first, __last, __traits, __flags)._M_get_nfa();
+    }
 
   template<typename _CharT, typename _TraitsT>
     struct _AnyMatcher

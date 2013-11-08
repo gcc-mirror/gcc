@@ -129,9 +129,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __ostr;
   }
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     std::ostream&
-    _NFA<_CharT, _TraitsT>::_M_dot(std::ostream& __ostr) const
+    _NFA<_TraitsT>::_M_dot(std::ostream& __ostr) const
     {
       __ostr << "digraph _Nfa {\n"
 	        "  rankdir=LR;\n";
@@ -142,9 +142,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     _StateIdT
-    _NFA<_CharT, _TraitsT>::_M_insert_backref(size_t __index)
+    _NFA<_TraitsT>::_M_insert_backref(size_t __index)
     {
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing
@@ -164,9 +164,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _M_insert_state(std::move(__tmp));
     }
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     void
-    _NFA<_CharT, _TraitsT>::_M_eliminate_dummy()
+    _NFA<_TraitsT>::_M_eliminate_dummy()
     {
       for (auto& __it : *this)
 	{
@@ -182,9 +182,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Just apply DFS on the sequence and re-link their links.
-  template<typename _CharT, typename _TraitsT>
-    _StateSeq<_CharT, _TraitsT>
-    _StateSeq<_CharT, _TraitsT>::_M_clone()
+  template<typename _TraitsT>
+    _StateSeq<_TraitsT>
+    _StateSeq<_TraitsT>::_M_clone()
     {
       std::map<_StateIdT, _StateIdT> __m;
       std::stack<_StateIdT> __stack;

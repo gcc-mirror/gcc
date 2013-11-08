@@ -12,6 +12,17 @@
 	* include/bits/regex_executor.h (__detail::_Executor::_M_is_word): Use
 	array, so past-the-end iterator is valid.
 
+	* include/bits/regex_automaton.h (__detail::_State, __detail::_NFA,
+	__detail::_StateSeq): Remove redundant _CharT template parameters.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h (__detail::_Compiler): Likewise.
+	(__compile_nfa): Add object generator for _Compiler.
+	* include/bits/regex_compiler.tcc: Remove _CharT template parameters.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex.h (basic_regex): Assert char_type matches. Use
+	__compile_nfa object generator. Remove _CharT template parameter.
+
 2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to

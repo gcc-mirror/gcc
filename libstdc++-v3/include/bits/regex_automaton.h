@@ -103,10 +103,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _State : _State_base
     {
-      typedef _Matcher<_CharT>           _MatcherT;
+      typedef _Matcher<typename _TraitsT::char_type> _MatcherT;
 
       _MatcherT      _M_matches;        // for _S_opcode_match
 
@@ -155,12 +155,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool                      _M_has_backref;
   };
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _NFA
-    : _NFA_base, std::vector<_State<_CharT, _TraitsT>>
+    : _NFA_base, std::vector<_State<_TraitsT>>
     {
-      typedef _State<_CharT, _TraitsT>		_StateT;
-      typedef _Matcher<_CharT>			_MatcherT;
+      typedef _State<_TraitsT>				_StateT;
+      typedef _Matcher<typename _TraitsT::char_type>	_MatcherT;
 
       using _NFA_base::_NFA_base;
 
@@ -268,11 +268,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Describes a sequence of one or more %_State, its current start
   /// and end(s).  This structure contains fragments of an NFA during
   /// construction.
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     class _StateSeq
     {
     public:
-      typedef _NFA<_CharT, _TraitsT> _RegexT;
+      typedef _NFA<_TraitsT> _RegexT;
 
     public:
       _StateSeq(_RegexT& __nfa, _StateIdT __s)

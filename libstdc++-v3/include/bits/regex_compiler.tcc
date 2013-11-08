@@ -59,8 +59,8 @@ namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+  template<typename _FwdIter, typename _TraitsT>
+    _Compiler<_FwdIter, _TraitsT>::
     _Compiler(_FwdIter __b, _FwdIter __e,
 	      const _TraitsT& __traits, _FlagT __flags)
     : _M_flags((__flags
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       ? __flags
 	       : __flags | regex_constants::ECMAScript),
     _M_traits(__traits),
-    _M_ctype(std::use_facet<std::ctype<_CharT>>(_M_traits.getloc())),
+    _M_ctype(std::use_facet<_CtypeT>(_M_traits.getloc())),
     _M_scanner(__b, __e, _M_flags, _M_traits.getloc()),
     _M_nfa(_M_flags)
     {
@@ -89,9 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_nfa._M_eliminate_dummy();
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     void
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_disjunction()
     {
       this->_M_alternative();
@@ -110,9 +110,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     void
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_alternative()
     {
       if (this->_M_term())
@@ -126,9 +126,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_term()
     {
       if (this->_M_assertion())
@@ -141,9 +141,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_assertion()
     {
       if (_M_match_token(_ScannerT::_S_token_line_begin))
@@ -172,9 +172,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     void
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_quantifier()
     {
       bool __neg = (_M_flags & regex_constants::ECMAScript);
@@ -278,9 +278,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_atom()
     {
       if (_M_match_token(_ScannerT::_S_token_anychar))
@@ -329,9 +329,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_bracket_expression()
     {
       bool __neg =
@@ -346,9 +346,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     void
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_expression_term(_BMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
@@ -383,9 +383,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_regex_error(regex_constants::error_brack);
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_try_char()
     {
       bool __is_char = false;
@@ -404,9 +404,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is_char;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_match_token(_TokenT token)
     {
       if (token == _M_scanner._M_get_token())
@@ -418,9 +418,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+  template<typename _FwdIter, typename _TraitsT>
     int
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _Compiler<_FwdIter, _TraitsT>::
     _M_cur_int_value(int __radix)
     {
       long __v = 0;
