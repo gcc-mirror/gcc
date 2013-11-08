@@ -1,3 +1,29 @@
+2013-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/stdatomic-compare-exchange-1.c,
+	gcc.dg/atomic/stdatomic-compare-exchange-2.c,
+	gcc.dg/atomic/stdatomic-compare-exchange-3.c,
+	gcc.dg/atomic/stdatomic-compare-exchange-4.c,
+	gcc.dg/atomic/stdatomic-exchange-1.c,
+	gcc.dg/atomic/stdatomic-exchange-2.c,
+	gcc.dg/atomic/stdatomic-exchange-3.c,
+	gcc.dg/atomic/stdatomic-exchange-4.c,
+	gcc.dg/atomic/stdatomic-fence.c, gcc.dg/atomic/stdatomic-flag.c,
+	gcc.dg/atomic/stdatomic-generic.c,
+	gcc.dg/atomic/stdatomic-kill-dep.c,
+	gcc.dg/atomic/stdatomic-load-1.c,
+	gcc.dg/atomic/stdatomic-load-2.c,
+	gcc.dg/atomic/stdatomic-load-3.c,
+	gcc.dg/atomic/stdatomic-load-4.c,
+	gcc.dg/atomic/stdatomic-lockfree.c,
+	gcc.dg/atomic/stdatomic-op-1.c, gcc.dg/atomic/stdatomic-op-2.c,
+	gcc.dg/atomic/stdatomic-op-3.c, gcc.dg/atomic/stdatomic-op-4.c,
+	gcc.dg/atomic/stdatomic-store-1.c,
+	gcc.dg/atomic/stdatomic-store-2.c,
+	gcc.dg/atomic/stdatomic-store-3.c,
+	gcc.dg/atomic/stdatomic-store-4.c, gcc.dg/c11-stdatomic-1.c: New
+	tests.
+
 2013-11-08  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/58508
