@@ -8012,6 +8012,32 @@ returns -1.
 
 @end deftypefn
 
+@node Cilk Plus Builtins
+@section Cilk Plus C/C++ language extension Built-in Functions.
+
+GCC provides support for the following built-in reduction funtions if Cilk Plus
+is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
+
+@itemize @bullet
+@item __sec_implicit_index
+@item __sec_reduce
+@item __sec_reduce_add
+@item __sec_reduce_all_nonzero
+@item __sec_reduce_all_zero
+@item __sec_reduce_any_nonzero
+@item __sec_reduce_any_zero
+@item __sec_reduce_max
+@item __sec_reduce_min
+@item __sec_reduce_max_ind
+@item __sec_reduce_min_ind
+@item __sec_reduce_mul
+@item __sec_reduce_mutating
+@end itemize
+
+Further details and examples about these built-in functions are described 
+in the Cilk Plus language manual which can be found at 
+@uref{http://www.cilkplus.org}.
+
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
@@ -9135,32 +9161,6 @@ are 32 bit.
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64 bit.
 @end deftypefn
-
-@node Cilk Plus Builtins
-@section Cilk Plus C/C++ language extension Built-in Functions.
-
-GCC provides support for the following built-in reduction funtions if Cilk Plus
-is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
-
-@itemize @bullet
-@item __sec_implicit_index
-@item __sec_reduce
-@item __sec_reduce_add
-@item __sec_reduce_all_nonzero
-@item __sec_reduce_all_zero
-@item __sec_reduce_any_nonzero
-@item __sec_reduce_any_zero
-@item __sec_reduce_max
-@item __sec_reduce_min
-@item __sec_reduce_max_ind
-@item __sec_reduce_min_ind
-@item __sec_reduce_mul
-@item __sec_reduce_mutating
-@end itemize
-
-Further details and examples about these built-in functions are described 
-in the Cilk Plus language manual which can be found at 
-@uref{http://www.cilkplus.org}.
 
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
