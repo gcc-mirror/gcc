@@ -28,6 +28,10 @@
 	_CharT template parameters.
 	* include/bits/regex_compiler.tcc: Likewise.
 
+	* include/bits/regex_compiler.h (__detail::__compile_nfa): Overload
+	so that std::basic_string<C> and std::vector<C> iterators dispatch to
+	the const C* compiler.
+
 2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to
