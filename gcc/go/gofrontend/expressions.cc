@@ -3351,9 +3351,10 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	  return se->get_tree(context);
 	}
 
-      Call_expression* i2s_expr =
+      Expression* i2s_expr =
           Runtime::make_call(Runtime::INT_TO_STRING, this->location(), 1,
                              this->expr_);
+      i2s_expr = Expression::make_cast(type, i2s_expr, this->location());
       ret = i2s_expr->get_tree(context);
     }
   else if (type->is_string_type() && expr_type->is_slice_type())
@@ -3405,7 +3406,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       Type* e = type->array_type()->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
 
-      Call_expression* s2a_expr;
+      Expression* s2a_expr;
       if (e->integer_type()->is_byte())
         s2a_expr = Runtime::make_call(Runtime::STRING_TO_BYTE_ARRAY,
                                       this->location(), 1, this->expr_);
@@ -3415,6 +3416,8 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
           s2a_expr = Runtime::make_call(Runtime::STRING_TO_INT_ARRAY,
                                         this->location(), 1, this->expr_);
 	}
+      s2a_expr = Expression::make_unsafe_cast(type, s2a_expr,
+					      this->location());
       ret = s2a_expr->get_tree(context);
     }
   else if ((type->is_unsafe_pointer_type()
