@@ -555,9 +555,7 @@ ssa_redirect_edges (struct redirection_data **slot,
 
       /* Go ahead and clear E->aux.  It's not needed anymore and failure
          to clear it will cause all kinds of unpleasant problems later.  */
-      for (unsigned int i = 0; i < path->length (); i++)
-	delete (*path)[i];
-      path->release ();
+      delete_jump_thread_path (path);
       e->aux = NULL;
 
     }
@@ -703,9 +701,7 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 	      /* Since this case is not handled by our special code
 		 to thread through a loop header, we must explicitly
 		 cancel the threading request here.  */
-	      for (unsigned int i = 0; i < path->length (); i++)
-		delete (*path)[i];
-	      path->release ();
+	      delete_jump_thread_path (path);
 	      e->aux = NULL;
 	      continue;
 	    }
@@ -1161,9 +1157,7 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 	  if (e->src->loop_father != e2->dest->loop_father
 	      && e2->dest != loop->header)
 	    {
-	      for (unsigned int i = 0; i < path->length (); i++)
-		delete (*path)[i];
-	      path->release ();
+	      delete_jump_thread_path (path);
 	      e->aux = NULL;
 	    }
 	}
@@ -1213,9 +1207,7 @@ fail:
 
       if (path)
 	{
-	  for (unsigned int i = 0; i < path->length (); i++)
-	    delete (*path)[i];
-	  path->release ();
+	  delete_jump_thread_path (path);
 	  e->aux = NULL;
 	}
     }
@@ -1310,9 +1302,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 
 		  if (e2 && !phi_args_equal_on_edges (e2, final_edge))
 		    {
-		      for (unsigned int i = 0; i < path->length (); i++)
-			delete (*path)[i];
-		      path->release ();
+		      delete_jump_thread_path (path);
 		      e->aux = NULL;
 		    }
 		}
@@ -1336,9 +1326,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 		  if (e->aux)
 		    {
 		      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-		      for (unsigned int i = 0; i < path->length (); i++)
-		        delete (*path)[i];
-		      path->release ();
+		      delete_jump_thread_path (path);
 		      e->aux = NULL;
 		    }
 		}
@@ -1395,9 +1383,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 			      || (path->last ()->type
 				  == EDGE_COPY_SRC_JOINER_BLOCK))
 			    {
-			      for (unsigned int i = 0; i < path->length (); i++)
-				delete (*path)[i];
-			      path->release ();
+			      delete_jump_thread_path (path);
 			      e->aux = NULL;
 			    }
 			  break;
@@ -1498,9 +1484,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	  {
 	    vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
-	    for (unsigned int i = 0; i < path->length (); i++)
-	      delete (*path)[i];
-	    path->release ();
+	    delete_jump_thread_path (path);
 	    e->aux = NULL;
  	  }
     }
@@ -1518,6 +1502,17 @@ thread_through_all_blocks (bool may_peel_loop_headers)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   return retval;
+}
+
+/* Delete the jump threading path PATH.  We have to explcitly delete
+   each entry in the vector, then the container.  */
+
+void
+delete_jump_thread_path (vec<jump_thread_edge *> *path)
+{
+  for (unsigned int i = 0; i < path->length (); i++)
+    delete (*path)[i];
+  path->release();
 }
 
 /* Dump a jump threading path, including annotations about each
@@ -1565,9 +1560,7 @@ register_jump_thread (vec<jump_thread_edge *> *path)
 {
   if (!dbg_cnt (registered_jump_thread))
     {
-      for (unsigned int i = 0; i < path->length (); i++)
-	delete (*path)[i];
-      path->release ();
+      delete_jump_thread_path (path);
       return;
     }
 
@@ -1583,9 +1576,7 @@ register_jump_thread (vec<jump_thread_edge *> *path)
 	    dump_jump_thread_path (dump_file, *path);
 	  }
 
-	for (unsigned int i = 0; i < path->length (); i++)
-	  delete (*path)[i];
-	path->release ();
+	delete_jump_thread_path (path);
 	return;
       }
 

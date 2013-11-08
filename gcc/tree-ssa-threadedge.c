@@ -1086,9 +1086,7 @@ thread_across_edge (gimple dummy_cond,
 	  }
 	else
 	  {
-	    for (unsigned int i = 0; i < path->length (); i++)
-	      delete (*path)[i];
-	    path->release();
+	    delete_jump_thread_path (path);
 	  }
       }
     BITMAP_FREE (visited);
