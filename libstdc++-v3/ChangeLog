@@ -1,3 +1,17 @@
+2013-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (__detail::_State): Split
+	non-dependent parts into new _State_base.
+	(__detail::_NFA): Likewise for _NFA_base. Use std::move() to avoid
+	copies when inserting _MatcherT and _StateT objects.
+	* include/bits/regex_automaton.tcc: Move member definitions to base
+	class. Qualify dependent names.
+	* include/bits/regex_compiler.h (__detail::_Compiler::_M_get_nfa): Make
+	non-const and use std::move to avoid copying.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_is_word): Use
+	array, so past-the-end iterator is valid.
+
 2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to
