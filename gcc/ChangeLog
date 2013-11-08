@@ -1,3 +1,7 @@
+2013-11-08  Tom de Vries  <tom@codesourcery.com>
+
+	* config/rs6000/t-xilinx: Remove duplicate contents.
+
 2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
