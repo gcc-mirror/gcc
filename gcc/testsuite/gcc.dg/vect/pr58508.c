@@ -1,3 +1,4 @@
+/* { dg-require-effective-target vect_int } */
 /* { dg-do compile } */
 
 
