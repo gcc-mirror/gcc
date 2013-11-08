@@ -1,3 +1,14 @@
+2013-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59047
+	* gcc.dg/torture/pr59047.c: New testcase.
+
+2013-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59038
+	PR tree-optimization/58955
+	* gcc.dg/torture/pr59038.c: New testcase.
+
 2013-11-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58471
