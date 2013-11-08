@@ -1,3 +1,9 @@
+2013-11-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/59055
+	* doc/extend.texi: Move Cilk Plus Builtins node before Other
+	Builtins node.
+
 2013-11-08  Andrew MacLeod  <amacleod@redhat.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
