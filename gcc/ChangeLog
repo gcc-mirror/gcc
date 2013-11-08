@@ -1,3 +1,12 @@
+2013-11-08  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.h (delete_thread_path): Declare.
+	* tree-ssa-threadupdate.c (delete_thread_path): New function.
+	(ssa_redirect_edges, thread_block_1): Use it.
+	(thread_through_loop_header, mark_threaded_blocks): Likewise.
+	(thread_through_all_blocks, register_jump_thread): Likewise.
+	* tree-ssa-threadedge.c (thread_across_edge): Likewise.
+
 2013-11-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/aarch-common.c
