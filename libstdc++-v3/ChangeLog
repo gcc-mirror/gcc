@@ -1,3 +1,23 @@
+2013-11-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::_S_Is):
+	Take only a const safe iterator reference.
+	(_BeforeBeginHelper<>::_S_Is_beginnest): Likewise.
+	(__get_distance): Take only one type of iterator.
+	(_Safe_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_iterator<>::_M_get_sequence()): Return pointer to const
+	sequence from a const_iterator and a pointer to sequence from an
+	iterator.
+	* include/debug/safe_iterator.tcc: Adapt.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_local_iterator<>::_M_get_sequence()): Return pointer to
+	const sequence from a const_iterator and a pointer to sequence
+	from an iterator.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/forward_list
+	(_BeforeBeginHelper<std::__debug::forward_list<>>): Adapt.
+
 2013-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (__detail::_State): Split
