@@ -118,7 +118,6 @@ extern bool lhd_omp_mappable_type (tree);
 #define LANG_HOOKS_BLOCK_MAY_FALLTHRU	hook_bool_const_tree_true
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
 #define LANG_HOOKS_DEEP_UNSHARING	false
-#define LANG_HOOKS_CHKP_SUPPORTED	false
 
 /* Attribute hooks.  */
 #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
@@ -319,8 +318,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS, \
   LANG_HOOKS_BLOCK_MAY_FALLTHRU, \
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \
-  LANG_HOOKS_DEEP_UNSHARING, \
-  LANG_HOOKS_CHKP_SUPPORTED \
+  LANG_HOOKS_DEEP_UNSHARING \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */
