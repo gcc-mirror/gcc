@@ -182,7 +182,14 @@ AC_SUBST(long_double_type_size)
 
 # Check for decimal float support.
 AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],
-	       [AC_COMPILE_IFELSE([_Decimal32 x;], [libgcc_cv_dfp=yes],
+	       [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <fenv.h>
+]], [[
+_Decimal32 x;
+int fe_except =
+  FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW|FE_UNDERFLOW|FE_INEXACT;
+]])],
+				  [libgcc_cv_dfp=yes],
 				  [libgcc_cv_dfp=no])])
 decimal_float=$libgcc_cv_dfp
 AC_SUBST(decimal_float)
