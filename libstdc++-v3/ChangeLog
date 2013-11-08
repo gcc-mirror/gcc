@@ -32,6 +32,9 @@
 	so that std::basic_string<C> and std::vector<C> iterators dispatch to
 	the const C* compiler.
 
+	* include/bits/regex_compiler.h (__detail::__has_contiguous_iter):
+	vector<bool> storage is not contiguous.
+
 2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to

@@ -134,12 +134,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Ch, typename _Tr, typename _Alloc>
     struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
-    : std::true_type
+    : std::true_type  // string<Ch> storage is contiguous
     { };
 
   template<typename _Tp, typename _Alloc>
     struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
-    : std::true_type
+    : std::true_type  // vector<Tp> storage is contiguous
+    { };
+
+  template<typename _Alloc>
+    struct __has_contiguous_iter<std::vector<bool, _Alloc>>
+    : std::false_type // vector<bool> storage is not contiguous
     { };
 
   template<typename _Tp>
