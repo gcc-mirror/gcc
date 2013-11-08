@@ -1,3 +1,12 @@
+2013-11-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* common.opt (fcheck-pointer-bounds): Move to ...
+	* c-family/c.opt: ... here.
+	* langhooks-def.h (LANG_HOOKS_CHKP_SUPPORTED): Remove.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_CHKP_SUPPORTED.
+	* langhooks.h (lang_hooks): Remove chkp_supported field.
+	* toplev.c (process_options): Remove chkp_supported check.
+
 2013-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59038
