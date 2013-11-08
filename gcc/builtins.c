@@ -1050,6 +1050,63 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
     }
 }
 
+static inline bool
+more_const_call_expr_args_p (const const_call_expr_arg_iterator *iter)
+{
+  return (iter->i < iter->n);
+}
+
+/* This function validates the types of a function call argument list
+   against a specified list of tree_codes.  If the last specifier is a 0,
+   that represents an ellipses, otherwise the last specifier must be a
+   VOID_TYPE.  */
+
+static bool
+validate_arglist (const_tree callexpr, ...)
+{
+  enum tree_code code;
+  bool res = 0;
+  va_list ap;
+  const_call_expr_arg_iterator iter;
+  const_tree arg;
+
+  va_start (ap, callexpr);
+  init_const_call_expr_arg_iterator (callexpr, &iter);
+
+  do
+    {
+      code = (enum tree_code) va_arg (ap, int);
+      switch (code)
+	{
+	case 0:
+	  /* This signifies an ellipses, any further arguments are all ok.  */
+	  res = true;
+	  goto end;
+	case VOID_TYPE:
+	  /* This signifies an endlink, if no arguments remain, return
+	     true, otherwise return false.  */
+	  res = !more_const_call_expr_args_p (&iter);
+	  goto end;
+	default:
+	  /* If no parameters remain or the parameter's code does not
+	     match the specified code, return false.  Otherwise continue
+	     checking any remaining arguments.  */
+	  arg = next_const_call_expr_arg (&iter);
+	  if (!validate_arg (arg, code))
+	    goto end;
+	  break;
+	}
+    }
+  while (1);
+
+  /* We need gotos here since we can only have one VA_CLOSE in a
+     function.  */
+ end: ;
+  va_end (ap);
+
+  return res;
+}
+
 /* Expand a call to __builtin_nonlocal_goto.  We're passed the target label
    and the address of the save area.  */
 
@@ -5581,6 +5638,33 @@ expand_builtin_set_thread_pointer (tree exp)
 }
 
 
+/* Emit code to restore the current value of stack.  */
+
+static void
+expand_stack_restore (tree var)
+{
+  rtx prev, sa = expand_normal (var);
+
+  sa = convert_memory_address (Pmode, sa);
+
+  prev = get_last_insn ();
+  emit_stack_restore (SAVE_BLOCK, sa);
+  fixup_args_size_notes (prev, get_last_insn (), 0);
+}
+
+
+/* Emit code to save the current value of stack.  */
+
+static rtx
+expand_stack_save (void)
+{
+  rtx ret = NULL_RTX;
+
+  do_pending_stack_adjust ();
+  emit_stack_save (SAVE_BLOCK, &ret);
+  return ret;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -10962,47 +11046,51 @@ fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool ignore)
   return NULL_TREE;
 }
 
-/* Builtins with folding operations that operate on "..." arguments
-   need special handling; we need to store the arguments in a convenient
-   data structure before attempting any folding.  Fortunately there are
-   only a few builtins that fall into this category.  FNDECL is the
-   function, EXP is the CALL_EXPR for the call, and IGNORE is true if the
-   result of the function call is ignored.  */
+/* Construct a new CALL_EXPR to FNDECL using the tail of the argument
+   list ARGS along with N new arguments in NEWARGS.  SKIP is the number
+   of arguments in ARGS to be omitted.  OLDNARGS is the number of
+   elements in ARGS.  */
 
 static tree
-fold_builtin_varargs (location_t loc, tree fndecl, tree exp,
-		      bool ignore ATTRIBUTE_UNUSED)
+rewrite_call_expr_valist (location_t loc, int oldnargs, tree *args,
+			  int skip, tree fndecl, int n, va_list newargs)
 {
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  tree ret = NULL_TREE;
+  int nargs = oldnargs - skip + n;
+  tree *buffer;
 
-  switch (fcode)
+  if (n > 0)
     {
-    case BUILT_IN_SPRINTF_CHK:
-    case BUILT_IN_VSPRINTF_CHK:
-      ret = fold_builtin_sprintf_chk (loc, exp, fcode);
-      break;
+      int i, j;
 
-    case BUILT_IN_SNPRINTF_CHK:
-    case BUILT_IN_VSNPRINTF_CHK:
-      ret = fold_builtin_snprintf_chk (loc, exp, NULL_TREE, fcode);
-      break;
-
-    case BUILT_IN_FPCLASSIFY:
-      ret = fold_builtin_fpclassify (loc, exp);
-      break;
-
-    default:
-      break;
+      buffer = XALLOCAVEC (tree, nargs);
+      for (i = 0; i < n; i++)
+	buffer[i] = va_arg (newargs, tree);
+      for (j = skip; j < oldnargs; j++, i++)
+	buffer[i] = args[j];
     }
-  if (ret)
-    {
-      ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
-      SET_EXPR_LOCATION (ret, loc);
-      TREE_NO_WARNING (ret) = 1;
-      return ret;
-    }
-  return NULL_TREE;
+  else
+    buffer = args + skip;
+
+  return build_call_expr_loc_array (loc, fndecl, nargs, buffer);
+}
+
+/* Construct a new CALL_EXPR to FNDECL using the tail of the argument
+   list ARGS along with N new arguments specified as the "..."
+   parameters.  SKIP is the number of arguments in ARGS to be omitted.
+   OLDNARGS is the number of elements in ARGS.  */
+
+static tree
+rewrite_call_expr_array (location_t loc, int oldnargs, tree *args,
+			 int skip, tree fndecl, int n, ...)
+{
+  va_list ap;
+  tree t;
+
+  va_start (ap, n);
+  t = rewrite_call_expr_valist (loc, oldnargs, args, skip, fndecl, n, ap);
+  va_end (ap);
+
+  return t;
 }
 
 /* Return true if FNDECL shouldn't be folded right now.
@@ -11193,53 +11281,6 @@ fold_builtin_call_array (location_t loc, tree type,
   return build_call_array_loc (loc, type, fn, n, argarray);
 }
 
-/* Construct a new CALL_EXPR to FNDECL using the tail of the argument
-   list ARGS along with N new arguments in NEWARGS.  SKIP is the number
-   of arguments in ARGS to be omitted.  OLDNARGS is the number of
-   elements in ARGS.  */
-
-static tree
-rewrite_call_expr_valist (location_t loc, int oldnargs, tree *args,
-			  int skip, tree fndecl, int n, va_list newargs)
-{
-  int nargs = oldnargs - skip + n;
-  tree *buffer;
-
-  if (n > 0)
-    {
-      int i, j;
-
-      buffer = XALLOCAVEC (tree, nargs);
-      for (i = 0; i < n; i++)
-	buffer[i] = va_arg (newargs, tree);
-      for (j = skip; j < oldnargs; j++, i++)
-	buffer[i] = args[j];
-    }
-  else
-    buffer = args + skip;
-
-  return build_call_expr_loc_array (loc, fndecl, nargs, buffer);
-}
-
-/* Construct a new CALL_EXPR to FNDECL using the tail of the argument
-   list ARGS along with N new arguments specified as the "..."
-   parameters.  SKIP is the number of arguments in ARGS to be omitted.
-   OLDNARGS is the number of elements in ARGS.  */
-
-static tree
-rewrite_call_expr_array (location_t loc, int oldnargs, tree *args,
-			 int skip, tree fndecl, int n, ...)
-{
-  va_list ap;
-  tree t;
-
-  va_start (ap, n);
-  t = rewrite_call_expr_valist (loc, oldnargs, args, skip, fndecl, n, ap);
-  va_end (ap);
-
-  return t;
-}
-
 /* Construct a new CALL_EXPR using the tail of the argument list of EXP
    along with N new arguments specified as the "..." parameters.  SKIP
    is the number of arguments in EXP to be omitted.  This function is used
@@ -11314,57 +11355,6 @@ validate_gimple_arglist (const_gimple call, ...)
 	     match the specified code, return false.  Otherwise continue
 	     checking any remaining arguments.  */
 	  arg = gimple_call_arg (call, i++);
-	  if (!validate_arg (arg, code))
-	    goto end;
-	  break;
-	}
-    }
-  while (1);
-
-  /* We need gotos here since we can only have one VA_CLOSE in a
-     function.  */
- end: ;
-  va_end (ap);
-
-  return res;
-}
-
-/* This function validates the types of a function call argument list
-   against a specified list of tree_codes.  If the last specifier is a 0,
-   that represents an ellipses, otherwise the last specifier must be a
-   VOID_TYPE.  */
-
-bool
-validate_arglist (const_tree callexpr, ...)
-{
-  enum tree_code code;
-  bool res = 0;
-  va_list ap;
-  const_call_expr_arg_iterator iter;
-  const_tree arg;
-
-  va_start (ap, callexpr);
-  init_const_call_expr_arg_iterator (callexpr, &iter);
-
-  do
-    {
-      code = (enum tree_code) va_arg (ap, int);
-      switch (code)
-	{
-	case 0:
-	  /* This signifies an ellipses, any further arguments are all ok.  */
-	  res = true;
-	  goto end;
-	case VOID_TYPE:
-	  /* This signifies an endlink, if no arguments remain, return
-	     true, otherwise return false.  */
-	  res = !more_const_call_expr_args_p (&iter);
-	  goto end;
-	default:
-	  /* If no parameters remain or the parameter's code does not
-	     match the specified code, return false.  Otherwise continue
-	     checking any remaining arguments.  */
-	  arg = next_const_call_expr_arg (&iter);
 	  if (!validate_arg (arg, code))
 	    goto end;
 	  break;
@@ -13151,12 +13141,55 @@ fold_builtin_snprintf_chk_1 (location_t loc, int nargs, tree *args,
    BUILT_IN_VSNPRINTF_CHK.  If MAXLEN is not NULL, it is maximum length
    passed as second argument.  */
 
-tree
+static tree
 fold_builtin_snprintf_chk (location_t loc, tree exp, tree maxlen,
 			   enum built_in_function fcode)
 {
   return fold_builtin_snprintf_chk_1 (loc, call_expr_nargs (exp),
 				      CALL_EXPR_ARGP (exp), maxlen, fcode);
+}
+
+/* Builtins with folding operations that operate on "..." arguments
+   need special handling; we need to store the arguments in a convenient
+   data structure before attempting any folding.  Fortunately there are
+   only a few builtins that fall into this category.  FNDECL is the
+   function, EXP is the CALL_EXPR for the call, and IGNORE is true if the
+   result of the function call is ignored.  */
+
+static tree
+fold_builtin_varargs (location_t loc, tree fndecl, tree exp,
+		      bool ignore ATTRIBUTE_UNUSED)
+{
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+  tree ret = NULL_TREE;
+
+  switch (fcode)
+    {
+    case BUILT_IN_SPRINTF_CHK:
+    case BUILT_IN_VSPRINTF_CHK:
+      ret = fold_builtin_sprintf_chk (loc, exp, fcode);
+      break;
+
+    case BUILT_IN_SNPRINTF_CHK:
+    case BUILT_IN_VSNPRINTF_CHK:
+      ret = fold_builtin_snprintf_chk (loc, exp, NULL_TREE, fcode);
+      break;
+
+    case BUILT_IN_FPCLASSIFY:
+      ret = fold_builtin_fpclassify (loc, exp);
+      break;
+
+    default:
+      break;
+    }
+  if (ret)
+    {
+      ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
+      SET_EXPR_LOCATION (ret, loc);
+      TREE_NO_WARNING (ret) = 1;
+      return ret;
+    }
+  return NULL_TREE;
 }
 
 /* Fold a call to the {,v}printf{,_unlocked} and __{,v}printf_chk builtins.

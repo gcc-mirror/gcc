@@ -8944,6 +8944,17 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
   return total.low > (unsigned HOST_WIDE_INT) size;
 }
 
+/* Return the HOST_WIDE_INT least significant bits of T, a sizetype
+   kind INTEGER_CST.  This makes sure to properly sign-extend the
+   constant.  */
+
+static HOST_WIDE_INT
+size_low_cst (const_tree t)
+{
+  double_int d = tree_to_double_int (t);
+  return d.sext (TYPE_PRECISION (TREE_TYPE (t))).low;
+}
+
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -9949,6 +9960,117 @@ mask_with_tz (tree type, double_int x, double_int y)
       return mask & x;
     }
   return x;
+}
+
+/* Return true when T is an address and is known to be nonzero.
+   For floating point we further ensure that T is not denormal.
+   Similar logic is present in nonzero_address in rtlanal.h.
+
+   If the return value is based on the assumption that signed overflow
+   is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
+   change *STRICT_OVERFLOW_P.  */
+
+static bool
+tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
+{
+  tree type = TREE_TYPE (t);
+  enum tree_code code;
+
+  /* Doing something useful for floating point would need more work.  */
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
+
+  code = TREE_CODE (t);
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_unary:
+      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
+					      strict_overflow_p);
+    case tcc_binary:
+    case tcc_comparison:
+      return tree_binary_nonzero_warnv_p (code, type,
+					       TREE_OPERAND (t, 0),
+					       TREE_OPERAND (t, 1),
+					       strict_overflow_p);
+    case tcc_constant:
+    case tcc_declaration:
+    case tcc_reference:
+      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
+
+    default:
+      break;
+    }
+
+  switch (code)
+    {
+    case TRUTH_NOT_EXPR:
+      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
+					      strict_overflow_p);
+
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+      return tree_binary_nonzero_warnv_p (code, type,
+					       TREE_OPERAND (t, 0),
+					       TREE_OPERAND (t, 1),
+					       strict_overflow_p);
+
+    case COND_EXPR:
+    case CONSTRUCTOR:
+    case OBJ_TYPE_REF:
+    case ASSERT_EXPR:
+    case ADDR_EXPR:
+    case WITH_SIZE_EXPR:
+    case SSA_NAME:
+      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
+
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+    case BIND_EXPR:
+      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
+					strict_overflow_p);
+
+    case SAVE_EXPR:
+      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
+					strict_overflow_p);
+
+    case CALL_EXPR:
+      {
+	tree fndecl = get_callee_fndecl (t);
+	if (!fndecl) return false;
+	if (flag_delete_null_pointer_checks && !flag_check_new
+	    && DECL_IS_OPERATOR_NEW (fndecl)
+	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	if (flag_delete_null_pointer_checks
+	    && lookup_attribute ("returns_nonnull",
+		 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	  return true;
+	return alloca_call_p (t);
+      }
+
+    default:
+      break;
+    }
+  return false;
+}
+
+/* Return true when T is an address and is known to be nonzero.
+   Handle warnings about undefined signed overflow.  */
+
+static bool
+tree_expr_nonzero_p (tree t)
+{
+  bool ret, strict_overflow_p;
+
+  strict_overflow_p = false;
+  ret = tree_expr_nonzero_warnv_p (t, &strict_overflow_p);
+  if (strict_overflow_p)
+    fold_overflow_warning (("assuming signed overflow does not occur when "
+			    "determining that expression is always "
+			    "non-zero"),
+			   WARN_STRICT_OVERFLOW_MISC);
+  return ret;
 }
 
 /* Fold a binary expression of code CODE and type TYPE with operands
@@ -15244,19 +15366,6 @@ fold_build2_initializer_loc (location_t loc, enum tree_code code,
 }
 
 tree
-fold_build3_initializer_loc (location_t loc, enum tree_code code,
-			     tree type, tree op0, tree op1, tree op2)
-{
-  tree result;
-  START_FOLD_INIT;
-
-  result = fold_build3_loc (loc, code, type, op0, op1, op2);
-
-  END_FOLD_INIT;
-  return result;
-}
-
-tree
 fold_build_call_array_initializer_loc (location_t loc, tree type, tree fn,
 				       int nargs, tree *argarray)
 {
@@ -15777,7 +15886,7 @@ tree_call_nonnegative_warnv_p (tree type, tree fndecl,
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-bool
+static bool
 tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 {
   enum tree_code code = TREE_CODE (t);
@@ -16144,117 +16253,6 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
       break;
     }
   return false;
-}
-
-/* Return true when T is an address and is known to be nonzero.
-   For floating point we further ensure that T is not denormal.
-   Similar logic is present in nonzero_address in rtlanal.h.
-
-   If the return value is based on the assumption that signed overflow
-   is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
-   change *STRICT_OVERFLOW_P.  */
-
-bool
-tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
-{
-  tree type = TREE_TYPE (t);
-  enum tree_code code;
-
-  /* Doing something useful for floating point would need more work.  */
-  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
-    return false;
-
-  code = TREE_CODE (t);
-  switch (TREE_CODE_CLASS (code))
-    {
-    case tcc_unary:
-      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
-					      strict_overflow_p);
-    case tcc_binary:
-    case tcc_comparison:
-      return tree_binary_nonzero_warnv_p (code, type,
-					       TREE_OPERAND (t, 0),
-					       TREE_OPERAND (t, 1),
-					       strict_overflow_p);
-    case tcc_constant:
-    case tcc_declaration:
-    case tcc_reference:
-      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
-
-    default:
-      break;
-    }
-
-  switch (code)
-    {
-    case TRUTH_NOT_EXPR:
-      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
-					      strict_overflow_p);
-
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-      return tree_binary_nonzero_warnv_p (code, type,
-					       TREE_OPERAND (t, 0),
-					       TREE_OPERAND (t, 1),
-					       strict_overflow_p);
-
-    case COND_EXPR:
-    case CONSTRUCTOR:
-    case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
-    case ADDR_EXPR:
-    case WITH_SIZE_EXPR:
-    case SSA_NAME:
-      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
-
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case BIND_EXPR:
-      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
-					strict_overflow_p);
-
-    case SAVE_EXPR:
-      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
-					strict_overflow_p);
-
-    case CALL_EXPR:
-      {
-	tree fndecl = get_callee_fndecl (t);
-	if (!fndecl) return false;
-	if (flag_delete_null_pointer_checks && !flag_check_new
-	    && DECL_IS_OPERATOR_NEW (fndecl)
-	    && !TREE_NOTHROW (fndecl))
-	  return true;
-	if (flag_delete_null_pointer_checks
-	    && lookup_attribute ("returns_nonnull",
-		 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
-	  return true;
-	return alloca_call_p (t);
-      }
-
-    default:
-      break;
-    }
-  return false;
-}
-
-/* Return true when T is an address and is known to be nonzero.
-   Handle warnings about undefined signed overflow.  */
-
-bool
-tree_expr_nonzero_p (tree t)
-{
-  bool ret, strict_overflow_p;
-
-  strict_overflow_p = false;
-  ret = tree_expr_nonzero_warnv_p (t, &strict_overflow_p);
-  if (strict_overflow_p)
-    fold_overflow_warning (("assuming signed overflow does not occur when "
-			    "determining that expression is always "
-			    "non-zero"),
-			   WARN_STRICT_OVERFLOW_MISC);
-  return ret;
 }
 
 /* Given the components of a binary expression CODE, TYPE, OP0 and OP1,
