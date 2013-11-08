@@ -9965,6 +9965,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  *cost = 0;
 	  return true;
 	}
+      break;
 
     case ABS:
       if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT

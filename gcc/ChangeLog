@@ -1,3 +1,8 @@
+2013-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs): Break after handling
+	comparisons.
+
 2013-11-08  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.h (delete_thread_path): Declare.
