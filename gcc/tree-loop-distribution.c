@@ -1324,7 +1324,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
   for (int ii = 0; drs1.iterate (ii, &dr1); ++ii)
     for (int jj = 0; drs2.iterate (jj, &dr2); ++jj)
       {
-	int this_dir = -1;
+	int this_dir = 1;
 	ddr_p ddr;
 	/* Re-shuffle data-refs to be in dominator order.  */
 	if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
@@ -1350,8 +1350,17 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	      }
 	    /* Known dependences can still be unordered througout the
 	       iteration space, see gcc.dg/tree-ssa/ldist-16.c.  */
-	    if (DDR_NUM_DIST_VECTS (ddr) == 0)
+	    if (DDR_NUM_DIST_VECTS (ddr) != 1)
 	      this_dir = 2;
+	    /* If the overlap is exact preserve stmt order.  */
+	    else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	      ;
+	    else
+	      {
+		/* Else as the distance vector is lexicographic positive
+		   swap the dependence direction.  */
+		this_dir = -this_dir;
+	      }
 	  }
 	else
 	  this_dir = 0;

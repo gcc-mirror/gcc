@@ -1,3 +1,10 @@
+2013-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59038
+	PR tree-optimization/58955
+	* tree-loop-distribution.c (pg_add_dependence_edges): Revert
+	previous change.  Handle known dependences correctly.
+
 2013-11-08  Tom de Vries  <tom@codesourcery.com>
 
 	* config/rs6000/t-xilinx: Remove duplicate contents.
