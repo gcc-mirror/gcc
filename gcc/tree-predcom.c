@@ -1353,10 +1353,24 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
   tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
   addr = force_gimple_operand_1 (addr, stmts, is_gimple_mem_ref_addr,
 				 NULL_TREE);
-  return fold_build2 (MEM_REF, TREE_TYPE (DR_REF (dr)),
-		      addr,
-		      fold_convert (reference_alias_ptr_type (DR_REF (dr)),
-				    coff));
+  tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
+  /* While data-ref analysis punts on bit offsets it still handles
+     bitfield accesses at byte boundaries.  Cope with that.  Note that
+     we cannot simply re-apply the outer COMPONENT_REF because the
+     byte-granular portion of it is already applied via DR_INIT and
+     DR_OFFSET, so simply build a BIT_FIELD_REF knowing that the bits
+     start at offset zero.  */
+  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
+    {
+      tree field = TREE_OPERAND (DR_REF (dr), 1);
+      return build3 (BIT_FIELD_REF, TREE_TYPE (DR_REF (dr)),
+		     build2 (MEM_REF, DECL_BIT_FIELD_TYPE (field),
+			     addr, alias_ptr),
+		     DECL_SIZE (field), bitsize_zero_node);
+    }
+  else
+    return fold_build2 (MEM_REF, TREE_TYPE (DR_REF (dr)), addr, alias_ptr);
 }
 
 /* Get the initialization expression for the INDEX-th temporary variable
