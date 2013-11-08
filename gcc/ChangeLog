@@ -1,3 +1,17 @@
+2013-11-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/aarch-common.c
+	(search_term): New typedef.
+	(shift_rtx_costs): New array.
+	(arm_rtx_shift_left_p): New.
+	(arm_find_sub_rtx_with_search_term): Likewise.
+	(arm_find_sub_rtx_with_code): Likewise.
+	(arm_early_load_addr_dep): Add sanity checking.
+	(arm_no_early_alu_shift_dep): Likewise.
+	(arm_no_early_alu_shift_value_dep): Likewise.
+	(arm_no_early_mul_dep): Likewise.
+	(arm_no_early_store_addr_dep): Likewise.
+
 2013-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59047
