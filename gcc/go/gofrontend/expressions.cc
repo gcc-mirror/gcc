@@ -13488,10 +13488,52 @@ class Composite_literal_expression : public Parser_expression
 int
 Composite_literal_expression::do_traverse(Traverse* traverse)
 {
-  if (this->vals_ != NULL
-      && this->vals_->traverse(traverse) == TRAVERSE_EXIT)
+  if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
-  return Type::traverse(this->type_, traverse);
+
+  // If this is a struct composite literal with keys, then the keys
+  // are field names, not expressions.  We don't want to traverse them
+  // in that case.  If we do, we can give an erroneous error "variable
+  // initializer refers to itself."  See bug482.go in the testsuite.
+  if (this->has_keys_ && this->vals_ != NULL)
+    {
+      // The type may not be resolvable at this point.
+      Type* type = this->type_;
+      while (true)
+	{
+	  if (type->classification() == Type::TYPE_NAMED)
+	    type = type->named_type()->real_type();
+	  else if (type->classification() == Type::TYPE_FORWARD)
+	    {
+	      Type* t = type->forwarded();
+	      if (t == type)
+		break;
+	      type = t;
+	    }
+	  else
+	    break;
+	}
+
+      if (type->classification() == Type::TYPE_STRUCT)
+	{
+	  Expression_list::iterator p = this->vals_->begin();
+	  while (p != this->vals_->end())
+	    {
+	      // Skip key.
+	      ++p;
+	      go_assert(p != this->vals_->end());
+	      if (Expression::traverse(&*p, traverse) == TRAVERSE_EXIT)
+		return TRAVERSE_EXIT;
+	      ++p;
+	    }
+	  return TRAVERSE_CONTINUE;
+	}
+    }
+
+  if (this->vals_ != NULL)
+    return this->vals_->traverse(traverse);
+
+  return TRAVERSE_CONTINUE;
 }
 
 // Lower a generic composite literal into a specific version based on
