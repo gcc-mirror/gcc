@@ -1,3 +1,9 @@
+2013-11-08  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/59039
+	* runtime/cilk_fiber-unix.cpp: Fixed a crash in run() function
+	when optimization is turned on.
+
 2013-11-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR bootstrap/58951
