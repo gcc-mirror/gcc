@@ -23,6 +23,11 @@
 	* include/bits/regex.h (basic_regex): Assert char_type matches. Use
 	__compile_nfa object generator. Remove _CharT template parameter.
 
+	* include/bits/regex_compiler.h (__detail::_AnyMatcher,
+	__detail::_CharMatcher, __detail::_BracketMatcher): Remove redundant
+	_CharT template parameters.
+	* include/bits/regex_compiler.tcc: Likewise.
+
 2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to

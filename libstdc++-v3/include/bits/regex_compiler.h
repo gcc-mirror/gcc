@@ -39,7 +39,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _BracketMatcher;
 
   /// Builds an NFA from an input iterator interval.
@@ -59,13 +59,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return make_shared<_RegexT>(std::move(_M_nfa)); }
 
     private:
-      typedef typename _TraitsT::char_type		      _CharT;
       typedef _Scanner<_FwdIter>                              _ScannerT;
       typedef typename _ScannerT::_TokenT                     _TokenT;
       typedef _StateSeq<_TraitsT>                     	      _StateSeqT;
       typedef std::stack<_StateSeqT, std::vector<_StateSeqT>> _StackT;
-      typedef _BracketMatcher<_CharT, _TraitsT>               _BMatcherT;
-      typedef std::ctype<_CharT>                              _CtypeT;
+      typedef _BracketMatcher<_TraitsT>			      _BMatcherT;
+      typedef std::ctype<typename _TraitsT::char_type>        _CtypeT;
 
       // accepts a specific token or returns false.
       bool
@@ -139,9 +138,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Cmplr(__first, __last, __traits, __flags)._M_get_nfa();
     }
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _AnyMatcher
     {
+      typedef typename _TraitsT::char_type	  _CharT;
+
       explicit
       _AnyMatcher(const _TraitsT& __traits)
       : _M_traits(__traits)
@@ -159,9 +160,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _TraitsT& _M_traits;
     };
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _CharMatcher
     {
+      typedef typename _TraitsT::char_type	  _CharT;
       typedef regex_constants::syntax_option_type _FlagT;
 
       explicit
@@ -188,9 +190,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Matches a character range (bracket expression)
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     struct _BracketMatcher
     {
+      typedef typename _TraitsT::char_type	  _CharT;
       typedef typename _TraitsT::char_class_type  _CharClassT;
       typedef typename _TraitsT::string_type      _StringT;
       typedef regex_constants::syntax_option_type _FlagT;

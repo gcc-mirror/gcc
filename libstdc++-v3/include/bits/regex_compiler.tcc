@@ -286,11 +286,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_match_token(_ScannerT::_S_token_anychar))
 	_M_stack.push(_StateSeqT(_M_nfa,
 				_M_nfa._M_insert_matcher
-				(_AnyMatcher<_CharT, _TraitsT>(_M_traits))));
+				(_AnyMatcher<_TraitsT>(_M_traits))));
       else if (_M_try_char())
 	_M_stack.push(_StateSeqT(_M_nfa,
 				 _M_nfa._M_insert_matcher
-				 (_CharMatcher<_CharT, _TraitsT>(_M_value[0],
+				 (_CharMatcher<_TraitsT>(_M_value[0],
 								 _M_traits,
 								 _M_flags))));
       else if (_M_match_token(_ScannerT::_S_token_backref))
@@ -430,9 +430,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __v;
     }
 
-  template<typename _CharT, typename _TraitsT>
+  template<typename _TraitsT>
     bool
-    _BracketMatcher<_CharT, _TraitsT>::operator()(_CharT __ch) const
+    _BracketMatcher<_TraitsT>::operator()(_CharT __ch) const
     {
       bool __ret = false;
       if (_M_traits.isctype(__ch, _M_class_set)
