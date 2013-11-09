@@ -1,3 +1,24 @@
+2013-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/58982
+	* include/bits/stl_algobase.h (__copy_move::__copy_m): Use assertion
+	to prevent using memmove() on non-assignable types.
+	(__copy_move_backward::__copy_move_b): Likewise.
+	* include/bits/stl_uninitialized.h (uninitialized_copy
+	uninitialized_copy_n, uninitialized_fill, uninitialized_fill_n,
+	__uninitialized_default, __uninitialized_default_n): Check for
+	assignable as well as trivial.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	58982.cc: New.
+	* testsuite/25_algorithms/copy/58982.cc: New.
+	* testsuite/25_algorithms/copy_n/58982.cc: New.
+
 2013-11-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::_S_Is):
