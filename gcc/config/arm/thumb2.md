@@ -1449,11 +1449,7 @@
 ;; knows what to generate.
 (define_expand "doloop_end"
   [(use (match_operand 0 "" ""))      ; loop pseudo
-   (use (match_operand 1 "" ""))      ; iterations; zero if unknown
-   (use (match_operand 2 "" ""))      ; max iterations
-   (use (match_operand 3 "" ""))      ; loop level
-   (use (match_operand 4 "" ""))      ; label
-   (use (match_operand 5 "" ""))]     ; flag: 1 if loop entered at top, else 0
+   (use (match_operand 1 "" ""))]     ; label
   "TARGET_32BIT"
   "
  {
@@ -1472,10 +1468,6 @@
      rtx insn;
      rtx cmp;
 
-     /* Only use this on innermost loops.  */
-     if (INTVAL (operands[3]) > 1)
-       FAIL;
-
      if (GET_MODE (operands[0]) != SImode)
        FAIL;
 
@@ -1488,7 +1480,7 @@
      cmp = XVECEXP (PATTERN (insn), 0, 0);
      cc_reg = SET_DEST (cmp);
      bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
-     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [4]);
+     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));

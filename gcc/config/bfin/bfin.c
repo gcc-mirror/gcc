@@ -3366,6 +3366,22 @@ find_prev_insn_start (rtx insn)
   return insn;
 }
 
+/* Implement TARGET_CAN_USE_DOLOOP_P.  */
+
+static bool
+bfin_can_use_doloop_p (double_int, double_int iterations_max,
+		       unsigned int, bool)
+{
+  /* Due to limitations in the hardware (an initial loop count of 0
+     does not loop 2^32 times) we must avoid to generate a hardware
+     loops when we cannot rule out this case.  */
+  if (!flag_unsafe_loop_optimizations
+      && (iterations_max.high != 0
+	  || iterations_max.low >= 0xFFFFFFFF))
+    return false;
+  return true;
+}
+
 /* Increment the counter for the number of loop instructions in the
    current function.  */
 
@@ -5809,5 +5825,8 @@ bfin_conditional_register_usage (void)
    change order of insns.  It also needs a valid CFG.  */
 #undef TARGET_DELAY_VARTRACK
 #define TARGET_DELAY_VARTRACK true
+
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P bfin_can_use_doloop_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

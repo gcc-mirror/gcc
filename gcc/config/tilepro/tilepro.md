@@ -1318,11 +1318,7 @@
 ;; generate.
 (define_expand "doloop_end"
   [(use (match_operand 0 "" ""))    ;; loop pseudo
-   (use (match_operand 1 "" ""))    ;; iterations; zero if unknown
-   (use (match_operand 2 "" ""))    ;; max iterations
-   (use (match_operand 3 "" ""))    ;; loop level
-   (use (match_operand 4 "" ""))    ;; label
-   (use (match_operand 5 "" ""))]   ;; flag: 1 if loop entered at top, else 0
+   (use (match_operand 1 "" ""))]   ;; label
    ""
 {
   if (optimize > 0)
@@ -1331,9 +1327,6 @@
      rtx bcomp;
      rtx loc_ref;
 
-     /* only do inner loop  */
-     if (INTVAL (operands[3]) > 1)
-       FAIL;
      /* only deal with loop counters in SImode  */
      if (GET_MODE (operands[0]) != SImode)
        FAIL;
@@ -1342,7 +1335,7 @@
 
      emit_move_insn (s0, gen_rtx_PLUS (SImode, s0, GEN_INT (-1)));
      bcomp = gen_rtx_NE(SImode, s0, const0_rtx);
-     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [4]);
+     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));

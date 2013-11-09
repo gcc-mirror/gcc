@@ -11091,6 +11091,20 @@ function version at run-time for a given set of function versions.
 body must be generated.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (double_int @var{iterations}, double_int @var{iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
+Return true if it is possible to use low-overhead loops (@code{doloop_end}
+and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the
+exact number of iterations, or 0 if not known.  @var{iterations_max} gives
+the maximum number of iterations, or 0 if not known.  @var{loop_depth} is
+the nesting depth of the loop, with 1 for innermost loops, 2 for loops that
+contain innermost loops, and so on.  @var{entered_at_top} is true if the
+loop is only entered from the top.
+
+This hook is only used if @code{doloop_end} is available.  The default
+implementation returns true.  You can use @code{can_use_doloop_if_innermost}
+if the loop must be the innermost, and if there are no other restrictions.
+@end deftypefn
+
 @deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const_rtx @var{insn})
 
 Take an instruction in @var{insn} and return NULL if it is valid within a

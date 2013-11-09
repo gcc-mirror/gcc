@@ -1738,5 +1738,14 @@ default_builtin_chkp_function (unsigned int fcode ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
+/* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do
+   not support nested low-overhead loops.  */
+
+bool
+can_use_doloop_if_innermost (double_int, double_int,
+			     unsigned int loop_depth, bool)
+{
+  return loop_depth == 1;
+}
 
 #include "gt-targhooks.h"
