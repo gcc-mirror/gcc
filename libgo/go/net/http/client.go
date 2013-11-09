@@ -74,8 +74,8 @@ type RoundTripper interface {
 	// authentication, or cookies.
 	//
 	// RoundTrip should not modify the request, except for
-	// consuming the Body.  The request's URL and Header fields
-	// are guaranteed to be initialized.
+	// consuming and closing the Body. The request's URL and
+	// Header fields are guaranteed to be initialized.
 	RoundTrip(*Request) (*Response, error)
 }
 
@@ -161,7 +161,9 @@ func send(req *Request, t RoundTripper) (resp *Response, err error) {
 	}
 
 	if u := req.URL.User; u != nil {
-		req.Header.Set("Authorization", "Basic "+base64.URLEncoding.EncodeToString([]byte(u.String())))
+		username := u.Username()
+		password, _ := u.Password()
+		req.Header.Set("Authorization", "Basic "+basicAuth(username, password))
 	}
 	resp, err = t.RoundTrip(req)
 	if err != nil {
@@ -171,6 +173,16 @@ func send(req *Request, t RoundTripper) (resp *Response, err error) {
 		return nil, err
 	}
 	return resp, nil
+}
+
+// See 2 (end of page 4) http://www.ietf.org/rfc/rfc2617.txt
+// "To receive authorization, the client sends the userid and password,
+// separated by a single colon (":") character, within a base64
+// encoded string in the credentials."
+// It is not meant to be urlencoded.
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 // True if the specified HTTP status code is one for which the Get utility should
@@ -335,6 +347,9 @@ func Post(url string, bodyType string, body io.Reader) (resp *Response, err erro
 // Post issues a POST to the specified URL.
 //
 // Caller should close resp.Body when done reading from it.
+//
+// If the provided body is also an io.Closer, it is closed after the
+// body is successfully written to the server.
 func (c *Client) Post(url string, bodyType string, body io.Reader) (resp *Response, err error) {
 	req, err := NewRequest("POST", url, body)
 	if err != nil {

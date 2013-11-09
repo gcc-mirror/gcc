@@ -726,15 +726,18 @@ cpp_iec_559_value (void)
     ret = 0;
 
   /* In strict C standards conformance mode, consider unpredictable
-     excess precision to mean lack of IEEE 754 support.  ??? The same
-     should apply to unpredictable contraction, but at present
-     standards conformance options do not enable conforming
-     contraction.  For C++, and outside strict conformance mode, do
-     not consider these options to mean lack of IEEE 754 support.  */
+     excess precision to mean lack of IEEE 754 support.  The same
+     applies to unpredictable contraction.  For C++, and outside
+     strict conformance mode, do not consider these options to mean
+     lack of IEEE 754 support.  */
   if (flag_iso
       && !c_dialect_cxx ()
       && TARGET_FLT_EVAL_METHOD != 0
       && flag_excess_precision_cmdline != EXCESS_PRECISION_STANDARD)
+    ret = 0;
+  if (flag_iso
+      && !c_dialect_cxx ()
+      && flag_fp_contract_mode == FP_CONTRACT_FAST)
     ret = 0;
 
   /* Various options are contrary to IEEE 754 semantics.  */

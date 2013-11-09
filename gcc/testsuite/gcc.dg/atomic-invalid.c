@@ -10,6 +10,7 @@ int i, e, b;
 size_t s;
 bool x;
 
+int
 main ()
 {
   __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_RELAXED, __ATOMIC_SEQ_CST); /* { dg-error "failure memory model cannot be stronger" } */

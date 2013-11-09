@@ -14,43 +14,10 @@ package runtime
 #include "go-string.h"
 
 // NOTE(rsc): Everything here could use cas if contention became an issue.
-static Lock proflock, alloclock;
+static Lock proflock;
 
 // All memory allocations are local and do not escape outside of the profiler.
 // The profiler is forbidden from referring to garbage-collected memory.
-
-static byte *pool;        // memory allocation pool
-static uintptr poolfree;  // number of bytes left in the pool
-enum {
-	Chunk = 32*PageSize,  // initial size of the pool
-};
-
-// Memory allocation local to this file.
-// There is no way to return the allocated memory back to the OS.
-static void*
-allocate(uintptr size)
-{
-	void *v;
-
-	if(size == 0)
-		return nil;
-
-	if(size >= Chunk/2)
-		return runtime_SysAlloc(size);
-
-	runtime_lock(&alloclock);
-	if(size > poolfree) {
-		pool = runtime_SysAlloc(Chunk);
-		if(pool == nil)
-			runtime_throw("runtime: cannot allocate memory");
-		poolfree = Chunk;
-	}
-	v = pool;
-	pool += size;
-	poolfree -= size;
-	runtime_unlock(&alloclock);
-	return v;
-}
 
 enum { MProf, BProf };  // profile types
 
@@ -104,10 +71,9 @@ stkbucket(int32 typ, Location *stk, int32 nstk, bool alloc)
 	Bucket *b;
 
 	if(buckhash == nil) {
-		buckhash = runtime_SysAlloc(BuckHashSize*sizeof buckhash[0]);
+		buckhash = runtime_SysAlloc(BuckHashSize*sizeof buckhash[0], &mstats.buckhash_sys);
 		if(buckhash == nil)
 			runtime_throw("runtime: cannot allocate memory");
-		mstats.buckhash_sys += BuckHashSize*sizeof buckhash[0];
 	}
 
 	// Hash stack.
@@ -137,9 +103,7 @@ stkbucket(int32 typ, Location *stk, int32 nstk, bool alloc)
 	if(!alloc)
 		return nil;
 
-	b = allocate(sizeof *b + nstk*sizeof stk[0]);
-	if(b == nil)
-		runtime_throw("runtime: cannot allocate memory");
+	b = runtime_persistentalloc(sizeof *b + nstk*sizeof stk[0], 0, &mstats.buckhash_sys);
 	bucketmem += sizeof *b + nstk*sizeof stk[0];
 	runtime_memmove(b->stk, stk, nstk*sizeof stk[0]);
 	b->typ = typ;
@@ -241,7 +205,7 @@ setaddrbucket(uintptr addr, Bucket *b)
 		if(ah->addr == (addr>>AddrHashShift))
 			goto found;
 
-	ah = allocate(sizeof *ah);
+	ah = runtime_persistentalloc(sizeof *ah, 0, &mstats.buckhash_sys);
 	addrmem += sizeof *ah;
 	ah->next = addrhash[h];
 	ah->addr = addr>>AddrHashShift;
@@ -249,7 +213,7 @@ setaddrbucket(uintptr addr, Bucket *b)
 
 found:
 	if((e = addrfree) == nil) {
-		e = allocate(64*sizeof *e);
+		e = runtime_persistentalloc(64*sizeof *e, 0, &mstats.buckhash_sys);
 		addrmem += 64*sizeof *e;
 		for(i=0; i+1<64; i++)
 			e[i].next = &e[i+1];
@@ -296,16 +260,10 @@ found:
 void
 runtime_MProf_Malloc(void *p, uintptr size)
 {
-	M *m;
 	int32 nstk;
 	Location stk[32];
 	Bucket *b;
 
-	m = runtime_m();
-	if(m->nomemprof > 0)
-		return;
-
-	m->nomemprof++;
 	nstk = runtime_callers(1, stk, 32);
 	runtime_lock(&proflock);
 	b = stkbucket(MProf, stk, nstk, true);
@@ -313,22 +271,14 @@ runtime_MProf_Malloc(void *p, uintptr size)
 	b->recent_alloc_bytes += size;
 	setaddrbucket((uintptr)p, b);
 	runtime_unlock(&proflock);
-	m = runtime_m();
-	m->nomemprof--;
 }
 
 // Called when freeing a profiled block.
 void
 runtime_MProf_Free(void *p, uintptr size)
 {
-	M *m;
 	Bucket *b;
 
-	m = runtime_m();
-	if(m->nomemprof > 0)
-		return;
-
-	m->nomemprof++;
 	runtime_lock(&proflock);
 	b = getaddrbucket((uintptr)p);
 	if(b != nil) {
@@ -336,8 +286,6 @@ runtime_MProf_Free(void *p, uintptr size)
 		b->recent_free_bytes += size;
 	}
 	runtime_unlock(&proflock);
-	m = runtime_m();
-	m->nomemprof--;
 }
 
 int64 runtime_blockprofilerate;  // in CPU ticks
@@ -347,7 +295,17 @@ void runtime_SetBlockProfileRate(intgo) __asm__ (GOSYM_PREFIX "runtime.SetBlockP
 void
 runtime_SetBlockProfileRate(intgo rate)
 {
-	runtime_atomicstore64((uint64*)&runtime_blockprofilerate, rate * runtime_tickspersecond() / (1000*1000*1000));
+	int64 r;
+
+	if(rate <= 0)
+		r = 0;  // disable profiling
+	else {
+		// convert ns to cycles, use float64 to prevent overflow during multiplication
+		r = (float64)rate*runtime_tickspersecond()/(1000*1000*1000);
+		if(r == 0)
+			r = 1;
+	}
+	runtime_atomicstore64((uint64*)&runtime_blockprofilerate, r);
 }
 
 void
@@ -510,10 +468,10 @@ func Stack(b Slice, all bool) (n int) {
 	bool enablegc;
 	
 	sp = runtime_getcallersp(&b);
-	pc = runtime_getcallerpc(&b);
+	pc = (byte*)(uintptr)runtime_getcallerpc(&b);
 
 	if(all) {
-		runtime_semacquire(&runtime_worldsema);
+		runtime_semacquire(&runtime_worldsema, false);
 		runtime_m()->gcing = 1;
 		runtime_stoptheworld();
 		enablegc = mstats.enablegc;
@@ -530,7 +488,7 @@ func Stack(b Slice, all bool) (n int) {
 		USED(sp);
 		runtime_goroutineheader(g);
 		runtime_traceback();
-		runtime_goroutinetrailer(g);
+		runtime_printcreatedby(g);
 		if(all)
 			runtime_tracebackothers(g);
 		n = b.__count - g->writenbuf;
@@ -572,7 +530,7 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 	ok = false;
 	n = runtime_gcount();
 	if(n <= b.__count) {
-		runtime_semacquire(&runtime_worldsema);
+		runtime_semacquire(&runtime_worldsema, false);
 		runtime_m()->gcing = 1;
 		runtime_stoptheworld();
 
@@ -598,5 +556,5 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 void
 runtime_mprofinit(void)
 {
-	addrhash = allocate((1<<AddrHashBits)*sizeof *addrhash);
+	addrhash = runtime_persistentalloc((1<<AddrHashBits)*sizeof *addrhash, 0, &mstats.buckhash_sys);
 }

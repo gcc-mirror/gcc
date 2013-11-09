@@ -3565,6 +3565,33 @@ advance_target_bb (basic_block bb, rtx insn)
 #endif
 
 static bool
+gate_handle_live_range_shrinkage (void)
+{
+#ifdef INSN_SCHEDULING
+  return flag_live_range_shrinkage;
+#else
+  return 0;
+#endif
+}
+
+/* Run instruction scheduler.  */
+static unsigned int
+rest_of_handle_live_range_shrinkage (void)
+{
+#ifdef INSN_SCHEDULING
+  int saved;
+
+  initialize_live_range_shrinkage ();
+  saved = flag_schedule_interblock;
+  flag_schedule_interblock = false;
+  schedule_insns ();
+  flag_schedule_interblock = saved;
+  finish_live_range_shrinkage ();
+#endif
+  return 0;
+}
+
+static bool
 gate_handle_sched (void)
 {
 #ifdef INSN_SCHEDULING
@@ -3618,6 +3645,45 @@ rest_of_handle_sched2 (void)
     }
 #endif
   return 0;
+}
+
+namespace {
+
+const pass_data pass_data_live_range_shrinkage =
+{
+  RTL_PASS, /* type */
+  "lr_shrinkage", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LIVE_RANGE_SHRINKAGE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
+};
+
+class pass_live_range_shrinkage : public rtl_opt_pass
+{
+public:
+  pass_live_range_shrinkage(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_live_range_shrinkage, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_live_range_shrinkage (); }
+  unsigned int execute () { return rest_of_handle_live_range_shrinkage (); }
+
+}; // class pass_live_range_shrinkage
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_live_range_shrinkage (gcc::context *ctxt)
+{
+  return new pass_live_range_shrinkage (ctxt);
 }
 
 namespace {

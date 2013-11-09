@@ -89,7 +89,7 @@ func testFunZZ(t *testing.T, msg string, f funZZ, a argZZ) {
 	var z Int
 	f(&z, a.x, a.y)
 	if !isNormalized(&z) {
-		t.Errorf("%s%v is not normalized", z, msg)
+		t.Errorf("%s%v is not normalized", msg, z)
 	}
 	if (&z).Cmp(a.z) != 0 {
 		t.Errorf("%s%+v\n\tgot z = %v; want %v", msg, a, &z, a.z)
@@ -1481,6 +1481,32 @@ func TestIntGobEncoding(t *testing.T) {
 		if rx.Cmp(&tx) != 0 {
 			t.Errorf("transmission of %s failed: got %s want %s", &tx, &rx, &tx)
 		}
+	}
+}
+
+// Sending a nil Int pointer (inside a slice) on a round trip through gob should yield a zero.
+// TODO: top-level nils.
+func TestGobEncodingNilIntInSlice(t *testing.T) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	dec := gob.NewDecoder(buf)
+
+	var in = make([]*Int, 1)
+	err := enc.Encode(&in)
+	if err != nil {
+		t.Errorf("gob encode failed: %q", err)
+	}
+	var out []*Int
+	err = dec.Decode(&out)
+	if err != nil {
+		t.Fatalf("gob decode failed: %q", err)
+	}
+	if len(out) != 1 {
+		t.Fatalf("wrong len; want 1 got %d", len(out))
+	}
+	var zero Int
+	if out[0].Cmp(&zero) != 0 {
+		t.Errorf("transmission of (*Int)(nill) failed: got %s want 0", out)
 	}
 }
 

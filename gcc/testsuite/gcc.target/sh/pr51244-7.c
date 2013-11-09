@@ -10,7 +10,7 @@
 	bra	.L197
 	nop
 */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "cmp/hi" } } */

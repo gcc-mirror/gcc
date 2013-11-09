@@ -381,6 +381,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdfix.h \
 	 $(srcdir)/ginclude/stdnoreturn.h \
 	 $(srcdir)/ginclude/stdalign.h \
+	 $(srcdir)/ginclude/stdatomic.h \
 	 $(EXTRA_HEADERS)
 
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
@@ -2974,7 +2975,7 @@ gpl.pod: gpl_v3.texi
 
 mostlyclean: lang.mostlyclean
 	-rm -f $(MOSTLYCLEANFILES)
-	-rm -f *$(objext)
+	-rm -f *$(objext) c-family/*$(objext)
 	-rm -f *$(coverageexts)
 # Delete build programs
 	-rm -f build/*

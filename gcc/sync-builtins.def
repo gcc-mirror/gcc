@@ -606,3 +606,9 @@ DEF_SYNC_BUILTIN (BUILT_IN_ATOMIC_SIGNAL_FENCE,
 		  "__atomic_signal_fence",
 		  BT_FN_VOID_INT, ATTR_NOTHROW_LEAF_LIST)
 
+/* This one is actually a function in libatomic and not expected to be
+   inlined, declared here for convenience of targets generating calls
+   to it.  */
+DEF_SYNC_BUILTIN (BUILT_IN_ATOMIC_FERAISEEXCEPT,
+		  "__atomic_feraiseexcept",
+		  BT_FN_VOID_INT, ATTR_LEAF_LIST)

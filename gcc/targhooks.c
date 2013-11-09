@@ -272,16 +272,6 @@ default_cxx_guard_type (void)
   return long_long_integer_type_node;
 }
 
-/* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do
-   not support nested low-overhead loops.  */
-
-bool
-can_use_doloop_if_innermost (const widest_int &, const widest_int &,
-			     unsigned int loop_depth, bool)
-{
-  return loop_depth == 1;
-}
-
 /* Returns the size of the cookie to use when allocating an array
    whose elements have the indicated TYPE.  Assumes that it is already
    known that a cookie is needed.  */
@@ -1609,6 +1599,13 @@ default_canonicalize_comparison (int *, rtx *, rtx *, bool)
 {
 }
 
+/* Default implementation of TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+void
+default_atomic_assign_expand_fenv (tree *, tree *, tree *)
+{
+}
+
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif
@@ -1740,5 +1737,14 @@ default_builtin_chkp_function (unsigned int fcode ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
+/* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do
+   not support nested low-overhead loops.  */
+
+bool
+can_use_doloop_if_innermost (const widest_int &, const widest_int &,
+			     unsigned int loop_depth, bool)
+{
+  return loop_depth == 1;
+}
 
 #include "gt-targhooks.h"

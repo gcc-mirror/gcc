@@ -4033,7 +4033,11 @@ aarch64_legitimize_reload_address (rtx *x_p,
 	cst = force_const_mem (xmode, cst);
 
       /* Reload high part into base reg, leaving the low part
-	 in the mem instruction.  */
+	 in the mem instruction.
+	 Note that replacing this gen_rtx_PLUS with plus_constant is
+	 wrong in this case because we rely on the
+	 (plus (plus reg c1) c2) structure being preserved so that
+	 XEXP (*p, 0) in push_reload below uses the correct term.  */
       x = gen_rtx_PLUS (xmode,
 			gen_rtx_PLUS (xmode, XEXP (x, 0), cst),
 			GEN_INT (low));

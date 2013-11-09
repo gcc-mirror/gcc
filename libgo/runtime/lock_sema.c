@@ -95,9 +95,6 @@ runtime_unlock(Lock *l)
 	uintptr v;
 	M *mp;
 
-	if(--runtime_m()->locks < 0)
-		runtime_throw("runtime_unlock: lock count");
-
 	for(;;) {
 		v = (uintptr)runtime_atomicloadp((void**)&l->key);
 		if(v == LOCKED) {
@@ -114,6 +111,9 @@ runtime_unlock(Lock *l)
 			}
 		}
 	}
+
+	if(--runtime_m()->locks < 0)
+		runtime_throw("runtime_unlock: lock count");
 }
 
 // One-time notifications.
@@ -151,6 +151,10 @@ runtime_notesleep(Note *n)
 	M *m;
 
 	m = runtime_m();
+
+	if(runtime_g() != m->g0)
+		runtime_throw("notesleep not on g0");
+
 	if(m->waitsema == 0)
 		m->waitsema = runtime_semacreate();
 	if(!runtime_casp((void**)&n->key, nil, m)) {  // must be LOCKED (got wakeup)
@@ -159,60 +163,48 @@ runtime_notesleep(Note *n)
 		return;
 	}
 	// Queued.  Sleep.
-	if(m->profilehz > 0)
-		runtime_setprof(false);
 	runtime_semasleep(-1);
-	if(m->profilehz > 0)
-		runtime_setprof(true);
 }
 
-void
-runtime_notetsleep(Note *n, int64 ns)
+static bool
+notetsleep(Note *n, int64 ns, int64 deadline, M *mp)
 {
 	M *m;
-	M *mp;
-	int64 deadline, now;
-
-	if(ns < 0) {
-		runtime_notesleep(n);
-		return;
-	}
 
 	m = runtime_m();
-	if(m->waitsema == 0)
-		m->waitsema = runtime_semacreate();
+
+	// Conceptually, deadline and mp are local variables.
+	// They are passed as arguments so that the space for them
+	// does not count against our nosplit stack sequence.
 
 	// Register for wakeup on n->waitm.
 	if(!runtime_casp((void**)&n->key, nil, m)) {  // must be LOCKED (got wakeup already)
 		if(n->key != LOCKED)
 			runtime_throw("notetsleep - waitm out of sync");
-		return;
+		return true;
 	}
 
-	if(m->profilehz > 0)
-		runtime_setprof(false);
+	if(ns < 0) {
+		// Queued.  Sleep.
+		runtime_semasleep(-1);
+		return true;
+	}
+
 	deadline = runtime_nanotime() + ns;
 	for(;;) {
 		// Registered.  Sleep.
 		if(runtime_semasleep(ns) >= 0) {
 			// Acquired semaphore, semawakeup unregistered us.
 			// Done.
-			if(m->profilehz > 0)
-				runtime_setprof(true);
-			return;
+			return true;
 		}
 
 		// Interrupted or timed out.  Still registered.  Semaphore not acquired.
-		now = runtime_nanotime();
-		if(now >= deadline)
+		ns = deadline - runtime_nanotime();
+		if(ns <= 0)
 			break;
-
 		// Deadline hasn't arrived.  Keep sleeping.
-		ns = deadline - now;
 	}
-
-	if(m->profilehz > 0)
-		runtime_setprof(true);
 
 	// Deadline arrived.  Still registered.  Semaphore not acquired.
 	// Want to give up and return, but have to unregister first,
@@ -223,15 +215,54 @@ runtime_notetsleep(Note *n, int64 ns)
 		if(mp == m) {
 			// No wakeup yet; unregister if possible.
 			if(runtime_casp((void**)&n->key, mp, nil))
-				return;
+				return false;
 		} else if(mp == (M*)LOCKED) {
 			// Wakeup happened so semaphore is available.
 			// Grab it to avoid getting out of sync.
 			if(runtime_semasleep(-1) < 0)
 				runtime_throw("runtime: unable to acquire - semaphore out of sync");
-			return;
-		} else {
+			return true;
+		} else
 			runtime_throw("runtime: unexpected waitm - semaphore out of sync");
-		}
 	}
+}
+
+bool
+runtime_notetsleep(Note *n, int64 ns)
+{
+	M *m;
+	bool res;
+
+	m = runtime_m();
+
+	if(runtime_g() != m->g0 && !m->gcing)
+		runtime_throw("notetsleep not on g0");
+
+	if(m->waitsema == 0)
+		m->waitsema = runtime_semacreate();
+
+	res = notetsleep(n, ns, 0, nil);
+	return res;
+}
+
+// same as runtime_notetsleep, but called on user g (not g0)
+// calls only nosplit functions between entersyscallblock/exitsyscall
+bool
+runtime_notetsleepg(Note *n, int64 ns)
+{
+	M *m;
+	bool res;
+
+	m = runtime_m();
+
+	if(runtime_g() == m->g0)
+		runtime_throw("notetsleepg on g0");
+
+	if(m->waitsema == 0)
+		m->waitsema = runtime_semacreate();
+
+	runtime_entersyscallblock();
+	res = notetsleep(n, ns, 0, nil);
+	runtime_exitsyscall();
+	return res;
 }

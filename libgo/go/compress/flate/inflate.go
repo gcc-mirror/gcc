@@ -91,6 +91,10 @@ type huffmanDecoder struct {
 
 // Initialize Huffman decoding tables from array of code lengths.
 func (h *huffmanDecoder) init(bits []int) bool {
+	if h.min != 0 {
+		*h = huffmanDecoder{}
+	}
+
 	// Count number of codes of each length,
 	// compute min and max length.
 	var count [maxCodeLen]int
@@ -125,6 +129,9 @@ func (h *huffmanDecoder) init(bits []int) bool {
 		if i == huffmanChunkBits+1 {
 			// create link tables
 			link := code >> 1
+			if huffmanNumChunks < link {
+				return false
+			}
 			h.links = make([][]uint32, huffmanNumChunks-link)
 			for j := uint(link); j < huffmanNumChunks; j++ {
 				reverse := int(reverseByte[j>>8]) | int(reverseByte[j&0xff])<<8
@@ -154,7 +161,11 @@ func (h *huffmanDecoder) init(bits []int) bool {
 				h.chunks[off] = chunk
 			}
 		} else {
-			linktab := h.links[h.chunks[reverse&(huffmanNumChunks-1)]>>huffmanValueShift]
+			value := h.chunks[reverse&(huffmanNumChunks-1)] >> huffmanValueShift
+			if value >= uint32(len(h.links)) {
+				return false
+			}
+			linktab := h.links[value]
 			reverse >>= huffmanChunkBits
 			for off := reverse; off < numLinks; off += 1 << uint(n-huffmanChunkBits) {
 				linktab[off] = chunk
@@ -511,7 +522,7 @@ func (f *decompressor) copyHist() bool {
 		if x := len(f.hist) - p; n > x {
 			n = x
 		}
-		forwardCopy(f.hist[f.hp:f.hp+n], f.hist[p:p+n])
+		forwardCopy(f.hist[:], f.hp, p, n)
 		p += n
 		f.hp += n
 		f.copyLen -= n
@@ -633,6 +644,10 @@ func (f *decompressor) huffSym(h *huffmanDecoder) (int, error) {
 		if n > huffmanChunkBits {
 			chunk = h.links[chunk>>huffmanValueShift][(f.b>>huffmanChunkBits)&h.linkMask]
 			n = uint(chunk & huffmanCountMask)
+			if n == 0 {
+				f.err = CorruptInputError(f.roffset)
+				return 0, f.err
+			}
 		}
 		if n <= f.nb {
 			f.b >>= n

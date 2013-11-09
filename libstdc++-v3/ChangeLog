@@ -1,3 +1,69 @@
+2013-11-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::_S_Is):
+	Take only a const safe iterator reference.
+	(_BeforeBeginHelper<>::_S_Is_beginnest): Likewise.
+	(__get_distance): Take only one type of iterator.
+	(_Safe_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_iterator<>::_M_get_sequence()): Return pointer to const
+	sequence from a const_iterator and a pointer to sequence from an
+	iterator.
+	* include/debug/safe_iterator.tcc: Adapt.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_local_iterator<>::_M_get_sequence()): Return pointer to
+	const sequence from a const_iterator and a pointer to sequence
+	from an iterator.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/forward_list
+	(_BeforeBeginHelper<std::__debug::forward_list<>>): Adapt.
+
+2013-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (__detail::_State): Split
+	non-dependent parts into new _State_base.
+	(__detail::_NFA): Likewise for _NFA_base. Use std::move() to avoid
+	copies when inserting _MatcherT and _StateT objects.
+	* include/bits/regex_automaton.tcc: Move member definitions to base
+	class. Qualify dependent names.
+	* include/bits/regex_compiler.h (__detail::_Compiler::_M_get_nfa): Make
+	non-const and use std::move to avoid copying.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_is_word): Use
+	array, so past-the-end iterator is valid.
+
+	* include/bits/regex_automaton.h (__detail::_State, __detail::_NFA,
+	__detail::_StateSeq): Remove redundant _CharT template parameters.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h (__detail::_Compiler): Likewise.
+	(__compile_nfa): Add object generator for _Compiler.
+	* include/bits/regex_compiler.tcc: Remove _CharT template parameters.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex.h (basic_regex): Assert char_type matches. Use
+	__compile_nfa object generator. Remove _CharT template parameter.
+
+	* include/bits/regex_compiler.h (__detail::_AnyMatcher,
+	__detail::_CharMatcher, __detail::_BracketMatcher): Remove redundant
+	_CharT template parameters.
+	* include/bits/regex_compiler.tcc: Likewise.
+
+	* include/bits/regex_compiler.h (__detail::__compile_nfa): Overload
+	so that std::basic_string<C> and std::vector<C> iterators dispatch to
+	the const C* compiler.
+
+	* include/bits/regex_compiler.h (__detail::__has_contiguous_iter):
+	vector<bool> storage is not contiguous.
+
+2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to
+	_S_opcode_word_boundary.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_word_boundry):
+	Rename to _M_word_boundary.
+	* include/bits/regex_executor.tcc: Likewise.
+
 2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	N3655 C++1y TransformationTraits Redux

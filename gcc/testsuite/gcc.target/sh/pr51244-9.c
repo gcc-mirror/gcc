@@ -8,7 +8,7 @@
 	cmp/hi	r2,r7			bt	.L534
 	bf	.L534
 */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "mov\t#0" } } */

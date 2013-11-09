@@ -1,6 +1,6 @@
 /* Check that the __builtin_strcmp function is inlined with cmp/str
    when optimizing for speed.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "jmp" } } */

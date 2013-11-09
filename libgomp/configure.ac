@@ -274,7 +274,7 @@ else
 fi
 
 # Set up the set of libraries that we need to link against for libgomp.
-# Note that the GOMP_SELF_SPEC in gcc.c will force -pthread for -fopenmp,
+# Note that the GOMP_SELF_SPEC in gcc.c may force -pthread,
 # which will force linkage against -lpthread (or equivalent for the system).
 # That's not 100% ideal, but about the best we can do easily.
 if test $enable_shared = yes; then

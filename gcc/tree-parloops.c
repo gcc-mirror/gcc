@@ -1152,7 +1152,6 @@ create_loads_for_reductions (reduction_info **slot, struct clsn_data *clsn_data)
   x = load_struct;
   name = PHI_RESULT (red->keep_res);
   stmt = gimple_build_assign (name, x);
-  SSA_NAME_DEF_STMT (name) = stmt;
 
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
@@ -1182,7 +1181,6 @@ create_final_loads_for_reduction (reduction_info_table_type reduction_list,
   stmt = gimple_build_assign (ld_st_data->load, t);
 
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
-  SSA_NAME_DEF_STMT (ld_st_data->load) = stmt;
 
   reduction_list
     .traverse <struct clsn_data *, create_loads_for_reductions> (ld_st_data);
@@ -1236,7 +1234,6 @@ create_loads_and_stores_for_name (name_to_copy_elt **slot,
   load_struct = build_simple_mem_ref (clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, elt->field, NULL_TREE);
   stmt = gimple_build_assign (elt->new_name, t);
-  SSA_NAME_DEF_STMT (elt->new_name) = stmt;
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
   return 1;
@@ -1594,7 +1591,6 @@ transform_to_exit_first_loop (struct loop *loop,
 				  false, NULL_TREE, false, GSI_SAME_STMT);
   stmt = gimple_build_assign (control_name, nit_1);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
-  SSA_NAME_DEF_STMT (control_name) = stmt;
 }
 
 /* Create the parallel constructs for LOOP as described in gen_parallel_loop.
@@ -1635,12 +1631,10 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
       param = make_ssa_name (DECL_ARGUMENTS (loop_fn), NULL);
       stmt = gimple_build_assign (param, build_fold_addr_expr (data));
       gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
-      SSA_NAME_DEF_STMT (param) = stmt;
 
       stmt = gimple_build_assign (new_data,
 				  fold_convert (TREE_TYPE (new_data), param));
       gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
-      SSA_NAME_DEF_STMT (new_data) = stmt;
     }
 
   /* Emit GIMPLE_OMP_RETURN for GIMPLE_OMP_PARALLEL.  */

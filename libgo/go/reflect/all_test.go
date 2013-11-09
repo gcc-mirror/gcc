@@ -169,16 +169,20 @@ var typeTests = []pair{
 }
 
 var valueTests = []pair{
+	{new(int), "132"},
 	{new(int8), "8"},
 	{new(int16), "16"},
 	{new(int32), "32"},
 	{new(int64), "64"},
+	{new(uint), "132"},
 	{new(uint8), "8"},
 	{new(uint16), "16"},
 	{new(uint32), "32"},
 	{new(uint64), "64"},
 	{new(float32), "256.25"},
 	{new(float64), "512.125"},
+	{new(complex64), "532.125+10i"},
+	{new(complex128), "564.25+1i"},
 	{new(string), "stringy cheese"},
 	{new(bool), "true"},
 	{new(*int8), "*int8(0)"},
@@ -944,7 +948,7 @@ func TestMap(t *testing.T) {
 
 	newm := newmap.Interface().(map[string]int)
 	if len(newm) != len(m) {
-		t.Errorf("length after copy: newm=%d, m=%d", newm, m)
+		t.Errorf("length after copy: newm=%d, m=%d", len(newm), len(m))
 	}
 
 	for k, v := range newm {
@@ -1630,6 +1634,25 @@ func TestMethodValue(t *testing.T) {
 		t.Errorf("Pointer Value MethodByName returned %d; want 325", i)
 	}
 
+	// Curried method of pointer to pointer.
+	pp := &p
+	v = ValueOf(&pp).Elem().Method(1)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Pointer Value Method Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(14)})[0].Int()
+	if i != 350 {
+		t.Errorf("Pointer Pointer Value Method returned %d; want 350", i)
+	}
+	v = ValueOf(&pp).Elem().MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Pointer Value MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(15)})[0].Int()
+	if i != 375 {
+		t.Errorf("Pointer Pointer Value MethodByName returned %d; want 375", i)
+	}
+
 	// Curried method of interface value.
 	// Have to wrap interface value in a struct to get at it.
 	// Passing it to ValueOf directly would
@@ -1644,17 +1667,17 @@ func TestMethodValue(t *testing.T) {
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Interface Method Type is %s; want %s", tt, tfunc)
 	}
-	i = ValueOf(v.Interface()).Call([]Value{ValueOf(14)})[0].Int()
-	if i != 350 {
-		t.Errorf("Interface Method returned %d; want 350", i)
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(16)})[0].Int()
+	if i != 400 {
+		t.Errorf("Interface Method returned %d; want 400", i)
 	}
 	v = pv.MethodByName("Dist")
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Interface MethodByName Type is %s; want %s", tt, tfunc)
 	}
-	i = ValueOf(v.Interface()).Call([]Value{ValueOf(15)})[0].Int()
-	if i != 375 {
-		t.Errorf("Interface MethodByName returned %d; want 375", i)
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(17)})[0].Int()
+	if i != 425 {
+		t.Errorf("Interface MethodByName returned %d; want 425", i)
 	}
 }
 
@@ -2330,6 +2353,9 @@ func TestAddr(t *testing.T) {
 /* gccgo does do allocations here.
 
 func noAlloc(t *testing.T, n int, f func(int)) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	if runtime.GOMAXPROCS(0) > 1 {
 		t.Skip("skipping; GOMAXPROCS>1")
 	}
@@ -2411,6 +2437,74 @@ func TestSlice(t *testing.T) {
 	if vs != s[3:5] {
 		t.Errorf("s.Slice(3, 5) = %q; expected %q", vs, s[3:5])
 	}
+}
+
+func TestSlice3(t *testing.T) {
+	xs := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	v := ValueOf(xs).Slice3(3, 5, 7).Interface().([]int)
+	if len(v) != 2 {
+		t.Errorf("len(xs.Slice3(3, 5, 7)) = %d", len(v))
+	}
+	if cap(v) != 4 {
+		t.Errorf("cap(xs.Slice3(3, 5, 7)) = %d", cap(v))
+	}
+	if !DeepEqual(v[0:4], xs[3:7:7]) {
+		t.Errorf("xs.Slice3(3, 5, 7)[0:4] = %v", v[0:4])
+	}
+	rv := ValueOf(&xs).Elem()
+	shouldPanic(func() { rv.Slice3(1, 2, 1) })
+	shouldPanic(func() { rv.Slice3(1, 1, 11) })
+	shouldPanic(func() { rv.Slice3(2, 2, 1) })
+
+	xa := [8]int{10, 20, 30, 40, 50, 60, 70, 80}
+	v = ValueOf(&xa).Elem().Slice3(2, 5, 6).Interface().([]int)
+	if len(v) != 3 {
+		t.Errorf("len(xa.Slice(2, 5, 6)) = %d", len(v))
+	}
+	if cap(v) != 4 {
+		t.Errorf("cap(xa.Slice(2, 5, 6)) = %d", cap(v))
+	}
+	if !DeepEqual(v[0:4], xa[2:6:6]) {
+		t.Errorf("xs.Slice(2, 5, 6)[0:4] = %v", v[0:4])
+	}
+	rv = ValueOf(&xa).Elem()
+	shouldPanic(func() { rv.Slice3(1, 2, 1) })
+	shouldPanic(func() { rv.Slice3(1, 1, 11) })
+	shouldPanic(func() { rv.Slice3(2, 2, 1) })
+
+	s := "hello world"
+	rv = ValueOf(&s).Elem()
+	shouldPanic(func() { rv.Slice3(1, 2, 3) })
+}
+
+func TestSetLenCap(t *testing.T) {
+	xs := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	xa := [8]int{10, 20, 30, 40, 50, 60, 70, 80}
+
+	vs := ValueOf(&xs).Elem()
+	shouldPanic(func() { vs.SetLen(10) })
+	shouldPanic(func() { vs.SetCap(10) })
+	shouldPanic(func() { vs.SetLen(-1) })
+	shouldPanic(func() { vs.SetCap(-1) })
+	shouldPanic(func() { vs.SetCap(6) }) // smaller than len
+	vs.SetLen(5)
+	if len(xs) != 5 || cap(xs) != 8 {
+		t.Errorf("after SetLen(5), len, cap = %d, %d, want 5, 8", len(xs), cap(xs))
+	}
+	vs.SetCap(6)
+	if len(xs) != 5 || cap(xs) != 6 {
+		t.Errorf("after SetCap(6), len, cap = %d, %d, want 5, 6", len(xs), cap(xs))
+	}
+	vs.SetCap(5)
+	if len(xs) != 5 || cap(xs) != 5 {
+		t.Errorf("after SetCap(5), len, cap = %d, %d, want 5, 5", len(xs), cap(xs))
+	}
+	shouldPanic(func() { vs.SetCap(4) }) // smaller than len
+	shouldPanic(func() { vs.SetLen(6) }) // bigger than cap
+
+	va := ValueOf(&xa).Elem()
+	shouldPanic(func() { va.SetLen(8) })
+	shouldPanic(func() { va.SetCap(8) })
 }
 
 func TestVariadic(t *testing.T) {
@@ -2958,17 +3052,28 @@ func TestConvert(t *testing.T) {
 		all[t2] = true
 		canConvert[[2]Type{t1, t2}] = true
 
+		// vout1 represents the in value converted to the in type.
 		v1 := tt.in
 		vout1 := v1.Convert(t1)
 		out1 := vout1.Interface()
 		if vout1.Type() != tt.in.Type() || !DeepEqual(out1, tt.in.Interface()) {
-			t.Errorf("ValueOf(%T(%v)).Convert(%s) = %T(%v), want %T(%v)", tt.in.Interface(), tt.in.Interface(), t1, out1, out1, tt.in.Interface(), tt.in.Interface())
+			t.Errorf("ValueOf(%T(%[1]v)).Convert(%s) = %T(%[3]v), want %T(%[4]v)", tt.in.Interface(), t1, out1, tt.in.Interface())
 		}
 
-		vout := v1.Convert(t2)
-		out := vout.Interface()
-		if vout.Type() != tt.out.Type() || !DeepEqual(out, tt.out.Interface()) {
-			t.Errorf("ValueOf(%T(%v)).Convert(%s) = %T(%v), want %T(%v)", tt.in.Interface(), tt.in.Interface(), t2, out, out, tt.out.Interface(), tt.out.Interface())
+		// vout2 represents the in value converted to the out type.
+		vout2 := v1.Convert(t2)
+		out2 := vout2.Interface()
+		if vout2.Type() != tt.out.Type() || !DeepEqual(out2, tt.out.Interface()) {
+			t.Errorf("ValueOf(%T(%[1]v)).Convert(%s) = %T(%[3]v), want %T(%[4]v)", tt.in.Interface(), t2, out2, tt.out.Interface())
+		}
+
+		// vout3 represents a new value of the out type, set to vout2.  This makes
+		// sure the converted value vout2 is really usable as a regular value.
+		vout3 := New(t2).Elem()
+		vout3.Set(vout2)
+		out3 := vout3.Interface()
+		if vout3.Type() != tt.out.Type() || !DeepEqual(out3, tt.out.Interface()) {
+			t.Errorf("Set(ValueOf(%T(%[1]v)).Convert(%s)) = %T(%[3]v), want %T(%[4]v)", tt.in.Interface(), t2, out3, tt.out.Interface())
 		}
 
 		if IsRO(v1) {
@@ -2977,8 +3082,11 @@ func TestConvert(t *testing.T) {
 		if IsRO(vout1) {
 			t.Errorf("self-conversion output %v is RO, should not be", vout1)
 		}
-		if IsRO(vout) {
-			t.Errorf("conversion output %v is RO, should not be", vout)
+		if IsRO(vout2) {
+			t.Errorf("conversion output %v is RO, should not be", vout2)
+		}
+		if IsRO(vout3) {
+			t.Errorf("set(conversion output) %v is RO, should not be", vout3)
 		}
 		if !IsRO(MakeRO(v1).Convert(t1)) {
 			t.Errorf("RO self-conversion output %v is not RO, should be", v1)
@@ -3402,6 +3510,46 @@ func BenchmarkFieldByName3(b *testing.B) {
 	t := TypeOf(R0{})
 	for i := 0; i < b.N; i++ {
 		t.FieldByName("X")
+	}
+}
+
+type S struct {
+	i1 int64
+	i2 int64
+}
+
+func BenchmarkInterfaceBig(b *testing.B) {
+	v := ValueOf(S{})
+	for i := 0; i < b.N; i++ {
+		v.Interface()
+	}
+	b.StopTimer()
+}
+
+func TestAllocsInterfaceBig(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	v := ValueOf(S{})
+	if allocs := testing.AllocsPerRun(100, func() { v.Interface() }); allocs > 0 {
+		t.Error("allocs:", allocs)
+	}
+}
+
+func BenchmarkInterfaceSmall(b *testing.B) {
+	v := ValueOf(int64(0))
+	for i := 0; i < b.N; i++ {
+		v.Interface()
+	}
+}
+
+func TestAllocsInterfaceSmall(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	v := ValueOf(int64(0))
+	if allocs := testing.AllocsPerRun(100, func() { v.Interface() }); allocs > 0 {
+		t.Error("allocs:", allocs)
 	}
 }
 

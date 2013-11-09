@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
+#include "tree-ssanames.h"
 #include "wide-int-print.h"
 
 
@@ -116,9 +117,12 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
    in TYPE to MIN and MAX.  */
 
 static void
-determine_value_range (tree type, tree var, mpz_t off,
+determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		       mpz_t min, mpz_t max)
 {
+  widest_int minv, maxv;
+  enum value_range_type rtype = VR_VARYING;
+
   /* If the expression is a constant, we know its value exactly.  */
   if (integer_zerop (var))
     {
@@ -127,9 +131,73 @@ determine_value_range (tree type, tree var, mpz_t off,
       return;
     }
 
+  get_type_static_bounds (type, min, max);
+
+  /* See if we have some range info from VRP.  */
+  if (TREE_CODE (var) == SSA_NAME && INTEGRAL_TYPE_P (type))
+    {
+      edge e = loop_preheader_edge (loop);
+      gimple_stmt_iterator gsi;
+
+      /* Either for VAR itself...  */
+      rtype = get_range_info (var, &minv, &maxv);
+      /* Or for PHI results in loop->header where VAR is used as
+	 PHI argument from the loop preheader edge.  */
+      for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  widest_int minc, maxc;
+	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
+	      && (get_range_info (gimple_phi_result (phi), &minc, &maxc)
+		  == VR_RANGE))
+	    {
+	      if (rtype != VR_RANGE)
+		{
+		  rtype = VR_RANGE;
+		  minv = minc;
+		  maxv = maxc;
+		}
+	      else
+		{
+		  minv = wi::smax (minv, minc);
+		  maxv = wi::smin (maxv, maxc);
+		  gcc_assert (wi::les_p (minv, maxv));
+		}
+	    }
+	}
+      if (rtype == VR_RANGE)
+	{
+	  mpz_t minm, maxm;
+	  gcc_assert (wi::les_p (minv, maxv));
+	  mpz_init (minm);
+	  mpz_init (maxm);
+	  wi::to_mpz (minv, minm, SIGNED);
+	  wi::to_mpz (maxv, maxm, SIGNED);
+	  mpz_add (minm, minm, off);
+	  mpz_add (maxm, maxm, off);
+	  /* If the computation may not wrap or off is zero, then this
+	     is always fine.  If off is negative and minv + off isn't
+	     smaller than type's minimum, or off is positive and
+	     maxv + off isn't bigger than type's maximum, use the more
+	     precise range too.  */
+	  if (nowrap_type_p (type)
+	      || mpz_sgn (off) == 0
+	      || (mpz_sgn (off) < 0 && mpz_cmp (minm, min) >= 0)
+	      || (mpz_sgn (off) > 0 && mpz_cmp (maxm, max) <= 0))
+	    {
+	      mpz_set (min, minm);
+	      mpz_set (max, maxm);
+	      mpz_clear (minm);
+	      mpz_clear (maxm);
+	      return;
+	    }
+	  mpz_clear (minm);
+	  mpz_clear (maxm);
+	}
+    }
+
   /* If the computation may wrap, we know nothing about the value, except for
      the range of the type.  */
-  get_type_static_bounds (type, min, max);
   if (!nowrap_type_p (type))
     return;
 
@@ -402,8 +470,8 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
       mpz_init (maxx);
       mpz_init (miny);
       mpz_init (maxy);
-      determine_value_range (type, varx, offx, minx, maxx);
-      determine_value_range (type, vary, offy, miny, maxy);
+      determine_value_range (loop, type, varx, offx, minx, maxx);
+      determine_value_range (loop, type, vary, offy, miny, maxy);
 
       mpz_sub (bnds->below, minx, maxy);
       mpz_sub (bnds->up, maxx, miny);

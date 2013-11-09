@@ -325,9 +325,6 @@ func TestReadWriteDeadline(t *testing.T) {
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	}
 
-	if !canCancelIO {
-		t.Skip("skipping test on this system")
-	}
 	const (
 		readTimeout  = 50 * time.Millisecond
 		writeTimeout = 250 * time.Millisecond
@@ -496,7 +493,10 @@ func testVariousDeadlines(t *testing.T, maxProcs int) {
 				clientc <- copyRes{n, err, d}
 			}()
 
-			const tooLong = 2000 * time.Millisecond
+			tooLong := 2 * time.Second
+			if runtime.GOOS == "windows" {
+				tooLong = 5 * time.Second
+			}
 			select {
 			case res := <-clientc:
 				if isTimeout(res.err) {
@@ -549,7 +549,7 @@ func TestReadDeadlineDataAvailable(t *testing.T) {
 	}
 	defer c.Close()
 	if res := <-servec; res.err != nil || res.n != int64(len(msg)) {
-		t.Fatalf("unexpected server Write: n=%d, err=%d; want n=%d, err=nil", res.n, res.err, len(msg))
+		t.Fatalf("unexpected server Write: n=%d, err=%v; want n=%d, err=nil", res.n, res.err, len(msg))
 	}
 	c.SetReadDeadline(time.Now().Add(-5 * time.Second)) // in the psat.
 	buf := make([]byte, len(msg)/2)
@@ -702,4 +702,41 @@ func TestProlongTimeout(t *testing.T) {
 		var buf [1]byte
 		c.Write(buf[:])
 	}
+}
+
+func TestDeadlineRace(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9":
+		t.Skipf("skipping test on %q", runtime.GOOS)
+	}
+
+	N := 1000
+	if testing.Short() {
+		N = 50
+	}
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(4))
+	ln := newLocalListener(t)
+	defer ln.Close()
+	c, err := Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	defer c.Close()
+	done := make(chan bool)
+	go func() {
+		t := time.NewTicker(2 * time.Microsecond).C
+		for i := 0; i < N; i++ {
+			if err := c.SetDeadline(time.Now().Add(2 * time.Microsecond)); err != nil {
+				break
+			}
+			<-t
+		}
+		done <- true
+	}()
+	var buf [1]byte
+	for i := 0; i < N; i++ {
+		c.Read(buf[:]) // ignore possible timeout errors
+	}
+	c.Close()
+	<-done
 }

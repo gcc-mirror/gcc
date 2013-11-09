@@ -4327,7 +4327,6 @@ vect_finalize_reduction:
       epilog_stmt = gimple_build_assign (new_dest, expr);
       new_temp = make_ssa_name (new_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
-      SSA_NAME_DEF_STMT (new_temp) = epilog_stmt;
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
       if (nested_in_vect_loop)
         {

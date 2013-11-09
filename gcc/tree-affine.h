@@ -76,7 +76,7 @@ bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, widest_int *);
 void aff_combination_expand (aff_tree *, struct pointer_map_t **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     struct pointer_map_t **);
-void get_inner_reference_aff (tree, aff_tree *, widest_int *);
+tree get_inner_reference_aff (tree, aff_tree *, widest_int *);
 void free_affine_expand_cache (struct pointer_map_t **);
 bool aff_comb_cannot_overlap_p (aff_tree *, const widest_int &,
 				const widest_int &);

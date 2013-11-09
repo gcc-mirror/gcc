@@ -368,7 +368,8 @@ enum cv_qualifier {
   TYPE_UNQUALIFIED   = 0x0,
   TYPE_QUAL_CONST    = 0x1,
   TYPE_QUAL_VOLATILE = 0x2,
-  TYPE_QUAL_RESTRICT = 0x4
+  TYPE_QUAL_RESTRICT = 0x4,
+  TYPE_QUAL_ATOMIC   = 0x8
 };
 
 /* Enumerate visibility settings.  */
@@ -396,6 +397,12 @@ enum tree_index {
   TI_UINTSI_TYPE,
   TI_UINTDI_TYPE,
   TI_UINTTI_TYPE,
+
+  TI_ATOMICQI_TYPE,
+  TI_ATOMICHI_TYPE,
+  TI_ATOMICSI_TYPE,
+  TI_ATOMICDI_TYPE,
+  TI_ATOMICTI_TYPE,
 
   TI_UINT16_TYPE,
   TI_UINT32_TYPE,
@@ -738,7 +745,8 @@ struct GTY(()) tree_base {
       unsigned packed_flag : 1;
       unsigned user_align : 1;
       unsigned nameless_flag : 1;
-      unsigned spare0 : 4;
+      unsigned atomic_flag : 1;
+      unsigned spare0 : 3;
 
       unsigned spare1 : 8;
 

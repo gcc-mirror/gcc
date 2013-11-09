@@ -143,8 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_lookahead(_State<_Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-		 _CharT, _TraitsT> __state)
+    _M_lookahead(_State<_TraitsT> __state)
     {
       _ResultsVec __what(_M_cur_results.size());
       auto __sub = std::unique_ptr<_Executor>(new _Executor(_M_current,
@@ -257,8 +256,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_at_end())
 	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
-	case _S_opcode_word_boundry:
-	  if (_M_word_boundry(__state) == !__state._M_neg)
+	case _S_opcode_word_boundary:
+	  if (_M_word_boundary(__state) == !__state._M_neg)
 	    _M_dfs<__match_mode>(__state._M_next);
 	  break;
 	// Here __state._M_alt offers a single start node for a sub-NFA.
@@ -344,11 +343,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-  // Return whether now is at some word boundry.
+  // Return whether now is at some word boundary.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_word_boundry(_State<_CharT, _TraitsT> __state) const
+    _M_word_boundary(_State<_TraitsT> __state) const
     {
       // By definition.
       bool __ans = false;

@@ -2,7 +2,7 @@
    surrounding code.
    These should be moved to C torture tests once there are target
    independent thread_pointer built-in functions available.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 

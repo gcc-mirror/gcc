@@ -238,7 +238,7 @@ type transferReader struct {
 	Trailer          Header
 }
 
-// bodyAllowedForStatus returns whether a given response status code
+// bodyAllowedForStatus reports whether a given response status code
 // permits a body.  See RFC2616, section 4.4.
 func bodyAllowedForStatus(status int) bool {
 	switch {
@@ -254,7 +254,7 @@ func bodyAllowedForStatus(status int) bool {
 
 // msg is *Request or *Response.
 func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
-	t := &transferReader{}
+	t := &transferReader{RequestMethod: "GET"}
 
 	// Unify input
 	isResponse := false
@@ -262,11 +262,13 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 	case *Response:
 		t.Header = rr.Header
 		t.StatusCode = rr.StatusCode
-		t.RequestMethod = rr.Request.Method
 		t.ProtoMajor = rr.ProtoMajor
 		t.ProtoMinor = rr.ProtoMinor
 		t.Close = shouldClose(t.ProtoMajor, t.ProtoMinor, t.Header)
 		isResponse = true
+		if rr.Request != nil {
+			t.RequestMethod = rr.Request.Method
+		}
 	case *Request:
 		t.Header = rr.Header
 		t.ProtoMajor = rr.ProtoMajor
@@ -274,7 +276,6 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 		// Transfer semantics for Requests are exactly like those for
 		// Responses with status code 200, responding to a GET method
 		t.StatusCode = 200
-		t.RequestMethod = "GET"
 	default:
 		panic("unexpected type")
 	}
@@ -328,12 +329,12 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 	switch {
 	case chunked(t.TransferEncoding):
 		if noBodyExpected(t.RequestMethod) {
-			t.Body = &body{Reader: eofReader, closing: t.Close}
+			t.Body = eofReader
 		} else {
 			t.Body = &body{Reader: newChunkedReader(r), hdr: msg, r: r, closing: t.Close}
 		}
 	case realLength == 0:
-		t.Body = &body{Reader: eofReader, closing: t.Close}
+		t.Body = eofReader
 	case realLength > 0:
 		t.Body = &body{Reader: io.LimitReader(r, realLength), closing: t.Close}
 	default:
@@ -343,7 +344,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 			t.Body = &body{Reader: r, closing: t.Close}
 		} else {
 			// Persistent connection (i.e. HTTP/1.1)
-			t.Body = &body{Reader: eofReader, closing: t.Close}
+			t.Body = eofReader
 		}
 	}
 
@@ -518,8 +519,6 @@ type body struct {
 	r       *bufio.Reader // underlying wire-format reader for the trailer
 	closing bool          // is the connection to be closed after reading body?
 	closed  bool
-
-	res *response // response writer for server requests, else nil
 }
 
 // ErrBodyReadAfterClose is returned when reading a Request or Response
@@ -534,13 +533,22 @@ func (b *body) Read(p []byte) (n int, err error) {
 	}
 	n, err = b.Reader.Read(p)
 
-	// Read the final trailer once we hit EOF.
-	if err == io.EOF && b.hdr != nil {
-		if e := b.readTrailer(); e != nil {
-			err = e
+	if err == io.EOF {
+		// Chunked case. Read the trailer.
+		if b.hdr != nil {
+			if e := b.readTrailer(); e != nil {
+				err = e
+			}
+			b.hdr = nil
+		} else {
+			// If the server declared the Content-Length, our body is a LimitedReader
+			// and we need to check whether this EOF arrived early.
+			if lr, ok := b.Reader.(*io.LimitedReader); ok && lr.N > 0 {
+				err = io.ErrUnexpectedEOF
+			}
 		}
-		b.hdr = nil
 	}
+
 	return n, err
 }
 
@@ -618,14 +626,6 @@ func (b *body) Close() error {
 	case b.hdr == nil && b.closing:
 		// no trailer and closing the connection next.
 		// no point in reading to EOF.
-	case b.res != nil && b.res.requestBodyLimitHit:
-		// In a server request, don't continue reading from the client
-		// if we've already hit the maximum body size set by the
-		// handler. If this is set, that also means the TCP connection
-		// is about to be closed, so getting to the next HTTP request
-		// in the stream is not necessary.
-	case b.Reader == eofReader:
-		// Nothing to read. No need to io.Copy from it.
 	default:
 		// Fully consume the body, which will also lead to us reading
 		// the trailer headers after the body, if present.

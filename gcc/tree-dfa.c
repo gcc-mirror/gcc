@@ -570,7 +570,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      && (!wi::fits_shwi_p (bit_offset)
 		  || !tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (exp)))
 		  || (bit_offset.to_shwi () + maxsize
-		      == (signed) tree_to_uhwi
+		      == (HOST_WIDE_INT) tree_to_uhwi
 		            (TYPE_SIZE (TREE_TYPE (exp))))))
 	    maxsize = -1;
 
@@ -607,7 +607,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       && (!wi::fits_shwi_p (bit_offset)
 	  || !tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (exp)))
 	  || (bit_offset.to_shwi () + maxsize
-	      == (signed) tree_to_uhwi (TYPE_SIZE (TREE_TYPE (exp))))))
+	      == (HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (TREE_TYPE (exp))))))
     maxsize = -1;
 
  done:

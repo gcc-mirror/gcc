@@ -1,5 +1,5 @@
 /* Test for resbank attribute.  */
-/* { dg-do assemble {target sh*-*-*}} */
+/* { dg-do assemble }  */
 /* { dg-skip-if "" { "sh*-*-*" } "*" "-m2a -m2a-nofpu -m2a-single -m2a-single-only" } */
 /* { dg-final { scan-assembler "resbank" } } */
  

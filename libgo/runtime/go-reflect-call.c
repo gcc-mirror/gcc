@@ -271,7 +271,21 @@ go_func_return_ffi (const struct __go_func_type *func)
   types = (const struct __go_type_descriptor **) func->__out.__values;
 
   if (count == 1)
-    return go_type_to_ffi (types[0]);
+    {
+
+#if defined (__i386__) && !defined (__x86_64__)
+      /* FFI does not support complex types.  On 32-bit x86, a
+	 complex64 will be returned in %eax/%edx.  We normally tell
+	 FFI that a complex64 is a struct of two floats.  On 32-bit
+	 x86 a struct of two floats is returned via a hidden first
+	 pointer parameter.  Fortunately we can make everything work
+	 by pretending that complex64 is int64.  */
+      if ((types[0]->__code & GO_CODE_MASK) == GO_COMPLEX64)
+	return &ffi_type_sint64;
+#endif
+
+      return go_type_to_ffi (types[0]);
+    }
 
   ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
   ret->type = FFI_TYPE_STRUCT;

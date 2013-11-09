@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m2e" "-m3e" "*single-only" } { "" } }  */
 /* { dg-final { scan-assembler "mov #?0,r.*; mov #?20,r" } } */

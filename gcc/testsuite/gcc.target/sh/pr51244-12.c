@@ -1,7 +1,7 @@
 /* Check that the negc instruction is generated as expected for the cases
    below.  If we see a movrt or #-1 negc sequence it means that the pattern
    which handles the inverted case does not work properly.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "negc" 10 } } */

@@ -164,8 +164,9 @@ func quotToFloat(a, b nat) (f float64, exact bool) {
 }
 
 // Float64 returns the nearest float64 value for x and a bool indicating
-// whether f represents x exactly. The sign of f always matches the sign
-// of x, even if f == 0.
+// whether f represents x exactly. If the magnitude of x is too large to
+// be represented by a float64, f is an infinity and exact is false.
+// The sign of f always matches the sign of x, even if f == 0.
 func (x *Rat) Float64() (f float64, exact bool) {
 	b := x.b.abs
 	if len(b) == 0 {
@@ -545,6 +546,9 @@ const ratGobVersion byte = 1
 
 // GobEncode implements the gob.GobEncoder interface.
 func (x *Rat) GobEncode() ([]byte, error) {
+	if x == nil {
+		return nil, nil
+	}
 	buf := make([]byte, 1+4+(len(x.a.abs)+len(x.b.abs))*_S) // extra bytes for version and sign bit (1), and numerator length (4)
 	i := x.b.abs.bytes(buf)
 	j := x.a.abs.bytes(buf[0:i])
@@ -566,7 +570,9 @@ func (x *Rat) GobEncode() ([]byte, error) {
 // GobDecode implements the gob.GobDecoder interface.
 func (z *Rat) GobDecode(buf []byte) error {
 	if len(buf) == 0 {
-		return errors.New("Rat.GobDecode: no data")
+		// Other side sent a nil or default value.
+		*z = Rat{}
+		return nil
 	}
 	b := buf[0]
 	if b>>1 != ratGobVersion {

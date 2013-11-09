@@ -18,7 +18,17 @@ package runtime
 #include "go-type.h"
 #include "race.h"
 
-MHeap *runtime_mheap;
+// Map gccgo field names to gc field names.
+// Eface aka __go_empty_interface.
+#define type __type_descriptor
+// Type aka __go_type_descriptor
+#define kind __code
+#define string __reflection
+#define KindPtr GO_PTR
+#define KindNoPointers GO_NO_POINTERS
+
+// Mark mheap as 'no pointers', it does not contain interesting pointers but occupies ~45K.
+MHeap runtime_mheap;
 
 int32	runtime_checking;
 
@@ -30,18 +40,27 @@ extern volatile intgo runtime_MemProfileRate
 // Allocate an object of at least size bytes.
 // Small objects are allocated from the per-thread cache's free lists.
 // Large objects (> 32 kB) are allocated straight from the heap.
+// If the block will be freed with runtime_free(), typ must be 0.
 void*
-runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
+runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 {
 	M *m;
 	G *g;
 	int32 sizeclass;
 	intgo rate;
 	MCache *c;
+	MCacheList *l;
 	uintptr npages;
 	MSpan *s;
-	void *v;
+	MLink *v;
 	bool incallback;
+
+	if(size == 0) {
+		// All 0-length allocations use this pointer.
+		// The language does not require the allocations to
+		// have distinct values.
+		return &runtime_zerobase;
+	}
 
 	m = runtime_m();
 	g = runtime_g();
@@ -56,34 +75,45 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		runtime_exitsyscall();
 		m = runtime_m();
 		incallback = true;
-		dogc = false;
+		flag |= FlagNoGC;
 	}
 
-	if(runtime_gcwaiting && g != m->g0 && m->locks == 0 && dogc) {
+	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoGC)) {
 		runtime_gosched();
 		m = runtime_m();
 	}
 	if(m->mallocing)
 		runtime_throw("malloc/free - deadlock");
+	// Disable preemption during settype_flush.
+	// We can not use m->mallocing for this, because settype_flush calls mallocgc.
+	m->locks++;
 	m->mallocing = 1;
-	if(size == 0)
-		size = 1;
 
 	if(DebugTypeAtBlockEnd)
 		size += sizeof(uintptr);
 
 	c = m->mcache;
-	c->local_nmalloc++;
 	if(size <= MaxSmallSize) {
 		// Allocate from mcache free lists.
-		sizeclass = runtime_SizeToClass(size);
+		// Inlined version of SizeToClass().
+		if(size <= 1024-8)
+			sizeclass = runtime_size_to_class8[(size+7)>>3];
+		else
+			sizeclass = runtime_size_to_class128[(size-1024+127) >> 7];
 		size = runtime_class_to_size[sizeclass];
-		v = runtime_MCache_Alloc(c, sizeclass, size, zeroed);
-		if(v == nil)
-			runtime_throw("out of memory");
-		c->local_alloc += size;
-		c->local_total_alloc += size;
-		c->local_by_size[sizeclass].nmalloc++;
+		l = &c->list[sizeclass];
+		if(l->list == nil)
+			runtime_MCache_Refill(c, sizeclass);
+		v = l->list;
+		l->list = v->next;
+		l->nlist--;
+		if(!(flag & FlagNoZero)) {
+			v->next = nil;
+			// block is zeroed iff second word is zero ...
+			if(size > sizeof(uintptr) && ((uintptr*)v)[1] != 0)
+				runtime_memclr((byte*)v, size);
+		}
+		c->local_cachealloc += size;
 	} else {
 		// TODO(rsc): Report tracebacks for very large allocations.
 
@@ -91,32 +121,39 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		npages = size >> PageShift;
 		if((size & PageMask) != 0)
 			npages++;
-		s = runtime_MHeap_Alloc(runtime_mheap, npages, 0, 1, zeroed);
+		s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, 1, !(flag & FlagNoZero));
 		if(s == nil)
 			runtime_throw("out of memory");
+		s->limit = (byte*)(s->start<<PageShift) + size;
 		size = npages<<PageShift;
-		c->local_alloc += size;
-		c->local_total_alloc += size;
 		v = (void*)(s->start << PageShift);
 
 		// setup for mark sweep
 		runtime_markspan(v, 0, 0, true);
 	}
 
-	if (sizeof(void*) == 4 && c->local_total_alloc >= (1<<30)) {
-		// purge cache stats to prevent overflow
-		runtime_lock(runtime_mheap);
-		runtime_purgecachedstats(c);
-		runtime_unlock(runtime_mheap);
-	}
-
 	if(!(flag & FlagNoGC))
-		runtime_markallocated(v, size, (flag&FlagNoPointers) != 0);
+		runtime_markallocated(v, size, (flag&FlagNoScan) != 0);
 
 	if(DebugTypeAtBlockEnd)
-		*(uintptr*)((uintptr)v+size-sizeof(uintptr)) = 0;
+		*(uintptr*)((uintptr)v+size-sizeof(uintptr)) = typ;
+
+	// TODO: save type even if FlagNoScan?  Potentially expensive but might help
+	// heap profiling/tracing.
+	if(UseSpanType && !(flag & FlagNoScan) && typ != 0) {
+		uintptr *buf, i;
+
+		buf = m->settype_buf;
+		i = m->settype_bufsize;
+		buf[i++] = (uintptr)v;
+		buf[i++] = typ;
+		m->settype_bufsize = i;
+	}
 
 	m->mallocing = 0;
+	if(UseSpanType && !(flag & FlagNoScan) && typ != 0 && m->settype_bufsize == nelem(m->settype_buf))
+		runtime_settype_flush(m);
+	m->locks--;
 
 	if(!(flag & FlagNoProfiling) && (rate = runtime_MemProfileRate) > 0) {
 		if(size >= (uint32) rate)
@@ -135,13 +172,11 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		}
 	}
 
-	if(dogc && mstats.heap_alloc >= mstats.next_gc)
+	if(!(flag & FlagNoInvokeGC) && mstats.heap_alloc >= mstats.next_gc)
 		runtime_gc(0);
 
-	if(raceenabled) {
-		runtime_racemalloc(v, size, m->racepc);
-		m->racepc = nil;
-	}
+	if(raceenabled)
+		runtime_racemalloc(v, size);
 
 	if(incallback)
 		runtime_entersyscall();
@@ -152,7 +187,7 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 void*
 __go_alloc(uintptr size)
 {
-	return runtime_mallocgc(size, 0, 0, 1);
+	return runtime_mallocgc(size, 0, FlagNoInvokeGC);
 }
 
 // Free the object whose base pointer is v.
@@ -197,7 +232,9 @@ __go_free(void *v)
 		// they might coalesce v into other spans and change the bitmap further.
 		runtime_markfreed(v, size);
 		runtime_unmarkspan(v, 1<<PageShift);
-		runtime_MHeap_Free(runtime_mheap, s, 1);
+		runtime_MHeap_Free(&runtime_mheap, s, 1);
+		c->local_nlargefree++;
+		c->local_largefree += size;
 	} else {
 		// Small object.
 		size = runtime_class_to_size[sizeclass];
@@ -207,11 +244,9 @@ __go_free(void *v)
 		// it might coalesce v and other blocks into a bigger span
 		// and change the bitmap further.
 		runtime_markfreed(v, size);
-		c->local_by_size[sizeclass].nfree++;
+		c->local_nsmallfree[sizeclass]++;
 		runtime_MCache_Free(c, v, sizeclass, size);
 	}
-	c->local_nfree++;
-	c->local_alloc -= size;
 	if(prof)
 		runtime_MProf_Free(v, size);
 	m->mallocing = 0;
@@ -230,12 +265,12 @@ runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **sp)
 	m->mcache->local_nlookup++;
 	if (sizeof(void*) == 4 && m->mcache->local_nlookup >= (1<<30)) {
 		// purge cache stats to prevent overflow
-		runtime_lock(runtime_mheap);
+		runtime_lock(&runtime_mheap);
 		runtime_purgecachedstats(m->mcache);
-		runtime_unlock(runtime_mheap);
+		runtime_unlock(&runtime_mheap);
 	}
 
-	s = runtime_MHeap_LookupMaybe(runtime_mheap, v);
+	s = runtime_MHeap_LookupMaybe(&runtime_mheap, v);
 	if(sp)
 		*sp = s;
 	if(s == nil) {
@@ -257,11 +292,6 @@ runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **sp)
 		return 1;
 	}
 
-	if((byte*)v >= (byte*)s->limit) {
-		// pointers past the last block do not count as pointers.
-		return 0;
-	}
-
 	n = s->elemsize;
 	if(base) {
 		i = ((byte*)v - p)/n;
@@ -279,11 +309,9 @@ runtime_allocmcache(void)
 	intgo rate;
 	MCache *c;
 
-	runtime_lock(runtime_mheap);
-	c = runtime_FixAlloc_Alloc(&runtime_mheap->cachealloc);
-	mstats.mcache_inuse = runtime_mheap->cachealloc.inuse;
-	mstats.mcache_sys = runtime_mheap->cachealloc.sys;
-	runtime_unlock(runtime_mheap);
+	runtime_lock(&runtime_mheap);
+	c = runtime_FixAlloc_Alloc(&runtime_mheap.cachealloc);
+	runtime_unlock(&runtime_mheap);
 	runtime_memclr((byte*)c, sizeof(*c));
 
 	// Set first allocation sample size.
@@ -300,30 +328,32 @@ void
 runtime_freemcache(MCache *c)
 {
 	runtime_MCache_ReleaseAll(c);
-	runtime_lock(runtime_mheap);
+	runtime_lock(&runtime_mheap);
 	runtime_purgecachedstats(c);
-	runtime_FixAlloc_Free(&runtime_mheap->cachealloc, c);
-	runtime_unlock(runtime_mheap);
+	runtime_FixAlloc_Free(&runtime_mheap.cachealloc, c);
+	runtime_unlock(&runtime_mheap);
 }
 
 void
 runtime_purgecachedstats(MCache *c)
 {
+	MHeap *h;
+	int32 i;
+
 	// Protected by either heap or GC lock.
+	h = &runtime_mheap;
 	mstats.heap_alloc += c->local_cachealloc;
 	c->local_cachealloc = 0;
-	mstats.heap_objects += c->local_objects;
-	c->local_objects = 0;
-	mstats.nmalloc += c->local_nmalloc;
-	c->local_nmalloc = 0;
-	mstats.nfree += c->local_nfree;
-	c->local_nfree = 0;
 	mstats.nlookup += c->local_nlookup;
 	c->local_nlookup = 0;
-	mstats.alloc += c->local_alloc;
-	c->local_alloc= 0;
-	mstats.total_alloc += c->local_total_alloc;
-	c->local_total_alloc= 0;
+	h->largefree += c->local_largefree;
+	c->local_largefree = 0;
+	h->nlargefree += c->local_nlargefree;
+	c->local_nlargefree = 0;
+	for(i=0; i<(int32)nelem(c->local_nsmallfree); i++) {
+		h->nsmallfree[i] += c->local_nsmallfree[i];
+		c->local_nsmallfree[i] = 0;
+	}
 }
 
 extern uintptr runtime_sizeof_C_MStats
@@ -335,24 +365,24 @@ void
 runtime_mallocinit(void)
 {
 	byte *p;
-	uintptr arena_size, bitmap_size;
+	uintptr arena_size, bitmap_size, spans_size;
 	extern byte _end[];
 	byte *want;
 	uintptr limit;
+	uint64 i;
 
 	runtime_sizeof_C_MStats = sizeof(MStats);
 
 	p = nil;
 	arena_size = 0;
 	bitmap_size = 0;
-	
+	spans_size = 0;
+
 	// for 64-bit build
 	USED(p);
 	USED(arena_size);
 	USED(bitmap_size);
-
-	if((runtime_mheap = runtime_SysAlloc(sizeof(*runtime_mheap))) == nil)
-		runtime_throw("runtime: cannot allocate heap metadata");
+	USED(spans_size);
 
 	runtime_InitSizes();
 
@@ -369,15 +399,17 @@ runtime_mallocinit(void)
 		// 128 GB (MaxMem) should be big enough for now.
 		//
 		// The code will work with the reservation at any address, but ask
-		// SysReserve to use 0x000000c000000000 if possible.
+		// SysReserve to use 0x0000XXc000000000 if possible (XX=00...7f).
 		// Allocating a 128 GB region takes away 37 bits, and the amd64
 		// doesn't let us choose the top 17 bits, so that leaves the 11 bits
 		// in the middle of 0x00c0 for us to choose.  Choosing 0x00c0 means
-		// that the valid memory addresses will begin 0x00c0, 0x00c1, ..., 0x0x00df.
+		// that the valid memory addresses will begin 0x00c0, 0x00c1, ..., 0x00df.
 		// In little-endian, that's c0 00, c1 00, ..., df 00. None of those are valid
 		// UTF-8 sequences, and they are otherwise as far away from 
-		// ff (likely a common byte) as possible. An earlier attempt to use 0x11f8 
-		// caused out of memory errors on OS X during thread allocations.
+		// ff (likely a common byte) as possible.  If that fails, we try other 0xXXc0
+		// addresses.  An earlier attempt to use 0x11f8 caused out of memory errors
+		// on OS X during thread allocations.  0x00c0 causes conflicts with
+		// AddressSanitizer which reserves all memory up to 0x0100.
 		// These choices are both for debuggability and to reduce the
 		// odds of the conservative garbage collector not collecting memory
 		// because some non-pointer block of memory had a bit pattern
@@ -389,7 +421,14 @@ runtime_mallocinit(void)
 		// If this fails we fall back to the 32 bit memory mechanism
 		arena_size = MaxMem;
 		bitmap_size = arena_size / (sizeof(void*)*8/4);
-		p = runtime_SysReserve((void*)(0x00c0ULL<<32), bitmap_size + arena_size);
+		spans_size = arena_size / PageSize * sizeof(runtime_mheap.spans[0]);
+		spans_size = ROUND(spans_size, PageSize);
+		for(i = 0; i <= 0x7f; i++) {
+			p = (void*)(uintptr)(i<<40 | 0x00c0ULL<<32);
+			p = runtime_SysReserve(p, bitmap_size + spans_size + arena_size);
+			if(p != nil)
+				break;
+		}
 	}
 	if (p == nil) {
 		// On a 32-bit machine, we can't typically get away
@@ -411,11 +450,14 @@ runtime_mallocinit(void)
 		// of address space, which is probably too much in a 32-bit world.
 		bitmap_size = MaxArena32 / (sizeof(void*)*8/4);
 		arena_size = 512<<20;
-		if(limit > 0 && arena_size+bitmap_size > limit) {
+		spans_size = MaxArena32 / PageSize * sizeof(runtime_mheap.spans[0]);
+		if(limit > 0 && arena_size+bitmap_size+spans_size > limit) {
 			bitmap_size = (limit / 9) & ~((1<<PageShift) - 1);
 			arena_size = bitmap_size * 8;
+			spans_size = arena_size / PageSize * sizeof(runtime_mheap.spans[0]);
 		}
-		
+		spans_size = ROUND(spans_size, PageSize);
+
 		// SysReserve treats the address we ask for, end, as a hint,
 		// not as an absolute requirement.  If we ask for the end
 		// of the data segment but the operating system requires
@@ -425,25 +467,27 @@ runtime_mallocinit(void)
 		// So adjust it upward a little bit ourselves: 1/4 MB to get
 		// away from the running binary image and then round up
 		// to a MB boundary.
-		want = (byte*)(((uintptr)_end + (1<<18) + (1<<20) - 1)&~((1<<20)-1));
-		if(0xffffffff - (uintptr)want <= bitmap_size + arena_size)
+		want = (byte*)ROUND((uintptr)_end + (1<<18), 1<<20);
+		if(0xffffffff - (uintptr)want <= bitmap_size + spans_size + arena_size)
 		  want = 0;
-		p = runtime_SysReserve(want, bitmap_size + arena_size);
+		p = runtime_SysReserve(want, bitmap_size + spans_size + arena_size);
 		if(p == nil)
 			runtime_throw("runtime: cannot reserve arena virtual address space");
 		if((uintptr)p & (((uintptr)1<<PageShift)-1))
-			runtime_printf("runtime: SysReserve returned unaligned address %p; asked for %p", p, bitmap_size+arena_size);
+			runtime_printf("runtime: SysReserve returned unaligned address %p; asked for %p", p,
+				bitmap_size+spans_size+arena_size);
 	}
 	if((uintptr)p & (((uintptr)1<<PageShift)-1))
 		runtime_throw("runtime: SysReserve returned unaligned address");
 
-	runtime_mheap->bitmap = p;
-	runtime_mheap->arena_start = p + bitmap_size;
-	runtime_mheap->arena_used = runtime_mheap->arena_start;
-	runtime_mheap->arena_end = runtime_mheap->arena_start + arena_size;
+	runtime_mheap.spans = (MSpan**)p;
+	runtime_mheap.bitmap = p + spans_size;
+	runtime_mheap.arena_start = p + spans_size + bitmap_size;
+	runtime_mheap.arena_used = runtime_mheap.arena_start;
+	runtime_mheap.arena_end = runtime_mheap.arena_start + arena_size;
 
 	// Initialize the rest of the allocator.	
-	runtime_MHeap_Init(runtime_mheap, runtime_SysAlloc);
+	runtime_MHeap_Init(&runtime_mheap);
 	runtime_m()->mcache = runtime_allocmcache();
 
 	// See if it works.
@@ -463,8 +507,7 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 		uintptr needed;
 
 		needed = (uintptr)h->arena_used + n - (uintptr)h->arena_end;
-		// Round wanted arena size to a multiple of 256MB.
-		needed = (needed + (256<<20) - 1) & ~((256<<20)-1);
+		needed = ROUND(needed, 256<<20);
 		new_end = h->arena_end + needed;
 		if(new_end <= h->arena_start + MaxArena32) {
 			p = runtime_SysReserve(h->arena_end, new_end - h->arena_end);
@@ -475,9 +518,10 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	if(n <= (uintptr)(h->arena_end - h->arena_used)) {
 		// Keep taking from our reservation.
 		p = h->arena_used;
-		runtime_SysMap(p, n);
+		runtime_SysMap(p, n, &mstats.heap_sys);
 		h->arena_used += n;
 		runtime_MHeap_MapBits(h);
+		runtime_MHeap_MapSpans(h);
 		if(raceenabled)
 			runtime_racemapshadow(p, n);
 		return p;
@@ -490,14 +534,14 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	// On 32-bit, once the reservation is gone we can
 	// try to get memory at a location chosen by the OS
 	// and hope that it is in the range we allocated bitmap for.
-	p = runtime_SysAlloc(n);
+	p = runtime_SysAlloc(n, &mstats.heap_sys);
 	if(p == nil)
 		return nil;
 
 	if(p < h->arena_start || (uintptr)(p+n - h->arena_start) >= MaxArena32) {
 		runtime_printf("runtime: memory allocated by OS (%p) not in usable range [%p,%p)\n",
 			p, h->arena_start, h->arena_start+MaxArena32);
-		runtime_SysFree(p, n);
+		runtime_SysFree(p, n, &mstats.heap_sys);
 		return nil;
 	}
 
@@ -506,6 +550,7 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 		if(h->arena_used > h->arena_end)
 			h->arena_end = h->arena_used;
 		runtime_MHeap_MapBits(h);
+		runtime_MHeap_MapSpans(h);
 		if(raceenabled)
 			runtime_racemapshadow(p, n);
 	}
@@ -513,17 +558,68 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	return p;
 }
 
+static struct
+{
+	Lock;
+	byte*	pos;
+	byte*	end;
+} persistent;
+
+enum
+{
+	PersistentAllocChunk	= 256<<10,
+	PersistentAllocMaxBlock	= 64<<10,  // VM reservation granularity is 64K on windows
+};
+
+// Wrapper around SysAlloc that can allocate small chunks.
+// There is no associated free operation.
+// Intended for things like function/type/debug-related persistent data.
+// If align is 0, uses default align (currently 8).
+void*
+runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
+{
+	byte *p;
+
+	if(align != 0) {
+		if(align&(align-1))
+			runtime_throw("persistentalloc: align is now a power of 2");
+		if(align > PageSize)
+			runtime_throw("persistentalloc: align is too large");
+	} else
+		align = 8;
+	if(size >= PersistentAllocMaxBlock)
+		return runtime_SysAlloc(size, stat);
+	runtime_lock(&persistent);
+	persistent.pos = (byte*)ROUND((uintptr)persistent.pos, align);
+	if(persistent.pos + size > persistent.end) {
+		persistent.pos = runtime_SysAlloc(PersistentAllocChunk, &mstats.other_sys);
+		if(persistent.pos == nil) {
+			runtime_unlock(&persistent);
+			runtime_throw("runtime: cannot allocate memory");
+		}
+		persistent.end = persistent.pos + PersistentAllocChunk;
+	}
+	p = persistent.pos;
+	persistent.pos += size;
+	runtime_unlock(&persistent);
+	if(stat != &mstats.other_sys) {
+		// reaccount the allocation against provided stat
+		runtime_xadd64(stat, size);
+		runtime_xadd64(&mstats.other_sys, -(uint64)size);
+	}
+	return p;
+}
+
 static Lock settype_lock;
 
 void
-runtime_settype_flush(M *mp, bool sysalloc)
+runtime_settype_flush(M *mp)
 {
 	uintptr *buf, *endbuf;
 	uintptr size, ofs, j, t;
 	uintptr ntypes, nbytes2, nbytes3;
 	uintptr *data2;
 	byte *data3;
-	bool sysalloc3;
 	void *v;
 	uintptr typ, p;
 	MSpan *s;
@@ -542,8 +638,8 @@ runtime_settype_flush(M *mp, bool sysalloc)
 		// (Manually inlined copy of runtime_MHeap_Lookup)
 		p = (uintptr)v>>PageShift;
 		if(sizeof(void*) == 8)
-			p -= (uintptr)runtime_mheap->arena_start >> PageShift;
-		s = runtime_mheap->map[p];
+			p -= (uintptr)runtime_mheap.arena_start >> PageShift;
+		s = runtime_mheap.spans[p];
 
 		if(s->sizeclass == 0) {
 			s->types.compression = MTypes_Single;
@@ -558,20 +654,9 @@ runtime_settype_flush(M *mp, bool sysalloc)
 		case MTypes_Empty:
 			ntypes = (s->npages << PageShift) / size;
 			nbytes3 = 8*sizeof(uintptr) + 1*ntypes;
-
-			if(!sysalloc) {
-				data3 = runtime_mallocgc(nbytes3, FlagNoProfiling|FlagNoPointers, 0, 1);
-			} else {
-				data3 = runtime_SysAlloc(nbytes3);
-				if(data3 == nil)
-					runtime_throw("runtime: cannot allocate memory");
-				if(0) runtime_printf("settype(0->3): SysAlloc(%x) --> %p\n", (uint32)nbytes3, data3);
-			}
-
+			data3 = runtime_mallocgc(nbytes3, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
 			s->types.compression = MTypes_Bytes;
-			s->types.sysalloc = sysalloc;
 			s->types.data = (uintptr)data3;
-
 			((uintptr*)data3)[1] = typ;
 			data3[8*sizeof(uintptr) + ofs] = 1;
 			break;
@@ -596,20 +681,8 @@ runtime_settype_flush(M *mp, bool sysalloc)
 			} else {
 				ntypes = (s->npages << PageShift) / size;
 				nbytes2 = ntypes * sizeof(uintptr);
-
-				if(!sysalloc) {
-					data2 = runtime_mallocgc(nbytes2, FlagNoProfiling|FlagNoPointers, 0, 1);
-				} else {
-					data2 = runtime_SysAlloc(nbytes2);
-					if(data2 == nil)
-						runtime_throw("runtime: cannot allocate memory");
-					if(0) runtime_printf("settype.(3->2): SysAlloc(%x) --> %p\n", (uint32)nbytes2, data2);
-				}
-
-				sysalloc3 = s->types.sysalloc;
-
+				data2 = runtime_mallocgc(nbytes2, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
 				s->types.compression = MTypes_Words;
-				s->types.sysalloc = sysalloc;
 				s->types.data = (uintptr)data2;
 
 				// Move the contents of data3 to data2. Then deallocate data3.
@@ -618,12 +691,6 @@ runtime_settype_flush(M *mp, bool sysalloc)
 					t = ((uintptr*)data3)[t];
 					data2[j] = t;
 				}
-				if(sysalloc3) {
-					nbytes3 = 8*sizeof(uintptr) + 1*ntypes;
-					if(0) runtime_printf("settype.(3->2): SysFree(%p,%x)\n", data3, (uint32)nbytes3);
-					runtime_SysFree(data3, nbytes3);
-				}
-
 				data2[ofs] = typ;
 			}
 			break;
@@ -634,64 +701,6 @@ runtime_settype_flush(M *mp, bool sysalloc)
 	mp->settype_bufsize = 0;
 }
 
-// It is forbidden to use this function if it is possible that
-// explicit deallocation via calling runtime_free(v) may happen.
-void
-runtime_settype(void *v, uintptr t)
-{
-	M *mp;
-	uintptr *buf;
-	uintptr i;
-	MSpan *s;
-
-	if(t == 0)
-		runtime_throw("settype: zero type");
-
-	mp = runtime_m();
-	buf = mp->settype_buf;
-	i = mp->settype_bufsize;
-	buf[i+0] = (uintptr)v;
-	buf[i+1] = t;
-	i += 2;
-	mp->settype_bufsize = i;
-
-	if(i == nelem(mp->settype_buf)) {
-		runtime_settype_flush(mp, false);
-	}
-
-	if(DebugTypeAtBlockEnd) {
-		s = runtime_MHeap_Lookup(runtime_mheap, v);
-		*(uintptr*)((uintptr)v+s->elemsize-sizeof(uintptr)) = t;
-	}
-}
-
-void
-runtime_settype_sysfree(MSpan *s)
-{
-	uintptr ntypes, nbytes;
-
-	if(!s->types.sysalloc)
-		return;
-
-	nbytes = (uintptr)-1;
-
-	switch (s->types.compression) {
-	case MTypes_Words:
-		ntypes = (s->npages << PageShift) / s->elemsize;
-		nbytes = ntypes * sizeof(uintptr);
-		break;
-	case MTypes_Bytes:
-		ntypes = (s->npages << PageShift) / s->elemsize;
-		nbytes = 8*sizeof(uintptr) + 1*ntypes;
-		break;
-	}
-
-	if(nbytes != (uintptr)-1) {
-		if(0) runtime_printf("settype: SysFree(%p,%x)\n", (void*)s->types.data, (uint32)nbytes);
-		runtime_SysFree((void*)s->types.data, nbytes);
-	}
-}
-
 uintptr
 runtime_gettype(void *v)
 {
@@ -699,7 +708,7 @@ runtime_gettype(void *v)
 	uintptr t, ofs;
 	byte *data;
 
-	s = runtime_MHeap_LookupMaybe(runtime_mheap, v);
+	s = runtime_MHeap_LookupMaybe(&runtime_mheap, v);
 	if(s != nil) {
 		t = 0;
 		switch(s->types.compression) {
@@ -736,61 +745,23 @@ runtime_gettype(void *v)
 void*
 runtime_mal(uintptr n)
 {
-	return runtime_mallocgc(n, 0, 1, 1);
+	return runtime_mallocgc(n, 0, 0);
 }
 
 void *
 runtime_new(const Type *typ)
 {
-	void *ret;
-	uint32 flag;
-
-	if(raceenabled)
-		runtime_m()->racepc = runtime_getcallerpc(&typ);
-
-	if(typ->__size == 0) {
-		// All 0-length allocations use this pointer.
-		// The language does not require the allocations to
-		// have distinct values.
-		ret = (uint8*)&runtime_zerobase;
-	} else {
-		flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
-		ret = runtime_mallocgc(typ->__size, flag, 1, 1);
-
-		if(UseSpanType && !flag) {
-			if(false)
-				runtime_printf("new %S: %p\n", *typ->__reflection, ret);
-			runtime_settype(ret, (uintptr)typ | TypeInfo_SingleObject);
-		}
-	}
-
-	return ret;
+	return runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&KindNoPointers ? FlagNoScan : 0);
 }
 
 static void*
 cnew(const Type *typ, intgo n, int32 objtyp)
 {
-	uint32 flag;
-	void *ret;
-
 	if((objtyp&(PtrSize-1)) != objtyp)
 		runtime_throw("runtime: invalid objtyp");
 	if(n < 0 || (typ->__size > 0 && (uintptr)n > (MaxMem/typ->__size)))
 		runtime_panicstring("runtime: allocation size out of range");
-	if(typ->__size == 0 || n == 0) {
-		// All 0-length allocations use this pointer.
-		// The language does not require the allocations to
-		// have distinct values.
-		return &runtime_zerobase;
-	}
-	flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
-	ret = runtime_mallocgc(typ->__size*n, flag, 1, 1);
-	if(UseSpanType && !flag) {
-		if(false)
-			runtime_printf("cnew [%D]%S: %p\n", (int64)n, *typ->__reflection, ret);
-		runtime_settype(ret, (uintptr)typ | TypeInfo_SingleObject);
-	}
-	return ret;
+	return runtime_mallocgc(typ->__size*n, (uintptr)typ | objtyp, typ->kind&KindNoPointers ? FlagNoScan : 0);
 }
 
 // same as runtime_new, but callable from C
@@ -814,6 +785,8 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	byte *base;
 	uintptr size;
 	const FuncType *ft;
+	const Type *fint;
+	const PtrType *ot;
 
 	if(obj.__type_descriptor == nil) {
 		runtime_printf("runtime.SetFinalizer: first argument is nil interface\n");
@@ -828,22 +801,36 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 		goto throw;
 	}
 	ft = nil;
+	ot = (const PtrType*)obj.__type_descriptor;
+	fint = nil;
 	if(finalizer.__type_descriptor != nil) {
 		if(finalizer.__type_descriptor->__code != GO_FUNC)
 			goto badfunc;
 		ft = (const FuncType*)finalizer.__type_descriptor;
-		if(ft->__dotdotdot || ft->__in.__count != 1 || !__go_type_descriptors_equal(*(Type**)ft->__in.__values, obj.__type_descriptor))
+		if(ft->__dotdotdot || ft->__in.__count != 1)
+			goto badfunc;
+		fint = *(Type**)ft->__in.__values;
+		if(__go_type_descriptors_equal(fint, obj.__type_descriptor)) {
+			// ok - same type
+		} else if(fint->__code == GO_PTR && (fint->__uncommon == nil || fint->__uncommon->__name == nil || obj.type->__uncommon == nil || obj.type->__uncommon->__name == nil) && __go_type_descriptors_equal(((const PtrType*)fint)->__element_type, ((const PtrType*)obj.type)->__element_type)) {
+			// ok - not same type, but both pointers,
+			// one or the other is unnamed, and same element type, so assignable.
+		} else if(fint->kind == GO_INTERFACE && ((const InterfaceType*)fint)->__methods.__count == 0) {
+			// ok - satisfies empty interface
+		} else if(fint->kind == GO_INTERFACE && __go_convert_interface_2(fint, obj.__type_descriptor, 1) != nil) {
+			// ok - satisfies non-empty interface
+		} else
 			goto badfunc;
 	}
 
-	if(!runtime_addfinalizer(obj.__object, finalizer.__type_descriptor != nil ? *(void**)finalizer.__object : nil, ft)) {
+	if(!runtime_addfinalizer(obj.__object, finalizer.__type_descriptor != nil ? *(void**)finalizer.__object : nil, ft, ot)) {
 		runtime_printf("runtime.SetFinalizer: finalizer already set\n");
 		goto throw;
 	}
 	return;
 
 badfunc:
-	runtime_printf("runtime.SetFinalizer: second argument is %S, not func(%S)\n", *finalizer.__type_descriptor->__reflection, *obj.__type_descriptor->__reflection);
+	runtime_printf("runtime.SetFinalizer: cannot pass %S to finalizer %S\n", *obj.__type_descriptor->__reflection, *finalizer.__type_descriptor->__reflection);
 throw:
 	runtime_throw("runtime.SetFinalizer");
 }

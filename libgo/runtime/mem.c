@@ -60,12 +60,10 @@ mmap_fixed(byte *v, uintptr n, int32 prot, int32 flags, int32 fd, uint32 offset)
 }
 
 void*
-runtime_SysAlloc(uintptr n)
+runtime_SysAlloc(uintptr n, uint64 *stat)
 {
 	void *p;
 	int fd = -1;
-
-	mstats.sys += n;
 
 #ifdef USE_DEV_ZERO
 	if (dev_zero == -1) {
@@ -91,6 +89,7 @@ runtime_SysAlloc(uintptr n)
 		}
 		return nil;
 	}
+	runtime_xadd64(stat, n);
 	return p;
 }
 
@@ -103,9 +102,16 @@ runtime_SysUnused(void *v __attribute__ ((unused)), uintptr n __attribute__ ((un
 }
 
 void
-runtime_SysFree(void *v, uintptr n)
+runtime_SysUsed(void *v, uintptr n)
 {
-	mstats.sys -= n;
+	USED(v);
+	USED(n);
+}
+
+void
+runtime_SysFree(void *v, uintptr n, uint64 *stat)
+{
+	runtime_xadd64(stat, -(uint64)n);
 	runtime_munmap(v, n);
 }
 
@@ -132,8 +138,10 @@ runtime_SysReserve(void *v, uintptr n)
 	// Only user-mode Linux (UML) rejects these requests.
 	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
 		p = mmap_fixed(v, 64<<10, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
-		if (p != v)
+		if (p != v) {
+			runtime_munmap(p, 64<<10);
 			return nil;
+		}
 		runtime_munmap(p, 64<<10);
 		return v;
 	}
@@ -149,12 +157,12 @@ runtime_SysReserve(void *v, uintptr n)
 }
 
 void
-runtime_SysMap(void *v, uintptr n)
+runtime_SysMap(void *v, uintptr n, uint64 *stat)
 {
 	void *p;
 	int fd = -1;
 	
-	mstats.sys += n;
+	runtime_xadd64(stat, n);
 
 #ifdef USE_DEV_ZERO
 	if (dev_zero == -1) {

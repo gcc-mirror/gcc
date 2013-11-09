@@ -1238,7 +1238,6 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
 						   gimple_phi_result (stmt),
 						   arg, NULL_TREE);
-	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
 	}
       else
 	{
@@ -1254,7 +1253,6 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
 	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
 						   gimple_phi_result (stmt),
 						   t, arg0, arg1);
-	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
 	  todo_ |= TODO_cleanup_cfg;
 	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
@@ -1948,7 +1946,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   fmt_data.orig_loop = loop;
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
-  if (block_in_transaction (loop_preheader_edge (loop)->src)
+  if (bb_in_transaction (loop_preheader_edge (loop)->src)
       || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
     multi_threaded_model_p = true;
 

@@ -285,6 +285,8 @@ gen_type (const char *ret_val, tree t, formals_style style)
       switch (TREE_CODE (t))
 	{
 	case POINTER_TYPE:
+	  if (TYPE_ATOMIC (t))
+	    ret_val = concat ("_Atomic ", ret_val, NULL);
 	  if (TYPE_READONLY (t))
 	    ret_val = concat ("const ", ret_val, NULL);
 	  if (TYPE_VOLATILE (t))
@@ -425,6 +427,8 @@ gen_type (const char *ret_val, tree t, formals_style style)
 	  gcc_unreachable ();
 	}
     }
+  if (TYPE_ATOMIC (t))
+    ret_val = concat ("_Atomic ", ret_val, NULL);
   if (TYPE_READONLY (t))
     ret_val = concat ("const ", ret_val, NULL);
   if (TYPE_VOLATILE (t))

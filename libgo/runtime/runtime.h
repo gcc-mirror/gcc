@@ -72,6 +72,7 @@ typedef	struct	ParFor		ParFor;
 typedef	struct	ParForThread	ParForThread;
 typedef	struct	CgoMal		CgoMal;
 typedef	struct	PollDesc	PollDesc;
+typedef	struct	DebugVars	DebugVars;
 
 typedef	struct	__go_open_array		Slice;
 typedef struct	__go_interface		Iface;
@@ -82,6 +83,7 @@ typedef	struct	__go_panic_stack	Panic;
 
 typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
+typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
 typedef struct	__go_channel_type	ChanType;
 
@@ -206,21 +208,20 @@ struct	G
 	void*	param;		// passed parameter on wakeup
 	bool	fromgogo;	// reached from gogo
 	int16	status;
-	int64	goid;
 	uint32	selgen;		// valid sudog pointer
+	int64	goid;
 	const char*	waitreason;	// if status==Gwaiting
 	G*	schedlink;
 	bool	ispanic;
 	bool	issystem;	// do not output in stack dump
 	bool	isbackground;	// ignore in deadlock detector
-	bool	blockingsyscall;	// hint that the next syscall will block
 	M*	m;		// for debuggers, but offset not hard-coded
 	M*	lockedm;
 	int32	sig;
 	int32	writenbuf;
 	byte*	writebuf;
-	// DeferChunk	*dchunk;
-	// DeferChunk	*dchunknext;
+	// DeferChunk*	dchunk;
+	// DeferChunk*	dchunknext;
 	uintptr	sigcode0;
 	uintptr	sigcode1;
 	// uintptr	sigpc;
@@ -243,6 +244,7 @@ struct	M
 	size_t	gsignalstacksize;
 	void	(*mstartfn)(void);
 	G*	curg;		// current running goroutine
+	G*	caughtsig;	// goroutine running during fatal signal
 	P*	p;		// attached P for executing Go code (nil if not executing Go code)
 	P*	nextp;
 	int32	id;
@@ -250,11 +252,9 @@ struct	M
 	int32	throwing;
 	int32	gcing;
 	int32	locks;
-	int32	nomemprof;
 	int32	dying;
 	int32	profilehz;
 	int32	helpgc;
-	bool	blockingsyscall;
 	bool	spinning;
 	uint32	fastrand;
 	uint64	ncgocall;	// number of cgo calls in total
@@ -289,10 +289,12 @@ struct P
 {
 	Lock;
 
-	uint32	status;  // one of Pidle/Prunning/...
+	int32	id;
+	uint32	status;		// one of Pidle/Prunning/...
 	P*	link;
-	uint32	tick;   // incremented on every scheduler or system call
-	M*	m;	// back-link to associated M (nil if idle)
+	uint32	schedtick;	// incremented on every scheduler call
+	uint32	syscalltick;	// incremented on every system call
+	M*	m;		// back-link to associated M (nil if idle)
 	MCache*	mcache;
 
 	// Queue of runnable goroutines.
@@ -308,9 +310,13 @@ struct P
 	byte	pad[64];
 };
 
-// The m->locked word holds a single bit saying whether
-// external calls to LockOSThread are in effect, and then a counter
-// of the internal nesting depth of lockOSThread / unlockOSThread.
+// The m->locked word holds two pieces of state counting active calls to LockOSThread/lockOSThread.
+// The low bit (LockExternal) is a boolean reporting whether any LockOSThread call is active.
+// External locks are not recursive; a second lock is silently ignored.
+// The upper bits of m->lockedcount record the nesting depth of calls to lockOSThread
+// (counting up by LockInternal), popped by unlockOSThread (counting down by LockInternal).
+// Internal locks can be recursive. For instance, a lock for cgo can occur while the main
+// goroutine is holding the lock during the initialization phase.
 enum
 {
 	LockExternal = 1,
@@ -333,18 +339,15 @@ enum
 	SigIgnored = 1<<6,	// the signal was ignored before we registered for it
 };
 
-#ifndef NSIG
-#define NSIG 32
-#endif
-
-// NOTE(rsc): keep in sync with extern.go:/type.Func.
-// Eventually, the loaded symbol table should be closer to this form.
+// Layout of in-memory per-function information prepared by linker
+// See http://golang.org/s/go12symtab.
+// Keep in sync with linker and with ../../libmach/sym.c
+// and with package debug/gosym.
 struct	Func
 {
 	String	name;
 	uintptr	entry;	// entry pc
 };
-
 
 #ifdef GOOS_windows
 enum {
@@ -372,7 +375,7 @@ struct	Timers
 // If this struct changes, adjust ../time/sleep.go:/runtimeTimer.
 struct	Timer
 {
-	int32	i;		// heap index
+	int32	i;	// heap index
 
 	// Timer wakes up at when, and then at when+period, ... (period > 0 only)
 	// each time calling f(now, arg) in the timer goroutine, so f must be
@@ -420,6 +423,16 @@ struct CgoMal
 	void	*alloc;
 };
 
+// Holds variables parsed from GODEBUG env var.
+struct DebugVars
+{
+	int32	gctrace;
+	int32	schedtrace;
+	int32	scheddetail;
+};
+
+extern bool runtime_precisestack;
+
 /*
  * defined macros
  *    you need super-gopher-guru privilege
@@ -453,12 +466,11 @@ extern	M*	runtime_allm;
 extern	P**	runtime_allp;
 extern	int32	runtime_gomaxprocs;
 extern	uint32	runtime_needextram;
-extern	bool	runtime_singleproc;
 extern	uint32	runtime_panicking;
-extern	uint32	runtime_gcwaiting;		// gc is waiting to run
 extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
+extern	DebugVars	runtime_debug;
 
 /*
  * common functions and data
@@ -466,11 +478,13 @@ extern 	void	(*runtime_sysargs)(int32, uint8**);
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
 #define runtime_strstr(s1, s2) __builtin_strstr((s1), (s2))
 intgo	runtime_findnull(const byte*);
+intgo	runtime_findnullw(const uint16*);
 void	runtime_dump(byte*, int32);
 
 /*
  * very low level c-called
  */
+void	runtime_gogo(G*);
 struct __go_func_type;
 void	runtime_args(int32, byte**);
 void	runtime_osinit();
@@ -492,14 +506,13 @@ void	runtime_sigenable(uint32 sig);
 void	runtime_sigdisable(uint32 sig);
 int32	runtime_gotraceback(bool *crash);
 void	runtime_goroutineheader(G*);
-void	runtime_goroutinetrailer(G*);
 void	runtime_printtrace(Location*, int32, bool);
 #define runtime_open(p, f, m) open((p), (f), (m))
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
 #define runtime_close(d) close(d)
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_cas64(pval, pold, new) __atomic_compare_exchange_n (pval, pold, new, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+#define runtime_cas64(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 // Don't confuse with XADD x86 instruction,
 // this one is actually 'addx', that is, add-and-fetch.
@@ -530,17 +543,21 @@ void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_malloc(s) __go_alloc(s)
 #define runtime_free(p) __go_free(p)
-bool	runtime_addfinalizer(void*, FuncVal *fn, const struct __go_func_type *);
+bool	runtime_addfinalizer(void*, FuncVal *fn, const struct __go_func_type *, const struct __go_ptr_type *);
 #define runtime_getcallersp(p) __builtin_frame_address(1)
 int32	runtime_mcount(void);
 int32	runtime_gcount(void);
+void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void);
+int32	runtime_timediv(int64, int32, int32*);
 
 void runtime_setmg(M*, G*);
 void runtime_newextram(void);
 #define runtime_exit(s) exit(s)
 #define runtime_breakpoint() __builtin_trap()
 void	runtime_gosched(void);
+void	runtime_gosched0(G*);
+void	runtime_schedtrace(bool);
 void	runtime_park(void(*)(Lock*), Lock*, const char*);
 void	runtime_tsleep(int64, const char*);
 M*	runtime_newm(void);
@@ -555,6 +572,8 @@ int32	runtime_callers(int32, Location*, int32);
 int64	runtime_nanotime(void);
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
+void	runtime_freezetheworld(void);
+void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof();
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
@@ -567,10 +586,14 @@ void	runtime_addtimer(Timer*);
 bool	runtime_deltimer(Timer*);
 G*	runtime_netpoll(bool);
 void	runtime_netpollinit(void);
-int32	runtime_netpollopen(int32, PollDesc*);
-int32   runtime_netpollclose(int32);
+int32	runtime_netpollopen(uintptr, PollDesc*);
+int32   runtime_netpollclose(uintptr);
 void	runtime_netpollready(G**, PollDesc*, int32);
+uintptr	runtime_netpollfd(PollDesc*);
 void	runtime_crash(void);
+void	runtime_parsedebugvars(void);
+void	_rt0_go(void);
+void*	runtime_funcdata(Func*, int32);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(void);
@@ -603,11 +626,15 @@ void	runtime_unlock(Lock*);
  * wake up early, it must wait to call noteclear until it
  * can be sure that no other goroutine is calling
  * notewakeup.
+ *
+ * notesleep/notetsleep are generally called on g0,
+ * notetsleepg is similar to notetsleep but is called on user g.
  */
 void	runtime_noteclear(Note*);
 void	runtime_notesleep(Note*);
 void	runtime_notewakeup(Note*);
-void	runtime_notetsleep(Note*, int64);
+bool	runtime_notetsleep(Note*, int64);  // false - timeout
+bool	runtime_notetsleepg(Note*, int64);  // false - timeout
 
 /*
  * low-level synchronization for implementing the above
@@ -698,11 +725,13 @@ void	runtime_newTypeAssertionError(const String*, const String*, const String*, 
      __asm__ (GOSYM_PREFIX "runtime.NewTypeAssertionError");
 void	runtime_newErrorString(String, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorString");
+void	runtime_newErrorCString(const char*, Eface*)
+     __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
 /*
  * wrapped for go users
  */
-void	runtime_semacquire(uint32 volatile *);
+void	runtime_semacquire(uint32 volatile *, bool);
 void	runtime_semrelease(uint32 volatile *);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
@@ -711,18 +740,9 @@ void	runtime_lockOSThread(void);
 void	runtime_unlockOSThread(void);
 
 bool	runtime_showframe(String, bool);
+void	runtime_printcreatedby(G*);
 
 uintptr	runtime_memlimit(void);
-
-// If appropriate, ask the operating system to control whether this
-// thread should receive profiling signals.  This is only necessary on OS X.
-// An operating system should not deliver a profiling signal to a
-// thread that is not actually executing (what good is that?), but that's
-// what OS X prefers to do.  When profiling is turned on, we mask
-// away the profiling signal when threads go to sleep, so that OS X
-// is forced to deliver the signal to a thread that's actually running.
-// This is a no-op on other systems.
-void	runtime_setprof(bool);
 
 #define ISNAN(f) __builtin_isnan(f)
 
@@ -763,3 +783,6 @@ int32 getproccount(void);
 
 void	__go_set_closure(void*);
 void*	__go_get_closure(void);
+
+bool	runtime_gcwaiting(void);
+void	runtime_badsignal(int);

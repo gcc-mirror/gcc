@@ -10,25 +10,31 @@ extern void abort(void);
 
 __int128_t v, count, ret;
 
+int
 main ()
 {
   v = 0;
   count = 0;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) != count)
     abort ();
+  count++;
 
   /* Now test the generic version.  */
 

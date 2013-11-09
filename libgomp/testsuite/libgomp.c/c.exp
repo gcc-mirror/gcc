@@ -17,6 +17,9 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize dg.
 dg-init
 
+# Turn on OpenMP.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
+
 # Gather a list of all tests.
 set tests [lsort [find $srcdir/$subdir *.c]]
 

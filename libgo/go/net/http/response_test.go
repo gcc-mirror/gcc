@@ -348,6 +348,29 @@ some body`,
 
 		"some body",
 	},
+
+	// Unchunked response without Content-Length, Request is nil
+	{
+		"HTTP/1.0 200 OK\r\n" +
+			"Connection: close\r\n" +
+			"\r\n" +
+			"Body here\n",
+
+		Response{
+			Status:     "200 OK",
+			StatusCode: 200,
+			Proto:      "HTTP/1.0",
+			ProtoMajor: 1,
+			ProtoMinor: 0,
+			Header: Header{
+				"Connection": {"close"}, // TODO(rsc): Delete?
+			},
+			Close:         true,
+			ContentLength: -1,
+		},
+
+		"Body here\n",
+	},
 }
 
 func TestReadResponse(t *testing.T) {
@@ -563,5 +586,44 @@ func TestResponseStatusStutter(t *testing.T) {
 	r.Write(&buf)
 	if strings.Contains(buf.String(), "123 123") {
 		t.Errorf("stutter in status: %s", buf.String())
+	}
+}
+
+func TestResponseContentLengthShortBody(t *testing.T) {
+	const shortBody = "Short body, not 123 bytes."
+	br := bufio.NewReader(strings.NewReader("HTTP/1.1 200 OK\r\n" +
+		"Content-Length: 123\r\n" +
+		"\r\n" +
+		shortBody))
+	res, err := ReadResponse(br, &Request{Method: "GET"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.ContentLength != 123 {
+		t.Fatalf("Content-Length = %d; want 123", res.ContentLength)
+	}
+	var buf bytes.Buffer
+	n, err := io.Copy(&buf, res.Body)
+	if n != int64(len(shortBody)) {
+		t.Errorf("Copied %d bytes; want %d, len(%q)", n, len(shortBody), shortBody)
+	}
+	if buf.String() != shortBody {
+		t.Errorf("Read body %q; want %q", buf.String(), shortBody)
+	}
+	if err != io.ErrUnexpectedEOF {
+		t.Errorf("io.Copy error = %#v; want io.ErrUnexpectedEOF", err)
+	}
+}
+
+func TestNeedsSniff(t *testing.T) {
+	// needsSniff returns true with an empty response.
+	r := &response{}
+	if got, want := r.needsSniff(), true; got != want {
+		t.Errorf("needsSniff = %t; want %t", got, want)
+	}
+	// needsSniff returns false when Content-Type = nil.
+	r.handlerHeader = Header{"Content-Type": nil}
+	if got, want := r.needsSniff(), false; got != want {
+		t.Errorf("needsSniff empty Content-Type = %t; want %t", got, want)
 	}
 }

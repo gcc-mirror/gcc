@@ -893,8 +893,8 @@ static inline bool
 range_int_cst_singleton_p (value_range_t *vr)
 {
   return (range_int_cst_p (vr)
-	  && !TREE_OVERFLOW (vr->min)
-	  && !TREE_OVERFLOW (vr->max)
+	  && !is_overflow_infinity (vr->min)
+	  && !is_overflow_infinity (vr->max)
 	  && tree_int_cst_equal (vr->min, vr->max));
 }
 
@@ -1457,24 +1457,6 @@ value_range_nonnegative_p (value_range_t *vr)
   return false;
 }
 
-/* Return true if T, an SSA_NAME, is known to be nonnegative.  Return
-   false otherwise or if no value range information is available.  */
-
-bool
-ssa_name_nonnegative_p (const_tree t)
-{
-  value_range_t *vr = get_value_range (t);
-
-  if (INTEGRAL_TYPE_P (t)
-      && TYPE_UNSIGNED (t))
-    return true;
-
-  if (!vr)
-    return false;
-
-  return value_range_nonnegative_p (vr);
-}
-
 /* If *VR has a value rante that is a single constant value return that,
    otherwise return NULL_TREE.  */
 
@@ -1732,7 +1714,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == LT_EXPR
 	   && compare_values (max, min) == 0)
-	  || (CONSTANT_CLASS_P (max) && TREE_OVERFLOW (max)))
+	  || is_overflow_infinity (max))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1772,7 +1754,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == GT_EXPR
 	   && compare_values (min, max) == 0)
-	  || (CONSTANT_CLASS_P (min) && TREE_OVERFLOW (min)))
+	  || is_overflow_infinity (min))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1994,8 +1976,8 @@ zero_nonzero_bits_from_vr (const tree expr_type,
   *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
   *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
   if (!range_int_cst_p (vr)
-      || TREE_OVERFLOW (vr->min)
-      || TREE_OVERFLOW (vr->max))
+      || is_overflow_infinity (vr->min)
+      || is_overflow_infinity (vr->max))
     return false;
 
   if (range_int_cst_singleton_p (vr))
@@ -3551,13 +3533,13 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		maxi = tree_floor_log2 (vr0->max) + 1;
 	    }
 	  goto bitop_builtin;
@@ -3592,7 +3574,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->min) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1 - tree_floor_log2 (vr0->min);
 		  if (maxi != prec)
@@ -3600,7 +3582,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		}
 	      else if (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)
-		       && !TREE_OVERFLOW (vr0->min))
+		       && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1;
 		  mini = 0;
@@ -3611,7 +3593,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result minimum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  mini = prec - 1 - tree_floor_log2 (vr0->max);
 		  if (mini == prec)
@@ -3654,7 +3636,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  mini = 0;
 		  maxi = prec - 1;
@@ -3663,7 +3645,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 we can decrease the result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  maxi = tree_floor_log2 (vr0->max);
 		  /* For vr0 [0, 0] give up.  */
@@ -4545,9 +4527,8 @@ register_new_assert_for (tree name, tree expr,
   /* Never build an assert comparing against an integer constant with
      TREE_OVERFLOW set.  This confuses our undefined overflow warning
      machinery.  */
-  if (TREE_CODE (val) == INTEGER_CST
-      && TREE_OVERFLOW (val))
-    val = wide_int_to_tree (TREE_TYPE (val), val);
+  if (TREE_OVERFLOW_P (val))
+    val = drop_tree_overflow (val);
 
   /* The new assertion A will be inserted at BB or E.  We need to
      determine if the new location is dominated by a previously
@@ -5832,6 +5813,34 @@ find_assert_locations (void)
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
+
+  /* Pre-seed loop latch liveness from loop header PHI nodes.  Due to
+     the order we compute liveness and insert asserts we otherwise
+     fail to insert asserts into the loop latch.  */
+  loop_p loop;
+  loop_iterator li;
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      i = loop->latch->index;
+      unsigned int j = single_succ_edge (loop->latch)->dest_idx;
+      for (gimple_stmt_iterator gsi = gsi_start_phis (loop->header);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
+	  tree arg = gimple_phi_arg_def (phi, j);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      if (live[i] == NULL)
+		{
+		  live[i] = sbitmap_alloc (num_ssa_names);
+		  bitmap_clear (live[i]);
+		}
+	      bitmap_set_bit (live[i], SSA_NAME_VERSION (arg));
+	    }
+	}
+    }
 
   need_asserts = false;
   for (i = rpo_cnt - 1; i >= 0; --i)
@@ -8260,10 +8269,7 @@ vrp_visit_phi_node (gimple phi)
 	  else
 	    {
 	      if (is_overflow_infinity (arg))
-		{
-		  arg = copy_node (arg);
-		  TREE_OVERFLOW (arg) = 0;
-		}
+		arg = drop_tree_overflow (arg);
 
 	      vr_arg.type = VR_RANGE;
 	      vr_arg.min = arg;

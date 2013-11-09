@@ -32,21 +32,20 @@
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
-    template<typename _Other>
-      bool
-      _Safe_local_iterator<_Iterator, _Sequence>::
-      _M_valid_range(const _Safe_local_iterator<_Other, _Sequence>& __rhs) const
-      {
-	if (!_M_can_compare(__rhs))
-	  return false;
-	if (_M_bucket != __rhs._M_bucket)
-	  return false;
+    bool
+    _Safe_local_iterator<_Iterator, _Sequence>::
+    _M_valid_range(const _Safe_local_iterator& __rhs) const
+    {
+      if (!_M_can_compare(__rhs))
+	return false;
+      if (_M_bucket != __rhs._M_bucket)
+	return false;
 
-	/* Determine if we can order the iterators without the help of
-	   the container */
-	std::pair<difference_type, _Distance_precision> __dist =
-	  __get_distance(base(), __rhs.base());
-	switch (__dist.second)
+      /* Determine if we can order the iterators without the help of
+	 the container */
+      std::pair<difference_type, _Distance_precision> __dist =
+	__get_distance(base(), __rhs.base());
+      switch (__dist.second)
 	{
 	case __dp_equality:
 	  if (__dist.first == 0)
@@ -58,18 +57,18 @@ namespace __gnu_debug
 	  return __dist.first >= 0;
 	}
 
-	/* We can only test for equality, but check if one of the
-	   iterators is at an extreme. */
-	/* Optim for classic [begin, it) or [it, end) ranges, limit checks
-	 * when code is valid. */
-	if (_M_is_begin() || __rhs._M_is_end())
-	  return true;
-	if (_M_is_end() || __rhs._M_is_begin())
-	  return false;
-
-	// Assume that this is a valid range; we can't check anything else
+      /* We can only test for equality, but check if one of the
+	 iterators is at an extreme. */
+      /* Optim for classic [begin, it) or [it, end) ranges, limit checks
+       * when code is valid. */
+      if (_M_is_begin() || __rhs._M_is_end())
 	return true;
-      }
+      if (_M_is_end() || __rhs._M_is_begin())
+	return false;
+
+      // Assume that this is a valid range; we can't check anything else
+      return true;
+    }
 } // namespace __gnu_debug
 
 #endif

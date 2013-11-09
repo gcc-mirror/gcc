@@ -32,14 +32,14 @@ type StructuralError struct {
 	Msg string
 }
 
-func (e StructuralError) Error() string { return "ASN.1 structure error: " + e.Msg }
+func (e StructuralError) Error() string { return "asn1: structure error: " + e.Msg }
 
 // A SyntaxError suggests that the ASN.1 data is invalid.
 type SyntaxError struct {
 	Msg string
 }
 
-func (e SyntaxError) Error() string { return "ASN.1 syntax error: " + e.Msg }
+func (e SyntaxError) Error() string { return "asn1: syntax error: " + e.Msg }
 
 // We start by dealing with each of the primitive types in turn.
 
@@ -51,7 +51,19 @@ func parseBool(bytes []byte) (ret bool, err error) {
 		return
 	}
 
-	return bytes[0] != 0, nil
+	// DER demands that "If the encoding represents the boolean value TRUE,
+	// its single contents octet shall have all eight bits set to one."
+	// Thus only 0 and 255 are valid encoded values.
+	switch bytes[0] {
+	case 0:
+		ret = false
+	case 0xff:
+		ret = true
+	default:
+		err = SyntaxError{"invalid boolean"}
+	}
+
+	return
 }
 
 // INTEGER
@@ -171,7 +183,7 @@ func parseBitString(bytes []byte) (ret BitString, err error) {
 // An ObjectIdentifier represents an ASN.1 OBJECT IDENTIFIER.
 type ObjectIdentifier []int
 
-// Equal returns true iff oi and other represent the same identifier.
+// Equal reports whether oi and other represent the same identifier.
 func (oi ObjectIdentifier) Equal(other ObjectIdentifier) bool {
 	if len(oi) != len(other) {
 		return false
@@ -198,12 +210,24 @@ func parseObjectIdentifier(bytes []byte) (s []int, err error) {
 	// encoded differently) and then every varint is a single byte long.
 	s = make([]int, len(bytes)+1)
 
-	// The first byte is 40*value1 + value2:
-	s[0] = int(bytes[0]) / 40
-	s[1] = int(bytes[0]) % 40
+	// The first varint is 40*value1 + value2:
+	// According to this packing, value1 can take the values 0, 1 and 2 only.
+	// When value1 = 0 or value1 = 1, then value2 is <= 39. When value1 = 2,
+	// then there are no restrictions on value2.
+	v, offset, err := parseBase128Int(bytes, 0)
+	if err != nil {
+		return
+	}
+	if v < 80 {
+		s[0] = v / 40
+		s[1] = v % 40
+	} else {
+		s[0] = 2
+		s[1] = v - 80
+	}
+
 	i := 2
-	for offset := 1; offset < len(bytes); i++ {
-		var v int
+	for ; offset < len(bytes); i++ {
 		v, offset, err = parseBase128Int(bytes, offset)
 		if err != nil {
 			return
@@ -573,7 +597,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 				}
 			} else {
 				if fieldType != flagType {
-					err = StructuralError{"Zero length explicit tag was not an asn1.Flag"}
+					err = StructuralError{"zero length explicit tag was not an asn1.Flag"}
 					return
 				}
 				v.SetBool(true)

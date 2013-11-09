@@ -1286,9 +1286,6 @@ process_options (void)
     {
       if (targetm.chkp_bound_mode () == VOIDmode)
 	error ("-fcheck-pointers is not supported for this target");
-
-      if (!lang_hooks.chkp_supported)
-	flag_check_pointer_bounds = 0;
     }
 
   /* One region RA really helps to decrease the code size.  */

@@ -366,6 +366,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_mode_switching);
       NEXT_PASS (pass_match_asm_constraints);
       NEXT_PASS (pass_sms);
+      NEXT_PASS (pass_live_range_shrinkage);
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);

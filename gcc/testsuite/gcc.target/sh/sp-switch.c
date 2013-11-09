@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-final { scan-assembler "mov\tr0,r15" } } */
 /* { dg-final { scan-assembler ".long\t_alt_stack" } } */
 

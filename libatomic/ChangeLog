@@ -1,3 +1,13 @@
+2013-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* fenv.c: New file.
+	* libatomic.map (LIBATOMIC_1.1): New symbol version.  Include
+	__atomic_feraiseexcept.
+	* configure.ac (libtool_VERSION): Change to 2:0:1.
+	(fenv.h): Test for header.
+	* Makefile.am (libatomic_la_SOURCES): Add fenv.c.
+	* Makefile.in, auto-config.h.in, configure: Regenerate.
+
 2013-10-17  Michael Hudson-Doyle  <michael.hudson@linaro.org>
 
 	* libatomic/configure.tgt (aarch64*): Remove code preventing

@@ -44,16 +44,15 @@ namespace __gnu_debug
   template <typename _Sequence>
     struct _BeforeBeginHelper
     {
-      typedef typename _Sequence::const_iterator _It;
-      typedef typename _It::iterator_type _BaseIt;
+      template<typename _Iterator>
+	static bool
+	_S_Is(const _Safe_iterator<_Iterator, _Sequence>&)
+	{ return false; }
 
-      static bool
-      _S_Is(_BaseIt, const _Sequence*)
-      { return false; }
-
-      static bool
-      _S_Is_Beginnest(_BaseIt __it, const _Sequence* __seq)
-      { return __it == __seq->_M_base().begin(); }
+      template<typename _Iterator>
+	static bool
+	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence>& __it)
+	{ return __it.base() == __it._M_get_sequence()->_M_base().begin(); }
     };
 
   /** Iterators that derive from _Safe_iterator_base can be determined singular
@@ -76,26 +75,26 @@ namespace __gnu_debug
   /** Determine the distance between two iterators with some known
    *	precision.
   */
-  template<typename _Iterator1, typename _Iterator2>
-    inline std::pair<typename std::iterator_traits<_Iterator1>::difference_type,
+  template<typename _Iterator>
+    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
 		     _Distance_precision>
-    __get_distance(const _Iterator1& __lhs, const _Iterator2& __rhs,
+    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
 		   std::random_access_iterator_tag)
     { return std::make_pair(__rhs - __lhs, __dp_exact); }
 
-  template<typename _Iterator1, typename _Iterator2>
-    inline std::pair<typename std::iterator_traits<_Iterator1>::difference_type,
+  template<typename _Iterator>
+    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
 		     _Distance_precision>
-    __get_distance(const _Iterator1& __lhs, const _Iterator2& __rhs,
+    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
 		   std::forward_iterator_tag)
     { return std::make_pair(__lhs == __rhs? 0 : 1, __dp_equality); }
 
-  template<typename _Iterator1, typename _Iterator2>
-    inline std::pair<typename std::iterator_traits<_Iterator1>::difference_type,
+  template<typename _Iterator>
+    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
 		     _Distance_precision>
-    __get_distance(const _Iterator1& __lhs, const _Iterator2& __rhs)
+    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs)
     {
-      typedef typename std::iterator_traits<_Iterator1>::iterator_category
+      typedef typename std::iterator_traits<_Iterator>::iterator_category
 	  _Category;
       return __get_distance(__lhs, __rhs, _Category());
     }
@@ -115,6 +114,7 @@ namespace __gnu_debug
     class _Safe_iterator : public _Safe_iterator_base
     {
       typedef _Safe_iterator _Self;
+      typedef typename _Sequence::const_iterator _Const_iterator;
 
       /// The underlying iterator
       _Iterator _M_current;
@@ -122,10 +122,7 @@ namespace __gnu_debug
       /// Determine if this is a constant iterator.
       bool
       _M_constant() const
-      {
-	typedef typename _Sequence::const_iterator const_iterator;
-	return std::__are_same<const_iterator, _Safe_iterator>::__value;
-      }
+      { return std::__are_same<_Const_iterator, _Safe_iterator>::__value; }
 
       typedef std::iterator_traits<_Iterator> _Traits;
 
@@ -445,37 +442,39 @@ namespace __gnu_debug
       _M_can_advance(const difference_type& __n) const;
 
       // Is the iterator range [*this, __rhs) valid?
-      template<typename _Other>
-        bool
-        _M_valid_range(const _Safe_iterator<_Other, _Sequence>& __rhs) const;
+      bool
+      _M_valid_range(const _Safe_iterator& __rhs) const;
 
       // The sequence this iterator references.
-      const _Sequence*
+      typename
+      __gnu_cxx::__conditional_type<std::__are_same<_Const_iterator,
+						    _Safe_iterator>::__value,
+				    const _Sequence*,
+				    _Sequence*>::__type
       _M_get_sequence() const
-      { return static_cast<const _Sequence*>(_M_sequence); }
+      { return static_cast<_Sequence*>(_M_sequence); }
 
       /// Is this iterator equal to the sequence's begin() iterator?
-      bool _M_is_begin() const
+      bool
+      _M_is_begin() const
       { return base() == _M_get_sequence()->_M_base().begin(); }
 
       /// Is this iterator equal to the sequence's end() iterator?
-      bool _M_is_end() const
+      bool
+      _M_is_end() const
       { return base() == _M_get_sequence()->_M_base().end(); }
 
       /// Is this iterator equal to the sequence's before_begin() iterator if
       /// any?
-      bool _M_is_before_begin() const
-      {
-	return _BeforeBeginHelper<_Sequence>::_S_Is(base(), _M_get_sequence());
-      }
+      bool
+      _M_is_before_begin() const
+      { return _BeforeBeginHelper<_Sequence>::_S_Is(*this); }
 
       /// Is this iterator equal to the sequence's before_begin() iterator if
       /// any or begin() otherwise?
-      bool _M_is_beginnest() const
-      {
-	return _BeforeBeginHelper<_Sequence>::_S_Is_Beginnest(base(),
-							  _M_get_sequence());
-      }
+      bool
+      _M_is_beginnest() const
+      { return _BeforeBeginHelper<_Sequence>::_S_Is_Beginnest(*this); }
     };
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>

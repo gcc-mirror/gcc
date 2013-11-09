@@ -6,13 +6,11 @@ package zip
 
 import (
 	"bufio"
-	"compress/flate"
 	"encoding/binary"
 	"errors"
 	"hash"
 	"hash/crc32"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -116,6 +114,19 @@ func (rc *ReadCloser) Close() error {
 	return rc.f.Close()
 }
 
+// DataOffset returns the offset of the file's possibly-compressed
+// data, relative to the beginning of the zip file.
+//
+// Most callers should instead use Open, which transparently
+// decompresses data and verifies checksums.
+func (f *File) DataOffset() (offset int64, err error) {
+	bodyOffset, err := f.findBodyOffset()
+	if err != nil {
+		return
+	}
+	return f.headerOffset + bodyOffset, nil
+}
+
 // Open returns a ReadCloser that provides access to the File's contents.
 // Multiple files may be read concurrently.
 func (f *File) Open() (rc io.ReadCloser, err error) {
@@ -125,15 +136,12 @@ func (f *File) Open() (rc io.ReadCloser, err error) {
 	}
 	size := int64(f.CompressedSize64)
 	r := io.NewSectionReader(f.zipr, f.headerOffset+bodyOffset, size)
-	switch f.Method {
-	case Store: // (no compression)
-		rc = ioutil.NopCloser(r)
-	case Deflate:
-		rc = flate.NewReader(r)
-	default:
+	dcomp := decompressor(f.Method)
+	if dcomp == nil {
 		err = ErrAlgorithm
 		return
 	}
+	rc = dcomp(r)
 	var desr io.Reader
 	if f.hasDataDescriptor() {
 		desr = io.NewSectionReader(f.zipr, f.headerOffset+bodyOffset+size, dataDescriptorLen)
@@ -184,9 +192,8 @@ func (r *checksumReader) Close() error { return r.rc.Close() }
 // findBodyOffset does the minimum work to verify the file has a header
 // and returns the file body offset.
 func (f *File) findBodyOffset() (int64, error) {
-	r := io.NewSectionReader(f.zipr, f.headerOffset, f.zipsize-f.headerOffset)
 	var buf [fileHeaderLen]byte
-	if _, err := io.ReadFull(r, buf[:]); err != nil {
+	if _, err := f.zipr.ReadAt(buf[:], f.headerOffset); err != nil {
 		return 0, err
 	}
 	b := readBuf(buf[:])

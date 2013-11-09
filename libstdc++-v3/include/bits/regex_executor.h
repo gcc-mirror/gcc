@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
+	   bool __dfs_mode>
     class _Executor
     {
     public:
@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::vector<sub_match<_BiIter>, _Alloc>       _ResultsVec;
       typedef regex_constants::match_flag_type              _FlagT;
       typedef typename _TraitsT::char_class_type            _ClassT;
-      typedef _NFA<_CharT, _TraitsT>                        _NFAT;
+      typedef _NFA<_TraitsT>                                _NFAT;
 
     public:
       _Executor(_BiIter         __begin,
@@ -117,9 +117,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_is_word(_CharT __ch) const
       {
-	static const _CharT __s = 'w';
+	static const _CharT __s[2] = { 'w' };
 	return _M_re._M_traits.isctype
-	  (__ch, _M_re._M_traits.lookup_classname(&__s, &__s+1));
+	  (__ch, _M_re._M_traits.lookup_classname(__s, __s+1));
       }
 
       bool
@@ -138,10 +138,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      _M_word_boundry(_State<_CharT, _TraitsT> __state) const;
+      _M_word_boundary(_State<_TraitsT> __state) const;
 
       bool
-      _M_lookahead(_State<_CharT, _TraitsT> __state);
+      _M_lookahead(_State<_TraitsT> __state);
 
     public:
       _ResultsVec                                          _M_cur_results;

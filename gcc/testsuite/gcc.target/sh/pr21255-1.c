@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 /* { dg-final { scan-assembler "mov fr4,fr.; mov fr5,fr." { target sh-*-* } } } */
 /* { dg-final { scan-assembler "mov fr4,fr.; mov fr5,fr." { target sh[1234lb]*-*-* } } } */

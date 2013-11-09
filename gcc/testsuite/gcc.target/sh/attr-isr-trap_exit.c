@@ -1,6 +1,6 @@
 /* Check that trapa / interrput_handler attributes can paired in
    either order.  */
-/* { dg-do compile { target "sh*-*-*" } }  */
+/* { dg-do compile }  */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 /* { dg-options "-O" }  */
 /* { dg-final { scan-assembler "trapa\[ \t\]\[ \t\]*#4"} }  */

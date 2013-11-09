@@ -1,7 +1,7 @@
 /* Verify that the delay slot is not stuffed with register pop insns for
    interrupt handler function returns on SH1* and SH2* targets, where the
    rte insn uses the stack pointer.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m1*" "-m2*" } }  */
 /* { dg-final { scan-assembler-times "nop" 1 } } */

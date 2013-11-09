@@ -60,7 +60,7 @@ __go_int_to_string (intgo v)
 	}
     }
 
-  retdata = runtime_mallocgc (len, FlagNoPointers, 1, 0);
+  retdata = runtime_mallocgc (len, 0, FlagNoScan);
   __builtin_memcpy (retdata, buf, len);
   ret.str = retdata;
   ret.len = len;

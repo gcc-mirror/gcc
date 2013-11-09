@@ -592,6 +592,12 @@ diagnose_tm_1_op (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+static inline bool
+is_tm_safe_or_pure (const_tree x)
+{
+  return is_tm_safe (x) || is_tm_pure (x);
+}
+
 static tree
 diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		    struct walk_stmt_info *wi)

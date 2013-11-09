@@ -168,6 +168,15 @@ func BenchmarkIndex(b *testing.B) {
 	}
 }
 
+func BenchmarkIndexByte(b *testing.B) {
+	if got := IndexByte(benchmarkString, 'v'); got != 17 {
+		b.Fatalf("wrong index: expected 17, got=%d", got)
+	}
+	for i := 0; i < b.N; i++ {
+		IndexByte(benchmarkString, 'v')
+	}
+}
+
 var explodetests = []struct {
 	s string
 	n int
@@ -997,6 +1006,30 @@ func TestEqualFold(t *testing.T) {
 		}
 		if out := EqualFold(tt.t, tt.s); out != tt.out {
 			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
+		}
+	}
+}
+
+var CountTests = []struct {
+	s, sep string
+	num    int
+}{
+	{"", "", 1},
+	{"", "notempty", 0},
+	{"notempty", "", 9},
+	{"smaller", "not smaller", 0},
+	{"12345678987654321", "6", 2},
+	{"611161116", "6", 3},
+	{"notequal", "NotEqual", 0},
+	{"equal", "equal", 1},
+	{"abc1231231123q", "123", 3},
+	{"11111", "11", 2},
+}
+
+func TestCount(t *testing.T) {
+	for _, tt := range CountTests {
+		if num := Count(tt.s, tt.sep); num != tt.num {
+			t.Errorf("Count(\"%s\", \"%s\") = %d, want %d", tt.s, tt.sep, num, tt.num)
 		}
 	}
 }

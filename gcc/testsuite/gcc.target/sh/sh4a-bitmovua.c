@@ -1,5 +1,5 @@
 /* Verify that we generate movua to load unaligned 32-bit values on SH4A.  */
-/* { dg-do run { target "sh*-*-*" } } */
+/* { dg-do run }  */
 /* { dg-options "-O1 -save-temps -fno-inline" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a*" } }  */
 /* { dg-final { scan-assembler-times "movua.l" 6 } } */

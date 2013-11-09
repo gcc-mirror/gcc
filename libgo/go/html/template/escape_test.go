@@ -538,7 +538,7 @@ func TestEscape(t *testing.T) {
 		{
 			"typed HTML in script",
 			`<button onclick="alert({{.W}})">`,
-			`<button onclick="alert(&#34;&amp;iexcl;\u003cb class=\&#34;foo\&#34;\u003eHello\u003c/b\u003e, \u003ctextarea\u003eO&#39;World\u003c/textarea\u003e!&#34;)">`,
+			`<button onclick="alert(&#34;\u0026iexcl;\u003cb class=\&#34;foo\&#34;\u003eHello\u003c/b\u003e, \u003ctextarea\u003eO&#39;World\u003c/textarea\u003e!&#34;)">`,
 		},
 		{
 			"typed HTML in RCDATA",
@@ -655,6 +655,11 @@ func TestEscape(t *testing.T) {
 	for _, test := range tests {
 		tmpl := New(test.name)
 		tmpl = Must(tmpl.Parse(test.input))
+		// Check for bug 6459: Tree field was not set in Parse.
+		if tmpl.Tree != tmpl.text.Tree {
+			t.Errorf("%s: tree not set properly", test.name)
+			continue
+		}
 		b := new(bytes.Buffer)
 		if err := tmpl.Execute(b, data); err != nil {
 			t.Errorf("%s: template execution failed: %s", test.name, err)
@@ -671,6 +676,10 @@ func TestEscape(t *testing.T) {
 		}
 		if w, g := test.output, b.String(); w != g {
 			t.Errorf("%s: escaped output for pointer: want\n\t%q\ngot\n\t%q", test.name, w, g)
+			continue
+		}
+		if tmpl.Tree != tmpl.text.Tree {
+			t.Errorf("%s: tree mismatch", test.name)
 			continue
 		}
 	}

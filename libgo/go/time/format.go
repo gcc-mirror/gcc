@@ -59,35 +59,39 @@ const (
 )
 
 const (
-	_                 = iota
-	stdLongMonth      = iota + stdNeedDate  // "January"
-	stdMonth                                // "Jan"
-	stdNumMonth                             // "1"
-	stdZeroMonth                            // "01"
-	stdLongWeekDay                          // "Monday"
-	stdWeekDay                              // "Mon"
-	stdDay                                  // "2"
-	stdUnderDay                             // "_2"
-	stdZeroDay                              // "02"
-	stdHour           = iota + stdNeedClock // "15"
-	stdHour12                               // "3"
-	stdZeroHour12                           // "03"
-	stdMinute                               // "4"
-	stdZeroMinute                           // "04"
-	stdSecond                               // "5"
-	stdZeroSecond                           // "05"
-	stdLongYear       = iota + stdNeedDate  // "2006"
-	stdYear                                 // "06"
-	stdPM             = iota + stdNeedClock // "PM"
-	stdpm                                   // "pm"
-	stdTZ             = iota                // "MST"
-	stdISO8601TZ                            // "Z0700"  // prints Z for UTC
-	stdISO8601ColonTZ                       // "Z07:00" // prints Z for UTC
-	stdNumTZ                                // "-0700"  // always numeric
-	stdNumShortTZ                           // "-07"    // always numeric
-	stdNumColonTZ                           // "-07:00" // always numeric
-	stdFracSecond0                          // ".0", ".00", ... , trailing zeros included
-	stdFracSecond9                          // ".9", ".99", ..., trailing zeros omitted
+	_                        = iota
+	stdLongMonth             = iota + stdNeedDate  // "January"
+	stdMonth                                       // "Jan"
+	stdNumMonth                                    // "1"
+	stdZeroMonth                                   // "01"
+	stdLongWeekDay                                 // "Monday"
+	stdWeekDay                                     // "Mon"
+	stdDay                                         // "2"
+	stdUnderDay                                    // "_2"
+	stdZeroDay                                     // "02"
+	stdHour                  = iota + stdNeedClock // "15"
+	stdHour12                                      // "3"
+	stdZeroHour12                                  // "03"
+	stdMinute                                      // "4"
+	stdZeroMinute                                  // "04"
+	stdSecond                                      // "5"
+	stdZeroSecond                                  // "05"
+	stdLongYear              = iota + stdNeedDate  // "2006"
+	stdYear                                        // "06"
+	stdPM                    = iota + stdNeedClock // "PM"
+	stdpm                                          // "pm"
+	stdTZ                    = iota                // "MST"
+	stdISO8601TZ                                   // "Z0700"  // prints Z for UTC
+	stdISO8601SecondsTZ                            // "Z070000"
+	stdISO8601ColonTZ                              // "Z07:00" // prints Z for UTC
+	stdISO8601ColonSecondsTZ                       // "Z07:00:00"
+	stdNumTZ                                       // "-0700"  // always numeric
+	stdNumSecondsTz                                // "-070000"
+	stdNumShortTZ                                  // "-07"    // always numeric
+	stdNumColonTZ                                  // "-07:00" // always numeric
+	stdNumColonSecondsTZ                           // "-07:00:00"
+	stdFracSecond0                                 // ".0", ".00", ... , trailing zeros included
+	stdFracSecond9                                 // ".9", ".99", ..., trailing zeros omitted
 
 	stdNeedDate  = 1 << 8             // need month, day, year
 	stdNeedClock = 2 << 8             // need hour, minute, second
@@ -97,6 +101,16 @@ const (
 
 // std0x records the std values for "01", "02", ..., "06".
 var std0x = [...]int{stdZeroMonth, stdZeroDay, stdZeroHour12, stdZeroMinute, stdZeroSecond, stdYear}
+
+// startsWithLowerCase reports whether the the string has a lower-case letter at the beginning.
+// Its purpose is to prevent matching strings like "Month" when looking for "Mon".
+func startsWithLowerCase(str string) bool {
+	if len(str) == 0 {
+		return false
+	}
+	c := str[0]
+	return 'a' <= c && c <= 'z'
+}
 
 // nextStdChunk finds the first occurrence of a std string in
 // layout and returns the text before, the std string, and the text after.
@@ -108,7 +122,9 @@ func nextStdChunk(layout string) (prefix string, std int, suffix string) {
 				if len(layout) >= i+7 && layout[i:i+7] == "January" {
 					return layout[0:i], stdLongMonth, layout[i+7:]
 				}
-				return layout[0:i], stdMonth, layout[i+3:]
+				if !startsWithLowerCase(layout[i+3:]) {
+					return layout[0:i], stdMonth, layout[i+3:]
+				}
 			}
 
 		case 'M': // Monday, Mon, MST
@@ -117,7 +133,9 @@ func nextStdChunk(layout string) (prefix string, std int, suffix string) {
 					if len(layout) >= i+6 && layout[i:i+6] == "Monday" {
 						return layout[0:i], stdLongWeekDay, layout[i+6:]
 					}
-					return layout[0:i], stdWeekDay, layout[i+3:]
+					if !startsWithLowerCase(layout[i+3:]) {
+						return layout[0:i], stdWeekDay, layout[i+3:]
+					}
 				}
 				if layout[i:i+3] == "MST" {
 					return layout[0:i], stdTZ, layout[i+3:]
@@ -165,7 +183,13 @@ func nextStdChunk(layout string) (prefix string, std int, suffix string) {
 				return layout[0:i], stdpm, layout[i+2:]
 			}
 
-		case '-': // -0700, -07:00, -07
+		case '-': // -070000, -07:00:00, -0700, -07:00, -07
+			if len(layout) >= i+7 && layout[i:i+7] == "-070000" {
+				return layout[0:i], stdNumSecondsTz, layout[i+7:]
+			}
+			if len(layout) >= i+9 && layout[i:i+9] == "-07:00:00" {
+				return layout[0:i], stdNumColonSecondsTZ, layout[i+9:]
+			}
 			if len(layout) >= i+5 && layout[i:i+5] == "-0700" {
 				return layout[0:i], stdNumTZ, layout[i+5:]
 			}
@@ -175,13 +199,21 @@ func nextStdChunk(layout string) (prefix string, std int, suffix string) {
 			if len(layout) >= i+3 && layout[i:i+3] == "-07" {
 				return layout[0:i], stdNumShortTZ, layout[i+3:]
 			}
-		case 'Z': // Z0700, Z07:00
+
+		case 'Z': // Z070000, Z07:00:00, Z0700, Z07:00,
+			if len(layout) >= i+7 && layout[i:i+7] == "Z070000" {
+				return layout[0:i], stdISO8601SecondsTZ, layout[i+7:]
+			}
+			if len(layout) >= i+9 && layout[i:i+9] == "Z07:00:00" {
+				return layout[0:i], stdISO8601ColonSecondsTZ, layout[i+9:]
+			}
 			if len(layout) >= i+5 && layout[i:i+5] == "Z0700" {
 				return layout[0:i], stdISO8601TZ, layout[i+5:]
 			}
 			if len(layout) >= i+6 && layout[i:i+6] == "Z07:00" {
 				return layout[0:i], stdISO8601ColonTZ, layout[i+6:]
 			}
+
 		case '.': // .000 or .999 - repeated digits for fractional seconds.
 			if i+1 < len(layout) && (layout[i+1] == '0' || layout[i+1] == '9') {
 				ch := layout[i+1]
@@ -321,8 +353,8 @@ var atoiError = errors.New("time: invalid number")
 // Duplicates functionality in strconv, but avoids dependency.
 func atoi(s string) (x int, err error) {
 	neg := false
-	if s != "" && s[0] == '-' {
-		neg = true
+	if s != "" && (s[0] == '-' || s[0] == '+') {
+		neg = s[0] == '-'
 		s = s[1:]
 	}
 	q, rem, err := leadingInt(s)
@@ -507,17 +539,19 @@ func (t Time) Format(layout string) string {
 			} else {
 				b = append(b, "am"...)
 			}
-		case stdISO8601TZ, stdISO8601ColonTZ, stdNumTZ, stdNumColonTZ:
+		case stdISO8601TZ, stdISO8601ColonTZ, stdISO8601SecondsTZ, stdISO8601ColonSecondsTZ, stdNumTZ, stdNumColonTZ, stdNumSecondsTz, stdNumColonSecondsTZ:
 			// Ugly special case.  We cheat and take the "Z" variants
 			// to mean "the time zone as formatted for ISO 8601".
-			if offset == 0 && (std == stdISO8601TZ || std == stdISO8601ColonTZ) {
+			if offset == 0 && (std == stdISO8601TZ || std == stdISO8601ColonTZ || std == stdISO8601SecondsTZ || std == stdISO8601ColonSecondsTZ) {
 				b = append(b, 'Z')
 				break
 			}
 			zone := offset / 60 // convert to minutes
+			absoffset := offset
 			if zone < 0 {
 				b = append(b, '-')
 				zone = -zone
+				absoffset = -absoffset
 			} else {
 				b = append(b, '+')
 			}
@@ -526,6 +560,15 @@ func (t Time) Format(layout string) string {
 				b = append(b, ':')
 			}
 			b = appendUint(b, uint(zone%60), '0')
+
+			// append seconds if appropriate
+			if std == stdISO8601SecondsTZ || std == stdNumSecondsTz || std == stdNumColonSecondsTZ || std == stdISO8601ColonSecondsTZ {
+				if std == stdNumColonSecondsTZ || std == stdISO8601ColonSecondsTZ {
+					b = append(b, ':')
+				}
+				b = appendUint(b, uint(absoffset%60), '0')
+			}
+
 		case stdTZ:
 			if name != "" {
 				b = append(b, name...)
@@ -780,7 +823,7 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 			// Special case: do we have a fractional second but no
 			// fractional second in the format?
 			if len(value) >= 2 && value[0] == '.' && isDigit(value, 1) {
-				_, std, _ := nextStdChunk(layout)
+				_, std, _ = nextStdChunk(layout)
 				std &= stdMask
 				if std == stdFracSecond0 || std == stdFracSecond9 {
 					// Fractional second in the layout; proceed normally
@@ -821,13 +864,13 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 			default:
 				err = errBad
 			}
-		case stdISO8601TZ, stdISO8601ColonTZ, stdNumTZ, stdNumShortTZ, stdNumColonTZ:
+		case stdISO8601TZ, stdISO8601ColonTZ, stdISO8601SecondsTZ, stdISO8601ColonSecondsTZ, stdNumTZ, stdNumShortTZ, stdNumColonTZ, stdNumSecondsTz, stdNumColonSecondsTZ:
 			if (std == stdISO8601TZ || std == stdISO8601ColonTZ) && len(value) >= 1 && value[0] == 'Z' {
 				value = value[1:]
 				z = UTC
 				break
 			}
-			var sign, hour, min string
+			var sign, hour, min, seconds string
 			if std == stdISO8601ColonTZ || std == stdNumColonTZ {
 				if len(value) < 6 {
 					err = errBad
@@ -837,26 +880,45 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 					err = errBad
 					break
 				}
-				sign, hour, min, value = value[0:1], value[1:3], value[4:6], value[6:]
+				sign, hour, min, seconds, value = value[0:1], value[1:3], value[4:6], "00", value[6:]
 			} else if std == stdNumShortTZ {
 				if len(value) < 3 {
 					err = errBad
 					break
 				}
-				sign, hour, min, value = value[0:1], value[1:3], "00", value[3:]
+				sign, hour, min, seconds, value = value[0:1], value[1:3], "00", "00", value[3:]
+			} else if std == stdISO8601ColonSecondsTZ || std == stdNumColonSecondsTZ {
+				if len(value) < 9 {
+					err = errBad
+					break
+				}
+				if value[3] != ':' || value[6] != ':' {
+					err = errBad
+					break
+				}
+				sign, hour, min, seconds, value = value[0:1], value[1:3], value[4:6], value[7:9], value[9:]
+			} else if std == stdISO8601SecondsTZ || std == stdNumSecondsTz {
+				if len(value) < 7 {
+					err = errBad
+					break
+				}
+				sign, hour, min, seconds, value = value[0:1], value[1:3], value[3:5], value[5:7], value[7:]
 			} else {
 				if len(value) < 5 {
 					err = errBad
 					break
 				}
-				sign, hour, min, value = value[0:1], value[1:3], value[3:5], value[5:]
+				sign, hour, min, seconds, value = value[0:1], value[1:3], value[3:5], "00", value[5:]
 			}
-			var hr, mm int
+			var hr, mm, ss int
 			hr, err = atoi(hour)
 			if err == nil {
 				mm, err = atoi(min)
 			}
-			zoneOffset = (hr*60 + mm) * 60 // offset is in seconds
+			if err == nil {
+				ss, err = atoi(seconds)
+			}
+			zoneOffset = (hr*60+mm)*60 + ss // offset is in seconds
 			switch sign[0] {
 			case '+':
 			case '-':
@@ -871,25 +933,12 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 				value = value[3:]
 				break
 			}
-
-			if len(value) >= 3 && value[2] == 'T' {
-				p, value = value[0:3], value[3:]
-			} else if len(value) >= 4 && value[3] == 'T' {
-				p, value = value[0:4], value[4:]
-			} else {
+			n, ok := parseTimeZone(value)
+			if !ok {
 				err = errBad
 				break
 			}
-			for i := 0; i < len(p); i++ {
-				if p[i] < 'A' || 'Z' < p[i] {
-					err = errBad
-				}
-			}
-			if err != nil {
-				break
-			}
-			// It's a valid format.
-			zoneName = p
+			zoneName, value = value[:n], value[n:]
 
 		case stdFracSecond0:
 			// stdFracSecond0 requires the exact number of digits as specified in
@@ -962,12 +1011,91 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 		}
 
 		// Otherwise, create fake zone with unknown offset.
-		t.loc = FixedZone(zoneName, 0)
+		if len(zoneName) > 3 && zoneName[:3] == "GMT" {
+			offset, _ = atoi(zoneName[3:]) // Guaranteed OK by parseGMT.
+			offset *= 3600
+		}
+		t.loc = FixedZone(zoneName, offset)
 		return t, nil
 	}
 
 	// Otherwise, fall back to default.
 	return Date(year, Month(month), day, hour, min, sec, nsec, defaultLocation), nil
+}
+
+// parseTimeZone parses a time zone string and returns its length. Time zones
+// are human-generated and unpredictable. We can't do precise error checking.
+// On the other hand, for a correct parse there must be a time zone at the
+// beginning of the string, so it's almost always true that there's one
+// there. We look at the beginning of the string for a run of upper-case letters.
+// If there are more than 5, it's an error.
+// If there are 4 or 5 and the last is a T, it's a time zone.
+// If there are 3, it's a time zone.
+// Otherwise, other than special cases, it's not a time zone.
+// GMT is special because it can have an hour offset.
+func parseTimeZone(value string) (length int, ok bool) {
+	if len(value) < 3 {
+		return 0, false
+	}
+	// Special case 1: This is the only zone with a lower-case letter.
+	if len(value) >= 4 && value[:4] == "ChST" {
+		return 4, true
+	}
+	// Special case 2: GMT may have an hour offset; treat it specially.
+	if value[:3] == "GMT" {
+		length = parseGMT(value)
+		return length, true
+	}
+	// How many upper-case letters are there? Need at least three, at most five.
+	var nUpper int
+	for nUpper = 0; nUpper < 6; nUpper++ {
+		if nUpper >= len(value) {
+			break
+		}
+		if c := value[nUpper]; c < 'A' || 'Z' < c {
+			break
+		}
+	}
+	switch nUpper {
+	case 0, 1, 2, 6:
+		return 0, false
+	case 5: // Must end in T to match.
+		if value[4] == 'T' {
+			return 5, true
+		}
+	case 4: // Must end in T to match.
+		if value[3] == 'T' {
+			return 4, true
+		}
+	case 3:
+		return 3, true
+	}
+	return 0, false
+}
+
+// parseGMT parses a GMT time zone. The input string is known to start "GMT".
+// The function checks whether that is followed by a sign and a number in the
+// range -14 through 12 excluding zero.
+func parseGMT(value string) int {
+	value = value[3:]
+	if len(value) == 0 {
+		return 3
+	}
+	sign := value[0]
+	if sign != '-' && sign != '+' {
+		return 3
+	}
+	x, rem, err := leadingInt(value[1:])
+	if err != nil {
+		return 3
+	}
+	if sign == '-' {
+		x = -x
+	}
+	if x == 0 || x < -14 || 12 < x {
+		return 3
+	}
+	return 3 + len(value) - len(rem)
 }
 
 func parseNanoseconds(value string, nbytes int) (ns int, rangeErrString string, err error) {
@@ -1076,11 +1204,11 @@ func ParseDuration(s string) (Duration, error) {
 			if err != nil {
 				return 0, errors.New("time: invalid duration " + orig)
 			}
-			scale := 1
+			scale := 1.0
 			for n := pl - len(s); n > 0; n-- {
 				scale *= 10
 			}
-			g += float64(x) / float64(scale)
+			g += float64(x) / scale
 			post = pl != len(s)
 		}
 		if !pre && !post {

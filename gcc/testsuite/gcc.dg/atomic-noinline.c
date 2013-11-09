@@ -16,6 +16,7 @@ extern void abort();
 short as,bs,cs;
 char ac,bc,cc;
 
+int
 main ()
 {
 

@@ -12,6 +12,8 @@
 
 package net
 
+import "errors"
+
 // IP address lengths (bytes).
 const (
 	IPv4len = 4
@@ -308,6 +310,43 @@ func (ip IP) String() string {
 		s += itox((uint(p[i])<<8)|uint(p[i+1]), 1)
 	}
 	return s
+}
+
+// ipEmptyString is like ip.String except that it returns
+// an empty string when ip is unset.
+func ipEmptyString(ip IP) string {
+	if len(ip) == 0 {
+		return ""
+	}
+	return ip.String()
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+// The encoding is the same as returned by String.
+func (ip IP) MarshalText() ([]byte, error) {
+	if len(ip) == 0 {
+		return []byte(""), nil
+	}
+	if len(ip) != IPv4len && len(ip) != IPv6len {
+		return nil, errors.New("invalid IP address")
+	}
+	return []byte(ip.String()), nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// The IP address is expected in a form accepted by ParseIP.
+func (ip *IP) UnmarshalText(text []byte) error {
+	if len(text) == 0 {
+		*ip = nil
+		return nil
+	}
+	s := string(text)
+	x := ParseIP(s)
+	if x == nil {
+		return &ParseError{"IP address", s}
+	}
+	*ip = x
+	return nil
 }
 
 // Equal returns true if ip and x are the same IP address.

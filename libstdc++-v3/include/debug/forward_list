@@ -785,23 +785,26 @@ namespace __gnu_debug
     struct _BeforeBeginHelper<std::__debug::forward_list<_Tp, _Alloc> >
     {
       typedef std::__debug::forward_list<_Tp, _Alloc> _Sequence;
-      typedef typename _Sequence::const_iterator _It;
-      typedef typename _It::iterator_type _BaseIt;
 
-      static bool
-      _S_Is(_BaseIt __it, const _Sequence* __seq)
-      { return __it == __seq->_M_base().cbefore_begin(); }
+      template<typename _Iterator>
+	static bool
+	_S_Is(const _Safe_iterator<_Iterator, _Sequence>& __it)
+	{
+	  return
+	    __it.base() == __it._M_get_sequence()->_M_base().before_begin();
+	}
 
-      static bool
-      _S_Is_Beginnest(_BaseIt __it, const _Sequence* __seq)
-      { return _S_Is(__it, __seq); }
+      template<typename _Iterator>
+	static bool
+	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence>& __it)
+	{ return _S_Is(__it); }
     };
 
 #ifndef _GLIBCXX_DEBUG_PEDANTIC
   template<class _Tp, class _Alloc>
     struct _Insert_range_from_self_is_safe<
       std::__debug::forward_list<_Tp, _Alloc> >
-      { enum { __value = 1 }; };
+    { enum { __value = 1 }; };
 #endif
 }
 

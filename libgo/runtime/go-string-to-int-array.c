@@ -32,8 +32,8 @@ __go_string_to_int_array (String str)
       p += __go_get_rune (p, pend - p, &rune);
     }
 
-  data = (uint32_t *) runtime_mallocgc (c * sizeof (uint32_t), FlagNoPointers,
-					1, 0);
+  data = (uint32_t *) runtime_mallocgc (c * sizeof (uint32_t), 0,
+					FlagNoScan | FlagNoZero);
   p = str.str;
   pd = data;
   while (p < pend)

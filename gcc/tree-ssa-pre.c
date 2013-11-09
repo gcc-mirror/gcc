@@ -4116,7 +4116,6 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       if (!useless_type_conversion_p (TREE_TYPE (res), TREE_TYPE (sprime)))
 	sprime = fold_convert (TREE_TYPE (res), sprime);
       stmt = gimple_build_assign (res, sprime);
-      SSA_NAME_DEF_STMT (res) = stmt;
       gimple_set_plf (stmt, NECESSARY, gimple_plf (phi, NECESSARY));
 
       gsi2 = gsi_after_labels (b);

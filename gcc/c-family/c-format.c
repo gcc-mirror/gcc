@@ -2374,6 +2374,7 @@ check_format_types (format_wanted_type *types)
 		  && pedantic
 		  && (TYPE_READONLY (cur_type)
 		      || TYPE_VOLATILE (cur_type)
+		      || TYPE_ATOMIC (cur_type)
 		      || TYPE_RESTRICT (cur_type)))
 		warning (OPT_Wformat_, "extra type qualifiers in format "
 			 "argument (argument %d)",
