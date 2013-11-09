@@ -548,20 +548,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 #ifdef HAVE_doloop_begin
   {
     rtx init;
-    unsigned level = get_loop_level (loop) + 1;
-    double_int iter;
-    rtx iter_rtx;
 
-    if (!get_max_loop_iterations (loop, &iter)
-	|| !iter.fits_shwi ())
-      iter_rtx = const0_rtx;
-    else
-      iter_rtx = GEN_INT (iter.to_shwi ());
-    init = gen_doloop_begin (counter_reg,
-			     desc->const_iter ? desc->niter_expr : const0_rtx,
-			     iter_rtx,
-			     GEN_INT (level),
-			     doloop_seq);
+    init = gen_doloop_begin (counter_reg, doloop_seq);
     if (init)
       {
 	start_sequence ();
@@ -608,8 +596,8 @@ doloop_optimize (struct loop *loop)
 {
   enum machine_mode mode;
   rtx doloop_seq, doloop_pat, doloop_reg;
-  rtx iterations, count;
-  rtx iterations_max;
+  rtx count;
+  double_int iterations, iterations_max;
   rtx start_label;
   rtx condition;
   unsigned level, est_niter;
@@ -617,7 +605,6 @@ doloop_optimize (struct loop *loop)
   struct niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
-  double_int iter;
   int entered_at_top;
 
   if (dump_file)
@@ -667,25 +654,30 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
-  count = copy_rtx (desc->niter_expr);
-  iterations = desc->const_iter ? desc->niter_expr : const0_rtx;
-  if (!get_max_loop_iterations (loop, &iter)
-      || !iter.fits_shwi ())
-    iterations_max = const0_rtx;
+  if (desc->const_iter)
+    iterations = rtx_to_double_int (desc->niter_expr);
   else
-    iterations_max = GEN_INT (iter.to_shwi ());
+    iterations = double_int_zero;
+  if (!get_max_loop_iterations (loop, &iterations_max))
+    iterations_max = double_int_zero;
   level = get_loop_level (loop) + 1;
+  entered_at_top = (loop->latch == desc->in_edge->dest
+		    && contains_no_active_insn_p (loop->latch));
+  if (!targetm.can_use_doloop_p (iterations, iterations_max, level,
+				 entered_at_top))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Loop rejected by can_use_doloop_p.\n");
+      return false;
+    }
 
   /* Generate looping insn.  If the pattern FAILs then give up trying
      to modify the loop since there is some aspect the back-end does
      not like.  */
+  count = copy_rtx (desc->niter_expr);
   start_label = block_label (desc->in_edge->dest);
   doloop_reg = gen_reg_rtx (mode);
-  entered_at_top = (loop->latch == desc->in_edge->dest
-		    && contains_no_active_insn_p (loop->latch));
-  doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
-			       GEN_INT (level), start_label,
-			       GEN_INT (entered_at_top));
+  doloop_seq = gen_doloop_end (doloop_reg, start_label);
 
   word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max
@@ -696,27 +688,14 @@ doloop_optimize (struct loop *loop)
 	 computed, we must be sure that the number of iterations fits into
 	 the new mode.  */
       && (word_mode_size >= GET_MODE_PRECISION (mode)
-	  || iter.ule (double_int::from_shwi (word_mode_max))))
+	  || iterations_max.ule (double_int::from_shwi (word_mode_max))))
     {
       if (word_mode_size > GET_MODE_PRECISION (mode))
-	{
-	  count = simplify_gen_unary (ZERO_EXTEND, word_mode,
-				      count, mode);
-	  iterations = simplify_gen_unary (ZERO_EXTEND, word_mode,
-					   iterations, mode);
-	  iterations_max = simplify_gen_unary (ZERO_EXTEND, word_mode,
-					       iterations_max, mode);
-	}
+	count = simplify_gen_unary (ZERO_EXTEND, word_mode, count, mode);
       else
-	{
-	  count = lowpart_subreg (word_mode, count, mode);
-	  iterations = lowpart_subreg (word_mode, iterations, mode);
-	  iterations_max = lowpart_subreg (word_mode, iterations_max, mode);
-	}
+	count = lowpart_subreg (word_mode, count, mode);
       PUT_MODE (doloop_reg, word_mode);
-      doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
-				   GEN_INT (level), start_label,
-				   GEN_INT (entered_at_top));
+      doloop_seq = gen_doloop_end (doloop_reg, start_label);
     }
   if (! doloop_seq)
     {

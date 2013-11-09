@@ -2414,11 +2414,7 @@
 ;; generate.
 (define_expand "doloop_end"
   [(use (match_operand 0 "" ""))    ;; loop pseudo
-   (use (match_operand 1 "" ""))    ;; iterations; zero if unknown
-   (use (match_operand 2 "" ""))    ;; max iterations
-   (use (match_operand 3 "" ""))    ;; loop level
-   (use (match_operand 4 "" ""))    ;; label
-   (use (match_operand 5 "" ""))]   ;; flag: 1 if loop entered at top, else 0
+   (use (match_operand 1 "" ""))]   ;; label
    ""
 {
   if (optimize > 0 && flag_modulo_sched)
@@ -2428,9 +2424,6 @@
      rtx loc_ref;
      enum machine_mode mode = GET_MODE (operands[0]);
 
-     /* only do inner loop  */
-     if (INTVAL (operands[3]) > 1)
-       FAIL;
      /* only deal with loop counters in SImode or DImode  */
      if (mode != SImode && mode != DImode)
        FAIL;
@@ -2438,7 +2431,7 @@
      s0 = operands [0];
      emit_move_insn (s0, gen_rtx_PLUS (mode, s0, GEN_INT (-1)));
      bcomp = gen_rtx_NE(mode, s0, const0_rtx);
-     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [4]);
+     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));

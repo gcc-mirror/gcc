@@ -1,3 +1,47 @@
+2013-11-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* target.def (can_use_doloop_p): New hook.
+	* doc/tm.texi.in (TARGET_CAN_USE_DOLOOP_P): Add.
+	* doc/tm.texi: Regenerate.
+	* doc/md.texi (doloop_begin, doloop_end): Update documentation.
+	* hooks.h (hook_bool_dint_dint_uint_true): Declare.
+	* hooks.c (hook_bool_dint_dint_uint_true): New function.
+	* targhooks.h (can_use_doloop_if_innermost): Declare.
+	* targhooks.c (can_use_doloop_if_innermost): New function.
+	* target.h: Include double-int.h.
+	* loop-doloop.c (doloop_optimize): Call targetm.can_use_doloop_p.
+	Remove iteration count, maximum iteration count, loop depth and
+	enter-at-top inputs from doloop_begin and doloop_end.
+	* config/arc/arc.md (doloop_begin, doloop_end): Update for new
+	interface.
+	* config/arc/arc.c (arc_can_use_doloop_p): New function.
+	(TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/arm/thumb2.md (doloop_end): Update for new interface.
+	* config/arm/arm.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/bfin/bfin.md (doloop_end): Update for new interface.
+	* config/bfin/bfin.c (bfin_can_use_doloop_p): New function.
+	(TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/c6x/c6x.md (doloop_end): Update for new interface.
+	* config/ia64/ia64.md (doloop_end): Update for new interface.
+	* config/ia64/ia64.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/mep/mep.md (doloop_begin, doloop_end): Update for new
+	interface.
+	* config/mep/mep.c (mep_emit_doloop): Likewise.
+	(TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/rs6000/rs6000.md (doloop_end): Update for new interface.
+	* config/rs6000/rs6000.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/s390/s390.md (doloop_end): Update for new interface.
+	* config/sh/sh.md (doloop_end): Likewise.
+	* config/spu/spu.md (doloop_end): Likewise.
+	* config/spu/spu.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/tilegx/tilegx.md (doloop_end): Update for new interface.
+	* config/tilegx/tilegx.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/tilepro/tilepro.md (doloop_end): Update for new interface.
+	* config/tilepro/tilepro.c (TARGET_CAN_USE_DOLOOP_P): Define.
+	* config/v850/v850.md (doloop_begin, doloop_end): Update for new
+	interface.
+	* config/v850/v850.c (TARGET_CAN_USE_DOLOOP_P): Define.
+
 2013-11-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/59055

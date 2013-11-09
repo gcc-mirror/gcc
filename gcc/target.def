@@ -3597,6 +3597,23 @@ normally defined in @file{libgcc2.c}.",
  tree, (void),
  default_external_stack_protect_fail)
 
+DEFHOOK
+(can_use_doloop_p,
+ "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\
+and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the\n\
+exact number of iterations, or 0 if not known.  @var{iterations_max} gives\n\
+the maximum number of iterations, or 0 if not known.  @var{loop_depth} is\n\
+the nesting depth of the loop, with 1 for innermost loops, 2 for loops that\n\
+contain innermost loops, and so on.  @var{entered_at_top} is true if the\n\
+loop is only entered from the top.\n\
+\n\
+This hook is only used if @code{doloop_end} is available.  The default\n\
+implementation returns true.  You can use @code{can_use_doloop_if_innermost}\n\
+if the loop must be the innermost, and if there are no other restrictions.",
+ bool, (double_int iterations, double_int iterations_max,
+	unsigned int loop_depth, bool entered_at_top),
+ hook_bool_dint_dint_uint_bool_true)
+
 /* Returns NULL if target supports the insn within a doloop block,
    otherwise it returns an error message.  */
 DEFHOOK

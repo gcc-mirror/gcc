@@ -5857,34 +5857,27 @@ reduction is enabled.
 
 @cindex @code{doloop_end} instruction pattern
 @item @samp{doloop_end}
-Conditional branch instruction that decrements a register and jumps if
-the register is nonzero.  This instruction takes five operands: Operand
-0 is the register to decrement and test; operand 1 is the number of loop
-iterations as a @code{const_int} or @code{const0_rtx} if this cannot be
-determined until run-time; operand 2 is the actual or estimated maximum
-number of iterations as a @code{const_int}; operand 3 is the number of
-enclosed loops as a @code{const_int} (an innermost loop has a value of
-1); operand 4 is the label to jump to if the register is nonzero;
-operand 5 is const1_rtx if the loop in entered at its top, const0_rtx
-otherwise.
+Conditional branch instruction that decrements a register and
+jumps if the register is nonzero.  Operand 0 is the register to
+decrement and test; operand 1 is the label to jump to if the
+register is nonzero.
 @xref{Looping Patterns}.
 
 This optional instruction pattern should be defined for machines with
 low-overhead looping instructions as the loop optimizer will try to
-modify suitable loops to utilize it.  If nested low-overhead looping is
-not supported, use a @code{define_expand} (@pxref{Expander Definitions})
-and make the pattern fail if operand 3 is not @code{const1_rtx}.
-Similarly, if the actual or estimated maximum number of iterations is
-too large for this instruction, make it fail.
+modify suitable loops to utilize it.  The target hook
+@code{TARGET_CAN_USE_DOLOOP_P} controls the conditions under which
+low-overhead loops can be used.
 
 @cindex @code{doloop_begin} instruction pattern
 @item @samp{doloop_begin}
 Companion instruction to @code{doloop_end} required for machines that
-need to perform some initialization, such as loading special registers
-used by a low-overhead looping instruction.  If initialization insns do
-not always need to be emitted, use a @code{define_expand}
-(@pxref{Expander Definitions}) and make it fail.
+need to perform some initialization, such as loading a special counter
+register.  Operand 1 is the associated @code{doloop_end} pattern and
+operand 0 is the register that it decrements.
 
+If initialization insns do not always need to be emitted, use a
+@code{define_expand} (@pxref{Expander Definitions}) and make it fail.
 
 @cindex @code{canonicalize_funcptr_for_compare} instruction pattern
 @item @samp{canonicalize_funcptr_for_compare}

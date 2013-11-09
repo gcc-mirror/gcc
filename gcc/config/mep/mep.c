@@ -5103,7 +5103,7 @@ mep_emit_doloop (rtx *operands, int is_end)
 
   tag = GEN_INT (cfun->machine->doloop_tags - 1);
   if (is_end)
-    emit_jump_insn (gen_doloop_end_internal (operands[0], operands[4], tag));
+    emit_jump_insn (gen_doloop_end_internal (operands[0], operands[1], tag));
   else
     emit_insn (gen_doloop_begin_internal (operands[0], operands[0], tag));
 }
@@ -7280,6 +7280,8 @@ mep_asm_init_sections (void)
 #define TARGET_TRAMPOLINE_INIT		mep_trampoline_init
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P	mep_legitimate_constant_p
+#undef  TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P		can_use_doloop_if_innermost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
