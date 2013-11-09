@@ -759,7 +759,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.u.bits.unsigned_flag)
 
 /* Same as TYPE_UNSIGNED but converted to SIGNOP.  */
-#define TYPE_SIGN(NODE) ((signop)TYPE_UNSIGNED(NODE))
+#define TYPE_SIGN(NODE) ((signop) TYPE_UNSIGNED (NODE))
 
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */

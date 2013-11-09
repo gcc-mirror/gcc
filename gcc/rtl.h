@@ -350,9 +350,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
   union {
     /* RTXs are free to use up to 32 bit from here.  */
 
-    /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of HOST_WIDE_INTs
-       in the hwivec_def.  */
-    unsigned  GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
+    /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
+       HOST_WIDE_INTs in the hwivec_def.  */
+    unsigned GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
   } GTY ((desc ("GET_CODE (&%0)"))) u2;
 
   /* The first element of the operands of this rtx.
@@ -404,12 +404,12 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-#define NULL_RTVEC (rtvec) 0
-
 struct GTY((variable_size)) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };
+
+#define NULL_RTVEC (rtvec) 0
 
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
 #define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))

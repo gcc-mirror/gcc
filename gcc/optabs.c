@@ -3710,6 +3710,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	op0 = expand_binop (imode, and_optab, op0,
 			    immed_wide_int_const (~mask, imode),
 			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
       temp = expand_binop (imode, ior_optab, op0, op1,
 			   gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
       target = lowpart_subreg_maybe_copy (mode, temp, imode);

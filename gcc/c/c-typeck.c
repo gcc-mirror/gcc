@@ -4757,8 +4757,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	    }
 	  else if (TREE_OVERFLOW (value))
 	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
-	    value = wide_int_to_tree (TREE_TYPE (value),
-				      value);
+	    value = wide_int_to_tree (TREE_TYPE (value), value);
 	}
     }
 

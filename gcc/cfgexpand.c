@@ -1143,7 +1143,8 @@ defer_stack_allocation (tree var, bool toplevel)
      "small" aggregates to the list at all.  */
   if (optimize == 0
       && (tree_to_uhwi (DECL_SIZE_UNIT (var))
-          < (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)))
+          < ((unsigned HOST_WIDE_INT)
+	     PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING))))
     return false;
 
   return true;

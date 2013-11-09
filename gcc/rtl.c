@@ -457,6 +457,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	  if (XWINT (x, i) != XWINT (y, i))
 	    return 0;
 	  break;
+
 	case 'n':
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))

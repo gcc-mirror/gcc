@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "wide-int-print.h"
 
-
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
 widest_int

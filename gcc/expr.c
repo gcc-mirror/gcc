@@ -9721,7 +9721,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		  {
 		    tree type = TREE_TYPE (TREE_TYPE (init));
 		    enum machine_mode mode = TYPE_MODE (type);
-		    
+
 		    if (GET_MODE_CLASS (mode) == MODE_INT
 			&& GET_MODE_SIZE (mode) == 1)
 		      return gen_int_mode (TREE_STRING_POINTER (init)

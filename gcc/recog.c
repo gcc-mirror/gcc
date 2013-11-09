@@ -1248,8 +1248,7 @@ nonimmediate_operand (rtx op, enum machine_mode mode)
   return (general_operand (op, mode) && ! CONSTANT_P (op));
 }
 
-/* Return 1 if OP is a register reference or immediate value of mode
-   MODE.  */
+/* Return 1 if OP is a register reference or immediate value of mode MODE.  */
 
 int
 nonmemory_operand (rtx op, enum machine_mode mode)

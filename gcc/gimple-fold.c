@@ -3047,8 +3047,8 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  tree unit_size = array_ref_element_size (t);
 
 	  /* If the resulting bit-offset is constant, track it.  */
-	  if ((TREE_CODE (low_bound) == INTEGER_CST)
-	      && (tree_fits_uhwi_p (unit_size)))
+	  if (TREE_CODE (low_bound) == INTEGER_CST
+	      && tree_fits_uhwi_p (unit_size))
 	    {
 	      offset_int woffset
 		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),

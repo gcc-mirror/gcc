@@ -489,8 +489,7 @@ set_lattice_value (tree var, prop_value_t new_val)
       || (new_val.lattice_val == CONSTANT
 	  && TREE_CODE (new_val.value) == INTEGER_CST
 	  && (TREE_CODE (old_val->value) != INTEGER_CST
-	      || new_val.mask 
-	      != old_val->mask)))
+	      || new_val.mask != old_val->mask)))
     {
       /* ???  We would like to delay creation of INTEGER_CSTs from
 	 partially constants here.  */
@@ -1749,7 +1748,8 @@ evaluate_stmt (gimple stmt)
     {
       tree lhs = gimple_get_lhs (stmt);
       widest_int nonzero_bits = get_nonzero_bits (lhs);
-      widest_int mask = wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (lhs)), false);
+      widest_int mask
+	= wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (lhs)), false);
       if (nonzero_bits != -1 && nonzero_bits != mask)
 	{
 	  if (!is_constant)

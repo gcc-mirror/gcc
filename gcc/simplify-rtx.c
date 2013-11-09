@@ -1686,7 +1686,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case CLRSB:
 	  result = wi::shwi (wi::clrsb (op0), mode);
 	  break;
-	  
+
 	case CTZ:
 	  result = wi::shwi (wi::ctz (op0), mode);
 	  break;
@@ -5122,7 +5122,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
     value_bit = 8,
     value_mask = (1 << value_bit) - 1
   };
-  unsigned char value[MAX_BITSIZE_MODE_ANY_MODE/value_bit];
+  unsigned char value[MAX_BITSIZE_MODE_ANY_MODE / value_bit];
   int value_start;
   int i;
   int elem;

@@ -985,8 +985,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
       if (INTEGER_CST_P (dim_arg))
 	{
 	  if (wi::ltu_p (dim_arg, 1)
-	      || wi::gtu_p (dim_arg,
-			    GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
+	      || wi::gtu_p (dim_arg, GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
 	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		       "dimension index", expr->value.function.isym->name,
 		       &expr->where);

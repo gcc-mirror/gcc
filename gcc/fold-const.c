@@ -1795,8 +1795,7 @@ fold_convert_const_fixed_from_int (tree type, const_tree arg1)
   else 
     di.high = TREE_INT_CST_ELT (arg1, 1);
 
-  overflow_p = fixed_convert_from_int (&value, TYPE_MODE (type),
-				       di,
+  overflow_p = fixed_convert_from_int (&value, TYPE_MODE (type), di,
 				       TYPE_UNSIGNED (TREE_TYPE (arg1)),
 				       TYPE_SATURATING (type));
   t = build_fixed (type, value);
@@ -6388,7 +6387,7 @@ fold_div_compare (location_t loc,
   tree prod, tmp, hi, lo;
   tree arg00 = TREE_OPERAND (arg0, 0);
   tree arg01 = TREE_OPERAND (arg0, 1);
-  signop sign  = TYPE_SIGN (TREE_TYPE (arg0));
+  signop sign = TYPE_SIGN (TREE_TYPE (arg0));
   bool neg_overflow = false;
   bool overflow;
 
@@ -11785,7 +11784,7 @@ fold_binary_loc (location_t loc,
 		}
 	    }
 	}
-      
+
       t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;

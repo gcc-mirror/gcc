@@ -1780,8 +1780,7 @@ real_value_from_int_cst (const_tree type, const_tree i)
   memset (&d, 0, sizeof d);
 
   real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode,
-		     wide_int (i),
-		     TYPE_SIGN (TREE_TYPE (i)));
+		     wide_int (i), TYPE_SIGN (TREE_TYPE (i)));
   return d;
 }
 
@@ -6708,7 +6707,7 @@ type_hash_eq (const void *va, const void *vb)
     case REAL_TYPE:
     case BOOLEAN_TYPE:
       if (TYPE_PRECISION (a->type) != TYPE_PRECISION (b->type))
-	  return false;
+	return false;
       return ((TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
 	       || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
 				      TYPE_MAX_VALUE (b->type)))

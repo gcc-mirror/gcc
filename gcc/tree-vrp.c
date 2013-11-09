@@ -8622,9 +8622,11 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   else
     return false;
 
-  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op0), &vr0, &may_be_nonzero0, &must_be_nonzero0))
+  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
+				  &must_be_nonzero0))
     return false;
-  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op1), &vr1, &may_be_nonzero1, &must_be_nonzero1))
+  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
+				  &must_be_nonzero1))
     return false;
 
   switch (gimple_assign_rhs_code (stmt))
@@ -9181,7 +9183,6 @@ static bool
 simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
-
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);

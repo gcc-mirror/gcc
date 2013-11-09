@@ -3498,7 +3498,6 @@ get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
     res = add_costs (res, force_expr_to_var_cost (multop, speed));
 
   *cost = res;
-
   return true;
 }
 
@@ -3613,7 +3612,6 @@ force_expr_to_var_cost (tree expr, bool speed)
       break;
 
     default:
-
       /* Just an arbitrary value, FIXME.  */
       return new_cost (target_spill_cost[speed], 0);
     }

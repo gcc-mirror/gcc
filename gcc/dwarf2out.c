@@ -5390,9 +5390,11 @@ print_die (dw_die_ref die, FILE *outfile)
 	    gcc_assert (i > 0);
 	    if (a->dw_attr_val.v.val_wide->elt (i) == 0)
 	      fprintf (outfile, "0x");
-	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, a->dw_attr_val.v.val_wide->elt (--i));
+	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
+		     a->dw_attr_val.v.val_wide->elt (--i));
 	    while (-- i >= 0)
-	      fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX, a->dw_attr_val.v.val_wide->elt (i));
+	      fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX,
+		       a->dw_attr_val.v.val_wide->elt (i));
 	    fprintf (outfile, ")");
 	    break;
 	  }
@@ -15108,15 +15110,13 @@ insert_wide_int (const wide_int &val, unsigned char *dest)
   if (WORDS_BIG_ENDIAN)
     for (i = (int)get_full_len (val) - 1; i >= 0; i--)
       {
-	insert_int ((HOST_WIDE_INT) val.elt (i), 
-		    sizeof (HOST_WIDE_INT), dest);
+	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
 	dest += sizeof (HOST_WIDE_INT);
       }
   else
     for (i = 0; i < (int)get_full_len (val); i++)
       {
-	insert_int ((HOST_WIDE_INT) val.elt (i), 
-		    sizeof (HOST_WIDE_INT), dest);
+	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
 	dest += sizeof (HOST_WIDE_INT);
       }
 }

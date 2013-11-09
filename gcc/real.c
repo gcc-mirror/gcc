@@ -1378,9 +1378,8 @@ real_to_integer (const REAL_VALUE_TYPE *r)
     }
 }
 
-/* Likewise, but producing a wide-int of PRECISION.  If
-   the value cannot be represented in precision, FAIL is set to
-   TRUE.  */
+/* Likewise, but producing a wide-int of PRECISION.  If the value cannot
+   be represented in precision, *FAIL is set to TRUE.  */
 
 wide_int
 real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
@@ -1448,8 +1447,8 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	}
 #endif 
       w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT; 
-      result = wide_int::from_array (val, 
-	  (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w, w); 
+      result = wide_int::from_array
+	(val, (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w);
       result = wi::lrshift (result, (words * HOST_BITS_PER_WIDE_INT) - exp);
       result = wide_int::from (result, precision, UNSIGNED);
 
@@ -2152,8 +2151,7 @@ real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
 
 void
 real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
-		   HOST_WIDE_INT val,
-		   signop sgn)
+		   HOST_WIDE_INT val, signop sgn)
 {
   if (val == 0)
     get_zero (r, 0);
@@ -2198,9 +2196,10 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
   else
     {
       unsigned int len = val_in.get_precision ();
-      int i, j, e=0;
+      int i, j, e = 0;
       int maxbitlen = MAX_BITSIZE_MODE_ANY_INT + HOST_BITS_PER_WIDE_INT;
-      const unsigned int realmax = SIGNIFICAND_BITS/HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
+      const unsigned int realmax = (SIGNIFICAND_BITS / HOST_BITS_PER_WIDE_INT
+				    * HOST_BITS_PER_WIDE_INT);
 
       memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
