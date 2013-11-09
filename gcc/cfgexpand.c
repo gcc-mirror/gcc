@@ -61,6 +61,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "output.h"
 
+/* Some systems use __main in a way incompatible with its use in gcc, in these
+   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
+   give the same symbol without quotes for an alternative entry point.  You
+   must define both, or neither.  */
+#ifndef NAME__MAIN
+#define NAME__MAIN "__main"
+#endif
+
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */
 struct ssaexpand SA;

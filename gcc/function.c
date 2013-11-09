@@ -71,14 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 
-/* Some systems use __main in a way incompatible with its use in gcc, in these
-   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
-   give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither.  */
-#ifndef NAME__MAIN
-#define NAME__MAIN "__main"
-#endif
-
 /* Round a value to the lowest integer less than it that is a multiple of
    the required alignment.  Avoid using division in case the value is
    negative.  Assume the alignment is a power of two.  */
