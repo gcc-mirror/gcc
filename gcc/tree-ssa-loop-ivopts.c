@@ -2655,9 +2655,6 @@ new_cost (unsigned runtime, unsigned complexity)
 {
   comp_cost cost;
 
-  static int ct = 0;
-  ct++;
-
   cost.cost = runtime;
   cost.complexity = complexity;
 
