@@ -1,3 +1,11 @@
+2013-11-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (atomic_size_supported_p): New function.
+	(resolve_overloaded_atomic_exchange)
+	(resolve_overloaded_atomic_compare_exchange)
+	(resolve_overloaded_atomic_load, resolve_overloaded_atomic_store):
+	Use it instead of comparing size with a local list of sizes.
+
 2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

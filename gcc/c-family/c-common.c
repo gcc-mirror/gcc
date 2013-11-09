@@ -10403,6 +10403,27 @@ add_atomic_size_parameter (unsigned n, location_t loc, tree function,
 }
 
 
+/* Return whether atomic operations for naturally aligned N-byte
+   arguments are supported, whether inline or through libatomic.  */
+static bool
+atomic_size_supported_p (int n)
+{
+  switch (n)
+    {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+      return true;
+
+    case 16:
+      return targetm.scalar_mode_supported_p (TImode);
+
+    default:
+      return false;
+    }
+}
+
 /* This will process an __atomic_exchange function call, determine whether it
    needs to be mapped to the _N variation, or turned into a library call.
    LOC is the location of the builtin call.
@@ -10428,7 +10449,7 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
     }
 
   /* If not a lock-free size, change to the library generic format.  */
-  if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
+  if (!atomic_size_supported_p (n))
     {
       *new_return = add_atomic_size_parameter (n, loc, function, params);
       return true;
@@ -10493,7 +10514,7 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
     }
 
   /* If not a lock-free size, change to the library generic format.  */
-  if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
+  if (!atomic_size_supported_p (n))
     {
       /* The library generic format does not have the weak parameter, so 
 	 remove it from the param list.  Since a parameter has been removed,
@@ -10569,7 +10590,7 @@ resolve_overloaded_atomic_load (location_t loc, tree function,
     }
 
   /* If not a lock-free size, change to the library generic format.  */
-  if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
+  if (!atomic_size_supported_p (n))
     {
       *new_return = add_atomic_size_parameter (n, loc, function, params);
       return true;
@@ -10629,7 +10650,7 @@ resolve_overloaded_atomic_store (location_t loc, tree function,
     }
 
   /* If not a lock-free size, change to the library generic format.  */
-  if (n != 1 && n != 2 && n != 4 && n != 8 && n != 16)
+  if (!atomic_size_supported_p (n))
     {
       *new_return = add_atomic_size_parameter (n, loc, function, params);
       return true;
