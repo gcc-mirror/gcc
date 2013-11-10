@@ -1422,7 +1422,7 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 
       words = (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
 
-      for (int i = 0; i < 2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT; i++)
+      for (unsigned int i = 0; i < ARRAY_SIZE (val); i++)
 	val[i] = 0;
 
 #if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
@@ -2205,16 +2205,11 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
       r->cl = rvc_normal;
       r->sign = wi::neg_p (val_in, sgn);
 
-      if (len == 0)
-	len = 1;
-
       /* We have to ensure we can negate the largest negative number.  */
       wide_int val = wide_int::from (val_in, maxbitlen, sgn);
 
       if (r->sign)
 	val = -val;
-      else
-	val = val;
       
       /* Ensure a multiple of HOST_BITS_PER_WIDE_INT, ceiling, as elt
 	 won't work with precisions that are not a multiple of

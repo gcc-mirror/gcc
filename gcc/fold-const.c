@@ -7175,8 +7175,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
       arg10 = build_one_cst (type);
       /* As we canonicalize A - 2 to A + -2 get rid of that sign for
 	 the purpose of this canonicalization.  */
-      if (TYPE_SIGN (TREE_TYPE (arg1)) == SIGNED
-	  && wi::neg_p (arg1)
+      if (wi::neg_p (arg1, TYPE_SIGN (TREE_TYPE (arg1)))
 	  && negate_expr_p (arg1)
 	  && code == PLUS_EXPR)
 	{

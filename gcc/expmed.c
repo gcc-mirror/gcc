@@ -3652,7 +3652,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
      modulus.  By including the signbit in the operation, many targets
      can avoid an explicit compare operation in the following comparison
      against zero.  */
-  wide_int mask = wi::mask (logd, false, GET_MODE_PRECISION (mode));
+  wide_int mask = wi::mask (logd, false, prec);
   mask = wi::set_bit (mask, prec - 1);
 
   temp = expand_binop (mode, and_optab, op0,
@@ -3667,7 +3667,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
   temp = expand_binop (mode, sub_optab, result, const1_rtx, result,
 		       0, OPTAB_LIB_WIDEN);
 
-  mask = wi::mask (logd, true, GET_MODE_PRECISION (mode));
+  mask = wi::mask (logd, true, prec);
   temp = expand_binop (mode, ior_optab, temp,
 		       immed_wide_int_const (mask, mode),
 		       result, 1, OPTAB_LIB_WIDEN);
