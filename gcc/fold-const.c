@@ -170,31 +170,10 @@ protected_set_expr_location_unshare (tree x, location_t loc)
 tree
 div_if_zero_remainder (const_tree arg1, const_tree arg2)
 {
-  wide_int quo;
-  wide_int warg1 = arg1;
-  wide_int warg2 = arg2;
-  signop sgn = TYPE_SIGN (TREE_TYPE (arg1));
-  signop sgn2 = TYPE_SIGN (TREE_TYPE (arg2));
+  widest_int quo;
 
-  if (sgn != sgn2)
-    {
-      /* When signedness mismatches, we promote the unsigned value to
-	 a signed value.  We preserve the value by extending the
-	 precision by 1 bit, iff the top bit is set.  */
-      if (sgn == UNSIGNED)
-	{
-	  if (wi::neg_p (warg1))
-	    warg1 = wide_int::from (warg1, warg1.get_precision () + 1, sgn);
-	  sgn = SIGNED;
-	}
-      else
-	{
-	  if (wi::neg_p (warg2))
-	    warg2 = wide_int::from (warg2, warg2.get_precision () + 1, sgn2);
-	}
-    }
-
-  if (wi::multiple_of_p (warg1, warg2, sgn, &quo))
+  if (wi::multiple_of_p (wi::to_widest (arg1), wi::to_widest (arg2),
+			 SIGNED, &quo))
     return wide_int_to_tree (TREE_TYPE (arg1), quo);
 
   return NULL_TREE; 
