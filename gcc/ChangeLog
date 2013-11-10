@@ -1,3 +1,8 @@
+2013-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mode-switching.c (optimize_mode_switching): Mark block as
+	nontransparent, if last_mode at block exit is different from no_mode.
+
 2013-11-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* function.c (NAME__MAIN): Move to...
@@ -90,8 +95,7 @@
 2013-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59047
-	* tree-predcom.c (ref_at_iteration): Handle bitfield accesses
-	properly.
+	* tree-predcom.c (ref_at_iteration): Handle bitfield accesses properly.
 
 2013-11-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -124,8 +128,7 @@
 	(TYPE_QUALS, TYPE_QUALS_NO_ADDR_SPACE): Add TYPE_QUAL_ATOMIC.
 	(TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC): New macro.
 	(atomicQI_type_node, atomicHI_type_node, atomicSI_type_node)
-	(atomicDI_type_node, atomicTI_type_node): New macros for type
-	nodes.
+	(atomicDI_type_node, atomicTI_type_node): New macros for type nodes.
 	* tree.c (set_type_quals): Set TYPE_ATOMIC.
 	(find_atomic_core_type): New function.
 	(build_qualified_type): Adjust alignment for qualified types.
@@ -134,23 +137,20 @@
 	atomicHI_type_node, atomicSI_type_node, atomicDI_type_node and
 	atomicTI_type_node.
 	* print-tree.c (print_node): Print atomic qualifier.
-	* tree-pretty-print.c (dump_generic_node): Print atomic type
-	attribute.
+	* tree-pretty-print.c (dump_generic_node): Print atomic type attribute.
 	* target.def (atomic_assign_expand_fenv): New hook.
 	* doc/tm.texi.in (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New @hook.
 	* doc/tm.texi: Regenerate.
 	* targhooks.c (default_atomic_assign_expand_fenv): New function.
 	* targhooks.h (default_atomic_assign_expand_fenv): Declare.
-	* sync-builtins.def (__atomic_feraiseexcept): New built-in
-	function.
+	* sync-builtins.def (__atomic_feraiseexcept): New built-in function.
 	* config/i386/i386-builtin-types.def (VOID_FTYPE_PUSHORT): New
 	function type.
 	* config/i386/i386.c (enum ix86_builtins): Add
 	IX86_BUILTIN_FNSTENV, IX86_BUILTIN_FLDENV, IX86_BUILTIN_FNSTSW and
 	IX86_BUILTIN_FNCLEX.
 	(bdesc_special_args): Add __builtin_ia32_fnstenv,
-	__builtin_ia32_fldenv, __builtin_ia32_fnstsw and
-	__builtin_ia32_fnclex.
+	__builtin_ia32_fldenv, __builtin_ia32_fnstsw and __builtin_ia32_fnclex.
 	(ix86_expand_builtin): Handle the new built-in functions.
 	(ix86_atomic_assign_expand_fenv): New function.
 	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New macro.
@@ -183,8 +183,7 @@
 	* tree-ssa-loop-im.c
 	(move_computations_dom_walker::before_dom_children): Same.
 	* tree-ssa-loop-manip.c (rewrite_phi_with_iv): Same.
-	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
-	Same.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Same.
 	* tree-ssa-propagate.c (substitute_and_fold): Same.
 	* tree-vect-loop.c (vect_finalize_reduction): Same.
 	* tree-vect-stmts.c (vectorizable_call): Same.
@@ -218,15 +217,13 @@
 	* doc/invoke.texi (-fisolate-erroneous-paths): Document.
 
 	* gimple-ssa-isolate-paths.c (gate_isolate_erroneous_paths):
-	No longer check if we have __builtin_trap, assume it's
-	available.
+	No longer check if we have __builtin_trap, assume it's available.
 
 2013-11-07  Diego Novillo  <dnovillo@google.com>
 
 	* attribs.c (lookup_scoped_attribute_spec): Make static.
 	(get_attribute_namespace): Likewise.
-	* builtins.c (more_const_call_expr_args_p): Move from
-	tree.h.
+	* builtins.c (more_const_call_expr_args_p): Move from tree.h.
 	(validate_arglist): Move earlier in the file. Make static.
 	(expand_stack_restore): Move from stmt.c
 	(expand_stack_save): Move from stmt.c
@@ -303,7 +300,7 @@
 	(in_array_bounds_p): Move to tree-eh.c.
 	(range_in_array_bounds_p): Move to tree-eh.c.
 	(truth_type_for): Move to gimple-fold.c.
-	(list_equal_p): remove.
+	(list_equal_p): Remove.
 	* tree.h (decl_assembler_name_equal): Remove.
 	(decl_assembler_name_hash): Remove.
 	(truth_type_for): Remove.
@@ -349,13 +346,12 @@
 	* doc/sourcebuild.texi (Top Level) <lto-plugin>: GNU ld can use
 	linker plugins, too.
 
-	* config/arc/arc.h (LINK_COMMAND_SPEC): For
-	-ftree-parallelize-loops=*, link to libgomp and its dependencies.
+	* config/arc/arc.h (LINK_COMMAND_SPEC): For -ftree-parallelize-loops=*,
+	link to libgomp and its dependencies.
 	* config/ia64/hpux.h (LIB_SPEC): Likewise.
 	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
 	* config/pa/pa64-hpux.h (LIB_SPEC): Likewise.
-	* gcc.c (GOMP_SELF_SPECS): Update comment about libgomp's
-	dependencies.
+	* gcc.c (GOMP_SELF_SPECS): Update comment about libgomp's dependencies.
 
 2013-11-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -398,8 +394,7 @@
 	(canonicalize_value): ... this.  Also handle stripping of
 	TREE_OVERFLOW.
 	(get_value, set_lattice_value, get_value_for_expr): Adjust.
-	* gimple-fold.c (canonicalize_constructor_val): Strip
-	TREE_OVERFLOW.
+	* gimple-fold.c (canonicalize_constructor_val): Strip TREE_OVERFLOW.
 	* tree-ssa-threadedge.c (set_ssa_name_value): Likewise.
 
 2013-11-07  Richard Biener  <rguenther@suse.de>
@@ -458,8 +453,7 @@
 	(finish_live_range_shrinkage): Ditto.
 	* sched-deps.c (create_insn_reg_set): Make void return value.
 	* passes.def: Add pass_live_range_shrinkage.
-	* ira.c (update_equiv_regs): Don't move if
-	flag_live_range_shrinkage.
+	* ira.c (update_equiv_regs): Don't move if flag_live_range_shrinkage.
 	* haifa-sched.c (live_range_shrinkage_p): New.
 	(initialize_live_range_shrinkage, finish_live_range_shrinkage):
 	New functions.

@@ -571,12 +571,15 @@ optimize_mode_switching (void)
 
 	  info[bb->index].computing = last_mode;
 	  /* Check for blocks without ANY mode requirements.
-	     N.B. because of MODE_AFTER, last_mode might still be different
-	     from no_mode.  */
+	     N.B. because of MODE_AFTER, last_mode might still
+	     be different from no_mode, in which case we need to
+	     mark the block as nontransparent.  */
 	  if (!any_set_required)
 	    {
 	      ptr = new_seginfo (no_mode, BB_END (bb), bb->index, live_now);
 	      add_seginfo (info + bb->index, ptr);
+	      if (last_mode != no_mode)
+		bitmap_clear_bit (transp[bb->index], j);
 	    }
 	}
 #if defined (MODE_ENTRY) && defined (MODE_EXIT)
