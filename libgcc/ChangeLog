@@ -1,3 +1,12 @@
+2013-11-10  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (__gcc_register_frame):
+	Increment load-count on use of LIBGCC_SONAME DLL.
+	(hmod_libgcc): New static variable to hold handle of
+	LIBGCC_SONAME DLL.
+	(__gcc_deregister_frame): Decrement load-count of
+	LIBGCC_SONAME DLL.
+
 2013-11-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* configure.ac (libgcc_cv_dfp): Extend check to probe fenv.h

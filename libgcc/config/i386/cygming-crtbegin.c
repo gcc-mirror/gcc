@@ -91,6 +91,9 @@ static EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
   = { };
 
 static struct object obj;
+
+/* Handle of libgcc's DLL reference.  */
+HANDLE hmod_libgcc;
 #endif
 
 #if TARGET_USE_JCR_SECTION
@@ -115,9 +118,14 @@ __gcc_register_frame (void)
 
   void (*register_frame_fn) (const void *, struct object *);
   HANDLE h = GetModuleHandle (LIBGCC_SONAME);
+
   if (h)
-    register_frame_fn = (void (*) (const void *, struct object *))
-			GetProcAddress (h, "__register_frame_info");
+    {
+      /* Increasing the load-count of LIBGCC_SONAME DLL.  */
+      hmod_libgcc = LoadLibrary (LIBGCC_SONAME);
+      register_frame_fn = (void (*) (const void *, struct object *))
+			  GetProcAddress (h, "__register_frame_info");
+    }
   else 
     register_frame_fn = __register_frame_info;
   if (register_frame_fn)
@@ -154,5 +162,7 @@ __gcc_deregister_frame (void)
     deregister_frame_fn = __deregister_frame_info;
   if (deregister_frame_fn)
      deregister_frame_fn (__EH_FRAME_BEGIN__);
+  if (hmod_libgcc)
+    FreeLibrary (hmod_libgcc);
 #endif
 }
