@@ -1,3 +1,17 @@
+2013-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Check presence of mkostemp.
+	* io/unix.c (set_close_on_exec): New function.
+	(tempfile_open): Use mkostemp and O_CLOEXEC if available, fallback
+	to calling set_close_on_exec.
+	(regular_file): Add O_CLOEXEC to flags if defined.
+	(open_external): Call set_close_on_exec if O_CLOEXEC is not
+	defined.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+
 2013-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55469
