@@ -1,7 +1,7 @@
 2013-11-10  Karlson2k  <k2k@narod.ru>
             Kai Tietz  <ktietz@redhat.com>
 
-	PR plugin/52862
+	PR plugin/52872
 	* configure.ac: Adding for exported symbols check
 	and for rdynamic-check executable-extension.
 	* configure: Regenerated.
