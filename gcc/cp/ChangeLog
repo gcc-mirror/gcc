@@ -1,3 +1,11 @@
+2013-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (cp_convert_to_pointer): Call build_ptrmemfunc before
+	maybe_warn_zero_as_null_pointer_constant to avoid duplicate
+	-Wzero-as-null-pointer-constant diagnostics.
+
+	* typeck.c (build_ptrmemfunc): Use cp_build_c_cast.
+
 2013-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/11006
