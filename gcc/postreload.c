@@ -303,21 +303,19 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	      switch (extend_op)
 		{
 		case ZERO_EXTEND:
-		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)));
-		  if (GET_MODE_PRECISION (GET_MODE (src))
-		      > GET_MODE_PRECISION (word_mode))
-		    result = wi::zext (result, GET_MODE_PRECISION (word_mode));
+		  result = wide_int::from (std::make_pair (this_rtx,
+							   GET_MODE (src)),
+					   BITS_PER_WORD, UNSIGNED);
 		  break;
 		case SIGN_EXTEND:
-		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)));
-		  if (GET_MODE_PRECISION (GET_MODE (src))
-		      > GET_MODE_PRECISION (word_mode))
-		    result = wi::sext (result, GET_MODE_PRECISION (word_mode));
+		  result = wide_int::from (std::make_pair (this_rtx,
+							   GET_MODE (src)),
+					   BITS_PER_WORD, SIGNED);
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
-	      this_rtx = immed_wide_int_const (result, GET_MODE (src));
+	      this_rtx = immed_wide_int_const (result, word_mode);
 	    }
 #endif
 	  this_cost = set_src_cost (this_rtx, speed);
