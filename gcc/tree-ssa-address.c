@@ -200,7 +200,7 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
   struct mem_addr_template *templ;
 
   if (addr->step && !integer_onep (addr->step))
-    st = immed_wide_int_const (wide_int (addr->step), pointer_mode);
+    st = immed_wide_int_const (addr->step, pointer_mode);
   else
     st = NULL_RTX;
 

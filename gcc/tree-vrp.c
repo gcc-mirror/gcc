@@ -2028,16 +2028,12 @@ ranges_from_anti_range (value_range_t *ar,
     {
       vr0->type = VR_RANGE;
       vr0->min = vrp_val_min (type);
-      vr0->max
-	= wide_int_to_tree (type,
-			    wide_int (ar->min) - 1);
+      vr0->max = wide_int_to_tree (type, wi::sub (ar->min, 1));
     }
   if (!vrp_val_is_max (ar->max))
     {
       vr1->type = VR_RANGE;
-      vr1->min
-	= wide_int_to_tree (type,
-			    wide_int (ar->max) + 1);
+      vr1->min = wide_int_to_tree (type, wi::add (ar->max, 1));
       vr1->max = vrp_val_max (type);
     }
   if (vr0->type == VR_UNDEFINED)
@@ -2411,9 +2407,9 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  if (!TYPE_OVERFLOW_WRAPS (expr_type))
 	    {
 	      if (vrp_val_min (expr_type))
-		type_min = wide_int (vrp_val_min (expr_type));
+		type_min = vrp_val_min (expr_type);
 	      if (vrp_val_max (expr_type))
-		type_max = wide_int (vrp_val_max (expr_type));
+		type_max = vrp_val_max (expr_type);
 	    }
 
 	  /* Check for type overflow.  */
@@ -4977,14 +4973,14 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      wide_int minval
 		= wi::min_value (prec, TYPE_SIGN (TREE_TYPE (val)));
 	      new_val = val2;
-	      if (minval == wide_int (new_val))
+	      if (minval == new_val)
 		new_val = NULL_TREE;
 	    }
 	  else
 	    {
 	      wide_int maxval
 		= wi::max_value (prec, TYPE_SIGN (TREE_TYPE (val)));
-	      mask |= wide_int (val2);
+	      mask |= val2;
 	      if (mask == maxval)
 		new_val = NULL_TREE;
 	      else

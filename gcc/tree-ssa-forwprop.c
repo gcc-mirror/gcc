@@ -2785,7 +2785,7 @@ associate_pointerplus (gimple_stmt_iterator *gsi)
   if (gimple_assign_rhs1 (def_stmt) != ptr)
     return false;
 
-  algn = wide_int_to_tree (TREE_TYPE (ptr), ~wide_int (algn));
+  algn = wide_int_to_tree (TREE_TYPE (ptr), wi::bit_not (algn));
   gimple_assign_set_rhs_with_ops (gsi, BIT_AND_EXPR, ptr, algn);
   fold_stmt_inplace (gsi);
   update_stmt (stmt);

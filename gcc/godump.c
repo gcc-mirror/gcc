@@ -990,7 +990,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 		     ((unsigned HOST_WIDE_INT)
 		      tree_to_uhwi (TREE_VALUE (element))));
 	  else
-	    print_hex (wide_int (element), buf);
+	    print_hex (element, buf);
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

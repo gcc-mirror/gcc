@@ -7979,11 +7979,10 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   for (; args; args = TREE_CHAIN (args))
     {
       tree position = TREE_VALUE (args);
-      wide_int p;
 
       if (TREE_CODE (position) != INTEGER_CST
-	  || wi::ltu_p (p = wide_int (position), 1)
-	  || wi::gtu_p (p, arg_count))
+	  || wi::ltu_p (position, 1)
+	  || wi::gtu_p (position, arg_count))
 	{
 	  warning (OPT_Wattributes,
 	           "alloc_size parameter outside range");

@@ -890,8 +890,7 @@ ccp_finalize (void)
 	}
       else
 	{
-	  widest_int nonzero_bits = val->mask;
-	  nonzero_bits = nonzero_bits | wi::to_widest (val->value);
+	  widest_int nonzero_bits = val->mask | wi::to_widest (val->value);
 	  nonzero_bits &= get_nonzero_bits (name);
 	  set_nonzero_bits (name, nonzero_bits);
 	}

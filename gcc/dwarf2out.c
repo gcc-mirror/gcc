@@ -16345,7 +16345,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 		 || (cst_fits_uhwi_p (bound) && wi::ges_p (bound, 0)))
 	  add_AT_unsigned (subrange_die, bound_attr, tree_to_hwi (bound));
 	else
-	  add_AT_wide (subrange_die, bound_attr, wide_int (bound));
+	  add_AT_wide (subrange_die, bound_attr, bound);
       }
       break;
 
@@ -17501,7 +17501,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  else
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
 	       that here.  */
-	    add_AT_wide (enum_die, DW_AT_const_value, wide_int (value));
+	    add_AT_wide (enum_die, DW_AT_const_value, value);
 	}
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);

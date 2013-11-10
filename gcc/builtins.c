@@ -12512,7 +12512,6 @@ fold_builtin_object_size (tree ptr, tree ost)
 {
   unsigned HOST_WIDE_INT bytes;
   int object_size_type;
-  int precision = TYPE_PRECISION (TREE_TYPE (ptr));
 
   if (!validate_arg (ptr, POINTER_TYPE)
       || !validate_arg (ost, INTEGER_TYPE))
@@ -12535,11 +12534,9 @@ fold_builtin_object_size (tree ptr, tree ost)
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
-      wide_int wbytes 
-	= wi::uhwi (compute_builtin_object_size (ptr, object_size_type),
-		    precision);
-      if (wi::fits_to_tree_p (wbytes, size_type_node))
-	return wide_int_to_tree (size_type_node, wbytes);
+      bytes = compute_builtin_object_size (ptr, object_size_type);
+      if (wi::fits_to_tree_p (bytes, size_type_node))
+	return build_int_cstu (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -12547,10 +12544,9 @@ fold_builtin_object_size (tree ptr, tree ost)
        later.  Maybe subsequent passes will help determining
        it.  */
       bytes = compute_builtin_object_size (ptr, object_size_type);
-      wide_int wbytes = wi::uhwi (bytes, precision);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
-          && wi::fits_to_tree_p (wbytes, size_type_node))
-	return wide_int_to_tree (size_type_node, wbytes);
+          && wi::fits_to_tree_p (bytes, size_type_node))
+	return build_int_cstu (size_type_node, bytes);
     }
 
   return NULL_TREE;

@@ -2223,7 +2223,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  else if (GET_CODE (rhs) == MULT
 		   && CONST_INT_P (XEXP (rhs, 1)))
 	    {
-	      negcoeff1 = -wide_int (std::make_pair (XEXP (rhs, 1), mode));
+	      negcoeff1 = wi::neg (std::make_pair (XEXP (rhs, 1), mode));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == ASHIFT

@@ -564,7 +564,7 @@ dequeue_and_dump (dump_info_p di)
 
     case INTEGER_CST:
       fprintf (di->stream, "int: ");
-      print_decs (wide_int (t), di->stream);
+      print_decs (t, di->stream);
       break;
 
     case STRING_CST:
