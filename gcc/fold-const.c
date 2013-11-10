@@ -9900,7 +9900,7 @@ exact_inverse (tree type, tree cst)
 /*  Mask out the tz least significant bits of X of type TYPE where
     tz is the number of trailing zeroes in Y.  */
 static wide_int
-mask_with_tz (tree type, wide_int x, wide_int y)
+mask_with_tz (tree type, const wide_int &x, const wide_int &y)
 {
   int tz = wi::ctz (y);
   if (tz > 0)

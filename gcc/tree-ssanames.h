@@ -70,11 +70,11 @@ struct GTY (()) range_info_def {
 enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree, widest_int, widest_int);
+extern void set_range_info (tree, const widest_int &, const widest_int &);
 /* Gets the value range from SSA.  */
 extern enum value_range_type get_range_info (const_tree, widest_int *,
 					     widest_int *);
-extern void set_nonzero_bits (tree, widest_int);
+extern void set_nonzero_bits (tree, const widest_int &);
 extern widest_int get_nonzero_bits (const_tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);

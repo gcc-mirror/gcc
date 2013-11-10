@@ -179,7 +179,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 /* Store range information MIN, and MAX to tree ssa_name NAME.  */
 
 void
-set_range_info (tree name, widest_int min, widest_int max)
+set_range_info (tree name, const widest_int &min, const widest_int &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
@@ -201,16 +201,15 @@ set_range_info (tree name, widest_int min, widest_int max)
   if (wi::cmp (min, max, TYPE_SIGN (TREE_TYPE (name))) != 1)
     {
       int prec = TYPE_PRECISION (TREE_TYPE (name));
-      widest_int xorv;
 
-      min = wi::zext (min, prec);
-      max = wi::zext (max, prec);
-      xorv = min ^ max;
+      widest_int ext_min = wi::zext (min, prec);
+      widest_int ext_max = wi::zext (max, prec);
+      widest_int xorv = ext_min ^ ext_max;
       if (xorv != 0)
 	xorv = wi::mask <widest_int> (MAX_BITSIZE_MODE_ANY_INT
 				      - wi::clz (xorv),
 				      false);
-      ri->nonzero_bits = ri->nonzero_bits & (min | xorv);
+      ri->nonzero_bits = ri->nonzero_bits & (ext_min | xorv);
     }
 }
 
@@ -254,7 +253,7 @@ get_range_info (const_tree name, widest_int *min, widest_int *max)
 /* Change non-zero bits bitmask of NAME.  */
 
 void
-set_nonzero_bits (tree name, widest_int mask)
+set_nonzero_bits (tree name, const widest_int &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   if (SSA_NAME_RANGE_INFO (name) == NULL)
