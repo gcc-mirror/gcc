@@ -1619,7 +1619,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	     a dangerous assumption as many times CONST_INTs are
 	     created and used with garbage in the bits outside of the
 	     precision of the implied mode of the const_int.  */
-	  op_mode = mode_for_size (MAX_BITSIZE_MODE_ANY_INT, MODE_INT, 0);
+	  op_mode = MAX_MODE_INT;
 	}
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), SIGNED);
@@ -1637,7 +1637,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	     a dangerous assumption as many times CONST_INTs are
 	     created and used with garbage in the bits outside of the
 	     precision of the implied mode of the const_int.  */
-	  op_mode = mode_for_size (MAX_BITSIZE_MODE_ANY_INT, MODE_INT, 0);
+	  op_mode = MAX_MODE_INT;
 	}
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), UNSIGNED);
