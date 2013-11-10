@@ -447,7 +447,7 @@ namespace wi
 #define BINARY_FUNCTION \
   template <typename T1, typename T2> WI_BINARY_RESULT (T1, T2)
 #define SHIFT_FUNCTION \
-  template <typename T> WI_UNARY_RESULT (T)
+  template <typename T1, typename T2> WI_UNARY_RESULT (T1)
 
   UNARY_PREDICATE fits_shwi_p (const T &);
   UNARY_PREDICATE fits_uhwi_p (const T &);
@@ -532,15 +532,12 @@ namespace wi
   bool multiple_of_p (const T1 &, const T2 &, signop,
 		      WI_BINARY_RESULT (T1, T2) *);
 
-  unsigned int trunc_shift (const wide_int_ref &, unsigned int, unsigned int);
-
-  SHIFT_FUNCTION lshift (const T &, const wide_int_ref &, unsigned int = 0);
-  SHIFT_FUNCTION lrshift (const T &, const wide_int_ref &, unsigned int = 0);
-  SHIFT_FUNCTION arshift (const T &, const wide_int_ref &, unsigned int = 0);
-  SHIFT_FUNCTION rshift (const T &, const wide_int_ref &, signop sgn,
-			 unsigned int = 0);
-  SHIFT_FUNCTION lrotate (const T &, const wide_int_ref &, unsigned int = 0);
-  SHIFT_FUNCTION rrotate (const T &, const wide_int_ref &, unsigned int = 0);
+  SHIFT_FUNCTION lshift (const T1 &, const T2 &);
+  SHIFT_FUNCTION lrshift (const T1 &, const T2 &);
+  SHIFT_FUNCTION arshift (const T1 &, const T2 &);
+  SHIFT_FUNCTION rshift (const T1 &, const T2 &, signop sgn);
+  SHIFT_FUNCTION lrotate (const T1 &, const T2 &, unsigned int = 0);
+  SHIFT_FUNCTION rrotate (const T1 &, const T2 &, unsigned int = 0);
 
 #undef SHIFT_FUNCTION
 #undef BINARY_PREDICATE
@@ -2531,132 +2528,127 @@ wi::multiple_of_p (const T1 &x, const T2 &y, signop sgn,
   return false;
 }
 
-/* Truncate the value of shift value X so that the value is within
-   BITSIZE.  PRECISION is the number of bits in the value being
-   shifted.  */
-inline unsigned int
-wi::trunc_shift (const wide_int_ref &x, unsigned int bitsize,
-		 unsigned int precision)
+/* Return X << Y.  Return 0 if Y is greater than or equal to
+   the precision of X.  */
+template <typename T1, typename T2>
+inline WI_UNARY_RESULT (T1)
+wi::lshift (const T1 &x, const T2 &y)
 {
-  if (bitsize == 0)
-    {
-      gcc_checking_assert (!neg_p (x));
-      if (geu_p (x, precision))
-	return precision;
-    }
-  return x.to_uhwi () & (bitsize - 1);
-}
-
-/* Return X << Y.  If BITSIZE is nonzero, only use the low BITSIZE
-   bits of Y.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::lshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
-{
-  WI_UNARY_RESULT_VAR (result, val, T, x);
+  WI_UNARY_RESULT_VAR (result, val, T1, x);
   unsigned int precision = get_precision (result);
-  WIDE_INT_REF_FOR (T) xi (x, precision);
-  unsigned int shift = trunc_shift (y, bitsize, precision);
+  WIDE_INT_REF_FOR (T1) xi (x, precision);
+  WIDE_INT_REF_FOR (T2) yi (y);
   /* Handle the simple cases quickly.   */
-  if (shift >= precision)
+  if (geu_p (yi, precision))
     {
       val[0] = 0;
       result.set_len (1);
     }
-  else if (precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      val[0] = xi.ulow () << shift;
-      result.set_len (1);
-    }
   else
-    result.set_len (lshift_large (val, xi.val, xi.len, 
-				  precision, shift));
+    {
+      unsigned int shift = yi.to_uhwi ();
+      if (precision <= HOST_BITS_PER_WIDE_INT)
+	{
+	  val[0] = xi.ulow () << shift;
+	  result.set_len (1);
+	}
+      else
+	result.set_len (lshift_large (val, xi.val, xi.len, 
+				      precision, shift));
+    }
   return result;
 }
 
-/* Return X >> Y, using a logical shift.  If BITSIZE is nonzero, only
-   use the low BITSIZE bits of Y.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::lrshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
+/* Return X >> Y, using a logical shift.  Return 0 if Y is greater than
+   or equal to the precision of X.  */
+template <typename T1, typename T2>
+inline WI_UNARY_RESULT (T1)
+wi::lrshift (const T1 &x, const T2 &y)
 {
-  WI_UNARY_RESULT_VAR (result, val, T, x);
+  WI_UNARY_RESULT_VAR (result, val, T1, x);
   /* Do things in the precision of the input rather than the output,
      since the result can be no larger than that.  */
-  WIDE_INT_REF_FOR (T) xi (x);
-  unsigned int shift = trunc_shift (y, bitsize, xi.precision);
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
   /* Handle the simple cases quickly.   */
-  if (shift >= xi.precision)
+  if (geu_p (yi, xi.precision))
     {
       val[0] = 0;
       result.set_len (1);
     }
-  else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      val[0] = xi.to_uhwi () >> shift;
-      result.set_len (1);
-    }
   else
-    result.set_len (lrshift_large (val, xi.val, xi.len, xi.precision,
-				   get_precision (result), shift));
+    {
+      unsigned int shift = yi.to_uhwi ();
+      if (xi.precision <= HOST_BITS_PER_WIDE_INT)
+	{
+	  val[0] = xi.to_uhwi () >> shift;
+	  result.set_len (1);
+	}
+      else
+	result.set_len (lrshift_large (val, xi.val, xi.len, xi.precision,
+				       get_precision (result), shift));
+    }
   return result;
 }
 
-/* Return X >> Y, using an arithmetic shift.  If BITSIZE is nonzero,
-   only use the low BITSIZE bits of Y.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::arshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
+/* Return X >> Y, using an arithmetic shift.  Return a sign mask if
+   Y is greater than or equal to the precision of X.  */
+template <typename T1, typename T2>
+inline WI_UNARY_RESULT (T1)
+wi::arshift (const T1 &x, const T2 &y)
 {
-  WI_UNARY_RESULT_VAR (result, val, T, x);
+  WI_UNARY_RESULT_VAR (result, val, T1, x);
   /* Do things in the precision of the input rather than the output,
      since the result can be no larger than that.  */
-  WIDE_INT_REF_FOR (T) xi (x);
-  unsigned int shift = trunc_shift (y, bitsize, xi.precision);
-  /* Handle the simple case quickly.   */
-  if (shift >= xi.precision)
+  WIDE_INT_REF_FOR (T1) xi (x);
+  WIDE_INT_REF_FOR (T2) yi (y);
+  /* Handle the simple cases quickly.   */
+  if (geu_p (yi, xi.precision))
     {
       val[0] = sign_mask (x);
       result.set_len (1);
     }
-  else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      val[0] = sext_hwi (xi.ulow () >> shift, xi.precision - shift);
-      result.set_len (1, true);
-    }
   else
-    result.set_len (arshift_large (val, xi.val, xi.len, xi.precision,
-				   get_precision (result), shift));
+    {
+      unsigned int shift = yi.to_uhwi ();
+      if (xi.precision <= HOST_BITS_PER_WIDE_INT)
+	{
+	  val[0] = sext_hwi (xi.ulow () >> shift, xi.precision - shift);
+	  result.set_len (1, true);
+	}
+      else
+	result.set_len (arshift_large (val, xi.val, xi.len, xi.precision,
+				       get_precision (result), shift));
+    }
   return result;
 }
 
 /* Return X >> Y, using an arithmetic shift if SGN is SIGNED and a
    logical shift otherwise.  If BITSIZE is nonzero, only use the low
    BITSIZE bits of Y.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::rshift (const T &x, const wide_int_ref &y, signop sgn,
-	    unsigned int bitsize)
+template <typename T1, typename T2>
+inline WI_UNARY_RESULT (T1)
+wi::rshift (const T1 &x, const T2 &y, signop sgn)
 {
   if (sgn == UNSIGNED)
-    return lrshift (x, y, bitsize);
+    return lrshift (x, y);
   else
-    return arshift (x, y, bitsize);
+    return arshift (x, y);
 }
 
 /* Return the result of rotating the low WIDTH bits of X left by Y
    bits and zero-extending the result.  Use a full-width rotate if
    WIDTH is zero.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::lrotate (const T &x, const wide_int_ref &y, unsigned int width)
+template <typename T1, typename T2>
+WI_UNARY_RESULT (T1)
+wi::lrotate (const T1 &x, const T2 &y, unsigned int width)
 {
   unsigned int precision = get_binary_precision (x, x);
   if (width == 0)
     width = precision;
-  gcc_checking_assert ((width & -width) == width);
-  WI_UNARY_RESULT (T) left = wi::lshift (x, y, width);
-  WI_UNARY_RESULT (T) right = wi::lrshift (x, wi::sub (width, y), width);
+  WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
+  WI_UNARY_RESULT (T1) left = wi::lshift (x, ymod);
+  WI_UNARY_RESULT (T1) right = wi::lrshift (x, wi::sub (width, ymod));
   if (width != precision)
     return wi::zext (left, width) | wi::zext (right, width);
   return left | right;
@@ -2665,16 +2657,16 @@ wi::lrotate (const T &x, const wide_int_ref &y, unsigned int width)
 /* Return the result of rotating the low WIDTH bits of X right by Y
    bits and zero-extending the result.  Use a full-width rotate if
    WIDTH is zero.  */
-template <typename T>
-inline WI_UNARY_RESULT (T)
-wi::rrotate (const T &x, const wide_int_ref &y, unsigned int width)
+template <typename T1, typename T2>
+WI_UNARY_RESULT (T1)
+wi::rrotate (const T1 &x, const T2 &y, unsigned int width)
 {
   unsigned int precision = get_binary_precision (x, x);
   if (width == 0)
     width = precision;
-  gcc_checking_assert ((width & -width) == width);
-  WI_UNARY_RESULT (T) right = wi::lrshift (x, y, width);
-  WI_UNARY_RESULT (T) left = wi::lshift (x, wi::sub (width, y), width);
+  WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
+  WI_UNARY_RESULT (T1) right = wi::lrshift (x, ymod);
+  WI_UNARY_RESULT (T1) left = wi::lshift (x, wi::sub (width, ymod));
   if (width != precision)
     return wi::zext (left, width) | wi::zext (right, width);
   return left | right;
