@@ -10402,10 +10402,10 @@ simple_type_size_in_bits (const_tree type)
     return TYPE_ALIGN (type);
 }
 
-/* Similarly, but return a wide_int instead of UHWI.  */
+/* Similarly, but return an offset_int instead of UHWI.  */
 
 static inline offset_int
-wide_int_type_size_in_bits (const_tree type)
+offset_int_type_size_in_bits (const_tree type)
 {
   if (TREE_CODE (type) == ERROR_MARK)
     return BITS_PER_WORD;
@@ -14834,7 +14834,7 @@ field_byte_offset (const_tree decl)
       offset_int type_size_in_bits;
 
       type = field_type (decl);
-      type_size_in_bits = wide_int_type_size_in_bits (type);
+      type_size_in_bits = offset_int_type_size_in_bits (type);
       type_align_in_bits = simple_type_align_in_bits (type);
 
       field_size_tree = DECL_SIZE (decl);
