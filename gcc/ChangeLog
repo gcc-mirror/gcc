@@ -1,3 +1,12 @@
+2013-11-10  Karlson2k  <k2k@narod.ru>
+	    Kai Tietz  <ktietz@redhat.com>
+
+	Merged from trunk
+	PR plugins/52872
+	* configure.ac: Adding for exported symbols check
+	and for rdynamic-check executable-extension.
+	* configure: Regenerated.
+
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59034
