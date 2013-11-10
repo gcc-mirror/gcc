@@ -2399,7 +2399,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if (CONST_SCALAR_INT_P (trueop1))
 	{
 	  val = wi::exact_log2 (std::make_pair (trueop1, mode));
-	  if (val >= 0 && val < GET_MODE_BITSIZE (mode))
+	  if (val >= 0)
 	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
 	}
 

@@ -3075,30 +3075,11 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       else if (CONST_DOUBLE_AS_INT_P (scalar_op1))
 #endif
 	{
-	  int p = GET_MODE_PRECISION (mode);
 	  int shift = wi::exact_log2 (std::make_pair (scalar_op1, mode));
-	  /* Perfect power of 2.  */
-	  is_neg = false;
+	  /* Perfect power of 2 (other than 1, which is handled above).  */
 	  if (shift > 0)
-	    {
-	      /* Do the shift count trucation against the bitsize, not
-		 the precision.  See the comment above
-		 wide-int.c:trunc_shift for details.  */
-	      if (SHIFT_COUNT_TRUNCATED)
-		shift &= GET_MODE_BITSIZE (mode) - 1;
-	      /* We could consider adding just a move of 0 to target
-		 if the shift >= p  */
-	      if (shift < p)
-		return expand_shift (LSHIFT_EXPR, mode, op0, 
-				     shift, target, unsignedp);
-	      /* Any positive number that fits in a word.  */
-	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
-	    }
-	  else if (wi::sign_mask (std::make_pair (scalar_op1, mode)) == 0)
-	    {
-	      /* Any positive number that fits in a word.  */
-	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
-	    }
+	    return expand_shift (LSHIFT_EXPR, mode, op0,
+				 shift, target, unsignedp);
 	  else
 	    goto skip_synth;
 	}
