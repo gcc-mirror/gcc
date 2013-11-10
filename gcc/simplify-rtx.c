@@ -3703,7 +3703,6 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
     {
       wide_int result;
       bool overflow;
-      unsigned int bitsize = GET_MODE_BITSIZE (mode);
       rtx_mode_t pop0 = std::make_pair (op0, mode);
       rtx_mode_t pop1 = std::make_pair (op1, mode); 
 
@@ -3785,36 +3784,46 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case LSHIFTRT:
 	case ASHIFTRT:
 	case ASHIFT:
-	case ROTATE:
-	case ROTATERT:
 	  {
 	    wide_int wop1 = pop1;
-	    if (wi::neg_p (wop1))
-	      return NULL_RTX;
-
 	    if (SHIFT_COUNT_TRUNCATED)
 	      wop1 = wi::umod_trunc (wop1, width);
+	    else if (wi::geu_p (wop1, width))
+	      return NULL_RTX;
 
 	    switch (code)
 	      {
 	      case LSHIFTRT:
-		result = wi::lrshift (pop0, wop1, bitsize);
+		result = wi::lrshift (pop0, wop1);
 		break;
 		
 	      case ASHIFTRT:
-		result = wi::arshift (pop0, wop1, bitsize);
+		result = wi::arshift (pop0, wop1);
 		break;
 		
 	      case ASHIFT:
-		result = wi::lshift (pop0, wop1, bitsize);
+		result = wi::lshift (pop0, wop1);
 		break;
 		
+	      default:
+		gcc_unreachable ();
+	      }
+	    break;
+	  }
+	case ROTATE:
+	case ROTATERT:
+	  {
+	    if (wi::neg_p (pop1))
+	      return NULL_RTX;
+
+	    switch (code)
+	      {
 	      case ROTATE:
-		result = wi::lrotate (pop0, wop1);
+		result = wi::lrotate (pop0, pop1);
 		break;
 		
 	      case ROTATERT:
-		result = wi::rrotate (pop0, wop1);
+		result = wi::rrotate (pop0, pop1);
 		break;
 
 	      default:
