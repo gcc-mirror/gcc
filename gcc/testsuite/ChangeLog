@@ -1,6 +1,12 @@
 2013-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58970
+	* gcc.c-torture/compile/pr58970-1.c: New test.
+	* gcc.c-torture/compile/pr58970-2.c: New test.
+
 	2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58997

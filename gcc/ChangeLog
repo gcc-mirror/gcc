@@ -1,6 +1,13 @@
 2013-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58970
+	* expr.c (get_bit_range): Handle *offset == NULL_TREE.
+	(expand_assignment): If *bitpos is negative, set *offset
+	and adjust *bitpos, so that it is not negative.
+
 	2013-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58997
