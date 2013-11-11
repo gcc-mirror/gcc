@@ -1,3 +1,8 @@
+2013-11-11  Marc Glisse  <marc.glisse@inria.fr>
+	    Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/alias-27.c: New testcase.
+
 2013-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58853

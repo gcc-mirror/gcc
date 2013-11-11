@@ -1,3 +1,9 @@
+2013-11-11  Marc Glisse  <marc.glisse@inria.fr>
+	    Jeff Law  <law@redhat.com>
+
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): Use
+	ao_ref_init_from_ptr_and_size for builtins.
+
 2013-11-11  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
