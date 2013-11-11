@@ -1,3 +1,9 @@
+
+2013-11-11  Basile Starynkevitch  <basile@starynkevitch.net>
+
+         * toplev.c (toplev_main): Move PLUGIN_FINISH invocation before
+           diagnostic_finish.
+
 2013-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs): Return after handling
