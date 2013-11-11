@@ -1,3 +1,9 @@
+2013-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.host (arm-wrs-vxworks): Replace arm/t-vxworks with arm/t-elf
+	in tmake_file.
+	* config/arm/t-vxworks: Delete.
+
 2013-11-10  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygming-crtbegin.c (__gcc_register_frame):
