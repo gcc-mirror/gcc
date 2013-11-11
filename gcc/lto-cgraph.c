@@ -482,6 +482,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     ref = LCC_NOT_FOUND;
   streamer_write_hwi_stream (ob->main_stream, ref);
 
+  streamer_write_hwi_stream (ob->main_stream, node->tp_first_run);
+
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->local.local, 1);
   bp_pack_value (&bp, node->externally_visible, 1);
@@ -1077,7 +1079,10 @@ input_node (struct lto_file_decl_data *file_data,
     internal_error ("bytecode stream: found multiple instances of cgraph "
 		    "node with uid %d", node->uid);
 
+  node->tp_first_run = streamer_read_uhwi (ib);
+
   bp = streamer_read_bitpack (ib);
+
   input_overwrite_node (file_data, node, tag, &bp);
 
   /* Store a reference for now, and fix up later to be a pointer.  */

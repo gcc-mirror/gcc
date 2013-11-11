@@ -1,3 +1,8 @@
+2013-11-11  Martin Liska	<marxin.liska@gmail.com>
+
+	* gcc.dg/time-profiler-1.c: New test.
+	* gcc.dg/time-profiler-2.c: Ditto.
+
 2013-11-11  Marc Glisse  <marc.glisse@inria.fr>
 	    Jeff Law  <law@redhat.com>
 

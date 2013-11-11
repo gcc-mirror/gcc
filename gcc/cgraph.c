@@ -1890,6 +1890,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     node->profile_id);
+  fprintf (f, "  First run: %i\n", node->tp_first_run);
   fprintf (f, "  Function flags:");
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",

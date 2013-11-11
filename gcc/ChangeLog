@@ -1,3 +1,31 @@
+2013-11-11  Martin Liska  <marxin.liska@gmail.com>
+						Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Profile dump added.
+	* cgraph.h (struct cgraph_node): New time profile variable added.
+	* cgraphclones.c (cgraph_clone_node): Time profile is cloned.
+	* gcov-io.h (gcov_type): New profiler type introduced.
+	* ipa-profile.c (lto_output_node): Streaming for time profile added.
+	(input_node): Time profiler is read from LTO stream.
+	* predict.c (maybe_hot_count_p): Hot prediction changed.
+	* profile.c (instrument_values): New case for time profiler added.
+	(compute_value_histograms): Read of time profile.
+	* tree-pretty-print.c (dump_function_header): Time profiler is dumped.
+	* tree-profile.c (init_ic_make_global_vars): Time profiler function added.
+	(gimple_init_edge_profiler): TP function instrumentation.
+	(gimple_gen_time_profiler): New.
+	* value-prof.c (gimple_add_histogram_value): Support for time profiler
+	added.
+	(dump_histogram_value): TP type added to dumps.
+	(visit_hist): More sensitive check that takes TP into account.
+	(gimple_find_values_to_profile): TP instrumentation.
+	* value-prof.h (hist_type): New histogram type added.
+	(struct histogram_value_t): Pointer to struct function added.
+	* libgcc/Makefile.in: New GCOV merge function for TP added.
+	* libgcov.c: function_counter variable introduced.
+	(_gcov_merge_time_profile): New.
+	(_gcov_time_profiler): New.
+
 2013-11-11  Marc Glisse  <marc.glisse@inria.fr>
 	    Jeff Law  <law@redhat.com>
 

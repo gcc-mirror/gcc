@@ -80,6 +80,7 @@ void __gcov_merge_delta (gcov_type *counters  __attribute__ ((unused)),
 #include <sys/stat.h>
 #endif
 
+extern gcov_type function_counter ATTRIBUTE_HIDDEN;
 extern void gcov_clear (void) ATTRIBUTE_HIDDEN;
 extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
 extern int gcov_dump_complete ATTRIBUTE_HIDDEN;
@@ -349,6 +350,10 @@ gcov_compute_histogram (struct gcov_summary *sum)
         }
     }
 }
+
+
+/* Counter for first visit of each function.  */
+gcov_type function_counter;
 
 /* Dump the coverage counts. We merge with existing counts when
    possible, to avoid growing the .da files ad infinitum. We use this
@@ -974,6 +979,27 @@ __gcov_merge_ior (gcov_type *counters, unsigned n_counters)
 }
 #endif
 
+/* Time profiles are merged so that minimum from all valid (greater than zero)
+ * is stored. There could be a fork that creates new counters. To have
+ * the profile stable, we chosen to pick the smallest function visit time.  */
+
+#ifdef L_gcov_merge_time_profile
+void
+__gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
+{
+  unsigned int i;
+  gcov_type value;
+
+  for (i = 0; i < n_counters; i++)
+  {
+    value = gcov_read_counter ();
+
+    if (value && (!counters[i] || value < counters[i]))
+      counters[i] = value;
+  }
+}
+#endif /* L_gcov_merge_time_profile */
+
 #ifdef L_gcov_merge_single
 /* The profile merging function for choosing the most common value.
    It is given an array COUNTERS of N_COUNTERS old counters and it
@@ -1199,6 +1225,18 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
       || (VTABLE_USES_DESCRIPTORS && __gcov_indirect_call_callee
 	  && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
     __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value);
+}
+#endif
+
+#ifdef L_gcov_time_profiler
+
+/* Sets corresponding COUNTERS if there is no value.  */
+
+void
+__gcov_time_profiler (gcov_type* counters)
+{
+  if (!counters[0])
+    counters[0] = ++function_counter;
 }
 #endif
 
