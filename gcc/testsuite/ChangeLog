@@ -1,3 +1,15 @@
+2013-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Adjust for ARC
+	LOGICAL_OP_NON_SHORT_CIRCUIT definition.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+
 2013-11-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/atomic/stdatomic-compare-exchange-1.c,
