@@ -1,3 +1,8 @@
+2013-11-11  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/59050
+	* tree-vect-data-refs.c (comp_dr_addr_with_seg_len_pair): Bug fix.
+
 2013-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/59049
