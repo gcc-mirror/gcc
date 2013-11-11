@@ -1,3 +1,8 @@
+2013-11-10  Wei Mi  <wmi@google.com>
+
+	* testsuite/gcc.dg/pr57518.c: Backport regex fix from r200720.
+
+
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
