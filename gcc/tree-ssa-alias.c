@@ -2008,9 +2008,10 @@ static bool
 stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 {
   /* For a must-alias check we need to be able to constrain
-     the access properly.  */
-  ao_ref_base (ref);
-  if (ref->max_size == -1)
+     the access properly.
+     FIXME: except for BUILTIN_FREE.  */
+  if (!ao_ref_base (ref)
+      || ref->max_size == -1)
     return false;
 
   if (gimple_has_lhs (stmt)
@@ -2097,23 +2098,33 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	    {
 	      tree dest = gimple_call_arg (stmt, 0);
 	      tree len = gimple_call_arg (stmt, 2);
-	      tree base = NULL_TREE;
-	      HOST_WIDE_INT offset = 0;
 	      if (!host_integerp (len, 0))
 		return false;
-	      if (TREE_CODE (dest) == ADDR_EXPR)
-		base = get_addr_base_and_unit_offset (TREE_OPERAND (dest, 0),
-						      &offset);
-	      else if (TREE_CODE (dest) == SSA_NAME)
-		base = dest;
-	      if (base
-		  && base == ao_ref_base (ref))
+	      tree rbase = ref->base;
+	      double_int roffset = double_int::from_shwi (ref->offset);
+	      ao_ref dref;
+	      ao_ref_init_from_ptr_and_size (&dref, dest, len);
+	      tree base = ao_ref_base (&dref);
+	      double_int offset = double_int::from_shwi (dref.offset);
+	      double_int bpu = double_int::from_uhwi (BITS_PER_UNIT);
+	      if (!base || dref.size == -1)
+		return false;
+	      if (TREE_CODE (base) == MEM_REF)
 		{
-		  HOST_WIDE_INT size = TREE_INT_CST_LOW (len);
-		  if (offset <= ref->offset / BITS_PER_UNIT
-		      && (offset + size
-		          >= ((ref->offset + ref->max_size + BITS_PER_UNIT - 1)
-			      / BITS_PER_UNIT)))
+		  if (TREE_CODE (rbase) != MEM_REF)
+		    return false;
+		  // Compare pointers.
+		  offset += bpu * mem_ref_offset (base);
+		  roffset += bpu * mem_ref_offset (rbase);
+		  base = TREE_OPERAND (base, 0);
+		  rbase = TREE_OPERAND (rbase, 0);
+		}
+	      if (base == rbase)
+		{
+		  double_int size = bpu * tree_to_double_int (len);
+		  double_int rsize = double_int::from_uhwi (ref->max_size);
+		  if (offset.sle (roffset)
+		      && (roffset + rsize).sle (offset + size))
 		    return true;
 		}
 	      break;
