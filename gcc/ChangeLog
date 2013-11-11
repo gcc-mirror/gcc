@@ -1,3 +1,11 @@
+2013-11-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backported from mainline
+        2013-10-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/58854
+	* config/arm/arm.c (arm_expand_epilogue_apcs_frame): Emit blockage
+
 2013-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
