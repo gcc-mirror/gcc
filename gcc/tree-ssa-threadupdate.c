@@ -1269,46 +1269,6 @@ mark_threaded_blocks (bitmap threaded_blocks)
       bitmap_set_bit (tmp, e->dest->index);
     }
 
-  /* If we have a joiner block (J) which has two successors S1 and S2 and
-     we are threading though S1 and the final destination of the thread
-     is S2, then we must verify that any PHI nodes in S2 have the same
-     PHI arguments for the edge J->S2 and J->S1->...->S2.
-
-     We used to detect this prior to registering the jump thread, but
-     that prohibits propagation of edge equivalences into non-dominated
-     PHI nodes as the equivalency test might occur before propagation.
-
-     This works for now, but will need improvement as part of the FSA
-     optimization.
-
-     Note since we've moved the thread request data to the edges,
-     we have to iterate on those rather than the threaded_edges vector.  */
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
-    {
-      bb = BASIC_BLOCK (i);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (e->aux)
-	    {
-	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-	      bool have_joiner = ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK);
-
-	      if (have_joiner)
-		{
-		  basic_block joiner = e->dest;
-		  edge final_edge = path->last ()->e;
-		  basic_block final_dest = final_edge->dest;
-		  edge e2 = find_edge (joiner, final_dest);
-
-		  if (e2 && !phi_args_equal_on_edges (e2, final_edge))
-		    {
-		      delete_jump_thread_path (path);
-		      e->aux = NULL;
-		    }
-		}
-	    }
-	}
-    }
 
 
   /* If optimizing for size, only thread through block if we don't have
@@ -1392,6 +1352,50 @@ mark_threaded_blocks (bitmap threaded_blocks)
 			{
 			  second_father = (*path)[i]->e->dest->loop_father;
 			}
+		    }
+		}
+	    }
+	}
+    }
+
+  /* If we have a joiner block (J) which has two successors S1 and S2 and
+     we are threading though S1 and the final destination of the thread
+     is S2, then we must verify that any PHI nodes in S2 have the same
+     PHI arguments for the edge J->S2 and J->S1->...->S2.
+
+     We used to detect this prior to registering the jump thread, but
+     that prohibits propagation of edge equivalences into non-dominated
+     PHI nodes as the equivalency test might occur before propagation.
+
+     This must also occur after we truncate any jump threading paths
+     as this scenario may only show up after truncation.
+
+     This works for now, but will need improvement as part of the FSA
+     optimization.
+
+     Note since we've moved the thread request data to the edges,
+     we have to iterate on those rather than the threaded_edges vector.  */
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      bb = BASIC_BLOCK (i);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->aux)
+	    {
+	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
+	      bool have_joiner = ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK);
+
+	      if (have_joiner)
+		{
+		  basic_block joiner = e->dest;
+		  edge final_edge = path->last ()->e;
+		  basic_block final_dest = final_edge->dest;
+		  edge e2 = find_edge (joiner, final_dest);
+
+		  if (e2 && !phi_args_equal_on_edges (e2, final_edge))
+		    {
+		      delete_jump_thread_path (path);
+		      e->aux = NULL;
 		    }
 		}
 	    }
