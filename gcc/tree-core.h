@@ -831,6 +831,9 @@ struct GTY(()) tree_base {
            VAR_DECL, FUNCTION_DECL
            IDENTIFIER_NODE
 
+       CONSTRUCTOR_NO_CLEARING in
+           CONSTRUCTOR
+
        ASM_VOLATILE_P in
            ASM_EXPR
 
