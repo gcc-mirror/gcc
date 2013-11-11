@@ -1,3 +1,9 @@
+2013-11-11  Tristan Gingold  <gingold@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_build_constructor): Also set the flag
+	CONSTRUCTOR_NO_CLEARING on the constructor.
+
 2013-10-30  Sharad Singhai  <singhai@google.com>
 
 	* gnat_ugn.texi: Remove option description for PR middle-end/58134.

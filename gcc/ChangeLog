@@ -1,8 +1,17 @@
+2013-11-11  Tristan Gingold  <gingold@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (CONSTRUCTOR_NO_CLEARING): Define.
+	* tree-core.h (CONSTRUCTOR_NO_CLEARING): Document it.
+	* tree.def (CONSTRUCTOR): Likewise.
+	* doc/generic.texi (CONSTRUCTOR): Likewise.  Update description.
+	* gimplify.c (gimplify_init_constructor): Do not clear the object when
+	the constructor is incomplete and CONSTRUCTOR_NO_CLEARING is set.
 
 2013-11-11  Basile Starynkevitch  <basile@starynkevitch.net>
 
-         * toplev.c (toplev_main): Move PLUGIN_FINISH invocation before
-           diagnostic_finish.
+	* toplev.c (toplev_main): Move PLUGIN_FINISH invocation before
+	diagnostic_finish.
 
 2013-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 

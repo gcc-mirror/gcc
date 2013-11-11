@@ -445,10 +445,12 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
    OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.  */
 DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
 
-/* Constructor: return an aggregate value made from specified components.
-   In C, this is used only for structure and array initializers.
-   The operand is a sequence of component values made out of a VEC of
-   struct constructor_elt.
+/* Used to represent the brace-enclosed initializers for a structure or an
+   array.  It contains a sequence of component values made out of a VEC of
+   constructor_elt.
+
+   For RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE:
+   The field INDEX of each constructor_elt is a FIELD_DECL.
 
    For ARRAY_TYPE:
    The field INDEX of each constructor_elt is the corresponding index.
@@ -457,8 +459,9 @@ DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
    has side-effects, they are evaluated once for each element.  Wrap the
    value in a SAVE_EXPR if you want to evaluate side effects only once.)
 
-   For RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE:
-   The field INDEX of each node is a FIELD_DECL.  */
+   Components that aren't present are cleared as per the C semantics,
+   unless the CONSTRUCTOR_NO_CLEARING flag is set, in which case their
+   value becomes undefined.  */
 DEFTREECODE (CONSTRUCTOR, "constructor", tcc_exceptional, 0)
 
 /* The expression types are mostly straightforward, with the fourth argument

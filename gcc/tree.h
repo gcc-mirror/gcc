@@ -957,6 +957,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (&(*CONSTRUCTOR_ELTS (NODE))[IDX])
 #define CONSTRUCTOR_NELTS(NODE) \
   (vec_safe_length (CONSTRUCTOR_ELTS (NODE)))
+#define CONSTRUCTOR_NO_CLEARING(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.public_flag)
 
 /* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
    value of each element (stored within VAL). IX must be a scratch variable

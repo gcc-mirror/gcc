@@ -1874,6 +1874,7 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
     v->qsort (compare_elmt_bitpos);
 
   result = build_constructor (type, v);
+  CONSTRUCTOR_NO_CLEARING (result) = 1;
   TREE_CONSTANT (result) = TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
   TREE_READONLY (result) = TYPE_READONLY (type) || allconstant;
