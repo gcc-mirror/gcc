@@ -5401,6 +5401,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   rtx subtarget;
   rtx tem, last, trueval;
 
+  /* If we compare constants, we shouldn't use a store-flag operation,
+     but a constant load.  We can get there via the vanilla route that
+     usually generates a compare-branch sequence, but will in this case
+     fold the comparison to a constant, and thus elide the branch.  */
+  if (CONSTANT_P (op0) && CONSTANT_P (op1))
+    return NULL_RTX;
+
   tem = emit_store_flag_1 (target, code, op0, op1, mode, unsignedp, normalizep,
 			   target_mode);
   if (tem)
