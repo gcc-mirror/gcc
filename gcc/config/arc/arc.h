@@ -1087,6 +1087,22 @@ arc_select_cc_mode (OP, X, Y)
    expensive than reg->reg moves.  */
 #define BRANCH_COST(speed_p, predictable_p) 2
 
+/* Scc sets the destination to 1 and then conditionally zeroes it.
+   Best case, ORed SCCs can be made into clear - condset - condset.
+   But it could also end up as five insns.  So say it costs four on
+   average.
+   These extra instructions - and the second comparison - will also be
+   an extra cost if the first comparison would have been decisive.
+   So get an average saving, with a probability of the first branch
+   beging decisive of p0, we want:
+   p0 * (branch_cost - 4) > (1 - p0) * 5
+   ??? We don't get to see that probability to evaluate, so we can
+   only wildly guess that it might be 50%.
+   ??? The compiler also lacks the notion of branch predictability.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT \
+  (BRANCH_COST (optimize_function_for_speed_p (cfun), \
+		false) > 9)
+
 /* Nonzero if access to memory by bytes is slow and undesirable.
    For RISC chips, it means that access to memory by bytes is no
    better than access by words when possible, so grab a whole word
