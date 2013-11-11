@@ -1,7 +1,14 @@
+2013-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58997
+	* gcc.c-torture/compile/pr58997.c: New test.
+
 2013-11-10  Wei Mi  <wmi@google.com>
 
 	* testsuite/gcc.dg/pr57518.c: Backport regex fix from r200720.
-
 
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 

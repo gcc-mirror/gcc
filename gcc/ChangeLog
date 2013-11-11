@@ -1,3 +1,16 @@
+2013-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58997
+	* loop-iv.c (iv_subreg): For IV_UNKNOWN_EXTEND, expect
+	get_iv_value to be in iv->mode rather than iv->extend_mode.
+	(iv_extend): Likewise.  Otherwise, if iv->extend != extend,
+	use lowpart_subreg on get_iv_value before calling simplify_gen_unary.
+	* loop-unswitch.c (may_unswitch_on): Make sure op[i] is in the right
+	mode.
+
 2013-11-10  Karlson2k  <k2k@narod.ru>
 	    Kai Tietz  <ktietz@redhat.com>
 

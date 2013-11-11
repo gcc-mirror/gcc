@@ -191,6 +191,7 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
   if (!test)
     return NULL_RTX;
 
+  mode = VOIDmode;
   for (i = 0; i < 2; i++)
     {
       op[i] = XEXP (test, i);
@@ -205,11 +206,15 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
 	return NULL_RTX;
 
       op[i] = get_iv_value (&iv, const0_rtx);
+      if (iv.extend != IV_UNKNOWN_EXTEND
+	  && iv.mode != iv.extend_mode)
+	op[i] = lowpart_subreg (iv.mode, op[i], iv.extend_mode);
+      if (mode == VOIDmode)
+	mode = iv.mode;
+      else
+	gcc_assert (mode == iv.mode);
     }
 
-  mode = GET_MODE (op[0]);
-  if (mode == VOIDmode)
-    mode = GET_MODE (op[1]);
   if (GET_MODE_CLASS (mode) == MODE_CC)
     {
       if (at != BB_END (bb))
