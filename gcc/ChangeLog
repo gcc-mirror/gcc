@@ -1,3 +1,19 @@
+2013-11-11  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/58853
+	* config/i386/x86-tune.def
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Rename from
+	TARGET_MISALIGNED_MOVE_STRING_PROLOGUES.
+	* config/i386/i386.h
+	(TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Rename from
+	TARGET_MISALIGNED_MOVE_STRING_PROLOGUES_EPILOGUES.  Update for renamed
+	X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES.
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Use
+	TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES to calculate
+	misaligned_prologue_used.  Check that
+	desired_aling <= epilogue_size_needed.
+
 2013-11-11  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/59050
