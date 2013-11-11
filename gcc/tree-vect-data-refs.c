@@ -2669,9 +2669,9 @@ comp_dr_addr_with_seg_len_pair (const void *p1_, const void *p2_)
       if (comp_res != 0)
 	return comp_res;
     }
-  if (tree_int_cst_compare (p11.offset, p21.offset) < 0)
+  else if (tree_int_cst_compare (p11.offset, p21.offset) < 0)
     return -1;
-  if (tree_int_cst_compare (p11.offset, p21.offset) > 0)
+  else if (tree_int_cst_compare (p11.offset, p21.offset) > 0)
     return 1;
   if (TREE_CODE (p12.offset) != INTEGER_CST
       || TREE_CODE (p22.offset) != INTEGER_CST)
@@ -2680,9 +2680,9 @@ comp_dr_addr_with_seg_len_pair (const void *p1_, const void *p2_)
       if (comp_res != 0)
 	return comp_res;
     }
-  if (tree_int_cst_compare (p12.offset, p22.offset) < 0)
+  else if (tree_int_cst_compare (p12.offset, p22.offset) < 0)
     return -1;
-  if (tree_int_cst_compare (p12.offset, p22.offset) > 0)
+  else if (tree_int_cst_compare (p12.offset, p22.offset) > 0)
     return 1;
 
   return 0;
