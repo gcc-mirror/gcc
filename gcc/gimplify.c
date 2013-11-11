@@ -4052,9 +4052,9 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	     objects.  Initializers for such objects must explicitly set
 	     every field that needs to be set.  */
 	  cleared = false;
-	else if (!complete_p)
+	else if (!complete_p && !CONSTRUCTOR_NO_CLEARING (ctor))
 	  /* If the constructor isn't complete, clear the whole object
-	     beforehand.
+	     beforehand, unless CONSTRUCTOR_NO_CLEARING is set on it.
 
 	     ??? This ought not to be needed.  For any element not present
 	     in the initializer, we should simply set them to zero.  Except
