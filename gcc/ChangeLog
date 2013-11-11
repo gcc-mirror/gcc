@@ -1,3 +1,8 @@
+2013-11-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs): Return after handling
+	comparisons.
+
 2013-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
