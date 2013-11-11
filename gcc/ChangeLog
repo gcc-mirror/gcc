@@ -1,3 +1,8 @@
+2013-11-08  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Truncate jump
+	threading paths first, then perform PHI node checks if applicable.
+
 2013-11-10  Karlson2k  <k2k@narod.ru>
             Kai Tietz  <ktietz@redhat.com>
 
