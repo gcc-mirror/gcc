@@ -613,6 +613,11 @@ class Expression
   address_taken(bool escapes)
   { this->do_address_taken(escapes); }
 
+  // Note that a nil check must be issued for this expression.
+  void
+  issue_nil_check()
+  { this->do_issue_nil_check(); }
+
   // Return whether this expression must be evaluated in order
   // according to the order of evaluation rules.  This is basically
   // true of all expressions with side-effects.
@@ -740,6 +745,11 @@ class Expression
   // Child class implements taking the address of an expression.
   virtual void
   do_address_taken(bool)
+  { }
+
+  // Child class implements issuing a nil check if the address is taken.
+  virtual void
+  do_issue_nil_check()
   { }
 
   // Child class implements whether this expression must be evaluated
@@ -1721,6 +1731,9 @@ class Index_expression : public Parser_expression
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  void
+  do_issue_nil_check()
+  { this->left_->issue_nil_check(); }
  private:
   // The expression being indexed.
   Expression* left_;
@@ -2010,6 +2023,10 @@ class Field_reference_expression : public Expression
   void
   do_address_taken(bool escapes)
   { this->expr_->address_taken(escapes); }
+
+  void
+  do_issue_nil_check()
+  { this->expr_->issue_nil_check(); }
 
   tree
   do_get_tree(Translate_context*);

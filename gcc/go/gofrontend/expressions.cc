@@ -3633,7 +3633,8 @@ class Unary_expression : public Expression
  public:
   Unary_expression(Operator op, Expression* expr, Location location)
     : Expression(EXPRESSION_UNARY, location),
-      op_(op), escapes_(true), create_temp_(false), expr_(expr)
+      op_(op), escapes_(true), create_temp_(false), expr_(expr),
+      issue_nil_check_(false)
   { }
 
   // Return the operator.
@@ -3719,6 +3720,10 @@ class Unary_expression : public Expression
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  void
+  do_issue_nil_check()
+  { this->issue_nil_check_ = (this->op_ == OPERATOR_MULT); }
+
  private:
   // The unary operator to apply.
   Operator op_;
@@ -3730,6 +3735,9 @@ class Unary_expression : public Expression
   bool create_temp_;
   // The operand.
   Expression* expr_;
+  // Whether or not to issue a nil check for this expression if its address
+  // is being taken.
+  bool issue_nil_check_;
 };
 
 // If we are taking the address of a composite literal, and the
@@ -4107,7 +4115,10 @@ Unary_expression::do_check_types(Gogo*)
 	    this->report_error(_("invalid operand for unary %<&%>"));
 	}
       else
-	this->expr_->address_taken(this->escapes_);
+        {
+          this->expr_->address_taken(this->escapes_);
+          this->expr_->issue_nil_check();
+        }
       break;
 
     case OPERATOR_MULT:
@@ -4277,12 +4288,13 @@ Unary_expression::do_get_tree(Translate_context* context)
 	// If we are dereferencing the pointer to a large struct, we
 	// need to check for nil.  We don't bother to check for small
 	// structs because we expect the system to crash on a nil
-	// pointer dereference.
+	// pointer dereference.	 However, if we know the address of this
+	// expression is being taken, we must always check for nil.
 	tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
 	if (!VOID_TYPE_P(target_type_tree))
 	  {
 	    HOST_WIDE_INT s = int_size_in_bytes(target_type_tree);
-	    if (s == -1 || s >= 4096)
+	    if (s == -1 || s >= 4096 || this->issue_nil_check_)
 	      {
 		if (!DECL_P(expr))
 		  expr = save_expr(expr);
@@ -10401,6 +10413,10 @@ class Array_index_expression : public Expression
   void
   do_address_taken(bool escapes)
   { this->array_->address_taken(escapes); }
+
+  void
+  do_issue_nil_check()
+  { this->array_->issue_nil_check(); }
 
   tree
   do_get_tree(Translate_context*);
