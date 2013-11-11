@@ -51,9 +51,10 @@ static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
 static GTY(()) tree tree_one_value_profiler_fn;
 static GTY(()) tree tree_indirect_call_profiler_fn;
+static GTY(()) tree tree_time_profiler_fn;
 static GTY(()) tree tree_average_profiler_fn;
 static GTY(()) tree tree_ior_profiler_fn;
-
+
 
 static GTY(()) tree ic_void_ptr_var;
 static GTY(()) tree ic_gcov_type_ptr_var;
@@ -63,7 +64,8 @@ static GTY(()) tree ptr_void;
 
 /* Add code:
    __thread gcov*	__gcov_indirect_call_counters; // pointer to actual counter
-   __thread  void*	__gcov_indirect_call_callee; // actual callee address
+   __thread void*	__gcov_indirect_call_callee; // actual callee address
+   __thread int __gcov_function_counter; // time profiler function counter
 */
 static void
 init_ic_make_global_vars (void)
@@ -145,6 +147,7 @@ gimple_init_edge_profiler (void)
   tree gcov_type_ptr;
   tree ic_profiler_fn_type;
   tree average_profiler_fn_type;
+  tree time_profiler_fn_type;
 
   if (!gcov_type_node)
     {
@@ -222,6 +225,18 @@ gimple_init_edge_profiler (void)
 	= tree_cons (get_identifier ("leaf"), NULL,
 		     DECL_ATTRIBUTES (tree_indirect_call_profiler_fn));
 
+      /* void (*) (gcov_type *, gcov_type, void *)  */
+      time_profiler_fn_type
+	       = build_function_type_list (void_type_node,
+					  gcov_type_ptr, NULL_TREE);
+      tree_time_profiler_fn
+	      = build_fn_decl ("__gcov_time_profiler",
+				     time_profiler_fn_type);
+      TREE_NOTHROW (tree_time_profiler_fn) = 1;
+      DECL_ATTRIBUTES (tree_time_profiler_fn)
+	= tree_cons (get_identifier ("leaf"), NULL,
+		     DECL_ATTRIBUTES (tree_time_profiler_fn));
+
       /* void (*) (gcov_type *, gcov_type)  */
       average_profiler_fn_type
 	      = build_function_type_list (void_type_node,
@@ -247,6 +262,7 @@ gimple_init_edge_profiler (void)
       DECL_ASSEMBLER_NAME (tree_pow2_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_one_value_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_indirect_call_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_time_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_average_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_ior_profiler_fn);
     }
@@ -453,6 +469,23 @@ gimple_gen_ic_func_profiler (void)
   void0 = build_int_cst (build_pointer_type (void_type_node), 0);
   stmt2 = gimple_build_assign (ic_void_ptr_var, void0);
   gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
+}
+
+/* Output instructions as GIMPLE tree at the beginning for each function.
+   TAG is the tag of the section for counters, BASE is offset of the
+   counter position and GSI is the iterator we place the counter.  */
+
+void
+gimple_gen_time_profiler (unsigned tag, unsigned base,
+                          gimple_stmt_iterator &gsi)
+{
+  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  gimple call;
+
+  ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
+				      true, NULL_TREE, true, GSI_SAME_STMT);
+  call = gimple_build_call (tree_time_profiler_fn, 1, ref_ptr);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
 /* Output instructions as GIMPLE trees for code to find the most common value

@@ -298,6 +298,8 @@ public:
   int uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
+  /* Time profiler: first run of function.  */
+  int tp_first_run;
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */

@@ -342,9 +342,10 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 				      counter.  */
 #define GCOV_COUNTER_IOR	7  /* IOR of the all values passed to
 				      counter.  */
-#define GCOV_LAST_VALUE_COUNTER 7  /* The last of counters used for value
+#define GCOV_TIME_PROFILER  8 /* Time profile collecting first run of a function */
+#define GCOV_LAST_VALUE_COUNTER 8  /* The last of counters used for value
 				      profiling.  */
-#define GCOV_COUNTERS		8
+#define GCOV_COUNTERS		9
 
 /* Number of counters used for value profiling.  */
 #define GCOV_N_VALUE_COUNTERS \
@@ -352,7 +353,7 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 
   /* A list of human readable names of the counters */
 #define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", \
-      				 "delta", "indirect_call", "average", "ior"}
+              "delta", "indirect_call", "average", "ior", "time_profiler"}
 
   /* Names of merge functions for counters.  */
 #define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add",	\
@@ -362,7 +363,8 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 				 "__gcov_merge_delta",  \
 				 "__gcov_merge_single", \
 				 "__gcov_merge_add",	\
-				 "__gcov_merge_ior"}
+				 "__gcov_merge_ior",  \
+         "__gcov_merge_time_profile" }
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\
@@ -511,6 +513,8 @@ extern void __gcov_merge_delta (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 /* The merge function that just ors the counters together.  */
 extern void __gcov_merge_ior (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
+extern void __gcov_merge_time_profile (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
+
 /* The profiler functions.  */
 extern void __gcov_interval_profiler (gcov_type *, gcov_type, int, unsigned);
 extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
@@ -518,6 +522,7 @@ extern void __gcov_one_value_profiler (gcov_type *, gcov_type);
 extern void __gcov_indirect_call_profiler_v2 (gcov_type, void *);
 extern void __gcov_average_profiler (gcov_type *, gcov_type);
 extern void __gcov_ior_profiler (gcov_type *, gcov_type);
+extern void __gcov_time_profiler (gcov_type *);
 
 #ifndef inhibit_libc
 /* The wrappers around some library functions..  */

@@ -196,6 +196,7 @@ gimple_add_histogram_value (struct function *fun, gimple stmt,
 {
   hist->hvalue.next = gimple_histogram_value (fun, stmt);
   set_histogram_value (fun, stmt, hist);
+  hist->fun = fun;
 }
 
 
@@ -338,6 +339,15 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	}
       fprintf (dump_file, ".\n");
       break;
+    case HIST_TYPE_TIME_PROFILE:
+      fprintf (dump_file, "Time profile ");
+      if (hist->hvalue.counters)
+      {
+        fprintf (dump_file, "time:"HOST_WIDEST_INT_PRINT_DEC,
+                 (HOST_WIDEST_INT) hist->hvalue.counters[0]);
+      }
+      fprintf (dump_file, ".\n");
+      break;
     case HIST_TYPE_MAX:
       gcc_unreachable ();
    }
@@ -411,6 +421,7 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
 	  break;
 
 	case HIST_TYPE_IOR:
+  case HIST_TYPE_TIME_PROFILE:
 	  ncounters = 1;
 	  break;
 	case HIST_TYPE_MAX:
@@ -496,7 +507,9 @@ visit_hist (void **slot, void *data)
 {
   struct pointer_set_t *visited = (struct pointer_set_t *) data;
   histogram_value hist = *(histogram_value *) slot;
-  if (!pointer_set_contains (visited, hist))
+
+  if (!pointer_set_contains (visited, hist)
+      && hist->type != HIST_TYPE_TIME_PROFILE)
     {
       error ("dead histogram");
       dump_histogram_value (stderr, hist);
@@ -1919,11 +1932,13 @@ gimple_find_values_to_profile (histogram_values *values)
   gimple_stmt_iterator gsi;
   unsigned i;
   histogram_value hist = NULL;
-
   values->create (0);
+
   FOR_EACH_BB (bb)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       gimple_values_to_profile (gsi_stmt (gsi), values);
+
+  values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_TIME_PROFILE, 0, 0));
 
   FOR_EACH_VEC_ELT (*values, i, hist)
     {
@@ -1948,6 +1963,10 @@ gimple_find_values_to_profile (histogram_values *values)
  	case HIST_TYPE_INDIR_CALL:
  	  hist->n_counters = 3;
 	  break;
+
+  case HIST_TYPE_TIME_PROFILE:
+    hist->n_counters = 1;
+    break;
 
 	case HIST_TYPE_AVERAGE:
 	  hist->n_counters = 2;
