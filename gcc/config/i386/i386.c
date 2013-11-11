@@ -23761,13 +23761,15 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     }
   gcc_assert (desired_align >= 1 && align >= 1);
 
-  /* Misaligned move sequences handles both prologues and epilogues at once.
-     Default code generation results in smaller code for large alignments and
-     also avoids redundant job when sizes are known precisely.  */
-  misaligned_prologue_used = (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES
-			      && MAX (desired_align, epilogue_size_needed) <= 32
-			      && ((desired_align > align && !align_bytes)
-				  || (!count && epilogue_size_needed > 1)));
+  /* Misaligned move sequences handle both prologue and epilogue at once.
+     Default code generation results in a smaller code for large alignments
+     and also avoids redundant job when sizes are known precisely.  */
+  misaligned_prologue_used
+    = (TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES
+       && MAX (desired_align, epilogue_size_needed) <= 32
+       && desired_align <= epilogue_size_needed
+       && ((desired_align > align && !align_bytes)
+	   || (!count && epilogue_size_needed > 1)));
 
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
