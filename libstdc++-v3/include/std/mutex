@@ -203,21 +203,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __timed_mutex_impl
     {
     protected:
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-      typedef chrono::steady_clock 	  	__clock_t;
-#else
       typedef chrono::high_resolution_clock 	__clock_t;
-#endif
 
       template<typename _Rep, typename _Period>
 	bool
 	_M_try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
 	{
-	  auto __rt = chrono::duration_cast<__clock_t::duration>(__rtime);
-	  if (ratio_greater<__clock_t::period, _Period>())
+	  using chrono::steady_clock;
+	  auto __rt = chrono::duration_cast<steady_clock::duration>(__rtime);
+	  if (ratio_greater<steady_clock::period, _Period>())
 	    ++__rt;
-
-	  return _M_try_lock_until(__clock_t::now() + __rt);
+	  return _M_try_lock_until(steady_clock::now() + __rt);
 	}
 
       template<typename _Duration>
@@ -225,11 +221,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_try_lock_until(const chrono::time_point<__clock_t,
 						   _Duration>& __atime)
 	{
-	  chrono::time_point<__clock_t, chrono::seconds> __s =
-	    chrono::time_point_cast<chrono::seconds>(__atime);
-
-	  chrono::nanoseconds __ns =
-	    chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+	  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	  auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
 
 	  __gthread_time_t __ts = {
 	    static_cast<std::time_t>(__s.time_since_epoch().count()),
@@ -243,7 +236,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Clock, typename _Duration>
 	bool
 	_M_try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
-	{ return _M_try_lock_for(__atime - _Clock::now()); }
+	{
+	  auto __rtime = __atime - _Clock::now();
+	  return _M_try_lock_until(__clock_t::now() + __rtime);
+	}
     };
 
   /// timed_mutex
