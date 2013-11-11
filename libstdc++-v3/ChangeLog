@@ -1,3 +1,14 @@
+2013-11-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54562
+	* include/std/mutex (__timed_mutex_impl::__clock_t): Use
+	high_resolution_clock for absolute timeouts, because
+	pthread_mutex_timedlock uses CLOCK_REALTIME not CLOCK_MONOTONIC.
+	(__timed_mutex_impl::_M_try_lock_for): Use steady_clock for relative
+	timeouts as per [thread.req.timing].
+	(__timed_mutex_impl::_M_try_lock_until<Clock,Duration>): Convert to
+	__clock_t time point instead of using _M_try_lock_for.
+
 2013-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/58982
