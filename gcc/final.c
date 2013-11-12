@@ -830,7 +830,7 @@ void
 update_alignments (vec<rtx> &label_pairs)
 {
   unsigned int i = 0;
-  rtx iter, label;
+  rtx iter, label = NULL_RTX;
 
   if (max_labelno != max_label_num ())
     grow_label_align ();

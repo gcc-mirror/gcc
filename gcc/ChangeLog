@@ -1,3 +1,7 @@
+2013-11-12  Marek Polacek  <polacek@redhat.com>
+
+	* final.c (update_alignments): Initialize label to NULL_RTX.
+
 2013-11-12  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-isolate-paths.c (check_loadstore): New function.
