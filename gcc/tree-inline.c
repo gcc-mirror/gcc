@@ -2353,6 +2353,29 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
     }
 }
 
+/* Convert estimated frequencies into counts for NODE, scaling COUNT
+   with each bb's frequency. Used when NODE has a 0-weight entry
+   but we are about to inline it into a non-zero count call bb.
+   See the comments for handle_missing_profiles() in predict.c for
+   when this can happen for COMDATs.  */
+
+void
+freqs_to_counts (struct cgraph_node *node, gcov_type count)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+
+  FOR_ALL_BB_FN(bb, fn)
+    {
+      bb->count = apply_scale (count,
+                               GCOV_COMPUTE_SCALE (bb->frequency, BB_FREQ_MAX));
+      FOR_EACH_EDGE (e, ei, bb->succs)
+        e->count = apply_probability (e->src->count, e->probability);
+    }
+}
+
 /* Make a copy of the body of FN so that it can be inserted inline in
    another function.  Walks FN via CFG, returns new fndecl.  */
 
@@ -2372,6 +2395,24 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   int last;
   int incoming_frequency = 0;
   gcov_type incoming_count = 0;
+
+  /* This can happen for COMDAT routines that end up with 0 counts
+     despite being called (see the comments for handle_missing_profiles()
+     in predict.c as to why). Apply counts to the blocks in the callee
+     before inlining, using the guessed edge frequencies, so that we don't
+     end up with a 0-count inline body which can confuse downstream
+     optimizations such as function splitting.  */
+  if (!ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count && count)
+    {
+      /* Apply the larger of the call bb count and the total incoming
+         call edge count to the callee.  */
+      gcov_type in_count = 0;
+      struct cgraph_edge *in_edge;
+      for (in_edge = id->src_node->callers; in_edge;
+           in_edge = in_edge->next_caller)
+        in_count += in_edge->count;
+      freqs_to_counts (id->src_node, count > in_count ? count : in_count);
+    }
 
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count)
     count_scale
