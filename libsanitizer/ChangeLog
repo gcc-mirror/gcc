@@ -1,3 +1,9 @@
+2013-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc: Temporarily
+	ifdef out almost the whole source.
+	* sanitizer_common/sanitizer_common_syscalls.inc: Likewise.
+
 2013-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/59018
