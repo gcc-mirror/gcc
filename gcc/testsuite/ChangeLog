@@ -1,3 +1,8 @@
+2013-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57734
+	* g++.dg/cpp0x/alias-decl-enum-1.C: New.
+
 2013-11-11  Martin Liska	<marxin.liska@gmail.com>
 
 	* gcc.dg/time-profiler-1.c: New test.
