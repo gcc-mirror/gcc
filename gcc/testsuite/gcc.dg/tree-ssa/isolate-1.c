@@ -50,7 +50,7 @@ d_type (struct d_info *di)
    and finally that we set the RHS of the store to zero.  */
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 1 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "->type = 42" 1 "isolate-paths"} } */
-/* { dg-final { scan-tree-dump-times "->type = 0" 1 "isolate-paths"} } */
+/* { dg-final { scan-tree-dump-times "->type ={v} 0" 1 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "->zzz" 1 "isolate-paths"} } */
 /* { dg-final { cleanup-tree-dump "isolate-paths" } } */
 

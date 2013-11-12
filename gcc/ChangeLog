@@ -1,3 +1,9 @@
+2013-11-12  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-isolate-paths.c (check_loadstore): Mark discovered
+	memory references as volatile.
+	(insert_trap_and_remove_trailing_statements): Fix comment.
+
 2013-11-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR other/58712

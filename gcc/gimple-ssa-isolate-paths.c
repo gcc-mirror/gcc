@@ -51,7 +51,12 @@ check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
 {
   if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
       && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
-    return true;
+    {
+      TREE_THIS_VOLATILE (op) = 1;
+      TREE_SIDE_EFFECTS (op) = 1;
+      update_stmt (stmt);
+      return true;
+    }
   return false;
 }
 
@@ -64,7 +69,7 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
      code that wishes to catch the signal can do so.
 
      If the dereference is a load, then there's nothing to do as the
-     LHS will be a throw-away SSA_NAME and the LHS is the NULL dereference.
+     LHS will be a throw-away SSA_NAME and the RHS is the NULL dereference.
 
      If the dereference is a store and we can easily transform the RHS,
      then simplify the RHS to enable more DCE.  */
