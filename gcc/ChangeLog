@@ -1,3 +1,15 @@
+2013-11-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* config/rs6000/rs6000.md (movdi_internal32): Eliminate
+	constraints that would allow DImode into the traditional Altivec
+	registers, but cause undesirable code generation when loading 0 as
+	a constant.
+	(movdi_internal64): Likewise.
+	(cmp<mode>_fpr): Do not use %x for CR register output.
+	(extendsfdf2_fpr): Fix constraints when -mallow-upper-df and
+	-mallow-upper-sf debug switches are used.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-expr.h (create_tmp_var_name, create_tmp_var_raw,
