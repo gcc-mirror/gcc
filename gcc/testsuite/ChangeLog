@@ -1,3 +1,8 @@
+2013-11-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* gcc.dg/cilk-plus/cilk-plus.exp: Added a check for LTO before running
+	LTO tests.
+
 2013-11-12  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/isolate-1.c: Update expected output.

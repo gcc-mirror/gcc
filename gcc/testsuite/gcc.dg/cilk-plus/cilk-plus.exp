@@ -18,6 +18,7 @@
 
 
 load_lib gcc-dg.exp
+load_lib lto.exp
 
 if { ![check_effective_target_cilkplus] } {
     return;
@@ -48,8 +49,9 @@ dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -std=c99 -fcilkplus $ALWAYS_CFLAGS" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -ftree-vectorize -fcilkplus $ALWAYS_CFLAGS" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -g -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -flto -g -fcilkplus $ALWAYS_CFLAGS" " "
-
+if { [check_effective_target_lto] } {
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -flto -g -fcilkplus $ALWAYS_CFLAGS" " "
+}
 
 
 dg-finish
