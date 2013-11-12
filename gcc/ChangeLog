@@ -1,5 +1,12 @@
 2013-11-12  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/59088
+	* config/i386/x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL):
+	Set for m_HASWELL.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Set for m_HASWELL.
+
+2013-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/59084
 	* config/i386/i386.c (ix86_option_override_internal): Check
 	X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL and
