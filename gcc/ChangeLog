@@ -1,3 +1,9 @@
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	* tree.c (grow_tree_vec_stat): New function ...
+	* tree.h (grow_tree_vec_stat) (grow_tree_vec): ... and its declaration
+	and macro front-end.
+
 2013-11-12  Marek Polacek  <polacek@redhat.com>
 
 	* final.c (update_alignments): Initialize label to NULL_RTX.

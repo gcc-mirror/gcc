@@ -1,3 +1,16 @@
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58534
+	PR c++/58536
+	PR c++/58548
+	PR c++/58549
+	PR c++/58637
+	* g++.dg/cpp1y/pr58534.C: New testcase.
+	* g++.dg/cpp1y/pr58536.C: New testcase.
+	* g++.dg/cpp1y/pr58548.C: New testcase.
+	* g++.dg/cpp1y/pr58549.C: New testcase.
+	* g++.dg/cpp1y/pr58637.C: New testcase.
+
 2013-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c90-thread-local-1.c, gcc.dg/c99-thread-local-1.c,
