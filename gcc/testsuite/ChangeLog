@@ -1,5 +1,17 @@
 2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
 
+	* g++.dg/cpp1y/lambda-generic.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-cfun.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-dep.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-udt.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-variadic.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-x.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-xcfun.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-xudt.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: New test case.
+
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
 	PR c++/58534
 	PR c++/58536
 	PR c++/58548
