@@ -1,5 +1,15 @@
 2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
 
+	* pt.c (convert_generic_types_to_packs): New function to transform
+	a range of implicitly introduced non-pack template parms to be parameter
+	packs.
+	* cp-tree.h (convert_generic_types_to_packs): Declare.
+	* parser.c (cp_parser_parameter_declaration_list): If a function
+	parameter pack contains generic types, convert them to packs prior to
+	grokdeclarator.
+
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
 	PR c++/58534
 	PR c++/58536
 	PR c++/58548
