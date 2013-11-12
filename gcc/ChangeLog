@@ -1,3 +1,15 @@
+2013-11-12  Teresa Johnson  <tejohnson@google.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (drop_profile): New function.
+	(handle_missing_profiles): Ditto.
+	(counts_to_freqs): Don't overwrite estimated frequencies
+	when function has no profile counts.
+	* predict.h (handle_missing_profiles): Declare.
+	* tree-inline.c (freqs_to_counts): New function.
+	(copy_cfg_body): Invoke freqs_to_counts as needed.
+	* tree-profile.c (tree_profiling): Invoke handle_missing_profiles.
+
 2013-11-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59088

@@ -645,6 +645,8 @@ tree_profiling (void)
       pop_cfun ();
     }
 
+  handle_missing_profiles ();
+
   del_node_map ();
   return 0;
 }
