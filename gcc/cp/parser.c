@@ -18112,7 +18112,7 @@ static tree
 cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 {
   tree parameters = NULL_TREE;
-  tree *tail = &parameters; 
+  tree *tail = &parameters;
   bool saved_in_unbraced_linkage_specification_p;
   int index = 0;
 
@@ -18121,7 +18121,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
   /* The special considerations that apply to a function within an
      unbraced linkage specifications do not apply to the parameters
      to the function.  */
-  saved_in_unbraced_linkage_specification_p 
+  saved_in_unbraced_linkage_specification_p
     = parser->in_unbraced_linkage_specification_p;
   parser->in_unbraced_linkage_specification_p = false;
 
@@ -18131,6 +18131,10 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       cp_parameter_declarator *parameter;
       tree decl = error_mark_node;
       bool parenthesized_p = false;
+      int template_parm_idx = (parser->num_template_parameter_lists?
+			       TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS
+						(current_template_parms)) : 0);
+
       /* Parse the parameter.  */
       parameter
 	= cp_parser_parameter_declaration (parser,
@@ -18142,11 +18146,29 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       deprecated_state = DEPRECATED_SUPPRESS;
 
       if (parameter)
-	decl = grokdeclarator (parameter->declarator,
-			       &parameter->decl_specifiers,
-			       PARM,
-			       parameter->default_argument != NULL_TREE,
-			       &parameter->decl_specifiers.attributes);
+	{
+	  /* If a function parameter pack was specified and an implicit template
+	     parameter was introduced during cp_parser_parameter_declaration,
+	     change any implicit parameters introduced into packs.  */
+	  if (parser->implicit_template_parms
+	      && parameter->declarator
+	      && parameter->declarator->parameter_pack_p)
+	    {
+	      int latest_template_parm_idx = TREE_VEC_LENGTH
+		(INNERMOST_TEMPLATE_PARMS (current_template_parms));
+
+	      if (latest_template_parm_idx != template_parm_idx)
+		parameter->decl_specifiers.type = convert_generic_types_to_packs
+		  (parameter->decl_specifiers.type,
+		   template_parm_idx, latest_template_parm_idx);
+	    }
+
+	  decl = grokdeclarator (parameter->declarator,
+				 &parameter->decl_specifiers,
+				 PARM,
+				 parameter->default_argument != NULL_TREE,
+				 &parameter->decl_specifiers.attributes);
+	}
 
       deprecated_state = DEPRECATED_NORMAL;
 
