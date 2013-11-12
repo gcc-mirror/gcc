@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "pointer-set.h"
 #include "hash-table.h"
+#include "gimplify.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */

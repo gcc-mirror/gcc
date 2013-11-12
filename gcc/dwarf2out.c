@@ -87,7 +87,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "cgraph.h"
 #include "input.h"
-#include "gimple.h"
 #include "ira.h"
 #include "lra.h"
 #include "dumpfile.h"

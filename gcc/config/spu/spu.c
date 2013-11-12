@@ -45,7 +45,7 @@
 #include "sched-int.h"
 #include "params.h"
 #include "machmode.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "tm-constrs.h"
 #include "ddg.h"
 #include "sbitmap.h"

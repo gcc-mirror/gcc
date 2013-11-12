@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"
-#include "gimple.h"
 #include "tree-ssa-loop-niter.h"
 
 

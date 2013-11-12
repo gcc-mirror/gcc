@@ -22,12 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 
 extern bool useless_type_conversion_p (tree, tree);
 
+
 extern void gimple_set_body (tree, gimple_seq);
 extern gimple_seq gimple_body (tree);
 extern bool gimple_has_body_p (tree);
 extern const char *gimple_decl_printable_name (tree, int);
 extern tree copy_var_decl (tree, tree, tree);
 extern bool gimple_can_coalesce_p (tree, tree);
+extern tree create_tmp_var_name (const char *);
+extern tree create_tmp_var_raw (tree, const char *);
+extern tree create_tmp_var (tree, const char *);
+extern tree create_tmp_reg (tree, const char *);
+
 
 extern void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *,
 				     tree *);
@@ -46,6 +52,8 @@ extern bool is_gimple_asm_val (tree);
 extern bool is_gimple_min_lval (tree);
 extern bool is_gimple_call_addr (tree);
 extern bool is_gimple_mem_ref_addr (tree);
+extern void mark_addressable (tree);
+extern bool is_gimple_reg_rhs (tree);
 
 /* Return true if a conversion from either type of TYPE1 and TYPE2
    to the other is not required.  Otherwise return false.  */

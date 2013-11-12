@@ -51,7 +51,7 @@
 #include "reload.h"
 #include "cfgloop.h"
 #include "sched-int.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "intl.h"
 #include "params.h"
 #include "tm-constrs.h"

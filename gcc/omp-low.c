@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "rtl.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "langhooks.h"

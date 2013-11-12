@@ -41,7 +41,7 @@
 #include "dwarf2.h"
 #include "timevar.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "cfgloop.h"
 #include "tilepro-builtins.h"
 #include "tilepro-multiply.h"

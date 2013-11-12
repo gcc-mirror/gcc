@@ -1,3 +1,124 @@
+2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-expr.h (create_tmp_var_name, create_tmp_var_raw,
+	create_tmp_var, create_tmp_reg, mark_addressable, is_gimple_reg_rhs):
+	Relocate prototypes from gimple.h.
+	* gimplify.h: New File.  Relocate some prototypes from gimple.h here.
+	(gimple_predicate, enum fallback, enum gimplify_status): Relocate
+	from gimple.h.
+	* gimple.h: Move some prototypes to gimplify.h.
+	(gimple_predicate, enum fallback, enum gimplify_status): Move to
+	gimplify.h.
+	(gimple_do_not_emit_location_p, gimple_set_do_not_emit_location):
+	Relocate from gimpify.c.
+	* gimple-expr.c (remove_suffix, tmp_var_id_num, create_tmp_var_name,
+	create_tmp_var_raw, create_tmp_var, create_tmp_reg, mark_addressable,
+	is_gimple_reg_rhs) Relocate from gimplify.c.
+	* gimplify.c (mark_addressable): Move to gimple-expr.c.
+	(gimple_seq_add_stmt_without_update): Move to gimple.c.
+	(remove_suffix, tmp_var_id_num, create_tmp_var_name, create_tmp_var_raw,
+	create_tmp_var, create_tmp_reg, is_gimple_reg_rhs): Move to 
+	gimple-expr.c.
+	(should_carry_location_p): Move to gimple.c.
+	(gimple_do_not_emit_location_p, gimple_set_do_not_emit_location): Move
+	to gimple.h.
+	(annotate_one_with_location, annotate_all_with_location_after,
+	annotate_all_with_location): Move to gimple.c.
+	(compare_case_labels, sort_case_labels,
+	preprocess_case_label_vec_for_gimple): Move to gimple.c.
+	(rhs_predicate_for): Make static.
+	(gimplify_assign): Relocate from gimple.c.
+	* gimple.c (gimplify_assign): Move to gimplify.c.
+	(gimple_seq_add_stmt_without_update, should_carry_location_p,
+	annotate_one_with_location, annotate_all_with_location_after,
+	annotate_all_with_location, compare_case_labels, sort_case_labels,
+	preprocess_case_label_vec_for_gimple): Relocate from gimplify.c.
+	* tree.h (unshare_expr, unshare_expr_without_location,
+	mark_addressable): Move prototypes to gimplify.h.
+	* Makefile.in (GTFILES): gimple-expr.c now has the GTY tag for
+	tmp_var_id_num
+	* asan.c: Include gimplify.h rather than gimple.h.
+	* cfgloopmanip.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* cilk-common.c: Likewise.
+	* dwarf2out.c: Dont include gimple.h.
+	* fold-const.c: Include gimplify.h rather than gimple.h.
+	* function.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* graphite-clast-to-gimple.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa.c: Likewise.
+	* langhooks.c: Dont include gimple.h.
+	* loop-init.c: Include gimplify.h rather than gimple.h.
+	* omp-low.c: Likewise.
+	* sese.c: Likewise.
+	* stor-layout.c: Likewise.
+	* targhooks.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-affine.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-iterator.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-ifcombine.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-loop-unswitch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-switch-conversio: Likewise.n.c
+	* tree-tailcall.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tsan.c: Likewise.
+	* value-prof.c: Likewise.
+	* config/aarch64/aarch64.c: Include gimplify.h instead of gimple.h.
+	* config/alpha/alpha.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
 
 	* tree.c (grow_tree_vec_stat): New function ...

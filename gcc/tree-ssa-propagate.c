@@ -30,7 +30,7 @@
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "sbitmap.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"

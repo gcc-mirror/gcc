@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
+#include "gimplify.h"
 
 #include <new>                    // For placement-new.
 

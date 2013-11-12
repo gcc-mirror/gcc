@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "c-common.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"

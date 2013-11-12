@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "diagnostic.h"
 #include "value-prof.h"
 #include "flags.h"
@@ -443,24 +444,6 @@ gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
 {
   return gimple_build_assign_with_ops (subcode, lhs, op1, op2, NULL_TREE
 				       PASS_MEM_STAT);
-}
-
-
-/* Build a new GIMPLE_ASSIGN tuple and append it to the end of *SEQ_P.
-
-   DST/SRC are the destination and source respectively.  You can pass
-   ungimplified trees in DST or SRC, in which case they will be
-   converted to a gimple operand if necessary.
-
-   This function returns the newly created GIMPLE_ASSIGN tuple.  */
-
-gimple
-gimplify_assign (tree dst, tree src, gimple_seq *seq_p)
-{
-  tree t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
-  gimplify_and_add (t, seq_p);
-  ggc_free (t);
-  return gimple_seq_last_stmt (*seq_p);
 }
 
 
@@ -1172,6 +1155,23 @@ gimple_seq_add_stmt (gimple_seq *seq_p, gimple gs)
   gsi_insert_after (&si, gs, GSI_NEW_STMT);
 }
 
+/* Link gimple statement GS to the end of the sequence *SEQ_P.  If
+   *SEQ_P is NULL, a new sequence is allocated.  This function is
+   similar to gimple_seq_add_stmt, but does not scan the operands.
+   During gimplification, we need to manipulate statement sequences
+   before the def/use vectors have been constructed.  */
+
+void
+gimple_seq_add_stmt_without_update (gimple_seq *seq_p, gimple gs)
+{
+  gimple_stmt_iterator si;
+
+  if (gs == NULL)
+    return;
+
+  si = gsi_last (*seq_p);
+  gsi_insert_after_without_update (&si, gs, GSI_NEW_STMT);
+}
 
 /* Append sequence SRC to the end of sequence *DST_P.  If *DST_P is
    NULL, a new sequence is allocated.  */
@@ -1187,6 +1187,64 @@ gimple_seq_add_seq (gimple_seq *dst_p, gimple_seq src)
   gsi_insert_seq_after (&si, src, GSI_NEW_STMT);
 }
 
+/* Determine whether to assign a location to the statement GS.  */
+
+static bool
+should_carry_location_p (gimple gs)
+{
+  /* Don't emit a line note for a label.  We particularly don't want to
+     emit one for the break label, since it doesn't actually correspond
+     to the beginning of the loop/switch.  */
+  if (gimple_code (gs) == GIMPLE_LABEL)
+    return false;
+
+  return true;
+}
+
+/* Set the location for gimple statement GS to LOCATION.  */
+
+static void
+annotate_one_with_location (gimple gs, location_t location)
+{
+  if (!gimple_has_location (gs)
+      && !gimple_do_not_emit_location_p (gs)
+      && should_carry_location_p (gs))
+    gimple_set_location (gs, location);
+}
+
+/* Set LOCATION for all the statements after iterator GSI in sequence
+   SEQ.  If GSI is pointing to the end of the sequence, start with the
+   first statement in SEQ.  */
+
+void
+annotate_all_with_location_after (gimple_seq seq, gimple_stmt_iterator gsi,
+				  location_t location)
+{
+  if (gsi_end_p (gsi))
+    gsi = gsi_start (seq);
+  else
+    gsi_next (&gsi);
+
+  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+    annotate_one_with_location (gsi_stmt (gsi), location);
+}
+
+/* Set the location for all the statements in a sequence STMT_P to LOCATION.  */
+
+void
+annotate_all_with_location (gimple_seq stmt_p, location_t location)
+{
+  gimple_stmt_iterator i;
+
+  if (gimple_seq_empty_p (stmt_p))
+    return;
+
+  for (i = gsi_start (stmt_p); !gsi_end_p (i); gsi_next (&i))
+    {
+      gimple gs = gsi_stmt (i);
+      annotate_one_with_location (gs, location);
+    }
+}
 
 /* Helper function of empty_body_p.  Return true if STMT is an empty
    statement.  */
@@ -3427,4 +3485,206 @@ infer_nonnull_range (gimple stmt, tree op)
     return true;
 
   return false;
+}
+
+/* Compare two case labels.  Because the front end should already have
+   made sure that case ranges do not overlap, it is enough to only compare
+   the CASE_LOW values of each case label.  */
+
+static int
+compare_case_labels (const void *p1, const void *p2)
+{
+  const_tree const case1 = *(const_tree const*)p1;
+  const_tree const case2 = *(const_tree const*)p2;
+
+  /* The 'default' case label always goes first.  */
+  if (!CASE_LOW (case1))
+    return -1;
+  else if (!CASE_LOW (case2))
+    return 1;
+  else
+    return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
+}
+
+/* Sort the case labels in LABEL_VEC in place in ascending order.  */
+
+void
+sort_case_labels (vec<tree> label_vec)
+{
+  label_vec.qsort (compare_case_labels);
+}
+
+/* Prepare a vector of case labels to be used in a GIMPLE_SWITCH statement.
+
+   LABELS is a vector that contains all case labels to look at.
+
+   INDEX_TYPE is the type of the switch index expression.  Case labels
+   in LABELS are discarded if their values are not in the value range
+   covered by INDEX_TYPE.  The remaining case label values are folded
+   to INDEX_TYPE.
+
+   If a default case exists in LABELS, it is removed from LABELS and
+   returned in DEFAULT_CASEP.  If no default case exists, but the
+   case labels already cover the whole range of INDEX_TYPE, a default
+   case is returned pointing to one of the existing case labels.
+   Otherwise DEFAULT_CASEP is set to NULL_TREE.
+
+   DEFAULT_CASEP may be NULL, in which case the above comment doesn't
+   apply and no action is taken regardless of whether a default case is
+   found or not.  */
+
+void
+preprocess_case_label_vec_for_gimple (vec<tree> labels,
+				      tree index_type,
+				      tree *default_casep)
+{
+  tree min_value, max_value;
+  tree default_case = NULL_TREE;
+  size_t i, len;
+
+  i = 0;
+  min_value = TYPE_MIN_VALUE (index_type);
+  max_value = TYPE_MAX_VALUE (index_type);
+  while (i < labels.length ())
+    {
+      tree elt = labels[i];
+      tree low = CASE_LOW (elt);
+      tree high = CASE_HIGH (elt);
+      bool remove_element = FALSE;
+
+      if (low)
+	{
+	  gcc_checking_assert (TREE_CODE (low) == INTEGER_CST);
+	  gcc_checking_assert (!high || TREE_CODE (high) == INTEGER_CST);
+
+	  /* This is a non-default case label, i.e. it has a value.
+
+	     See if the case label is reachable within the range of
+	     the index type.  Remove out-of-range case values.  Turn
+	     case ranges into a canonical form (high > low strictly)
+	     and convert the case label values to the index type.
+
+	     NB: The type of gimple_switch_index() may be the promoted
+	     type, but the case labels retain the original type.  */
+
+	  if (high)
+	    {
+	      /* This is a case range.  Discard empty ranges.
+		 If the bounds or the range are equal, turn this
+		 into a simple (one-value) case.  */
+	      int cmp = tree_int_cst_compare (high, low);
+	      if (cmp < 0)
+		remove_element = TRUE;
+	      else if (cmp == 0)
+		high = NULL_TREE;
+	    }
+
+	  if (! high)
+	    {
+	      /* If the simple case value is unreachable, ignore it.  */
+	      if ((TREE_CODE (min_value) == INTEGER_CST
+		   && tree_int_cst_compare (low, min_value) < 0)
+		  || (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, max_value) > 0))
+		remove_element = TRUE;
+	      else
+		low = fold_convert (index_type, low);
+	    }
+	  else
+	    {
+	      /* If the entire case range is unreachable, ignore it.  */
+	      if ((TREE_CODE (min_value) == INTEGER_CST
+		   && tree_int_cst_compare (high, min_value) < 0)
+		  || (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, max_value) > 0))
+		remove_element = TRUE;
+	      else
+		{
+		  /* If the lower bound is less than the index type's
+		     minimum value, truncate the range bounds.  */
+		  if (TREE_CODE (min_value) == INTEGER_CST
+		      && tree_int_cst_compare (low, min_value) < 0)
+		    low = min_value;
+		  low = fold_convert (index_type, low);
+
+		  /* If the upper bound is greater than the index type's
+		     maximum value, truncate the range bounds.  */
+		  if (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (high, max_value) > 0)
+		    high = max_value;
+		  high = fold_convert (index_type, high);
+
+		  /* We may have folded a case range to a one-value case.  */
+		  if (tree_int_cst_equal (low, high))
+		    high = NULL_TREE;
+		}
+	    }
+
+	  CASE_LOW (elt) = low;
+	  CASE_HIGH (elt) = high;
+	}
+      else
+	{
+	  gcc_assert (!default_case);
+	  default_case = elt;
+	  /* The default case must be passed separately to the
+	     gimple_build_switch routine.  But if DEFAULT_CASEP
+	     is NULL, we do not remove the default case (it would
+	     be completely lost).  */
+	  if (default_casep)
+	    remove_element = TRUE;
+	}
+
+      if (remove_element)
+	labels.ordered_remove (i);
+      else
+	i++;
+    }
+  len = i;
+
+  if (!labels.is_empty ())
+    sort_case_labels (labels);
+
+  if (default_casep && !default_case)
+    {
+      /* If the switch has no default label, add one, so that we jump
+	 around the switch body.  If the labels already cover the whole
+	 range of the switch index_type, add the default label pointing
+	 to one of the existing labels.  */
+      if (len
+	  && TYPE_MIN_VALUE (index_type)
+	  && TYPE_MAX_VALUE (index_type)
+	  && tree_int_cst_equal (CASE_LOW (labels[0]),
+				 TYPE_MIN_VALUE (index_type)))
+	{
+	  tree low, high = CASE_HIGH (labels[len - 1]);
+	  if (!high)
+	    high = CASE_LOW (labels[len - 1]);
+	  if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
+	    {
+	      for (i = 1; i < len; i++)
+		{
+		  high = CASE_LOW (labels[i]);
+		  low = CASE_HIGH (labels[i - 1]);
+		  if (!low)
+		    low = CASE_LOW (labels[i - 1]);
+		  if ((TREE_INT_CST_LOW (low) + 1
+		       != TREE_INT_CST_LOW (high))
+		      || (TREE_INT_CST_HIGH (low)
+			  + (TREE_INT_CST_LOW (high) == 0)
+			  != TREE_INT_CST_HIGH (high)))
+		    break;
+		}
+	      if (i == len)
+		{
+		  tree label = CASE_LABEL (labels[0]);
+		  default_case = build_case_label (NULL_TREE, NULL_TREE,
+						   label);
+		}
+	    }
+	}
+    }
+
+  if (default_casep)
+    *default_casep = default_case;
 }

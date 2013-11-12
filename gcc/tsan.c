@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tm.h"
 #include "basic-block.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "function.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
