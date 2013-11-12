@@ -3968,7 +3968,7 @@ d_copy_templates (struct d_print_info *dpi)
   for (src = dpi->templates; src != NULL; src = src->next)
     {
       struct d_print_template *dst =
-	malloc (sizeof (struct d_print_template));
+	(struct d_print_template *) malloc (sizeof (struct d_print_template));
 
       if (dst == NULL)
 	{
@@ -4381,14 +4381,16 @@ d_print_comp (struct d_print_info *dpi, int options,
 
 	    if (scope == NULL)
 	      {
+		size_t size;
+
 		/* This is the first time SUB has been traversed.
 		   We need to capture the current templates so
 		   they can be restored if SUB is reentered as a
 		   substitution.  */
 		++dpi->num_saved_scopes;
-		scopes = realloc (dpi->saved_scopes,
-				  sizeof (struct d_saved_scope)
-				  * dpi->num_saved_scopes);
+		size = sizeof (struct d_saved_scope) * dpi->num_saved_scopes;
+		scopes = (struct d_saved_scope *) realloc (dpi->saved_scopes,
+							   size);
 		if (scopes == NULL)
 		  {
 		    d_print_error (dpi);
