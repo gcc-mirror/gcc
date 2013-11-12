@@ -1,3 +1,16 @@
+2013-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59084
+	* config/i386/i386.c (ix86_option_override_internal): Check
+	X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL and
+	X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL for
+	MASK_AVX256_SPLIT_UNALIGNED_LOAD and
+	MASK_AVX256_SPLIT_UNALIGNED_STORE.
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL):
+	Clear m_COREI7_AVX and update comments.
+	(X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL): Likewise.
+
 2013-11-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/10474

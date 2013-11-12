@@ -376,15 +376,15 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
 
-/* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if true, unaligned loads are
+/* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if false, unaligned loads are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal", 
-          ~(m_COREI7 | m_GENERIC))
+          ~(m_COREI7 | m_COREI7_AVX | m_GENERIC))
 
-/* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if true, unaligned loads are
+/* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if false, unaligned stores are
    split.  */
-DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_load_optimal", 
-          ~(m_COREI7 | m_BDVER | m_GENERIC))
+DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal", 
+          ~(m_COREI7 | m_COREI7_AVX | m_BDVER | m_GENERIC))
 
 /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
    the auto-vectorizer.  */
