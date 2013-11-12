@@ -1,3 +1,35 @@
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58534
+	PR c++/58536
+	PR c++/58548
+	PR c++/58549
+	PR c++/58637
+	* parser.h (struct cp_parser): New members implicit_template_parms,
+	implicit_template_scope and auto_is_implicit_function_template_parm_p.
+	* parser.c (add_implicit_template_parms): Refactor as ...
+	(synthesize_implicit_template_parm): ... this to append a new template
+	type parm to the current template parameter list (introducing a new list
+	if necessary).  Removed push_deferring_access_checks.
+	(finish_fully_implicit_template): Removed pop_deferring_access_checks.
+	(cp_parser_new): Initialize new cp_parser members.
+	(cp_parser_parameter_declaration_clause): Consider auto as implicit
+	template parm when parsing a parameter declaration (unless parsing an
+	explicit specialization).
+	(cp_parser_parameter_declaration_list): Remove local
+	implicit_template_parms counter and reset cp_parser implicit template
+	state when complete.
+	(cp_parser_lambda_expression): Reset implicit template cp_parser members
+	whilst generating lambda class.
+	(cp_parser_function_definition_after_declarator): Reset implicit
+	template cp_parser members whilst parsing function definition.
+	(make_generic_type_name): Respell '<autoN>' as 'auto:N' which works
+	better with template diagnostics.
+	(cp_parser_simple_type_specifier): Synthesize implicit template parm on
+	parsing 'auto' if auto_is_implicit_function_template_parm_p and provide
+	diagnostics ...
+	* decl.c (grokdeclarator): ... that were previously done here.
+
 2013-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57734

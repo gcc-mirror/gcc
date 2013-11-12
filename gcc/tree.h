@@ -3430,6 +3430,11 @@ extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 extern tree make_tree_vec_stat (int MEM_STAT_DECL);
 #define make_tree_vec(t) make_tree_vec_stat (t MEM_STAT_INFO)
 
+/* Grow a TREE_VEC.  */
+
+extern tree grow_tree_vec_stat (tree v, int MEM_STAT_DECL);
+#define grow_tree_vec(v, t) grow_tree_vec_stat (v, t MEM_STAT_INFO)
+
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
 

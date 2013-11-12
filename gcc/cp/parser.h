@@ -360,10 +360,29 @@ typedef struct GTY(()) cp_parser {
      data structure with everything needed for parsing the clauses.  */
   cp_omp_declare_simd_data * GTY((skip)) omp_declare_simd;
 
+  /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
+     template parameter.  */
+  bool auto_is_implicit_function_template_parm_p;
+
   /* TRUE if the function being declared was made a template due to its
      parameter list containing generic type specifiers (`auto' or concept
      identifiers) rather than an explicit template parameter list.  */
   bool fully_implicit_function_template_p;
+
+  /* Tracks the function's template parameter list when declaring a function
+     using generic type parameters.  This is either a new chain in the case of a
+     fully implicit function template or an extension of the function's existing
+     template parameter list.  This is tracked to optimize calls subsequent
+     calls to synthesize_implicit_template_parm during
+     cp_parser_parameter_declaration.  */
+  tree implicit_template_parms;
+
+  /* The scope into which an implicit template parameter list has been
+     introduced or an existing template parameter list is being extended with
+     implicit template paramaters.  In most cases this is the sk_function_parms
+     scope containing the use of a generic type.  In the case of an out-of-line
+     member definition using a generic type, it is the sk_class scope.  */
+  cp_binding_level* implicit_template_scope;
 
 } cp_parser;
 
