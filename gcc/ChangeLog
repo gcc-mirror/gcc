@@ -1,3 +1,13 @@
+2013-11-12  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-isolate-paths.c (check_loadstore): New function.
+	(insert_trap_and_remove_trailing_statements): New argument OP which
+	is the NULL pointer.  Emit the trap after the load/store through
+	the NULL pointer.  Simplify the RHS of a store through a NULL pointer
+	when trivial to do so.
+	(isolate_path): Corresponding changes.
+	(gimple_ssa_isolate_erroneous_path): Likewise.
+
 2013-11-12  Teresa Johnson  <tejohnson@google.com>
 	    Jan Hubicka  <jh@suse.cz>
 

@@ -39,17 +39,65 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool cfg_altered;
 
-/* Insert a trap before SI and remove SI and all statements after SI.  */
+/* Callback for walk_stmt_load_store_ops.
+ 
+   Return TRUE if OP will dereference the tree stored in DATA, FALSE
+   otherwise.
+
+   This routine only makes a superficial check for a dereference.  Thus,
+   it must only be used if it is safe to return a false negative.  */
+static bool
+check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+      && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
+    return true;
+  return false;
+}
+
+/* Insert a trap after SI and remove SI and all statements after the trap.  */
 
 static void
-insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p)
+insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
 {
-  gimple_seq seq = NULL;
-  gimple stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  gimple_seq_add_stmt (&seq, stmt);
-  gsi_insert_before (si_p, seq, GSI_SAME_STMT);
+  /* We want the NULL pointer dereference to actually occur so that
+     code that wishes to catch the signal can do so.
 
-  /* Now delete all remaining statements in this block.  */
+     If the dereference is a load, then there's nothing to do as the
+     LHS will be a throw-away SSA_NAME and the LHS is the NULL dereference.
+
+     If the dereference is a store and we can easily transform the RHS,
+     then simplify the RHS to enable more DCE.  */
+  gimple stmt = gsi_stmt (*si_p);
+  if (walk_stmt_load_store_ops (stmt, (void *)op, NULL, check_loadstore)
+      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
+    {
+      /* We just need to turn the RHS into zero converted to the proper
+         type.  */
+      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+      gimple_assign_set_rhs_code (stmt, INTEGER_CST);
+      gimple_assign_set_rhs1 (stmt, fold_convert (type, integer_zero_node));
+      update_stmt (stmt);
+    }
+
+  gimple new_stmt
+    = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  gimple_seq seq = NULL;
+  gimple_seq_add_stmt (&seq, new_stmt);
+
+  /* If we had a NULL pointer dereference, then we want to insert the
+     __builtin_trap after the statement, for the other cases we want
+     to insert before the statement.  */
+  if (walk_stmt_load_store_ops (stmt, (void *)op,
+			        check_loadstore,
+				check_loadstore))
+    gsi_insert_after (si_p, seq, GSI_NEW_STMT);
+  else
+    gsi_insert_before (si_p, seq, GSI_NEW_STMT);
+
+  /* The iterator points to the __builtin_trap.  Advance the iterator
+     and delete everything else in the block.  */
+  gsi_next (si_p);
   for (; !gsi_end_p (*si_p);)
     {
       stmt = gsi_stmt (*si_p);
@@ -73,7 +121,8 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p)
    Return BB'.  */
 
 basic_block
-isolate_path (basic_block bb, basic_block duplicate, edge e, gimple stmt)
+isolate_path (basic_block bb, basic_block duplicate,
+	      edge e, gimple stmt, tree op)
 {
   gimple_stmt_iterator si, si2;
   edge_iterator ei;
@@ -133,7 +182,7 @@ isolate_path (basic_block bb, basic_block duplicate, edge e, gimple stmt)
      SI2 points to the duplicate of STMT in DUPLICATE.  Insert a trap
      before SI2 and remove SI2 and all trailing statements.  */
   if (!gsi_end_p (si2))
-    insert_trap_and_remove_trailing_statements (&si2);
+    insert_trap_and_remove_trailing_statements (&si2, op);
 
   return duplicate;
 }
@@ -224,7 +273,7 @@ gimple_ssa_isolate_erroneous_paths (void)
 		  if (infer_nonnull_range (use_stmt, lhs))
 		    {
 		      duplicate = isolate_path (bb, duplicate,
-						e, use_stmt);
+						e, use_stmt, lhs);
 
 		      /* When we remove an incoming edge, we need to
 			 reprocess the Ith element.  */
@@ -247,7 +296,8 @@ gimple_ssa_isolate_erroneous_paths (void)
 	     where a non-NULL value is required.  */
 	  if (infer_nonnull_range (stmt, null_pointer_node))
 	    {
-	      insert_trap_and_remove_trailing_statements (&si);
+	      insert_trap_and_remove_trailing_statements (&si,
+							  null_pointer_node);
 
 	      /* And finally, remove all outgoing edges from BB.  */
 	      edge e;
