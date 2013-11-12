@@ -38,19 +38,19 @@ d_type (struct d_info *di)
 {
    struct demangle_component *ret;
    ret = d_make_empty (di);
-   ret->type = 42;
-   ret->zzz = -1;
+   foo (ret->type);
+   bar (ret->zzz);
    return ret;
 }
 
-/* We're testing three aspects of isolation here.  First that isolation
+/* We're testing two aspects of isolation here.  First that isolation
    occurs, second that if we have two null dereferences in a block that
    that we delete everything from the first dereferece to the end of the
-   block, regardless of which comes first in the immediate use iterator
-   and finally that we set the RHS of the store to zero.  */
+   block, regardless of which comes first in the immediate use iterator.
+
+   We leave the 0->type in the IL, so expect to see ->type twice.  */
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 1 "isolate-paths"} } */
-/* { dg-final { scan-tree-dump-times "->type = 42" 1 "isolate-paths"} } */
-/* { dg-final { scan-tree-dump-times "->type = 0" 1 "isolate-paths"} } */
+/* { dg-final { scan-tree-dump-times "->type" 2 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "->zzz" 1 "isolate-paths"} } */
 /* { dg-final { cleanup-tree-dump "isolate-paths" } } */
 
