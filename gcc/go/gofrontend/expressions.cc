@@ -12,6 +12,7 @@
 #include "intl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "tree-iterator.h"
 #include "convert.h"
 #include "real.h"
