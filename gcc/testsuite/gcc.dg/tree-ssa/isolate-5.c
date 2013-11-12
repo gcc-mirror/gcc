@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-isolate-paths" } */
+/* { dg-options "-O2 -fdump-tree-isolate-paths -fdump-tree-optimized" } */
 
 
 struct demangle_component
@@ -51,9 +51,11 @@ d_type (struct d_info *di)
    We leave the 0->type in the IL, so expect to see ->type twice.  */
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 1 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "->type" 2 "isolate-paths"} } */
+/* { dg-final { scan-tree-dump-times "->type" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "\\.type" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "->zzz" 1 "isolate-paths"} } */
 /* { dg-final { cleanup-tree-dump "isolate-paths" } } */
-
+/* { dg-final { cleanup-tree-dump "optimized-paths" } } */
 
 
 
