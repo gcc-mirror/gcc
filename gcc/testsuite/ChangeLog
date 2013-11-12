@@ -1,3 +1,11 @@
+2013-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-thread-local-1.c, gcc.dg/c99-thread-local-1.c,
+	gcc.dg/c11-thread-local-1.c, gcc.dg/c11-thread-local-2.c: New
+	tests.
+	* gcc.dg/tls/diag-2.c, objc.dg/tls/diag-2.m: Update expected
+	diagnostics.
+
 2013-11-12  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat.dg/aggr21.adb: New test.

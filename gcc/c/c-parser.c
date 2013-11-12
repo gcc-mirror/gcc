@@ -1969,6 +1969,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
      static
      auto
      register
+     _Thread_local
+
+   (_Thread_local is new in C11.)
 
    C99 6.7.4:
    function-specifier:

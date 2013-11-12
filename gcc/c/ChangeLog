@@ -1,3 +1,16 @@
+2013-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (struct c_declspecs): Add thread_gnu_p field.
+	* c-parser.c (c_parser_declspecs): Mention _Thread_local in
+	comment.
+	* c-decl.c (shadow_tag_warned, grokdeclarator): Mention __thread
+	or _Thread_local as appropriate in diagnostics.
+	(build_null_declspecs): Initialize ret->thread_gnu_p.
+	(declspecs_add_scspec): Handle either __thread or _Thread_local
+	for RID_THREAD.  Diagnose _Thread_local for pre-C11 standards if
+	pedantic.  Do not disallow _Thread_local extern and _Thread_local
+	static.
+
 2013-11-07  Joseph Myers  <joseph@codesourcery.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 
