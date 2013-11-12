@@ -3974,10 +3974,10 @@ ix86_option_override_internal (bool main_args_p,
       if (flag_expensive_optimizations
 	  && !(opts_set->x_target_flags & MASK_VZEROUPPER))
 	opts->x_target_flags |= MASK_VZEROUPPER;
-      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
+      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL]
+      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
       /* Enable 128-bit AVX instruction generation
