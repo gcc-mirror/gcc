@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"
-#include "gimple.h"		/* For create_tmp_var_raw.  */
+#include "gimple-expr.h"
 #include "langhooks.h"
 
 

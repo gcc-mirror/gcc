@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "common/common-target.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "langhooks.h"
 #include "reload.h"
 #include "params.h"

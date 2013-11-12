@@ -4294,10 +4294,6 @@ extern void cache_integer_cst (tree);
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
 
-/* In gimplify.c */
-extern tree unshare_expr (tree);
-extern tree unshare_expr_without_location (tree);
-
 /* In stmt.c */
 
 extern void expand_label (tree);
@@ -4775,7 +4771,6 @@ extern void set_decl_incoming_rtl (tree, rtx, bool);
 
 /* In gimple.c.  */
 extern tree get_base_address (tree t);
-extern void mark_addressable (tree);
 
 /* In tree.c.  */
 extern tree drop_tree_overflow (tree);

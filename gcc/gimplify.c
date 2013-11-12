@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "tree-pretty-print.h"
@@ -107,55 +107,6 @@ static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 
 /* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
-
-/* Mark X addressable.  Unlike the langhook we expect X to be in gimple
-   form and we don't do any syntax checking.  */
-
-void
-mark_addressable (tree x)
-{
-  while (handled_component_p (x))
-    x = TREE_OPERAND (x, 0);
-  if (TREE_CODE (x) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
-    x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
-  if (TREE_CODE (x) != VAR_DECL
-      && TREE_CODE (x) != PARM_DECL
-      && TREE_CODE (x) != RESULT_DECL)
-    return;
-  TREE_ADDRESSABLE (x) = 1;
-
-  /* Also mark the artificial SSA_NAME that points to the partition of X.  */
-  if (TREE_CODE (x) == VAR_DECL
-      && !DECL_EXTERNAL (x)
-      && !TREE_STATIC (x)
-      && cfun->gimple_df != NULL
-      && cfun->gimple_df->decls_to_pointers != NULL)
-    {
-      void *namep
-	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, x); 
-      if (namep)
-	TREE_ADDRESSABLE (*(tree *)namep) = 1;
-    }
-}
-
-/* Link gimple statement GS to the end of the sequence *SEQ_P.  If
-   *SEQ_P is NULL, a new sequence is allocated.  This function is
-   similar to gimple_seq_add_stmt, but does not scan the operands.
-   During gimplification, we need to manipulate statement sequences
-   before the def/use vectors have been constructed.  */
-
-void
-gimple_seq_add_stmt_without_update (gimple_seq *seq_p, gimple gs)
-{
-  gimple_stmt_iterator si;
-
-  if (gs == NULL)
-    return;
-
-  si = gsi_last (*seq_p);
-  gsi_insert_after_without_update (&si, gs, GSI_NEW_STMT);
-}
 
 /* Shorter alias name for the above function for use in gimplify.c
    only.  */
@@ -363,125 +314,6 @@ gimplify_and_return_first (tree t, gimple_seq *seq_p)
     }
   else
     return gimple_seq_first_stmt (*seq_p);
-}
-
-/* Strip off a legitimate source ending from the input string NAME of
-   length LEN.  Rather than having to know the names used by all of
-   our front ends, we strip off an ending of a period followed by
-   up to five characters.  (Java uses ".class".)  */
-
-static inline void
-remove_suffix (char *name, int len)
-{
-  int i;
-
-  for (i = 2;  i < 8 && len > i;  i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
-}
-
-/* Create a new temporary name with PREFIX.  Return an identifier.  */
-
-static GTY(()) unsigned int tmp_var_id_num;
-
-tree
-create_tmp_var_name (const char *prefix)
-{
-  char *tmp_name;
-
-  if (prefix)
-    {
-      char *preftmp = ASTRDUP (prefix);
-
-      remove_suffix (preftmp, strlen (preftmp));
-      clean_symbol_name (preftmp);
-
-      prefix = preftmp;
-    }
-
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix ? prefix : "T", tmp_var_id_num++);
-  return get_identifier (tmp_name);
-}
-
-/* Create a new temporary variable declaration of type TYPE.
-   Do NOT push it into the current binding.  */
-
-tree
-create_tmp_var_raw (tree type, const char *prefix)
-{
-  tree tmp_var;
-
-  tmp_var = build_decl (input_location,
-			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
-			type);
-
-  /* The variable was declared by the compiler.  */
-  DECL_ARTIFICIAL (tmp_var) = 1;
-  /* And we don't want debug info for it.  */
-  DECL_IGNORED_P (tmp_var) = 1;
-
-  /* Make the variable writable.  */
-  TREE_READONLY (tmp_var) = 0;
-
-  DECL_EXTERNAL (tmp_var) = 0;
-  TREE_STATIC (tmp_var) = 0;
-  TREE_USED (tmp_var) = 1;
-
-  return tmp_var;
-}
-
-/* Create a new temporary variable declaration of type TYPE.  DO push the
-   variable into the current binding.  Further, assume that this is called
-   only from gimplification or optimization, at which point the creation of
-   certain types are bugs.  */
-
-tree
-create_tmp_var (tree type, const char *prefix)
-{
-  tree tmp_var;
-
-  /* We don't allow types that are addressable (meaning we can't make copies),
-     or incomplete.  We also used to reject every variable size objects here,
-     but now support those for which a constant upper bound can be obtained.
-     The processing for variable sizes is performed in gimple_add_tmp_var,
-     point at which it really matters and possibly reached via paths not going
-     through this function, e.g. after direct calls to create_tmp_var_raw.  */
-  gcc_assert (!TREE_ADDRESSABLE (type) && COMPLETE_TYPE_P (type));
-
-  tmp_var = create_tmp_var_raw (type, prefix);
-  gimple_add_tmp_var (tmp_var);
-  return tmp_var;
-}
-
-/* Create a new temporary variable declaration of type TYPE by calling
-   create_tmp_var and if TYPE is a vector or a complex number, mark the new
-   temporary as gimple register.  */
-
-tree
-create_tmp_reg (tree type, const char *prefix)
-{
-  tree tmp;
-
-  tmp = create_tmp_var (type, prefix);
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (tmp) = 1;
-
-  return tmp;
-}
-
-/* Returns true iff T is a valid RHS for an assignment to a renamed
-   user -- or front-end generated artificial -- variable.  */
-
-static bool
-is_gimple_reg_rhs (tree t)
-{
-  return get_gimple_rhs_class (TREE_CODE (t)) != GIMPLE_INVALID_RHS;
 }
 
 /* Returns true iff T is a valid RHS for an assignment to an un-renamed
@@ -750,84 +582,7 @@ gimple_add_tmp_var (tree tmp)
     }
 }
 
-/* Determine whether to assign a location to the statement GS.  */
 
-static bool
-should_carry_location_p (gimple gs)
-{
-  /* Don't emit a line note for a label.  We particularly don't want to
-     emit one for the break label, since it doesn't actually correspond
-     to the beginning of the loop/switch.  */
-  if (gimple_code (gs) == GIMPLE_LABEL)
-    return false;
-
-  return true;
-}
-
-/* Return true if a location should not be emitted for this statement
-   by annotate_one_with_location.  */
-
-static inline bool
-gimple_do_not_emit_location_p (gimple g)
-{
-  return gimple_plf (g, GF_PLF_1);
-}
-
-/* Mark statement G so a location will not be emitted by
-   annotate_one_with_location.  */
-
-static inline void
-gimple_set_do_not_emit_location (gimple g)
-{
-  /* The PLF flags are initialized to 0 when a new tuple is created,
-     so no need to initialize it anywhere.  */
-  gimple_set_plf (g, GF_PLF_1, true);
-}
-
-/* Set the location for gimple statement GS to LOCATION.  */
-
-static void
-annotate_one_with_location (gimple gs, location_t location)
-{
-  if (!gimple_has_location (gs)
-      && !gimple_do_not_emit_location_p (gs)
-      && should_carry_location_p (gs))
-    gimple_set_location (gs, location);
-}
-
-/* Set LOCATION for all the statements after iterator GSI in sequence
-   SEQ.  If GSI is pointing to the end of the sequence, start with the
-   first statement in SEQ.  */
-
-static void
-annotate_all_with_location_after (gimple_seq seq, gimple_stmt_iterator gsi,
-				  location_t location)
-{
-  if (gsi_end_p (gsi))
-    gsi = gsi_start (seq);
-  else
-    gsi_next (&gsi);
-
-  for (; !gsi_end_p (gsi); gsi_next (&gsi))
-    annotate_one_with_location (gsi_stmt (gsi), location);
-}
-
-/* Set the location for all the statements in a sequence STMT_P to LOCATION.  */
-
-void
-annotate_all_with_location (gimple_seq stmt_p, location_t location)
-{
-  gimple_stmt_iterator i;
-
-  if (gimple_seq_empty_p (stmt_p))
-    return;
-
-  for (i = gsi_start (stmt_p); !gsi_end_p (i); gsi_next (&i))
-    {
-      gimple gs = gsi_stmt (i);
-      annotate_one_with_location (gs, location);
-    }
-}
 
 /* This page contains routines to unshare tree nodes, i.e. to duplicate tree
    nodes that are referenced more than once in GENERIC functions.  This is
@@ -1441,6 +1196,20 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   gimplify_ctxp->save_stack = true;
 }
 
+/* A helper function to be called via walk_tree.  Mark all labels under *TP
+   as being forced.  To be called for DECL_INITIAL of static variables.  */
+
+static tree
+force_labels_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  if (TREE_CODE (*tp) == LABEL_DECL)
+    FORCED_LABEL (*tp) = 1;
+
+  return NULL_TREE;
+}
+
 /* Gimplify a DECL_EXPR node *STMT_P by making any necessary allocation
    and initialization explicit.  */
 
@@ -1557,208 +1326,7 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
 
   return GS_ALL_DONE;
 }
-
-/* Compare two case labels.  Because the front end should already have
-   made sure that case ranges do not overlap, it is enough to only compare
-   the CASE_LOW values of each case label.  */
 
-static int
-compare_case_labels (const void *p1, const void *p2)
-{
-  const_tree const case1 = *(const_tree const*)p1;
-  const_tree const case2 = *(const_tree const*)p2;
-
-  /* The 'default' case label always goes first.  */
-  if (!CASE_LOW (case1))
-    return -1;
-  else if (!CASE_LOW (case2))
-    return 1;
-  else
-    return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
-}
-
-/* Sort the case labels in LABEL_VEC in place in ascending order.  */
-
-void
-sort_case_labels (vec<tree> label_vec)
-{
-  label_vec.qsort (compare_case_labels);
-}
-
-/* Prepare a vector of case labels to be used in a GIMPLE_SWITCH statement.
-
-   LABELS is a vector that contains all case labels to look at.
-
-   INDEX_TYPE is the type of the switch index expression.  Case labels
-   in LABELS are discarded if their values are not in the value range
-   covered by INDEX_TYPE.  The remaining case label values are folded
-   to INDEX_TYPE.
-
-   If a default case exists in LABELS, it is removed from LABELS and
-   returned in DEFAULT_CASEP.  If no default case exists, but the
-   case labels already cover the whole range of INDEX_TYPE, a default
-   case is returned pointing to one of the existing case labels.
-   Otherwise DEFAULT_CASEP is set to NULL_TREE.
-
-   DEFAULT_CASEP may be NULL, in which case the above comment doesn't
-   apply and no action is taken regardless of whether a default case is
-   found or not.  */
-
-void
-preprocess_case_label_vec_for_gimple (vec<tree> labels,
-				      tree index_type,
-				      tree *default_casep)
-{
-  tree min_value, max_value;
-  tree default_case = NULL_TREE;
-  size_t i, len;
-
-  i = 0;
-  min_value = TYPE_MIN_VALUE (index_type);
-  max_value = TYPE_MAX_VALUE (index_type);
-  while (i < labels.length ())
-    {
-      tree elt = labels[i];
-      tree low = CASE_LOW (elt);
-      tree high = CASE_HIGH (elt);
-      bool remove_element = FALSE;
-
-      if (low)
-	{
-	  gcc_checking_assert (TREE_CODE (low) == INTEGER_CST);
-	  gcc_checking_assert (!high || TREE_CODE (high) == INTEGER_CST);
-
-	  /* This is a non-default case label, i.e. it has a value.
-
-	     See if the case label is reachable within the range of
-	     the index type.  Remove out-of-range case values.  Turn
-	     case ranges into a canonical form (high > low strictly)
-	     and convert the case label values to the index type.
-
-	     NB: The type of gimple_switch_index() may be the promoted
-	     type, but the case labels retain the original type.  */
-
-	  if (high)
-	    {
-	      /* This is a case range.  Discard empty ranges.
-		 If the bounds or the range are equal, turn this
-		 into a simple (one-value) case.  */
-	      int cmp = tree_int_cst_compare (high, low);
-	      if (cmp < 0)
-		remove_element = TRUE;
-	      else if (cmp == 0)
-		high = NULL_TREE;
-	    }
-
-	  if (! high)
-	    {
-	      /* If the simple case value is unreachable, ignore it.  */
-	      if ((TREE_CODE (min_value) == INTEGER_CST
-		   && tree_int_cst_compare (low, min_value) < 0)
-		  || (TREE_CODE (max_value) == INTEGER_CST
-		      && tree_int_cst_compare (low, max_value) > 0))
-		remove_element = TRUE;
-	      else
-		low = fold_convert (index_type, low);
-	    }
-	  else
-	    {
-	      /* If the entire case range is unreachable, ignore it.  */
-	      if ((TREE_CODE (min_value) == INTEGER_CST
-		   && tree_int_cst_compare (high, min_value) < 0)
-		  || (TREE_CODE (max_value) == INTEGER_CST
-		      && tree_int_cst_compare (low, max_value) > 0))
-		remove_element = TRUE;
-	      else
-		{
-		  /* If the lower bound is less than the index type's
-		     minimum value, truncate the range bounds.  */
-		  if (TREE_CODE (min_value) == INTEGER_CST
-		      && tree_int_cst_compare (low, min_value) < 0)
-		    low = min_value;
-		  low = fold_convert (index_type, low);
-
-		  /* If the upper bound is greater than the index type's
-		     maximum value, truncate the range bounds.  */
-		  if (TREE_CODE (max_value) == INTEGER_CST
-		      && tree_int_cst_compare (high, max_value) > 0)
-		    high = max_value;
-		  high = fold_convert (index_type, high);
-
-		  /* We may have folded a case range to a one-value case.  */
-		  if (tree_int_cst_equal (low, high))
-		    high = NULL_TREE;
-		}
-	    }
-
-	  CASE_LOW (elt) = low;
-	  CASE_HIGH (elt) = high;
-	}
-      else
-	{
-	  gcc_assert (!default_case);
-	  default_case = elt;
-	  /* The default case must be passed separately to the
-	     gimple_build_switch routine.  But if DEFAULT_CASEP
-	     is NULL, we do not remove the default case (it would
-	     be completely lost).  */
-	  if (default_casep)
-	    remove_element = TRUE;
-	}
-
-      if (remove_element)
-	labels.ordered_remove (i);
-      else
-	i++;
-    }
-  len = i;
-
-  if (!labels.is_empty ())
-    sort_case_labels (labels);
-
-  if (default_casep && !default_case)
-    {
-      /* If the switch has no default label, add one, so that we jump
-	 around the switch body.  If the labels already cover the whole
-	 range of the switch index_type, add the default label pointing
-	 to one of the existing labels.  */
-      if (len
-	  && TYPE_MIN_VALUE (index_type)
-	  && TYPE_MAX_VALUE (index_type)
-	  && tree_int_cst_equal (CASE_LOW (labels[0]),
-				 TYPE_MIN_VALUE (index_type)))
-	{
-	  tree low, high = CASE_HIGH (labels[len - 1]);
-	  if (!high)
-	    high = CASE_LOW (labels[len - 1]);
-	  if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
-	    {
-	      for (i = 1; i < len; i++)
-		{
-		  high = CASE_LOW (labels[i]);
-		  low = CASE_HIGH (labels[i - 1]);
-		  if (!low)
-		    low = CASE_LOW (labels[i - 1]);
-		  if ((TREE_INT_CST_LOW (low) + 1
-		       != TREE_INT_CST_LOW (high))
-		      || (TREE_INT_CST_HIGH (low)
-			  + (TREE_INT_CST_LOW (high) == 0)
-			  != TREE_INT_CST_HIGH (high)))
-		    break;
-		}
-	      if (i == len)
-		{
-		  tree label = CASE_LABEL (labels[0]);
-		  default_case = build_case_label (NULL_TREE, NULL_TREE,
-						   label);
-		}
-	    }
-	}
-    }
-
-  if (default_casep)
-    *default_casep = default_case;
-}
 
 /* Gimplify a SWITCH_EXPR, and collect the vector of labels it can
    branch to.  */
@@ -1880,20 +1448,6 @@ gimplify_exit_expr (tree *expr_p)
   *expr_p = expr;
 
   return GS_OK;
-}
-
-/* A helper function to be called via walk_tree.  Mark all labels under *TP
-   as being forced.  To be called for DECL_INITIAL of static variables.  */
-
-tree
-force_labels_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
-{
-  if (TYPE_P (*tp))
-    *walk_subtrees = 0;
-  if (TREE_CODE (*tp) == LABEL_DECL)
-    FORCED_LABEL (*tp) = 1;
-
-  return NULL_TREE;
 }
 
 /* *EXPR_P is a COMPONENT_REF being used as an rvalue.  If its type is
@@ -3838,7 +3392,7 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
 
 /* Return the appropriate RHS predicate for this LHS.  */
 
-gimple_predicate
+static gimple_predicate
 rhs_predicate_for (tree lhs)
 {
   if (is_gimple_reg (lhs))
@@ -9419,4 +8973,20 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     }
 }
 
-#include "gt-gimplify.h"
+/* Build a new GIMPLE_ASSIGN tuple and append it to the end of *SEQ_P.
+
+   DST/SRC are the destination and source respectively.  You can pass
+   ungimplified trees in DST or SRC, in which case they will be
+   converted to a gimple operand if necessary.
+
+   This function returns the newly created GIMPLE_ASSIGN tuple.  */
+
+gimple
+gimplify_assign (tree dst, tree src, gimple_seq *seq_p)
+{
+  tree t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
+  gimplify_and_add (t, seq_p);
+  ggc_free (t);
+  return gimple_seq_last_stmt (*seq_p);
+}
+

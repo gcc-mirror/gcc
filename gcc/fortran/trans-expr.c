@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "dependency.h"
+#include "gimplify.h"
 
 
 /* Convert a scalar to an array descriptor. To be used for assumed-rank

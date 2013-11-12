@@ -1,3 +1,11 @@
+2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-family/c-common.c: Include gimplify.h.
+	* c-family/c-gimplify.c: Likewise.
+	* c-family/cilk.c: Likewise.
+	* c-family/c-omp.c: Include gimple-expr.h instead of gimple.h.
+	* c-family/c-ubsan.c: Don't include gimple.h.
+
 2013-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_reswords): Add _Thread_local.

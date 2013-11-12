@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "basic-block.h"
 #include "tree-pass.h"
 #include "cfgloop.h"

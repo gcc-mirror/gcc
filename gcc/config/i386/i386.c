@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "reload.h"
 #include "cgraph.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "dwarf2.h"
 #include "df.h"
 #include "tm-constrs.h"

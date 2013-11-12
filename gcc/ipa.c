@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "ggc.h"
 #include "flags.h"
 #include "pointer-set.h"

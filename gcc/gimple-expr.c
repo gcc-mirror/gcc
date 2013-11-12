@@ -24,8 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "demangle.h"
+#include "gimple-ssa.h"
 
 /* ----- Type related -----  */
 
@@ -406,6 +407,116 @@ gimple_can_coalesce_p (tree name1, tree name2)
   return false;
 }
 
+/* Strip off a legitimate source ending from the input string NAME of
+   length LEN.  Rather than having to know the names used by all of
+   our front ends, we strip off an ending of a period followed by
+   up to five characters.  (Java uses ".class".)  */
+
+static inline void
+remove_suffix (char *name, int len)
+{
+  int i;
+
+  for (i = 2;  i < 8 && len > i;  i++)
+    {
+      if (name[len - i] == '.')
+	{
+	  name[len - i] = '\0';
+	  break;
+	}
+    }
+}
+
+/* Create a new temporary name with PREFIX.  Return an identifier.  */
+
+static GTY(()) unsigned int tmp_var_id_num;
+
+tree
+create_tmp_var_name (const char *prefix)
+{
+  char *tmp_name;
+
+  if (prefix)
+    {
+      char *preftmp = ASTRDUP (prefix);
+
+      remove_suffix (preftmp, strlen (preftmp));
+      clean_symbol_name (preftmp);
+
+      prefix = preftmp;
+    }
+
+  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix ? prefix : "T", tmp_var_id_num++);
+  return get_identifier (tmp_name);
+}
+
+/* Create a new temporary variable declaration of type TYPE.
+   Do NOT push it into the current binding.  */
+
+tree
+create_tmp_var_raw (tree type, const char *prefix)
+{
+  tree tmp_var;
+
+  tmp_var = build_decl (input_location,
+			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
+			type);
+
+  /* The variable was declared by the compiler.  */
+  DECL_ARTIFICIAL (tmp_var) = 1;
+  /* And we don't want debug info for it.  */
+  DECL_IGNORED_P (tmp_var) = 1;
+
+  /* Make the variable writable.  */
+  TREE_READONLY (tmp_var) = 0;
+
+  DECL_EXTERNAL (tmp_var) = 0;
+  TREE_STATIC (tmp_var) = 0;
+  TREE_USED (tmp_var) = 1;
+
+  return tmp_var;
+}
+
+/* Create a new temporary variable declaration of type TYPE.  DO push the
+   variable into the current binding.  Further, assume that this is called
+   only from gimplification or optimization, at which point the creation of
+   certain types are bugs.  */
+
+tree
+create_tmp_var (tree type, const char *prefix)
+{
+  tree tmp_var;
+
+  /* We don't allow types that are addressable (meaning we can't make copies),
+     or incomplete.  We also used to reject every variable size objects here,
+     but now support those for which a constant upper bound can be obtained.
+     The processing for variable sizes is performed in gimple_add_tmp_var,
+     point at which it really matters and possibly reached via paths not going
+     through this function, e.g. after direct calls to create_tmp_var_raw.  */
+  gcc_assert (!TREE_ADDRESSABLE (type) && COMPLETE_TYPE_P (type));
+
+  tmp_var = create_tmp_var_raw (type, prefix);
+  gimple_add_tmp_var (tmp_var);
+  return tmp_var;
+}
+
+/* Create a new temporary variable declaration of type TYPE by calling
+   create_tmp_var and if TYPE is a vector or a complex number, mark the new
+   temporary as gimple register.  */
+
+tree
+create_tmp_reg (tree type, const char *prefix)
+{
+  tree tmp;
+
+  tmp = create_tmp_var (type, prefix);
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (tmp) = 1;
+
+  return tmp;
+}
+
 
 /* ----- Expression related -----  */
 
@@ -719,3 +830,45 @@ is_gimple_mem_ref_addr (tree t)
 	      && (CONSTANT_CLASS_P (TREE_OPERAND (t, 0))
 		  || decl_address_invariant_p (TREE_OPERAND (t, 0)))));
 }
+
+/* Mark X addressable.  Unlike the langhook we expect X to be in gimple
+   form and we don't do any syntax checking.  */
+
+void
+mark_addressable (tree x)
+{
+  while (handled_component_p (x))
+    x = TREE_OPERAND (x, 0);
+  if (TREE_CODE (x) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
+    x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
+  if (TREE_CODE (x) != VAR_DECL
+      && TREE_CODE (x) != PARM_DECL
+      && TREE_CODE (x) != RESULT_DECL)
+    return;
+  TREE_ADDRESSABLE (x) = 1;
+
+  /* Also mark the artificial SSA_NAME that points to the partition of X.  */
+  if (TREE_CODE (x) == VAR_DECL
+      && !DECL_EXTERNAL (x)
+      && !TREE_STATIC (x)
+      && cfun->gimple_df != NULL
+      && cfun->gimple_df->decls_to_pointers != NULL)
+    {
+      void *namep
+	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, x); 
+      if (namep)
+	TREE_ADDRESSABLE (*(tree *)namep) = 1;
+    }
+}
+
+/* Returns true iff T is a valid RHS for an assignment to a renamed
+   user -- or front-end generated artificial -- variable.  */
+
+bool
+is_gimple_reg_rhs (tree t)
+{
+  return get_gimple_rhs_class (TREE_CODE (t)) != GIMPLE_INVALID_RHS;
+}
+
+#include "gt-gimple-expr.h"

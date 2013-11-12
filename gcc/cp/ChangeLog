@@ -1,3 +1,18 @@
+2013-11-12  Andrew MacLeod <amacleod@redhat.com>
+
+	* cp/class.c: Include gimplify.h.
+	* cp/cp-gimplify.c: Likewise.
+	* cp/error.c: Likewise.
+	* cp/init.c: Likewise.
+	* cp/optimize.c: Likewise.
+	* cp/pt.c: Likewise.
+	* cp/semantics.c: Likewise.
+	* cp/tree.c: Likewise.
+	* cp/vtable-class-hierarchy.c: Likewise.
+	* cp/decl2.c: Don't include gimple.h.
+	* cp/except.c: Likewise.
+	* cp/method.c: Include pointer-set.h instead of gimple.h.
+
 2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
 
 	* pt.c (convert_generic_types_to_packs): New function to transform

@@ -78,7 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "tm.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "bitmap.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"

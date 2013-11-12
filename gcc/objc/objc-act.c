@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 
 /* For enum gimplify_status */
-#include "gimple.h"
+#include "gimplify.h"
 
 /* For encode_method_prototype().  */
 #include "objc-encoding.h"

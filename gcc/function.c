@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "target.h"
 #include "common/common-target.h"
-#include "gimple.h"
+#include "gimplify.h"
 #include "tree-pass.h"
 #include "predict.h"
 #include "df.h"

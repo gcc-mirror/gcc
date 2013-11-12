@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"	/* For create_tmp_var_raw.  */
+#include "gimple-expr.h"	/* For create_tmp_var_raw.  */
 #include "tree-iterator.h"
 #include "diagnostic-core.h"  /* For internal_error.  */
 #include "flags.h"
