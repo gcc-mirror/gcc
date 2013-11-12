@@ -760,7 +760,8 @@ thread_around_empty_blocks (edge taken_edge,
 			    bool handle_dominating_asserts,
 			    tree (*simplify) (gimple, gimple),
 			    bitmap visited,
-			    vec<jump_thread_edge *> *path)
+			    vec<jump_thread_edge *> *path,
+			    bool *backedge_seen_p)
 {
   basic_block bb = taken_edge->dest;
   gimple_stmt_iterator gsi;
@@ -795,19 +796,20 @@ thread_around_empty_blocks (edge taken_edge,
       if (single_succ_p (bb))
 	{
 	  taken_edge = single_succ_edge (bb);
-	  if ((taken_edge->flags & EDGE_DFS_BACK) == 0
-	      && !bitmap_bit_p (visited, taken_edge->dest->index))
+	  if (!bitmap_bit_p (visited, taken_edge->dest->index))
 	    {
 	      jump_thread_edge *x
 		= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 	      path->safe_push (x);
 	      bitmap_set_bit (visited, taken_edge->dest->index);
+	      *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
 	      return thread_around_empty_blocks (taken_edge,
 						 dummy_cond,
 						 handle_dominating_asserts,
 						 simplify,
 						 visited,
-						 path);
+						 path,
+						 backedge_seen_p);
 	    }
 	}
 
@@ -841,13 +843,15 @@ thread_around_empty_blocks (edge taken_edge,
       jump_thread_edge *x
 	= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
       path->safe_push (x);
+      *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
 
       thread_around_empty_blocks (taken_edge,
 				  dummy_cond,
 				  handle_dominating_asserts,
 				  simplify,
 				  visited,
-				  path);
+				  path,
+				  backedge_seen_p);
       return true;
     }
 
@@ -889,17 +893,16 @@ thread_through_normal_block (edge e,
 			     vec<tree> *stack,
 			     tree (*simplify) (gimple, gimple),
 			     vec<jump_thread_edge *> *path,
-			     bitmap visited)
+			     bitmap visited,
+			     bool *backedge_seen_p)
 {
-  /* If E is a backedge, then we want to verify that the COND_EXPR,
+  /* If we have crossed a backedge, then we want to verify that the COND_EXPR,
      SWITCH_EXPR or GOTO_EXPR at the end of e->dest is not affected
      by any statements in e->dest.  If it is affected, then it is not
      safe to thread this edge.  */
-  if (e->flags & EDGE_DFS_BACK)
-    {
-      if (cond_arg_set_in_bb (e, e->dest))
-	return false;
-    }
+  if (*backedge_seen_p
+      && cond_arg_set_in_bb (e, e->dest))
+    return false;
 
   /* PHIs create temporary equivalences.  */
   if (!record_temporary_equivalences_from_phis (e, stack))
@@ -931,20 +934,24 @@ thread_through_normal_block (edge e,
 
 	  /* DEST could be NULL for a computed jump to an absolute
 	     address.  */
-	  if (dest == NULL || dest == e->dest || bitmap_bit_p (visited, dest->index))
+	  if (dest == NULL
+	      || dest == e->dest
+	      || bitmap_bit_p (visited, dest->index))
 	    return false;
 
           jump_thread_edge *x
 	    = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
 	  path->safe_push (x);
+	  *backedge_seen_p |= ((e->flags & EDGE_DFS_BACK) != 0);
 
 	  x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_BLOCK);
 	  path->safe_push (x);
+	  *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
 
 	  /* See if we can thread through DEST as well, this helps capture
 	     secondary effects of threading without having to re-run DOM or
 	     VRP.  */
-	  if ((e->flags & EDGE_DFS_BACK) == 0
+	  if (!*backedge_seen_p
 	       || ! cond_arg_set_in_bb (taken_edge, e->dest))
 	    {
 	      /* We don't want to thread back to a block we have already
@@ -956,7 +963,8 @@ thread_through_normal_block (edge e,
 					  handle_dominating_asserts,
 					  simplify,
 					  visited,
-					  path);
+					  path,
+					  backedge_seen_p);
 	    }
 	  return true;
 	}
@@ -999,6 +1007,7 @@ thread_across_edge (gimple dummy_cond,
 		    tree (*simplify) (gimple, gimple))
 {
   bitmap visited = BITMAP_ALLOC (NULL);
+  bool backedge_seen;
 
   stmt_count = 0;
 
@@ -1006,8 +1015,10 @@ thread_across_edge (gimple dummy_cond,
   bitmap_clear (visited);
   bitmap_set_bit (visited, e->src->index);
   bitmap_set_bit (visited, e->dest->index);
+  backedge_seen = ((e->flags & EDGE_DFS_BACK) != 0);
   if (thread_through_normal_block (e, dummy_cond, handle_dominating_asserts,
-				   stack, simplify, path, visited))
+				   stack, simplify, path, visited,
+				   &backedge_seen))
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
@@ -1067,14 +1078,17 @@ thread_across_edge (gimple dummy_cond,
         x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
 	path->safe_push (x);
 	found = false;
-	if ((e->flags & EDGE_DFS_BACK) == 0
+	backedge_seen = ((e->flags & EDGE_DFS_BACK) != 0);
+	backedge_seen |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
+	if (!backedge_seen
 	    || ! cond_arg_set_in_bb (path->last ()->e, e->dest))
 	  found = thread_around_empty_blocks (taken_edge,
 					      dummy_cond,
 					      handle_dominating_asserts,
 					      simplify,
 					      visited,
-					      path);
+					      path,
+					      &backedge_seen);
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
