@@ -1,3 +1,8 @@
+2013-11-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Refactor the code.
+	Handle type conversion.
+
 2013-11-11  Martin Liska  <marxin.liska@gmail.com>
 						Jan Hubicka  <jh@suse.cz>
 

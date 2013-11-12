@@ -3608,36 +3608,31 @@ force_expr_to_var_cost (tree expr, bool speed)
       op1 = TREE_OPERAND (expr, 1);
       STRIP_NOPS (op0);
       STRIP_NOPS (op1);
-
-      if (is_gimple_val (op0))
-	cost0 = no_cost;
-      else
-	cost0 = force_expr_to_var_cost (op0, speed);
-
-      if (is_gimple_val (op1))
-	cost1 = no_cost;
-      else
-	cost1 = force_expr_to_var_cost (op1, speed);
-
       break;
 
+    CASE_CONVERT:
     case NEGATE_EXPR:
       op0 = TREE_OPERAND (expr, 0);
       STRIP_NOPS (op0);
       op1 = NULL_TREE;
-
-      if (is_gimple_val (op0))
-	cost0 = no_cost;
-      else
-	cost0 = force_expr_to_var_cost (op0, speed);
-
-      cost1 = no_cost;
       break;
 
     default:
       /* Just an arbitrary value, FIXME.  */
       return new_cost (target_spill_cost[speed], 0);
     }
+
+  if (op0 == NULL_TREE
+      || TREE_CODE (op0) == SSA_NAME || CONSTANT_CLASS_P (op0))
+    cost0 = no_cost;
+  else
+    cost0 = force_expr_to_var_cost (op0, speed);
+
+  if (op1 == NULL_TREE
+      || TREE_CODE (op1) == SSA_NAME || CONSTANT_CLASS_P (op1))
+    cost1 = no_cost;
+  else
+    cost1 = force_expr_to_var_cost (op1, speed);
 
   mode = TYPE_MODE (TREE_TYPE (expr));
   switch (TREE_CODE (expr))
@@ -3662,6 +3657,16 @@ force_expr_to_var_cost (tree expr, bool speed)
                                     speed, &sa_cost))
             return sa_cost;
         }
+      break;
+
+    CASE_CONVERT:
+      {
+	tree inner_mode, outer_mode;
+	outer_mode = TREE_TYPE (expr);
+	inner_mode = TREE_TYPE (op0);
+	cost = new_cost (convert_cost (TYPE_MODE (outer_mode),
+				       TYPE_MODE (inner_mode), speed), 0);
+      }
       break;
 
     case MULT_EXPR:
