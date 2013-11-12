@@ -312,6 +312,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_cv_dlopen_libs = @lt_cv_dlopen_libs@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
@@ -395,8 +396,9 @@ CILK_REVISION = 3902
 #libcilkrts_la_LDFLAGS  = -rpath '$(libdir)'
 
 # Hack for Cygwin
-libcilkrts_la_LDFLAGS = -version-info 5:0:0 -lpthread -ldl \
-	$(am__append_1) $(am__append_2) -no-undefined
+libcilkrts_la_LDFLAGS = -version-info 5:0:0 -lpthread \
+	@lt_cv_dlopen_libs@ $(am__append_1) $(am__append_2) \
+	-no-undefined
 
 # C/C++ header files for Cilk.
 cilkincludedir = $(includedir)/cilk

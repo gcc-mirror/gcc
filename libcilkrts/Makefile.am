@@ -91,7 +91,7 @@ include include/internal/rev.mk
 
 #libcilkrts_la_LDFLAGS  = -rpath '$(libdir)'
 libcilkrts_la_LDFLAGS = -version-info 5:0:0
-libcilkrts_la_LDFLAGS += -lpthread -ldl
+libcilkrts_la_LDFLAGS += -lpthread @lt_cv_dlopen_libs@
 
 # If we're building on Linux, use the Linux version script
 if LINUX_LINKER_SCRIPT

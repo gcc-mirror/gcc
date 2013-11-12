@@ -146,9 +146,12 @@ case "${host}" in
 esac
 AM_CONDITIONAL(MAC_LINKER_SCRIPT, test "$mac_linker_script" = "yes")
 
+AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
+
+AC_SUBST(lt_cv_dlopen_libs)
 
 # Must be last
 AC_OUTPUT
