@@ -3,7 +3,7 @@
 
 __thread extern int g1;		/* { dg-error "'__thread' before 'extern'" } */
 __thread static int g2;		/* { dg-error "'__thread' before 'static'" } */
-__thread __thread int g3;	/* { dg-error "duplicate '__thread'" } */
+__thread __thread int g3;	/* { dg-error "duplicate" } */
 typedef __thread int g4;	/* { dg-error "'__thread' used with 'typedef'" } */
 
 void foo()

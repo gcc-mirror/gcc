@@ -1,3 +1,7 @@
+2013-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Add _Thread_local.
+
 2013-11-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (atomic_size_supported_p): New function.

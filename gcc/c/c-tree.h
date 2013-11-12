@@ -320,8 +320,10 @@ struct c_declspecs {
   BOOL_BITFIELD inline_p : 1;
   /* Whether "_Noreturn" was speciied.  */
   BOOL_BITFIELD noreturn_p : 1;
-  /* Whether "__thread" was specified.  */
+  /* Whether "__thread" or "_Thread_local" was specified.  */
   BOOL_BITFIELD thread_p : 1;
+  /* Whether "__thread" rather than "_Thread_local" was specified.  */
+  BOOL_BITFIELD thread_gnu_p : 1;
   /* Whether "const" was specified.  */
   BOOL_BITFIELD const_p : 1;
   /* Whether "volatile" was specified.  */
