@@ -1,3 +1,9 @@
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (enum rid): Add RID_AUTO_TYPE.
+	* c-common.c (c_common_reswords): Add __auto_type.
+	(keyword_begins_type_specifier): Handle RID_AUTO_TYPE.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-family/c-common.c: Include gimplify.h.

@@ -214,7 +214,8 @@ enum c_typespec_keyword {
   cts_dfloat64,
   cts_dfloat128,
   cts_fract,
-  cts_accum
+  cts_accum,
+  cts_auto_type
 };
 
 /* This enum lists all the possible declarator specifiers, storage

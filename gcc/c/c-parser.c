@@ -501,6 +501,7 @@ c_token_starts_typename (c_token *token)
 	case RID_FRACT:
 	case RID_ACCUM:
 	case RID_SAT:
+	case RID_AUTO_TYPE:
 	  return true;
 	default:
 	  return false;
@@ -659,6 +660,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_SAT:
 	case RID_ALIGNAS:
 	case RID_ATOMIC:
+	case RID_AUTO_TYPE:
 	  return true;
 	default:
 	  return false;
@@ -1128,7 +1130,7 @@ static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
-				bool, bool, enum c_lookahead_kind);
+				bool, bool, bool, enum c_lookahead_kind);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
 static tree c_parser_struct_declaration (c_parser *);
@@ -1499,7 +1501,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
     }
 
   c_parser_declspecs (parser, specs, true, true, start_attr_ok,
-		      true, cla_nonabstract_decl);
+		      true, true, cla_nonabstract_decl);
   if (parser->error)
     {
       c_parser_skip_to_end_of_block_or_statement (parser);
@@ -1512,9 +1514,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       return;
     }
   finish_declspecs (specs);
+  bool auto_type_p = specs->typespec_word == cts_auto_type;
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
-      if (empty_ok)
+      if (auto_type_p)
+	error_at (here, "%<__auto_type%> in empty declaration");
+      else if (empty_ok)
 	shadow_tag (specs);
       else
 	{
@@ -1537,7 +1542,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       shadow_tag_warned (specs, 1);
       return;
     }
-  else if (c_dialect_objc ())
+  else if (c_dialect_objc () && !auto_type_p)
     {
       /* Prefix attributes are an error on method decls.  */
       switch (c_parser_peek_token (parser)->type)
@@ -1640,6 +1645,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  c_parser_skip_to_end_of_block_or_statement (parser);
 	  return;
 	}
+      if (auto_type_p && declarator->kind != cdk_id)
+	{
+	  error_at (here,
+		    "%<__auto_type%> requires a plain identifier"
+		    " as declarator");
+	  c_parser_skip_to_end_of_block_or_statement (parser);
+	  return;
+	}
       if (c_parser_next_token_is (parser, CPP_EQ)
 	  || c_parser_next_token_is (parser, CPP_COMMA)
 	  || c_parser_next_token_is (parser, CPP_SEMICOLON)
@@ -1667,19 +1680,72 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      struct c_expr init;
 	      location_t init_loc;
 	      c_parser_consume_token (parser);
-	      /* The declaration of the variable is in effect while
-		 its initializer is parsed.  */
-	      d = start_decl (declarator, specs, true,
-			      chainon (postfix_attrs, all_prefix_attrs));
-	      if (!d)
-		d = error_mark_node;
-	      if (omp_declare_simd_clauses.exists ())
-		c_finish_omp_declare_simd (parser, d, NULL_TREE,
-					   omp_declare_simd_clauses);
-	      start_init (d, asm_name, global_bindings_p ());
-	      init_loc = c_parser_peek_token (parser)->location;
-	      init = c_parser_initializer (parser);
-	      finish_init ();
+	      if (auto_type_p)
+		{
+		  start_init (NULL_TREE, asm_name, global_bindings_p ());
+		  init_loc = c_parser_peek_token (parser)->location;
+		  init = c_parser_expr_no_commas (parser, NULL);
+		  if (TREE_CODE (init.value) == COMPONENT_REF
+		      && DECL_C_BIT_FIELD (TREE_OPERAND (init.value, 1)))
+		    error_at (here,
+			      "%<__auto_type%> used with a bit-field"
+			      " initializer");
+		  init = convert_lvalue_to_rvalue (init_loc, init, true, true);
+		  tree init_type = TREE_TYPE (init.value);
+		  /* As with typeof, remove _Atomic and const
+		     qualifiers from atomic types.  */
+		  if (init_type != error_mark_node && TYPE_ATOMIC (init_type))
+		    init_type
+		      = c_build_qualified_type (init_type,
+						(TYPE_QUALS (init_type)
+						 & ~(TYPE_QUAL_ATOMIC
+						     | TYPE_QUAL_CONST)));
+		  bool vm_type = variably_modified_type_p (init_type,
+							   NULL_TREE);
+		  if (vm_type)
+		    init.value = c_save_expr (init.value);
+		  finish_init ();
+		  specs->typespec_kind = ctsk_typeof;
+		  specs->locations[cdw_typedef] = init_loc;
+		  specs->typedef_p = true;
+		  specs->type = init_type;
+		  if (vm_type)
+		    {
+		      bool maybe_const = true;
+		      tree type_expr = c_fully_fold (init.value, false,
+						     &maybe_const);
+		      specs->expr_const_operands &= maybe_const;
+		      if (specs->expr)
+			specs->expr = build2 (COMPOUND_EXPR,
+					      TREE_TYPE (type_expr),
+					      specs->expr, type_expr);
+		      else
+			specs->expr = type_expr;
+		    }
+		  d = start_decl (declarator, specs, true,
+				  chainon (postfix_attrs, all_prefix_attrs));
+		  if (!d)
+		    d = error_mark_node;
+		  if (omp_declare_simd_clauses.exists ())
+		    c_finish_omp_declare_simd (parser, d, NULL_TREE,
+					       omp_declare_simd_clauses);
+		}
+	      else
+		{
+		  /* The declaration of the variable is in effect while
+		     its initializer is parsed.  */
+		  d = start_decl (declarator, specs, true,
+				  chainon (postfix_attrs, all_prefix_attrs));
+		  if (!d)
+		    d = error_mark_node;
+		  if (omp_declare_simd_clauses.exists ())
+		    c_finish_omp_declare_simd (parser, d, NULL_TREE,
+					       omp_declare_simd_clauses);
+		  start_init (d, asm_name, global_bindings_p ());
+		  init_loc = c_parser_peek_token (parser)->location;
+		  init = c_parser_initializer (parser);
+		  finish_init ();
+		}
 	      if (d != error_mark_node)
 		{
 		  maybe_warn_string_init (TREE_TYPE (d), init);
@@ -1689,6 +1755,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  else
 	    {
+	      if (auto_type_p)
+		{
+		  error_at (here,
+			    "%<__auto_type%> requires an initialized "
+			    "data declaration");
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		  return;
+		}
 	      tree d = start_decl (declarator, specs, false,
 				   chainon (postfix_attrs,
 					    all_prefix_attrs));
@@ -1728,6 +1802,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    {
+	      if (auto_type_p)
+		{
+		  error_at (here,
+			    "%<__auto_type%> may only be used with"
+			    " a single declarator");
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		  return;
+		}
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 		all_prefix_attrs = chainon (c_parser_attributes (parser),
@@ -1756,6 +1838,13 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      c_parser_skip_to_end_of_block_or_statement (parser);
 	      return;
 	    }
+	}
+      else if (auto_type_p)
+	{
+	  error_at (here,
+		    "%<__auto_type%> requires an initialized data declaration");
+	  c_parser_skip_to_end_of_block_or_statement (parser);
+	  return;
 	}
       else if (!fndef_ok)
 	{
@@ -1949,7 +2038,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    Storage class specifiers are accepted iff SCSPEC_OK; type
    specifiers are accepted iff TYPESPEC_OK; alignment specifiers are
    accepted iff ALIGNSPEC_OK; attributes are accepted at the start
-   iff START_ATTR_OK.
+   iff START_ATTR_OK; __auto_type is accepted iff AUTO_TYPE_OK.
 
    declaration-specifiers:
      storage-class-specifier declaration-specifiers[opt]
@@ -2030,6 +2119,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 
    type-specifier:
      typeof-specifier
+     __auto_type
      __int128
      _Decimal32
      _Decimal64
@@ -2055,7 +2145,8 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 static void
 c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 		    bool scspec_ok, bool typespec_ok, bool start_attr_ok,
-		    bool alignspec_ok, enum c_lookahead_kind la)
+		    bool alignspec_ok, bool auto_type_ok,
+		    enum c_lookahead_kind la)
 {
   bool attrs_ok = start_attr_ok;
   bool seen_type = specs->typespec_kind != ctsk_none;
@@ -2177,6 +2268,10 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 				c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
 	  break;
+	case RID_AUTO_TYPE:
+	  if (!auto_type_ok)
+	    goto out;
+	  /* Fall through.  */
 	case RID_UNSIGNED:
 	case RID_LONG:
 	case RID_INT128:
@@ -2722,7 +2817,7 @@ c_parser_struct_declaration (c_parser *parser)
      of N1731.
      <http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1731.pdf>  */
   c_parser_declspecs (parser, specs, false, true, true,
-		      true, cla_nonabstract_decl);
+		      true, false, cla_nonabstract_decl);
   if (parser->error)
     return NULL_TREE;
   if (!specs->declspecs_seen_p)
@@ -3045,7 +3140,7 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declarator *inner;
       c_parser_consume_token (parser);
       c_parser_declspecs (parser, quals_attrs, false, false, true,
-			  false, cla_prefer_id);
+			  false, false, cla_prefer_id);
       inner = c_parser_declarator (parser, type_seen_p, kind, seen_id);
       if (inner == NULL)
 	return NULL;
@@ -3201,13 +3296,13 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       dimen.original_type = NULL_TREE;
       c_parser_consume_token (parser);
       c_parser_declspecs (parser, quals_attrs, false, false, true,
-			  false, cla_prefer_id);
+			  false, false, cla_prefer_id);
       static_seen = c_parser_next_token_is_keyword (parser, RID_STATIC);
       if (static_seen)
 	c_parser_consume_token (parser);
       if (static_seen && !quals_attrs->declspecs_seen_p)
 	c_parser_declspecs (parser, quals_attrs, false, false, true,
-			    false, cla_prefer_id);
+			    false, false, cla_prefer_id);
       if (!quals_attrs->declspecs_seen_p)
 	quals_attrs = NULL;
       /* If "static" is present, there must be an array dimension.
@@ -3510,7 +3605,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       declspecs_add_attrs (input_location, specs, attrs);
       attrs = NULL_TREE;
     }
-  c_parser_declspecs (parser, specs, true, true, true, true,
+  c_parser_declspecs (parser, specs, true, true, true, true, false,
 		      cla_nonabstract_decl);
   finish_declspecs (specs);
   pending_xref_error ();
@@ -3643,6 +3738,7 @@ c_parser_attribute_any_word (c_parser *parser)
 	case RID_TRANSACTION_ATOMIC:
 	case RID_TRANSACTION_CANCEL:
 	case RID_ATOMIC:
+	case RID_AUTO_TYPE:
 	  ok = true;
 	  break;
 	default:
@@ -3821,7 +3917,7 @@ c_parser_type_name (c_parser *parser)
   struct c_declarator *declarator;
   struct c_type_name *ret;
   bool dummy = false;
-  c_parser_declspecs (parser, specs, false, true, true, false,
+  c_parser_declspecs (parser, specs, false, true, true, false, false,
 		      cla_prefer_type);
   if (!specs->declspecs_seen_p)
     {
@@ -8702,6 +8798,7 @@ c_parser_objc_selector (c_parser *parser)
     case RID_VOID:
     case RID_BOOL:
     case RID_ATOMIC:
+    case RID_AUTO_TYPE:
       c_parser_consume_token (parser);
       return value;
     default:

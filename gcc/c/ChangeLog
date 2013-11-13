@@ -1,3 +1,19 @@
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (c_typespec_keyword): Add cts_auto_type.
+	* c-decl.c (declspecs_add_type, finish_declspecs): Handle
+	__auto_type.
+	* c-parser.c (c_token_starts_typename, c_token_starts_declspecs)
+	(c_parser_attribute_any_word, c_parser_objc_selector): Handle
+	RID_AUTO_TYPE.
+	(c_parser_declspecs): Take argument AUTO_TYPE_OK.
+	(c_parser_declaration_or_fndef, c_parser_struct_declaration)
+	(c_parser_declarator, c_parser_direct_declarator_inner)
+	(c_parser_parameter_declaration, c_parser_type_name): All callers
+	changed.
+	(c_parser_declaration_or_fndef): Handle declarations with type
+	determined from the initializer.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c/c-typeck.c: Include gimplify.h.

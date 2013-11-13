@@ -1,3 +1,8 @@
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/stdatomic-vm.c, gcc.dg/auto-type-1.c,
+	gcc.dg/auto-type-2.c: New tests.
+
 2013-11-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* gcc.dg/cilk-plus/cilk-plus.exp: Added a check for LTO before running
