@@ -443,7 +443,7 @@ enum reg_class
 #define INDEX_REG_CLASS	CORE_REGS
 #define BASE_REG_CLASS  POINTER_REGS
 
-/* Register pairs used to eliminate unneeded registers that point intoi
+/* Register pairs used to eliminate unneeded registers that point into
    the stack frame.  */
 #define ELIMINABLE_REGS							\
 {									\
@@ -484,7 +484,7 @@ extern enum aarch64_processor aarch64_tune;
 /* Stack layout; function entry, exit and calling.  */
 #define STACK_GROWS_DOWNWARD	1
 
-#define FRAME_GROWS_DOWNWARD	0
+#define FRAME_GROWS_DOWNWARD	1
 
 #define STARTING_FRAME_OFFSET	0
 
