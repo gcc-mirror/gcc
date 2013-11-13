@@ -1,3 +1,8 @@
+2013-11-12  Jeff Law  <law@redhat.com>
+
+	* PR middle-end/59119
+	* gcc.c-torture/compile/pr59119.c: New test.
+
 2013-11-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ira-shrinkwrap-prep-1.c: Add lp64 to target requirements.
