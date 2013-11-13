@@ -415,7 +415,7 @@ public:
   bool gate () { return gate_isolate_erroneous_paths (); }
   unsigned int execute () { return gimple_ssa_isolate_erroneous_paths (); }
 
-}; // class pass_uncprop
+}; // class pass_isolate_erroneous_paths
 }
 
 gimple_opt_pass *
