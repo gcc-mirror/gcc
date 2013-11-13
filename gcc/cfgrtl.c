@@ -610,7 +610,7 @@ forwarder_block_p (const_basic_block bb)
 }
 
 /* Return nonzero if we can reach target from src by falling through.  */
-/* FIXME: Make this a cfg hook.  */
+/* FIXME: Make this a cfg hook, the result is only valid in cfgrtl mode.  */
 
 bool
 can_fallthru (basic_block src, basic_block target)
@@ -623,17 +623,21 @@ can_fallthru (basic_block src, basic_block target)
   if (target == EXIT_BLOCK_PTR)
     return true;
   if (src->next_bb != target)
-    return 0;
+    return false;
+
+  /* ??? Later we may add code to move jump tables offline.  */
+  if (tablejump_p (insn, NULL, NULL))
+    return false;
+
   FOR_EACH_EDGE (e, ei, src->succs)
     if (e->dest == EXIT_BLOCK_PTR
 	&& e->flags & EDGE_FALLTHRU)
-      return 0;
+      return false;
 
   insn2 = BB_HEAD (target);
-  if (insn2 && !active_insn_p (insn2))
+  if (!active_insn_p (insn2))
     insn2 = next_active_insn (insn2);
 
-  /* ??? Later we may add code to move jump tables offline.  */
   return next_active_insn (insn) == insn2;
 }
 

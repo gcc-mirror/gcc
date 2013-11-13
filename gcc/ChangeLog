@@ -1,3 +1,17 @@
+2013-11-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgrtl.c (can_fallthru): Reorder code to move tablejump check up.
+	Make that check explicit.  BB_HEAD cannot be NULL, remove check for it.
+	* haifa-sched.c (ready_remove_first_dispatch): Check INSN_P before
+	looking at INSN_CODE.
+	* reload1.c (delete_dead_insn) Do not expect JUMP_TABLE_DATA to be an
+	active_insn_p object, respect basic block boundaries.
+	* reorg.c (follow_jumps): Use invariant that JUMP_TABLE_DATA always
+	follows immediately after the jump table data label.
+	* config/nds32/nds32.c (nds32_output_casesi_pc_relative): Likewise.
+	* config/sh/sh.c (barrier_align): Likewise.  Rearrange code such
+	that JUMP_TABLE_DATA is not expected to be an active_insn_p object.
+
 2013-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR ipa/58862
