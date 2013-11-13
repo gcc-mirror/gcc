@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "langhooks.h"
 #include "ggc.h"
 #include "target.h"

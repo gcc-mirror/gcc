@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "tree-pretty-print.h"

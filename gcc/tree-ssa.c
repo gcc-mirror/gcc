@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "pointer-set.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"

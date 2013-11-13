@@ -47,6 +47,7 @@
 #include "coverage.h"
 #include "tree-pass.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"

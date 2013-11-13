@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
 #include "tree-ssa-loop-manip.h"
 #include "dumpfile.h"
 

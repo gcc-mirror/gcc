@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "gimple-ssa.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"

@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "intl.h"

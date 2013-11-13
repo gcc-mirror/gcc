@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "dumpfile.h"

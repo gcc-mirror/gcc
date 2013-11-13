@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"

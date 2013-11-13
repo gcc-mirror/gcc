@@ -52,6 +52,8 @@
 #include "cfgloop.h"
 #include "sched-int.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "intl.h"
 #include "params.h"
 #include "tm-constrs.h"
