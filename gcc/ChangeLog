@@ -1,3 +1,164 @@
+2013-11-13  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (ix86_print_operand): Support z-masking
+	* config/i386/predicate.md (const_0_to_4_operand): New.
+	(const_0_to_5_operand): Ditto.
+	* config/i386/sse.md (UNSPEC_COMPRESS): New.
+	(UNSPEC_COMPRESS_STORE): Ditto.
+	(UNSPEC_EXPAND): Ditto.
+	(UNSPEC_EMBEDDED_ROUNDING): Ditto.
+	(define_mode_attr ssescalarsize): Ditto.
+	(avx512f_load<mode>_mask): Ditto.
+	(avx512f_store<mode>_mask): Ditto.
+	(avx512f_storedqu<mode>_mask): Ditto.
+	(avx512f_vmcmp<mode>3_mask): Ditto.
+	(avx512f_fmadd_<mode>_mask): Ditto.
+	(avx512f_fmadd_<mode>_mask3): Ditto.
+	(avx512f_fmsub_<mode>_mask): Ditto.
+	(avx512f_fmsub_<mode>_mask3): Ditto.
+	(avx512f_fnmadd_<mode>_mask): Ditto.
+	(avx512f_fnmadd_<mode>_mask3): Ditto.
+	(avx512f_fnmsub_<mode>_mask): Ditto.
+	(avx512f_fnmsub_<mode>_mask3): Ditto.
+	(avx512f_fmaddsub_<mode>_mask): Ditto.
+	(avx512f_fmaddsub_<mode>_mask3): Ditto.
+	(avx512f_fmsubadd_<mode>_mask): Ditto.
+	(avx512f_fmsubadd_<mode>_mask3): Ditto.
+	(vec_unpacku_float_lo_v16si): Ditto.
+	(avx512f_vextract<shuffletype>32x4_mask): Ditto.
+	(avx512f_vextract<shuffletype>32x4_1_maskm): Ditto.
+	(avx512f_vextract<shuffletype>64x4_mask): Ditto.
+	(vec_extract_lo_<mode>_maskm): Ditto.
+	(vec_extract_hi_<mode>_maskm): Ditto.
+	(avx512f_vternlog<mode>_mask): Ditto.
+	(avx512f_shufps512_mask): Ditto.
+	(avx512f_fixupimm<mode>_mask): Ditto.
+	(avx512f_shufpd512_mask): Ditto.
+	(avx512f_<code><pmov_src_lower><mode>2_mask): Ditto.
+	(avx512f_<code>v8div16qi2_mask/trunc): Ditto.
+	(*avx512f_<code>v8div16qi2_store_mask): Ditto.
+	(ashr<mode>3<mask_name>): Ditto.
+	(avx512f_vinsert<shuffletype>32x4_mask): Ditto.
+	(avx512f_vinsert<shuffletype>64x4_mask): Ditto.
+	(avx512f_shuf_<shuffletype>64x2_mask): Ditto.
+	(avx512f_shuf_<shuffletype>32x4_mask): Ditto.
+	(avx512f_pshufdv3_mask): Ditto.
+	(avx512f_perm<mode>_mask): Ditto.
+	(avx512f_vpermi2var<mode>3_mask): Ditto.
+	(avx512f_vpermt2var<mode>3_mask): Ditto.
+	(avx512f_compress<mode>_mask): Ditto.
+	(avx512f_compressstore<mode>_mask): Ditto.
+	(avx512f_expand<mode>_mask): Ditto.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>): Extend
+	to support masking.
+	(avx512f_storeu<ssemodesuffix>512_mask): Ditto.
+	(<plusminus_insn><mode>3<mask_name>): Ditto.
+	(*<plusminus_insn><mode>3<mask_name>): Ditto.
+	(mul<mode>3<mask_name>): Ditto.
+	(*mul<mode>3<mask_name>): Ditto.
+	(<sse>_div<mode>3<mask_name>): Ditto.
+	(<mask_codefor>rcp14<mode><mask_name>): Ditto.
+	(<sse>_sqrt<mode>2<mask_name>): Ditto.
+	(<mask_codefor>rsqrt14<mode><mask_name>): Ditto.
+	(<code><mode>3<mask_name>/smaxmin): Ditto.
+	(*<code><mode>3_finite<mask_name>/smaxmin): Ditto.
+	(*<code><mode>3<mask_name>/smaxmin): Ditto.
+	(float<sseintvecmodelower><mode>2<mask_name>): Ditto.
+	(ufloatv16siv16sf2<mask_name>): Ditto.
+	(<mask_codefor>avx512f_fix_notruncv16sfv16si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_ufix_notruncv16sfv16si<mask_name>): Ditto.
+	(<fixsuffix>fix_truncv16sfv16si2<mask_name>): Ditto.
+	(float<si2dfmodelower><mode>2<mask_name>): Ditto.
+	(ufloatv8siv8df<mask_name>): Ditto.
+	(<mask_codefor>avx512f_cvtpd2dq512<mask_name>): Ditto.
+	(avx512f_ufix_notruncv8dfv8si<mask_name>): Ditto.
+	(<fixsuffix>fix_truncv8dfv8si2<mask_name>): Ditto.
+	(<mask_codefor>avx512f_cvtpd2ps512<mask_name>): Ditto.
+	(<sse2_avx_avx512f>_cvtps2pd<avxsizesuffix><mask_name>): Ditto.
+	(<mask_codefor>avx512f_unpckhps512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_unpcklps512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_movshdup512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_movsldup512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Ditto.
+	(vec_extract_lo_<mode><mask_name>): Ditto.
+	(vec_extract_hi_<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_unpckhpd512<mask_name>): Ditto.
+	(avx512f_movddup512<mask_name>): Ditto.
+	(avx512f_unpcklpd512<mask_name>): Ditto.
+	(*avx512f_unpcklpd512<mask_name>): Ditto.
+	(*avx512f_vmscalef<mode>): Ditto.
+	(avx512f_scalef<mode><mask_name>): Ditto.
+	(avx512f_getexp<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_align<mode><mask_name>): Ditto.
+	(avx512f_rndscale<mode><mask_name>): Ditto.
+	(avx512f_shufps512_1<mask_name>): Ditto.
+	(avx512f_shufpd512_1<mask_name>): Ditto.
+	(<plusminus_insn><mode>3<mask_name>): Ditto.
+	(*<plusminus_insn><mode>3<mask_name>): Ditto.
+	(vec_widen_umult_even_v16si<mask_name>): Ditto.
+	(*vec_widen_umult_even_v16si<mask_name>): Ditto.
+	(vec_widen_smult_even_v16si<mask_name>): Ditto.
+	(*vec_widen_smult_even_v16si<mask_name>): Ditto.
+	(mul<mode>3<mask_name>): Ditto.
+	(*<sse4_1_avx2>_mul<mode>3<mask_name>): Ditto.
+	(<shift_insn><mode>3<mask_name>): Ditto.
+	(avx512f_<rotate>v<mode><mask_name>/rotate): Ditto.
+	(avx512f_<rotate><mode><mask_name>): Ditto.
+	(<code><mode>3<mask_name>/maxmin): Ditto.
+	(*avx2_<code><mode>3<mask_name>/maxmin): Ditto.
+	(<sse2_avx2>_andnot<mode>3<mask_name>): Ditto.
+	(*andnot<mode>3<mask_name>): Ditto.
+	(<mask_codefor><code><mode>3<mask_name>/any_logic): Ditto.
+	(<mask_codefor>avx512f_interleave_highv16si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_interleave_lowv16si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_vinsert<shuffletype>32x4_1<mask_name>): Ditto.
+	(vec_set_lo_<mode><mask_name>): Ditto.
+	(vec_set_hi_<mode><mask_name>): Ditto.
+	(avx512f_shuf_<shuffletype>64x2_1<mask_name>): Ditto.
+	(avx512f_shuf_<shuffletype>32x4_1<mask_name>): Ditto.
+	(avx512f_pshufd_1<mask_name>): Ditto.
+	(<mask_codefor>abs<mode>2<mask_name>): Ditto.
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>): Ditto.
+	(avx512f_<code>v16hiv16si2<mask_name>/any_extend): Ditto.
+	(avx512f_<code>v8qiv8di2<mask_name>/any_extend): Ditto.
+	(avx512f_<code>v8hiv8di2<mask_name>/any_extend): Ditto.
+	(avx512f_<code>v8siv8di2<mask_name>/any_extend): Ditto.
+	(avx512er_exp2<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name>): Ditto.
+	(<avx2_avx512f>_permvar<mode><mask_name>): Ditto.
+	(<avx2_avx512f>_perm<mode>_1<mask_name>): Ditto.
+	(<mask_codefor>avx512f_vec_dup<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_broadcast<mode><mask_name>/V16FI): Ditto.
+	(<mask_codefor>avx512f_broadcast<mode><mask_name>/V8FI): Ditto.
+	(<mask_codefor>avx512f_vec_dup_gpr<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_vec_dup_mem<mode><mask_name>): Ditto.
+	(<sse2_avx_avx512f>_vpermil<mode><mask_name>/VF2): Ditto.
+	(<sse2_avx_avx512f>_vpermil<mode><mask_name>/VF1): Ditto.
+	(*<sse2_avx_avx512f>_vpermilp<mode><mask_name>): Ditto.
+	(<sse2_avx_avx512f>_vpermilvar<mode>3<mask_name>): Ditto.
+	(<avx2_avx512f>_ashrv<mode><mask_name>): Ditto.
+	(<avx2_avx512f>_<shift_insn>v<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_vcvtph2ps512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_vcvtps2ph512<mask_name>): Ditto.
+	(avx512f_getmant<mode><mask_name>): Ditto.
+	(clz<mode>2<mask_name>): Ditto.
+	(<mask_codefor>conflict<mode><mask_name>): Ditto.
+	(*srcp14<mode>): Remove visibility.
+	(*rsqrt14<mode>): Ditto.
+	(*fma_fmsub_<mode>): Ditto.
+	(*fma_fnmadd_<mode>): Ditto.
+	(*avx512f_rndscale<mode>): Ditto.
+	* config/i386/subst.md: New file.
+
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (Statement Exprs, Typeof): Discuss __auto_type.

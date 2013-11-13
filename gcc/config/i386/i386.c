@@ -14855,6 +14855,11 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  /* We do not want to print value of the operand.  */
 	  return;
 
+	case 'N':
+	  if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
+	    fputs ("{z}", file);
+	  return;
+
 	case '*':
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('*', file);
