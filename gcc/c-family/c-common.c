@@ -434,6 +434,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__asm__",		RID_ASM,	0 },
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
+  { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
@@ -11551,6 +11552,7 @@ keyword_begins_type_specifier (enum rid keyword)
 {
   switch (keyword)
     {
+    case RID_AUTO_TYPE:
     case RID_INT:
     case RID_CHAR:
     case RID_FLOAT:
