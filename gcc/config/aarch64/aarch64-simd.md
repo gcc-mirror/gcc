@@ -695,16 +695,18 @@
 )
 
 (define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VQ_S 0 "register_operand" "=w")
+  [(set (match_operand:VQ_S 0 "register_operand" "=w,w")
         (vec_merge:VQ_S
 	    (vec_duplicate:VQ_S
-		(match_operand:<VEL> 1 "register_operand" "r"))
-	    (match_operand:VQ_S 3 "register_operand" "0")
-	    (match_operand:SI 2 "immediate_operand" "i")))]
+		(match_operand:<VEL> 1 "register_operand" "r,w"))
+	    (match_operand:VQ_S 3 "register_operand" "0,0")
+	    (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_SIMD"
-  "ins\t%0.<Vetype>[%p2], %w1";
-  [(set_attr "simd_type" "simd_insgp")
-   (set_attr "type" "neon_from_gp<q>")
+  "@
+   ins\t%0.<Vetype>[%p2], %w1
+   ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]"
+  [(set_attr "simd_type" "simd_insgp, simd_ins")
+   (set_attr "type" "neon_from_gp<q>, neon_ins<q>")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -958,9 +960,9 @@
 })
 
 (define_expand "vec_set<mode>"
-  [(match_operand:VQ_S 0 "register_operand" "+w")
-   (match_operand:<VEL> 1 "register_operand" "r")
-   (match_operand:SI 2 "immediate_operand" "")]
+  [(match_operand:VQ_S 0 "register_operand")
+   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
   {
     HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
@@ -971,23 +973,25 @@
 )
 
 (define_insn "aarch64_simd_vec_setv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=w")
+  [(set (match_operand:V2DI 0 "register_operand" "=w,w")
         (vec_merge:V2DI
 	    (vec_duplicate:V2DI
-		(match_operand:DI 1 "register_operand" "r"))
-	    (match_operand:V2DI 3 "register_operand" "0")
-	    (match_operand:SI 2 "immediate_operand" "i")))]
+		(match_operand:DI 1 "register_operand" "r,w"))
+	    (match_operand:V2DI 3 "register_operand" "0,0")
+	    (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_SIMD"
-  "ins\t%0.d[%p2], %1";
-  [(set_attr "simd_type" "simd_insgp")
-   (set_attr "type" "neon_from_gp")
+  "@
+   ins\t%0.d[%p2], %1
+   ins\\t%0.d[%p2], %1.d[0]"
+  [(set_attr "simd_type" "simd_insgp, simd_ins")
+   (set_attr "type" "neon_from_gp, neon_ins_q")
    (set_attr "simd_mode" "V2DI")]
 )
 
 (define_expand "vec_setv2di"
-  [(match_operand:V2DI 0 "register_operand" "+w")
-   (match_operand:DI 1 "register_operand" "r")
-   (match_operand:SI 2 "immediate_operand" "")]
+  [(match_operand:V2DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
   {
     HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
