@@ -1,6 +1,12 @@
 2013-11-13  Teresa Johnson  <tejohnson@google.com>
 
 	PR ipa/58862
+	* predict.c (drop_profile): Error is currently too strict.
+	(handle_missing_profiles): Pass call_count to drop_profile.
+
+2013-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR ipa/58862
 	* ipa-inline.c (edge_badness): Fix overflow.
 
 2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>

@@ -2766,12 +2766,17 @@ estimate_loops (void)
 }
 
 /* Drop the profile for NODE to guessed, and update its frequency based on
-   whether it is expected to be HOT.  */
+   whether it is expected to be hot given the CALL_COUNT.  */
 
 static void
-drop_profile (struct cgraph_node *node, bool hot)
+drop_profile (struct cgraph_node *node, gcov_type call_count)
 {
   struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  /* In the case where this was called by another function with a
+     dropped profile, call_count will be 0. Since there are no
+     non-zero call counts to this function, we don't know for sure
+     whether it is hot, and therefore it will be marked normal below.  */
+  bool hot = maybe_hot_count_p (NULL, call_count);
 
   if (dump_file)
     fprintf (dump_file,
@@ -2781,8 +2786,13 @@ drop_profile (struct cgraph_node *node, bool hot)
   /* We only expect to miss profiles for functions that are reached
      via non-zero call edges in cases where the function may have
      been linked from another module or library (COMDATs and extern
-     templates). See the comments below for handle_missing_profiles.  */
-  if (!DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl))
+     templates). See the comments below for handle_missing_profiles.
+     Also, only warn in cases where the missing counts exceed the
+     number of training runs. In certain cases with an execv followed
+     by a no-return call the profile for the no-return call is not
+     dumped and there can be a mismatch.  */
+  if (!DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl)
+      && call_count > profile_info->runs)
     {
       if (flag_profile_correction)
         {
@@ -2792,8 +2802,8 @@ drop_profile (struct cgraph_node *node, bool hot)
                      cgraph_node_name (node), node->order);
         }
       else
-        error ("Missing counts for called function %s/%i",
-               cgraph_node_name (node), node->order);
+        warning (0, "Missing counts for called function %s/%i",
+                 cgraph_node_name (node), node->order);
     }
 
   profile_status_for_function (fn)
@@ -2839,9 +2849,7 @@ handle_missing_profiles (void)
           && fn && fn->cfg
           && (call_count * unlikely_count_fraction >= profile_info->runs))
         {
-          bool maybe_hot = maybe_hot_count_p (NULL, call_count);
-
-          drop_profile (node, maybe_hot);
+          drop_profile (node, call_count);
           worklist.safe_push (node);
         }
     }
@@ -2863,11 +2871,7 @@ handle_missing_profiles (void)
           if (DECL_COMDAT (callee->decl) && fn && fn->cfg
               && profile_status_for_function (fn) == PROFILE_READ)
             {
-              /* Since there are no non-0 call counts to this function,
-                 we don't know for sure whether it is hot. Indicate to
-                 the drop_profile routine that function should be marked
-                 normal, rather than hot.  */
-              drop_profile (node, false);
+              drop_profile (node, 0);
               worklist.safe_push (callee);
             }
         }
