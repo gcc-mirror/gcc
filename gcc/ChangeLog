@@ -1,3 +1,8 @@
+2013-11-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gimple-ssa-isolate-paths.c (pass_isolate_erroneous_paths): Comment
+	fix.
+
 2013-11-13  Jeff Law  <law@redhat.com>
 
 	* PR middle-end/59119
