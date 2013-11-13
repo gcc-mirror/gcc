@@ -1,5 +1,9 @@
 2013-11-13  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* config/aarch64/aarch64-simd.md (vec_extract): New.
+
+2013-11-13  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/aarch64/aarch64-simd.md (vec_set<mode>): Add w -> w option to
 	the constraint.
 
