@@ -1,3 +1,10 @@
+2013-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* passes.c (execute_todo): Don't call do_per_function if
+	flags are zero.
+	(execute_one_ipa_transform_pass, execute_one_pass): Don't call
+	execute_function_dump if dump_file is NULL.
+
 2013-11-13  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.c (cgraph_get_create_node): Do what
