@@ -8619,7 +8619,7 @@ ready_remove_first_dispatch (struct ready_list *ready)
     {
       insn = ready_element (ready, i);
 
-      if (! INSN_P (insn)
+      if (!INSN_P (insn)
 	  || INSN_CODE (insn) < 0
 	  || !active_insn_p (insn))
 	continue;
