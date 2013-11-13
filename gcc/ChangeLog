@@ -1,3 +1,11 @@
+2013-11-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple-streamer-out.c (output_gimple_stmt): Also wrap
+	decls in ADDR_EXPR operands inside a MEM_REF and optimize that.
+	* gimple-streamer-in.c (input_gimple_stmt): Remove now dead
+	code dealing with type mismatches inside component reference
+	chains.
+
 2013-11-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/59077

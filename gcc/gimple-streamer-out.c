@@ -129,6 +129,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	  if (op && (i || !is_gimple_debug (stmt)))
 	    {
 	      basep = &op;
+	      if (TREE_CODE (*basep) == ADDR_EXPR)
+		basep = &TREE_OPERAND (*basep, 0);
 	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
 	      if (TREE_CODE (*basep) == VAR_DECL
@@ -136,10 +138,10 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 		  && !DECL_REGISTER (*basep))
 		{
 		  bool volatilep = TREE_THIS_VOLATILE (*basep);
+		  tree ptrtype = build_pointer_type (TREE_TYPE (*basep));
 		  *basep = build2 (MEM_REF, TREE_TYPE (*basep),
-				   build_fold_addr_expr (*basep),
-				   build_int_cst (build_pointer_type
-						  (TREE_TYPE (*basep)), 0));
+				   build1 (ADDR_EXPR, ptrtype, *basep),
+				   build_int_cst (ptrtype, 0));
 		  TREE_THIS_VOLATILE (*basep) = volatilep;
 		}
 	      else
