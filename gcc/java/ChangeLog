@@ -124,7 +124,7 @@
 
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* java-gimplify.c Include dumpfile.h instead of tree-dump.h
+	* java-gimplify.c: Include dumpfile.h instead of tree-dump.h
 	* Make-lang.in: Fix dependencies.
 
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
