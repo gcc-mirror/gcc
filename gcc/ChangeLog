@@ -1,3 +1,12 @@
+2013-11-13  Jeff Law  <law@redhat.com>
+
+	* PR middle-end/59119
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behaviour): New
+	function, extracted from gimple_ssa_isolate_erroneous_paths.
+	(find_explicit_erroneous_behaviour): Similarly.
+	(insert_trap_and_remove_trailing_statements): Remove statements
+	in reverse order.
+
 2013-11-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgrtl.c (can_fallthru): Reorder code to move tablejump check up.
