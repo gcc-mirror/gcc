@@ -1,5 +1,9 @@
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/c11-complex-1.c: New test.
+
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/atomic/stdatomic-vm.c, gcc.dg/auto-type-1.c,
 	gcc.dg/auto-type-2.c: New tests.
 
