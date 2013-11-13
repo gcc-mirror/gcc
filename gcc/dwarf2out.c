@@ -3163,7 +3163,7 @@ static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 static void add_data_member_location_attribute (dw_die_ref, tree);
 static bool add_const_value_attribute (dw_die_ref, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
-static void insert_wide_int (const wide_int &, unsigned char *);
+static void insert_wide_int (const wide_int &, unsigned char *, int);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
 static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
@@ -13464,7 +13464,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	      for (i = 0, p = array; i < length; i++, p += elt_size)
 		{
 		  rtx elt = CONST_VECTOR_ELT (rtl, i);
-		  insert_wide_int (std::make_pair (elt, imode), p);
+		  insert_wide_int (std::make_pair (elt, imode), p, elt_size);
 		}
 	      break;
 
@@ -15103,18 +15103,29 @@ extract_int (const unsigned char *src, unsigned int size)
 /* Writes wide_int values to dw_vec_const array.  */
 
 static void
-insert_wide_int (const wide_int &val, unsigned char *dest)
+insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
 {
   int i;
 
+  if (elt_size <= HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT)
+    {
+      insert_int ((HOST_WIDE_INT) val.elt (0), elt_size, dest);
+      return;
+    }
+
+  // We'd have to extend this code to support odd sizes.
+  gcc_assert (elt_size % (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT) == 0);
+
+  int n = elt_size / (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT);
+
   if (WORDS_BIG_ENDIAN)
-    for (i = (int)get_full_len (val) - 1; i >= 0; i--)
+    for (i = n - 1; i >= 0; i--)
       {
 	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
 	dest += sizeof (HOST_WIDE_INT);
       }
   else
-    for (i = 0; i < (int)get_full_len (val); i++)
+    for (i = 0; i < n; i++)
       {
 	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
 	dest += sizeof (HOST_WIDE_INT);
@@ -15207,7 +15218,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
-		insert_wide_int (std::make_pair (elt, imode), p);
+		insert_wide_int (std::make_pair (elt, imode), p, elt_size);
 	      }
 	    break;
 
