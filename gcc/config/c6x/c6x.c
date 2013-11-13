@@ -52,6 +52,7 @@
 #include "hw-doloop.h"
 #include "regrename.h"
 #include "dumpfile.h"
+#include "gimple-expr.h"
 
 /* Table of supported architecture variants.  */
 typedef struct

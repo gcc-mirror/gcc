@@ -1,3 +1,7 @@
+2013-11-13  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/c6x/c6x.c: Include "gimple-expr.h".
+
 2013-11-13  Richard Biener  <rguenther@suse.de>
 
 	* gimple-streamer-out.c (output_gimple_stmt): Also wrap
