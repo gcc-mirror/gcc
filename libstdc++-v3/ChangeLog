@@ -1,3 +1,8 @@
+2013-11-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/59087
+	* include/ext/pod_char_traits.h: Uglify V, I and S.
+
 2013-11-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/54562
