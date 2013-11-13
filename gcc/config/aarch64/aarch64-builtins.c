@@ -31,6 +31,7 @@
 #include "diagnostic-core.h"
 #include "optabs.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 
 enum aarch64_simd_builtin_type_mode
 {

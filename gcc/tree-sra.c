@@ -79,6 +79,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "bitmap.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"

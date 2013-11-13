@@ -1240,6 +1240,7 @@ OBJS = \
 	gimple-ssa-strength-reduction.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
+	gimple-walk.o \
 	gimplify.o \
 	godump.o \
 	graph.o \

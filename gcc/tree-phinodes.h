@@ -30,21 +30,7 @@ extern void remove_phi_args (edge);
 extern void remove_phi_node (gimple_stmt_iterator *, bool);
 extern void remove_phi_nodes (basic_block);
 extern tree degenerate_phi_result (gimple);
-
-/* Set PHI nodes of a basic block BB to SEQ.  */
-
-static inline void
-set_phi_nodes (basic_block bb, gimple_seq seq)
-{
-  gimple_stmt_iterator i;
-
-  gcc_checking_assert (!(bb->flags & BB_RTL));
-  bb->il.gimple.phi_nodes = seq;
-  if (seq)
-    for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
-      gimple_set_bb (gsi_stmt (i), bb);
-}
-
+extern void set_phi_nodes (basic_block, gimple_seq);
 
 static inline use_operand_p
 gimple_phi_arg_imm_use_ptr (gimple gs, int i)

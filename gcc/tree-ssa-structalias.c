@@ -30,6 +30,7 @@
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-ssanames.h"

@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "langhooks.h"
