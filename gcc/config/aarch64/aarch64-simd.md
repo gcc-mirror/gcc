@@ -4582,3 +4582,19 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+;; Standard pattern name vec_extract<mode>.
+
+(define_insn "vec_extract<mode>"
+  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
+	(vec_select:<VEL>
+	  (match_operand:VALL 1 "register_operand" "w, w, w")
+	  (parallel [(match_operand:SI 2 "immediate_operand" "i,i,i")])))]
+  "TARGET_SIMD"
+  "@
+  umov\\t%<vw>0, %1.<Vetype>[%2]
+  dup\\t%<Vetype>0, %1.<Vetype>[%2]
+  st1\\t{%1.<Vetype>}[%2], %0"
+  [(set_attr "simd_type" "simd_movgp, simd_dup, simd_store1s")
+   (set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")
+   (set_attr "simd_mode" "<MODE>")]
+)
