@@ -2454,7 +2454,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 		     ie->callee->order);
 	  return NULL;
 	}
-      callee = cgraph_get_create_real_symbol_node (target);
+      callee = cgraph_get_create_node (target);
     }
   ipa_check_create_node_params ();
 
