@@ -1,3 +1,27 @@
+2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59036
+	* ira-color.c (struct allocno_color_data): Add new members
+	first_thread_allocno, next_thread_allocno, thread_freq.
+	(sorted_copies): New static var.
+	(allocnos_conflict_by_live_ranges_p, copy_freq_compare_func): Move
+	up.
+	(allocno_thread_conflict_p, merge_threads)
+	(form_threads_from_copies, form_threads_from_bucket)
+	(form_threads_from_colorable_allocno, init_allocno_threads): New
+	functions.
+	(bucket_allocno_compare_func): Add comparison by thread frequency
+	and threads.
+	(add_allocno_to_ordered_bucket): Rename to
+	add_allocno_to_ordered_colorable_bucket.  Remove parameter.
+        (push_only_colorable): Call form_threads_from_bucket.
+	(color_pass): Call init_allocno_threads.  Use
+	consideration_allocno_bitmap instead of coloring_allocno_bitmap
+	for nuillify allocno color data.
+	(ira_initiate_assign, ira_finish_assign): Allocate/free
+	sorted_copies.
+	(coalesce_allocnos): Use static sorted copies.
+
 2013-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* passes.c (execute_todo): Don't call do_per_function if
