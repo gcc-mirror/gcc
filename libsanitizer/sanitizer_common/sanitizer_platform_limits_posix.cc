@@ -855,6 +855,7 @@ CHECK_STRUCT_SIZE_AND_OFFSET(sigaction, sa_flags);
 CHECK_STRUCT_SIZE_AND_OFFSET(sigaction, sa_restorer);
 #endif
 
+#ifdef SYSCALL_INTERCEPTION
 #if SANITIZER_LINUX
 CHECK_TYPE_SIZE(__sysctl_args);
 CHECK_SIZE_AND_OFFSET(__sysctl_args, name);
@@ -871,6 +872,7 @@ CHECK_TYPE_SIZE(__kernel_old_gid_t);
 CHECK_TYPE_SIZE(__kernel_off_t);
 CHECK_TYPE_SIZE(__kernel_loff_t);
 CHECK_TYPE_SIZE(__kernel_fd_set);
+#endif
 #endif
 
 #if !SANITIZER_ANDROID
