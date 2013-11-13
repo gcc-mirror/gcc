@@ -1995,7 +1995,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 		     || [check_effective_target_powerpc_altivec]))
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
              || [istarget spu-*-*]
-	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
+	     || [istarget aarch64*-*-*] } {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
