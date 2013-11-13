@@ -1610,9 +1610,15 @@ expand_used_vars (void)
 	  replace_ssa_name_symbol (var, (tree) *slot);
 	}
 
+      /* Always allocate space for partitions based on VAR_DECLs.  But for
+	 those based on PARM_DECLs or RESULT_DECLs and which matter for the
+	 debug info, there is no need to do so if optimization is disabled
+	 because all the SSA_NAMEs based on these DECLs have been coalesced
+	 into a single partition, which is thus assigned the canonical RTL
+	 location of the DECLs.  */
       if (TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	expand_one_var (var, true, true);
-      else
+      else if (DECL_IGNORED_P (SSA_NAME_VAR (var)) || optimize)
 	{
 	  /* This is a PARM_DECL or RESULT_DECL.  For those partitions that
 	     contain the default def (representing the parm or result itself)
