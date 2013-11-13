@@ -1,3 +1,8 @@
+2013-11-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/59077
+	* ipa-pure-const.c (better_state): Update *state.
+
 2013-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/aarch64.h (FRAME_GROWS_DOWNWARD): Define to 1.
