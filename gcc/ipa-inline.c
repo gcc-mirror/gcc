@@ -909,7 +909,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       /* Capping edge->count to max_count. edge->count can be larger than
 	 max_count if an inline adds new edges which increase max_count
 	 after max_count is computed.  */
-      int edge_count = edge->count > max_count ? max_count : edge->count;
+      gcov_type edge_count = edge->count > max_count ? max_count : edge->count;
 
       sreal_init (&relbenefit_real, relbenefit, 0);
       sreal_init (&growth_real, growth, 0);
