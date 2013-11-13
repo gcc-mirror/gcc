@@ -1,3 +1,8 @@
+2013-11-13  Teresa Johnson  <tejohnson@google.com>
+
+	PR ipa/58862
+	* ipa-inline.c (edge_badness): Fix overflow.
+
 2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59036
