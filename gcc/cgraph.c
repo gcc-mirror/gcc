@@ -540,19 +540,34 @@ cgraph_create_node (tree decl)
   return node;
 }
 
-/* Try to find a call graph node for declaration DECL and if it does not exist,
-   create it.  */
+/* Try to find a call graph node for declaration DECL and if it does not exist
+   or if it corresponds to an inline clone, create a new one.  */
 
 struct cgraph_node *
 cgraph_get_create_node (tree decl)
 {
-  struct cgraph_node *node;
+  struct cgraph_node *first_clone = cgraph_get_node (decl);
 
-  node = cgraph_get_node (decl);
-  if (node)
-    return node;
+  if (first_clone && !first_clone->global.inlined_to)
+    return first_clone;
 
-  return cgraph_create_node (decl);
+  struct cgraph_node *node = cgraph_create_node (decl);
+  if (first_clone)
+    {
+      first_clone->clone_of = node;
+      node->clones = first_clone;
+      symtab_prevail_in_asm_name_hash (node);
+      symtab_insert_node_to_hashtable (node);
+      if (dump_file)
+	fprintf (dump_file, "Introduced new external node "
+		 "(%s/%i) and turned into root of the clone tree.\n",
+		 xstrdup (cgraph_node_name (node)), node->order);
+    }
+  else if (dump_file)
+    fprintf (dump_file, "Introduced new external node "
+	     "(%s/%i).\n", xstrdup (cgraph_node_name (node)),
+	     node->order);
+  return node;
 }
 
 /* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
@@ -2889,51 +2904,6 @@ verify_cgraph (void)
   FOR_EACH_FUNCTION (node)
     verify_cgraph_node (node);
 }
-
-/* Create external decl node for DECL.
-   The difference i nbetween cgraph_get_create_node and
-   cgraph_get_create_real_symbol_node is that cgraph_get_create_node
-   may return inline clone, while cgraph_get_create_real_symbol_node
-   will create a new node in this case.
-   FIXME: This function should be removed once clones are put out of decl
-   hash.  */
-
-struct cgraph_node *
-cgraph_get_create_real_symbol_node (tree decl)
-{
-  struct cgraph_node *first_clone = cgraph_get_node (decl);
-  struct cgraph_node *node;
-  /* create symbol table node.  even if inline clone exists, we can not take
-     it as a target of non-inlined call.  */
-  node = cgraph_get_node (decl);
-  if (node && !node->global.inlined_to)
-    return node;
-
-  node = cgraph_create_node (decl);
-
-  /* ok, we previously inlined the function, then removed the offline copy and
-     now we want it back for external call.  this can happen when devirtualizing
-     while inlining function called once that happens after extern inlined and
-     virtuals are already removed.  in this case introduce the external node
-     and make it available for call.  */
-  if (first_clone)
-    {
-      first_clone->clone_of = node;
-      node->clones = first_clone;
-      symtab_prevail_in_asm_name_hash (node);
-      symtab_insert_node_to_hashtable (node);
-      if (dump_file)
-	fprintf (dump_file, "Introduced new external node "
-		 "(%s/%i) and turned into root of the clone tree.\n",
-		 xstrdup (cgraph_node_name (node)), node->order);
-    }
-  else if (dump_file)
-    fprintf (dump_file, "Introduced new external node "
-	     "(%s/%i).\n", xstrdup (cgraph_node_name (node)),
-	     node->order);
-  return node;
-}
-
 
 /* Given NODE, walk the alias chain to return the function NODE is alias of.
    Walk through thunk, too.

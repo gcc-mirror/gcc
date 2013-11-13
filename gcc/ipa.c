@@ -355,7 +355,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (DECL_ABSTRACT_ORIGIN (node->decl))
 	    {
 	      struct cgraph_node *origin_node
-	      = cgraph_get_create_real_symbol_node (DECL_ABSTRACT_ORIGIN (node->decl));
+	      = cgraph_get_create_node (DECL_ABSTRACT_ORIGIN (node->decl));
 	      origin_node->used_as_abstract_origin = true;
 	      enqueue_node (origin_node, &first, reachable);
 	    }

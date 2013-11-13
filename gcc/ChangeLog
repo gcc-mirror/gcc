@@ -1,3 +1,13 @@
+2013-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_get_create_node): Do what
+	cgraph_get_create_real_symbol_node used to do.
+	(cgraph_get_create_real_symbol_node): Removed.  Changed all users to
+	call cgraph_get_create_node.
+	* cgraph.h (cgraph_get_create_real_symbol_node): Removed.
+	* lto-streamer-in.c (input_function): Call cgraph_get_node instead of
+	cgraph_get_create_node.  Assert we get a node.
+
 2013-11-13  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_extract): New.
