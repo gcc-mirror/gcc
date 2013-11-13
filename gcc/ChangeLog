@@ -1,3 +1,9 @@
+2013-11-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c: Include aarch-cost-tables.h.
+	(generic_extra_costs): Move from here...
+	* config/arm/aarch-cost-tables.h: ... To here.  New file.
+
 2013-11-13  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
