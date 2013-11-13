@@ -1,3 +1,9 @@
+2013-11-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR sanitizer/59009
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Temporarily
+	ifdef out more source.
+
 2013-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_platform_limits_linux.cc: Temporarily
