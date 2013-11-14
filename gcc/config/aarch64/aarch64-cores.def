@@ -35,6 +35,6 @@
    therefore serves as a template for adding more CPUs in the future.  */
 
 AARCH64_CORE("cortex-a53",	  cortexa53,	     8,  AARCH64_FL_FPSIMD,    generic)
-AARCH64_CORE("cortex-a57",	  cortexa57,	     8,  AARCH64_FL_FPSIMD,    generic)
+AARCH64_CORE("cortex-a57",	  cortexa15,	     8,  AARCH64_FL_FPSIMD,    generic)
 AARCH64_CORE("example-1",	      large,	     8,  AARCH64_FL_FPSIMD,    generic)
 AARCH64_CORE("example-2",	      small,	     8,  AARCH64_FL_FPSIMD,    generic)
