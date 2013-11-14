@@ -1076,6 +1076,24 @@ set_cluster (basic_block bb1, basic_block bb2)
     gcc_unreachable ();
 }
 
+/* Return true if gimple operands T1 and T2 have the same value.  */
+
+static bool
+gimple_operand_equal_value_p (tree t1, tree t2)
+{
+  if (t1 == t2)
+    return true;
+
+  if (t1 == NULL_TREE
+      || t2 == NULL_TREE)
+    return false;
+
+  if (operand_equal_p (t1, t2, 0))
+    return true;
+
+  return gvn_uses_equal (t1, t2);
+}
+
 /* Return true if gimple statements S1 and S2 are equal.  Gimple_bb (s1) and
    gimple_bb (s2) are members of SAME_SUCC.  */
 
@@ -1104,9 +1122,7 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
 	{
 	  t1 = gimple_call_arg (s1, i);
 	  t2 = gimple_call_arg (s2, i);
-	  if (operand_equal_p (t1, t2, 0))
-	    continue;
-	  if (gvn_uses_equal (t1, t2))
+	  if (gimple_operand_equal_value_p (t1, t2))
 	    continue;
 	  return false;
 	}
@@ -1136,14 +1152,12 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
     case GIMPLE_COND:
       t1 = gimple_cond_lhs (s1);
       t2 = gimple_cond_lhs (s2);
-      if (!operand_equal_p (t1, t2, 0)
-	  && !gvn_uses_equal (t1, t2))
+      if (!gimple_operand_equal_value_p (t1, t2))
 	return false;
 
       t1 = gimple_cond_rhs (s1);
       t2 = gimple_cond_rhs (s2);
-      if (!operand_equal_p (t1, t2, 0)
-	  && !gvn_uses_equal (t1, t2))
+      if (!gimple_operand_equal_value_p (t1, t2))
 	return false;
 
       code1 = gimple_expr_code (s1);

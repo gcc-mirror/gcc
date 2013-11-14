@@ -1,5 +1,11 @@
 2013-11-14  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-tail-merge.c (gimple_operand_equal_value_p): Factor new
+	function out of ...
+	(gimple_equal_p): ... here.
+
+2013-11-14  Tom de Vries  <tom@codesourcery.com>
+
 	* trans-mem.c (is_tm_ending): New function.
 	* gimple.h (is_tm_ending): Declare.
 	* tree-ssa-tail-merge.c (gimple_equal_p): Remove test on
