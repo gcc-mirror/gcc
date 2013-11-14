@@ -1,3 +1,9 @@
+2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/float128-cmp-invalid.c: Require fenv_exceptions.
+	* gcc.dg/torture/float128-div-underflow.c: Likewise.
+	* gcc.dg/torture/float128-extend-nan.c: Likewise.
+
 2013-11-14  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Fix target selector.
