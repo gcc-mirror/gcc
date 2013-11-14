@@ -1,3 +1,7 @@
+2013-11-14  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-alias-check.c: Update.
+
 2013-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57887
