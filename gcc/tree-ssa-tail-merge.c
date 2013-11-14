@@ -1142,8 +1142,17 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
       lhs2 = gimple_get_lhs (s2);
       if (TREE_CODE (lhs1) != SSA_NAME
 	  && TREE_CODE (lhs2) != SSA_NAME)
-	return (vn_valueize (gimple_vdef (s1))
-		== vn_valueize (gimple_vdef (s2)));
+	{
+	  /* If the vdef is the same, it's the same statement.  */
+	  if (vn_valueize (gimple_vdef (s1))
+	      == vn_valueize (gimple_vdef (s2)))
+	    return true;
+
+	  /* Test for structural equality.  */
+	  return (operand_equal_p (lhs1, lhs2, 0)
+		  && gimple_operand_equal_value_p (gimple_assign_rhs1 (s1),
+						   gimple_assign_rhs1 (s2)));
+	}
       else if (TREE_CODE (lhs1) == SSA_NAME
 	       && TREE_CODE (lhs2) == SSA_NAME)
 	return vn_valueize (lhs1) == vn_valueize (lhs2);

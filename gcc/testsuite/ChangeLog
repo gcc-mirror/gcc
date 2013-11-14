@@ -1,3 +1,7 @@
+2013-11-14  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tail-merge-store.c: New test.
+
 2013-11-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* testsuite/g++.dg/plugin/selfassign.c: Include gimple-iterator.h.

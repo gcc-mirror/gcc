@@ -1,5 +1,10 @@
 2013-11-14  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-ssa-tail-merge.c (gimple_equal_p): Add test for structural
+	equality for GIMPLE_ASSIGN.
+
+2013-11-14  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-tail-merge.c (gimple_operand_equal_value_p): Factor new
 	function out of ...
 	(gimple_equal_p): ... here.
