@@ -1,3 +1,8 @@
+2013-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage1b.adb: New test.
+	* gnat.dg/stack_usage1c.adb: Likewise.
+
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gnat.dg/specs/addr1.ads: Revert the last change.
