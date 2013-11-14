@@ -1231,7 +1231,7 @@
 	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
 	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
 
-2013-10-17  Charles Bayis  <charles.baylis@linaro.org>
+2013-10-17  Charles Baylis  <charles.baylis@linaro.org>
 
 	* gcc.dg/builtin-apply2.c: Skip test on arm hardfloat ABI targets.
 	* gcc.dg/tls/pr42894.c: Remove dg-options for arm*-*-* targets.
