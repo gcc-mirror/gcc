@@ -1,3 +1,9 @@
+2013-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57887
+	* g++.dg/cpp0x/nsdmi-template3.C: New.
+	* g++.dg/cpp0x/nsdmi-template4.C: Likewise.
+
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.target/powerpc/ppc64-abi-1.c (stack_frame_t): Remove

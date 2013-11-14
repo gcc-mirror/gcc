@@ -1,3 +1,11 @@
+2013-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57887
+	* parser.c (cp_parser_late_parsing_nsdmi): Call
+	maybe_begin_member_template_processing.
+	* pt.c (maybe_begin_member_template_processing): Handle NSDMIs.
+	(inline_needs_template_parms): Adjust.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* class.c: Include only gimplify.h and gimple.h as needed.
