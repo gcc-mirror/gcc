@@ -1,5 +1,15 @@
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-cores.def (example-1): Remove.
+	(example-2): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.md: Do not include "large.md" or "small.md".
+	(generic_sched): Remove "large", "small".
+	* config/aarch64/large.md: Delete.
+	* config/aarch64/small.md: Delete.
+
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-cores.def (cortex-a57): Tune for cortexa15.
 	* config/aarch64/aarch64-tune.md: Regenerate.
 	* config/aarch64/aarch64.md: Include cortex-a15 pipeline model.
