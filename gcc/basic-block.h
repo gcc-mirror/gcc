@@ -1008,4 +1008,19 @@ inverse_probability (int prob1)
   check_probability (prob1);
   return REG_BR_PROB_BASE - prob1;
 }
+
+/* Return true if BB has at least one abnormal outgoing edge.  */
+
+static inline bool
+has_abnormal_outgoing_edge_p (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_ABNORMAL)
+      return true;
+
+  return false;
+}
 #endif /* GCC_BASIC_BLOCK_H */
