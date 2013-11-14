@@ -1,5 +1,15 @@
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-arches.def (armv8-a): Tune for cortex-a53.
+	* config/aarch64/aarch64.md: Do not include aarch64-generic.md.
+	* config/aarch64/aarch64.c (aarch64_tune): Initialize to cortexa53.
+	(all_cores): Use cortexa53 when tuning for "generic".
+	(aarch64_override_options): Fix comment.
+	* config/aarch64/aarch64.h (TARGET_CPU_DEFAULT): Set to cortexa53.
+	* config/aarch64/aarch64-generic.md: Delete.
+
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c (all_architectures): Remove "generic".
 
 2013-11-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>

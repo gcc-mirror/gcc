@@ -468,10 +468,10 @@ enum target_cpus
   TARGET_CPU_generic
 };
 
-/* If there is no CPU defined at configure, use "generic" as default.  */
+/* If there is no CPU defined at configure, use "cortex-a53" as default.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+  (TARGET_CPU_cortexa53 | (AARCH64_CPU_DEFAULT_FLAGS << 6))
 #endif
 
 /* The processor for which instructions should be scheduled.  */
