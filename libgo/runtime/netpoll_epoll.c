@@ -11,6 +11,7 @@
 
 #include "runtime.h"
 #include "defs.h"
+#include "malloc.h"
 
 #ifndef EPOLLRDHUP
 #define EPOLLRDHUP 0x2000
@@ -155,4 +156,10 @@ retry:
 	if(block && gp == nil)
 		goto retry;
 	return gp;
+}
+
+void
+runtime_netpoll_scan(void (*addroot)(Obj))
+{
+	USED(addroot);
 }
