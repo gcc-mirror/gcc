@@ -1,3 +1,7 @@
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (all_architectures): Remove "generic".
+
 2013-11-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c: Include aarch-cost-tables.h.

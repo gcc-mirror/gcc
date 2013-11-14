@@ -237,7 +237,6 @@ static const struct processor all_architectures[] =
   {NAME, CORE, #ARCH, FLAGS, NULL},
 #include "aarch64-arches.def"
 #undef AARCH64_ARCH
-  {"generic", generic, "8", AARCH64_FL_FOR_ARCH8, NULL},
   {NULL, aarch64_none, NULL, 0, NULL}
 };
 
