@@ -3725,8 +3725,6 @@ coalesce_allocnos (void)
   int i, n, cp_num, regno;
   bitmap_iterator bi;
 
-  sorted_copies = (ira_copy_t *) ira_allocate (ira_copies_num
-					       * sizeof (ira_copy_t));
   cp_num = 0;
   /* Collect copies.  */
   EXECUTE_IF_SET_IN_BITMAP (coloring_allocno_bitmap, 0, j, bi)
@@ -3790,7 +3788,6 @@ coalesce_allocnos (void)
 	}
       cp_num = n;
     }
-  ira_free (sorted_copies);
 }
 
 /* Usage cost and order number of coalesced allocno set to which
