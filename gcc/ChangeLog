@@ -1,5 +1,9 @@
 2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* ira.c: Add comment about threads at the top of file.
+
+2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* ira-color.c (coalesce_allocnos): Don't allocate and free
 	sorted_copies.
 

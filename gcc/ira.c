@@ -192,7 +192,14 @@ along with GCC; see the file COPYING3.  If not see
          this point.  There is some freedom in the order of putting
          allocnos on the stack which can affect the final result of
          the allocation.  IRA uses some heuristics to improve the
-         order.
+         order.  The major one is to form *threads* from colorable
+         allocnos and push them on the stack by threads.  Thread is a
+         set of non-conflicting colorable allocnos connected by
+         copies.  The thread contains allocnos from the colorable
+         bucket or colorable allocnos already pushed onto the coloring
+         stack.  Pushing thread allocnos one after another onto the
+         stack increases chances of removing copies when the allocnos
+         get the same hard reg.
 	 
 	 We also use a modification of Chaitin-Briggs algorithm which
          works for intersected register classes of allocnos.  To
