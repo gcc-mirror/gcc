@@ -1,3 +1,8 @@
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* calls.c (store_unaligned_arguments_into_pseudos): Skip PARALLEL
+	arguments.
+
 2013-11-14  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.c (rx_mode_dependent_address_p): Allow offsets up
