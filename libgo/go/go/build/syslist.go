@@ -5,4 +5,4 @@
 package build
 
 const goosList = "darwin dragonfly freebsd linux netbsd openbsd plan9 windows solaris "
-const goarchList = "386 amd64 arm "
+const goarchList = "386 amd64 arm alpha m68k mipso32 mipsn32 mipsn64 mipso64 ppc ppc64 sparc sparc64 "
