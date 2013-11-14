@@ -1100,14 +1100,6 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
       if (!gimple_call_same_target_p (s1, s2))
         return false;
 
-      /* Eventually, we'll significantly complicate the CFG by adding
-	 back edges to properly model the effects of transaction restart.
-	 For the bulk of optimization this does not matter, but what we
-	 cannot recover from is tail merging blocks between two separate
-	 transactions.  Avoid that by making commit not match.  */
-      if (gimple_call_builtin_p (s1, BUILT_IN_TM_COMMIT))
-	return false;
-
       for (i = 0; i < gimple_call_num_args (s1); ++i)
 	{
 	  t1 = gimple_call_arg (s1, i);
@@ -1221,15 +1213,14 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
       gimple stmt1 = gsi_stmt (gsi1);
       gimple stmt2 = gsi_stmt (gsi2);
 
-      if (!gimple_equal_p (same_succ, stmt1, stmt2))
+      /* What could be better than to this this here is to blacklist the bb
+	 containing the stmt, when encountering the stmt f.i. in
+	 same_succ_hash.  */
+      if (is_tm_ending (stmt1)
+	  || is_tm_ending (stmt2))
 	return;
 
-      // We cannot tail-merge the builtins that end transactions.
-      // ??? The alternative being unsharing of BBs in the tm_init pass.
-      if (flag_tm
-	  && is_gimple_call (stmt1)
-	  && (gimple_call_flags (stmt1) & ECF_TM_BUILTIN)
-	  && is_tm_ending_fndecl (gimple_call_fndecl (stmt1)))
+      if (!gimple_equal_p (same_succ, stmt1, stmt2))
 	return;
 
       gsi_prev_nondebug (&gsi1);

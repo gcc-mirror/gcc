@@ -323,6 +323,22 @@ is_tm_ending_fndecl (tree fndecl)
   return false;
 }
 
+/* Return true if STMT is a built in function call that "ends" a
+   transaction.  */
+
+bool
+is_tm_ending (gimple stmt)
+{
+  tree fndecl;
+
+  if (gimple_code (stmt) != GIMPLE_CALL)
+    return false;
+
+  fndecl = gimple_call_fndecl (stmt);
+  return (fndecl != NULL_TREE
+	  && is_tm_ending_fndecl (fndecl));
+}
+
 /* Return true if STMT is a TM load.  */
 
 static bool

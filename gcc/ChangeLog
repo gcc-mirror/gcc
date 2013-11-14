@@ -1,5 +1,13 @@
 2013-11-14  Tom de Vries  <tom@codesourcery.com>
 
+	* trans-mem.c (is_tm_ending): New function.
+	* gimple.h (is_tm_ending): Declare.
+	* tree-ssa-tail-merge.c (gimple_equal_p): Remove test on
+	BUILT_IN_TM_COMMIT.
+	(find_duplicate): Use is_tm_ending instead of is_tm_ending_fndecl.
+
+2013-11-14  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-tail-merge.c (gimple_equal_p): Remove equal variable.
 
 2013-11-13  Andrew MacLeod  <amacleod@redhat,com>

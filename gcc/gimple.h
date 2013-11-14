@@ -957,6 +957,7 @@ extern bool infer_nonnull_range (gimple, tree);
 /* In trans-mem.c.  */
 extern void diagnose_tm_safe_errors (tree);
 extern void compute_transaction_bits (void);
+extern bool is_tm_ending (gimple);
 
 /* In tree-nested.c.  */
 extern void lower_nested_functions (tree);
