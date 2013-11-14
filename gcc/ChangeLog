@@ -1,5 +1,13 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_psave_function_arg): New function.
+	(rs6000_finish_function_arg): Likewise.
+	(rs6000_function_arg): Use rs6000_psave_function_arg and
+	rs6000_finish_function_arg to handle both vector and floating
+	point arguments that are also passed in GPRs / the stack.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (USE_FP_FOR_ARG_P): Remove TYPE argument.
 	(USE_ALTIVEC_FOR_ARG_P): Likewise.
 	(rs6000_darwin64_record_arg_advance_recurse): Update uses.
