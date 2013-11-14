@@ -21,7 +21,7 @@ package Addr1 is
   for Obj1'Address use A'Address; -- { dg-bogus "(alignment|erroneous)" }
 
   Obj2: Rec2;
-  for Obj2'Address use A'Address; -- { dg-bogus "(alignment|erroneous)" "" { xfail mips*-*-* } }
+  for Obj2'Address use A'Address; -- { dg-bogus "(alignment|erroneous)" "" { xfail mips*-*-* { { i?86-*-* x86_64-*-* } && x32 } } }
 
   Obj3: Rec1;
   for Obj3'Address use A(1)'Address; -- { dg-bogus "(alignment|erroneous)" }

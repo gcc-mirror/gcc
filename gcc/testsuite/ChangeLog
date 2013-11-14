@@ -1,3 +1,8 @@
+2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gnat.dg/specs/addr1.ads: XFAIL on x32.
+	* gnat.dg/specs/atomic1.ads: Likewise.
+
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/cpu-diagnostics-2.c: Change "-mcpu="
