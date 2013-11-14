@@ -1,3 +1,8 @@
+2013-11-14  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.md (doloop_begin_i): Remove extra alignment;
+	use (.&-4) idiom.
+
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/sysv4le.h (LINUX64_DEFAULT_ABI_ELFv2): Define.
