@@ -1538,6 +1538,26 @@
   return 1;
 })
 
+;; Return 1 if OP is valid for crsave insn, known to be a PARALLEL.
+(define_predicate "crsave_operation"
+  (match_code "parallel")
+{
+  int count = XVECLEN (op, 0);
+  int i;
+
+  for (i = 1; i < count; i++)
+    {
+      rtx exp = XVECEXP (op, 0, i);
+
+      if (GET_CODE (exp) != USE
+	  || GET_CODE (XEXP (exp, 0)) != REG
+	  || GET_MODE (XEXP (exp, 0)) != CCmode
+	  || ! CR_REGNO_P (REGNO (XEXP (exp, 0))))
+	return 0;
+    }
+  return 1;
+})
+
 ;; Return 1 if OP is valid for lmw insn, known to be a PARALLEL.
 (define_predicate "lmw_operation"
   (match_code "parallel")
