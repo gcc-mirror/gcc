@@ -1,11 +1,16 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans-expr.c: Include only gimplify.h and gimple.h as needed.
+	* trans-openmp.c: Likewise.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
-	* fortran/f95-lang.c: Don't include gimple.h.
-	* fortran/trans-array.c: Include gimple-expr.h instead of gimple.h.
-	* fortran/trans.c: Likewise.
-	* fortran/trans-decl.c: Likewise.
-	* fortran/trans-expr.c: Include gimplify.h.
-	* fortran/trans-openmp.c: Likewise.
+	* f95-lang.c: Don't include gimple.h.
+	* trans-array.c: Include gimple-expr.h instead of gimple.h.
+	* trans.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-expr.c: Include gimplify.h.
+	* trans-openmp.c: Likewise.
 
 2013-11-07  Janus Weil  <janus@gcc.gnu.org>
 

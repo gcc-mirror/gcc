@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "langhooks.h"
 #include "md5.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
 

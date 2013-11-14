@@ -1242,6 +1242,7 @@ OBJS = \
 	gimple-streamer-out.o \
 	gimple-walk.o \
 	gimplify.o \
+	gimplify-me.o \
 	godump.o \
 	graph.o \
 	graphds.o \

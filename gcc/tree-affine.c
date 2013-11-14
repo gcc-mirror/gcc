@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "pointer-set.h"
 #include "tree-affine.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "flags.h"
 #include "dumpfile.h"

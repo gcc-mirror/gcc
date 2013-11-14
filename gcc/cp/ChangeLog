@@ -1,17 +1,29 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Include only gimplify.h and gimple.h as needed.
+	* cp-gimplify.c: Likewise.
+	* error.c: Likewise.
+	* init.c: Likewise.
+	* optimize.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+
 2013-11-12  Andrew MacLeod <amacleod@redhat.com>
 
-	* cp/class.c: Include gimplify.h.
-	* cp/cp-gimplify.c: Likewise.
-	* cp/error.c: Likewise.
-	* cp/init.c: Likewise.
-	* cp/optimize.c: Likewise.
-	* cp/pt.c: Likewise.
-	* cp/semantics.c: Likewise.
-	* cp/tree.c: Likewise.
-	* cp/vtable-class-hierarchy.c: Likewise.
-	* cp/decl2.c: Don't include gimple.h.
-	* cp/except.c: Likewise.
-	* cp/method.c: Include pointer-set.h instead of gimple.h.
+	* class.c: Include gimplify.h.
+	* cp-gimplify.c: Likewise.
+	* error.c: Likewise.
+	* init.c: Likewise.
+	* optimize.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+	* decl2.c: Don't include gimple.h.
+	* except.c: Likewise.
+	* method.c: Include pointer-set.h instead of gimple.h.
 
 2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
 

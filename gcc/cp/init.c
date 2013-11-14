@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "target.h"
+#include "gimple.h"
 #include "gimplify.h"
 
 static bool begin_init_stmts (tree *, tree *);

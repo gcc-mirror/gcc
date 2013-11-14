@@ -26,6 +26,7 @@
 #include "function.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"

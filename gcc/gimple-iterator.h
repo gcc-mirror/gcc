@@ -35,6 +35,16 @@ typedef struct gimple_stmt_iterator_d
   basic_block bb;
 } gimple_stmt_iterator;
  
+enum gsi_iterator_update
+{
+  GSI_NEW_STMT,		/* Only valid when single statement is added, move
+			   iterator to it.  */
+  GSI_SAME_STMT,	/* Leave the iterator at the same statement.  */
+  GSI_CONTINUE_LINKING	/* Move iterator to whatever position is suitable
+			   for linking other statements in the same
+			   direction.  */
+};
+
 extern void gsi_insert_seq_before_without_update (gimple_stmt_iterator *,
 						  gimple_seq,
 						  enum gsi_iterator_update);

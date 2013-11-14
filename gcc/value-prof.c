@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "regs.h"
 #include "ggc.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"

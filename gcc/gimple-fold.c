@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "dumpfile.h"
 #include "bitmap.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"

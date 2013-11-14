@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "tree-dump.h"
+#include "gimple.h"
 #include "gimplify.h"
 
 /* Data type for the expressions representing sizes of data types.
