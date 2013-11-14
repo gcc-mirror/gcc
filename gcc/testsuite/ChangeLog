@@ -1,3 +1,7 @@
+2013-11-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Fix target selector.
+ 
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gnat.dg/specs/addr1.ads: XFAIL on x32.
