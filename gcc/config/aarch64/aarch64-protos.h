@@ -108,25 +108,6 @@ enum aarch64_symbol_type
    cost models and vectors for address cost calculations, register
    move costs and memory move costs.  */
 
-/* Extra costs for specific insns.  Only records the cost above a
-   single insn.  */
-
-struct cpu_rtx_cost_table
-{
-  const int memory_load;
-  const int memory_store;
-  const int register_shift;
-  const int int_divide;
-  const int float_divide;
-  const int double_divide;
-  const int int_multiply;
-  const int int_multiply_extend;
-  const int int_multiply_add;
-  const int int_multiply_extend_add;
-  const int float_multiply;
-  const int double_multiply;
-};
-
 /* Additional cost for addresses.  */
 struct cpu_addrcost_table
 {
@@ -170,7 +151,7 @@ struct cpu_vector_cost
 
 struct tune_params
 {
-  const struct cpu_rtx_cost_table *const insn_extra_cost;
+  const struct cpu_cost_table *const insn_extra_cost;
   const struct cpu_addrcost_table *const addr_cost;
   const struct cpu_regmove_cost *const regmove_cost;
   const struct cpu_vector_cost *const vec_costs;

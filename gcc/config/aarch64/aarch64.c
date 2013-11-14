@@ -47,6 +47,7 @@
 #include "dwarf2.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
+#include "config/arm/aarch-cost-tables.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -149,21 +150,6 @@ unsigned long aarch64_tune_flags = 0;
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
 #endif
-static const struct cpu_rtx_cost_table generic_rtx_cost_table =
-{
-  NAMED_PARAM (memory_load, COSTS_N_INSNS (1)),
-  NAMED_PARAM (memory_store, COSTS_N_INSNS (0)),
-  NAMED_PARAM (register_shift, COSTS_N_INSNS (1)),
-  NAMED_PARAM (int_divide, COSTS_N_INSNS (6)),
-  NAMED_PARAM (float_divide, COSTS_N_INSNS (2)),
-  NAMED_PARAM (double_divide, COSTS_N_INSNS (6)),
-  NAMED_PARAM (int_multiply, COSTS_N_INSNS (1)),
-  NAMED_PARAM (int_multiply_extend, COSTS_N_INSNS (1)),
-  NAMED_PARAM (int_multiply_add, COSTS_N_INSNS (1)),
-  NAMED_PARAM (int_multiply_extend_add, COSTS_N_INSNS (1)),
-  NAMED_PARAM (float_multiply, COSTS_N_INSNS (0)),
-  NAMED_PARAM (double_multiply, COSTS_N_INSNS (1))
-};
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
@@ -216,7 +202,7 @@ __extension__
 #endif
 static const struct tune_params generic_tunings =
 {
-  &generic_rtx_cost_table,
+  &generic_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,
@@ -4491,7 +4477,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 		   int param ATTRIBUTE_UNUSED, int *cost, bool speed)
 {
   rtx op0, op1;
-  const struct cpu_rtx_cost_table *extra_cost
+  const struct cpu_cost_table *extra_cost
     = aarch64_tune_params->insn_extra_cost;
 
   switch (code)
@@ -4504,7 +4490,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	{
 	case MEM:
 	  if (speed)
-	    *cost += extra_cost->memory_store;
+	    *cost += extra_cost->ldst.store;
 
 	  if (op1 != const0_rtx)
 	    *cost += rtx_cost (op1, SET, 1, speed);
@@ -4541,7 +4527,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
     case MEM:
       if (speed)
-	*cost += extra_cost->memory_load;
+	*cost += extra_cost->ldst.load;
 
       return true;
 
@@ -4627,7 +4613,8 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 					    speed)
 				+ rtx_cost (op1, PLUS, 1, speed));
 		      if (speed)
-			*cost += extra_cost->int_multiply_extend_add;
+			*cost +=
+			  extra_cost->mult[GET_MODE (x) == DImode].extend_add;
 		      return true;
 		    }
 		  *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
@@ -4635,7 +4622,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 			    + rtx_cost (op1, PLUS, 1, speed));
 
 		  if (speed)
-		    *cost += extra_cost->int_multiply_add;
+		    *cost += extra_cost->mult[GET_MODE (x) == DImode].add;
 		}
 
 	      *cost += (rtx_cost (new_op0, PLUS, 0, speed)
@@ -4701,7 +4688,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
       /* Shifting by a register often takes an extra cycle.  */
       if (speed && !CONST_INT_P (XEXP (x, 1)))
-	*cost += extra_cost->register_shift;
+	*cost += extra_cost->alu.arith_shift_reg;
 
       *cost += rtx_cost (XEXP (x, 0), ASHIFT, 0, speed);
       return true;
@@ -4744,19 +4731,19 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	      *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
 			+ rtx_cost (XEXP (op1, 0), MULT, 1, speed));
 	      if (speed)
-		*cost += extra_cost->int_multiply_extend;
+		*cost += extra_cost->mult[GET_MODE (x) == DImode].extend;
 	      return true;
 	    }
 
 	  if (speed)
-	    *cost += extra_cost->int_multiply;
+	    *cost += extra_cost->mult[GET_MODE (x) == DImode].simple;
 	}
       else if (speed)
 	{
 	  if (GET_MODE (x) == DFmode)
-	    *cost += extra_cost->double_multiply;
+	    *cost += extra_cost->fp[1].mult;
 	  else if (GET_MODE (x) == SFmode)
-	    *cost += extra_cost->float_multiply;
+	    *cost += extra_cost->fp[0].mult;
 	}
 
       return false;  /* All arguments need to be in registers.  */
@@ -4767,14 +4754,14 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       if (speed)
 	{
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-	    *cost += (extra_cost->int_multiply_add
-		      + extra_cost->int_divide);
+	    *cost += (extra_cost->mult[GET_MODE (x) == DImode].add
+		      + extra_cost->mult[GET_MODE (x) == DImode].idiv);
 	  else if (GET_MODE (x) == DFmode)
-	    *cost += (extra_cost->double_multiply
-		      + extra_cost->double_divide);
+	    *cost += (extra_cost->fp[1].mult
+		      + extra_cost->fp[1].div);
 	  else if (GET_MODE (x) == SFmode)
-	    *cost += (extra_cost->float_multiply
-		      + extra_cost->float_divide);
+	    *cost += (extra_cost->fp[0].mult
+		      + extra_cost->fp[0].div);
 	}
       return false;  /* All arguments need to be in registers.  */
 
@@ -4784,11 +4771,11 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       if (speed)
 	{
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-	    *cost += extra_cost->int_divide;
+	    *cost += extra_cost->mult[GET_MODE (x) == DImode].idiv;
 	  else if (GET_MODE (x) == DFmode)
-	    *cost += extra_cost->double_divide;
+	    *cost += extra_cost->fp[1].div;
 	  else if (GET_MODE (x) == SFmode)
-	    *cost += extra_cost->float_divide;
+	    *cost += extra_cost->fp[0].div;
 	}
       return false;  /* All arguments need to be in registers.  */
 
