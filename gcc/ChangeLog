@@ -1,4 +1,187 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.h (RS6000_SAVE_AREA): Handle ABI_ELFv2.
+	(RS6000_SAVE_TOC): Remove.
+	(RS6000_TOC_SAVE_SLOT): New macro.
+	* config/rs6000/rs6000.c (rs6000_parm_offset): New function.
+	(rs6000_parm_start): Use it.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_emit_prologue): Use RS6000_TOC_SAVE_SLOT.
+	(rs6000_emit_epilogue): Likewise.
+	(rs6000_call_aix): Likewise.
+	(rs6000_output_function_prologue): Do not save/restore r11
+	around calling _mcount for ABI_ELFv2.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_reg_parm_stack_space):
+	Add prototype.
+	* config/rs6000/rs6000.h (RS6000_REG_SAVE): Remove.
+	(REG_PARM_STACK_SPACE): Call rs6000_reg_parm_stack_space.
+	* config/rs6000/rs6000.c (rs6000_parm_needs_stack): New function.
+	(rs6000_function_parms_need_stack): Likewise.
+	(rs6000_reg_parm_stack_space): Likewise.
+	(rs6000_function_arg): Do not replace BLKmode by Pmode when
+	returning a register argument.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Michael Gschwind  <mkg@us.ibm.com>
+
+	* config/rs6000/rs6000.h (FP_ARG_MAX_RETURN): New macro.
+	(ALTIVEC_ARG_MAX_RETURN): Likewise.
+	(FUNCTION_VALUE_REGNO_P): Use them.
+	* config/rs6000/rs6000.c (TARGET_RETURN_IN_MSB): Define.
+	(rs6000_return_in_msb): New function.
+	(rs6000_return_in_memory): Handle ELFv2 homogeneous aggregates.
+	Handle aggregates of up to 16 bytes for ELFv2.
+	(rs6000_function_value): Handle ELFv2 homogeneous aggregates.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Michael Gschwind  <mkg@us.ibm.com>
+
+	* config/rs6000/rs6000.h (AGGR_ARG_NUM_REG): Define.
+	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): New function.
+	(rs6000_discover_homogeneous_aggregate): Likewise.
+	(rs6000_function_arg_boundary): Handle homogeneous aggregates.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_function_arg): Likewise.
+	(rs6000_arg_partial_bytes): Likewise.
+	(rs6000_psave_function_arg): Handle BLKmode arguments.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Michael Gschwind  <mkg@us.ibm.com>
+
+	* config/rs6000/rs6000.h (AGGR_ARG_NUM_REG): Define.
+	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): New function.
+	(rs6000_discover_homogeneous_aggregate): Likewise.
+	(rs6000_function_arg_boundary): Handle homogeneous aggregates.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_function_arg): Likewise.
+	(rs6000_arg_partial_bytes): Likewise.
+	(rs6000_psave_function_arg): Handle BLKmode arguments.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (machine_function): New member
+	r2_setup_needed.
+	(rs6000_emit_prologue): Set r2_setup_needed if necessary.
+	(rs6000_output_mi_thunk): Set r2_setup_needed.
+	(rs6000_output_function_prologue): Output global entry point
+	prologue and local entry point marker if needed for ABI_ELFv2.
+	Output -mprofile-kernel code here.
+	(output_function_profiler): Do not output -mprofile-kernel
+	code here; moved to rs6000_output_function_prologue.
+	(rs6000_file_start): Output ".abiversion 2" for ABI_ELFv2.
+
+	(rs6000_emit_move): Do not handle dot symbols for ABI_ELFv2.
+	(rs6000_output_function_entry): Likewise.
+	(rs6000_assemble_integer): Likewise.
+	(rs6000_elf_encode_section_info): Likewise.
+	(rs6000_elf_declare_function_name): Do not create dot symbols
+	or .opd section for ABI_ELFv2.
+
+	(rs6000_trampoline_size): Update for ABI_ELFv2 trampolines.
+	(rs6000_trampoline_init): Likewise.
+	(rs6000_elf_file_end): Call file_end_indicate_exec_stack
+	for ABI_ELFv2.
+
+	(rs6000_call_aix): Handle ELFv2 indirect calls.  Do not check
+	for function descriptors in ABI_ELFv2.
+
+	* config/rs6000/rs6000.md ("*call_indirect_aix<mode>"): Support
+	on ABI_AIX only, not ABI_ELFv2.
+	("*call_value_indirect_aix<mode>"): Likewise.
+	("*call_indirect_elfv2<mode>"): New pattern.
+	("*call_value_indirect_elfv2<mode>"): Likewise.
+
+	* config/rs6000/predicates.md ("symbol_ref_operand"): Do not
+	check for function descriptors in ABI_ELFv2.
+	("current_file_function_operand"): Likewise.
+
+	* config/rs6000/ppc-asm.h [__powerpc64__ && _CALL_ELF == 2]:
+	(toc): Undefine.
+	(FUNC_NAME): Define ELFv2 variant.
+	(JUMP_TARGET): Likewise.
+	(FUNC_START): Likewise.
+	(HIDDEN_FUNC): Likewise.
+	(FUNC_END): Likeiwse.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config.gcc [powerpc*-*-* | rs6000-*-*]: Support --with-abi=elfv1
+	and --with-abi=elfv2.
+	* config/rs6000/option-defaults.h (OPTION_DEFAULT_SPECS): Add "abi".
+	* config/rs6000/rs6000.opt (mabi=elfv1): New option.
+	(mabi=elfv2): Likewise.
+	* config/rs6000/rs6000-opts.h (enum rs6000_abi): Add ABI_ELFv2.
+	* config/rs6000/linux64.h (DEFAULT_ABI): Do not hard-code to AIX_ABI
+	if !RS6000_BI_ARCH.
+	(ELFv2_ABI_CHECK): New macro.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Use it to decide whether to set
+	rs6000_current_abi to ABI_AIX or ABI_ELFv2.
+	(GLIBC_DYNAMIC_LINKER64): Support ELFv2 ld.so version.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Predefine
+	_CALL_ELF and __STRUCT_PARM_ALIGN__ if appropriate.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Handle ABI_ELFv2.
+	(debug_stack_info): Likewise.
+	(rs6000_file_start): Treat ABI_ELFv2 the same as ABI_AIX.
+	(rs6000_legitimize_tls_address): Likewise.
+	(rs6000_conditional_register_usage): Likewise.
+	(rs6000_emit_move): Likewise.
+	(init_cumulative_args): Likewise.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_function_arg): Likewise.
+	(rs6000_arg_partial_bytes): Likewise.
+	(rs6000_output_function_entry): Likewise.
+	(rs6000_assemble_integer): Likewise.
+	(rs6000_savres_strategy): Likewise.
+	(rs6000_stack_info): Likewise.
+	(rs6000_function_ok_for_sibcall): Likewise.
+	(rs6000_emit_load_toc_table): Likewise.
+	(rs6000_savres_routine_name): Likewise.
+	(ptr_regno_for_savres): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	(output_profile_hook): Likewise.
+	(output_function_profiler): Likewise.
+	(rs6000_trampoline_size): Likewise.
+	(rs6000_trampoline_init): Likewise.
+	(rs6000_elf_output_toc_section_asm_op): Likewise.
+	(rs6000_elf_encode_section_info): Likewise.
+	(rs6000_elf_reloc_rw_mask): Likewise.
+	(rs6000_elf_declare_function_name): Likewise.
+	(rs6000_function_arg_boundary): Treat ABI_ELFv2 the same as ABI_AIX,
+	except that rs6000_compat_align_parm is always assumed false.
+	(rs6000_gimplify_va_arg): Likewise.
+	(rs6000_call_aix): Update comment.
+	(rs6000_sibcall_aix): Likewise.
+	* config/rs6000/rs6000.md ("tls_gd_aix<TLSmode:tls_abi_suffix>"):
+	Treat ABI_ELFv2 the same as ABI_AIX.
+	("*tls_gd_call_aix<TLSmode:tls_abi_suffix>"): Likewise.
+	("tls_ld_aix<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_ld_call_aix<TLSmode:tls_abi_suffix>"): Likewise.
+	("load_toc_aix_si"): Likewise.
+	("load_toc_aix_di"): Likewise.
+	("call"): Likewise.
+	("call_value"): Likewise.
+	("*call_local_aix<mode>"): Likewise.
+	("*call_value_local_aix<mode>"): Likewise.
+	("*call_nonlocal_aix<mode>"): Likewise.
+	("*call_value_nonlocal_aix<mode>"): Likewise.
+	("*call_indirect_aix<mode>"): Likewise.
+	("*call_value_indirect_aix<mode>"): Likewise.
+	("sibcall"): Likewise.
+	("sibcall_value"): Likewise.
+	("*sibcall_aix<mode>"): Likewise.
+	("*sibcall_value_aix<mode>"): Likewise.
+	* config/rs6000/predicates.md ("symbol_ref_operand"): Likewise.
+	("current_file_function_operand"): Likewise.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Simplify logic
 	by making use of the fact that for vector / floating point arguments

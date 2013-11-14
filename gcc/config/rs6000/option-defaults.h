@@ -54,6 +54,7 @@
    --with-float is ignored if -mhard-float or -msoft-float are
      specified.  */
 #define OPTION_DEFAULT_SPECS \
+  {"abi", "%{!mabi=elfv*:-mabi=%(VALUE)}" }, \
   {"tune", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }, \
   {"tune_32", "%{" OPT_ARCH32 ":%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}}" }, \
   {"tune_64", "%{" OPT_ARCH64 ":%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}}" }, \

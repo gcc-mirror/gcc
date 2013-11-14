@@ -3020,6 +3020,22 @@ proc check_effective_target_powerpc_405_nocache { } {
     }
 }
 
+# Return 1 if this is a PowerPC target using the ELFv2 ABI.
+
+proc check_effective_target_powerpc_elfv2 { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages powerpc_elfv2 object {
+	    #if _CALL_ELF != 2
+	    #error not ELF v2 ABI
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a SPU target with a toolchain that
 # supports automatic overlay generation.
 
