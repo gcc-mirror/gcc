@@ -1,3 +1,14 @@
+2013-11-14  Cong Hou  <congh@google.com>
+
+	* tree-vectorizer.h (struct dr_with_seg_len): Remove the base
+	address field as it can be obtained from dr.  Rename the struct.
+	* tree-vect-data-refs.c (comp_dr_with_seg_len_pair): Consider
+	steps of data references during sort.
+	(vect_prune_runtime_alias_test_list): Adjust with the change to
+	struct dr_with_seg_len.
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
+	Adjust with the change to struct dr_with_seg_len.
+
 2013-11-14  Jeff Law  <law@redhat.com>
 
 	PR middle-end/59127
