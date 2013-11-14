@@ -1,3 +1,15 @@
+2013-11-14  Jeff Law  <law@redhat.com>
+
+	PR middle-end/59127
+	* basic-block.h (has_abnormal_outgoing_edge_p): Moved here from...
+	* tree-inline.c (has_abnormal_outgoing_edge_p): Remove.
+	* gimple-ssa-isolate-paths.c: Include tree-cfg.h.
+	(find_implicit_erroneous_behaviour): If a block has abnormal outgoing
+	edges, then ignore it.  If the statement exhibiting erroneous
+	behaviour ends basic blocks, with the exception of GIMPLE_RETURNs,
+	then we can not optimize.
+	(find_explicit_erroneous_behaviour): Likewise.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimplify-me.h:  New file.  Add prototypes.
