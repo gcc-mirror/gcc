@@ -1,3 +1,10 @@
+2013-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59101
+	* config/i386/i386.md (*anddi_2): Only allow CCZmode if
+	operands[2] satisfies_constraint_Z that might have bit 31 set.
+
 2013-11-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59102
