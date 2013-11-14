@@ -152,7 +152,7 @@ static int for_each_template_parm (tree, tree_fn_t, void*,
 				   struct pointer_set_t*, bool);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
-static bool inline_needs_template_parms (tree);
+static bool inline_needs_template_parms (tree, bool);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
 static void register_local_specialization (tree, tree);
@@ -378,9 +378,9 @@ template_class_depth (tree type)
    Returns true if processing DECL needs us to push template parms.  */
 
 static bool
-inline_needs_template_parms (tree decl)
+inline_needs_template_parms (tree decl, bool nsdmi)
 {
-  if (! DECL_TEMPLATE_INFO (decl))
+  if (!decl || (!nsdmi && ! DECL_TEMPLATE_INFO (decl)))
     return false;
 
   return (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (most_general_template (decl)))
@@ -449,16 +449,23 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
     }
 }
 
-/* Restore the template parameter context for a member template or
-   a friend template defined in a class definition.  */
+/* Restore the template parameter context for a member template, a
+   friend template defined in a class definition, or a non-template
+   member of template class.  */
 
 void
 maybe_begin_member_template_processing (tree decl)
 {
   tree parms;
   int levels = 0;
+  bool nsdmi = TREE_CODE (decl) == FIELD_DECL;
 
-  if (inline_needs_template_parms (decl))
+  if (nsdmi)
+    decl = (CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
+	    ? CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (decl))
+	    : NULL_TREE);
+
+  if (inline_needs_template_parms (decl, nsdmi))
     {
       parms = DECL_TEMPLATE_PARMS (most_general_template (decl));
       levels = TMPL_PARMS_DEPTH (parms) - processing_template_decl;
