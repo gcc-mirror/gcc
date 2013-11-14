@@ -1130,6 +1130,12 @@ expand_one_error_var (tree var)
 static bool
 defer_stack_allocation (tree var, bool toplevel)
 {
+  /* Whether the variable is small enough for immediate allocation not to be
+     a problem with regard to the frame size.  */
+  bool smallish
+    = (tree_low_cst (DECL_SIZE_UNIT (var), 1)
+       < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING));
+
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
      Similarly for Address Sanitizer.  */
@@ -1141,8 +1147,15 @@ defer_stack_allocation (tree var, bool toplevel)
   if (DECL_ALIGN (var) > MAX_SUPPORTED_STACK_ALIGNMENT)
     return true;
 
-  /* Variables in the outermost scope automatically conflict with
-     every other variable.  The only reason to want to defer them
+  /* When optimization is enabled, DECL_IGNORED_P variables originally scoped
+     might be detached from their block and appear at toplevel when we reach
+     here.  We want to coalesce them with variables from other blocks when
+     the immediate contribution to the frame size would be noticeable.  */
+  if (toplevel && optimize > 0 && DECL_IGNORED_P (var) && !smallish)
+    return true;
+
+  /* Variables declared in the outermost scope automatically conflict
+     with every other variable.  The only reason to want to defer them
      at all is that, after sorting, we can more efficiently pack
      small variables in the stack frame.  Continue to defer at -O2.  */
   if (toplevel && optimize < 2)
@@ -1154,9 +1167,7 @@ defer_stack_allocation (tree var, bool toplevel)
      other hand, we don't want the function's stack frame size to
      get completely out of hand.  So we avoid adding scalars and
      "small" aggregates to the list at all.  */
-  if (optimize == 0
-      && (tree_low_cst (DECL_SIZE_UNIT (var), 1)
-          < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)))
+  if (optimize == 0 && smallish)
     return false;
 
   return true;
@@ -1676,9 +1687,11 @@ expand_used_vars (void)
       else if (TREE_STATIC (var) || DECL_EXTERNAL (var))
 	expand_now = true;
 
-      /* If the variable is not associated with any block, then it
-	 was created by the optimizers, and could be live anywhere
-	 in the function.  */
+      /* Expand variables not associated with any block now.  Those created by
+	 the optimizers could be live anywhere in the function.  Those that
+	 could possibly have been scoped originally and detached from their
+	 block will have their allocation deferred so we coalesce them with
+	 others when optimization is enabled.  */
       else if (TREE_USED (var))
 	expand_now = true;
 

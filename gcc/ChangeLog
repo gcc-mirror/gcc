@@ -1,3 +1,10 @@
+2013-11-14   Olivier Hainque  <hainque@adacore.com>
+
+	* cfgexpand.c (defer_stack_allocation): When optimization is enabled,
+	defer allocation of DECL_IGNORED_P variables at toplevel unless really
+	small.  Factorize size threshold computation from the existing one.
+	(expand_used_vars): Refine comment.
+
 2013-11-14  Cong Hou  <congh@google.com>
 
 	* tree-vectorizer.h (struct dr_with_seg_len): Remove the base
