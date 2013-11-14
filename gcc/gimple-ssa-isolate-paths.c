@@ -74,9 +74,11 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
      LHS will be a throw-away SSA_NAME and the RHS is the NULL dereference.
 
      If the dereference is a store and we can easily transform the RHS,
-     then simplify the RHS to enable more DCE.  */
+     then simplify the RHS to enable more DCE.   Note that we require the
+     statement to be a GIMPLE_ASSIGN which filters out calls on the RHS.  */
   gimple stmt = gsi_stmt (*si_p);
   if (walk_stmt_load_store_ops (stmt, (void *)op, NULL, check_loadstore)
+      && is_gimple_assign (stmt)
       && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
     {
       /* We just need to turn the RHS into zero converted to the proper

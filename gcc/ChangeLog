@@ -1,3 +1,10 @@
+2013-11-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59102
+	* gimple-ssa-isolate-paths.c
+	(insert_trap_and_remove_trailing_statments): Ensure STMT is a
+	gimple assignment before looking at gimple_assign_lhs.
+
 2013-11-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c: Add comment about threads at the top of file.
