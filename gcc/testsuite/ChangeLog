@@ -1,3 +1,9 @@
+2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Define _XOPEN_SOURCE=600 on
+	*-*-solaris2.1[0-9]*.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
 2013-11-14  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.dg/tree-ssa/forwprop-28.c: Disable for cortex_m.
