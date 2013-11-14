@@ -1,3 +1,9 @@
+2013-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/57491
+	* config/ia64/ia64.c (ia64_split_tmode_move): Relax `dead'
+	flag setting.
+
 2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
