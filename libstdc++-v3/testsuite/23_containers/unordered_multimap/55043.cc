@@ -41,29 +41,3 @@ void test01()
   std::vector<uim> v;
   v.emplace_back(uim());
 }
-
-// Unordered containers don't use allocator_traits yet so need full
-// Allocator interface, derive from std::allocator to get it.
-template<typename T, bool R>
-struct Alloc : std::allocator<T>
-{
-  template<typename U>
-    struct rebind { typedef Alloc<U, R> other; };
-
-  Alloc() = default;
-
-  template<typename U>
-    Alloc(const Alloc<U, R>&) { }
-
-  typedef typename std::conditional<R, T&&, const T&>::type arg_type;
-
-  void construct(T* p, arg_type) const
-  { new((void*)p) T(); }
-};
-
-// verify is_copy_constructible depends on allocator
-typedef test_type<Alloc<MoveOnly, true>> uim_rval;
-static_assert(!std::is_copy_constructible<uim_rval>::value, "is not copyable");
-
-typedef test_type<Alloc<MoveOnly, false>> uim_lval;
-static_assert(std::is_copy_constructible<uim_lval>::value, "is copyable");
