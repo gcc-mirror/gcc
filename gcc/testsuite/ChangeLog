@@ -1,3 +1,8 @@
+2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gnat.dg/specs/addr1.ads: Revert the last change.
+	* gnat.dg/specs/atomic1.ads: Likewise.
+
 2013-11-14  Cong Hou  <congh@google.com>
 
 	* gcc.dg/vect/vect-alias-check.c: Update.
