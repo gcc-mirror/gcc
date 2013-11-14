@@ -1,3 +1,40 @@
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_indirect_aix): Rename to ...
+	(rs6000_call_aix): ... this.  Handle both direct and indirect calls.
+	Create call insn directly instead of via various gen_... routines.
+	Mention special registers used by the call in CALL_INSN_FUNCTION_USAGE.
+	(rs6000_sibcall_aix): New function.
+	* config/rs6000/rs6000.md (TOC_SAVE_OFFSET_32BIT): Remove.
+	(TOC_SAVE_OFFSET_64BIT): Likewise.
+	(AIX_FUNC_DESC_TOC_32BIT): Likewise.
+	(AIX_FUNC_DESC_TOC_64BIT): Likewise.
+	(AIX_FUNC_DESC_SC_32BIT): Likewise.
+	(AIX_FUNC_DESC_SC_64BIT): Likewise.
+	("call" expander): Call rs6000_call_aix.
+	("call_value" expander): Likewise.
+	("call_indirect_aix<ptrsize>"): Replace this pattern ...
+	("call_indirect_aix<ptrsize>_nor11"): ... and this pattern ...
+	("*call_indirect_aix<mode>"): ... by this insn pattern.
+	("call_value_indirect_aix<ptrsize>"): Replace this pattern ...
+	("call_value_indirect_aix<ptrsize>_nor11"): ... and this pattern ...
+	("*call_value_indirect_aix<mode>"): ... by this insn pattern.
+	("*call_nonlocal_aix32", "*call_nonlocal_aix64"): Replace by ...
+	("*call_nonlocal_aix<mode>"): ... this pattern.
+	("*call_value_nonlocal_aix32", "*call_value_nonlocal_aix64"): Replace
+	("*call_value_nonlocal_aix<mode>"): ... by this pattern.
+	("*call_local_aix<mode>"): New insn pattern.
+	("*call_value_local_aix<mode>"): Likewise.
+	("sibcall" expander): Call rs6000_sibcall_aix.
+	("sibcall_value" expander): Likewise.  Move earlier in file.
+	("*sibcall_nonlocal_aix<mode>"): Replace by ...
+	("*sibcall_aix<mode>"): ... this pattern.
+	("*sibcall_value_nonlocal_aix<mode>"): Replace by ...
+	("*sibcall_value_aix<mode>"): ... this pattern.
+	* config/rs6000/rs6000-protos.h (rs6000_call_indirect_aix): Remove.
+	(rs6000_call_aix): Add prototype.
+	(rs6000_sibcall_aix): Likewise.
+
 2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/59122
