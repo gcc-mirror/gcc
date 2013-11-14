@@ -1,3 +1,8 @@
+2013-11-14  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58533
+	* g++.dg/cpp1y/pr58533.C: New testcase (fixed by r204714).
+
 2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59101
