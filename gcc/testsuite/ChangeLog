@@ -1,3 +1,8 @@
+2013-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59101
+	* gcc.c-torture/execute/pr59101.c: New test.
+
 2013-11-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59102
