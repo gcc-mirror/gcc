@@ -1,4 +1,9 @@
-2013-11-14  Tom de Vries  <tom@codesourcery.com>
+2013-11-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59102
+	* gcc.c-torture/compile/pr59102.c: New test.
+	 
+2013-11-13  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tail-merge-store.c: New test.
 
@@ -7,7 +12,7 @@
 	* testsuite/g++.dg/plugin/selfassign.c: Include gimple-iterator.h.
 	* testsuite/gcc.dg/plugin/selfassign.c: Likewise.
 
-2013-11-12  Jeff Law  <law@redhat.com>
+2013-11-13  Jeff Law  <law@redhat.com>
 
 	* PR middle-end/59119
 	* gcc.c-torture/compile/pr59119.c: New test.
