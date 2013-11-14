@@ -1,3 +1,8 @@
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* scripts/extract_symvers.in: Ignore <localentry: > fields
+	in readelf --symbols output.
+
 2013-11-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/alloc_traits.h (__allow_copy_cons): Remove.

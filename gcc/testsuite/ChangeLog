@@ -1,5 +1,28 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gcc.target/powerpc/ppc64-abi-1.c (stack_frame_t): Remove
+	compiler and linker field if _CALL_ELF == 2.
+	* gcc.target/powerpc/ppc64-abi-2.c (stack_frame_t): Likewise.
+	* gcc.target/powerpc/ppc64-abi-dfp-1.c (stack_frame_t): Likewise.
+	* gcc.dg/stack-usage-1.c (SIZE): Update value for _CALL_ELF == 2.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-dfp-1.c (FUNC_START): New macro.
+	(WRAPPER): Use it.
+	* gcc.target/powerpc/no-r11-1.c: Skip on powerpc_elfv2.
+	* gcc.target/powerpc/no-r11-2.c: Skip on powerpc_elfv2.
+	* gcc.target/powerpc/no-r11-3.c: Skip on powerpc_elfv2.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_elfv2):
+	New function.
+	* gcc.target/powerpc/pr57949-1.c: Disable for powerpc_elfv2.
+	* gcc.target/powerpc/pr57949-2.c: Likewise.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* g++.dg/eh/ppc64-sighandle-cr.C: New test.
 
 2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

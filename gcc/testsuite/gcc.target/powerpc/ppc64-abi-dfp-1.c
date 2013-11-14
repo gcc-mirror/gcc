@@ -33,15 +33,27 @@ reg_parms_t gparms;
 
 
 /* Wrapper to save the GPRs and FPRs and then jump to the real function.  */
+#if _CALL_ELF != 2
+#define FUNC_START(NAME)						\
+	"\t.globl\t" NAME "\n\t"					\
+         ".section \".opd\",\"aw\"\n\t"					\
+         ".align 3\n"							\
+         NAME ":\n\t"							\
+         ".quad .L." NAME ",.TOC.@tocbase,0\n\t"			\
+         ".text\n\t"							\
+         ".type " NAME ", @function\n"					\
+         ".L." NAME ":\n\t"
+#else
+#define FUNC_START(NAME)						\
+	"\t.globl\t" NAME "\n\t"					\
+         ".text\n\t"							\
+         NAME ":\n"							\
+	"0:\taddis 2,12,(.TOC.-0b)@ha\n\t"				\
+	"addi 2,2,(.TOC.-0b)@l\n\t"					\
+	".localentry " NAME ",.-" NAME "\n\t"
+#endif
 #define WRAPPER(NAME)							\
-__asm__ ("\t.globl\t" #NAME "_asm\n\t"					\
-	 ".section \".opd\",\"aw\"\n\t"					\
-	 ".align 3\n"							\
-	 #NAME "_asm:\n\t"						\
-	 ".quad .L." #NAME "_asm,.TOC.@tocbase,0\n\t"			\
-	 ".text\n\t"							\
-	 ".type " #NAME "_asm, @function\n"				\
-	 ".L." #NAME "_asm:\n\t"					\
+__asm__ (FUNC_START (#NAME "_asm")					\
 	 "ld 11,gparms@got(2)\n\t"					\
 	 "std 3,0(11)\n\t"						\
 	 "std 4,8(11)\n\t"						\
@@ -75,8 +87,10 @@ typedef struct sf
   long a1;
   long a2;
   long a3;
+#if _CALL_ELF != 2
   long a4;
   long a5;
+#endif
   unsigned long slot[100];
 } stack_frame_t;
 

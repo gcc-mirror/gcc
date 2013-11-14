@@ -1527,18 +1527,14 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0			\
 			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
-/* Size of the outgoing register save area */
-#define RS6000_REG_SAVE \
-  ((DEFAULT_ABI == ABI_V4 ? 0 : 32) << (TARGET_64BIT ? 1 : 0))
-
 /* Size of the fixed area on the stack */
 #define RS6000_SAVE_AREA \
-  ((DEFAULT_ABI == ABI_V4 ? 8 : 24) << (TARGET_64BIT ? 1 : 0))
+  ((DEFAULT_ABI == ABI_V4 ? 8 : DEFAULT_ABI == ABI_ELFv2 ? 16 : 24)	\
+   << (TARGET_64BIT ? 1 : 0))
 
-/* MEM representing address to save the TOC register */
-#define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
-				     plus_constant (Pmode, stack_pointer_rtx, \
-						    (TARGET_32BIT ? 20 : 40)))
+/* Stack offset for toc save slot.  */
+#define RS6000_TOC_SAVE_SLOT \
+  ((DEFAULT_ABI == ABI_ELFv2 ? 12 : 20) << (TARGET_64BIT ? 1 : 0))
 
 /* Align an address */
 #define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
@@ -1588,7 +1584,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 /* Define this if stack space is still allocated for a parameter passed
    in a register.  The value is the number of bytes allocated to this
    area.  */
-#define REG_PARM_STACK_SPACE(FNDECL)	RS6000_REG_SAVE
+#define REG_PARM_STACK_SPACE(FNDECL) rs6000_reg_parm_stack_space((FNDECL))
 
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
@@ -1641,10 +1637,17 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define ALTIVEC_ARG_MAX_REG (ALTIVEC_ARG_MIN_REG + 11)
 #define ALTIVEC_ARG_NUM_REG (ALTIVEC_ARG_MAX_REG - ALTIVEC_ARG_MIN_REG + 1)
 
+/* Maximum number of registers per ELFv2 homogeneous aggregate argument.  */
+#define AGGR_ARG_NUM_REG 8
+
 /* Return registers */
 #define GP_ARG_RETURN GP_ARG_MIN_REG
 #define FP_ARG_RETURN FP_ARG_MIN_REG
 #define ALTIVEC_ARG_RETURN (FIRST_ALTIVEC_REGNO + 2)
+#define FP_ARG_MAX_RETURN (DEFAULT_ABI != ABI_ELFv2 ? FP_ARG_RETURN	\
+			   : (FP_ARG_RETURN + AGGR_ARG_NUM_REG - 1))
+#define ALTIVEC_ARG_MAX_RETURN (DEFAULT_ABI != ABI_ELFv2 ? ALTIVEC_ARG_RETURN \
+			        : (ALTIVEC_ARG_RETURN + AGGR_ARG_NUM_REG - 1))
 
 /* Flags for the call/call_value rtl operations set up by function_arg */
 #define CALL_NORMAL		0x00000000	/* no special processing */
@@ -1664,8 +1667,10 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    On RS/6000, this is r3, fp1, and v2 (for AltiVec).  */
 #define FUNCTION_VALUE_REGNO_P(N)					\
   ((N) == GP_ARG_RETURN							\
-   || ((N) == FP_ARG_RETURN && TARGET_HARD_FLOAT && TARGET_FPRS)	\
-   || ((N) == ALTIVEC_ARG_RETURN && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI))
+   || ((N) >= FP_ARG_RETURN && (N) <= FP_ARG_MAX_RETURN			\
+       && TARGET_HARD_FLOAT && TARGET_FPRS)				\
+   || ((N) >= ALTIVEC_ARG_RETURN && (N) <= ALTIVEC_ARG_MAX_RETURN	\
+       && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI))
 
 /* 1 if N is a possible register number for function argument passing.
    On RS/6000, these are r3-r10 and fp1-fp13.
