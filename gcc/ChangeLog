@@ -1,3 +1,12 @@
+2013-11-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c: Include aarch-cost-tables.h.
+	(generic_rtx_cost_table): Remove.
+	(aarch64_rtx_costs): Use fields from cpu_cost_table.
+	* config/aarch64/aarch64-protos.h (tune_params): Use cpu_cost_table for
+	insn_extra_cost.
+	(cpu_rtx_cost_table): Remove.
+
 2013-11-14  Julian Brown  <julian@codesourcery.com>
 	Joey Ye  <joey.ye@arm.com>
 
