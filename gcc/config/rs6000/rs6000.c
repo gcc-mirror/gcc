@@ -9840,15 +9840,25 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			  tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  bool passed_in_gprs = true;
   int ret = 0;
   int align_words;
 
   if (DEFAULT_ABI == ABI_V4)
     return 0;
 
-  if (USE_ALTIVEC_FOR_ARG_P (cum, mode, named)
-      && cum->nargs_prototype >= 0)
-    return 0;
+  if (USE_ALTIVEC_FOR_ARG_P (cum, mode, named))
+    {
+      /* If we are passing this arg in the fixed parameter save area
+         (gprs or memory) as well as VRs, we do not use the partial
+	 bytes mechanism; instead, rs6000_function_arg will return a
+	 PARALLEL including a memory element as necessary.  */
+      if (TARGET_64BIT && ! cum->prototype)
+	return 0;
+
+      /* Otherwise, we pass in VRs only.  No partial copy possible.  */
+      passed_in_gprs = false;
+    }
 
   /* In this complicated case we just disable the partial_nregs code.  */
   if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
@@ -9858,24 +9868,27 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 
   if (USE_FP_FOR_ARG_P (cum, mode))
     {
+      unsigned long n_fpreg = (GET_MODE_SIZE (mode) + 7) >> 3;
+
       /* If we are passing this arg in the fixed parameter save area
-	 (gprs or memory) as well as fprs, then this function should
-	 return the number of partial bytes passed in the parameter
-	 save area rather than partial bytes passed in fprs.  */
+         (gprs or memory) as well as FPRs, we do not use the partial
+	 bytes mechanism; instead, rs6000_function_arg will return a
+	 PARALLEL including a memory element as necessary.  */
       if (type
 	  && (cum->nargs_prototype <= 0
 	      || (DEFAULT_ABI == ABI_AIX
 		  && TARGET_XL_COMPAT
 		  && align_words >= GP_ARG_NUM_REG)))
 	return 0;
-      else if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3)
-	       > FP_ARG_MAX_REG + 1)
+
+      /* Otherwise, we pass in FPRs only.  Check for partial copies.  */
+      passed_in_gprs = false;
+      if (cum->fregno + n_fpreg > FP_ARG_MAX_REG + 1)
 	ret = (FP_ARG_MAX_REG + 1 - cum->fregno) * 8;
-      else if (cum->nargs_prototype >= 0)
-	return 0;
     }
 
-  if (align_words < GP_ARG_NUM_REG
+  if (passed_in_gprs
+      && align_words < GP_ARG_NUM_REG
       && GP_ARG_NUM_REG < align_words + rs6000_arg_size (mode, type))
     ret = (GP_ARG_NUM_REG - align_words) * (TARGET_32BIT ? 4 : 8);
 

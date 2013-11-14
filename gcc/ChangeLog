@@ -1,5 +1,12 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Simplify logic
+	by making use of the fact that for vector / floating point arguments
+	passed both in VRs/FPRs and in the fixed parameter area, the partial
+	bytes mechanism is in fact not used.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_psave_function_arg): New function.
 	(rs6000_finish_function_arg): Likewise.
 	(rs6000_function_arg): Use rs6000_psave_function_arg and
