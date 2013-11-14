@@ -11169,9 +11169,9 @@ instead of the @option{-mcpu=} option.
 Specify the name of the target processor, optionally suffixed by one or more
 feature modifiers.  This option has the form
 @option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-possible values for @var{cpu} are @samp{generic}, @samp{large}.  The
-possible values for @var{feature} are documented in the sub-section
-below.
+possible values for @var{cpu} are @samp{generic}, @samp{cortex-a53},
+@samp{cortex-a57}.  The possible values for @var{feature} are documented
+in the sub-section below.
 
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
@@ -11184,8 +11184,12 @@ generating assembly code.
 Specify the name of the processor to tune the performance for.  The code will
 be tuned as if the target processor were of the type specified in this option,
 but still using instructions compatible with the target processor specified
-by a @option{-mcpu=} option.  This option cannot be suffixed by feature
-modifiers.
+by a @option{-mcpu=} option.  Where no @option{-mtune=} option is
+specified, the code will be tuned to perform well on the target processor
+given by @option{-mcpu=} or @option{-march=}.  Where none of
+@option{-mtune=}, @option{-mcpu=} or @option{-march=} are specified,
+the code will be tuned to perform well across a range of target
+processors.  This option cannot be suffixed by feature modifiers.
 
 @end table
 

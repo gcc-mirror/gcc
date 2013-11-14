@@ -1,5 +1,10 @@
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* doc/invoke.texi: Update documentation for AArch64's -mcpu
+	and -mtune options.
+
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-cores.def (example-1): Remove.
 	(example-2): Likewise.
 	* config/aarch64/aarch64-tune.md: Regenerate.
