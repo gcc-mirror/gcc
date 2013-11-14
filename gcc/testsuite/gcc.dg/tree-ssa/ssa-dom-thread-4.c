@@ -59,9 +59,9 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
    code we missed the edge when the first conditional is false
    (b_elt is zero, which means the second conditional is always
    zero.  */
-/* ARM Cortex-M0 defined LOGICAL_OP_NON_SHORT_CIRCUIT to false,
+/* ARM Cortex-M defined LOGICAL_OP_NON_SHORT_CIRCUIT to false,
    so skip below test.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1" { target { ! { { mips*-*-* avr-*-* arc*-*-* } || { arm_cortex_m && arm_thumb1 } } } } } } */
+/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1" { target { ! { { mips*-*-* avr-*-* arc*-*-* } || { arm_cortex_m } } } } } } */
 /* MIPS defines LOGICAL_OP_NON_SHORT_CIRCUIT to 0, so we split both
    "a_elt || b_elt" and "b_elt && kill_elt" into two conditions each,
    rather than using "(var1 != 0) op (var2 != 0)".  Also, as on other targets,

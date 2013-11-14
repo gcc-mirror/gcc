@@ -1,3 +1,11 @@
+2013-11-14  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Disable for cortex_m.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Ingore for cortex_m.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Likewise.
+
 2013-11-14  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/58533

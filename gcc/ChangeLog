@@ -1,3 +1,16 @@
+2013-11-14  Julian Brown  <julian@codesourcery.com>
+	Joey Ye  <joey.ye@arm.com>
+
+	* config/arm/arm.c (arm_cortex_m_branch_cost): New.
+	(arm_v7m_tune): New.
+	(arm_slowmul_tune, arm_fastmul_tune,
+	arm_strongarm_tune, arm_9e_tune, arm_v6t2_tune,
+	arm_cortex_tune, arm_cortex_a15_tune,
+	arm_cortex_a5_tune, arm_v6m_tune): Add comments
+	for Sched adj cost.
+	* config/arm/arm-cores.def (cortex-m4, cortex-m3):
+	Use arm_v7m_tune.
+
 2013-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/57491
