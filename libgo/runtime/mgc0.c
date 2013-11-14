@@ -1491,6 +1491,7 @@ addroots(void)
 	runtime_proc_scan(addroot);
 	runtime_MProf_Mark(addroot);
 	runtime_time_scan(addroot);
+	runtime_netpoll_scan(addroot);
 
 	// MSpan.types
 	allspans = runtime_mheap.allspans;
