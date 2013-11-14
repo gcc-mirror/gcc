@@ -26,6 +26,8 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
   oof ();
 }
 
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "vrp1" }  } */
+/* ARM Cortex-M defined LOGICAL_OP_NON_SHORT_CIRCUIT to false,
+   so skip below test.  */
+/* { dg-final { { scan-tree-dump-times "Threaded" 1 "vrp1" } || { arm_cortex_m } }  } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 

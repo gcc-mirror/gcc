@@ -2,6 +2,10 @@
 
 /* { dg-options "-O2 -fdump-tree-vrp2-details -fdump-tree-cddce2-details" } */
 /* { dg-additional-options "-mbranch-cost=2" { target avr-*-* } } */
+/* Skip on ARM Cortex-M, where LOGICAL_OP_NON_SHORT_CIRCUIT is set to false,
+   leading to two conditional jumps when evaluating an && condition.  VRP is
+   not able to optimize this.  */
+/* { dg-skip-if "" { arm_cortex_m } } */
 
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
