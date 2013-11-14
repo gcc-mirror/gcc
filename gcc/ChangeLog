@@ -1,3 +1,9 @@
+2013-11-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_through_normal_block): Only push
+	the EDGE_START_JUMP_THREAD marker if the jump threading path is
+	empty.
+
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi: Update documentation for AArch64's -mcpu

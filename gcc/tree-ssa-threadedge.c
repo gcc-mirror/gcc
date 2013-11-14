@@ -940,12 +940,18 @@ thread_through_normal_block (edge e,
 	      || bitmap_bit_p (visited, dest->index))
 	    return false;
 
-          jump_thread_edge *x
-	    = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
-	  path->safe_push (x);
-	  *backedge_seen_p |= ((e->flags & EDGE_DFS_BACK) != 0);
+	  /* Only push the EDGE_START_JUMP_THREAD marker if this is
+	     first edge on the path.  */
+	  if (path->length () == 0)
+	    {
+              jump_thread_edge *x
+	        = new jump_thread_edge (e, EDGE_START_JUMP_THREAD);
+	      path->safe_push (x);
+	      *backedge_seen_p |= ((e->flags & EDGE_DFS_BACK) != 0);
+	    }
 
-	  x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_BLOCK);
+	  jump_thread_edge *x
+	    = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_BLOCK);
 	  path->safe_push (x);
 	  *backedge_seen_p |= ((taken_edge->flags & EDGE_DFS_BACK) != 0);
 
@@ -953,7 +959,7 @@ thread_through_normal_block (edge e,
 	     secondary effects of threading without having to re-run DOM or
 	     VRP.  */
 	  if (!*backedge_seen_p
-	       || ! cond_arg_set_in_bb (taken_edge, e->dest))
+	      || ! cond_arg_set_in_bb (taken_edge, e->dest))
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
