@@ -30604,118 +30604,138 @@ rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
 }
 
 
-/* A function pointer under AIX is a pointer to a data area whose first word
-   contains the actual address of the function, whose second word contains a
-   pointer to its TOC, and whose third word contains a value to place in the
-   static chain register (r11).  Note that if we load the static chain, our
-   "trampoline" need not have any executable code.  */
+
+/* Expand code to perform a call under the AIX ABI.  */
 
 void
-rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
+rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 {
+  rtx toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
+  rtx toc_load = NULL_RTX;
+  rtx toc_restore = NULL_RTX;
   rtx func_addr;
-  rtx toc_reg;
-  rtx sc_reg;
-  rtx stack_ptr;
-  rtx stack_toc_offset;
-  rtx stack_toc_mem;
-  rtx func_toc_offset;
-  rtx func_toc_mem;
-  rtx func_sc_offset;
-  rtx func_sc_mem;
+  rtx abi_reg = NULL_RTX;
+  rtx call[4];
+  int n_call;
   rtx insn;
-  rtx (*call_func) (rtx, rtx, rtx, rtx);
-  rtx (*call_value_func) (rtx, rtx, rtx, rtx, rtx);
 
-  stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-  toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
+  /* Handle longcall attributes.  */
+  if (INTVAL (cookie) & CALL_LONG)
+    func_desc = rs6000_longcall_ref (func_desc);
 
-  /* Load up address of the actual function.  */
-  func_desc = force_reg (Pmode, func_desc);
-  func_addr = gen_reg_rtx (Pmode);
-  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func_desc));
-
-  if (TARGET_32BIT)
+  /* Handle indirect calls.  */
+  if (GET_CODE (func_desc) != SYMBOL_REF
+      || !SYMBOL_REF_FUNCTION_P (func_desc))
     {
+      /* Save the TOC into its reserved slot before the call,
+	 and prepare to restore it after the call.  */
+      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx stack_toc_offset = GEN_INT (5 * GET_MODE_SIZE (Pmode));
+      rtx stack_toc_mem = gen_frame_mem (Pmode,
+					 gen_rtx_PLUS (Pmode, stack_ptr,
+						       stack_toc_offset));
+      toc_restore = gen_rtx_SET (VOIDmode, toc_reg, stack_toc_mem);
 
-      stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_32BIT);
-      func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_32BIT);
-      func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_32BIT);
-      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
-	{
-	  call_func = gen_call_indirect_aix32bit;
-	  call_value_func = gen_call_value_indirect_aix32bit;
-	}
+      /* Can we optimize saving the TOC in the prologue or
+	 do we need to do it at every call?  */
+      if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
+	cfun->machine->save_toc_in_prologue = true;
       else
 	{
-	  call_func = gen_call_indirect_aix32bit_nor11;
-	  call_value_func = gen_call_value_indirect_aix32bit_nor11;
+	  MEM_VOLATILE_P (stack_toc_mem) = 1;
+	  emit_move_insn (stack_toc_mem, toc_reg);
+	}
+
+      /* A function pointer under AIX is a pointer to a data area whose
+	 first word contains the actual address of the function, whose
+	 second word contains a pointer to its TOC, and whose third word
+	 contains a value to place in the static chain register (r11).
+	 Note that if we load the static chain, our "trampoline" need
+	 not have any executable code.  */
+
+      /* Load up address of the actual function.  */
+      func_desc = force_reg (Pmode, func_desc);
+      func_addr = gen_reg_rtx (Pmode);
+      emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func_desc));
+
+      /* Prepare to load the TOC of the called function.  Note that the
+	 TOC load must happen immediately before the actual call so
+	 that unwinding the TOC registers works correctly.  See the
+	 comment in frob_update_context.  */
+      rtx func_toc_offset = GEN_INT (GET_MODE_SIZE (Pmode));
+      rtx func_toc_mem = gen_rtx_MEM (Pmode,
+				      gen_rtx_PLUS (Pmode, func_desc,
+						    func_toc_offset));
+      toc_load = gen_rtx_USE (VOIDmode, func_toc_mem);
+
+      /* If we have a static chain, load it up.  */
+      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+	{
+	  rtx sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
+	  rtx func_sc_offset = GEN_INT (2 * GET_MODE_SIZE (Pmode));
+	  rtx func_sc_mem = gen_rtx_MEM (Pmode,
+					 gen_rtx_PLUS (Pmode, func_desc,
+						       func_sc_offset));
+	  emit_move_insn (sc_reg, func_sc_mem);
+	  abi_reg = sc_reg;
 	}
     }
   else
     {
-      stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_64BIT);
-      func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_64BIT);
-      func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_64BIT);
-      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
-	{
-	  call_func = gen_call_indirect_aix64bit;
-	  call_value_func = gen_call_value_indirect_aix64bit;
-	}
-      else
-	{
-	  call_func = gen_call_indirect_aix64bit_nor11;
-	  call_value_func = gen_call_value_indirect_aix64bit_nor11;
-	}
-    }
-
-  /* Reserved spot to store the TOC.  */
-  stack_toc_mem = gen_frame_mem (Pmode,
-				 gen_rtx_PLUS (Pmode,
-					       stack_ptr,
-					       stack_toc_offset));
-
-  gcc_assert (cfun);
-  gcc_assert (cfun->machine);
-
-  /* Can we optimize saving the TOC in the prologue or do we need to do it at
-     every call?  */
-  if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
-    cfun->machine->save_toc_in_prologue = true;
-
-  else
-    {
-      MEM_VOLATILE_P (stack_toc_mem) = 1;
-      emit_move_insn (stack_toc_mem, toc_reg);
-    }
-
-  /* Calculate the address to load the TOC of the called function.  We don't
-     actually load this until the split after reload.  */
-  func_toc_mem = gen_rtx_MEM (Pmode,
-			      gen_rtx_PLUS (Pmode,
-					    func_desc,
-					    func_toc_offset));
-
-  /* If we have a static chain, load it up.  */
-  if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
-    {
-      func_sc_mem = gen_rtx_MEM (Pmode,
-				 gen_rtx_PLUS (Pmode,
-					       func_desc,
-					       func_sc_offset));
-
-      sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
-      emit_move_insn (sc_reg, func_sc_mem);
+      /* Direct calls use the TOC: for local calls, the callee will
+	 assume the TOC register is set; for non-local calls, the
+	 PLT stub needs the TOC register.  */
+      abi_reg = toc_reg;
+      func_addr = func_desc;
     }
 
   /* Create the call.  */
-  if (value)
-    insn = call_value_func (value, func_addr, flag, func_toc_mem,
-			    stack_toc_mem);
-  else
-    insn = call_func (func_addr, flag, func_toc_mem, stack_toc_mem);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), flag);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (VOIDmode, value, call[0]);
+  n_call = 1;
 
-  emit_call_insn (insn);
+  if (toc_load)
+    call[n_call++] = toc_load;
+  if (toc_restore)
+    call[n_call++] = toc_restore;
+
+  call[n_call++] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (n_call, call));
+  insn = emit_call_insn (insn);
+
+  /* Mention all registers defined by the ABI to hold information
+     as uses in CALL_INSN_FUNCTION_USAGE.  */
+  if (abi_reg)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
+}
+
+/* Expand code to perform a sibling call under the AIX ABI.  */
+
+void
+rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
+{
+  rtx call[2];
+  rtx insn;
+
+  gcc_assert (INTVAL (cookie) == 0);
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), flag);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (VOIDmode, value, call[0]);
+
+  call[1] = simple_return_rtx;
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (2, call));
+  insn = emit_call_insn (insn);
+
+  /* Note use of the TOC register.  */
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, TOC_REGNUM));
+  /* We need to also mark a use of the link register since the function we
+     sibling-call to will use it to return to our caller.  */
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, LR_REGNO));
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update
