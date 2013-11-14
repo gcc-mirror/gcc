@@ -1,3 +1,106 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimplify-me.h:  New file.  Add prototypes.
+	* gimplify.h: Don't include gimple.h.
+	(struct gimplify_hasher, struct gimplify_ctx, is_gimple_sizepos):
+	Relocate from gimple.h.
+	* gimple.h (struct gimplify_hasher, struct gimplify_ctx,
+	is_gimple_sizepos): Move to gimplify.h.
+	(gimplify_hasher::hash, gimplify_hasher::equal): Move to gimplify.c.
+	(enum gsi_iterator_update): Move to gimple-iterator.h.
+	* gimple-iterator.h (enum gsi_iterator_update): Relocate from gimple.h.
+	* gimplify-me.c: New File.
+	(force_gimple_operand_1, force_gimple_operand,
+	force_gimple_operand_gsi_1, force_gimple_operand_gsi,
+	gimple_regimplify_operands): Relocate from gimplify.c.
+	* gimplify.c (force_gimple_operand_1, force_gimple_operand,
+	force_gimple_operand_gsi_1, force_gimple_operand_gsi,
+	gimple_regimplify_operands): Move to gimplify-me.c.
+	(gimplify_hasher::hash, gimplify_hasher::equal): Relocate from gimple.h.
+	* Makefile.in (OBJS): Add gimplify-me.o
+	* asan.c: Include only gimplify.h, gimplify-me.h, and/or gimple.h as
+	required.
+	* cfgloopmanip.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* cilk-common.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gimple-expr.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* gimple.c: Likewise.
+	* graphite-clast-to-gimple.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa.c: Likewise.
+	* langhooks.c: Likewise.
+	* omp-low.c: Likewise.
+	* sese.c: Likewise.
+	* stor-layout.c: Likewise.
+	* targhooks.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-affine.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-ifcombine.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-loop-unswitch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tree.c: Likewise.
+	* tsan.c: Likewise.
+	* value-prof.c: Likewise.
+	* config/aarch64/aarch64.c: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2013-11-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.md (doloop_begin_i): Remove extra alignment;

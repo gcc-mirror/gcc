@@ -1,6 +1,10 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Include only gimplify.h and gimple.h as needed.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
-	* objc/objc-act.c: Include gimplify.h.
+	* objc-act.c: Include gimplify.h.
 
 2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
 

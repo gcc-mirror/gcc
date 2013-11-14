@@ -42,6 +42,7 @@
 #include "recog.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "optabs.h"
 #include "dwarf2.h"

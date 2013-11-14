@@ -43,6 +43,7 @@
 #include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "df.h"
 #include "reload.h"

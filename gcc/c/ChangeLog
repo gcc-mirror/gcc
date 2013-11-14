@@ -1,3 +1,7 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-typeck.c: Include only gimplify.h and gimple.h as needed.
+
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-tree.h (c_typespec_keyword): Add cts_auto_type.
@@ -16,7 +20,7 @@
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
-	* c/c-typeck.c: Include gimplify.h.
+	* c-typeck.c: Include gimplify.h.
 
 2013-11-12  Joseph Myers  <joseph@codesourcery.com>
 

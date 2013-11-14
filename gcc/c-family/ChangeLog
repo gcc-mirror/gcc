@@ -1,3 +1,9 @@
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* cilk.c: Likewise.
+
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (enum rid): Add RID_AUTO_TYPE.
@@ -6,11 +12,11 @@
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
-	* c-family/c-common.c: Include gimplify.h.
-	* c-family/c-gimplify.c: Likewise.
-	* c-family/cilk.c: Likewise.
-	* c-family/c-omp.c: Include gimple-expr.h instead of gimple.h.
-	* c-family/c-ubsan.c: Don't include gimple.h.
+	* c-common.c: Include gimplify.h.
+	* c-gimplify.c: Likewise.
+	* cilk.c: Likewise.
+	* c-omp.c: Include gimple-expr.h instead of gimple.h.
+	* c-ubsan.c: Don't include gimple.h.
 
 2013-11-12  Joseph Myers  <joseph@codesourcery.com>
 

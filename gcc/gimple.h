@@ -847,85 +847,6 @@ typedef struct gimple_temp_hash_elt
   tree temp;  /* Value */
 } elt_t;
 
-/* Gimplify hashtable helper.  */
-
-struct gimplify_hasher : typed_free_remove <elt_t>
-{
-  typedef elt_t value_type;
-  typedef elt_t compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-};
-
-inline hashval_t
-gimplify_hasher::hash (const value_type *p)
-{
-  tree t = p->val;
-  return iterative_hash_expr (t, 0);
-}
-
-inline bool
-gimplify_hasher::equal (const value_type *p1, const compare_type *p2)
-{
-  tree t1 = p1->val;
-  tree t2 = p2->val;
-  enum tree_code code = TREE_CODE (t1);
-
-  if (TREE_CODE (t2) != code
-      || TREE_TYPE (t1) != TREE_TYPE (t2))
-    return false;
-
-  if (!operand_equal_p (t1, t2, 0))
-    return false;
-
-#ifdef ENABLE_CHECKING
-  /* Only allow them to compare equal if they also hash equal; otherwise
-     results are nondeterminate, and we fail bootstrap comparison.  */
-  gcc_assert (hash (p1) == hash (p2));
-#endif
-
-  return true;
-}
-
-struct gimplify_ctx
-{
-  struct gimplify_ctx *prev_context;
-
-  vec<gimple> bind_expr_stack;
-  tree temps;
-  gimple_seq conditional_cleanups;
-  tree exit_label;
-  tree return_temp;
-
-  vec<tree> case_labels;
-  /* The formal temporary table.  Should this be persistent?  */
-  hash_table <gimplify_hasher> temp_htab;
-
-  int conditions;
-  bool save_stack;
-  bool into_ssa;
-  bool allow_rhs_cond_expr;
-  bool in_cleanup_point_expr;
-};
-
-/* Return true if gimplify_one_sizepos doesn't need to gimplify
-   expr (when in TYPE_SIZE{,_UNIT} and similar type/decl size/bitsize
-   fields).  */
-static inline bool
-is_gimple_sizepos (tree expr)
-{
-  /* gimplify_one_sizepos doesn't need to do anything if the value isn't there,
-     is constant, or contains A PLACEHOLDER_EXPR.  We also don't want to do
-     anything if it's already a VAR_DECL.  If it's a VAR_DECL from another
-     function, the gimplifier will want to replace it with a new variable,
-     but that will cause problems if this type is from outside the function.
-     It's OK to have that here.  */
-  return (expr == NULL_TREE
-	  || TREE_CONSTANT (expr)
-	  || TREE_CODE (expr) == VAR_DECL
-	  || CONTAINS_PLACEHOLDER_P (expr));
-}                                        
-
 /* Get the number of the next statement uid to be allocated.  */
 static inline unsigned int
 gimple_stmt_max_uid (struct function *fn)
@@ -948,7 +869,6 @@ inc_gimple_stmt_max_uid (struct function *fn)
 }
 
 /* Miscellaneous helpers.  */
-struct gimplify_omp_ctx;
 extern tree canonicalize_cond_expr_cond (tree);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool nonfreeing_call_p (gimple);
@@ -5201,16 +5121,6 @@ gimple_expr_type (const_gimple stmt)
   else
     return void_type_node;
 }
-
-enum gsi_iterator_update
-{
-  GSI_NEW_STMT,		/* Only valid when single statement is added, move
-			   iterator to it.  */
-  GSI_SAME_STMT,	/* Leave the iterator at the same statement.  */
-  GSI_CONTINUE_LINKING	/* Move iterator to whatever position is suitable
-			   for linking other statements in the same
-			   direction.  */
-};
 
 gimple gimple_call_copy_skip_args (gimple, bitmap);
 

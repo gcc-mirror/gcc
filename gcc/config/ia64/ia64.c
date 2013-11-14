@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hash-table.h"
 #include "langhooks.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "intl.h"
 #include "df.h"

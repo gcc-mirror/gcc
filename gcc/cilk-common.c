@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "recog.h"
 #include "tree-iterator.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "cilk.h"
 

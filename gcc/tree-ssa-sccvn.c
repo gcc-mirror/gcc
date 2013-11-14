@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
+#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"

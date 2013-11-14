@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLIFY_H
 #define GCC_GIMPLIFY_H
 
-#include "gimple.h"
-
 /* Validation of GIMPLE expressions.  Note that these predicates only check
    the basic form of the expression, they don't recurse to make sure that
    underlying nodes are also of the right form.  */
@@ -50,7 +48,38 @@ enum gimplify_status {
   GS_OK		= 0,	/* We did something, maybe more to do.  */
   GS_ALL_DONE	= 1	/* The expression is fully gimplified.  */
 };
+/* Gimplify hashtable helper.  */
 
+struct gimplify_hasher : typed_free_remove <elt_t>
+{
+  typedef elt_t value_type;
+  typedef elt_t compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+struct gimplify_ctx
+{
+  struct gimplify_ctx *prev_context;
+
+  vec<gimple> bind_expr_stack;
+  tree temps;
+  gimple_seq conditional_cleanups;
+  tree exit_label;
+  tree return_temp;
+
+  vec<tree> case_labels;
+  /* The formal temporary table.  Should this be persistent?  */
+  hash_table <gimplify_hasher> temp_htab;
+
+  int conditions;
+  bool save_stack;
+  bool into_ssa;
+  bool allow_rhs_cond_expr;
+  bool in_cleanup_point_expr;
+};
+
+extern struct gimplify_ctx *gimplify_ctxp;
 extern void push_gimplify_context (struct gimplify_ctx *);
 extern void pop_gimplify_context (gimple);
 extern gimple gimple_current_bind_expr (void);
@@ -67,6 +96,7 @@ extern tree build_and_jump (tree *);
 extern enum gimplify_status gimplify_self_mod_expr (tree *, gimple_seq *,
 						    gimple_seq *, bool, tree);
 extern tree gimple_boolify (tree);
+extern gimple_predicate rhs_predicate_for (tree);
 extern bool gimplify_stmt (tree *, gimple_seq *);
 extern void omp_firstprivatize_variable (struct gimplify_omp_ctx *, tree);
 extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
@@ -76,17 +106,27 @@ extern void gimplify_type_sizes (tree, gimple_seq *);
 extern void gimplify_one_sizepos (tree *, gimple_seq *);
 extern gimple gimplify_body (tree, bool);
 extern void gimplify_function_tree (tree);
-extern void gimple_regimplify_operands (gimple, gimple_stmt_iterator *);
-extern tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
-extern tree force_gimple_operand (tree, gimple_seq *, bool, tree);
-extern tree force_gimple_operand_gsi_1 (gimple_stmt_iterator *, tree,
-					gimple_predicate, tree,
-					bool, enum gsi_iterator_update);
-extern tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
-				      bool, enum gsi_iterator_update);
-
 extern enum gimplify_status gimplify_va_arg_expr (tree *, gimple_seq *,
 						  gimple_seq *);
 gimple gimplify_assign (tree, tree, gimple_seq *);
+
+/* Return true if gimplify_one_sizepos doesn't need to gimplify
+   expr (when in TYPE_SIZE{,_UNIT} and similar type/decl size/bitsize
+   fields).  */
+
+static inline bool
+is_gimple_sizepos (tree expr)
+{
+  /* gimplify_one_sizepos doesn't need to do anything if the value isn't there,
+     is constant, or contains A PLACEHOLDER_EXPR.  We also don't want to do
+     anything if it's already a VAR_DECL.  If it's a VAR_DECL from another
+     function, the gimplifier will want to replace it with a new variable,
+     but that will cause problems if this type is from outside the function.
+     It's OK to have that here.  */
+  return (expr == NULL_TREE
+	  || TREE_CONSTANT (expr)
+	  || TREE_CODE (expr) == VAR_DECL
+	  || CONTAINS_PLACEHOLDER_P (expr));
+}                                        
 
 #endif /* GCC_GIMPLIFY_H */
