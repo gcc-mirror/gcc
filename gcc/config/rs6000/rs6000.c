@@ -9516,6 +9516,83 @@ rs6000_mixed_function_arg (enum machine_mode mode, const_tree type,
   return gen_rtx_PARALLEL (mode, gen_rtvec_v (k, rvec));
 }
 
+/* We have an argument of MODE and TYPE that goes into FPRs or VRs,
+   but must also be copied into the parameter save area starting at
+   offset ALIGN_WORDS.  Fill in RVEC with the elements corresponding
+   to the GPRs and/or memory.  Return the number of elements used.  */
+
+static int
+rs6000_psave_function_arg (enum machine_mode mode, const_tree type,
+			   int align_words, rtx *rvec)
+{
+  int k = 0;
+
+  if (align_words < GP_ARG_NUM_REG)
+    {
+      int n_words = rs6000_arg_size (mode, type);
+
+      if (align_words + n_words > GP_ARG_NUM_REG
+	  || (TARGET_32BIT && TARGET_POWERPC64))
+	{
+	  /* If this is partially on the stack, then we only
+	     include the portion actually in registers here.  */
+	  enum machine_mode rmode = TARGET_32BIT ? SImode : DImode;
+	  int i = 0;
+
+	  if (align_words + n_words > GP_ARG_NUM_REG)
+	    {
+	      /* Not all of the arg fits in gprs.  Say that it goes in memory
+		 too, using a magic NULL_RTX component.  Also see comment in
+		 rs6000_mixed_function_arg for why the normal
+		 function_arg_partial_nregs scheme doesn't work in this case. */
+	      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
+	    }
+
+	  do
+	    {
+	      rtx r = gen_rtx_REG (rmode, GP_ARG_MIN_REG + align_words);
+	      rtx off = GEN_INT (i++ * GET_MODE_SIZE (rmode));
+	      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
+	    }
+	  while (++align_words < GP_ARG_NUM_REG && --n_words != 0);
+	}
+      else
+	{
+	  /* The whole arg fits in gprs.  */
+	  rtx r = gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
+	  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, const0_rtx);
+	}
+    }
+  else
+    {
+      /* It's entirely in memory.  */
+      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
+    }
+
+  return k;
+}
+
+/* RVEC is a vector of K components of an argument of mode MODE.
+   Construct the final function_arg return value from it.  */
+
+static rtx
+rs6000_finish_function_arg (enum machine_mode mode, rtx *rvec, int k)
+{
+  gcc_assert (k >= 1);
+
+  /* Avoid returning a PARALLEL in the trivial cases.  */
+  if (k == 1)
+    {
+      if (XEXP (rvec[0], 0) == NULL_RTX)
+	return NULL_RTX;
+
+      if (GET_MODE (XEXP (rvec[0], 0)) == mode)
+	return XEXP (rvec[0], 0);
+    }
+
+  return gen_rtx_PARALLEL (mode, gen_rtvec_v (k, rvec));
+}
+
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -9585,32 +9662,25 @@ rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
     }
 
   if (USE_ALTIVEC_FOR_ARG_P (cum, mode, named))
-    if (TARGET_64BIT && ! cum->prototype)
-      {
-	/* Vector parameters get passed in vector register
-	   and also in GPRs or memory, in absence of prototype.  */
-	int align_words;
-	rtx slot;
-	align_words = (cum->words + 1) & ~1;
+    {
+      rtx rvec[GP_ARG_NUM_REG + 1];
+      rtx r;
+      int k = 0;
 
-	if (align_words >= GP_ARG_NUM_REG)
-	  {
-	    slot = NULL_RTX;
-	  }
-	else
-	  {
-	    slot = gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
-	  }
-	return gen_rtx_PARALLEL (mode,
-		 gen_rtvec (2,
-			    gen_rtx_EXPR_LIST (VOIDmode,
-					       slot, const0_rtx),
-			    gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (mode, cum->vregno),
-					       const0_rtx)));
-      }
-    else
-      return gen_rtx_REG (mode, cum->vregno);
+      /* Do we also need to pass this argument in the parameter
+	 save area?  */
+      if (TARGET_64BIT && ! cum->prototype)
+	{
+	  int align_words = (cum->words + 1) & ~1;
+	  k = rs6000_psave_function_arg (mode, type, align_words, rvec);
+	}
+
+      /* Describe where this argument goes in the vector registers.  */
+      r = gen_rtx_REG (mode, cum->vregno);
+      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, const0_rtx);
+
+      return rs6000_finish_function_arg (mode, rvec, k);
+    }
   else if (TARGET_ALTIVEC_ABI
 	   && (ALTIVEC_OR_VSX_VECTOR_MODE (mode)
 	       || (type && TREE_CODE (type) == VECTOR_TYPE
@@ -9716,85 +9786,33 @@ rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	{
 	  rtx rvec[GP_ARG_NUM_REG + 1];
 	  rtx r;
-	  int k;
-	  bool needs_psave;
+	  int k = 0;
 	  enum machine_mode fmode = mode;
 	  unsigned long n_fpreg = (GET_MODE_SIZE (mode) + 7) >> 3;
 
+	  /* Do we also need to pass this argument in the parameter
+	     save area?  */
+	  if (type && (cum->nargs_prototype <= 0
+		       || (DEFAULT_ABI == ABI_AIX
+			   && TARGET_XL_COMPAT
+			   && align_words >= GP_ARG_NUM_REG)))
+	    k = rs6000_psave_function_arg (mode, type, align_words, rvec);
+
+	  /* Describe where this argument goes in the fprs.  */
+
+	  /* Check if the argument is split over registers and memory.
+	     This can only ever happen for long double or _Decimal128;
+	     complex types are handled via split_complex_arg.  */
 	  if (cum->fregno + n_fpreg > FP_ARG_MAX_REG + 1)
 	    {
-	      /* Currently, we only ever need one reg here because complex
-		 doubles are split.  */
-	      gcc_assert (cum->fregno == FP_ARG_MAX_REG
-			  && (fmode == TFmode || fmode == TDmode));
-
-	      /* Long double or _Decimal128 split over regs and memory.  */
+	      gcc_assert (fmode == TFmode || fmode == TDmode);
 	      fmode = DECIMAL_FLOAT_MODE_P (fmode) ? DDmode : DFmode;
 	    }
 
-	  /* Do we also need to pass this arg in the parameter save
-	     area?  */
-	  needs_psave = (type
-			 && (cum->nargs_prototype <= 0
-			     || (DEFAULT_ABI == ABI_AIX
-				 && TARGET_XL_COMPAT
-				 && align_words >= GP_ARG_NUM_REG)));
-
-	  if (!needs_psave && mode == fmode)
-	    return gen_rtx_REG (fmode, cum->fregno);
-
-	  k = 0;
-	  if (needs_psave)
-	    {
-	      /* Describe the part that goes in gprs or the stack.
-		 This piece must come first, before the fprs.  */
-	      if (align_words < GP_ARG_NUM_REG)
-		{
-		  unsigned long n_words = rs6000_arg_size (mode, type);
-
-		  if (align_words + n_words > GP_ARG_NUM_REG
-		      || (TARGET_32BIT && TARGET_POWERPC64))
-		    {
-		      /* If this is partially on the stack, then we only
-			 include the portion actually in registers here.  */
-		      enum machine_mode rmode = TARGET_32BIT ? SImode : DImode;
-		      rtx off;
-		      int i = 0;
-		      if (align_words + n_words > GP_ARG_NUM_REG)
-			/* Not all of the arg fits in gprs.  Say that it
-			   goes in memory too, using a magic NULL_RTX
-			   component.  Also see comment in
-			   rs6000_mixed_function_arg for why the normal
-			   function_arg_partial_nregs scheme doesn't work
-			   in this case. */
-			rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX,
-						       const0_rtx);
-		      do
-			{
-			  r = gen_rtx_REG (rmode,
-					   GP_ARG_MIN_REG + align_words);
-			  off = GEN_INT (i++ * GET_MODE_SIZE (rmode));
-			  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
-			}
-		      while (++align_words < GP_ARG_NUM_REG && --n_words != 0);
-		    }
-		  else
-		    {
-		      /* The whole arg fits in gprs.  */
-		      r = gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
-		      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, const0_rtx);
-		    }
-		}
-	      else
-		/* It's entirely in memory.  */
-		rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
-	    }
-
-	  /* Describe where this piece goes in the fprs.  */
 	  r = gen_rtx_REG (fmode, cum->fregno);
 	  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, const0_rtx);
 
-	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (k, rvec));
+	  return rs6000_finish_function_arg (mode, rvec, k);
 	}
       else if (align_words < GP_ARG_NUM_REG)
 	{
