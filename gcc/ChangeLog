@@ -1,3 +1,20 @@
+2013-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mode-switching.c (optimize_mode_switching): Mark block as
+	nontransparent, if last_mode at block exit is different from no_mode.
+
+	Backport from mainline
+	2013-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59021
+	* config/i386/i386.c (ix86_avx_u128_mode_needed): Require
+	AVX_U128_DIRTY mode for call_insn RTXes that use AVX256 registers.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_DIRTY mode for call_insn
+	RTXes that return in AVX256 register.
+
 2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
@@ -18,7 +35,7 @@
 2013-11-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backported from mainline
-        2013-10-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	2013-10-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/58854
 	* config/arm/arm.c (arm_expand_epilogue_apcs_frame): Emit blockage
@@ -96,7 +113,7 @@
 
 	PR middle-end/58789
 	Backport from mainline
-        2013-05-09  Martin Jambor  <mjambor@suse.cz>
+	2013-05-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/57084
 	* gimple-fold.c (canonicalize_constructor_val): Call

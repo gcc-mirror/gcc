@@ -1,3 +1,11 @@
+2013-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58853
+	* gcc.target/i386/pr58853.c: New test.
+
 2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59101
