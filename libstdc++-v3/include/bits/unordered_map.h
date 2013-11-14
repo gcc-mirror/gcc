@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Key>,
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_map : __check_copy_constructible<_Alloc>
+    class unordered_map
     {
       typedef __umap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Key>,
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_multimap : __check_copy_constructible<_Alloc>
+    class unordered_multimap
     {
       typedef __ummap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
