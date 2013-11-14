@@ -1529,12 +1529,19 @@ ia64_split_tmode_move (rtx operands[])
       && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
       rtx base = XEXP (operands[1], 0);
+      rtx first_write = gen_rtx_REG (DImode, REGNO (operands[0]));
       while (GET_CODE (base) != REG)
 	base = XEXP (base, 0);
 
       if (REGNO (base) == REGNO (operands[0]))
-	reversed = true;
-      dead = true;
+	{
+	  reversed = true;
+	  first_write = gen_rtx_REG (DImode, REGNO (operands[0]) + 1);
+	}
+
+      if (GET_CODE (operands[0]) == REG
+	  && reg_overlap_mentioned_p (first_write, operands[1]))
+	dead = true;
     }
   /* Another reason to do the moves in reversed order is if the first
      element of the target register pair is also the second element of
