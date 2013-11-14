@@ -1,3 +1,8 @@
+2013-11-14  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (rx_mode_dependent_address_p): Allow offsets up
+	to 16 bits.
+
 2013-11-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_through_normal_block): Only push
