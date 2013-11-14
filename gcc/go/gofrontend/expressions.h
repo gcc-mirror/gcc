@@ -655,12 +655,11 @@ class Expression
 				 Type* rhs_type, tree rhs_tree,
 				 bool for_type_guard, Location);
 
-  // Return a tree implementing the comparison LHS_TREE OP RHS_TREE.
+  // Return a tree implementing the comparison LHS_EXPR OP RHS_EXPR.
   // TYPE is the type of both sides.
   static tree
   comparison_tree(Translate_context*, Type* result_type, Operator op,
-		  Type* left_type, tree left_tree, Type* right_type,
-		  tree right_tree, Location);
+		  Expression* left_expr, Expression* right_expr, Location);
 
   // Return the backend expression for the numeric constant VAL.
   static Bexpression*
@@ -1304,6 +1303,9 @@ class Binary_expression : public Expression
 
   Expression*
   lower_array_comparison(Gogo*, Statement_inserter*);
+
+  Expression*
+  lower_interface_value_comparison(Gogo*, Statement_inserter*);
 
   Expression*
   lower_compare_to_memcmp(Gogo*, Statement_inserter*);
