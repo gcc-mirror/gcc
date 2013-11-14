@@ -128,7 +128,7 @@ static bool aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 						 const unsigned char *sel);
 
 /* The processor for which instructions should be scheduled.  */
-enum aarch64_processor aarch64_tune = generic;
+enum aarch64_processor aarch64_tune = cortexa53;
 
 /* The current tuning set.  */
 const struct tune_params *aarch64_tune_params;
@@ -226,7 +226,7 @@ static const struct processor all_cores[] =
   {NAME, IDENT, #ARCH, FLAGS | AARCH64_FL_FOR_ARCH##ARCH, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
-  {"generic", generic, "8", AARCH64_FL_FPSIMD | AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {"generic", cortexa53, "8", AARCH64_FL_FPSIMD | AARCH64_FL_FOR_ARCH8, &generic_tunings},
   {NULL, aarch64_none, NULL, 0, NULL}
 };
 
@@ -5170,7 +5170,7 @@ aarch64_override_options (void)
 
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "generic".  */
+     --with-cpu, otherwise it is "coretex-a53".  */
   if (!selected_cpu)
     {
       selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
