@@ -1,6 +1,7 @@
 /* Test for spurious underflow from __float128 division.  */
 /* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
 /* { dg-options "" } */
+/* { dg-require-effective-target fenv_exceptions } */
 
 #include <fenv.h>
 #include <stdlib.h>
