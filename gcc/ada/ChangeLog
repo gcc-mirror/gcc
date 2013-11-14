@@ -1,3 +1,7 @@
+2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc-interface/trans.c: Include gimple.h and pointer-set.h.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/trans.c: Include gimplify.h.
