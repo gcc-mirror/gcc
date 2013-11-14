@@ -1,3 +1,9 @@
+2013-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59122
+	* asan.c (asan_emit_stack_protection): Ensure -fsection-anchors
+	isn't confused by the artificial decl.
+
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Do not place a
