@@ -1,3 +1,7 @@
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.dg/eh/ppc64-sighandle-cr.C: New test.
+
 2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/torture/float128-cmp-invalid.c: Require fenv_exceptions.

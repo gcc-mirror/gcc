@@ -21766,21 +21766,9 @@ rs6000_emit_prologue (void)
       && REGNO (frame_reg_rtx) != cr_save_regno
       && !(using_static_chain_p && cr_save_regno == 11))
     {
-      rtx set;
-
       cr_save_rtx = gen_rtx_REG (SImode, cr_save_regno);
       START_USE (cr_save_regno);
-      insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      /* Now, there's no way that dwarf2out_frame_debug_expr is going
-	 to understand '(unspec:SI [(reg:CC 68) ...] UNSPEC_MOVESI_FROM_CR)'.
-	 But that's OK.  All we have to do is specify that _one_ condition
-	 code register is saved in this stack slot.  The thrower's epilogue
-	 will then restore all the call-saved registers.
-	 We use CR2_REGNO (70) to be compatible with gcc-2.95 on Linux.  */
-      set = gen_rtx_SET (VOIDmode, cr_save_rtx,
-			 gen_rtx_REG (SImode, CR2_REGNO));
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR, set);
+      emit_insn (gen_movesi_from_cr (cr_save_rtx));
     }
 
   /* Do any required saving of fpr's.  If only one or two to save, do
@@ -22091,26 +22079,62 @@ rs6000_emit_prologue (void)
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->cr_save_offset + frame_off));
       rtx mem = gen_frame_mem (SImode, addr);
-      /* See the large comment above about why CR2_REGNO is used.  */
-      rtx magic_eh_cr_reg = gen_rtx_REG (SImode, CR2_REGNO);
 
       /* If we didn't copy cr before, do so now using r0.  */
       if (cr_save_rtx == NULL_RTX)
 	{
-	  rtx set;
-
 	  START_USE (0);
 	  cr_save_rtx = gen_rtx_REG (SImode, 0);
-	  insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  set = gen_rtx_SET (VOIDmode, cr_save_rtx, magic_eh_cr_reg);
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, set);
+	  emit_insn (gen_movesi_from_cr (cr_save_rtx));
 	}
-      insn = emit_move_insn (mem, cr_save_rtx);
+
+      /* Saving CR requires a two-instruction sequence: one instruction
+	 to move the CR to a general-purpose register, and a second
+	 instruction that stores the GPR to memory.
+
+	 We do not emit any DWARF CFI records for the first of these,
+	 because we cannot properly represent the fact that CR is saved in
+	 a register.  One reason is that we cannot express that multiple
+	 CR fields are saved; another reason is that on 64-bit, the size
+	 of the CR register in DWARF (4 bytes) differs from the size of
+	 a general-purpose register.
+
+	 This means if any intervening instruction were to clobber one of
+	 the call-saved CR fields, we'd have incorrect CFI.  To prevent
+	 this from happening, we mark the store to memory as a use of
+	 those CR fields, which prevents any such instruction from being
+	 scheduled in between the two instructions.  */
+      rtx crsave_v[9];
+      int n_crsave = 0;
+      int i;
+
+      crsave_v[n_crsave++] = gen_rtx_SET (VOIDmode, mem, cr_save_rtx);
+      for (i = 0; i < 8; i++)
+	if (save_reg_p (CR0_REGNO + i))
+	  crsave_v[n_crsave++]
+	    = gen_rtx_USE (VOIDmode, gen_rtx_REG (CCmode, CR0_REGNO + i));
+
+      insn = emit_insn (gen_rtx_PARALLEL (VOIDmode,
+					  gen_rtvec_v (n_crsave, crsave_v)));
       END_USE (REGNO (cr_save_rtx));
 
-      rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-			    NULL_RTX, NULL_RTX);
+      /* Now, there's no way that dwarf2out_frame_debug_expr is going to
+	 understand '(unspec:SI [(reg:CC 68) ...] UNSPEC_MOVESI_FROM_CR)',
+	 so we need to construct a frame expression manually.  */
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      /* Update address to be stack-pointer relative, like
+	 rs6000_frame_related would do.  */
+      addr = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM),
+			   GEN_INT (info->cr_save_offset + sp_off));
+      mem = gen_frame_mem (SImode, addr);
+
+      /* We still cannot express that multiple CR fields are saved in the
+	 CR save slot.  By convention, we use a single CR regnum to represent
+	 the fact that all call-saved CR fields are saved.  We use CR2_REGNO
+	 to be compatible with gcc-2.95 on Linux.  */
+      rtx set = gen_rtx_SET (VOIDmode, mem, gen_rtx_REG (SImode, CR2_REGNO));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, set);
     }
 
   /* Update stack and set back pointer unless this is V.4,

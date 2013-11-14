@@ -1,4 +1,14 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Do not place a
+	RTX_FRAME_RELATED_P marker on the UNSPEC_MOVESI_FROM_CR insn.
+	Instead, add USEs of all modified call-saved CR fields to the
+	insn storing the result to the stack slot, and provide an
+	appropriate REG_FRAME_RELATED_EXPR for that insn.
+	* config/rs6000/rs6000.md ("*crsave"): New insn pattern.
+	* config/rs6000/predicates.md ("crsave_operation"): New predicate.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	    Alan Modra  <amodra@gmail.com>
 
 	* function.c (assign_parms): Use all.reg_parm_stack_space instead
