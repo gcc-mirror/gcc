@@ -1,3 +1,7 @@
+2013-11-14  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c (gimple_equal_p): Remove equal variable.
+
 2013-11-13  Andrew MacLeod  <amacleod@redhat,com>
 
 	* gimple-walk.h: New File.  Relocate prototypes from gimple.h.

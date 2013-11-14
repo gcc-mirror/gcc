@@ -1086,7 +1086,7 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
   tree lhs1, lhs2;
   basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
   tree t1, t2;
-  bool equal, inv_cond;
+  bool inv_cond;
   enum tree_code code1, code2;
 
   if (gimple_code (s1) != gimple_code (s2))
@@ -1108,7 +1108,6 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
       if (gimple_call_builtin_p (s1, BUILT_IN_TM_COMMIT))
 	return false;
 
-      equal = true;
       for (i = 0; i < gimple_call_num_args (s1); ++i)
 	{
 	  t1 = gimple_call_arg (s1, i);
@@ -1117,11 +1116,8 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
 	    continue;
 	  if (gvn_uses_equal (t1, t2))
 	    continue;
-	  equal = false;
-	  break;
+	  return false;
 	}
-      if (!equal)
-	return false;
 
       lhs1 = gimple_get_lhs (s1);
       lhs2 = gimple_get_lhs (s2);
