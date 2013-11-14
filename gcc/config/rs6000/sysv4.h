@@ -45,7 +45,7 @@
 				      & (OPTION_MASK_RELOCATABLE	\
 					 | OPTION_MASK_MINIMAL_TOC))	\
 				     && flag_pic > 1)			\
-				 || DEFAULT_ABI == ABI_AIX)
+				 || DEFAULT_ABI != ABI_V4)
 
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
 #define	TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
@@ -147,7 +147,7 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  else if (flag_pic && DEFAULT_ABI != ABI_AIX				\
+  else if (flag_pic && DEFAULT_ABI == ABI_V4				\
 	   && (rs6000_sdata == SDATA_EABI				\
 	       || rs6000_sdata == SDATA_SYSV))				\
     {									\
@@ -173,14 +173,14 @@ do {									\
       error ("-mrelocatable and -mno-minimal-toc are incompatible");	\
     }									\
 									\
-  if (TARGET_RELOCATABLE && rs6000_current_abi == ABI_AIX)		\
+  if (TARGET_RELOCATABLE && rs6000_current_abi != ABI_V4)		\
     {									\
       rs6000_isa_flags &= ~OPTION_MASK_RELOCATABLE;			\
       error ("-mrelocatable and -mcall-%s are incompatible",		\
 	     rs6000_abi_name);						\
     }									\
 									\
-  if (!TARGET_64BIT && flag_pic > 1 && rs6000_current_abi == ABI_AIX)	\
+  if (!TARGET_64BIT && flag_pic > 1 && rs6000_current_abi != ABI_V4)	\
     {									\
       flag_pic = 0;							\
       error ("-fPIC and -mcall-%s are incompatible",			\
@@ -193,7 +193,7 @@ do {									\
     }									\
 									\
   /* Treat -fPIC the same as -mrelocatable.  */				\
-  if (flag_pic > 1 && DEFAULT_ABI != ABI_AIX)				\
+  if (flag_pic > 1 && DEFAULT_ABI == ABI_V4)				\
     {									\
       rs6000_isa_flags |= OPTION_MASK_RELOCATABLE | OPTION_MASK_MINIMAL_TOC; \
       TARGET_NO_FP_IN_TOC = 1;						\
@@ -317,7 +317,7 @@ do {									\
 
 /* Put PC relative got entries in .got2.  */
 #define	MINIMAL_TOC_SECTION_ASM_OP \
-  (TARGET_RELOCATABLE || (flag_pic && DEFAULT_ABI != ABI_AIX)		\
+  (TARGET_RELOCATABLE || (flag_pic && DEFAULT_ABI == ABI_V4)		\
    ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
 
 #define	SDATA_SECTION_ASM_OP "\t.section\t\".sdata\",\"aw\""
