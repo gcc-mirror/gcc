@@ -1,4 +1,8 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/sysv4le.h (LINUX64_DEFAULT_ABI_ELFv2): Define.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	    Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h (RS6000_SAVE_AREA): Handle ABI_ELFv2.
