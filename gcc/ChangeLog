@@ -1,5 +1,14 @@
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-cores.def (cortex-a57): Tune for cortexa15.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.md: Include cortex-a15 pipeline model.
+	(generic_sched): "no" if we are	tuning for cortexa15.
+	* config/arm/cortex-a15.md: Include cortex-a15-neon.md by
+	relative path.
+
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-arches.def (armv8-a): Tune for cortex-a53.
 	* config/aarch64/aarch64.md: Do not include aarch64-generic.md.
 	* config/aarch64/aarch64.c (aarch64_tune): Initialize to cortexa53.
