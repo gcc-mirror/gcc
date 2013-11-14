@@ -1,5 +1,35 @@
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Replace
+	"DEFAULT_ABI != ABI_AIX" test by testing for ABI_V4 or ABI_DARWIN.
+	(rs6000_savres_strategy): Likewise.
+	(rs6000_return_addr): Likewise.
+	(rs6000_emit_load_toc_table): Replace "DEFAULT_ABI != ABI_AIX" by
+	testing for ABI_V4 (since ABI_DARWIN is impossible here).
+	(rs6000_emit_prologue): Likewise.
+	(legitimate_lo_sum_address_p): Simplify DEFAULT_ABI test.
+	(rs6000_elf_declare_function_name): Remove duplicated test.
+	* config/rs6000/rs6000.md ("load_toc_v4_PIC_1"): Explicitly test
+	for ABI_V4 (instead of "DEFAULT_ABI != ABI_AIX" test).
+	("load_toc_v4_PIC_1_normal"): Likewise.
+	("load_toc_v4_PIC_1_476"): Likewise.
+	("load_toc_v4_PIC_1b"): Likewise.
+	("load_toc_v4_PIC_1b_normal"): Likewise.
+	("load_toc_v4_PIC_1b_476"): Likewise.
+	("load_toc_v4_PIC_2"): Likewise.
+	("load_toc_v4_PIC_3b"): Likewise.
+	("load_toc_v4_PIC_3c"): Likewise.
+	* config/rs6000/rs6000.h (RS6000_REG_SAVE): Simplify DEFAULT_ABI test.
+	(RS6000_SAVE_AREA): Likewise.
+	(FP_ARG_MAX_REG): Likewise.
+	(RETURN_ADDRESS_OFFSET): Likewise.
+	* config/rs6000/sysv.h (TARGET_TOC): Test for ABI_V4 instead
+	of ABI_AIX.
+	(SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_call_indirect_aix): Rename to ...
 	(rs6000_call_aix): ... this.  Handle both direct and indirect calls.
 	Create call insn directly instead of via various gen_... routines.

@@ -1528,15 +1528,12 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* Size of the outgoing register save area */
-#define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\
-			  || DEFAULT_ABI == ABI_DARWIN)			\
-			 ? (TARGET_64BIT ? 64 : 32)			\
-			 : 0)
+#define RS6000_REG_SAVE \
+  ((DEFAULT_ABI == ABI_V4 ? 0 : 32) << (TARGET_64BIT ? 1 : 0))
 
 /* Size of the fixed area on the stack */
 #define RS6000_SAVE_AREA \
-  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN) ? 24 : 8)	\
-   << (TARGET_64BIT ? 1 : 0))
+  ((DEFAULT_ABI == ABI_V4 ? 8 : 24) << (TARGET_64BIT ? 1 : 0))
 
 /* MEM representing address to save the TOC register */
 #define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
@@ -1635,9 +1632,8 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define FP_ARG_MIN_REG 33
 #define	FP_ARG_AIX_MAX_REG 45
 #define	FP_ARG_V4_MAX_REG  40
-#define	FP_ARG_MAX_REG ((DEFAULT_ABI == ABI_AIX				\
-			 || DEFAULT_ABI == ABI_DARWIN)			\
-			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
+#define	FP_ARG_MAX_REG (DEFAULT_ABI == ABI_V4				\
+			? FP_ARG_V4_MAX_REG : FP_ARG_AIX_MAX_REG)
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
 
 /* Minimum and maximum AltiVec registers used to hold arguments.  */
@@ -1793,11 +1789,8 @@ typedef struct rs6000_args
 /* Number of bytes into the frame return addresses can be found.  See
    rs6000_stack_info in rs6000.c for more information on how the different
    abi's store the return address.  */
-#define RETURN_ADDRESS_OFFSET						\
- ((DEFAULT_ABI == ABI_AIX						\
-   || DEFAULT_ABI == ABI_DARWIN)	? (TARGET_32BIT ? 8 : 16) :	\
-  (DEFAULT_ABI == ABI_V4)		? 4 :				\
-  (internal_error ("RETURN_ADDRESS_OFFSET not supported"), 0))
+#define RETURN_ADDRESS_OFFSET \
+  ((DEFAULT_ABI == ABI_V4 ? 4 : 8) << (TARGET_64BIT ? 1 : 0))
 
 /* The current return address is in link register (65).  The return address
    of anything farther back is accessed normally at an offset of 8 from the
