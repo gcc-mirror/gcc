@@ -1,3 +1,7 @@
+2013-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* doc/invoke.texi (-mabi=elfv1, -mabi=elfv2): Document.
+
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure

@@ -18846,7 +18846,8 @@ SVR4 ABI)@.
 @opindex mabi
 Extend the current ABI with a particular extension, or remove such extension.
 Valid values are @var{altivec}, @var{no-altivec}, @var{spe},
-@var{no-spe}, @var{ibmlongdouble}, @var{ieeelongdouble}@.
+@var{no-spe}, @var{ibmlongdouble}, @var{ieeelongdouble},
+@var{elfv1}, @var{elfv2}@.
 
 @item -mabi=spe
 @opindex mabi=spe
@@ -18867,6 +18868,20 @@ This is a PowerPC 32-bit SYSV ABI option.
 @opindex mabi=ieeelongdouble
 Change the current ABI to use IEEE extended-precision long double.
 This is a PowerPC 32-bit Linux ABI option.
+
+@item -mabi=elfv1
+@opindex mabi=elfv1
+Change the current ABI to use the ELFv1 ABI.
+This is the default ABI for big-endian PowerPC 64-bit Linux.
+Overriding the default ABI requires special system support and is
+likely to fail in spectacular ways.
+
+@item -mabi=elfv2
+@opindex mabi=elfv2
+Change the current ABI to use the ELFv2 ABI.
+This is the default ABI for little-endian PowerPC 64-bit Linux.
+Overriding the default ABI requires special system support and is
+likely to fail in spectacular ways.
 
 @item -mprototype
 @itemx -mno-prototype
