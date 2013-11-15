@@ -4306,6 +4306,50 @@ gcc_GAS_CHECK_FEATURE([.lcomm with alignment], gcc_cv_as_lcomm_with_alignment,
 [AC_DEFINE(HAVE_GAS_LCOMM_WITH_ALIGNMENT, 1,
   [Define if your assembler supports .lcomm with an alignment field.])])
 
+if test x$with_sysroot = x && test x$host = x$target \
+   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" \
+   && test "$prefix" != "NONE"; then
+  AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",
+[Define to PREFIX/include if cpp should also search that directory.])
+fi
+
+if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+  if test "x$with_headers" != x; then
+    target_header_dir=$with_headers
+  elif test "x$with_sysroot" = x; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
+  elif test "x$with_build_sysroot" != "x"; then
+    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
+  elif test "x$with_sysroot" = xyes; then
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+  else
+    target_header_dir="${with_sysroot}${native_system_header_dir}"
+  fi
+else
+  target_header_dir=${native_system_header_dir}
+fi
+
+# Determine the version of glibc, if any, used on the target.
+AC_MSG_CHECKING([for target glibc version])
+AC_ARG_WITH([glibc-version],
+  [AS_HELP_STRING([--with-glibc-version=M.N],
+    [assume GCC used with glibc version M.N or later])], [
+if [echo "$with_glibc_version" | grep '^[0-9][0-9]*\.[0-9][0-9]*$']; then
+  glibc_version_major=`echo "$with_glibc_version" | sed -e 's/\..*//'`
+  glibc_version_minor=`echo "$with_glibc_version" | sed -e 's/.*\.//'`
+else
+  AC_MSG_ERROR([option --with-glibc-version requires a version number M.N])
+fi], [
+glibc_version_major=0
+glibc_version_minor=0
+[if test -f $target_header_dir/features.h \
+  && glibc_version_major_define=`$EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+[0-9]' $target_header_dir/features.h` \
+  && glibc_version_minor_define=`$EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+[0-9]' $target_header_dir/features.h`; then
+  glibc_version_major=`echo "$glibc_version_major_define" | sed -e 's/.*__GLIBC__[ 	]*//'`
+  glibc_version_minor=`echo "$glibc_version_minor_define" | sed -e 's/.*__GLIBC_MINOR__[ 	]*//'`
+fi]])
+AC_MSG_RESULT([$glibc_version_major.$glibc_version_minor])
+
 AC_ARG_ENABLE(gnu-unique-object,
  [AS_HELP_STRING([--enable-gnu-unique-object],
    [enable the use of the @gnu_unique_object ELF extension on glibc systems])],
@@ -4319,16 +4363,8 @@ Valid choices are 'yes' and 'no'.]) ;;
    [.type foo, '$target_type_format_char'gnu_unique_object],,
 # We need to unquote above to to use the definition from config.gcc.
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
-   [[if test x$host = x$build -a x$host = x$target &&
-       ldd --version 2>/dev/null &&
-       glibcver=`ldd --version 2>/dev/null | sed 's/.* //;q'`; then
-      glibcmajor=`expr "$glibcver" : "\([0-9]*\)"`
-      glibcminor=`expr "$glibcver" : "[2-9]*\.\([0-9]*\)"`
-      glibcnum=`expr $glibcmajor \* 1000 + $glibcminor`
-      if test "$glibcnum" -ge 2011 ; then
-        enable_gnu_unique_object=yes
-      fi
-    fi]])])
+   [GCC_GLIBC_VERSION_GTE_IFELSE([2], [11], [enable_gnu_unique_object=yes], )]
+   )])
 if test x$enable_gnu_unique_object = xyes; then
   AC_DEFINE(HAVE_GAS_GNU_UNIQUE_OBJECT, 1,
    [Define if your assembler supports @gnu_unique_object.])
@@ -4816,49 +4852,19 @@ if test x"$gcc_cv_ld_sysroot" = xyes; then
   [Define if your linker supports --sysroot.])
 fi	  
 
-if test x$with_sysroot = x && test x$host = x$target \
-   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" \
-   && test "$prefix" != "NONE"; then
-  AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",
-[Define to PREFIX/include if cpp should also search that directory.])
-fi
-
-if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-  if test "x$with_headers" != x; then
-    target_header_dir=$with_headers
-  elif test "x$with_sysroot" = x; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
-  elif test "x$with_build_sysroot" != "x"; then
-    target_header_dir="${with_build_sysroot}${native_system_header_dir}"
-  elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
-  else
-    target_header_dir="${with_sysroot}${native_system_header_dir}"
-  fi
-else
-  target_header_dir=${native_system_header_dir}
-fi
-
 # Test for stack protector support in target C library.
 AC_CACHE_CHECK(__stack_chk_fail in target C library,
       gcc_cv_libc_provides_ssp,
       [gcc_cv_libc_provides_ssp=no
     case "$target" in
        *-*-linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
-      [# glibc 2.4 and later provides __stack_chk_fail and
+      # glibc 2.4 and later provides __stack_chk_fail and
       # either __stack_chk_guard, or TLS access to stack guard canary.
-      if test -f $target_header_dir/features.h \
+      GCC_GLIBC_VERSION_GTE_IFELSE([2], [4], [gcc_cv_libc_provides_ssp=yes], [
+      [if test -f $target_header_dir/features.h \
 	 && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
 	    $target_header_dir/features.h > /dev/null; then
-	if $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+([1-9][0-9]|[3-9])' \
-	   $target_header_dir/features.h > /dev/null; then
-	  gcc_cv_libc_provides_ssp=yes
-	elif $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+2' \
-	     $target_header_dir/features.h > /dev/null \
-	     && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+([1-9][0-9]|[4-9])' \
-	     $target_header_dir/features.h > /dev/null; then
-	  gcc_cv_libc_provides_ssp=yes
-	elif $EGREP '^[ 	]*#[ 	]*define[ 	]+__UCLIBC__[ 	]+1' \
+	if $EGREP '^[ 	]*#[ 	]*define[ 	]+__UCLIBC__[ 	]+1' \
 	     $target_header_dir/features.h > /dev/null && \
 	     test -f $target_header_dir/bits/uClibc_config.h && \
 	     $EGREP '^[ 	]*#[ 	]*define[ 	]+__UCLIBC_HAS_SSP__[ 	]+1' \
@@ -4870,7 +4876,7 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
         && $EGREP '^[  ]*#[    ]*define[       ]+__BIONIC__[   ]+1' \
            $target_header_dir/sys/cdefs.h > /dev/null; then
          gcc_cv_libc_provides_ssp=yes
-      fi]
+      fi]])
 	;;
        *-*-gnu*)
 	 # Avoid complicated tests (see
@@ -4913,11 +4919,12 @@ case "$target" in
       [AS_HELP_STRING([--with-long-double-128],
 		      [use 128-bit long double by default])],
       gcc_cv_target_ldbl128="$with_long_double_128",
-      [[gcc_cv_target_ldbl128=no
+      [GCC_GLIBC_VERSION_GTE_IFELSE([2], [4], [gcc_cv_target_ldbl128=yes], [
+      [gcc_cv_target_ldbl128=no
       grep '^[ 	]*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
         $target_header_dir/bits/wordsize.h > /dev/null 2>&1 \
       && gcc_cv_target_ldbl128=yes
-      ]])
+      ]])])
     ;;
 esac
 if test x$gcc_cv_target_ldbl128 = xyes; then
