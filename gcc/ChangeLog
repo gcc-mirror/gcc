@@ -1,3 +1,10 @@
+2013-11-15  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Remove simd_type from all
+	patterns.
+	* config/aarch64/aarch64.md: Likewise, correct "type" attribute
+	where it is incorrect or missing.
+
 2013-11-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): Remove unnecessary
