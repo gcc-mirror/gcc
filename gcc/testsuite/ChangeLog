@@ -1,3 +1,8 @@
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58599
+	* g++.dg/cpp0x/nsdmi-template5.C: New.
+
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-c++-common/cilk-plus/PS: New directory.
