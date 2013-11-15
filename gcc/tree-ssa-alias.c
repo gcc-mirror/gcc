@@ -452,8 +452,18 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
     {
       fprintf (file, ", points-to vars: ");
       dump_decl_set (file, pt->vars);
-      if (pt->vars_contains_global)
-	fprintf (file, " (includes global vars)");
+      if (pt->vars_contains_nonlocal
+	  && pt->vars_contains_escaped_heap)
+	fprintf (file, " (nonlocal, escaped heap)");
+      else if (pt->vars_contains_nonlocal
+	       && pt->vars_contains_escaped)
+	fprintf (file, " (nonlocal, escaped)");
+      else if (pt->vars_contains_nonlocal)
+	fprintf (file, " (nonlocal)");
+      else if (pt->vars_contains_escaped_heap)
+	fprintf (file, " (escaped heap)");
+      else if (pt->vars_contains_escaped)
+	fprintf (file, " (escaped)");
     }
 }
 
