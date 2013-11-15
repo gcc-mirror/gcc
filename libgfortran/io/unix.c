@@ -1245,7 +1245,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
   char path[min(PATH_MAX, opp->file_len + 1)];
   int mode;
   int rwflag;
-  int crflag;
+  int crflag, crflag2;
   int fd;
   int err;
 
@@ -1297,8 +1297,6 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
     }
 #endif
 
-  rwflag = 0;
-
   switch (flags->action)
     {
     case ACTION_READ:
@@ -1329,8 +1327,10 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
       break;
 
     case STATUS_UNKNOWN:
-    case STATUS_SCRATCH:
-      crflag = O_CREAT;
+      if (rwflag == O_RDONLY)
+	crflag = 0;
+      else
+	crflag = O_CREAT;
       break;
 
     case STATUS_REPLACE:
@@ -1338,6 +1338,8 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
       break;
 
     default:
+      /* Note: STATUS_SCRATCH is handled by tempfile () and should
+	 never be seen here.  */
       internal_error (&opp->common, "regular_file(): Bad status");
     }
 
@@ -1366,14 +1368,18 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 
   /* retry for read-only access */
   rwflag = O_RDONLY;
-  fd = open (path, rwflag | crflag, mode);
+  if (flags->status == STATUS_UNKNOWN)
+    crflag2 = crflag & ~(O_CREAT);
+  else
+    crflag2 = crflag;
+  fd = open (path, rwflag | crflag2, mode);
   if (fd >=0)
     {
       flags->action = ACTION_READ;
       return fd;		/* success */
     }
   
-  if (errno != EACCES)
+  if (errno != EACCES && errno != ENOENT)
     return fd;			/* failure */
 
   /* retry for write-only access */

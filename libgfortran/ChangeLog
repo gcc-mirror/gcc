@@ -1,3 +1,11 @@
+2013-11-15  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/59108
+	* io/unix.c (regular_file): Don't set O_CREAT when opening a file
+	read-only with unknown status. Mask out O_CREAT when falling back
+	to opening read-only if ACTION= is not set and read-write fails.
+
 2013-11-15  Steve Ellcey  <sellcey@mips.com>
 
 	* configure.ac: Do not define HAVE_STRTOLD.
