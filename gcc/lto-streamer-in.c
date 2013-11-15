@@ -917,7 +917,8 @@ input_function (tree fn_decl, struct data_in *data_in,
   gimple_register_cfg_hooks ();
 
   node = cgraph_get_node (fn_decl);
-  gcc_checking_assert (node);
+  if (!node)
+    node = cgraph_create_node (fn_decl);
   input_struct_function_base (fn, data_in, ib);
   input_cfg (ib_cfg, fn, node->count_materialization_scale);
 
