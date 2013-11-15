@@ -237,7 +237,7 @@ namespace __gnu_test
   semaphore::semaphore() 
   {
 #ifdef _GLIBCXX_SYSV_SEM
-    // Remeber the PID for the process that created the semaphore set
+    // Remember the PID for the process that created the semaphore set
     // so that only one process will destroy the set.
     pid_ = getpid();
 

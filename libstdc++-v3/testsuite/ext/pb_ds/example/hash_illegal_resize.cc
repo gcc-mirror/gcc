@@ -38,7 +38,7 @@
 
 /**
  * This example shows the case where a hash-based container object is
- * resized to a value which it cannot accomodate at runtime. Illegal
+ * resized to a value which it cannot accommodate at runtime. Illegal
  * runtime resizes cause an exception.
  */
 
