@@ -1,3 +1,7 @@
+2013-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_binary_loc) <comparisons>: Reuse local variable.
+
 2013-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lto-streamer-in.c (input function): Call cgraph_create_node if
