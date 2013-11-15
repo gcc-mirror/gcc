@@ -17321,9 +17321,8 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  if (TREE_CODE (value) == CONST_DECL)
 	    value = DECL_INITIAL (value);
 
-	  if (host_integerp (value, TYPE_UNSIGNED (TREE_TYPE (value)))
-	      && (simple_type_size_in_bits (TREE_TYPE (value))
-		  <= HOST_BITS_PER_WIDE_INT || host_integerp (value, 0)))
+	  if (simple_type_size_in_bits (TREE_TYPE (value))
+	      <= HOST_BITS_PER_WIDE_INT || host_integerp (value, 0))
 	    /* DWARF2 does not provide a way of indicating whether or
 	       not enumeration constants are signed or unsigned.  GDB
 	       always assumes the values are signed, so we output all

@@ -12033,16 +12033,15 @@ fold_binary_loc (location_t loc,
 	 if the new mask might be further optimized.  */
       if ((TREE_CODE (arg0) == LSHIFT_EXPR
 	   || TREE_CODE (arg0) == RSHIFT_EXPR)
-	  && host_integerp (TREE_OPERAND (arg0, 1), 1)
-	  && host_integerp (arg1, TYPE_UNSIGNED (TREE_TYPE (arg1)))
-	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1)
-	     < TYPE_PRECISION (TREE_TYPE (arg0))
 	  && TYPE_PRECISION (TREE_TYPE (arg0)) <= HOST_BITS_PER_WIDE_INT
-	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1) > 0)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && host_integerp (TREE_OPERAND (arg0, 1), 1)
+	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1) > 0
+	  && (tree_low_cst (TREE_OPERAND (arg0, 1), 1)
+	      < TYPE_PRECISION (TREE_TYPE (arg0))))
 	{
 	  unsigned int shiftc = tree_low_cst (TREE_OPERAND (arg0, 1), 1);
-	  unsigned HOST_WIDE_INT mask
-	    = tree_low_cst (arg1, TYPE_UNSIGNED (TREE_TYPE (arg1)));
+	  unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg1);
 	  unsigned HOST_WIDE_INT newmask, zerobits = 0;
 	  tree shift_type = TREE_TYPE (arg0);
 
