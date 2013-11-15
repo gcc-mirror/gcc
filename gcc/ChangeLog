@@ -1,3 +1,16 @@
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure
+	macro.
+	* configure.ac: Determine target_header_dir earlier.
+	(--with-glibc-version): New configure option.
+	Use GCC_GLIBC_VERSION_GTE_IFELSE in enable_gnu_unique_object,
+	gcc_cv_libc_provides_ssp and gcc_cv_target_ldbl128 tests.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-gnu-unique-object): Don't refer to
+	native toolchains for default.
+	(--with-glibc-version): Document.
+
 2013-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_binary_loc) <comparisons>: Reuse local variable.
