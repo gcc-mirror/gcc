@@ -1,3 +1,10 @@
+2013-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_bvector.h (vector<bool>::emplace_back()): LWG 2187:
+	Define.
+	(vector<bool>::emplace()): Likewise.
+	* testsuite/23_containers/vector/bool/emplace.cc: New.
+
 2013-11-15  Ondřej Bílka <neleai@seznam.cz>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
