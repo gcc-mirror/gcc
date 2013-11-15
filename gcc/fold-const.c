@@ -13824,8 +13824,7 @@ fold_binary_loc (location_t loc,
 		   and X >= signed_max+1 because previous transformations.  */
 		if (code == LE_EXPR || code == GT_EXPR)
 		  {
-		    tree st;
-		    st = signed_type_for (TREE_TYPE (arg1));
+		    tree st = signed_type_for (arg1_type);
 		    return fold_build2_loc (loc,
 					code == LE_EXPR ? GE_EXPR : LT_EXPR,
 					type, fold_convert_loc (loc, st, arg0),
