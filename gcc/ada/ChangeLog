@@ -1,3 +1,23 @@
+2013-11-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ada/54040
+	* s-linux-x32.ads: New file.
+	* s-osprim-x32.adb: Likewise.
+	* s-linux.ads (time_t): New type.
+	* s-linux-alpha.ads (time_t):  Likewise.
+	* s-linux-hppa.ads (time_t):  Likewise.
+	* s-linux-mipsel.ads (time_t):  Likewise.
+	* s-linux-sparc.ads (time_t):  Likewise.
+	* s-osinte-linux.ads (time_t): Mark it private.  Replace long
+	with System.Linux.time_t.
+	(timespec): Replace long with time_t.
+	* s-osinte-posix.adb (To_Timespec): Likewise.
+	* s-taprop-linux.adb (timeval): Replace C.long with
+	System.OS_Interface.time_t.
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Replace
+	s-linux.ads with s-linux-x32.ads, s-osprim-posix.adb with
+	s-osprim-x32.adb for x32.
+
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc-interface/trans.c: Include gimple.h and pointer-set.h.

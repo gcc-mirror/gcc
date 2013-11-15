@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2009-2011, Free Software Foundation, Inc.      --
+--          Copyright (C) 2013, Free Software Foundation, Inc.              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,9 +24,10 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
+--                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the mipsel version of this package
+--  This is the x32 version of this package
 
 --  This package encapsulates cpu specific differences between implementations
 --  of GNU/Linux, in order to share s-osinte-linux.ads.
@@ -41,7 +42,7 @@ package System.Linux is
    -- time_t --
    ------------
 
-   type time_t is new Long_Integer;
+   type time_t is new Long_Long_Integer;
 
    -----------
    -- Errno --
@@ -99,9 +100,9 @@ package System.Linux is
 
    --  struct_sigaction offsets
 
-   sa_handler_pos : constant := Standard'Address_Size / 8;
-   sa_mask_pos    : constant := 2 * Standard'Address_Size / 8;
-   sa_flags_pos   : constant := 0;
+   sa_handler_pos : constant := 0;
+   sa_mask_pos    : constant := Standard'Address_Size / 8;
+   sa_flags_pos   : constant := 128 + sa_mask_pos;
 
    SA_SIGINFO  : constant := 16#04#;
    SA_ONSTACK  : constant := 16#08000000#;
