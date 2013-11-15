@@ -267,12 +267,18 @@ if test "x${with_newlib}" = "xyes"; then
    # link executables.
    AC_DEFINE(HAVE_MKSTEMP, 1, [Define if you have mkstemp.])
    AC_DEFINE(HAVE_STRTOF, 1, [Define if you have strtof.])
-   AC_DEFINE(HAVE_STRTOLD, 1, [Define if you have strtold.])
    AC_DEFINE(HAVE_SNPRINTF, 1, [Define if you have snprintf.])
    AC_DEFINE(HAVE_STRCASESTR, 1, [Define if you have strcasestr.])
    AC_DEFINE(HAVE_VSNPRINTF, 1, [Define if you have vsnprintf.])
    AC_DEFINE(HAVE_LOCALTIME_R, 1, [Define if you have localtime_r.])
    AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have gmtime_r.])
+
+   # At some point, we should differentiate between architectures
+   # like x86, which have long double versions, and alpha/powerpc/etc.,
+   # which don't. For the time being, punt.
+   if test x"long_double_math_on_this_cpu" = x"yes"; then
+     AC_DEFINE(HAVE_STRTOLD, 1, [Define if you have strtold.])
+   fi
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
