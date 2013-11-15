@@ -1,3 +1,8 @@
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (tree_loop_distribution): Make sure
+	to distribute all stores.
+
 2013-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* doc/invoke.texi (-mabi=elfv1, -mabi=elfv2): Document.
