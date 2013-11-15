@@ -352,7 +352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
             {
 	      _Tp_alloc_type __a(_M_get_Node_allocator());
 	      typedef allocator_traits<_Tp_alloc_type> _Alloc_traits;
-	      ::new ((void*)__node) _Node();
+	      ::new ((void*)__node) _Node;
 	      _Alloc_traits::construct(__a, __node->_M_valptr(),
 				       std::forward<_Args>(__args)...);
             }

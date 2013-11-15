@@ -1371,7 +1371,7 @@ particular release.
       <entry>23.2.1</entry>
       <entry>General container requirements</entry>
       <entry>Partial</entry>
-      <entry>Only <code>vector</code> and <code>forward_list</code>
+      <entry><code>deque</code> and <code>list</code> do not
              meet the requirements
              relating to allocator use and propagation.</entry>
     </row>
@@ -1416,8 +1416,7 @@ particular release.
       <entry>23.3.3</entry>
       <entry>Class template <code>deque</code></entry>
       <entry>Partial</entry>
-      <entry><code>insert</code> and <code>erase</code> members do not
-             take <code>const_iterator</code> arguments (N2350).</entry>
+      <entry>Incomplete allocator support.</entry>
     </row>
     <row>
       <entry>23.3.4</entry>
@@ -1430,24 +1429,19 @@ particular release.
       <entry>23.3.5</entry>
       <entry>Class template <code>list</code></entry>
       <entry>Partial</entry>
-      <entry><code>insert</code> and <code>erase</code> members do not
-             take <code>const_iterator</code> arguments (N2350).</entry>
+      <entry>Incomplete allocator support.</entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.6</entry>
       <entry>Class template <code>vector</code></entry>
-      <entry>Partial</entry>
-      <entry><code>insert</code> and <code>erase</code> members do not
-             take <code>const_iterator</code> arguments (N2350).</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.7</entry>
       <entry>Class <code>vector&lt;bool&gt;</code></entry>
-      <entry>Partial</entry>
-      <entry><code>insert</code> and <code>erase</code> members do not
-             take <code>const_iterator</code> arguments (N2350).</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.4</entry>
