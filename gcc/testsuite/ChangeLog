@@ -1,5 +1,12 @@
 2013-11-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/50262
+	* gcc.dg/tree-ssa/alias-28.c: New testcase.
+	* gcc.dg/strlenopt-1.c: Adjust.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/torture/20131115-1.c: New testcase.
 
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>

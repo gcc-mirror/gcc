@@ -1,5 +1,26 @@
 2013-11-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/50262
+	* tree-ssa-alias.h (struct pt_solution): Split
+	vars_contains_global into vars_contains_nonlocal,
+	vars_contains_escaped and vars_contains_escaped_heap.
+	* tree-ssa-structalias.c (label_visit): Expand comment.
+	(handle_lhs_call): Adjust comment.
+	(set_uids_in_ptset): Set the new flags appropriately.
+	(pt_solution_set): Adjust.
+	(pt_solution_set_var): Likewise.
+	(pt_solution_ior_into): Likewise.
+	(pt_solution_includes_global): Likewise.
+	(pt_solutions_intersect_1): Optimize escaped handling.
+	(compute_points_to_sets): Remove heap variable globalization.
+	(ipa_escaped_pt): Adjust initializer.
+	(pass_data_ipa_pta): Do not run TODO_update_ssa.
+	* gimple-pretty-print.c (pp_points_to_solution): Print split
+	flags.
+	* tree-ssa-alias.c (dump_points_to_solution): Likewise.
+
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
 	* tree-loop-distribution.c (tree_loop_distribution): Make sure
 	to distribute all stores.
 

@@ -48,9 +48,13 @@ struct GTY(()) pt_solution
   unsigned int null : 1;
 
 
-  /* Nonzero if the pt_vars bitmap includes a global variable.  */
-  unsigned int vars_contains_global : 1;
-
+  /* Nonzero if the vars bitmap includes a variable included in 'nonlocal'.  */
+  unsigned int vars_contains_nonlocal : 1;
+  /* Nonzero if the vars bitmap includes a variable included in 'escaped'.  */
+  unsigned int vars_contains_escaped : 1;
+  /* Nonzero if the vars bitmap includes a anonymous heap variable that
+     escaped the function and thus became global.  */
+  unsigned int vars_contains_escaped_heap : 1;
 
   /* Set of variables that this pointer may point to.  */
   bitmap vars;
