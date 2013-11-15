@@ -1983,7 +1983,10 @@ runtime_exitsyscall(void)
 #endif
 	gp->gcnext_sp = nil;
 	runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
-	m->p->syscalltick++;
+
+	// Don't refer to m again, we might be running on a different
+	// thread after returning from runtime_mcall.
+	runtime_m()->p->syscalltick++;
 }
 
 static bool
