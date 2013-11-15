@@ -1,3 +1,11 @@
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2012-06-29  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* copying-lib.texi (Library Copying): Don't use @heading inside
+	@enumerate.
+
 2013-04-11  Release Manager
 
 	* GCC 4.7.3 released.
