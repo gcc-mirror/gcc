@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 #include <forward_list>
 #include <testsuite_hooks.h>
@@ -49,9 +49,22 @@ void test02()
   VERIFY(1 == v2.get_allocator().get_personality());
 }
 
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+  typedef propagating_allocator<T, true> alloc_type;
+  typedef std::forward_list<T, alloc_type> test_type;
+  test_type v1(alloc_type(1));
+  v1.push_front(T());
+  test_type v2(v1, alloc_type(2));
+  VERIFY(1 == v1.get_allocator().get_personality());
+  VERIFY(2 == v2.get_allocator().get_personality());
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }

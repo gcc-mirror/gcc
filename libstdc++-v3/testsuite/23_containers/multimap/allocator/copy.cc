@@ -15,36 +15,29 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=c++11" }
+// { dg-options "-std=gnu++11" }
 
-#include <unordered_map>
+#include <map>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
 struct T { int i; };
 
-struct hash
-{
-  std::size_t operator()(const T t) const noexcept
-  { return t.i; }
-};
+bool operator<(T l, T r) { return l.i < r.i; }
 
-struct equal_to
-{
-  bool operator()(const T& lhs, const T& rhs) const noexcept
-  { return lhs.i == rhs.i; }
-};
+using Cmp = std::less<T>;
+
+struct U { };
 
 using __gnu_test::propagating_allocator;
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, false> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
+  typedef propagating_allocator<std::pair<const T, U>, false> alloc_type;
+  typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
-  v1.emplace(std::piecewise_construct,
-	     std::make_tuple(T()), std::make_tuple(T()));
+  v1 = { test_type::value_type{} };
   test_type v2(v1);
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(0 == v2.get_allocator().get_personality());
@@ -53,11 +46,10 @@ void test01()
 void test02()
 {
   bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, true> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
+  typedef propagating_allocator<std::pair<const T, U>, true> alloc_type;
+  typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
-  v1.emplace(std::piecewise_construct,
-	     std::make_tuple(T()), std::make_tuple(T()));
+  v1 = { test_type::value_type{} };
   test_type v2(v1);
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
@@ -66,11 +58,10 @@ void test02()
 void test03()
 {
   bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, true> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
+  typedef propagating_allocator<std::pair<const T, U>, true> alloc_type;
+  typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
-  v1.emplace(std::piecewise_construct,
-	     std::make_tuple(T()), std::make_tuple(T()));
+  v1 = { test_type::value_type{} };
   test_type v2(v1, alloc_type(2));
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(2 == v2.get_allocator().get_personality());

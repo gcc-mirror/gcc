@@ -61,9 +61,22 @@ void test02()
   VERIFY(1 == v2.get_allocator().get_personality());
 }
 
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+  typedef propagating_allocator<T, true> alloc_type;
+  typedef std::unordered_multiset<T, hash, equal_to, alloc_type> test_type;
+  test_type v1(alloc_type(1));
+  v1.insert(T());
+  test_type v2(v1, alloc_type(2));
+  VERIFY(1 == v1.get_allocator().get_personality());
+  VERIFY(2 == v2.get_allocator().get_personality());
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }

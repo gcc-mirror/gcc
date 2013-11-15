@@ -1,3 +1,76 @@
+2013-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_map.h (map): Implement C++11 allocator-aware
+	container requirements.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree_node): Use __aligned_buffer and
+	add accessors for value.
+	(_Rb_tree_iterator, _Rb_tree_const_iterator): Use _Rb_tree_node
+	accessors.
+	(_Rb_tree): Use allocator_traits and implement support for sets and
+	maps the be allocator-aware.
+	* include/bits/forward_list.h (_Fwd_list_base::_M_create_node): Do
+	not zero-initialize storage buffer.
+	* include/bits/hashtable_policy.h (_Hashtable_alloc::_M_allocate_node):
+	Likewise.
+	* include/bits/stl_vector.h (vector(vector&&, const allocator_type&)):
+	Add conditional noexcept specification.
+	* doc/xml/manual/status_cxx2011.xml: Update status of containers.
+	* testsuite/util/testsuite_allocator.h: Re-indent.
+	* testsuite/23_containers/forward_list/allocator/copy.cc: Test
+	allocator-extended copy constructor.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/copy.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/vector/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/forward_list/allocator/move.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/move.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/move.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/move.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/move.cc: New.
+	* testsuite/23_containers/vector/allocator/move.cc: New.
+	* testsuite/23_containers/map/allocator/copy.cc: New.
+	* testsuite/23_containers/map/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/map/allocator/minimal.cc: New.
+	* testsuite/23_containers/map/allocator/move.cc: New.
+	* testsuite/23_containers/map/allocator/move_assign.cc: New.
+	* testsuite/23_containers/map/allocator/noexcept.cc: New.
+	* testsuite/23_containers/map/allocator/swap.cc: New.
+	* testsuite/23_containers/multimap/allocator/copy.cc: New.
+	* testsuite/23_containers/multimap/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/multimap/allocator/minimal.cc: New.
+	* testsuite/23_containers/multimap/allocator/move.cc: New.
+	* testsuite/23_containers/multimap/allocator/move_assign.cc: New.
+	* testsuite/23_containers/multimap/allocator/noexcept.cc: New.
+	* testsuite/23_containers/multimap/allocator/swap.cc: New.
+	* testsuite/23_containers/multiset/allocator/copy.cc: New.
+	* testsuite/23_containers/multiset/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/multiset/allocator/minimal.cc: New.
+	* testsuite/23_containers/multiset/allocator/move.cc: New.
+	* testsuite/23_containers/multiset/allocator/move_assign.cc: New.
+	* testsuite/23_containers/multiset/allocator/noexcept.cc: New.
+	* testsuite/23_containers/multiset/allocator/swap.cc: New.
+	* testsuite/23_containers/set/allocator/copy.cc: New.
+	* testsuite/23_containers/set/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/set/allocator/minimal.cc: New.
+	* testsuite/23_containers/set/allocator/move.cc: New.
+	* testsuite/23_containers/set/allocator/move_assign.cc: New.
+	* testsuite/23_containers/set/allocator/noexcept.cc: New.
+	* testsuite/23_containers/set/allocator/swap.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* scripts/extract_symvers.in: Ignore <localentry: > fields

@@ -35,43 +35,30 @@ struct equal_to
   { return lhs.i == rhs.i; }
 };
 
-using __gnu_test::propagating_allocator;
+using __gnu_test::uneq_allocator;
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, false> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
+  typedef uneq_allocator<T> alloc_type;
+  typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,
 	     std::make_tuple(T()), std::make_tuple(T()));
-  test_type v2(v1);
+  test_type v2(std::move(v1));
   VERIFY(1 == v1.get_allocator().get_personality());
-  VERIFY(0 == v2.get_allocator().get_personality());
+  VERIFY(1 == v2.get_allocator().get_personality());
 }
 
 void test02()
 {
   bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, true> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
+  typedef uneq_allocator<T> alloc_type;
+  typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,
 	     std::make_tuple(T()), std::make_tuple(T()));
-  test_type v2(v1);
-  VERIFY(1 == v1.get_allocator().get_personality());
-  VERIFY(1 == v2.get_allocator().get_personality());
-}
-
-void test03()
-{
-  bool test __attribute__((unused)) = true;
-  typedef propagating_allocator<T, true> alloc_type;
-  typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
-  test_type v1(alloc_type(1));
-  v1.emplace(std::piecewise_construct,
-	     std::make_tuple(T()), std::make_tuple(T()));
-  test_type v2(v1, alloc_type(2));
+  test_type v2(std::move(v1), alloc_type(2));
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(2 == v2.get_allocator().get_personality());
 }
@@ -80,6 +67,5 @@ int main()
 {
   test01();
   test02();
-  test03();
   return 0;
 }
