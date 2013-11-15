@@ -1012,13 +1012,13 @@ inverse_probability (int prob1)
 /* Return true if BB has at least one abnormal outgoing edge.  */
 
 static inline bool
-has_abnormal_outgoing_edge_p (basic_block bb)
+has_abnormal_or_eh_outgoing_edge_p (basic_block bb)
 {
   edge e;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_ABNORMAL)
+    if (e->flags & (EDGE_ABNORMAL | EDGE_EH))
       return true;
 
   return false;

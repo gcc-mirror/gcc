@@ -224,7 +224,7 @@ find_implicit_erroneous_behaviour (void)
 	 the trap we insert.  We have to preserve abnormal edges out
 	 of the isolated block which in turn means updating PHIs at
 	 the targets of those abnormal outgoing edges.  */
-      if (has_abnormal_outgoing_edge_p (bb))
+      if (has_abnormal_or_eh_outgoing_edge_p (bb))
 	continue;
 
       /* First look for a PHI which sets a pointer to NULL and which
@@ -268,15 +268,8 @@ find_implicit_erroneous_behaviour (void)
 	        {
 	          /* We only care about uses in BB.  Catching cases in
 		     in other blocks would require more complex path
-		     isolation code. 
-
-		     If the statement must end a block and is not a
-		     GIMPLE_RETURN, then additional work would be
-		     necessary to isolate the path.  Just punt it for
-		     now.  */
-		  if (gimple_bb (use_stmt) != bb
-		      || (stmt_ends_bb_p (use_stmt)
-			  && gimple_code (use_stmt) != GIMPLE_RETURN))
+		     isolation code.   */
+		  if (gimple_bb (use_stmt) != bb)
 		    continue;
 
 		  if (infer_nonnull_range (use_stmt, lhs))
@@ -316,7 +309,7 @@ find_explicit_erroneous_behaviour (void)
 	 the trap we insert.  We have to preserve abnormal edges out
 	 of the isolated block which in turn means updating PHIs at
 	 the targets of those abnormal outgoing edges.  */
-      if (has_abnormal_outgoing_edge_p (bb))
+      if (has_abnormal_or_eh_outgoing_edge_p (bb))
 	continue;
 
       /* Now look at the statements in the block and see if any of
@@ -329,8 +322,7 @@ find_explicit_erroneous_behaviour (void)
 	  /* By passing null_pointer_node, we can use infer_nonnull_range
 	     to detect explicit NULL pointer dereferences and other uses
 	     where a non-NULL value is required.  */
-	  if ((!stmt_ends_bb_p (stmt) || gimple_code (stmt) == GIMPLE_RETURN)
-	      && infer_nonnull_range (stmt, null_pointer_node))
+	  if (infer_nonnull_range (stmt, null_pointer_node))
 	    {
 	      insert_trap_and_remove_trailing_statements (&si,
 							  null_pointer_node);

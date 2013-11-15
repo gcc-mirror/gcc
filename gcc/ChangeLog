@@ -1,5 +1,14 @@
 2013-11-15  Jeff Law  <law@redhat.com>
 
+	* basic-block.h (has_abnormal_or_eh_outgoing_edge): Renamed from
+	has_abnormal_or_outgoing_edge.  Check for EH edges as well.
+	* gimple-ssa-isolate-paths.c
+	(find_implicit_erroneous_behaviour): Corresponding changes.
+	Do not check stmt_ends_bb_p or GIMPLE_RETURN anymore.
+	(find_explicit_erroneous_behaviour): Likewise.
+
+2013-11-15  Jeff Law  <law@redhat.com>
+
 	* ifcvt.c (find_cond_trap): Properly handle case where
 	trap_bb == else_bb.
 
