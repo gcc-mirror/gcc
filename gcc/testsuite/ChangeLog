@@ -1,5 +1,20 @@
 2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58188
+	* g++.dg/cpp0x/nsdmi-template8.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58725
+	* g++.dg/cpp0x/nsdmi-template7.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58829
+	* g++.dg/cpp0x/nsdmi-template6.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58599
 	* g++.dg/cpp0x/nsdmi-template5.C: New.
 
