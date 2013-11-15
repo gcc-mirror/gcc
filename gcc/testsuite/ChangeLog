@@ -1,3 +1,7 @@
+2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/3b-15.c: Revise for little endian.
+
 2013-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/50262
