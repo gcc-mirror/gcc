@@ -1,3 +1,7 @@
+2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* picflag.m4 (m68k-*-*): Use default PIC flag.
+
 2013-09-29  Iain Sandoe  <iain@codesourcery.com>
 
 	* mh-darwin (BOOT_CFLAGS): Only add -mdynamic-no-pic for m32 hosts.
