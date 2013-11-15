@@ -1,3 +1,8 @@
+2013-11-15  Jeff Law  <law@redhat.com>
+
+	* ifcvt.c (find_cond_trap): Properly handle case where
+	trap_bb == else_bb.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
