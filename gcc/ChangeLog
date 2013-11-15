@@ -1,3 +1,8 @@
+2013-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lto-streamer-in.c (input function): Call cgraph_create_node if
+	cgraph_get_node failed.
+
 2013-11-14   Olivier Hainque  <hainque@adacore.com>
 
 	* cfgexpand.c (defer_stack_allocation): When optimization is enabled,
@@ -46,7 +51,8 @@
 	* gimplify.c (force_gimple_operand_1, force_gimple_operand,
 	force_gimple_operand_gsi_1, force_gimple_operand_gsi,
 	gimple_regimplify_operands): Move to gimplify-me.c.
-	(gimplify_hasher::hash, gimplify_hasher::equal): Relocate from gimple.h.
+	(gimplify_hasher::hash, gimplify_hasher::equal): Relocate
+	from gimple.h.
 	* Makefile.in (OBJS): Add gimplify-me.o
 	* asan.c: Include only gimplify.h, gimplify-me.h, and/or gimple.h as
 	required.
@@ -226,8 +232,7 @@
 
 	(rs6000_trampoline_size): Update for ABI_ELFv2 trampolines.
 	(rs6000_trampoline_init): Likewise.
-	(rs6000_elf_file_end): Call file_end_indicate_exec_stack
-	for ABI_ELFv2.
+	(rs6000_elf_file_end): Call file_end_indicate_exec_stack for ABI_ELFv2.
 
 	(rs6000_call_aix): Handle ELFv2 indirect calls.  Do not check
 	for function descriptors in ABI_ELFv2.
@@ -455,9 +460,8 @@
 
 2013-11-14  Jeff Law  <law@redhat.com>
 
-	* tree-ssa-threadedge.c (thread_through_normal_block): Only push
-	the EDGE_START_JUMP_THREAD marker if the jump threading path is
-	empty.
+	* tree-ssa-threadedge.c (thread_through_normal_block): Only push the
+	EDGE_START_JUMP_THREAD marker if the jump threading path is empty.
 
 2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -507,17 +511,14 @@
 	(cpu_rtx_cost_table): Remove.
 
 2013-11-14  Julian Brown  <julian@codesourcery.com>
-	Joey Ye  <joey.ye@arm.com>
+	    Joey Ye  <joey.ye@arm.com>
 
 	* config/arm/arm.c (arm_cortex_m_branch_cost): New.
 	(arm_v7m_tune): New.
-	(arm_slowmul_tune, arm_fastmul_tune,
-	arm_strongarm_tune, arm_9e_tune, arm_v6t2_tune,
-	arm_cortex_tune, arm_cortex_a15_tune,
-	arm_cortex_a5_tune, arm_v6m_tune): Add comments
-	for Sched adj cost.
-	* config/arm/arm-cores.def (cortex-m4, cortex-m3):
-	Use arm_v7m_tune.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune, arm_9e_tune,
+	arm_v6t2_tune, arm_cortex_tune, arm_cortex_a15_tune,
+	arm_cortex_a5_tune, arm_v6m_tune): Add comments for Sched adj cost.
+	* config/arm/arm-cores.def (cortex-m4, cortex-m3): Use arm_v7m_tune.
 
 2013-11-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
@@ -571,7 +572,7 @@
 
 	* tree-ssa-tail-merge.c (gimple_equal_p): Remove equal variable.
 
-2013-11-13  Andrew MacLeod  <amacleod@redhat,com>
+2013-11-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-walk.h: New File.  Relocate prototypes from gimple.h.
 	(struct walk_stmt_info):  Relocate here from gimple.h.
@@ -759,8 +760,7 @@
 	* ira-color.c (struct allocno_color_data): Add new members
 	first_thread_allocno, next_thread_allocno, thread_freq.
 	(sorted_copies): New static var.
-	(allocnos_conflict_by_live_ranges_p, copy_freq_compare_func): Move
-	up.
+	(allocnos_conflict_by_live_ranges_p, copy_freq_compare_func): Move up.
 	(allocno_thread_conflict_p, merge_threads)
 	(form_threads_from_copies, form_threads_from_bucket)
 	(form_threads_from_colorable_allocno, init_allocno_threads): New
@@ -769,12 +769,11 @@
 	and threads.
 	(add_allocno_to_ordered_bucket): Rename to
 	add_allocno_to_ordered_colorable_bucket.  Remove parameter.
-        (push_only_colorable): Call form_threads_from_bucket.
+	(push_only_colorable): Call form_threads_from_bucket.
 	(color_pass): Call init_allocno_threads.  Use
 	consideration_allocno_bitmap instead of coloring_allocno_bitmap
 	for nuillify allocno color data.
-	(ira_initiate_assign, ira_finish_assign): Allocate/free
-	sorted_copies.
+	(ira_initiate_assign, ira_finish_assign): Allocate/free sorted_copies.
 	(coalesce_allocnos): Use static sorted copies.
 
 2013-11-13  Jakub Jelinek  <jakub@redhat.com>
@@ -820,9 +819,8 @@
 
 	* gimple-streamer-out.c (output_gimple_stmt): Also wrap
 	decls in ADDR_EXPR operands inside a MEM_REF and optimize that.
-	* gimple-streamer-in.c (input_gimple_stmt): Remove now dead
-	code dealing with type mismatches inside component reference
-	chains.
+	* gimple-streamer-in.c (input_gimple_stmt): Remove now dead code
+	dealing with type mismatches inside component reference chains.
 
 2013-11-13  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -857,7 +855,7 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-	* config/i386/i386.c (ix86_print_operand): Support z-masking
+	* config/i386/i386.c (ix86_print_operand): Support z-masking.
 	* config/i386/predicate.md (const_0_to_4_operand): New.
 	(const_0_to_5_operand): Ditto.
 	* config/i386/sse.md (UNSPEC_COMPRESS): New.
@@ -1019,9 +1017,8 @@
 
 2013-11-12  Jeff Law  <law@redhat.com>
 
-	* tree-ssa-threadedge.c (thread_around_empty_blocks): New
-	argument backedge_seen_p.  Set, use and pass it to children
-	appropriately.
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): New argument
+	backedge_seen_p.  Set, use and pass it to children appropriately.
 	(thread_through_normal_block): Similarly.
 	(thread_across_edge): Similarly.
 
@@ -1065,9 +1062,9 @@
 	is_gimple_reg_rhs) Relocate from gimplify.c.
 	* gimplify.c (mark_addressable): Move to gimple-expr.c.
 	(gimple_seq_add_stmt_without_update): Move to gimple.c.
-	(remove_suffix, tmp_var_id_num, create_tmp_var_name, create_tmp_var_raw,
-	create_tmp_var, create_tmp_reg, is_gimple_reg_rhs): Move to 
-	gimple-expr.c.
+	(remove_suffix, tmp_var_id_num, create_tmp_var_name,
+	create_tmp_var_raw, create_tmp_var, create_tmp_reg,
+	is_gimple_reg_rhs): Move to gimple-expr.c.
 	(should_carry_location_p): Move to gimple.c.
 	(gimple_do_not_emit_location_p, gimple_set_do_not_emit_location): Move
 	to gimple.h.
@@ -1235,7 +1232,7 @@
 	Handle type conversion.
 
 2013-11-11  Martin Liska  <marxin.liska@gmail.com>
-						Jan Hubicka  <jh@suse.cz>
+	    Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Profile dump added.
 	* cgraph.h (struct cgraph_node): New time profile variable added.
@@ -1247,7 +1244,8 @@
 	* profile.c (instrument_values): New case for time profiler added.
 	(compute_value_histograms): Read of time profile.
 	* tree-pretty-print.c (dump_function_header): Time profiler is dumped.
-	* tree-profile.c (init_ic_make_global_vars): Time profiler function added.
+	* tree-profile.c (init_ic_make_global_vars): Time profiler
+	function added.
 	(gimple_init_edge_profiler): TP function instrumentation.
 	(gimple_gen_time_profiler): New.
 	* value-prof.c (gimple_add_histogram_value): Support for time profiler
@@ -1324,7 +1322,7 @@
 	threading paths first, then perform PHI node checks if applicable.
 
 2013-11-10  Karlson2k  <k2k@narod.ru>
-            Kai Tietz  <ktietz@redhat.com>
+	    Kai Tietz  <ktietz@redhat.com>
 
 	PR plugin/52872
 	* configure.ac: Adding for exported symbols check
@@ -4710,8 +4708,7 @@
 	* ipa-reference.h: Include cgraph.h instead of tree.h.
 	* cgraph.h: Include basic-block.h instead of tree.h.
 	* tree-streamer.h: Do not include tree.h.
-	* genattrtab.c (write_header): Generate inclusion of
-	tree.h.
+	* genattrtab.c (write_header): Generate inclusion of tree.h.
 	* genautomata.c (main): Likewise.
 	* genemit.c: Likewise.
 	* genopinit.c: Likewise.
