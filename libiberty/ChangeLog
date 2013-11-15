@@ -1,3 +1,7 @@
+2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
 2013-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* cp-demangle.c (d_copy_templates): Cast result of malloc

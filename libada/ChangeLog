@@ -1,3 +1,7 @@
+2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* configure: Regenerate.
+
 2013-03-27  Kai Tietz  <ktietz@redhat.com>
 
 	* configure: Regenerated.
