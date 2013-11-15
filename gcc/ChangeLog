@@ -1,3 +1,14 @@
+2013-11-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): Remove unnecessary
+	host_integerp test.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
+	Use TREE_INT_CST_LOW rather than tree_low_cst when reading the
+	constant.
+	* fold-const.c (fold_binary_loc): Replace a host_integerp/tree_low_cst
+	pair with a TREE_CODE test and TREE_INT_CST_LOW.
+	* tree-vect-generic.c (expand_vector_divmod): Likewise.
+
 2013-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/50262

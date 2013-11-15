@@ -432,7 +432,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       tree cst = VECTOR_CST_ELT (op1, i);
       unsigned HOST_WIDE_INT ml;
 
-      if (!host_integerp (cst, unsignedp) || integer_zerop (cst))
+      if (TREE_CODE (cst) != INTEGER_CST || integer_zerop (cst))
 	return NULL_TREE;
       pre_shifts[i] = 0;
       post_shifts[i] = 0;
@@ -453,7 +453,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       if (unsignedp)
 	{
 	  unsigned HOST_WIDE_INT mh;
-	  unsigned HOST_WIDE_INT d = tree_low_cst (cst, 1) & mask;
+	  unsigned HOST_WIDE_INT d = TREE_INT_CST_LOW (cst) & mask;
 
 	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
 	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
@@ -523,7 +523,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       else
 	{
-	  HOST_WIDE_INT d = tree_low_cst (cst, 0);
+	  HOST_WIDE_INT d = TREE_INT_CST_LOW (cst);
 	  unsigned HOST_WIDE_INT abs_d;
 
 	  if (d == -1)
