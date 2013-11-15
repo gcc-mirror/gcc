@@ -33,6 +33,13 @@ set ALWAYS_CFLAGS ""
 lappend ALWAYS_CFLAGS "-L${library_var}/libcilkrts/.libs"
 
 dg-init
+
+# Run the tests that are shared with C++.
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] " -ftree-vectorize -fcilkplus -std=c99" " "
+# Run the C-only tests.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
+	"-ftree-vectorize -fcilkplus -std=c99" " "
+
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O2 -fcilkplus" " "

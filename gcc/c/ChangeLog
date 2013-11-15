@@ -1,3 +1,20 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-parser.c (c_parser_cilk_simd): New.
+	(c_parser_cilk_verify_simd): New.
+	(c_parser_pragma): Add case for PRAGMA_CILK_SIMD.
+	(c_parser_omp_for_loop): Add case for NE_EXPR.
+	Set c_break_label for CILK_SIMD.
+	(c_parser_cilk_clause_vectorlength): New.
+	(c_parser_cilk_clause_linear): New.
+	(c_parser_cilk_clause_name): New.
+	(c_parser_cilk_all_clauses): New.
+	* c-typeck.c (build_unary_op): Pass location argument to
+	readonly_error.
+	(build_modify_expr): Same.
+	(build_asm_expr): Same.
+	(c_finish_bc_stmt): Error on break/continue in loops.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-typeck.c: Include only gimplify.h and gimple.h as needed.

@@ -4055,7 +4055,7 @@ build_unary_op (location_t location,
 	/* Report a read-only lvalue.  */
 	if (TYPE_READONLY (argtype))
 	  {
-	    readonly_error (arg,
+	    readonly_error (location, arg,
 			    ((code == PREINCREMENT_EXPR
 			      || code == POSTINCREMENT_EXPR)
 			     ? lv_increment : lv_decrement));
@@ -5266,7 +5266,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	   || TREE_CODE (lhstype) == UNION_TYPE)
 	  && C_TYPE_FIELDS_READONLY (lhstype)))
     {
-      readonly_error (lhs, lv_assign);
+      readonly_error (location, lhs, lv_assign);
       return error_mark_node;
     }
   else if (TREE_READONLY (lhs))
@@ -8949,7 +8949,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	      || ((TREE_CODE (TREE_TYPE (output)) == RECORD_TYPE
 		   || TREE_CODE (TREE_TYPE (output)) == UNION_TYPE)
 		  && C_TYPE_FIELDS_READONLY (TREE_TYPE (output)))))
-	readonly_error (output, lv_asm);
+	readonly_error (loc, output, lv_asm);
 
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
       oconstraints[i] = constraint;
@@ -9574,6 +9574,13 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
     case 1:
       gcc_assert (is_break);
       error_at (loc, "break statement used with OpenMP for loop");
+      return NULL_TREE;
+
+    case 2:
+      if (is_break) 
+	error ("break statement within %<#pragma simd%> loop body");
+      else 
+	error ("continue statement within %<#pragma simd%> loop body");
       return NULL_TREE;
 
     default:

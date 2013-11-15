@@ -16,12 +16,18 @@
 
 # Written by Balaji V. Iyer <balaji.v.iyer@intel.com>
 
-
 load_lib g++-dg.exp
 
 if { ![check_effective_target_cilkplus] } {
     return;
 }
+
+dg-init
+# Run the tests that are shared with C.
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] ""
+# Run the C++ only tests.
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] ""
+dg-finish
 
 dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "

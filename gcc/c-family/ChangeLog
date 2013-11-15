@@ -1,3 +1,18 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-cilkplus.c: New file.
+	* c-common.c (readonly_error): Add location argument.
+	* c-common.h (readonly_error): Same.
+	(c_finish_cilk_clauses): Protoize.
+	(c_check_cilk_loop): Same.
+	c-omp.c (c_finish_omp_for): Handle CILK_SIMD nodes.
+	Do not fail on error_mark_node.
+	Abstract increment canonicalization to here...
+	(c_omp_for_incr_canonicalize_ptr): New.
+	c-pragma.c (init_pragma): Register "simd" pragma.
+	c-pragma.h (enum pragma_kind): Add PRAGMA_CILK_SIMD.
+	(enum pragma_cilk_clause): New.
+
 2013-11-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* c-pretty-print.c (pp_c_character_constant): Remove unnecessary

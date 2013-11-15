@@ -300,6 +300,7 @@ typedef struct GTY(()) cp_parser {
 #define IN_OMP_BLOCK		4
 #define IN_OMP_FOR		8
 #define IN_IF_STMT             16
+#define IN_CILK_SIMD_FOR       32
   unsigned char in_statement;
 
   /* TRUE if we are presently parsing the body of a switch statement.

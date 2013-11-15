@@ -1,3 +1,29 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Depend on cp/cp-cilkplus.o.
+	* cp-cilkplus.c: New file.
+	* cp-tree.h (cpp_validate_cilk_plus_loop): Protoize.
+	* parser.c (cp_parser_cilk_simd): New.
+	(cp_debug_parser): Add case for IN_CILK_SIMD_FOR.
+	(cp_parser_jump_statement): Same.
+	(cp_parser_omp_for_cond): Add new argument.
+	Add case for NE_EXPR.
+	(cp_parser_omp_for_loop): Pass new argument to
+	cp_parser_omp_for_cond.
+	Handle CILK_SIMD nodes.
+	Abstract initilization code to..
+	(cp_parser_omp_for_loop_init): ...here.
+	(cp_parser_pragma): Add case for PRAGMA_CILK_SIMD.
+	(cp_parser_cilk_simd_vectorlength): New.
+	(cp_parser_cilk_simd_linear): New.
+	(cp_parser_cilk_simd_clause_name): New.
+	(cp_parser_cilk_simd_all_clauses): New.
+	(cp_parser_cilk_simd): New.
+	* parser.h (IN_CILK_SIMD_FOR): New macro.
+	* pt.c (tsubst_expr): Add case for CILK_SIMD.
+	* typeck2.c (cxx_readonly_error): Pass location argument to
+	readonly_error.
+
 2013-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57887

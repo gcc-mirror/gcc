@@ -6177,6 +6177,9 @@ extern void vtv_save_class_info                 (tree);
 extern void vtv_recover_class_info              (void);
 extern void vtv_build_vtable_verify_fndecl      (void);
 
+/* In cp-cilkplus.c.  */
+extern bool cpp_validate_cilk_plus_loop		(tree);
+
 /* In cp/cp-array-notations.c */
 extern tree expand_array_notation_exprs         (tree);
 bool cilkplus_an_triplet_types_ok_p             (location_t, tree, tree, tree,

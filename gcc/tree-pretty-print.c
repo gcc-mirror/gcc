@@ -2380,6 +2380,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma omp simd");
       goto dump_omp_loop;
 
+    case CILK_SIMD:
+      pp_string (buffer, "#pragma simd");
+      goto dump_omp_loop;
+
     case OMP_DISTRIBUTE:
       pp_string (buffer, "#pragma omp distribute");
       goto dump_omp_loop;

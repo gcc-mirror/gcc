@@ -1237,6 +1237,9 @@ static void c_parser_objc_at_dynamic_declaration (c_parser *);
 static bool c_parser_objc_diagnose_bad_element_prefix
   (c_parser *, struct c_declspecs *);
 
+/* Cilk Plus supporting routines.  */
+static void c_parser_cilk_simd (c_parser *);
+static bool c_parser_cilk_verify_simd (c_parser *, enum pragma_context);
 static tree c_parser_array_notation (location_t, c_parser *, tree, tree);
 
 /* Parse a translation unit (C90 6.7, C99 6.9).
@@ -9371,6 +9374,13 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
       c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
       return false;
 
+    case PRAGMA_CILK_SIMD:
+      if (!c_parser_cilk_verify_simd (parser, context))
+	return false;
+      c_parser_consume_pragma (parser);
+      c_parser_cilk_simd (parser);
+      return false;
+
     default:
       if (id < PRAGMA_FIRST_EXTERNAL)
 	{
@@ -11543,6 +11553,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	    case LT_EXPR:
 	    case LE_EXPR:
 	      break;
+	    case NE_EXPR:
+	      if (code == CILK_SIMD)
+		break;
+	      /* FALLTHRU.  */
 	    default:
 	      /* Can't be cond = error_mark_node, because we want to preserve
 		 the location until c_finish_omp_for.  */
@@ -11616,7 +11630,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
     }
 
   save_break = c_break_label;
-  c_break_label = size_one_node;
+  if (code == CILK_SIMD)
+    c_break_label = build_int_cst (size_type_node, 2);
+  else
+    c_break_label = size_one_node;
   save_cont = c_cont_label;
   c_cont_label = NULL_TREE;
   body = push_stmt_list ();
@@ -13311,7 +13328,252 @@ c_parser_omp_threadprivate (c_parser *parser)
 
   c_parser_skip_to_pragma_eol (parser);
 }
+
+/* Cilk Plus <#pragma simd> parsing routines.  */
 
+/* Helper function for c_parser_pragma.  Perform some sanity checking
+   for <#pragma simd> constructs.  Returns FALSE if there was a
+   problem.  */
+
+static bool
+c_parser_cilk_verify_simd (c_parser *parser,
+				  enum pragma_context context)
+{
+  if (!flag_enable_cilkplus)
+    {
+      warning (0, "pragma simd ignored because -fcilkplus is not enabled");
+      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+      return false;
+    }
+  if (context == pragma_external)
+    {
+      c_parser_error (parser,"pragma simd must be inside a function");
+      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+      return false;
+    }
+  return true;
+}
+
+/* Cilk Plus:
+   vectorlength ( constant-expression ) */
+
+static tree
+c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
+{
+  /* The vectorlength clause behaves exactly like OpenMP's safelen
+     clause.  Represent it in OpenMP terms.  */
+  check_no_duplicate_clause (clauses, OMP_CLAUSE_SAFELEN, "vectorlength");
+
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return clauses;
+
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree expr = c_parser_expr_no_commas (parser, NULL).value;
+  expr = c_fully_fold (expr, false, NULL);
+
+  if (!TREE_TYPE (expr)
+      || !TREE_CONSTANT (expr)
+      || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
+    error_at (loc, "vectorlength must be an integer constant");
+  else if (exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
+    error_at (loc, "vectorlength must be a power of 2");
+  else
+    {
+      tree u = build_omp_clause (loc, OMP_CLAUSE_SAFELEN);
+      OMP_CLAUSE_SAFELEN_EXPR (u) = expr;
+      OMP_CLAUSE_CHAIN (u) = clauses;
+      clauses = u;
+    }
+
+  c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+
+  return clauses;
+}
+
+/* Cilk Plus:
+   linear ( simd-linear-variable-list )
+
+   simd-linear-variable-list:
+     simd-linear-variable
+     simd-linear-variable-list , simd-linear-variable
+
+   simd-linear-variable:
+     id-expression
+     id-expression : simd-linear-step
+
+   simd-linear-step:
+   conditional-expression */
+
+static tree
+c_parser_cilk_clause_linear (c_parser *parser, tree clauses)
+{
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return clauses;
+
+  location_t loc = c_parser_peek_token (parser)->location;
+
+  if (c_parser_next_token_is_not (parser, CPP_NAME)
+      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+    c_parser_error (parser, "expected identifier");
+
+  while (c_parser_next_token_is (parser, CPP_NAME)
+	 && c_parser_peek_token (parser)->id_kind == C_ID_ID)
+    {
+      tree var = lookup_name (c_parser_peek_token (parser)->value);
+
+      if (var == NULL)
+	{
+	  undeclared_variable (c_parser_peek_token (parser)->location,
+			       c_parser_peek_token (parser)->value);
+	c_parser_consume_token (parser);
+	}
+      else if (var == error_mark_node)
+	c_parser_consume_token (parser);
+      else
+	{
+	  tree step = integer_one_node;
+
+	  /* Parse the linear step if present.  */
+	  if (c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+	    {
+	      c_parser_consume_token (parser);
+	      c_parser_consume_token (parser);
+
+	      tree expr = c_parser_expr_no_commas (parser, NULL).value;
+	      expr = c_fully_fold (expr, false, NULL);
+
+	      if (TREE_TYPE (expr)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (expr))
+		  && (TREE_CONSTANT (expr)
+		      || DECL_P (expr)))
+		step = expr;
+	      else
+		c_parser_error (parser,
+				"step size must be an integer constant "
+				"expression or an integer variable");
+	    }
+	  else
+	    c_parser_consume_token (parser);
+
+	  /* Use OMP_CLAUSE_LINEAR, which has the same semantics.  */
+	  tree u = build_omp_clause (loc, OMP_CLAUSE_LINEAR);
+	  OMP_CLAUSE_DECL (u) = var;
+	  OMP_CLAUSE_LINEAR_STEP (u) = step;
+	  OMP_CLAUSE_CHAIN (u) = clauses;
+	  clauses = u;
+	}
+
+      if (c_parser_next_token_is_not (parser, CPP_COMMA))
+	break;
+
+      c_parser_consume_token (parser);
+    }
+
+  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+
+  return clauses;
+}
+
+/* Returns the name of the next clause.  If the clause is not
+   recognized SIMD_OMP_CLAUSE_NONE is returned and the next token is
+   not consumed.  Otherwise, the appropriate pragma_simd_clause is
+   returned and the token is consumed.  */
+
+static pragma_cilk_clause
+c_parser_cilk_clause_name (c_parser *parser)
+{
+  pragma_cilk_clause result;
+  c_token *token = c_parser_peek_token (parser);
+
+  if (!token->value || token->type != CPP_NAME)
+    return PRAGMA_CILK_CLAUSE_NONE;
+
+  const char *p = IDENTIFIER_POINTER (token->value);
+
+  if (!strcmp (p, "vectorlength"))
+    result = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
+  else if (!strcmp (p, "linear"))
+    result = PRAGMA_CILK_CLAUSE_LINEAR;
+  else if (!strcmp (p, "private"))
+    result = PRAGMA_CILK_CLAUSE_PRIVATE;
+  else if (!strcmp (p, "firstprivate"))
+    result = PRAGMA_CILK_CLAUSE_FIRSTPRIVATE;
+  else if (!strcmp (p, "lastprivate"))
+    result = PRAGMA_CILK_CLAUSE_LASTPRIVATE;
+  else if (!strcmp (p, "reduction"))
+    result = PRAGMA_CILK_CLAUSE_REDUCTION;
+  else
+    return PRAGMA_CILK_CLAUSE_NONE;
+
+  c_parser_consume_token (parser);
+  return result;
+}
+
+/* Parse all #<pragma simd> clauses.  Return the list of clauses
+   found.  */
+
+static tree
+c_parser_cilk_all_clauses (c_parser *parser)
+{
+  tree clauses = NULL;
+
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
+    {
+      pragma_cilk_clause c_kind;
+
+      c_kind = c_parser_cilk_clause_name (parser);
+
+      switch (c_kind)
+	{
+	case PRAGMA_CILK_CLAUSE_VECTORLENGTH:
+	  clauses = c_parser_cilk_clause_vectorlength (parser, clauses);
+	  break;
+	case PRAGMA_CILK_CLAUSE_LINEAR:
+	  clauses = c_parser_cilk_clause_linear (parser, clauses);
+	  break;
+	case PRAGMA_CILK_CLAUSE_PRIVATE:
+	  /* Use the OpenMP counterpart.  */
+	  clauses = c_parser_omp_clause_private (parser, clauses);
+	  break;
+	case PRAGMA_CILK_CLAUSE_FIRSTPRIVATE:
+	  /* Use the OpenMP counterpart.  */
+	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
+	  break;
+	case PRAGMA_CILK_CLAUSE_LASTPRIVATE:
+	  /* Use the OpenMP counterpart.  */
+	  clauses = c_parser_omp_clause_lastprivate (parser, clauses);
+	  break;
+	case PRAGMA_CILK_CLAUSE_REDUCTION:
+	  /* Use the OpenMP counterpart.  */
+	  clauses = c_parser_omp_clause_reduction (parser, clauses);
+	  break;
+	default:
+	  c_parser_error (parser, "expected %<#pragma simd%> clause");
+	  goto saw_error;
+	}
+    }
+
+ saw_error:
+  c_parser_skip_to_pragma_eol (parser);
+  return c_finish_cilk_clauses (clauses);
+}
+
+/* Main entry point for parsing Cilk Plus <#pragma simd> for
+   loops.  */
+
+static void
+c_parser_cilk_simd (c_parser *parser ATTRIBUTE_UNUSED)
+{
+  char p_name[100];
+  strcpy (p_name, "#pragma omp");
+  tree clauses = c_parser_cilk_all_clauses (parser);
+  tree block = c_begin_compound_stmt (true);
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_parser_omp_for_loop (loc, parser, CILK_SIMD, clauses, NULL);
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (block);
+}
+
 /* Parse a transaction attribute (GCC Extension).
 
    transaction-attribute:
