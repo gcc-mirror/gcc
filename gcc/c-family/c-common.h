@@ -970,7 +970,7 @@ enum lvalue_use {
   lv_asm
 };
 
-extern void readonly_error (tree, enum lvalue_use);
+extern void readonly_error (location_t, tree, enum lvalue_use);
 extern void lvalue_error (location_t, enum lvalue_use);
 extern void invalid_indirection_error (location_t, tree, ref_operator);
 
@@ -1288,6 +1288,11 @@ enum stv_conv {
 
 extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
 				       tree op0, tree op1, bool);
+
+/* In c-cilkplus.c  */
+extern tree c_finish_cilk_clauses (tree);
+extern tree c_validate_cilk_plus_loop (tree *, int *, void *);
+extern bool c_check_cilk_loop (location_t, tree);
 
 /* These #defines allow users to access different operands of the
    array notation tree.  */

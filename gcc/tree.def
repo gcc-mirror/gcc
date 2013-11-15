@@ -1042,6 +1042,10 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 6)
 
+/* Cilk Plus - #pragma simd [clause1 ... clauseN]
+   Operands like for OMP_FOR.  */
+DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 6)
+
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 6)

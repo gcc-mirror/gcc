@@ -1,3 +1,29 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Depend on c-cilkplus.o.
+	* gimple-pretty-print.c (dump_omp_for): Add case for
+	GF_OMP_FOR_KIND_CILKSIMD.
+	* gimple.h (enum gf_mask): Restructure entries to add
+	GF_OMP_FOR_KIND_CILKSIMD.
+	* gimplify.c (is_gimple_stmt): Add case for CILK_SIMD.
+	(gimplify_omp_for): Handle CILK_SIMD.
+	(gimplify_expr): Add ccase for CILK_SIMD.
+	* omp-low.c (extract_omp_for_data): Handle CILK_SIMD.
+	(build_outer_var_ref): Same.
+	(check_omp_nesting_restrictions): Same.
+	(lower_rec_input_clauses): Same.
+	(lower_lastprivate_clauses): Same.
+	(expand_omp_for): Same.
+	(execute_expand_omp): Check flag_enable_cilkplus.
+	(execute_lower_omp): Same.
+	(diagnose_sb_0): Handle CILK_SIMD.
+	(diagnose_omp_structured_block_errors): Check
+	flag_enable_cilkplus.
+	(setjmp_or_longjmp_p): New.
+	(scan_omp_1_stmt): Error on setjmp/longjmp in a simd construct.
+	* tree-pretty-print.c (dump_generic_node): Add case for CILK_SIMD.
+	* tree.def: Add tree code for CILK_SIMD.
+
 2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (UNSPEC_VPERM_X, UNSPEC_VPERM_UNS_X):

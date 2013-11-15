@@ -1,3 +1,10 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-c++-common/cilk-plus/PS: New directory.
+	* g++.dg/cilk-plus/cilk-plus.exp: Run shared tests.
+	* g++.dg/dg.exp: Run Cilk Plus tests.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Run shared tests.
+
 2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/3b-15.c: Revise for little endian.

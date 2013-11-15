@@ -349,6 +349,28 @@ check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
   return error_mark_node;
 }
 
+/* If the OMP_FOR increment expression in INCR is of pointer type,
+   canonicalize it into an expression handled by gimplify_omp_for()
+   and return it.  DECL is the iteration variable.  */
+
+static tree
+c_omp_for_incr_canonicalize_ptr (location_t loc, tree decl, tree incr)
+{
+  if (POINTER_TYPE_P (TREE_TYPE (decl))
+      && TREE_OPERAND (incr, 1))
+    {
+      tree t = fold_convert_loc (loc,
+				 sizetype, TREE_OPERAND (incr, 1));
+
+      if (TREE_CODE (incr) == POSTDECREMENT_EXPR
+	  || TREE_CODE (incr) == PREDECREMENT_EXPR)
+	t = fold_build1_loc (loc, NEGATE_EXPR, sizetype, t);
+      t = fold_build_pointer_plus (decl, t);
+      incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
+    }
+  return incr;
+}
+
 /* Validate and emit code for the OpenMP directive #pragma omp for.
    DECLV is a vector of iteration variables, for each collapsed loop.
    INITV, CONDV and INCRV are vectors containing initialization
@@ -363,6 +385,10 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
   location_t elocus;
   bool fail = false;
   int i;
+
+  if (code == CILK_SIMD
+      && !c_check_cilk_loop (locus, TREE_VEC_ELT (declv, 0)))
+    fail = true;
 
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (initv));
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (condv));
@@ -407,8 +433,11 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 				    init,
 				    NULL_TREE);
 	}
-      gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
-      gcc_assert (TREE_OPERAND (init, 0) == decl);
+      if (init != error_mark_node)
+	{
+	  gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
+	  gcc_assert (TREE_OPERAND (init, 0) == decl);
+	}
 
       if (cond == NULL_TREE)
 	{
@@ -487,7 +516,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					    0))
 		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
 					 ? LT_EXPR : GE_EXPR);
-		  else
+		  else if (code != CILK_SIMD)
 		    cond_ok = false;
 		}
 	    }
@@ -523,18 +552,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		break;
 
 	      incr_ok = true;
-	      if (POINTER_TYPE_P (TREE_TYPE (decl))
-		  && TREE_OPERAND (incr, 1))
-		{
-		  tree t = fold_convert_loc (elocus,
-					     sizetype, TREE_OPERAND (incr, 1));
-
-		  if (TREE_CODE (incr) == POSTDECREMENT_EXPR
-		      || TREE_CODE (incr) == PREDECREMENT_EXPR)
-		    t = fold_build1_loc (elocus, NEGATE_EXPR, sizetype, t);
-		  t = fold_build_pointer_plus (decl, t);
-		  incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
-		}
+	      incr = c_omp_for_incr_canonicalize_ptr (elocus, decl, incr);
 	      break;
 
 	    case MODIFY_EXPR:

@@ -125,7 +125,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
                              "read-only reference %qD"),
                           TREE_OPERAND (arg, 0));
   else
-    readonly_error (arg, errstring);
+    readonly_error (input_location, arg, errstring);
 }
 
 

@@ -9816,7 +9816,7 @@ warn_for_omitted_condop (location_t location, tree cond)
    how ARG was being used.  */
 
 void
-readonly_error (tree arg, enum lvalue_use use)
+readonly_error (location_t loc, tree arg, enum lvalue_use use)
 {
   gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
 	      || use == lv_asm);
@@ -9829,59 +9829,59 @@ readonly_error (tree arg, enum lvalue_use use)
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-        error (READONLY_MSG (G_("assignment of member "
-				"%qD in read-only object"),
-			     G_("increment of member "
-				"%qD in read-only object"),
-			     G_("decrement of member "
-				"%qD in read-only object"),
-			     G_("member %qD in read-only object "
-				"used as %<asm%> output")),
-	       TREE_OPERAND (arg, 1));
+        error_at (loc, READONLY_MSG (G_("assignment of member "
+					"%qD in read-only object"),
+				     G_("increment of member "
+					"%qD in read-only object"),
+				     G_("decrement of member "
+					"%qD in read-only object"),
+				     G_("member %qD in read-only object "
+					"used as %<asm%> output")),
+		  TREE_OPERAND (arg, 1));
       else
-	error (READONLY_MSG (G_("assignment of read-only member %qD"),
-			     G_("increment of read-only member %qD"),
-			     G_("decrement of read-only member %qD"),
-			     G_("read-only member %qD used as %<asm%> output")),
-	       TREE_OPERAND (arg, 1));
+	error_at (loc, READONLY_MSG (G_("assignment of read-only member %qD"),
+				     G_("increment of read-only member %qD"),
+				     G_("decrement of read-only member %qD"),
+				     G_("read-only member %qD used as %<asm%> output")),
+		  TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
-    error (READONLY_MSG (G_("assignment of read-only variable %qD"),
-			 G_("increment of read-only variable %qD"),
-			 G_("decrement of read-only variable %qD"),
-			 G_("read-only variable %qD used as %<asm%> output")),
-	   arg);
+    error_at (loc, READONLY_MSG (G_("assignment of read-only variable %qD"),
+				 G_("increment of read-only variable %qD"),
+				 G_("decrement of read-only variable %qD"),
+				 G_("read-only variable %qD used as %<asm%> output")),
+	      arg);
   else if (TREE_CODE (arg) == PARM_DECL)
-    error (READONLY_MSG (G_("assignment of read-only parameter %qD"),
-			 G_("increment of read-only parameter %qD"),
-			 G_("decrement of read-only parameter %qD"),
-			 G_("read-only parameter %qD use as %<asm%> output")),
-	   arg);  
+    error_at (loc, READONLY_MSG (G_("assignment of read-only parameter %qD"),
+				 G_("increment of read-only parameter %qD"),
+				 G_("decrement of read-only parameter %qD"),
+				 G_("read-only parameter %qD use as %<asm%> output")),
+	      arg);
   else if (TREE_CODE (arg) == RESULT_DECL)
     {
       gcc_assert (c_dialect_cxx ());
-      error (READONLY_MSG (G_("assignment of "
-			      "read-only named return value %qD"),
-			   G_("increment of "
-			      "read-only named return value %qD"),
-			   G_("decrement of "
-			      "read-only named return value %qD"),
-			   G_("read-only named return value %qD "
-			      "used as %<asm%>output")),
-	     arg);
+      error_at (loc, READONLY_MSG (G_("assignment of "
+				      "read-only named return value %qD"),
+				   G_("increment of "
+				      "read-only named return value %qD"),
+				   G_("decrement of "
+				      "read-only named return value %qD"),
+				   G_("read-only named return value %qD "
+				      "used as %<asm%>output")),
+		arg);
     }
   else if (TREE_CODE (arg) == FUNCTION_DECL)
-    error (READONLY_MSG (G_("assignment of function %qD"),
-			 G_("increment of function %qD"),
-			 G_("decrement of function %qD"),
-			 G_("function %qD used as %<asm%> output")),
-	   arg);
+    error_at (loc, READONLY_MSG (G_("assignment of function %qD"),
+				 G_("increment of function %qD"),
+				 G_("decrement of function %qD"),
+				 G_("function %qD used as %<asm%> output")),
+	      arg);
   else
-    error (READONLY_MSG (G_("assignment of read-only location %qE"),
-			 G_("increment of read-only location %qE"),
-			 G_("decrement of read-only location %qE"),
-			 G_("read-only location %qE used as %<asm%> output")),
-	   arg);
+    error_at (loc, READONLY_MSG (G_("assignment of read-only location %qE"),
+				 G_("increment of read-only location %qE"),
+				 G_("decrement of read-only location %qE"),
+				 G_("read-only location %qE used as %<asm%> output")),
+	      arg);
 }
 
 /* Print an error message for an invalid lvalue.  USE says
