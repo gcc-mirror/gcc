@@ -5777,6 +5777,9 @@ barrier_align (rtx barrier_or_label)
 {
   rtx next, pat;
 
+  if (! barrier_or_label)
+    return 0;
+
   if (LABEL_P (barrier_or_label)
       && NEXT_INSN (barrier_or_label)
       && JUMP_TABLE_DATA_P (NEXT_INSN (barrier_or_label)))
