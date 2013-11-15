@@ -218,6 +218,7 @@ package System.OS_Interface is
    ----------
 
    type timespec is private;
+   type time_t is private;
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -596,11 +597,11 @@ private
 
    type pid_t is new int;
 
-   type time_t is new long;
+   type time_t is new System.Linux.time_t;
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : long;
+      tv_nsec : time_t;
    end record;
    pragma Convention (C, timespec);
 
