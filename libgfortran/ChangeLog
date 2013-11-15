@@ -1,3 +1,8 @@
+2013-11-15  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.ac: Do not define HAVE_STRTOLD.
+	* configure: Regenerate.
+
 2013-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Check presence of mkostemp.
