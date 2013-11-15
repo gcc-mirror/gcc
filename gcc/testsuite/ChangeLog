@@ -1,3 +1,7 @@
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20131115-1.c: New testcase.
+
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/ucnid-9.c: New test.
