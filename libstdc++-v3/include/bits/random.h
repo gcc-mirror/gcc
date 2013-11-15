@@ -5685,11 +5685,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __d1._M_param == __d2._M_param; }
 
       /**
-       * @brief Inserts a %piecewise_constan_distribution random
+       * @brief Inserts a %piecewise_constant_distribution random
        *        number distribution @p __x into the output stream @p __os.
        *
        * @param __os An output stream.
-       * @param __x  A %piecewise_constan_distribution random number
+       * @param __x  A %piecewise_constant_distribution random number
        *             distribution.
        *
        * @returns The output stream with the state of @p __x inserted or in
@@ -5701,11 +5701,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const std::piecewise_constant_distribution<_RealType1>& __x);
 
       /**
-       * @brief Extracts a %piecewise_constan_distribution random
+       * @brief Extracts a %piecewise_constant_distribution random
        *        number distribution @p __x from the input stream @p __is.
        *
        * @param __is An input stream.
-       * @param __x A %piecewise_constan_distribution random number
+       * @param __x A %piecewise_constant_distribution random number
        *            generator engine.
        *
        * @returns The input stream with @p __x extracted or in an error

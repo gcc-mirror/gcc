@@ -255,7 +255,7 @@ template<typename _Tp>
   void 
   linkage_check_cxx98_cxx11_erase(_Tp& container)
   {
-    // Crashing when exteral reference and internal reference symbols are
+    // Crashing when external reference and internal reference symbols are
     // equivalently mangled but have different size return types in C++98
     // and C++11 signatures.
     erase_external(container); 		// C++98
@@ -266,7 +266,7 @@ template<typename _Tp>
   void 
   linkage_check_cxx98_cxx11_erase_iterators(_Tp& container)
   {
-    // Crashing when exteral reference and internal reference symbols are
+    // Crashing when external reference and internal reference symbols are
     // equivalently mangled but have different size return types in C++98
     // and C++11 signatures.
     erase_external_iterators(container);// C++98

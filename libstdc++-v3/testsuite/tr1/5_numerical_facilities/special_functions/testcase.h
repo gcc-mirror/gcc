@@ -21,7 +21,7 @@
 
 //
 //  These are little PODs for special function inputs and
-//  expexted results for the testsuite.
+//  expected results for the testsuite.
 //
 
 //  5.2.1.1  Associated Laguerre polynomials.

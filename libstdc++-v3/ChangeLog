@@ -1,3 +1,19 @@
+2013-11-15  Ondřej Bílka <neleai@seznam.cz>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/build_hacking.xml: Fix documentation typos.
+	* doc/xml/manual/configure.xml: Likewise.
+	* include/bits/atomic_base.h: Fix typos in comments.
+	* include/bits/random.h: Likewise.
+	* include/ext/cast.h: Likewise.
+	* libsupc++/cxxabi.h: Likewise.
+	* testsuite/ext/pb_ds/example/hash_illegal_resize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/testcase.h:
+	Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/util/testsuite_containers.h: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+
 2013-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_map.h (map): Implement C++11 allocator-aware
