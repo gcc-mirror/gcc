@@ -66,6 +66,8 @@ read_ucnid (const char *fname)
 	break;
       if (strcmp (line, "[C99]\n") == 0)
 	fl = C99;
+      if (strcmp (line, "[C99DIG]\n") == 0)
+	fl = C99|digit;
       else if (strcmp (line, "[CXX]\n") == 0)
 	fl = CXX;
       else if (isxdigit (line[0]))
@@ -104,10 +106,10 @@ read_ucnid (const char *fname)
   fclose (f);
 }
 
-/* Read UnicodeData.txt and set the 'digit' flag, and
-   also fill in the 'decomp' table to be the decompositions of
-   characters for which both the character decomposed and all the code
-   points in the decomposition are either C99 or CXX.  */
+/* Read UnicodeData.txt and fill in the 'decomp' table to be the
+   decompositions of characters for which both the character
+   decomposed and all the code points in the decomposition are either
+   C99 or CXX.  */
 
 static void
 read_table (char *fname)
@@ -135,11 +137,7 @@ read_table (char *fname)
       do {
 	l++;
       } while (*l != ';');
-      /* Category value; things starting with 'N' are numbers of some
-	 kind.  */
-      if (*++l == 'N')
-	flags[codepoint] |= digit;
-
+      /* Category value.  */
       do {
 	l++;
       } while (*l != ';');

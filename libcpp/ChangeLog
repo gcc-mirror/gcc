@@ -1,3 +1,10 @@
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* ucnid.tab: Mark C99 digits as [C99DIG].
+	* makeucnid.c (read_ucnid): Handle [C99DIG].
+	(read_table): Don't check for digit characters.
+	* ucnid.h: Regenerate.
+
 2013-11-06  Tobias Burnus  <burnus@net-b.de>
 
 	* macro.c (_cpp_builtin_macro_text): Correct
