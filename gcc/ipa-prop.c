@@ -22,6 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimplify-me.h"
+#include "gimple-walk.h"
 #include "langhooks.h"
 #include "ggc.h"
 #include "target.h"
@@ -2454,7 +2458,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 		     ie->callee->order);
 	  return NULL;
 	}
-      callee = cgraph_get_create_real_symbol_node (target);
+      callee = cgraph_get_create_node (target);
     }
   ipa_check_create_node_params ();
 

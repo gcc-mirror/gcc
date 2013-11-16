@@ -369,6 +369,14 @@ mabi=no-spe
 Target RejectNegative Var(rs6000_spe_abi, 0)
 Do not use the SPE ABI extensions
 
+mabi=elfv1
+Target RejectNegative Var(rs6000_elf_abi, 1) Save
+Use the ELFv1 ABI
+
+mabi=elfv2
+Target RejectNegative Var(rs6000_elf_abi, 2)
+Use the ELFv2 ABI
+
 ; These are here for testing during development only, do not document
 ; in the manual please.
 

@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc_elfv2 } { "*" } { "" } } */
 /* { dg-options "-O2 -mpointers-to-nested-functions" } */
 
 int

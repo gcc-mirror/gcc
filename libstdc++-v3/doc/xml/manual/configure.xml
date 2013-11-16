@@ -376,7 +376,7 @@
      to standard error for certain events such as calling a pure virtual
      function or the invocation of the standard terminate handler.  Those
      messages cause the library to depend on the demangler and standard I/O
-     facilites, which might be undesirable in a low-memory environment or
+     facilities, which might be undesirable in a low-memory environment or
      when standard error is not available.  This option disables those
      messages.  This option does not change the library ABI.
    </para>

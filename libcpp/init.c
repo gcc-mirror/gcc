@@ -77,6 +77,7 @@ struct lang_flags
   char cplusplus;
   char extended_numbers;
   char extended_identifiers;
+  char c11_identifiers;
   char std;
   char cplusplus_comments;
   char digraphs;
@@ -88,21 +89,21 @@ struct lang_flags
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid std  //   digr ulit rlit udlit bin_cst dig_sep */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0,   0,    0,      0 },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,   0,    0,      0 },
-  /* GNUC11   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,   0,    0,      0 },
-  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0,   0,    0,      0 },
-  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0,   0,    0,      0 },
-  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0,   0,    0,      0 },
-  /* STDC11   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0,   0,    0,      0 },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0,   0,    0,      0 },
-  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0,   0,    0,      0 },
-  /* GNUCXX11 */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,   1,    0,      0 },
-  /* CXX11    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,   1,    0,      0 },
-  /* GNUCXX1Y */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,   1,    1,      1 },
-  /* CXX1Y    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,   1,    1,      1 },
-  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0,   0,    0,      0 }
+{ /*              c99 c++ xnum xid c11 std  //   digr ulit rlit udlit bin_cst dig_sep */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,  0,   1,   1,   0,   0,   0,    0,      0 },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,  0,   1,   1,   1,   1,   0,    0,      0 },
+  /* GNUC11   */  { 1,  0,  1,   0,  1,  0,   1,   1,   1,   1,   0,    0,      0 },
+  /* STDC89   */  { 0,  0,  0,   0,  0,  1,   0,   0,   0,   0,   0,    0,      0 },
+  /* STDC94   */  { 0,  0,  0,   0,  0,  1,   0,   1,   0,   0,   0,    0,      0 },
+  /* STDC99   */  { 1,  0,  1,   0,  0,  1,   1,   1,   0,   0,   0,    0,      0 },
+  /* STDC11   */  { 1,  0,  1,   0,  1,  1,   1,   1,   1,   0,   0,    0,      0 },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,  0,   1,   1,   0,   0,   0,    0,      0 },
+  /* CXX98    */  { 0,  1,  1,   0,  0,  1,   1,   1,   0,   0,   0,    0,      0 },
+  /* GNUCXX11 */  { 1,  1,  1,   0,  1,  0,   1,   1,   1,   1,   1,    0,      0 },
+  /* CXX11    */  { 1,  1,  1,   0,  1,  1,   1,   1,   1,   1,   1,    0,      0 },
+  /* GNUCXX1Y */  { 1,  1,  1,   0,  1,  0,   1,   1,   1,   1,   1,    1,      1 },
+  /* CXX1Y    */  { 1,  1,  1,   0,  1,  1,   1,   1,   1,   1,   1,    1,      1 },
+  /* ASM      */  { 0,  0,  1,   0,  0,  0,   1,   0,   0,   0,   0,    0,      0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, CXX11,
      GNUCXX1Y, and CXX1Y when no longer experimental (when all uses of
      identifiers in the compiler have been audited for correct handling
@@ -121,6 +122,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, cplusplus)			 = l->cplusplus;
   CPP_OPTION (pfile, extended_numbers)		 = l->extended_numbers;
   CPP_OPTION (pfile, extended_identifiers)	 = l->extended_identifiers;
+  CPP_OPTION (pfile, c11_identifiers)		 = l->c11_identifiers;
   CPP_OPTION (pfile, std)			 = l->std;
   CPP_OPTION (pfile, trigraphs)			 = l->std;
   CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;

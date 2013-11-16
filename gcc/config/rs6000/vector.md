@@ -966,8 +966,8 @@
     	      				 operands[2], operands[3]));
   else
     {
-      /* Avoid the "subtract from splat31" workaround for vperm since
-         we have changed lvsr to lvsl instead.  */
+      /* We have changed lvsr to lvsl, so to complete the transformation
+         of vperm for LE, we must swap the inputs.  */
       rtx unspec = gen_rtx_UNSPEC (<MODE>mode,
                                    gen_rtvec (3, operands[2],
                                               operands[1], operands[3]),

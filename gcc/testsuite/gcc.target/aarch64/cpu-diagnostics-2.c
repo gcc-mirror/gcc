@@ -1,5 +1,5 @@
 /* { dg-error "missing" "" {target "aarch64*-*-*" } } */
-/* { dg-options "-O2 -mcpu=example-1+no" } */
+/* { dg-options "-O2 -mcpu=cortex-a53+no" } */
 
 void f ()
 {

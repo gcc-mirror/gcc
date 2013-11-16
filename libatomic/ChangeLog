@@ -1,3 +1,7 @@
+2013-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/fenv.c: New file.
+
 2013-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* fenv.c: New file.

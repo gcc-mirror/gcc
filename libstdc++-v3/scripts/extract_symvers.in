@@ -53,6 +53,7 @@ SunOS)
   # present on Solaris.
   ${readelf} ${lib} |\
   sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
+  sed -e 's/ \[<localentry>: [0-9]*\] //' |\
   egrep -v ' (LOCAL|UND) ' |\
   egrep -v ' (_DYNAMIC|_GLOBAL_OFFSET_TABLE_|_PROCEDURE_LINKAGE_TABLE_|_edata|_end|_etext)$' |\
   sed -e 's/ <processor specific>: / <processor_specific>:_/g' |\

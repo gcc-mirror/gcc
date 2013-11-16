@@ -1142,6 +1142,7 @@ func TestReadAtEOF(t *testing.T) {
 }
 
 func testKillProcess(t *testing.T, processKiller func(p *Process)) {
+	t.Skip("gccgo does not have a go command")
 	dir, err := ioutil.TempDir("", "go-build")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)

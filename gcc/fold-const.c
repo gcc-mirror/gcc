@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "md5.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "tree-dfa.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
@@ -11943,16 +11944,15 @@ fold_binary_loc (location_t loc,
 	 if the new mask might be further optimized.  */
       if ((TREE_CODE (arg0) == LSHIFT_EXPR
 	   || TREE_CODE (arg0) == RSHIFT_EXPR)
-	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
-	  && tree_fits_hwi_p (arg1)
-	  && tree_to_uhwi (TREE_OPERAND (arg0, 1))
-	     < TYPE_PRECISION (TREE_TYPE (arg0))
 	  && TYPE_PRECISION (TREE_TYPE (arg0)) <= HOST_BITS_PER_WIDE_INT
-	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) > 0)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
+	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) > 0
+	  && (tree_to_uhwi (TREE_OPERAND (arg0, 1))
+	      < TYPE_PRECISION (TREE_TYPE (arg0))))
 	{
 	  unsigned int shiftc = tree_to_uhwi (TREE_OPERAND (arg0, 1));
-	  unsigned HOST_WIDE_INT mask
-	    = tree_to_hwi (arg1, TYPE_SIGN (TREE_TYPE (arg1)));
+	  unsigned HOST_WIDE_INT mask = tree_to_hwi (arg1);
 	  unsigned HOST_WIDE_INT newmask, zerobits = 0;
 	  tree shift_type = TREE_TYPE (arg0);
 
@@ -13668,8 +13668,7 @@ fold_binary_loc (location_t loc,
 		   and X >= signed_max+1 because previous transformations.  */
 		if (code == LE_EXPR || code == GT_EXPR)
 		  {
-		    tree st;
-		    st = signed_type_for (TREE_TYPE (arg1));
+		    tree st = signed_type_for (arg1_type);
 		    return fold_build2_loc (loc,
 					code == LE_EXPR ? GE_EXPR : LT_EXPR,
 					type, fold_convert_loc (loc, st, arg0),

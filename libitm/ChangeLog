@@ -1,3 +1,13 @@
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/powerpc/sjlj.S [__powerpc64__ && _CALL_ELF == 2]:
+	(FUNC): Define ELFv2 variant.
+	(END): Likewise.
+	(HIDDEN): Likewise.
+	(CALL): Likewise.
+	(BASE): Likewise.
+	(LR_SAVE): Likewise.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

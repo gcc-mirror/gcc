@@ -220,6 +220,11 @@ if ! grep '^const O_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const O_CLOEXEC = 0" >> ${OUT}
 fi
 
+# The os package requires F_DUPFD_CLOEXEC to be defined.
+if ! grep '^const F_DUPFD_CLOEXEC' ${OUT} >/dev/null 2>&1; then
+  echo "const F_DUPFD_CLOEXEC = 0" >> ${OUT}
+fi
+
 # These flags can be lost on i386 GNU/Linux when using
 # -D_FILE_OFFSET_BITS=64, because we see "#define F_SETLK F_SETLK64"
 # before we see the definition of F_SETLK64.

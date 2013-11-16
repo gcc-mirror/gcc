@@ -41,6 +41,7 @@
 #include "timevar.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "cfgloop.h"
 #include "tilegx-builtins.h"
 #include "tilegx-multiply.h"

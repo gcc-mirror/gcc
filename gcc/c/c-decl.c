@@ -3805,7 +3805,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
   if (!warned && !in_system_header && declspecs->thread_p)
     {
-      warning (0, "useless %<__thread%> in empty declaration");
+      warning (0, "useless %qs in empty declaration",
+	       declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
       warned = 2;
     }
 
@@ -5164,7 +5165,8 @@ grokdeclarator (const struct c_declarator *declarator,
       if (storage_class == csc_typedef)
 	error_at (loc, "function definition declared %<typedef%>");
       if (threadp)
-	error_at (loc, "function definition declared %<__thread%>");
+	error_at (loc, "function definition declared %qs",
+		  declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
       threadp = false;
       if (storage_class == csc_auto
 	  || storage_class == csc_register
@@ -5233,8 +5235,8 @@ grokdeclarator (const struct c_declarator *declarator,
       else if (threadp && storage_class == csc_none)
 	{
 	  error_at (loc, "function-scope %qE implicitly auto and declared "
-		    "%<__thread%>",
-		    name);
+		    "%qs", name,
+		    declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
 	  threadp = false;
 	}
     }
@@ -8981,6 +8983,7 @@ build_null_declspecs (void)
   ret->inline_p = false;
   ret->noreturn_p = false;
   ret->thread_p = false;
+  ret->thread_gnu_p = false;
   ret->const_p = false;
   ret->volatile_p = false;
   ret->atomic_p = false;
@@ -9113,6 +9116,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<short%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<long%> and %<__auto_type%> in "
+			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<long%> and %<void%> in "
@@ -9156,6 +9163,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      if (specs->long_p)
 		error_at (loc,
 			  ("both %<long%> and %<short%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<short%> and %<__auto_type%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
@@ -9205,6 +9216,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<signed%> and %<unsigned%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<signed%> and %<__auto_type%> in "
+			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<signed%> and %<void%> in "
@@ -9245,6 +9260,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<signed%> and %<unsigned%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<unsigned%> and %<__auto_type%> in "
+			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<unsigned%> and %<void%> in "
@@ -9284,7 +9303,11 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      if (!flag_isoc99 && !in_system_header_at (loc))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C90 does not support complex types");
-	      if (specs->typespec_word == cts_void)
+	      if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<complex%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<complex%> and %<void%> in "
 			   "declaration specifiers"));
@@ -9332,6 +9355,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			    ("both %<_Sat%> and %<__int128%> in "
 			     "declaration specifiers"));
 	        }
+	      else if (specs->typespec_word == cts_auto_type)
+		error_at (loc,
+			  ("both %<_Sat%> and %<__auto_type%> in "
+			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<_Sat%> and %<void%> in "
@@ -9390,7 +9417,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else
 	{
 	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
-	     "__int128", "_Decimal64", "_Decimal128", "_Fract" or "_Accum".  */
+	     "__int128", "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
+	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
 	      error_at (loc,
@@ -9399,6 +9427,37 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    }
 	  switch (i)
 	    {
+	    case RID_AUTO_TYPE:
+	      if (specs->long_p)
+		error_at (loc,
+			  ("both %<long%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->short_p)
+		error_at (loc,
+			  ("both %<short%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->signed_p)
+		error_at (loc,
+			  ("both %<signed%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->unsigned_p)
+		error_at (loc,
+			  ("both %<unsigned%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->complex_p)
+		error_at (loc,
+			  ("both %<complex%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else if (specs->saturating_p)
+		error_at (loc,
+			  ("both %<_Sat%> and %<__auto_type%> in "
+			   "declaration specifiers"));
+	      else
+		{
+		  specs->typespec_word = cts_auto_type;
+		  specs->locations[cdw_typespec] = loc;
+		}
+	      return specs;
 	    case RID_INT128:
 	      if (int128_integer_type_node == NULL_TREE)
 		{
@@ -9774,14 +9833,29 @@ declspecs_add_scspec (source_location loc,
     case RID_THREAD:
       dupe = specs->thread_p;
       if (specs->storage_class == csc_auto)
-	error ("%<__thread%> used with %<auto%>");
+	error ("%qE used with %<auto%>", scspec);
       else if (specs->storage_class == csc_register)
-	error ("%<__thread%> used with %<register%>");
+	error ("%qE used with %<register%>", scspec);
       else if (specs->storage_class == csc_typedef)
-	error ("%<__thread%> used with %<typedef%>");
+	error ("%qE used with %<typedef%>", scspec);
       else
 	{
 	  specs->thread_p = true;
+	  specs->thread_gnu_p = (strcmp (IDENTIFIER_POINTER (scspec),
+					 "__thread") == 0);
+	  /* A diagnostic is not required for the use of this
+	     identifier in the implementation namespace; only diagnose
+	     it for the C11 spelling because of existing code using
+	     the other spelling.  */
+	  if (!flag_isoc11 && !specs->thread_gnu_p)
+	    {
+	      if (flag_isoc99)
+		pedwarn (loc, OPT_Wpedantic,
+			 "ISO C99 does not support %qE", scspec);
+	      else
+		pedwarn (loc, OPT_Wpedantic,
+			 "ISO C90 does not support %qE", scspec);
+	    }
 	  specs->locations[cdw_thread] = loc;
 	}
       break;
@@ -9791,7 +9865,7 @@ declspecs_add_scspec (source_location loc,
     case RID_EXTERN:
       n = csc_extern;
       /* Diagnose "__thread extern".  */
-      if (specs->thread_p)
+      if (specs->thread_p && specs->thread_gnu_p)
 	error ("%<__thread%> before %<extern%>");
       break;
     case RID_REGISTER:
@@ -9800,7 +9874,7 @@ declspecs_add_scspec (source_location loc,
     case RID_STATIC:
       n = csc_static;
       /* Diagnose "__thread static".  */
-      if (specs->thread_p)
+      if (specs->thread_p && specs->thread_gnu_p)
 	error ("%<__thread%> before %<static%>");
       break;
     case RID_TYPEDEF:
@@ -9812,7 +9886,12 @@ declspecs_add_scspec (source_location loc,
   if (n != csc_none && n == specs->storage_class)
     dupe = true;
   if (dupe)
-    error ("duplicate %qE", scspec);
+    {
+      if (i == RID_THREAD)
+	error ("duplicate %<_Thread_local%> or %<__thread%>");
+      else
+	error ("duplicate %qE", scspec);
+    }
   if (n != csc_none)
     {
       if (specs->storage_class != csc_none && n != specs->storage_class)
@@ -9825,7 +9904,9 @@ declspecs_add_scspec (source_location loc,
 	  specs->locations[cdw_storage_class] = loc;
 	  if (n != csc_extern && n != csc_static && specs->thread_p)
 	    {
-	      error ("%<__thread%> used with %qE", scspec);
+	      error ("%qs used with %qE",
+		     specs->thread_gnu_p ? "__thread" : "_Thread_local",
+		     scspec);
 	      specs->thread_p = false;
 	    }
 	}
@@ -9932,6 +10013,12 @@ finish_declspecs (struct c_declspecs *specs)
   /* Now compute the actual type.  */
   switch (specs->typespec_word)
     {
+    case cts_auto_type:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p
+		  && !specs->complex_p);
+      /* Type to be filled in later.  */
+      break;
     case cts_void:
       gcc_assert (!specs->long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p

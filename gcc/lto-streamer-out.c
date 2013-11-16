@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"

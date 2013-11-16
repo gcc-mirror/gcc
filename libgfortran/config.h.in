@@ -606,6 +606,9 @@
 /* Define if you have __mingw_snprintf. */
 #undef HAVE_MINGW_SNPRINTF
 
+/* Define to 1 if you have the `mkostemp' function. */
+#undef HAVE_MKOSTEMP
+
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 

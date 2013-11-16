@@ -3694,7 +3694,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   /* Wire together the blocks again.  */
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
     single_succ_edge (test_bb)->flags |= EDGE_FALLTHRU;
-  else
+  else if (trap_bb == then_bb)
     {
       rtx lab, newjump;
 

@@ -107,7 +107,8 @@ enum group_termination
 /* Enumeration to give which calling sequence to use.  */
 enum rs6000_abi {
   ABI_NONE,
-  ABI_AIX,			/* IBM's AIX */
+  ABI_AIX,			/* IBM's AIX, or Linux ELFv1 */
+  ABI_ELFv2,			/* Linux ELFv2 ABI */
   ABI_V4,			/* System V.4/eabi */
   ABI_DARWIN			/* Apple's Darwin (OS X kernel) */
 };

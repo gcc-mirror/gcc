@@ -14,6 +14,7 @@
 // userspace headers.
 // Most "normal" includes go in sanitizer_platform_limits_posix.cc
 
+#ifdef SYSCALL_INTERCEPTION
 #include "sanitizer_platform.h"
 #if SANITIZER_LINUX
 
@@ -43,3 +44,4 @@ namespace __sanitizer {
 }  // namespace __sanitizer
 
 #endif  // SANITIZER_LINUX
+#endif

@@ -119,6 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "vtable-verify.h"
 #include "gimple.h"
+#include "gimplify.h"
 
 static int num_calls_to_regset = 0;
 static int num_calls_to_regpair = 0;

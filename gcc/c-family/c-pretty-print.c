@@ -949,14 +949,8 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 static void
 pp_c_character_constant (c_pretty_printer *pp, tree c)
 {
-  tree type = TREE_TYPE (c);
-  if (type == wchar_type_node)
-    pp_character (pp, 'L');
   pp_quote (pp);
-  if (tree_fits_hwi_p (c, TYPE_SIGN (type)))
-    pp_c_char (pp, tree_to_hwi (c, TYPE_SIGN (type)));
-  else
-    pp_scalar (pp, "\\x%x", (unsigned) tree_to_hwi (c));
+  pp_c_char (pp, (unsigned) tree_to_hwi (c));
   pp_quote (pp);
 }
 

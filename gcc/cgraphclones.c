@@ -208,6 +208,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->frequency = n->frequency;
   new_node->clone = n->clone;
   new_node->clone.tree_map = NULL;
+  new_node->tp_first_run = n->tp_first_run;
   if (n->count)
     {
       if (new_node->count > n->count)

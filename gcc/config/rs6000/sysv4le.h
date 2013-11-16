@@ -34,3 +34,7 @@
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mlittle", "mcall-sysv" }
+
+/* Little-endian PowerPC64 Linux uses the ELF v2 ABI by default.  */
+#define LINUX64_DEFAULT_ABI_ELFv2
+

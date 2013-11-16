@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "lto-streamer.h"
 #include "ipa-utils.h"
+#include "ipa-inline.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
@@ -83,6 +84,12 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   if (node->decl != prevailing_node->decl)
     cgraph_release_function_body (node);
+
+  /* Time profile merging */
+  if (node->tp_first_run)
+    prevailing_node->tp_first_run = prevailing_node->tp_first_run ?
+      MIN (prevailing_node->tp_first_run, node->tp_first_run) :
+      node->tp_first_run;
 
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);

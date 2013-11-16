@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
-    class unordered_set : __check_copy_constructible<_Alloc>
+    class unordered_set
     {
       typedef __uset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -725,7 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
-    class unordered_multiset : __check_copy_constructible<_Alloc>
+    class unordered_multiset
     {
       typedef __umset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;

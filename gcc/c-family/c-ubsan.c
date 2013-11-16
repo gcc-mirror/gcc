@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "alloc-pool.h"
 #include "cgraph.h"
-#include "gimple.h"
 #include "output.h"
 #include "toplev.h"
 #include "ubsan.h"

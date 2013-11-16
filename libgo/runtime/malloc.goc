@@ -75,10 +75,10 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		runtime_exitsyscall();
 		m = runtime_m();
 		incallback = true;
-		flag |= FlagNoGC;
+		flag |= FlagNoInvokeGC;
 	}
 
-	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoGC)) {
+	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC)) {
 		runtime_gosched();
 		m = runtime_m();
 	}

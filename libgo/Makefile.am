@@ -413,12 +413,12 @@ endif
 endif
 
 if LIBGO_IS_LINUX
-runtime_netpoll_files = netpoll.c runtime/netpoll_epoll.c
+runtime_netpoll_files = runtime/netpoll_epoll.c
 else
-if LIBGO_IS_DARWIN
-runtime_netpoll_files = netpoll.c runtime/netpoll_kqueue.c
+if LIBGO_IS_SOLARIS
+runtime_netpoll_files = runtime/netpoll_select.c
 else
-runtime_netpoll_files = runtime/netpoll_stub.c
+runtime_netpoll_files = runtime/netpoll_kqueue.c
 endif
 endif
 
@@ -515,6 +515,7 @@ runtime_files = \
 	malloc.c \
 	map.c \
 	mprof.c \
+	netpoll.c \
 	reflect.c \
 	runtime1.c \
 	sema.c \
@@ -670,26 +671,6 @@ go_mime_files = \
 	go/mime/type.go \
 	go/mime/type_unix.go
 
-if LIBGO_IS_RTEMS
-go_net_fd_os_file = go/net/fd_select.go
-go_net_newpollserver_file = go/net/newpollserver_rtems.go
-else # !LIBGO_IS_RTEMS
-if LIBGO_IS_LINUX
-go_net_fd_os_file =
-go_net_newpollserver_file =
-else # !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
-if LIBGO_IS_NETBSD
-go_net_fd_os_file =
-go_net_newpollserver_file =
-else # !LIBGO_IS_NETBSD && !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
-# By default use select with pipes.  Most systems should have
-# something better.
-go_net_fd_os_file = go/net/fd_select.go
-go_net_newpollserver_file =
-endif # !LIBGO_IS_NETBSD
-endif # !LIBGO_IS_LINUX
-endif # !LIBGO_IS_RTEMS
-
 if LIBGO_IS_LINUX
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_linux.go
@@ -770,7 +751,11 @@ else
 if LIBGO_IS_DARWIN
 go_net_tcpsockopt_file = go/net/tcpsockopt_darwin.go
 else
+if LIBGO_IS_SOLARIS
+go_net_tcpsockopt_file = go/net/tcpsockopt_darwin.go
+else
 go_net_tcpsockopt_file =  go/net/tcpsockopt_unix.go
+endif
 endif
 endif
 
@@ -783,10 +768,8 @@ go_net_files = \
 	go/net/dnsclient_unix.go \
 	go/net/dnsconfig_unix.go \
 	go/net/dnsmsg.go \
-	$(go_net_newpollserver_file) \
 	go/net/fd_mutex.go \
 	go/net/fd_unix.go \
-	$(go_net_fd_os_file) \
 	go/net/file_unix.go \
 	go/net/hosts.go \
 	go/net/interface.go \
@@ -1296,7 +1279,7 @@ go_go_build_files = \
 	go/go/build/build.go \
 	go/go/build/doc.go \
 	go/go/build/read.go \
-	syslist.go
+	go/go/build/syslist.go
 go_go_doc_files = \
 	go/go/doc/comment.go \
 	go/go/doc/doc.go \
@@ -2772,15 +2755,6 @@ go/build.lo: $(go_go_build_files)
 go/build/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/build/check
-
-syslist.go: s-syslist; @true
-s-syslist: Makefile
-	echo '// Generated automatically by make.' >syslist.go.tmp
-	echo 'package build' >>syslist.go.tmp
-	echo 'const goosList = "$(GOOS)"' >>syslist.go.tmp
-	echo 'const goarchList = "$(GOARCH)"' >>syslist.go.tmp
-	$(SHELL) $(srcdir)/../move-if-change syslist.go.tmp syslist.go
-	$(STAMP) $@
 
 @go_include@ go/doc.lo.dep
 go/doc.lo.dep: $(go_go_doc_files)

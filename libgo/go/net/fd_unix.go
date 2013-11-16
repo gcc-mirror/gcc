@@ -410,7 +410,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (netfd *netFD, err e
 var tryDupCloexec = int32(1)
 
 func dupCloseOnExec(fd int) (newfd int, err error) {
-	if atomic.LoadInt32(&tryDupCloexec) == 1 {
+	if atomic.LoadInt32(&tryDupCloexec) == 1 && syscall.F_DUPFD_CLOEXEC != 0 {
 		r0, _, e1 := syscall.Syscall(syscall.SYS_FCNTL, uintptr(fd), syscall.F_DUPFD_CLOEXEC, 0)
 		if runtime.GOOS == "darwin" && e1 == syscall.EBADF {
 			// On OS X 10.6 and below (but we only support

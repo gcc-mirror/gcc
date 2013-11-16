@@ -312,15 +312,13 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (eq_attr "tune" "large,small,cortexa53")
+          (eq_attr "tune" "cortexa53,cortexa15")
           (const_string "no")
           (const_string "yes"))))
 
 ;; Scheduling
-(include "aarch64-generic.md")
-(include "large.md")
-(include "small.md")
 (include "../arm/cortex-a53.md")
+(include "../arm/cortex-a15.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
@@ -795,11 +793,10 @@
      }
 }
   [(set_attr "v8type" "move,alu,alu,load1,load1,store1,store1,*,*,*")
-   (set_attr "type" "mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,*,*,*")
-   (set_attr "simd_type" "*,*,simd_move_imm,*,*,*,*,simd_movgp,simd_dupgp,simd_dup")
+   (set_attr "type" "mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,\
+                     neon_from_gp<q>,neon_from_gp<q>, neon_dup")
    (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")
-   (set_attr "mode" "<MODE>")
-   (set_attr "simd_mode" "<MODE>")]
+   (set_attr "mode" "<MODE>")]
 )
 
 (define_expand "mov<mode>"
@@ -914,13 +911,13 @@
    str\\t%q1, %0"
   [(set_attr "v8type" "move2,fmovi2f,fmovf2i,*, \
 		       load2,store2,store2,fpsimd_load,fpsimd_store")
-   (set_attr "type" "multiple,f_mcr,f_mrc,*, \
+   (set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
 		             load2,store2,store2,f_loadd,f_stored")
-   (set_attr "simd_type" "*,*,*,simd_move,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,TI,DI,DI,DI,TI,TI")
    (set_attr "length" "8,8,8,4,4,4,4,4,4")
-   (set_attr "fp" "*,*,*,*,*,*,*,yes,yes")
-   (set_attr "simd" "*,*,*,yes,*,*,*,*,*")])
+   (set_attr "simd" "*,*,*,yes,*,*,*,*,*")
+   (set_attr "fp" "*,*,*,*,*,*,*,yes,yes")]
+)
 
 ;; Split a TImode register-register or register-immediate move into
 ;; its component DImode pieces, taking care to handle overlapping
@@ -2121,11 +2118,9 @@
    neg\\t%<w>0, %<w>1
    neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
   [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "simd_type" "*,simd_negabs")
+   (set_attr "type" "alu_reg, neon_neg<q>")
    (set_attr "simd" "*,yes")
-   (set_attr "mode" "<MODE>")
-   (set_attr "simd_mode" "<MODE>")]
+   (set_attr "mode" "<MODE>")]
 )
 
 ;; zero_extend version of above
@@ -3205,10 +3200,8 @@
    ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
    lsl\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
-   (set_attr "simd_mode" "<MODE>,<MODE>,*")
    (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "*,*,shift_reg")
+   (set_attr "type" "neon_shift_imm<q>, neon_shift_reg<q>,shift_reg")
    (set_attr "mode" "*,*,<MODE>")]
 )
 
@@ -3224,10 +3217,8 @@
    #
    lsr\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
-   (set_attr "simd_mode" "<MODE>,<MODE>,*")
    (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "*,*,shift_reg")
+   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")
    (set_attr "mode" "*,*,<MODE>")]
 )
 
@@ -3269,10 +3260,8 @@
    #
    asr\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
-   (set_attr "simd_mode" "<MODE>,<MODE>,*")
    (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "*,*,shift_reg")
+   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")
    (set_attr "mode" "*,*,<MODE>")]
 )
 
@@ -3310,8 +3299,7 @@
   "TARGET_SIMD"
   "ushl\t%d0, %d1, %d2"
   [(set_attr "simd" "yes")
-   (set_attr "simd_type" "simd_shift")
-   (set_attr "simd_mode" "DI")]
+   (set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_ushl_2s"
@@ -3322,8 +3310,7 @@
   "TARGET_SIMD"
   "ushl\t%0.2s, %1.2s, %2.2s"
   [(set_attr "simd" "yes")
-   (set_attr "simd_type" "simd_shift")
-   (set_attr "simd_mode" "DI")]
+   (set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sisd_sshl"
@@ -3334,8 +3321,7 @@
   "TARGET_SIMD"
   "sshl\t%d0, %d1, %d2"
   [(set_attr "simd" "yes")
-   (set_attr "simd_type" "simd_shift")
-   (set_attr "simd_mode" "DI")]
+   (set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sshl_2s"
@@ -3346,8 +3332,7 @@
   "TARGET_SIMD"
   "sshl\t%0.2s, %1.2s, %2.2s"
   [(set_attr "simd" "yes")
-   (set_attr "simd_type" "simd_shift")
-   (set_attr "simd_mode" "DI")]
+   (set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sisd_neg_qi"
@@ -3357,8 +3342,7 @@
   "TARGET_SIMD"
   "neg\t%d0, %d1"
   [(set_attr "simd" "yes")
-   (set_attr "simd_type" "simd_negabs")
-   (set_attr "simd_mode" "QI")]
+   (set_attr "type" "neon_neg")]
 )
 
 ;; Rotate right

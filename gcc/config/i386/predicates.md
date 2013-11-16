@@ -687,6 +687,16 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
 
+;; Match 0 to 4.
+(define_predicate "const_0_to_4_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 4)")))
+
+;; Match 0 to 5.
+(define_predicate "const_0_to_5_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 5)")))
+
 ;; Match 0 to 7.
 (define_predicate "const_0_to_7_operand"
   (and (match_code "const_int")

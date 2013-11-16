@@ -16,9 +16,7 @@ foo (char *p, char *r)
      is immediately overwritten.  */
   strcat (q, "/");
   strcat (q, "abcde");
-  /* Due to inefficient PTA (PR50262) the above calls invalidate
-     string length of r, so it is optimized just into strcpy instead
-     of memcpy.  */
+  /* This can also be optimized into memcpy.  */
   strcat (q, r);
   return q;
 }
@@ -39,8 +37,8 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 3 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 4 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */

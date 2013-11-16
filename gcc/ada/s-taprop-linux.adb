@@ -627,7 +627,7 @@ package body System.Task_Primitives.Operations is
    function Monotonic_Clock return Duration is
       use Interfaces;
 
-      type timeval is array (1 .. 2) of C.long;
+      type timeval is array (1 .. 2) of System.OS_Interface.time_t;
 
       procedure timeval_to_duration
         (T    : not null access timeval;

@@ -87,7 +87,7 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define kill_dependency(Y)			\
   __extension__					\
   ({						\
-    __typeof__ (Y) __kill_dependency_tmp = (Y);	\
+    __auto_type __kill_dependency_tmp = (Y);	\
     __kill_dependency_tmp;			\
   })
 
@@ -121,9 +121,9 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
   __atomic_type_lock_free (void * _Atomic)
 
 
-/* Note that these macros require __typeof__ to remove _Atomic
-   qualifiers (and const qualifiers, if those are valid on macro
-   operands).
+/* Note that these macros require __typeof__ and __auto_type to remove
+   _Atomic qualifiers (and const qualifiers, if those are valid on
+   macro operands).
    
    Also note that the header file uses the generic form of __atomic
    builtins, which requires the address to be taken of the value
@@ -132,11 +132,12 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
    these to lock-free _N variants if possible, and throw away the
    temps.  */
 
-#define atomic_store_explicit(PTR, VAL, MO)		\
-  __extension__						\
-  ({							\
-    __typeof__ (*(PTR)) __atomic_store_tmp = (VAL);	\
-    __atomic_store ((PTR), &__atomic_store_tmp, (MO));	\
+#define atomic_store_explicit(PTR, VAL, MO)				\
+  __extension__								\
+  ({									\
+    __auto_type __atomic_store_ptr = (PTR);				\
+    __typeof__ (*__atomic_store_ptr) __atomic_store_tmp = (VAL);	\
+    __atomic_store (__atomic_store_ptr, &__atomic_store_tmp, (MO));	\
   })
 
 #define atomic_store(PTR, VAL)				\
@@ -146,8 +147,9 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define atomic_load_explicit(PTR, MO)					\
   __extension__								\
   ({									\
-    __typeof__ (*(PTR)) __atomic_load_tmp; 				\
-    __atomic_load ((PTR), &__atomic_load_tmp, (MO));			\
+    __auto_type __atomic_load_ptr = (PTR);				\
+    __typeof__ (*__atomic_load_ptr) __atomic_load_tmp;			\
+    __atomic_load (__atomic_load_ptr, &__atomic_load_tmp, (MO));	\
     __atomic_load_tmp;							\
   })
 
@@ -157,8 +159,10 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define atomic_exchange_explicit(PTR, VAL, MO)				\
   __extension__								\
   ({									\
-    __typeof__ (*(PTR)) __atomic_exchange_val = (VAL), __atomic_exchange_tmp; \
-    __atomic_exchange ((PTR), &__atomic_exchange_val,			\
+    __auto_type __atomic_exchange_ptr = (PTR);				\
+    __typeof__ (*__atomic_exchange_ptr) __atomic_exchange_val = (VAL);	\
+    __typeof__ (*__atomic_exchange_ptr) __atomic_exchange_tmp;		\
+    __atomic_exchange (__atomic_exchange_ptr, &__atomic_exchange_val,	\
 		       &__atomic_exchange_tmp, (MO));			\
     __atomic_exchange_tmp;						\
   })
@@ -170,8 +174,10 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define atomic_compare_exchange_strong_explicit(PTR, VAL, DES, SUC, FAIL) \
   __extension__								\
   ({									\
-    __typeof__ (*(PTR)) __atomic_compare_exchange_tmp = (DES);		\
-    __atomic_compare_exchange ((PTR), (VAL),				\
+    __auto_type __atomic_compare_exchange_ptr = (PTR);			\
+    __typeof__ (*__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
+      = (DES);								\
+    __atomic_compare_exchange (__atomic_compare_exchange_ptr, (VAL),	\
 			       &__atomic_compare_exchange_tmp, 0,	\
 			       (SUC), (FAIL));				\
   })
@@ -183,8 +189,10 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define atomic_compare_exchange_weak_explicit(PTR, VAL, DES, SUC, FAIL) \
   __extension__								\
   ({									\
-    __typeof__ (*(PTR)) __atomic_compare_exchange_tmp = (DES);		\
-    __atomic_compare_exchange ((PTR), (VAL),				\
+    __auto_type __atomic_compare_exchange_ptr = (PTR);			\
+    __typeof__ (*__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
+      = (DES);								\
+    __atomic_compare_exchange (__atomic_compare_exchange_ptr, (VAL),	\
 			       &__atomic_compare_exchange_tmp, 1,	\
 			       (SUC), (FAIL));				\
   })

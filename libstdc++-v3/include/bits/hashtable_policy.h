@@ -1862,7 +1862,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__try
 	  {
 	    __value_alloc_type __a(_M_node_allocator());
-	    ::new ((void*)__n) __node_type();
+	    ::new ((void*)__n) __node_type;
 	    __value_alloc_traits::construct(__a, __n->_M_valptr(),
 					    std::forward<_Args>(__args)...);
 	    return __n;
