@@ -15,6 +15,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"net/http"
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
@@ -469,12 +470,18 @@ func TestTransportHeadResponses(t *testing.T) {
 		res, err := c.Head(ts.URL)
 		if err != nil {
 			t.Errorf("error on loop %d: %v", i, err)
+			continue
 		}
 		if e, g := "123", res.Header.Get("Content-Length"); e != g {
 			t.Errorf("loop %d: expected Content-Length header of %q, got %q", i, e, g)
 		}
 		if e, g := int64(123), res.ContentLength; e != g {
 			t.Errorf("loop %d: expected res.ContentLength of %v, got %v", i, e, g)
+		}
+		if all, err := ioutil.ReadAll(res.Body); err != nil {
+			t.Errorf("loop %d: Body ReadAll: %v", i, err)
+		} else if len(all) != 0 {
+			t.Errorf("Bogus body %q", all)
 		}
 	}
 }
@@ -553,12 +560,13 @@ func TestRoundTripGzip(t *testing.T) {
 		res, err := DefaultTransport.RoundTrip(req)
 		var body []byte
 		if test.compressed {
-			gzip, err := gzip.NewReader(res.Body)
+			var r *gzip.Reader
+			r, err = gzip.NewReader(res.Body)
 			if err != nil {
 				t.Errorf("%d. gzip NewReader: %v", i, err)
 				continue
 			}
-			body, err = ioutil.ReadAll(gzip)
+			body, err = ioutil.ReadAll(r)
 			res.Body.Close()
 		} else {
 			body, err = ioutil.ReadAll(res.Body)
@@ -585,13 +593,16 @@ func TestTransportGzip(t *testing.T) {
 	const testString = "The test string aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	const nRandBytes = 1024 * 1024
 	ts := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {
+		if req.Method == "HEAD" {
+			if g := req.Header.Get("Accept-Encoding"); g != "" {
+				t.Errorf("HEAD request sent with Accept-Encoding of %q; want none", g)
+			}
+			return
+		}
 		if g, e := req.Header.Get("Accept-Encoding"), "gzip"; g != e {
 			t.Errorf("Accept-Encoding = %q, want %q", g, e)
 		}
 		rw.Header().Set("Content-Encoding", "gzip")
-		if req.Method == "HEAD" {
-			return
-		}
 
 		var w io.Writer = rw
 		var buf bytes.Buffer
@@ -819,7 +830,7 @@ func TestTransportPersistConnLeakShortBody(t *testing.T) {
 	}
 	nhigh := runtime.NumGoroutine()
 	tr.CloseIdleConnections()
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	runtime.GC()
 	nfinal := runtime.NumGoroutine()
 
@@ -1569,6 +1580,77 @@ func TestProxyFromEnvironment(t *testing.T) {
 			t.Errorf("%v: got URL = %q, want %q", tt, url, tt.want)
 		}
 	}
+}
+
+func TestIdleConnChannelLeak(t *testing.T) {
+	var mu sync.Mutex
+	var n int
+
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		mu.Lock()
+		n++
+		mu.Unlock()
+	}))
+	defer ts.Close()
+
+	tr := &Transport{
+		Dial: func(netw, addr string) (net.Conn, error) {
+			return net.Dial(netw, ts.Listener.Addr().String())
+		},
+	}
+	defer tr.CloseIdleConnections()
+
+	c := &Client{Transport: tr}
+
+	// First, without keep-alives.
+	for _, disableKeep := range []bool{true, false} {
+		tr.DisableKeepAlives = disableKeep
+		for i := 0; i < 5; i++ {
+			_, err := c.Get(fmt.Sprintf("http://foo-host-%d.tld/", i))
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if got := tr.IdleConnChMapSizeForTesting(); got != 0 {
+			t.Fatalf("ForDisableKeepAlives = %v, map size = %d; want 0", disableKeep, got)
+		}
+	}
+}
+
+// Verify the status quo: that the Client.Post function coerces its
+// body into a ReadCloser if it's a Closer, and that the Transport
+// then closes it.
+func TestTransportClosesRequestBody(t *testing.T) {
+	defer afterTest(t)
+	ts := httptest.NewServer(http.HandlerFunc(func(w ResponseWriter, r *Request) {
+		io.Copy(ioutil.Discard, r.Body)
+	}))
+	defer ts.Close()
+
+	tr := &Transport{}
+	defer tr.CloseIdleConnections()
+	cl := &Client{Transport: tr}
+
+	closes := 0
+
+	res, err := cl.Post(ts.URL, "text/plain", countCloseReader{&closes, strings.NewReader("hello")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if closes != 1 {
+		t.Errorf("closes = %d; want 1", closes)
+	}
+}
+
+type countCloseReader struct {
+	n *int
+	io.Reader
+}
+
+func (cr countCloseReader) Close() error {
+	(*cr.n)++
+	return nil
 }
 
 // rgz is a gzip quine that uncompresses to itself.

@@ -2624,7 +2624,7 @@ other hand, assumed-type assumed-rank dummy arguments
 (@code{TYPE(*), DIMENSION(..)}) allow for both scalars and arrays, but
 require special code on the callee side to handle the array descriptor.
 
-@item Assumed-shape arrays (@code{DIMENSION(..)}) as dummy argument
+@item Assumed-rank arrays (@code{DIMENSION(..)}) as dummy argument
 allow that scalars and arrays of any rank can be passed as actual
 argument. As the Technical Specification does not provide for direct
 means to operate with them, they have to be used either from the C side

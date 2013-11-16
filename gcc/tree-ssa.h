@@ -39,8 +39,6 @@ extern edge_var_map_vector *redirect_edge_var_map_vector (edge);
 extern void redirect_edge_var_map_destroy (void);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
-extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
-				   unsigned *);
 extern void gimple_replace_ssa_lhs (gimple, tree);
 extern tree target_for_debug_bind (tree);
 extern void insert_debug_temp_for_var_def (gimple_stmt_iterator *, tree);

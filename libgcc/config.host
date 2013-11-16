@@ -564,7 +564,7 @@ i[34567]86-*-nto-qnx*)
 	extra_parts=crtbegin.o
 	;;
 i[34567]86-*-rtems*)
-	tmake_file="$tmake_file i386/t-softfp i386/t-crtstuff"
+	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdf t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)

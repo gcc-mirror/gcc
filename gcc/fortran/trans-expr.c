@@ -737,7 +737,6 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
     gfc_add_modify (&parmse->post, vptr,
 		    fold_convert (TREE_TYPE (vptr), ctree));
 
-  gcc_assert (!optional || (optional && !copyback));
   if (optional)
     {
       tree tmp2;
@@ -7769,7 +7768,7 @@ is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
 	      e1 = a->expr;
 	      if (e1->rank > 0 && !is_runtime_conformable (expr1, e1))
 		return false;
-	    }	 
+	    }
 	  return true;
 	}
       else if (expr2->value.function.isym

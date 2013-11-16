@@ -17,6 +17,7 @@ __int128_t zero = 0;
 #define STRONG 0
 #define WEAK 1
 
+int
 main ()
 {
 

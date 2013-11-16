@@ -100,6 +100,7 @@ struct gfc_cpp_option_data
   const char *deps_filename_user;       /* -MF <arg> */
   int deps_missing_are_generated;       /* -MG */
   int deps_phony;                       /* -MP */
+  int warn_date_time;                   /* -Wdate-time */
 
   const char *multilib;                 /* -imultilib <dir>  */
   const char *prefix;                   /* -iprefix <dir>  */
@@ -262,6 +263,7 @@ gfc_cpp_init_options (unsigned int decoded_options_count,
   gfc_cpp_option.no_predefined = 0;
   gfc_cpp_option.standard_include_paths = 1;
   gfc_cpp_option.verbose = 0;
+  gfc_cpp_option.warn_date_time = 0;
   gfc_cpp_option.deps = 0;
   gfc_cpp_option.deps_skip_system = 0;
   gfc_cpp_option.deps_phony = 0;
@@ -358,6 +360,9 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
     case OPT_v:
       gfc_cpp_option.verbose = value;
       break;
+
+    case OPT_Wdate_time:
+      gfc_cpp_option.warn_date_time = value;
 
     case OPT_A:
     case OPT_D:
@@ -469,6 +474,7 @@ gfc_cpp_post_options (void)
   cpp_option->discard_comments_in_macro_exp = gfc_cpp_option.discard_comments_in_macro_exp;
   cpp_option->print_include_names = gfc_cpp_option.print_include_names;
   cpp_option->preprocessed = gfc_option.flag_preprocessed;
+  cpp_option->warn_date_time = gfc_cpp_option.warn_date_time;
 
   if (gfc_cpp_makedep ())
     {

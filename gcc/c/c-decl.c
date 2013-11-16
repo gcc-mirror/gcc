@@ -1587,8 +1587,14 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
       if (oldargtype == error_mark_node || newargtype == error_mark_node)
 	return false;
 
-      oldargtype = TYPE_MAIN_VARIANT (oldargtype);
-      newargtype = TYPE_MAIN_VARIANT (newargtype);
+      oldargtype = (TYPE_ATOMIC (oldargtype)
+		    ? c_build_qualified_type (TYPE_MAIN_VARIANT (oldargtype),
+					      TYPE_QUAL_ATOMIC)
+		    : TYPE_MAIN_VARIANT (oldargtype));
+      newargtype = (TYPE_ATOMIC (newargtype)
+		    ? c_build_qualified_type (TYPE_MAIN_VARIANT (newargtype),
+					      TYPE_QUAL_ATOMIC)
+		    : TYPE_MAIN_VARIANT (newargtype));
 
       if (END_OF_ARGLIST (oldargtype) && END_OF_ARGLIST (newargtype))
 	break;
@@ -1637,7 +1643,8 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 static void
 locate_old_decl (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl)
+      && !C_DECL_DECLARED_BUILTIN (decl))
     ;
   else if (DECL_INITIAL (decl))
     inform (input_location, "previous definition of %q+D was here", decl);
@@ -3728,6 +3735,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
                    && declspecs->typespec_kind != ctsk_tagfirstref
 		   && (declspecs->const_p
 		       || declspecs->volatile_p
+		       || declspecs->atomic_p
 		       || declspecs->restrict_p
 		       || declspecs->address_space))
 	    {
@@ -3817,6 +3825,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
   if (!warned && !in_system_header && (declspecs->const_p
 				       || declspecs->volatile_p
+				       || declspecs->atomic_p
 				       || declspecs->restrict_p
 				       || declspecs->address_space))
     {
@@ -3848,6 +3857,7 @@ quals_from_declspecs (const struct c_declspecs *specs)
   int quals = ((specs->const_p ? TYPE_QUAL_CONST : 0)
 	       | (specs->volatile_p ? TYPE_QUAL_VOLATILE : 0)
 	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0)
+	       | (specs->atomic_p ? TYPE_QUAL_ATOMIC : 0)
 	       | (specs->shared_p   ? TYPE_QUAL_SHARED : 0)
 	       | (specs->strict_p   ? TYPE_QUAL_STRICT : 0)
 	       | (specs->relaxed_p  ? TYPE_QUAL_RELAXED : 0)
@@ -4186,7 +4196,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	      tree type = TREE_TYPE (args);
 	      if (type && INTEGRAL_TYPE_P (type)
 		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-		DECL_ARG_TYPE (args) = integer_type_node;
+		DECL_ARG_TYPE (args) = c_type_promotes_to (type);
 	    }
 	}
     }
@@ -4979,6 +4989,7 @@ grokdeclarator (const struct c_declarator *declarator,
   int constp;
   int restrictp;
   int volatilep;
+  int atomicp;
   int sharedp;
   int strictp;
   int relaxedp;
@@ -5142,6 +5153,7 @@ grokdeclarator (const struct c_declarator *declarator,
   constp = declspecs->const_p + TYPE_READONLY (element_type);
   restrictp = declspecs->restrict_p + TYPE_RESTRICT (element_type);
   volatilep = declspecs->volatile_p + TYPE_VOLATILE (element_type);
+  atomicp = declspecs->atomic_p + TYPE_ATOMIC (element_type);
   sharedp = declspecs->shared_p + upc_shared_type_p (element_type);
   strictp = declspecs->strict_p + TYPE_STRICT (element_type);
   relaxedp = declspecs->relaxed_p + TYPE_RELAXED (element_type);
@@ -5159,12 +5171,15 @@ grokdeclarator (const struct c_declarator *declarator,
 	pedwarn (loc, OPT_Wpedantic, "duplicate %<restrict%>");
       if (volatilep > 1)
 	pedwarn (loc, OPT_Wpedantic, "duplicate %<volatile%>");
+      if (atomicp > 1)
+	pedwarn (loc, OPT_Wpedantic, "duplicate %<_Atomic%>");
       if (sharedp > 1)
 	pedwarn (loc, OPT_Wpedantic, "duplicate %<shared%>");
       if (strictp > 1)
 	pedwarn (loc, OPT_Wpedantic, "duplicate %<strict%>");
       if (relaxedp > 1)
 	pedwarn (loc, OPT_Wpedantic, "duplicate %<relaxed%>");
+
     }
   if (strictp && relaxedp)
     error_at (loc, "UPC shared variable %qE is declared "
@@ -5187,11 +5202,19 @@ grokdeclarator (const struct c_declarator *declarator,
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
 		| (volatilep ? TYPE_QUAL_VOLATILE : 0)
+		| (atomicp ? TYPE_QUAL_ATOMIC : 0)
 		| (sharedp ? TYPE_QUAL_SHARED : 0)
 		| (strictp ? TYPE_QUAL_STRICT : 0)
 		| (relaxedp ? TYPE_QUAL_RELAXED : 0)
 		| ENCODE_QUAL_ADDR_SPACE (address_space));
   
+  /* Applying the _Atomic qualifier to an array type (through the use
+     of typedefs or typeof) must be detected here.  If the qualifier
+     is introduced later, any appearance of applying it to an array is
+     actually applying it to an element of that array.  */
+  if (atomicp && TREE_CODE (type) == ARRAY_TYPE)
+    error_at (loc, "%<_Atomic%>-qualified array type");
+
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
 
@@ -5821,9 +5844,15 @@ grokdeclarator (const struct c_declarator *declarator,
 	  {
 	    /* Merge any constancy or volatility into the target type
 	       for the pointer.  */
-
-	    if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-		&& type_quals)
+	    if ((type_quals & TYPE_QUAL_ATOMIC)
+		&& TREE_CODE (type) == FUNCTION_TYPE)
+	      {
+		error_at (loc,
+			  "%<_Atomic%>-qualified function type");
+		type_quals &= ~TYPE_QUAL_ATOMIC;
+	      }
+	    else if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
+		     && type_quals)
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C forbids qualified function types");
 
@@ -5949,7 +5978,20 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* Check the type and width of a bit-field.  */
   if (bitfield)
-    check_bitfield_type_and_width (&type, width, name);
+    {
+      check_bitfield_type_and_width (&type, width, name);
+      /* C11 makes it implementation-defined (6.7.2.1#5) whether
+	 atomic types are permitted for bit-fields; we have no code to
+	 make bit-field accesses atomic, so disallow them.  */
+      if (type_quals & TYPE_QUAL_ATOMIC)
+	{
+	  if (name)
+	    error ("bit-field %qE has atomic type", name);
+	  else
+	    error ("bit-field has atomic type");
+	  type_quals &= ~TYPE_QUAL_ATOMIC;
+	}
+    }
 
   /* Check for UPC's layout qualifier.  */
   if (upc_layout_qualifier || upc_elem_block_factor)
@@ -6020,8 +6062,15 @@ grokdeclarator (const struct c_declarator *declarator,
   if (storage_class == csc_typedef)
     {
       tree decl;
-      if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	  && type_quals)
+      if ((type_quals & TYPE_QUAL_ATOMIC)
+	  && TREE_CODE (type) == FUNCTION_TYPE)
+	{
+	  error_at (loc,
+		    "%<_Atomic%>-qualified function type");
+	  type_quals &= ~TYPE_QUAL_ATOMIC;
+	}
+      else if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
+	       && type_quals)
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids qualified function types");
       if (type_quals)
@@ -6067,8 +6116,15 @@ grokdeclarator (const struct c_declarator *declarator,
 	 and fields.  */
       gcc_assert (storage_class == csc_none && !threadp
 		  && !declspecs->inline_p && !declspecs->noreturn_p);
-      if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	  && type_quals)
+      if ((type_quals & TYPE_QUAL_ATOMIC)
+	  && TREE_CODE (type) == FUNCTION_TYPE)
+	{
+	  error_at (loc,
+		    "%<_Atomic%>-qualified function type");
+	  type_quals &= ~TYPE_QUAL_ATOMIC;
+	}
+      else if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
+	       && type_quals)
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids const or volatile function types");
       if (type_quals)
@@ -6137,7 +6193,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
-	    if (type_quals)
+	    if (type_quals & TYPE_QUAL_ATOMIC)
+	      {
+		error_at (loc,
+			  "%<_Atomic%>-qualified function type");
+		type_quals &= ~TYPE_QUAL_ATOMIC;
+	      }
+	    else if (type_quals)
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C forbids qualified function types");
 	    if (type_quals)
@@ -6245,7 +6307,13 @@ grokdeclarator (const struct c_declarator *declarator,
 			   FUNCTION_DECL, declarator->u.id, type);
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
-	if (pedantic && type_quals && !DECL_IN_SYSTEM_HEADER (decl))
+	if (type_quals & TYPE_QUAL_ATOMIC)
+	  {
+	    error_at (loc,
+		      "%<_Atomic%>-qualified function type");
+	    type_quals &= ~TYPE_QUAL_ATOMIC;
+	  }
+	else if (pedantic && type_quals && !DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn (loc, OPT_Wpedantic,
 		   "ISO C forbids qualified function types");
 
@@ -6639,8 +6707,7 @@ get_parm_info (bool ellipsis, tree expr)
       && !DECL_NAME (b->decl)               /* anonymous */
       && VOID_TYPE_P (TREE_TYPE (b->decl))) /* of void type */
     {
-      if (TREE_THIS_VOLATILE (b->decl)
-	  || TREE_READONLY (b->decl)
+      if (TYPE_QUALS (TREE_TYPE (b->decl)) != TYPE_UNQUALIFIED
 	  || C_DECL_REGISTER (b->decl))
 	error ("%<void%> as only parameter may not be qualified");
 
@@ -8393,11 +8460,15 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	     type for parameters declared with qualified type.  */
 	  if (TREE_TYPE (parm) != error_mark_node
 	      && TREE_TYPE (type) != error_mark_node
-	      && !comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
-			     TYPE_MAIN_VARIANT (TREE_VALUE (type))))
+	      && ((TYPE_ATOMIC (DECL_ARG_TYPE (parm))
+		   != TYPE_ATOMIC (TREE_VALUE (type)))
+		  || !comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
+				 TYPE_MAIN_VARIANT (TREE_VALUE (type)))))
 	    {
-	      if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
-		  == TYPE_MAIN_VARIANT (TREE_VALUE (type)))
+	      if ((TYPE_ATOMIC (DECL_ARG_TYPE (parm))
+		   == TYPE_ATOMIC (TREE_VALUE (type)))
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
+		      == TYPE_MAIN_VARIANT (TREE_VALUE (type))))
 		{
 		  /* Adjust argument to match prototype.  E.g. a previous
 		     `int foo(float);' prototype causes
@@ -8410,7 +8481,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 		      && INTEGRAL_TYPE_P (TREE_TYPE (parm))
 		      && TYPE_PRECISION (TREE_TYPE (parm))
 		      < TYPE_PRECISION (integer_type_node))
-		    DECL_ARG_TYPE (parm) = integer_type_node;
+		    DECL_ARG_TYPE (parm)
+		      = c_type_promotes_to (TREE_TYPE (parm));
 
 		  /* ??? Is it possible to get here with a
 		     built-in prototype or will it always have
@@ -8612,7 +8684,7 @@ finish_function (void)
 	  tree type = TREE_TYPE (args);
 	  if (INTEGRAL_TYPE_P (type)
 	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	    DECL_ARG_TYPE (args) = integer_type_node;
+	    DECL_ARG_TYPE (args) = c_type_promotes_to (type);
 	}
     }
 
@@ -9096,6 +9168,7 @@ build_null_declspecs (void)
   ret->thread_p = false;
   ret->const_p = false;
   ret->volatile_p = false;
+  ret->atomic_p = false;
   ret->restrict_p = false;
   ret->shared_p = false;
   ret->strict_p = false;
@@ -9176,6 +9249,10 @@ declspecs_add_qual (source_location loc,
       dupe = specs->restrict_p;
       specs->restrict_p = true;
       specs->locations[cdw_restrict] = loc;
+      break;
+    case RID_ATOMIC:
+      dupe = specs->atomic_p;
+      specs->atomic_p = true;
       break;
     case RID_SHARED:
       dupe = specs->shared_p;

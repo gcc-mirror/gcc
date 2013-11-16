@@ -45,7 +45,7 @@ GENERAL_FLAGS += -fcilkplus
 
 AM_CFLAGS = $(GENERAL_FLAGS) -std=c99
 AM_CPPFLAGS = $(GENERAL_FLAGS)
-AM_LDFLAGS = -lpthread -ldl
+AM_LDFLAGS = -lpthread 
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)

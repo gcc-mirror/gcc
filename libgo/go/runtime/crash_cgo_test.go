@@ -7,6 +7,7 @@
 package runtime_test
 
 import (
+	"runtime"
 	"testing"
 )
 
@@ -15,13 +16,23 @@ func TestCgoCrashHandler(t *testing.T) {
 }
 
 func TestCgoSignalDeadlock(t *testing.T) {
-	/* gccgo does not have a go command
+	if testing.Short() && runtime.GOOS == "windows" {
+		t.Skip("Skipping in short mode") // takes up to 64 seconds
+	}
+	t.Skip("gccgo does not have a go command")
 	got := executeTest(t, cgoSignalDeadlockSource, nil)
 	want := "OK\n"
 	if got != want {
 		t.Fatalf("expected %q, but got %q", want, got)
 	}
-	*/
+}
+
+func TestCgoTraceback(t *testing.T) {
+	got := executeTest(t, cgoTracebackSource, nil)
+	want := "OK\n"
+	if got != want {
+		t.Fatalf("expected %q, but got %q", want, got)
+	}
 }
 
 const cgoSignalDeadlockSource = `
@@ -85,6 +96,25 @@ func main() {
 		fmt.Printf("HANG\n")
 		return
 	}
+	fmt.Printf("OK\n")
+}
+`
+
+const cgoTracebackSource = `
+package main
+
+/* void foo(void) {} */
+import "C"
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func main() {
+	C.foo()
+	buf := make([]byte, 1)
+	runtime.Stack(buf, true)
 	fmt.Printf("OK\n")
 }
 `

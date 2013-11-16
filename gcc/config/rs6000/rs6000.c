@@ -1593,6 +1593,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
+
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
 
 /* Processor table.  */
@@ -3221,11 +3224,6 @@ rs6000_option_override_internal (bool global_init_p)
 	}
       else if (TARGET_PAIRED_FLOAT)
 	msg = N_("-mvsx and -mpaired are incompatible");
-      /* The hardware will allow VSX and little endian, but until we make sure
-	 things like vector select, etc. work don't allow VSX on little endian
-	 systems at this point.  */
-      else if (!BYTES_BIG_ENDIAN)
-	msg = N_("-mvsx used with little endian code");
       else if (TARGET_AVOID_XFORM > 0)
 	msg = N_("-mvsx needs indexed addressing");
       else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
@@ -6405,7 +6403,7 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_NUNITS (mode) != 1)
 	return false;
-      if (! lra_in_progress && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	  && !(/* ??? Assume floating point reg based on mode?  */
 	       TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT
 	       && (mode == DFmode || mode == DDmode)))
@@ -21559,8 +21557,19 @@ rs6000_emit_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = info->total_size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && info->total_size)
-    rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT, info->total_size);
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+    {
+      HOST_WIDE_INT size = info->total_size;
+
+      if (crtl->is_leaf && !cfun->calls_alloca)
+	{
+	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+	    rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT,
+					   size - STACK_CHECK_PROTECT);
+	}
+      else if (size > 0)
+	rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+    }
 
   if (TARGET_FIX_AND_CONTINUE)
     {

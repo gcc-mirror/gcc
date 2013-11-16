@@ -1,3 +1,47 @@
+2013-11-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58471
+	* primary.c (gfc_expr_attr): Check for result symbol.
+
+2013-11-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.texi: Fix typo.
+
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (-Wdate-time): New option
+	* cpp.c (gfc_cpp_option_data): Add warn_date_time.
+	(gfc_cpp_init_options, gfc_cpp_handle_option,
+	gfc_cpp_post_options): Handle it and pass on to libcpp.
+
+2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/58989
+	* check.c (gfc_check_reshape): ensure that shape is a constant
+	expression.
+
+2013-11-05  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (fopenmp-simd): New option.
+	* gfortran.h (gfc_option_t): Add gfc_flag_openmp_simd.
+	* options.c (gfc_handle_option): Handle it.
+
+2013-11-04  Ian Lance Taylor  <iant@google.com>
+
+	* f95-lang.c (ATTR_LEAF_LIST): Define.
+
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58771
+	* trans-io.c (transfer_expr): If the backend_decl for a derived
+	type is missing, build it with gfc_typenode_for_spec.
+
+2013-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57445
+	* trans-expr.c (gfc_conv_class_to_class): Remove spurious
+	assert.
+
 2013-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44350

@@ -643,6 +643,10 @@ Wpragmas
 C UPC ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
+Wdate-time
+Common Var(cpp_warn_date_time) Warning
+Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage
+
 Wproperty-assign-default
 ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
 Warn if a property for an Objective-C object has no assign semantics specified
@@ -856,6 +860,11 @@ C UPC ObjC C++ ObjC++ Joined
 fcanonical-system-headers
 C UPC Objc C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
+
+fcheck-pointer-bounds
+C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
+Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
+control instrumentation.
 
 fcilkplus
 C UPC Objc C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
@@ -1075,6 +1084,10 @@ Conform to the Objective-C 1.0 language as implemented in GCC 4.0
 fopenmp
 C UPC ObjC C++ ObjC++ Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
+
+fopenmp-simd
+C ObjC C++ ObjC++ Var(flag_openmp_simd)
+Enable OpenMP's SIMD directives
 
 foperator-names
 C++ ObjC++

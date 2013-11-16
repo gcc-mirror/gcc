@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } "*" "-m1 -m2*" }  */
 /* { dg-final { scan-assembler-not "\trte\t\n\tmov.l\t@r15\\+" } } */

@@ -745,6 +745,8 @@ Define this macro to 1 if your target needs this facility.  The default
 is 0.
 @end defmac
 
+@hook TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
+
 @node Per-Function Data
 @section Defining data structures for per-function information.
 @cindex per-function data
@@ -4937,6 +4939,10 @@ them: try the first ones in this list first.
 
 @hook TARGET_SCHED_REORDER2
 
+@hook TARGET_SCHED_MACRO_FUSION_P
+
+@hook TARGET_SCHED_MACRO_FUSION_PAIR_P
+
 @hook TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK
 
 @hook TARGET_SCHED_INIT
@@ -8275,6 +8281,8 @@ to by @var{ce_info}.
 
 @hook TARGET_GENERATE_VERSION_DISPATCHER_BODY
 
+@hook TARGET_CAN_USE_DOLOOP_P
+
 @hook TARGET_INVALID_WITHIN_DOLOOP
 
 @hook TARGET_LEGITIMATE_COMBINED_INSN
@@ -8467,3 +8475,5 @@ and the associated definitions of those functions.
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 
 @hook TARGET_HAS_IFUNC_P
+
+@hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV

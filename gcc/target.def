@@ -1041,6 +1041,19 @@ scheduling one insn causes other insns to become ready in the same\n\
 cycle.  These other insns can then be taken into account properly.",
  int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
 
+DEFHOOK
+(macro_fusion_p,
+ "This hook is used to check whether target platform supports macro fusion.",
+ bool, (void), NULL)
+
+DEFHOOK
+(macro_fusion_pair_p,
+ "This hook is used to check whether two insns could be macro fused for\n\
+target microarchitecture. If this hook returns true for the given insn pair\n\
+(@var{condgen} and @var{condjmp}), scheduler will put them into a sched\n\
+group, and they will not be scheduled apart.",
+ bool, (rtx condgen, rtx condjmp), NULL)
+
 /* The following member value is a pointer to a function called
    after evaluation forward dependencies of insns in chain given
    by two parameter values (head and tail correspondingly).  */
@@ -1934,6 +1947,18 @@ DEFHOOK_UNDOC
  "",
  bool, (void),
  targhook_float_words_big_endian)
+
+DEFHOOK
+(float_exceptions_rounding_supported_p,
+ "Returns true if the target supports IEEE 754 floating-point exceptions\
+ and rounding modes, false otherwise.  This is intended to relate to the\
+ @code{float} and @code{double} types, but not necessarily @code{long double}.\
+ By default, returns true if the @code{adddf3} instruction pattern is\
+ available and false otherwise, on the assumption that hardware floating\
+ point supports exceptions and rounding modes but software floating point\
+ does not.",
+ bool, (void),
+ default_float_exceptions_rounding_supported_p)
 
 /* True if the target supports decimal floating point.  */
 DEFHOOK
@@ -3571,6 +3596,23 @@ The default version of this hook invokes a function called\n\
 normally defined in @file{libgcc2.c}.",
  tree, (void),
  default_external_stack_protect_fail)
+
+DEFHOOK
+(can_use_doloop_p,
+ "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\
+and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the\n\
+exact number of iterations, or 0 if not known.  @var{iterations_max} gives\n\
+the maximum number of iterations, or 0 if not known.  @var{loop_depth} is\n\
+the nesting depth of the loop, with 1 for innermost loops, 2 for loops that\n\
+contain innermost loops, and so on.  @var{entered_at_top} is true if the\n\
+loop is only entered from the top.\n\
+\n\
+This hook is only used if @code{doloop_end} is available.  The default\n\
+implementation returns true.  You can use @code{can_use_doloop_if_innermost}\n\
+if the loop must be the innermost, and if there are no other restrictions.",
+ bool, (double_int iterations, double_int iterations_max,
+	unsigned int loop_depth, bool entered_at_top),
+ hook_bool_dint_dint_uint_bool_true)
 
 /* Returns NULL if target supports the insn within a doloop block,
    otherwise it returns an error message.  */
@@ -5254,7 +5296,27 @@ DEFHOOKPOD
  @code{atomic_test_and_set} is not exactly 1, i.e. the\
  @code{bool} @code{true}.",
  unsigned char, 1)
- 
+
+DEFHOOK
+(atomic_assign_expand_fenv,
+"ISO C11 requires atomic compound assignments that may raise floating-point\
+ exceptions to raise exceptions corresponding to the arithmetic operation\
+ whose result was successfully stored in a compare-and-exchange sequence. \
+ This requires code equivalent to calls to @code{feholdexcept},\
+ @code{feclearexcept} and @code{feupdateenv} to be generated at\
+ appropriate points in the compare-and-exchange sequence.  This hook should\
+ set @code{*@var{hold}} to an expression equivalent to the call to\
+ @code{feholdexcept}, @code{*@var{clear}} to an expression equivalent to\
+ the call to @code{feclearexcept} and @code{*@var{update}} to an expression\
+ equivalent to the call to @code{feupdateenv}.  The three expressions are\
+ @code{NULL_TREE} on entry to the hook and may be left as @code{NULL_TREE}\
+ if no code is required in a particular place.  The default implementation\
+ leaves all three expressions as @code{NULL_TREE}.  The\
+ @code{__atomic_feraiseexcept} function from @code{libatomic} may be of use\
+ as part of the code generated in @code{*@var{update}}.",
+ void, (tree *hold, tree *clear, tree *update),
+ default_atomic_assign_expand_fenv)
+
 /* Leave the boolean fields at the end.  */
 
 /* True if we can create zeroed data by switching to a BSS section

@@ -3277,7 +3277,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 		 "than %d elements", &shape->where, GFC_MAX_DIMENSIONS);
       return false;
     }
-  else if (shape->expr_type == EXPR_ARRAY)
+  else if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
     {
       gfc_expr *e;
       int i, extent;

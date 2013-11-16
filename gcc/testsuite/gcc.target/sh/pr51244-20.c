@@ -1,7 +1,7 @@
 /* Check that the SH specific sh_treg_combine RTL optimization pass works as
    expected.  On SH2A the expected insns are slightly different, see
    pr51244-21.c.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
 /* { dg-final { scan-assembler-times "tst" 6 } } */

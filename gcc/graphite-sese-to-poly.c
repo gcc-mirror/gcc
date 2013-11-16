@@ -101,7 +101,6 @@ remove_simple_copy_phi (gimple_stmt_iterator *psi)
 
   remove_phi_node (psi, false);
   gsi_insert_on_edge_immediate (e, stmt);
-  SSA_NAME_DEF_STMT (res) = stmt;
 }
 
 /* Removes an invariant phi node at position PSI by inserting on the
@@ -2174,7 +2173,6 @@ rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
       stmt = gimple_build_assign (res, arg);
       remove_phi_node (psi, false);
       gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
-      SSA_NAME_DEF_STMT (res) = stmt;
       return;
     }
 
@@ -2251,7 +2249,6 @@ rewrite_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 
   stmt = gimple_build_assign (res, unshare_expr (zero_dim_array));
   remove_phi_node (psi, false);
-  SSA_NAME_DEF_STMT (res) = stmt;
   insert_stmts (scop, stmt, NULL, gsi_after_labels (bb));
 }
 
@@ -2274,7 +2271,6 @@ rewrite_degenerate_phi (gimple_stmt_iterator *psi)
 
   stmt = gimple_build_assign (res, rhs);
   remove_phi_node (psi, false);
-  SSA_NAME_DEF_STMT (res) = stmt;
 
   gsi = gsi_after_labels (bb);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
@@ -2381,7 +2377,6 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
       gimple assign = gimple_build_assign (new_name, def);
       gimple_stmt_iterator psi = gsi_after_labels (SESE_EXIT (region)->dest);
 
-      SSA_NAME_DEF_STMT (new_name) = assign;
       update_stmt (assign);
       gsi_insert_before (&psi, assign, GSI_SAME_STMT);
     }

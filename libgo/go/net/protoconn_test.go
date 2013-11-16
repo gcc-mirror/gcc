@@ -103,6 +103,7 @@ func TestTCPConnSpecificMethods(t *testing.T) {
 	}
 	defer c.Close()
 	c.SetKeepAlive(false)
+	c.SetKeepAlivePeriod(3 * time.Second)
 	c.SetLinger(0)
 	c.SetNoDelay(false)
 	c.LocalAddr()
@@ -160,15 +161,20 @@ func TestUDPConnSpecificMethods(t *testing.T) {
 	} else {
 		f.Close()
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			t.Fatalf("UDPConn.WriteToUDP or WriteMsgUDP panicked: %v", p)
+		}
+	}()
+
+	c.WriteToUDP(wb, nil)
+	c.WriteMsgUDP(wb, nil, nil)
 }
 
 func TestIPConnSpecificMethods(t *testing.T) {
-	switch runtime.GOOS {
-	case "plan9":
-		t.Skipf("skipping test on %q", runtime.GOOS)
-	}
-	if os.Getuid() != 0 {
-		t.Skipf("skipping test; must be root")
+	if skip, skipmsg := skipRawSocketTest(t); skip {
+		t.Skip(skipmsg)
 	}
 
 	la, err := ResolveIPAddr("ip4", "127.0.0.1")
@@ -198,7 +204,7 @@ func TestIPConnSpecificMethods(t *testing.T) {
 	if err != nil {
 		t.Fatalf("icmpMessage.Marshal failed: %v", err)
 	}
-	rb := make([]byte, 20+128)
+	rb := make([]byte, 20+len(wb))
 	if _, err := c.WriteToIP(wb, c.LocalAddr().(*IPAddr)); err != nil {
 		t.Fatalf("IPConn.WriteToIP failed: %v", err)
 	}
@@ -217,6 +223,15 @@ func TestIPConnSpecificMethods(t *testing.T) {
 	} else {
 		f.Close()
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			t.Fatalf("IPConn.WriteToIP or WriteMsgIP panicked: %v", p)
+		}
+	}()
+
+	c.WriteToIP(wb, nil)
+	c.WriteMsgIP(wb, nil, nil)
 }
 
 func TestUnixListenerSpecificMethods(t *testing.T) {
@@ -357,4 +372,15 @@ func TestUnixConnSpecificMethods(t *testing.T) {
 	} else {
 		f.Close()
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			t.Fatalf("UnixConn.WriteToUnix or WriteMsgUnix panicked: %v", p)
+		}
+	}()
+
+	c1.WriteToUnix(wb, nil)
+	c1.WriteMsgUnix(wb, nil, nil)
+	c3.WriteToUnix(wb, nil)
+	c3.WriteMsgUnix(wb, nil, nil)
 }

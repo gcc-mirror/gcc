@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O0" } */
 /* { dg-skip-if "" { "sh*-*-*" } "-mb" "" }  */
 /* { dg-final { scan-assembler-not "add\tr0,r0" } } */

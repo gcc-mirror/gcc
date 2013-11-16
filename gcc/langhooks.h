@@ -496,9 +496,6 @@ struct lang_hooks
      gimplification.  */
   bool deep_unsharing;
 
-  /* True if this language allows pointers checker instrumentation.  */
-  bool chkp_supported;
-
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

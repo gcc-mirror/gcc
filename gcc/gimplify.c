@@ -7900,6 +7900,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case STRING_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
+	  /* Drop the overflow flag on constants, we do not want
+	     that in the GIMPLE IL.  */
+	  if (TREE_OVERFLOW_P (*expr_p))
+	    *expr_p = drop_tree_overflow (*expr_p);
 	  ret = GS_ALL_DONE;
 	  break;
 
@@ -8874,7 +8878,7 @@ gimplify_body (tree fndecl, bool do_parms)
       nonlocal_vlas = NULL;
     }
 
-  if (flag_openmp && gimplify_omp_ctxp)
+  if ((flag_openmp || flag_openmp_simd) && gimplify_omp_ctxp)
     {
       delete_omp_context (gimplify_omp_ctxp);
       gimplify_omp_ctxp = NULL;
@@ -9190,8 +9194,6 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 		temp = make_ssa_name (temp, NULL);
 	      gimple_set_lhs (stmt, temp);
 	      post_stmt = gimple_build_assign (lhs, temp);
-	      if (TREE_CODE (lhs) == SSA_NAME)
-		SSA_NAME_DEF_STMT (lhs) = post_stmt;
 	    }
 	}
       break;

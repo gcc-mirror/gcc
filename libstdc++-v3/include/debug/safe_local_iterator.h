@@ -52,6 +52,7 @@ namespace __gnu_debug
     class _Safe_local_iterator : public _Safe_local_iterator_base
     {
       typedef _Safe_local_iterator _Self;
+      typedef typename _Sequence::const_local_iterator _Const_local_iterator;
       typedef typename _Sequence::size_type size_type;
 
       /// The underlying iterator
@@ -64,8 +65,8 @@ namespace __gnu_debug
       bool
       _M_constant() const
       {
-	typedef typename _Sequence::const_local_iterator const_iterator;
-	return std::__are_same<const_iterator, _Safe_local_iterator>::__value;
+	return std::__are_same<_Const_local_iterator,
+			       _Safe_local_iterator>::__value;
       }
 
       typedef std::iterator_traits<_Iterator> _Traits;
@@ -253,15 +254,17 @@ namespace __gnu_debug
       { return !this->_M_singular() && !_M_is_end(); }
 
       // Is the iterator range [*this, __rhs) valid?
-      template<typename _Other>
-	bool
-	_M_valid_range(const _Safe_local_iterator<_Other,
-						  _Sequence>& __rhs) const;
+      bool
+      _M_valid_range(const _Safe_local_iterator& __rhs) const;
 
       // The sequence this iterator references.
-      const _Sequence*
+      typename
+      __gnu_cxx::__conditional_type<std::__are_same<_Const_local_iterator,
+						    _Safe_local_iterator>::__value,
+				    const _Sequence*,
+				    _Sequence*>::__type
       _M_get_sequence() const
-      { return static_cast<const _Sequence*>(_M_sequence); }
+      { return static_cast<_Sequence*>(_M_sequence); }
 
       /// Is this iterator equal to the sequence's begin() iterator?
       bool _M_is_begin() const

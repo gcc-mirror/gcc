@@ -377,10 +377,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
    * Storage for the regular expression is allocated and deallocated as
    * necessary by the member functions of this class.
    */
-  template<typename _Ch_type, typename _Rx_traits = regex_traits<_Ch_type> >
+  template<typename _Ch_type, typename _Rx_traits = regex_traits<_Ch_type>>
     class basic_regex
     {
     public:
+      static_assert(is_same<_Ch_type, typename _Rx_traits::char_type>::value,
+		    "regex traits class must have the same char_type");
+
       // types:
       typedef _Ch_type                            value_type;
       typedef _Rx_traits                          traits_type;
@@ -498,8 +501,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	basic_regex(_FwdIter __first, _FwdIter __last,
 		    flag_type __f = ECMAScript)
 	: _M_flags(__f),
-	  _M_automaton(__detail::_Compiler<_FwdIter, _Ch_type, _Rx_traits>
-		       (__first, __last, _M_traits, _M_flags)._M_get_nfa())
+	  _M_automaton(__detail::__compile_nfa(__first, __last, _M_traits,
+					       _M_flags))
 	{ }
 
       /**
@@ -634,9 +637,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	       flag_type __flags = ECMAScript)
 	{
 	  _M_flags = __flags;
-	  _M_automaton =
-	    __detail::_Compiler<decltype(__s.begin()), _Ch_type, _Rx_traits>
-	    (__s.begin(), __s.end(), _M_traits, _M_flags)._M_get_nfa();
+	  _M_automaton = __detail::__compile_nfa(__s.begin(), __s.end(),
+						 _M_traits, _M_flags);
 	  return *this;
 	}
 
@@ -730,8 +732,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
     protected:
-      typedef std::shared_ptr<__detail::_NFA<_Ch_type, _Rx_traits>>
-	_AutomatonPtr;
+      typedef std::shared_ptr<__detail::_NFA<_Rx_traits>> _AutomatonPtr;
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>

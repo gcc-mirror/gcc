@@ -19,38 +19,7 @@
 #include "sanitizer_common/sanitizer_stacktrace.h"
 #include "sanitizer_common/sanitizer_libc.h"
 
-#if !defined(__linux__) && !defined(__APPLE__) && !defined(_WIN32)
-# error "This operating system is not supported by AddressSanitizer"
-#endif
-
 #define ASAN_DEFAULT_FAILURE_EXITCODE 1
-
-#if defined(__linux__)
-# define ASAN_LINUX   1
-#else
-# define ASAN_LINUX   0
-#endif
-
-#if defined(__APPLE__)
-# define ASAN_MAC     1
-#else
-# define ASAN_MAC     0
-#endif
-
-#if defined(_WIN32)
-# define ASAN_WINDOWS 1
-#else
-# define ASAN_WINDOWS 0
-#endif
-
-#if defined(__ANDROID__) || defined(ANDROID)
-# define ASAN_ANDROID 1
-#else
-# define ASAN_ANDROID 0
-#endif
-
-
-#define ASAN_POSIX (ASAN_LINUX || ASAN_MAC)
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 # error "The AddressSanitizer run-time should not be"
@@ -61,7 +30,7 @@
 
 // If set, asan will install its own SEGV signal handler.
 #ifndef ASAN_NEEDS_SEGV
-# if ASAN_ANDROID == 1
+# if SANITIZER_ANDROID == 1
 #  define ASAN_NEEDS_SEGV 0
 # else
 #  define ASAN_NEEDS_SEGV 1
@@ -90,7 +59,7 @@
 #endif
 
 #ifndef ASAN_USE_PREINIT_ARRAY
-# define ASAN_USE_PREINIT_ARRAY (ASAN_LINUX && !ASAN_ANDROID)
+# define ASAN_USE_PREINIT_ARRAY (SANITIZER_LINUX && !SANITIZER_ANDROID)
 #endif
 
 // All internal functions in asan reside inside the __asan namespace
@@ -121,6 +90,7 @@ void UnsetAlternateSignalStack();
 void InstallSignalHandlers();
 void ReadContextStack(void *context, uptr *stack, uptr *ssize);
 void AsanPlatformThreadInit();
+void StopInitOrderChecking();
 
 // Wrapper for TLS/TSD.
 void AsanTSDInit(void (*destructor)(void *tsd));
@@ -129,24 +99,14 @@ void AsanTSDSet(void *tsd);
 
 void AppendToErrorMessageBuffer(const char *buffer);
 
-// asan_poisoning.cc
-// Poisons the shadow memory for "size" bytes starting from "addr".
-void PoisonShadow(uptr addr, uptr size, u8 value);
-// Poisons the shadow memory for "redzone_size" bytes starting from
-// "addr + size".
-void PoisonShadowPartialRightRedzone(uptr addr,
-                                     uptr size,
-                                     uptr redzone_size,
-                                     u8 value);
-
 // Platfrom-specific options.
-#ifdef __APPLE__
+#if SANITIZER_MAC
 bool PlatformHasDifferentMemcpyAndMemmove();
 # define PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE \
     (PlatformHasDifferentMemcpyAndMemmove())
 #else
 # define PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE true
-#endif  // __APPLE__
+#endif  // SANITIZER_MAC
 
 // Add convenient macro for interface functions that may be represented as
 // weak hooks.

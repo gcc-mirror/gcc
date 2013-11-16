@@ -1,6 +1,6 @@
 /* Check that zero-displacement branches are used instead of branch-free
    execution patterns.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1 -mzdcbranch" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "subc|and" } } */

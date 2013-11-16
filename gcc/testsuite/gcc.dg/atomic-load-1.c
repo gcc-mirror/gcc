@@ -10,6 +10,7 @@ extern void abort(void);
 
 char v, count;
 
+int
 main ()
 {
   v = 0;

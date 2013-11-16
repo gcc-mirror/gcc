@@ -1,6 +1,6 @@
 /* Check that the redundant test removal code in the *cbranch_t split works
    as expected on SH2A targets.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "tst" 6 } } */

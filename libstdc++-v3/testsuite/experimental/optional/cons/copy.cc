@@ -63,11 +63,12 @@ int main()
   }
 
   {
-    std::experimental::optional<long> o { std::experimental::in_place, 0x1234ABCDF1E2D3C4 };
+    const long val = 0x1234ABCD;
+    std::experimental::optional<long> o { std::experimental::in_place, val};
     auto copy = o;
     VERIFY( copy );
-    VERIFY( *copy == 0x1234ABCDF1E2D3C4 );
-    VERIFY( o && o == 0x1234ABCDF1E2D3C4 );
+    VERIFY( *copy == val );
+    VERIFY( o && o == val );
   }
 
   {

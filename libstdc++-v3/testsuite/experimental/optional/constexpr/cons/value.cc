@@ -26,44 +26,44 @@ int main()
   // [20.5.4.1] Constructors
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o { i };
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o = i;
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o = { i };
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o { std::move(i) };
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o = std::move(i);
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 
   {
-    constexpr auto i = 0x1234ABCDF1E2D3C4;
+    constexpr long i = 0x1234ABCD;
     constexpr std::experimental::optional<long> o = { std::move(i) };
     static_assert( o, "" );
-    static_assert( *o == 0x1234ABCDF1E2D3C4, "" );
+    static_assert( *o == 0x1234ABCD, "" );
   }
 }

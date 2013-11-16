@@ -126,6 +126,7 @@ along with GCC; see the file COPYING3.  If not see
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   INSERT_PASSES_AFTER (all_passes)
+  NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
@@ -166,9 +167,16 @@ along with GCC; see the file COPYING3.  If not see
 	 is removed, and this place fits nicely.  Remember this when
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
       NEXT_PASS (pass_dominator);
+      /* At this point the majority of const/copy propagations
+	 are exposed.  Go ahead and identify paths that should never
+	 be executed in a conforming program and isolate those paths.
+
+	 This will expose more degenerate PHIs in the main path and
+	 expose more PRE/DOM optimization opportunities.  */
+      NEXT_PASS (pass_isolate_erroneous_paths);
       /* The only const/copy propagation opportunities left after
-	 DOM should be due to degenerate PHI nodes.  So rather than
-	 run the full propagators, run a specialized pass which
+	 DOM and erroneous path isolation should be due to degenerate PHI nodes.
+	 So rather than run the full propagators, run a specialized pass which
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
@@ -358,6 +366,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_mode_switching);
       NEXT_PASS (pass_match_asm_constraints);
       NEXT_PASS (pass_sms);
+      NEXT_PASS (pass_live_range_shrinkage);
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);

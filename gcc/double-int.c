@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"			/* For SHIFT_COUNT_TRUNCATED.  */
+#include "tm.h"			/* For BITS_PER_UNIT and *_BIG_ENDIAN.  */
 #include "tree.h"
 
 static int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
@@ -237,9 +237,6 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	      ? -((unsigned HOST_WIDE_INT) h1 >> (HOST_BITS_PER_WIDE_INT - 1))
 	      : 0);
 
-  if (SHIFT_COUNT_TRUNCATED)
-    count %= prec;
-
   if (count >= HOST_BITS_PER_DOUBLE_INT)
     {
       /* Shifting by the host word size is undefined according to the
@@ -294,9 +291,6 @@ lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT signmask;
-
-  if (SHIFT_COUNT_TRUNCATED)
-    count %= prec;
 
   if (count >= HOST_BITS_PER_DOUBLE_INT)
     {

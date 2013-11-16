@@ -36,27 +36,22 @@ namespace __gnu_debug
     _Safe_iterator<_Iterator, _Sequence>::
     _M_can_advance(const difference_type& __n) const
     {
-      typedef typename _Sequence::const_iterator const_debug_iterator;
-      typedef typename const_debug_iterator::iterator_type const_iterator;
-
       if (this->_M_singular())
 	return false;
       if (__n == 0)
 	return true;
       if (__n < 0)
 	{
-	  const_iterator __begin = _M_get_sequence()->_M_base().begin();
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    __get_distance(__begin, base());
+	    __get_distance(_M_get_sequence()->_M_base().begin(), base());
 	  bool __ok =  ((__dist.second == __dp_exact && __dist.first >= -__n)
 			|| (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
 	}
       else
 	{
-	  const_iterator __end = _M_get_sequence()->_M_base().end();
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    __get_distance(base(), __end);
+	    __get_distance(base(), _M_get_sequence()->_M_base().end());
 	  bool __ok = ((__dist.second == __dp_exact && __dist.first >= __n)
 		       || (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
@@ -64,42 +59,41 @@ namespace __gnu_debug
     }
 
   template<typename _Iterator, typename _Sequence>
-    template<typename _Other>
-      bool
-      _Safe_iterator<_Iterator, _Sequence>::
-      _M_valid_range(const _Safe_iterator<_Other, _Sequence>& __rhs) const
-      {
-	if (!_M_can_compare(__rhs))
-	  return false;
+    bool
+    _Safe_iterator<_Iterator, _Sequence>::
+    _M_valid_range(const _Safe_iterator& __rhs) const
+    {
+      if (!_M_can_compare(__rhs))
+	return false;
 
-	/* Determine if we can order the iterators without the help of
-	   the container */
-	std::pair<difference_type, _Distance_precision> __dist =
-	  __get_distance(base(), __rhs.base());
-	switch (__dist.second) {
-	case __dp_equality:
-	  if (__dist.first == 0)
-	    return true;
-	  break;
-
-	case __dp_sign:
-	case __dp_exact:
-	  return __dist.first >= 0;
-	}
-
-	/* We can only test for equality, but check if one of the
-	   iterators is at an extreme. */
-	/* Optim for classic [begin, it) or [it, end) ranges, limit checks
-	 * when code is valid.  Note, for the special case of forward_list,
-	 * before_begin replaces the role of begin.  */ 
-	if (_M_is_beginnest() || __rhs._M_is_end())
+      /* Determine if we can order the iterators without the help of
+	 the container */
+      std::pair<difference_type, _Distance_precision> __dist =
+	__get_distance(base(), __rhs.base());
+      switch (__dist.second) {
+      case __dp_equality:
+	if (__dist.first == 0)
 	  return true;
-	if (_M_is_end() || __rhs._M_is_beginnest())
-	  return false;
+	break;
 
-	// Assume that this is a valid range; we can't check anything else
-	return true;
+      case __dp_sign:
+      case __dp_exact:
+	return __dist.first >= 0;
       }
+
+      /* We can only test for equality, but check if one of the
+	 iterators is at an extreme. */
+      /* Optim for classic [begin, it) or [it, end) ranges, limit checks
+       * when code is valid.  Note, for the special case of forward_list,
+       * before_begin replaces the role of begin.  */ 
+      if (_M_is_beginnest() || __rhs._M_is_end())
+	return true;
+      if (_M_is_end() || __rhs._M_is_beginnest())
+	return false;
+
+      // Assume that this is a valid range; we can't check anything else
+      return true;
+    }
 } // namespace __gnu_debug
 
 #endif

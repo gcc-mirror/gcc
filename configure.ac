@@ -2095,7 +2095,7 @@ AS_HELP_STRING(
 case ,${enable_languages}, in
   *,c++,*) ;;
   *)
-    noconfigdirs="$noconfigdirs target-libitm target-libsanitizer target-libvtv"
+    noconfigdirs="$noconfigdirs target-libcilkrts target-libitm target-libsanitizer target-libvtv"
     ;;
 esac
 

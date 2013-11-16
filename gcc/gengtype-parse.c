@@ -730,7 +730,7 @@ declarator (type_p ty, const char **namep, options_p *optsp,
    (
    type bitfield ';'
    | type declarator bitfield? ( ',' declarator bitfield? )+ ';'
-   )+
+   )*
 
    Knows that such declarations must end with a close brace (or,
    erroneously, at EOF).
@@ -744,7 +744,7 @@ struct_field_seq (void)
   const char *name;
   bool another;
 
-  do
+  while (token () != '}' && token () != EOF_TOKEN)
     {
       ty = type (&opts, true);
 
@@ -787,7 +787,6 @@ struct_field_seq (void)
 	}
       while (another);
     }
-  while (token () != '}' && token () != EOF_TOKEN);
   return nreverse_pairs (f);
 }
 

@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd netbsd openbsd
-
-// Socket options for BSD variants
+// +build darwin dragonfly freebsd netbsd openbsd
 
 package net
 
@@ -13,40 +11,26 @@ import (
 	"syscall"
 )
 
-func setDefaultSockopts(s, f, t int, ipv6only bool) error {
-	switch f {
-	case syscall.AF_INET6:
-		if ipv6only {
-			syscall.SetsockoptInt(s, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 1)
-		} else {
-			// Allow both IP versions even if the OS default
-			// is otherwise.  Note that some operating systems
-			// never admit this option.
-			syscall.SetsockoptInt(s, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 0)
-		}
+func setDefaultSockopts(s, family, sotype int, ipv6only bool) error {
+	if family == syscall.AF_INET6 && sotype != syscall.SOCK_RAW {
+		// Allow both IP versions even if the OS default
+		// is otherwise.  Note that some operating systems
+		// never admit this option.
+		syscall.SetsockoptInt(s, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, boolint(ipv6only))
 	}
 	// Allow broadcast.
-	err := syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1))
 }
 
 func setDefaultListenerSockopts(s int) error {
 	// Allow reuse of recently-used addresses.
-	err := syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1))
 }
 
 func setDefaultMulticastSockopts(s int) error {
 	// Allow multicast UDP and raw IP datagram sockets to listen
 	// concurrently across multiple listeners.
-	err := syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-	if err != nil {
+	if err := syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1); err != nil {
 		return os.NewSyscallError("setsockopt", err)
 	}
 	// Allow reuse of recently-used ports.
@@ -54,10 +38,7 @@ func setDefaultMulticastSockopts(s int) error {
 	// to make an effective multicast application that requires
 	// quick draw possible.
 	if syscall.SO_REUSEPORT != 0 {
-		err = syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEPORT, 1)
-		if err != nil {
-			return os.NewSyscallError("setsockopt", err)
-		}
+		return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEPORT, 1))
 	}
 	return nil
 }

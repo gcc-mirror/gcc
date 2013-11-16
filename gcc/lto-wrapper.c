@@ -409,6 +409,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:
+	case OPT_fnon_call_exceptions:
 	case OPT_fgnu_tm:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
@@ -573,6 +574,7 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:
+	case OPT_fnon_call_exceptions:
 	case OPT_fgnu_tm:
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:

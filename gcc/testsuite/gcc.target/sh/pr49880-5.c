@@ -1,6 +1,6 @@
 /* Check that the option -mdiv=call-fp results in the corresponding library
    function calls on targets that have a double precision FPU.  */
-/* { dg-do compile { target "sh*-*-*" } }  */
+/* { dg-do compile }  */
 /* { dg-options "-mdiv=call-fp" }  */
 /* { dg-skip-if "" { "sh*-*-*" } { "*"} { "-m2a" "-m4" "-m4a" "*single-only" } }  */
 /* { dg-final { scan-assembler "sdivsi3_i4\n" } }  */

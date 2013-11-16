@@ -1,6 +1,6 @@
 /* Verify that the SH2A clips and clipu instructions are generated as
    expected.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "clips.b" 2 } } */

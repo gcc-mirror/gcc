@@ -42,4 +42,5 @@ public:
 };
 
 extern void register_jump_thread (vec <class jump_thread_edge *> *);
+extern void delete_jump_thread_path (vec <class jump_thread_edge *> *);
 #endif

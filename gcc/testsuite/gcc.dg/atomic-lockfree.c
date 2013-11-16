@@ -17,6 +17,7 @@ extern void abort();
 int r1, r2;
 
 /* Test for consistency on sizes 1, 2, 4, 8, 16 and 32.  */
+int
 main ()
 {
   

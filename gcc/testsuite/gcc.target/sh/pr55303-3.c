@@ -1,6 +1,6 @@
 /* Verify that the special case (umin (reg const_int 1)) results in the
    expected instruction sequence on SH2A.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "tst" 1 } } */

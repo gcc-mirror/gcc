@@ -4487,11 +4487,7 @@ selb\t%0,%4,%0,%3"
  ;; knows what to generate.
  (define_expand "doloop_end"
    [(use (match_operand 0 "" ""))      ; loop pseudo
-    (use (match_operand 1 "" ""))      ; iterations; zero if unknown
-    (use (match_operand 2 "" ""))      ; max iterations
-    (use (match_operand 3 "" ""))      ; loop level
-    (use (match_operand 4 "" ""))      ; label
-    (match_operand 5 "" "")]
+    (use (match_operand 1 "" ""))]     ; label
    ""
    "
  {
@@ -4507,16 +4503,13 @@ selb\t%0,%4,%0,%3"
      rtx bcomp;
      rtx loc_ref;
 
-     /* Only use this on innermost loops.  */
-     if (INTVAL (operands[3]) > 1)
-       FAIL;
      if (GET_MODE (operands[0]) != SImode)
        FAIL;
 
      s0 = operands [0];
      emit_move_insn (s0, gen_rtx_PLUS (SImode, s0, GEN_INT (-1)));
      bcomp = gen_rtx_NE(SImode, s0, const0_rtx);
-     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [4]);
+     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));

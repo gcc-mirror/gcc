@@ -1,3 +1,9 @@
+2013-11-06  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_post_options): If
+	-fisolate-erroneous-paths was turned on by an optimization option,
+	turn it off.
+
 2013-10-14  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::address_expression): New function.

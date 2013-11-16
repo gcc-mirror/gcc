@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not, see
 #include "timevar.h"		/* For TV_SCHED2, in picochip_reorg. */
 #include "libfuncs.h"		/* For memcpy_libfuncs, etc. */
 #include "df.h"			/* For df_regs_ever_live_df_regs_ever_live_pp, etc. */
+#include "dbxout.h"
 
 
 /* Target AE ISA information. */

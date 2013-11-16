@@ -46,7 +46,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"sync"
 	"syscall"
 	"time"
 )
@@ -160,7 +159,7 @@ func (c *conn) SetDeadline(t time.Time) error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return setDeadline(c.fd, t)
+	return c.fd.setDeadline(t)
 }
 
 // SetReadDeadline implements the Conn SetReadDeadline method.
@@ -168,7 +167,7 @@ func (c *conn) SetReadDeadline(t time.Time) error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return setReadDeadline(c.fd, t)
+	return c.fd.setReadDeadline(t)
 }
 
 // SetWriteDeadline implements the Conn SetWriteDeadline method.
@@ -176,7 +175,7 @@ func (c *conn) SetWriteDeadline(t time.Time) error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return setWriteDeadline(c.fd, t)
+	return c.fd.setWriteDeadline(t)
 }
 
 // SetReadBuffer sets the size of the operating system's
@@ -258,6 +257,8 @@ type PacketConn interface {
 	// some of the data was successfully written.
 	SetWriteDeadline(t time.Time) error
 }
+
+var listenerBacklog = maxListenerBacklog()
 
 // A Listener is a generic network listener for stream-oriented protocols.
 //
@@ -370,6 +371,12 @@ func (e UnknownNetworkError) Error() string   { return "unknown network " + stri
 func (e UnknownNetworkError) Temporary() bool { return false }
 func (e UnknownNetworkError) Timeout() bool   { return false }
 
+type InvalidAddrError string
+
+func (e InvalidAddrError) Error() string   { return string(e) }
+func (e InvalidAddrError) Timeout() bool   { return false }
+func (e InvalidAddrError) Temporary() bool { return false }
+
 // DNSConfigError represents an error reading the machine's DNS configuration.
 type DNSConfigError struct {
 	Err error
@@ -393,35 +400,22 @@ func genericReadFrom(w io.Writer, r io.Reader) (n int64, err error) {
 	return io.Copy(writerOnly{w}, r)
 }
 
-// deadline is an atomically-accessed number of nanoseconds since 1970
-// or 0, if no deadline is set.
-type deadline struct {
-	sync.Mutex
-	val int64
+// Limit the number of concurrent cgo-using goroutines, because
+// each will block an entire operating system thread. The usual culprit
+// is resolving many DNS names in separate goroutines but the DNS
+// server is not responding. Then the many lookups each use a different
+// thread, and the system or the program runs out of threads.
+
+var threadLimit = make(chan struct{}, 500)
+
+// Using send for acquire is fine here because we are not using this
+// to protect any memory. All we care about is the number of goroutines
+// making calls at a time.
+
+func acquireThread() {
+	threadLimit <- struct{}{}
 }
 
-func (d *deadline) expired() bool {
-	t := d.value()
-	return t > 0 && time.Now().UnixNano() >= t
-}
-
-func (d *deadline) value() (v int64) {
-	d.Lock()
-	v = d.val
-	d.Unlock()
-	return
-}
-
-func (d *deadline) set(v int64) {
-	d.Lock()
-	d.val = v
-	d.Unlock()
-}
-
-func (d *deadline) setTime(t time.Time) {
-	if t.IsZero() {
-		d.set(0)
-	} else {
-		d.set(t.UnixNano())
-	}
+func releaseThread() {
+	<-threadLimit
 }

@@ -1833,8 +1833,9 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_P4_NOCONA (m_PENT4 | m_NOCONA)
 #define m_CORE2 (1<<PROCESSOR_CORE2)
 #define m_COREI7 (1<<PROCESSOR_COREI7)
+#define m_COREI7_AVX (1<<PROCESSOR_COREI7_AVX)
 #define m_HASWELL (1<<PROCESSOR_HASWELL)
-#define m_CORE_ALL (m_CORE2 | m_COREI7  | m_HASWELL)
+#define m_CORE_ALL (m_CORE2 | m_COREI7  | m_COREI7_AVX | m_HASWELL)
 #define m_ATOM (1<<PROCESSOR_ATOM)
 #define m_SLM (1<<PROCESSOR_SLM)
 
@@ -2299,6 +2300,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&core_cost, 16, 10, 16, 10, 16},
   /* Core i7  */
   {&core_cost, 16, 10, 16, 10, 16},
+  /* Core i7 avx  */
+  {&core_cost, 16, 10, 16, 10, 16},
   /* Core avx2  */
   {&core_cost, 16, 10, 16, 10, 16},
   {&generic_cost, 16, 10, 16, 10, 16},
@@ -2328,6 +2331,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "nocona",
   "core2",
   "corei7",
+  "corei7-avx",
   "core-avx2",
   "atom",
   "slm",
@@ -3016,12 +3020,12 @@ ix86_option_override_internal (bool main_args_p,
       {"corei7", PROCESSOR_COREI7, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
 	| PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_POPCNT | PTA_FXSR},
-      {"corei7-avx", PROCESSOR_COREI7, CPU_COREI7,
+      {"corei7-avx", PROCESSOR_COREI7_AVX, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL
 	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
-      {"core-avx-i", PROCESSOR_COREI7, CPU_COREI7,
+      {"core-avx-i", PROCESSOR_COREI7_AVX, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
@@ -10668,8 +10672,12 @@ ix86_expand_prologue (void)
 
       if (STACK_CHECK_MOVING_SP)
 	{
-	  ix86_adjust_stack_and_probe (allocate);
-	  allocate = 0;
+	  if (!(crtl->is_leaf && !cfun->calls_alloca
+		&& allocate <= PROBE_INTERVAL))
+	    {
+	      ix86_adjust_stack_and_probe (allocate);
+	      allocate = 0;
+	    }
 	}
       else
 	{
@@ -10679,9 +10687,26 @@ ix86_expand_prologue (void)
 	    size = 0x80000000 - STACK_CHECK_PROTECT - 1;
 
 	  if (TARGET_STACK_PROBE)
-	    ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+	    {
+	      if (crtl->is_leaf && !cfun->calls_alloca)
+		{
+		  if (size > PROBE_INTERVAL)
+		    ix86_emit_probe_stack_range (0, size);
+		}
+	      else
+		ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+	    }
 	  else
-	    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	    {
+	      if (crtl->is_leaf && !cfun->calls_alloca)
+		{
+		  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+		    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT,
+						 size - STACK_CHECK_PROTECT);
+		}
+	      else
+		ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	    }
 	}
     }
 
@@ -15698,7 +15723,7 @@ ix86_avx_u128_mode_needed (rtx insn)
 	      rtx arg = XEXP (XEXP (link, 0), 0);
 
 	      if (ix86_check_avx256_register (&arg, NULL))
-		return AVX_U128_ANY;
+		return AVX_U128_DIRTY;
 	    }
 	}
 
@@ -15818,8 +15843,8 @@ ix86_avx_u128_mode_after (int mode, rtx insn)
     {
       bool avx_reg256_found = false;
       note_stores (pat, ix86_check_avx256_stores, &avx_reg256_found);
-      if (!avx_reg256_found)
-	return AVX_U128_CLEAN;
+
+      return avx_reg256_found ? AVX_U128_DIRTY : AVX_U128_CLEAN;
     }
 
   /* Otherwise, return current mode.  Remember that if insn
@@ -17353,6 +17378,14 @@ ix86_split_idivmod (enum machine_mode mode, rtx operands[],
   set_unique_reg_note (insn, REG_EQUAL, div);
 
   emit_label (end_label);
+}
+
+/* Whether it is OK to emit CFI directives when emitting asm code.  */
+
+bool
+ix86_emit_cfi ()
+{
+  return dwarf2out_do_cfi_asm ();
 }
 
 #define LEA_MAX_STALL (3)
@@ -23778,7 +23811,6 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (misaligned_prologue_used)
     {
       /* Misaligned move prologue handled small blocks by itself.  */
-      misaligned_prologue_used = true;
       expand_set_or_movmem_prologue_epilogue_by_misaligned_moves
 	   (dst, src, &destreg, &srcreg,
 	    move_mode, promoted_val, vec_promoted_val,
@@ -24534,6 +24566,42 @@ ix86_instantiate_decls (void)
       instantiate_decl_rtl (s->rtl);
 }
 
+/* Check whether x86 address PARTS is a pc-relative address.  */
+
+static bool
+rip_relative_addr_p (struct ix86_address *parts)
+{
+  rtx base, index, disp;
+
+  base = parts->base;
+  index = parts->index;
+  disp = parts->disp;
+
+  if (disp && !base && !index)
+    {
+      if (TARGET_64BIT)
+	{
+	  rtx symbol = disp;
+
+	  if (GET_CODE (disp) == CONST)
+	    symbol = XEXP (disp, 0);
+	  if (GET_CODE (symbol) == PLUS
+	      && CONST_INT_P (XEXP (symbol, 1)))
+	    symbol = XEXP (symbol, 0);
+
+	  if (GET_CODE (symbol) == LABEL_REF
+	      || (GET_CODE (symbol) == SYMBOL_REF
+		  && SYMBOL_REF_TLS_MODEL (symbol) == 0)
+	      || (GET_CODE (symbol) == UNSPEC
+		  && (XINT (symbol, 1) == UNSPEC_GOTPCREL
+		      || XINT (symbol, 1) == UNSPEC_PCREL
+		      || XINT (symbol, 1) == UNSPEC_GOTNTPOFF)))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Calculate the length of the memory address in the instruction encoding.
    Includes addr32 prefix, does not include the one-byte modrm, opcode,
    or other prefixes.  We never generate addr32 prefix for LEA insn.  */
@@ -24605,25 +24673,8 @@ memory_address_length (rtx addr, bool lea)
   else if (disp && !base && !index)
     {
       len += 4;
-      if (TARGET_64BIT)
-	{
-	  rtx symbol = disp;
-
-	  if (GET_CODE (disp) == CONST)
-	    symbol = XEXP (disp, 0);
-	  if (GET_CODE (symbol) == PLUS
-	      && CONST_INT_P (XEXP (symbol, 1)))
-	    symbol = XEXP (symbol, 0);
-
-	  if (GET_CODE (symbol) != LABEL_REF
-	      && (GET_CODE (symbol) != SYMBOL_REF
-		  || SYMBOL_REF_TLS_MODEL (symbol) != 0)
-	      && (GET_CODE (symbol) != UNSPEC
-		  || (XINT (symbol, 1) != UNSPEC_GOTPCREL
-		      && XINT (symbol, 1) != UNSPEC_PCREL
-		      && XINT (symbol, 1) != UNSPEC_GOTNTPOFF)))
-	    len++;
-	}
+      if (rip_relative_addr_p (&parts))
+	len++;
     }
   else
     {
@@ -24814,14 +24865,15 @@ ix86_issue_rate (void)
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_GENERIC:
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
       return 3;
 
+    case PROCESSOR_BDVER1:
+    case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_COREI7_AVX:
     case PROCESSOR_HASWELL:
       return 4;
 
@@ -25118,6 +25170,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_COREI7_AVX:
     case PROCESSOR_HASWELL:
       memory = get_attr_memory (insn);
 
@@ -25194,8 +25247,16 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_K6:
       return 1;
 
+    case PROCESSOR_BDVER1:
+    case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
+      /* We use lookahead value 4 for BD both before and after reload
+	 schedules. Plan is to have value 8 included for O3. */
+        return 4;
+
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_COREI7_AVX:
     case PROCESSOR_HASWELL:
     case PROCESSOR_ATOM:
     case PROCESSOR_SLM:
@@ -25210,6 +25271,119 @@ ia32_multipass_dfa_lookahead (void)
     default:
       return 0;
     }
+}
+
+/* Return true if target platform supports macro-fusion.  */
+
+static bool
+ix86_macro_fusion_p ()
+{
+  return TARGET_FUSE_CMP_AND_BRANCH;
+}
+
+/* Check whether current microarchitecture support macro fusion
+   for insn pair "CONDGEN + CONDJMP". Refer to
+   "Intel Architectures Optimization Reference Manual". */
+
+static bool
+ix86_macro_fusion_pair_p (rtx condgen, rtx condjmp)
+{
+  rtx src, dest;
+  rtx single_set = single_set (condgen);
+  enum rtx_code ccode;
+  rtx compare_set = NULL_RTX, test_if, cond;
+  rtx alu_set = NULL_RTX, addr = NULL_RTX;
+
+  if (get_attr_type (condgen) != TYPE_TEST
+      && get_attr_type (condgen) != TYPE_ICMP
+      && get_attr_type (condgen) != TYPE_INCDEC
+      && get_attr_type (condgen) != TYPE_ALU)
+    return false;
+
+  if (single_set == NULL_RTX
+      && !TARGET_FUSE_ALU_AND_BRANCH)
+    return false;
+
+  if (single_set != NULL_RTX)
+    compare_set = single_set;
+  else
+    {
+      int i;
+      rtx pat = PATTERN (condgen);
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
+	  {
+	    rtx set_src = SET_SRC (XVECEXP (pat, 0, i));
+	    if (GET_CODE (set_src) == COMPARE)
+	      compare_set = XVECEXP (pat, 0, i);
+	    else
+	      alu_set = XVECEXP (pat, 0, i);
+	  }
+    }
+  if (compare_set == NULL_RTX)
+    return false;
+  src = SET_SRC (compare_set);
+  if (GET_CODE (src) != COMPARE)
+    return false;
+
+  /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
+     supported.  */
+  if ((MEM_P (XEXP (src, 0))
+       && CONST_INT_P (XEXP (src, 1)))
+      || (MEM_P (XEXP (src, 1))
+	  && CONST_INT_P (XEXP (src, 0))))
+    return false;
+
+  /* No fusion for RIP-relative address.  */
+  if (MEM_P (XEXP (src, 0)))
+    addr = XEXP (XEXP (src, 0), 0);
+  else if (MEM_P (XEXP (src, 1)))
+    addr = XEXP (XEXP (src, 1), 0);
+
+  if (addr) {
+    ix86_address parts;
+    int ok = ix86_decompose_address (addr, &parts);
+    gcc_assert (ok);
+
+    if (rip_relative_addr_p (&parts))
+      return false;
+  }
+
+  test_if = SET_SRC (pc_set (condjmp));
+  cond = XEXP (test_if, 0);
+  ccode = GET_CODE (cond);
+  /* Check whether conditional jump use Sign or Overflow Flags.  */
+  if (!TARGET_FUSE_CMP_AND_BRANCH_SOFLAGS
+      && (ccode == GE
+          || ccode == GT
+	  || ccode == LE
+	  || ccode == LT))
+    return false;
+
+  /* Return true for TYPE_TEST and TYPE_ICMP.  */
+  if (get_attr_type (condgen) == TYPE_TEST
+      || get_attr_type (condgen) == TYPE_ICMP)
+    return true;
+
+  /* The following is the case that macro-fusion for alu + jmp.  */
+  if (!TARGET_FUSE_ALU_AND_BRANCH || !alu_set)
+    return false;
+
+  /* No fusion for alu op with memory destination operand.  */
+  dest = SET_DEST (alu_set);
+  if (MEM_P (dest))
+    return false;
+
+  /* Macro-fusion for inc/dec + unsigned conditional jump is not
+     supported.  */
+  if (get_attr_type (condgen) == TYPE_INCDEC
+      && (ccode == GEU
+	  || ccode == GTU
+	  || ccode == LEU
+	  || ccode == LTU))
+    return false;
+
+  return true;
 }
 
 /* Try to reorder ready list to take advantage of Atom pipelined IMUL
@@ -25836,6 +26010,7 @@ ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_COREI7_AVX:
     case PROCESSOR_HASWELL:
       /* Do not perform multipass scheduling for pre-reload schedule
          to save compile time.  */
@@ -26833,6 +27008,11 @@ enum ix86_builtins
   IX86_BUILTIN_LFENCE,
   IX86_BUILTIN_PAUSE,
 
+  IX86_BUILTIN_FNSTENV,
+  IX86_BUILTIN_FLDENV,
+  IX86_BUILTIN_FNSTSW,
+  IX86_BUILTIN_FNCLEX,
+
   IX86_BUILTIN_BSRSI,
   IX86_BUILTIN_BSRDI,
   IX86_BUILTIN_RDPMC,
@@ -27808,6 +27988,12 @@ static const struct builtin_description bdesc_special_args[] =
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  /* 80387 (for use internally for atomic compound assignment).  */
+  { 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { 0, CODE_FOR_fldenv, "__builtin_ia32_fldenv", IX86_BUILTIN_FLDENV, UNKNOWN, (int) VOID_FTYPE_PCVOID },
+  { 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) VOID_FTYPE_PUSHORT },
+  { 0, CODE_FOR_fnclex, "__builtin_ia32_fnclex", IX86_BUILTIN_FNCLEX, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
   { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
@@ -29687,6 +29873,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "corei7";
 	      priority = P_PROC_SSE4_2;
 	      break;
+            case PROCESSOR_COREI7_AVX:
+              arg_str = "corei7-avx";
+              priority = P_PROC_SSE4_2;
+              break;
 	    case PROCESSOR_ATOM:
 	      arg_str = "atom";
 	      priority = P_PROC_SSSE3;
@@ -32766,6 +32956,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_FXRSTOR:
     case IX86_BUILTIN_FXSAVE64:
     case IX86_BUILTIN_FXRSTOR64:
+    case IX86_BUILTIN_FNSTENV:
+    case IX86_BUILTIN_FLDENV:
+    case IX86_BUILTIN_FNSTSW:
+      mode0 = BLKmode;
       switch (fcode)
 	{
 	case IX86_BUILTIN_FXSAVE:
@@ -32780,6 +32974,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	case IX86_BUILTIN_FXRSTOR64:
 	  icode = CODE_FOR_fxrstor64;
 	  break;
+	case IX86_BUILTIN_FNSTENV:
+	  icode = CODE_FOR_fnstenv;
+	  break;
+	case IX86_BUILTIN_FLDENV:
+	  icode = CODE_FOR_fldenv;
+	  break;
+	case IX86_BUILTIN_FNSTSW:
+	  icode = CODE_FOR_fnstsw;
+	  mode0 = HImode;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -32792,7 +32996,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  op0 = convert_memory_address (Pmode, op0);
 	  op0 = copy_addr_to_reg (op0);
 	}
-      op0 = gen_rtx_MEM (BLKmode, op0);
+      op0 = gen_rtx_MEM (mode0, op0);
 
       pat = GEN_FCN (icode) (op0);
       if (pat)
@@ -43390,6 +43594,115 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   return val;
 }
 
+/* Implement TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P.  */
+
+static bool
+ix86_float_exceptions_rounding_supported_p (void)
+{
+  /* For x87 floating point with standard excess precision handling,
+     there is no adddf3 pattern (since x87 floating point only has
+     XFmode operations) so the default hook implementation gets this
+     wrong.  */
+  return TARGET_80387 || TARGET_SSE_MATH;
+}
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  if (!TARGET_80387 && !TARGET_SSE_MATH)
+    return;
+  tree exceptions_var = create_tmp_var (integer_type_node, NULL);
+  if (TARGET_80387)
+    {
+      tree fenv_index_type = build_index_type (size_int (6));
+      tree fenv_type = build_array_type (unsigned_type_node, fenv_index_type);
+      tree fenv_var = create_tmp_var (fenv_type, NULL);
+      mark_addressable (fenv_var);
+      tree fenv_ptr = build_pointer_type (fenv_type);
+      tree fenv_addr = build1 (ADDR_EXPR, fenv_ptr, fenv_var);
+      fenv_addr = fold_convert (ptr_type_node, fenv_addr);
+      tree fnstenv = ix86_builtins[IX86_BUILTIN_FNSTENV];
+      tree fldenv = ix86_builtins[IX86_BUILTIN_FLDENV];
+      tree fnstsw = ix86_builtins[IX86_BUILTIN_FNSTSW];
+      tree fnclex = ix86_builtins[IX86_BUILTIN_FNCLEX];
+      tree hold_fnstenv = build_call_expr (fnstenv, 1, fenv_addr);
+      tree hold_fnclex = build_call_expr (fnclex, 0);
+      *hold = build2 (COMPOUND_EXPR, void_type_node, hold_fnstenv,
+		      hold_fnclex);
+      *clear = build_call_expr (fnclex, 0);
+      tree sw_var = create_tmp_var (short_unsigned_type_node, NULL);
+      mark_addressable (sw_var);
+      tree su_ptr = build_pointer_type (short_unsigned_type_node);
+      tree sw_addr = build1 (ADDR_EXPR, su_ptr, sw_var);
+      tree fnstsw_call = build_call_expr (fnstsw, 1, sw_addr);
+      tree exceptions_x87 = fold_convert (integer_type_node, sw_var);
+      tree update_mod = build2 (MODIFY_EXPR, integer_type_node,
+				exceptions_var, exceptions_x87);
+      *update = build2 (COMPOUND_EXPR, integer_type_node,
+			fnstsw_call, update_mod);
+      tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
+      *update = build2 (COMPOUND_EXPR, void_type_node, *update, update_fldenv);
+    }
+  if (TARGET_SSE_MATH)
+    {
+      tree mxcsr_orig_var = create_tmp_var (unsigned_type_node, NULL);
+      tree mxcsr_mod_var = create_tmp_var (unsigned_type_node, NULL);
+      tree stmxcsr = ix86_builtins[IX86_BUILTIN_STMXCSR];
+      tree ldmxcsr = ix86_builtins[IX86_BUILTIN_LDMXCSR];
+      tree stmxcsr_hold_call = build_call_expr (stmxcsr, 0);
+      tree hold_assign_orig = build2 (MODIFY_EXPR, unsigned_type_node,
+				      mxcsr_orig_var, stmxcsr_hold_call);
+      tree hold_mod_val = build2 (BIT_IOR_EXPR, unsigned_type_node,
+				  mxcsr_orig_var,
+				  build_int_cst (unsigned_type_node, 0x1f80));
+      hold_mod_val = build2 (BIT_AND_EXPR, unsigned_type_node, hold_mod_val,
+			     build_int_cst (unsigned_type_node, 0xffffffc0));
+      tree hold_assign_mod = build2 (MODIFY_EXPR, unsigned_type_node,
+				     mxcsr_mod_var, hold_mod_val);
+      tree ldmxcsr_hold_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
+      tree hold_all = build2 (COMPOUND_EXPR, unsigned_type_node,
+			      hold_assign_orig, hold_assign_mod);
+      hold_all = build2 (COMPOUND_EXPR, void_type_node, hold_all,
+			 ldmxcsr_hold_call);
+      if (*hold)
+	*hold = build2 (COMPOUND_EXPR, void_type_node, *hold, hold_all);
+      else
+	*hold = hold_all;
+      tree ldmxcsr_clear_call = build_call_expr (ldmxcsr, 1, mxcsr_mod_var);
+      if (*clear)
+	*clear = build2 (COMPOUND_EXPR, void_type_node, *clear,
+			 ldmxcsr_clear_call);
+      else
+	*clear = ldmxcsr_clear_call;
+      tree stxmcsr_update_call = build_call_expr (stmxcsr, 0);
+      tree exceptions_sse = fold_convert (integer_type_node,
+					  stxmcsr_update_call);
+      if (*update)
+	{
+	  tree exceptions_mod = build2 (BIT_IOR_EXPR, integer_type_node,
+					exceptions_var, exceptions_sse);
+	  tree exceptions_assign = build2 (MODIFY_EXPR, integer_type_node,
+					   exceptions_var, exceptions_mod);
+	  *update = build2 (COMPOUND_EXPR, integer_type_node, *update,
+			    exceptions_assign);
+	}
+      else
+	*update = build2 (MODIFY_EXPR, integer_type_node,
+			  exceptions_var, exceptions_sse);
+      tree ldmxcsr_update_call = build_call_expr (ldmxcsr, 1, mxcsr_orig_var);
+      *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+			ldmxcsr_update_call);
+    }
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept,
+						    1, exceptions_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    atomic_feraiseexcept_call);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
@@ -43490,12 +43803,19 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   ia32_multipass_dfa_lookahead
+#undef TARGET_SCHED_MACRO_FUSION_P
+#define TARGET_SCHED_MACRO_FUSION_P ix86_macro_fusion_p
+#undef TARGET_SCHED_MACRO_FUSION_PAIR_P
+#define TARGET_SCHED_MACRO_FUSION_PAIR_P ix86_macro_fusion_pair_p
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall
 
 #undef TARGET_MEMMODEL_CHECK
 #define TARGET_MEMMODEL_CHECK ix86_memmodel_check
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV ix86_atomic_assign_expand_fenv
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -43761,6 +44081,10 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
+
+#undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
+#define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \
+  ix86_float_exceptions_rounding_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

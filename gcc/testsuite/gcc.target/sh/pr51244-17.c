@@ -1,6 +1,6 @@
 /* Check that no unnecessary zero extensions are done on values that are
    results of arithmetic with T bit inputs.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "extu|exts" } } */

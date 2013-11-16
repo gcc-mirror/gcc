@@ -874,11 +874,6 @@ fbounds-check
 Common Report Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays
 
-fcheck-pointer-bounds
-Common Report Var(flag_check_pointer_bounds)
-Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
-control instrumentation.  Currently available for C, C++ and ObjC.
-
 fbranch-count-reg
 Common Report Var(flag_branch_on_count_reg) Init(1) Optimization
 Replace add, compare, branch with branch on count register
@@ -1738,6 +1733,10 @@ fregmove
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
+flive-range-shrinkage
+Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
+Relief of register pressure through live range shrinkage
+
 frename-registers
 Common Report Var(flag_rename_registers) Init(2) Optimization
 Perform a register renaming optimization pass
@@ -2108,6 +2107,12 @@ Enable Full Redundancy Elimination (FRE) on trees
 foptimize-strlen
 Common Report Var(flag_optimize_strlen) Optimization
 Enable string length optimizations on trees
+
+fisolate-erroneous-paths
+Common Report Var(flag_isolate_erroneous_paths) Optimization
+Detect paths which trigger erroneous or undefined behaviour.  Isolate those
+paths from the main control flow and turn the statement with erroneous or
+undefined behaviour into a trap.
 
 ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization

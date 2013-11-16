@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd
 
 // Socket control messages
 
@@ -18,7 +18,7 @@ func cmsgAlignOf(salen int) int {
 	salign := int(sizeofPtr)
 	// NOTE: It seems like 64-bit Darwin kernel still requires 32-bit
 	// aligned access to BSD subsystem.
-	if darwinAMD64 {
+	if darwin64Bit {
 		salign = 4
 	}
 	// NOTE: Solaris always uses 32-bit alignment,

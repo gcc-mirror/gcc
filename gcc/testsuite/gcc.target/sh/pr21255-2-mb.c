@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-mb -O2 -fomit-frame-pointer" } */
 /* { dg-final { scan-assembler "mov @r.,r.; mov @\\(4,r.\\),r." } } */
 double d;

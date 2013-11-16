@@ -892,8 +892,8 @@ static inline bool
 range_int_cst_singleton_p (value_range_t *vr)
 {
   return (range_int_cst_p (vr)
-	  && !TREE_OVERFLOW (vr->min)
-	  && !TREE_OVERFLOW (vr->max)
+	  && !is_overflow_infinity (vr->min)
+	  && !is_overflow_infinity (vr->max)
 	  && tree_int_cst_equal (vr->min, vr->max));
 }
 
@@ -1464,24 +1464,6 @@ value_range_nonnegative_p (value_range_t *vr)
   return false;
 }
 
-/* Return true if T, an SSA_NAME, is known to be nonnegative.  Return
-   false otherwise or if no value range information is available.  */
-
-bool
-ssa_name_nonnegative_p (const_tree t)
-{
-  value_range_t *vr = get_value_range (t);
-
-  if (INTEGRAL_TYPE_P (t)
-      && TYPE_UNSIGNED (t))
-    return true;
-
-  if (!vr)
-    return false;
-
-  return value_range_nonnegative_p (vr);
-}
-
 /* If *VR has a value rante that is a single constant value return that,
    otherwise return NULL_TREE.  */
 
@@ -1741,7 +1723,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == LT_EXPR
 	   && compare_values (max, min) == 0)
-	  || (CONSTANT_CLASS_P (max) && TREE_OVERFLOW (max)))
+	  || is_overflow_infinity (max))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1781,7 +1763,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == GT_EXPR
 	   && compare_values (min, max) == 0)
-	  || (CONSTANT_CLASS_P (min) && TREE_OVERFLOW (min)))
+	  || is_overflow_infinity (min))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1998,8 +1980,8 @@ zero_nonzero_bits_from_vr (value_range_t *vr,
   *may_be_nonzero = double_int_minus_one;
   *must_be_nonzero = double_int_zero;
   if (!range_int_cst_p (vr)
-      || TREE_OVERFLOW (vr->min)
-      || TREE_OVERFLOW (vr->max))
+      || is_overflow_infinity (vr->min)
+      || is_overflow_infinity (vr->max))
     return false;
 
   if (range_int_cst_singleton_p (vr))
@@ -3623,13 +3605,13 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		maxi = tree_floor_log2 (vr0->max) + 1;
 	    }
 	  goto bitop_builtin;
@@ -3664,7 +3646,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->min) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1 - tree_floor_log2 (vr0->min);
 		  if (maxi != prec)
@@ -3672,7 +3654,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		}
 	      else if (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)
-		       && !TREE_OVERFLOW (vr0->min))
+		       && !is_overflow_infinity (vr0->min))
 		{
 		  maxi = prec - 1;
 		  mini = 0;
@@ -3683,7 +3665,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 result minimum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  mini = prec - 1 - tree_floor_log2 (vr0->max);
 		  if (mini == prec)
@@ -3726,7 +3708,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		    && integer_nonzerop (vr0->min))
 		   || (vr0->type == VR_ANTI_RANGE
 		       && integer_zerop (vr0->min)))
-		  && !TREE_OVERFLOW (vr0->min))
+		  && !is_overflow_infinity (vr0->min))
 		{
 		  mini = 0;
 		  maxi = prec - 1;
@@ -3735,7 +3717,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 		 we can decrease the result maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
-		  && !TREE_OVERFLOW (vr0->max))
+		  && !is_overflow_infinity (vr0->max))
 		{
 		  maxi = tree_floor_log2 (vr0->max);
 		  /* For vr0 [0, 0] give up.  */
@@ -4476,57 +4458,6 @@ fp_predicate (gimple stmt)
   return FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)));
 }
 
-
-/* If OP can be inferred to be non-zero after STMT executes, return true.  */
-
-static bool
-infer_nonnull_range (gimple stmt, tree op)
-{
-  /* We can only assume that a pointer dereference will yield
-     non-NULL if -fdelete-null-pointer-checks is enabled.  */
-  if (!flag_delete_null_pointer_checks
-      || !POINTER_TYPE_P (TREE_TYPE (op))
-      || gimple_code (stmt) == GIMPLE_ASM)
-    return false;
-
-  unsigned num_uses, num_loads, num_stores;
-
-  count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
-  if (num_loads + num_stores > 0)
-    return true;
-
-  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
-    {
-      tree fntype = gimple_call_fntype (stmt);
-      tree attrs = TYPE_ATTRIBUTES (fntype);
-      for (; attrs; attrs = TREE_CHAIN (attrs))
-	{
-	  attrs = lookup_attribute ("nonnull", attrs);
-
-	  /* If "nonnull" wasn't specified, we know nothing about
-	     the argument.  */
-	  if (attrs == NULL_TREE)
-	    return false;
-
-	  /* If "nonnull" applies to all the arguments, then ARG
-	     is non-null.  */
-	  if (TREE_VALUE (attrs) == NULL_TREE)
-	    return true;
-
-	  /* Now see if op appears in the nonnull list.  */
-	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
-	    {
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
-	      tree arg = gimple_call_arg (stmt, idx);
-	      if (op == arg)
-		return true;
-	    }
-	}
-    }
-
-  return false;
-}
-
 /* If the range of values taken by OP can be inferred after STMT executes,
    return the comparison code (COMP_CODE_P) and value (VAL_P) that
    describes the inferred range.  Return true if a range could be
@@ -4670,10 +4601,8 @@ register_new_assert_for (tree name, tree expr,
   /* Never build an assert comparing against an integer constant with
      TREE_OVERFLOW set.  This confuses our undefined overflow warning
      machinery.  */
-  if (TREE_CODE (val) == INTEGER_CST
-      && TREE_OVERFLOW (val))
-    val = build_int_cst_wide (TREE_TYPE (val),
-			      TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val));
+  if (TREE_OVERFLOW_P (val))
+    val = drop_tree_overflow (val);
 
   /* The new assertion A will be inserted at BB or E.  We need to
      determine if the new location is dominated by a previously
@@ -5957,6 +5886,34 @@ find_assert_locations (void)
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
 
+  /* Pre-seed loop latch liveness from loop header PHI nodes.  Due to
+     the order we compute liveness and insert asserts we otherwise
+     fail to insert asserts into the loop latch.  */
+  loop_p loop;
+  loop_iterator li;
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      i = loop->latch->index;
+      unsigned int j = single_succ_edge (loop->latch)->dest_idx;
+      for (gimple_stmt_iterator gsi = gsi_start_phis (loop->header);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
+	  tree arg = gimple_phi_arg_def (phi, j);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      if (live[i] == NULL)
+		{
+		  live[i] = sbitmap_alloc (num_ssa_names);
+		  bitmap_clear (live[i]);
+		}
+	      bitmap_set_bit (live[i], SSA_NAME_VERSION (arg));
+	    }
+	}
+    }
+
   need_asserts = false;
   for (i = rpo_cnt - 1; i >= 0; --i)
     {
@@ -6472,13 +6429,14 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     if (USE_STMT (use_p) != stmt)
       {
-	gimple use_stmt = USE_STMT (use_p);
+	gimple use_stmt = USE_STMT (use_p), use_stmt2;
 	if (is_gimple_debug (use_stmt))
 	  continue;
 	while (is_gimple_assign (use_stmt)
+	       && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
 	       && single_imm_use (gimple_assign_lhs (use_stmt),
-				  &use2_p, &use_stmt))
-	  ;
+				  &use2_p, &use_stmt2))
+	  use_stmt = use_stmt2;
 	if (gimple_code (use_stmt) != GIMPLE_COND
 	    || gimple_bb (use_stmt) != cond_bb)
 	  return false;
@@ -8370,10 +8328,7 @@ vrp_visit_phi_node (gimple phi)
 	  else
 	    {
 	      if (is_overflow_infinity (arg))
-		{
-		  arg = copy_node (arg);
-		  TREE_OVERFLOW (arg) = 0;
-		}
+		arg = drop_tree_overflow (arg);
 
 	      vr_arg.type = VR_RANGE;
 	      vr_arg.min = arg;

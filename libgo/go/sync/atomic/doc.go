@@ -13,6 +13,13 @@
 // Share memory by communicating;
 // don't communicate by sharing memory.
 //
+// The swap operation, implemented by the SwapT functions, is the atomic
+// equivalent of:
+//
+//	old = *addr
+//	*addr = new
+//	return old
+//
 // The compare-and-swap operation, implemented by the CompareAndSwapT
 // functions, is the atomic equivalent of:
 //
@@ -40,10 +47,30 @@ import (
 
 // BUG(rsc): On x86-32, the 64-bit functions use instructions unavailable before the Pentium MMX.
 //
+// On non-Linux ARM, the 64-bit functions use instructions unavailable before the ARMv6k core.
+//
 // On both ARM and x86-32, it is the caller's responsibility to arrange for 64-bit
 // alignment of 64-bit words accessed atomically. The first word in a global
 // variable or in an allocated struct or slice can be relied upon to be
 // 64-bit aligned.
+
+// SwapInt32 atomically stores new into *addr and returns the previous *addr value.
+func SwapInt32(addr *int32, new int32) (old int32)
+
+// SwapInt64 atomically stores new into *addr and returns the previous *addr value.
+func SwapInt64(addr *int64, new int64) (old int64)
+
+// SwapUint32 atomically stores new into *addr and returns the previous *addr value.
+func SwapUint32(addr *uint32, new uint32) (old uint32)
+
+// SwapUint64 atomically stores new into *addr and returns the previous *addr value.
+func SwapUint64(addr *uint64, new uint64) (old uint64)
+
+// SwapUintptr atomically stores new into *addr and returns the previous *addr value.
+func SwapUintptr(addr *uintptr, new uintptr) (old uintptr)
+
+// SwapPointer atomically stores new into *addr and returns the previous *addr value.
+func SwapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer)
 
 // CompareAndSwapInt32 executes the compare-and-swap operation for an int32 value.
 func CompareAndSwapInt32(addr *int32, old, new int32) (swapped bool)
@@ -67,12 +94,16 @@ func CompareAndSwapPointer(addr *unsafe.Pointer, old, new unsafe.Pointer) (swapp
 func AddInt32(addr *int32, delta int32) (new int32)
 
 // AddUint32 atomically adds delta to *addr and returns the new value.
+// To subtract a signed positive constant value c from x, do AddUint32(&x, ^uint32(c-1)).
+// In particular, to decrement x, do AddUint32(&x, ^uint32(0)).
 func AddUint32(addr *uint32, delta uint32) (new uint32)
 
 // AddInt64 atomically adds delta to *addr and returns the new value.
 func AddInt64(addr *int64, delta int64) (new int64)
 
 // AddUint64 atomically adds delta to *addr and returns the new value.
+// To subtract a signed positive constant value c from x, do AddUint64(&x, ^uint64(c-1)).
+// In particular, to decrement x, do AddUint64(&x, ^uint64(0)).
 func AddUint64(addr *uint64, delta uint64) (new uint64)
 
 // AddUintptr atomically adds delta to *addr and returns the new value.

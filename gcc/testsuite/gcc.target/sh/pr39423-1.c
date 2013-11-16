@@ -1,6 +1,6 @@
 /* Check that displacement addressing is used for indexed addresses with a
    small offset, instead of re-calculating the index.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-not "add\t#1" } } */

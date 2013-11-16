@@ -95,13 +95,11 @@ static bool arm_print_operand_punct_valid_p (unsigned char code);
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
 static HOST_WIDE_INT int_log2 (HOST_WIDE_INT);
-static rtx is_jump_table (rtx);
 static const char *output_multi_immediate (rtx *, const char *, const char *,
 					   int, HOST_WIDE_INT);
 static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
 static void thumb_exit (FILE *, int);
-static rtx is_jump_table (rtx);
 static HOST_WIDE_INT get_jump_table_size (rtx);
 static Mnode *move_minipool_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
 static Mnode *add_minipool_forward_ref (Mfix *);
@@ -669,6 +667,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef MAX_INSN_PER_IT_BLOCK
 #define MAX_INSN_PER_IT_BLOCK (arm_restrict_it ? 1 : 4)
 
+#undef TARGET_CAN_USE_DOLOOP_P
+#define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9967,6 +9967,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  *cost = 0;
 	  return true;
 	}
+      break;
 
     case ABS:
       if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -15468,23 +15469,6 @@ Mfix * 		minipool_fix_tail;
 /* The fix entry for the current minipool, once it has been placed.  */
 Mfix *		minipool_barrier;
 
-/* Determines if INSN is the start of a jump table.  Returns the end
-   of the TABLE or NULL_RTX.  */
-static rtx
-is_jump_table (rtx insn)
-{
-  rtx table;
-
-  if (jump_to_label_p (insn)
-      && ((table = next_active_insn (JUMP_LABEL (insn)))
-	  == next_active_insn (insn))
-      && table != NULL
-      && JUMP_TABLE_DATA_P (table))
-    return table;
-
-  return NULL_RTX;
-}
-
 #ifndef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #endif
@@ -16093,8 +16077,7 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 	count += get_attr_length (from);
 
       /* If there is a jump table, add its length.  */
-      tmp = is_jump_table (from);
-      if (tmp != NULL)
+      if (tablejump_p (from, NULL, &tmp))
 	{
 	  count += get_jump_table_size (tmp);
 
@@ -16700,7 +16683,7 @@ arm_reorg (void)
 
 	  /* If the insn is a vector jump, add the size of the table
 	     and skip the table.  */
-	  if ((table = is_jump_table (insn)) != NULL)
+	  if (tablejump_p (insn, NULL, &table))
 	    {
 	      address += get_jump_table_size (table);
 	      insn = table;
@@ -28610,7 +28593,7 @@ arm_output_iwmmxt_tinsr (rtx *operands)
 const char *
 thumb1_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (next_active_insn (operands[0]));
+  rtx diff_vec = PATTERN (NEXT_INSN (operands[0]));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
@@ -28633,7 +28616,7 @@ thumb1_output_casesi (rtx *operands)
 const char *
 thumb2_output_casesi (rtx *operands)
 {
-  rtx diff_vec = PATTERN (next_active_insn (operands[2]));
+  rtx diff_vec = PATTERN (NEXT_INSN (operands[2]));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 

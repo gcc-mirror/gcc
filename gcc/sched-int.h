@@ -1333,6 +1333,8 @@ extern void debug_ds (ds_t);
 
 
 /* Functions in haifa-sched.c.  */
+extern void initialize_live_range_shrinkage (void);
+extern void finish_live_range_shrinkage (void);
 extern void sched_init_region_reg_pressure_info (void);
 extern int haifa_classify_insn (const_rtx);
 extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);

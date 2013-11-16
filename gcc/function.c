@@ -71,14 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 
-/* Some systems use __main in a way incompatible with its use in gcc, in these
-   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
-   give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither.  */
-#ifndef NAME__MAIN
-#define NAME__MAIN "__main"
-#endif
-
 /* Round a value to the lowest integer less than it that is a multiple of
    the required alignment.  Avoid using division in case the value is
    negative.  Assume the alignment is a power of two.  */
@@ -130,7 +122,6 @@ static bool contains (const_rtx, htab_t);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
-static void set_insn_locations (rtx, int) ATTRIBUTE_UNUSED;
 
 /* Stack of nested functions.  */
 /* Keep track of the cfun stack.  */
@@ -4655,51 +4646,6 @@ init_function_start (tree subr)
     warning (OPT_Waggregate_return, "function returns an aggregate");
 }
 
-
-void
-expand_main_function (void)
-{
-#if (defined(INVOKE__main)				\
-     || (!defined(HAS_INIT_SECTION)			\
-	 && !defined(INIT_SECTION_ASM_OP)		\
-	 && !defined(INIT_ARRAY_SECTION_ASM_OP)))
-  emit_library_call (init_one_libfunc (NAME__MAIN), LCT_NORMAL, VOIDmode, 0);
-#endif
-}
-
-/* Expand code to initialize the stack_protect_guard.  This is invoked at
-   the beginning of a function to be protected.  */
-
-#ifndef HAVE_stack_protect_set
-# define HAVE_stack_protect_set		0
-# define gen_stack_protect_set(x,y)	(gcc_unreachable (), NULL_RTX)
-#endif
-
-void
-stack_protect_prologue (void)
-{
-  tree guard_decl = targetm.stack_protect_guard ();
-  rtx x, y;
-
-  x = expand_normal (crtl->stack_protect_guard);
-  y = expand_normal (guard_decl);
-
-  /* Allow the target to copy from Y to X without leaking Y into a
-     register.  */
-  if (HAVE_stack_protect_set)
-    {
-      rtx insn = gen_stack_protect_set (x, y);
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return;
-	}
-    }
-
-  /* Otherwise do a straight move.  */
-  emit_move_insn (x, y);
-}
-
 /* Expand code to verify the stack_protect_guard.  This is invoked at
    the end of a function to be protected.  */
 
@@ -5015,6 +4961,19 @@ do_warn_unused_parameter (tree fn)
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)
 	&& !TREE_NO_WARNING (decl))
       warning (OPT_Wunused_parameter, "unused parameter %q+D", decl);
+}
+
+/* Set the location of the insn chain starting at INSN to LOC.  */
+
+static void
+set_insn_locations (rtx insn, int loc)
+{
+  while (insn != NULL_RTX)
+    {
+      if (INSN_P (insn))
+	INSN_LOCATION (insn) = loc;
+      insn = NEXT_INSN (insn);
+    }
 }
 
 /* Generate RTL for the end of the current function.  */
@@ -5344,18 +5303,6 @@ maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
   slot = htab_find_slot (hash, copy, INSERT);
   gcc_assert (*slot == NULL);
   *slot = copy;
-}
-
-/* Set the location of the insn chain starting at INSN to LOC.  */
-static void
-set_insn_locations (rtx insn, int loc)
-{
-  while (insn != NULL_RTX)
-    {
-      if (INSN_P (insn))
-	INSN_LOCATION (insn) = loc;
-      insn = NEXT_INSN (insn);
-    }
 }
 
 /* Determine if any INSNs in HASH are, or are part of, INSN.  Because

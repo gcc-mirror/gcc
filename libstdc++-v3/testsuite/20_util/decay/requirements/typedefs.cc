@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -19,38 +20,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdlib>
 #include <type_traits>
-#include <testsuite_hooks.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::decay;
   using std::is_same;
 
   // Positive tests.
   typedef decay<bool>::type     	test1_type;
-  VERIFY( (is_same<test1_type, bool>::value) );
+  static_assert( is_same<test1_type, bool>(), "decay<bool>" );
 
   // NB: DR 705.
   typedef decay<const int>::type  	test2_type;
-  VERIFY( (is_same<test2_type, int>::value) );
+  static_assert( is_same<test2_type, int>(), "decay<const int>" );
 
   typedef decay<int[4]>::type     	test3_type;
-  VERIFY( (is_same<test3_type, std::remove_extent<int[4]>::type*>::value) );
+  static_assert( is_same<test3_type, std::remove_extent<int[4]>::type*>(),
+                 "decay<int[4]>" );
 
   typedef void (fn_type) ();
   typedef decay<fn_type>::type  	test4_type;
-  VERIFY( (is_same<test4_type, std::add_pointer<fn_type>::type>::value) );
+  static_assert( is_same<test4_type, std::add_pointer<fn_type>::type>(),
+                 "decay<fn_type>" );
 
   typedef void (cfn_type) () const;
   typedef decay<cfn_type>::type  	test5_type;
-  VERIFY( (is_same<test5_type, cfn_type>::value) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert( is_same<test5_type, cfn_type>(), "decay<cfn_type>" );
 }

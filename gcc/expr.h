@@ -468,6 +468,9 @@ extern void do_pending_stack_adjust (void);
    a string constant.  */
 extern tree string_constant (tree, tree *);
 
+/* If X is a sum, return a new sum like X but lacking any constant terms.  */
+extern tree tree_expr_size (const_tree);
+
 /* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
 extern void jumpifnot (tree, rtx, int);
 extern void jumpifnot_1 (enum tree_code, tree, tree, rtx, int);

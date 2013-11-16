@@ -12,7 +12,7 @@
    not working as expected.  This test requires -O2 because the T bit stores
    in question will be eliminated in additional insn split passes after
    reload.  */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "movt|tst" } } */

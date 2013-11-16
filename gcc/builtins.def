@@ -213,6 +213,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef ATTR_MATHFN_FPROUNDING_STORE
 #define ATTR_MATHFN_FPROUNDING_STORE ATTR_NOTHROW_LEAF_LIST
 
+/* Define an attribute list for leaf functions that do not throw
+   exceptions normally, but may throw exceptions when using
+   -fnon-call-exceptions.  */
+#define ATTR_NOTHROWCALL_LEAF_LIST (flag_non_call_exceptions ? \
+	ATTR_LEAF_LIST : ATTR_NOTHROW_LEAF_LIST)
+
 /* Make sure 0 is not a legitimate builtin.  */
 DEF_BUILTIN_STUB(BUILT_IN_NONE, (const char *)0)
 

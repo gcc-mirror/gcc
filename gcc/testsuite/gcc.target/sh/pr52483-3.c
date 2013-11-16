@@ -1,6 +1,6 @@
 /* Check that loads/stores from/to volatile mems utilize indexed addressing
    modes and do not result in redundant sign/zero extensions. */
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "@\\(r0," 6 } } */

@@ -8244,6 +8244,7 @@ objc_push_parm (tree parm)
   c_apply_type_quals_to_decl
   ((TYPE_READONLY (TREE_TYPE (parm)) ? TYPE_QUAL_CONST : 0)
    | (TYPE_RESTRICT (TREE_TYPE (parm)) ? TYPE_QUAL_RESTRICT : 0)
+   | (TYPE_ATOMIC (TREE_TYPE (parm)) ? TYPE_QUAL_ATOMIC : 0)
    | (TYPE_VOLATILE (TREE_TYPE (parm)) ? TYPE_QUAL_VOLATILE : 0), parm);
 
   objc_parmlist = chainon (objc_parmlist, parm);

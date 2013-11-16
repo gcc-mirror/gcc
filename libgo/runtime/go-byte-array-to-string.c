@@ -16,7 +16,7 @@ __go_byte_array_to_string (const void* p, intgo len)
   String ret;
 
   bytes = (const unsigned char *) p;
-  retdata = runtime_mallocgc ((uintptr) len, FlagNoPointers, 1, 0);
+  retdata = runtime_mallocgc ((uintptr) len, 0, FlagNoScan);
   __builtin_memcpy (retdata, bytes, len);
   ret.str = retdata;
   ret.len = len;

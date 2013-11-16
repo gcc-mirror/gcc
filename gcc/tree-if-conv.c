@@ -1330,7 +1330,6 @@ predicate_scalar_phi (gimple phi, tree cond,
     }
 
   new_stmt = gimple_build_assign (res, rhs);
-  SSA_NAME_DEF_STMT (gimple_phi_result (phi)) = new_stmt;
   gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
   update_stmt (new_stmt);
 

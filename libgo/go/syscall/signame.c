@@ -31,7 +31,7 @@ Signame (intgo sig)
       s = buf;
     }
   len = __builtin_strlen (s);
-  data = runtime_mallocgc (len, FlagNoPointers, 0, 0);
+  data = runtime_mallocgc (len, 0, FlagNoScan);
   __builtin_memcpy (data, s, len);
   ret.str = data;
   ret.len = len;

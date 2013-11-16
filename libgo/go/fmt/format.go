@@ -24,8 +24,6 @@ const (
 var padZeroBytes = make([]byte, nByte)
 var padSpaceBytes = make([]byte, nByte)
 
-var newline = []byte{'\n'}
-
 func init() {
 	for i := 0; i < nByte; i++ {
 		padZeroBytes[i] = '0'
@@ -162,6 +160,11 @@ func (f *fmt) integer(a int64, base uint64, signedness bool, digits string) {
 	}
 
 	var buf []byte = f.intbuf[0:]
+	if f.widPresent && f.wid > nByte {
+		// We're going to need a bigger boat.
+		buf = make([]byte, f.wid)
+	}
+
 	negative := signedness == signed && a < 0
 	if negative {
 		a = -a
@@ -184,7 +187,7 @@ func (f *fmt) integer(a int64, base uint64, signedness bool, digits string) {
 	// a is made into unsigned ua.  we could make things
 	// marginally faster by splitting the 32-bit case out into a separate
 	// block but it's not worth the duplication, so ua has 64 bits.
-	i := len(f.intbuf)
+	i := len(buf)
 	ua := uint64(a)
 	for ua >= base {
 		i--
@@ -193,7 +196,7 @@ func (f *fmt) integer(a int64, base uint64, signedness bool, digits string) {
 	}
 	i--
 	buf[i] = digits[ua]
-	for i > 0 && prec > nByte-i {
+	for i > 0 && prec > len(buf)-i {
 		i--
 		buf[i] = '0'
 	}
@@ -356,6 +359,14 @@ func (f *fmt) formatFloat(v float64, verb byte, prec, n int) {
 	// The formatted number starts at slice[1].
 	switch slice[1] {
 	case '-', '+':
+		// If we're zero padding, want the sign before the leading zeros.
+		// Achieve this by writing the sign out and padding the postive number.
+		if f.zero && f.widPresent && f.wid > len(slice) {
+			f.buf.WriteByte(slice[1])
+			f.wid--
+			f.pad(slice[2:])
+			return
+		}
 		// We're set; drop the leading space.
 		slice = slice[1:]
 	default:
@@ -418,6 +429,8 @@ func (f *fmt) fmt_c64(v complex64, verb rune) {
 	oldPlus := f.plus
 	for i := 0; ; i++ {
 		switch verb {
+		case 'b':
+			f.fmt_fb32(r)
 		case 'e':
 			f.fmt_e32(r)
 		case 'E':
@@ -446,6 +459,8 @@ func (f *fmt) fmt_c128(v complex128, verb rune) {
 	oldPlus := f.plus
 	for i := 0; ; i++ {
 		switch verb {
+		case 'b':
+			f.fmt_fb64(r)
 		case 'e':
 			f.fmt_e64(r)
 		case 'E':

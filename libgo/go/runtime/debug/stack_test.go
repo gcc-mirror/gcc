@@ -49,10 +49,10 @@ func TestStack(t *testing.T) {
 			n++
 		}
 	}
-	frame("src/pkg/runtime/debug/stack_test.go", "\t(*T).ptrmethod: return Stack()")
-	frame("src/pkg/runtime/debug/stack_test.go", "\tT.method: return t.ptrmethod()")
-	frame("src/pkg/runtime/debug/stack_test.go", "\tTestStack: b := T(0).method()")
-	frame("src/pkg/testing/testing.go", "")
+	frame("stack_test.go", "\tmethod.N15_runtime_debug.T: return Stack()")
+	frame("stack_test.go", "\tmethod.N15_runtime_debug.T: return t.ptrmethod()")
+	frame("stack_test.go", "\tTestStack: b := T(0).method()")
+	frame("testing/testing.go", "")
 }
 
 func check(t *testing.T, line, has string) {

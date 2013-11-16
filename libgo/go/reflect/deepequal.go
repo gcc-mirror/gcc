@@ -9,18 +9,17 @@ package reflect
 // During deepValueEqual, must keep track of checks that are
 // in progress.  The comparison algorithm assumes that all
 // checks in progress are true when it reencounters them.
-// Visited are stored in a map indexed by 17 * a1 + a2;
+// Visited comparisons are stored in a map indexed by visit.
 type visit struct {
-	a1   uintptr
-	a2   uintptr
-	typ  Type
-	next *visit
+	a1  uintptr
+	a2  uintptr
+	typ Type
 }
 
 // Tests for deep equality using reflected types. The map argument tracks
 // comparisons that have already been seen, which allows short circuiting on
 // recursive types.
-func deepValueEqual(v1, v2 Value, visited map[uintptr]*visit, depth int) (b bool) {
+func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
 	if !v1.IsValid() || !v2.IsValid() {
 		return v1.IsValid() == v2.IsValid()
 	}
@@ -29,8 +28,15 @@ func deepValueEqual(v1, v2 Value, visited map[uintptr]*visit, depth int) (b bool
 	}
 
 	// if depth > 10 { panic("deepValueEqual") }	// for debugging
+	hard := func(k Kind) bool {
+		switch k {
+		case Array, Map, Slice, Struct:
+			return true
+		}
+		return false
+	}
 
-	if v1.CanAddr() && v2.CanAddr() {
+	if v1.CanAddr() && v2.CanAddr() && hard(v1.Kind()) {
 		addr1 := v1.UnsafeAddr()
 		addr2 := v2.UnsafeAddr()
 		if addr1 > addr2 {
@@ -44,17 +50,14 @@ func deepValueEqual(v1, v2 Value, visited map[uintptr]*visit, depth int) (b bool
 		}
 
 		// ... or already seen
-		h := 17*addr1 + addr2
-		seen := visited[h]
 		typ := v1.Type()
-		for p := seen; p != nil; p = p.next {
-			if p.a1 == addr1 && p.a2 == addr2 && p.typ == typ {
-				return true
-			}
+		v := visit{addr1, addr2, typ}
+		if visited[v] {
+			return true
 		}
 
 		// Remember for later.
-		visited[h] = &visit{addr1, addr2, typ, seen}
+		visited[v] = true
 	}
 
 	switch v1.Kind() {
@@ -74,6 +77,9 @@ func deepValueEqual(v1, v2 Value, visited map[uintptr]*visit, depth int) (b bool
 		}
 		if v1.Len() != v2.Len() {
 			return false
+		}
+		if v1.Pointer() == v2.Pointer() {
+			return true
 		}
 		for i := 0; i < v1.Len(); i++ {
 			if !deepValueEqual(v1.Index(i), v2.Index(i), visited, depth+1) {
@@ -101,6 +107,9 @@ func deepValueEqual(v1, v2 Value, visited map[uintptr]*visit, depth int) (b bool
 		}
 		if v1.Len() != v2.Len() {
 			return false
+		}
+		if v1.Pointer() == v2.Pointer() {
+			return true
 		}
 		for _, k := range v1.MapKeys() {
 			if !deepValueEqual(v1.MapIndex(k), v2.MapIndex(k), visited, depth+1) {
@@ -135,5 +144,5 @@ func DeepEqual(a1, a2 interface{}) bool {
 	if v1.Type() != v2.Type() {
 		return false
 	}
-	return deepValueEqual(v1, v2, make(map[uintptr]*visit), 0)
+	return deepValueEqual(v1, v2, make(map[visit]bool), 0)
 }

@@ -33,25 +33,25 @@
 #define SOFT_FP_H
 
 #ifdef _LIBC
-#include <sfp-machine.h>
+# include <sfp-machine.h>
 #else
-#include "sfp-machine.h"
+# include "sfp-machine.h"
 #endif
 
 /* Allow sfp-machine to have its own byte order definitions. */
 #ifndef __BYTE_ORDER
-#ifdef _LIBC
-#include <endian.h>
-#else
-#error "endianness not defined by sfp-machine.h"
-#endif
+# ifdef _LIBC
+#  include <endian.h>
+# else
+#  error "endianness not defined by sfp-machine.h"
+# endif
 #endif
 
 #define _FP_WORKBITS		3
-#define _FP_WORK_LSB		((_FP_W_TYPE)1 << 3)
-#define _FP_WORK_ROUND		((_FP_W_TYPE)1 << 2)
-#define _FP_WORK_GUARD		((_FP_W_TYPE)1 << 1)
-#define _FP_WORK_STICKY		((_FP_W_TYPE)1 << 0)
+#define _FP_WORK_LSB		((_FP_W_TYPE) 1 << 3)
+#define _FP_WORK_ROUND		((_FP_W_TYPE) 1 << 2)
+#define _FP_WORK_GUARD		((_FP_W_TYPE) 1 << 1)
+#define _FP_WORK_STICKY		((_FP_W_TYPE) 1 << 0)
 
 #ifndef FP_RND_NEAREST
 # define FP_RND_NEAREST		0
@@ -65,22 +65,22 @@
 
 /* By default don't care about exceptions. */
 #ifndef FP_EX_INVALID
-#define FP_EX_INVALID		0
+# define FP_EX_INVALID		0
 #endif
 #ifndef FP_EX_OVERFLOW
-#define FP_EX_OVERFLOW		0
+# define FP_EX_OVERFLOW		0
 #endif
 #ifndef FP_EX_UNDERFLOW
-#define FP_EX_UNDERFLOW		0
+# define FP_EX_UNDERFLOW	0
 #endif
 #ifndef FP_EX_DIVZERO
-#define FP_EX_DIVZERO		0
+# define FP_EX_DIVZERO		0
 #endif
 #ifndef FP_EX_INEXACT
-#define FP_EX_INEXACT		0
+# define FP_EX_INEXACT		0
 #endif
 #ifndef FP_EX_DENORM
-#define FP_EX_DENORM		0
+# define FP_EX_DENORM		0
 #endif
 
 /* _FP_STRUCT_LAYOUT may be defined as an attribute to determine the
@@ -90,23 +90,31 @@
    differences in how consecutive bit-fields are laid out from the
    default expected by soft-fp.  */
 #ifndef _FP_STRUCT_LAYOUT
-#define _FP_STRUCT_LAYOUT
+# define _FP_STRUCT_LAYOUT
 #endif
 
 #ifdef _FP_DECL_EX
-#define FP_DECL_EX					\
+# define FP_DECL_EX					\
   int _fex = 0;						\
   _FP_DECL_EX
 #else
-#define FP_DECL_EX int _fex = 0
+# define FP_DECL_EX int _fex = 0
 #endif
 
+/* Initialize any machine-specific state used in FP_ROUNDMODE,
+   FP_TRAPPING_EXCEPTIONS or FP_HANDLE_EXCEPTIONS.  */
 #ifndef FP_INIT_ROUNDMODE
-#define FP_INIT_ROUNDMODE do {} while (0)
+# define FP_INIT_ROUNDMODE do {} while (0)
+#endif
+
+/* Initialize any machine-specific state used in
+   FP_HANDLE_EXCEPTIONS.  */
+#ifndef FP_INIT_EXCEPTIONS
+# define FP_INIT_EXCEPTIONS FP_INIT_ROUNDMODE
 #endif
 
 #ifndef FP_HANDLE_EXCEPTIONS
-#define FP_HANDLE_EXCEPTIONS do {} while (0)
+# define FP_HANDLE_EXCEPTIONS do {} while (0)
 #endif
 
 #ifndef FP_INHIBIT_RESULTS
@@ -115,14 +123,11 @@
  * check if some exceptions are unmasked
  * and inhibit it in such a case.
  */
-#define FP_INHIBIT_RESULTS 0
+# define FP_INHIBIT_RESULTS 0
 #endif
 
 #define FP_SET_EXCEPTION(ex)				\
   _fex |= (ex)
-
-#define FP_UNSET_EXCEPTION(ex)				\
-  _fex &= ~(ex)
 
 #define FP_CLEAR_EXCEPTIONS				\
   _fex = 0
@@ -131,58 +136,90 @@
   (_fex)
 
 #ifndef FP_TRAPPING_EXCEPTIONS
-#define FP_TRAPPING_EXCEPTIONS 0
+# define FP_TRAPPING_EXCEPTIONS 0
 #endif
 
-#define _FP_ROUND_NEAREST(wc, X)			\
-do {							\
-    if ((_FP_FRAC_LOW_##wc(X) & 15) != _FP_WORK_ROUND)	\
-      _FP_FRAC_ADDI_##wc(X, _FP_WORK_ROUND);		\
-} while (0)
+/* A file using soft-fp may define FP_NO_EXCEPTIONS before including
+   soft-fp.h to indicate that, although a macro used there could raise
+   exceptions, or do rounding and potentially thereby raise
+   exceptions, for some arguments, for the particular arguments used
+   in that file no exceptions or rounding can occur.  Such a file
+   should not itself use macros relating to handling exceptions and
+   rounding modes; this is only for indirect uses (in particular, in
+   _FP_FROM_INT and the macros it calls).  */
+#ifdef FP_NO_EXCEPTIONS
 
-#define _FP_ROUND_ZERO(wc, X)		(void)0
+# undef FP_SET_EXCEPTION
+# define FP_SET_EXCEPTION(ex) do {} while (0)
+
+# undef FP_CUR_EXCEPTIONS
+# define FP_CUR_EXCEPTIONS 0
+
+# undef FP_TRAPPING_EXCEPTIONS
+# define FP_TRAPPING_EXCEPTIONS 0
+
+# undef FP_ROUNDMODE
+# define FP_ROUNDMODE FP_RND_ZERO
+
+#endif
+
+#define _FP_ROUND_NEAREST(wc, X)				\
+  do								\
+    {								\
+      if ((_FP_FRAC_LOW_##wc (X) & 15) != _FP_WORK_ROUND)	\
+	_FP_FRAC_ADDI_##wc (X, _FP_WORK_ROUND);			\
+    }								\
+  while (0)
+
+#define _FP_ROUND_ZERO(wc, X)		(void) 0
 
 #define _FP_ROUND_PINF(wc, X)				\
-do {							\
-    if (!X##_s && (_FP_FRAC_LOW_##wc(X) & 7))		\
-      _FP_FRAC_ADDI_##wc(X, _FP_WORK_LSB);		\
-} while (0)
+  do							\
+    {							\
+      if (!X##_s && (_FP_FRAC_LOW_##wc (X) & 7))	\
+	_FP_FRAC_ADDI_##wc (X, _FP_WORK_LSB);		\
+    }							\
+  while (0)
 
-#define _FP_ROUND_MINF(wc, X)				\
-do {							\
-    if (X##_s && (_FP_FRAC_LOW_##wc(X) & 7))		\
-      _FP_FRAC_ADDI_##wc(X, _FP_WORK_LSB);		\
-} while (0)
+#define _FP_ROUND_MINF(wc, X)			\
+  do						\
+    {						\
+      if (X##_s && (_FP_FRAC_LOW_##wc (X) & 7))	\
+	_FP_FRAC_ADDI_##wc (X, _FP_WORK_LSB);	\
+    }						\
+  while (0)
 
 #define _FP_ROUND(wc, X)			\
-do {						\
-	if (_FP_FRAC_LOW_##wc(X) & 7)		\
-	  {					\
-	    FP_SET_EXCEPTION(FP_EX_INEXACT);	\
-	    switch (FP_ROUNDMODE)		\
-	      {					\
-	      case FP_RND_NEAREST:		\
-		_FP_ROUND_NEAREST(wc,X);	\
-		break;				\
-	      case FP_RND_ZERO:			\
-		_FP_ROUND_ZERO(wc,X);		\
-		break;				\
-	      case FP_RND_PINF:			\
-		_FP_ROUND_PINF(wc,X);		\
-		break;				\
-	      case FP_RND_MINF:			\
-		_FP_ROUND_MINF(wc,X);		\
-		break;				\
-	      }					\
-	  }					\
-} while (0)
+  do						\
+    {						\
+      if (_FP_FRAC_LOW_##wc (X) & 7)		\
+	{					\
+	  FP_SET_EXCEPTION (FP_EX_INEXACT);	\
+	  switch (FP_ROUNDMODE)			\
+	    {					\
+	    case FP_RND_NEAREST:		\
+	      _FP_ROUND_NEAREST (wc, X);	\
+	      break;				\
+	    case FP_RND_ZERO:			\
+	      _FP_ROUND_ZERO (wc, X);		\
+	      break;				\
+	    case FP_RND_PINF:			\
+	      _FP_ROUND_PINF (wc, X);		\
+	      break;				\
+	    case FP_RND_MINF:			\
+	      _FP_ROUND_MINF (wc, X);		\
+	      break;				\
+	    }					\
+	}					\
+    }						\
+  while (0)
 
 #define FP_CLS_NORMAL		0
 #define FP_CLS_ZERO		1
 #define FP_CLS_INF		2
 #define FP_CLS_NAN		3
 
-#define _FP_CLS_COMBINE(x,y)	(((x) << 2) | (y))
+#define _FP_CLS_COMBINE(x, y)	(((x) << 2) | (y))
 
 #include "op-1.h"
 #include "op-2.h"
@@ -194,35 +231,35 @@ do {						\
 #define UWtype		_FP_W_TYPE
 #define W_TYPE_SIZE	_FP_W_TYPE_SIZE
 
-typedef int QItype __attribute__((mode(QI)));
-typedef int SItype __attribute__((mode(SI)));
-typedef int DItype __attribute__((mode(DI)));
-typedef unsigned int UQItype __attribute__((mode(QI)));
-typedef unsigned int USItype __attribute__((mode(SI)));
-typedef unsigned int UDItype __attribute__((mode(DI)));
+typedef int QItype __attribute__ ((mode (QI)));
+typedef int SItype __attribute__ ((mode (SI)));
+typedef int DItype __attribute__ ((mode (DI)));
+typedef unsigned int UQItype __attribute__ ((mode (QI)));
+typedef unsigned int USItype __attribute__ ((mode (SI)));
+typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #if _FP_W_TYPE_SIZE == 32
-typedef unsigned int UHWtype __attribute__((mode(HI)));
+typedef unsigned int UHWtype __attribute__ ((mode (HI)));
 #elif _FP_W_TYPE_SIZE == 64
 typedef USItype UHWtype;
 #endif
 
 #ifndef CMPtype
-#define CMPtype		int
+# define CMPtype	int
 #endif
 
-#define SI_BITS		(__CHAR_BIT__ * (int)sizeof(SItype))
-#define DI_BITS		(__CHAR_BIT__ * (int)sizeof(DItype))
+#define SI_BITS		(__CHAR_BIT__ * (int) sizeof (SItype))
+#define DI_BITS		(__CHAR_BIT__ * (int) sizeof (DItype))
 
 #ifndef umul_ppmm
-#ifdef _LIBC
-#include <stdlib/longlong.h>
-#else
-#include "longlong.h"
-#endif
+# ifdef _LIBC
+#  include <stdlib/longlong.h>
+# else
+#  include "longlong.h"
+# endif
 #endif
 
 #ifdef _LIBC
-#include <stdlib.h>
+# include <stdlib.h>
 #else
 extern void abort (void);
 #endif

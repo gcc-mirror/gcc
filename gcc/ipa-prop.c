@@ -852,7 +852,7 @@ static bool
 ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor_t> descriptors,
 			  struct param_analysis_info *parms_ainfo, gimple stmt,
 			  tree op, int *index_p, HOST_WIDE_INT *offset_p,
-			  bool *by_ref_p)
+			  HOST_WIDE_INT *size_p, bool *by_ref_p)
 {
   int index;
   HOST_WIDE_INT size, max_size;
@@ -870,6 +870,8 @@ ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor_t> descriptors,
 	{
 	  *index_p = index;
 	  *by_ref_p = false;
+	  if (size_p)
+	    *size_p = size;
 	  return true;
 	}
       return false;
@@ -912,6 +914,8 @@ ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor_t> descriptors,
     {
       *index_p = index;
       *by_ref_p = true;
+      if (size_p)
+	*size_p = size;
       return true;
     }
   return false;
@@ -926,7 +930,7 @@ ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
 			bool *by_ref_p)
 {
   return ipa_load_from_parm_agg_1 (info->descriptors, NULL, stmt, op, index_p,
-				   offset_p, by_ref_p);
+				   offset_p, NULL, by_ref_p);
 }
 
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
@@ -1826,7 +1830,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   if (gimple_assign_single_p (def)
       && ipa_load_from_parm_agg_1 (info->descriptors, parms_ainfo, def,
 				   gimple_assign_rhs1 (def), &index, &offset,
-				   &by_ref))
+				   NULL, &by_ref))
     {
       struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
       cs->indirect_info->offset = offset;
@@ -4567,7 +4571,7 @@ ipcp_transform_function (struct cgraph_node *node)
 	struct ipa_agg_replacement_value *v;
 	gimple stmt = gsi_stmt (gsi);
 	tree rhs, val, t;
-	HOST_WIDE_INT offset;
+	HOST_WIDE_INT offset, size;
 	int index;
 	bool by_ref, vce;
 
@@ -4594,13 +4598,15 @@ ipcp_transform_function (struct cgraph_node *node)
 	  continue;
 
 	if (!ipa_load_from_parm_agg_1 (descriptors, parms_ainfo, stmt,
-				       rhs, &index, &offset, &by_ref))
+				       rhs, &index, &offset, &size, &by_ref))
 	  continue;
 	for (v = aggval; v; v = v->next)
 	  if (v->index == index
 	      && v->offset == offset)
 	    break;
-	if (!v || v->by_ref != by_ref)
+	if (!v
+	    || v->by_ref != by_ref
+	    || tree_low_cst (TYPE_SIZE (TREE_TYPE (v->value)), 0) != size)
 	  continue;
 
 	gcc_checking_assert (is_gimple_ip_invariant (v->value));

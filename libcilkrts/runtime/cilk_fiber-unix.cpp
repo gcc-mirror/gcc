@@ -44,23 +44,26 @@
 #include <cstdio>
 #include <cstdlib>
 
-#if defined HAVE_ALLOCA_H
-# include <alloca.h>
-#elif defined __GNUC__
-# define alloca __builtin_alloca
-#elif defined _AIX
-# define alloca __alloca
-#else
-# include <stddef.h>
-# ifdef  __cplusplus
-extern "C"
-# endif
-void *alloca (size_t);
-#endif
-
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+// You'd think that getting a defintion for alloca would be easy.  But you'd
+// be wrong. Here's a variant on what's recommended in the autoconf doc.  I've
+// remove the Windows portion since this is Unix-specific code.
+#if defined HAVE_ALLOCA_H
+#   include <alloca.h>
+#elif defined __GNUC__
+#   define alloca __builtin_alloca
+#elif defined _AIX
+#   define alloca __alloca
+#else
+#   include <stddef.h>
+#   ifdef  __cplusplus
+extern "C"
+#   endif
+void *alloca (size_t);
+#endif
 
 // MAP_ANON is deprecated on Linux, but seems to be required on Mac...
 #ifndef MAP_ANONYMOUS
@@ -163,8 +166,15 @@ NORETURN cilk_fiber_sysdep::jump_to_resume_other_sysdep(cilk_fiber_sysdep* other
     __cilkrts_bug("Should not get here");
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("-O0")
+// GCC doesn't allow us to call __builtin_longjmp in the same function that
+// calls __builtin_setjmp, so create a new function to house the call to
+// __builtin_longjmp
+static void __attribute__((noinline))
+do_cilk_longjmp(__CILK_JUMP_BUFFER jmpbuf)
+{
+    CILK_LONGJMP(jmpbuf);
+}
+
 NORETURN cilk_fiber_sysdep::run()
 {
     // Only fibers created from a pool have a proc method to run and execute. 
@@ -201,7 +211,11 @@ NORETURN cilk_fiber_sysdep::run()
         // switching to for any temporaries required for this run()
         // function.
         JMPBUF_SP(m_resume_jmpbuf) = m_stack_base - frame_size;
-        CILK_LONGJMP(m_resume_jmpbuf);
+
+        // GCC doesn't allow us to call __builtin_longjmp in the same function
+        // that calls __builtin_setjmp, so it's been moved into it's own
+        // function that cannot be inlined.
+        do_cilk_longjmp(m_resume_jmpbuf);
     }
 
     // Note: our resetting of the stack pointer is valid only if the
@@ -228,7 +242,6 @@ NORETURN cilk_fiber_sysdep::run()
     // User proc should never return.
     __cilkrts_bug("Should not get here");
 }
-#pragma GCC pop_options
 
 void cilk_fiber_sysdep::make_stack(size_t stack_size)
 {

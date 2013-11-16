@@ -118,6 +118,28 @@
 	convert the value before recurring:
 		func (x X) String() string { return Sprintf("<%s>", string(x)) }
 
+	Explicit argument indexes:
+
+	In Printf, Sprintf, and Fprintf, the default behavior is for each
+	formatting verb to format successive arguments passed in the call.
+	However, the notation [n] immediately before the verb indicates that the
+	nth one-indexed argument is to be formatted instead. The same notation
+	before a '*' for a width or precision selects the argument index holding
+	the value. After processing a bracketed expression [n], arguments n+1,
+	n+2, etc. will be processed unless otherwise directed.
+
+	For example,
+		fmt.Sprintf("%[2]d %[1]d\n", 11, 22)
+	will yield "22, 11", while
+		fmt.Sprintf("%[3]*.[2]*[1]f", 12.0, 2, 6),
+	equivalent to
+		fmt.Sprintf("%6.2f", 12.0),
+	will yield " 12.00". Because an explicit index affects subsequent verbs,
+	this notation can be used to print the same values multiple times
+	by resetting the index for the first argument to be repeated:
+		fmt.Sprintf("%d %d %#[1]x %#x", 16, 17)
+	will yield "16 17 0x10 0x11".
+
 	Format errors:
 
 	If an invalid argument is given for a verb, such as providing
@@ -133,6 +155,9 @@
 		Non-int for width or precision: %!(BADWIDTH) or %!(BADPREC)
 			Printf("%*s", 4.5, "hi"):  %!(BADWIDTH)hi
 			Printf("%.*s", 4.5, "hi"): %!(BADPREC)hi
+		Invalid or invalid use of argument index: %!(BADINDEX)
+			Printf("%*[2]d", 7):       %!d(BADINDEX)
+			Printf("%.[2]d", 7):       %!d(BADINDEX)
 
 	All errors begin with the string "%!" followed sometimes
 	by a single character (the verb) and end with a parenthesized
@@ -144,9 +169,9 @@
 	through the fmt package.  For example, if a String method
 	calls panic("bad"), the resulting formatted message will look
 	like
-		%s(PANIC=bad)
+		%!s(PANIC=bad)
 
-	The %s just shows the print verb in use when the failure
+	The %!s just shows the print verb in use when the failure
 	occurred.
 
 	Scanning
@@ -189,6 +214,10 @@
 	text in the format string must match the input text; scanning
 	stops if it does not, with the return value of the function
 	indicating the number of arguments scanned.
+
+	In all the scanning functions, a carriage return followed
+	immediately by a newline is treated as a plain newline
+	(\r\n means the same as \n).
 
 	In all the scanning functions, if an operand implements method
 	Scan (that is, it implements the Scanner interface) that

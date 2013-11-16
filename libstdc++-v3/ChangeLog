@@ -1,3 +1,142 @@
+2013-11-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/58982
+	* include/bits/stl_algobase.h (__copy_move::__copy_m): Use assertion
+	to prevent using memmove() on non-assignable types.
+	(__copy_move_backward::__copy_move_b): Likewise.
+	* include/bits/stl_uninitialized.h (uninitialized_copy
+	uninitialized_copy_n, uninitialized_fill, uninitialized_fill_n,
+	__uninitialized_default, __uninitialized_default_n): Check for
+	assignable as well as trivial.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/
+	58982.cc: New.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	58982.cc: New.
+	* testsuite/25_algorithms/copy/58982.cc: New.
+	* testsuite/25_algorithms/copy_n/58982.cc: New.
+
+2013-11-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::_S_Is):
+	Take only a const safe iterator reference.
+	(_BeforeBeginHelper<>::_S_Is_beginnest): Likewise.
+	(__get_distance): Take only one type of iterator.
+	(_Safe_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_iterator<>::_M_get_sequence()): Return pointer to const
+	sequence from a const_iterator and a pointer to sequence from an
+	iterator.
+	* include/debug/safe_iterator.tcc: Adapt.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_M_valid_range<>): Not template anymore.
+	(_Safe_local_iterator<>::_M_get_sequence()): Return pointer to
+	const sequence from a const_iterator and a pointer to sequence
+	from an iterator.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/forward_list
+	(_BeforeBeginHelper<std::__debug::forward_list<>>): Adapt.
+
+2013-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (__detail::_State): Split
+	non-dependent parts into new _State_base.
+	(__detail::_NFA): Likewise for _NFA_base. Use std::move() to avoid
+	copies when inserting _MatcherT and _StateT objects.
+	* include/bits/regex_automaton.tcc: Move member definitions to base
+	class. Qualify dependent names.
+	* include/bits/regex_compiler.h (__detail::_Compiler::_M_get_nfa): Make
+	non-const and use std::move to avoid copying.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_is_word): Use
+	array, so past-the-end iterator is valid.
+
+	* include/bits/regex_automaton.h (__detail::_State, __detail::_NFA,
+	__detail::_StateSeq): Remove redundant _CharT template parameters.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h (__detail::_Compiler): Likewise.
+	(__compile_nfa): Add object generator for _Compiler.
+	* include/bits/regex_compiler.tcc: Remove _CharT template parameters.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex.h (basic_regex): Assert char_type matches. Use
+	__compile_nfa object generator. Remove _CharT template parameter.
+
+	* include/bits/regex_compiler.h (__detail::_AnyMatcher,
+	__detail::_CharMatcher, __detail::_BracketMatcher): Remove redundant
+	_CharT template parameters.
+	* include/bits/regex_compiler.tcc: Likewise.
+
+	* include/bits/regex_compiler.h (__detail::__compile_nfa): Overload
+	so that std::basic_string<C> and std::vector<C> iterators dispatch to
+	the const C* compiler.
+
+	* include/bits/regex_compiler.h (__detail::__has_contiguous_iter):
+	vector<bool> storage is not contiguous.
+
+2013-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_automaton.h (_S_opcode_word_boundry): Rename to
+	_S_opcode_word_boundary.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_executor.h (__detail::_Executor::_M_word_boundry):
+	Rename to _M_word_boundary.
+	* include/bits/regex_executor.tcc: Likewise.
+
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	N3655 C++1y TransformationTraits Redux
+	* include/std/type_traits (remove_const_t, remove_volatile_t,
+	remove_cv_t, add_const_t, add_volatile_t, add_cv_t, remove_reference_t,
+	add_lvalue_reference_t, add_rvalue_reference_t, make_signed_t,
+	make_unsigned_t, remove_extent_t, remove_all_extents_t,
+	remove_pointer_t, add_pointer_t, aligned_storage_t, decay_t,
+	enable_if_t, conditional_t, common_type_t, underlying_type_t,
+	result_of_t): Define.
+	* doc/xml/manual/status_cxx2014.xml: Update.
+	* testsuite/20_util/add_lvalue_reference/requirements/typedefs-3.cc:
+	New.
+	* testsuite/20_util/add_rvalue_reference/requirements/typedefs-3.cc:
+	New.
+	* testsuite/20_util/common_type/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/conditional/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/decay/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/enable_if/requirements/typedefs-2.cc: New.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/remove_reference/requirements/typedefs.cc: New.
+	* testsuite/20_util/result_of/requirements/typedefs.cc: New.
+	* testsuite/20_util/underlying_type/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/common_type/requirements/typedefs-2.cc: Change to
+	compile-only test.
+	* testsuite/20_util/decay/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document aligned_union as
+	missing.
+
+2013-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/experimental/optional: Use __and_<> and __not_<> in
+	conditions. Style fixes.
+	(__constexpr_addressof, swap): Make inline.
+	* testsuite/experimental/optional/cons/copy.cc: Adjust constants for
+	32-bit targets.
+	* testsuite/experimental/optional/cons/move.cc: Likewise.
+	* testsuite/experimental/optional/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: Likewise.
+
 2013-11-01  Michael Brune  <lucdanton@free.fr>
 
 	* include/bits/enable_special_members.h: New.

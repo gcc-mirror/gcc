@@ -22,10 +22,18 @@ func (a *UDPAddr) String() string {
 	if a == nil {
 		return "<nil>"
 	}
+	ip := ipEmptyString(a.IP)
 	if a.Zone != "" {
-		return JoinHostPort(a.IP.String()+"%"+a.Zone, itoa(a.Port))
+		return JoinHostPort(ip+"%"+a.Zone, itoa(a.Port))
 	}
-	return JoinHostPort(a.IP.String(), itoa(a.Port))
+	return JoinHostPort(ip, itoa(a.Port))
+}
+
+func (a *UDPAddr) toAddr() Addr {
+	if a == nil {
+		return nil
+	}
+	return a
 }
 
 // ResolveUDPAddr parses addr as a UDP address of the form "host:port"
@@ -46,5 +54,5 @@ func ResolveUDPAddr(net, addr string) (*UDPAddr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return a.(*UDPAddr), nil
+	return a.toAddr().(*UDPAddr), nil
 }

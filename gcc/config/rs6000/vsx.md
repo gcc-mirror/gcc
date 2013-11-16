@@ -333,12 +333,18 @@
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
-(define_insn_and_split "*vsx_le_perm_store_<mode>"
+(define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_D 0 "memory_operand" "=Z")
         (match_operand:VSX_D 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "12")])
+
+(define_split
+  [(set (match_operand:VSX_D 0 "memory_operand" "")
+        (match_operand:VSX_D 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -347,21 +353,43 @@
         (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
-  "
 {
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
-}
-  "
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "8")])
+})
 
-(define_insn_and_split "*vsx_le_perm_store_<mode>"
+;; The post-reload split requires that we re-permute the source
+;; register in case it is still live.
+(define_split
+  [(set (match_operand:VSX_D 0 "memory_operand" "")
+        (match_operand:VSX_D 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  [(set (match_dup 1)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 0)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 1)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 1) (const_int 0)])))]
+  "")
+
+(define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
         (match_operand:VSX_W 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "12")])
+
+(define_split
+  [(set (match_operand:VSX_W 0 "memory_operand" "")
+        (match_operand:VSX_W 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -372,21 +400,46 @@
           (match_dup 2)
           (parallel [(const_int 2) (const_int 3)
 	             (const_int 0) (const_int 1)])))]
-  "
 {
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
-}
-  "
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "8")])
+})
 
-(define_insn_and_split "*vsx_le_perm_store_v8hi"
+;; The post-reload split requires that we re-permute the source
+;; register in case it is still live.
+(define_split
+  [(set (match_operand:VSX_W 0 "memory_operand" "")
+        (match_operand:VSX_W 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  [(set (match_dup 1)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 2) (const_int 3)
+	             (const_int 0) (const_int 1)])))
+   (set (match_dup 0)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 2) (const_int 3)
+	             (const_int 0) (const_int 1)])))
+   (set (match_dup 1)
+        (vec_select:<MODE>
+          (match_dup 1)
+          (parallel [(const_int 2) (const_int 3)
+	             (const_int 0) (const_int 1)])))]
+  "")
+
+(define_insn "*vsx_le_perm_store_v8hi"
   [(set (match_operand:V8HI 0 "memory_operand" "=Z")
         (match_operand:V8HI 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "12")])
+
+(define_split
+  [(set (match_operand:V8HI 0 "memory_operand" "")
+        (match_operand:V8HI 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V8HI
           (match_dup 1)
@@ -401,21 +454,52 @@
                      (const_int 6) (const_int 7)
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
-  "
 {
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
-}
-  "
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "8")])
+})
 
-(define_insn_and_split "*vsx_le_perm_store_v16qi"
+;; The post-reload split requires that we re-permute the source
+;; register in case it is still live.
+(define_split
+  [(set (match_operand:V8HI 0 "memory_operand" "")
+        (match_operand:V8HI 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  [(set (match_dup 1)
+        (vec_select:V8HI
+          (match_dup 1)
+          (parallel [(const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)])))
+   (set (match_dup 0)
+        (vec_select:V8HI
+          (match_dup 1)
+          (parallel [(const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)])))
+   (set (match_dup 1)
+        (vec_select:V8HI
+          (match_dup 1)
+          (parallel [(const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)])))]
+  "")
+
+(define_insn "*vsx_le_perm_store_v16qi"
   [(set (match_operand:V16QI 0 "memory_operand" "=Z")
         (match_operand:V16QI 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "12")])
+
+(define_split
+  [(set (match_operand:V16QI 0 "memory_operand" "")
+        (match_operand:V16QI 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V16QI
           (match_dup 1)
@@ -438,14 +522,51 @@
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
-  "
 {
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
-}
-  "
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "8")])
+})
+
+;; The post-reload split requires that we re-permute the source
+;; register in case it is still live.
+(define_split
+  [(set (match_operand:V16QI 0 "memory_operand" "")
+        (match_operand:V16QI 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  [(set (match_dup 1)
+        (vec_select:V16QI
+          (match_dup 1)
+          (parallel [(const_int 8) (const_int 9)
+                     (const_int 10) (const_int 11)
+                     (const_int 12) (const_int 13)
+                     (const_int 14) (const_int 15)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)])))
+   (set (match_dup 0)
+        (vec_select:V16QI
+          (match_dup 1)
+          (parallel [(const_int 8) (const_int 9)
+                     (const_int 10) (const_int 11)
+                     (const_int 12) (const_int 13)
+                     (const_int 14) (const_int 15)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)])))
+   (set (match_dup 1)
+        (vec_select:V16QI
+          (match_dup 1)
+          (parallel [(const_int 8) (const_int 9)
+                     (const_int 10) (const_int 11)
+                     (const_int 12) (const_int 13)
+                     (const_int 14) (const_int 15)
+                     (const_int 0) (const_int 1)
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)])))]
+  "")
 
 
 (define_insn "*vsx_mov<mode>"

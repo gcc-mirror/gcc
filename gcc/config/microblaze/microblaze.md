@@ -1798,9 +1798,8 @@
 	(plus:SI (match_operand:SI 0 "register_operand" "d")
 		 (label_ref:SI (match_operand 1 "" ""))))
   (use (label_ref:SI (match_dup 1)))]
- "next_active_insn (insn) != 0
-  && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
-  && PREV_INSN (next_active_insn (insn)) == operands[1]
+ "NEXT_INSN (operands[1]) != 0
+  && GET_CODE (PATTERN (NEXT_INSN (operands[1]))) == ADDR_DIFF_VEC
   && flag_pic"
   {
     output_asm_insn ("addk\t%0,%0,r20",operands);

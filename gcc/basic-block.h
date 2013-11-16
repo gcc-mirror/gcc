@@ -897,6 +897,14 @@ struct loop *get_loop_copy (struct loop *);
 
 #include "cfghooks.h"
 
+/* Return true if BB is in a transaction.  */
+
+static inline bool
+bb_in_transaction (basic_block bb)
+{
+  return bb->flags & BB_IN_TRANSACTION;
+}
+
 /* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
 static inline bool
 bb_has_eh_pred (basic_block bb)

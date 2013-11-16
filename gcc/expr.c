@@ -1297,11 +1297,12 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
 	     here because if SIZE is less than the mode mask, as it is
 	     returned by the macro, it will definitely be less than the
-	     actual mode mask.  */
+	     actual mode mask.  Since SIZE is within the Pmode address
+	     space, we limit MODE to Pmode.  */
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
-	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD))
+	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
 	  struct expand_operand ops[6];
 	  unsigned int nops;
@@ -2879,14 +2880,15 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
       enum insn_code code = direct_optab_handler (setmem_optab, mode);
 
       if (code != CODE_FOR_nothing
-	  /* We don't need MODE to be narrower than
-	     BITS_PER_HOST_WIDE_INT here because if SIZE is less than
-	     the mode mask, as it is returned by the macro, it will
-	     definitely be less than the actual mode mask.  */
+	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
+	     here because if SIZE is less than the mode mask, as it is
+	     returned by the macro, it will definitely be less than the
+	     actual mode mask.  Since SIZE is within the Pmode address
+	     space, we limit MODE to Pmode.  */
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
-	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD))
+	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
 	  struct expand_operand ops[6];
 	  unsigned int nops;
@@ -4574,19 +4576,19 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 		- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
 
   /* If the adjustment is larger than bitpos, we would have a negative bit
-     position for the lower bound and this may wreak havoc later.  This can
-     occur only if we have a non-null offset, so adjust offset and bitpos
-     to make the lower bound non-negative.  */
+     position for the lower bound and this may wreak havoc later.  Adjust
+     offset and bitpos to make the lower bound non-negative in that case.  */
   if (bitoffset > *bitpos)
     {
       HOST_WIDE_INT adjust = bitoffset - *bitpos;
-
       gcc_assert ((adjust % BITS_PER_UNIT) == 0);
-      gcc_assert (*offset != NULL_TREE);
 
       *bitpos += adjust;
-      *offset
-	= size_binop (MINUS_EXPR, *offset, size_int (adjust / BITS_PER_UNIT));
+      if (*offset == NULL_TREE)
+	*offset = size_int (-adjust / BITS_PER_UNIT);
+      else
+	*offset
+	  = size_binop (MINUS_EXPR, *offset, size_int (adjust / BITS_PER_UNIT));
       *bitstart = 0;
     }
   else
@@ -4626,17 +4628,6 @@ mem_ref_refers_to_non_mem_p (tree ref)
 {
   tree base = TREE_OPERAND (ref, 0);
   return addr_expr_of_non_mem_decl_p_1 (base, false);
-}
-
-/* Return TRUE iff OP is an ADDR_EXPR of a DECL that's not
-   addressable.  This is very much like mem_ref_refers_to_non_mem_p,
-   but instead of the MEM_REF, it takes its base, and it doesn't
-   assume a DECL is in memory just because its RTL is not set yet.  */
-
-bool
-addr_expr_of_non_mem_decl_p (tree op)
-{
-  return addr_expr_of_non_mem_decl_p_1 (op, true);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
@@ -4718,6 +4709,15 @@ expand_assignment (tree to, tree from, bool nontemporal)
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
 				 &unsignedp, &volatilep, true);
+
+      /* Make sure bitpos is not negative, it can wreak havoc later.  */
+      if (bitpos < 0)
+	{
+	  gcc_assert (offset == NULL_TREE);
+	  offset = size_int (bitpos >> (BITS_PER_UNIT == 8
+					? 3 : exact_log2 (BITS_PER_UNIT)));
+	  bitpos &= BITS_PER_UNIT - 1;
+	}
 
       if (TREE_CODE (to) == COMPONENT_REF
 	  && DECL_BIT_FIELD_TYPE (TREE_OPERAND (to, 1)))
@@ -5741,6 +5741,23 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
   else
     store_field (target, bitsize, bitpos, 0, 0, mode, exp, alias_set, false);
 }
+
+
+/* Returns the number of FIELD_DECLs in TYPE.  */
+
+static int
+fields_length (const_tree type)
+{
+  tree t = TYPE_FIELDS (type);
+  int count = 0;
+
+  for (; t; t = DECL_CHAIN (t))
+    if (TREE_CODE (t) == FIELD_DECL)
+      ++count;
+
+  return count;
+}
+
 
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM; we know it cannot conflict, since

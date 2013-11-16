@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Convert a 128bit signed integer to IEEE single
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Uros Bizjak (ubizjak@gmail.com).
 
@@ -24,21 +24,22 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "soft-fp.h"
 #include "single.h"
 
-SFtype __floattisf(TItype i)
+SFtype
+__floattisf (TItype i)
 {
   FP_DECL_EX;
-  FP_DECL_S(A);
+  FP_DECL_S (A);
   SFtype a;
 
-  FP_FROM_INT_S(A, i, TI_BITS, UTItype);
-  FP_PACK_RAW_S(a, A);
+  FP_INIT_ROUNDMODE;
+  FP_FROM_INT_S (A, i, TI_BITS, UTItype);
+  FP_PACK_RAW_S (a, A);
   FP_HANDLE_EXCEPTIONS;
 
   return a;

@@ -32,6 +32,33 @@ func BenchmarkHashStringSpeed(b *testing.B) {
 	}
 }
 
+type chunk [17]byte
+
+func BenchmarkHashBytesSpeed(b *testing.B) {
+	// a bunch of chunks, each with a different alignment mod 16
+	var chunks [size]chunk
+	// initialize each to a different value
+	for i := 0; i < size; i++ {
+		chunks[i][0] = byte(i)
+	}
+	// put into a map
+	m := make(map[chunk]int, size)
+	for i, c := range chunks {
+		m[c] = i
+	}
+	idx := 0
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if m[chunks[idx]] != idx {
+			b.Error("bad map entry for chunk")
+		}
+		idx++
+		if idx == size {
+			idx = 0
+		}
+	}
+}
+
 func BenchmarkHashInt32Speed(b *testing.B) {
 	ints := make([]int32, size)
 	for i := 0; i < size; i++ {
@@ -204,5 +231,40 @@ func BenchmarkNewEmptyMap(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = make(map[int]int)
+	}
+}
+
+func BenchmarkMapIter(b *testing.B) {
+	m := make(map[int]bool)
+	for i := 0; i < 8; i++ {
+		m[i] = true
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, _ = range m {
+		}
+	}
+}
+
+func BenchmarkMapIterEmpty(b *testing.B) {
+	m := make(map[int]bool)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, _ = range m {
+		}
+	}
+}
+
+func BenchmarkSameLengthMap(b *testing.B) {
+	// long strings, same length, differ in first few
+	// and last few bytes.
+	m := make(map[string]bool)
+	s1 := "foo" + strings.Repeat("-", 100) + "bar"
+	s2 := "goo" + strings.Repeat("-", 100) + "ber"
+	m[s1] = true
+	m[s2] = true
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = m[s1]
 	}
 }

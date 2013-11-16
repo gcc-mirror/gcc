@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux netbsd openbsd windows
+// +build darwin dragonfly freebsd linux netbsd openbsd windows
 
 package net
 
@@ -16,15 +16,11 @@ func joinIPv4Group(fd *netFD, ifi *Interface, ip IP) error {
 	if err := setIPv4MreqToInterface(mreq, ifi); err != nil {
 		return err
 	}
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	err := syscall.SetsockoptIPMreq(fd.sysfd, syscall.IPPROTO_IP, syscall.IP_ADD_MEMBERSHIP, mreq)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptIPMreq(fd.sysfd, syscall.IPPROTO_IP, syscall.IP_ADD_MEMBERSHIP, mreq))
 }
 
 func setIPv6MulticastInterface(fd *netFD, ifi *Interface) error {
@@ -32,27 +28,19 @@ func setIPv6MulticastInterface(fd *netFD, ifi *Interface) error {
 	if ifi != nil {
 		v = ifi.Index
 	}
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	err := syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_MULTICAST_IF, v)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_MULTICAST_IF, v))
 }
 
 func setIPv6MulticastLoopback(fd *netFD, v bool) error {
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	err := syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_MULTICAST_LOOP, boolint(v))
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_MULTICAST_LOOP, boolint(v)))
 }
 
 func joinIPv6Group(fd *netFD, ifi *Interface, ip IP) error {
@@ -61,13 +49,9 @@ func joinIPv6Group(fd *netFD, ifi *Interface, ip IP) error {
 	if ifi != nil {
 		mreq.Interface = uint32(ifi.Index)
 	}
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	err := syscall.SetsockoptIPv6Mreq(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_JOIN_GROUP, mreq)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptIPv6Mreq(fd.sysfd, syscall.IPPROTO_IPV6, syscall.IPV6_JOIN_GROUP, mreq))
 }

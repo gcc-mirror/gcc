@@ -659,6 +659,8 @@ LIBGO_IS_SOLARIS_FALSE
 LIBGO_IS_SOLARIS_TRUE
 LIBGO_IS_RTEMS_FALSE
 LIBGO_IS_RTEMS_TRUE
+LIBGO_IS_DRAGONFLY_FALSE
+LIBGO_IS_DRAGONFLY_TRUE
 LIBGO_IS_OPENBSD_FALSE
 LIBGO_IS_OPENBSD_TRUE
 LIBGO_IS_NETBSD_FALSE
@@ -11111,7 +11113,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11114 "configure"
+#line 11116 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11217,7 +11219,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11220 "configure"
+#line 11222 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13490,6 +13492,7 @@ is_irix=no
 is_linux=no
 is_netbsd=no
 is_openbsd=no
+is_dragonfly=no
 is_rtems=no
 is_solaris=no
 GOOS=unknown
@@ -13500,6 +13503,7 @@ case ${host} in
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-netbsd*)	 is_netbsd=yes;  GOOS=netbsd ;;
   *-*-openbsd*)  is_openbsd=yes; GOOS=openbsd ;;
+  *-*-dragonfly*) is_dragonfly=yes; GOOS=dragonfly ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
@@ -13549,6 +13553,14 @@ fi
 else
   LIBGO_IS_OPENBSD_TRUE='#'
   LIBGO_IS_OPENBSD_FALSE=
+fi
+
+ if test $is_dragonly = yes; then
+  LIBGO_IS_DRAGONFLY_TRUE=
+  LIBGO_IS_DRAGONFLY_FALSE='#'
+else
+  LIBGO_IS_DRAGONFLY_TRUE='#'
+  LIBGO_IS_DRAGONFLY_FALSE=
 fi
 
  if test $is_rtems = yes; then
@@ -14600,7 +14612,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/file.h sys/mman.h syscall.h sys/epoll.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h
+for ac_header in sys/file.h sys/mman.h syscall.h sys/epoll.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/reboot.h netinet/icmp6.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -15500,6 +15512,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_OPENBSD_TRUE}" && test -z "${LIBGO_IS_OPENBSD_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_OPENBSD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_DRAGONFLY_TRUE}" && test -z "${LIBGO_IS_DRAGONFLY_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_DRAGONFLY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_RTEMS_TRUE}" && test -z "${LIBGO_IS_RTEMS_FALSE}"; then

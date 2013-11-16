@@ -17,6 +17,8 @@
 
 namespace __sanitizer {
 class AnsiColorDecorator {
+  // FIXME: This is not portable. It assumes the special strings are printed to
+  // stdout, which is not the case on Windows (see SetConsoleTextAttribute()).
  public:
   explicit AnsiColorDecorator(bool use_ansi_colors) : ansi_(use_ansi_colors) { }
   const char *Bold()    const { return ansi_ ? "\033[1m" : ""; }

@@ -924,11 +924,30 @@ determine_base_object (tree expr)
 static struct iv *
 alloc_iv (tree base, tree step)
 {
+  tree base_object = base;
   struct iv *iv = XCNEW (struct iv);
   gcc_assert (step != NULL_TREE);
 
+  /* Lower all address expressions except ones with DECL_P as operand.
+     By doing this:
+       1) More accurate cost can be computed for address expressions;
+       2) Duplicate candidates won't be created for bases in different
+          forms, like &a[0] and &a.  */
+  STRIP_NOPS (base_object);
+  if (TREE_CODE (base_object) == ADDR_EXPR
+      && !DECL_P (TREE_OPERAND (base_object, 0)))
+    {
+      aff_tree comb;
+      double_int size;
+      base_object = get_inner_reference_aff (TREE_OPERAND (base_object, 0),
+					     &comb, &size);
+      gcc_assert (base_object != NULL_TREE);
+      base_object = build_fold_addr_expr (base_object);
+      base = fold_convert (TREE_TYPE (base), aff_combination_to_tree (&comb));
+    }
+
   iv->base = base;
-  iv->base_object = determine_base_object (base);
+  iv->base_object = determine_base_object (base_object);
   iv->step = step;
   iv->biv_p = false;
   iv->have_use_for = false;
@@ -3481,17 +3500,21 @@ get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
   int m = exact_log2 (int_cst_value (cst));
   int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
   int sa_cost;
+  bool equal_p = false;
 
   if (!(m >= 0 && m < maxm))
     return false;
 
+  if (operand_equal_p (op1, mult, 0))
+    equal_p = true;
+
   sa_cost = (TREE_CODE (expr) != MINUS_EXPR
              ? shiftadd_cost (speed, mode, m)
-             : (mult == op1
+             : (equal_p
                 ? shiftsub1_cost (speed, mode, m)
                 : shiftsub0_cost (speed, mode, m)));
   res = new_cost (sa_cost, 0);
-  res = add_costs (res, mult == op1 ? cost0 : cost1);
+  res = add_costs (res, equal_p ? cost0 : cost1);
 
   STRIP_NOPS (multop);
   if (!is_gimple_val (multop))

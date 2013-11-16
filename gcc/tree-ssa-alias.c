@@ -559,14 +559,14 @@ ao_ref_alias_set (ao_ref *ref)
 }
 
 /* Init an alias-oracle reference representation from a gimple pointer
-   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE the the
+   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE then the
    size is assumed to be unknown.  The access is assumed to be only
    to or after of the pointer target, not before it.  */
 
 void
 ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
-  HOST_WIDE_INT t1, t2, extra_offset = 0;
+  HOST_WIDE_INT t, extra_offset = 0;
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -576,17 +576,26 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 	ptr = gimple_assign_rhs1 (stmt);
       else if (is_gimple_assign (stmt)
 	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
-	       && host_integerp (gimple_assign_rhs2 (stmt), 0)
-	       && (t1 = int_cst_value (gimple_assign_rhs2 (stmt))) >= 0)
+	       && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST)
 	{
 	  ptr = gimple_assign_rhs1 (stmt);
-	  extra_offset = BITS_PER_UNIT * t1;
+	  extra_offset = BITS_PER_UNIT
+			 * int_cst_value (gimple_assign_rhs2 (stmt));
 	}
     }
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    ref->base = get_ref_base_and_extent (TREE_OPERAND (ptr, 0),
-					 &ref->offset, &t1, &t2);
+    {
+      ref->base = get_addr_base_and_unit_offset (TREE_OPERAND (ptr, 0), &t);
+      if (ref->base)
+	ref->offset = BITS_PER_UNIT * t;
+      else
+	{
+	  size = NULL_TREE;
+	  ref->offset = 0;
+	  ref->base = get_base_address (TREE_OPERAND (ptr, 0));
+	}
+    }
   else
     {
       ref->base = build2 (MEM_REF, char_type_node,

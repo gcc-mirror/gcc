@@ -14704,16 +14704,19 @@ __LD4_LANE_FUNC (uint64x2x4_t, uint64_t, 2d, d, u64, q)
 
 #define __ST2_LANE_FUNC(intype, ptrtype, regsuffix,			\
 			lnsuffix, funcsuffix, Q)			\
+  typedef struct { ptrtype __x[2]; } __ST2_LANE_STRUCTURE_##intype;	\
   __extension__ static __inline void					\
   __attribute__ ((__always_inline__))					\
-  vst2 ## Q ## _lane_ ## funcsuffix (const ptrtype *ptr,		\
+  vst2 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
 				     intype b, const int c)		\
   {									\
+    __ST2_LANE_STRUCTURE_##intype *__p =				\
+				(__ST2_LANE_STRUCTURE_##intype *)ptr;	\
     __asm__ ("ld1 {v16." #regsuffix ", v17." #regsuffix "}, %1\n\t"	\
 	     "st2 {v16." #lnsuffix ", v17." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*(intype *) ptr)					\
+	     : "=Q"(*__p)						\
 	     : "Q"(b), "i"(c)						\
-	     : "memory", "v16", "v17");					\
+	     : "v16", "v17");						\
   }
 
 __ST2_LANE_FUNC (int8x8x2_t, int8_t, 8b, b, s8,)
@@ -14743,16 +14746,19 @@ __ST2_LANE_FUNC (uint64x2x2_t, uint64_t, 2d, d, u64, q)
 
 #define __ST3_LANE_FUNC(intype, ptrtype, regsuffix,			\
 			lnsuffix, funcsuffix, Q)			\
+  typedef struct { ptrtype __x[3]; } __ST3_LANE_STRUCTURE_##intype;	\
   __extension__ static __inline void					\
   __attribute__ ((__always_inline__))					\
-  vst3 ## Q ## _lane_ ## funcsuffix (const ptrtype *ptr,		\
+  vst3 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
 				     intype b, const int c)		\
   {									\
+    __ST3_LANE_STRUCTURE_##intype *__p =				\
+				(__ST3_LANE_STRUCTURE_##intype *)ptr;	\
     __asm__ ("ld1 {v16." #regsuffix " - v18." #regsuffix "}, %1\n\t"	\
 	     "st3 {v16." #lnsuffix " - v18." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*(intype *) ptr)					\
+	     : "=Q"(*__p)						\
 	     : "Q"(b), "i"(c)						\
-	     : "memory", "v16", "v17", "v18");				\
+	     : "v16", "v17", "v18");					\
   }
 
 __ST3_LANE_FUNC (int8x8x3_t, int8_t, 8b, b, s8,)
@@ -14782,16 +14788,19 @@ __ST3_LANE_FUNC (uint64x2x3_t, uint64_t, 2d, d, u64, q)
 
 #define __ST4_LANE_FUNC(intype, ptrtype, regsuffix,			\
 			lnsuffix, funcsuffix, Q)			\
+  typedef struct { ptrtype __x[4]; } __ST4_LANE_STRUCTURE_##intype;	\
   __extension__ static __inline void					\
   __attribute__ ((__always_inline__))					\
-  vst4 ## Q ## _lane_ ## funcsuffix (const ptrtype *ptr,		\
+  vst4 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
 				     intype b, const int c)		\
   {									\
+    __ST4_LANE_STRUCTURE_##intype *__p =				\
+				(__ST4_LANE_STRUCTURE_##intype *)ptr;	\
     __asm__ ("ld1 {v16." #regsuffix " - v19." #regsuffix "}, %1\n\t"	\
 	     "st4 {v16." #lnsuffix " - v19." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*(intype *) ptr)					\
+	     : "=Q"(*__p)						\
 	     : "Q"(b), "i"(c)						\
-	     : "memory", "v16", "v17", "v18", "v19");			\
+	     : "v16", "v17", "v18", "v19");				\
   }
 
 __ST4_LANE_FUNC (int8x8x4_t, int8_t, 8b, b, s8,)

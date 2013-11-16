@@ -7,6 +7,7 @@
 extern void abort(void);
 unsigned char a;
 
+int
 main ()
 {
   int b;

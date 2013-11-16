@@ -245,7 +245,7 @@ proc dg-additional-files-options { options source } {
 	set additional_sources ""
     }
     if { $additional_files != "" } then { 
-	regsub -all " " $additional_files " [file dirname $source]/" additional_files
+	regsub -all "^| " $additional_files " [file dirname $source]/" additional_files
 	set to_download [concat $to_download $additional_files]
 	set additional_files ""
     }

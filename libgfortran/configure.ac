@@ -280,7 +280,7 @@ else
    strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    readlink getgid getpid getppid getuid geteuid umask getegid \
-   secure_getenv __secure_getenv)
+   secure_getenv __secure_getenv mkostemp)
 fi
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist

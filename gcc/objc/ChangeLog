@@ -1,3 +1,7 @@
+2013-11-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c (objc_push_parm): Handle atomic qualifier.
+
 2013-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (START_HDRS, cc1obj-checksum.o, objc/objc-lang.o)

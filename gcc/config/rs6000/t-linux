@@ -7,3 +7,7 @@ else
 MULTIARCH_DIRNAME = powerpc-linux-gnu
 endif
 endif
+
+rs6000-linux.o: $(srcdir)/config/rs6000/rs6000-linux.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

@@ -69,6 +69,7 @@ extern tree default_mangle_assembler_name (const char *);
 extern bool default_scalar_mode_supported_p (enum machine_mode);
 extern bool targhook_words_big_endian (void);
 extern bool targhook_float_words_big_endian (void);
+extern bool default_float_exceptions_rounding_supported_p (void);
 extern bool default_decimal_float_supported_p (void);
 extern bool default_fixed_point_supported_p (void);
 
@@ -202,6 +203,7 @@ extern void default_asm_output_ident_directive (const char*);
 
 extern enum machine_mode default_cstore_mode (enum insn_code);
 extern bool default_member_type_forces_blk (const_tree, enum machine_mode);
+extern void default_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);
 extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 
@@ -211,3 +213,5 @@ extern tree default_fn_abi_va_list_bounds_size (tree);
 extern tree default_chkp_bound_type (void);
 extern enum machine_mode default_chkp_bound_mode (void);
 extern tree default_builtin_chkp_function (unsigned int);
+extern bool can_use_doloop_if_innermost (double_int, double_int,
+					 unsigned int, bool);

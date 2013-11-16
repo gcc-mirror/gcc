@@ -6,8 +6,10 @@ package net
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 )
@@ -59,7 +61,7 @@ func BenchmarkTCP6PersistentTimeout(b *testing.B) {
 func benchmarkTCP(b *testing.B, persistent, timeout bool, laddr string) {
 	const msgLen = 512
 	conns := b.N
-	numConcurrent := runtime.GOMAXPROCS(-1) * 16
+	numConcurrent := runtime.GOMAXPROCS(-1) * 2
 	msgs := 1
 	if persistent {
 		conns = numConcurrent
@@ -147,11 +149,134 @@ func benchmarkTCP(b *testing.B, persistent, timeout bool, laddr string) {
 	}
 }
 
+func BenchmarkTCP4ConcurrentReadWrite(b *testing.B) {
+	benchmarkTCPConcurrentReadWrite(b, "127.0.0.1:0")
+}
+
+func BenchmarkTCP6ConcurrentReadWrite(b *testing.B) {
+	if !supportsIPv6 {
+		b.Skip("ipv6 is not supported")
+	}
+	benchmarkTCPConcurrentReadWrite(b, "[::1]:0")
+}
+
+func benchmarkTCPConcurrentReadWrite(b *testing.B, laddr string) {
+	// The benchmark creates GOMAXPROCS client/server pairs.
+	// Each pair creates 4 goroutines: client reader/writer and server reader/writer.
+	// The benchmark stresses concurrent reading and writing to the same connection.
+	// Such pattern is used in net/http and net/rpc.
+
+	b.StopTimer()
+
+	P := runtime.GOMAXPROCS(0)
+	N := b.N / P
+	W := 1000
+
+	// Setup P client/server connections.
+	clients := make([]Conn, P)
+	servers := make([]Conn, P)
+	ln, err := Listen("tcp", laddr)
+	if err != nil {
+		b.Fatalf("Listen failed: %v", err)
+	}
+	defer ln.Close()
+	done := make(chan bool)
+	go func() {
+		for p := 0; p < P; p++ {
+			s, err := ln.Accept()
+			if err != nil {
+				b.Fatalf("Accept failed: %v", err)
+			}
+			servers[p] = s
+		}
+		done <- true
+	}()
+	for p := 0; p < P; p++ {
+		c, err := Dial("tcp", ln.Addr().String())
+		if err != nil {
+			b.Fatalf("Dial failed: %v", err)
+		}
+		clients[p] = c
+	}
+	<-done
+
+	b.StartTimer()
+
+	var wg sync.WaitGroup
+	wg.Add(4 * P)
+	for p := 0; p < P; p++ {
+		// Client writer.
+		go func(c Conn) {
+			defer wg.Done()
+			var buf [1]byte
+			for i := 0; i < N; i++ {
+				v := byte(i)
+				for w := 0; w < W; w++ {
+					v *= v
+				}
+				buf[0] = v
+				_, err := c.Write(buf[:])
+				if err != nil {
+					b.Fatalf("Write failed: %v", err)
+				}
+			}
+		}(clients[p])
+
+		// Pipe between server reader and server writer.
+		pipe := make(chan byte, 128)
+
+		// Server reader.
+		go func(s Conn) {
+			defer wg.Done()
+			var buf [1]byte
+			for i := 0; i < N; i++ {
+				_, err := s.Read(buf[:])
+				if err != nil {
+					b.Fatalf("Read failed: %v", err)
+				}
+				pipe <- buf[0]
+			}
+		}(servers[p])
+
+		// Server writer.
+		go func(s Conn) {
+			defer wg.Done()
+			var buf [1]byte
+			for i := 0; i < N; i++ {
+				v := <-pipe
+				for w := 0; w < W; w++ {
+					v *= v
+				}
+				buf[0] = v
+				_, err := s.Write(buf[:])
+				if err != nil {
+					b.Fatalf("Write failed: %v", err)
+				}
+			}
+			s.Close()
+		}(servers[p])
+
+		// Client reader.
+		go func(c Conn) {
+			defer wg.Done()
+			var buf [1]byte
+			for i := 0; i < N; i++ {
+				_, err := c.Read(buf[:])
+				if err != nil {
+					b.Fatalf("Read failed: %v", err)
+				}
+			}
+			c.Close()
+		}(clients[p])
+	}
+	wg.Wait()
+}
+
 type resolveTCPAddrTest struct {
-	net     string
-	litAddr string
-	addr    *TCPAddr
-	err     error
+	net           string
+	litAddrOrName string
+	addr          *TCPAddr
+	err           error
 }
 
 var resolveTCPAddrTests = []resolveTCPAddrTest{
@@ -167,6 +292,8 @@ var resolveTCPAddrTests = []resolveTCPAddrTest{
 	{"", "127.0.0.1:0", &TCPAddr{IP: IPv4(127, 0, 0, 1), Port: 0}, nil}, // Go 1.0 behavior
 	{"", "[::1]:0", &TCPAddr{IP: ParseIP("::1"), Port: 0}, nil},         // Go 1.0 behavior
 
+	{"tcp", ":12345", &TCPAddr{Port: 12345}, nil},
+
 	{"http", "127.0.0.1:0", nil, UnknownNetworkError("http")},
 }
 
@@ -178,16 +305,33 @@ func init() {
 			{"tcp6", "[fe80::1%" + index + "]:4", &TCPAddr{IP: ParseIP("fe80::1"), Port: 4, Zone: index}, nil},
 		}...)
 	}
+	if ips, err := LookupIP("localhost"); err == nil && len(ips) > 1 && supportsIPv4 && supportsIPv6 {
+		resolveTCPAddrTests = append(resolveTCPAddrTests, []resolveTCPAddrTest{
+			{"tcp", "localhost:5", &TCPAddr{IP: IPv4(127, 0, 0, 1), Port: 5}, nil},
+			{"tcp4", "localhost:6", &TCPAddr{IP: IPv4(127, 0, 0, 1), Port: 6}, nil},
+			{"tcp6", "localhost:7", &TCPAddr{IP: IPv6loopback, Port: 7}, nil},
+		}...)
+	}
 }
 
 func TestResolveTCPAddr(t *testing.T) {
 	for _, tt := range resolveTCPAddrTests {
-		addr, err := ResolveTCPAddr(tt.net, tt.litAddr)
+		addr, err := ResolveTCPAddr(tt.net, tt.litAddrOrName)
 		if err != tt.err {
-			t.Fatalf("ResolveTCPAddr(%v, %v) failed: %v", tt.net, tt.litAddr, err)
+			t.Fatalf("ResolveTCPAddr(%q, %q) failed: %v", tt.net, tt.litAddrOrName, err)
 		}
 		if !reflect.DeepEqual(addr, tt.addr) {
-			t.Fatalf("got %#v; expected %#v", addr, tt.addr)
+			t.Fatalf("ResolveTCPAddr(%q, %q) = %#v, want %#v", tt.net, tt.litAddrOrName, addr, tt.addr)
+		}
+		if err == nil {
+			str := addr.String()
+			addr1, err := ResolveTCPAddr(tt.net, str)
+			if err != nil {
+				t.Fatalf("ResolveTCPAddr(%q, %q) [from %q]: %v", tt.net, str, tt.litAddrOrName, err)
+			}
+			if !reflect.DeepEqual(addr1, addr) {
+				t.Fatalf("ResolveTCPAddr(%q, %q) [from %q] = %#v, want %#v", tt.net, str, tt.litAddrOrName, addr1, addr)
+			}
 		}
 	}
 }
@@ -291,6 +435,156 @@ func TestIPv6LinkLocalUnicastTCP(t *testing.T) {
 			t.Fatalf("Conn.Read failed: %v", err)
 		}
 
+		<-done
+	}
+}
+
+func TestTCPConcurrentAccept(t *testing.T) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(4))
+	ln, err := Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Listen failed: %v", err)
+	}
+	const N = 10
+	var wg sync.WaitGroup
+	wg.Add(N)
+	for i := 0; i < N; i++ {
+		go func() {
+			for {
+				c, err := ln.Accept()
+				if err != nil {
+					break
+				}
+				c.Close()
+			}
+			wg.Done()
+		}()
+	}
+	for i := 0; i < 10*N; i++ {
+		c, err := Dial("tcp", ln.Addr().String())
+		if err != nil {
+			t.Fatalf("Dial failed: %v", err)
+		}
+		c.Close()
+	}
+	ln.Close()
+	wg.Wait()
+}
+
+func TestTCPReadWriteMallocs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	ln, err := Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Listen failed: %v", err)
+	}
+	defer ln.Close()
+	var server Conn
+	errc := make(chan error)
+	go func() {
+		var err error
+		server, err = ln.Accept()
+		errc <- err
+	}()
+	client, err := Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatalf("Dial failed: %v", err)
+	}
+	if err := <-errc; err != nil {
+		t.Fatalf("Accept failed: %v", err)
+	}
+	defer server.Close()
+	var buf [128]byte
+	mallocs := testing.AllocsPerRun(1000, func() {
+		_, err := server.Write(buf[:])
+		if err != nil {
+			t.Fatalf("Write failed: %v", err)
+		}
+		_, err = io.ReadFull(client, buf[:])
+		if err != nil {
+			t.Fatalf("Read failed: %v", err)
+		}
+	})
+	if mallocs > 0 {
+		t.Fatalf("Got %v allocs, want 0", mallocs)
+	}
+}
+
+func TestTCPStress(t *testing.T) {
+	const conns = 2
+	const msgLen = 512
+	msgs := int(1e4)
+	if testing.Short() {
+		msgs = 1e2
+	}
+
+	sendMsg := func(c Conn, buf []byte) bool {
+		n, err := c.Write(buf)
+		if n != len(buf) || err != nil {
+			t.Logf("Write failed: %v", err)
+			return false
+		}
+		return true
+	}
+	recvMsg := func(c Conn, buf []byte) bool {
+		for read := 0; read != len(buf); {
+			n, err := c.Read(buf)
+			read += n
+			if err != nil {
+				t.Logf("Read failed: %v", err)
+				return false
+			}
+		}
+		return true
+	}
+
+	ln, err := Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Listen failed: %v", err)
+	}
+	defer ln.Close()
+	// Acceptor.
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				break
+			}
+			// Server connection.
+			go func(c Conn) {
+				defer c.Close()
+				var buf [msgLen]byte
+				for m := 0; m < msgs; m++ {
+					if !recvMsg(c, buf[:]) || !sendMsg(c, buf[:]) {
+						break
+					}
+				}
+			}(c)
+		}
+	}()
+	done := make(chan bool)
+	for i := 0; i < conns; i++ {
+		// Client connection.
+		go func() {
+			defer func() {
+				done <- true
+			}()
+			c, err := Dial("tcp", ln.Addr().String())
+			if err != nil {
+				t.Logf("Dial failed: %v", err)
+				return
+			}
+			defer c.Close()
+			var buf [msgLen]byte
+			for m := 0; m < msgs; m++ {
+				if !sendMsg(c, buf[:]) || !recvMsg(c, buf[:]) {
+					break
+				}
+			}
+		}()
+	}
+	for i := 0; i < conns; i++ {
 		<-done
 	}
 }

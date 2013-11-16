@@ -17,26 +17,17 @@ func setIPv4MulticastInterface(fd *netFD, ifi *Interface) error {
 	}
 	var a [4]byte
 	copy(a[:], ip.To4())
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	err = syscall.Setsockopt(fd.sysfd, int32(syscall.IPPROTO_IP), int32(syscall.IP_MULTICAST_IF), (*byte)(unsafe.Pointer(&a[0])), 4)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.Setsockopt(fd.sysfd, syscall.IPPROTO_IP, syscall.IP_MULTICAST_IF, (*byte)(unsafe.Pointer(&a[0])), 4))
 }
 
 func setIPv4MulticastLoopback(fd *netFD, v bool) error {
-	if err := fd.incref(false); err != nil {
+	if err := fd.incref(); err != nil {
 		return err
 	}
 	defer fd.decref()
-	vv := int32(boolint(v))
-	err := syscall.Setsockopt(fd.sysfd, int32(syscall.IPPROTO_IP), int32(syscall.IP_MULTICAST_LOOP), (*byte)(unsafe.Pointer(&vv)), 4)
-	if err != nil {
-		return os.NewSyscallError("setsockopt", err)
-	}
-	return nil
+	return os.NewSyscallError("setsockopt", syscall.SetsockoptInt(fd.sysfd, syscall.IPPROTO_IP, syscall.IP_MULTICAST_LOOP, boolint(v)))
 }

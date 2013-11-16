@@ -22,6 +22,7 @@
 #ifndef SANITIZER_SYMBOLIZER_H
 #define SANITIZER_SYMBOLIZER_H
 
+#include "sanitizer_allocator_internal.h"
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_libc.h"
 // WARNING: Do not include system headers here. See details above.
@@ -40,8 +41,14 @@ struct AddressInfo {
   AddressInfo() {
     internal_memset(this, 0, sizeof(AddressInfo));
   }
+
   // Deletes all strings and sets all fields to zero.
-  void Clear();
+  void Clear() {
+    InternalFree(module);
+    InternalFree(function);
+    InternalFree(file);
+    internal_memset(this, 0, sizeof(AddressInfo));
+  }
 
   void FillAddressAndModuleInfo(uptr addr, const char *mod_name,
                                 uptr mod_offset) {
@@ -60,52 +67,39 @@ struct DataInfo {
   uptr size;
 };
 
-// Fills at most "max_frames" elements of "frames" with descriptions
-// for a given address (in all inlined functions). Returns the number
-// of descriptions actually filled.
-// This function should NOT be called from two threads simultaneously.
-uptr SymbolizeCode(uptr address, AddressInfo *frames, uptr max_frames);
-bool SymbolizeData(uptr address, DataInfo *info);
-
-bool IsSymbolizerAvailable();
-
-// Attempts to demangle the provided C++ mangled name.
-const char *Demangle(const char *Name);
-
-// Starts external symbolizer program in a subprocess. Sanitizer communicates
-// with external symbolizer via pipes.
-bool InitializeExternalSymbolizer(const char *path_to_symbolizer);
-
-class LoadedModule {
+class SymbolizerInterface {
  public:
-  LoadedModule(const char *module_name, uptr base_address);
-  void addAddressRange(uptr beg, uptr end);
-  bool containsAddress(uptr address) const;
-
-  const char *full_name() const { return full_name_; }
-  uptr base_address() const { return base_address_; }
-
- private:
-  struct AddressRange {
-    uptr beg;
-    uptr end;
-  };
-  char *full_name_;
-  uptr base_address_;
-  static const uptr kMaxNumberOfAddressRanges = 6;
-  AddressRange ranges_[kMaxNumberOfAddressRanges];
-  uptr n_ranges_;
+  // Fills at most "max_frames" elements of "frames" with descriptions
+  // for a given address (in all inlined functions). Returns the number
+  // of descriptions actually filled.
+  virtual uptr SymbolizeCode(uptr address, AddressInfo *frames,
+                             uptr max_frames) {
+    return 0;
+  }
+  virtual bool SymbolizeData(uptr address, DataInfo *info) {
+    return false;
+  }
+  virtual bool IsAvailable() {
+    return false;
+  }
+  // Release internal caches (if any).
+  virtual void Flush() {}
+  // Attempts to demangle the provided C++ mangled name.
+  virtual const char *Demangle(const char *name) {
+    return name;
+  }
+  virtual void PrepareForSandboxing() {}
+  // Starts external symbolizer program in a subprocess. Sanitizer communicates
+  // with external symbolizer via pipes. If path_to_symbolizer is NULL or empty,
+  // tries to look for llvm-symbolizer in PATH.
+  virtual bool InitializeExternal(const char *path_to_symbolizer) {
+    return false;
+  }
 };
 
-// Creates external symbolizer connected via pipe, user should write
-// to output_fd and read from input_fd.
-bool StartSymbolizerSubprocess(const char *path_to_symbolizer,
-                               int *input_fd, int *output_fd);
-
-// OS-dependent function that fills array with descriptions of at most
-// "max_modules" currently loaded modules. Returns the number of
-// initialized modules.
-uptr GetListOfModules(LoadedModule *modules, uptr max_modules);
+// Returns platform-specific implementation of SymbolizerInterface. It can't be
+// used from multiple threads simultaneously.
+SANITIZER_WEAK_ATTRIBUTE SymbolizerInterface *getSymbolizer();
 
 }  // namespace __sanitizer
 

@@ -8,6 +8,7 @@ import (
 	"math"
 	"runtime"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -92,6 +93,35 @@ func TestYieldLocked(t *testing.T) {
 	<-c
 }
 
+func TestGoroutineParallelism(t *testing.T) {
+	P := 4
+	N := 10
+	if testing.Short() {
+		P = 3
+		N = 3
+	}
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(P))
+	for try := 0; try < N; try++ {
+		done := make(chan bool)
+		x := uint32(0)
+		for p := 0; p < P; p++ {
+			// Test that all P goroutines are scheduled at the same time
+			go func(p int) {
+				for i := 0; i < 3; i++ {
+					expected := uint32(P*i + p)
+					for atomic.LoadUint32(&x) != expected {
+					}
+					atomic.StoreUint32(&x, expected+1)
+				}
+				done <- true
+			}(p)
+		}
+		for p := 0; p < P; p++ {
+			<-done
+		}
+	}
+}
+
 func TestBlockLocked(t *testing.T) {
 	const N = 10
 	c := make(chan bool)
@@ -107,10 +137,187 @@ func TestBlockLocked(t *testing.T) {
 	}
 }
 
+func TestTimerFairness(t *testing.T) {
+	done := make(chan bool)
+	c := make(chan bool)
+	for i := 0; i < 2; i++ {
+		go func() {
+			for {
+				select {
+				case c <- true:
+				case <-done:
+					return
+				}
+			}
+		}()
+	}
+
+	timer := time.After(20 * time.Millisecond)
+	for {
+		select {
+		case <-c:
+		case <-timer:
+			close(done)
+			return
+		}
+	}
+}
+
+func TestTimerFairness2(t *testing.T) {
+	done := make(chan bool)
+	c := make(chan bool)
+	for i := 0; i < 2; i++ {
+		go func() {
+			timer := time.After(20 * time.Millisecond)
+			var buf [1]byte
+			for {
+				syscall.Read(0, buf[0:0])
+				select {
+				case c <- true:
+				case <-c:
+				case <-timer:
+					done <- true
+					return
+				}
+			}
+		}()
+	}
+	<-done
+	<-done
+}
+
+// The function is used to test preemption at split stack checks.
+// Declaring a var avoids inlining at the call site.
+var preempt = func() int {
+	var a [128]int
+	sum := 0
+	for _, v := range a {
+		sum += v
+	}
+	return sum
+}
+
+func TestPreemption(t *testing.T) {
+	t.Skip("gccgo does not implement preemption")
+	// Test that goroutines are preempted at function calls.
+	N := 5
+	if testing.Short() {
+		N = 2
+	}
+	c := make(chan bool)
+	var x uint32
+	for g := 0; g < 2; g++ {
+		go func(g int) {
+			for i := 0; i < N; i++ {
+				for atomic.LoadUint32(&x) != uint32(g) {
+					preempt()
+				}
+				atomic.StoreUint32(&x, uint32(1-g))
+			}
+			c <- true
+		}(g)
+	}
+	<-c
+	<-c
+}
+
+func TestPreemptionGC(t *testing.T) {
+	t.Skip("gccgo does not implement preemption")
+	// Test that pending GC preempts running goroutines.
+	P := 5
+	N := 10
+	if testing.Short() {
+		P = 3
+		N = 2
+	}
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(P + 1))
+	var stop uint32
+	for i := 0; i < P; i++ {
+		go func() {
+			for atomic.LoadUint32(&stop) == 0 {
+				preempt()
+			}
+		}()
+	}
+	for i := 0; i < N; i++ {
+		runtime.Gosched()
+		runtime.GC()
+	}
+	atomic.StoreUint32(&stop, 1)
+}
+
 func stackGrowthRecursive(i int) {
 	var pad [128]uint64
 	if i != 0 && pad[0] == 0 {
 		stackGrowthRecursive(i - 1)
+	}
+}
+
+func TestPreemptSplitBig(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in -short mode")
+	}
+	t.Skip("gccgo does not implement preemption")
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(2))
+	stop := make(chan int)
+	go big(stop)
+	for i := 0; i < 3; i++ {
+		time.Sleep(10 * time.Microsecond) // let big start running
+		runtime.GC()
+	}
+	close(stop)
+}
+
+func big(stop chan int) int {
+	n := 0
+	for {
+		// delay so that gc is sure to have asked for a preemption
+		for i := 0; i < 1e9; i++ {
+			n++
+		}
+
+		// call bigframe, which used to miss the preemption in its prologue.
+		bigframe(stop)
+
+		// check if we've been asked to stop.
+		select {
+		case <-stop:
+			return n
+		}
+	}
+}
+
+func bigframe(stop chan int) int {
+	// not splitting the stack will overflow.
+	// small will notice that it needs a stack split and will
+	// catch the overflow.
+	var x [8192]byte
+	return small(stop, &x)
+}
+
+func small(stop chan int, x *[8192]byte) int {
+	for i := range x {
+		x[i] = byte(i)
+	}
+	sum := 0
+	for i := range x {
+		sum += int(x[i])
+	}
+
+	// keep small from being a leaf function, which might
+	// make it not do any stack check at all.
+	nonleaf(stop)
+
+	return sum
+}
+
+func nonleaf(stop chan int) bool {
+	// do something that won't be inlined:
+	select {
+	case <-stop:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -149,49 +356,6 @@ func BenchmarkStackGrowth(b *testing.B) {
 
 func BenchmarkStackGrowthDeep(b *testing.B) {
 	benchmarkStackGrowth(b, 1024)
-}
-
-func BenchmarkSyscall(b *testing.B) {
-	benchmarkSyscall(b, 0, 1)
-}
-
-func BenchmarkSyscallWork(b *testing.B) {
-	benchmarkSyscall(b, 100, 1)
-}
-
-func BenchmarkSyscallExcess(b *testing.B) {
-	benchmarkSyscall(b, 0, 4)
-}
-
-func BenchmarkSyscallExcessWork(b *testing.B) {
-	benchmarkSyscall(b, 100, 4)
-}
-
-func benchmarkSyscall(b *testing.B, work, excess int) {
-	const CallsPerSched = 1000
-	procs := runtime.GOMAXPROCS(-1) * excess
-	N := int32(b.N / CallsPerSched)
-	c := make(chan bool, procs)
-	for p := 0; p < procs; p++ {
-		go func() {
-			foo := 42
-			for atomic.AddInt32(&N, -1) >= 0 {
-				runtime.Gosched()
-				for g := 0; g < CallsPerSched; g++ {
-					runtime.Entersyscall()
-					for i := 0; i < work; i++ {
-						foo *= 2
-						foo /= 2
-					}
-					runtime.Exitsyscall()
-				}
-			}
-			c <- foo == 42
-		}()
-	}
-	for p := 0; p < procs; p++ {
-		<-c
-	}
 }
 
 func BenchmarkCreateGoroutines(b *testing.B) {
