@@ -1,3 +1,9 @@
+2013-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29143
+	* g++.dg/overload/addr2.C: New.
+	* g++.old-deja/g++.other/overload11.C: Adjust.
+
 2013-11-15  Mike Stump  <mikestump@comcast.net>
 
 	* lib/gcc.exp (gcc_target_compile): Add support for random runtime
