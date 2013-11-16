@@ -1,3 +1,7 @@
+2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/constraints.md (Rcq): Simplify register number test.
+
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple.h (enum gf_mask): Change the ordering of GF_OMP_* bits.
