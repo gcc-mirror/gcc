@@ -2,7 +2,6 @@
 
 	* lib/gcc.exp (gcc_target_compile): Add support for random runtime
 	* lib/g++.exp (g++_target_compile): Likewise.
-	libraries.
 	* gcc.dg/cilk-plus/cilk-plus.exp: Improve support for runtime
 	libraries.  Remove debugging.
 	* g++.dg/cilk-plus/cilk-plus.exp: Add support to find runtime
