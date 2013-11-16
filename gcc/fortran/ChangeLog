@@ -1,3 +1,9 @@
+2013-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58771
+	* trans-io.c (transfer_expr): If the backend_decl for a derived
+	type is missing, build it with gfc_typenode_for_spec.
+
 2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/58989
