@@ -29,14 +29,19 @@ g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] 
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] ""
 dg-finish
 
+set library_var [get_multilibs]
+# Pointing the ld_library_path to the Cilk Runtime library binaries. 
+set ld_library_path "${library_var}/libcilkrts/.libs"
+
+global TEST_EXTRA_LIBS
+set TEST_EXTRA_LIBS "-L${library_var}/libcilkrts/.libs"
+
 dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O0 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O2 -ftree-vectorize -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O0 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O1 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O2 -ftree-vectorize -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O3 -fcilkplus" " "
@@ -56,3 +61,5 @@ dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O2 
 dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O3 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O3 -ftree-vectorize -fcilkplus -g" " "
 dg-finish
+
+unset TEST_EXTRA_LIBS
