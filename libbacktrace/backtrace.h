@@ -89,8 +89,7 @@ typedef void (*backtrace_error_callback) (void *data, const char *msg,
    system-specific path names.  If not NULL, FILENAME must point to a
    permanent buffer.  If THREADED is non-zero the state may be
    accessed by multiple threads simultaneously, and the library will
-   use appropriate locks (this requires that the library be configured
-   with --enable-backtrace-threads).  If THREADED is zero the state
+   use appropriate atomic operations.  If THREADED is zero the state
    may only be accessed by one thread at a time.  This returns a state
    pointer on success, NULL on error.  If an error occurs, this will
    call the ERROR_CALLBACK routine.  */
