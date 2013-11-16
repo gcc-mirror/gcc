@@ -1138,6 +1138,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
+  c-family/c-cilkplus.o \
   c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o
 
 # Language-independent object files.
@@ -1240,7 +1241,9 @@ OBJS = \
 	gimple-ssa-strength-reduction.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
+	gimple-walk.o \
 	gimplify.o \
+	gimplify-me.o \
 	godump.o \
 	graph.o \
 	graphds.o \
@@ -2255,7 +2258,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c \
   $(srcdir)/tree-dfa.c \
-  $(srcdir)/tree-iterator.c $(srcdir)/gimplify.c \
+  $(srcdir)/tree-iterator.c $(srcdir)/gimple-expr.c \
   $(srcdir)/tree-chrec.h \
   $(srcdir)/tree-scalar-evolution.c \
   $(srcdir)/tree-ssa-operands.h \

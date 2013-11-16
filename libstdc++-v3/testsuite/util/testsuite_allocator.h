@@ -411,11 +411,11 @@ namespace __gnu_test
 
       propagating_allocator&
       operator=(const propagating_allocator& a) noexcept
-	{
-	  static_assert(Propagate, "assigning propagating_allocator<T, true>");
-	  propagating_allocator(a).swap_base(*this);
-	  return *this;
-	}
+      {
+	static_assert(Propagate, "assigning propagating_allocator<T, true>");
+	propagating_allocator(a).swap_base(*this);
+	return *this;
+      }
 
       template<bool P2>
   	propagating_allocator&

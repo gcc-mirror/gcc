@@ -298,6 +298,8 @@ public:
   int uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
+  /* Time profiler: first run of function.  */
+  int tp_first_run;
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
@@ -633,7 +635,6 @@ struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 struct cgraph_node * cgraph_create_node (tree);
 struct cgraph_node * cgraph_create_empty_node (void);
 struct cgraph_node * cgraph_get_create_node (tree);
-struct cgraph_node * cgraph_get_create_real_symbol_node (tree);
 struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
 struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
 				       HOST_WIDE_INT, tree, tree);

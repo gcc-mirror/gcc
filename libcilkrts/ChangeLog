@@ -1,3 +1,11 @@
+2013-11-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* Makefile.am (libcilkrts_la_LDFLAGS): Added a check for availability
+	of "-ldl" flag.
+	* configure.ac: Likewise.
+	* configure: Regenerate
+	* Makefile.in: Likewise.
+
 2013-11-08  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/59039

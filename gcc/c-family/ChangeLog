@@ -1,3 +1,47 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-cilkplus.c: New file.
+	* c-common.c (readonly_error): Add location argument.
+	* c-common.h (readonly_error): Same.
+	(c_finish_cilk_clauses): Protoize.
+	(c_check_cilk_loop): Same.
+	c-omp.c (c_finish_omp_for): Handle CILK_SIMD nodes.
+	Do not fail on error_mark_node.
+	Abstract increment canonicalization to here...
+	(c_omp_for_incr_canonicalize_ptr): New.
+	c-pragma.c (init_pragma): Register "simd" pragma.
+	c-pragma.h (enum pragma_kind): Add PRAGMA_CILK_SIMD.
+	(enum pragma_cilk_clause): New.
+
+2013-11-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-pretty-print.c (pp_c_character_constant): Remove unnecessary
+	wchar_type and host_integerp checks.
+
+2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* cilk.c: Likewise.
+
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (enum rid): Add RID_AUTO_TYPE.
+	* c-common.c (c_common_reswords): Add __auto_type.
+	(keyword_begins_type_specifier): Handle RID_AUTO_TYPE.
+
+2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Include gimplify.h.
+	* c-gimplify.c: Likewise.
+	* cilk.c: Likewise.
+	* c-omp.c: Include gimple-expr.h instead of gimple.h.
+	* c-ubsan.c: Don't include gimple.h.
+
+2013-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Add _Thread_local.
+
 2013-11-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (atomic_size_supported_p): New function.

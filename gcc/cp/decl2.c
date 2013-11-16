@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-pragma.h"
 #include "dumpfile.h"
 #include "intl.h"
-#include "gimple.h"
 #include "pointer-set.h"
 #include "splay-tree.h"
 #include "langhooks.h"

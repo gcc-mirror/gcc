@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cfgloop.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
@@ -2765,6 +2766,120 @@ estimate_loops (void)
   BITMAP_FREE (tovisit);
 }
 
+/* Drop the profile for NODE to guessed, and update its frequency based on
+   whether it is expected to be hot given the CALL_COUNT.  */
+
+static void
+drop_profile (struct cgraph_node *node, gcov_type call_count)
+{
+  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  /* In the case where this was called by another function with a
+     dropped profile, call_count will be 0. Since there are no
+     non-zero call counts to this function, we don't know for sure
+     whether it is hot, and therefore it will be marked normal below.  */
+  bool hot = maybe_hot_count_p (NULL, call_count);
+
+  if (dump_file)
+    fprintf (dump_file,
+             "Dropping 0 profile for %s/%i. %s based on calls.\n",
+             cgraph_node_name (node), node->order,
+             hot ? "Function is hot" : "Function is normal");
+  /* We only expect to miss profiles for functions that are reached
+     via non-zero call edges in cases where the function may have
+     been linked from another module or library (COMDATs and extern
+     templates). See the comments below for handle_missing_profiles.
+     Also, only warn in cases where the missing counts exceed the
+     number of training runs. In certain cases with an execv followed
+     by a no-return call the profile for the no-return call is not
+     dumped and there can be a mismatch.  */
+  if (!DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl)
+      && call_count > profile_info->runs)
+    {
+      if (flag_profile_correction)
+        {
+          if (dump_file)
+            fprintf (dump_file,
+                     "Missing counts for called function %s/%i\n",
+                     cgraph_node_name (node), node->order);
+        }
+      else
+        warning (0, "Missing counts for called function %s/%i",
+                 cgraph_node_name (node), node->order);
+    }
+
+  profile_status_for_function (fn)
+      = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
+  node->frequency
+      = hot ? NODE_FREQUENCY_HOT : NODE_FREQUENCY_NORMAL;
+}
+
+/* In the case of COMDAT routines, multiple object files will contain the same
+   function and the linker will select one for the binary. In that case
+   all the other copies from the profile instrument binary will be missing
+   profile counts. Look for cases where this happened, due to non-zero
+   call counts going to 0-count functions, and drop the profile to guessed
+   so that we can use the estimated probabilities and avoid optimizing only
+   for size.
+   
+   The other case where the profile may be missing is when the routine
+   is not going to be emitted to the object file, e.g. for "extern template"
+   class methods. Those will be marked DECL_EXTERNAL. Emit a warning in
+   all other cases of non-zero calls to 0-count functions.  */
+
+void
+handle_missing_profiles (void)
+{
+  struct cgraph_node *node;
+  int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+  vec<struct cgraph_node *> worklist;
+  worklist.create (64);
+
+  /* See if 0 count function has non-0 count callers.  In this case we
+     lost some profile.  Drop its function profile to PROFILE_GUESSED.  */
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      struct cgraph_edge *e;
+      gcov_type call_count = 0;
+      struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+
+      if (node->count)
+        continue;
+      for (e = node->callers; e; e = e->next_caller)
+        call_count += e->count;
+      if (call_count
+          && fn && fn->cfg
+          && (call_count * unlikely_count_fraction >= profile_info->runs))
+        {
+          drop_profile (node, call_count);
+          worklist.safe_push (node);
+        }
+    }
+
+  /* Propagate the profile dropping to other 0-count COMDATs that are
+     potentially called by COMDATs we already dropped the profile on.  */
+  while (worklist.length () > 0)
+    {
+      struct cgraph_edge *e;
+
+      node = worklist.pop ();
+      for (e = node->callees; e; e = e->next_caller)
+        {
+          struct cgraph_node *callee = e->callee;
+          struct function *fn = DECL_STRUCT_FUNCTION (callee->decl);
+
+          if (callee->count > 0)
+            continue;
+          if (DECL_COMDAT (callee->decl) && fn && fn->cfg
+              && profile_status_for_function (fn) == PROFILE_READ)
+            {
+              drop_profile (node, 0);
+              worklist.safe_push (callee);
+            }
+        }
+    }
+  worklist.release ();
+}
+
 /* Convert counts measured by profile driven feedback to frequencies.
    Return nonzero iff there was any nonzero execution count.  */
 
@@ -2773,6 +2888,12 @@ counts_to_freqs (void)
 {
   gcov_type count_max, true_count_max = 0;
   basic_block bb;
+
+  /* Don't overwrite the estimated frequencies when the profile for
+     the function is missing.  We may drop this function PROFILE_GUESSED
+     later in drop_profile ().  */
+  if (!ENTRY_BLOCK_PTR->count)
+    return 0;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     true_count_max = MAX (bb->count, true_count_max);

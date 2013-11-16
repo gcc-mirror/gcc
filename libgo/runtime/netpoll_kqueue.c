@@ -5,8 +5,8 @@
 // +build darwin dragonfly freebsd netbsd openbsd
 
 #include "runtime.h"
-#include "defs_GOOS_GOARCH.h"
-#include "os_GOOS.h"
+#include "defs.h"
+#include "malloc.h"
 
 // Integrated network poller (kqueue-based implementation).
 
@@ -101,4 +101,10 @@ retry:
 	if(block && gp == nil)
 		goto retry;
 	return gp;
+}
+
+void
+runtime_netpoll_scan(void (*addroot)(Obj))
+{
+	USED(addroot);
 }

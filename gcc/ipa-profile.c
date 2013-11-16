@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "ggc.h"
 #include "flags.h"
 #include "target.h"

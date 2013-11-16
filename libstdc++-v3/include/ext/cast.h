@@ -38,7 +38,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * These functions are here to allow containers to support non standard
    * pointer types.  For normal pointers, these resolve to the use of the
    * standard cast operation.  For other types the functions will perform
-   * the apprpriate cast to/from the custom pointer class so long as that
+   * the appropriate cast to/from the custom pointer class so long as that
    * class meets the following conditions:
    * 1) has a typedef element_type which names tehe type it points to.
    * 2) has a get() const method which returns element_type*.

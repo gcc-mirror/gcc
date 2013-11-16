@@ -1751,7 +1751,7 @@ linker for all final links. @var{choice} can be one of
 @itemx --disable-gnu-unique-object
 Tells GCC to use the gnu_unique_object relocation for C++ template
 static data members and inline function local statics.  Enabled by
-default for a native toolchain with an assembler that accepts it and
+default for a toolchain with an assembler that accepts it and
 GLIBC 2.11 or above, otherwise disabled.
 
 @item --enable-lto
@@ -1773,6 +1773,18 @@ produce shorter header file paths in diagnostics and dependency output
 files, but these changed header paths may conflict with some compilation
 environments.  Enabled by default, and may be disabled using
 @option{--disable-canonical-system-headers}.
+
+@item --with-glibc-version=@var{major}.@var{minor}
+Tell GCC that when the GNU C Library (glibc) is used on the target it
+will be version @var{major}.@var{minor} or later.  Normally this can
+be detected from the C library's header files, but this option may be
+needed when bootstrapping a cross toolchain without the header files
+available for building the initial bootstrap compiler.
+
+If GCC is configured with some multilibs that use glibc and some that
+do not, this option applies only to the multilibs that use glibc.
+However, such configurations may not work well as not all the relevant
+configuration in GCC is on a per-multilib basis.
 @end table
 
 @subheading Cross-Compiler-Specific Options

@@ -43,12 +43,14 @@ d_type (struct d_info *di)
    return ret;
 }
 
-/* We're testing two aspects of isolation here.  First that isolation
+/* We're testing three aspects of isolation here.  First that isolation
    occurs, second that if we have two null dereferences in a block that
    that we delete everything from the first dereferece to the end of the
-   block, regardless of which comes first in the immediate use iterator.  */
+   block, regardless of which comes first in the immediate use iterator
+   and finally that we set the RHS of the store to zero.  */
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 1 "isolate-paths"} } */
-/* { dg-final { scan-tree-dump-times "->type" 1 "isolate-paths"} } */
+/* { dg-final { scan-tree-dump-times "->type = 42" 1 "isolate-paths"} } */
+/* { dg-final { scan-tree-dump-times "->type ={v} 0" 1 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "->zzz" 1 "isolate-paths"} } */
 /* { dg-final { cleanup-tree-dump "isolate-paths" } } */
 

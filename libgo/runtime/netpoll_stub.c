@@ -5,6 +5,7 @@
 // +build plan9
 
 #include "runtime.h"
+#include "malloc.h"
 
 // Polls for ready network connections.
 // Returns list of goroutines that become runnable.
@@ -15,4 +16,10 @@ runtime_netpoll(bool block)
 	// integrated network poller.
 	USED(block);
 	return nil;
+}
+
+void
+runtime_netpoll_scan(void (*addroot)(Obj))
+{
+	USED(addroot);
 }

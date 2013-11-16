@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "optabs.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "df.h"
 #include "params.h"
 #include "cfgloop.h"

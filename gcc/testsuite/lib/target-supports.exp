@@ -1995,7 +1995,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 		     || [check_effective_target_powerpc_altivec]))
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
              || [istarget spu-*-*]
-	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
+	     || [istarget aarch64*-*-*] } {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
@@ -3014,6 +3015,22 @@ proc check_effective_target_powerpc_405_nocache { } {
 	    #error not a PPC405
 	    #endif
 	} [current_compiler_flags]]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target using the ELFv2 ABI.
+
+proc check_effective_target_powerpc_elfv2 { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages powerpc_elfv2 object {
+	    #if _CALL_ELF != 2
+	    #error not ELF v2 ABI
+	    #else
+	    int dummy;
+	    #endif
+	}]
     } else {
 	return 0
     }

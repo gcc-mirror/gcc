@@ -76,6 +76,7 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
  cp/mangle.o cp/cp-objcp-common.o cp/name-lookup.o cp/cxx-pretty-print.o \
+ cp/cp-cilkplus.o \
  cp/cp-gimplify.o cp/cp-array-notation.o cp/lambda.o \
  cp/vtable-class-hierarchy.o $(CXX_C_OBJS)
 

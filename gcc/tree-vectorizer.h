@@ -176,32 +176,33 @@ typedef struct _slp_oprnd_info
 
 
 /* This struct is used to store the information of a data reference,
-   including the data ref itself, its basic address, the access offset
-   and the segment length for aliasing checks.  This is used to generate
-   alias checks.  */
+   including the data ref itself, the access offset (calculated by summing its
+   offset and init) and the segment length for aliasing checks.
+   This is used to merge alias checks.  */
 
-struct dr_addr_with_seg_len
+struct dr_with_seg_len
 {
-  dr_addr_with_seg_len (data_reference* d, tree addr, tree off, tree len)
-    : dr (d), basic_addr (addr), offset (off), seg_len (len) {}
+  dr_with_seg_len (data_reference_p d, tree len)
+    : dr (d),
+      offset (size_binop (PLUS_EXPR, DR_OFFSET (d), DR_INIT (d))),
+      seg_len (len) {}
 
-  data_reference *dr;
-  tree basic_addr;
+  data_reference_p dr;
   tree offset;
   tree seg_len;
 };
 
-/* This struct contains two dr_addr_with_seg_len objects with aliasing data
+/* This struct contains two dr_with_seg_len objects with aliasing data
    refs.  Two comparisons are generated from them.  */
 
-struct dr_addr_with_seg_len_pair_t
+struct dr_with_seg_len_pair_t
 {
-  dr_addr_with_seg_len_pair_t (const dr_addr_with_seg_len& d1,
-			       const dr_addr_with_seg_len& d2)
+  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
+			       const dr_with_seg_len& d2)
     : first (d1), second (d2) {}
 
-  dr_addr_with_seg_len first;
-  dr_addr_with_seg_len second;
+  dr_with_seg_len first;
+  dr_with_seg_len second;
 };
 
 
@@ -306,7 +307,7 @@ typedef struct _loop_vec_info {
 
   /* Data Dependence Relations defining address ranges together with segment
      lengths from which the run-time aliasing check is built.  */
-  vec<dr_addr_with_seg_len_pair_t> comp_alias_ddrs;
+  vec<dr_with_seg_len_pair_t> comp_alias_ddrs;
 
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */

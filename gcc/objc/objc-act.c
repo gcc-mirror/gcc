@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* For enum gimplify_status */
 #include "gimple.h"
+#include "gimplify.h"
 
 /* For encode_method_prototype().  */
 #include "objc-encoding.h"

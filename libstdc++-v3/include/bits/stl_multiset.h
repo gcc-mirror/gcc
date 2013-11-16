@@ -108,18 +108,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     private:
       /// This turns a red-black tree into a [multi]set.
-      typedef typename _Alloc::template rebind<_Key>::other _Key_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_Key>::other _Key_alloc_type;
 
       typedef _Rb_tree<key_type, value_type, _Identity<value_type>,
 		       key_compare, _Key_alloc_type> _Rep_type;
       /// The actual tree structure.
       _Rep_type _M_t;
 
+      typedef __gnu_cxx::__alloc_traits<_Key_alloc_type> _Alloc_traits;
+
     public:
-      typedef typename _Key_alloc_type::pointer             pointer;
-      typedef typename _Key_alloc_type::const_pointer       const_pointer;
-      typedef typename _Key_alloc_type::reference           reference;
-      typedef typename _Key_alloc_type::const_reference     const_reference;
+      typedef typename _Alloc_traits::pointer		    pointer;
+      typedef typename _Alloc_traits::const_pointer	    const_pointer;
+      typedef typename _Alloc_traits::reference		    reference;
+      typedef typename _Alloc_traits::const_reference	    const_reference;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 103. set::iterator is required to be modifiable,
       // but this allows modification of keys.
@@ -216,6 +219,33 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const allocator_type& __a = allocator_type())
       : _M_t(__comp, _Key_alloc_type(__a))
       { _M_t._M_insert_equal(__l.begin(), __l.end()); }
+
+      /// Allocator-extended default constructor.
+      explicit
+      multiset(const allocator_type& __a)
+      : _M_t(_Compare(), _Key_alloc_type(__a)) { }
+
+      /// Allocator-extended copy constructor.
+      multiset(const multiset& __m, const allocator_type& __a)
+      : _M_t(__m._M_t, _Key_alloc_type(__a)) { }
+
+      /// Allocator-extended move constructor.
+      multiset(multiset&& __m, const allocator_type& __a)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value
+	       && _Alloc_traits::_S_always_equal())
+      : _M_t(std::move(__m._M_t), _Key_alloc_type(__a)) { }
+
+      /// Allocator-extended initialier-list constructor.
+      multiset(initializer_list<value_type> __l, const allocator_type& __a)
+      : _M_t(_Compare(), _Key_alloc_type(__a))
+      { _M_t._M_insert_equal(__l.begin(), __l.end()); }
+
+      /// Allocator-extended range constructor.
+      template<typename _InputIterator>
+        multiset(_InputIterator __first, _InputIterator __last,
+		 const allocator_type& __a)
+	: _M_t(_Compare(), _Key_alloc_type(__a))
+        { _M_t._M_insert_equal(__first, __last); }
 #endif
 
       /**
@@ -242,12 +272,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %multiset.
        */
       multiset&
-      operator=(multiset&& __x)
+      operator=(multiset&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	if (!_M_t._M_move_assign(__x._M_t))
+	  {
+	    // The rvalue's allocator cannot be moved and is not equal,
+	    // so we need to individually move each element.
+	    clear();
+	    insert(std::__make_move_if_noexcept_iterator(__x._M_t.begin()),
+		   std::__make_move_if_noexcept_iterator(__x._M_t.end()));
+	    __x.clear();
+	  }
 	return *this;
       }
 
@@ -388,6 +423,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(multiset& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       { _M_t.swap(__x._M_t); }
 
       // insert/erase
@@ -747,7 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  @return  True iff @a __x is lexicographically less than @a __y.
    *
    *  This is a total ordering relation.  It is linear in the size of the
-   *  maps.  The elements must be comparable with @c <.
+   *  sets.  The elements must be comparable with @c <.
    *
    *  See std::lexicographical_compare() for how the determination is made.
   */

@@ -515,3 +515,4 @@ void	runtime_memorydump(void);
 
 void	runtime_proc_scan(void (*)(Obj));
 void	runtime_time_scan(void (*)(Obj));
+void	runtime_netpoll_scan(void (*)(Obj));

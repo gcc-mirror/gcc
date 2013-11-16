@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "flags.h"

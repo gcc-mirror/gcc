@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc_elfv2 } { "*" } { "" } } */
 /* { dg-options "-O2 -mcpu=power7 -mcompat-align-parm" } */
 
 /* Verify that vs is not 16-byte aligned with -mcompat-align-parm.  */

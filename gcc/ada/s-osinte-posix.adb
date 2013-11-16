@@ -104,7 +104,7 @@ package body System.OS_Interface is
       end if;
 
       return timespec'(tv_sec => S,
-                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+                       tv_nsec => time_t (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
 end System.OS_Interface;

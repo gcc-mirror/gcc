@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "bitmap.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
@@ -621,8 +622,18 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
 	  pp_space (buffer);
 	}
       pp_right_brace (buffer);
-      if (pt->vars_contains_global)
-	pp_string (buffer, " (glob)");
+      if (pt->vars_contains_nonlocal
+	  && pt->vars_contains_escaped_heap)
+	pp_string (buffer, " (nonlocal, escaped heap)");
+      else if (pt->vars_contains_nonlocal
+	       && pt->vars_contains_escaped)
+	pp_string (buffer, " (nonlocal, escaped)");
+      else if (pt->vars_contains_nonlocal)
+	pp_string (buffer, " (nonlocal)");
+      else if (pt->vars_contains_escaped_heap)
+	pp_string (buffer, " (escaped heap)");
+      else if (pt->vars_contains_escaped)
+	pp_string (buffer, " (escaped)");
     }
 }
 
@@ -1107,6 +1118,8 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
 	  break;
+	case GF_OMP_FOR_KIND_CILKSIMD:
+	  kind = " cilksimd";
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  kind = " distribute";
 	  break;
@@ -1137,6 +1150,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	case GF_OMP_FOR_KIND_CILKSIMD:
+	  pp_string (buffer, "#pragma simd");
 	  break;
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  pp_string (buffer, "#pragma omp distribute");

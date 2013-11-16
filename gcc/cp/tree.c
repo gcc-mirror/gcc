@@ -30,7 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "cgraph.h"
 #include "splay-tree.h"
-#include "gimple.h" /* gimple_has_body_p */
+#include "gimple.h"
+#include "gimplify.h"
 #include "hash-table.h"
 
 static tree bot_manip (tree *, int *, void *);

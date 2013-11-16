@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "upc-gasp.h"
 #include "cgraph.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"

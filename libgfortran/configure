@@ -16457,9 +16457,6 @@ $as_echo "#define HAVE_MKSTEMP 1" >>confdefs.h
 $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
 
 
-$as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
-
-
 $as_echo "#define HAVE_SNPRINTF 1" >>confdefs.h
 
 
@@ -16474,6 +16471,15 @@ $as_echo "#define HAVE_LOCALTIME_R 1" >>confdefs.h
 
 $as_echo "#define HAVE_GMTIME_R 1" >>confdefs.h
 
+
+   # At some point, we should differentiate between architectures
+   # like x86, which have long double versions, and alpha/powerpc/etc.,
+   # which don't. For the time being, punt.
+   if test x"long_double_math_on_this_cpu" = x"yes"; then
+
+$as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
+
+   fi
 else
 
 

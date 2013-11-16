@@ -107,8 +107,10 @@ typedef struct sf
   long a1;
   long a2;
   long a3;
+#if _CALL_ELF != 2
   long a4;
   long a5;
+#endif
   parm_t slot[100];
 } stack_frame_t;
 

@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
@@ -504,5 +505,18 @@ degenerate_phi_result (gimple phi)
   return (i == gimple_phi_num_args (phi) ? val : NULL);
 }
 
+/* Set PHI nodes of a basic block BB to SEQ.  */
+
+void
+set_phi_nodes (basic_block bb, gimple_seq seq)
+{
+  gimple_stmt_iterator i;
+
+  gcc_checking_assert (!(bb->flags & BB_RTL));
+  bb->il.gimple.phi_nodes = seq;
+  if (seq)
+    for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+      gimple_set_bb (gsi_stmt (i), bb);
+}
 
 #include "gt-tree-phinodes.h"

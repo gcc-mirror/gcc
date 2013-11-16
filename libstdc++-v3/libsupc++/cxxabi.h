@@ -144,7 +144,7 @@ namespace __cxxabiv1
   void
   __cxa_deleted_virtual(void) __attribute__ ((__noreturn__));
 
-  // Exception handling auxillary.
+  // Exception handling auxiliary.
   void 
   __cxa_bad_cast() __attribute__((__noreturn__));
 

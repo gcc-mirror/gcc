@@ -561,3 +561,12 @@ dnl Make sure that build_exeext is looked for
 AC_DEFUN([gcc_AC_BUILD_EXEEXT], [
 ac_executable_extensions="$build_exeext"])
 
+dnl GCC_GLIBC_VERSION_GTE_IFELSE(MAJOR, MINOR, IF-TRUE, IF-FALSE)
+dnl -------------------------------------------------------------
+dnl If the target glibc version ($glibc_version_major.$glibc_version_minor)
+dnl is at least MAJOR.MINOR, call IF-TRUE, otherwise call IF-FALSE.
+AC_DEFUN([GCC_GLIBC_VERSION_GTE_IFELSE],
+[
+AS_IF([test $glibc_version_major -gt $1 \
+  || ( test $glibc_version_major -eq $1 && test $glibc_version_minor -ge $2 )],
+[$3], [$4])])

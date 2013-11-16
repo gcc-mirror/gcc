@@ -604,6 +604,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+lt_cv_dlopen_libs
 toolexeclibdir
 toolexecdir
 CXXCPP
@@ -4982,6 +4983,10 @@ else
 fi
 
 
+enable_dlopen=yes
+
+
+
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -7586,8 +7591,6 @@ done
 # Set options
 
 
-
-        enable_dlopen=no
 
 
   enable_win32_dll=no
@@ -11057,7 +11060,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11060 "configure"
+#line 11063 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11163,7 +11166,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11166 "configure"
+#line 11169 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14414,6 +14417,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # Only expand once:
+
+
 
 
 

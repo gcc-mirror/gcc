@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "opts.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-alias.h"
 #include "insn-codes.h"

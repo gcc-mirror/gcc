@@ -153,7 +153,7 @@ the value of an enumeration constant, the width of a bit-field, or
 the initial value of a static variable.
 
 If you don't know the type of the operand, you can still do this, but you
-must use @code{typeof} (@pxref{Typeof}).
+must use @code{typeof} or @code{__auto_type} (@pxref{Typeof}).
 
 In G++, the result value of a statement expression undergoes array and
 function pointer decay, and is returned by value to the enclosing
@@ -753,6 +753,35 @@ array (pointer (char), 4) y;
 @noindent
 Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
+@end itemize
+
+In GNU C, but not GNU C++, you may also declare the type of a variable
+as @code{__auto_type}.  In that case, the declaration must declare
+only one variable, whose declarator must just be an identifier, the
+declaration must be initialized, and the type of the variable is
+determined by the initializer; the name of the variable is not in
+scope until after the initializer.  (In C++, you should use C++11
+@code{auto} for this purpose.)  Using @code{__auto_type}, the
+``maximum'' macro above could be written as:
+
+@smallexample
+#define max(a,b) \
+  (@{ __auto_type _a = (a); \
+      __auto_type _b = (b); \
+    _a > _b ? _a : _b; @})
+@end smallexample
+
+Using @code{__auto_type} instead of @code{typeof} has two advantages:
+
+@itemize @bullet
+@item Each argument to the macro appears only once in the expansion of
+the macro.  This prevents the size of the macro expansion growing
+exponentially when calls to such macros are nested inside arguments of
+such macros.
+
+@item If the argument to the macro has variably modified type, it is
+evaluated only once when using @code{__auto_type}, but twice if
+@code{typeof} is used.
 @end itemize
 
 @emph{Compatibility Note:} In addition to @code{typeof}, GCC 2 supported

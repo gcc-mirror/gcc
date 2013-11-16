@@ -541,24 +541,6 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
     : is_copy_constructible<_Tp>
     { };
 
-  // Used to allow copy construction of unordered containers
-  template<bool> struct __allow_copy_cons { };
-
-  // Used to delete copy constructor of unordered containers
-  template<>
-    struct __allow_copy_cons<false>
-    {
-      __allow_copy_cons() = default;
-      __allow_copy_cons(const __allow_copy_cons&) = delete;
-      __allow_copy_cons(__allow_copy_cons&&) = default;
-      __allow_copy_cons& operator=(const __allow_copy_cons&) = default;
-      __allow_copy_cons& operator=(__allow_copy_cons&&) = default;
-    };
-
-  template<typename _Alloc>
-    using __check_copy_constructible
-      = __allow_copy_cons<__is_copy_insertable<_Alloc>::value>;
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

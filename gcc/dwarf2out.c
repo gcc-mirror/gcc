@@ -87,7 +87,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "cgraph.h"
 #include "input.h"
-#include "gimple.h"
 #include "ira.h"
 #include "lra.h"
 #include "dumpfile.h"
@@ -16359,11 +16358,13 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
     }
 }
 
+/* Add a DW_AT_byte_size attribute to DIE with TREE_NODE's size.  */
+
 static void
 add_byte_size_attribute (dw_die_ref die, tree tree_node)
 {
   dw_die_ref decl_die;
-  unsigned size;
+  HOST_WIDE_INT size;
 
   switch (TREE_CODE (tree_node))
     {
@@ -16387,7 +16388,7 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
 	 generally given as the number of bytes normally allocated for an
 	 object of the *declared* type of the member itself.  This is true
 	 even for bit-fields.  */
-      size = simple_type_size_in_bits (field_type (tree_node)) / BITS_PER_UNIT;
+      size = int_size_in_bytes (field_type (tree_node));
       break;
     default:
       gcc_unreachable ();
@@ -16396,8 +16397,9 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
   /* Note that `size' might be -1 when we get to this point.  If it is, that
      indicates that the byte size of the entity in question is variable.  We
      have no good way of expressing this fact in Dwarf at the present time,
-     so just let the -1 pass on through.  */
-  add_AT_unsigned (die, DW_AT_byte_size, size);
+     when location description was not used by the caller code instead.  */
+  if (size >= 0)
+    add_AT_unsigned (die, DW_AT_byte_size, size);
 }
 
 /* For a FIELD_DECL node which represents a bit-field, output an attribute
@@ -17360,9 +17362,8 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  if (TREE_CODE (value) == CONST_DECL)
 	    value = DECL_INITIAL (value);
 
-	  if (host_integerp (value, TYPE_UNSIGNED (TREE_TYPE (value)))
-	      && (simple_type_size_in_bits (TREE_TYPE (value))
-		  <= HOST_BITS_PER_WIDE_INT || host_integerp (value, 0)))
+	  if (simple_type_size_in_bits (TREE_TYPE (value))
+	      <= HOST_BITS_PER_WIDE_INT || host_integerp (value, 0))
 	    /* DWARF2 does not provide a way of indicating whether or
 	       not enumeration constants are signed or unsigned.  GDB
 	       always assumes the values are signed, so we output all

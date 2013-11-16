@@ -1049,6 +1049,8 @@ extern tree upc_block_factor_lookup (const_tree);
   (&(*CONSTRUCTOR_ELTS (NODE))[IDX])
 #define CONSTRUCTOR_NELTS(NODE) \
   (vec_safe_length (CONSTRUCTOR_ELTS (NODE)))
+#define CONSTRUCTOR_NO_CLEARING(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.public_flag)
 
 /* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
    value of each element (stored within VAL). IX must be a scratch variable
@@ -3556,6 +3558,11 @@ extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 extern tree make_tree_vec_stat (int MEM_STAT_DECL);
 #define make_tree_vec(t) make_tree_vec_stat (t MEM_STAT_INFO)
 
+/* Grow a TREE_VEC.  */
+
+extern tree grow_tree_vec_stat (tree v, int MEM_STAT_DECL);
+#define grow_tree_vec(v, t) grow_tree_vec_stat (v, t MEM_STAT_INFO)
+
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
 
@@ -4424,10 +4431,6 @@ extern void cache_integer_cst (tree);
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
 
-/* In gimplify.c */
-extern tree unshare_expr (tree);
-extern tree unshare_expr_without_location (tree);
-
 /* In stmt.c */
 
 extern void expand_label (tree);
@@ -4905,7 +4908,6 @@ extern void set_decl_incoming_rtl (tree, rtx, bool);
 
 /* In gimple.c.  */
 extern tree get_base_address (tree t);
-extern void mark_addressable (tree);
 
 /* In tree.c.  */
 extern tree drop_tree_overflow (tree);

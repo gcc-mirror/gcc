@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimplify.h"
+#include "gimple-iterator.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
 #include "tree-ssanames.h"
@@ -1001,6 +1003,9 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   TREE_STATIC (decl) = 1;
   TREE_PUBLIC (decl) = 0;
   TREE_USED (decl) = 1;
+  DECL_INITIAL (decl) = decl;
+  TREE_ASM_WRITTEN (decl) = 1;
+  TREE_ASM_WRITTEN (id) = 1;
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
 			      GEN_INT (ASAN_SHADOW_SHIFT),

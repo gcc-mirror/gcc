@@ -45,13 +45,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // int_type to properly hold the full range of char_type values as
   // well as EOF.
   /// @brief A POD class that serves as a character abstraction class.
-  template<typename V, typename I, typename S = std::mbstate_t>
+  template<typename _Value, typename _Int, typename _St = std::mbstate_t>
     struct character
     {
-      typedef V				value_type;
-      typedef I				int_type;
-      typedef S				state_type;
-      typedef character<V, I, S>	char_type;
+      typedef _Value				value_type;
+      typedef _Int				int_type;
+      typedef _St				state_type;
+      typedef character<_Value, _Int, _St>	char_type;
 
       value_type	value;
 
@@ -73,14 +73,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     };
 
-  template<typename V, typename I, typename S>
+  template<typename _Value, typename _Int, typename _St>
     inline bool
-    operator==(const character<V, I, S>& lhs, const character<V, I, S>& rhs)
+    operator==(const character<_Value, _Int, _St>& lhs,
+	       const character<_Value, _Int, _St>& rhs)
     { return lhs.value == rhs.value; }
 
-  template<typename V, typename I, typename S>
+  template<typename _Value, typename _Int, typename _St>
     inline bool
-    operator<(const character<V, I, S>& lhs, const character<V, I, S>& rhs)
+    operator<(const character<_Value, _Int, _St>& lhs,
+	      const character<_Value, _Int, _St>& rhs)
     { return lhs.value < rhs.value; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
@@ -91,14 +93,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// char_traits<__gnu_cxx::character> specialization.
-  template<typename V, typename I, typename S>
-    struct char_traits<__gnu_cxx::character<V, I, S> >
+  template<typename _Value, typename _Int, typename _St>
+    struct char_traits<__gnu_cxx::character<_Value, _Int, _St> >
     {
-      typedef __gnu_cxx::character<V, I, S>	char_type;
-      typedef typename char_type::int_type	int_type;
-      typedef typename char_type::state_type	state_type;
-      typedef fpos<state_type>			pos_type;
-      typedef streamoff				off_type;
+      typedef __gnu_cxx::character<_Value, _Int, _St>	char_type;
+      typedef typename char_type::int_type		int_type;
+      typedef typename char_type::state_type		state_type;
+      typedef fpos<state_type>				pos_type;
+      typedef streamoff					off_type;
 
       static void
       assign(char_type& __c1, const char_type& __c2)

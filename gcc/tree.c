@@ -49,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "bitmap.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimplify.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-phinodes.h"
@@ -1866,6 +1868,28 @@ make_tree_vec_stat (int len MEM_STAT_DECL)
   TREE_VEC_LENGTH (t) = len;
 
   return t;
+}
+
+/* Grow a TREE_VEC node to new length LEN.  */
+
+tree
+grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
+{
+  gcc_assert (TREE_CODE (v) == TREE_VEC);
+
+  int oldlen = TREE_VEC_LENGTH (v);
+  gcc_assert (len > oldlen);
+
+  int oldlength = (oldlen - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
+
+  record_node_allocation_statistics (TREE_VEC, length - oldlength);
+
+  v = (tree) ggc_realloc_stat (v, length PASS_MEM_STAT);
+
+  TREE_VEC_LENGTH (v) = len;
+
+  return v;
 }
 
 /* Return 1 if EXPR is the integer constant zero or a complex constant

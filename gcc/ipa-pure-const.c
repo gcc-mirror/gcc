@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-inline.h"
@@ -397,6 +399,7 @@ better_state (enum pure_const_state_e *state, bool *looping,
 	*looping = looping2;
       else
 	*looping = MIN (*looping, looping2);
+      *state = state2;
     }
   else if (state2 != IPA_NEITHER)
     *looping = MIN (*looping, looping2);

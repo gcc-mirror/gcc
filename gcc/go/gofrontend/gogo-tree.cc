@@ -9,6 +9,7 @@
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
 #include "langhooks.h"

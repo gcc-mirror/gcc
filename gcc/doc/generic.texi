@@ -1616,29 +1616,31 @@ of temporaries during the evaluation of that expression should be
 performed immediately after the expression is evaluated.
 
 @item CONSTRUCTOR
-These nodes represent the brace-enclosed initializers for a structure or
-array.  The first operand is reserved for use by the back end.  The
-second operand is a @code{TREE_LIST}.  If the @code{TREE_TYPE} of the
-@code{CONSTRUCTOR} is a @code{RECORD_TYPE} or @code{UNION_TYPE}, then
-the @code{TREE_PURPOSE} of each node in the @code{TREE_LIST} will be a
-@code{FIELD_DECL} and the @code{TREE_VALUE} of each node will be the
-expression used to initialize that field.
+These nodes represent the brace-enclosed initializers for a structure or an
+array.  They contain a sequence of component values made out of a vector of
+constructor_elt, which is a (@code{INDEX}, @code{VALUE}) pair.
 
-If the @code{TREE_TYPE} of the @code{CONSTRUCTOR} is an
-@code{ARRAY_TYPE}, then the @code{TREE_PURPOSE} of each element in the
-@code{TREE_LIST} will be an @code{INTEGER_CST} or a @code{RANGE_EXPR} of
-two @code{INTEGER_CST}s.  A single @code{INTEGER_CST} indicates which
-element of the array (indexed from zero) is being assigned to.  A
-@code{RANGE_EXPR} indicates an inclusive range of elements to
-initialize.  In both cases the @code{TREE_VALUE} is the corresponding
+If the @code{TREE_TYPE} of the @code{CONSTRUCTOR} is a @code{RECORD_TYPE},
+@code{UNION_TYPE} or @code{QUAL_UNION_TYPE} then the @code{INDEX} of each
+node in the sequence will be a @code{FIELD_DECL} and the @code{VALUE} will
+be the expression used to initialize that field.
+
+If the @code{TREE_TYPE} of the @code{CONSTRUCTOR} is an @code{ARRAY_TYPE},
+then the @code{INDEX} of each node in the sequence will be an
+@code{INTEGER_CST} or a @code{RANGE_EXPR} of two @code{INTEGER_CST}s.
+A single @code{INTEGER_CST} indicates which element of the array is being
+assigned to.  A @code{RANGE_EXPR} indicates an inclusive range of elements
+to initialize.  In both cases the @code{VALUE} is the corresponding
 initializer.  It is re-evaluated for each element of a
-@code{RANGE_EXPR}.  If the @code{TREE_PURPOSE} is @code{NULL_TREE}, then
+@code{RANGE_EXPR}.  If the @code{INDEX} is @code{NULL_TREE}, then
 the initializer is for the next available array element.
 
 In the front end, you should not depend on the fields appearing in any
 particular order.  However, in the middle end, fields must appear in
 declaration order.  You should not assume that all fields will be
-represented.  Unrepresented fields will be set to zero.
+represented.  Unrepresented fields will be cleared (zeroed), unless the
+CONSTRUCTOR_NO_CLEARING flag is set, in which case their value becomes
+undefined.
 
 @item COMPOUND_LITERAL_EXPR
 @findex COMPOUND_LITERAL_EXPR_DECL_EXPR

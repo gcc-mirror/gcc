@@ -1,3 +1,297 @@
+2013-11-15  Mike Stump  <mikestump@comcast.net>
+
+	* lib/gcc.exp (gcc_target_compile): Add support for random runtime
+	* lib/g++.exp (g++_target_compile): Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Improve support for runtime
+	libraries.  Remove debugging.
+	* g++.dg/cilk-plus/cilk-plus.exp: Add support to find runtime
+	libraries.  Remove -O0, redundant with default.
+
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-c++-common/cpp/ucnid-2011-1.c: New test.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58188
+	* g++.dg/cpp0x/nsdmi-template8.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58725
+	* g++.dg/cpp0x/nsdmi-template7.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58829
+	* g++.dg/cpp0x/nsdmi-template6.C: New.
+
+2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58599
+	* g++.dg/cpp0x/nsdmi-template5.C: New.
+
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-c++-common/cilk-plus/PS: New directory.
+	* g++.dg/cilk-plus/cilk-plus.exp: Run shared tests.
+	* g++.dg/dg.exp: Run Cilk Plus tests.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Run shared tests.
+
+2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/3b-15.c: Revise for little endian.
+
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/50262
+	* gcc.dg/tree-ssa/alias-28.c: New testcase.
+	* gcc.dg/strlenopt-1.c: Adjust.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+
+2013-11-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20131115-1.c: New testcase.
+
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/ucnid-9.c: New test.
+
+2013-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage1b.adb: New test.
+	* gnat.dg/stack_usage1c.adb: Likewise.
+
+2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gnat.dg/specs/addr1.ads: Revert the last change.
+	* gnat.dg/specs/atomic1.ads: Likewise.
+
+2013-11-14  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-alias-check.c: Update.
+
+2013-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57887
+	* g++.dg/cpp0x/nsdmi-template3.C: New.
+	* g++.dg/cpp0x/nsdmi-template4.C: Likewise.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-1.c (stack_frame_t): Remove
+	compiler and linker field if _CALL_ELF == 2.
+	* gcc.target/powerpc/ppc64-abi-2.c (stack_frame_t): Likewise.
+	* gcc.target/powerpc/ppc64-abi-dfp-1.c (stack_frame_t): Likewise.
+	* gcc.dg/stack-usage-1.c (SIZE): Update value for _CALL_ELF == 2.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-dfp-1.c (FUNC_START): New macro.
+	(WRAPPER): Use it.
+	* gcc.target/powerpc/no-r11-1.c: Skip on powerpc_elfv2.
+	* gcc.target/powerpc/no-r11-2.c: Skip on powerpc_elfv2.
+	* gcc.target/powerpc/no-r11-3.c: Skip on powerpc_elfv2.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_elfv2):
+	New function.
+	* gcc.target/powerpc/pr57949-1.c: Disable for powerpc_elfv2.
+	* gcc.target/powerpc/pr57949-2.c: Likewise.
+
+2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.dg/eh/ppc64-sighandle-cr.C: New test.
+
+2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/float128-cmp-invalid.c: Require fenv_exceptions.
+	* gcc.dg/torture/float128-div-underflow.c: Likewise.
+	* gcc.dg/torture/float128-extend-nan.c: Likewise.
+
+2013-11-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Fix target selector.
+ 
+2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gnat.dg/specs/addr1.ads: XFAIL on x32.
+	* gnat.dg/specs/atomic1.ads: Likewise.
+
+2013-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/cpu-diagnostics-2.c: Change "-mcpu="
+	to "cortex-a53".
+	* gcc.target/aarch64/cpu-diagnostics-3.c: Change "-mcpu="
+	to "cortex-a53".
+
+2013-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Define _XOPEN_SOURCE=600 on
+	*-*-solaris2.1[0-9]*.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
+2013-11-14  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Disable for cortex_m.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Ingore for cortex_m.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Likewise.
+
+2013-11-14  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58533
+	* g++.dg/cpp1y/pr58533.C: New testcase (fixed by r204714).
+
+2013-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59101
+	* gcc.c-torture/execute/pr59101.c: New test.
+
+2013-11-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59102
+	* gcc.c-torture/compile/pr59102.c: New test.
+	 
+2013-11-13  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tail-merge-store.c: New test.
+
+2013-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* testsuite/g++.dg/plugin/selfassign.c: Include gimple-iterator.h.
+	* testsuite/gcc.dg/plugin/selfassign.c: Likewise.
+
+2013-11-13  Jeff Law  <law@redhat.com>
+
+	* PR middle-end/59119
+	* gcc.c-torture/compile/pr59119.c: New test.
+
+2013-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Add lp64 to target requirements.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+	* gcc.dg/pr10474.c: Likewise.
+
+2013-11-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_cmdline_neeed): Add AArch64 to the list
+	of targets that do not need command line argument to enable SIMD.
+
+2013-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-4.c: New test.
+
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-complex-1.c: New test.
+
+2013-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/stdatomic-vm.c, gcc.dg/auto-type-1.c,
+	gcc.dg/auto-type-2.c: New tests.
+
+2013-11-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* gcc.dg/cilk-plus/cilk-plus.exp: Added a check for LTO before running
+	LTO tests.
+
+2013-11-12  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/isolate-1.c: Update expected output.
+	* gcc.dg/tree-ssa/isolate-5.c: Verify the load survives through
+	the SSA optimizers.
+
+2013-11-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* gcc.target/powerpc/pr59054.c: New test.
+
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	* g++.dg/cpp1y/lambda-generic.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-cfun.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-dep.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-udt.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-variadic.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-x.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-xcfun.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-xudt.C: New test case.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: New test case.
+
+2013-11-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58534
+	PR c++/58536
+	PR c++/58548
+	PR c++/58549
+	PR c++/58637
+	* g++.dg/cpp1y/pr58534.C: New testcase.
+	* g++.dg/cpp1y/pr58536.C: New testcase.
+	* g++.dg/cpp1y/pr58548.C: New testcase.
+	* g++.dg/cpp1y/pr58549.C: New testcase.
+	* g++.dg/cpp1y/pr58637.C: New testcase.
+
+2013-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-thread-local-1.c, gcc.dg/c99-thread-local-1.c,
+	gcc.dg/c11-thread-local-1.c, gcc.dg/c11-thread-local-2.c: New
+	tests.
+	* gcc.dg/tls/diag-2.c, objc.dg/tls/diag-2.m: Update expected
+	diagnostics.
+
+2013-11-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat.dg/aggr21.adb: New test.
+	* gnat.dg/aggr21_pkg.ad[sb]: New helper.
+
+2013-11-12  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/isolate-1.c: Update expected output.
+	* gcc.dg/tree-ssa/isolate-5.c: New test.
+
+2013-11-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/10474
+	* gcc.dg/pr10474.c: New testcase.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Likewise.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+
+2013-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57734
+	* g++.dg/cpp0x/alias-decl-enum-1.C: New.
+
+2013-11-11  Martin Liska	<marxin.liska@gmail.com>
+
+	* gcc.dg/time-profiler-1.c: New test.
+	* gcc.dg/time-profiler-2.c: Ditto.
+
+2013-11-11  Marc Glisse  <marc.glisse@inria.fr>
+	    Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/alias-27.c: New testcase.
+
+2013-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58853
+	* gcc.target/i386/pr58853.c: New test.
+
+2013-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Adjust for ARC
+	LOGICAL_OP_NON_SHORT_CIRCUIT definition.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+
 2013-11-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/atomic/stdatomic-compare-exchange-1.c,
@@ -83,7 +377,6 @@
 	gcc.dg/c11-atomic-2.c, gcc.dg/c11-atomic-3.c,
 	gcc.dg/c90-atomic-1.c, gcc.dg/c99-atomic-1.c: New tests.
 
->>>>>>> .r204589
 2013-11-07  Cong Hou  <congh@google.com>
 
 	* gcc.dg/vect/vect-alias-check.c: New.
@@ -351,7 +644,7 @@
 	PR fortran/58989
 	* gfortran.dg/reshape_6.f90: New test.
 
-2013-10-05  Jeff Law  <law@redhat.com>
+2013-11-05  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/pr38984.c: Add -fno-isolate-erroneous-paths.
 	* gcc.dg/tree-ssa/isolate-1.c: New test.
@@ -1059,7 +1352,7 @@
 	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
 	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
 
-2013-10-17  Charles Bayis  <charles.baylis@linaro.org>
+2013-10-17  Charles Baylis  <charles.baylis@linaro.org>
 
 	* gcc.dg/builtin-apply2.c: Skip test on arm hardfloat ABI targets.
 	* gcc.dg/tls/pr42894.c: Remove dg-options for arm*-*-* targets.

@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "cgraph.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "dwarf2.h"
 #include "df.h"
 #include "tm-constrs.h"
@@ -3974,10 +3975,10 @@ ix86_option_override_internal (bool main_args_p,
       if (flag_expensive_optimizations
 	  && !(opts_set->x_target_flags & MASK_VZEROUPPER))
 	opts->x_target_flags |= MASK_VZEROUPPER;
-      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
+      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-      if (!ix86_tune_features[X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL]
+      if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
 	  && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
       /* Enable 128-bit AVX instruction generation
@@ -14870,6 +14871,11 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  /* We do not want to print value of the operand.  */
 	  return;
 
+	case 'N':
+	  if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
+	    fputs ("{z}", file);
+	  return;
+
 	case '*':
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('*', file);
@@ -23776,13 +23782,15 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     }
   gcc_assert (desired_align >= 1 && align >= 1);
 
-  /* Misaligned move sequences handles both prologues and epilogues at once.
-     Default code generation results in smaller code for large alignments and
-     also avoids redundant job when sizes are known precisely.  */
-  misaligned_prologue_used = (TARGET_MISALIGNED_MOVE_STRING_PROLOGUES
-			      && MAX (desired_align, epilogue_size_needed) <= 32
-			      && ((desired_align > align && !align_bytes)
-				  || (!count && epilogue_size_needed > 1)));
+  /* Misaligned move sequences handle both prologue and epilogue at once.
+     Default code generation results in a smaller code for large alignments
+     and also avoids redundant job when sizes are known precisely.  */
+  misaligned_prologue_used
+    = (TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES
+       && MAX (desired_align, epilogue_size_needed) <= 32
+       && desired_align <= epilogue_size_needed
+       && ((desired_align > align && !align_bytes)
+	   || (!count && epilogue_size_needed > 1)));
 
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the

@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 #include "tree-ssa.h"
 #include "tree-ssanames.h"
 #include "gimple-ssa.h"
@@ -35,26 +37,84 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
+#include "tree-cfg.h"
 
 
 static bool cfg_altered;
 
-/* Insert a trap before SI and remove SI and all statements after SI.  */
+/* Callback for walk_stmt_load_store_ops.
+ 
+   Return TRUE if OP will dereference the tree stored in DATA, FALSE
+   otherwise.
+
+   This routine only makes a superficial check for a dereference.  Thus,
+   it must only be used if it is safe to return a false negative.  */
+static bool
+check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+      && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
+    {
+      TREE_THIS_VOLATILE (op) = 1;
+      TREE_SIDE_EFFECTS (op) = 1;
+      update_stmt (stmt);
+      return true;
+    }
+  return false;
+}
+
+/* Insert a trap after SI and remove SI and all statements after the trap.  */
 
 static void
-insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p)
+insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
 {
-  gimple_seq seq = NULL;
-  gimple stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  gimple_seq_add_stmt (&seq, stmt);
-  gsi_insert_before (si_p, seq, GSI_SAME_STMT);
+  /* We want the NULL pointer dereference to actually occur so that
+     code that wishes to catch the signal can do so.
 
-  /* Now delete all remaining statements in this block.  */
-  for (; !gsi_end_p (*si_p);)
+     If the dereference is a load, then there's nothing to do as the
+     LHS will be a throw-away SSA_NAME and the RHS is the NULL dereference.
+
+     If the dereference is a store and we can easily transform the RHS,
+     then simplify the RHS to enable more DCE.   Note that we require the
+     statement to be a GIMPLE_ASSIGN which filters out calls on the RHS.  */
+  gimple stmt = gsi_stmt (*si_p);
+  if (walk_stmt_load_store_ops (stmt, (void *)op, NULL, check_loadstore)
+      && is_gimple_assign (stmt)
+      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
     {
-      stmt = gsi_stmt (*si_p);
+      /* We just need to turn the RHS into zero converted to the proper
+         type.  */
+      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+      gimple_assign_set_rhs_code (stmt, INTEGER_CST);
+      gimple_assign_set_rhs1 (stmt, fold_convert (type, integer_zero_node));
+      update_stmt (stmt);
+    }
+
+  gimple new_stmt
+    = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  gimple_seq seq = NULL;
+  gimple_seq_add_stmt (&seq, new_stmt);
+
+  /* If we had a NULL pointer dereference, then we want to insert the
+     __builtin_trap after the statement, for the other cases we want
+     to insert before the statement.  */
+  if (walk_stmt_load_store_ops (stmt, (void *)op,
+			        check_loadstore,
+				check_loadstore))
+    gsi_insert_after (si_p, seq, GSI_NEW_STMT);
+  else
+    gsi_insert_before (si_p, seq, GSI_NEW_STMT);
+
+  /* We must remove statements from the end of the block so that we
+     never reference a released SSA_NAME.  */
+  basic_block bb = gimple_bb (gsi_stmt (*si_p));
+  for (gimple_stmt_iterator si = gsi_last_bb (bb);
+       gsi_stmt (si) != gsi_stmt (*si_p);
+       si = gsi_last_bb (bb))
+    {
+      stmt = gsi_stmt (si);
       unlink_stmt_vdef (stmt);
-      gsi_remove (si_p, true);
+      gsi_remove (&si, true);
       release_defs (stmt);
     }
 }
@@ -73,7 +133,8 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p)
    Return BB'.  */
 
 basic_block
-isolate_path (basic_block bb, basic_block duplicate, edge e, gimple stmt)
+isolate_path (basic_block bb, basic_block duplicate,
+	      edge e, gimple stmt, tree op)
 {
   gimple_stmt_iterator si, si2;
   edge_iterator ei;
@@ -133,48 +194,38 @@ isolate_path (basic_block bb, basic_block duplicate, edge e, gimple stmt)
      SI2 points to the duplicate of STMT in DUPLICATE.  Insert a trap
      before SI2 and remove SI2 and all trailing statements.  */
   if (!gsi_end_p (si2))
-    insert_trap_and_remove_trailing_statements (&si2);
+    insert_trap_and_remove_trailing_statements (&si2, op);
 
   return duplicate;
 }
 
-/* Search the function for statements which, if executed, would cause
-   the program to fault such as a dereference of a NULL pointer.
+/* Look for PHI nodes which feed statements in the same block where
+   the value of the PHI node implies the statement is erroneous.
 
-   Such a program can't be valid if such a statement was to execute
-   according to ISO standards.
+   For example, a NULL PHI arg value which then feeds a pointer
+   dereference.
 
-   We detect explicit NULL pointer dereferences as well as those implied
-   by a PHI argument having a NULL value which unconditionally flows into
-   a dereference in the same block as the PHI.
-
-   In the former case we replace the offending statement with an
-   unconditional trap and eliminate the outgoing edges from the statement's
-   basic block.  This may expose secondary optimization opportunities.
-
-   In the latter case, we isolate the path(s) with the NULL PHI 
-   feeding the dereference.  We can then replace the offending statement
-   and eliminate the outgoing edges in the duplicate.  Again, this may
-   expose secondary optimization opportunities.
-
-   A warning for both cases may be advisable as well.
-
-   Other statically detectable violations of the ISO standard could be
-   handled in a similar way, such as out-of-bounds array indexing.  */
-
-static unsigned int
-gimple_ssa_isolate_erroneous_paths (void)
+   When found isolate and optimize the path associated with the PHI
+   argument feeding the erroneous statement.  */
+static void
+find_implicit_erroneous_behaviour (void)
 {
   basic_block bb;
 
-  initialize_original_copy_tables ();
-
-  /* Search all the blocks for edges which, if traversed, will
-     result in undefined behaviour.  */
-  cfg_altered = false;
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator si;
+
+      /* Out of an abundance of caution, do not isolate paths to a
+	 block where the block has any abnormal outgoing edges.
+
+	 We might be able to relax this in the future.  We have to detect
+	 when we have to split the block with the NULL dereference and
+	 the trap we insert.  We have to preserve abnormal edges out
+	 of the isolated block which in turn means updating PHIs at
+	 the targets of those abnormal outgoing edges.  */
+      if (has_abnormal_or_eh_outgoing_edge_p (bb))
+	continue;
 
       /* First look for a PHI which sets a pointer to NULL and which
  	 is then dereferenced within BB.  This is somewhat overly
@@ -217,14 +268,14 @@ gimple_ssa_isolate_erroneous_paths (void)
 	        {
 	          /* We only care about uses in BB.  Catching cases in
 		     in other blocks would require more complex path
-		     isolation code.  */
+		     isolation code.   */
 		  if (gimple_bb (use_stmt) != bb)
 		    continue;
 
 		  if (infer_nonnull_range (use_stmt, lhs))
 		    {
 		      duplicate = isolate_path (bb, duplicate,
-						e, use_stmt);
+						e, use_stmt, lhs);
 
 		      /* When we remove an incoming edge, we need to
 			 reprocess the Ith element.  */
@@ -234,6 +285,32 @@ gimple_ssa_isolate_erroneous_paths (void)
 		}
 	    }
 	}
+    }
+}
+
+/* Look for statements which exhibit erroneous behaviour.  For example
+   a NULL pointer dereference. 
+
+   When found, optimize the block containing the erroneous behaviour.  */
+static void
+find_explicit_erroneous_behaviour (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator si;
+
+      /* Out of an abundance of caution, do not isolate paths to a
+	 block where the block has any abnormal outgoing edges.
+
+	 We might be able to relax this in the future.  We have to detect
+	 when we have to split the block with the NULL dereference and
+	 the trap we insert.  We have to preserve abnormal edges out
+	 of the isolated block which in turn means updating PHIs at
+	 the targets of those abnormal outgoing edges.  */
+      if (has_abnormal_or_eh_outgoing_edge_p (bb))
+	continue;
 
       /* Now look at the statements in the block and see if any of
 	 them explicitly dereference a NULL pointer.  This happens
@@ -247,7 +324,8 @@ gimple_ssa_isolate_erroneous_paths (void)
 	     where a non-NULL value is required.  */
 	  if (infer_nonnull_range (stmt, null_pointer_node))
 	    {
-	      insert_trap_and_remove_trailing_statements (&si);
+	      insert_trap_and_remove_trailing_statements (&si,
+							  null_pointer_node);
 
 	      /* And finally, remove all outgoing edges from BB.  */
 	      edge e;
@@ -263,6 +341,56 @@ gimple_ssa_isolate_erroneous_paths (void)
 	    }
 	}
     }
+}
+/* Search the function for statements which, if executed, would cause
+   the program to fault such as a dereference of a NULL pointer.
+
+   Such a program can't be valid if such a statement was to execute
+   according to ISO standards.
+
+   We detect explicit NULL pointer dereferences as well as those implied
+   by a PHI argument having a NULL value which unconditionally flows into
+   a dereference in the same block as the PHI.
+
+   In the former case we replace the offending statement with an
+   unconditional trap and eliminate the outgoing edges from the statement's
+   basic block.  This may expose secondary optimization opportunities.
+
+   In the latter case, we isolate the path(s) with the NULL PHI 
+   feeding the dereference.  We can then replace the offending statement
+   and eliminate the outgoing edges in the duplicate.  Again, this may
+   expose secondary optimization opportunities.
+
+   A warning for both cases may be advisable as well.
+
+   Other statically detectable violations of the ISO standard could be
+   handled in a similar way, such as out-of-bounds array indexing.  */
+
+static unsigned int
+gimple_ssa_isolate_erroneous_paths (void)
+{
+  initialize_original_copy_tables ();
+
+  /* Search all the blocks for edges which, if traversed, will
+     result in undefined behaviour.  */
+  cfg_altered = false;
+
+  /* First handle cases where traversal of a particular edge
+     triggers undefined behaviour.  These cases require creating
+     duplicate blocks and thus new SSA_NAMEs.
+
+     We want that process complete prior to the phase where we start
+     removing edges from the CFG.  Edge removal may ultimately result in
+     removal of PHI nodes and thus releasing SSA_NAMEs back to the
+     name manager.
+
+     If the two processes run in parallel we could release an SSA_NAME
+     back to the manager but we could still have dangling references
+     to the released SSA_NAME in unreachable blocks.
+     that any released names not have dangling references in the IL.  */
+  find_implicit_erroneous_behaviour ();
+  find_explicit_erroneous_behaviour ();
+
   free_original_copy_tables ();
 
   /* We scramble the CFG and loop structures a bit, clean up 
@@ -314,7 +442,7 @@ public:
   bool gate () { return gate_isolate_erroneous_paths (); }
   unsigned int execute () { return gimple_ssa_isolate_erroneous_paths (); }
 
-}; // class pass_uncprop
+}; // class pass_isolate_erroneous_paths
 }
 
 gimple_opt_pass *

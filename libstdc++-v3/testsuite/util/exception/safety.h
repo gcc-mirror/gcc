@@ -1198,7 +1198,7 @@ namespace __gnu_test
 	  try
 	    {
 	      // An exception while assigning might leave the container empty
-	      // making future attemps less relevant. So we copy it before to
+	      // making future attempts less relevant. So we copy it before to
 	      // always assign to a non empty container. It also check for copy
 	      // constructor exception safety at the same time.
 	      _Tp __clone(__container);

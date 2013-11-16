@@ -142,13 +142,13 @@ in the build directory starts the build process. The <literal>all</literal> targ
   <para>
     Most comments should use {octothorpes, shibboleths, hash marks,
     pound signs, whatever} rather than "dnl".  Nearly all comments in
-    configure.ac should.  Comments inside macros written in ancilliary
+    configure.ac should.  Comments inside macros written in ancillary
     .m4 files should.  About the only comments which should
     <emphasis>not</emphasis> use #, but use dnl instead, are comments
-    <emphasis>outside</emphasis> our own macros in the ancilliary
+    <emphasis>outside</emphasis> our own macros in the ancillary
     files.  The difference is that # comments show up in
     <code>configure</code> (which is most helpful for debugging),
-    while dnl'd lines just vanish.  Since the macros in ancilliary
+    while dnl'd lines just vanish.  Since the macros in ancillary
     files generate code which appears in odd places, their "outside"
     comments tend to not be useful while reading
     <code>configure</code>.
@@ -419,7 +419,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
    </para>
    <para>
      Generates two convenience libraries, one for C++98 and one for
-     C++11, various compability files for shared and static
+     C++11, various compatibility files for shared and static
      libraries, and then collects all the generated bits and creates
      the final libstdc++ libraries.
   </para>

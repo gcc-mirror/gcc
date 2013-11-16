@@ -294,6 +294,11 @@ proc g++_target_compile { source dest type options } {
 	lappend options "ldflags=${wrap_flags}"
     }
 
+    global TEST_EXTRA_LIBS
+    if [info exists TEST_EXTRA_LIBS] {
+	lappend options "ldflags=$TEST_EXTRA_LIBS"
+    }
+
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "compiler=$GXX_UNDER_TEST"
     lappend options "timeout=[timeout_value]"

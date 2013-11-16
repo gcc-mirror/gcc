@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "cfgloop.h"

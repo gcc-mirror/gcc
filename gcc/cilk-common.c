@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "tree-iterator.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "cilk.h"
 
 /* This structure holds all the important fields of the internal structures,

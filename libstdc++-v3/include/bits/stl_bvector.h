@@ -971,7 +971,18 @@ template<typename _Alloc>
     clear() _GLIBCXX_NOEXCEPT
     { _M_erase_at_end(begin()); }
 
-   
+#if __cplusplus >= 201103L
+    template<typename... _Args>
+      void
+      emplace_back(_Args&&... __args)
+      { push_back(bool(__args...)); }
+
+    template<typename... _Args>
+      iterator
+      emplace(const_iterator __pos, _Args&&... __args)
+      { return insert(__pos, bool(__args...)); }
+#endif
+
   protected:
     // Precondition: __first._M_offset == 0 && __result._M_offset == 0.
     iterator

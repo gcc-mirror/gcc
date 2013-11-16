@@ -266,6 +266,7 @@ static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
 static unsigned int arm_autovectorize_vector_sizes (void);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
+static int arm_cortex_m_branch_cost (bool, bool);
 
 static bool arm_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 					     const unsigned char *sel);
@@ -949,106 +950,9 @@ struct cpu_vec_costs arm_default_vec_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+/* Cost tables for AArch32 + AArch64 cores should go in aarch-cost-tables.h  */
+#include "aarch-cost-tables.h"
 
-const struct cpu_cost_table generic_extra_costs =
-{
-  /* ALU */
-  {
-    0,			/* Arith.  */
-    0,			/* Logical.  */
-    0,			/* Shift.  */
-    COSTS_N_INSNS (1),	/* Shift_reg.  */
-    0,			/* Arith_shift.  */
-    COSTS_N_INSNS (1),	/* Arith_shift_reg.  */
-    0,			/* Log_shift.  */
-    COSTS_N_INSNS (1),	/* Log_shift_reg.  */
-    0,			/* Extend.  */
-    COSTS_N_INSNS (1),	/* Extend_arith.  */
-    0,			/* Bfi.  */
-    0,			/* Bfx.  */
-    0,			/* Clz.  */
-    COSTS_N_INSNS (1),	/* non_exec.  */
-    false		/* non_exec_costs_exec.  */
-  },
-  /* MULT SImode */
-  {
-    {
-      COSTS_N_INSNS (2),	/* Simple.  */
-      COSTS_N_INSNS (1),	/* Flag_setting.  */
-      COSTS_N_INSNS (2),	/* Extend.  */
-      COSTS_N_INSNS (3),	/* Add.  */
-      COSTS_N_INSNS (3),	/* Extend_add.  */
-      COSTS_N_INSNS (8)		/* Idiv.  */
-    },
-    /* MULT DImode */
-    {
-      0,			/* Simple (N/A).  */
-      0,			/* Flag_setting (N/A).  */
-      COSTS_N_INSNS (2),	/* Extend.  */
-      0,			/* Add (N/A).  */
-      COSTS_N_INSNS (3),	/* Extend_add.  */
-      0				/* Idiv (N/A).  */
-    }
-  },
-  /* LD/ST */
-  {
-    COSTS_N_INSNS (2),	/* Load.  */
-    COSTS_N_INSNS (2),	/* Load_sign_extend.  */
-    COSTS_N_INSNS (3),	/* Ldrd.  */
-    COSTS_N_INSNS (2),	/* Ldm_1st.  */
-    1,			/* Ldm_regs_per_insn_1st.  */
-    1,			/* Ldm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (2),	/* Loadf.  */
-    COSTS_N_INSNS (3),	/* Loadd.  */
-    COSTS_N_INSNS (1),  /* Load_unaligned.  */
-    COSTS_N_INSNS (2),	/* Store.  */
-    COSTS_N_INSNS (3),	/* Strd.  */
-    COSTS_N_INSNS (2),	/* Stm_1st.  */
-    1,			/* Stm_regs_per_insn_1st.  */
-    1,			/* Stm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (2),	/* Storef.  */
-    COSTS_N_INSNS (3),	/* Stored.  */
-    COSTS_N_INSNS (1)  /* Store_unaligned.  */
-  },
-  {
-    /* FP SFmode */
-    {
-      COSTS_N_INSNS (7),	/* Div.  */
-      COSTS_N_INSNS (2),	/* Mult.  */
-      COSTS_N_INSNS (3),	/* Mult_addsub.  */
-      COSTS_N_INSNS (3),	/* Fma.  */
-      COSTS_N_INSNS (1),	/* Addsub.  */
-      0,			/* Fpconst.  */
-      0,			/* Neg.  */
-      0,			/* Compare.  */
-      0,			/* Widen.  */
-      0,			/* Narrow.  */
-      0,			/* Toint.  */
-      0,			/* Fromint.  */
-      0				/* Roundint.  */
-    },
-    /* FP DFmode */
-    {
-      COSTS_N_INSNS (15),	/* Div.  */
-      COSTS_N_INSNS (5),	/* Mult.  */
-      COSTS_N_INSNS (7),	/* Mult_addsub.  */
-      COSTS_N_INSNS (7),	/* Fma.  */
-      COSTS_N_INSNS (3),	/* Addsub.  */
-      0,			/* Fpconst.  */
-      0,			/* Neg.  */
-      0,			/* Compare.  */
-      0,			/* Widen.  */
-      0,			/* Narrow.  */
-      0,			/* Toint.  */
-      0,			/* Fromint.  */
-      0				/* Roundint.  */
-    }
-  },
-  /* Vector */
-  {
-    COSTS_N_INSNS (1)	/* Alu.  */
-  }
-};
 
 
 const struct cpu_cost_table cortexa9_extra_costs =
@@ -1357,7 +1261,7 @@ const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   3,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1373,7 +1277,7 @@ const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1392,7 +1296,7 @@ const struct tune_params arm_strongarm_tune =
 {
   arm_fastmul_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1424,7 +1328,7 @@ const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1440,7 +1344,7 @@ const struct tune_params arm_v6t2_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1457,7 +1361,7 @@ const struct tune_params arm_cortex_tune =
 {
   arm_9e_rtx_costs,
   &generic_extra_costs,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1489,7 +1393,7 @@ const struct tune_params arm_cortex_a15_tune =
 {
   arm_9e_rtx_costs,
   &cortexa15_extra_costs,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   2,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1508,7 +1412,7 @@ const struct tune_params arm_cortex_a5_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   1,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -1536,13 +1440,36 @@ const struct tune_params arm_cortex_a9_tune =
   false                                         /* Prefer Neon for 64-bits bitops.  */
 };
 
+/* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
+   cycle to execute each.  An LDR from the constant pool also takes two cycles
+   to execute, but mildly increases pipelining opportunity (consecutive
+   loads/stores can be pipelined together, saving one cycle), and may also
+   improve icache utilisation.  Hence we prefer the constant pool for such
+   processors.  */
+
+const struct tune_params arm_v7m_tune =
+{
+  arm_9e_rtx_costs,
+  &generic_extra_costs,
+  NULL,						/* Sched adj cost.  */
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_cortex_m_branch_cost,
+  false,					/* Prefer LDRD/STRD.  */
+  {false, false},				/* Prefer non short circuit.  */
+  &arm_default_vec_cost,                        /* Vectorizer costs.  */
+  false                                         /* Prefer Neon for 64-bits bitops.  */
+};
+
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
    arm_v6t2_tune. It is used for cortex-m0, cortex-m1 and cortex-m0plus.  */
 const struct tune_params arm_v6m_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  NULL,
+  NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
@@ -9967,7 +9894,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  *cost = 0;
 	  return true;
 	}
-      break;
+      return false;
 
     case ABS:
       if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -11336,6 +11263,20 @@ static int
 arm_cortex_a5_branch_cost (bool speed_p, bool predictable_p)
 {
   return speed_p ? 0 : arm_default_branch_cost (speed_p, predictable_p);
+}
+
+/* Thumb-2 branches are relatively cheap on Cortex-M processors ("1 + P cycles"
+   on Cortex-M4, where P varies from 1 to 3 according to some criteria), since
+   sequences of non-executed instructions in IT blocks probably take the same
+   amount of time as executed instructions (and the IT instruction itself takes
+   space in icache).  This function was experimentally determined to give good
+   results on a popular embedded benchmark.  */
+
+static int
+arm_cortex_m_branch_cost (bool speed_p, bool predictable_p)
+{
+  return (TARGET_32BIT && speed_p) ? 1
+         : arm_default_branch_cost (speed_p, predictable_p);
 }
 
 static bool fp_consts_inited = false;

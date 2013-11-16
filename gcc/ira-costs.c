@@ -1224,6 +1224,9 @@ record_operand_costs (rtx insn, enum reg_class *pref)
      preferred class is very expensive as the source of a copy
      instruction.  */
   if ((set = single_set (insn)) != NULL_RTX
+      /* In rare cases the single set insn might have less 2 operands
+	 as the source can be a fixed special reg.  */
+      && recog_data.n_operands > 1
       && ops[0] == SET_DEST (set) && ops[1] == SET_SRC (set))
     {
       int regno, other_regno;

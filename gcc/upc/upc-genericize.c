@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "gimple.h"
 #include "gimple-low.h"
+#include "gimplify.h"
 #include "timevar.h"
 #include "tree-check.h"
 #include "tree-cfg.h"
