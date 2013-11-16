@@ -19,7 +19,8 @@
 ; D, which is itself a reproduction from ISO/IEC TR 10176:1998, and
 ; the similar table from ISO/IEC 14882:1988 (C++98) Annex E, which is
 ; a reproduction of ISO/IEC PDTR 10176.  Unfortunately these tables
-; are not identical.
+; are not identical.  It also reproduces the somewhat different tables
+; in C11 and C++11, which are identical to each other.
 
 [C99]
 
@@ -209,3 +210,34 @@ fbd3-fd3f fd50-fd8f fd92-fdc7 fdf0-fdfb fe70-fe72 fe74 fe76-fefc
 ff21-ff3a ff41-ff5a ff66-ffbe ffc2-ffc7 ffca-ffcf ffd2-ffd7
 ffda-ffdc 4e00-9fa5
 
+[C11]
+; Group 1
+00a8 00aa 00ad 00af 00b2-00b5 00b7-00ba 00bc-00be 00c0-00d6 00d8-00f6
+00f8-00ff
+
+; Group 2, minus characters under C11NOSTART
+0100-02ff 0370-167f 1681-180d 180f-1dbf 1e00-1fff
+
+; Group 3
+200b-200d 202a-202e 203f-2040 2054 2060-206f
+
+; Group 4, minus characters under C11NOSTART
+2070-20cf 2100-218f 2460-24ff 2776-2793 2c00-2dff 2e80-2fff
+
+; Group 5
+3004-3007 3021-302f 3031-303f
+
+; Group 6
+3040-d7ff
+
+; Group 7, minus characters under C11NOSTART
+f900-fd3d fd40-fdcf fdf0-fe1f fe30-fe44 fe47-fffd
+
+; Group 8
+10000-1fffd 20000-2fffd 30000-3fffd 40000-4fffd 50000-5fffd
+60000-6fffd 70000-7fffd 80000-8fffd 90000-9fffd a0000-afffd
+b0000-bfffd c0000-cfffd d0000-dfffd e0000-efffd
+
+[C11NOSTART]
+; Group 1
+0300-036f 1dc0-1dff 20d0-20ff fe20-fe2f
