@@ -32,7 +32,7 @@ int main (int argc, char **argv)
   void (*vptr) ();
   
   (ovl) (1);                // ok
-  (&ovl) (1);               // { dg-error "" } not suitable for overload resolution
+  (&ovl) (1);               // ok
   (ovl) ();                 // { dg-error "" } no matching candidates
   // { dg-message "candidate" "candidate note" { target *-*-* } 36 }
   (&ovl) ();                // { dg-error "" } not suitable for overload resolution
