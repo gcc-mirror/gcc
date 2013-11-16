@@ -1245,7 +1245,8 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	  return FAILURE;
 	}
 
-      if (r1->ts.u.cl->length)
+      if (s1->ts.u.cl && s1->ts.u.cl->length
+	  && s2->ts.u.cl && s2->ts.u.cl->length)
 	{
 	  int compval = gfc_dep_compare_expr (r1->ts.u.cl->length,
 					      r2->ts.u.cl->length);
@@ -1367,8 +1368,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       if (s1->attr.function && s2->attr.function)
 	{
 	  /* If both are functions, check result characteristics.  */
-	  if (check_result_characteristics (s1, s2, errmsg, err_len)
-	      == FAILURE)
+	  if (check_result_characteristics (s1, s2, errmsg, err_len) == FAILURE
+	      || check_result_characteristics (s2, s1, errmsg, err_len) == FAILURE)
 	    return 0;
 	}
 
