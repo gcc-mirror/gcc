@@ -1,3 +1,7 @@
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple.h (enum gf_mask): Change the ordering of GF_OMP_* bits.
+
 2013-11-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (barrier_align): Return 0 when barrier_or_label
