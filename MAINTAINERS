@@ -30,7 +30,6 @@ Jeff Law					law@redhat.com
 Michael Meissner				gnu@the-meissners.org
 Jason Merrill					jason@redhat.com
 David S. Miller					davem@redhat.com
-Mark Mitchell					mark@codesourcery.com
 Joseph Myers					joseph@codesourcery.com
 Diego Novillo					dnovillo@google.com
 Bernd Schmidt					bernds@codesourcery.com
@@ -151,7 +150,6 @@ Ada front end		Arnaud Charlet		charlet@act-europe.fr
 Ada front end		Eric Botcazou		ebotcazou@libertysurf.fr
 Fortran			Paul Brook		paul@codesourcery.com
 c++			Jason Merrill		jason@redhat.com
-c++			Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
 go			Ian Lance Taylor	ian@airs.com
 java			Per Bothner		per@bothner.com
