@@ -1,5 +1,14 @@
 2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* config/arc/arc.c (arc_predicate_delay_insns): New function.
+	(pass_data_arc_predicate_delay_insns): New pass_data instance.
+	(pass_arc_predicate_delay_insns): New subclass of rtl_opt_class.
+	(make_pass_arc_predicate_delay_insns): New function.
+	(arc_init): Register pass_arc_predicate_delay_insns if
+	flag_delayed_branch is active.
+
+2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	* config/arc/constraints.md (Rcq): Simplify register number test.
 
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
