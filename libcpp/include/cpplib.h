@@ -437,6 +437,10 @@ struct cpp_options
      literal number suffixes as user-defined literal number suffixes.  */
   unsigned char ext_numeric_literals;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     in C11 and C++11.  */
+  unsigned char c11_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 

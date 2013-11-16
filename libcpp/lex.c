@@ -1204,11 +1204,14 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 
   cur = pfile->buffer->cur;
   if (! starts_ucn)
-    while (ISIDNUM (*cur))
-      {
-	hash = HT_HASHSTEP (hash, *cur);
-	cur++;
-      }
+    {
+      while (ISIDNUM (*cur))
+	{
+	  hash = HT_HASHSTEP (hash, *cur);
+	  cur++;
+	}
+      NORMALIZE_STATE_UPDATE_IDNUM (nst, *(cur - 1));
+    }
   pfile->buffer->cur = cur;
   if (starts_ucn || forms_identifier_p (pfile, false, nst))
     {
@@ -1216,8 +1219,8 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
       do {
 	while (ISIDNUM (*pfile->buffer->cur))
 	  {
+	    NORMALIZE_STATE_UPDATE_IDNUM (nst, *pfile->buffer->cur);
 	    pfile->buffer->cur++;
-	    NORMALIZE_STATE_UPDATE_IDNUM (nst);
 	  }
       } while (forms_identifier_p (pfile, false, nst));
       result = _cpp_interpret_identifier (pfile, base,
@@ -1277,8 +1280,8 @@ lex_number (cpp_reader *pfile, cpp_string *number,
       while (ISIDNUM (*cur) || *cur == '.' || DIGIT_SEP (*cur)
 	     || VALID_SIGN (*cur, cur[-1]))
 	{
+	  NORMALIZE_STATE_UPDATE_IDNUM (nst, *cur);
 	  cur++;
-	  NORMALIZE_STATE_UPDATE_IDNUM (nst);
 	}
 
       pfile->buffer->cur = cur;

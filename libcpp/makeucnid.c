@@ -29,15 +29,22 @@ along with this program; see the file COPYING3.  If not see
 enum {
   C99 = 1,
   CXX = 2,
-  digit = 4,
-  not_NFC = 8,
-  not_NFKC = 16,
-  maybe_not_NFC = 32
+  N99 = 4,
+  C11 = 8,
+  N11 = 16,
+  all_languages = C99 | CXX | C11,
+  not_NFC = 32,
+  not_NFKC = 64,
+  maybe_not_NFC = 128
 };
 
-static unsigned flags[65536];
-static unsigned short decomp[65536][2];
-static unsigned char combining_value[65536];
+#define NUM_CODE_POINTS 0x110000
+#define MAX_CODE_POINT 0x10ffff
+
+static unsigned flags[NUM_CODE_POINTS];
+static unsigned int all_decomp[NUM_CODE_POINTS][2];
+static unsigned int decomp[NUM_CODE_POINTS][2];
+static unsigned char combining_value[NUM_CODE_POINTS];
 
 /* Die!  */
 
@@ -48,7 +55,7 @@ fail (const char *s)
   exit (1);
 }
 
-/* Read ucnid.tab and set the C99 and CXX flags in header[].  */
+/* Read ucnid.tab and set the flags for language versions in header[].  */
 
 static void
 read_ucnid (const char *fname)
@@ -66,10 +73,14 @@ read_ucnid (const char *fname)
 	break;
       if (strcmp (line, "[C99]\n") == 0)
 	fl = C99;
-      if (strcmp (line, "[C99DIG]\n") == 0)
-	fl = C99|digit;
+      else if (strcmp (line, "[C99DIG]\n") == 0)
+	fl = C99|N99;
       else if (strcmp (line, "[CXX]\n") == 0)
 	fl = CXX;
+      else if (strcmp (line, "[C11]\n") == 0)
+	fl = C11;
+      else if (strcmp (line, "[C11NOSTART]\n") == 0)
+	fl = C11|N11;
       else if (isxdigit (line[0]))
 	{
 	  char *l = line;
@@ -94,7 +105,7 @@ read_ucnid (const char *fname)
 		}
 	      while (isspace (*l))
 		l++;
-	      if (end > 0xFFFF)
+	      if (end > MAX_CODE_POINT)
 		fail ("parsing ucnid.tab, end too large");
 	      while (start <= end)
 		flags[start++] |= fl;
@@ -108,8 +119,10 @@ read_ucnid (const char *fname)
 
 /* Read UnicodeData.txt and fill in the 'decomp' table to be the
    decompositions of characters for which both the character
-   decomposed and all the code points in the decomposition are either
-   C99 or CXX.  */
+   decomposed and all the code points in the decomposition are valid
+   for some supported language version, and the 'all_decomp' table to
+   be the decompositions of all characters without those
+   constraints.  */
 
 static void
 read_table (char *fname)
@@ -123,7 +136,7 @@ read_table (char *fname)
       char line[256];
       unsigned long codepoint, this_decomp[4];
       char *l;
-      int i;
+      int i, j;
       int decomp_useful;
 
       if (!fgets (line, sizeof (line), f))
@@ -131,8 +144,8 @@ read_table (char *fname)
       codepoint = strtoul (line, &l, 16);
       if (l == line || *l != ';')
 	fail ("parsing UnicodeData.txt, reading code point");
-      if (codepoint > 0xffff || ! (flags[codepoint] & (C99 | CXX)))
-	continue;
+      if (codepoint > MAX_CODE_POINT)
+	fail ("parsing UnicodeData.txt, code point too large");
 
       do {
 	l++;
@@ -171,7 +184,9 @@ read_table (char *fname)
 	}
       if (i > 2)  /* Decomposition too long.  */
 	fail ("parsing UnicodeData.txt, decomposition too long");
-      if (decomp_useful)
+      for (j = 0; j < i; j++)
+	all_decomp[codepoint][j] = this_decomp[j];
+      if ((flags[codepoint] & all_languages) && decomp_useful)
 	while (--i >= 0)
 	  decomp[codepoint][i] = this_decomp[i];
     }
@@ -208,8 +223,8 @@ read_derived (const char *fname)
       start = strtoul (line, &l, 16);
       if (l == line)
 	fail ("parsing DerivedNormalizationProps.txt, reading start");
-      if (start > 0xffff)
-	continue;
+      if (start > MAX_CODE_POINT)
+	fail ("parsing DerivedNormalizationProps.txt, code point too large");
       if (*l == '.' && l[1] == '.')
 	end = strtoul (l + 2, &l, 16);
       else
@@ -237,17 +252,21 @@ write_table (void)
   unsigned last_flag = flags[0];
   bool really_safe = decomp[0][0] == 0;
   unsigned char last_combine = combining_value[0];
+
+  printf ("static const struct ucnrange ucnranges[] = {\n");
   
-  for (i = 1; i <= 65536; i++)
-    if (i == 65536
-	|| (flags[i] != last_flag && ((flags[i] | last_flag) & (C99 | CXX)))
+  for (i = 1; i <= NUM_CODE_POINTS; i++)
+    if (i == NUM_CODE_POINTS
+	|| (flags[i] != last_flag && ((flags[i] | last_flag) & all_languages))
 	|| really_safe != (decomp[i][0] == 0)
 	|| combining_value[i] != last_combine)
       {
-	printf ("{ %s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
+	printf ("{ %s|%s|%s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
 		last_flag & C99 ? "C99" : "  0",
-		last_flag & digit ? "DIG" : "  0",
+		last_flag & N99 ? "N99" : "  0",
 		last_flag & CXX ? "CXX" : "  0",
+		last_flag & C11 ? "C11" : "  0",
+		last_flag & N11 ? "N11" : "  0",
 		really_safe ? "CID" : "  0",
 		last_flag & not_NFC ? "  0" : "NFC",
 		last_flag & not_NFKC ? "  0" : "NKC",
@@ -258,6 +277,98 @@ write_table (void)
 	last_combine = combining_value[0];
 	really_safe = decomp[i][0] == 0;
       }
+
+  printf ("};\n");
+}
+
+/* Return whether a given character is valid in an identifier for some
+   supported language, either as itself or as a UCN.  */
+
+static bool
+char_id_valid (unsigned int c)
+{
+  return ((flags[c] & all_languages)
+	  || (c == 0x24)
+	  || (c >= 0x30 && c <= 0x39)
+	  || (c >= 0x41 && c <= 0x5a)
+	  || (c >= 0x61 && c <= 0x7a));
+}
+
+/* Write out the switch statement over characters for which it is
+   context-dependent whether they are in NFC.  */
+
+static void
+write_context_switch (void)
+{
+  unsigned i;
+  printf ("static bool\n"
+	  "check_nfc (cpp_reader *pfile, cppchar_t c, cppchar_t p)\n"
+	  "{\n"
+	  "  switch (c)\n"
+	  "    {\n");
+  for (i = 0; i < NUM_CODE_POINTS; i++)
+    {
+      bool found_case = false;
+      unsigned j;
+      if (!(flags[i] & all_languages) || !(flags[i] & maybe_not_NFC))
+	continue;
+      if ((i >= 0x1161 && i <= 0x1175) || (i >= 0x11A8 && i <= 0x11C2))
+	continue; /* Hangul handled algorithmically.  */
+      printf ("    case %#06x:\n"
+	      "      switch (p)\n"
+	      "\t{\n", i);
+      /* If an NFC starter character decomposes with this character I
+	 as the second character and an NFC starter character S as the
+	 first character, that latter character as a previous
+	 character means this character is not NFC.  Furthermore, any
+	 NFC starter character K made by a series of compositions of S
+	 with combining characters whose combining class is greater
+	 than that of I also means this character is not NFC.  */
+      for (j = 0; j < NUM_CODE_POINTS; j++)
+	{
+	  unsigned s, k;
+	  if (all_decomp[j][1] != i)
+	    continue;
+	  s = all_decomp[j][0];
+	  if (combining_value[s] != 0 || (flags[s] & not_NFC) != 0)
+	    continue;
+	  if (char_id_valid (s))
+	    {
+	      found_case = true;
+	      printf ("\tcase %#06x:\n", s);
+	    }
+	  for (k = 0; k < NUM_CODE_POINTS; k++)
+	    {
+	      unsigned t = k;
+	      if (k == s || !char_id_valid (k))
+		continue;
+	      while (all_decomp[t][1] != 0
+		     && combining_value[all_decomp[t][1]] > combining_value[i])
+		{
+		  if (combining_value[t] != 0 || (flags[t] & not_NFC) != 0)
+		    break;
+		  t = all_decomp[t][0];
+		}
+	      if (t == s)
+		{
+		  found_case = true;
+		  printf ("\tcase %#06x:\n", k);
+		}
+	    }
+	}
+      if (found_case)
+	printf ("\t  return false;\n");
+      else
+	printf ("\t/* Non-NFC cases not applicable to C/C++.  */\n");
+      printf ("\tdefault:\n"
+	      "\t  return true;\n"
+	      "\t}\n\n");
+    }
+  printf ("    default:\n"
+	  "      cpp_error (pfile, CPP_DL_ICE, \"Character %%x might not be NFKC\", c);\n"
+	  "      return true;\n"
+	  "  }\n"
+	  "}\n");
 }
 
 /* Print out the huge copyright notice.  */
@@ -336,5 +447,6 @@ main(int argc, char ** argv)
 
   write_copyright ();
   write_table ();
+  write_context_switch ();
   return 0;
 }

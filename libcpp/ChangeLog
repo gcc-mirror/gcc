@@ -1,5 +1,47 @@
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* ucnid.tab: Add C11 and C11NOSTART data.
+	* makeucnid.c (digit): Rename enum value to N99.
+	(C11, N11, all_languages): New enum values.
+	(NUM_CODE_POINTS, MAX_CODE_POINT): New macros.
+	(flags, decomp, combining_value): Use NUM_CODE_POINTS as array
+	size.
+	(decomp): Use unsigned int as element type.
+	(all_decomp): New array.
+	(read_ucnid): Handle C11 and C11NOSTART.  Use MAX_CODE_POINT.
+	(read_table): Use MAX_CODE_POINT.  Store all decompositions in
+	all_decomp.
+	(read_derived): Use MAX_CODE_POINT.
+	(write_table): Use NUM_CODE_POINTS.  Print N99, C11 and N11
+	flags.  Print whole array variable declaration rather than just
+	array contents.
+	(char_id_valid, write_context_switch): New functions.
+	(main): Call write_context_switch.
+	* ucnid.h: Regenerate.
+	* include/cpplib.h (struct cpp_options): Add c11_identifiers.
+	* init.c (struct lang_flags): Add c11_identifiers.
+	(cpp_set_lang): Set c11_identifiers option from selected language.
+	* internal.h (struct normalize_state): Document "previous" as
+	previous starter character.
+	(NORMALIZE_STATE_UPDATE_IDNUM): Take character as argument.
+	* charset.c (DIG): Rename enum value to N99.
+	(C11, N11): New enum values.
+	(struct ucnrange): Give name to struct.  Use short for flags and
+	unsigned int for end of range.  Include ucnid.h for whole variable
+	declaration.
+	(ucn_valid_in_identifier): Allow for characters up to 0x10FFFF.
+	Allow for C11 in determining valid characters and valid start
+	characters.  Use check_nfc for non-Hangul context-dependent
+	checks.  Only store starter characters in nst->previous.
+	(_cpp_valid_ucn): Pass new argument to
+	NORMALIZE_STATE_UPDATE_IDNUM.
+	* lex.c (lex_identifier): Pass new argument to
+	NORMALIZE_STATE_UPDATE_IDNUM.  Call NORMALIZE_STATE_UPDATE_IDNUM
+	after initial non-UCN part of identifier.
+	(lex_number): Pass new argument to NORMALIZE_STATE_UPDATE_IDNUM.
+
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* ucnid.tab: Mark C99 digits as [C99DIG].
 	* makeucnid.c (read_ucnid): Handle [C99DIG].
 	(read_table): Don't check for digit characters.

@@ -1,3 +1,7 @@
+2013-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-c++-common/cpp/ucnid-2011-1.c: New test.
+
 2013-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58188
