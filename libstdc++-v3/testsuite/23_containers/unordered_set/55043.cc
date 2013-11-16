@@ -29,11 +29,18 @@ struct MoveOnly
   MoveOnly(MoveOnly&&) = default;
 };
 
-struct equal {
-  bool operator()(const MoveOnly&, const MoveOnly) const { return true; }
+struct equal
+{
+  bool
+  operator()(const MoveOnly&, const MoveOnly&) const
+  { return true; }
 };
-struct hash {
-  std::size_t operator()(const MoveOnly&) const { return 0; }
+
+struct hash
+{
+  std::size_t
+  operator()(const MoveOnly&) const
+  { return 0; }
 };
 
 template<typename Alloc>

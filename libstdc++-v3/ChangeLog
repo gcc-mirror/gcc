@@ -1,3 +1,8 @@
+2013-11-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/unordered_set/55043.cc (equal): Add
+	missing & on rhs parameter.
+
 2013-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_bvector.h (vector<bool>::emplace_back()): LWG 2187:
