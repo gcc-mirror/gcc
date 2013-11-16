@@ -1,3 +1,16 @@
+2013-11-15  Ian Lance Taylor  <iant@google.com>
+
+	* backtrace.h (backtrace_syminfo): Update comment and parameter
+	name to take any address, not just a PC value.
+	* elf.c (STT_OBJECT): Define.
+	(elf_nosyms): Rename parameter pc to addr.
+	(elf_symbol_search): Rename local variable pc to addr.
+	(elf_initialize_syminfo): Add STT_OBJECT symbols to elf_symbols.
+	(elf_syminfo): Rename parameter pc to addr.
+	* btest.c (global): New global variable.
+	(test5): New test.
+	(main): Call test5.
+
 2013-10-17  Ian Lance Taylor  <iant@google.com>
 
 	* elf.c (elf_add): Don't get the wrong offsets if a debug section

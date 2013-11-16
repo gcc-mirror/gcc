@@ -598,6 +598,53 @@ f33 (int f1line, int f2line)
   return failures;
 }
 
+int global = 1;
+
+static int
+test5 (void)
+{
+  struct symdata symdata;
+  int i;
+
+  symdata.name = NULL;
+  symdata.val = 0;
+  symdata.failed = 0;
+
+  i = backtrace_syminfo (state, (uintptr_t) &global, callback_three,
+			 error_callback_three, &symdata);
+  if (i == 0)
+    {
+      fprintf (stderr,
+	       "test5: unexpected return value from backtrace_syminfo %d\n",
+	       i);
+      symdata.failed = 1;
+    }
+
+  if (!symdata.failed)
+    {
+      if (symdata.name == NULL)
+	{
+	  fprintf (stderr, "test5: NULL syminfo name\n");
+	  symdata.failed = 1;
+	}
+      else if (strcmp (symdata.name, "global") != 0)
+	{
+	  fprintf (stderr,
+		   "test5: unexpected syminfo name got %s expected %s\n",
+		   symdata.name, "global");
+	  symdata.failed = 1;
+	}
+    }
+
+  printf ("%s: backtrace_syminfo variable\n",
+	  symdata.failed ? "FAIL" : "PASS");
+
+  if (symdata.failed)
+    ++failures;
+
+  return failures;
+}
+
 static void
 error_callback_create (void *data ATTRIBUTE_UNUSED, const char *msg,
 		       int errnum)
@@ -622,6 +669,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
   test2 ();
   test3 ();
   test4 ();
+  test5 ();
 #endif
 
   exit (failures ? EXIT_FAILURE : EXIT_SUCCESS);
