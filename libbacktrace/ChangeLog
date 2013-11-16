@@ -1,3 +1,8 @@
+2013-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* backtrace.h (backtrace_create_state): Correct comment about
+	threading.
+
 2013-11-15  Ian Lance Taylor  <iant@google.com>
 
 	* backtrace.h (backtrace_syminfo): Update comment and parameter
