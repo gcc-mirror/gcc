@@ -1,3 +1,7 @@
+2013-11-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* MAINTAINERS (Global Reviewers, c++): Remove Mark Mitchell.
+
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Makefile.in: Regenerate.
@@ -13,7 +17,7 @@
 
 2013-11-01  Trevor Saunders  <tsaunders@mozilla.com>
 
-* MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2013-10-30  Jason Merrill  <jason@redhat.com>
 
