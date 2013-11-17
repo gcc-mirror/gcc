@@ -1,3 +1,12 @@
+2011-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_frame_related): Add split_reg
+	parameter and use it in REG_FRAME_RELATED_EXPR note.
+	(emit_frame_save): Call rs6000_frame_related with extra NULL_RTX
+	parameter.
+	(rs6000_emit_prologue): Likewise, but for little endian VSX
+	stores, pass the source register of the store instead.
+
 2013-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple.h: Reorder prototypes to match .c declaration order, and remove
