@@ -11785,9 +11785,6 @@ ix86_address_subreg_operand (rtx op)
 
   mode = GET_MODE (op);
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
-    return false;
-
   /* Don't allow SUBREGs that span more than a word.  It can lead to spill
      failures when the register is one word out of a two word structure.  */
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
@@ -11961,19 +11958,6 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	return 0;
       scale = 1 << scale;
       retval = -1;
-    }
-  else if (CONST_INT_P (addr))
-    {
-      if (!x86_64_immediate_operand (addr, VOIDmode))
-	return 0;
-
-      /* Constant addresses are sign extended to 64bit, we have to
-	 prevent addresses from 0x80000000 to 0xffffffff in x32 mode.  */
-      if (TARGET_X32
-	  && val_signbit_known_set_p (SImode, INTVAL (addr)))
-	return 0;
-
-      disp = addr;
     }
   else
     disp = addr;			/* displacement */
@@ -12705,6 +12689,12 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       else if (TARGET_64BIT
 	       && !x86_64_immediate_operand (disp, VOIDmode))
 	/* Displacement is out of range.  */
+	return false;
+      /* In x32 mode, constant addresses are sign extended to 64bit, so
+	 we have to prevent addresses from 0x80000000 to 0xffffffff.  */
+      else if (TARGET_X32 && !(index || base)
+	       && CONST_INT_P (disp)
+	       && val_signbit_known_set_p (SImode, INTVAL (disp)))
 	return false;
     }
 

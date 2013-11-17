@@ -1,3 +1,8 @@
+2013-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59153
+	* gcc.target/i386/pr59153.c: New test.
+
 2013-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59123
@@ -125,7 +130,7 @@
 2013-11-14  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Fix target selector.
- 
+
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gnat.dg/specs/addr1.ads: XFAIL on x32.
@@ -166,7 +171,7 @@
 
 	PR tree-optimization/59102
 	* gcc.c-torture/compile/pr59102.c: New test.
-	 
+
 2013-11-13  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tail-merge-store.c: New test.
@@ -250,8 +255,7 @@
 2013-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c90-thread-local-1.c, gcc.dg/c99-thread-local-1.c,
-	gcc.dg/c11-thread-local-1.c, gcc.dg/c11-thread-local-2.c: New
-	tests.
+	gcc.dg/c11-thread-local-1.c, gcc.dg/c11-thread-local-2.c: New tests.
 	* gcc.dg/tls/diag-2.c, objc.dg/tls/diag-2.m: Update expected
 	diagnostics.
 
@@ -277,7 +281,7 @@
 	PR c++/57734
 	* g++.dg/cpp0x/alias-decl-enum-1.C: New.
 
-2013-11-11  Martin Liska	<marxin.liska@gmail.com>
+2013-11-11  Martin Liska  <marxin.liska@gmail.com>
 
 	* gcc.dg/time-profiler-1.c: New test.
 	* gcc.dg/time-profiler-2.c: Ditto.
@@ -397,10 +401,10 @@
 
 	* gcc.dg/tree-ssa/loop-39.c: New test.
 
-        * gcc.dg/unroll_1.c: Add -fno-tree-vrp to dg-options.
-        * gcc.dg/unroll_2.c: Likewise.
-        * gcc.dg/unroll_3.c: Likewise.
-        * gcc.dg/unroll_4.c: Likewise.
+	* gcc.dg/unroll_1.c: Add -fno-tree-vrp to dg-options.
+	* gcc.dg/unroll_2.c: Likewise.
+	* gcc.dg/unroll_3.c: Likewise.
+	* gcc.dg/unroll_4.c: Likewise.
 	* gcc.dg/vrp90.c: New test.
 
 2013-11-07  Paolo Carlini  <paolo.carlini@oracle.com>

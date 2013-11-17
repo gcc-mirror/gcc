@@ -1,3 +1,12 @@
+2013-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59153
+	* config/i386/i386.c (ix86_address_subreg_operand): Do not
+	reject non-integer subregs.
+	(ix86_decompose_address): Do not reject invalid CONST_INT RTXes.
+	Move check for invalid x32 constant addresses ...
+	(ix86_legitimate_address_p): ... here.
+
 2011-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_frame_related): Add split_reg
@@ -9,8 +18,8 @@
 
 2013-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gimple.h: Reorder prototypes to match .c declaration order, and remove
-	protyotypes for functions not in gimple.c.
+	* gimple.h: Reorder prototypes to match .c declaration order, and
+	remove protyotypes for functions not in gimple.c.
 	(LABEL): Move to tree-into-ssa.c.
 	* gimple.c: Remove unused prototypes.
 	(get_base_address): Move to tree.c.
@@ -79,8 +88,7 @@
 	(execute_expand_omp): Check flag_enable_cilkplus.
 	(execute_lower_omp): Same.
 	(diagnose_sb_0): Handle CILK_SIMD.
-	(diagnose_omp_structured_block_errors): Check
-	flag_enable_cilkplus.
+	(diagnose_omp_structured_block_errors): Check flag_enable_cilkplus.
 	(setjmp_or_longjmp_p): New.
 	(scan_omp_1_stmt): Error on setjmp/longjmp in a simd construct.
 	* tree-pretty-print.c (dump_generic_node): Add case for CILK_SIMD.
@@ -94,8 +102,7 @@
 	(*altivec_vperm_<mode>_internal): Remove.
 	(altivec_vperm_<mode>_uns): Revert earlier little endian change.
 	(*altivec_vperm_<mode>_uns_internal): Remove.
-	* config/rs6000/vector.md (vec_realign_load_<mode>): Revise
-	commentary.
+	* config/rs6000/vector.md (vec_realign_load_<mode>): Revise commentary.
 
 2013-11-15  Jeff Law  <law@redhat.com>
 
@@ -117,8 +124,7 @@
 
 2013-11-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* config/aarch64/aarch64-simd.md: Remove simd_type from all
-	patterns.
+	* config/aarch64/aarch64-simd.md: Remove simd_type from all patterns.
 	* config/aarch64/aarch64.md: Likewise, correct "type" attribute
 	where it is incorrect or missing.
 
@@ -150,8 +156,7 @@
 	(compute_points_to_sets): Remove heap variable globalization.
 	(ipa_escaped_pt): Adjust initializer.
 	(pass_data_ipa_pta): Do not run TODO_update_ssa.
-	* gimple-pretty-print.c (pp_points_to_solution): Print split
-	flags.
+	* gimple-pretty-print.c (pp_points_to_solution): Print split flags.
 	* tree-ssa-alias.c (dump_points_to_solution): Likewise.
 
 2013-11-15  Richard Biener  <rguenther@suse.de>
@@ -165,8 +170,7 @@
 
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
-	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure
-	macro.
+	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure macro.
 	* configure.ac: Determine target_header_dir earlier.
 	(--with-glibc-version): New configure option.
 	Use GCC_GLIBC_VERSION_GTE_IFELSE in enable_gnu_unique_object,
