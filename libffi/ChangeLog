@@ -1,5 +1,7 @@
 2013-11-18  Alan Modra  <amodra@gmail.com>
 
+	* src/powerpc/ppc_closure.S: Don't bl .Luint128.
+
 	* src/powerpc/ffitarget.h: Import from upstream.
 	* src/powerpc/ffi.c: Likewise.
 	* src/powerpc/linux64.S: Likewise.
