@@ -31277,7 +31277,7 @@ cp_parser_cilk_simd_vectorlength (cp_parser *parser, tree clauses)
   expr = maybe_constant_value (expr);
 
   if (TREE_CONSTANT (expr)
-	   && exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
+	   && exact_log2 (tree_to_hwi (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else if (expr != error_mark_node)
     {

@@ -2113,12 +2113,11 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	      if (!tree_fits_shwi_p (len))
 		return false;
 	      tree rbase = ref->base;
-	      offset_int roffset = wi::to_offset (ref->offset);
+	      offset_int roffset = ref->offset;
 	      ao_ref dref;
 	      ao_ref_init_from_ptr_and_size (&dref, dest, len);
 	      tree base = ao_ref_base (&dref);
-	      offset_int offset = wi::to_offset (dref.offset);
-	      offset_int bpu = wi::to_offset (BITS_PER_UNIT);
+	      offset_int offset = dref.offset;
 	      if (!base || dref.size == -1)
 		return false;
 	      if (TREE_CODE (base) == MEM_REF)
@@ -2126,16 +2125,16 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 		  if (TREE_CODE (rbase) != MEM_REF)
 		    return false;
 		  // Compare pointers.
-		  offset += bpu * mem_ref_offset (base);
-		  roffset += bpu * mem_ref_offset (rbase);
+		  offset += mem_ref_offset (base) * BITS_PER_UNIT;
+		  roffset += mem_ref_offset (rbase) * BITS_PER_UNIT;
 		  base = TREE_OPERAND (base, 0);
 		  rbase = TREE_OPERAND (rbase, 0);
 		}
 	      if (base == rbase)
 		{
-		  wide_int size = bpu * tree_to_hwi (len);
-		  if (wi::le_p (offset, roffset, SIGNED)
-		      && wi::le_p (roffset + ref->max_size, offset + size, SIGNED))
+		  offset_int size = wi::to_offset (len) * BITS_PER_UNIT;
+		  if (wi::les_p (offset, roffset)
+		      && wi::les_p (roffset + ref->max_size, offset + size))
 		    return true;
 		}
 	      break;
