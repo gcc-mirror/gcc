@@ -28,7 +28,7 @@
  */
 
 //
-// ISO C++ 14882: 21  Strings library
+// N3762 basic_string_view library
 //
 
 #ifndef _GLIBCXX_EXPERIMENTAL_STRING_VIEW_TCC
