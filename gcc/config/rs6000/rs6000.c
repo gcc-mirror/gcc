@@ -8188,7 +8188,9 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 	}
       else if (INT_REGNO_P (REGNO (operands[1])))
 	{
-	  rtx mem = adjust_address_nv (operands[0], mode, 4);
+	  rtx mem = operands[0];
+	  if (BYTES_BIG_ENDIAN)
+	    mem = adjust_address_nv (mem, mode, 4);
 	  mem = eliminate_regs (mem, VOIDmode, NULL_RTX);
 	  emit_insn (gen_movsd_hardfloat (mem, operands[1]));
 	}
@@ -8211,7 +8213,9 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 	}
       else if (INT_REGNO_P (REGNO (operands[0])))
 	{
-	  rtx mem = adjust_address_nv (operands[1], mode, 4);
+	  rtx mem = operands[1];
+	  if (BYTES_BIG_ENDIAN)
+	    mem = adjust_address_nv (mem, mode, 4);
 	  mem = eliminate_regs (mem, VOIDmode, NULL_RTX);
 	  emit_insn (gen_movsd_hardfloat (operands[0], mem));
 	}

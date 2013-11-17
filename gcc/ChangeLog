@@ -1,3 +1,8 @@
+2013-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use low word of
+	sdmode_stack_slot also in little-endian mode.
+
 2013-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* doc/md.texi (setmem, movstr): Update documentation.
