@@ -23611,10 +23611,11 @@ promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align,
 
      3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
 	with specified algorithm.  */
-static bool
+bool
 ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
-			      rtx align_exp, rtx expected_align_exp,
-			      rtx expected_size_exp, bool issetmem)
+			   rtx align_exp, rtx expected_align_exp,
+			   rtx expected_size_exp, rtx min_size_exp,
+			   rtx max_size_exp, bool issetmem)
 {
   rtx destreg;
   rtx srcreg = NULL;
@@ -23654,6 +23655,10 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   if (CONST_INT_P (count_exp))
     min_size = max_size = count = expected_size = INTVAL (count_exp);
+  if (min_size_exp)
+    min_size = INTVAL (min_size_exp);
+  if (max_size_exp)
+    max_size = INTVAL (max_size_exp);
   if (CONST_INT_P (expected_size_exp) && count == 0)
     expected_size = INTVAL (expected_size_exp);
 
@@ -24056,24 +24061,6 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (jump_around_label)
     emit_label (jump_around_label);
   return true;
-}
-
-/* Wrapper for ix86_expand_set_or_movmem for memcpy case.  */
-bool
-ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
-		    rtx expected_align_exp, rtx expected_size_exp)
-{
-  return ix86_expand_set_or_movmem (dst, src, count_exp, NULL, align_exp,
-		    expected_align_exp, expected_size_exp, false);
-}
-
-/* Wrapper for ix86_expand_set_or_movmem for memset case.  */
-bool
-ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
-		    rtx expected_align_exp, rtx expected_size_exp)
-{
-  return ix86_expand_set_or_movmem (dst, NULL, count_exp, val_exp, align_exp,
-		      expected_align_exp, expected_size_exp, true);
 }
 
 

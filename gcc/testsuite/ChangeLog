@@ -1,3 +1,7 @@
+2013-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-2.c: New testcase.
+
 2013-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59153
