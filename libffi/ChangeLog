@@ -1,3 +1,13 @@
+2013-11-18  Alan Modra  <amodra@gmail.com>
+
+	* src/powerpc/ffitarget.h: Import from upstream.
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/linux64_closure.S: Likewise.
+	* doc/libffi.texi: Likewise.
+	* testsuite/libffi.call/cls_double_va.c: Likewise.
+	* testsuite/libffi.call/cls_longdouble_va.c: Likewise.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.
@@ -88,10 +98,10 @@
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
             Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
-        * README: Add details of aarch64 port.
-        * src/aarch64/ffi.c: New.
-        * src/aarch64/ffitarget.h: Likewise.
-        * src/aarch64/sysv.S: Likewise.
+	* README: Add details of aarch64 port.
+	* src/aarch64/ffi.c: New.
+	* src/aarch64/ffitarget.h: Likewise.
+	* src/aarch64/sysv.S: Likewise.
 	* Makefile.am: Support aarch64.
 	* configure.ac: Support aarch64.
 	* Makefile.in, configure: Rebuilt.
@@ -99,30 +109,30 @@
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
             Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
-        * testsuite/lib/libffi.exp: Add support for aarch64.
-        * testsuite/libffi.call/cls_struct_va1.c: New.
-        * testsuite/libffi.call/cls_uchar_va.c: Likewise.
-        * testsuite/libffi.call/cls_uint_va.c: Likewise.
-        * testsuite/libffi.call/cls_ulong_va.c: Likewise.
-        * testsuite/libffi.call/cls_ushort_va.c: Likewise.
-        * testsuite/libffi.call/nested_struct11.c: Likewise.
-        * testsuite/libffi.call/uninitialized.c: Likewise.
-        * testsuite/libffi.call/va_1.c: Likewise.
-        * testsuite/libffi.call/va_struct1.c: Likewise.
-        * testsuite/libffi.call/va_struct2.c: Likewise.
-        * testsuite/libffi.call/va_struct3.c: Likewise.
+	* testsuite/lib/libffi.exp: Add support for aarch64.
+	* testsuite/libffi.call/cls_struct_va1.c: New.
+	* testsuite/libffi.call/cls_uchar_va.c: Likewise.
+	* testsuite/libffi.call/cls_uint_va.c: Likewise.
+	* testsuite/libffi.call/cls_ulong_va.c: Likewise.
+	* testsuite/libffi.call/cls_ushort_va.c: Likewise.
+	* testsuite/libffi.call/nested_struct11.c: Likewise.
+	* testsuite/libffi.call/uninitialized.c: Likewise.
+	* testsuite/libffi.call/va_1.c: Likewise.
+	* testsuite/libffi.call/va_struct1.c: Likewise.
+	* testsuite/libffi.call/va_struct2.c: Likewise.
+	* testsuite/libffi.call/va_struct3.c: Likewise.
 
 2012-10-12  Walter Lee  <walt@tilera.com>
 
-        * Makefile.am: Add TILE-Gx/TILEPro support.
-        * configure.ac: Likewise.
-        * Makefile.in: Regenerate.
-        * configure: Likewise.
-        * src/prep_cif.c (ffi_prep_cif_core): Handle TILE-Gx/TILEPro.
-        * src/tile: New directory.
-        * src/tile/ffi.c: New file.
-        * src/tile/ffitarget.h: Ditto.
-        * src/tile/tile.S: Ditto.
+	* Makefile.am: Add TILE-Gx/TILEPro support.
+	* configure.ac: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* src/prep_cif.c (ffi_prep_cif_core): Handle TILE-Gx/TILEPro.
+	* src/tile: New directory.
+	* src/tile/ffi.c: New file.
+	* src/tile/ffitarget.h: Ditto.
+	* src/tile/tile.S: Ditto.
 
 2012-10-12  Matthias Klose  <doko@ubuntu.com>
 
@@ -623,7 +633,7 @@
 
 2011-07-11  Andrew Haley  <aph@redhat.com>
 
-        * src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Clear icache.
+	* src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Clear icache.
 
 2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -923,10 +933,10 @@
 
 2010-08-05  Dan Witte  <dwitte@mozilla.com>
 
-        * Makefile.am: Pass FFI_DEBUG define to msvcc.sh for linking to the
-        debug CRT when --enable-debug is given.
-        * configure.ac: Define it.
-        * msvcc.sh: Translate -g and -DFFI_DEBUG appropriately.
+	* Makefile.am: Pass FFI_DEBUG define to msvcc.sh for linking to the
+	debug CRT when --enable-debug is given.
+	* configure.ac: Define it.
+	* msvcc.sh: Translate -g and -DFFI_DEBUG appropriately.
 
 2010-08-04  Dan Witte  <dwitte@mozilla.com>
 
@@ -944,7 +954,7 @@
 
 	* src/*/ffitarget.h: Make FFI_LAST_ABI one past the last valid ABI.
 	* src/prep_cif.c: Fix ABI assertion.
-        * src/cris/ffi.c: Ditto.
+	* src/cris/ffi.c: Ditto.
 
 2010-07-10  Evan Phoenix  <evan@fallingsnow.net>
 
@@ -1546,74 +1556,74 @@
 	testsuite/libffi.call/cls_2byte.c,
 	testsuite/libffi.call/cls_3_1byte.c,
 	testsuite/libffi.call/cls_3byte1.c,
- 	testsuite/libffi.call/cls_3byte2.c,
- 	testsuite/libffi.call/cls_4_1byte.c,
- 	testsuite/libffi.call/cls_4byte.c,
- 	testsuite/libffi.call/cls_5_1_byte.c,
- 	testsuite/libffi.call/cls_5byte.c,
- 	testsuite/libffi.call/cls_64byte.c,
- 	testsuite/libffi.call/cls_6_1_byte.c,
- 	testsuite/libffi.call/cls_6byte.c,
- 	testsuite/libffi.call/cls_7_1_byte.c,
- 	testsuite/libffi.call/cls_7byte.c,
- 	testsuite/libffi.call/cls_8byte.c,
- 	testsuite/libffi.call/cls_9byte1.c,
- 	testsuite/libffi.call/cls_9byte2.c,
- 	testsuite/libffi.call/cls_align_double.c,
- 	testsuite/libffi.call/cls_align_float.c,
- 	testsuite/libffi.call/cls_align_longdouble.c,
- 	testsuite/libffi.call/cls_align_longdouble_split.c,
- 	testsuite/libffi.call/cls_align_longdouble_split2.c,
- 	testsuite/libffi.call/cls_align_pointer.c,
- 	testsuite/libffi.call/cls_align_sint16.c,
- 	testsuite/libffi.call/cls_align_sint32.c,
- 	testsuite/libffi.call/cls_align_sint64.c,
- 	testsuite/libffi.call/cls_align_uint16.c,
- 	testsuite/libffi.call/cls_align_uint32.c,
- 	testsuite/libffi.call/cls_align_uint64.c,
- 	testsuite/libffi.call/cls_dbls_struct.c,
- 	testsuite/libffi.call/cls_double.c,
- 	testsuite/libffi.call/cls_double_va.c,
- 	testsuite/libffi.call/cls_float.c,
- 	testsuite/libffi.call/cls_longdouble.c,
- 	testsuite/libffi.call/cls_longdouble_va.c,
- 	testsuite/libffi.call/cls_multi_schar.c,
- 	testsuite/libffi.call/cls_multi_sshort.c,
- 	testsuite/libffi.call/cls_multi_sshortchar.c,
- 	testsuite/libffi.call/cls_multi_uchar.c,
- 	testsuite/libffi.call/cls_multi_ushort.c,
- 	testsuite/libffi.call/cls_multi_ushortchar.c,
- 	testsuite/libffi.call/cls_pointer.c,
- 	testsuite/libffi.call/cls_pointer_stack.c,
- 	testsuite/libffi.call/cls_schar.c,
- 	testsuite/libffi.call/cls_sint.c,
- 	testsuite/libffi.call/cls_sshort.c,
- 	testsuite/libffi.call/cls_uchar.c,
- 	testsuite/libffi.call/cls_uint.c,
- 	testsuite/libffi.call/cls_ulonglong.c,
- 	testsuite/libffi.call/cls_ushort.c,
- 	testsuite/libffi.call/err_bad_abi.c,
- 	testsuite/libffi.call/err_bad_typedef.c,
- 	testsuite/libffi.call/float2.c,
- 	testsuite/libffi.call/huge_struct.c,
- 	testsuite/libffi.call/nested_struct.c,
- 	testsuite/libffi.call/nested_struct1.c,
- 	testsuite/libffi.call/nested_struct10.c,
- 	testsuite/libffi.call/nested_struct2.c,
- 	testsuite/libffi.call/nested_struct3.c,
- 	testsuite/libffi.call/nested_struct4.c,
- 	testsuite/libffi.call/nested_struct5.c,
- 	testsuite/libffi.call/nested_struct6.c,
- 	testsuite/libffi.call/nested_struct7.c,
- 	testsuite/libffi.call/nested_struct8.c,
- 	testsuite/libffi.call/nested_struct9.c,
- 	testsuite/libffi.call/problem1.c,
- 	testsuite/libffi.call/return_ldl.c,
- 	testsuite/libffi.call/return_ll1.c,
- 	testsuite/libffi.call/stret_large.c,
- 	testsuite/libffi.call/stret_large2.c,
- 	testsuite/libffi.call/stret_medium.c,
- 	testsuite/libffi.call/stret_medium2.c,
+	testsuite/libffi.call/cls_3byte2.c,
+	testsuite/libffi.call/cls_4_1byte.c,
+	testsuite/libffi.call/cls_4byte.c,
+	testsuite/libffi.call/cls_5_1_byte.c,
+	testsuite/libffi.call/cls_5byte.c,
+	testsuite/libffi.call/cls_64byte.c,
+	testsuite/libffi.call/cls_6_1_byte.c,
+	testsuite/libffi.call/cls_6byte.c,
+	testsuite/libffi.call/cls_7_1_byte.c,
+	testsuite/libffi.call/cls_7byte.c,
+	testsuite/libffi.call/cls_8byte.c,
+	testsuite/libffi.call/cls_9byte1.c,
+	testsuite/libffi.call/cls_9byte2.c,
+	testsuite/libffi.call/cls_align_double.c,
+	testsuite/libffi.call/cls_align_float.c,
+	testsuite/libffi.call/cls_align_longdouble.c,
+	testsuite/libffi.call/cls_align_longdouble_split.c,
+	testsuite/libffi.call/cls_align_longdouble_split2.c,
+	testsuite/libffi.call/cls_align_pointer.c,
+	testsuite/libffi.call/cls_align_sint16.c,
+	testsuite/libffi.call/cls_align_sint32.c,
+	testsuite/libffi.call/cls_align_sint64.c,
+	testsuite/libffi.call/cls_align_uint16.c,
+	testsuite/libffi.call/cls_align_uint32.c,
+	testsuite/libffi.call/cls_align_uint64.c,
+	testsuite/libffi.call/cls_dbls_struct.c,
+	testsuite/libffi.call/cls_double.c,
+	testsuite/libffi.call/cls_double_va.c,
+	testsuite/libffi.call/cls_float.c,
+	testsuite/libffi.call/cls_longdouble.c,
+	testsuite/libffi.call/cls_longdouble_va.c,
+	testsuite/libffi.call/cls_multi_schar.c,
+	testsuite/libffi.call/cls_multi_sshort.c,
+	testsuite/libffi.call/cls_multi_sshortchar.c,
+	testsuite/libffi.call/cls_multi_uchar.c,
+	testsuite/libffi.call/cls_multi_ushort.c,
+	testsuite/libffi.call/cls_multi_ushortchar.c,
+	testsuite/libffi.call/cls_pointer.c,
+	testsuite/libffi.call/cls_pointer_stack.c,
+	testsuite/libffi.call/cls_schar.c,
+	testsuite/libffi.call/cls_sint.c,
+	testsuite/libffi.call/cls_sshort.c,
+	testsuite/libffi.call/cls_uchar.c,
+	testsuite/libffi.call/cls_uint.c,
+	testsuite/libffi.call/cls_ulonglong.c,
+	testsuite/libffi.call/cls_ushort.c,
+	testsuite/libffi.call/err_bad_abi.c,
+	testsuite/libffi.call/err_bad_typedef.c,
+	testsuite/libffi.call/float2.c,
+	testsuite/libffi.call/huge_struct.c,
+	testsuite/libffi.call/nested_struct.c,
+	testsuite/libffi.call/nested_struct1.c,
+	testsuite/libffi.call/nested_struct10.c,
+	testsuite/libffi.call/nested_struct2.c,
+	testsuite/libffi.call/nested_struct3.c,
+	testsuite/libffi.call/nested_struct4.c,
+	testsuite/libffi.call/nested_struct5.c,
+	testsuite/libffi.call/nested_struct6.c,
+	testsuite/libffi.call/nested_struct7.c,
+	testsuite/libffi.call/nested_struct8.c,
+	testsuite/libffi.call/nested_struct9.c,
+	testsuite/libffi.call/problem1.c,
+	testsuite/libffi.call/return_ldl.c,
+	testsuite/libffi.call/return_ll1.c,
+	testsuite/libffi.call/stret_large.c,
+	testsuite/libffi.call/stret_large2.c,
+	testsuite/libffi.call/stret_medium.c,
+	testsuite/libffi.call/stret_medium2.c,
 	testsuite/libffi.special/unwindtest.cc: use ffi_closure_alloc instead
 	of checking for MMAP.  Use intptr_t instead of long casts.
 
