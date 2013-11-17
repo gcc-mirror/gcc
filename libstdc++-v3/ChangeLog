@@ -1,3 +1,89 @@
+2013-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3762 string_view: a non-owning reference to a string.
+	* include/Makefile.am: Add string_view and string_view.tcc.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/string_view: Implement basic_string_view.
+	* include/experimental/string_view.tcc: Implement basic_string_view.
+	* testsuite/experimental/string_view/capacity/1.cc: New.
+	* testsuite/experimental/string_view/cons/char/1.cc: New.
+	* testsuite/experimental/string_view/cons/char/2.cc: New.
+	* testsuite/experimental/string_view/cons/char/3.cc: New.
+	* testsuite/experimental/string_view/cons/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/cons/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/cons/wchar_t/3.cc: New.
+	* testsuite/experimental/string_view/element_access/char/1.cc: New.
+	* testsuite/experimental/string_view/element_access/char/2.cc: New.
+	* testsuite/experimental/string_view/element_access/char/empty.cc: New.
+	* testsuite/experimental/string_view/element_access/char/front_back.cc:
+	New.
+	* testsuite/experimental/string_view/element_access/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/element_access/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/element_access/wchar_t/empty.cc:
+	New.
+	* testsuite/experimental/string_view/element_access/wchar_t/
+	front_back.cc: New.
+	* testsuite/experimental/string_view/include.cc: New.
+	* testsuite/experimental/string_view/inserters/char/1.cc: New.
+	* testsuite/experimental/string_view/inserters/char/2.cc: New.
+	* testsuite/experimental/string_view/inserters/char/3.cc: New.
+	* testsuite/experimental/string_view/inserters/pod/10081-out.cc: New.
+	* testsuite/experimental/string_view/inserters/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/inserters/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/inserters/wchar_t/3.cc: New.
+	* testsuite/experimental/string_view/literals/types.cc: New.
+	* testsuite/experimental/string_view/literals/values.cc: New.
+	* testsuite/experimental/string_view/modifiers/remove_prefix/char/1.cc:
+	New.
+	* testsuite/experimental/string_view/modifiers/remove_prefix/wchar_t/
+	1.cc: New.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/char/1.cc:
+	New.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/wchar_t/
+	1.cc: New.
+	* testsuite/experimental/string_view/operations/compare/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/compare/char/13650.cc:
+	New.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/1.cc:
+	New.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/
+	13650.cc: New.
+	* testsuite/experimental/string_view/operations/data/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/data/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/operations/find/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/find/char/2.cc: New.
+	* testsuite/experimental/string_view/operations/find/char/3.cc: New.
+	* testsuite/experimental/string_view/operations/find/char/4.cc: New.
+	* testsuite/experimental/string_view/operations/find/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/operations/find/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/operations/find/wchar_t/3.cc: New.
+	* testsuite/experimental/string_view/operations/find/wchar_t/4.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/char/2.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/char/3.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/operations/rfind/wchar_t/3.cc: New.
+	* testsuite/experimental/string_view/operations/substr/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/substr/wchar_t/1.cc:
+	New.
+	* testsuite/experimental/string_view/operators/char/2.cc: New.
+	* testsuite/experimental/string_view/operators/wchar_t/2.cc: New.
+	* testsuite/experimental/string_view/range_access/char/1.cc: New.
+	* testsuite/experimental/string_view/range_access/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char/1.cc: New.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char16_t/1.cc: New.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char32_t/1.cc: New.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/wchar_t/1.cc: New.
+	* testsuite/experimental/string_view/requirements/typedefs.cc: New.
+	* testsuite/experimental/string_view/types/1.cc: New.
+
 2013-11-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/unordered_set/55043.cc (equal): Add
