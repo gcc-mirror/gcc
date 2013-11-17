@@ -347,7 +347,7 @@ dump_struct_debug (tree type, enum debug_info_usage usage,
 
 #endif
 
-/* Get the number of host wide ints needed to represent the precision
+/* Get the number of HOST_WIDE_INTs needed to represent the precision
    of the number.  */
 
 static unsigned int

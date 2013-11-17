@@ -7345,10 +7345,9 @@ Returns the negative of the floating point value @var{x}.
 Returns the absolute value of @var{x}.
 @end deftypefn
 
-@deftypefn Macro void REAL_VALUE_FROM_INT (REAL_VALUE_TYPE @var{x}, HOST_WIDE_INT @var{val}, enum machine_mode @var{mode})
-Converts a double-precision integer found in @var{val},
-into a floating point value which is then stored into @var{x}.  The
-value is truncated to fit in mode @var{mode}.
+@deftypefn Macro void REAL_VALUE_FROM_INT (REAL_VALUE_TYPE @var{x}, const wide_int_ref &@var{val}, enum machine_mode @var{mode})
+Converts integer @var{val} into a floating-point value which is then
+stored into @var{x}.  The value is truncated to fit in mode @var{mode}.
 @end deftypefn
 
 @node Mode Switching
@@ -8406,15 +8405,15 @@ and the associated definitions of those functions.
 @defmac TARGET_SUPPORTS_WIDE_INT
 
 On older ports, large integers are stored in @code{CONST_DOUBLE} rtl
-objects.  Newer ports define @code{TARGET_SUPPORTS_WIDE_INT} to be non
-zero to indicate that large integers are stored in
+objects.  Newer ports define @code{TARGET_SUPPORTS_WIDE_INT} to be nonzero
+to indicate that large integers are stored in
 @code{CONST_WIDE_INT} rtl objects.  The @code{CONST_WIDE_INT} allows
 very large integer constants to be represented.  @code{CONST_DOUBLE}
-are limited to twice the size of host's @code{HOST_WIDE_INT}
+is limited to twice the size of the host's @code{HOST_WIDE_INT}
 representation.
 
 Converting a port mostly requires looking for the places where
-@code{CONST_DOUBLES} are used with @code{VOIDmode} and replacing that
+@code{CONST_DOUBLE}s are used with @code{VOIDmode} and replacing that
 code with code that accesses @code{CONST_WIDE_INT}s.  @samp{"grep -i
 const_double"} at the port level gets you to 95% of the changes that
 need to be made.  There are a few places that require a deeper look.
@@ -8444,7 +8443,7 @@ The rtx costs may have to be adjusted to properly account for larger
 constants that are represented as @code{CONST_WIDE_INT}.
 @end itemize
 
-All and all it does not takes long to convert ports that the
+All and all it does not take long to convert ports that the
 maintainer is familiar with.
 
 @end defmac

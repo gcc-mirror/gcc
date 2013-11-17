@@ -605,8 +605,8 @@ decimal_real_to_integer (const REAL_VALUE_TYPE *r)
   return real_to_integer (&to);
 }
 
-/* Likewise, but returns a wide_int with PRECISION.  Fail
-   is set if the value does not fit.  */
+/* Likewise, but returns a wide_int with PRECISION.  *FAIL is set if the
+   value does not fit.  */
 
 wide_int
 decimal_real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)

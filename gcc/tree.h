@@ -3143,10 +3143,10 @@ omp_clause_elt_check (const_tree __t, int __i,
 
 #endif
 
-/* Checks that X is integer constant that can be expressed in signed
-   HOST_WIDE_INT without loss of precision.  This function differs
-   from the tree_fits_* versions in that the signedness of the
-   type of X is not considered.  */
+/* Checks that X is an integer constant that can be expressed in a signed
+   HOST_WIDE_INT without loss of precision.  This function differs from
+   the tree_fits_* versions in that the signedness of the type of X is
+   not considered.  */
 
 static inline bool
 cst_fits_shwi_p (const_tree x)
@@ -3157,10 +3157,10 @@ cst_fits_shwi_p (const_tree x)
   return TREE_INT_CST_NUNITS (x) == 1;
 }
 
-/* Checks that X is integer constant that can be expressed in signed
-   HOST_WIDE_INT without loss of precision.  This function differs
-   from the tree_fits_* versions in that the signedness of the
-   type of X is not considered.  */
+/* Checks that X is an integer constant that can be expressed in an unsigned
+   HOST_WIDE_INT without loss of precision.  This function differs from
+   the tree_fits_* versions in that the signedness of the type of X is
+   not considered.  */
 
 static inline bool
 cst_fits_uhwi_p (const_tree x)

@@ -1178,7 +1178,7 @@ int_cst_hash_eq (const void *x, const void *y)
 /* Create an INT_CST node of TYPE and value CST.
    The returned node is always shared.  For small integers we use a
    per-type vector cache, for larger ones we use a single hash table.
-   The value is extended from it's precision according to the sign of
+   The value is extended from its precision according to the sign of
    the type to be a multiple of HOST_BITS_PER_WIDE_INT.  This defines
    the upper bits and ensures that hashing and value equality based
    upon the underlying HOST_WIDE_INTs works without masking.  */
@@ -1944,7 +1944,9 @@ build_case_label (tree low_value, tree high_value, tree label_decl)
   return t;
 }
 
-/* Build a newly constructed INETEGER_CST node of length LEN.  */
+/* Build a newly constructed INTEGER_CST node.  LEN and EXT_LEN are the
+   values of TREE_INT_CST_NUNITS and TREE_INT_CST_EXT_NUNITS respectively.
+   The latter determines the length of the HOST_WIDE_INT vector.  */
 
 tree
 make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)

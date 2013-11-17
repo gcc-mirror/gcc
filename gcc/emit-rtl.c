@@ -547,8 +547,8 @@ rtx_to_double_int (const_rtx cst)
 #endif
 
 #if TARGET_SUPPORTS_WIDE_INT
-/* Determine whether WIDE_INT, already exists in the hash table.  If
-   so, return its counterpart; otherwise add it to the hash table and
+/* Determine whether CONST_WIDE_INT WINT already exists in the hash table.
+   If so, return its counterpart; otherwise add it to the hash table and
    return it.  */
 
 static rtx
@@ -562,11 +562,11 @@ lookup_const_wide_int (rtx wint)
 }
 #endif
 
-/* V contains a wide_int.  A CONST_INT or CONST_WIDE_INT (if
-   TARGET_SUPPORTS_WIDE_INT is defined) or CONST_DOUBLE if
-   TARGET_SUPPORTS_WIDE_INT is not defined is produced based on the
-   number of HOST_WIDE_INTs that are necessary to represent the value
-   in compact form.  */
+/* Return an rtx constant for V, given that the constant has mode MODE.
+   The returned rtx will be a CONST_INT if V fits, otherwise it will be
+   a CONST_DOUBLE (if !TARGET_SUPPORTS_WIDE_INT) or a CONST_WIDE_INT
+   (if TARGET_SUPPORTS_WIDE_INT).  */
+
 rtx
 immed_wide_int_const (const wide_int &v, enum machine_mode mode)
 {
