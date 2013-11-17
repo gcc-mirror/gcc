@@ -44,4 +44,6 @@ extern struct target_builtins *this_target_builtins;
 #define this_target_builtins (&default_target_builtins)
 #endif
 
+extern bool validate_gimple_arglist (const_gimple, ...);
+
 #endif

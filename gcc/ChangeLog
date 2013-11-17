@@ -1,3 +1,34 @@
+2013-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h: Reorder prototypes to match .c declaration order, and remove
+	protyotypes for functions not in gimple.c.
+	(LABEL): Move to tree-into-ssa.c.
+	* gimple.c: Remove unused prototypes.
+	(get_base_address): Move to tree.c.
+	* tree.c (get_base_address): Relocate from gimple.c.
+	* builtins.h (validate_gimple_arglist): Add prototype.
+	* trans-mem.h (compute_transaction_bits, is_tm_ending): Add prototype.
+	* cfgexpand.h: New File.
+	(gimple_assign_rhs_to_tree, estimated_stack_frame_size): Add protoype.
+	* tree.h (build_addr): Move to tree-nested.h.
+	* tree-nested.h: New File.
+	(build_addr, lower_nested_functions, insert_field_into_struct): Add
+	prototypes.
+	* tree-inline.h (estimated_stack_frame_size): Remove prototype.
+	* ipa-inline-analysis.c: Include cfgexpand.h.
+	* cgraphunit.c: Include tree-nested.h.
+	* omp-low.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* gimple-low.h: Likewise.
+	* tree-profile.h: Likewise.
+	* expr.c: Include cfgexpand.h.
+	* tree-affine.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-ssa-loop-im.c: Include trans-mem.h.
+	* tree-ssa-tail-merge.c: Likewise.
+	* value-prof.c: Include builtins.h and tree-nested.h.
+	* tree-into-ssa.c (LABEL): Define here.
+
 2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_predicate_delay_insns): New function.

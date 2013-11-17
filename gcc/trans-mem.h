@@ -34,3 +34,6 @@
 #define PR_EXCEPTIONBLOCK	0x1000
 #define PR_HASELSE		0x2000
 #define PR_READONLY		0x4000
+
+extern void compute_transaction_bits (void);
+extern bool is_tm_ending (gimple);

@@ -4597,9 +4597,6 @@ extern bool using_eh_for_cleanups_p (void);
 
 extern const char *get_tree_code_name (enum tree_code);
 
-/* In tree-nested.c */
-extern tree build_addr (tree, tree);
-
 /* In function.c */
 extern void expand_function_end (void);
 extern void expand_function_start (tree);

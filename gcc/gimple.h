@@ -727,32 +727,26 @@ extern enum gimple_statement_structure_enum const gss_for_code_[];
    of comminucating the profile info to the builtin expanders.  */
 extern gimple currently_expanding_gimple_stmt;
 
+#define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
+gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 gimple gimple_build_return (tree);
-
-gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
-#define gimple_build_assign(l,r) gimple_build_assign_stat (l, r MEM_STAT_INFO)
-
-gimple
-gimple_build_assign_with_ops (enum tree_code, tree,
-			      tree, tree CXX_MEM_STAT_INFO);
-gimple
-gimple_build_assign_with_ops (enum tree_code, tree,
-			      tree, tree, tree CXX_MEM_STAT_INFO);
-
-gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
-#define gimple_build_debug_bind(var,val,stmt)			\
-  gimple_build_debug_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
-gimple gimple_build_debug_source_bind_stat (tree, tree, gimple MEM_STAT_DECL);
-#define gimple_build_debug_source_bind(var,val,stmt)			\
-  gimple_build_debug_source_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
-
+void gimple_call_reset_alias_info (gimple);
 gimple gimple_build_call_vec (tree, vec<tree> );
 gimple gimple_build_call (tree, unsigned, ...);
 gimple gimple_build_call_valist (tree, unsigned, va_list);
 gimple gimple_build_call_internal (enum internal_fn, unsigned, ...);
 gimple gimple_build_call_internal_vec (enum internal_fn, vec<tree> );
 gimple gimple_build_call_from_tree (tree);
+extern unsigned gimple_call_get_nobnd_arg_index (const_gimple, unsigned);
+gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
+#define gimple_build_assign(l,r) gimple_build_assign_stat (l, r MEM_STAT_INFO)
+gimple gimple_build_assign_with_ops (enum tree_code, tree,
+				     tree, tree, tree CXX_MEM_STAT_INFO);
+gimple gimple_build_assign_with_ops (enum tree_code, tree,
+				     tree, tree CXX_MEM_STAT_INFO);
 gimple gimple_build_cond (enum tree_code, tree, tree, tree, tree);
+gimple gimple_build_cond_from_tree (tree, tree, tree);
+void gimple_cond_set_condition_from_tree (gimple, tree);
 gimple gimple_build_label (tree label);
 gimple gimple_build_goto (tree dest);
 gimple gimple_build_nop (void);
@@ -767,39 +761,46 @@ gimple gimple_build_eh_else (gimple_seq, gimple_seq);
 gimple gimple_build_try (gimple_seq, gimple_seq, enum gimple_try_flags);
 gimple gimple_build_wce (gimple_seq);
 gimple gimple_build_resx (int);
-gimple gimple_build_eh_dispatch (int);
 gimple gimple_build_switch_nlabels (unsigned, tree, tree);
 gimple gimple_build_switch (tree, tree, vec<tree> );
+gimple gimple_build_eh_dispatch (int);
+gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
+#define gimple_build_debug_bind(var,val,stmt)			\
+  gimple_build_debug_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
+gimple gimple_build_debug_source_bind_stat (tree, tree, gimple MEM_STAT_DECL);
+#define gimple_build_debug_source_bind(var,val,stmt)			\
+  gimple_build_debug_source_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
+gimple gimple_build_omp_critical (gimple_seq, tree);
+gimple gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
 gimple gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gimple gimple_build_omp_task (gimple_seq, tree, tree, tree, tree, tree, tree);
-gimple gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
-gimple gimple_build_omp_critical (gimple_seq, tree);
 gimple gimple_build_omp_section (gimple_seq);
-gimple gimple_build_omp_continue (tree, tree);
 gimple gimple_build_omp_master (gimple_seq);
 gimple gimple_build_omp_taskgroup (gimple_seq);
-gimple gimple_build_omp_return (bool);
+gimple gimple_build_omp_continue (tree, tree);
 gimple gimple_build_omp_ordered (gimple_seq);
+gimple gimple_build_omp_return (bool);
 gimple gimple_build_omp_sections (gimple_seq, tree);
 gimple gimple_build_omp_sections_switch (void);
 gimple gimple_build_omp_single (gimple_seq, tree);
 gimple gimple_build_omp_target (gimple_seq, int, tree);
 gimple gimple_build_omp_teams (gimple_seq, tree);
-gimple gimple_build_cdt (tree, tree);
 gimple gimple_build_omp_atomic_load (tree, tree);
 gimple gimple_build_omp_atomic_store (tree);
 gimple gimple_build_transaction (gimple_seq, tree);
 gimple gimple_build_predict (enum br_predictor, enum prediction);
-enum gimple_statement_structure_enum gss_for_assign (enum tree_code);
-gimple_seq gimple_seq_alloc (void);
-void gimple_seq_free (gimple_seq);
+extern void gimple_seq_add_stmt (gimple_seq *, gimple);
+extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
+extern void annotate_all_with_location_after (gimple_seq, gimple_stmt_iterator,
+					      location_t);
+extern void annotate_all_with_location (gimple_seq, location_t);
+bool empty_body_p (gimple_seq);
 gimple_seq gimple_seq_copy (gimple_seq);
 bool gimple_call_same_target_p (const_gimple, const_gimple);
 int gimple_call_flags (const_gimple);
-int gimple_call_return_flags (const_gimple);
 int gimple_call_arg_flags (const_gimple, unsigned);
-void gimple_call_reset_alias_info (gimple);
+int gimple_call_return_flags (const_gimple);
 bool gimple_assign_copy_p (gimple);
 bool gimple_assign_ssa_name_copy_p (gimple);
 bool gimple_assign_unary_nop_p (gimple);
@@ -809,35 +810,31 @@ void gimple_assign_set_rhs_with_ops_1 (gimple_stmt_iterator *, enum tree_code,
 				       tree, tree, tree);
 tree gimple_get_lhs (const_gimple);
 void gimple_set_lhs (gimple, tree);
-void gimple_replace_lhs (gimple, tree);
 gimple gimple_copy (gimple);
-gimple gimple_build_cond_from_tree (tree, tree, tree);
-void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
-bool gimple_could_trap_p (gimple);
 bool gimple_could_trap_p_1 (gimple, bool, bool);
+bool gimple_could_trap_p (gimple);
 bool gimple_assign_rhs_could_trap_p (gimple);
-bool empty_body_p (gimple_seq);
-extern void annotate_all_with_location_after (gimple_seq, gimple_stmt_iterator,
-					      location_t);
-extern void annotate_all_with_location (gimple_seq, location_t);
+extern void dump_gimple_statistics (void);
 unsigned get_gimple_rhs_num_ops (enum tree_code);
-#define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
-gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
-
-/* Return TRUE iff stmt is a call to a built-in function.  */
-extern bool is_gimple_builtin_call (gimple stmt);
-
 extern void recalculate_side_effects (tree);
+extern tree canonicalize_cond_expr_cond (tree);
+gimple gimple_call_copy_skip_args (gimple, bitmap);
 extern bool gimple_compare_field_offset (tree, tree);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple);
+extern bool is_gimple_builtin_call (gimple stmt);
 extern bool gimple_call_builtin_p (gimple, enum built_in_class);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
-extern unsigned gimple_call_get_nobnd_arg_index (const_gimple, unsigned);
+extern void dump_decl_set (FILE *, bitmap);
+extern bool nonfreeing_call_p (gimple);
+extern bool infer_nonnull_range (gimple, tree);
+extern void sort_case_labels (vec<tree> );
+extern void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
+extern void gimple_seq_set_location (gimple_seq , location_t);
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
@@ -868,27 +865,6 @@ inc_gimple_stmt_max_uid (struct function *fn)
 {
   return fn->last_stmt_uid++;
 }
-
-/* Miscellaneous helpers.  */
-extern tree canonicalize_cond_expr_cond (tree);
-extern void dump_decl_set (FILE *, bitmap);
-extern bool nonfreeing_call_p (gimple);
-extern bool infer_nonnull_range (gimple, tree);
-
-/* In trans-mem.c.  */
-extern void diagnose_tm_safe_errors (tree);
-extern void compute_transaction_bits (void);
-extern bool is_tm_ending (gimple);
-
-/* In tree-nested.c.  */
-extern void lower_nested_functions (tree);
-extern void insert_field_into_struct (tree, tree);
-
-/* In cfgexpand.c.  */
-extern tree gimple_assign_rhs_to_tree (gimple);
-
-/* In builtins.c  */
-extern bool validate_gimple_arglist (const_gimple, ...);
 
 /* Return the first node in GIMPLE sequence S.  */
 
@@ -953,9 +929,6 @@ gimple_seq_empty_p (gimple_seq s)
 {
   return s == NULL;
 }
-
-extern void gimple_seq_add_stmt (gimple_seq *, gimple);
-extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 
 /* Allocate a new sequence and initialize its first element with STMT.  */
 
@@ -5123,8 +5096,6 @@ gimple_expr_type (const_gimple stmt)
     return void_type_node;
 }
 
-gimple gimple_call_copy_skip_args (gimple, bitmap);
-
 /* Enum and arrays used for allocation stats.  Keep in sync with
    gimple.c:gimple_alloc_kind_names.  */
 enum gimple_alloc_kind
@@ -5156,8 +5127,6 @@ gimple_alloc_kind (enum gimple_code code)
     }
 }
 
-extern void dump_gimple_statistics (void);
-
 /* Return true if a location should not be emitted for this statement
    by annotate_all_with_location.  */
 
@@ -5187,11 +5156,5 @@ gimple_set_do_not_emit_location (gimple g)
 		     : (x) / (1024*1024))))
 
 #define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
-
-#define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
-
-extern void sort_case_labels (vec<tree> );
-extern void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
-extern void gimple_seq_set_location (gimple_seq , location_t);
 
 #endif  /* GCC_GIMPLE_H */
