@@ -1,3 +1,9 @@
+2013-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59123
+	* decl.c (validate_constexpr_redeclaration): Redeclarations of
+	variables can differ in constexpr.
+
 2013-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29143

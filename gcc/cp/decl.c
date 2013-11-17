@@ -1216,10 +1216,12 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
       if (! DECL_TEMPLATE_SPECIALIZATION (old_decl)
 	  && DECL_TEMPLATE_SPECIALIZATION (new_decl))
 	return true;
+
+      error ("redeclaration %qD differs in %<constexpr%>", new_decl);
+      error ("from previous declaration %q+D", old_decl);
+      return false;
     }
-  error ("redeclaration %qD differs in %<constexpr%>", new_decl);
-  error ("from previous declaration %q+D", old_decl);
-  return false;
+  return true;
 }
 
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
