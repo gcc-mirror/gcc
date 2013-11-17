@@ -1,3 +1,24 @@
+2013-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* doc/md.texi (setmem, movstr): Update documentation.
+	* builtins.c (determine_block_size): New function.
+	(expand_builtin_memcpy): Use it and pass it to
+	emit_block_move_hints.
+	(expand_builtin_memset_args): Use it and pass it to
+	set_storage_via_setmem.
+	* expr.c (emit_block_move_via_movmem): Add min_size/max_size parameters;
+	update call to expander.
+	(emit_block_move_hints): Add min_size/max_size parameters.
+	(clear_storage_hints): Likewise.
+	(set_storage_via_setmem): Likewise.
+	(clear_storage): Update.
+	* expr.h (emit_block_move_hints, clear_storage_hints,
+	set_storage_via_setmem): Update prototype.
+	* i386.c (ix86_expand_set_or_movmem): Add bounds; export.
+	(ix86_expand_movmem, ix86_expand_setmem): Remove.
+	(ix86_expand_movmem, ix86_expand_setmem): Remove.
+	* i386.md (movmem, setmem): Pass parameters.
+
 2013-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59153

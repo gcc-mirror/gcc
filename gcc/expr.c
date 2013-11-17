@@ -128,7 +128,8 @@ struct store_by_pieces_d
 static void move_by_pieces_1 (insn_gen_fn, machine_mode,
 			      struct move_by_pieces_d *);
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT);
+static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
+					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static tree emit_block_move_libcall_fn (int);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static rtx clear_by_pieces_1 (void *, HOST_WIDE_INT, enum machine_mode);
@@ -1119,13 +1120,18 @@ move_by_pieces_1 (insn_gen_fn genfun, machine_mode mode,
    SIZE is an rtx that says how long they are.
    ALIGN is the maximum alignment we can assume they have.
    METHOD describes what kind of copy this is, and what mechanisms may be used.
+   MIN_SIZE is the minimal size of block to move
+   MAX_SIZE is the maximal size of block to move, if it can not be represented
+   in unsigned HOST_WIDE_INT, than it is mask of all ones.
 
    Return the address of the new block, if memcpy is called and returns it,
    0 otherwise.  */
 
 rtx
 emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
-		       unsigned int expected_align, HOST_WIDE_INT expected_size)
+		       unsigned int expected_align, HOST_WIDE_INT expected_size,
+		       unsigned HOST_WIDE_INT min_size,
+		       unsigned HOST_WIDE_INT max_size)
 {
   bool may_use_call;
   rtx retval = 0;
@@ -1181,7 +1187,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   if (CONST_INT_P (size) && MOVE_BY_PIECES_P (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align, 0);
   else if (emit_block_move_via_movmem (x, y, size, align,
-				       expected_align, expected_size))
+				       expected_align, expected_size,
+				       min_size, max_size))
     ;
   else if (may_use_call
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
@@ -1211,7 +1218,13 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 rtx
 emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 {
-  return emit_block_move_hints (x, y, size, method, 0, -1);
+  unsigned HOST_WIDE_INT max, min = 0;
+  if (GET_CODE (size) == CONST_INT)
+    min = max = UINTVAL (size);
+  else
+    max = GET_MODE_MASK (GET_MODE (size));
+  return emit_block_move_hints (x, y, size, method, 0, -1,
+				min, max);
 }
 
 /* A subroutine of emit_block_move.  Returns true if calling the
@@ -1274,13 +1287,22 @@ block_move_libcall_safe_for_call_parm (void)
 
 static bool
 emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
-			    unsigned int expected_align, HOST_WIDE_INT expected_size)
+			    unsigned int expected_align, HOST_WIDE_INT expected_size,
+			    unsigned HOST_WIDE_INT min_size,
+			    unsigned HOST_WIDE_INT max_size)
 {
   int save_volatile_ok = volatile_ok;
   enum machine_mode mode;
 
   if (expected_align < align)
     expected_align = align;
+  if (expected_size != -1)
+    {
+      if ((unsigned HOST_WIDE_INT)expected_size > max_size)
+	expected_size = max_size;
+      if ((unsigned HOST_WIDE_INT)expected_size < min_size)
+	expected_size = min_size;
+    }
 
   /* Since this is a move insn, we don't care about volatility.  */
   volatile_ok = 1;
@@ -1303,9 +1325,10 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
+	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[6];
+	  struct expand_operand ops[8];
 	  unsigned int nops;
 
 	  /* ??? When called via emit_block_move_for_call, it'd be
@@ -1313,17 +1336,27 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	     that it doesn't fail the expansion because it thinks
 	     emitting the libcall would be more efficient.  */
 	  nops = insn_data[(int) code].n_generator_args;
-	  gcc_assert (nops == 4 || nops == 6);
+	  gcc_assert (nops == 4 || nops == 6 || nops == 8);
 
 	  create_fixed_operand (&ops[0], x);
 	  create_fixed_operand (&ops[1], y);
 	  /* The check above guarantees that this size conversion is valid.  */
 	  create_convert_operand_to (&ops[2], size, mode, true);
 	  create_integer_operand (&ops[3], align / BITS_PER_UNIT);
-	  if (nops == 6)
+	  if (nops >= 6)
 	    {
 	      create_integer_operand (&ops[4], expected_align / BITS_PER_UNIT);
 	      create_integer_operand (&ops[5], expected_size);
+	    }
+	  if (nops == 8)
+	    {
+	      create_integer_operand (&ops[6], min_size);
+	      /* If we can not represent the maximal size,
+		 make parameter NULL.  */
+	      if ((HOST_WIDE_INT) max_size != -1)
+	        create_integer_operand (&ops[7], max_size);
+	      else
+		create_fixed_operand (&ops[7], NULL);
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
 	    {
@@ -2712,7 +2745,9 @@ store_by_pieces_2 (insn_gen_fn genfun, machine_mode mode,
 
 rtx
 clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
-		     unsigned int expected_align, HOST_WIDE_INT expected_size)
+		     unsigned int expected_align, HOST_WIDE_INT expected_size,
+		     unsigned HOST_WIDE_INT min_size,
+		     unsigned HOST_WIDE_INT max_size)
 {
   enum machine_mode mode = GET_MODE (object);
   unsigned int align;
@@ -2753,7 +2788,8 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
       && CLEAR_BY_PIECES_P (INTVAL (size), align))
     clear_by_pieces (object, INTVAL (size), align);
   else if (set_storage_via_setmem (object, size, const0_rtx, align,
-				   expected_align, expected_size))
+				   expected_align, expected_size,
+				   min_size, max_size))
     ;
   else if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (object)))
     return set_storage_via_libcall (object, size, const0_rtx,
@@ -2767,7 +2803,12 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 rtx
 clear_storage (rtx object, rtx size, enum block_op_methods method)
 {
-  return clear_storage_hints (object, size, method, 0, -1);
+  unsigned HOST_WIDE_INT max, min = 0;
+  if (GET_CODE (size) == CONST_INT)
+    min = max = UINTVAL (size);
+  else
+    max = GET_MODE_MASK (GET_MODE (size));
+  return clear_storage_hints (object, size, method, 0, -1, min, max);
 }
 
 
@@ -2864,7 +2905,9 @@ clear_storage_libcall_fn (int for_call)
 
 bool
 set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
-			unsigned int expected_align, HOST_WIDE_INT expected_size)
+			unsigned int expected_align, HOST_WIDE_INT expected_size,
+			unsigned HOST_WIDE_INT min_size,
+			unsigned HOST_WIDE_INT max_size)
 {
   /* Try the most limited insn first, because there's no point
      including more than one in the machine description unless
@@ -2874,6 +2917,13 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 
   if (expected_align < align)
     expected_align = align;
+  if (expected_size != -1)
+    {
+      if ((unsigned HOST_WIDE_INT)expected_size > max_size)
+	expected_size = max_size;
+      if ((unsigned HOST_WIDE_INT)expected_size < min_size)
+	expected_size = min_size;
+    }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
@@ -2889,23 +2939,34 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	  && ((CONST_INT_P (size)
 	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		   <= (GET_MODE_MASK (mode) >> 1)))
+	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[6];
+	  struct expand_operand ops[8];
 	  unsigned int nops;
 
 	  nops = insn_data[(int) code].n_generator_args;
-	  gcc_assert (nops == 4 || nops == 6);
+	  gcc_assert (nops == 4 || nops == 6 || nops == 8);
 
 	  create_fixed_operand (&ops[0], object);
 	  /* The check above guarantees that this size conversion is valid.  */
 	  create_convert_operand_to (&ops[1], size, mode, true);
 	  create_convert_operand_from (&ops[2], val, byte_mode, true);
 	  create_integer_operand (&ops[3], align / BITS_PER_UNIT);
-	  if (nops == 6)
+	  if (nops >= 6)
 	    {
 	      create_integer_operand (&ops[4], expected_align / BITS_PER_UNIT);
 	      create_integer_operand (&ops[5], expected_size);
+	    }
+	  if (nops == 8)
+	    {
+	      create_integer_operand (&ops[6], min_size);
+	      /* If we can not represent the maximal size,
+		 make parameter NULL.  */
+	      if ((HOST_WIDE_INT) max_size != -1)
+	        create_integer_operand (&ops[7], max_size);
+	      else
+		create_fixed_operand (&ops[7], NULL);
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
 	    return true;

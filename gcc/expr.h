@@ -300,7 +300,9 @@ extern void init_block_clear_fn (const char *);
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
 extern rtx emit_block_move_via_libcall (rtx, rtx, rtx, bool);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
-			          unsigned int, HOST_WIDE_INT);
+			          unsigned int, HOST_WIDE_INT,
+				  unsigned HOST_WIDE_INT,
+				  unsigned HOST_WIDE_INT);
 extern bool emit_storent_insn (rtx to, rtx from);
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -361,13 +363,17 @@ extern void use_group_regs (rtx *, rtx);
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
 extern rtx clear_storage (rtx, rtx, enum block_op_methods);
 extern rtx clear_storage_hints (rtx, rtx, enum block_op_methods,
-			        unsigned int, HOST_WIDE_INT);
+			        unsigned int, HOST_WIDE_INT,
+				unsigned HOST_WIDE_INT,
+				unsigned HOST_WIDE_INT);
 /* The same, but always output an library call.  */
 rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
 
 /* Expand a setmem pattern; return true if successful.  */
 extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int,
-				    unsigned int, HOST_WIDE_INT);
+				    unsigned int, HOST_WIDE_INT,
+				    unsigned HOST_WIDE_INT,
+				    unsigned HOST_WIDE_INT);
 
 extern unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
 						     unsigned int,
