@@ -1117,8 +1117,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			   as we have a VAR_DECL for the pointer we make.  */
 		      }
 
-		    gnu_expr = build_unary_op (ADDR_EXPR, gnu_type,
-					       maybe_stable_expr);
+		    if (type_annotate_only
+ 			&& TREE_CODE (maybe_stable_expr) == ERROR_MARK)
+		      gnu_expr = NULL_TREE;
+		    else
+		      gnu_expr = build_unary_op (ADDR_EXPR, gnu_type,
+						 maybe_stable_expr);
 
 		    gnu_size = NULL_TREE;
 		    used_by_ref = true;
