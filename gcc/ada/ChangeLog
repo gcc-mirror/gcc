@@ -1,5 +1,10 @@
 2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): For an Out parameter passed by
+	copy and that don't need to be  copied in, only evaluate its address.
+
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Deal with an
 	error mark as renamed object in type annotating mode.
 
