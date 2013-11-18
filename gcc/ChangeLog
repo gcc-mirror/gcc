@@ -1,3 +1,16 @@
+2013-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59125
+	PR tree-optimization/54570
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): When inlining
+	is not complete do not treat component-references with offset zero
+	but different fields as equal.
+	* tree-object-size.c: Include tree-phinodes.h and ssa-iterators.h.
+	(compute_object_sizes): Apply TLC.  Propagate the constant
+	results into all uses and fold their stmts.
+	* passes.def (pass_all_optimizations): Move pass_object_sizes
+	after the first pass_forwprop and before pass_fre.
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree.h (tree_to_uhwi): Return an unsigned HOST_WIDE_INT.

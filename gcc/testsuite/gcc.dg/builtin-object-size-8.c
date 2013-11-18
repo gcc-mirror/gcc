@@ -1,4 +1,4 @@
-/* { dg-do run { xfail *-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 typedef __SIZE_TYPE__ size_t;

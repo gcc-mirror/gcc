@@ -760,7 +760,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
     }
 
   /* For non-calls, store the information that makes up the address.  */
-
+  tree orig = ref;
   while (ref)
     {
       vn_reference_op_s temp;
@@ -810,7 +810,15 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 			+ tree_to_double_int (bit_offset)
 			.rshift (BITS_PER_UNIT == 8
 				   ? 3 : exact_log2 (BITS_PER_UNIT));
-		    if (off.fits_shwi ())
+		    if (off.fits_shwi ()
+			/* Probibit value-numbering zero offset components
+			   of addresses the same before the pass folding
+			   __builtin_object_size had a chance to run
+			   (checking cfun->after_inlining does the
+			   trick here).  */
+			&& (TREE_CODE (orig) != ADDR_EXPR
+			    || !off.is_zero ()
+			    || cfun->after_inlining))
 		      temp.off = off.low;
 		  }
 	      }
