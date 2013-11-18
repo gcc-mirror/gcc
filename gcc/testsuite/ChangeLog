@@ -1,3 +1,8 @@
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile11.adb: New test.
+	* gnat.dg/volatile11_pkg.ad[sb]: New helper.
+
 2013-11-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59106
