@@ -1753,8 +1753,8 @@ rest_of_record_type_compilation (tree record_type)
 		   && TREE_CODE (curpos) == PLUS_EXPR
 		   && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1))
 		   && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
-		   && host_integerp
-		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1))
+		   && tree_fits_uhwi_p
+		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1)))
 	    {
 	      tree offset = TREE_OPERAND (TREE_OPERAND (curpos, 0), 0);
 	      unsigned HOST_WIDE_INT addend
