@@ -907,7 +907,6 @@ pass_manager::dump_passes () const
   dump_pass_list (all_lowering_passes, 1);
   dump_pass_list (all_small_ipa_passes, 1);
   dump_pass_list (all_regular_ipa_passes, 1);
-  dump_pass_list (all_lto_gen_passes, 1);
   dump_pass_list (all_late_ipa_passes, 1);
   dump_pass_list (all_passes, 1);
 
@@ -1426,8 +1425,6 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
   if (!success || all_instances)
     success |= position_pass (pass_info, &all_regular_ipa_passes);
   if (!success || all_instances)
-    success |= position_pass (pass_info, &all_lto_gen_passes);
-  if (!success || all_instances)
     success |= position_pass (pass_info, &all_late_ipa_passes);
   if (!success || all_instances)
     success |= position_pass (pass_info, &all_passes);
@@ -1498,7 +1495,7 @@ pass_manager::operator new (size_t sz)
 
 pass_manager::pass_manager (context *ctxt)
 : all_passes (NULL), all_small_ipa_passes (NULL), all_lowering_passes (NULL),
-  all_regular_ipa_passes (NULL), all_lto_gen_passes (NULL),
+  all_regular_ipa_passes (NULL),
   all_late_ipa_passes (NULL), passes_by_id (NULL), passes_by_id_size (0),
   m_ctxt (ctxt)
 {
@@ -1551,9 +1548,6 @@ pass_manager::pass_manager (context *ctxt)
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
   register_dump_files (all_regular_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_lto_gen_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
   register_dump_files (all_late_ipa_passes,
@@ -2274,6 +2268,18 @@ execute_pass_list (struct opt_pass *pass)
   while (pass);
 }
 
+/* Write out all LTO data.  */
+static void
+write_lto (void)
+{
+  timevar_push (TV_IPA_LTO_GIMPLE_OUT);
+  lto_output ();
+  timevar_pop (TV_IPA_LTO_GIMPLE_OUT);
+  timevar_push (TV_IPA_LTO_DECL_OUT);
+  produce_asm_for_decls ();
+  timevar_pop (TV_IPA_LTO_DECL_OUT);
+}
+
 /* Same as execute_pass_list but assume that subpasses of IPA passes
    are local passes. If SET is not NULL, write out summaries of only
    those node in SET. */
@@ -2328,7 +2334,8 @@ ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
 
   gcc_assert (!flag_wpa);
   ipa_write_summaries_2 (passes->all_regular_ipa_passes, state);
-  ipa_write_summaries_2 (passes->all_lto_gen_passes, state);
+
+  write_lto ();
 
   gcc_assert (lto_get_out_decl_state () == state);
   lto_pop_out_decl_state ();
@@ -2461,7 +2468,8 @@ ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
   gcc_assert (flag_wpa);
   pass_manager *passes = g->get_passes ();
   ipa_write_optimization_summaries_1 (passes->all_regular_ipa_passes, state);
-  ipa_write_optimization_summaries_1 (passes->all_lto_gen_passes, state);
+
+  write_lto ();
 
   gcc_assert (lto_get_out_decl_state () == state);
   lto_pop_out_decl_state ();
@@ -2509,14 +2517,13 @@ ipa_read_summaries_1 (struct opt_pass *pass)
 }
 
 
-/* Read all the summaries for all_regular_ipa_passes and all_lto_gen_passes.  */
+/* Read all the summaries for all_regular_ipa_passes.  */
 
 void
 ipa_read_summaries (void)
 {
   pass_manager *passes = g->get_passes ();
   ipa_read_summaries_1 (passes->all_regular_ipa_passes);
-  ipa_read_summaries_1 (passes->all_lto_gen_passes);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes
@@ -2559,14 +2566,13 @@ ipa_read_optimization_summaries_1 (struct opt_pass *pass)
     }
 }
 
-/* Read all the summaries for all_regular_ipa_passes and all_lto_gen_passes.  */
+/* Read all the summaries for all_regular_ipa_passes.  */
 
 void
 ipa_read_optimization_summaries (void)
 {
   pass_manager *passes = g->get_passes ();
   ipa_read_optimization_summaries_1 (passes->all_regular_ipa_passes);
-  ipa_read_optimization_summaries_1 (passes->all_lto_gen_passes);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes

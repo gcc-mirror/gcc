@@ -111,11 +111,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_reference);
   TERMINATE_PASS_LIST ()
 
-  INSERT_PASSES_AFTER (all_lto_gen_passes)
-  NEXT_PASS (pass_ipa_lto_gimple_out);
-  NEXT_PASS (pass_ipa_lto_finish_out);  /* This must be the last LTO pass.  */
-  TERMINATE_PASS_LIST ()
-
   /* Simple IPA passes executed after the regular passes.  In WHOPR mode the
      passes are executed after partitioning and thus see just parts of the
      compiled unit.  */

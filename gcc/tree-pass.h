@@ -458,7 +458,6 @@ extern simple_ipa_opt_pass *make_pass_early_local_passes (gcc::context *ctxt);
 
 extern ipa_opt_pass_d *make_pass_ipa_whole_program_visibility (gcc::context
 							       *ctxt);
-extern ipa_opt_pass_d *make_pass_ipa_lto_gimple_out (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_increase_alignment (gcc::context
 							      *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_inline (gcc::context *ctxt);
@@ -470,7 +469,6 @@ extern ipa_opt_pass_d *make_pass_ipa_devirt (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_reference (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_pure_const (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_pta (gcc::context *ctxt);
-extern ipa_opt_pass_d *make_pass_ipa_lto_finish_out (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_tm (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_profile (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_cdtor_merge (gcc::context *ctxt);
