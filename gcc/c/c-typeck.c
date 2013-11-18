@@ -7210,7 +7210,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
       constructor_type = TREE_TYPE (constructor_type);
-      push_array_bounds (tree_low_cst (constructor_index, 1));
+      push_array_bounds (tree_to_uhwi (constructor_index));
       constructor_depth++;
     }
 
@@ -8760,7 +8760,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  /* Now output the actual element.  */
 	  if (value.value)
 	    {
-	      push_array_bounds (tree_low_cst (constructor_index, 1));
+	      push_array_bounds (tree_to_uhwi (constructor_index));
 	      output_init_element (value.value, value.original_type,
 				   strict_string, elttype,
 				   constructor_index, 1, implicit,

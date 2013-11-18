@@ -843,7 +843,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    else if (compare_tree_int (TYPE_SIZE (gnu_type), align_cap) > 0)
 	      align = align_cap;
 	    else
-	      align = ceil_pow2 (tree_low_cst (TYPE_SIZE (gnu_type), 1));
+	      align = ceil_pow2 (tree_to_uhwi (TYPE_SIZE (gnu_type)));
 
 	    /* But make sure not to under-align the object.  */
 	    if (align <= TYPE_ALIGN (gnu_type))
@@ -4933,11 +4933,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
 	align = MIN (BIGGEST_ALIGNMENT,
-		     tree_low_cst (TYPE_SIZE (gnu_type), 1));
+		     tree_to_uhwi (TYPE_SIZE (gnu_type)));
       else if (Is_Atomic (gnat_entity) && gnu_size
 	       && tree_fits_uhwi_p (gnu_size)
 	       && integer_pow2p (gnu_size))
-	align = MIN (BIGGEST_ALIGNMENT, tree_low_cst (gnu_size, 1));
+	align = MIN (BIGGEST_ALIGNMENT, tree_to_uhwi (gnu_size));
 
       /* See if we need to pad the type.  If we did, and made a record,
 	 the name of the new type may be changed.  So get it back for
@@ -8362,7 +8362,7 @@ create_field_decl_from (tree old_field, tree field_type, tree record_type,
 {
   tree t = TREE_VALUE (purpose_member (old_field, pos_list));
   tree pos = TREE_VEC_ELT (t, 0), bitpos = TREE_VEC_ELT (t, 2);
-  unsigned int offset_align = tree_low_cst (TREE_VEC_ELT (t, 1), 1);
+  unsigned int offset_align = tree_to_uhwi (TREE_VEC_ELT (t, 1));
   tree new_pos, new_field;
   unsigned int i;
   subst_pair *s;

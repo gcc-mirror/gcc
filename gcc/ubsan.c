@@ -234,7 +234,7 @@ static unsigned short
 get_ubsan_type_info_for_type (tree type)
 {
   gcc_assert (TYPE_SIZE (type) && tree_fits_uhwi_p (TYPE_SIZE (type)));
-  int prec = exact_log2 (tree_low_cst (TYPE_SIZE (type), 1));
+  int prec = exact_log2 (tree_to_uhwi (TYPE_SIZE (type)));
   gcc_assert (prec != -1);
   return (prec << 1) | !TYPE_UNSIGNED (type);
 }

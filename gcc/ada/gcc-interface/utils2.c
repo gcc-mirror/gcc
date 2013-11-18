@@ -626,7 +626,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 static unsigned int
 resolve_atomic_size (tree type)
 {
-  unsigned HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;

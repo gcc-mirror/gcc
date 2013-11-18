@@ -1433,10 +1433,10 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  if (!tree_fits_uhwi_p (arg2))
 	    return NULL_TREE;
 
-	  unsigned HOST_WIDE_INT shiftc = tree_low_cst (arg2, 1);
-	  unsigned HOST_WIDE_INT outerc = tree_low_cst (TYPE_SIZE (type), 1);
+	  unsigned HOST_WIDE_INT shiftc = tree_to_uhwi (arg2);
+	  unsigned HOST_WIDE_INT outerc = tree_to_uhwi (TYPE_SIZE (type));
 	  unsigned HOST_WIDE_INT innerc
-	    = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
 	  if (shiftc >= outerc || (shiftc % innerc) != 0)
 	    return NULL_TREE;
 	  int offset = shiftc / innerc;
@@ -8102,7 +8102,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    {
 	      unsigned HOST_WIDE_INT cst;
 
-	      cst = tree_low_cst (and1, 1);
+	      cst = tree_to_uhwi (and1);
 	      cst &= HOST_WIDE_INT_M1U
 		     << (TYPE_PRECISION (TREE_TYPE (and1)) - 1);
 	      change = (cst == 0);
@@ -11866,7 +11866,7 @@ fold_binary_loc (location_t loc,
 	 If B is constant and (B & M) == 0, fold into A & M.  */
       if (tree_fits_uhwi_p (arg1))
 	{
-	  unsigned HOST_WIDE_INT cst1 = tree_low_cst (arg1, 1);
+	  unsigned HOST_WIDE_INT cst1 = tree_to_uhwi (arg1);
 	  if (~cst1 && (cst1 & (cst1 + 1)) == 0
 	      && INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	      && (TREE_CODE (arg0) == PLUS_EXPR
@@ -11891,7 +11891,7 @@ fold_binary_loc (location_t loc,
 		}
 
 	      if (!tree_fits_uhwi_p (TYPE_MAX_VALUE (TREE_TYPE (arg0)))
-		  || (tree_low_cst (TYPE_MAX_VALUE (TREE_TYPE (arg0)), 1)
+		  || (tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (arg0)))
 		      & cst1) != cst1)
 		which = -1;
 
@@ -12036,11 +12036,11 @@ fold_binary_loc (location_t loc,
 	  && TYPE_PRECISION (TREE_TYPE (arg0)) <= HOST_BITS_PER_WIDE_INT
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
-	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1) > 0
-	  && (tree_low_cst (TREE_OPERAND (arg0, 1), 1)
+	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) > 0
+	  && (tree_to_uhwi (TREE_OPERAND (arg0, 1))
 	      < TYPE_PRECISION (TREE_TYPE (arg0))))
 	{
-	  unsigned int shiftc = tree_low_cst (TREE_OPERAND (arg0, 1), 1);
+	  unsigned int shiftc = tree_to_uhwi (TREE_OPERAND (arg0, 1));
 	  unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg1);
 	  unsigned HOST_WIDE_INT newmask, zerobits = 0;
 	  tree shift_type = TREE_TYPE (arg0);
@@ -14503,9 +14503,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0)))))
 	{
 	  tree eltype = TREE_TYPE (TREE_TYPE (arg0));
-	  unsigned HOST_WIDE_INT width = tree_low_cst (TYPE_SIZE (eltype), 1);
-	  unsigned HOST_WIDE_INT n = tree_low_cst (arg1, 1);
-	  unsigned HOST_WIDE_INT idx = tree_low_cst (op2, 1);
+	  unsigned HOST_WIDE_INT width = tree_to_uhwi (TYPE_SIZE (eltype));
+	  unsigned HOST_WIDE_INT n = tree_to_uhwi (arg1);
+	  unsigned HOST_WIDE_INT idx = tree_to_uhwi (op2);
 
 	  if (n != 0
 	      && (idx % width) == 0
@@ -14576,7 +14576,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
       /* A bit-field-ref that referenced the full argument can be stripped.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	  && TYPE_PRECISION (TREE_TYPE (arg0)) == tree_low_cst (arg1, 1)
+	  && TYPE_PRECISION (TREE_TYPE (arg0)) == tree_to_uhwi (arg1)
 	  && integer_zerop (op2))
 	return fold_convert_loc (loc, type, arg0);
 
@@ -14587,14 +14587,14 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (arg0)))
 	  /* This limitation should not be necessary, we just need to
 	     round this up to mode size.  */
-	  && tree_low_cst (op1, 1) % BITS_PER_UNIT == 0
+	  && tree_to_uhwi (op1) % BITS_PER_UNIT == 0
 	  /* Need bit-shifting of the buffer to relax the following.  */
-	  && tree_low_cst (op2, 1) % BITS_PER_UNIT == 0)
+	  && tree_to_uhwi (op2) % BITS_PER_UNIT == 0)
 	{
-	  unsigned HOST_WIDE_INT bitpos = tree_low_cst (op2, 1);
-	  unsigned HOST_WIDE_INT bitsize = tree_low_cst (op1, 1);
+	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
+	  unsigned HOST_WIDE_INT bitsize = tree_to_uhwi (op1);
 	  unsigned HOST_WIDE_INT clen;
-	  clen = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (arg0)), 1);
+	  clen = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (arg0)));
 	  /* ???  We cannot tell native_encode_expr to start at
 	     some random byte only.  So limit us to a reasonable amount
 	     of work.  */

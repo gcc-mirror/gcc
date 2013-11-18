@@ -297,7 +297,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		       item->offset);
 	      if (TYPE_P (item->value))
 		fprintf (f, "clobber of " HOST_WIDE_INT_PRINT_DEC " bits",
-			 tree_low_cst (TYPE_SIZE (item->value), 1));
+			 tree_to_uhwi (TYPE_SIZE (item->value)));
 	      else
 		{
 		  fprintf (f, "cst: ");
@@ -1348,7 +1348,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	  arg_base = arg;
 	  arg_offset = 0;
 	  type_size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)));
-	  arg_size = tree_low_cst (type_size, 1);
+	  arg_size = tree_to_uhwi (type_size);
 	  ao_ref_init_from_ptr_and_size (&r, arg_base, NULL_TREE);
 	}
       else if (TREE_CODE (arg) == ADDR_EXPR)
@@ -1995,7 +1995,7 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   cs = ipa_note_param_call (node, index, call);
   ii = cs->indirect_info;
   ii->offset = anc_offset;
-  ii->otr_token = tree_low_cst (OBJ_TYPE_REF_TOKEN (target), 1);
+  ii->otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
   ii->otr_type = obj_type_ref_class (target);
   ii->polymorphic = 1;
 }
@@ -2207,7 +2207,7 @@ ipa_intraprocedural_devirtualization (gimple call)
   if (!binfo)
     return NULL_TREE;
   token = OBJ_TYPE_REF_TOKEN (otr);
-  fndecl = gimple_get_virt_method_for_binfo (tree_low_cst (token, 1),
+  fndecl = gimple_get_virt_method_for_binfo (tree_to_uhwi (token),
 					     binfo);
 #ifdef ENABLE_CHECKING
   if (fndecl)

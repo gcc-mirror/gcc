@@ -2352,8 +2352,8 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 	  *known_p = false;
 	  return;
 	}
-      *offset += (tree_low_cst (xoffset, 1)
-		  + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+      *offset += (tree_to_uhwi (xoffset)
+		  + (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
 		     / BITS_PER_UNIT));
 
       x = TREE_OPERAND (x, 0);

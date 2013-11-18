@@ -966,7 +966,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
       gcc_assert (TREE_CODE (type) == RECORD_TYPE);
       edge->indirect_info->param_index = -1;
       edge->indirect_info->otr_token
-	 = tree_low_cst (OBJ_TYPE_REF_TOKEN (target), 1);
+	 = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
       edge->indirect_info->otr_type = type;
       edge->indirect_info->polymorphic = 1;
     }

@@ -1076,7 +1076,7 @@ gimple_extract_devirt_binfo_from_cst (tree cst, tree expected_type)
 	    continue;
 
 	  pos = int_bit_position (fld);
-	  size = tree_low_cst (DECL_SIZE (fld), 1);
+	  size = tree_to_uhwi (DECL_SIZE (fld));
 	  if (pos <= offset && (pos + size) > offset)
 	    break;
 	}
@@ -3151,7 +3151,7 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
 
   if (TREE_CODE (v) == POINTER_PLUS_EXPR)
     {
-      offset = tree_low_cst (TREE_OPERAND (v, 1), 1) * BITS_PER_UNIT;
+      offset = tree_to_uhwi (TREE_OPERAND (v, 1)) * BITS_PER_UNIT;
       v = TREE_OPERAND (v, 0);
     }
   else
@@ -3177,7 +3177,7 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
       return NULL_TREE;
     }
   gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
-  size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);
+  size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))));
   offset += token * size;
   fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
 			    offset, size, v);
@@ -3403,7 +3403,7 @@ gimple_fold_indirect_ref (tree t)
 	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
 	  && tree_fits_uhwi_p (off))
 	{
-          unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
+          unsigned HOST_WIDE_INT offset = tree_to_uhwi (off);
           tree part_width = TYPE_SIZE (type);
           unsigned HOST_WIDE_INT part_widthi
             = tree_to_shwi (part_width) / BITS_PER_UNIT;

@@ -669,7 +669,7 @@ try_unroll_loop_completely (struct loop *loop,
      from the iv test.  */
   if (tree_fits_uhwi_p (niter))
     {
-      n_unroll = tree_low_cst (niter, 1);
+      n_unroll = tree_to_uhwi (niter);
       n_unroll_found = true;
       edge_to_cancel = EDGE_SUCC (exit->src, 0);
       if (edge_to_cancel == exit)

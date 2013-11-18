@@ -941,7 +941,7 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   if (TYPE_DOMAIN (type))
     {
-      unsigned HOST_WIDE_INT alen = tree_low_cst (array_type_nelts_top (type), 1);
+      unsigned HOST_WIDE_INT alen = tree_to_uhwi (array_type_nelts_top (type));
       if (alen < len)
 	return NULL;
     }

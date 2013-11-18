@@ -1,5 +1,23 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* alias.c, asan.c, builtins.c, cfgexpand.c, cgraph.c,
+	config/aarch64/aarch64.c, config/alpha/predicates.md,
+	config/arm/arm.c, config/darwin.c, config/epiphany/epiphany.c,
+	config/i386/i386.c, config/iq2000/iq2000.c, config/m32c/m32c-pragma.c,
+	config/mep/mep-pragma.c, config/mips/mips.c,
+	config/picochip/picochip.c, config/rs6000/rs6000.c, cppbuiltin.c,
+	dbxout.c, dwarf2out.c, emit-rtl.c, except.c, expr.c, fold-const.c,
+	function.c, gimple-fold.c, godump.c, ipa-cp.c, ipa-prop.c, omp-low.c,
+	predict.c, sdbout.c, stor-layout.c, trans-mem.c, tree-object-size.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-forwprop.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c, tree-ssa-loop-niter.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-strlen.c, tree-stdarg.c,
+	tree-switch-conversion.c, tree-vect-generic.c, tree-vect-loop.c,
+	tree-vect-patterns.c, tree-vrp.c, tree.c, tsan.c, ubsan.c, varasm.c:
+	Replace tree_low_cst (..., 1) with tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* builtins.c, cilk-common.c, config/aarch64/aarch64.c,
 	config/alpha/alpha.c, config/arm/arm.c, config/c6x/predicates.md,
 	config/i386/i386.c, config/ia64/predicates.md, config/s390/s390.c,

@@ -659,7 +659,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
   if (!no_overflow)
     {
       max = double_int::mask (TYPE_PRECISION (type)
-			      - tree_low_cst (num_ending_zeros (s), 1));
+			      - tree_to_uhwi (num_ending_zeros (s)));
       mpz_set_double_int (bnd, max, true);
       return;
     }
@@ -748,7 +748,7 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
   bits = num_ending_zeros (s);
   bound = build_low_bits_mask (niter_type,
 			       (TYPE_PRECISION (niter_type)
-				- tree_low_cst (bits, 1)));
+				- tree_to_uhwi (bits)));
 
   d = fold_binary_to_constant (LSHIFT_EXPR, niter_type,
 			       build_int_cst (niter_type, 1), bits);

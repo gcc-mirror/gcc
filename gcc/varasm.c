@@ -1889,7 +1889,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 {
   unsigned HOST_WIDE_INT size, rounded;
 
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
   rounded = size;
 
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_protect_global (decl))
@@ -1936,11 +1936,11 @@ assemble_variable_contents (tree decl, const char *name,
 	  && !initializer_zerop (DECL_INITIAL (decl)))
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
-			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
+			 tree_to_uhwi (DECL_SIZE_UNIT (decl)),
 			 get_variable_align (decl));
       else
 	/* Leave space for it.  */
-	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
     }
 }
 
@@ -2126,7 +2126,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       if (asan_protected)
 	{
 	  unsigned HOST_WIDE_INT int size
-	    = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	    = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  assemble_zeros (asan_red_zone_size (size));
 	}
     }
@@ -2717,7 +2717,7 @@ decode_addr_const (tree exp, struct addr_const *value)
       else if (TREE_CODE (target) == ARRAY_REF
 	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
-	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
+	  offset += (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (target)))
 		     * tree_to_shwi (TREE_OPERAND (target, 1)));
 	  target = TREE_OPERAND (target, 0);
 	}
@@ -4876,7 +4876,7 @@ output_constructor_regular_field (oc_local_state *local)
       double_int idx = tree_to_double_int (local->index)
 		       - tree_to_double_int (local->min_index);
       idx = idx.sext (prec);
-      fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
+      fieldpos = (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (local->val)))
 		  * idx.low);
     }
   else if (local->field != NULL_TREE)
@@ -4926,7 +4926,7 @@ output_constructor_regular_field (oc_local_state *local)
 	  gcc_assert (!fieldsize || !DECL_CHAIN (local->field));
 	}
       else
-	fieldsize = tree_low_cst (DECL_SIZE_UNIT (local->field), 1);
+	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
     }
   else
     fieldsize = int_size_in_bytes (TREE_TYPE (local->type));
@@ -4951,8 +4951,8 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
   /* Bit size of this element.  */
   HOST_WIDE_INT ebitsize
     = (local->field
-       ? tree_low_cst (DECL_SIZE (local->field), 1)
-       : tree_low_cst (TYPE_SIZE (TREE_TYPE (local->type)), 1));
+       ? tree_to_uhwi (DECL_SIZE (local->field))
+       : tree_to_uhwi (TYPE_SIZE (TREE_TYPE (local->type))));
 
   /* Relative index of this element if this is an array component.  */
   HOST_WIDE_INT relative_index
@@ -7070,7 +7070,7 @@ place_block_symbol (rtx symbol)
     {
       decl = SYMBOL_REF_DECL (symbol);
       alignment = get_variable_align (decl);
-      size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
       if ((flag_sanitize & SANITIZE_ADDRESS)
 	  && asan_protect_global (decl))
 	{
@@ -7236,7 +7236,7 @@ output_object_block (struct object_block *block)
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
 	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
-	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  offset += size;
 	  if ((flag_sanitize & SANITIZE_ADDRESS)
 	      && asan_protect_global (decl))

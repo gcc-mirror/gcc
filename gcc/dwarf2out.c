@@ -10262,7 +10262,7 @@ simple_type_size_in_bits (const_tree type)
   else if (TYPE_SIZE (type) == NULL_TREE)
     return 0;
   else if (tree_fits_uhwi_p (TYPE_SIZE (type)))
-    return tree_low_cst (TYPE_SIZE (type), 1);
+    return tree_to_uhwi (TYPE_SIZE (type));
   else
     return TYPE_ALIGN (type);
 }
@@ -13543,7 +13543,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
       || !tree_fits_uhwi_p (DECL_SIZE (decl)))
     return NULL;
 
-  decl_size = tree_low_cst (DECL_SIZE (decl), 1);
+  decl_size = tree_to_uhwi (DECL_SIZE (decl));
   descr = NULL;
   descr_tail = &descr;
 
@@ -16436,7 +16436,7 @@ add_bit_size_attribute (dw_die_ref die, tree decl)
 	      && DECL_BIT_FIELD_TYPE (decl));
 
   if (tree_fits_uhwi_p (DECL_SIZE (decl)))
-    add_AT_unsigned (die, DW_AT_bit_size, tree_low_cst (DECL_SIZE (decl), 1));
+    add_AT_unsigned (die, DW_AT_bit_size, tree_to_uhwi (DECL_SIZE (decl)));
 }
 
 /* If the compiled language is ANSI C, then add a 'prototyped'
@@ -17073,7 +17073,7 @@ descr_info_loc (tree val, tree base_decl)
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (tree_fits_uhwi_p (TREE_OPERAND (val, 1))
-	  && (unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (val, 1), 1)
+	  && (unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (val, 1))
 	     < 16384)
 	{
 	  loc = descr_info_loc (TREE_OPERAND (val, 0), base_decl);

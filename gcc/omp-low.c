@@ -6770,11 +6770,11 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	{
 	  safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
 	  if (!tree_fits_uhwi_p (safelen)
-	      || (unsigned HOST_WIDE_INT) tree_low_cst (safelen, 1)
+	      || (unsigned HOST_WIDE_INT) tree_to_uhwi (safelen)
 		 > INT_MAX)
 	    loop->safelen = INT_MAX;
 	  else
-	    loop->safelen = tree_low_cst (safelen, 1);
+	    loop->safelen = tree_to_uhwi (safelen);
 	  if (loop->safelen == 1)
 	    loop->safelen = 0;
 	}
@@ -7678,7 +7678,7 @@ expand_omp_atomic (struct omp_region *region)
   HOST_WIDE_INT index;
 
   /* Make sure the type is one of the supported sizes.  */
-  index = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  index = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   index = exact_log2 (index);
   if (index >= 0 && index <= 4)
     {

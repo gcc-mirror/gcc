@@ -662,7 +662,7 @@ c_getstr (tree src)
 	   || compare_tree_int (offset_node, TREE_STRING_LENGTH (src) - 1) > 0)
     return 0;
 
-  return TREE_STRING_POINTER (src) + tree_low_cst (offset_node, 1);
+  return TREE_STRING_POINTER (src) + tree_to_uhwi (offset_node);
 }
 
 /* Return a CONST_INT or CONST_DOUBLE corresponding to target reading
@@ -3126,11 +3126,11 @@ determine_block_size (tree len, rtx len_rtx,
       else
 	{
 	  if (tree_fits_uhwi_p (TYPE_MIN_VALUE (TREE_TYPE (len))))
-	    *min_size = tree_low_cst (TYPE_MIN_VALUE (TREE_TYPE (len)), 1);
+	    *min_size = tree_to_uhwi (TYPE_MIN_VALUE (TREE_TYPE (len)));
 	  else
 	    *min_size = 0;
 	  if (tree_fits_uhwi_p (TYPE_MAX_VALUE (TREE_TYPE (len))))
-	    *max_size = tree_low_cst (TYPE_MAX_VALUE (TREE_TYPE (len)), 1);
+	    *max_size = tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (len)));
 	  else
 	    *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
 	}
@@ -3529,14 +3529,14 @@ expand_builtin_strncpy (tree exp, rtx target)
 	  rtx dest_mem;
 
 	  if (!p || dest_align == 0 || !tree_fits_uhwi_p (len)
-	      || !can_store_by_pieces (tree_low_cst (len, 1),
+	      || !can_store_by_pieces (tree_to_uhwi (len),
 				       builtin_strncpy_read_str,
 				       CONST_CAST (char *, p),
 				       dest_align, false))
 	    return NULL_RTX;
 
 	  dest_mem = get_memory_rtx (dest, len);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_strncpy_read_str,
 			   CONST_CAST (char *, p), dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), target);
@@ -3673,12 +3673,12 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
        * We can't pass builtin_memset_gen_str as that emits RTL.  */
       c = 1;
       if (tree_fits_uhwi_p (len)
-	  && can_store_by_pieces (tree_low_cst (len, 1),
+	  && can_store_by_pieces (tree_to_uhwi (len),
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
 	{
 	  val_rtx = force_reg (val_mode, val_rtx);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_memset_gen_str, val_rtx, dest_align,
 			   true, 0);
 	}
@@ -3698,10 +3698,10 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   if (c)
     {
       if (tree_fits_uhwi_p (len)
-	  && can_store_by_pieces (tree_low_cst (len, 1),
+	  && can_store_by_pieces (tree_to_uhwi (len),
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
-	store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	store_by_pieces (dest_mem, tree_to_uhwi (len),
 			 builtin_memset_read_str, &c, dest_align, true, 0);
       else if (!set_storage_via_setmem (dest_mem, len_rtx,
 					gen_int_mode (c, val_mode),
@@ -4406,7 +4406,7 @@ expand_builtin_frame_address (tree fndecl, tree exp)
     {
       rtx tem
 	= expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl),
-				      tree_low_cst (CALL_EXPR_ARG (exp, 0), 1));
+				      tree_to_uhwi (CALL_EXPR_ARG (exp, 0)));
 
       /* Some ports cannot access arbitrary stack frames.  */
       if (tem == NULL)
@@ -8676,7 +8676,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
   if (! var_decl_component_p (var))
     return NULL_TREE;
 
-  length = tree_low_cst (len, 1);
+  length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
@@ -8781,7 +8781,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  if (readonly_data_expr (src)
 	      || (tree_fits_uhwi_p (len)
 		  && (MIN (src_align, dest_align) / BITS_PER_UNIT
-		      >= (unsigned HOST_WIDE_INT) tree_low_cst (len, 1))))
+		      >= (unsigned HOST_WIDE_INT) tree_to_uhwi (len))))
 	    {
 	      tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
 	      if (!fn)
@@ -8805,7 +8805,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      dest_base = get_ref_base_and_extent (destvar, &dest_offset,
 						   &size, &maxsize);
 	      if (tree_fits_uhwi_p (len))
-		maxsize = tree_low_cst (len, 1);
+		maxsize = tree_to_uhwi (len);
 	      else
 		maxsize = -1;
 	      src_offset /= BITS_PER_UNIT;
@@ -9172,7 +9172,7 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
 	  if (target_char_cast (arg2, &c))
 	    return NULL_TREE;
 
-	  r = (const char *) memchr (p1, c, tree_low_cst (len, 1));
+	  r = (const char *) memchr (p1, c, tree_to_uhwi (len));
 
 	  if (r == NULL)
 	    return build_int_cst (TREE_TYPE (arg1), 0);
@@ -9215,7 +9215,7 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
       && compare_tree_int (len, strlen (p1) + 1) <= 0
       && compare_tree_int (len, strlen (p2) + 1) <= 0)
     {
-      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
+      const int r = memcmp (p1, p2, tree_to_uhwi (len));
 
       if (r > 0)
 	return integer_one_node;
@@ -9227,7 +9227,7 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (tree_fits_uhwi_p (len) && tree_low_cst (len, 1) == 1)
+  if (tree_fits_uhwi_p (len) && tree_to_uhwi (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node
@@ -9341,7 +9341,7 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 
   if (tree_fits_uhwi_p (len) && p1 && p2)
     {
-      const int i = strncmp (p1, p2, tree_low_cst (len, 1));
+      const int i = strncmp (p1, p2, tree_to_uhwi (len));
       if (i > 0)
 	return integer_one_node;
       else if (i < 0)
@@ -9387,7 +9387,7 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (tree_fits_uhwi_p (len) && tree_low_cst (len, 1) == 1)
+  if (tree_fits_uhwi_p (len) && tree_to_uhwi (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node
@@ -12256,7 +12256,7 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
   if (!init_target_chars ())
     return NULL_TREE;
 
-  destlen = tree_low_cst (destsize, 1);
+  destlen = tree_to_uhwi (destsize);
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
   if (strchr (fmt_str, target_percent) == NULL)
@@ -12304,7 +12304,7 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
       if (!retval || !tree_fits_uhwi_p (retval))
 	return NULL_TREE;
 
-      origlen = tree_low_cst (retval, 1);
+      origlen = tree_to_uhwi (retval);
       /* We could expand this as
 	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
 	 or to

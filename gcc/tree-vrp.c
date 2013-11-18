@@ -5017,13 +5017,13 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  if (TREE_CODE (name2) == SSA_NAME
 	      && tree_fits_uhwi_p (cst2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
-	      && IN_RANGE (tree_low_cst (cst2, 1), 1, prec - 1)
+	      && IN_RANGE (tree_to_uhwi (cst2), 1, prec - 1)
 	      && prec <= HOST_BITS_PER_DOUBLE_INT
 	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val)))
 	      && live_on_edge (e, name2)
 	      && !has_single_use (name2))
 	    {
-	      mask = double_int::mask (tree_low_cst (cst2, 1));
+	      mask = double_int::mask (tree_to_uhwi (cst2));
 	      val2 = fold_binary (LSHIFT_EXPR, TREE_TYPE (val), val, cst2);
 	    }
 	}

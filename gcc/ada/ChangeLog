@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc-interface/decl.c, gcc-interface/utils.c, gcc-interface/utils2.c:
+	Replace tree_low_cst (..., 1) with tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc-interface/cuintp.c: Update comments to refer to
 	tree_fits_shwi_p rather than host_integerp.
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use tree_fits_uhwi_p

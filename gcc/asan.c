@@ -2029,7 +2029,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node,
 					build_fold_addr_expr (refdecl)));
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
   size += asan_red_zone_size (size);
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
