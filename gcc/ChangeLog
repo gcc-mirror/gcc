@@ -1,3 +1,17 @@
+2013-11-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (redirection_data): Record two
+	duplicated blocks instead of just one.
+	(local_info): Explain why we don't create a template for the
+	second duplicated block in a thread path.
+	(create_block_for_threading): Accept argument indicating array
+	index into redirection_data to store its result.
+	(lookup_redirection_data): Initialize both duplicate blocks.
+	(ssa_create_duplicates): If a jump threading path needs multiple
+	blocks duplicated, then duplicate them.
+	(ssa_fix_duplicate_block_edges): Corresponding changes.
+	(ssa_fixup_template_block, thread_single_edge):  Likewise.
+	
 2013-11-18  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Extend -fsanitize=undefined documentation.
