@@ -98,6 +98,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef EV_CURRENT
 #undef SHN_LORESERVE
 #undef SHN_XINDEX
+#undef SHN_UNDEF
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
@@ -183,6 +184,7 @@ typedef struct {
   b_elf_wxword	sh_entsize;		/* Entry size if section holds table */
 } b_elf_shdr;  /* Elf_Shdr.  */
 
+#define SHN_UNDEF	0x0000		/* Undefined section */
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
 
@@ -342,6 +344,7 @@ elf_symbol_search (const void *vkey, const void *ventry)
 
 static int
 elf_initialize_syminfo (struct backtrace_state *state,
+			uintptr_t base_address,
 			const unsigned char *symtab_data, size_t symtab_size,
 			const unsigned char *strtab, size_t strtab_size,
 			backtrace_error_callback error_callback,
@@ -365,7 +368,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
       int info;
 
       info = sym->st_info & 0xf;
-      if (info == STT_FUNC || info == STT_OBJECT)
+      if ((info == STT_FUNC || info == STT_OBJECT)
+	  && sym->st_shndx != SHN_UNDEF)
 	++elf_symbol_count;
     }
 
@@ -385,6 +389,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
       info = sym->st_info & 0xf;
       if (info != STT_FUNC && info != STT_OBJECT)
 	continue;
+      if (sym->st_shndx == SHN_UNDEF)
+	continue;
       if (sym->st_name >= strtab_size)
 	{
 	  error_callback (data, "symbol string index out of range", 0);
@@ -393,7 +399,7 @@ elf_initialize_syminfo (struct backtrace_state *state,
 	  return 0;
 	}
       elf_symbols[j].name = (const char *) strtab + sym->st_name;
-      elf_symbols[j].address = sym->st_value;
+      elf_symbols[j].address = sym->st_value + base_address;
       elf_symbols[j].size = sym->st_size;
       ++j;
     }
@@ -733,7 +739,7 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
       if (sdata == NULL)
 	goto fail;
 
-      if (!elf_initialize_syminfo (state,
+      if (!elf_initialize_syminfo (state, base_address,
 				   symtab_view.data, symtab_shdr->sh_size,
 				   strtab_view.data, strtab_shdr->sh_size,
 				   error_callback, data, sdata))
