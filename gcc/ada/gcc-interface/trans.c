@@ -66,12 +66,6 @@
    instead.  */
 #define ALLOCA_THRESHOLD 1000
 
-/* Let code below know whether we are targeting VMS without need of
-   intrusive preprocessor directives.  */
-#ifndef TARGET_ABI_OPEN_VMS
-#define TARGET_ABI_OPEN_VMS 0
-#endif
-
 /* In configurations where blocks have no end_locus attached, just
    sink assignments into a dummy global.  */
 #ifndef BLOCK_SOURCE_END_LOCATION

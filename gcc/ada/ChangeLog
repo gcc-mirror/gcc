@@ -1,5 +1,9 @@
 2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (TARGET_ABI_OPEN_VMS): Delete as redundant.
+
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Call_to_gnu): For an Out parameter passed by
 	copy and that don't need to be  copied in, only evaluate its address.
 
