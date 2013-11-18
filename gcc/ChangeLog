@@ -1,3 +1,7 @@
+2013-11-18  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Extend -fsanitize=undefined documentation.
+
 2013-11-18  Andrew Pinski <apinski@cavium.com>
 	    Steve Ellcey  <sellcey@mips.com>
 
