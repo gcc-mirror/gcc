@@ -1,3 +1,10 @@
+2013-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_base<_S_single>): Use
+	non-atomic operations.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line number.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
 2013-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N3762 string_view: a non-owning reference to a string.
