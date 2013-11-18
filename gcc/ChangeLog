@@ -1,3 +1,26 @@
+2013-11-18  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cgraphunit.c (ipa_passes): Don't execute all_lto_gen_passes.
+	* lto-streamer-out.c (lto_output, produce_asm_for_decls): No longer
+	static.
+	(pass_data_ipa_lto_gimple_out, pass_ipa_lto_gimple_out,
+	make_pass_ipa_lto_gimple_out, pass_data_ipa_lto_finish_out,
+	pass_ipa_lto_finish_out, make_pass_ipa_lto_finish_out): Remove.
+	* lto-streamer.h (lto_output, produce_asm_for_decls): Declare.
+	* pass-manager.h (GCC_PASS_LISTS, class pass_manager):
+	Remove all_lto_gen_passes.
+	* passes.c (pass_manager::dump_passes): Remove its use.
+	(pass_manager::register_pass): Likewise.
+	(ipa_read_summaries, ipa_read_optimization_summaries): Likewise.
+	(pass_manager::pass_manager): Don't initialize or use it.
+	(write_lto): New static function.
+	(ipa_write_summaries_1, ipa_write_optimization_summaries): Use it
+	instead of using all_lto_gen_passes.
+	* passes.def (all_lto_gen_passes, pass_ipa_lto_gimple_out,
+	pass_ipa_lto_finish_out): Delete.
+	* tree-pass.h (make_pass_ipa_lto_gimple_out,
+	make_pass_ipa_lto_finish_out): Don't declare.
+
 2013-11-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (redirection_data): Record two
@@ -11,7 +34,7 @@
 	blocks duplicated, then duplicate them.
 	(ssa_fix_duplicate_block_edges): Corresponding changes.
 	(ssa_fixup_template_block, thread_single_edge):  Likewise.
-	
+
 2013-11-18  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Extend -fsanitize=undefined documentation.

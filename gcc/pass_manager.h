@@ -29,7 +29,6 @@ struct register_pass_info;
   DEF_PASS_LIST (all_lowering_passes) \
   DEF_PASS_LIST (all_small_ipa_passes) \
   DEF_PASS_LIST (all_regular_ipa_passes) \
-  DEF_PASS_LIST (all_lto_gen_passes) \
   DEF_PASS_LIST (all_passes)
 
 #define DEF_PASS_LIST(LIST) PASS_LIST_NO_##LIST,
@@ -82,7 +81,6 @@ public:
   opt_pass *all_small_ipa_passes;
   opt_pass *all_lowering_passes;
   opt_pass *all_regular_ipa_passes;
-  opt_pass *all_lto_gen_passes;
   opt_pass *all_late_ipa_passes;
 
   /* A map from static pass id to optimization pass.  */
