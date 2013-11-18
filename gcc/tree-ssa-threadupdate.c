@@ -112,9 +112,20 @@ struct el
 
 struct redirection_data : typed_free_remove<redirection_data>
 {
-  /* A duplicate of B with the trailing control statement removed and which
-     targets a single successor of B.  */
-  basic_block dup_block;
+  /* We support wiring up two block duplicates in a jump threading path.
+
+     One is a normal block copy where we remove the control statement
+     and wire up its single remaining outgoing edge to the thread path.
+
+     The other is a joiner block where we leave the control statement
+     in place, but wire one of the outgoing edges to a thread path. 
+
+     In theory we could have multiple block duplicates in a jump
+     threading path, but I haven't tried that.
+
+     The duplicate blocks appear in this array in the same order in
+     which they appear in the jump thread path.  */
+  basic_block dup_blocks[2];
 
   /* The jump threading path.  */
   vec<jump_thread_edge *> *path;
@@ -168,8 +179,11 @@ struct ssa_local_info_t
   /* The current block we are working on.  */
   basic_block bb;
 
-  /* A template copy of BB with no outgoing edges or control statement that
-     we use for creating copies.  */
+  /* We only create a template block for the first duplicated block in a
+     jump threading path as we may need many duplicates of that block.
+
+     The second duplicate block in a path is specific to that path.  Creating
+     and sharing a template for that block is considerably more difficult.  */
   basic_block template_block;
 
   /* TRUE if we thread one or more jumps, FALSE otherwise.  */
@@ -231,24 +245,27 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
     }
 }
 
-/* Create a duplicate of BB.  Record the duplicate block in RD.  */
+/* Create a duplicate of BB.  Record the duplicate block in an array
+   indexed by COUNT stored in RD.  */
 
 static void
-create_block_for_threading (basic_block bb, struct redirection_data *rd)
+create_block_for_threading (basic_block bb,
+			    struct redirection_data *rd,
+			    unsigned int count)
 {
   edge_iterator ei;
   edge e;
 
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
-  rd->dup_block = duplicate_block (bb, NULL, NULL);
+  rd->dup_blocks[count] = duplicate_block (bb, NULL, NULL);
 
-  FOR_EACH_EDGE (e, ei, rd->dup_block->succs)
+  FOR_EACH_EDGE (e, ei, rd->dup_blocks[count]->succs)
     e->aux = NULL;
 
   /* Zero out the profile, since the block is unreachable for now.  */
-  rd->dup_block->frequency = 0;
-  rd->dup_block->count = 0;
+  rd->dup_blocks[count]->frequency = 0;
+  rd->dup_blocks[count]->count = 0;
 }
 
 /* Main data structure to hold information for duplicates of BB.  */
@@ -272,7 +289,8 @@ lookup_redirection_data (edge e, enum insert_option insert)
      in the table.  */
   elt = XNEW (struct redirection_data);
   elt->path = path;
-  elt->dup_block = NULL;
+  elt->dup_blocks[0] = NULL;
+  elt->dup_blocks[1] = NULL;
   elt->incoming_edges = NULL;
 
   slot = redirection_data.find_slot (elt, insert);
@@ -420,11 +438,11 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 
       /* This updates the PHIs at the destination of the duplicate
 	 block.  */
-      update_destination_phis (local_info->bb, rd->dup_block);
+      update_destination_phis (local_info->bb, rd->dup_blocks[0]);
 
       /* Find the edge from the duplicate block to the block we're
 	 threading through.  That's the edge we want to redirect.  */
-      victim = find_edge (rd->dup_block, (*path)[1]->e->dest);
+      victim = find_edge (rd->dup_blocks[0], (*path)[1]->e->dest);
       e2 = redirect_edge_and_branch (victim, path->last ()->e->dest);
       e2->count = path->last ()->e->count;
 
@@ -436,8 +454,8 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
     }
   else
     {
-      remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
-      create_edge_and_update_destination_phis (rd, rd->dup_block);
+      remove_ctrl_stmt_and_useless_edges (rd->dup_blocks[0], NULL);
+      create_edge_and_update_destination_phis (rd, rd->dup_blocks[0]);
     }
 }
 /* Hash table traversal callback routine to create duplicate blocks.  */
@@ -448,12 +466,32 @@ ssa_create_duplicates (struct redirection_data **slot,
 {
   struct redirection_data *rd = *slot;
 
+  /* The second duplicated block in a jump threading path is specific
+     to the path.  So it gets stored in RD rather than in LOCAL_DATA. 
+	
+     Each time we're called, we have to look through the path and see
+     if a second block needs to be duplicated. 
+
+     Note the search starts with the third edge on the path.  The first
+     edge is the incoming edge, the second edge always has its source
+     duplicated.  Thus we start our search with the third edge.  */
+  vec<jump_thread_edge *> *path = rd->path;
+  for (unsigned int i = 2; i < path->length (); i++)
+    {
+      if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK
+	  || (*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	{
+	  create_block_for_threading ((*path)[i]->e->src, rd, 1);
+	  break;
+	}
+    }
+  
   /* Create a template block if we have not done so already.  Otherwise
      use the template to create a new block.  */
   if (local_info->template_block == NULL)
     {
-      create_block_for_threading (local_info->bb, rd);
-      local_info->template_block = rd->dup_block;
+      create_block_for_threading ((*path)[1]->e->src, rd, 0);
+      local_info->template_block = rd->dup_blocks[0];
 
       /* We do not create any outgoing edges for the template.  We will
 	 take care of that in a later traversal.  That way we do not
@@ -461,7 +499,7 @@ ssa_create_duplicates (struct redirection_data **slot,
     }
   else
     {
-      create_block_for_threading (local_info->template_block, rd);
+      create_block_for_threading (local_info->template_block, rd, 0);
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
@@ -489,7 +527,7 @@ ssa_fixup_template_block (struct redirection_data **slot,
      to keep its control statement and redirect an outgoing edge.
      Else we want to remove the control statement & edges, then create
      a new outgoing edge.  In both cases we may need to update PHIs.  */
-  if (rd->dup_block && rd->dup_block == local_info->template_block)
+  if (rd->dup_blocks[0] && rd->dup_blocks[0] == local_info->template_block)
     {
       ssa_fix_duplicate_block_edges (rd, local_info);
       return 0;
@@ -523,30 +561,30 @@ ssa_redirect_edges (struct redirection_data **slot,
 
       thread_stats.num_threaded_edges++;
 
-      if (rd->dup_block)
+      if (rd->dup_blocks[0])
 	{
 	  edge e2;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-		     e->src->index, e->dest->index, rd->dup_block->index);
+		     e->src->index, e->dest->index, rd->dup_blocks[0]->index);
 
-	  rd->dup_block->count += e->count;
+	  rd->dup_blocks[0]->count += e->count;
 
 	  /* Excessive jump threading may make frequencies large enough so
 	     the computation overflows.  */
-	  if (rd->dup_block->frequency < BB_FREQ_MAX * 2)
-	    rd->dup_block->frequency += EDGE_FREQUENCY (e);
+	  if (rd->dup_blocks[0]->frequency < BB_FREQ_MAX * 2)
+	    rd->dup_blocks[0]->frequency += EDGE_FREQUENCY (e);
 
 	  /* In the case of threading through a joiner block, the outgoing
 	     edges from the duplicate block were updated when they were
 	     redirected during ssa_fix_duplicate_block_edges.  */
 	  if ((*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
-	    EDGE_SUCC (rd->dup_block, 0)->count += e->count;
+	    EDGE_SUCC (rd->dup_blocks[0], 0)->count += e->count;
 
 	  /* Redirect the incoming edge (possibly to the joiner block) to the
 	     appropriate duplicate block.  */
-	  e2 = redirect_edge_and_branch (e, rd->dup_block);
+	  e2 = redirect_edge_and_branch (e, rd->dup_blocks[0]);
 	  gcc_assert (e == e2);
 	  flush_pending_stmts (e2);
 	}
@@ -827,21 +865,21 @@ thread_single_edge (edge e)
   npath->safe_push (x);
   rd.path = npath;
 
-  create_block_for_threading (bb, &rd);
-  remove_ctrl_stmt_and_useless_edges (rd.dup_block, NULL);
-  create_edge_and_update_destination_phis (&rd, rd.dup_block);
+  create_block_for_threading (bb, &rd, 0);
+  remove_ctrl_stmt_and_useless_edges (rd.dup_blocks[0], NULL);
+  create_edge_and_update_destination_phis (&rd, rd.dup_blocks[0]);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-	     e->src->index, e->dest->index, rd.dup_block->index);
+	     e->src->index, e->dest->index, rd.dup_blocks[0]->index);
 
-  rd.dup_block->count = e->count;
-  rd.dup_block->frequency = EDGE_FREQUENCY (e);
-  single_succ_edge (rd.dup_block)->count = e->count;
-  redirect_edge_and_branch (e, rd.dup_block);
+  rd.dup_blocks[0]->count = e->count;
+  rd.dup_blocks[0]->frequency = EDGE_FREQUENCY (e);
+  single_succ_edge (rd.dup_blocks[0])->count = e->count;
+  redirect_edge_and_branch (e, rd.dup_blocks[0]);
   flush_pending_stmts (e);
 
-  return rd.dup_block;
+  return rd.dup_blocks[0];
 }
 
 /* Callback for dfs_enumerate_from.  Returns true if BB is different
