@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expr.h: Update comments to refer to tree_fits_[su]hwi_p rather
+	than host_integerp.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* builtins.c, config/alpha/alpha.c, config/iq2000/iq2000.c,
 	config/mips/mips.c, dbxout.c, dwarf2out.c, expr.c, fold-const.c,
 	gimple-fold.c, godump.c, omp-low.c, predict.c, sdbout.c, stor-layout.c,

@@ -150,7 +150,7 @@ UI_From_gnu (tree Input)
   Int_Vector vec;
 
 #if HOST_BITS_PER_WIDE_INT == 64
-  /* On 64-bit hosts, host_integerp tells whether the input fits in a
+  /* On 64-bit hosts, tree_fits_shwi_p tells whether the input fits in a
      signed 64-bit integer.  Then a truncation tells whether it fits
      in a signed 32-bit integer.  */
   if (tree_fits_shwi_p (Input))
@@ -162,7 +162,7 @@ UI_From_gnu (tree Input)
   else
     return No_Uint;
 #else
-  /* On 32-bit hosts, host_integerp tells whether the input fits in a
+  /* On 32-bit hosts, tree_fits_shwi_p tells whether the input fits in a
      signed 32-bit integer.  Then a sign test tells whether it fits
      in a signed 64-bit integer.  */
   if (tree_fits_shwi_p (Input))

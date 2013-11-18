@@ -1484,8 +1484,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && AGGREGATE_TYPE_P (gnu_type)
 	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (gnu_type))
 	    && !(TYPE_IS_PADDING_P (gnu_type)
-		 && !host_integerp (TYPE_SIZE_UNIT
-				    (TREE_TYPE (TYPE_FIELDS (gnu_type))), 1)))
+		 && !tree_fits_uhwi_p (TYPE_SIZE_UNIT
+				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
 	  static_p = true;
 
 	/* Now create the variable or the constant and set various flags.  */
