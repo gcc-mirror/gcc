@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 struct object_size_info
 {
@@ -1205,16 +1207,9 @@ compute_object_sizes (void)
       gimple_stmt_iterator i;
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
-	  tree callee, result;
+	  tree result;
 	  gimple call = gsi_stmt (i);
-
-          if (gimple_code (call) != GIMPLE_CALL)
-	    continue;
-
-	  callee = gimple_call_fndecl (call);
-	  if (!callee
-	      || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
-	      || DECL_FUNCTION_CODE (callee) != BUILT_IN_OBJECT_SIZE)
+	  if (!gimple_call_builtin_p (call, BUILT_IN_OBJECT_SIZE))
 	    continue;
 
 	  init_object_sizes ();
@@ -1243,20 +1238,32 @@ compute_object_sizes (void)
 		continue;
 	    }
 
+	  gcc_assert (TREE_CODE (result) == INTEGER_CST);
+
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Simplified\n  ");
 	      print_gimple_stmt (dump_file, call, 0, dump_flags);
+	      fprintf (dump_file, " to ");
+	      print_generic_expr (dump_file, result, 0);
+	      fprintf (dump_file, "\n");
 	    }
 
-	  if (!update_call_from_tree (&i, result))
-	    gcc_unreachable ();
+	  tree lhs = gimple_call_lhs (call);
+	  if (!lhs)
+	    continue;
 
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  /* Propagate into all uses and fold those stmts.  */
+	  gimple use_stmt;
+	  imm_use_iterator iter;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 	    {
-	      fprintf (dump_file, "to\n  ");
-	      print_gimple_stmt (dump_file, gsi_stmt (i), 0, dump_flags);
-	      fprintf (dump_file, "\n");
+	      use_operand_p use_p;
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, result);
+	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	      fold_stmt (&gsi);
+	      update_stmt (gsi_stmt (gsi));
 	    }
 	}
     }

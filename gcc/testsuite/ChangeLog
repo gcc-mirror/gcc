@@ -1,3 +1,13 @@
+2013-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59125
+	PR tree-optimization/54570
+	* gcc.dg/builtin-object-size-8.c: Un-xfail.
+	* gcc.dg/builtin-object-size-14.c: New testcase.
+	* gcc.dg/strlenopt-14gf.c: Adjust.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+	* gcc.dg/strlenopt-4gf.c: Likewise.
+
 2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/volatile11.adb: New test.
