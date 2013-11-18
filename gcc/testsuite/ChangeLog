@@ -1,3 +1,8 @@
+2013-11-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* c-c++-common/cilk-plus/PS/reduction-3.c: Use stdlib.h.
+	Remove spurious FIXME.
+
 2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* c-c++-common/cilk-plus/PS/body.c: Add fopenmp effective target check.
