@@ -2782,7 +2782,7 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
   if (dump_file)
     fprintf (dump_file,
              "Dropping 0 profile for %s/%i. %s based on calls.\n",
-             cgraph_node_name (node), node->order,
+             node->name (), node->order,
              hot ? "Function is hot" : "Function is normal");
   /* We only expect to miss profiles for functions that are reached
      via non-zero call edges in cases where the function may have
@@ -2800,11 +2800,11 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
           if (dump_file)
             fprintf (dump_file,
                      "Missing counts for called function %s/%i\n",
-                     cgraph_node_name (node), node->order);
+                     node->name (), node->order);
         }
       else
         warning (0, "Missing counts for called function %s/%i",
-                 cgraph_node_name (node), node->order);
+                 node->name (), node->order);
     }
 
   profile_status_for_function (fn)

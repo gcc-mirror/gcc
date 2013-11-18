@@ -890,7 +890,7 @@ dump_possible_polymorphic_call_targets (FILE *f,
 	   (int)otr_token,
 	   final ? " (full list)" : " (partial list, may call to other unit)");
   for (i = 0; i < targets.length (); i++)
-    fprintf (f, " %s/%i", cgraph_node_name (targets[i]),
+    fprintf (f, " %s/%i", targets[i]->name (),
 	     targets[i]->order);
   fprintf (f, "\n");
 }
@@ -988,7 +988,7 @@ ipa_devirt (void)
       bool update = false;
       if (dump_file && n->indirect_calls)
 	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
-		 cgraph_node_name (n), n->order);
+		 n->name (), n->order);
       for (e = n->indirect_calls; e; e = e->next_callee)
 	if (e->indirect_info->polymorphic)
 	  {
@@ -1101,8 +1101,8 @@ ipa_devirt (void)
 		if (dump_file)
 		  fprintf (dump_file,
 			   "Speculatively devirtualizing call in %s/%i to %s/%i\n",
-			   cgraph_node_name (n), n->order,
-			   cgraph_node_name (likely_target),
+			   n->name (), n->order,
+			   likely_target->name (),
 			   likely_target->order);
 		if (!symtab_can_be_discarded (likely_target))
 		  {

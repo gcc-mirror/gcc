@@ -1851,7 +1851,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Created new direct edge to %s\n",
-			       cgraph_node_name (dest));
+			       dest->name ());
 		    }
 		}
 

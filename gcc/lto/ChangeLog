@@ -1,3 +1,7 @@
+2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto-partition.c lto-symtab.c lto.c Adjust.
+
 2013-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	Automated part of renaming of symtab_node_base to symtab_node.

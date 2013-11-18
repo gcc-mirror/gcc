@@ -502,7 +502,7 @@ varpool_remove_unreferenced_decls (void)
 	{
 	  enqueue_node (node, &first);
           if (cgraph_dump_file)
-	    fprintf (cgraph_dump_file, " %s", varpool_node_asm_name (node));
+	    fprintf (cgraph_dump_file, " %s", node->asm_name ());
 	}
     }
   while (first != (struct varpool_node *)(void *)1)
@@ -540,7 +540,7 @@ varpool_remove_unreferenced_decls (void)
       if (!node->aux)
 	{
           if (cgraph_dump_file)
-	    fprintf (cgraph_dump_file, " %s", varpool_node_asm_name (node));
+	    fprintf (cgraph_dump_file, " %s", node->asm_name ());
 	  varpool_remove_node (node);
 	}
     }
