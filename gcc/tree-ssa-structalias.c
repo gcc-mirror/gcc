@@ -7158,7 +7158,7 @@ ipa_pta_execute (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   "Generating constraints for %s", cgraph_node_name (node));
+		   "Generating constraints for %s", node->name ());
 	  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
 	    fprintf (dump_file, " (%s)",
 		     IDENTIFIER_POINTER

@@ -1,3 +1,15 @@
+2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cgraph.h (symtab_node_asm_name): Rename to symtab_node::asm_name.
+	(symtab_node_name): Rename to symtab_node::name.
+	(cgraph_node_asm_name): Remove.
+	(varpool_node_asm_name): Remove.
+	* cgraph.c cgraphclones.c cgraphunit.c ipa-cp.c ipa-devirt.c
+	ipa-inline-analysis.c ipa-inline-transform.c ipa-inline.c
+	ipa-profile.c ipa-prop.c ipa-pure-const.c ipa-ref.c ipa-reference.c
+	ipa-utils.c ipa.c symtab.c tree-inline.c tree-sra.c
+	tree-ssa-structalias.c value-prof.c varpool.c Adjust.
+
 2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/aarch-cost-tables.h (cortexa53_extra_costs): New table.

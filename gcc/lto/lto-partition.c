@@ -197,7 +197,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
       node->in_other_partition = 1;
       if (cgraph_dump_file)
         fprintf (cgraph_dump_file, "Symbol node %s now used in multiple partitions\n",
-		 symtab_node_name (node));
+		 node->name ());
     }
   node->aux = (void *)((size_t)node->aux + 1);
 
@@ -381,7 +381,7 @@ lto_max_map (void)
       if (get_symbol_class (node) != SYMBOL_PARTITION
 	  || symbol_partitioned_p (node))
 	continue;
-      partition = new_partition (symtab_node_asm_name (node));
+      partition = new_partition (node->asm_name ());
       add_symbol_to_partition (partition, node);
       npartitions++;
     }
@@ -688,7 +688,7 @@ lto_balanced_map (void)
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i "
 		 "best %i/%i, step %i\n", i,
-		 cgraph_node_name (order[i]), order[i]->order,
+		 order[i]->name (), order[i]->order,
 		 partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
@@ -824,7 +824,7 @@ promote_symbol (symtab_node *node)
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
-	    "Promoting as hidden: %s\n", symtab_node_name (node));
+	    "Promoting as hidden: %s\n", node->name ());
 }
 
 /* Return true if NODE needs named section even if it won't land in the partition
@@ -885,7 +885,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
-	    "Renaming statics with asm name: %s\n", symtab_node_name (node));
+	    "Renaming statics with asm name: %s\n", node->name ());
 
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */

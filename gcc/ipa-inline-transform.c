@@ -310,7 +310,7 @@ save_inline_function_body (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "\nSaving body of %s for later reuse\n",
-	     cgraph_node_name (node));
+	     node->name ());
  
   gcc_assert (node == cgraph_get_node (node->decl));
 

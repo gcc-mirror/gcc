@@ -44,6 +44,12 @@ class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
   symtab_node
 {
 public:
+  /* Return name.  */
+  const char *name () const;
+
+  /* Return asm name.  */
+  const char * asm_name () const;
+
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
 
@@ -589,8 +595,6 @@ void symtab_unregister_node (symtab_node *);
 void symtab_remove_node (symtab_node *);
 symtab_node *symtab_get_node (const_tree);
 symtab_node *symtab_node_for_asm (const_tree asmname);
-const char * symtab_node_asm_name (symtab_node *);
-const char * symtab_node_name (symtab_node *);
 void symtab_insert_node_to_hashtable (symtab_node *);
 void symtab_add_to_same_comdat_group (symtab_node *, symtab_node *);
 void symtab_dissolve_same_comdat_group_list (symtab_node *node);
@@ -877,34 +881,6 @@ varpool_get_node (const_tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   return varpool (symtab_get_node (decl));
-}
-
-/* Return asm name of cgraph node.  */
-static inline const char *
-cgraph_node_asm_name (struct cgraph_node *node)
-{
-  return symtab_node_asm_name (node);
-}
-
-/* Return asm name of varpool node.  */
-static inline const char *
-varpool_node_asm_name (struct varpool_node *node)
-{
-  return symtab_node_asm_name (node);
-}
-
-/* Return name of cgraph node.  */
-static inline const char *
-cgraph_node_name (struct cgraph_node *node)
-{
-  return symtab_node_name (node);
-}
-
-/* Return name of varpool node.  */
-static inline const char *
-varpool_node_name (struct varpool_node *node)
-{
-  return symtab_node_name (node);
 }
 
 /* Walk all symbols.  */

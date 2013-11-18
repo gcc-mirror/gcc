@@ -970,8 +970,8 @@ cgraph_materialize_all_clones (void)
 		  if (cgraph_dump_file)
 		    {
 		      fprintf (cgraph_dump_file, "cloning %s to %s\n",
-			       xstrdup (cgraph_node_name (node->clone_of)),
-			       xstrdup (cgraph_node_name (node)));
+			       xstrdup (node->clone_of->name ()),
+			       xstrdup (node->name ()));
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
