@@ -1,3 +1,8 @@
+2013-11-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Fix file block comment.
+	Fix minor indention issue.
+
 2013-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Use REG_P instead of

@@ -73,19 +73,16 @@ along with GCC; see the file COPYING3.  If not see
    set of unique destination blocks that the incoming edges should
    be threaded to.
 
-   Block duplication can be further minimized by using B instead of
-   creating B' for one destination if all edges into B are going to be
-   threaded to a successor of B.  We had code to do this at one time, but
-   I'm not convinced it is correct with the changes to avoid mucking up
-   the loop structure (which may cancel threading requests, thus a block
-   which we thought was going to become unreachable may still be reachable).
-   This code was also going to get ugly with the introduction of the ability
-   for a single jump thread request to bypass multiple blocks.
+   We reduce the number of edges and statements we create by not copying all
+   the outgoing edges and the control statement in step #1.  We instead create
+   a template block without the outgoing edges and duplicate the template.
 
-   We further reduce the number of edges and statements we create by
-   not copying all the outgoing edges and the control statement in
-   step #1.  We instead create a template block without the outgoing
-   edges and duplicate the template.  */
+   Another case this code handles is threading through a "joiner" block.  In
+   this case, we do not know the destination of the joiner block, but one
+   of the outgoing edges from the joiner block leads to a threadable path.  This
+   case largely works as outlined above, except the duplicate of the joiner
+   block still contains a full set of outgoing edges and its control statement.
+   We just redirect one of its outgoing edges to our jump threading path.  */
 
 
 /* Steps #5 and #6 of the above algorithm are best implemented by walking
@@ -389,7 +386,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
 	    = new jump_thread_edge ((*path)[i]->e, (*path)[i]->type);
 	  copy->safe_push (x);
 	}
-     e->aux = (void *)copy;
+      e->aux = (void *)copy;
     }
   else
     {
