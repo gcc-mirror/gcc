@@ -6776,7 +6776,7 @@
 (define_insn "*mov<GPR:mode>_on_<MOVECC:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(if_then_else:GPR
-	 (match_operator:MOVECC 4 "equality_operator"
+	 (match_operator 4 "equality_operator"
 		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
@@ -6788,10 +6788,23 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
+(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+       (if_then_else:GPR
+        (match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>")
+        (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
+        (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
+  "ISA_HAS_CONDMOVE"
+  "@
+    movn\t%0,%z2,%1
+    movz\t%0,%z3,%1"
+  [(set_attr "type" "condmove")
+   (set_attr "mode" "<GPR:MODE>")])
+
 (define_insn "*mov<SCALARF:mode>_on_<MOVECC:mode>"
   [(set (match_operand:SCALARF 0 "register_operand" "=f,f")
 	(if_then_else:SCALARF
-	 (match_operator:MOVECC 4 "equality_operator"
+	 (match_operator 4 "equality_operator"
 		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:SCALARF 2 "register_operand" "f,0")
