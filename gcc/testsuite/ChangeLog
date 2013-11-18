@@ -1,3 +1,8 @@
+2013-11-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59106
+	* c-c++-common/asan/pr59106.c: New test.
+
 2013-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/memcpy-2.c: New testcase.
