@@ -1,3 +1,9 @@
+2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_costs): New table.
+	* config/arm/arm.c (arm_cortex_a53_tune): New.
+	* config/arm/arm-cores.def (cortex-a53): Use cortex_a53 tuning struct.
+
 2013-11-12 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config.gcc (i[34567]86-*-linux* | ...): Add bdver4.
