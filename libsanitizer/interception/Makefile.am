@@ -4,7 +4,7 @@ AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
-AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
+AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
