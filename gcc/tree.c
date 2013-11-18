@@ -6990,6 +6990,32 @@ host_integerp (const_tree t, int pos)
 	      || (pos && TREE_INT_CST_HIGH (t) == 0)));
 }
 
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  */
+
+bool
+tree_fits_shwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && ((TREE_INT_CST_HIGH (t) == 0
+	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
+	      || (TREE_INT_CST_HIGH (t) == -1
+		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0
+		  && !TYPE_UNSIGNED (TREE_TYPE (t)))));
+}
+
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in an unsigned HOST_WIDE_INT.  */
+
+bool
+tree_fits_uhwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (t) == 0);
+}
+
 /* Return the HOST_WIDE_INT least significant bits of T if it is an
    INTEGER_CST and there is no overflow.  POS is nonzero if the result must
    be non-negative.  We must be able to satisfy the above conditions.  */
