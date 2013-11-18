@@ -1,3 +1,8 @@
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gofrontend/expressions.cc: Replace host_integerp (..., 0) with
+	tree_fits_shwi_p throughout.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-lang.c: Include only gimplify.h and gimple.h as needed.

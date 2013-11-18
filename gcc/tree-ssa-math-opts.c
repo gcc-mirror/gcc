@@ -1502,7 +1502,7 @@ execute_cse_sincos (void)
 		    }
 		  else
 		    {
-		      if (!host_integerp (arg1, 0))
+		      if (!tree_fits_shwi_p (arg1))
 			break;
 
 		      n = TREE_INT_CST_LOW (arg1);

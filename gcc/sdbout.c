@@ -535,8 +535,8 @@ plain_type_1 (tree type, int level)
 	    = (TYPE_DOMAIN (type)
 	       && TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != 0
 	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != 0
-	       && host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
-	       && host_integerp (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0)
+	       && tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	       && tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
 	       ? (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
 		  - tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0) + 1)
 	       : 0);
@@ -995,7 +995,7 @@ sdbout_field_types (tree type)
 	&& DECL_NAME (tail)
 	&& DECL_SIZE (tail)
 	&& host_integerp (DECL_SIZE (tail), 1)
-	&& host_integerp (bit_position (tail), 0))
+	&& tree_fits_shwi_p (bit_position (tail)))
       {
 	if (POINTER_TYPE_P (TREE_TYPE (tail)))
 	  sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
@@ -1152,7 +1152,7 @@ sdbout_one_type (tree type)
 	        if (TREE_CODE (value) == CONST_DECL)
 	          value = DECL_INITIAL (value);
 
-	        if (host_integerp (value, 0))
+	        if (tree_fits_shwi_p (value))
 		  {
 		    PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
 		    PUT_SDB_INT_VAL (tree_low_cst (value, 0));
@@ -1174,7 +1174,7 @@ sdbout_one_type (tree type)
 		&& DECL_NAME (tem)
 		&& DECL_SIZE (tem)
 		&& host_integerp (DECL_SIZE (tem), 1)
-		&& host_integerp (bit_position (tem), 0))
+		&& tree_fits_shwi_p (bit_position (tem)))
 	      {
 		const char *name;
 

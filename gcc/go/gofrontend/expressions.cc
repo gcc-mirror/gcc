@@ -3343,7 +3343,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
 
       expr_tree = fold_convert(int_type_tree, expr_tree);
-      if (host_integerp(expr_tree, 0))
+      if (tree_fits_shwi_p (expr_tree))
 	{
 	  HOST_WIDE_INT intval = tree_low_cst(expr_tree, 0);
 	  std::string s;

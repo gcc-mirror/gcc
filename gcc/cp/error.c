@@ -851,7 +851,7 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 	  tree max = TYPE_MAX_VALUE (dtype);
 	  if (integer_all_onesp (max))
 	    pp_character (pp, '0');
-	  else if (host_integerp (max, 0))
+	  else if (tree_fits_shwi_p (max))
 	    pp_wide_integer (pp, tree_low_cst (max, 0) + 1);
 	  else
 	    {
@@ -2285,7 +2285,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	      pp_cxx_right_paren (pp);
 	      break;
 	    }
-	  else if (host_integerp (idx, 0))
+	  else if (tree_fits_shwi_p (idx))
 	    {
 	      tree virtuals;
 	      unsigned HOST_WIDE_INT n;

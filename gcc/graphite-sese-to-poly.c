@@ -1508,9 +1508,9 @@ pdr_add_data_dimensions (isl_set *extent, scop_p scop, data_reference_p dr)
          subscript - low >= 0 and high - subscript >= 0 in case one of
 	 the two bounds isn't known.  Do the same here?  */
 
-      if (host_integerp (low, 0)
+      if (tree_fits_shwi_p (low)
 	  && high
-	  && host_integerp (high, 0)
+	  && tree_fits_shwi_p (high)
 	  /* 1-element arrays at end of structures may extend over
 	     their declared size.  */
 	  && !(array_at_struct_end_p (ref)

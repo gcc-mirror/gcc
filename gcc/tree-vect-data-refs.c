@@ -2547,8 +2547,8 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	  if (!host_integerp (sza, 1)
 	      || !host_integerp (szb, 1)
 	      || !tree_int_cst_equal (sza, szb)
-	      || !host_integerp (DR_STEP (dra), 0)
-	      || !host_integerp (DR_STEP (drb), 0)
+	      || !tree_fits_shwi_p (DR_STEP (dra))
+	      || !tree_fits_shwi_p (DR_STEP (drb))
 	      || !tree_int_cst_equal (DR_STEP (dra), DR_STEP (drb)))
 	    break;
 
@@ -2877,8 +2877,8 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
 				DR_BASE_ADDRESS (dr_a2->dr),
 				0)
-	      || !host_integerp (dr_a1->offset, 0)
-	      || !host_integerp (dr_a2->offset, 0))
+	      || !tree_fits_shwi_p (dr_a1->offset)
+	      || !tree_fits_shwi_p (dr_a2->offset))
 	    continue;
 
 	  HOST_WIDE_INT diff = TREE_INT_CST_LOW (dr_a2->offset) -
@@ -3069,7 +3069,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	    }
 	  break;
 	case MULT_EXPR:
-	  if (scale == 1 && host_integerp (op1, 0))
+	  if (scale == 1 && tree_fits_shwi_p (op1))
 	    {
 	      scale = tree_low_cst (op1, 0);
 	      off = op0;

@@ -3420,7 +3420,7 @@ make_bit_field_ref (location_t loc, tree inner, tree type,
       tree size = TYPE_SIZE (TREE_TYPE (inner));
       if ((INTEGRAL_TYPE_P (TREE_TYPE (inner))
 	   || POINTER_TYPE_P (TREE_TYPE (inner)))
-	  && host_integerp (size, 0)
+	  && tree_fits_shwi_p (size)
 	  && tree_low_cst (size, 0) == bitsize)
 	return fold_convert_loc (loc, type, inner);
     }
@@ -7255,8 +7255,8 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
   /* No identical multiplicands; see if we can find a common
      power-of-two factor in non-power-of-two multiplies.  This
      can help in multi-dimensional array access.  */
-  else if (host_integerp (arg01, 0)
-	   && host_integerp (arg11, 0))
+  else if (tree_fits_shwi_p (arg01)
+	   && tree_fits_shwi_p (arg11))
     {
       HOST_WIDE_INT int01, int11, tmp;
       bool swap = false;
@@ -7488,7 +7488,7 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len)
   if (TREE_CODE (type) != ARRAY_TYPE
       || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
       || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type))) != BITS_PER_UNIT
-      || !host_integerp (TYPE_SIZE_UNIT (type), 0))
+      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
   total_bytes = tree_low_cst (TYPE_SIZE_UNIT (type), 0);
   if (total_bytes > len)
@@ -9089,7 +9089,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base0 = true;
 	    }
 	  offset0 = TREE_OPERAND (arg0, 1);
-	  if (host_integerp (offset0, 0))
+	  if (tree_fits_shwi_p (offset0))
 	    {
 	      HOST_WIDE_INT off = size_low_cst (offset0);
 	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
@@ -9123,7 +9123,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      indirect_base1 = true;
 	    }
 	  offset1 = TREE_OPERAND (arg1, 1);
-	  if (host_integerp (offset1, 0))
+	  if (tree_fits_shwi_p (offset1))
 	    {
 	      HOST_WIDE_INT off = size_low_cst (offset1);
 	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
@@ -12676,9 +12676,9 @@ fold_binary_loc (location_t loc,
       if (((code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR)
            || (TYPE_UNSIGNED (type)
 	       && code == RSHIFT_EXPR && TREE_CODE (arg0) == LSHIFT_EXPR))
-	  && host_integerp (arg1, false)
+	  && tree_fits_shwi_p (arg1)
 	  && TREE_INT_CST_LOW (arg1) < prec
-	  && host_integerp (TREE_OPERAND (arg0, 1), false)
+	  && tree_fits_shwi_p (TREE_OPERAND (arg0, 1))
 	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < prec)
 	{
 	  HOST_WIDE_INT low0 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));

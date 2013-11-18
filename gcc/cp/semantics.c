@@ -8739,8 +8739,8 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 	return value;
       if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE
 	  && TREE_CODE (value) == INTEGER_CST
-	  && host_integerp (bitpos, 0)
-	  && host_integerp (DECL_SIZE (field), 0))
+	  && tree_fits_shwi_p (bitpos)
+	  && tree_fits_shwi_p (DECL_SIZE (field)))
 	{
 	  HOST_WIDE_INT bit = tree_low_cst (bitpos, 0);
 	  HOST_WIDE_INT sz = tree_low_cst (DECL_SIZE (field), 0);

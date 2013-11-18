@@ -1300,8 +1300,8 @@ place_field (record_layout_info rli, tree field)
 	  if (DECL_BIT_FIELD_TYPE (field)
 	      && !integer_zerop (DECL_SIZE (field))
 	      && !integer_zerop (DECL_SIZE (rli->prev_field))
-	      && host_integerp (DECL_SIZE (rli->prev_field), 0)
-	      && host_integerp (TYPE_SIZE (type), 0)
+	      && tree_fits_shwi_p (DECL_SIZE (rli->prev_field))
+	      && tree_fits_shwi_p (TYPE_SIZE (type))
 	      && simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type)))
 	    {
 	      /* We're in the middle of a run of equal type size fields; make

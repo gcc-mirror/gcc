@@ -2720,7 +2720,7 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
-	  if (!host_integerp (TREE_OPERAND (base, 1), 0))
+	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
 	    return NULL_TREE;
 	  *bit_offset += (mem_ref_offset (base).low
 			  * BITS_PER_UNIT);

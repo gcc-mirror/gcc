@@ -6290,7 +6290,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			  && DECL_INITIAL (SYMBOL_REF_DECL (l->loc)))
 			{
 			  initial = DECL_INITIAL (SYMBOL_REF_DECL (l->loc));
-			  if (host_integerp (initial, 0))
+			  if (tree_fits_shwi_p (initial))
 			    {
 			      item = GEN_INT (tree_low_cst (initial, 0));
 			      item = gen_rtx_CONCAT (indmode, mem, item);

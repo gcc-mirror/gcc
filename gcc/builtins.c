@@ -617,7 +617,7 @@ c_strlen (tree src, int only_value)
      a null character if we can represent it as a single HOST_WIDE_INT.  */
   if (offset_node == 0)
     offset = 0;
-  else if (! host_integerp (offset_node, 0))
+  else if (! tree_fits_shwi_p (offset_node))
     offset = -1;
   else
     offset = tree_low_cst (offset_node, 0);
@@ -5288,7 +5288,7 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
 
   weak = CALL_EXPR_ARG (exp, 3);
   is_weak = false;
-  if (host_integerp (weak, 0) && tree_low_cst (weak, 0) != 0)
+  if (tree_fits_shwi_p (weak) && tree_low_cst (weak, 0) != 0)
     is_weak = true;
 
   oldval = expect;
@@ -8547,7 +8547,7 @@ fold_builtin_powi (location_t loc, tree fndecl ATTRIBUTE_UNUSED,
   if (real_onep (arg0))
     return omit_one_operand_loc (loc, type, build_real (type, dconst1), arg1);
 
-  if (host_integerp (arg1, 0))
+  if (tree_fits_shwi_p (arg1))
     {
       HOST_WIDE_INT c = TREE_INT_CST_LOW (arg1);
 
@@ -8871,7 +8871,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  return NULL_TREE;
 	}
 
-      if (!host_integerp (len, 0))
+      if (!tree_fits_shwi_p (len))
 	return NULL_TREE;
       /* FIXME:
          This logic lose for arguments like (type *)malloc (sizeof (type)),
@@ -9845,7 +9845,7 @@ fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
       /* If both arguments are constant, then try to evaluate it.  */
       if ((ldexp || REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
 	  && TREE_CODE (arg0) == REAL_CST && !TREE_OVERFLOW (arg0)
-	  && host_integerp (arg1, 0))
+	  && tree_fits_shwi_p (arg1))
         {
 	  /* Bound the maximum adjustment to twice the range of the
 	     mode's valid exponents.  Use abs to ensure the range is
@@ -13841,7 +13841,7 @@ do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && host_integerp (arg1, 0)
+      && tree_fits_shwi_p (arg1)
       && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
     {
       const HOST_WIDE_INT n = tree_low_cst (arg1, 0);

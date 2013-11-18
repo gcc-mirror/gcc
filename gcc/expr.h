@@ -94,7 +94,7 @@ struct locate_and_pad_arg_data
 #define ADD_PARM_SIZE(TO, INC)					\
 do {								\
   tree inc = (INC);						\
-  if (host_integerp (inc, 0))					\
+  if (tree_fits_shwi_p (inc))					\
     (TO).constant += tree_low_cst (inc, 0);			\
   else if ((TO).var == 0)					\
     (TO).var = fold_convert (ssizetype, inc);			\
@@ -106,7 +106,7 @@ do {								\
 #define SUB_PARM_SIZE(TO, DEC)					\
 do {								\
   tree dec = (DEC);						\
-  if (host_integerp (dec, 0))					\
+  if (tree_fits_shwi_p (dec))					\
     (TO).constant -= tree_low_cst (dec, 0);			\
   else if ((TO).var == 0)					\
     (TO).var = size_binop (MINUS_EXPR, ssize_int (0),		\
