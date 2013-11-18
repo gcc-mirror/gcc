@@ -1,7 +1,6 @@
 /* Test __atomic routines for existence and proper execution on 1 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_char_short } */
 
 /* Test the execution of the __atomic_store_n builtin for a char.  */
 
@@ -9,6 +8,7 @@ extern void abort(void);
 
 char v, count;
 
+int
 main ()
 {
   v = 0;

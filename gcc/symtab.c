@@ -540,19 +540,19 @@ symtab_dissolve_same_comdat_group_list (symtab_node *node)
    is unknown go with identifier name.  */
 
 const char *
-symtab_node_asm_name (symtab_node *node)
+symtab_node::asm_name () const
 {
-  if (!DECL_ASSEMBLER_NAME_SET_P (node->decl))
-    return lang_hooks.decl_printable_name (node->decl, 2);
-  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl));
+  if (!DECL_ASSEMBLER_NAME_SET_P (decl))
+    return lang_hooks.decl_printable_name (decl, 2);
+  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 }
 
 /* Return printable identifier name.  */
 
 const char *
-symtab_node_name (symtab_node *node)
+symtab_node::name () const
 {
-  return lang_hooks.decl_printable_name (node->decl, 2);
+  return lang_hooks.decl_printable_name (decl, 2);
 }
 
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
@@ -567,9 +567,9 @@ dump_symtab_base (FILE *f, symtab_node *node)
   };
 
   fprintf (f, "%s/%i (%s)",
-	   symtab_node_asm_name (node),
+	   node->asm_name (),
 	   node->order,
-	   symtab_node_name (node));
+	   node->name ());
   dump_addr (f, " @", (void *)node);
   fprintf (f, "\n  Type: %s", symtab_type_names[node->type]);
 
@@ -645,7 +645,7 @@ dump_symtab_base (FILE *f, symtab_node *node)
   
   if (node->same_comdat_group)
     fprintf (f, "  Same comdat group as: %s/%i\n",
-	     symtab_node_asm_name (node->same_comdat_group),
+	     node->same_comdat_group->asm_name (),
 	     node->same_comdat_group->order);
   if (node->next_sharing_asm_name)
     fprintf (f, "  next sharing asm name: %i\n",

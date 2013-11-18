@@ -359,7 +359,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       if (CASE_HIGH (cs) == NULL_TREE)
 	hi = lo;
       else
-	hi = tree_to_uhwi (int_const_binop (MINUS_EXPR, 
+	hi = tree_to_uhwi (int_const_binop (MINUS_EXPR,
 					    CASE_HIGH (cs), minval));
 
       for (j = lo; j <= hi; j++)
@@ -707,7 +707,7 @@ check_range (struct switch_conv_info *info)
       return false;
     }
 
-  if ((unsigned HOST_WIDE_INT) tree_to_uhwi (info->range_size)
+  if (tree_to_uhwi (info->range_size)
       > ((unsigned) info->count * SWITCH_CONVERSION_BRANCH_RATIO))
     {
       info->reason = "the maximum range-branch ratio exceeded";

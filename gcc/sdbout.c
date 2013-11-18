@@ -1152,7 +1152,7 @@ sdbout_one_type (tree type)
 	        if (TREE_CODE (value) == CONST_DECL)
 	          value = DECL_INITIAL (value);
 
-	        if (tree_fits_hwi_p (value))
+	        if (tree_fits_shwi_p (value))
 		  {
 		    PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
 		    PUT_SDB_INT_VAL (tree_to_shwi (value));

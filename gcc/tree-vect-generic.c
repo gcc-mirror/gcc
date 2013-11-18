@@ -54,6 +54,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   unsigned HOST_WIDE_INT low, mask;
   HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
   int i;
+
   gcc_assert (n);
 
   if (width == HOST_BITS_PER_WIDE_INT)

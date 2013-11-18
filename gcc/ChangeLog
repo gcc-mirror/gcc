@@ -1,3 +1,288 @@
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h (tree_to_uhwi): Return an unsigned HOST_WIDE_INT.
+	* tree.c (tree_to_uhwi): Return an unsigned HOST_WIDE_INT.
+	(tree_ctz): Remove cast to unsigned type.
+	* builtins.c (fold_builtin_memory_op): Likewise.
+	* dwarf2out.c (descr_info_loc): Likewise.
+	* godump.c (go_output_typedef): Likewise.
+	* omp-low.c (expand_omp_simd): Likewise.
+	* stor-layout.c (excess_unit_span): Likewise.
+	* tree-object-size.c (addr_object_size): Likewise.
+	* tree-sra.c (analyze_all_variable_accesses): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	(simplify_rotate): Likewise.
+	* tree-ssa-strlen.c (adjust_last_stmt, handle_builtin_memcpy)
+	(handle_pointer_plus): Likewise.
+	* tree-switch-conversion.c (check_range): Likewise.
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Likewise.
+	* tsan.c (instrument_builtin_call): Likewise.
+	* cfgexpand.c (defer_stack_allocation): Add cast to HOST_WIDE_INT.
+	* trans-mem.c (tm_log_add): Likewise.
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): Likewise.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Make offset unsigned.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h (host_integerp, tree_low_cst): Delete.
+	* tree.c (host_integerp, tree_low_cst): Delete.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expr.h: Update comments to refer to tree_to_[su]hwi rather
+	than tree_low_cst.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* expr.c (store_constructor): Use tree_to_uhwi rather than
+	tree_low_cst.
+	* ipa-utils.h (possible_polymorphic_call_target_p): Likewise.
+	* stmt.c (emit_case_dispatch_table): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* alias.c, asan.c, builtins.c, cfgexpand.c, cgraph.c,
+	config/aarch64/aarch64.c, config/alpha/predicates.md,
+	config/arm/arm.c, config/darwin.c, config/epiphany/epiphany.c,
+	config/i386/i386.c, config/iq2000/iq2000.c, config/m32c/m32c-pragma.c,
+	config/mep/mep-pragma.c, config/mips/mips.c,
+	config/picochip/picochip.c, config/rs6000/rs6000.c, cppbuiltin.c,
+	dbxout.c, dwarf2out.c, emit-rtl.c, except.c, expr.c, fold-const.c,
+	function.c, gimple-fold.c, godump.c, ipa-cp.c, ipa-prop.c, omp-low.c,
+	predict.c, sdbout.c, stor-layout.c, trans-mem.c, tree-object-size.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-forwprop.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c, tree-ssa-loop-niter.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-strlen.c, tree-stdarg.c,
+	tree-switch-conversion.c, tree-vect-generic.c, tree-vect-loop.c,
+	tree-vect-patterns.c, tree-vrp.c, tree.c, tsan.c, ubsan.c, varasm.c:
+	Replace tree_low_cst (..., 1) with tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* builtins.c, cilk-common.c, config/aarch64/aarch64.c,
+	config/alpha/alpha.c, config/arm/arm.c, config/c6x/predicates.md,
+	config/i386/i386.c, config/ia64/predicates.md, config/s390/s390.c,
+	coverage.c, dbxout.c, dwarf2out.c, except.c, explow.c, expr.c, expr.h,
+	fold-const.c, gimple-fold.c, godump.c, ipa-prop.c, omp-low.c,
+	predict.c, rtlanal.c, sdbout.c, stmt.c, stor-layout.c, targhooks.c,
+	tree-cfg.c, tree-data-ref.c, tree-inline.c, tree-ssa-forwprop.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-phiopt.c, tree-ssa-sccvn.c,
+	tree-ssa-strlen.c, tree-stdarg.c, tree-vect-data-refs.c,
+	tree-vect-patterns.c, tree.c, tree.h, var-tracking.c, varasm.c:
+	Replace tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h (tree_to_shwi, tree_to_uhwi): Declare, with inline expansions.
+	* tree.c (tree_to_shwi, tree_to_uhwi): New functions.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expr.h: Update comments to refer to tree_fits_[su]hwi_p rather
+	than host_integerp.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* builtins.c, config/alpha/alpha.c, config/iq2000/iq2000.c,
+	config/mips/mips.c, dbxout.c, dwarf2out.c, expr.c, fold-const.c,
+	gimple-fold.c, godump.c, omp-low.c, predict.c, sdbout.c, stor-layout.c,
+	tree-dfa.c, tree-sra.c, tree-ssa-forwprop.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-phiopt.c, tree-ssa-sccvn.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-vect-data-refs.c, tree-vect-patterns.c,
+	tree.c, varasm.c, alias.c, cfgexpand.c, config/aarch64/aarch64.c,
+	config/arm/arm.c, config/epiphany/epiphany.c, config/i386/i386.c,
+	config/m32c/m32c-pragma.c, config/mep/mep-pragma.c,
+	config/rs6000/rs6000.c, config/sparc/sparc.c, emit-rtl.c, function.c,
+	gimplify.c, ipa-prop.c, stmt.c, trans-mem.c, tree-cfg.c,
+	tree-object-size.c, tree-ssa-ccp.c, tree-ssa-loop-ivcanon.c,
+	tree-stdarg.c, tree-switch-conversion.c, tree-vect-generic.c,
+	tree-vrp.c, tsan.c, ubsan.c: Replace host_integerp (..., 1) with
+	tree_fits_uhwi_p throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* builtins.c, config/alpha/alpha.c, config/c6x/predicates.md,
+	config/ia64/predicates.md, config/iq2000/iq2000.c, config/mips/mips.c,
+	config/s390/s390.c, dbxout.c, dwarf2out.c, except.c, explow.c, expr.c,
+	expr.h, fold-const.c, gimple-fold.c, gimple-ssa-strength-reduction.c,
+	gimple.c, godump.c, graphite-scop-detection.c, graphite-sese-to-poly.c,
+	omp-low.c, predict.c, rtlanal.c, sdbout.c, simplify-rtx.c,
+	stor-layout.c, tree-data-ref.c, tree-dfa.c, tree-pretty-print.c,
+	tree-sra.c, tree-ssa-alias.c, tree-ssa-forwprop.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-loop-prefetch.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-reassoc.c, tree-ssa-sccvn.c,
+	tree-ssa-strlen.c, tree-ssa-structalias.c, tree-vect-data-refs.c,
+	tree-vect-patterns.c, tree-vectorizer.h, tree.c, var-tracking.c,
+	varasm.c: Replace host_integerp (..., 0) with tree_fits_shwi_p
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Declare.
+	* tree.c (tree_fits_shwi_p, tree_fits_uhwi_p): Define.
+
+2013-11-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark
+	load with `dead' flag if it kills address, not its
+	post-increment.
+
+2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_VAR): New.
+	* chkp-builtins.def (BUILT_IN_CHKP_BIND_BOUNDS): New.
+	* cfgexpand.c (expand_call_stmt): Expand BUILT_IN_CHKP_BIND_BOUNDS.
+	* gimple.c (gimple_call_get_nobnd_arg_index): Remove.
+	* gimple.h (gf_mask): Add GF_CALL_WITH_BOUNDS.
+	(gimple_call_with_bounds_p): New.
+	(gimple_call_set_with_bounds): New.
+	(gimple_call_num_nobnd_args): Remove.
+	(gimple_call_nobnd_arg): Remove.
+	* tree.h (CALL_WITH_BOUNDS_P): New.
+	* rtl.h (CALL_EXPR_WITH_BOUNDS_P): New.
+
+2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cgraph.h (symtab_node_asm_name): Rename to symtab_node::asm_name.
+	(symtab_node_name): Rename to symtab_node::name.
+	(cgraph_node_asm_name): Remove.
+	(varpool_node_asm_name): Remove.
+	* cgraph.c cgraphclones.c cgraphunit.c ipa-cp.c ipa-devirt.c
+	ipa-inline-analysis.c ipa-inline-transform.c ipa-inline.c
+	ipa-profile.c ipa-prop.c ipa-pure-const.c ipa-ref.c ipa-reference.c
+	ipa-utils.c ipa.c symtab.c tree-inline.c tree-sra.c
+	tree-ssa-structalias.c value-prof.c varpool.c Adjust.
+
+2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_costs): New table.
+	* config/arm/arm.c (arm_cortex_a53_tune): New.
+	* config/arm/arm-cores.def (cortex-a53): Use cortex_a53 tuning struct.
+
+2013-11-12 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config.gcc (i[34567]86-*-linux* | ...): Add bdver4.
+	(case ${target}): Add bdver4.
+	* config/i386/bdver3.md: Add bdver4.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize bdver4 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	bdver4 def_and_undef
+	* config/i386/i386.c (struct processor_costs bdver4_cost): New.
+	(m_BDVER4): New definition.
+	(m_AMD_MULTIPLE): Includes m_BDVER4.
+	(processor_target_table): Add bdver4 entry.
+	(static const char *const cpu_names): Add bdver4 entry.
+	(software_prefetching_beneficial_p): Add bdver3.
+	(ix86_option_override_internal): Add bdver4 instruction sets.
+	(ix86_issue_rate): Add bdver4.
+	(ix86_adjust_cost): Add bdver4.
+	(ia32_multipass_dfa_lookahead): Add bdver4.
+	(enum processor_model): Add M_AMDFAM15H_BDVER4.
+	(struct _arch_names_table): Add M_AMDFAM15H_BDVER4.
+	(has_dispatch): Add bdver4.
+	* config/i386/i386.h (TARGET_BDVER4): New definition.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_bdver4.
+	(enum processor_type): Add PROCESSOR_BDVER4.
+	* config/i386/i386.md (define_attr "cpu"): Add bdver4.
+	* config/i386/i386.opt (flag_dispatch_scheduler): Add bdver4.
+	* gcc/doc/extend.texi: Add details about bdver4.
+	* gcc/doc/invoke.texi: Add details about bdver4. Add
+	fma4 and fsgsbase for bdver3. Add fma4 for bdver2.
+
+2013-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use low word of
+	sdmode_stack_slot also in little-endian mode.
+
+2013-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* doc/md.texi (setmem, movstr): Update documentation.
+	* builtins.c (determine_block_size): New function.
+	(expand_builtin_memcpy): Use it and pass it to
+	emit_block_move_hints.
+	(expand_builtin_memset_args): Use it and pass it to
+	set_storage_via_setmem.
+	* expr.c (emit_block_move_via_movmem): Add min_size/max_size parameters;
+	update call to expander.
+	(emit_block_move_hints): Add min_size/max_size parameters.
+	(clear_storage_hints): Likewise.
+	(set_storage_via_setmem): Likewise.
+	(clear_storage): Update.
+	* expr.h (emit_block_move_hints, clear_storage_hints,
+	set_storage_via_setmem): Update prototype.
+	* i386.c (ix86_expand_set_or_movmem): Add bounds; export.
+	(ix86_expand_movmem, ix86_expand_setmem): Remove.
+	(ix86_expand_movmem, ix86_expand_setmem): Remove.
+	* i386.md (movmem, setmem): Pass parameters.
+
+2013-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59153
+	* config/i386/i386.c (ix86_address_subreg_operand): Do not
+	reject non-integer subregs.
+	(ix86_decompose_address): Do not reject invalid CONST_INT RTXes.
+	Move check for invalid x32 constant addresses ...
+	(ix86_legitimate_address_p): ... here.
+
+2011-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_frame_related): Add split_reg
+	parameter and use it in REG_FRAME_RELATED_EXPR note.
+	(emit_frame_save): Call rs6000_frame_related with extra NULL_RTX
+	parameter.
+	(rs6000_emit_prologue): Likewise, but for little endian VSX
+	stores, pass the source register of the store instead.
+
+2013-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h: Reorder prototypes to match .c declaration order, and
+	remove protyotypes for functions not in gimple.c.
+	(LABEL): Move to tree-into-ssa.c.
+	* gimple.c: Remove unused prototypes.
+	(get_base_address): Move to tree.c.
+	* tree.c (get_base_address): Relocate from gimple.c.
+	* builtins.h (validate_gimple_arglist): Add prototype.
+	* trans-mem.h (compute_transaction_bits, is_tm_ending): Add prototype.
+	* cfgexpand.h: New File.
+	(gimple_assign_rhs_to_tree, estimated_stack_frame_size): Add protoype.
+	* tree.h (build_addr): Move to tree-nested.h.
+	* tree-nested.h: New File.
+	(build_addr, lower_nested_functions, insert_field_into_struct): Add
+	prototypes.
+	* tree-inline.h (estimated_stack_frame_size): Remove prototype.
+	* ipa-inline-analysis.c: Include cfgexpand.h.
+	* cgraphunit.c: Include tree-nested.h.
+	* omp-low.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* gimple-low.h: Likewise.
+	* tree-profile.h: Likewise.
+	* expr.c: Include cfgexpand.h.
+	* tree-affine.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-ssa-loop-im.c: Include trans-mem.h.
+	* tree-ssa-tail-merge.c: Likewise.
+	* value-prof.c: Include builtins.h and tree-nested.h.
+	* tree-into-ssa.c (LABEL): Define here.
+
+2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (arc_predicate_delay_insns): New function.
+	(pass_data_arc_predicate_delay_insns): New pass_data instance.
+	(pass_arc_predicate_delay_insns): New subclass of rtl_opt_class.
+	(make_pass_arc_predicate_delay_insns): New function.
+	(arc_init): Register pass_arc_predicate_delay_insns if
+	flag_delayed_branch is active.
+
+2013-11-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/constraints.md (Rcq): Simplify register number test.
+
+2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple.h (enum gf_mask): Change the ordering of GF_OMP_* bits.
+
 2013-11-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (barrier_align): Return 0 when barrier_or_label
@@ -22,8 +307,7 @@
 	(execute_expand_omp): Check flag_enable_cilkplus.
 	(execute_lower_omp): Same.
 	(diagnose_sb_0): Handle CILK_SIMD.
-	(diagnose_omp_structured_block_errors): Check
-	flag_enable_cilkplus.
+	(diagnose_omp_structured_block_errors): Check flag_enable_cilkplus.
 	(setjmp_or_longjmp_p): New.
 	(scan_omp_1_stmt): Error on setjmp/longjmp in a simd construct.
 	* tree-pretty-print.c (dump_generic_node): Add case for CILK_SIMD.
@@ -37,8 +321,7 @@
 	(*altivec_vperm_<mode>_internal): Remove.
 	(altivec_vperm_<mode>_uns): Revert earlier little endian change.
 	(*altivec_vperm_<mode>_uns_internal): Remove.
-	* config/rs6000/vector.md (vec_realign_load_<mode>): Revise
-	commentary.
+	* config/rs6000/vector.md (vec_realign_load_<mode>): Revise commentary.
 
 2013-11-15  Jeff Law  <law@redhat.com>
 
@@ -60,8 +343,7 @@
 
 2013-11-15  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* config/aarch64/aarch64-simd.md: Remove simd_type from all
-	patterns.
+	* config/aarch64/aarch64-simd.md: Remove simd_type from all patterns.
 	* config/aarch64/aarch64.md: Likewise, correct "type" attribute
 	where it is incorrect or missing.
 
@@ -93,8 +375,7 @@
 	(compute_points_to_sets): Remove heap variable globalization.
 	(ipa_escaped_pt): Adjust initializer.
 	(pass_data_ipa_pta): Do not run TODO_update_ssa.
-	* gimple-pretty-print.c (pp_points_to_solution): Print split
-	flags.
+	* gimple-pretty-print.c (pp_points_to_solution): Print split flags.
 	* tree-ssa-alias.c (dump_points_to_solution): Likewise.
 
 2013-11-15  Richard Biener  <rguenther@suse.de>
@@ -108,8 +389,7 @@
 
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
-	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure
-	macro.
+	* acinclude.m4 (GCC_GLIBC_VERSION_GTE_IFELSE): New configure macro.
 	* configure.ac: Determine target_header_dir earlier.
 	(--with-glibc-version): New configure option.
 	Use GCC_GLIBC_VERSION_GTE_IFELSE in enable_gnu_unique_object,

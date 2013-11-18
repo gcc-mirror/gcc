@@ -2184,6 +2184,11 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	}
     }
 
+  /* Per 13.3.1.1, '(&f)(...)' is the same as '(f)(...)'.  */
+  if (TREE_CODE (fn) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (fn, 0)) == OVERLOAD)
+    fn = TREE_OPERAND (fn, 0);
+
   if (is_overloaded_fn (fn))
     fn = baselink_for_fns (fn);
 

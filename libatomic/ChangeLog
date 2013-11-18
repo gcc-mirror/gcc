@@ -1,3 +1,40 @@
+2013-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/libatomic.c/atomic-compare-exchange-1.c,
+	testsuite/libatomic.c/atomic-compare-exchange-2.c,
+	testsuite/libatomic.c/atomic-compare-exchange-3.c,
+	testsuite/libatomic.c/atomic-compare-exchange-4.c,
+	testsuite/libatomic.c/atomic-compare-exchange-5.c,
+	testsuite/libatomic.c/atomic-exchange-1.c,
+	testsuite/libatomic.c/atomic-exchange-2.c,
+	testsuite/libatomic.c/atomic-exchange-3.c,
+	testsuite/libatomic.c/atomic-exchange-4.c,
+	testsuite/libatomic.c/atomic-exchange-5.c,
+	testsuite/libatomic.c/atomic-generic.c,
+	testsuite/libatomic.c/atomic-load-1.c,
+	testsuite/libatomic.c/atomic-load-2.c,
+	testsuite/libatomic.c/atomic-load-3.c,
+	testsuite/libatomic.c/atomic-load-4.c,
+	testsuite/libatomic.c/atomic-load-5.c,
+	testsuite/libatomic.c/atomic-op-1.c,
+	testsuite/libatomic.c/atomic-op-2.c,
+	testsuite/libatomic.c/atomic-op-3.c,
+	testsuite/libatomic.c/atomic-op-4.c,
+	testsuite/libatomic.c/atomic-op-5.c,
+	testsuite/libatomic.c/atomic-store-1.c,
+	testsuite/libatomic.c/atomic-store-2.c,
+	testsuite/libatomic.c/atomic-store-3.c,
+	testsuite/libatomic.c/atomic-store-4.c,
+	testsuite/libatomic.c/atomic-store-5.c: Declare main as returning
+	int.  Do not require built-in sync support or add target-specific
+	options.
+	* testsuite/libatomic.c/atomic-exchange-1.c,
+	testsuite/libatomic.c/atomic-exchange-2.c,
+	testsuite/libatomic.c/atomic-exchange-3.c,
+	testsuite/libatomic.c/atomic-exchange-4.c,
+	testsuite/libatomic.c/atomic-exchange-5.c: Separate increments of
+	count from expression using value of count.
+
 2013-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/fenv.c: New file.

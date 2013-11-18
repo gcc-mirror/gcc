@@ -97,6 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
 #include "cilk.h"
+#include "cfgexpand.h"
 
 /* Estimate runtime of function can easilly run into huge numbers with many
    nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE * 2 in an
@@ -1300,7 +1301,7 @@ dump_inline_edge_summary (FILE *f, int indent, struct cgraph_node *node,
       fprintf (f,
 	       "%*s%s/%i %s\n%*s  loop depth:%2i freq:%4i size:%2i"
 	       " time: %2i callee size:%2i stack:%2i",
-	       indent, "", cgraph_node_name (callee), callee->order,
+	       indent, "", callee->name (), callee->order,
 	       !edge->inline_failed
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
 	       indent, "", es->loop_depth, edge->frequency,
@@ -1365,7 +1366,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
       struct inline_summary *s = inline_summary (node);
       size_time_entry *e;
       int i;
-      fprintf (f, "Inline summary for %s/%i", cgraph_node_name (node),
+      fprintf (f, "Inline summary for %s/%i", node->name (),
 	       node->order);
       if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
 	fprintf (f, " always_inline");
@@ -2382,7 +2383,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function body size: %s\n",
-	     cgraph_node_name (node));
+	     node->name ());
 
   /* When we run into maximal number of entries, we assign everything to the
      constant truth case.  Be sure to have it in list. */
@@ -2989,7 +2990,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
     {
       bool found = false;
       fprintf (dump_file, "   Estimating body: %s/%i\n"
-	       "   Known to be false: ", cgraph_node_name (node),
+	       "   Known to be false: ", node->name (),
 	       node->order);
 
       for (i = predicate_not_inlined_condition;
@@ -3771,7 +3772,7 @@ inline_analyze_function (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s/%u\n",
-	     cgraph_node_name (node), node->order);
+	     node->name (), node->order);
   if (optimize && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-affine.h"
 #include "pointer-set.h"
 #include "tree-ssa-propagate.h"
+#include "trans-mem.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 

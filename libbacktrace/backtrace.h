@@ -89,8 +89,7 @@ typedef void (*backtrace_error_callback) (void *data, const char *msg,
    system-specific path names.  If not NULL, FILENAME must point to a
    permanent buffer.  If THREADED is non-zero the state may be
    accessed by multiple threads simultaneously, and the library will
-   use appropriate locks (this requires that the library be configured
-   with --enable-backtrace-threads).  If THREADED is zero the state
+   use appropriate atomic operations.  If THREADED is zero the state
    may only be accessed by one thread at a time.  This returns a state
    pointer on success, NULL on error.  If an error occurs, this will
    call the ERROR_CALLBACK routine.  */
@@ -177,17 +176,17 @@ typedef void (*backtrace_syminfo_callback) (void *data, uintptr_t pc,
 					    const char *symname,
 					    uintptr_t symval);
 
-/* Given PC, a program counter in the current program, call the
-   callback information with the symbol name and value describing the
-   function in which PC may be found.  This will call either CALLBACK
-   or ERROR_CALLBACK exactly once.  This returns 1 on success, 0 on
-   failure.  This function requires the symbol table but does not
-   require the debug info.  Note that if the symbol table is present
-   but PC could not be found in the table, CALLBACK will be called
-   with a NULL SYMNAME argument.  Returns 1 on success, 0 on
-   error.  */
+/* Given ADDR, an address or program counter in the current program,
+   call the callback information with the symbol name and value
+   describing the function or variable in which ADDR may be found.
+   This will call either CALLBACK or ERROR_CALLBACK exactly once.
+   This returns 1 on success, 0 on failure.  This function requires
+   the symbol table but does not require the debug info.  Note that if
+   the symbol table is present but ADDR could not be found in the
+   table, CALLBACK will be called with a NULL SYMNAME argument.
+   Returns 1 on success, 0 on error.  */
 
-extern int backtrace_syminfo (struct backtrace_state *state, uintptr_t pc,
+extern int backtrace_syminfo (struct backtrace_state *state, uintptr_t addr,
 			      backtrace_syminfo_callback callback,
 			      backtrace_error_callback error_callback,
 			      void *data);

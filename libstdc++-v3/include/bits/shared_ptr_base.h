@@ -209,11 +209,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Sp_counted_base<_S_single>::
     _M_add_ref_lock()
     {
-      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
-	{
-	  _M_use_count = 0;
-	  __throw_bad_weak_ptr();
-	}
+      if (_M_use_count == 0)
+	__throw_bad_weak_ptr();
+      ++_M_use_count;
     }
 
   template<>
@@ -247,6 +245,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  true, __ATOMIC_ACQ_REL, 
 					  __ATOMIC_RELAXED));
     }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_add_ref_copy()
+    { ++_M_use_count; }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_release() noexcept
+    {
+      if (--_M_use_count == 0)
+        {
+          _M_dispose();
+          if (--_M_weak_count == 0)
+            _M_destroy();
+        }
+    }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_weak_add_ref() noexcept
+    { ++_M_weak_count; }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_single>::_M_weak_release() noexcept
+    {
+      if (--_M_weak_count == 0)
+        _M_destroy();
+    }
+
+  template<>
+    inline long
+    _Sp_counted_base<_S_single>::_M_get_use_count() const noexcept
+    { return _M_use_count; }
 
 
   // Forward declarations.

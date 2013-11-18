@@ -1133,9 +1133,8 @@ defer_stack_allocation (tree var, bool toplevel)
   /* Whether the variable is small enough for immediate allocation not to be
      a problem with regard to the frame size.  */
   bool smallish
-    = (tree_to_uhwi (DECL_SIZE_UNIT (var))
-       < ((unsigned HOST_WIDE_INT)
-	  PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)));
+    = ((HOST_WIDE_INT) tree_to_uhwi (DECL_SIZE_UNIT (var))
+       < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
@@ -2155,11 +2154,21 @@ expand_call_stmt (gimple stmt)
       return;
     }
 
-  exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
-
-  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
   decl = gimple_call_fndecl (stmt);
   builtin_p = decl && DECL_BUILT_IN (decl);
+
+  /* Bind bounds call is expanded as assignment.  */
+  if (builtin_p
+      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (decl) == BUILT_IN_CHKP_BIND_BOUNDS)
+    {
+      expand_assignment (gimple_call_lhs (stmt),
+			 gimple_call_arg (stmt, 0), false);
+      return;
+    }
+
+  exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
+  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
 
   /* If this is not a builtin function, the function type through which the
      call is made may be different from the type of the function.  */

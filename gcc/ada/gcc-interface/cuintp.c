@@ -176,9 +176,9 @@ UI_From_gnu (tree Input)
 
   for (i = Max_For_Dint - 1; i >= 0; i--)
     {
-      v[i] = tree_to_hwi (fold_build1 (ABS_EXPR, gnu_type,
-				       fold_build2 (TRUNC_MOD_EXPR, gnu_type,
-						    gnu_temp, gnu_base)));
+      v[i] = tree_to_shwi (fold_build1 (ABS_EXPR, gnu_type,
+					fold_build2 (TRUNC_MOD_EXPR, gnu_type,
+						     gnu_temp, gnu_base)));
       gnu_temp = fold_build2 (TRUNC_DIV_EXPR, gnu_type, gnu_temp, gnu_base);
     }
 

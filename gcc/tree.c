@@ -2226,8 +2226,7 @@ tree_ctz (const_tree expr)
     case LSHIFT_EXPR:
       ret1 = tree_ctz (TREE_OPERAND (expr, 0));
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
-	      < (unsigned HOST_WIDE_INT) prec))
+	  && (tree_to_uhwi (TREE_OPERAND (expr, 1)) < prec))
 	{
 	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
 	  return MIN (ret1 + ret2, prec);
@@ -2235,8 +2234,7 @@ tree_ctz (const_tree expr)
       return ret1;
     case RSHIFT_EXPR:
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
-	      < (unsigned HOST_WIDE_INT) prec))
+	  && (tree_to_uhwi (TREE_OPERAND (expr, 1)) < prec))
 	{
 	  ret1 = tree_ctz (TREE_OPERAND (expr, 0));
 	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
@@ -6957,6 +6955,50 @@ int
 tree_int_cst_compare (const_tree t1, const_tree t2)
 {
   return wi::cmps (wi::to_widest (t1), wi::to_widest (t2));
+}
+
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  */
+
+bool
+tree_fits_shwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_shwi_p (wi::to_widest (t)));
+}
+
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in an unsigned HOST_WIDE_INT.  */
+
+bool
+tree_fits_uhwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_uhwi_p (wi::to_widest (t)));
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  Return that
+   HOST_WIDE_INT.  */
+
+HOST_WIDE_INT
+tree_to_shwi (const_tree t)
+{
+  gcc_assert (tree_fits_shwi_p (t));
+  return TREE_INT_CST_ELT (t, 0);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in an unsigned HOST_WIDE_INT.  Return that
+   HOST_WIDE_INT.  */
+
+unsigned HOST_WIDE_INT
+tree_to_uhwi (const_tree t)
+{
+  gcc_assert (tree_fits_uhwi_p (t));
+  return TREE_INT_CST_ELT (t, 0);
 }
 
 /* Return the most significant (sign) bit of T.  */
@@ -12126,6 +12168,34 @@ drop_tree_overflow (tree t)
      and drop the flag.  */
   t = copy_node (t);
   TREE_OVERFLOW (t) = 0;
+  return t;
+}
+
+/* Given a memory reference expression T, return its base address.
+   The base address of a memory reference expression is the main
+   object being referenced.  For instance, the base address for
+   'array[i].fld[j]' is 'array'.  You can think of this as stripping
+   away the offset part from a memory address.
+
+   This function calls handled_component_p to strip away all the inner
+   parts of the memory reference until it reaches the base object.  */
+
+tree
+get_base_address (tree t)
+{
+  while (handled_component_p (t))
+    t = TREE_OPERAND (t, 0);
+
+  if ((TREE_CODE (t) == MEM_REF
+       || TREE_CODE (t) == TARGET_MEM_REF)
+      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
+    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
+  /* ???  Either the alias oracle or all callers need to properly deal
+     with WITH_SIZE_EXPRs before we can look through those.  */
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    return NULL_TREE;
+
   return t;
 }
 

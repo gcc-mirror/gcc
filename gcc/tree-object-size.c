@@ -210,15 +210,13 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
   else if (pt_var
 	   && DECL_P (pt_var)
 	   && tree_fits_uhwi_p (DECL_SIZE_UNIT (pt_var))
-	   && (unsigned HOST_WIDE_INT)
-	        tree_to_uhwi (DECL_SIZE_UNIT (pt_var)) < offset_limit)
+	   && tree_to_uhwi (DECL_SIZE_UNIT (pt_var)) < offset_limit)
     pt_var_size = DECL_SIZE_UNIT (pt_var);
   else if (pt_var
 	   && TREE_CODE (pt_var) == STRING_CST
 	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
 	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
-	   && (unsigned HOST_WIDE_INT)
-	      tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
+	   && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
 	      < offset_limit)
     pt_var_size = TYPE_SIZE_UNIT (TREE_TYPE (pt_var));
   else

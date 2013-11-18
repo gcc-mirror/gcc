@@ -615,7 +615,8 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
   ref->offset += extra_offset;
   if (size
       && tree_fits_shwi_p (size)
-      && tree_to_shwi (size) * BITS_PER_UNIT / BITS_PER_UNIT == tree_to_shwi (size))
+      && tree_to_shwi (size) * BITS_PER_UNIT / BITS_PER_UNIT
+	 == tree_to_hwi (size))
     ref->max_size = ref->size = tree_to_shwi (size) * BITS_PER_UNIT;
   else
     ref->max_size = ref->size = -1;

@@ -844,6 +844,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
+/* In a CALL_EXPR, means call was instrumented by Pointer Bounds Checker.  */
+#define CALL_WITH_BOUNDS_P(NODE) (CALL_EXPR_CHECK (NODE)->base.deprecated_flag)
+
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM
    of this type is aligned at least to the alignment of the type, even if it
@@ -3171,123 +3174,6 @@ cst_fits_uhwi_p (const_tree x)
   return TREE_INT_CST_NUNITS (x) == 1 && TREE_INT_CST_ELT (x, 0) >= 0;
 }
 
-/* Return true if T is an INTEGER_CST whose value must be non-negative
-   and can be represented in a single unsigned HOST_WIDE_INT.  This
-   function differs from the cst_fits versions in that the signedness
-   of the type of cst is considered.  */
-
-static inline bool
-tree_fits_uhwi_p (const_tree cst)
-{
-  tree type;
-  if (cst == NULL_TREE)
-    return false;
-
-  type = TREE_TYPE (cst);
-
-  if (TREE_CODE (cst) != INTEGER_CST)
-    return false;
-
-  if (TREE_INT_CST_NUNITS (cst) == 1)
-    {
-      if ((TYPE_SIGN (type) == UNSIGNED)
-	  && (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT))
-	return true;
-
-      /* For numbers of unsigned type that are longer than a HWI, if
-	 the top bit of the bottom word is set, and there is not
-	 another element, then this is too large to fit in a single
-	 hwi.  For signed numbers, negative values are not allowed. */
-      if (TREE_INT_CST_ELT (cst, 0) >= 0)
-	return true;
-    }
-  else if (TREE_INT_CST_NUNITS (cst) == 2)
-    {
-      if (TREE_INT_CST_ELT (cst, 1) == 0)
-	return true;
-    }
-  return false;
-}
-
-/* Return true if CST is an INTEGER_CST whose value can be represented
-   in a single HOST_WIDE_INT.  This function differs from the cst_fits
-   versions in that the signedness of the type of cst is
-   considered.  */
-
-static inline bool
-tree_fits_shwi_p (const_tree cst)
-{
-  if (cst == NULL_TREE)
-    return false;
-
-  if (TREE_CODE (cst) != INTEGER_CST)
-    return false;
-
-  if (TREE_INT_CST_NUNITS (cst) != 1)
-    return false;
-
-  if (TYPE_SIGN (TREE_TYPE (cst)) == SIGNED)
-    return true;
-
-  if (TREE_INT_CST_ELT (cst, 0) >= 0)
-    return true;
-
-  return false;
-}
-
-/* Return true if T is an INTEGER_CST that can be manipulated
-   efficiently on the host.  If SIGN is SIGNED, the value can be
-   represented in a single HOST_WIDE_INT.  If SIGN is UNSIGNED, the
-   value must be non-negative and can be represented in a single
-   unsigned HOST_WIDE_INT.  */
-
-static inline bool
-tree_fits_hwi_p (const_tree cst, signop sign)
-{
-  return sign ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
-}
-
-/* Return true if T is an INTEGER_CST that can be manipulated
-   efficiently on the host.  If the sign of CST is SIGNED, the value
-   can be represented in a single HOST_WIDE_INT.  If the sign of CST
-   is UNSIGNED, the value must be non-negative and can be represented
-   in a single unsigned HOST_WIDE_INT.  */
-
-static inline bool
-tree_fits_hwi_p (const_tree cst)
-{
-  if (cst == NULL_TREE)
-    return false;
-
-  if (TREE_CODE (cst) != INTEGER_CST)
-    return false;
-
-  return TYPE_UNSIGNED (TREE_TYPE (cst)) 
-    ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
-}
-
-/* Return the unsigned HOST_WIDE_INT least significant bits of CST.
-   If checking is enabled, this ices if the value does not fit.  */
-
-static inline unsigned HOST_WIDE_INT
-tree_to_uhwi (const_tree cst)
-{
-  gcc_checking_assert (tree_fits_uhwi_p (cst));
-
-  return (unsigned HOST_WIDE_INT)TREE_INT_CST_ELT (cst, 0);
-}
-
-/* Return the HOST_WIDE_INT least significant bits of CST.  If
-   checking is enabled, this ices if the value does not fit.  */
-
-static inline HOST_WIDE_INT
-tree_to_shwi (const_tree cst)
-{
-  gcc_checking_assert (tree_fits_shwi_p (cst));
-
-  return (HOST_WIDE_INT)TREE_INT_CST_ELT (cst, 0);
-}
-
 /* Return the HOST_WIDE_INT least significant bits of CST.  No
    checking is done to assure that it fits.  It is assumed that one of
    tree_fits_uhwi_p or tree_fits_shwi_p was done before this call. */
@@ -3297,19 +3183,6 @@ tree_to_hwi (const_tree cst)
 {
   return TREE_INT_CST_ELT (cst, 0);
 }
-
-/* Return the HOST_WIDE_INT least significant bits of CST.  The sign
-   of the checking is based on SIGNOP. */
-
-static inline HOST_WIDE_INT
-tree_to_hwi (const_tree cst, signop sgn)
-{
-  if (sgn == SIGNED)
-    return tree_to_shwi (cst);
-  else
-    return tree_to_uhwi (cst);
-}
-
 
 /* Compute the number of operands in an expression node NODE.  For
    tcc_vl_exp nodes like CALL_EXPRs, this is stored in the node itself,
@@ -3843,6 +3716,33 @@ extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 extern int tree_int_cst_lt (const_tree, const_tree);
 extern int tree_int_cst_compare (const_tree, const_tree);
+extern bool tree_fits_shwi_p (const_tree)
+#ifndef ENABLE_TREE_CHECKING
+  ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
+#endif
+  ;
+extern bool tree_fits_uhwi_p (const_tree)
+#ifndef ENABLE_TREE_CHECKING
+  ATTRIBUTE_PURE /* tree_fits_uhwi_p is pure only when checking is disabled.  */
+#endif
+  ;
+extern HOST_WIDE_INT tree_to_shwi (const_tree);
+extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree);
+#if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
+extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
+tree_to_shwi (const_tree t)
+{
+  gcc_assert (tree_fits_shwi_p (t));
+  return TREE_INT_CST_ELT (t, 0);
+}
+
+extern inline __attribute__ ((__gnu_inline__)) unsigned HOST_WIDE_INT
+tree_to_uhwi (const_tree t)
+{
+  gcc_assert (tree_fits_uhwi_p (t));
+  return TREE_INT_CST_ELT (t, 0);
+}
+#endif
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
 extern unsigned int tree_int_cst_min_precision (tree, signop);
@@ -3853,6 +3753,50 @@ extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
 extern bool valid_constant_size_p (const_tree);
 extern unsigned int element_precision (const_tree);
+
+/* Return true if T is an INTEGER_CST that can be manipulated
+   efficiently on the host.  If SIGN is SIGNED, the value can be
+   represented in a single HOST_WIDE_INT.  If SIGN is UNSIGNED, the
+   value must be non-negative and can be represented in a single
+   unsigned HOST_WIDE_INT.  */
+
+static inline bool
+tree_fits_hwi_p (const_tree cst, signop sign)
+{
+  return sign ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
+}
+
+/* Return true if T is an INTEGER_CST that can be manipulated
+   efficiently on the host.  If the sign of CST is SIGNED, the value
+   can be represented in a single HOST_WIDE_INT.  If the sign of CST
+   is UNSIGNED, the value must be non-negative and can be represented
+   in a single unsigned HOST_WIDE_INT.  */
+
+static inline bool
+tree_fits_hwi_p (const_tree cst)
+{
+  if (cst == NULL_TREE)
+    return false;
+
+  if (TREE_CODE (cst) != INTEGER_CST)
+    return false;
+
+  return TYPE_UNSIGNED (TREE_TYPE (cst)) 
+    ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
+}
+
+/* Return the HOST_WIDE_INT least significant bits of CST.  The sign
+   of the checking is based on SIGNOP. */
+
+static inline HOST_WIDE_INT
+tree_to_hwi (const_tree cst, signop sgn)
+{
+  if (sgn == SIGNED)
+    return tree_to_shwi (cst);
+  else
+    return tree_to_uhwi (cst);
+}
+
 
 /* Construct various nodes representing fract or accum data types.  */
 
@@ -4769,9 +4713,6 @@ extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);
 
 extern const char *get_tree_code_name (enum tree_code);
-
-/* In tree-nested.c */
-extern tree build_addr (tree, tree);
 
 /* In function.c */
 extern void expand_function_end (void);

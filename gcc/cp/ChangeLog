@@ -1,3 +1,42 @@
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* decl.c (reshape_init_array_1): Use tree_to_uhwi rather than
+	tree_low_cst.
+	(grokdeclarator): Update comment to refer to tree_to_[su]hwi rather
+	than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* call.c, class.c, decl.c, error.c: Replace tree_low_cst (..., 1) with
+	tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* class.c, dump.c, error.c, init.c, method.c, parser.c, semantics.c:
+	Replace tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* decl.c: Replace host_integerp (..., 1) with tree_fits_uhwi_p
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* error.c, init.c, parser.c, semantics.c: Replace
+	host_integerp (..., 0) with tree_fits_shwi_p throughout.
+
+2013-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59123
+	* decl.c (validate_constexpr_redeclaration): Redeclarations of
+	variables can differ in constexpr.
+
+2013-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29143
+	* semantics.c (finish_call_expr): Ensure that for OVERLOADs too
+	'(&f)(...)' is the same as '(f)(...)', per 13.3.1.1.
+
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Depend on cp/cp-cilkplus.o.

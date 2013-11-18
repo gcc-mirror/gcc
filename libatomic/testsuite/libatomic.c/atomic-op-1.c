@@ -1,7 +1,6 @@
 /* Test __atomic routines for existence and proper execution on 1 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_char_short } */
 
 /* Test the execution of the __atomic_*OP builtin routines for a char.  */
 
@@ -527,6 +526,7 @@ test_or ()
     abort ();
 }
 
+int
 main ()
 {
   test_fetch_add ();

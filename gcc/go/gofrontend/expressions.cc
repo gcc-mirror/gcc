@@ -3343,9 +3343,9 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
 
       expr_tree = fold_convert(int_type_tree, expr_tree);
-      if (tree_fits_shwi_p(expr_tree))
+      if (tree_fits_shwi_p (expr_tree))
 	{
-	  HOST_WIDE_INT intval = tree_to_shwi(expr_tree);
+	  HOST_WIDE_INT intval = tree_to_shwi (expr_tree);
 	  std::string s;
 	  Lex::append_char(intval, true, &s, this->location());
 	  Expression* se = Expression::make_string(s, this->location());

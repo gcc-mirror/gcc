@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-into-ssa.h"
 
+#define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
 /* This file builds the SSA form for a function as described in:
    R. Cytron, J. Ferrante, B. Rosen, M. Wegman, and K. Zadeck. Efficiently

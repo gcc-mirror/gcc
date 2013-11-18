@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "gimple-low.h"
 #include "tree-cfgcleanup.h"
+#include "tree-nested.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two

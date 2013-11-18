@@ -2488,7 +2488,7 @@ analyze_all_variable_accesses (void)
 	if (TREE_CODE (var) == VAR_DECL
 	    && type_consists_of_records_p (TREE_TYPE (var)))
 	  {
-	    if ((unsigned) tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
+	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_total_scalarization_size)
 	      {
 		completely_scalarize_var (var);
@@ -4846,9 +4846,9 @@ convert_callers_for_node (struct cgraph_node *node,
 
       if (dump_file)
 	fprintf (dump_file, "Adjusting call %s/%i -> %s/%i\n",
-		 xstrdup (cgraph_node_name (cs->caller)),
+		 xstrdup (cs->caller->name ()),
 		 cs->caller->order,
-		 xstrdup (cgraph_node_name (cs->callee)),
+		 xstrdup (cs->callee->name ()),
 		 cs->callee->order);
 
       ipa_modify_call_arguments (cs, cs->call_stmt, *adjustments);
