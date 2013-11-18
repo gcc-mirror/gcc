@@ -6169,7 +6169,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	{
 	  unsigned HOST_WIDE_INT width;
 	  tree ftype = TREE_TYPE (field);
-	  width = tree_low_cst (DECL_SIZE (field), /*unsignedp=*/1);
+	  width = tree_to_uhwi (DECL_SIZE (field));
 	  if (width != TYPE_PRECISION (ftype))
 	    {
 	      TREE_TYPE (field)

@@ -1489,7 +1489,7 @@ bit_value_assume_aligned (gimple stmt)
   align = gimple_call_arg (stmt, 1);
   if (!tree_fits_uhwi_p (align))
     return ptrval;
-  aligni = tree_low_cst (align, 1);
+  aligni = tree_to_uhwi (align);
   if (aligni <= 1
       || (aligni & (aligni - 1)) != 0)
     return ptrval;
@@ -1498,7 +1498,7 @@ bit_value_assume_aligned (gimple stmt)
       misalign = gimple_call_arg (stmt, 2);
       if (!tree_fits_uhwi_p (misalign))
 	return ptrval;
-      misaligni = tree_low_cst (misalign, 1);
+      misaligni = tree_to_uhwi (misalign);
       if (misaligni >= aligni)
 	return ptrval;
     }

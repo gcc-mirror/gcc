@@ -703,7 +703,7 @@ check_range (struct switch_conv_info *info)
       return false;
     }
 
-  if ((unsigned HOST_WIDE_INT) tree_low_cst (info->range_size, 1)
+  if ((unsigned HOST_WIDE_INT) tree_to_uhwi (info->range_size)
       > ((unsigned) info->count * SWITCH_CONVERSION_BRANCH_RATIO))
     {
       info->reason = "the maximum range-branch ratio exceeded";
@@ -805,7 +805,7 @@ create_temp_arrays (struct switch_conv_info *info)
   info->target_inbound_names = info->default_values + info->phi_count;
   info->target_outbound_names = info->target_inbound_names + info->phi_count;
   for (i = 0; i < info->phi_count; i++)
-    vec_alloc (info->constructors[i], tree_low_cst (info->range_size, 1) + 1);
+    vec_alloc (info->constructors[i], tree_to_uhwi (info->range_size) + 1);
 }
 
 /* Free the arrays created by create_temp_arrays().  The vectors that are

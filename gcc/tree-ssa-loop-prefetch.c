@@ -1509,7 +1509,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 	{
 	  stride = TYPE_SIZE_UNIT (TREE_TYPE (ref));
 	  if (tree_fits_uhwi_p (stride))
-	    astride = tree_low_cst (stride, 1);
+	    astride = tree_to_uhwi (stride);
 	  else
 	    astride = L1_CACHE_LINE_SIZE;
 

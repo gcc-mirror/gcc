@@ -5094,7 +5094,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	return new_init;
 
       if (tree_fits_uhwi_p (max_index))
-	max_index_cst = tree_low_cst (max_index, 1);
+	max_index_cst = tree_to_uhwi (max_index);
       /* sizetype is sign extended, not zero extended.  */
       else
 	max_index_cst = tree_low_cst (fold_convert (size_type_node, max_index),

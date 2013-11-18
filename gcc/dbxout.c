@@ -1566,7 +1566,7 @@ dbxout_type_fields (tree type)
 	      stabstr_C (',');
 	      stabstr_D (int_bit_position (tem));
 	      stabstr_C (',');
-	      stabstr_D (tree_low_cst (DECL_SIZE (tem), 1));
+	      stabstr_D (tree_to_uhwi (DECL_SIZE (tem)));
 	      stabstr_C (';');
 	    }
 	}

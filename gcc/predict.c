@@ -1560,7 +1560,7 @@ predict_loops (void)
 	      if (tree_fits_uhwi_p (niter)
 		  && max
 		  && compare_tree_int (niter, max - 1) == -1)
-		nitercst = tree_low_cst (niter, 1) + 1;
+		nitercst = tree_to_uhwi (niter) + 1;
 	      else
 		nitercst = max;
 	      predictor = PRED_LOOP_ITERATIONS;

@@ -293,7 +293,7 @@ add_stack_var (tree decl)
   * (size_t *)pointer_map_insert (decl_to_stack_part, decl) = stack_vars_num;
 
   v->decl = decl;
-  v->size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (decl)), 1);
+  v->size = tree_to_uhwi (DECL_SIZE_UNIT (SSAVAR (decl)));
   /* Ensure that all variables have size, so that &a != &b for any two
      variables that are simultaneously live.  */
   if (v->size == 0)
@@ -1057,7 +1057,7 @@ expand_one_stack_var (tree var)
   HOST_WIDE_INT size, offset;
   unsigned byte_align;
 
-  size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (var)), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (SSAVAR (var)));
   byte_align = align_local_variable (SSAVAR (var));
 
   /* We handle highly aligned variables in expand_stack_vars.  */
@@ -1133,7 +1133,7 @@ defer_stack_allocation (tree var, bool toplevel)
   /* Whether the variable is small enough for immediate allocation not to be
      a problem with regard to the frame size.  */
   bool smallish
-    = (tree_low_cst (DECL_SIZE_UNIT (var), 1)
+    = (tree_to_uhwi (DECL_SIZE_UNIT (var))
        < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,
@@ -1281,7 +1281,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
     {
       if (really_expand)
         expand_one_stack_var (origvar);
-      return tree_low_cst (DECL_SIZE_UNIT (var), 1);
+      return tree_to_uhwi (DECL_SIZE_UNIT (var));
     }
   return 0;
 }
@@ -1361,7 +1361,7 @@ stack_protect_classify_type (tree type)
 	      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	    len = max;
 	  else
-	    len = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+	    len = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 
 	  if (len < max)
 	    ret = SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_ARRAY;

@@ -48,7 +48,7 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
     {
       if (tree_fits_uhwi_p (val))
 	{
-	  i = tree_low_cst (val, 1);
+	  i = tree_to_uhwi (val);
 
 	  type = pragma_lex (&val);
 	  if (type != CPP_EOF)
@@ -95,7 +95,7 @@ m32c_pragma_address (cpp_reader * reader ATTRIBUTE_UNUSED)
 	{
 	  if (var != error_mark_node)
 	    {
-	      unsigned uaddr = tree_low_cst (addr, 1);
+	      unsigned uaddr = tree_to_uhwi (addr);
 	      m32c_note_pragma_address (IDENTIFIER_POINTER (var), uaddr);
 	    }
 

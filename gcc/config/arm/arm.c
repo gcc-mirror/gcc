@@ -4734,12 +4734,12 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4769,7 +4769,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4801,7 +4801,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 

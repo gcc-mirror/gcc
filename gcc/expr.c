@@ -4630,12 +4630,12 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
      see finish_bitfield_layout.  */
   if (tree_fits_uhwi_p (DECL_FIELD_OFFSET (field))
       && tree_fits_uhwi_p (DECL_FIELD_OFFSET (repr)))
-    bitoffset = (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
-		 - tree_low_cst (DECL_FIELD_OFFSET (repr), 1)) * BITS_PER_UNIT;
+    bitoffset = (tree_to_uhwi (DECL_FIELD_OFFSET (field))
+		 - tree_to_uhwi (DECL_FIELD_OFFSET (repr))) * BITS_PER_UNIT;
   else
     bitoffset = 0;
-  bitoffset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-		- tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
+  bitoffset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
+		- tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));
 
   /* If the adjustment is larger than bitpos, we would have a negative bit
      position for the lower bound and this may wreak havoc later.  Adjust
@@ -4656,7 +4656,7 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
   else
     *bitstart = *bitpos - bitoffset;
 
-  *bitend = *bitstart + tree_low_cst (DECL_SIZE (repr), 1) - 1;
+  *bitend = *bitstart + tree_to_uhwi (DECL_SIZE (repr)) - 1;
 }
 
 /* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
@@ -5474,7 +5474,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
 	  {
 	    unsigned HOST_WIDE_INT n;
 
-	    n = tree_low_cst (nelts, 1) + 1;
+	    n = tree_to_uhwi (nelts) + 1;
 	    if (n == 0 || for_ctor_p)
 	      return n;
 	    else
@@ -5590,8 +5590,8 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  tree hi_index = TREE_OPERAND (purpose, 1);
 
 	  if (tree_fits_uhwi_p (lo_index) && tree_fits_uhwi_p (hi_index))
-	    mult = (tree_low_cst (hi_index, 1)
-		    - tree_low_cst (lo_index, 1) + 1);
+	    mult = (tree_to_uhwi (hi_index)
+		    - tree_to_uhwi (lo_index) + 1);
 	}
       num_fields += mult;
       elt_type = TREE_TYPE (value);
@@ -5909,7 +5909,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      continue;
 
 	    if (tree_fits_uhwi_p (DECL_SIZE (field)))
-	      bitsize = tree_low_cst (DECL_SIZE (field), 1);
+	      bitsize = tree_to_uhwi (DECL_SIZE (field));
 	    else
 	      bitsize = -1;
 
@@ -6054,8 +6054,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 			break;
 		      }
 
-		    this_node_count = (tree_low_cst (hi_index, 1)
-				       - tree_low_cst (lo_index, 1) + 1);
+		    this_node_count = (tree_to_uhwi (hi_index)
+				       - tree_to_uhwi (lo_index) + 1);
 		  }
 		else
 		  this_node_count = 1;
@@ -6103,7 +6103,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    mode = TYPE_MODE (elttype);
 	    if (mode == BLKmode)
 	      bitsize = (tree_fits_uhwi_p (TYPE_SIZE (elttype))
-			 ? tree_low_cst (TYPE_SIZE (elttype), 1)
+			 ? tree_to_uhwi (TYPE_SIZE (elttype))
 			 : -1);
 	    else
 	      bitsize = GET_MODE_BITSIZE (mode);
@@ -6126,7 +6126,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 			(!MEM_P (target)
 			 || count <= 2
 			 || (tree_fits_uhwi_p (TYPE_SIZE (elttype))
-			     && (tree_low_cst (TYPE_SIZE (elttype), 1) * count
+			     && (tree_to_uhwi (TYPE_SIZE (elttype)) * count
 				 <= 40 * 8)))))
 		  {
 		    lo -= minelt;  hi -= minelt;
@@ -6236,9 +6236,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      {
 		if (index != 0)
 		  bitpos = ((tree_to_shwi (index) - minelt)
-			    * tree_low_cst (TYPE_SIZE (elttype), 1));
+			    * tree_to_uhwi (TYPE_SIZE (elttype)));
 		else
-		  bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
+		  bitpos = (i * tree_to_uhwi (TYPE_SIZE (elttype)));
 
 		if (MEM_P (target) && !MEM_KEEP_ALIAS_SET_P (target)
 		    && TREE_CODE (type) == ARRAY_TYPE
@@ -6262,7 +6262,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	int need_to_clear;
 	int icode = CODE_FOR_nothing;
 	tree elttype = TREE_TYPE (type);
-	int elt_size = tree_low_cst (TYPE_SIZE (elttype), 1);
+	int elt_size = tree_to_uhwi (TYPE_SIZE (elttype));
 	enum machine_mode eltmode = TYPE_MODE (elttype);
 	HOST_WIDE_INT bitsize;
 	HOST_WIDE_INT bitpos;
@@ -6344,12 +6344,12 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    HOST_WIDE_INT eltpos;
 	    tree value = ce->value;
 
-	    bitsize = tree_low_cst (TYPE_SIZE (TREE_TYPE (value)), 1);
+	    bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)));
 	    if (cleared && initializer_zerop (value))
 	      continue;
 
 	    if (ce->index)
-	      eltpos = tree_low_cst (ce->index, 1);
+	      eltpos = tree_to_uhwi (ce->index);
 	    else
 	      eltpos = i;
 
@@ -6679,7 +6679,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       if (! tree_fits_uhwi_p (size_tree))
 	mode = BLKmode, *pbitsize = -1;
       else
-	*pbitsize = tree_low_cst (size_tree, 1);
+	*pbitsize = tree_to_uhwi (size_tree);
     }
 
   /* Compute cumulative bit-offset for nested component-refs and array-refs,
@@ -7758,7 +7758,7 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
 		  || TREE_ADDRESSABLE (exp)
 		  || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
 		      && (! MOVE_BY_PIECES_P
-				     (tree_low_cst (TYPE_SIZE_UNIT (type), 1),
+				     (tree_to_uhwi (TYPE_SIZE_UNIT (type)),
 				      TYPE_ALIGN (type)))
 		      && ! mostly_zeros_p (exp))))
       || ((modifier == EXPAND_INITIALIZER || modifier == EXPAND_CONST_ADDRESS)
@@ -10561,7 +10561,7 @@ is_aligning_offset (const_tree offset, const_tree exp)
       || !tree_fits_uhwi_p (TREE_OPERAND (offset, 1))
       || compare_tree_int (TREE_OPERAND (offset, 1),
 			   BIGGEST_ALIGNMENT / BITS_PER_UNIT) <= 0
-      || !exact_log2 (tree_low_cst (TREE_OPERAND (offset, 1), 1) + 1) < 0)
+      || !exact_log2 (tree_to_uhwi (TREE_OPERAND (offset, 1)) + 1) < 0)
     return 0;
 
   /* Look at the first operand of BIT_AND_EXPR and strip any conversion.

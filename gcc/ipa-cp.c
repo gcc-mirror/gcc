@@ -1371,7 +1371,7 @@ propagate_aggs_accross_jump_function (struct cgraph_edge *cs,
 	  if (item->offset < 0)
 	    continue;
 	  gcc_checking_assert (is_gimple_ip_invariant (item->value));
-	  val_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (item->value)), 1);
+	  val_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (item->value)));
 
 	  if (merge_agg_lats_step (dest_plats, item->offset, val_size,
 				   &aglat, pre_existing, &ret))

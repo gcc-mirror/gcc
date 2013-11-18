@@ -82,7 +82,7 @@ static void
 init_offset_limit (void)
 {
   if (tree_fits_uhwi_p (TYPE_MAX_VALUE (sizetype)))
-    offset_limit = tree_low_cst (TYPE_MAX_VALUE (sizetype), 1);
+    offset_limit = tree_to_uhwi (TYPE_MAX_VALUE (sizetype));
   else
     offset_limit = -1;
   offset_limit /= 2;
@@ -110,7 +110,7 @@ compute_object_offset (const_tree expr, const_tree var)
 
       t = TREE_OPERAND (expr, 1);
       off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
-			size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t), 1)
+			size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				  / BITS_PER_UNIT));
       break;
 
@@ -211,14 +211,14 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	   && DECL_P (pt_var)
 	   && tree_fits_uhwi_p (DECL_SIZE_UNIT (pt_var))
 	   && (unsigned HOST_WIDE_INT)
-	        tree_low_cst (DECL_SIZE_UNIT (pt_var), 1) < offset_limit)
+	        tree_to_uhwi (DECL_SIZE_UNIT (pt_var)) < offset_limit)
     pt_var_size = DECL_SIZE_UNIT (pt_var);
   else if (pt_var
 	   && TREE_CODE (pt_var) == STRING_CST
 	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
 	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
 	   && (unsigned HOST_WIDE_INT)
-	      tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)
+	      tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)))
 	      < offset_limit)
     pt_var_size = TYPE_SIZE_UNIT (TREE_TYPE (pt_var));
   else
@@ -372,7 +372,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
     bytes = pt_var_size;
 
   if (tree_fits_uhwi_p (bytes))
-    return tree_low_cst (bytes, 1);
+    return tree_to_uhwi (bytes);
 
   return unknown[object_size_type];
 }
@@ -436,7 +436,7 @@ alloc_object_size (const_gimple call, int object_size_type)
     bytes = fold_convert (sizetype, gimple_call_arg (call, arg1));
 
   if (bytes && tree_fits_uhwi_p (bytes))
-    return tree_low_cst (bytes, 1);
+    return tree_to_uhwi (bytes);
 
   return unknown[object_size_type];
 }
@@ -799,10 +799,10 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
       if (! tree_fits_uhwi_p (op1))
 	bytes = unknown[object_size_type];
       else if (TREE_CODE (op0) == SSA_NAME)
-	return merge_object_sizes (osi, var, op0, tree_low_cst (op1, 1));
+	return merge_object_sizes (osi, var, op0, tree_to_uhwi (op1));
       else
 	{
-	  unsigned HOST_WIDE_INT off = tree_low_cst (op1, 1);
+	  unsigned HOST_WIDE_INT off = tree_to_uhwi (op1);
 
           /* op0 will be ADDR_EXPR here.  */
 	  bytes = addr_object_size (osi, op0, object_size_type);
@@ -1231,7 +1231,7 @@ compute_object_sizes (void)
 		  if (tree_fits_uhwi_p (ost))
 		    {
 		      unsigned HOST_WIDE_INT object_size_type
-			= tree_low_cst (ost, 1);
+			= tree_to_uhwi (ost);
 
 		      if (object_size_type < 2)
 			result = fold_convert (size_type_node,

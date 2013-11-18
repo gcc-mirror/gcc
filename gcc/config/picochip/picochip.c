@@ -810,7 +810,7 @@ picochip_compute_arg_size (const_tree type, enum machine_mode mode)
   int type_size_in_units = 0;
 
   if (type)
-    type_size_in_units = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+    type_size_in_units = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   else
     type_size_in_units = GET_MODE_SIZE (mode);
 

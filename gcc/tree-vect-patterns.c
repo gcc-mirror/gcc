@@ -1636,13 +1636,13 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
   if (TREE_CODE (def) == INTEGER_CST)
     {
       if (!tree_fits_uhwi_p (def)
-	  || (unsigned HOST_WIDE_INT) tree_low_cst (def, 1)
+	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (def)
 	     >= GET_MODE_PRECISION (TYPE_MODE (type))
 	  || integer_zerop (def))
 	return NULL;
       def2 = build_int_cst (stype,
 			    GET_MODE_PRECISION (TYPE_MODE (type))
-			    - tree_low_cst (def, 1));
+			    - tree_to_uhwi (def));
     }
   else
     {

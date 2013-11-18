@@ -14940,7 +14940,7 @@ r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
     return false;
 
   offset += bitoffset / BITS_PER_UNIT;
-  return offset >= 0 && offset < tree_low_cst (DECL_SIZE_UNIT (inner), 1);
+  return offset >= 0 && offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
 }
 
 /* A for_each_rtx callback for which DATA points to the instruction

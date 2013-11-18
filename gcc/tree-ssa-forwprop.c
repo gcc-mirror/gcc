@@ -1555,7 +1555,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      if (!tree_fits_uhwi_p (off1)
 		  || compare_tree_int (off1, TREE_STRING_LENGTH (str1) - 1) > 0
 		  || compare_tree_int (len1, TREE_STRING_LENGTH (str1)
-					     - tree_low_cst (off1, 1)) > 0
+					     - tree_to_uhwi (off1)) > 0
 		  || TREE_CODE (TREE_TYPE (str1)) != ARRAY_TYPE
 		  || TYPE_MODE (TREE_TYPE (TREE_TYPE (str1)))
 		     != TYPE_MODE (char_type_node))
@@ -1599,10 +1599,10 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 
 	  /* Use maximum of difference plus memset length and memcpy length
 	     as the new memcpy length, if it is too big, bail out.  */
-	  src_len = tree_low_cst (diff, 1);
-	  src_len += tree_low_cst (len2, 1);
-	  if (src_len < (unsigned HOST_WIDE_INT) tree_low_cst (len1, 1))
-	    src_len = tree_low_cst (len1, 1);
+	  src_len = tree_to_uhwi (diff);
+	  src_len += tree_to_uhwi (len2);
+	  if (src_len < (unsigned HOST_WIDE_INT) tree_to_uhwi (len1))
+	    src_len = tree_to_uhwi (len1);
 	  if (src_len > 1024)
 	    break;
 
@@ -1628,12 +1628,12 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  src_buf = XALLOCAVEC (char, src_len + 1);
 	  if (callee1)
 	    memcpy (src_buf,
-		    TREE_STRING_POINTER (str1) + tree_low_cst (off1, 1),
-		    tree_low_cst (len1, 1));
+		    TREE_STRING_POINTER (str1) + tree_to_uhwi (off1),
+		    tree_to_uhwi (len1));
 	  else
 	    src_buf[0] = tree_to_shwi (src1);
-	  memset (src_buf + tree_low_cst (diff, 1),
-		  tree_to_shwi (val2), tree_low_cst (len2, 1));
+	  memset (src_buf + tree_to_uhwi (diff),
+		  tree_to_shwi (val2), tree_to_uhwi (len2));
 	  src_buf[src_len] = '\0';
 	  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
 	     handle embedded '\0's.  */
@@ -2319,8 +2319,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   /* CNT1 + CNT2 == B case above.  */
   if (tree_fits_uhwi_p (def_arg2[0])
       && tree_fits_uhwi_p (def_arg2[1])
-      && (unsigned HOST_WIDE_INT) tree_low_cst (def_arg2[0], 1)
-	 + tree_low_cst (def_arg2[1], 1) == TYPE_PRECISION (rtype))
+      && (unsigned HOST_WIDE_INT) tree_to_uhwi (def_arg2[0])
+	 + tree_to_uhwi (def_arg2[1]) == TYPE_PRECISION (rtype))
     rotcnt = def_arg2[0];
   else if (TREE_CODE (def_arg2[0]) != SSA_NAME
 	   || TREE_CODE (def_arg2[1]) != SSA_NAME)

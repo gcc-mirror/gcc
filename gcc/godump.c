@@ -987,7 +987,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  else if (tree_fits_uhwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		     ((unsigned HOST_WIDE_INT)
-		      tree_low_cst (TREE_VALUE (element), 1)));
+		      tree_to_uhwi (TREE_VALUE (element))));
 	  else
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		     ((unsigned HOST_WIDE_INT)

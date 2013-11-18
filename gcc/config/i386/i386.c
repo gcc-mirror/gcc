@@ -29317,7 +29317,7 @@ ix86_builtin_tm_load (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M64);
@@ -29337,7 +29337,7 @@ ix86_builtin_tm_store (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M64);
@@ -32658,7 +32658,7 @@ get_element_number (tree vec_type, tree arg)
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
   if (!tree_fits_uhwi_p (arg)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;

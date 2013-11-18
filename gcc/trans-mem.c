@@ -1104,7 +1104,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 	  && transaction_invariant_address_p (lp->addr, entry_block)
 	  && TYPE_SIZE_UNIT (type) != NULL
 	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
-	  && (tree_low_cst (TYPE_SIZE_UNIT (type), 1)
+	  && (tree_to_uhwi (TYPE_SIZE_UNIT (type))
 	      < PARAM_VALUE (PARAM_TM_MAX_AGGREGATE_SIZE))
 	  /* We must be able to copy this type normally.  I.e., no
 	     special constructors and the like.  */
@@ -1189,7 +1189,7 @@ tm_log_emit_stmt (tree addr, gimple stmt)
     code = BUILT_IN_TM_LOG_LDOUBLE;
   else if (tree_fits_uhwi_p (size))
     {
-      unsigned int n = tree_low_cst (size, 1);
+      unsigned int n = tree_to_uhwi (size);
       switch (n)
 	{
 	case 1:
@@ -2107,7 +2107,7 @@ build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
   else if (TYPE_SIZE_UNIT (type) != NULL
 	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
     {
-      switch (tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE_UNIT (type)))
 	{
 	case 1:
 	  code = BUILT_IN_TM_LOAD_1;
@@ -2179,7 +2179,7 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
   else if (TYPE_SIZE_UNIT (type) != NULL
 	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
     {
-      switch (tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE_UNIT (type)))
 	{
 	case 1:
 	  code = BUILT_IN_TM_STORE_1;

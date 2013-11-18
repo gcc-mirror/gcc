@@ -6128,7 +6128,7 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
 	    return false;
 
-	  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  dsize = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  if (dsize > 32768)
 	    return false;
 
@@ -6152,7 +6152,7 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	    dsize = TREE_STRING_LENGTH (decl);
 	  else if (TYPE_SIZE_UNIT (type)
 		   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
-	    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+	    dsize = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 	  else
 	    return false;
 	  if (dsize > 32768)
@@ -8559,12 +8559,12 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -8594,7 +8594,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -8626,7 +8626,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 
 	/* There must be no padding.  */
 	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -12387,7 +12387,7 @@ get_element_number (tree vec_type, tree arg)
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
   if (!tree_fits_uhwi_p (arg)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;

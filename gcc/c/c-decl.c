@@ -4832,7 +4832,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
       *width = build_int_cst (integer_type_node, w);
     }
   else
-    w = tree_low_cst (*width, 1);
+    w = tree_to_uhwi (*width);
 
   if (TREE_CODE (*type) == ENUMERAL_TYPE)
     {
@@ -7263,7 +7263,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
       if (DECL_INITIAL (x))
 	{
-	  unsigned HOST_WIDE_INT width = tree_low_cst (DECL_INITIAL (x), 1);
+	  unsigned HOST_WIDE_INT width = tree_to_uhwi (DECL_INITIAL (x));
 	  DECL_SIZE (x) = bitsize_int (width);
 	  DECL_BIT_FIELD (x) = 1;
 	  SET_DECL_C_BIT_FIELD (x);
@@ -7334,7 +7334,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  && TREE_TYPE (*fieldlistp) != error_mark_node)
 	{
 	  unsigned HOST_WIDE_INT width
-	    = tree_low_cst (DECL_INITIAL (*fieldlistp), 1);
+	    = tree_to_uhwi (DECL_INITIAL (*fieldlistp));
 	  tree type = TREE_TYPE (*fieldlistp);
 	  if (width != TYPE_PRECISION (type))
 	    {

@@ -49,7 +49,7 @@ static void expand_vector_operations_1 (gimple_stmt_iterator *);
 static tree
 build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
 {
-  int width = tree_low_cst (TYPE_SIZE (inner_type), 1);
+  int width = tree_to_uhwi (TYPE_SIZE (inner_type));
   int n = HOST_BITS_PER_WIDE_INT / width;
   unsigned HOST_WIDE_INT low, high, mask;
   tree ret;
@@ -238,8 +238,8 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   tree part_width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
   int nunits = TYPE_VECTOR_SUBPARTS (type);
-  int delta = tree_low_cst (part_width, 1)
-	      / tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+  int delta = tree_to_uhwi (part_width)
+	      / tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -272,7 +272,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
 {
   tree result, compute_type;
   enum machine_mode mode;
-  int n_words = tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
+  int n_words = tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
   /* We have three strategies.  If the type is already correct, just do
@@ -295,7 +295,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
   else
     {
       /* Use a single scalar operation with a mode no wider than word_mode.  */
-      mode = mode_for_size (tree_low_cst (TYPE_SIZE (type), 1), MODE_INT, 0);
+      mode = mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), MODE_INT, 0);
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
       result = f (gsi, compute_type, a, b, NULL_TREE, NULL_TREE, code);
       warning_at (loc, OPT_Wvector_operation_performance,
@@ -317,7 +317,7 @@ expand_vector_addition (gimple_stmt_iterator *gsi,
 			tree type, tree a, tree b, enum tree_code code)
 {
   int parts_per_word = UNITS_PER_WORD
-	  	       / tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type)), 1);
+	  	       / tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
 
   if (INTEGRAL_TYPE_P (TREE_TYPE (type))
       && parts_per_word >= 4
@@ -487,7 +487,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 
 		      if (!tree_fits_uhwi_p (cst2))
 			return NULL_TREE;
-		      d2 = tree_low_cst (cst2, 1) & mask;
+		      d2 = tree_to_uhwi (cst2) & mask;
 		      if (d2 == 0)
 			return NULL_TREE;
 		      this_pre_shift = floor_log2 (d2 & -d2);

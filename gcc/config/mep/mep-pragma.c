@@ -234,7 +234,7 @@ mep_pragma_coprocessor_width (void)
     case CPP_NUMBER:
       if (! tree_fits_uhwi_p (val))
 	break;
-      i = tree_low_cst (val, 1);
+      i = tree_to_uhwi (val);
       /* This pragma no longer has any effect.  */
 #if 0
       if (i == 32)
@@ -273,7 +273,7 @@ mep_pragma_coprocessor_subclass (void)
   type = mep_pragma_lex (&val);
   if (type != CPP_CHAR)
     goto syntax_error;
-  class_letter = tree_low_cst (val, 1);
+  class_letter = tree_to_uhwi (val);
   if (class_letter >= 'A' && class_letter <= 'D')
     switch (class_letter)
       {

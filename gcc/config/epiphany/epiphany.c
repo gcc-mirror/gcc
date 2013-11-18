@@ -2785,7 +2785,7 @@ epiphany_adjust_field_align (tree field, unsigned computed)
     {
       tree elmsz = TYPE_SIZE (TREE_TYPE (TREE_TYPE (field)));
 
-      if (!tree_fits_uhwi_p (elmsz) || tree_low_cst (elmsz, 1) >= 32)
+      if (!tree_fits_uhwi_p (elmsz) || tree_to_uhwi (elmsz) >= 32)
 	return 64;
     }
   return computed;

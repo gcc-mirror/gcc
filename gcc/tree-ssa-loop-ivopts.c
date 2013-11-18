@@ -4356,7 +4356,7 @@ iv_period (struct iv *iv)
 
   period = build_low_bits_mask (type,
                                 (TYPE_PRECISION (type)
-                                 - tree_low_cst (pow2div, 1)));
+                                 - tree_to_uhwi (pow2div)));
 
   return period;
 }

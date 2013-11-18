@@ -357,7 +357,7 @@
 	    && !SYMBOL_REF_TLS_MODEL (op))
     {
       if (SYMBOL_REF_DECL (op))
-        max_ofs = tree_low_cst (DECL_SIZE_UNIT (SYMBOL_REF_DECL (op)), 1);
+        max_ofs = tree_to_uhwi (DECL_SIZE_UNIT (SYMBOL_REF_DECL (op)));
     }
   else
     return false;

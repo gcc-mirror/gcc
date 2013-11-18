@@ -1307,7 +1307,7 @@ iq2000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	      /* ??? If this is a packed structure, then the last hunk won't
 		 be 64 bits.  */
 	      chunks
-		= tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
+		= tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
 	      if (chunks + *arg_words + bias > (unsigned) MAX_ARGS_IN_REGISTERS)
 		chunks = MAX_ARGS_IN_REGISTERS - *arg_words - bias;
 

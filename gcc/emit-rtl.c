@@ -1545,8 +1545,8 @@ get_mem_align_offset (rtx mem, unsigned int align)
 	      || !tree_fits_uhwi_p (bit_offset))
 	    return -1;
 
-	  offset += tree_low_cst (byte_offset, 1);
-	  offset += tree_low_cst (bit_offset, 1) / BITS_PER_UNIT;
+	  offset += tree_to_uhwi (byte_offset);
+	  offset += tree_to_uhwi (bit_offset) / BITS_PER_UNIT;
 
 	  if (inner == NULL_TREE)
 	    {
@@ -1773,7 +1773,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      if (tree_fits_uhwi_p (off_tree))
 		{
 		  attrs.offset_known_p = true;
-		  attrs.offset = tree_low_cst (off_tree, 1);
+		  attrs.offset = tree_to_uhwi (off_tree);
 		  apply_bitpos = bitpos;
 		}
 	    }
@@ -1803,7 +1803,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   if (tree_fits_uhwi_p (new_size))
     {
       attrs.size_known_p = true;
-      attrs.size = tree_low_cst (new_size, 1);
+      attrs.size = tree_to_uhwi (new_size);
     }
 
   /* If we modified OFFSET based on T, then subtract the outstanding
@@ -2280,8 +2280,8 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 	    }
 
 	  attrs.expr = TREE_OPERAND (attrs.expr, 0);
-	  attrs.offset += tree_low_cst (offset, 1);
-	  attrs.offset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+	  attrs.offset += tree_to_uhwi (offset);
+	  attrs.offset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
 			   / BITS_PER_UNIT);
 	}
       /* Similarly for the decl.  */

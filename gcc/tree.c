@@ -2211,20 +2211,20 @@ tree_ctz (const_tree expr)
     case LSHIFT_EXPR:
       ret1 = tree_ctz (TREE_OPERAND (expr, 0));
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
+	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
 	      < (unsigned HOST_WIDE_INT) prec))
 	{
-	  ret2 = tree_low_cst (TREE_OPERAND (expr, 1), 1);
+	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
 	  return MIN (ret1 + ret2, prec);
 	}
       return ret1;
     case RSHIFT_EXPR:
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
+	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
 	      < (unsigned HOST_WIDE_INT) prec))
 	{
 	  ret1 = tree_ctz (TREE_OPERAND (expr, 0));
-	  ret2 = tree_low_cst (TREE_OPERAND (expr, 1), 1);
+	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
 	  if (ret1 > ret2)
 	    return ret1 - ret2;
 	}
@@ -2675,7 +2675,7 @@ max_int_size_in_bytes (const_tree type)
       size_tree = TYPE_ARRAY_MAX_SIZE (type);
 
       if (size_tree && tree_fits_uhwi_p (size_tree))
-	size = tree_low_cst (size_tree, 1);
+	size = tree_to_uhwi (size_tree);
     }
 
   /* If we still haven't been able to get a size, see if the language
@@ -2686,7 +2686,7 @@ max_int_size_in_bytes (const_tree type)
       size_tree = lang_hooks.types.max_size (type);
 
       if (size_tree && tree_fits_uhwi_p (size_tree))
-	size = tree_low_cst (size_tree, 1);
+	size = tree_to_uhwi (size_tree);
     }
 
   return size;
@@ -6120,7 +6120,7 @@ find_atomic_core_type (tree type)
   if (TYPE_SIZE (type) == NULL_TREE)
     return NULL_TREE;
 
-  HOST_WIDE_INT type_size = tree_low_cst (TYPE_SIZE (type), 1);
+  HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
   switch (type_size)
     {
     case 8:
@@ -7709,7 +7709,7 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
 
   ret = itype;
   if (tree_fits_uhwi_p (TYPE_MAX_VALUE (itype)))
-    ret = type_hash_canon (tree_low_cst (TYPE_MAX_VALUE (itype), 1), itype);
+    ret = type_hash_canon (tree_to_uhwi (TYPE_MAX_VALUE (itype)), itype);
   if (precision <= MAX_INT_CACHED_PREC)
     nonstandard_integer_type_cache[precision + unsignedp] = ret;
 
@@ -8548,7 +8548,7 @@ get_narrower (tree op, int *unsignedp_ptr)
       && tree_fits_uhwi_p (DECL_SIZE (TREE_OPERAND (op, 1))))
     {
       unsigned HOST_WIDE_INT innerprec
-	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
+	= tree_to_uhwi (DECL_SIZE (TREE_OPERAND (op, 1)));
       int unsignedp = (DECL_UNSIGNED (TREE_OPERAND (op, 1))
 		       || TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
       tree type = lang_hooks.types.type_for_size (innerprec, unsignedp);
@@ -11971,7 +11971,7 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 	    continue;
 
 	  pos = int_bit_position (fld);
-	  size = tree_low_cst (DECL_SIZE (fld), 1);
+	  size = tree_to_uhwi (DECL_SIZE (fld));
 	  if (pos <= offset && (pos + size) > offset)
 	    break;
 	}

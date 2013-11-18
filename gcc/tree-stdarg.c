@@ -174,7 +174,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  && TREE_CODE (rhs1) == SSA_NAME
 	  && tree_fits_uhwi_p (gimple_assign_rhs2 (stmt)))
 	{
-	  ret += tree_low_cst (gimple_assign_rhs2 (stmt), 1);
+	  ret += tree_to_uhwi (gimple_assign_rhs2 (stmt));
 	  lhs = rhs1;
 	  continue;
 	}
@@ -184,7 +184,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0)) == SSA_NAME
 	  && tree_fits_uhwi_p (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1)))
 	{
-	  ret += tree_low_cst (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1);
+	  ret += tree_to_uhwi (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1));
 	  lhs = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
 	  continue;
 	}
@@ -241,7 +241,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  && TREE_CODE (rhs1) == SSA_NAME
 	  && tree_fits_uhwi_p (gimple_assign_rhs2 (stmt)))
 	{
-	  val -= tree_low_cst (gimple_assign_rhs2 (stmt), 1);
+	  val -= tree_to_uhwi (gimple_assign_rhs2 (stmt));
 	  lhs = rhs1;
 	  continue;
 	}
@@ -251,7 +251,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0)) == SSA_NAME
 	  && tree_fits_uhwi_p (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1)))
 	{
-	  val -= tree_low_cst (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1);
+	  val -= tree_to_uhwi (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1));
 	  lhs = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
 	  continue;
 	}
@@ -597,7 +597,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 
 		      gpr_size = si->offsets[SSA_NAME_VERSION (use)]
 			  	 + tree_to_shwi (TREE_OPERAND (rhs, 1))
-				 + tree_low_cst (access_size, 1);
+				 + tree_to_uhwi (access_size);
 		      if (gpr_size >= VA_LIST_MAX_GPR_SIZE)
 			cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;
 		      else if (gpr_size > cfun->va_list_gpr_size)

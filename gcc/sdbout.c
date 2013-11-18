@@ -1185,7 +1185,7 @@ sdbout_one_type (tree type)
 		    PUT_SDB_INT_VAL (int_bit_position (tem));
 		    PUT_SDB_SCL (C_FIELD);
 		    sdbout_type (DECL_BIT_FIELD_TYPE (tem));
-		    PUT_SDB_SIZE (tree_low_cst (DECL_SIZE (tem), 1));
+		    PUT_SDB_SIZE (tree_to_uhwi (DECL_SIZE (tem)));
 		  }
 		else
 		  {
