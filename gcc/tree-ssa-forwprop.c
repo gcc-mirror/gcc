@@ -1601,7 +1601,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	     as the new memcpy length, if it is too big, bail out.  */
 	  src_len = tree_to_uhwi (diff);
 	  src_len += tree_to_uhwi (len2);
-	  if (src_len < (unsigned HOST_WIDE_INT) tree_to_uhwi (len1))
+	  if (src_len < tree_to_uhwi (len1))
 	    src_len = tree_to_uhwi (len1);
 	  if (src_len > 1024)
 	    break;
@@ -2319,7 +2319,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   /* CNT1 + CNT2 == B case above.  */
   if (tree_fits_uhwi_p (def_arg2[0])
       && tree_fits_uhwi_p (def_arg2[1])
-      && (unsigned HOST_WIDE_INT) tree_to_uhwi (def_arg2[0])
+      && tree_to_uhwi (def_arg2[0])
 	 + tree_to_uhwi (def_arg2[1]) == TYPE_PRECISION (rtype))
     rotcnt = def_arg2[0];
   else if (TREE_CODE (def_arg2[0]) != SSA_NAME

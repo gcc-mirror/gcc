@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* c-common.c (convert_vector_to_pointer_for_subscript): Remove
+	cast to unsigned type.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* c-common.c (fold_offsetof_1): Use tree_to_uhwi rather than
 	tree_low_cst.
 	(complete_array_type): Update comment to refer to tree_to_[su]hwi

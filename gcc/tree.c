@@ -2211,8 +2211,7 @@ tree_ctz (const_tree expr)
     case LSHIFT_EXPR:
       ret1 = tree_ctz (TREE_OPERAND (expr, 0));
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
-	      < (unsigned HOST_WIDE_INT) prec))
+	  && (tree_to_uhwi (TREE_OPERAND (expr, 1)) < prec))
 	{
 	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
 	  return MIN (ret1 + ret2, prec);
@@ -2220,8 +2219,7 @@ tree_ctz (const_tree expr)
       return ret1;
     case RSHIFT_EXPR:
       if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
-	  && ((unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (expr, 1))
-	      < (unsigned HOST_WIDE_INT) prec))
+	  && (tree_to_uhwi (TREE_OPERAND (expr, 1)) < prec))
 	{
 	  ret1 = tree_ctz (TREE_OPERAND (expr, 0));
 	  ret2 = tree_to_uhwi (TREE_OPERAND (expr, 1));
@@ -7011,7 +7009,7 @@ tree_to_shwi (const_tree t)
    TYPE_UNSIGNED) fits in an unsigned HOST_WIDE_INT.  Return that
    HOST_WIDE_INT.  */
 
-HOST_WIDE_INT
+unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));

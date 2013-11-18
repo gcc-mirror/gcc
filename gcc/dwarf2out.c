@@ -17073,8 +17073,7 @@ descr_info_loc (tree val, tree base_decl)
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (tree_fits_uhwi_p (TREE_OPERAND (val, 1))
-	  && (unsigned HOST_WIDE_INT) tree_to_uhwi (TREE_OPERAND (val, 1))
-	     < 16384)
+	  && tree_to_uhwi (TREE_OPERAND (val, 1)) < 16384)
 	{
 	  loc = descr_info_loc (TREE_OPERAND (val, 0), base_decl);
 	  if (!loc)

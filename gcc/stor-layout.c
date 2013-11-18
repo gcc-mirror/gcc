@@ -1053,8 +1053,7 @@ excess_unit_span (HOST_WIDE_INT byte_offset, HOST_WIDE_INT bit_offset,
 
   offset = offset % align;
   return ((offset + size + align - 1) / align
-	  > ((unsigned HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-	     / align));
+	  > tree_to_uhwi (TYPE_SIZE (type)) / align);
 }
 #endif
 
