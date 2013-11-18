@@ -382,6 +382,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_regrename);
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
+	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_reorder_blocks);
 	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
@@ -393,7 +394,6 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_stack_regs_run);
 	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_compute_alignments);
-	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_variable_tracking);
 	  NEXT_PASS (pass_free_cfg);
 	  NEXT_PASS (pass_machine_reorg);

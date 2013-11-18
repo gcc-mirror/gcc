@@ -1,3 +1,10 @@
+2013-11-18  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc/cfgrtl.c (cfg_layout_initialize): Assert if we
+	try to go into cfglayout after bb reordering.
+	* gcc/passes.def: Move compgotos before bb reordering
+	since it goes into cfglayout.
+
 2013-11-18  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* cgraphunit.c (ipa_passes): Don't execute all_lto_gen_passes.
