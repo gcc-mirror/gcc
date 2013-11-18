@@ -1,3 +1,15 @@
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* libgcov-driver.c (get_gcov_dump_complete): Update comments.
+	(all_prg, crc32): Remove static vars.
+	(gcov_exit_compute_summary): Rewrite to return crc32; do not clear
+	all_prg.
+	(gcov_exit_merge_gcda): Add crc32 parameter.
+	(gcov_exit_merge_summary): Add crc32 and all_prg parameter;
+	do not account run if it was already accounted.
+	(gcov_exit_dump_gcov): Add crc32 and all_prg parameters.
+	(gcov_exit): Initialize all_prg; update.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
