@@ -485,7 +485,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		      unsigned HOST_WIDE_INT d2;
 		      int this_pre_shift;
 
-		      if (!host_integerp (cst2, 1))
+		      if (!tree_fits_uhwi_p (cst2))
 			return NULL_TREE;
 		      d2 = tree_low_cst (cst2, 1) & mask;
 		      if (d2 == 0)
@@ -1054,7 +1054,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
       /* Given that we're about to compute a binary modulus,
 	 we don't care about the high bits of the value.  */
       index = TREE_INT_CST_LOW (idx);
-      if (!host_integerp (idx, 1) || index >= elements)
+      if (!tree_fits_uhwi_p (idx) || index >= elements)
 	{
 	  index &= elements - 1;
 	  idx = build_int_cst (TREE_TYPE (idx), index);
@@ -1186,7 +1186,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  unsigned HOST_WIDE_INT index;
 
 	  index = TREE_INT_CST_LOW (i_val);
-	  if (!host_integerp (i_val, 1) || index >= elements)
+	  if (!tree_fits_uhwi_p (i_val) || index >= elements)
 	    i_val = build_int_cst (mask_elt_type, index & (elements - 1));
 
           if (two_operand_p && (index & elements) != 0)

@@ -8477,7 +8477,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   size = TREE_VALUE (args);
 
-  if (!host_integerp (size, 1))
+  if (!tree_fits_uhwi_p (size))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
@@ -8510,7 +8510,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       || (!SCALAR_FLOAT_MODE_P (orig_mode)
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
-      || !host_integerp (TYPE_SIZE_UNIT (type), 1)
+      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE)
     {
       error ("invalid vector type for attribute %qE", name);
@@ -11702,7 +11702,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       tree type1;
 
       if (TREE_CODE (index) == INTEGER_CST)
-        if (!host_integerp (index, 1)
+        if (!tree_fits_uhwi_p (index)
             || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
                >= TYPE_VECTOR_SUBPARTS (type)))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");

@@ -46,7 +46,7 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
   type = pragma_lex (&val);
   if (type == CPP_NUMBER)
     {
-      if (host_integerp (val, 1))
+      if (tree_fits_uhwi_p (val))
 	{
 	  i = tree_low_cst (val, 1);
 

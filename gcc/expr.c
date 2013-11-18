@@ -4628,8 +4628,8 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
      relative to the representative.  DECL_FIELD_OFFSET of field and
      repr are the same by construction if they are not constants,
      see finish_bitfield_layout.  */
-  if (host_integerp (DECL_FIELD_OFFSET (field), 1)
-      && host_integerp (DECL_FIELD_OFFSET (repr), 1))
+  if (tree_fits_uhwi_p (DECL_FIELD_OFFSET (field))
+      && tree_fits_uhwi_p (DECL_FIELD_OFFSET (repr)))
     bitoffset = (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
 		 - tree_low_cst (DECL_FIELD_OFFSET (repr), 1)) * BITS_PER_UNIT;
   else
@@ -5470,7 +5470,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
 	tree nelts;
 
 	nelts = array_type_nelts (type);
-	if (nelts && host_integerp (nelts, 1))
+	if (nelts && tree_fits_uhwi_p (nelts))
 	  {
 	    unsigned HOST_WIDE_INT n;
 
@@ -5589,7 +5589,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  tree lo_index = TREE_OPERAND (purpose, 0);
 	  tree hi_index = TREE_OPERAND (purpose, 1);
 
-	  if (host_integerp (lo_index, 1) && host_integerp (hi_index, 1))
+	  if (tree_fits_uhwi_p (lo_index) && tree_fits_uhwi_p (hi_index))
 	    mult = (tree_low_cst (hi_index, 1)
 		    - tree_low_cst (lo_index, 1) + 1);
 	}
@@ -5908,7 +5908,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    if (cleared && initializer_zerop (value))
 	      continue;
 
-	    if (host_integerp (DECL_SIZE (field), 1))
+	    if (tree_fits_uhwi_p (DECL_SIZE (field)))
 	      bitsize = tree_low_cst (DECL_SIZE (field), 1);
 	    else
 	      bitsize = -1;
@@ -6047,8 +6047,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    tree lo_index = TREE_OPERAND (index, 0);
 		    tree hi_index = TREE_OPERAND (index, 1);
 
-		    if (! host_integerp (lo_index, 1)
-			|| ! host_integerp (hi_index, 1))
+		    if (! tree_fits_uhwi_p (lo_index)
+			|| ! tree_fits_uhwi_p (hi_index))
 		      {
 			need_to_clear = 1;
 			break;
@@ -6102,7 +6102,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	    mode = TYPE_MODE (elttype);
 	    if (mode == BLKmode)
-	      bitsize = (host_integerp (TYPE_SIZE (elttype), 1)
+	      bitsize = (tree_fits_uhwi_p (TYPE_SIZE (elttype))
 			 ? tree_low_cst (TYPE_SIZE (elttype), 1)
 			 : -1);
 	    else
@@ -6125,7 +6125,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 			count = hi - lo + 1,
 			(!MEM_P (target)
 			 || count <= 2
-			 || (host_integerp (TYPE_SIZE (elttype), 1)
+			 || (tree_fits_uhwi_p (TYPE_SIZE (elttype))
 			     && (tree_low_cst (TYPE_SIZE (elttype), 1) * count
 				 <= 40 * 8)))))
 		  {
@@ -6208,7 +6208,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  }
 	      }
 	    else if ((index != 0 && ! tree_fits_shwi_p (index))
-		     || ! host_integerp (TYPE_SIZE (elttype), 1))
+		     || ! tree_fits_uhwi_p (TYPE_SIZE (elttype)))
 	      {
 		tree position;
 
@@ -6676,7 +6676,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
   if (size_tree != 0)
     {
-      if (! host_integerp (size_tree, 1))
+      if (! tree_fits_uhwi_p (size_tree))
 	mode = BLKmode, *pbitsize = -1;
       else
 	*pbitsize = tree_low_cst (size_tree, 1);
@@ -7756,7 +7756,7 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
        && ((mode == BLKmode
 	    && ! (target != 0 && safe_from_p (target, exp, 1)))
 		  || TREE_ADDRESSABLE (exp)
-		  || (host_integerp (TYPE_SIZE_UNIT (type), 1)
+		  || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
 		      && (! MOVE_BY_PIECES_P
 				     (tree_low_cst (TYPE_SIZE_UNIT (type), 1),
 				      TYPE_ALIGN (type)))
@@ -9633,7 +9633,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    HOST_WIDE_INT offset = mem_ref_offset (exp).low;
 	    base = TREE_OPERAND (base, 0);
 	    if (offset == 0
-		&& host_integerp (TYPE_SIZE (type), 1)
+		&& tree_fits_uhwi_p (TYPE_SIZE (type))
 		&& (GET_MODE_BITSIZE (DECL_MODE (base))
 		    == TREE_INT_CST_LOW (TYPE_SIZE (type))))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
@@ -10558,7 +10558,7 @@ is_aligning_offset (const_tree offset, const_tree exp)
   /* We must now have a BIT_AND_EXPR with a constant that is one less than
      power of 2 and which is larger than BIGGEST_ALIGNMENT.  */
   if (TREE_CODE (offset) != BIT_AND_EXPR
-      || !host_integerp (TREE_OPERAND (offset, 1), 1)
+      || !tree_fits_uhwi_p (TREE_OPERAND (offset, 1))
       || compare_tree_int (TREE_OPERAND (offset, 1),
 			   BIGGEST_ALIGNMENT / BITS_PER_UNIT) <= 0
       || !exact_log2 (tree_low_cst (TREE_OPERAND (offset, 1), 1) + 1) < 0)
@@ -10696,7 +10696,7 @@ string_constant (tree arg, tree *ptr_offset)
 	 and inside of the bounds of the string literal.  */
       offset = fold_convert (sizetype, offset);
       if (compare_tree_int (DECL_SIZE_UNIT (array), length) > 0
-	  && (! host_integerp (offset, 1)
+	  && (! tree_fits_uhwi_p (offset)
 	      || compare_tree_int (offset, length) >= 0))
 	return 0;
 

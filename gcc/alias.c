@@ -338,7 +338,7 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (MEM_EXPR (mem) != get_spill_slot_decl (false)
       && (ref->offset < 0
 	  || (DECL_P (ref->base)
-	      && (!host_integerp (DECL_SIZE (ref->base), 1)
+	      && (!tree_fits_uhwi_p (DECL_SIZE (ref->base))
 		  || (TREE_INT_CST_LOW (DECL_SIZE ((ref->base)))
 		      < (unsigned HOST_WIDE_INT)(ref->offset + ref->size))))))
     return false;
@@ -2347,7 +2347,7 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
       tree xoffset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
 
-      if (! host_integerp (xoffset, 1))
+      if (! tree_fits_uhwi_p (xoffset))
 	{
 	  *known_p = false;
 	  return;

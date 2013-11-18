@@ -5149,7 +5149,7 @@ mips_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
       && type != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_SIZE_UNIT (type)
-      && host_integerp (TYPE_SIZE_UNIT (type), 1))
+      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
     {
       tree field;
 

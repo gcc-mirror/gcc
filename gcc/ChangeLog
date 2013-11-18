@@ -1,5 +1,23 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* builtins.c, config/alpha/alpha.c, config/iq2000/iq2000.c,
+	config/mips/mips.c, dbxout.c, dwarf2out.c, expr.c, fold-const.c,
+	gimple-fold.c, godump.c, omp-low.c, predict.c, sdbout.c, stor-layout.c,
+	tree-dfa.c, tree-sra.c, tree-ssa-forwprop.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-phiopt.c, tree-ssa-sccvn.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-vect-data-refs.c, tree-vect-patterns.c,
+	tree.c, varasm.c, alias.c, cfgexpand.c, config/aarch64/aarch64.c,
+	config/arm/arm.c, config/epiphany/epiphany.c, config/i386/i386.c,
+	config/m32c/m32c-pragma.c, config/mep/mep-pragma.c,
+	config/rs6000/rs6000.c, config/sparc/sparc.c, emit-rtl.c, function.c,
+	gimplify.c, ipa-prop.c, stmt.c, trans-mem.c, tree-cfg.c,
+	tree-object-size.c, tree-ssa-ccp.c, tree-ssa-loop-ivcanon.c,
+	tree-stdarg.c, tree-switch-conversion.c, tree-vect-generic.c,
+	tree-vrp.c, tsan.c, ubsan.c: Replace host_integerp (..., 1) with
+	tree_fits_uhwi_p throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* builtins.c, config/alpha/alpha.c, config/c6x/predicates.md,
 	config/ia64/predicates.md, config/iq2000/iq2000.c, config/mips/mips.c,
 	config/s390/s390.c, dbxout.c, dwarf2out.c, except.c, explow.c, expr.c,

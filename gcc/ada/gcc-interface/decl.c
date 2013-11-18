@@ -837,7 +837,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		align_cap = get_mode_alignment (ptr_mode);
 	      }
 
-	    if (!host_integerp (TYPE_SIZE (gnu_type), 1)
+	    if (!tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 		|| compare_tree_int (TYPE_SIZE (gnu_type), size_cap) > 0)
 	      align = 0;
 	    else if (compare_tree_int (TYPE_SIZE (gnu_type), align_cap) > 0)
@@ -1482,7 +1482,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && const_flag
 	    && gnu_expr && TREE_CONSTANT (gnu_expr)
 	    && AGGREGATE_TYPE_P (gnu_type)
-	    && host_integerp (TYPE_SIZE_UNIT (gnu_type), 1)
+	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (gnu_type))
 	    && !(TYPE_IS_PADDING_P (gnu_type)
 		 && !host_integerp (TYPE_SIZE_UNIT
 				    (TREE_TYPE (TYPE_FIELDS (gnu_type))), 1)))
@@ -3497,7 +3497,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			gnu_size = DECL_SIZE (gnu_old_field);
 			if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 			    && !TYPE_FAT_POINTER_P (gnu_field_type)
-			    && host_integerp (TYPE_SIZE (gnu_field_type), 1))
+			    && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type)))
 			  gnu_field_type
 			    = make_packable_type (gnu_field_type, true);
 		      }
@@ -4922,7 +4922,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* Consider an alignment as suspicious if the alignment/size
 		 ratio is greater or equal to the byte/bit ratio.  */
-	      if (host_integerp (size, 1)
+	      if (tree_fits_uhwi_p (size)
 		  && align >= TREE_INT_CST_LOW (size) * BITS_PER_UNIT)
 		post_error_ne ("?suspiciously large alignment specified for&",
 			       Expression (Alignment_Clause (gnat_entity)),
@@ -4930,12 +4930,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 	}
       else if (Is_Atomic (gnat_entity) && !gnu_size
-	       && host_integerp (TYPE_SIZE (gnu_type), 1)
+	       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
 	align = MIN (BIGGEST_ALIGNMENT,
 		     tree_low_cst (TYPE_SIZE (gnu_type), 1));
       else if (Is_Atomic (gnat_entity) && gnu_size
-	       && host_integerp (gnu_size, 1)
+	       && tree_fits_uhwi_p (gnu_size)
 	       && integer_pow2p (gnu_size))
 	align = MIN (BIGGEST_ALIGNMENT, tree_low_cst (gnu_size, 1));
 
@@ -5583,7 +5583,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && !Strict_Alignment (gnat_type)
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
-      && host_integerp (TYPE_SIZE (gnu_type), 1))
+      && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
     gnu_type = make_packable_type (gnu_type, false);
 
   if (Has_Atomic_Components (gnat_array))
@@ -6507,7 +6507,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (!needs_strict_alignment
       && RECORD_OR_UNION_TYPE_P (gnu_field_type)
       && !TYPE_FAT_POINTER_P (gnu_field_type)
-      && host_integerp (TYPE_SIZE (gnu_field_type), 1)
+      && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type))
       && (packed == 1
 	  || (gnu_size
 	      && (tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type))

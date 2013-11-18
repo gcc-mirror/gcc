@@ -697,7 +697,7 @@ static bool
 check_range (struct switch_conv_info *info)
 {
   gcc_assert (info->range_size);
-  if (!host_integerp (info->range_size, 1))
+  if (!tree_fits_uhwi_p (info->range_size))
     {
       info->reason = "index range way too large or otherwise unusable";
       return false;

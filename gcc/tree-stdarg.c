@@ -172,7 +172,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
       if ((rhs_code == POINTER_PLUS_EXPR
 	   || rhs_code == PLUS_EXPR)
 	  && TREE_CODE (rhs1) == SSA_NAME
-	  && host_integerp (gimple_assign_rhs2 (stmt), 1))
+	  && tree_fits_uhwi_p (gimple_assign_rhs2 (stmt)))
 	{
 	  ret += tree_low_cst (gimple_assign_rhs2 (stmt), 1);
 	  lhs = rhs1;
@@ -182,7 +182,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
       if (rhs_code == ADDR_EXPR 
 	  && TREE_CODE (TREE_OPERAND (rhs1, 0)) == MEM_REF
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0)) == SSA_NAME
-	  && host_integerp (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1)))
 	{
 	  ret += tree_low_cst (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1);
 	  lhs = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
@@ -239,7 +239,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
       if ((rhs_code == POINTER_PLUS_EXPR
 	   || rhs_code == PLUS_EXPR)
 	  && TREE_CODE (rhs1) == SSA_NAME
-	  && host_integerp (gimple_assign_rhs2 (stmt), 1))
+	  && tree_fits_uhwi_p (gimple_assign_rhs2 (stmt)))
 	{
 	  val -= tree_low_cst (gimple_assign_rhs2 (stmt), 1);
 	  lhs = rhs1;
@@ -249,7 +249,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
       if (rhs_code == ADDR_EXPR 
 	  && TREE_CODE (TREE_OPERAND (rhs1, 0)) == MEM_REF
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0)) == SSA_NAME
-	  && host_integerp (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1)))
 	{
 	  val -= tree_low_cst (TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1), 1);
 	  lhs = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
@@ -589,7 +589,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		  if (rhs_code == MEM_REF
 		      && TREE_OPERAND (rhs, 0) == use
 		      && TYPE_SIZE_UNIT (TREE_TYPE (rhs))
-		      && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (rhs)), 1)
+		      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (rhs)))
 		      && si->offsets[SSA_NAME_VERSION (use)] != -1)
 		    {
 		      unsigned HOST_WIDE_INT gpr_size;

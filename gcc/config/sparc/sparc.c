@@ -6332,7 +6332,7 @@ function_arg_record_value_1 (const_tree type, HOST_WIDE_INT startbitpos,
 	      if (integer_zerop (DECL_SIZE (field)))
 		continue;
 
-	      if (host_integerp (bit_position (field), 1))
+	      if (tree_fits_uhwi_p (bit_position (field)))
 		bitpos += int_bit_position (field);
 	    }
 
@@ -6480,7 +6480,7 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
 	      if (integer_zerop (DECL_SIZE (field)))
 		continue;
 
-	      if (host_integerp (bit_position (field), 1))
+	      if (tree_fits_uhwi_p (bit_position (field)))
 		bitpos += int_bit_position (field);
 	    }
 

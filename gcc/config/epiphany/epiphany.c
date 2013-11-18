@@ -2758,7 +2758,7 @@ epiphany_special_round_type_align (tree type, unsigned computed,
 	continue;
       offset = bit_position (field);
       size = DECL_SIZE (field);
-      if (!host_integerp (offset, 1) || !host_integerp (size, 1)
+      if (!tree_fits_uhwi_p (offset) || !tree_fits_uhwi_p (size)
 	  || TREE_INT_CST_LOW (offset) >= try_align
 	  || TREE_INT_CST_LOW (size) >= try_align)
 	return try_align;
@@ -2785,7 +2785,7 @@ epiphany_adjust_field_align (tree field, unsigned computed)
     {
       tree elmsz = TYPE_SIZE (TREE_TYPE (TREE_TYPE (field)));
 
-      if (!host_integerp (elmsz, 1) || tree_low_cst (elmsz, 1) >= 32)
+      if (!tree_fits_uhwi_p (elmsz) || tree_low_cst (elmsz, 1) >= 32)
 	return 64;
     }
   return computed;

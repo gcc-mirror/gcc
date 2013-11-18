@@ -5015,7 +5015,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  cst2 = gimple_assign_rhs2 (def_stmt);
 	  if (TREE_CODE (name2) == SSA_NAME
-	      && host_integerp (cst2, 1)
+	      && tree_fits_uhwi_p (cst2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && IN_RANGE (tree_low_cst (cst2, 1), 1, prec - 1)
 	      && prec <= HOST_BITS_PER_DOUBLE_INT

@@ -1975,9 +1975,9 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       tree_offset2 = bit_position (field2);
       tree_size2 = DECL_SIZE (field2);
 
-      if (!host_integerp (tree_offset1, 1)
-	  || !host_integerp (tree_offset2, 1)
-	  || !host_integerp (tree_size2, 1))
+      if (!tree_fits_uhwi_p (tree_offset1)
+	  || !tree_fits_uhwi_p (tree_offset2)
+	  || !tree_fits_uhwi_p (tree_size2))
 	continue;
 
       offset1 = TREE_INT_CST_LOW (tree_offset1);

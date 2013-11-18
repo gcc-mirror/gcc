@@ -2210,7 +2210,7 @@ tree_ctz (const_tree expr)
       return MIN (ret1 + ret2, prec);
     case LSHIFT_EXPR:
       ret1 = tree_ctz (TREE_OPERAND (expr, 0));
-      if (host_integerp (TREE_OPERAND (expr, 1), 1)
+      if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
 	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
 	      < (unsigned HOST_WIDE_INT) prec))
 	{
@@ -2219,7 +2219,7 @@ tree_ctz (const_tree expr)
 	}
       return ret1;
     case RSHIFT_EXPR:
-      if (host_integerp (TREE_OPERAND (expr, 1), 1)
+      if (tree_fits_uhwi_p (TREE_OPERAND (expr, 1))
 	  && ((unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (expr, 1), 1)
 	      < (unsigned HOST_WIDE_INT) prec))
 	{
@@ -2674,7 +2674,7 @@ max_int_size_in_bytes (const_tree type)
     {
       size_tree = TYPE_ARRAY_MAX_SIZE (type);
 
-      if (size_tree && host_integerp (size_tree, 1))
+      if (size_tree && tree_fits_uhwi_p (size_tree))
 	size = tree_low_cst (size_tree, 1);
     }
 
@@ -2685,7 +2685,7 @@ max_int_size_in_bytes (const_tree type)
     {
       size_tree = lang_hooks.types.max_size (type);
 
-      if (size_tree && host_integerp (size_tree, 1))
+      if (size_tree && tree_fits_uhwi_p (size_tree))
 	size = tree_low_cst (size_tree, 1);
     }
 
@@ -7282,7 +7282,7 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
 bool
 valid_constant_size_p (const_tree size)
 {
-  if (! host_integerp (size, 1)
+  if (! tree_fits_uhwi_p (size)
       || TREE_OVERFLOW (size)
       || tree_int_cst_sign_bit (size) != 0)
     return false;
@@ -7686,7 +7686,7 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
     fixup_signed_type (itype);
 
   ret = itype;
-  if (host_integerp (TYPE_MAX_VALUE (itype), 1))
+  if (tree_fits_uhwi_p (TYPE_MAX_VALUE (itype)))
     ret = type_hash_canon (tree_low_cst (TYPE_MAX_VALUE (itype), 1), itype);
   if (precision <= MAX_INT_CACHED_PREC)
     nonstandard_integer_type_cache[precision + unsignedp] = ret;
@@ -8523,7 +8523,7 @@ get_narrower (tree op, int *unsignedp_ptr)
       && TREE_CODE (TREE_TYPE (op)) != FIXED_POINT_TYPE
       /* Ensure field is laid out already.  */
       && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
-      && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
+      && tree_fits_uhwi_p (DECL_SIZE (TREE_OPERAND (op, 1))))
     {
       unsigned HOST_WIDE_INT innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);

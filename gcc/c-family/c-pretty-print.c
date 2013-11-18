@@ -917,7 +917,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 
   if (tree_fits_shwi_p (i))
     pp_wide_integer (pp, TREE_INT_CST_LOW (i));
-  else if (host_integerp (i, 1))
+  else if (tree_fits_uhwi_p (i))
     pp_unsigned_wide_integer (pp, TREE_INT_CST_LOW (i));
   else
     {

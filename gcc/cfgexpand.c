@@ -1358,7 +1358,7 @@ stack_protect_classify_type (tree type)
 	  unsigned HOST_WIDE_INT len;
 
 	  if (!TYPE_SIZE_UNIT (type)
-	      || !host_integerp (TYPE_SIZE_UNIT (type), 1))
+	      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	    len = max;
 	  else
 	    len = tree_low_cst (TYPE_SIZE_UNIT (type), 1);

@@ -1136,7 +1136,7 @@ get_block_for_decl (tree decl)
      constant size.  */
   if (DECL_SIZE_UNIT (decl) == NULL)
     return NULL;
-  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
     return NULL;
 
   /* Find out which section should contain DECL.  We cannot put it into
