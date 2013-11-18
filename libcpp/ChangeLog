@@ -1,3 +1,7 @@
+2013-11-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lex.c (search_line_fast): Correct for little endian.
+
 2013-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* ucnid.tab: Add C11 and C11NOSTART data.
