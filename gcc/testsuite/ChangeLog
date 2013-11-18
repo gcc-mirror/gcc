@@ -1,3 +1,8 @@
+2013-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53473
+	* g++.dg/cpp0x/constexpr-noexcept7.C: New.
+
 2013-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59125
