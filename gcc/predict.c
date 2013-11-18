@@ -1557,7 +1557,7 @@ predict_loops (void)
 
 	  if (TREE_CODE (niter) == INTEGER_CST)
 	    {
-	      if (host_integerp (niter, 1)
+	      if (tree_fits_uhwi_p (niter)
 		  && max
 		  && compare_tree_int (niter, max - 1) == -1)
 		nitercst = tree_low_cst (niter, 1) + 1;

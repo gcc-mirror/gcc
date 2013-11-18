@@ -2207,7 +2207,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	node = fold_convert (ssizetype, node);
       if (tree_fits_shwi_p (node))
 	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
-      else if (host_integerp (node, 1))
+      else if (tree_fits_uhwi_p (node))
 	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
       else
 	{

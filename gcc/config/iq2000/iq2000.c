@@ -1279,7 +1279,7 @@ iq2000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 
       if (! type || TREE_CODE (type) != RECORD_TYPE
 	  || ! named  || ! TYPE_SIZE_UNIT (type)
-	  || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
+	  || ! tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
 	{

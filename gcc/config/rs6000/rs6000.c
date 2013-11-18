@@ -6125,7 +6125,7 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (!DECL_SIZE_UNIT (decl))
 	    return false;
 
-	  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+	  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
 	    return false;
 
 	  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
@@ -6151,7 +6151,7 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (TREE_CODE (decl) == STRING_CST)
 	    dsize = TREE_STRING_LENGTH (decl);
 	  else if (TYPE_SIZE_UNIT (type)
-		   && host_integerp (TYPE_SIZE_UNIT (type), 1))
+		   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
 	  else
 	    return false;
@@ -8553,9 +8553,9 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
@@ -8563,7 +8563,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
@@ -8593,7 +8593,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
@@ -8625,7 +8625,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
@@ -9159,7 +9159,7 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -9641,7 +9641,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -12386,7 +12386,7 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
+  if (!tree_fits_uhwi_p (arg)
       || (elt = tree_low_cst (arg, 1), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);

@@ -1528,7 +1528,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  use_operand_p use_p;
 
 	  if (!tree_fits_shwi_p (val2)
-	      || !host_integerp (len2, 1))
+	      || !tree_fits_uhwi_p (len2))
 	    break;
 	  if (is_gimple_call (stmt1))
 	    {
@@ -1547,12 +1547,12 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      src1 = gimple_call_arg (stmt1, 1);
 	      len1 = gimple_call_arg (stmt1, 2);
 	      lhs1 = gimple_call_lhs (stmt1);
-	      if (!host_integerp (len1, 1))
+	      if (!tree_fits_uhwi_p (len1))
 		break;
 	      str1 = string_constant (src1, &off1);
 	      if (str1 == NULL_TREE)
 		break;
-	      if (!host_integerp (off1, 1)
+	      if (!tree_fits_uhwi_p (off1)
 		  || compare_tree_int (off1, TREE_STRING_LENGTH (str1) - 1) > 0
 		  || compare_tree_int (len1, TREE_STRING_LENGTH (str1)
 					     - tree_low_cst (off1, 1)) > 0
@@ -1593,7 +1593,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  /* If the difference between the second and first destination pointer
 	     is not constant, or is bigger than memcpy length, bail out.  */
 	  if (diff == NULL
-	      || !host_integerp (diff, 1)
+	      || !tree_fits_uhwi_p (diff)
 	      || tree_int_cst_lt (len1, diff))
 	    break;
 
@@ -2317,8 +2317,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     return false;
 
   /* CNT1 + CNT2 == B case above.  */
-  if (host_integerp (def_arg2[0], 1)
-      && host_integerp (def_arg2[1], 1)
+  if (tree_fits_uhwi_p (def_arg2[0])
+      && tree_fits_uhwi_p (def_arg2[1])
       && (unsigned HOST_WIDE_INT) tree_low_cst (def_arg2[0], 1)
 	 + tree_low_cst (def_arg2[1], 1) == TYPE_PRECISION (rtype))
     rotcnt = def_arg2[0];

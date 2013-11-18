@@ -32657,7 +32657,7 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
+  if (!tree_fits_uhwi_p (arg)
       || (elt = tree_low_cst (arg, 1), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);

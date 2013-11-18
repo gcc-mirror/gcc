@@ -1521,7 +1521,7 @@ dbxout_type_fields (tree type)
 	  || (TREE_CODE (tem) == FIELD_DECL
 	      && (! tree_fits_shwi_p (bit_position (tem))
 		  || ! DECL_SIZE (tem)
-		  || ! host_integerp (DECL_SIZE (tem), 1))))
+		  || ! tree_fits_uhwi_p (DECL_SIZE (tem)))))
 	continue;
 
       else if (TREE_CODE (tem) != CONST_DECL)
@@ -1864,7 +1864,7 @@ dbxout_type (tree type, int full)
 	 Sun dbx crashes if we do.  */
       if (! full || !COMPLETE_TYPE_P (type)
 	  /* No way in DBX fmt to describe a variable size.  */
-	  || ! host_integerp (TYPE_SIZE (type), 1))
+	  || ! tree_fits_uhwi_p (TYPE_SIZE (type)))
 	return;
       break;
     case TYPE_DEFINED:
@@ -1889,7 +1889,7 @@ dbxout_type (tree type, int full)
 	 && !full)
 	|| !COMPLETE_TYPE_P (type)
 	/* No way in DBX fmt to describe a variable size.  */
-	|| ! host_integerp (TYPE_SIZE (type), 1))
+	|| ! tree_fits_uhwi_p (TYPE_SIZE (type)))
       {
 	typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	return;
@@ -2147,7 +2147,7 @@ dbxout_type (tree type, int full)
 	     && !full)
 	    || !COMPLETE_TYPE_P (type)
 	    /* No way in DBX fmt to describe a variable size.  */
-	    || ! host_integerp (TYPE_SIZE (type), 1))
+	    || ! tree_fits_uhwi_p (TYPE_SIZE (type)))
 	  {
 	    /* If the type is just a cross reference, output one
 	       and mark the type as partially described.
@@ -2796,7 +2796,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 		/* Do not generate a tag for records of variable size,
 		   since this type can not be properly described in the
 		   DBX format, and it confuses some tools such as objdump.  */
-		&& host_integerp (TYPE_SIZE (type), 1))
+		&& tree_fits_uhwi_p (TYPE_SIZE (type)))
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)

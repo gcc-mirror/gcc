@@ -1430,7 +1430,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       if (code == VEC_LSHIFT_EXPR
 	  || code == VEC_RSHIFT_EXPR)
 	{
-	  if (!host_integerp (arg2, 1))
+	  if (!tree_fits_uhwi_p (arg2))
 	    return NULL_TREE;
 
 	  unsigned HOST_WIDE_INT shiftc = tree_low_cst (arg2, 1);
@@ -6643,7 +6643,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 	 not overflow, adjust BITNUM and INNER.  */
       if (TREE_CODE (inner) == RSHIFT_EXPR
 	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
-	  && host_integerp (TREE_OPERAND (inner, 1), 1)
+	  && tree_fits_uhwi_p (TREE_OPERAND (inner, 1))
 	  && bitnum < TYPE_PRECISION (type)
 	  && (TREE_INT_CST_LOW (TREE_OPERAND (inner, 1))
 	      < (unsigned) (TYPE_PRECISION (type) - bitnum)))
@@ -8098,7 +8098,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    change = 1;
 	  else if (TYPE_PRECISION (TREE_TYPE (and1))
 		   <= HOST_BITS_PER_WIDE_INT
-		   && host_integerp (and1, 1))
+		   && tree_fits_uhwi_p (and1))
 	    {
 	      unsigned HOST_WIDE_INT cst;
 
@@ -11864,7 +11864,7 @@ fold_binary_loc (location_t loc,
 	 and for - instead of + (or unary - instead of +)
 	 and/or ^ instead of |.
 	 If B is constant and (B & M) == 0, fold into A & M.  */
-      if (host_integerp (arg1, 1))
+      if (tree_fits_uhwi_p (arg1))
 	{
 	  unsigned HOST_WIDE_INT cst1 = tree_low_cst (arg1, 1);
 	  if (~cst1 && (cst1 & (cst1 + 1)) == 0
@@ -11890,7 +11890,7 @@ fold_binary_loc (location_t loc,
 		  which = 1;
 		}
 
-	      if (!host_integerp (TYPE_MAX_VALUE (TREE_TYPE (arg0)), 1)
+	      if (!tree_fits_uhwi_p (TYPE_MAX_VALUE (TREE_TYPE (arg0)))
 		  || (tree_low_cst (TYPE_MAX_VALUE (TREE_TYPE (arg0)), 1)
 		      & cst1) != cst1)
 		which = -1;
@@ -12013,7 +12013,7 @@ fold_binary_loc (location_t loc,
       /* If arg0 is derived from the address of an object or function, we may
 	 be able to fold this expression using the object or function's
 	 alignment.  */
-      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && host_integerp (arg1, 1))
+      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && tree_fits_uhwi_p (arg1))
 	{
 	  unsigned HOST_WIDE_INT modulus, residue;
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (arg1);
@@ -12035,7 +12035,7 @@ fold_binary_loc (location_t loc,
 	   || TREE_CODE (arg0) == RSHIFT_EXPR)
 	  && TYPE_PRECISION (TREE_TYPE (arg0)) <= HOST_BITS_PER_WIDE_INT
 	  && TREE_CODE (arg1) == INTEGER_CST
-	  && host_integerp (TREE_OPERAND (arg0, 1), 1)
+	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
 	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1) > 0
 	  && (tree_low_cst (TREE_OPERAND (arg0, 1), 1)
 	      < TYPE_PRECISION (TREE_TYPE (arg0))))
@@ -12646,9 +12646,9 @@ fold_binary_loc (location_t loc,
       prec = element_precision (type);
 
       /* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
-      if (TREE_CODE (op0) == code && host_integerp (arg1, true)
+      if (TREE_CODE (op0) == code && tree_fits_uhwi_p (arg1)
 	  && TREE_INT_CST_LOW (arg1) < prec
-	  && host_integerp (TREE_OPERAND (arg0, 1), true)
+	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
 	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < prec)
 	{
 	  unsigned int low = (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
@@ -14584,7 +14584,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
          fold (nearly) all BIT_FIELD_REFs.  */
       if (CONSTANT_CLASS_P (arg0)
 	  && can_native_interpret_type_p (type)
-	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (arg0)), 1)
+	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (arg0)))
 	  /* This limitation should not be necessary, we just need to
 	     round this up to mode size.  */
 	  && tree_low_cst (op1, 1) % BITS_PER_UNIT == 0

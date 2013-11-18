@@ -742,12 +742,12 @@ type_internals_preclude_sra_p (tree type, const char **msg)
 		*msg = "zero structure field size";
 	        return true;
 	      }
-	    if (!host_integerp (DECL_FIELD_OFFSET (fld), 1))
+	    if (!tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
 	      {
 		*msg = "structure field offset not fixed";
 		return true;
 	      }
-	    if (!host_integerp (DECL_SIZE (fld), 1))
+	    if (!tree_fits_uhwi_p (DECL_SIZE (fld)))
 	      {
 	        *msg = "structure field size not fixed";
 		return true;
@@ -1651,12 +1651,12 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 		continue;
 
 	      tr_pos = bit_position (fld);
-	      if (!tr_pos || !host_integerp (tr_pos, 1))
+	      if (!tr_pos || !tree_fits_uhwi_p (tr_pos))
 		continue;
 	      pos = TREE_INT_CST_LOW (tr_pos);
 	      gcc_assert (TREE_CODE (type) == RECORD_TYPE || pos == 0);
 	      tr_size = DECL_SIZE (fld);
-	      if (!tr_size || !host_integerp (tr_size, 1))
+	      if (!tr_size || !tree_fits_uhwi_p (tr_size))
 		continue;
 	      size = TREE_INT_CST_LOW (tr_size);
 	      if (size == 0)
@@ -1681,7 +1681,7 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 
 	case ARRAY_TYPE:
 	  tr_size = TYPE_SIZE (TREE_TYPE (type));
-	  if (!tr_size || !host_integerp (tr_size, 1))
+	  if (!tr_size || !tree_fits_uhwi_p (tr_size))
 	    return false;
 	  el_size = tree_low_cst (tr_size, 1);
 
@@ -1759,7 +1759,7 @@ maybe_add_sra_candidate (tree var)
       reject (var, "has incomplete type");
       return false;
     }
-  if (!host_integerp (TYPE_SIZE (type), 1))
+  if (!tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
       reject (var, "type size not fixed");
       return false;
@@ -2799,8 +2799,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     {
       HOST_WIDE_INT start_offset, chunk_size;
       if (bfr
-	  && host_integerp (TREE_OPERAND (bfr, 1), 1)
-	  && host_integerp (TREE_OPERAND (bfr, 2), 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (bfr, 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (bfr, 2)))
 	{
 	  chunk_size = tree_low_cst (TREE_OPERAND (bfr, 1), 1);
 	  start_offset = access->offset
@@ -3693,7 +3693,7 @@ find_param_candidates (void)
 	continue;
 
       if (!COMPLETE_TYPE_P (type)
-	  || !host_integerp (TYPE_SIZE (type), 1)
+	  || !tree_fits_uhwi_p (TYPE_SIZE (type))
           || tree_low_cst (TYPE_SIZE (type), 1) == 0
 	  || (AGGREGATE_TYPE_P (type)
 	      && type_internals_preclude_sra_p (type, &msg)))

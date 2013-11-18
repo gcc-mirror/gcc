@@ -232,7 +232,7 @@ mep_pragma_coprocessor_width (void)
   switch (type)
     {
     case CPP_NUMBER:
-      if (! host_integerp (val, 1))
+      if (! tree_fits_uhwi_p (val))
 	break;
       i = tree_low_cst (val, 1);
       /* This pragma no longer has any effect.  */

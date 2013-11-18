@@ -6030,9 +6030,9 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
@@ -6040,7 +6040,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
@@ -6070,7 +6070,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
@@ -6102,7 +6102,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
 	    || (tree_low_cst (TYPE_SIZE (type), 1)
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;

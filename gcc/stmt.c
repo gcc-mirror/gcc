@@ -854,7 +854,7 @@ expand_switch_as_decision_tree_p (tree range,
      who knows...  */
   max_ratio = optimize_insn_for_size_p () ? 3 : 10;
   if (count < case_values_threshold ()
-      || ! host_integerp (range, /*pos=*/1)
+      || ! tree_fits_uhwi_p (range)
       || compare_tree_int (range, max_ratio * count) > 0)
     return true;
 

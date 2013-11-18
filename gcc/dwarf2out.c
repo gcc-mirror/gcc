@@ -10261,7 +10261,7 @@ simple_type_size_in_bits (const_tree type)
     return BITS_PER_WORD;
   else if (TYPE_SIZE (type) == NULL_TREE)
     return 0;
-  else if (host_integerp (TYPE_SIZE (type), 1))
+  else if (tree_fits_uhwi_p (TYPE_SIZE (type)))
     return tree_low_cst (TYPE_SIZE (type), 1);
   else
     return TYPE_ALIGN (type);
@@ -13540,7 +13540,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
   enum var_init_status initialized;
 
   if (DECL_SIZE (decl) == NULL
-      || !host_integerp (DECL_SIZE (decl), 1))
+      || !tree_fits_uhwi_p (DECL_SIZE (decl)))
     return NULL;
 
   decl_size = tree_low_cst (DECL_SIZE (decl), 1);
@@ -16395,7 +16395,7 @@ add_bit_offset_attribute (dw_die_ref die, tree decl)
      encounter such things, just return without generating any attribute
      whatsoever.  Likewise for variable or too large size.  */
   if (! tree_fits_shwi_p (bit_position (decl))
-      || ! host_integerp (DECL_SIZE (decl), 1))
+      || ! tree_fits_uhwi_p (DECL_SIZE (decl)))
     return;
 
   bitpos_int = int_bit_position (decl);
@@ -16435,7 +16435,7 @@ add_bit_size_attribute (dw_die_ref die, tree decl)
   gcc_assert (TREE_CODE (decl) == FIELD_DECL
 	      && DECL_BIT_FIELD_TYPE (decl));
 
-  if (host_integerp (DECL_SIZE (decl), 1))
+  if (tree_fits_uhwi_p (DECL_SIZE (decl)))
     add_AT_unsigned (die, DW_AT_bit_size, tree_low_cst (DECL_SIZE (decl), 1));
 }
 
@@ -17072,7 +17072,7 @@ descr_info_loc (tree val, tree base_decl)
       return loc;
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      if (host_integerp (TREE_OPERAND (val, 1), 1)
+      if (tree_fits_uhwi_p (TREE_OPERAND (val, 1))
 	  && (unsigned HOST_WIDE_INT) tree_low_cst (TREE_OPERAND (val, 1), 1)
 	     < 16384)
 	{

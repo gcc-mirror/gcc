@@ -1635,7 +1635,7 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
 
   if (TREE_CODE (def) == INTEGER_CST)
     {
-      if (!host_integerp (def, 1)
+      if (!tree_fits_uhwi_p (def)
 	  || (unsigned HOST_WIDE_INT) tree_low_cst (def, 1)
 	     >= GET_MODE_PRECISION (TYPE_MODE (type))
 	  || integer_zerop (def))

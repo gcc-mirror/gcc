@@ -1264,7 +1264,7 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
   fld = TYPE_FIELDS (type);
   if (!fld || !POINTER_TYPE_P (TREE_TYPE (fld))
       || TREE_CODE (TREE_TYPE (TREE_TYPE (fld))) != METHOD_TYPE
-      || !host_integerp (DECL_FIELD_OFFSET (fld), 1))
+      || !tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
     return false;
 
   if (method_ptr)
@@ -1272,7 +1272,7 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
 
   fld = DECL_CHAIN (fld);
   if (!fld || INTEGRAL_TYPE_P (fld)
-      || !host_integerp (DECL_FIELD_OFFSET (fld), 1))
+      || !tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
     return false;
   if (delta)
     *delta = fld;
@@ -1342,7 +1342,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
       if (TREE_CODE (arg) == SSA_NAME)
 	{
 	  tree type_size;
-          if (!host_integerp (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg))), 1))
+          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)))))
             return;
 	  check_ref = true;
 	  arg_base = arg;

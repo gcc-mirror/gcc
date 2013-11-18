@@ -3057,7 +3057,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  if ((low_bound = array_ref_low_bound (t),
 	       TREE_CODE (low_bound) == INTEGER_CST)
 	      && (unit_size = array_ref_element_size (t),
-		  host_integerp (unit_size, 1))
+		  tree_fits_uhwi_p (unit_size))
 	      && (doffset = (TREE_INT_CST (idx) - TREE_INT_CST (low_bound))
 			    .sext (TYPE_PRECISION (TREE_TYPE (idx))),
 		  doffset.fits_shwi ()))
@@ -3401,7 +3401,7 @@ gimple_fold_indirect_ref (tree t)
       if (TREE_CODE (addr) == ADDR_EXPR
 	  && TREE_CODE (TREE_TYPE (addrtype)) == VECTOR_TYPE
 	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
-	  && host_integerp (off, 1))
+	  && tree_fits_uhwi_p (off))
 	{
           unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
           tree part_width = TYPE_SIZE (type);

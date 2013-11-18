@@ -846,9 +846,9 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
     }
 
   len = gimple_call_arg (last.stmt, 2);
-  if (host_integerp (len, 1))
+  if (tree_fits_uhwi_p (len))
     {
-      if (!host_integerp (last.len, 1)
+      if (!tree_fits_uhwi_p (last.len)
 	  || integer_zerop (len)
 	  || (unsigned HOST_WIDE_INT) tree_low_cst (len, 1)
 	     != (unsigned HOST_WIDE_INT) tree_low_cst (last.len, 1) + 1)
@@ -1310,7 +1310,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
     return;
 
   if (olddsi != NULL
-      && host_integerp (len, 1)
+      && tree_fits_uhwi_p (len)
       && !integer_zerop (len))
     adjust_last_stmt (olddsi, stmt, false);
 
@@ -1336,7 +1336,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       si = NULL;
       /* Handle memcpy (x, "abcd", 5) or
 	 memcpy (x, "abc\0uvw", 7).  */
-      if (!host_integerp (len, 1)
+      if (!tree_fits_uhwi_p (len)
 	  || (unsigned HOST_WIDE_INT) tree_low_cst (len, 1)
 	     <= (unsigned HOST_WIDE_INT) ~idx)
 	return;
@@ -1626,7 +1626,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
   if (idx < 0)
     {
       tree off = gimple_assign_rhs2 (stmt);
-      if (host_integerp (off, 1)
+      if (tree_fits_uhwi_p (off)
 	  && (unsigned HOST_WIDE_INT) tree_low_cst (off, 1)
 	     <= (unsigned HOST_WIDE_INT) ~idx)
 	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)]

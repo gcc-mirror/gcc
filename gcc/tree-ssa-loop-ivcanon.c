@@ -667,7 +667,7 @@ try_unroll_loop_completely (struct loop *loop,
      If the number of execution of loop is determined by standard induction
      variable test, then EXIT and EDGE_TO_CANCEL are the two edges leaving
      from the iv test.  */
-  if (host_integerp (niter, 1))
+  if (tree_fits_uhwi_p (niter))
     {
       n_unroll = tree_low_cst (niter, 1);
       n_unroll_found = true;

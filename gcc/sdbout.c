@@ -994,7 +994,7 @@ sdbout_field_types (tree type)
     if (TREE_CODE (tail) == FIELD_DECL
 	&& DECL_NAME (tail)
 	&& DECL_SIZE (tail)
-	&& host_integerp (DECL_SIZE (tail), 1)
+	&& tree_fits_uhwi_p (DECL_SIZE (tail))
 	&& tree_fits_shwi_p (bit_position (tail)))
       {
 	if (POINTER_TYPE_P (TREE_TYPE (tail)))
@@ -1173,7 +1173,7 @@ sdbout_one_type (tree type)
 	    if (TREE_CODE (tem) == FIELD_DECL
 		&& DECL_NAME (tem)
 		&& DECL_SIZE (tem)
-		&& host_integerp (DECL_SIZE (tem), 1)
+		&& tree_fits_uhwi_p (DECL_SIZE (tem))
 		&& tree_fits_shwi_p (bit_position (tem)))
 	      {
 		const char *name;

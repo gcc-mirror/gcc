@@ -332,7 +332,7 @@ mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
   unsigned HOST_WIDE_INT uhwi;
   unsigned int ui;
 
-  if (!host_integerp (size, 1))
+  if (!tree_fits_uhwi_p (size))
     return BLKmode;
   uhwi = tree_low_cst (size, 1);
   ui = uhwi;
@@ -483,7 +483,7 @@ mode_for_array (tree elem_type, tree size)
     return TYPE_MODE (elem_type);
 
   limit_p = true;
-  if (host_integerp (size, 1) && host_integerp (elem_size, 1))
+  if (tree_fits_uhwi_p (size) && tree_fits_uhwi_p (elem_size))
     {
       int_size = tree_low_cst (size, 1);
       int_elem_size = tree_low_cst (elem_size, 1);
@@ -1117,7 +1117,7 @@ place_field (record_layout_info rli, tree field)
 		   & - tree_low_cst (rli->bitpos, 1));
   else if (integer_zerop (rli->offset))
     known_align = 0;
-  else if (host_integerp (rli->offset, 1))
+  else if (tree_fits_uhwi_p (rli->offset))
     known_align = (BITS_PER_UNIT
 		   * (tree_low_cst (rli->offset, 1)
 		      & - tree_low_cst (rli->offset, 1)));
@@ -1194,9 +1194,9 @@ place_field (record_layout_info rli, tree field)
 	  || TYPE_ALIGN (type) <= BITS_PER_UNIT)
       && maximum_field_alignment == 0
       && ! integer_zerop (DECL_SIZE (field))
-      && host_integerp (DECL_SIZE (field), 1)
-      && host_integerp (rli->offset, 1)
-      && host_integerp (TYPE_SIZE (type), 1))
+      && tree_fits_uhwi_p (DECL_SIZE (field))
+      && tree_fits_uhwi_p (rli->offset)
+      && tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
@@ -1238,9 +1238,9 @@ place_field (record_layout_info rli, tree field)
       && DECL_BIT_FIELD_TYPE (field)
       && ! DECL_PACKED (field)
       && ! integer_zerop (DECL_SIZE (field))
-      && host_integerp (DECL_SIZE (field), 1)
-      && host_integerp (rli->offset, 1)
-      && host_integerp (TYPE_SIZE (type), 1))
+      && tree_fits_uhwi_p (DECL_SIZE (field))
+      && tree_fits_uhwi_p (rli->offset)
+      && tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
@@ -1383,8 +1383,8 @@ place_field (record_layout_info rli, tree field)
 	     until we see a bitfield (and come by here again) we just skip
 	     calculating it.  */
 	  if (DECL_SIZE (field) != NULL
-	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 1)
-	      && host_integerp (DECL_SIZE (field), 1))
+	      && tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (field)))
+	      && tree_fits_uhwi_p (DECL_SIZE (field)))
 	    {
 	      unsigned HOST_WIDE_INT bitsize
 		= tree_low_cst (DECL_SIZE (field), 1);
@@ -1425,7 +1425,7 @@ place_field (record_layout_info rli, tree field)
 		    & - tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1));
   else if (integer_zerop (DECL_FIELD_OFFSET (field)))
     actual_align = MAX (BIGGEST_ALIGNMENT, rli->record_align);
-  else if (host_integerp (DECL_FIELD_OFFSET (field), 1))
+  else if (tree_fits_uhwi_p (DECL_FIELD_OFFSET (field)))
     actual_align = (BITS_PER_UNIT
 		   * (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
 		      & - tree_low_cst (DECL_FIELD_OFFSET (field), 1)));
@@ -1584,7 +1584,7 @@ compute_record_mode (tree type)
      line.  */
   SET_TYPE_MODE (type, BLKmode);
 
-  if (! host_integerp (TYPE_SIZE (type), 1))
+  if (! tree_fits_uhwi_p (TYPE_SIZE (type)))
     return;
 
   /* A record which has any BLKmode members must itself be
@@ -1600,9 +1600,9 @@ compute_record_mode (tree type)
 	      && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field))
 	      && !(TYPE_SIZE (TREE_TYPE (field)) != 0
 		   && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))))
-	  || ! host_integerp (bit_position (field), 1)
+	  || ! tree_fits_uhwi_p (bit_position (field))
 	  || DECL_SIZE (field) == 0
-	  || ! host_integerp (DECL_SIZE (field), 1))
+	  || ! tree_fits_uhwi_p (DECL_SIZE (field)))
 	return;
 
       /* If this field is the whole struct, remember its mode so
@@ -1621,7 +1621,7 @@ compute_record_mode (tree type)
      matches the type's size.  This only applies to RECORD_TYPE.  This
      does not apply to unions.  */
   if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
-      && host_integerp (TYPE_SIZE (type), 1)
+      && tree_fits_uhwi_p (TYPE_SIZE (type))
       && GET_MODE_BITSIZE (mode) == TREE_INT_CST_LOW (TYPE_SIZE (type)))
     SET_TYPE_MODE (type, mode);
   else
@@ -1763,7 +1763,7 @@ finish_bitfield_representative (tree repr, tree field)
 
   size = size_diffop (DECL_FIELD_OFFSET (field),
 		      DECL_FIELD_OFFSET (repr));
-  gcc_assert (host_integerp (size, 1));
+  gcc_assert (tree_fits_uhwi_p (size));
   bitsize = (tree_low_cst (size, 1) * BITS_PER_UNIT
 	     + tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 	     - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1)
@@ -1785,7 +1785,7 @@ finish_bitfield_representative (tree repr, tree field)
 	return;
       maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
 			     DECL_FIELD_OFFSET (repr));
-      if (host_integerp (maxsize, 1))
+      if (tree_fits_uhwi_p (maxsize))
 	{
 	  maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
 			+ tree_low_cst (DECL_FIELD_BIT_OFFSET (nextf), 1)
@@ -1806,7 +1806,7 @@ finish_bitfield_representative (tree repr, tree field)
 	 use bitsize as fallback for this case.  */
       tree maxsize = size_diffop (TYPE_SIZE_UNIT (DECL_CONTEXT (field)),
 				  DECL_FIELD_OFFSET (repr));
-      if (host_integerp (maxsize, 1))
+      if (tree_fits_uhwi_p (maxsize))
 	maxbitsize = (tree_low_cst (maxsize, 1) * BITS_PER_UNIT
 		      - tree_low_cst (DECL_FIELD_BIT_OFFSET (repr), 1));
       else
@@ -1919,8 +1919,8 @@ finish_bitfield_layout (record_layout_info rli)
 	     representative to be generated.  That will at most
 	     generate worse code but still maintain correctness with
 	     respect to the C++ memory model.  */
-	  else if (!((host_integerp (DECL_FIELD_OFFSET (repr), 1)
-		      && host_integerp (DECL_FIELD_OFFSET (field), 1))
+	  else if (!((tree_fits_uhwi_p (DECL_FIELD_OFFSET (repr))
+		      && tree_fits_uhwi_p (DECL_FIELD_OFFSET (field)))
 		     || operand_equal_p (DECL_FIELD_OFFSET (repr),
 					 DECL_FIELD_OFFSET (field), 0)))
 	    {

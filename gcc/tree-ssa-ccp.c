@@ -1487,7 +1487,7 @@ bit_value_assume_aligned (gimple stmt)
 	       && TREE_CODE (ptrval.value) == INTEGER_CST)
 	      || ptrval.mask.is_minus_one ());
   align = gimple_call_arg (stmt, 1);
-  if (!host_integerp (align, 1))
+  if (!tree_fits_uhwi_p (align))
     return ptrval;
   aligni = tree_low_cst (align, 1);
   if (aligni <= 1
@@ -1496,7 +1496,7 @@ bit_value_assume_aligned (gimple stmt)
   if (gimple_call_num_args (stmt) > 2)
     {
       misalign = gimple_call_arg (stmt, 2);
-      if (!host_integerp (misalign, 1))
+      if (!tree_fits_uhwi_p (misalign))
 	return ptrval;
       misaligni = tree_low_cst (misalign, 1);
       if (misaligni >= aligni)
@@ -1881,7 +1881,7 @@ fold_builtin_alloca_with_align (gimple stmt)
   arg = get_constant_value (gimple_call_arg (stmt, 0));
   if (arg == NULL_TREE
       || TREE_CODE (arg) != INTEGER_CST
-      || !host_integerp (arg, 1))
+      || !tree_fits_uhwi_p (arg))
     return NULL_TREE;
 
   size = TREE_INT_CST_LOW (arg);
