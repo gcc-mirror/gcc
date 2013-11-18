@@ -7027,6 +7027,28 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  Return that
+   HOST_WIDE_INT.  */
+
+HOST_WIDE_INT
+tree_to_shwi (const_tree t)
+{
+  gcc_assert (tree_fits_shwi_p (t));
+  return TREE_INT_CST_LOW (t);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in an unsigned HOST_WIDE_INT.  Return that
+   HOST_WIDE_INT.  */
+
+HOST_WIDE_INT
+tree_to_uhwi (const_tree t)
+{
+  gcc_assert (tree_fits_uhwi_p (t));
+  return TREE_INT_CST_LOW (t);
+}
+
 /* Return the most significant (sign) bit of T.  */
 
 int

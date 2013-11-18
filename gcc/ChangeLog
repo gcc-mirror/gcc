@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* tree.h (tree_to_shwi, tree_to_uhwi): Declare, with inline expansions.
+	* tree.c (tree_to_shwi, tree_to_uhwi): New functions.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expr.h: Update comments to refer to tree_fits_[su]hwi_p rather
 	than host_integerp.
 
