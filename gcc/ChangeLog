@@ -1,3 +1,9 @@
+2013-11-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark
+	load with `dead' flag if it kills address, not its
+	post-increment.
+
 2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* builtin-types.def (BT_FN_PTR_CONST_PTR_VAR): New.
