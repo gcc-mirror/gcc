@@ -1,8 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 16 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_int_128_runtime } */
-/* { dg-options "-mcx16" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target int128 } */
 
 /* Test the execution of the __atomic_X builtin for a 16 byte value.  */
 
@@ -10,25 +9,31 @@ extern void abort(void);
 
 __int128_t v, count, ret;
 
+int
 main ()
 {
   v = 0;
   count = 0;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) != count)
     abort ();
+  count++;
 
   /* Now test the generic version.  */
 

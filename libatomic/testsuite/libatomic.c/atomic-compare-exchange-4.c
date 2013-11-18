@@ -1,9 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 8 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
-/* { dg-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* Test the execution of __atomic_compare_exchange_n builtin for a long_long.  */
 
@@ -18,6 +16,7 @@ long long zero = 0;
 #define STRONG 0
 #define WEAK 1
 
+int
 main ()
 {
 

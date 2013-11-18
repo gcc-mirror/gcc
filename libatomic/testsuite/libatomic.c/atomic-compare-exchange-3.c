@@ -1,7 +1,6 @@
 /* Test __atomic routines for existence and proper execution on 4 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_int_long } */
 
 /* Test the execution of the __atomic_compare_exchange_n builtin for an int.  */
 
@@ -16,6 +15,7 @@ int zero = 0;
 #define STRONG 0
 #define WEAK 1
 
+int
 main ()
 {
 
