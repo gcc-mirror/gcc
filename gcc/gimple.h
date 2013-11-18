@@ -101,6 +101,7 @@ enum gf_mask {
     GF_CALL_NOTHROW		= 1 << 4,
     GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
     GF_CALL_INTERNAL		= 1 << 6,
+    GF_CALL_WITH_BOUNDS 	= 1 << 7,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_FOR_KIND_MASK	= 3 << 0,
     GF_OMP_FOR_KIND_FOR		= 0 << 0,
@@ -737,7 +738,6 @@ gimple gimple_build_call_valist (tree, unsigned, va_list);
 gimple gimple_build_call_internal (enum internal_fn, unsigned, ...);
 gimple gimple_build_call_internal_vec (enum internal_fn, vec<tree> );
 gimple gimple_build_call_from_tree (tree);
-extern unsigned gimple_call_get_nobnd_arg_index (const_gimple, unsigned);
 gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
 #define gimple_build_assign(l,r) gimple_build_assign_stat (l, r MEM_STAT_INFO)
 gimple gimple_build_assign_with_ops (enum tree_code, tree,
@@ -1960,6 +1960,31 @@ gimple_call_internal_p (const_gimple gs)
 }
 
 
+/* Return true if call GS is marked as instrumented by
+   Pointer Bounds Checker.  */
+
+static inline bool
+gimple_call_with_bounds_p (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  return (gs->gsbase.subcode & GF_CALL_WITH_BOUNDS) != 0;
+}
+
+
+/* If INSTRUMENTED_P is true, marm statement GS as instrumented by
+   Pointer Bounds Checker.  */
+
+static inline void
+gimple_call_set_with_bounds (gimple gs, bool with_bounds)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  if (with_bounds)
+    gs->gsbase.subcode |= GF_CALL_WITH_BOUNDS;
+  else
+    gs->gsbase.subcode &= ~GF_CALL_WITH_BOUNDS;
+}
+
+
 /* Return the target of internal call GS.  */
 
 static inline enum internal_fn
@@ -2122,32 +2147,6 @@ gimple_call_arg (const_gimple gs, unsigned index)
 {
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   return gimple_op (gs, index + 3);
-}
-
-
-/* Return the number of arguments used by call statement GS
-   ignoring bound ones.  */
-
-static inline unsigned
-gimple_call_num_nobnd_args (const_gimple gs)
-{
-  unsigned num_args = gimple_call_num_args (gs);
-  unsigned res = num_args;
-  for (unsigned n = 0; n < num_args; n++)
-    if (POINTER_BOUNDS_P (gimple_call_arg (gs, n)))
-      res--;
-  return res;
-}
-
-
-/* Return INDEX's call argument ignoring bound ones.  */
-static inline tree
-gimple_call_nobnd_arg (const_gimple gs, unsigned index)
-{
-  /* No bound args may exist if pointers checker is off.  */
-  if (!flag_check_pointer_bounds)
-    return gimple_call_arg (gs, index);
-  return gimple_call_arg (gs, gimple_call_get_nobnd_arg_index (gs, index));
 }
 
 

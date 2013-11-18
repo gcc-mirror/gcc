@@ -42,6 +42,9 @@ DEF_BUILTIN_STUB (BUILT_IN_CHKP_EXTRACT_LOWER, "__chkp_extract_lower")
 DEF_BUILTIN_STUB (BUILT_IN_CHKP_EXTRACT_UPPER, "__chkp_extract_upper")
 DEF_BUILTIN_STUB (BUILT_IN_CHKP_NARROW, "__chkp_narrow")
 
+/* Builtins to bind bounds to call arguments.  */
+DEF_CHKP_BUILTIN (BUILT_IN_CHKP_BIND_BOUNDS, "__chkp_bind_bounds", BT_FN_PTR_CONST_PTR_VAR, ATTR_CONST_NOTHROW_LEAF_LIST)
+
 /* Pointer Bounds Checker builtins for users.  Only
    BUILT_IN_CHKP_SET_PTR_BOUNDS may be redefined
    by target.  Other builtins calls are expanded
