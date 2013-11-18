@@ -3657,11 +3657,6 @@ extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 extern int tree_int_cst_lt (const_tree, const_tree);
 extern int tree_int_cst_compare (const_tree, const_tree);
-extern int host_integerp (const_tree, int)
-#ifndef ENABLE_TREE_CHECKING
-  ATTRIBUTE_PURE /* host_integerp is pure only when checking is disabled.  */
-#endif
-  ;
 extern bool tree_fits_shwi_p (const_tree)
 #ifndef ENABLE_TREE_CHECKING
   ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
@@ -3672,17 +3667,9 @@ extern bool tree_fits_uhwi_p (const_tree)
   ATTRIBUTE_PURE /* tree_fits_uhwi_p is pure only when checking is disabled.  */
 #endif
   ;
-extern HOST_WIDE_INT tree_low_cst (const_tree, int);
 extern HOST_WIDE_INT tree_to_shwi (const_tree);
 extern HOST_WIDE_INT tree_to_uhwi (const_tree);
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
-extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
-tree_low_cst (const_tree t, int pos)
-{
-  gcc_assert (host_integerp (t, pos));
-  return TREE_INT_CST_LOW (t);
-}
-
 extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
 tree_to_shwi (const_tree t)
 {
