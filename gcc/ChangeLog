@@ -1,3 +1,12 @@
+2013-11-18  Andrew Pinski <apinski@cavium.com>
+	    Steve Ellcey  <sellcey@mips.com>
+
+	PR target/56552
+	* config/mips/mips.md (*mov<GPR:mode>_on_<MOVECC:mode>): Remove
+	type restriction from equality_operator on conditonal move.
+	(*mov<SCALARF:mode>_on_<MOVECC:mode>): Ditto.
+	(*mov<GPR:mode>_on_<GPR2:mode>_ne): New.
+
 2013-11-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c: Fix file block comment.
