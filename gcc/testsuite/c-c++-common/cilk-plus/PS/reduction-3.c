@@ -1,13 +1,11 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -fcilkplus" } */
 
-/* FIXME: This test has been xfailed until reductions are fixed.  */
-
 #define N 256
 #if HAVE_IO
 #include <stdio.h>
 #endif
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 reduction_simd (int *a)
