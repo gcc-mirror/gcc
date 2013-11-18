@@ -6970,26 +6970,6 @@ tree_int_cst_compare (const_tree t1, const_tree t2)
     return 0;
 }
 
-/* Return 1 if T is an INTEGER_CST that can be manipulated efficiently on
-   the host.  If POS is zero, the value can be represented in a single
-   HOST_WIDE_INT.  If POS is nonzero, the value must be non-negative and can
-   be represented in a single unsigned HOST_WIDE_INT.  */
-
-int
-host_integerp (const_tree t, int pos)
-{
-  if (t == NULL_TREE)
-    return 0;
-
-  return (TREE_CODE (t) == INTEGER_CST
-	  && ((TREE_INT_CST_HIGH (t) == 0
-	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
-	      || (! pos && TREE_INT_CST_HIGH (t) == -1
-		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0
-		  && !TYPE_UNSIGNED (TREE_TYPE (t)))
-	      || (pos && TREE_INT_CST_HIGH (t) == 0)));
-}
-
 /* Return true if T is an INTEGER_CST whose numerical value (extended
    according to TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  */
 
@@ -7014,17 +6994,6 @@ tree_fits_uhwi_p (const_tree t)
   return (t != NULL_TREE
 	  && TREE_CODE (t) == INTEGER_CST
 	  && TREE_INT_CST_HIGH (t) == 0);
-}
-
-/* Return the HOST_WIDE_INT least significant bits of T if it is an
-   INTEGER_CST and there is no overflow.  POS is nonzero if the result must
-   be non-negative.  We must be able to satisfy the above conditions.  */
-
-HOST_WIDE_INT
-tree_low_cst (const_tree t, int pos)
-{
-  gcc_assert (host_integerp (t, pos));
-  return TREE_INT_CST_LOW (t);
 }
 
 /* T is an INTEGER_CST whose numerical value (extended according to
