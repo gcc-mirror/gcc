@@ -4204,6 +4204,15 @@ cfg_layout_initialize (unsigned int flags)
   rtx x;
   basic_block bb;
 
+  /* Once bb reordering is complete, cfg layout mode should not be re-entered.
+     Entering cfg layout mode will perform optimizations on the cfg that
+     could affect the bb layout negatively or even require fixups. An
+     example of the latter is if edge forwarding performed when optimizing
+     the cfg layout required moving a block from the hot to the cold section
+     under -freorder-blocks-and-partition. This would create an illegal
+     partitioning unless some manual fixup was performed.  */
+  gcc_assert (!crtl->bb_reorder_complete);
+
   initialize_original_copy_tables ();
 
   cfg_layout_rtl_register_cfg_hooks ();
