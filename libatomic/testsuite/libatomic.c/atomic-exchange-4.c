@@ -1,9 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 8 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "" } */
-/* { dg-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* Test the execution of the __atomic_X builtin for a long_long.  */
 
@@ -11,25 +9,31 @@ extern void abort(void);
 
 long long v, count, ret;
 
+int
 main ()
 {
   v = 0;
   count = 0;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELAXED) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQUIRE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_RELEASE) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_ACQ_REL) != count)
     abort ();
+  count++;
 
-  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) !=  count++) 
+  if (__atomic_exchange_n (&v, count + 1, __ATOMIC_SEQ_CST) != count)
     abort ();
+  count++;
 
   /* Now test the generic version.  */
 

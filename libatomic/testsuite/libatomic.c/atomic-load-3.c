@@ -1,13 +1,13 @@
 /* Test __atomic routines for existence and proper execution on 4 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_int_long } */
 
 extern void abort(void);
 
 int v, count;
 
 
+int
 main ()
 {
   v = 0;

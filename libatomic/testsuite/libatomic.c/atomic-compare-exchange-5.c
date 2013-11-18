@@ -1,8 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 16 byte 
    values with each valid memory model.  */
 /* { dg-do run } */
-/* { dg-require-effective-target sync_int_128_runtime } */
-/* { dg-options "-mcx16" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target int128 } */
 
 /* Test the execution of __atomic_compare_exchange_n builtin for an int_128.  */
 
@@ -17,6 +16,7 @@ __int128_t zero = 0;
 #define STRONG 0
 #define WEAK 1
 
+int
 main ()
 {
 
