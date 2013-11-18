@@ -1,5 +1,16 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expr.h: Update comments to refer to tree_to_[su]hwi rather
+	than tree_low_cst.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* expr.c (store_constructor): Use tree_to_uhwi rather than
+	tree_low_cst.
+	* ipa-utils.h (possible_polymorphic_call_target_p): Likewise.
+	* stmt.c (emit_case_dispatch_table): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* alias.c, asan.c, builtins.c, cfgexpand.c, cgraph.c,
 	config/aarch64/aarch64.c, config/alpha/predicates.md,
 	config/arm/arm.c, config/darwin.c, config/epiphany/epiphany.c,

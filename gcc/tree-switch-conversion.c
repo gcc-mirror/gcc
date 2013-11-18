@@ -354,15 +354,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       else
         test[k].bits++;
 
-      lo = tree_low_cst (int_const_binop (MINUS_EXPR,
-					  CASE_LOW (cs), minval),
-			 1);
+      lo = tree_to_uhwi (int_const_binop (MINUS_EXPR,
+					  CASE_LOW (cs), minval));
       if (CASE_HIGH (cs) == NULL_TREE)
 	hi = lo;
       else
-	hi = tree_low_cst (int_const_binop (MINUS_EXPR, 
-					    CASE_HIGH (cs), minval),
-			   1);
+	hi = tree_to_uhwi (int_const_binop (MINUS_EXPR,
+					    CASE_HIGH (cs), minval));
 
       for (j = lo; j <= hi; j++)
         if (j >= HOST_BITS_PER_WIDE_INT)

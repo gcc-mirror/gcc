@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* c-decl.c (grokdeclarator): Update comment to refer to
+	tree_to_[su]hwi rather than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* c-decl.c, c-typeck.c: Replace tree_low_cst (..., 1) with
 	tree_to_uhwi throughout.
 

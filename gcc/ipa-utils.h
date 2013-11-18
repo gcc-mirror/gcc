@@ -117,8 +117,8 @@ possible_polymorphic_call_target_p (tree call,
 				    struct cgraph_node *n)
 {
   return possible_polymorphic_call_target_p (obj_type_ref_class (call),
-					     tree_low_cst
-						(OBJ_TYPE_REF_TOKEN (call), 1),
+					     tree_to_uhwi
+						(OBJ_TYPE_REF_TOKEN (call)),
 					     n);
 }
 #endif  /* GCC_IPA_UTILS_H  */

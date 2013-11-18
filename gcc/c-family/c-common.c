@@ -9721,8 +9721,7 @@ fold_offsetof_1 (tree expr)
 	  return error_mark_node;
 	}
       off = size_binop_loc (input_location, PLUS_EXPR, DECL_FIELD_OFFSET (t),
-			    size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t),
-						    1)
+			    size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				      / BITS_PER_UNIT));
       break;
 
@@ -10091,7 +10090,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
     {
       error ("size of array is too large");
       /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_low_cst().  */
+	 crash in tree_to_[su]hwi().  */
       type = error_mark_node;
     }
 
