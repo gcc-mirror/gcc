@@ -14927,7 +14927,7 @@ r10k_safe_address_p (rtx x, rtx insn)
    a link-time-constant address.  */
 
 static bool
-r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
+r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
 {
   HOST_WIDE_INT bitoffset, bitsize;
   tree inner, var_offset;
@@ -14940,7 +14940,7 @@ r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
     return false;
 
   offset += bitoffset / BITS_PER_UNIT;
-  return offset >= 0 && offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
+  return offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
 }
 
 /* A for_each_rtx callback for which DATA points to the instruction

@@ -850,12 +850,11 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
     {
       if (!tree_fits_uhwi_p (last.len)
 	  || integer_zerop (len)
-	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (len)
-	     != (unsigned HOST_WIDE_INT) tree_to_uhwi (last.len) + 1)
+	  || tree_to_uhwi (len) != tree_to_uhwi (last.len) + 1)
 	return;
       /* Don't adjust the length if it is divisible by 4, it is more efficient
 	 to store the extra '\0' in that case.  */
-      if ((((unsigned HOST_WIDE_INT) tree_to_uhwi (len)) & 3) == 0)
+      if ((tree_to_uhwi (len) & 3) == 0)
 	return;
     }
   else if (TREE_CODE (len) == SSA_NAME)
@@ -1337,8 +1336,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       /* Handle memcpy (x, "abcd", 5) or
 	 memcpy (x, "abc\0uvw", 7).  */
       if (!tree_fits_uhwi_p (len)
-	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (len)
-	     <= (unsigned HOST_WIDE_INT) ~idx)
+	  || tree_to_uhwi (len) <= (unsigned HOST_WIDE_INT) ~idx)
 	return;
     }
 
@@ -1627,8 +1625,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
     {
       tree off = gimple_assign_rhs2 (stmt);
       if (tree_fits_uhwi_p (off)
-	  && (unsigned HOST_WIDE_INT) tree_to_uhwi (off)
-	     <= (unsigned HOST_WIDE_INT) ~idx)
+	  && tree_to_uhwi (off) <= (unsigned HOST_WIDE_INT) ~idx)
 	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)]
 	    = ~(~idx - (int) tree_to_uhwi (off));
       return;

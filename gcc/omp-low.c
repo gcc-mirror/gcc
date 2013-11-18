@@ -6770,8 +6770,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	{
 	  safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
 	  if (!tree_fits_uhwi_p (safelen)
-	      || (unsigned HOST_WIDE_INT) tree_to_uhwi (safelen)
-		 > INT_MAX)
+	      || tree_to_uhwi (safelen) > INT_MAX)
 	    loop->safelen = INT_MAX;
 	  else
 	    loop->safelen = tree_to_uhwi (safelen);

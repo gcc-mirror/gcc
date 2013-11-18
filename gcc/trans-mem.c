@@ -1104,7 +1104,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 	  && transaction_invariant_address_p (lp->addr, entry_block)
 	  && TYPE_SIZE_UNIT (type) != NULL
 	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
-	  && (tree_to_uhwi (TYPE_SIZE_UNIT (type))
+	  && ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE_UNIT (type))
 	      < PARAM_VALUE (PARAM_TM_MAX_AGGREGATE_SIZE))
 	  /* We must be able to copy this type normally.  I.e., no
 	     special constructors and the like.  */

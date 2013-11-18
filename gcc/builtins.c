@@ -8781,7 +8781,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  if (readonly_data_expr (src)
 	      || (tree_fits_uhwi_p (len)
 		  && (MIN (src_align, dest_align) / BITS_PER_UNIT
-		      >= (unsigned HOST_WIDE_INT) tree_to_uhwi (len))))
+		      >= tree_to_uhwi (len))))
 	    {
 	      tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
 	      if (!fn)

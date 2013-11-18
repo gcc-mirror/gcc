@@ -1133,7 +1133,7 @@ defer_stack_allocation (tree var, bool toplevel)
   /* Whether the variable is small enough for immediate allocation not to be
      a problem with regard to the frame size.  */
   bool smallish
-    = (tree_to_uhwi (DECL_SIZE_UNIT (var))
+    = ((HOST_WIDE_INT) tree_to_uhwi (DECL_SIZE_UNIT (var))
        < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,

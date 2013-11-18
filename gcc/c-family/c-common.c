@@ -11702,8 +11702,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
 
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
-            || ((unsigned HOST_WIDE_INT) tree_to_uhwi (index)
-               >= TYPE_VECTOR_SUBPARTS (type)))
+            || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
       c_common_mark_addressable_vec (*vecp);

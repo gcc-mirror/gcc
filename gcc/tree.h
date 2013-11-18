@@ -3668,7 +3668,7 @@ extern bool tree_fits_uhwi_p (const_tree)
 #endif
   ;
 extern HOST_WIDE_INT tree_to_shwi (const_tree);
-extern HOST_WIDE_INT tree_to_uhwi (const_tree);
+extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree);
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
 extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
 tree_to_shwi (const_tree t)
@@ -3677,7 +3677,7 @@ tree_to_shwi (const_tree t)
   return TREE_INT_CST_LOW (t);
 }
 
-extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
+extern inline __attribute__ ((__gnu_inline__)) unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));

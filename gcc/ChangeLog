@@ -1,5 +1,31 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* tree.h (tree_to_uhwi): Return an unsigned HOST_WIDE_INT.
+	* tree.c (tree_to_uhwi): Return an unsigned HOST_WIDE_INT.
+	(tree_ctz): Remove cast to unsigned type.
+	* builtins.c (fold_builtin_memory_op): Likewise.
+	* dwarf2out.c (descr_info_loc): Likewise.
+	* godump.c (go_output_typedef): Likewise.
+	* omp-low.c (expand_omp_simd): Likewise.
+	* stor-layout.c (excess_unit_span): Likewise.
+	* tree-object-size.c (addr_object_size): Likewise.
+	* tree-sra.c (analyze_all_variable_accesses): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	(simplify_rotate): Likewise.
+	* tree-ssa-strlen.c (adjust_last_stmt, handle_builtin_memcpy)
+	(handle_pointer_plus): Likewise.
+	* tree-switch-conversion.c (check_range): Likewise.
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Likewise.
+	* tsan.c (instrument_builtin_call): Likewise.
+	* cfgexpand.c (defer_stack_allocation): Add cast to HOST_WIDE_INT.
+	* trans-mem.c (tm_log_add): Likewise.
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): Likewise.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Make offset unsigned.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* tree.h (host_integerp, tree_low_cst): Delete.
 	* tree.c (host_integerp, tree_low_cst): Delete.
 
