@@ -1,3 +1,17 @@
+2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_VAR): New.
+	* chkp-builtins.def (BUILT_IN_CHKP_BIND_BOUNDS): New.
+	* cfgexpand.c (expand_call_stmt): Expand BUILT_IN_CHKP_BIND_BOUNDS.
+	* gimple.c (gimple_call_get_nobnd_arg_index): Remove.
+	* gimple.h (gf_mask): Add GF_CALL_WITH_BOUNDS.
+	(gimple_call_with_bounds_p): New.
+	(gimple_call_set_with_bounds): New.
+	(gimple_call_num_nobnd_args): Remove.
+	(gimple_call_nobnd_arg): Remove.
+	* tree.h (CALL_WITH_BOUNDS_P): New.
+	* rtl.h (CALL_EXPR_WITH_BOUNDS_P): New.
+
 2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cgraph.h (symtab_node_asm_name): Rename to symtab_node::asm_name.
