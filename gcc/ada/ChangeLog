@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi rather than
+	tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc-interface/decl.c, gcc-interface/utils.c, gcc-interface/utils2.c:
 	Replace tree_low_cst (..., 1) with tree_to_uhwi throughout.
 

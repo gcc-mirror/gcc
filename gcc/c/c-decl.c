@@ -5912,7 +5912,7 @@ grokdeclarator (const struct c_declarator *declarator,
       else
 	error_at (loc, "size of unnamed array is too large");
       /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_low_cst().  */
+	 crash in tree_to_[su]hwi().  */
       type = error_mark_node;
     }
 

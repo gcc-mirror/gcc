@@ -1029,11 +1029,11 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 	 value since that should fit in a HOST_WIDE_INT while the
 	 actual values may not.  */
       HOST_WIDE_INT i_low
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->low, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->low, minval));
       HOST_WIDE_INT i_high
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->high, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->high, minval));
       HOST_WIDE_INT i;
 
       for (i = i_low; i <= i_high; i ++)

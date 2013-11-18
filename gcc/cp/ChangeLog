@@ -1,5 +1,12 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* decl.c (reshape_init_array_1): Use tree_to_uhwi rather than
+	tree_low_cst.
+	(grokdeclarator): Update comment to refer to tree_to_[su]hwi rather
+	than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* call.c, class.c, decl.c, error.c: Replace tree_low_cst (..., 1) with
 	tree_to_uhwi throughout.
 

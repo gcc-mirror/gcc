@@ -11904,7 +11904,7 @@ fold_binary_loc (location_t loc,
 		    if (TREE_CODE (TREE_OPERAND (pmop[which], 1))
 			!= INTEGER_CST)
 		      break;
-		    /* tree_low_cst not used, because we don't care about
+		    /* tree_to_[su]hwi not used, because we don't care about
 		       the upper bits.  */
 		    cst0 = TREE_INT_CST_LOW (TREE_OPERAND (pmop[which], 1));
 		    cst0 &= cst1;
