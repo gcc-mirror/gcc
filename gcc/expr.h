@@ -95,7 +95,7 @@ struct locate_and_pad_arg_data
 do {								\
   tree inc = (INC);						\
   if (tree_fits_shwi_p (inc))					\
-    (TO).constant += tree_low_cst (inc, 0);			\
+    (TO).constant += tree_to_shwi (inc);			\
   else if ((TO).var == 0)					\
     (TO).var = fold_convert (ssizetype, inc);			\
   else								\
@@ -107,7 +107,7 @@ do {								\
 do {								\
   tree dec = (DEC);						\
   if (tree_fits_shwi_p (dec))					\
-    (TO).constant -= tree_low_cst (dec, 0);			\
+    (TO).constant -= tree_to_shwi (dec);			\
   else if ((TO).var == 0)					\
     (TO).var = size_binop (MINUS_EXPR, ssize_int (0),		\
 			   fold_convert (ssizetype, dec));	\

@@ -9737,7 +9737,7 @@ c_parser_omp_clause_collapse (c_parser *parser, tree list)
   num = c_fully_fold (num, false, NULL);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
       || !tree_fits_shwi_p (num)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc,
@@ -11463,7 +11463,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 

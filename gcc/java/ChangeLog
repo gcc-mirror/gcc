@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* class.c, expr.c: Replace tree_low_cst (..., 0) with tree_to_shwi
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* class.c, expr.c: Replace host_integerp (..., 0) with
 	tree_fits_shwi_p throughout.
 

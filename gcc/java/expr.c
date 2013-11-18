@@ -1050,7 +1050,7 @@ build_newarray (int atype_value, tree length)
   tree type
     = build_java_array_type (prim_type,
 			     tree_fits_shwi_p (length) == INTEGER_CST
-			     ? tree_low_cst (length, 0) : -1);
+			     ? tree_to_shwi (length) : -1);
 
   /* Pass a reference to the primitive type class and save the runtime
      some work.  */
@@ -1070,7 +1070,7 @@ build_anewarray (tree class_type, tree length)
   tree type
     = build_java_array_type (class_type,
 			     tree_fits_shwi_p (length)
-			     ? tree_low_cst (length, 0) : -1);
+			     ? tree_to_shwi (length) : -1);
 
   return build_call_nary (promote_type (type),
 			  build_address_of (soft_anewarray_node),

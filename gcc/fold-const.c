@@ -3421,7 +3421,7 @@ make_bit_field_ref (location_t loc, tree inner, tree type,
       if ((INTEGRAL_TYPE_P (TREE_TYPE (inner))
 	   || POINTER_TYPE_P (TREE_TYPE (inner)))
 	  && tree_fits_shwi_p (size)
-	  && tree_low_cst (size, 0) == bitsize)
+	  && tree_to_shwi (size) == bitsize)
 	return fold_convert_loc (loc, type, inner);
     }
 
@@ -7490,7 +7490,7 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len)
       || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type))) != BITS_PER_UNIT
       || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
-  total_bytes = tree_low_cst (TYPE_SIZE_UNIT (type), 0);
+  total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (type));
   if (total_bytes > len)
     return 0;
   if (TREE_STRING_LENGTH (expr) < total_bytes)
@@ -16706,9 +16706,9 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	  if (TREE_CODE (op00type) == VECTOR_TYPE
 	      && type == TREE_TYPE (op00type))
 	    {
-	      HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_low_cst (part_width, 0)/BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 

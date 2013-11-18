@@ -2718,7 +2718,7 @@ decode_addr_const (tree exp, struct addr_const *value)
 	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
 	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
-		     * tree_low_cst (TREE_OPERAND (target, 1), 0));
+		     * tree_to_shwi (TREE_OPERAND (target, 1)));
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == MEM_REF
@@ -4664,7 +4664,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   if (TREE_CODE (exp) == FDESC_EXPR)
     {
 #ifdef ASM_OUTPUT_FDESC
-      HOST_WIDE_INT part = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      HOST_WIDE_INT part = tree_to_shwi (TREE_OPERAND (exp, 1));
       tree decl = TREE_OPERAND (exp, 0);
       ASM_OUTPUT_FDESC (asm_out_file, decl, part);
 #else
@@ -4833,9 +4833,9 @@ output_constructor_array_range (oc_local_state *local)
     = int_size_in_bytes (TREE_TYPE (local->type));
 
   HOST_WIDE_INT lo_index
-    = tree_low_cst (TREE_OPERAND (local->index, 0), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 0));
   HOST_WIDE_INT hi_index
-    = tree_low_cst (TREE_OPERAND (local->index, 1), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 1));
   HOST_WIDE_INT index;
 
   unsigned int align2
@@ -4958,8 +4958,8 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
   HOST_WIDE_INT relative_index
     = (!local->field
        ? (local->index
-	  ? (tree_low_cst (local->index, 0)
-	     - tree_low_cst (local->min_index, 0))
+	  ? (tree_to_shwi (local->index)
+	     - tree_to_shwi (local->min_index))
 	  : local->last_relative_index + 1)
        : 0);
 

@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* c-common.c, c-format.c, c-omp.c, c-pretty-print.c: Replace
+	tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* c-ada-spec.c, c-common.c, c-pretty-print.c: Replace
 	host_integerp (..., 1) with tree_fits_uhwi_p throughout.
 

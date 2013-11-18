@@ -1221,7 +1221,7 @@ remap_eh_region_tree_nr (tree old_t_nr, copy_body_data *id)
 {
   int old_nr, new_nr;
 
-  old_nr = tree_low_cst (old_t_nr, 0);
+  old_nr = tree_to_shwi (old_t_nr);
   new_nr = remap_eh_region_nr (old_nr, id);
 
   return build_int_cst (integer_type_node, new_nr);

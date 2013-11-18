@@ -7003,7 +7003,7 @@ get_priority (tree args, bool is_destructor)
       || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
     goto invalid;
 
-  pri = tree_low_cst (arg, /*pos=*/0);
+  pri = tree_to_shwi (arg);
   if (pri < 0 || pri > MAX_INIT_PRIORITY)
     goto invalid;
 
@@ -11254,13 +11254,13 @@ warn_for_sign_compare (location_t location,
             {
               primop = op1;
               unsignedp = unsignedp1;
-              constant = tree_low_cst (op0, 0);
+              constant = tree_to_shwi (op0);
             }
           else
             {
               primop = op0;
               unsignedp = unsignedp0;
-              constant = tree_low_cst (op1, 0);
+              constant = tree_to_shwi (op1);
             }
 
           bits = TYPE_PRECISION (TREE_TYPE (primop));

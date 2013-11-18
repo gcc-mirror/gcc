@@ -10195,7 +10195,7 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 	  || !DECL_ALIGN (decl)
 	  || !tree_fits_shwi_p (DECL_SIZE (decl))
 	  || (DECL_ALIGN (decl) <= 64
-	      && DECL_ALIGN (decl) != tree_low_cst (DECL_SIZE (decl), 0)))
+	      && DECL_ALIGN (decl) != tree_to_shwi (DECL_SIZE (decl))))
 	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
     }
 

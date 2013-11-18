@@ -5925,7 +5925,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		offset = 0;
 	      }
 	    else
-	      bitpos = tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 0);
+	      bitpos = tree_to_shwi (DECL_FIELD_BIT_OFFSET (field));
 
 	    if (offset)
 	      {
@@ -6014,8 +6014,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	/* If we have constant bounds for the range of the type, get them.  */
 	if (const_bounds_p)
 	  {
-	    minelt = tree_low_cst (TYPE_MIN_VALUE (domain), 0);
-	    maxelt = tree_low_cst (TYPE_MAX_VALUE (domain), 0);
+	    minelt = tree_to_shwi (TYPE_MIN_VALUE (domain));
+	    maxelt = tree_to_shwi (TYPE_MAX_VALUE (domain));
 	  }
 
 	/* If the constructor has fewer elements than the array, clear
@@ -6120,8 +6120,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		if (const_bounds_p
 		    && tree_fits_shwi_p (lo_index)
 		    && tree_fits_shwi_p (hi_index)
-		    && (lo = tree_low_cst (lo_index, 0),
-			hi = tree_low_cst (hi_index, 0),
+		    && (lo = tree_to_shwi (lo_index),
+			hi = tree_to_shwi (hi_index),
 			count = hi - lo + 1,
 			(!MEM_P (target)
 			 || count <= 2
@@ -6132,7 +6132,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    lo -= minelt;  hi -= minelt;
 		    for (; lo <= hi; lo++)
 		      {
-			bitpos = lo * tree_low_cst (TYPE_SIZE (elttype), 0);
+			bitpos = lo * tree_to_shwi (TYPE_SIZE (elttype));
 
 			if (MEM_P (target)
 			    && !MEM_KEEP_ALIAS_SET_P (target)
@@ -6235,7 +6235,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    else
 	      {
 		if (index != 0)
-		  bitpos = ((tree_low_cst (index, 0) - minelt)
+		  bitpos = ((tree_to_shwi (index) - minelt)
 			    * tree_low_cst (TYPE_SIZE (elttype), 1));
 		else
 		  bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
@@ -8551,7 +8551,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	    op0 = copy_to_mode_reg (mode, op0);
 
 	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0,
-			       gen_int_mode (tree_low_cst (exp1, 0),
+			       gen_int_mode (tree_to_shwi (exp1),
 					     TYPE_MODE (TREE_TYPE (exp1)))));
 	}
 

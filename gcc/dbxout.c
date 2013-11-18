@@ -1612,7 +1612,7 @@ dbxout_type_method_1 (tree decl)
 
   if (DECL_VINDEX (decl) && tree_fits_shwi_p (DECL_VINDEX (decl)))
     {
-      stabstr_D (tree_low_cst (DECL_VINDEX (decl), 0));
+      stabstr_D (tree_to_shwi (DECL_VINDEX (decl)));
       stabstr_C (';');
       dbxout_type (DECL_CONTEXT (decl), 0);
       stabstr_C (';');
@@ -1723,7 +1723,7 @@ dbxout_range_type (tree type, tree low, tree high)
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (low);
       else
-        stabstr_D (tree_low_cst (low, 0));
+        stabstr_D (tree_to_shwi (low));
     }
   else
     stabstr_C ('0');
@@ -1734,7 +1734,7 @@ dbxout_range_type (tree type, tree low, tree high)
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (high);
       else
-        stabstr_D (tree_low_cst (high, 0));
+        stabstr_D (tree_to_shwi (high));
       stabstr_C (';');
     }
   else
@@ -2210,10 +2210,10 @@ dbxout_type (tree type, int full)
 		     	 offset within the vtable where we must look
 		     	 to find the necessary adjustment.  */
 		      stabstr_D
-			(tree_low_cst (BINFO_VPTR_FIELD (child), 0)
+			(tree_to_shwi (BINFO_VPTR_FIELD (child))
 			 * BITS_PER_UNIT);
 		    else
-		      stabstr_D (tree_low_cst (BINFO_OFFSET (child), 0)
+		      stabstr_D (tree_to_shwi (BINFO_OFFSET (child))
 				       * BITS_PER_UNIT);
 		    stabstr_C (',');
 		    dbxout_type (BINFO_TYPE (child), 0);
@@ -2228,11 +2228,11 @@ dbxout_type (tree type, int full)
 		    stabstr_C (':');
 		    dbxout_type (BINFO_TYPE (child), full);
 		    stabstr_C (',');
-		    stabstr_D (tree_low_cst (BINFO_OFFSET (child), 0)
+		    stabstr_D (tree_to_shwi (BINFO_OFFSET (child))
 				     * BITS_PER_UNIT);
 		    stabstr_C (',');
 		    stabstr_D
-		      (tree_low_cst (TYPE_SIZE (BINFO_TYPE (child)), 0)
+		      (tree_to_shwi (TYPE_SIZE (BINFO_TYPE (child)))
 		       * BITS_PER_UNIT);
 		    stabstr_C (';');
 		  }
@@ -2518,7 +2518,7 @@ dbxout_expand_expr (tree expr)
 	  {
 	    if (!tree_fits_shwi_p (offset))
 	      return NULL;
-	    x = adjust_address_nv (x, mode, tree_low_cst (offset, 0));
+	    x = adjust_address_nv (x, mode, tree_to_shwi (offset));
 	  }
 	if (bitpos != 0)
 	  x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);

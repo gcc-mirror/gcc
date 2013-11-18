@@ -6863,7 +6863,7 @@ aarch64_simd_attr_length_move (rtx insn)
 static HOST_WIDE_INT
 aarch64_simd_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
   return MIN (align, 128);
 }
 

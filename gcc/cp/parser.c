@@ -26963,7 +26963,7 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
   num = fold_non_dependent_expr (num);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
       || !tree_fits_shwi_p (num)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc, "collapse argument needs positive constant integer expression");
@@ -28929,7 +28929,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 

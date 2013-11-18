@@ -776,8 +776,8 @@ dump_case_nodes (FILE *f, struct case_node *root,
 
   dump_case_nodes (f, root->left, indent_step, indent_level);
 
-  low = tree_low_cst (root->low, 0);
-  high = tree_low_cst (root->high, 0);
+  low = tree_to_shwi (root->low);
+  high = tree_to_shwi (root->high);
 
   fputs (";; ", f);
   if (high == low)
@@ -1019,7 +1019,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 
   /* Get table of labels to jump to, in order of case index.  */
 
-  ncases = tree_low_cst (range, 0) + 1;
+  ncases = tree_to_shwi (range) + 1;
   labelvec = XALLOCAVEC (rtx, ncases);
   memset (labelvec, 0, ncases * sizeof (rtx));
 

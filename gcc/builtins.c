@@ -620,7 +620,7 @@ c_strlen (tree src, int only_value)
   else if (! tree_fits_shwi_p (offset_node))
     offset = -1;
   else
-    offset = tree_low_cst (offset_node, 0);
+    offset = tree_to_shwi (offset_node);
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
@@ -5288,7 +5288,7 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
 
   weak = CALL_EXPR_ARG (exp, 3);
   is_weak = false;
-  if (tree_fits_shwi_p (weak) && tree_low_cst (weak, 0) != 0)
+  if (tree_fits_shwi_p (weak) && tree_to_shwi (weak) != 0)
     is_weak = true;
 
   oldval = expect;
@@ -9855,7 +9855,7 @@ fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
 		 - REAL_MODE_FORMAT (TYPE_MODE (type))->emin);
 
 	  /* Get the user-requested adjustment.  */
-	  const HOST_WIDE_INT req_exp_adj = tree_low_cst (arg1, 0);
+	  const HOST_WIDE_INT req_exp_adj = tree_to_shwi (arg1);
 
 	  /* The requested adjustment must be inside this range.  This
 	     is a preliminary cap to avoid things like overflow, we
@@ -12366,7 +12366,7 @@ expand_builtin_object_size (tree exp)
       return const0_rtx;
     }
 
-  object_size_type = tree_low_cst (ost, 0);
+  object_size_type = tree_to_shwi (ost);
 
   return object_size_type < 2 ? constm1_rtx : const0_rtx;
 }
@@ -12660,7 +12660,7 @@ fold_builtin_object_size (tree ptr, tree ost)
       || compare_tree_int (ost, 3) > 0)
     return NULL_TREE;
 
-  object_size_type = tree_low_cst (ost, 0);
+  object_size_type = tree_to_shwi (ost);
 
   /* __builtin_object_size doesn't evaluate side-effects in its arguments;
      if there are any side-effects, it returns (size_t) -1 for types 0 and 1
@@ -13844,7 +13844,7 @@ do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
       && tree_fits_shwi_p (arg1)
       && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
     {
-      const HOST_WIDE_INT n = tree_low_cst (arg1, 0);
+      const HOST_WIDE_INT n = tree_to_shwi (arg1);
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg2);
 
       if (n == (long)n

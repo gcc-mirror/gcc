@@ -994,7 +994,7 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
 {
-  return tree_low_cst (TYPE_SIZE (type), 0);
+  return tree_to_shwi (TYPE_SIZE (type));
 }
 
 bool

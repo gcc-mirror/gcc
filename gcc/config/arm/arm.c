@@ -28807,7 +28807,7 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 static HOST_WIDE_INT
 arm_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
 
   if (TARGET_AAPCS_BASED)
     align = MIN (align, 64);

@@ -995,7 +995,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	/* And now the usual component-reference style ops.  */
 	case BIT_FIELD_REF:
-	  offset += tree_low_cst (op->op1, 0);
+	  offset += tree_to_shwi (op->op1);
 	  break;
 
 	case COMPONENT_REF:

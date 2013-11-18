@@ -5989,7 +5989,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 	  if (!tree_fits_shwi_p (gimple_assign_rhs2 (arg2_stmt)))
 	    goto escapes;
 
-	  sub = tree_low_cst (gimple_assign_rhs2 (arg2_stmt), 0);
+	  sub = tree_to_shwi (gimple_assign_rhs2 (arg2_stmt));
 	  if (code2 == MINUS_EXPR)
 	    sub = -sub;
 	  if (sub < -48 || sub > -32)

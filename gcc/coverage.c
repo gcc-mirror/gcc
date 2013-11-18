@@ -830,7 +830,7 @@ build_fn_info (const struct coverage_data *data, tree type, tree key)
 
 	if (var)
 	  count
-	    = tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (var))), 0)
+	    = tree_to_shwi (TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (var))))
 	    + 1;
 
 	CONSTRUCTOR_APPEND_ELT (ctr, TYPE_FIELDS (ctr_type),

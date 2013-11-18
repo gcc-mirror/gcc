@@ -95,7 +95,7 @@ make_thunk (tree function, bool this_adjusting,
 		    convert (ssizetype,
 			     TYPE_SIZE_UNIT (vtable_entry_type)));
 
-  d = tree_low_cst (fixed_offset, 0);
+  d = tree_to_shwi (fixed_offset);
 
   /* See if we already have the thunk in question.  For this_adjusting
      thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
@@ -323,7 +323,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
     {
       if (!this_adjusting)
 	virtual_offset = BINFO_VPTR_FIELD (virtual_offset);
-      virtual_value = tree_low_cst (virtual_offset, /*pos=*/0);
+      virtual_value = tree_to_shwi (virtual_offset);
       gcc_assert (virtual_value);
     }
   else

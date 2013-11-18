@@ -2709,7 +2709,7 @@ bit_position (const_tree field)
 HOST_WIDE_INT
 int_bit_position (const_tree field)
 {
-  return tree_low_cst (bit_position (field), 0);
+  return tree_to_shwi (bit_position (field));
 }
 
 /* Return the byte position of FIELD, in bytes from the start of the record.
@@ -2729,7 +2729,7 @@ byte_position (const_tree field)
 HOST_WIDE_INT
 int_byte_position (const_tree field)
 {
-  return tree_low_cst (byte_position (field), 0);
+  return tree_to_shwi (byte_position (field));
 }
 
 /* Return the strictest alignment, in bits, that T is known to have.  */

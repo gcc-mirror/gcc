@@ -8041,7 +8041,7 @@ dump_class_hierarchy_r (FILE *stream,
   igo = TREE_CHAIN (binfo);
 
   fprintf (stream, HOST_WIDE_INT_PRINT_DEC,
-	   tree_low_cst (BINFO_OFFSET (binfo), 0));
+	   tree_to_shwi (BINFO_OFFSET (binfo)));
   if (is_empty_class (BINFO_TYPE (binfo)))
     fprintf (stream, " empty");
   else if (CLASSTYPE_NEARLY_EMPTY_P (BINFO_TYPE (binfo)))
@@ -8117,10 +8117,10 @@ dump_class_hierarchy_1 (FILE *stream, int flags, tree t)
 {
   fprintf (stream, "Class %s\n", type_as_string (t, TFF_PLAIN_IDENTIFIER));
   fprintf (stream, "   size=%lu align=%lu\n",
-	   (unsigned long)(tree_low_cst (TYPE_SIZE (t), 0) / BITS_PER_UNIT),
+	   (unsigned long)(tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
   fprintf (stream, "   base size=%lu base align=%lu\n",
-	   (unsigned long)(tree_low_cst (TYPE_SIZE (CLASSTYPE_AS_BASE (t)), 0)
+	   (unsigned long)(tree_to_shwi (TYPE_SIZE (CLASSTYPE_AS_BASE (t)))
 			   / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (CLASSTYPE_AS_BASE (t))
 			   / BITS_PER_UNIT));
@@ -8157,7 +8157,7 @@ dump_array (FILE * stream, tree decl)
   HOST_WIDE_INT elt;
   tree size = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (decl)));
 
-  elt = (tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl))), 0)
+  elt = (tree_to_shwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl))))
 	 / BITS_PER_UNIT);
   fprintf (stream, "%s:", decl_as_string (decl, TFF_PLAIN_IDENTIFIER));
   fprintf (stream, " %s entries",
@@ -8246,10 +8246,10 @@ dump_thunk (FILE *stream, int indent, tree thunk)
 	/*NOP*/;
       else if (DECL_THIS_THUNK_P (thunk))
 	fprintf (stream, " vcall="  HOST_WIDE_INT_PRINT_DEC,
-		 tree_low_cst (virtual_adjust, 0));
+		 tree_to_shwi (virtual_adjust));
       else
 	fprintf (stream, " vbase=" HOST_WIDE_INT_PRINT_DEC "(%s)",
-		 tree_low_cst (BINFO_VPTR_FIELD (virtual_adjust), 0),
+		 tree_to_shwi (BINFO_VPTR_FIELD (virtual_adjust)),
 		 type_as_string (BINFO_TYPE (virtual_adjust), TFF_SCOPE));
       if (THUNK_ALIAS (thunk))
 	fprintf (stream, " alias to %p", (void *)THUNK_ALIAS (thunk));
