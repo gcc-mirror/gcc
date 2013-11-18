@@ -1323,90 +1323,43 @@ replace_ref_with (gimple stmt, tree new_tree, bool set, bool in_lhs)
   gsi_insert_after (&bsi, new_stmt, GSI_NEW_STMT);
 }
 
-/* Returns the reference to the address of REF in the ITER-th iteration of
-   LOOP, or NULL if we fail to determine it (ITER may be negative).  We
-   try to preserve the original shape of the reference (not rewrite it
-   as an indirect ref to the address), to make tree_could_trap_p in
-   prepare_initializers_chain return false more often.  */
+/* Returns a memory reference to DR in the ITER-th iteration of
+   the loop it was analyzed in.  Append init stmts to STMTS.  */
 
-static tree
-ref_at_iteration (struct loop *loop, tree ref, int iter)
+static tree 
+ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
 {
-  tree idx, *idx_p, type, val, op0 = NULL_TREE, ret;
-  affine_iv iv;
-  bool ok;
-
-  if (handled_component_p (ref))
+  tree off = DR_OFFSET (dr);
+  tree coff = DR_INIT (dr);
+  if (iter == 0)
+    ;
+  else if (TREE_CODE (DR_STEP (dr)) == INTEGER_CST)
+    coff = size_binop (PLUS_EXPR, coff,
+		       size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
+  else
+    off = size_binop (PLUS_EXPR, off,
+		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
+  tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
+  addr = force_gimple_operand_1 (addr, stmts, is_gimple_mem_ref_addr,
+				 NULL_TREE);
+  tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
+  /* While data-ref analysis punts on bit offsets it still handles
+     bitfield accesses at byte boundaries.  Cope with that.  Note that
+     we cannot simply re-apply the outer COMPONENT_REF because the
+     byte-granular portion of it is already applied via DR_INIT and
+     DR_OFFSET, so simply build a BIT_FIELD_REF knowing that the bits
+     start at offset zero.  */
+  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
     {
-      op0 = ref_at_iteration (loop, TREE_OPERAND (ref, 0), iter);
-      if (!op0)
-	return NULL_TREE;
-    }
-  else if (!INDIRECT_REF_P (ref)
-	   && TREE_CODE (ref) != MEM_REF)
-    return unshare_expr (ref);
-
-  if (TREE_CODE (ref) == MEM_REF)
-    {
-      ret = unshare_expr (ref);
-      idx = TREE_OPERAND (ref, 0);
-      idx_p = &TREE_OPERAND (ret, 0);
-    }
-  else if (TREE_CODE (ref) == COMPONENT_REF)
-    {
-      /* Check that the offset is loop invariant.  */
-      if (TREE_OPERAND (ref, 2)
-	  && !expr_invariant_in_loop_p (loop, TREE_OPERAND (ref, 2)))
-	return NULL_TREE;
-
-      return build3 (COMPONENT_REF, TREE_TYPE (ref), op0,
-		     unshare_expr (TREE_OPERAND (ref, 1)),
-		     unshare_expr (TREE_OPERAND (ref, 2)));
-    }
-  else if (TREE_CODE (ref) == ARRAY_REF)
-    {
-      /* Check that the lower bound and the step are loop invariant.  */
-      if (TREE_OPERAND (ref, 2)
-	  && !expr_invariant_in_loop_p (loop, TREE_OPERAND (ref, 2)))
-	return NULL_TREE;
-      if (TREE_OPERAND (ref, 3)
-	  && !expr_invariant_in_loop_p (loop, TREE_OPERAND (ref, 3)))
-	return NULL_TREE;
-
-      ret = build4 (ARRAY_REF, TREE_TYPE (ref), op0, NULL_TREE,
-		    unshare_expr (TREE_OPERAND (ref, 2)),
-		    unshare_expr (TREE_OPERAND (ref, 3)));
-      idx = TREE_OPERAND (ref, 1);
-      idx_p = &TREE_OPERAND (ret, 1);
+      tree field = TREE_OPERAND (DR_REF (dr), 1);
+      return build3 (BIT_FIELD_REF, TREE_TYPE (DR_REF (dr)),
+		     build2 (MEM_REF, DECL_BIT_FIELD_TYPE (field),
+			     addr, alias_ptr),
+		     DECL_SIZE (field), bitsize_zero_node);
     }
   else
-    return NULL_TREE;
-
-  ok = simple_iv (loop, loop, idx, &iv, true);
-  if (!ok)
-    return NULL_TREE;
-  iv.base = expand_simple_operations (iv.base);
-  if (integer_zerop (iv.step))
-    *idx_p = unshare_expr (iv.base);
-  else
-    {
-      type = TREE_TYPE (iv.base);
-      if (POINTER_TYPE_P (type))
-	{
-	  val = fold_build2 (MULT_EXPR, sizetype, iv.step,
-			     size_int (iter));
-	  val = fold_build_pointer_plus (iv.base, val);
-	}
-      else
-	{
-	  val = fold_build2 (MULT_EXPR, type, iv.step,
-			     build_int_cst_type (type, iter));
-	  val = fold_build2 (PLUS_EXPR, type, iv.base, val);
-	}
-      *idx_p = unshare_expr (val);
-    }
-
-  return ret;
+    return fold_build2 (MEM_REF, TREE_TYPE (DR_REF (dr)), addr, alias_ptr);
 }
 
 /* Get the initialization expression for the INDEX-th temporary variable
@@ -2365,14 +2318,10 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
       if (chain->inits[i] != NULL_TREE)
 	continue;
 
-      init = ref_at_iteration (loop, DR_REF (dr), (int) i - n);
-      if (!init)
-	return false;
-
+      init = ref_at_iteration (dr, (int) i - n, &stmts);
       if (!chain->all_always_accessed && tree_could_trap_p (init))
 	return false;
 
-      init = force_gimple_operand (init, &stmts, false, NULL_TREE);
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (entry, stmts);
 

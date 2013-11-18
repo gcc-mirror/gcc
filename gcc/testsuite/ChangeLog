@@ -1,3 +1,33 @@
+2013-11-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58794
+	* c-c++-common/torture/pr58794-1.c: New testcase.
+	* c-c++-common/torture/pr58794-2.c: Likewise.
+
+	2013-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58742
+	* c-c++-common/fold-divmul-1.c: New testcase.
+
+	2013-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58653
+	* gcc.dg/tree-ssa/predcom-6.c: New testcase.
+	* gcc.dg/tree-ssa/predcom-7.c: Likewise.
+
+	PR tree-optimization/59047
+	* gcc.dg/torture/pr59047.c: New testcase.
+
+	2013-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58143
+	* gcc.dg/torture/pr58143-1.c: New testcase.
+	* gcc.dg/torture/pr58143-2.c: Likewise.
+	* gcc.dg/torture/pr58143-3.c: Likewise.
+
 2013-11-17  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
