@@ -2291,7 +2291,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 	      return false;
 	    }
 	  switch (tree_fits_shwi_p (gimple_call_arg (stmt, 0))
-		  ? tree_low_cst (gimple_call_arg (stmt, 0), 0)
+		  ? tree_to_shwi (gimple_call_arg (stmt, 0))
 		  : 0)
 	    {
 	    case 1:
@@ -2954,7 +2954,7 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
 				    OMP_CLAUSE_SAFELEN);
 	  if (c
 	      && compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c), max_vf) == -1)
-	    max_vf = tree_low_cst (OMP_CLAUSE_SAFELEN_EXPR (c), 0);
+	    max_vf = tree_to_shwi (OMP_CLAUSE_SAFELEN_EXPR (c));
 	}
       if (max_vf > 1)
 	{

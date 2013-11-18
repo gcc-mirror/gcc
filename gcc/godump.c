@@ -733,7 +733,7 @@ go_format_type (struct godump_container *container, tree type,
 	  char buf[100];
 
 	  snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC "+1",
-		    tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0));
+		    tree_to_shwi (TYPE_MAX_VALUE (TYPE_DOMAIN (type))));
 	  obstack_grow (ob, buf, strlen (buf));
 	}
       obstack_1grow (ob, ']');
@@ -983,7 +983,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 
 	  if (tree_fits_shwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC,
-		     tree_low_cst (TREE_VALUE (element), 0));
+		     tree_to_shwi (TREE_VALUE (element)));
 	  else if (tree_fits_uhwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		     ((unsigned HOST_WIDE_INT)

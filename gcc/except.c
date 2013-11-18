@@ -2051,7 +2051,7 @@ expand_builtin_eh_common (tree region_nr_t)
   eh_region region;
 
   gcc_assert (tree_fits_shwi_p (region_nr_t));
-  region_nr = tree_low_cst (region_nr_t, 0);
+  region_nr = tree_to_shwi (region_nr_t);
 
   region = (*cfun->eh->region_array)[region_nr];
 

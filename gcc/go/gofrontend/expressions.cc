@@ -3345,7 +3345,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       expr_tree = fold_convert(int_type_tree, expr_tree);
       if (tree_fits_shwi_p (expr_tree))
 	{
-	  HOST_WIDE_INT intval = tree_low_cst(expr_tree, 0);
+	  HOST_WIDE_INT intval = tree_to_shwi (expr_tree);
 	  std::string s;
 	  Lex::append_char(intval, true, &s, this->location());
 	  Expression* se = Expression::make_string(s, this->location());

@@ -596,7 +596,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		      tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (rhs));
 
 		      gpr_size = si->offsets[SSA_NAME_VERSION (use)]
-			  	 + tree_low_cst (TREE_OPERAND (rhs, 1), 0)
+			  	 + tree_to_shwi (TREE_OPERAND (rhs, 1))
 				 + tree_low_cst (access_size, 1);
 		      if (gpr_size >= VA_LIST_MAX_GPR_SIZE)
 			cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;

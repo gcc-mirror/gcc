@@ -1631,9 +1631,9 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		    TREE_STRING_POINTER (str1) + tree_low_cst (off1, 1),
 		    tree_low_cst (len1, 1));
 	  else
-	    src_buf[0] = tree_low_cst (src1, 0);
+	    src_buf[0] = tree_to_shwi (src1);
 	  memset (src_buf + tree_low_cst (diff, 1),
-		  tree_low_cst (val2, 0), tree_low_cst (len2, 1));
+		  tree_to_shwi (val2), tree_low_cst (len2, 1));
 	  src_buf[src_len] = '\0';
 	  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
 	     handle embedded '\0's.  */
@@ -2355,7 +2355,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	   with optional casts.  */
 	if (cdef_code[i] == MINUS_EXPR
 	    && tree_fits_shwi_p (cdef_arg1[i])
-	    && tree_low_cst (cdef_arg1[i], 0) == TYPE_PRECISION (rtype)
+	    && tree_to_shwi (cdef_arg1[i]) == TYPE_PRECISION (rtype)
 	    && TREE_CODE (cdef_arg2[i]) == SSA_NAME)
 	  {
 	    tree tem;
@@ -2387,7 +2387,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	   One shift count is Y and the other (-Y) & (B - 1).  */
 	else if (cdef_code[i] == BIT_AND_EXPR
 		 && tree_fits_shwi_p (cdef_arg2[i])
-		 && tree_low_cst (cdef_arg2[i], 0)
+		 && tree_to_shwi (cdef_arg2[i])
 		    == TYPE_PRECISION (rtype) - 1
 		 && TREE_CODE (cdef_arg1[i]) == SSA_NAME
 		 && gimple_assign_rhs_code (stmt) == BIT_IOR_EXPR)

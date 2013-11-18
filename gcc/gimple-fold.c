@@ -3406,7 +3406,7 @@ gimple_fold_indirect_ref (tree t)
           unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
           tree part_width = TYPE_SIZE (type);
           unsigned HOST_WIDE_INT part_widthi
-            = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
+            = tree_to_shwi (part_width) / BITS_PER_UNIT;
           unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
           tree index = bitsize_int (indexi);
           if (offset / part_widthi

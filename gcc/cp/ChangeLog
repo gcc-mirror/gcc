@@ -1,5 +1,10 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* class.c, dump.c, error.c, init.c, method.c, parser.c, semantics.c:
+	Replace tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* decl.c: Replace host_integerp (..., 1) with tree_fits_uhwi_p
 	throughout.
 

@@ -8611,7 +8611,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
       *non_constant_p = true;
       return t;
     }
-  i = tree_low_cst (index, 0);
+  i = tree_to_shwi (index);
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return (*CONSTRUCTOR_ELTS (ary))[i].value;
   else if (elem_nchars == 1)
@@ -8726,8 +8726,8 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
 
   start = TREE_OPERAND (t, 2);
-  istart = tree_low_cst (start, 0);
-  isize = tree_low_cst (TREE_OPERAND (t, 1), 0);
+  istart = tree_to_shwi (start);
+  isize = tree_to_shwi (TREE_OPERAND (t, 1));
   utype = TREE_TYPE (t);
   if (!TYPE_UNSIGNED (utype))
     utype = build_nonstandard_integer_type (TYPE_PRECISION (utype), 1);
@@ -8742,8 +8742,8 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 	  && tree_fits_shwi_p (bitpos)
 	  && tree_fits_shwi_p (DECL_SIZE (field)))
 	{
-	  HOST_WIDE_INT bit = tree_low_cst (bitpos, 0);
-	  HOST_WIDE_INT sz = tree_low_cst (DECL_SIZE (field), 0);
+	  HOST_WIDE_INT bit = tree_to_shwi (bitpos);
+	  HOST_WIDE_INT sz = tree_to_shwi (DECL_SIZE (field));
 	  HOST_WIDE_INT shift;
 	  if (bit >= istart && bit + sz <= istart + isize)
 	    {
@@ -8900,7 +8900,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 		     bool *non_constant_p, bool *overflow_p)
 {
   tree elttype = TREE_TYPE (atype);
-  int max = tree_low_cst (array_type_nelts (atype), 0);
+  int max = tree_to_shwi (array_type_nelts (atype));
   vec<constructor_elt, va_gc> *n;
   vec_alloc (n, max + 1);
   bool pre_init = false;
@@ -9119,9 +9119,9 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (op00type))))
 	    {
-	      HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_low_cst (part_width, 0)/BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 

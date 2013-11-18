@@ -921,8 +921,8 @@ c_omp_declare_simd_clause_cmp (const void *p, const void *q)
       && OMP_CLAUSE_CODE (a) != OMP_CLAUSE_INBRANCH
       && OMP_CLAUSE_CODE (a) != OMP_CLAUSE_NOTINBRANCH)
     {
-      int c = tree_low_cst (OMP_CLAUSE_DECL (a), 0);
-      int d = tree_low_cst (OMP_CLAUSE_DECL (b), 0);
+      int c = tree_to_shwi (OMP_CLAUSE_DECL (a));
+      int d = tree_to_shwi (OMP_CLAUSE_DECL (b));
       if (c < d)
 	return 1;
       if (c > d)
@@ -987,7 +987,7 @@ c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
 	&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_INBRANCH
 	&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_NOTINBRANCH)
       {
-	int idx = tree_low_cst (OMP_CLAUSE_DECL (c), 0), i;
+	int idx = tree_to_shwi (OMP_CLAUSE_DECL (c)), i;
 	tree arg;
 	for (arg = DECL_ARGUMENTS (fndecl), i = 0; arg;
 	     arg = TREE_CHAIN (arg), i++)

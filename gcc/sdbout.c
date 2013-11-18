@@ -537,8 +537,8 @@ plain_type_1 (tree type, int level)
 	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != 0
 	       && tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
 	       && tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
-	       ? (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
-		  - tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0) + 1)
+	       ? (tree_to_shwi (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+		  - tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1)
 	       : 0);
 
 	return PUSH_DERIVED_LEVEL (DT_ARY, m);
@@ -1134,7 +1134,7 @@ sdbout_one_type (tree type)
 		  continue;
 
 		PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
-		PUT_SDB_INT_VAL (tree_low_cst (BINFO_OFFSET (child), 0));
+		PUT_SDB_INT_VAL (tree_to_shwi (BINFO_OFFSET (child)));
 		PUT_SDB_SCL (member_scl);
 		sdbout_type (BINFO_TYPE (child));
 		PUT_SDB_ENDEF;
@@ -1155,7 +1155,7 @@ sdbout_one_type (tree type)
 	        if (tree_fits_shwi_p (value))
 		  {
 		    PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
-		    PUT_SDB_INT_VAL (tree_low_cst (value, 0));
+		    PUT_SDB_INT_VAL (tree_to_shwi (value));
 		    PUT_SDB_SCL (C_MOE);
 		    PUT_SDB_TYPE (T_MOE);
 		    PUT_SDB_ENDEF;

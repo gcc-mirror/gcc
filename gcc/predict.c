@@ -1054,14 +1054,14 @@ strips_small_constant (tree t1, tree t2)
   else if (TREE_CODE (t1) == SSA_NAME)
     ret = t1;
   else if (tree_fits_shwi_p (t1))
-    value = tree_low_cst (t1, 0);
+    value = tree_to_shwi (t1);
   else
     return NULL;
 
   if (!t2)
     return ret;
   else if (tree_fits_shwi_p (t2))
-    value = tree_low_cst (t2, 0);
+    value = tree_to_shwi (t2);
   else if (TREE_CODE (t2) == SSA_NAME)
     {
       if (ret)
@@ -1674,7 +1674,7 @@ predict_loops (void)
 	  if (loop_bound_var)
 	    predict_iv_comparison (loop, bb, loop_bound_var, loop_iv_base,
 				   loop_bound_code,
-				   tree_low_cst (loop_bound_step, 0));
+				   tree_to_shwi (loop_bound_step));
 	}
 
       /* Free basic blocks from get_loop_body.  */

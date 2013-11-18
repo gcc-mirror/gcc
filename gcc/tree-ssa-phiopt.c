@@ -1375,7 +1375,7 @@ add_or_mark_expr (basic_block bb, tree exp,
       map.phase = 0;
       map.bb = 0;
       map.store = store;
-      map.offset = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
       map.size = size;
 
       slot = seen_ssa_names.find_slot (&map, INSERT);

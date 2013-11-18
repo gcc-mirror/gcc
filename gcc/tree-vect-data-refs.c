@@ -3071,7 +3071,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	case MULT_EXPR:
 	  if (scale == 1 && tree_fits_shwi_p (op1))
 	    {
-	      scale = tree_low_cst (op1, 0);
+	      scale = tree_to_shwi (op1);
 	      off = op0;
 	      continue;
 	    }

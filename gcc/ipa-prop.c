@@ -4610,7 +4610,7 @@ ipcp_transform_function (struct cgraph_node *node)
 	    break;
 	if (!v
 	    || v->by_ref != by_ref
-	    || tree_low_cst (TYPE_SIZE (TREE_TYPE (v->value)), 0) != size)
+	    || tree_to_shwi (TYPE_SIZE (TREE_TYPE (v->value))) != size)
 	  continue;
 
 	gcc_checking_assert (is_gimple_ip_invariant (v->value));

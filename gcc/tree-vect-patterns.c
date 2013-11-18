@@ -784,7 +784,7 @@ vect_recog_pow_pattern (vec<gimple> *stmts, tree *type_in,
 
   /* Catch squaring.  */
   if ((tree_fits_shwi_p (exp)
-       && tree_low_cst (exp, 0) == 2)
+       && tree_to_shwi (exp) == 2)
       || (TREE_CODE (exp) == REAL_CST
           && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
     {

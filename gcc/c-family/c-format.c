@@ -1460,7 +1460,7 @@ check_format_arg (void *ctx, tree format_tree,
 	  return;
 	}
       if (!tree_fits_shwi_p (arg1)
-	  || (offset = tree_low_cst (arg1, 0)) < 0)
+	  || (offset = tree_to_shwi (arg1)) < 0)
 	{
 	  res->number_non_literal++;
 	  return;
@@ -1507,7 +1507,7 @@ check_format_arg (void *ctx, tree format_tree,
     }
   if (TREE_CODE (format_tree) == ARRAY_REF
       && tree_fits_shwi_p (TREE_OPERAND (format_tree, 1))
-      && (offset += tree_low_cst (TREE_OPERAND (format_tree, 1), 0)) >= 0)
+      && (offset += tree_to_shwi (TREE_OPERAND (format_tree, 1))) >= 0)
     format_tree = TREE_OPERAND (format_tree, 0);
   if (TREE_CODE (format_tree) == VAR_DECL
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE

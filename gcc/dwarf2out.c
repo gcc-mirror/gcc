@@ -14253,10 +14253,10 @@ loc_list_from_tree (tree loc, int want_address)
 	       && tree_fits_shwi_p (loc)
 	       && (ret = address_of_int_loc_descriptor
 	       		   (int_size_in_bytes (TREE_TYPE (loc)),
-	       		    tree_low_cst (loc, 0))))
+	       		    tree_to_shwi (loc))))
 	have_address = 1;
       else if (tree_fits_shwi_p (loc))
-	ret = int_loc_descriptor (tree_low_cst (loc, 0));
+	ret = int_loc_descriptor (tree_to_shwi (loc));
       else
 	{
 	  expansion_failed (loc, NULL_RTX,
@@ -14351,7 +14351,7 @@ loc_list_from_tree (tree loc, int want_address)
 	  if (list_ret == 0)
 	    return 0;
 
-	  loc_list_plus_const (list_ret, tree_low_cst (TREE_OPERAND (loc, 1), 0));
+	  loc_list_plus_const (list_ret, tree_to_shwi (TREE_OPERAND (loc, 1)));
 	  break;
 	}
 
@@ -14855,7 +14855,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 	  add_loc_descr (&loc_descr, tmp);
 
 	  /* Calculate the address of the offset.  */
-	  offset = tree_low_cst (BINFO_VPTR_FIELD (decl), 0);
+	  offset = tree_to_shwi (BINFO_VPTR_FIELD (decl));
 	  gcc_assert (offset < 0);
 
 	  tmp = int_loc_descriptor (-offset);
@@ -14872,7 +14872,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 	  add_loc_descr (&loc_descr, tmp);
 	}
       else
-	offset = tree_low_cst (BINFO_OFFSET (decl), 0);
+	offset = tree_to_shwi (BINFO_OFFSET (decl));
     }
   else
     offset = field_byte_offset (decl);
@@ -15528,7 +15528,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
     {
       if (!tree_fits_shwi_p (offset))
 	return NULL_TREE;
-      *value = tree_low_cst (offset, 0);
+      *value = tree_to_shwi (offset);
     }
   if (bitpos != 0)
     *value += bitpos / BITS_PER_UNIT;
@@ -15701,7 +15701,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	  if (fieldsize <= 0)
 	    return false;
 
-	  min_index = tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0);
+	  min_index = tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type)));
 	  memset (array, '\0', size);
 	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
 	    {
@@ -15709,10 +15709,10 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	      tree index = ce->index;
 	      int pos = curpos;
 	      if (index && TREE_CODE (index) == RANGE_EXPR)
-		pos = (tree_low_cst (TREE_OPERAND (index, 0), 0) - min_index)
+		pos = (tree_to_shwi (TREE_OPERAND (index, 0)) - min_index)
 		      * fieldsize;
 	      else if (index)
-		pos = (tree_low_cst (index, 0) - min_index) * fieldsize;
+		pos = (tree_to_shwi (index) - min_index) * fieldsize;
 
 	      if (val)
 		{
@@ -15723,8 +15723,8 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	      curpos = pos + fieldsize;
 	      if (index && TREE_CODE (index) == RANGE_EXPR)
 		{
-		  int count = tree_low_cst (TREE_OPERAND (index, 1), 0)
-			      - tree_low_cst (TREE_OPERAND (index, 0), 0);
+		  int count = tree_to_shwi (TREE_OPERAND (index, 1))
+			      - tree_to_shwi (TREE_OPERAND (index, 0));
 		  while (count-- > 0)
 		    {
 		      if (val)
@@ -15770,7 +15770,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	      else if (DECL_SIZE_UNIT (field) == NULL_TREE
 		       || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
 		return false;
-	      fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 0);
+	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
 	      pos = int_byte_position (field);
 	      gcc_assert (pos + fieldsize <= size);
 	      if (val
@@ -16162,7 +16162,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	if (bound_attr == DW_AT_lower_bound
 	    && tree_fits_shwi_p (bound)
 	    && (dflt = lower_bound_default ()) != -1
-	    && tree_low_cst (bound, 0) == dflt)
+	    && tree_to_shwi (bound) == dflt)
 	  ;
 
 	/* Otherwise represent the bound as an unsigned value with the
@@ -16410,7 +16410,7 @@ add_bit_offset_attribute (dw_die_ref die, tree decl)
 
   if (! BYTES_BIG_ENDIAN)
     {
-      highest_order_field_bit_offset += tree_low_cst (DECL_SIZE (decl), 0);
+      highest_order_field_bit_offset += tree_to_shwi (DECL_SIZE (decl));
       highest_order_object_bit_offset += simple_type_size_in_bits (type);
     }
 
@@ -16508,7 +16508,7 @@ add_pure_or_virtual_attribute (dw_die_ref die, tree func_decl)
       if (tree_fits_shwi_p (DECL_VINDEX (func_decl)))
 	add_AT_loc (die, DW_AT_vtable_elem_location,
 		    new_loc_descr (DW_OP_constu,
-				   tree_low_cst (DECL_VINDEX (func_decl), 0),
+				   tree_to_shwi (DECL_VINDEX (func_decl)),
 				   0));
 
       /* GNU extension: Record what type this method came from originally.  */
@@ -17056,7 +17056,7 @@ descr_info_loc (tree val, tree base_decl)
       return loc_descriptor_from_tree (val, 0);
     case INTEGER_CST:
       if (tree_fits_shwi_p (val))
-	return int_loc_descriptor (tree_low_cst (val, 0));
+	return int_loc_descriptor (tree_to_shwi (val));
       break;
     case INDIRECT_REF:
       size = int_size_in_bytes (TREE_TYPE (val));
@@ -17079,7 +17079,7 @@ descr_info_loc (tree val, tree base_decl)
 	  loc = descr_info_loc (TREE_OPERAND (val, 0), base_decl);
 	  if (!loc)
 	    break;
-	  loc_descr_plus_const (&loc, tree_low_cst (TREE_OPERAND (val, 1), 0));
+	  loc_descr_plus_const (&loc, tree_to_shwi (TREE_OPERAND (val, 1)));
 	}
       else
 	{
@@ -17121,7 +17121,7 @@ add_descr_info_field (dw_die_ref die, enum dwarf_attribute attr,
 
   if (tree_fits_shwi_p (val))
     {
-      add_AT_unsigned (die, attr, tree_low_cst (val, 0));
+      add_AT_unsigned (die, attr, tree_to_shwi (val));
       return;
     }
 
@@ -17174,7 +17174,7 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 
 	  if (tree_fits_shwi_p (info->dimen[dim].lower_bound)
 	      && (dflt = lower_bound_default ()) != -1
-	      && tree_low_cst (info->dimen[dim].lower_bound, 0) == dflt)
+	      && tree_to_shwi (info->dimen[dim].lower_bound) == dflt)
 	    ;
 	  else
 	    add_descr_info_field (subrange_die, DW_AT_lower_bound,
@@ -23114,7 +23114,7 @@ optimize_location_into_implicit_ptr (dw_die_ref die, tree decl)
   if (TREE_CODE (init) == POINTER_PLUS_EXPR
       && tree_fits_shwi_p (TREE_OPERAND (init, 1)))
     {
-      offset = tree_low_cst (TREE_OPERAND (init, 1), 0);
+      offset = tree_to_shwi (TREE_OPERAND (init, 1));
       init = TREE_OPERAND (init, 0);
       STRIP_NOPS (init);
     }

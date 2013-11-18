@@ -6292,7 +6292,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			  initial = DECL_INITIAL (SYMBOL_REF_DECL (l->loc));
 			  if (tree_fits_shwi_p (initial))
 			    {
-			      item = GEN_INT (tree_low_cst (initial, 0));
+			      item = GEN_INT (tree_to_shwi (initial));
 			      item = gen_rtx_CONCAT (indmode, mem, item);
 			      call_arguments
 				= gen_rtx_EXPR_LIST (VOIDmode, item,
@@ -6371,7 +6371,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	= TYPE_MODE (TREE_TYPE (OBJ_TYPE_REF_EXPR (obj_type_ref)));
       rtx clobbered = gen_rtx_MEM (mode, this_arg);
       HOST_WIDE_INT token
-	= tree_low_cst (OBJ_TYPE_REF_TOKEN (obj_type_ref), 0);
+	= tree_to_shwi (OBJ_TYPE_REF_TOKEN (obj_type_ref));
       if (token)
 	clobbered = plus_constant (mode, clobbered,
 				   token * GET_MODE_SIZE (mode));

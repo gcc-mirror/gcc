@@ -1201,8 +1201,8 @@ place_field (record_layout_info rli, tree field)
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
       HOST_WIDE_INT field_size = tree_low_cst (dsize, 1);
-      HOST_WIDE_INT offset = tree_low_cst (rli->offset, 0);
-      HOST_WIDE_INT bit_offset = tree_low_cst (rli->bitpos, 0);
+      HOST_WIDE_INT offset = tree_to_shwi (rli->offset);
+      HOST_WIDE_INT bit_offset = tree_to_shwi (rli->bitpos);
 
 #ifdef ADJUST_FIELD_ALIGN
       if (! TYPE_USER_ALIGN (type))
@@ -1245,8 +1245,8 @@ place_field (record_layout_info rli, tree field)
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
       HOST_WIDE_INT field_size = tree_low_cst (dsize, 1);
-      HOST_WIDE_INT offset = tree_low_cst (rli->offset, 0);
-      HOST_WIDE_INT bit_offset = tree_low_cst (rli->bitpos, 0);
+      HOST_WIDE_INT offset = tree_to_shwi (rli->offset);
+      HOST_WIDE_INT bit_offset = tree_to_shwi (rli->bitpos);
 
 #ifdef ADJUST_FIELD_ALIGN
       if (! TYPE_USER_ALIGN (type))

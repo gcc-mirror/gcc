@@ -587,7 +587,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 	  tree type = TREE_TYPE (maxval);
 
 	  if (tree_fits_shwi_p (maxval))
-	    pp_wide_integer (this, tree_low_cst (maxval, 0) + 1);
+	    pp_wide_integer (this, tree_to_shwi (maxval) + 1);
 	  else
 	    expression (fold_build2 (PLUS_EXPR, type, maxval,
                                      build_int_cst (type, 1)));
@@ -1599,8 +1599,8 @@ c_pretty_printer::postfix_expression (tree e)
 	if (type
 	    && tree_int_cst_equal (TYPE_SIZE (type), TREE_OPERAND (e, 1)))
 	  {
-	    HOST_WIDE_INT bitpos = tree_low_cst (TREE_OPERAND (e, 2), 0);
-	    HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 0);
+	    HOST_WIDE_INT bitpos = tree_to_shwi (TREE_OPERAND (e, 2));
+	    HOST_WIDE_INT size = tree_to_shwi (TYPE_SIZE (type));
 	    if ((bitpos % size) == 0)
 	      {
 		pp_c_left_paren (this);

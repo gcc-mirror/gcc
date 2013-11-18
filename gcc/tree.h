@@ -604,7 +604,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define SET_PREDICT_EXPR_OUTCOME(NODE, OUTCOME) \
   (PREDICT_EXPR_CHECK (NODE)->base.addressable_flag = (int) OUTCOME)
 #define PREDICT_EXPR_PREDICTOR(NODE) \
-  ((enum br_predictor)tree_low_cst (TREE_OPERAND (PREDICT_EXPR_CHECK (NODE), 0), 0))
+  ((enum br_predictor)tree_to_shwi (TREE_OPERAND (PREDICT_EXPR_CHECK (NODE), 0)))
 
 /* In a VAR_DECL, nonzero means allocate static storage.
    In a FUNCTION_DECL, nonzero if function has been defined.

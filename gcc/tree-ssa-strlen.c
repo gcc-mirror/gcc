@@ -218,7 +218,7 @@ get_stridx (tree exp)
       && (o == NULL_TREE || tree_fits_shwi_p (o))
       && TREE_STRING_LENGTH (s) > 0)
     {
-      HOST_WIDE_INT offset = o ? tree_low_cst (o, 0) : 0;
+      HOST_WIDE_INT offset = o ? tree_to_shwi (o) : 0;
       const char *p = TREE_STRING_POINTER (s);
       int max = TREE_STRING_LENGTH (s) - 1;
 
