@@ -782,7 +782,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	  if (host_integerp (TREE_OPERAND (ref, 1), 0))
+	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 1)))
 	    temp.off = TREE_INT_CST_LOW (TREE_OPERAND (ref, 1));
 	  break;
 	case BIT_FIELD_REF:
@@ -1020,9 +1020,9 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
 	  /* We recorded the lower bound and the element size.  */
-	  if (!host_integerp (op->op0, 0)
-	      || !host_integerp (op->op1, 0)
-	      || !host_integerp (op->op2, 0))
+	  if (!tree_fits_shwi_p (op->op0)
+	      || !tree_fits_shwi_p (op->op1)
+	      || !tree_fits_shwi_p (op->op2))
 	    max_size = -1;
 	  else
 	    {
@@ -1156,7 +1156,7 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
       off += double_int::from_shwi (addr_offset);
       mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
-      if (host_integerp (mem_op->op0, 0))
+      if (tree_fits_shwi_p (mem_op->op0))
 	mem_op->off = TREE_INT_CST_LOW (mem_op->op0);
       else
 	mem_op->off = -1;
@@ -1221,7 +1221,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
     }
 
   mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
-  if (host_integerp (mem_op->op0, 0))
+  if (tree_fits_shwi_p (mem_op->op0))
     mem_op->off = TREE_INT_CST_LOW (mem_op->op0);
   else
     mem_op->off = -1;

@@ -1519,7 +1519,7 @@ dbxout_type_fields (tree type)
 	  /* Omit fields whose position or size are variable or too large to
 	     represent.  */
 	  || (TREE_CODE (tem) == FIELD_DECL
-	      && (! host_integerp (bit_position (tem), 0)
+	      && (! tree_fits_shwi_p (bit_position (tem))
 		  || ! DECL_SIZE (tem)
 		  || ! host_integerp (DECL_SIZE (tem), 1))))
 	continue;
@@ -1610,7 +1610,7 @@ dbxout_type_method_1 (tree decl)
   stabstr_C (c1);
   stabstr_C (c2);
 
-  if (DECL_VINDEX (decl) && host_integerp (DECL_VINDEX (decl), 0))
+  if (DECL_VINDEX (decl) && tree_fits_shwi_p (DECL_VINDEX (decl)))
     {
       stabstr_D (tree_low_cst (DECL_VINDEX (decl), 0));
       stabstr_C (';');
@@ -1718,7 +1718,7 @@ dbxout_range_type (tree type, tree low, tree high)
     }
 
   stabstr_C (';');
-  if (low && host_integerp (low, 0))
+  if (low && tree_fits_shwi_p (low))
     {
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (low);
@@ -1729,7 +1729,7 @@ dbxout_range_type (tree type, tree low, tree high)
     stabstr_C ('0');
 
   stabstr_C (';');
-  if (high && host_integerp (high, 0))
+  if (high && tree_fits_shwi_p (high))
     {
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (high);
@@ -2516,7 +2516,7 @@ dbxout_expand_expr (tree expr)
 	  return NULL;
 	if (offset != NULL)
 	  {
-	    if (!host_integerp (offset, 0))
+	    if (!tree_fits_shwi_p (offset))
 	      return NULL;
 	    x = adjust_address_nv (x, mode, tree_low_cst (offset, 0));
 	  }
@@ -2912,7 +2912,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	 ??? Why do we skip emitting the type and location in this case?  */
       if (TREE_STATIC (decl) && TREE_READONLY (decl)
 	  && DECL_INITIAL (decl) != 0
-	  && host_integerp (DECL_INITIAL (decl), 0)
+	  && tree_fits_shwi_p (DECL_INITIAL (decl))
 	  && ! TREE_ASM_WRITTEN (decl)
 	  && (DECL_FILE_SCOPE_P (decl)
 	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK

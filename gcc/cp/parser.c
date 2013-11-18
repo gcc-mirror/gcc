@@ -26962,7 +26962,7 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
     return list;
   num = fold_non_dependent_expr (num);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
-      || !host_integerp (num, 0)
+      || !tree_fits_shwi_p (num)
       || (n = tree_low_cst (num, 0)) <= 0
       || (int) n != n)
     {

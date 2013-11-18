@@ -2098,8 +2098,8 @@ gimple_compare_field_offset (tree f1, tree f2)
   /* Fortran and C do not always agree on what DECL_OFFSET_ALIGN
      should be, so handle differing ones specially by decomposing
      the offset into a byte and bit offset manually.  */
-  if (host_integerp (DECL_FIELD_OFFSET (f1), 0)
-      && host_integerp (DECL_FIELD_OFFSET (f2), 0))
+  if (tree_fits_shwi_p (DECL_FIELD_OFFSET (f1))
+      && tree_fits_shwi_p (DECL_FIELD_OFFSET (f2)))
     {
       unsigned HOST_WIDE_INT byte_offset1, byte_offset2;
       unsigned HOST_WIDE_INT bit_offset1, bit_offset2;

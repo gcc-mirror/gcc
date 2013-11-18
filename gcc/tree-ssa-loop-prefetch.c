@@ -1458,7 +1458,7 @@ add_subscript_strides (tree access_fn, unsigned stride,
       if ((unsigned) loop_depth (aloop) <= min_depth)
 	continue;
 
-      if (host_integerp (step, 0))
+      if (tree_fits_shwi_p (step))
 	astep = tree_low_cst (step, 0);
       else
 	astep = L1_CACHE_LINE_SIZE;

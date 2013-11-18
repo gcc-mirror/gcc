@@ -279,7 +279,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	  if (!decl)
 	    decl_size = -1;
 	  else if (DECL_P (decl) && DECL_SIZE_UNIT (decl))
-	    decl_size = (host_integerp (DECL_SIZE_UNIT (decl), 0)
+	    decl_size = (tree_fits_shwi_p (DECL_SIZE_UNIT (decl))
 			 ? tree_low_cst (DECL_SIZE_UNIT (decl), 0)
 			 : -1);
 	  else if (TREE_CODE (decl) == STRING_CST)

@@ -5918,8 +5918,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      mode = VOIDmode;
 
 	    offset = DECL_FIELD_OFFSET (field);
-	    if (host_integerp (offset, 0)
-		&& host_integerp (bit_position (field), 0))
+	    if (tree_fits_shwi_p (offset)
+		&& tree_fits_shwi_p (bit_position (field)))
 	      {
 		bitpos = int_bit_position (field);
 		offset = 0;
@@ -6008,8 +6008,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	domain = TYPE_DOMAIN (type);
 	const_bounds_p = (TYPE_MIN_VALUE (domain)
 			  && TYPE_MAX_VALUE (domain)
-			  && host_integerp (TYPE_MIN_VALUE (domain), 0)
-			  && host_integerp (TYPE_MAX_VALUE (domain), 0));
+			  && tree_fits_shwi_p (TYPE_MIN_VALUE (domain))
+			  && tree_fits_shwi_p (TYPE_MAX_VALUE (domain)));
 
 	/* If we have constant bounds for the range of the type, get them.  */
 	if (const_bounds_p)
@@ -6118,8 +6118,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 		/* If the range is constant and "small", unroll the loop.  */
 		if (const_bounds_p
-		    && host_integerp (lo_index, 0)
-		    && host_integerp (hi_index, 0)
+		    && tree_fits_shwi_p (lo_index)
+		    && tree_fits_shwi_p (hi_index)
 		    && (lo = tree_low_cst (lo_index, 0),
 			hi = tree_low_cst (hi_index, 0),
 			count = hi - lo + 1,
@@ -6207,7 +6207,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    emit_label (loop_end);
 		  }
 	      }
-	    else if ((index != 0 && ! host_integerp (index, 0))
+	    else if ((index != 0 && ! tree_fits_shwi_p (index))
 		     || ! host_integerp (TYPE_SIZE (elttype), 1))
 	      {
 		tree position;
@@ -8538,7 +8538,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	 indexed address, for machines that support that.  */
 
       if (modifier == EXPAND_SUM && mode == ptr_mode
-	  && host_integerp (treeop1, 0))
+	  && tree_fits_shwi_p (treeop1))
 	{
 	  tree exp1 = treeop1;
 

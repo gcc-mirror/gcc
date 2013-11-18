@@ -1527,7 +1527,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  char *src_buf;
 	  use_operand_p use_p;
 
-	  if (!host_integerp (val2, 0)
+	  if (!tree_fits_shwi_p (val2)
 	      || !host_integerp (len2, 1))
 	    break;
 	  if (is_gimple_call (stmt1))
@@ -1569,7 +1569,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      src1 = gimple_assign_rhs1 (stmt1);
 	      if (TREE_CODE (ptr1) != MEM_REF
 		  || TYPE_MODE (TREE_TYPE (ptr1)) != TYPE_MODE (char_type_node)
-		  || !host_integerp (src1, 0))
+		  || !tree_fits_shwi_p (src1))
 		break;
 	      ptr1 = build_fold_addr_expr (ptr1);
 	      callee1 = NULL_TREE;
@@ -2354,7 +2354,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	/* Check for one shift count being Y and the other B - Y,
 	   with optional casts.  */
 	if (cdef_code[i] == MINUS_EXPR
-	    && host_integerp (cdef_arg1[i], 0)
+	    && tree_fits_shwi_p (cdef_arg1[i])
 	    && tree_low_cst (cdef_arg1[i], 0) == TYPE_PRECISION (rtype)
 	    && TREE_CODE (cdef_arg2[i]) == SSA_NAME)
 	  {
@@ -2386,7 +2386,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	   This alternative is safe even for rotation count of 0.
 	   One shift count is Y and the other (-Y) & (B - 1).  */
 	else if (cdef_code[i] == BIT_AND_EXPR
-		 && host_integerp (cdef_arg2[i], 0)
+		 && tree_fits_shwi_p (cdef_arg2[i])
 		 && tree_low_cst (cdef_arg2[i], 0)
 		    == TYPE_PRECISION (rtype) - 1
 		 && TREE_CODE (cdef_arg1[i]) == SSA_NAME

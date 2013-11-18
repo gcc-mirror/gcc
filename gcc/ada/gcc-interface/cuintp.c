@@ -153,7 +153,7 @@ UI_From_gnu (tree Input)
   /* On 64-bit hosts, host_integerp tells whether the input fits in a
      signed 64-bit integer.  Then a truncation tells whether it fits
      in a signed 32-bit integer.  */
-  if (host_integerp (Input, 0))
+  if (tree_fits_shwi_p (Input))
     {
       HOST_WIDE_INT hw_input = TREE_INT_CST_LOW (Input);
       if (hw_input == (int) hw_input)
@@ -165,7 +165,7 @@ UI_From_gnu (tree Input)
   /* On 32-bit hosts, host_integerp tells whether the input fits in a
      signed 32-bit integer.  Then a sign test tells whether it fits
      in a signed 64-bit integer.  */
-  if (host_integerp (Input, 0))
+  if (tree_fits_shwi_p (Input))
     return UI_From_Int (TREE_INT_CST_LOW (Input));
   else if (TREE_INT_CST_HIGH (Input) < 0 && TYPE_UNSIGNED (gnu_type))
     return No_Uint;

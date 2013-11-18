@@ -2050,7 +2050,7 @@ expand_builtin_eh_common (tree region_nr_t)
   HOST_WIDE_INT region_nr;
   eh_region region;
 
-  gcc_assert (host_integerp (region_nr_t, 0));
+  gcc_assert (tree_fits_shwi_p (region_nr_t));
   region_nr = tree_low_cst (region_nr_t, 0);
 
   region = (*cfun->eh->region_array)[region_nr];

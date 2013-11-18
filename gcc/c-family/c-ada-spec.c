@@ -1813,7 +1813,7 @@ is_simple_enum (tree node)
       if (TREE_CODE (int_val) != INTEGER_CST)
 	int_val = DECL_INITIAL (int_val);
 
-      if (!host_integerp (int_val, 0))
+      if (!tree_fits_shwi_p (int_val))
 	return false;
       else if (TREE_INT_CST_LOW (int_val) != count)
 	return false;
@@ -2205,7 +2205,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	 to generate the (0 .. -1) range for flexible array members.  */
       if (TREE_TYPE (node) == sizetype)
 	node = fold_convert (ssizetype, node);
-      if (host_integerp (node, 0))
+      if (tree_fits_shwi_p (node))
 	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
       else if (host_integerp (node, 1))
 	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));

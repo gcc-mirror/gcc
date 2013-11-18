@@ -1289,7 +1289,7 @@ iq2000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	    if (TREE_CODE (field) == FIELD_DECL
 		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
-		&& host_integerp (bit_position (field), 0)
+		&& tree_fits_shwi_p (bit_position (field))
 		&& int_bit_position (field) % BITS_PER_WORD == 0)
 	      break;
 

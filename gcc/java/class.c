@@ -1592,7 +1592,7 @@ get_dispatch_vector (tree type)
 	{
 	  tree method_index = get_method_index (method);
 	  if (method_index != NULL_TREE
-	      && host_integerp (method_index, 0))
+	      && tree_fits_shwi_p (method_index))
 	    TREE_VEC_ELT (vtable, tree_low_cst (method_index, 0)) = method;
 	}
     }

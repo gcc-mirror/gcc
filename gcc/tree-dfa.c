@@ -455,8 +455,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		      {
 			tree fsize = DECL_SIZE_UNIT (field);
 			tree ssize = TYPE_SIZE_UNIT (stype);
-			if (host_integerp (fsize, 0)
-			    && host_integerp (ssize, 0)
+			if (tree_fits_shwi_p (fsize)
+			    && tree_fits_shwi_p (ssize)
 			    && doffset.fits_shwi ())
 			  maxsize += ((TREE_INT_CST_LOW (ssize)
 				       - TREE_INT_CST_LOW (fsize))

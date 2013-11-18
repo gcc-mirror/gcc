@@ -2290,7 +2290,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 			: "#pragma omp cancellation point");
 	      return false;
 	    }
-	  switch (host_integerp (gimple_call_arg (stmt, 0), 0)
+	  switch (tree_fits_shwi_p (gimple_call_arg (stmt, 0))
 		  ? tree_low_cst (gimple_call_arg (stmt, 0), 0)
 		  : 0)
 	    {
@@ -8832,7 +8832,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 
   /* When possible, use a strict equality expression.  This can let VRP
      type optimizations deduce the value and remove a copy.  */
-  if (host_integerp (fd->loop.step, 0))
+  if (tree_fits_shwi_p (fd->loop.step))
     {
       HOST_WIDE_INT step = TREE_INT_CST_LOW (fd->loop.step);
       if (step == 1 || step == -1)
@@ -8852,7 +8852,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
       /* Optimize: v = 0; is usually cheaper than v = some_other_constant.  */
       vinit = fd->loop.n1;
       if (cond_code == EQ_EXPR
-	  && host_integerp (fd->loop.n2, 0)
+	  && tree_fits_shwi_p (fd->loop.n2)
 	  && ! integer_zerop (fd->loop.n2))
 	vinit = build_int_cst (TREE_TYPE (fd->loop.v), 0);
       else

@@ -728,7 +728,7 @@ go_format_type (struct godump_container *container, tree type,
 	  && tree_int_cst_sgn (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) == 0
 	  && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
 	  && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INTEGER_CST
-	  && host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0))
+	  && tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
 	{
 	  char buf[100];
 
@@ -981,7 +981,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  if (*slot != NULL)
 	    macro_hash_del (*slot);
 
-	  if (host_integerp (TREE_VALUE (element), 0))
+	  if (tree_fits_shwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC,
 		     tree_low_cst (TREE_VALUE (element), 0));
 	  else if (host_integerp (TREE_VALUE (element), 1))

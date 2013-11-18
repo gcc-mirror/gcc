@@ -614,7 +614,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
     }
   ref->offset += extra_offset;
   if (size
-      && host_integerp (size, 0)
+      && tree_fits_shwi_p (size)
       && TREE_INT_CST_LOW (size) * BITS_PER_UNIT / BITS_PER_UNIT
 	 == TREE_INT_CST_LOW (size))
     ref->max_size = ref->size = TREE_INT_CST_LOW (size) * BITS_PER_UNIT;
@@ -2108,7 +2108,7 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	    {
 	      tree dest = gimple_call_arg (stmt, 0);
 	      tree len = gimple_call_arg (stmt, 2);
-	      if (!host_integerp (len, 0))
+	      if (!tree_fits_shwi_p (len))
 		return false;
 	      tree rbase = ref->base;
 	      double_int roffset = double_int::from_shwi (ref->offset);

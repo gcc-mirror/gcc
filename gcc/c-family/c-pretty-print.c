@@ -586,7 +586,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 	  tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (t));
 	  tree type = TREE_TYPE (maxval);
 
-	  if (host_integerp (maxval, 0))
+	  if (tree_fits_shwi_p (maxval))
 	    pp_wide_integer (this, tree_low_cst (maxval, 0) + 1);
 	  else
 	    expression (fold_build2 (PLUS_EXPR, type, maxval,
@@ -915,7 +915,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     ? TYPE_CANONICAL (TREE_TYPE (i))
     : TREE_TYPE (i);
 
-  if (host_integerp (i, 0))
+  if (tree_fits_shwi_p (i))
     pp_wide_integer (pp, TREE_INT_CST_LOW (i));
   else if (host_integerp (i, 1))
     pp_unsigned_wide_integer (pp, TREE_INT_CST_LOW (i));

@@ -10193,7 +10193,7 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
       if (!DECL_SIZE (decl)
 	  || !DECL_ALIGN (decl)
-	  || !host_integerp (DECL_SIZE (decl), 0)
+	  || !tree_fits_shwi_p (DECL_SIZE (decl))
 	  || (DECL_ALIGN (decl) <= 64
 	      && DECL_ALIGN (decl) != tree_low_cst (DECL_SIZE (decl), 0)))
 	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;

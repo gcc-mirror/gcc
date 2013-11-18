@@ -215,7 +215,7 @@ get_stridx (tree exp)
 
   s = string_constant (exp, &o);
   if (s != NULL_TREE
-      && (o == NULL_TREE || host_integerp (o, 0))
+      && (o == NULL_TREE || tree_fits_shwi_p (o))
       && TREE_STRING_LENGTH (s) > 0)
     {
       HOST_WIDE_INT offset = o ? tree_low_cst (o, 0) : 0;

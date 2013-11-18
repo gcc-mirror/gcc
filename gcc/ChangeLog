@@ -1,5 +1,22 @@
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* builtins.c, config/alpha/alpha.c, config/c6x/predicates.md,
+	config/ia64/predicates.md, config/iq2000/iq2000.c, config/mips/mips.c,
+	config/s390/s390.c, dbxout.c, dwarf2out.c, except.c, explow.c, expr.c,
+	expr.h, fold-const.c, gimple-fold.c, gimple-ssa-strength-reduction.c,
+	gimple.c, godump.c, graphite-scop-detection.c, graphite-sese-to-poly.c,
+	omp-low.c, predict.c, rtlanal.c, sdbout.c, simplify-rtx.c,
+	stor-layout.c, tree-data-ref.c, tree-dfa.c, tree-pretty-print.c,
+	tree-sra.c, tree-ssa-alias.c, tree-ssa-forwprop.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-loop-prefetch.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-reassoc.c, tree-ssa-sccvn.c,
+	tree-ssa-strlen.c, tree-ssa-structalias.c, tree-vect-data-refs.c,
+	tree-vect-patterns.c, tree-vectorizer.h, tree.c, var-tracking.c,
+	varasm.c: Replace host_integerp (..., 0) with tree_fits_shwi_p
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Declare.
 	* tree.c (tree_fits_shwi_p, tree_fits_uhwi_p): Define.
 

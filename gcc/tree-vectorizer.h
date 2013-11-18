@@ -388,7 +388,7 @@ typedef struct _loop_vec_info {
 (L)->may_alias_ddrs.length () > 0
 
 #define NITERS_KNOWN_P(n)                     \
-(host_integerp ((n),0)                        \
+(tree_fits_shwi_p ((n))                        \
 && TREE_INT_CST_LOW ((n)) > 0)
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \

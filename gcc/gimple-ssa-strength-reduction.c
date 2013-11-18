@@ -609,7 +609,7 @@ stmt_cost (gimple gs, bool speed)
     case MULT_EXPR:
       rhs2 = gimple_assign_rhs2 (gs);
 
-      if (host_integerp (rhs2, 0))
+      if (tree_fits_shwi_p (rhs2))
 	return mult_by_coeff_cost (TREE_INT_CST_LOW (rhs2), lhs_mode, speed);
 
       gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
