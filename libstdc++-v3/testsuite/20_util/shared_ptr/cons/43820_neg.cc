@@ -32,7 +32,7 @@ void test01()
 {
   X* px = 0;
   std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 779 }
+  // { dg-error "incomplete" "" { target *-*-* } 812 }
 
   std::shared_ptr<X> p9(ap());  // { dg-error "here" }
   // { dg-error "incomplete" "" { target *-*-* } 307 }
