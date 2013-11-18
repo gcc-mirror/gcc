@@ -1,3 +1,34 @@
+2013-11-12 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config.gcc (i[34567]86-*-linux* | ...): Add bdver4.
+	(case ${target}): Add bdver4.
+	* config/i386/bdver3.md: Add bdver4.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize bdver4 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	bdver4 def_and_undef
+	* config/i386/i386.c (struct processor_costs bdver4_cost): New.
+	(m_BDVER4): New definition.
+	(m_AMD_MULTIPLE): Includes m_BDVER4.
+	(processor_target_table): Add bdver4 entry.
+	(static const char *const cpu_names): Add bdver4 entry.
+	(software_prefetching_beneficial_p): Add bdver3.
+	(ix86_option_override_internal): Add bdver4 instruction sets.
+	(ix86_issue_rate): Add bdver4.
+	(ix86_adjust_cost): Add bdver4.
+	(ia32_multipass_dfa_lookahead): Add bdver4.
+	(enum processor_model): Add M_AMDFAM15H_BDVER4.
+	(struct _arch_names_table): Add M_AMDFAM15H_BDVER4.
+	(has_dispatch): Add bdver4.
+	* config/i386/i386.h (TARGET_BDVER4): New definition.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_bdver4.
+	(enum processor_type): Add PROCESSOR_BDVER4.
+	* config/i386/i386.md (define_attr "cpu"): Add bdver4.
+	* config/i386/i386.opt (flag_dispatch_scheduler): Add bdver4.
+	* gcc/doc/extend.texi: Add details about bdver4.
+	* gcc/doc/invoke.texi: Add details about bdver4. Add
+	fma4 and fsgsbase for bdver3. Add fma4 for bdver2.
+
 2013-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Use low word of
