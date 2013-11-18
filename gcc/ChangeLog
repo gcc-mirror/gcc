@@ -1,3 +1,8 @@
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Declare.
+	* tree.c (tree_fits_shwi_p, tree_fits_uhwi_p): Define.
+
 2013-11-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark

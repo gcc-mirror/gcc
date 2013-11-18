@@ -3662,6 +3662,16 @@ extern int host_integerp (const_tree, int)
   ATTRIBUTE_PURE /* host_integerp is pure only when checking is disabled.  */
 #endif
   ;
+extern bool tree_fits_shwi_p (const_tree)
+#ifndef ENABLE_TREE_CHECKING
+  ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
+#endif
+  ;
+extern bool tree_fits_uhwi_p (const_tree)
+#ifndef ENABLE_TREE_CHECKING
+  ATTRIBUTE_PURE /* tree_fits_uhwi_p is pure only when checking is disabled.  */
+#endif
+  ;
 extern HOST_WIDE_INT tree_low_cst (const_tree, int);
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
 extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
