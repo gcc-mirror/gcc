@@ -1,5 +1,10 @@
 2013-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* elf.c (SHN_UNDEF): Define.
+	(elf_initialize_syminfo): Add base_address argument.  Ignore symbols
+	with st_shndx == SHN_UNDEF.  Add base_address to address fields.
+	(elf_add): Adjust caller.
+
 	* elf.c (phdr_callback): Process info->dlpi_addr == 0 normally.
 
 2013-11-16  Ian Lance Taylor  <iant@google.com>
