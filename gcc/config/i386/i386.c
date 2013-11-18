@@ -11869,27 +11869,6 @@ ix86_live_on_entry (bitmap regs)
     }
 }
 
-/* Determine if op is suitable SUBREG RTX for address.  */
-
-static bool
-ix86_address_subreg_operand (rtx op)
-{
-  enum machine_mode mode;
-
-  if (!REG_P (op))
-    return false;
-
-  mode = GET_MODE (op);
-
-  /* Don't allow SUBREGs that span more than a word.  It can lead to spill
-     failures when the register is one word out of a two word structure.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return false;
-
-  /* Allow only SUBREGs of non-eliminable hard registers.  */
-  return register_no_elim_operand (op, mode);
-}
-
 /* Extract the parts of an RTL expression that is a valid memory address
    for an instruction.  Return 0 if the structure of the address is
    grossly off.  Return -1 if the address contains ASHIFT, so it is not
@@ -11946,7 +11925,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     base = addr;
   else if (GET_CODE (addr) == SUBREG)
     {
-      if (ix86_address_subreg_operand (SUBREG_REG (addr)))
+      if (REG_P (SUBREG_REG (addr)))
 	base = addr;
       else
 	return 0;
@@ -12010,7 +11989,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      break;
 
 	    case SUBREG:
-	      if (!ix86_address_subreg_operand (SUBREG_REG (op)))
+	      if (!REG_P (SUBREG_REG (op)))
 		return 0;
 	      /* FALLTHRU */
 
@@ -12063,17 +12042,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       if (REG_P (index))
 	;
       else if (GET_CODE (index) == SUBREG
-	       && ix86_address_subreg_operand (SUBREG_REG (index)))
+	       && REG_P (SUBREG_REG (index)))
 	;
       else
 	return 0;
     }
-
-/* Address override works only on the (%reg) part of %fs:(%reg).  */
-  if (seg != SEG_DEFAULT
-      && ((base && GET_MODE (base) != word_mode)
-	  || (index && GET_MODE (index) != word_mode)))
-    return 0;
 
   /* Extract the integral value of scale.  */
   if (scale_rtx)
@@ -12591,6 +12564,45 @@ ix86_legitimize_reload_address (rtx x,
   return false;
 }
 
+/* Determine if op is suitable RTX for an address register.
+   Return naked register if a register or a register subreg is
+   found, otherwise return NULL_RTX.  */
+
+static rtx
+ix86_validate_address_register (rtx op)
+{
+  enum machine_mode mode = GET_MODE (op);
+
+  /* Only SImode or DImode registers can form the address.  */
+  if (mode != SImode && mode != DImode)
+    return NULL_RTX;
+
+  if (REG_P (op))
+    return op;
+  else if (GET_CODE (op) == SUBREG)
+    {
+      rtx reg = SUBREG_REG (op);
+
+      if (!REG_P (reg))
+	return NULL_RTX;
+
+      mode = GET_MODE (reg);
+
+      /* Don't allow SUBREGs that span more than a word.  It can
+	 lead to spill failures when the register is one word out
+	 of a two word structure.  */
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return NULL_RTX;
+
+      /* Allow only SUBREGs of non-eliminable hard registers.  */
+      if (register_no_elim_operand (reg, mode))
+	return reg;
+    }
+
+  /* Op is not a register.  */
+  return NULL_RTX;
+}
+
 /* Recognizes RTL expressions that are valid memory addresses for an
    instruction.  The MODE argument is the machine mode for the MEM
    expression that wants to use this address.
@@ -12606,6 +12618,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
+  enum ix86_address_seg seg;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     /* Decomposition failed.  */
@@ -12615,21 +12628,14 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   index = parts.index;
   disp = parts.disp;
   scale = parts.scale;
+  seg = parts.seg;
 
   /* Validate base register.  */
   if (base)
     {
-      rtx reg;
+      rtx reg = ix86_validate_address_register (base);
 
-      if (REG_P (base))
-  	reg = base;
-      else if (GET_CODE (base) == SUBREG && REG_P (SUBREG_REG (base)))
-	reg = SUBREG_REG (base);
-      else
-	/* Base is not a register.  */
-	return false;
-
-      if (GET_MODE (base) != SImode && GET_MODE (base) != DImode)
+      if (reg == NULL_RTX)
 	return false;
 
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
@@ -12641,17 +12647,9 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   /* Validate index register.  */
   if (index)
     {
-      rtx reg;
+      rtx reg = ix86_validate_address_register (index);
 
-      if (REG_P (index))
-  	reg = index;
-      else if (GET_CODE (index) == SUBREG && REG_P (SUBREG_REG (index)))
-	reg = SUBREG_REG (index);
-      else
-	/* Index is not a register.  */
-	return false;
-
-      if (GET_MODE (index) != SImode && GET_MODE (index) != DImode)
+      if (reg == NULL_RTX)
 	return false;
 
       if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
@@ -12663,6 +12661,12 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   /* Index and base should have the same mode.  */
   if (base && index
       && GET_MODE (base) != GET_MODE (index))
+    return false;
+
+  /* Address override works only on the (%reg) part of %fs:(%reg).  */
+  if (seg != SEG_DEFAULT
+      && ((base && GET_MODE (base) != word_mode)
+	  || (index && GET_MODE (index) != word_mode)))
     return false;
 
   /* Validate scale factor.  */

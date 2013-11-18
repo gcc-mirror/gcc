@@ -1,3 +1,15 @@
+2013-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Use REG_P instead of
+	ix86_address_subreg_operand.  Move subreg checks to
+	ix86_validate_address_register.  Move address override check to
+	ix86_legitimate_address_p.
+	(ix86_validate_address_register): New function.
+	(ix86_legitimate_address_p): Call ix86_validate_address_register
+	to validate base and index registers.  Add address override check
+	from ix86_decompose_address.
+	(ix86_decompose_address): Remove.
+
 2013-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59125
@@ -137,9 +149,8 @@
 
 2013-11-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark
-	load with `dead' flag if it kills address, not its
-	post-increment.
+	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark load with
+	`dead' flag if it kills address, not its post-increment.
 
 2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -173,7 +184,7 @@
 	* config/arm/arm.c (arm_cortex_a53_tune): New.
 	* config/arm/arm-cores.def (cortex-a53): Use cortex_a53 tuning struct.
 
-2013-11-12 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2013-11-12  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config.gcc (i[34567]86-*-linux* | ...): Add bdver4.
 	(case ${target}): Add bdver4.
@@ -213,18 +224,17 @@
 
 	* doc/md.texi (setmem, movstr): Update documentation.
 	* builtins.c (determine_block_size): New function.
-	(expand_builtin_memcpy): Use it and pass it to
-	emit_block_move_hints.
+	(expand_builtin_memcpy): Use it and pass it to emit_block_move_hints.
 	(expand_builtin_memset_args): Use it and pass it to
 	set_storage_via_setmem.
-	* expr.c (emit_block_move_via_movmem): Add min_size/max_size parameters;
-	update call to expander.
+	* expr.c (emit_block_move_via_movmem): Add min_size/max_size
+	parameters; update call to expander.
 	(emit_block_move_hints): Add min_size/max_size parameters.
 	(clear_storage_hints): Likewise.
 	(set_storage_via_setmem): Likewise.
 	(clear_storage): Update.
 	* expr.h (emit_block_move_hints, clear_storage_hints,
-	set_storage_via_setmem): Update prototype.
+	set_storage_via_setmem): Update prototypes.
 	* i386.c (ix86_expand_set_or_movmem): Add bounds; export.
 	(ix86_expand_movmem, ix86_expand_setmem): Remove.
 	(ix86_expand_movmem, ix86_expand_setmem): Remove.
