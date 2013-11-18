@@ -5260,9 +5260,44 @@ data race bugs.
 See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
 
 @item -fsanitize=undefined
-Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector
+Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
 Various computations will be instrumented to detect undefined behavior
-at runtime, e.g.@: division by zero or various overflows.
+at runtime.  Current suboptions are:
+
+@itemize @bullet
+
+@item @option{-fsanitize=shift}
+
+This option enables checking that the result of a shift operation is
+not undefined.  Note that what exactly is considered undefined differs
+slightly between C and C++, as well as between ISO C90 and C99, etc.
+
+@item @option{-fsanitize=integer-divide-by-zero}
+
+Detect integer division by zero as well as @code{INT_MIN / -1} division.
+
+@item @option{-fsanitize=unreachable}
+
+With this option, the compiler will turn the @code{__builtin_unreachable}
+call into a diagnostics message call instead.  When reaching the
+@code{__builtin_unreachable} call, the behavior is undefined.
+
+@item @option{-fsanitize=vla-bound}
+
+This option instructs the compiler to check that the size of a variable
+length array is positive.  This option does not have any effect in
+@option{-std=c++1y} mode, as the standard requires the exception be thrown
+instead.
+
+@item @option{-fsanitize=null}
+
+This option enables pointer checking.  Particularly, the application
+built with this option turned on will issue an error message when it
+tries to dereference a NULL pointer, or if a reference (possibly an
+rvalue reference) is bound to a NULL pointer.
+
+@end itemize
+
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
