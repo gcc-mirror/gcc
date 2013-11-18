@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fcilkplus -fopenmp" } */
+/* { dg-require-effective-target fopenmp } */
 
 int *a, *b, c;
 void *jmpbuf[10];

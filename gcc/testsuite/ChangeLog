@@ -1,3 +1,7 @@
+2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/cilk-plus/PS/body.c: Add fopenmp effective target check.
+
 2013-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53473
