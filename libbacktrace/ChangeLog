@@ -1,3 +1,7 @@
+2013-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* elf.c (phdr_callback): Process info->dlpi_addr == 0 normally.
+
 2013-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* backtrace.h (backtrace_create_state): Correct comment about

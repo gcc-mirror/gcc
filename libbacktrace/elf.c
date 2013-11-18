@@ -863,12 +863,8 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
   fileline elf_fileline_fn;
   int found_dwarf;
 
-  /* There is not much we can do if we don't have the module name.  If
-     the base address is 0, this is probably the executable, which we
-     already loaded.  */
-  if (info->dlpi_name == NULL
-      || info->dlpi_name[0] == '\0'
-      || info->dlpi_addr == 0)
+  /* There is not much we can do if we don't have the module name.  */
+  if (info->dlpi_name == NULL || info->dlpi_name[0] == '\0')
     return 0;
 
   descriptor = backtrace_open (info->dlpi_name, pd->error_callback, pd->data,
