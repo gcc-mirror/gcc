@@ -84,11 +84,6 @@ static const char * const gimple_alloc_kind_names[] = {
     "everything else"
 };
 
-/* Private API manipulation functions shared only with some
-   other files.  */
-extern void gimple_set_stored_syms (gimple, bitmap, bitmap_obstack *);
-extern void gimple_set_loaded_syms (gimple, bitmap, bitmap_obstack *);
-
 /* Gimple tuple constructors.
    Note: Any constructor taking a ``gimple_seq'' as a parameter, can
    be passed a NULL to start with an empty sequence.  */
@@ -1957,34 +1952,6 @@ const unsigned char gimple_rhs_class_table[] = {
 
 #undef DEFTREECODE
 #undef END_OF_BASE_TREE_CODES
-
-/* Given a memory reference expression T, return its base address.
-   The base address of a memory reference expression is the main
-   object being referenced.  For instance, the base address for
-   'array[i].fld[j]' is 'array'.  You can think of this as stripping
-   away the offset part from a memory address.
-
-   This function calls handled_component_p to strip away all the inner
-   parts of the memory reference until it reaches the base object.  */
-
-tree
-get_base_address (tree t)
-{
-  while (handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
-
-  if ((TREE_CODE (t) == MEM_REF
-       || TREE_CODE (t) == TARGET_MEM_REF)
-      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
-    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-
-  /* ???  Either the alias oracle or all callers need to properly deal
-     with WITH_SIZE_EXPRs before we can look through those.  */
-  if (TREE_CODE (t) == WITH_SIZE_EXPR)
-    return NULL_TREE;
-
-  return t;
-}
 
 void
 recalculate_side_effects (tree t)

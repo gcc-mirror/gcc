@@ -101,6 +101,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
+#undef STT_OBJECT
 #undef STT_FUNC
 
 /* Basic types.  */
@@ -215,6 +216,7 @@ typedef struct
 
 #endif /* BACKTRACE_ELF_SIZE != 32 */
 
+#define STT_OBJECT 1
 #define STT_FUNC 2
 
 /* An index of ELF sections we care about.  */
@@ -293,7 +295,7 @@ elf_nodebug (struct backtrace_state *state ATTRIBUTE_UNUSED,
 
 static void
 elf_nosyms (struct backtrace_state *state ATTRIBUTE_UNUSED,
-	    uintptr_t pc ATTRIBUTE_UNUSED,
+	    uintptr_t addr ATTRIBUTE_UNUSED,
 	    backtrace_syminfo_callback callback ATTRIBUTE_UNUSED,
 	    backtrace_error_callback error_callback, void *data)
 {
@@ -316,7 +318,7 @@ elf_symbol_compare (const void *v1, const void *v2)
     return 0;
 }
 
-/* Compare a PC against an elf_symbol for bsearch.  We allocate one
+/* Compare an ADDR against an elf_symbol for bsearch.  We allocate one
    extra entry in the array so that this can look safely at the next
    entry.  */
 
@@ -325,12 +327,12 @@ elf_symbol_search (const void *vkey, const void *ventry)
 {
   const uintptr_t *key = (const uintptr_t *) vkey;
   const struct elf_symbol *entry = (const struct elf_symbol *) ventry;
-  uintptr_t pc;
+  uintptr_t addr;
 
-  pc = *key;
-  if (pc < entry->address)
+  addr = *key;
+  if (addr < entry->address)
     return -1;
-  else if (pc >= entry->address + entry->size)
+  else if (addr >= entry->address + entry->size)
     return 1;
   else
     return 0;
@@ -360,7 +362,10 @@ elf_initialize_syminfo (struct backtrace_state *state,
   elf_symbol_count = 0;
   for (i = 0; i < sym_count; ++i, ++sym)
     {
-      if ((sym->st_info & 0xf) == STT_FUNC)
+      int info;
+
+      info = sym->st_info & 0xf;
+      if (info == STT_FUNC || info == STT_OBJECT)
 	++elf_symbol_count;
     }
 
@@ -375,7 +380,10 @@ elf_initialize_syminfo (struct backtrace_state *state,
   j = 0;
   for (i = 0; i < sym_count; ++i, ++sym)
     {
-      if ((sym->st_info & 0xf) != STT_FUNC)
+      int info;
+
+      info = sym->st_info & 0xf;
+      if (info != STT_FUNC && info != STT_OBJECT)
 	continue;
       if (sym->st_name >= strtab_size)
 	{
@@ -445,10 +453,10 @@ elf_add_syminfo_data (struct backtrace_state *state,
     }
 }
 
-/* Return the symbol name and value for a PC.  */
+/* Return the symbol name and value for an ADDR.  */
 
 static void
-elf_syminfo (struct backtrace_state *state, uintptr_t pc,
+elf_syminfo (struct backtrace_state *state, uintptr_t addr,
 	     backtrace_syminfo_callback callback,
 	     backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
 	     void *data)
@@ -463,7 +471,7 @@ elf_syminfo (struct backtrace_state *state, uintptr_t pc,
 	   edata = edata->next)
 	{
 	  sym = ((struct elf_symbol *)
-		 bsearch (&pc, edata->symbols, edata->count,
+		 bsearch (&addr, edata->symbols, edata->count,
 			  sizeof (struct elf_symbol), elf_symbol_search));
 	  if (sym != NULL)
 	    break;
@@ -485,7 +493,7 @@ elf_syminfo (struct backtrace_state *state, uintptr_t pc,
 	    break;
 
 	  sym = ((struct elf_symbol *)
-		 bsearch (&pc, edata->symbols, edata->count,
+		 bsearch (&addr, edata->symbols, edata->count,
 			  sizeof (struct elf_symbol), elf_symbol_search));
 	  if (sym != NULL)
 	    break;
@@ -495,9 +503,9 @@ elf_syminfo (struct backtrace_state *state, uintptr_t pc,
     }
 
   if (sym == NULL)
-    callback (data, pc, NULL, 0);
+    callback (data, addr, NULL, 0);
   else
-    callback (data, pc, sym->name, sym->address);
+    callback (data, addr, sym->name, sym->address);
 }
 
 /* Add the backtrace data for one ELF file.  */

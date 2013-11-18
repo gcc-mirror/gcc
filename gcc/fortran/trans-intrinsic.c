@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
+#include "tree-nested.h"
 
 /* This maps Fortran intrinsic math functions to external library or GCC
    builtin functions.  */

@@ -5328,6 +5328,9 @@ destination and source strings are operands 1 and 2, and both are
 the expansion of this pattern should store in operand 0 the address in
 which the @code{NUL} terminator was stored in the destination string.
 
+This patern has also several optional operands that are same as in
+@code{setmem}.
+
 @cindex @code{setmem@var{m}} instruction pattern
 @item @samp{setmem@var{m}}
 Block set instruction.  The destination string is the first operand,
@@ -5347,6 +5350,8 @@ respectively.  The expected alignment differs from alignment in operand 4
 in a way that the blocks are not required to be aligned according to it in
 all cases. This expected alignment is also in bytes, just like operand 4.
 Expected size, when unknown, is set to @code{(const_int -1)}.
+Operand 7 is the minimal size of the block and operand 8 is the
+maximal size of the block (NULL if it can not be represented as CONST_INT).
 
 The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
 

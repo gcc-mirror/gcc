@@ -201,6 +201,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regset.h"     /* FIXME: For reg_obstack.  */
 #include "context.h"
 #include "pass_manager.h"
+#include "tree-nested.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that

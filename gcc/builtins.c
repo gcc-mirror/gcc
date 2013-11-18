@@ -3095,6 +3095,51 @@ builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
   return c_readstr (str + offset, mode);
 }
 
+/* LEN specify length of the block of memcpy/memset operation.
+   Figure out its range and put it into MIN_SIZE/MAX_SIZE.  */
+
+static void
+determine_block_size (tree len, rtx len_rtx,
+		      unsigned HOST_WIDE_INT *min_size,
+		      unsigned HOST_WIDE_INT *max_size)
+{
+  if (CONST_INT_P (len_rtx))
+    {
+      *min_size = *max_size = UINTVAL (len_rtx);
+      return;
+    }
+  else
+    {
+      double_int min, max;
+      if (TREE_CODE (len) == SSA_NAME 
+	  && get_range_info (len, &min, &max) == VR_RANGE)
+	{
+	  if (min.fits_uhwi ())
+	    *min_size = min.to_uhwi ();
+	  else
+	    *min_size = 0;
+	  if (max.fits_uhwi ())
+	    *max_size = max.to_uhwi ();
+	  else
+	    *max_size = (HOST_WIDE_INT)-1;
+	}
+      else
+	{
+	  if (host_integerp (TYPE_MIN_VALUE (TREE_TYPE (len)), 1))
+	    *min_size = tree_low_cst (TYPE_MIN_VALUE (TREE_TYPE (len)), 1);
+	  else
+	    *min_size = 0;
+	  if (host_integerp (TYPE_MAX_VALUE (TREE_TYPE (len)), 1))
+	    *max_size = tree_low_cst (TYPE_MAX_VALUE (TREE_TYPE (len)), 1);
+	  else
+	    *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
+	}
+    }
+  gcc_checking_assert (*max_size <=
+		       (unsigned HOST_WIDE_INT)
+			  GET_MODE_MASK (GET_MODE (len_rtx)));
+}
+
 /* Expand a call EXP to the memcpy builtin.
    Return NULL_RTX if we failed, the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
@@ -3117,6 +3162,8 @@ expand_builtin_memcpy (tree exp, rtx target)
       rtx dest_mem, src_mem, dest_addr, len_rtx;
       HOST_WIDE_INT expected_size = -1;
       unsigned int expected_align = 0;
+      unsigned HOST_WIDE_INT min_size;
+      unsigned HOST_WIDE_INT max_size;
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
@@ -3136,6 +3183,7 @@ expand_builtin_memcpy (tree exp, rtx target)
       dest_mem = get_memory_rtx (dest, len);
       set_mem_align (dest_mem, dest_align);
       len_rtx = expand_normal (len);
+      determine_block_size (len, len_rtx, &min_size, &max_size);
       src_str = c_getstr (src);
 
       /* If SRC is a string constant and block move would be done
@@ -3164,7 +3212,8 @@ expand_builtin_memcpy (tree exp, rtx target)
       dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
 				         CALL_EXPR_TAILCALL (exp)
 				         ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
-					 expected_align, expected_size);
+					 expected_align, expected_size,
+					 min_size, max_size);
 
       if (dest_addr == 0)
 	{
@@ -3578,6 +3627,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   rtx dest_mem, dest_addr, len_rtx;
   HOST_WIDE_INT expected_size = -1;
   unsigned int expected_align = 0;
+  unsigned HOST_WIDE_INT min_size;
+  unsigned HOST_WIDE_INT max_size;
 
   dest_align = get_pointer_alignment (dest);
 
@@ -3606,6 +3657,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   len = builtin_save_expr (len);
 
   len_rtx = expand_normal (len);
+  determine_block_size (len, len_rtx, &min_size, &max_size);
   dest_mem = get_memory_rtx (dest, len);
   val_mode = TYPE_MODE (unsigned_char_type_node);
 
@@ -3632,7 +3684,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 	}
       else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
 					dest_align, expected_align,
-					expected_size))
+					expected_size, min_size, max_size))
 	goto do_libcall;
 
       dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -3654,7 +3706,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
       else if (!set_storage_via_setmem (dest_mem, len_rtx,
 					gen_int_mode (c, val_mode),
 					dest_align, expected_align,
-					expected_size))
+					expected_size, min_size, max_size))
 	goto do_libcall;
 
       dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -3666,7 +3718,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   dest_addr = clear_storage_hints (dest_mem, len_rtx,
 				   CALL_EXPR_TAILCALL (orig_exp)
 				   ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
-				   expected_align, expected_size);
+				   expected_align, expected_size,
+				   min_size, max_size);
 
   if (dest_addr == 0)
     {

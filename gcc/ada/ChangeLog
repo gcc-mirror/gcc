@@ -1,3 +1,8 @@
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Deal with an
+	error mark as renamed object in type annotating mode.
+
 2013-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR ada/54040
