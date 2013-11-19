@@ -7983,6 +7983,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, enum machine_mode mode)
   gcc_assert (!BYTES_BIG_ENDIAN
 	      && VECTOR_MEM_VSX_P (mode)
 	      && mode != TImode
+	      && !gpr_or_gpr_p (dest, source)
 	      && (MEM_P (source) ^ MEM_P (dest)));
 
   if (MEM_P (source))
