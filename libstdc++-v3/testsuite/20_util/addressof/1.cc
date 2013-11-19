@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 

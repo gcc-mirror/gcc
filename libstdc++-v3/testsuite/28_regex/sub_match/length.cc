@@ -1,4 +1,3 @@
-// { dg-do compile }
 // { dg-options "-std=c++0x" }
 
 //
@@ -46,4 +45,9 @@ test01()
 
 	VERIFY( sm1.length() == test_len );
 	VERIFY( sm2.length() == 0 );
+}
+
+int main()
+{
+  test01();
 }
