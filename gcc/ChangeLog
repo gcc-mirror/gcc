@@ -1,5 +1,11 @@
 2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* config/aarch64/aarch64.md
+	(aarch64_movdi_<mode>low, *add_<shift>_si_uxtw):
+	Adjust whitespace.
+
+2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* config/aarch64/aarch64.h (PROFILE_HOOK): Fix whitespace.
 
 2013-11-19  Joseph Myers  <joseph@codesourcery.com>
