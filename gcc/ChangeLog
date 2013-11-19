@@ -1,3 +1,7 @@
+2013-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.md (zero_extend<mode>di2): Add type attribute.
+
 2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/vector.md ("mov<mode>"): Do not call
