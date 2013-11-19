@@ -1,3 +1,11 @@
+2013-11-19  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (enum ainc_type): New.
+	(address_cost_data): New field.
+	(get_address_cost): Compute auto-increment rtx cost in ainc_costs.
+	Use ainc_costs for auto-increment rtx patterns.
+	Cleanup TWS.
+
 2013-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md: Remove v8type from all insns.
