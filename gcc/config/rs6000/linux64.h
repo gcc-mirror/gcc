@@ -71,7 +71,11 @@ extern int dot_symbols;
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_POWER7
 #undef  PROCESSOR_DEFAULT64
+#ifdef LINUX64_DEFAULT_ABI_ELFv2
+#define PROCESSOR_DEFAULT64 PROCESSOR_POWER8
+#else
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
+#endif
 
 /* We don't need to generate entries in .fixup, except when
    -mrelocatable or -mrelocatable-lib is given.  */

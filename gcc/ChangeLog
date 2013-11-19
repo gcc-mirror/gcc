@@ -1,3 +1,11 @@
+2013-11-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/sysv4.h (CC1_ENDIAN_LITTLE_SPEC): Define as empty.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Default
+	to strict alignment on older processors when little-endian.
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT64): Default to power8
+	for ELFv2.
+
 2013-11-19  Teresa Johnson  <tejohnson@google.com>
 
 	* common/config/i386/i386-common.c: Enable
