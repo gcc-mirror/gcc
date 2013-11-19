@@ -19,6 +19,21 @@
 	* testsuite/23_containers/vector/allocator/swap.cc: Add elements
 	before swapping.
 
+	* config/abi/pre/gnu.ver (_ZNSt11regex_errorC*): Export regex_error
+	constructors.
+	* testsuite/20_util/addressof/1.cc: Remove { dg-do compile }.
+	* testsuite/20_util/allocator_traits/members/destroy.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/select.cc: Likewise. Fix
+	failure.
+	* testsuite/28_regex/basic_regex/ctors/extended/cstring.cc: Likewise.
+	* testsuite/28_regex/init-list.cc: Likewise.
+	* testsuite/28_regex/regex_error/regex_error.cc: Likewise.
+	* testsuite/28_regex/sub_match/length.cc: Likewise. Add main.
+	* testsuite/28_regex/sub_match/cast_char.cc: Likewise. Fix test.
+	* testsuite/28_regex/sub_match/cast_wchar_t.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_extended.cc: Delete.
+
 2013-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/experimental/string_view (_S_max_size): Remove.

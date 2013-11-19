@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
@@ -54,7 +53,7 @@ void test01()
 
 void test02()
 {
-  typedef std::allocator_traits<alloc1<X>> traits_type;
+  typedef std::allocator_traits<alloc2<X>> traits_type;
   traits_type::allocator_type a{1};
   const traits_type::allocator_type& a2
     = traits_type::select_on_container_copy_construction(a);

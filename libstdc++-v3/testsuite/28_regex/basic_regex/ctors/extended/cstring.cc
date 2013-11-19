@@ -1,4 +1,3 @@
-// { dg-do compile }
 // { dg-options "-std=c++0x" }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
@@ -33,7 +32,7 @@ test01()
   std::regex re("(wee|week)(knights|night)", std::regex::extended);
   
   VERIFY( re.flags() == std::regex::extended );
-  VERIFY( re.mark_count() == 0 );
+  VERIFY( re.mark_count() == 2 );
 }
 
 int main()
