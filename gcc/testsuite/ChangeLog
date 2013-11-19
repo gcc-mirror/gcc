@@ -1,3 +1,7 @@
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-3.c: New testcase.
+
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

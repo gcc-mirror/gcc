@@ -5352,6 +5352,8 @@ all cases. This expected alignment is also in bytes, just like operand 4.
 Expected size, when unknown, is set to @code{(const_int -1)}.
 Operand 7 is the minimal size of the block and operand 8 is the
 maximal size of the block (NULL if it can not be represented as CONST_INT).
+Operand 9 is the probable maximal size (i.e. we can not rely on it for correctness,
+but it can be used for choosing proper code sequence for a given size).
 
 The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
 
