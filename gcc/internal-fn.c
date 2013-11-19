@@ -139,6 +139,14 @@ expand_GOMP_SIMD_LAST_LANE (gimple stmt ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_UBSAN_NULL (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 

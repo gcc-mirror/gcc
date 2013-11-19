@@ -21,9 +21,26 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_UBSAN_H
 #define GCC_UBSAN_H
 
+/* The various kinds of NULL pointer checks.  */
+enum ubsan_null_ckind {
+  UBSAN_LOAD_OF,
+  UBSAN_STORE_OF,
+  UBSAN_REF_BINDING,
+  UBSAN_MEMBER_ACCESS,
+  UBSAN_MEMBER_CALL
+};
+
+/* An extra data used by ubsan pointer checking.  */
+struct ubsan_mismatch_data {
+  tree align;
+  tree ckind;
+};
+
+extern void ubsan_expand_null_ifn (gimple_stmt_iterator);
 extern tree ubsan_instrument_unreachable (location_t);
-extern tree ubsan_create_data (const char *, location_t, ...);
-extern tree ubsan_type_descriptor (tree);
+extern tree ubsan_create_data (const char *, location_t,
+			       const struct ubsan_mismatch_data *, ...);
+extern tree ubsan_type_descriptor (tree, bool);
 extern tree ubsan_encode_value (tree);
 extern bool is_ubsan_builtin_p (tree);
 
