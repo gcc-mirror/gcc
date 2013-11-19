@@ -2649,7 +2649,7 @@ convert_regs_entry (void)
      Note that we are inserting converted code here.  This code is
      never seen by the convert_regs pass.  */
 
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     {
       basic_block block = e->dest;
       block_info bi = BLOCK_INFO (block);
@@ -2693,7 +2693,7 @@ convert_regs_exit (void)
       value_reg_high = END_HARD_REGNO (retvalue) - 1;
     }
 
-  output_stack = &BLOCK_INFO (EXIT_BLOCK_PTR)->stack_in;
+  output_stack = &BLOCK_INFO (EXIT_BLOCK_PTR_FOR_FN (cfun))->stack_in;
   if (value_reg_low == -1)
     output_stack->top = -1;
   else
@@ -2847,7 +2847,7 @@ compensate_edges (void)
   starting_stack_p = false;
 
   FOR_EACH_BB (bb)
-    if (bb != ENTRY_BLOCK_PTR)
+    if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
       {
         edge e;
         edge_iterator ei;
@@ -3141,14 +3141,14 @@ convert_regs (void)
 
   /* Construct the desired stack for function exit.  */
   convert_regs_exit ();
-  BLOCK_INFO (EXIT_BLOCK_PTR)->done = 1;
+  BLOCK_INFO (EXIT_BLOCK_PTR_FOR_FN (cfun))->done = 1;
 
   /* ??? Future: process inner loops first, and give them arbitrary
      initial stacks which emit_swap_insn can modify.  This ought to
      prevent double fxch that often appears at the head of a loop.  */
 
   /* Process all blocks reachable from all entry points.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     cfg_altered |= convert_regs_2 (e->dest);
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
@@ -3221,7 +3221,7 @@ reg_to_stack (void)
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (!(e->flags & EDGE_DFS_BACK)
-	    && e->src != ENTRY_BLOCK_PTR)
+	    && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	  bi->predecessors++;
 
       /* Set current register status at last instruction `uninitialized'.  */

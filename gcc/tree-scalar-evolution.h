@@ -47,7 +47,7 @@ static inline basic_block
 block_before_loop (loop_p loop)
 {
   edge preheader = loop_preheader_edge (loop);
-  return (preheader ? preheader->src : ENTRY_BLOCK_PTR);
+  return (preheader ? preheader->src : ENTRY_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Analyze all the parameters of the chrec that were left under a

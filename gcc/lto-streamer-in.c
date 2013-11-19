@@ -659,7 +659,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       index = streamer_read_hwi (ib);
     }
 
-  p_bb = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
+  p_bb = ENTRY_BLOCK_PTR_FOR_FN (fn);
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
@@ -996,7 +996,7 @@ input_function (tree fn_decl, struct data_in *data_in,
      of a gimple body is used by the cgraph routines, but we should
      really use the presence of the CFG.  */
   {
-    edge_iterator ei = ei_start (ENTRY_BLOCK_PTR->succs);
+    edge_iterator ei = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
     gimple_set_body (fn_decl, bb_seq (ei_edge (ei)->dest));
   }
 

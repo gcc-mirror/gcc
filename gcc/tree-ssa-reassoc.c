@@ -1270,11 +1270,11 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
   if ((!op1def || gimple_nop_p (op1def))
       && (!op2def || gimple_nop_p (op2def)))
     {
-      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
       if (gsi_end_p (gsi))
 	{
 	  gimple_stmt_iterator gsi2
-	    = gsi_last_bb (single_succ (ENTRY_BLOCK_PTR));
+	    = gsi_last_bb (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gimple_set_uid (sum,
 			  gsi_end_p (gsi2) ? 1 : gimple_uid (gsi_stmt (gsi2)));
 	}
@@ -4529,8 +4529,8 @@ debug_ops_vector (vec<operand_entry_t> ops)
 static void
 do_reassoc (void)
 {
-  break_up_subtract_bb (ENTRY_BLOCK_PTR);
-  reassociate_bb (EXIT_BLOCK_PTR);
+  break_up_subtract_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  reassociate_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Initialize the reassociation pass.  */

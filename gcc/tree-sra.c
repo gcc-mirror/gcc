@@ -3409,7 +3409,7 @@ initialize_parameter_reductions (void)
 
   seq = gsi_seq (gsi);
   if (seq)
-    gsi_insert_seq_on_edge_immediate (single_succ_edge (ENTRY_BLOCK_PTR), seq);
+    gsi_insert_seq_on_edge_immediate (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), seq);
 }
 
 /* The "main" function of intraprocedural SRA passes.  Runs the analysis and if
@@ -3788,7 +3788,7 @@ propagate_dereference_distances (void)
   basic_block bb;
 
   queue.create (last_basic_block_for_function (cfun));
-  queue.quick_push (ENTRY_BLOCK_PTR);
+  queue.quick_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   FOR_EACH_BB (bb)
     {
       queue.quick_push (bb);
@@ -3818,7 +3818,7 @@ propagate_dereference_distances (void)
 	  {
 	    int succ_idx = e->dest->index * func_param_count + i;
 
-	    if (e->src == EXIT_BLOCK_PTR)
+	    if (e->src == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	      continue;
 
 	    if (first)
@@ -3859,10 +3859,11 @@ dump_dereferences_table (FILE *f, const char *str, HOST_WIDE_INT *table)
   basic_block bb;
 
   fprintf (dump_file, str);
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       fprintf (f, "%4i  %i   ", bb->index, bitmap_bit_p (final_bbs, bb->index));
-      if (bb != EXIT_BLOCK_PTR)
+      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  int i;
 	  for (i = 0; i < func_param_count; i++)
@@ -3914,7 +3915,7 @@ analyze_caller_dereference_legality (vec<access_p> representatives)
   for (i = 0; i < func_param_count; i++)
     {
       struct access *repr = representatives[i];
-      int idx = ENTRY_BLOCK_PTR->index * func_param_count + i;
+      int idx = ENTRY_BLOCK_PTR_FOR_FN (cfun)->index * func_param_count + i;
 
       if (!repr || no_accesses_p (repr))
 	continue;
@@ -4728,9 +4729,9 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
   int i, len;
   gimple_stmt_iterator *gsip = NULL, gsi;
 
-  if (MAY_HAVE_DEBUG_STMTS && single_succ_p (ENTRY_BLOCK_PTR))
+  if (MAY_HAVE_DEBUG_STMTS && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
     {
-      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
       gsip = &gsi;
     }
   len = adjustments.length ();

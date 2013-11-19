@@ -735,7 +735,7 @@ slsr_process_phi (gimple phi, bool speed)
 	  derived_base_name = arg;
 
 	  if (SSA_NAME_IS_DEFAULT_DEF (arg))
-	    arg_bb = single_succ (ENTRY_BLOCK_PTR);
+	    arg_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 	  else
 	    gimple_bb (SSA_NAME_DEF_STMT (arg));
 	}

@@ -352,10 +352,10 @@ init_loops_structure (struct function *fn,
   /* Dummy loop containing whole function.  */
   root = alloc_loop ();
   root->num_nodes = n_basic_blocks_for_fn (fn);
-  root->latch = EXIT_BLOCK_PTR_FOR_FUNCTION (fn);
-  root->header = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
-  EXIT_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
+  root->latch = EXIT_BLOCK_PTR_FOR_FN (fn);
+  root->header = ENTRY_BLOCK_PTR_FOR_FN (fn);
+  ENTRY_BLOCK_PTR_FOR_FN (fn)->loop_father = root;
+  EXIT_BLOCK_PTR_FOR_FN (fn)->loop_father = root;
 
   loops->larray->quick_push (root);
   loops->tree_root = root;
@@ -382,7 +382,7 @@ bb_loop_header_p (basic_block header)
   FOR_EACH_EDGE (e, ei, header->preds)
     {
       basic_block latch = e->src;
-      if (latch != ENTRY_BLOCK_PTR
+      if (latch != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && dominated_by_p (CDI_DOMINATORS, latch, header))
 	return true;
     }
@@ -745,7 +745,7 @@ disambiguate_multiple_latches (struct loop *loop)
      block.  This would cause problems if the entry edge was the one from the
      entry block.  To avoid having to handle this case specially, split
      such entry edge.  */
-  e = find_edge (ENTRY_BLOCK_PTR, loop->header);
+  e = find_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), loop->header);
   if (e)
     split_edge (e);
 
@@ -781,7 +781,8 @@ flow_bb_inside_loop_p (const struct loop *loop, const_basic_block bb)
 {
   struct loop *source_loop;
 
-  if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return 0;
 
   source_loop = bb->loop_father;
@@ -826,13 +827,13 @@ get_loop_body (const struct loop *loop)
 
   body = XNEWVEC (basic_block, loop->num_nodes);
 
-  if (loop->latch == EXIT_BLOCK_PTR)
+  if (loop->latch == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       /* There may be blocks unreachable from EXIT_BLOCK, hence we need to
 	 special-case the fake loop that contains the whole function.  */
       gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks_for_fn (cfun));
       body[tv++] = loop->header;
-      body[tv++] = EXIT_BLOCK_PTR;
+      body[tv++] = EXIT_BLOCK_PTR_FOR_FN (cfun);
       FOR_EACH_BB (bb)
 	body[tv++] = bb;
     }
@@ -886,7 +887,7 @@ get_loop_body_in_dom_order (const struct loop *loop)
 
   tovisit = XNEWVEC (basic_block, loop->num_nodes);
 
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   tv = 0;
   fill_sons_in_loop (loop, loop->header, tovisit, &tv);
@@ -921,7 +922,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   unsigned int vc = 1;
 
   gcc_assert (loop->num_nodes);
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   blocks = XNEWVEC (basic_block, loop->num_nodes);
   visited = BITMAP_ALLOC (NULL);
@@ -1143,7 +1144,7 @@ get_loop_exit_edges (const struct loop *loop)
   edge_iterator ei;
   struct loop_exit *exit;
 
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* If we maintain the lists of exits, use them.  Otherwise we must
      scan the body of the loop.  */
@@ -1175,7 +1176,7 @@ num_loop_branches (const struct loop *loop)
   unsigned i, n;
   basic_block * body;
 
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   body = get_loop_body (loop);
   n = 0;

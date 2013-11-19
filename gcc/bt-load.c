@@ -1328,7 +1328,8 @@ migrate_btr_def (btr_def def, int min_cost)
   def_basic_block_freq = basic_block_freq (def->bb);
 
   for (attempt = get_immediate_dominator (CDI_DOMINATORS, def->bb);
-       !give_up && attempt && attempt != ENTRY_BLOCK_PTR && def->cost >= min_cost;
+       !give_up && attempt && attempt != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+       && def->cost >= min_cost;
        attempt = get_immediate_dominator (CDI_DOMINATORS, attempt))
     {
       /* Try to move the instruction that sets the target register into

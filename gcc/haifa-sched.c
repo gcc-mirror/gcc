@@ -1615,7 +1615,7 @@ priority (rtx insn)
 
           /* Selective scheduling does not define RECOVERY_BLOCK macro.  */
 	  rec = sel_sched_p () ? NULL : RECOVERY_BLOCK (insn);
-	  if (!rec || rec == EXIT_BLOCK_PTR)
+	  if (!rec || rec == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      prev_first = PREV_INSN (insn);
 	      twin = insn;
@@ -7522,7 +7522,7 @@ static void
 sched_extend_bb (void)
 {
   /* The following is done to keep current_sched_info->next_tail non null.  */
-  rtx end = BB_END (EXIT_BLOCK_PTR->prev_bb);
+  rtx end = BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
   rtx insn = DEBUG_INSN_P (end) ? prev_nondebug_insn (end) : end;
   if (NEXT_INSN (end) == 0
       || (!NOTE_P (insn)
@@ -7533,7 +7533,7 @@ sched_extend_bb (void)
       rtx note = emit_note_after (NOTE_INSN_DELETED, end);
       /* Make note appear outside BB.  */
       set_block_for_insn (note, NULL);
-      BB_END (EXIT_BLOCK_PTR->prev_bb) = end;
+      BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = end;
     }
 }
 
@@ -7551,7 +7551,7 @@ init_before_recovery (basic_block *before_recovery_ptr)
   basic_block last;
   edge e;
 
-  last = EXIT_BLOCK_PTR->prev_bb;
+  last = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
   e = find_fallthru_edge_from (last);
 
   if (e)
@@ -7591,7 +7591,8 @@ init_before_recovery (basic_block *before_recovery_ptr)
 
       redirect_edge_succ (e, single);
       make_single_succ_edge (single, empty, 0);
-      make_single_succ_edge (empty, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+      make_single_succ_edge (empty, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			     EDGE_FALLTHRU);
 
       label = block_label (empty);
       x = emit_jump_insn_after (gen_jump (label), BB_END (single));
@@ -7734,14 +7735,14 @@ create_check_block_twin (rtx insn, bool mutate_p)
     }
   else
     {
-      rec = EXIT_BLOCK_PTR;
+      rec = EXIT_BLOCK_PTR_FOR_FN (cfun);
       label = NULL_RTX;
     }
 
   /* Emit CHECK.  */
   check = targetm.sched.gen_spec_check (insn, label, todo_spec);
 
-  if (rec != EXIT_BLOCK_PTR)
+  if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       /* To have mem_reg alive at the beginning of second_bb,
 	 we emit check BEFORE insn, so insn after splitting
@@ -7774,7 +7775,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 
   /* Initialize TWIN (twin is a duplicate of original instruction
      in the recovery block).  */
-  if (rec != EXIT_BLOCK_PTR)
+  if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       sd_iterator_def sd_it;
       dep_t dep;
@@ -7811,7 +7812,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
      provide correct value for INSN_TICK (TWIN).  */
   sd_copy_back_deps (twin, insn, true);
 
-  if (rec != EXIT_BLOCK_PTR)
+  if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
     /* In case of branchy check, fix CFG.  */
     {
       basic_block first_bb, second_bb;
@@ -7823,7 +7824,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
       sched_create_recovery_edges (first_bb, rec, second_bb);
 
       sched_init_only_bb (second_bb, first_bb);
-      sched_init_only_bb (rec, EXIT_BLOCK_PTR);
+      sched_init_only_bb (rec, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
       jump = BB_END (rec);
       haifa_init_insn (jump);
@@ -7864,7 +7865,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
       init_dep_1 (new_dep, pro, check, DEP_TYPE (dep), ds);
       sd_add_dep (new_dep, false);
 
-      if (rec != EXIT_BLOCK_PTR)
+      if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  DEP_CON (new_dep) = twin;
 	  sd_add_dep (new_dep, false);
@@ -7913,7 +7914,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
   /* Future speculations: call the helper.  */
   process_insn_forw_deps_be_in_spec (insn, twin, fs);
 
-  if (rec != EXIT_BLOCK_PTR)
+  if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       /* Which types of dependencies should we use here is,
 	 generally, machine-dependent question...  But, for now,
@@ -8127,7 +8128,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   bb_header = XNEWVEC (rtx, last_basic_block);
 
   /* Make a sentinel.  */
-  if (last->next_bb != EXIT_BLOCK_PTR)
+  if (last->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     bb_header[last->next_bb->index] = 0;
 
   first = first->next_bb;
@@ -8171,7 +8172,7 @@ restore_bb_notes (basic_block first)
   first = first->next_bb;
   /* Remember: FIRST is actually a second basic block in the ebb.  */
 
-  while (first != EXIT_BLOCK_PTR
+  while (first != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	 && bb_header[first->index])
     {
       rtx prev, label, note, next;

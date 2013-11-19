@@ -918,7 +918,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   unsigned int visited_count = 0;
 
   gcc_assert (loop->num_nodes);
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   blocks = XCNEWVEC (basic_block, loop->num_nodes);
   visited = BITMAP_ALLOC (NULL);

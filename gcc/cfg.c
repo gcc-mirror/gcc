@@ -70,16 +70,16 @@ init_flow (struct function *the_fun)
   if (!the_fun->cfg)
     the_fun->cfg = ggc_alloc_cleared_control_flow_graph ();
   n_edges_for_fn (the_fun) = 0;
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)
+  ENTRY_BLOCK_PTR_FOR_FN (the_fun)
     = ggc_alloc_cleared_basic_block_def ();
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)->index = ENTRY_BLOCK;
-  EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)
+  ENTRY_BLOCK_PTR_FOR_FN (the_fun)->index = ENTRY_BLOCK;
+  EXIT_BLOCK_PTR_FOR_FN (the_fun)
     = ggc_alloc_cleared_basic_block_def ();
-  EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)->index = EXIT_BLOCK;
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)->next_bb
-    = EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun);
-  EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)->prev_bb
-    = ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun);
+  EXIT_BLOCK_PTR_FOR_FN (the_fun)->index = EXIT_BLOCK;
+  ENTRY_BLOCK_PTR_FOR_FN (the_fun)->next_bb
+    = EXIT_BLOCK_PTR_FOR_FN (the_fun);
+  EXIT_BLOCK_PTR_FOR_FN (the_fun)->prev_bb
+    = ENTRY_BLOCK_PTR_FOR_FN (the_fun);
 }
 
 /* Helper function for remove_edge and clear_edges.  Frees edge structure
@@ -109,10 +109,10 @@ clear_edges (void)
       vec_safe_truncate (bb->preds, 0);
     }
 
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     free_edge (e);
-  vec_safe_truncate (EXIT_BLOCK_PTR->preds, 0);
-  vec_safe_truncate (ENTRY_BLOCK_PTR->succs, 0);
+  vec_safe_truncate (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds, 0);
+  vec_safe_truncate (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs, 0);
 
   gcc_assert (!n_edges_for_fn (cfun));
 }
@@ -153,8 +153,8 @@ compact_blocks (void)
 {
   int i;
 
-  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
-  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
+  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   if (df)
     df_compact_blocks ();
@@ -282,8 +282,8 @@ edge
 cached_make_edge (sbitmap edge_cache, basic_block src, basic_block dst, int flags)
 {
   if (edge_cache == NULL
-      || src == ENTRY_BLOCK_PTR
-      || dst == EXIT_BLOCK_PTR)
+      || src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || dst == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return make_edge (src, dst, flags);
 
   /* Does the requested edge already exist?  */
@@ -387,7 +387,7 @@ clear_bb_flags (void)
 {
   basic_block bb;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     bb->flags &= BB_FLAGS_TO_PRESERVE;
 }
 
@@ -411,7 +411,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
   if (profile_status_for_function (fun) == PROFILE_ABSENT)
     return;
 
-  if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (fun))
+  if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	sum += e->probability;
@@ -428,7 +428,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 (int) lsum, (int) bb->count);
     }
-    if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (fun))
+    if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
     {
       sum = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -641,7 +641,8 @@ alloc_aux_for_edges (int size)
     {
       basic_block bb;
 
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		      EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
 	{
 	  edge e;
 	  edge_iterator ei;
@@ -660,7 +661,8 @@ clear_aux_for_edges (void)
   basic_block bb;
   edge e;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, bb->succs)

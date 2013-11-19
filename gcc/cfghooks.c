@@ -102,10 +102,10 @@ verify_flow_info (void)
   edge_checksum = XCNEWVEC (size_t, last_basic_block);
 
   /* Check bb chain & numbers.  */
-  last_bb_seen = ENTRY_BLOCK_PTR;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+  last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, NULL, next_bb)
     {
-      if (bb != EXIT_BLOCK_PTR
+      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && bb != BASIC_BLOCK (bb->index))
 	{
 	  error ("bb %d on wrong place", bb->index);
@@ -234,21 +234,21 @@ verify_flow_info (void)
     edge e;
     edge_iterator ei;
 
-    FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+    FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
       edge_checksum[e->dest->index] += (size_t) e;
 
-    FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+    FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
       edge_checksum[e->dest->index] -= (size_t) e;
   }
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     if (edge_checksum[bb->index])
       {
 	error ("basic block %i edge lists are corrupted", bb->index);
 	err = 1;
       }
 
-  last_bb_seen = ENTRY_BLOCK_PTR;
+  last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   /* Clean up.  */
   free (last_visited);
@@ -938,10 +938,11 @@ tidy_fallthru_edges (void)
   if (!cfg_hooks->tidy_fallthru_edge)
     return;
 
-  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
 
-  FOR_BB_BETWEEN (b, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, next_bb)
+  FOR_BB_BETWEEN (b, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
+		  EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, next_bb)
     {
       edge s;
 
@@ -1011,7 +1012,7 @@ can_duplicate_block_p (const_basic_block bb)
     internal_error ("%s does not support can_duplicate_block_p",
 		    cfg_hooks->name);
 
-  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   return cfg_hooks->can_duplicate_block_p (bb);
@@ -1409,7 +1410,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 
   FOR_ALL_BB (bb)
    {
-      if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (cfun)
+      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status != PROFILE_ABSENT)
 	{
 	  sum = 0;
@@ -1424,7 +1425,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
 	    record->num_mismatched_count_out[after_pass]++;
 	}
-      if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+      if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status != PROFILE_ABSENT)
 	{
 	  sum = 0;
@@ -1440,8 +1441,8 @@ account_profile_record (struct profile_record *record, int after_pass)
 	  if (lsum - bb->count > 100 || lsum - bb->count < -100)
 	    record->num_mismatched_count_in[after_pass]++;
 	}
-      if (bb == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
-	  || bb == EXIT_BLOCK_PTR_FOR_FUNCTION (cfun))
+      if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       gcc_assert (cfg_hooks->account_profile_record);
       cfg_hooks->account_profile_record (bb, after_pass, record);

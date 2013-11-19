@@ -713,7 +713,7 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
  restart:
   if (single_pred_p (dest)
       && gimple_seq_empty_p (phi_nodes (dest))
-      && dest != EXIT_BLOCK_PTR)
+      && dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_start_bb (dest);
       if (gsi_end_p (*gsi))
@@ -744,7 +744,7 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
       && single_succ_p (src)
-      && src != ENTRY_BLOCK_PTR)
+      && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_last_bb (src);
       if (gsi_end_p (*gsi))
@@ -830,7 +830,8 @@ gsi_commit_edge_inserts (void)
   edge e;
   edge_iterator ei;
 
-  gsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR), NULL);
+  gsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+			      NULL);
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)

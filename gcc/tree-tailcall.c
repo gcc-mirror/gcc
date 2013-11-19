@@ -821,7 +821,7 @@ eliminate_tail_call (struct tailcall *t)
 
   gcc_assert (is_gimple_call (stmt));
 
-  first = single_succ (ENTRY_BLOCK_PTR);
+  first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* Remove the code after call_gsi that will become unreachable.  The
      possibly unreachable code in other blocks is removed later in
@@ -842,9 +842,10 @@ eliminate_tail_call (struct tailcall *t)
 
   /* Number of executions of function has reduced by the tailcall.  */
   e = single_succ_edge (gsi_bb (t->call_gsi));
-  decrease_profile (EXIT_BLOCK_PTR, e->count, EDGE_FREQUENCY (e));
-  decrease_profile (ENTRY_BLOCK_PTR, e->count, EDGE_FREQUENCY (e));
-  if (e->dest != EXIT_BLOCK_PTR)
+  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count, EDGE_FREQUENCY (e));
+  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count,
+		    EDGE_FREQUENCY (e));
+  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     decrease_profile (e->dest, e->count, EDGE_FREQUENCY (e));
 
   /* Replace the call by a jump to the start of function.  */
@@ -948,7 +949,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   bool phis_constructed = false;
   struct tailcall *tailcalls = NULL, *act, *next;
   bool changed = false;
-  basic_block first = single_succ (ENTRY_BLOCK_PTR);
+  basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   tree param;
   gimple stmt;
   edge_iterator ei;
@@ -958,7 +959,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   if (opt_tailcalls)
     opt_tailcalls = suitable_for_tail_call_opt_p ();
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       /* Only traverse the normal exits, i.e. those that end with return
 	 statement.  */
@@ -982,7 +983,8 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	     or if there are existing degenerate PHI nodes.  */
 	  if (!single_pred_p (first)
 	      || !gimple_seq_empty_p (phi_nodes (first)))
-	    first = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
+	    first =
+	      split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
 	  /* Copy the args if needed.  */
 	  for (param = DECL_ARGUMENTS (current_function_decl);
@@ -1029,7 +1031,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   if (a_acc || m_acc)
     {
       /* Modify the remaining return statements.  */
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
 	{
 	  stmt = last_stmt (e->src);
 

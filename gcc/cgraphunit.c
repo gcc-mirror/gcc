@@ -1336,10 +1336,10 @@ init_lowered_empty_function (tree decl, bool in_ssa)
   loops_for_fn (cfun)->state |= LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
 
   /* Create BB for body of the function and connect it properly.  */
-  bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
-  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
-  make_edge (bb, EXIT_BLOCK_PTR, 0);
-  add_bb_to_loop (bb, ENTRY_BLOCK_PTR->loop_father);
+  bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
+  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+  add_bb_to_loop (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   return bb;
 }
@@ -1627,7 +1627,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 		  make_edge (bb, then_bb, EDGE_TRUE_VALUE);
 		  make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-		  make_edge (return_bb, EXIT_BLOCK_PTR, 0);
+		  make_edge (return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 		  make_edge (then_bb, return_bb, EDGE_FALLTHRU);
 		  make_edge (else_bb, return_bb, EDGE_FALLTHRU);
 		  bsi = gsi_last_bb (then_bb);

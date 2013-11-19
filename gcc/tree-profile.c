@@ -440,7 +440,8 @@ gimple_gen_ic_func_profiler (void)
     stmt1: __gcov_indirect_call_profiler_v2 (profile_id,
 					     &current_function_decl)
    */
-  gsi = gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR)));
+  gsi =
+					     gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))));
 
   cur_func = force_gimple_operand_gsi (&gsi,
 				       build_addr (current_function_decl,

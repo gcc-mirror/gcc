@@ -1587,7 +1587,7 @@ local_pure_const (void)
 
   /* Do NORETURN discovery.  */
   if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
     {
       warn_function_noreturn (cfun->decl);
       if (dump_file)
@@ -1723,7 +1723,7 @@ static unsigned int
 execute_warn_function_noreturn (void)
 {
   if (!TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
     warn_function_noreturn (current_function_decl);
   return 0;
 }

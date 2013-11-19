@@ -97,7 +97,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 	  break;
 	}
 
-      gcc_assert (src != ENTRY_BLOCK_PTR);
+      gcc_assert (src != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
       if (! bitmap_bit_p (visited, src->index))
 	{

@@ -195,7 +195,7 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
   const char *fillcolors[3] = { "grey88", "grey77", "grey66" };
 
   if (loop->header != NULL
-      && loop->latch != EXIT_BLOCK_PTR)
+      && loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
     pp_printf (pp,
 	       "\tsubgraph cluster_%d_%d {\n"
 	       "\tstyle=\"filled\";\n"
@@ -214,7 +214,7 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
   if (loop->header == NULL)
     return;
 
-  if (loop->latch == EXIT_BLOCK_PTR)
+  if (loop->latch == EXIT_BLOCK_PTR_FOR_FN (cfun))
     body = get_loop_body (loop);
   else
     body = get_loop_body_in_bfs_order (loop);
@@ -228,7 +228,7 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 
   free (body);
 
-  if (loop->latch != EXIT_BLOCK_PTR)
+  if (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
     pp_printf (pp, "\t}\n");
 }
 

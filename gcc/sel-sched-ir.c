@@ -3682,7 +3682,7 @@ maybe_tidy_empty_bb (basic_block bb)
      successors.  Otherwise remove it.  */
   if (!sel_bb_empty_p (bb)
       || (single_succ_p (bb)
-          && single_succ (bb) == EXIT_BLOCK_PTR
+	  && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
           && (!single_pred_p (bb)
               || !(single_pred_edge (bb)->flags & EDGE_FALLTHRU)))
       || EDGE_COUNT (bb->preds) == 0
@@ -3853,7 +3853,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       && EDGE_COUNT (xbb->succs) == 1
       && (EDGE_SUCC (xbb, 0)->flags & EDGE_FALLTHRU)
       /* When successor is an EXIT block, it may not be the next block.  */
-      && single_succ (xbb) != EXIT_BLOCK_PTR
+      && single_succ (xbb) != EXIT_BLOCK_PTR_FOR_FN (cfun)
       /* And unconditional jump in previous basic block leads to
          next basic block of XBB and this jump can be safely removed.  */
       && in_current_region_p (xbb->prev_bb)
@@ -4325,7 +4325,7 @@ init_lv_sets (void)
     init_lv_set (bb);
 
   /* Don't forget EXIT_BLOCK.  */
-  init_lv_set (EXIT_BLOCK_PTR);
+  init_lv_set (EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Release lv set of HEAD.  */
@@ -4346,7 +4346,7 @@ free_lv_sets (void)
   basic_block bb;
 
   /* Don't forget EXIT_BLOCK.  */
-  free_lv_set (EXIT_BLOCK_PTR);
+  free_lv_set (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* Free LV sets.  */
   FOR_EACH_BB (bb)
@@ -4524,7 +4524,7 @@ sel_bb_head (basic_block bb)
 {
   insn_t head;
 
-  if (bb == EXIT_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       gcc_assert (exit_insn != NULL_RTX);
       head = exit_insn;
@@ -4557,7 +4557,7 @@ sel_bb_end (basic_block bb)
   if (sel_bb_empty_p (bb))
     return NULL_RTX;
 
-  gcc_assert (bb != EXIT_BLOCK_PTR);
+  gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   return BB_END (bb);
 }
@@ -4852,7 +4852,7 @@ bb_ends_ebb_p (basic_block bb)
   basic_block next_bb = bb_next_bb (bb);
   edge e;
 
-  if (next_bb == EXIT_BLOCK_PTR
+  if (next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
       || bitmap_bit_p (forced_ebb_heads, next_bb->index)
       || (LABEL_P (BB_HEAD (next_bb))
 	  /* NB: LABEL_NUSES () is not maintained outside of jump.c.
@@ -5538,7 +5538,7 @@ sel_create_recovery_block (insn_t orig_insn)
 
   recovery_block = sched_create_recovery_block (&before_recovery);
   if (before_recovery)
-    copy_lv_set_from (before_recovery, EXIT_BLOCK_PTR);
+    copy_lv_set_from (before_recovery, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   gcc_assert (sel_bb_empty_p (recovery_block));
   sched_create_recovery_edges (first_bb, recovery_block, second_bb);
@@ -5821,7 +5821,7 @@ setup_nop_and_exit_insns (void)
   emit_insn (nop_pattern);
   exit_insn = get_insns ();
   end_sequence ();
-  set_block_for_insn (exit_insn, EXIT_BLOCK_PTR);
+  set_block_for_insn (exit_insn, EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Free special insns used in the scheduler.  */
@@ -6396,7 +6396,7 @@ sel_remove_loop_preheader (void)
                  If it is so - delete this jump and clear data sets of its
                  basic block if it becomes empty.  */
 	      if (next_bb->prev_bb == prev_bb
-                  && prev_bb != ENTRY_BLOCK_PTR
+		  && prev_bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
                   && bb_has_removable_jump_to_p (prev_bb, next_bb))
                 {
                   redirect_edge_and_branch (EDGE_SUCC (prev_bb, 0), next_bb);

@@ -6200,7 +6200,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	      && e == BRANCH_EDGE (previous_bb_in_path))
 	    {
 	      bb = FALLTHRU_EDGE (previous_bb_in_path)->dest;
-	      if (bb != EXIT_BLOCK_PTR
+	      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && single_pred_p (bb)
 		  /* We used to assert here that we would only see blocks
 		     that we have not visited yet.  But we may end up
@@ -6254,7 +6254,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 
 	  if (e
 	      && !((e->flags & EDGE_ABNORMAL_CALL) && cfun->has_nonlocal_label)
-	      && e->dest != EXIT_BLOCK_PTR
+	      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      && single_pred_p (e->dest)
 	      /* Avoid visiting basic blocks twice.  The large comment
 		 above explains why this can happen.  */
@@ -7166,7 +7166,7 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
 	continue;
 
       if (EDGE_COUNT (e->dest->preds) != 1
-	  || e->dest == EXIT_BLOCK_PTR
+	  || e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  /* Avoid endless recursion on unreachable blocks.  */
 	  || e->dest == orig_bb)
 	continue;

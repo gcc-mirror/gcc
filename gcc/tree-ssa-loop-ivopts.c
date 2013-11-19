@@ -2007,7 +2007,7 @@ find_interesting_uses (struct ivopts_data *data)
       bb = body[i];
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && !flow_bb_inside_loop_p (data->current_loop, e->dest))
 	  find_interesting_uses_outside (data, e);
 

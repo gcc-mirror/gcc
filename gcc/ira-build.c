@@ -1745,7 +1745,7 @@ ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSE
 		  ira_loop_tree_node_t pred_node;
 		  basic_block pred_bb = e->src;
 
-		  if (e->src == ENTRY_BLOCK_PTR)
+		  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		    continue;
 
 		  pred_node = IRA_BB_NODE_BY_INDEX (pred_bb->index);

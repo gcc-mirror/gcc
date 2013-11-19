@@ -1950,7 +1950,7 @@ tm_region_init (struct tm_region *region)
   vec<tm_region_p> bb_regions = vNULL;
 
   all_tm_regions = region;
-  bb = single_succ (ENTRY_BLOCK_PTR);
+  bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
@@ -2016,7 +2016,7 @@ gate_tm_init (void)
       struct tm_region *region = (struct tm_region *)
 	obstack_alloc (&tm_obstack.obstack, sizeof (struct tm_region));
       memset (region, 0, sizeof (*region));
-      region->entry_block = single_succ (ENTRY_BLOCK_PTR);
+      region->entry_block = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
       /* For a clone, the entire function is the region.  But even if
 	 we don't need to record any exit blocks, we may need to
 	 record irrevocable blocks.  */
@@ -3633,7 +3633,8 @@ tm_memopt_compute_available (struct tm_region *region,
 	/* If the out state of this block changed, then we need to add
 	   its successors to the worklist if they are not already in.  */
 	FOR_EACH_EDGE (e, ei, bb->succs)
-	  if (!AVAIL_IN_WORKLIST_P (e->dest) && e->dest != EXIT_BLOCK_PTR)
+	  if (!AVAIL_IN_WORKLIST_P (e->dest)
+	      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      *qin++ = e->dest;
 	      AVAIL_IN_WORKLIST_P (e->dest) = true;
@@ -4539,12 +4540,14 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   if (for_clone)
     {
       old_irr = d->irrevocable_blocks_clone;
-      queue.quick_push (single_succ (ENTRY_BLOCK_PTR));
+      queue.quick_push (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
       if (ipa_tm_scan_irr_blocks (&queue, new_irr, old_irr, NULL))
 	{
-	  ipa_tm_propagate_irr (single_succ (ENTRY_BLOCK_PTR), new_irr,
+	  ipa_tm_propagate_irr (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+				new_irr,
 				old_irr, NULL);
-	  ret = bitmap_bit_p (new_irr, single_succ (ENTRY_BLOCK_PTR)->index);
+	  ret = bitmap_bit_p (new_irr,
+			      single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun))->index);
 	}
     }
   else
@@ -5294,7 +5297,8 @@ ipa_tm_transform_clone (struct cgraph_node *node)
   calculate_dominance_info (CDI_DOMINATORS);
 
   need_ssa_rename =
-    ipa_tm_transform_calls (d->clone, NULL, single_succ (ENTRY_BLOCK_PTR),
+    ipa_tm_transform_calls (d->clone, NULL,
+			    single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			    d->irrevocable_blocks_clone);
 
   if (need_ssa_rename)

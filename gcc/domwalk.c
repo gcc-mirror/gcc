@@ -169,8 +169,8 @@ dom_walker::walk (basic_block bb)
     {
       /* Don't worry about unreachable blocks.  */
       if (EDGE_COUNT (bb->preds) > 0
-	  || bb == ENTRY_BLOCK_PTR
-	  || bb == EXIT_BLOCK_PTR)
+	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  /* Callback for subclasses to do custom things before we have walked
 	     the dominator children, but before we walk statements.  */

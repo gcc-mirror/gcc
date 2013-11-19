@@ -1308,7 +1308,7 @@ canon_loop (struct loop *loop)
 
   /* Avoid annoying special cases of edges going to exit
      block.  */
-  FOR_EACH_EDGE (e, i, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, i, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if ((e->flags & EDGE_FALLTHRU) && (EDGE_COUNT (e->src->succs) > 1))
       split_edge (e);
 
@@ -3344,7 +3344,7 @@ rest_of_handle_sms (void)
 
   /* Finalize layout changes.  */
   FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
   free_dominance_info (CDI_DOMINATORS);
   cfg_layout_finalize ();

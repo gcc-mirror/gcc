@@ -251,14 +251,14 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	 Otherwise, BB must have PHI nodes.  */
       || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted
       /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
-      || single_succ (bb) == EXIT_BLOCK_PTR
+      || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
       /* Nor should this be an infinite loop.  */
       || single_succ (bb) == bb
       /* BB may not have an abnormal outgoing edge.  */
       || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     return false;
 
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR);
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   locus = single_succ_edge (bb)->goto_locus;
 
@@ -268,7 +268,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
     edge e;
 
     FOR_EACH_EDGE (e, ei, bb->preds)
-      if (e->src == ENTRY_BLOCK_PTR || (e->flags & EDGE_EH))
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
 	return false;
       /* If goto_locus of any of the edges differs, prevent removing
 	 the forwarder block for -O0.  */

@@ -496,7 +496,7 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   /* Now walk the dominators of the loop header and use the entry
      guards to refine the estimates.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -1781,7 +1781,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
      the number of BBs times the number of loops in degenerate
      cases.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))

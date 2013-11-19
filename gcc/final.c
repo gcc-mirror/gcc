@@ -762,7 +762,7 @@ compute_alignments (void)
 	  && (branch_frequency > freq_threshold
 	      || (bb->frequency > bb->prev_bb->frequency * 10
 		  && (bb->prev_bb->frequency
-		      <= ENTRY_BLOCK_PTR->frequency / 2))))
+		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency / 2))))
 	{
 	  log = JUMP_ALIGN (label);
 	  if (dump_file)

@@ -2063,7 +2063,7 @@ pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr,
     {
       basic_block pred_bb = pred->src;
 
-      if (pred->src == ENTRY_BLOCK_PTR
+      if (pred->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  /* Has predecessor has already been visited?  */
 	  || visited[pred_bb->index])
 	;/* Nothing to do.  */
@@ -2830,7 +2830,7 @@ compute_code_hoist_vbeinout (void)
 	 the convergence.  */
       FOR_EACH_BB_REVERSE (bb)
 	{
-	  if (bb->next_bb != EXIT_BLOCK_PTR)
+	  if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      bitmap_intersection_of_succs (hoist_vbeout[bb->index],
 					    hoist_vbein, bb);
@@ -2908,7 +2908,7 @@ update_bb_reg_pressure (basic_block bb, rtx from)
       FOR_EACH_EDGE (succ, ei, bb->succs)
 	{
 	  succ_bb = succ->dest;
-	  if (succ_bb == EXIT_BLOCK_PTR)
+	  if (succ_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    continue;
 
 	  if (bitmap_bit_p (BB_DATA (succ_bb)->live_in, REGNO (dreg)))
@@ -3041,7 +3041,7 @@ should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
     {
       basic_block pred_bb = pred->src;
 
-      if (pred->src == ENTRY_BLOCK_PTR)
+      if (pred->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	break;
       else if (pred_bb == expr_bb)
 	continue;
@@ -3185,16 +3185,16 @@ hoist_code (void)
       bb_size[bb->index] = to_head;
     }
 
-  gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR->succs) == 1
-	      && (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
-		  == ENTRY_BLOCK_PTR->next_bb));
+  gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs) == 1
+	      && (EDGE_SUCC (ENTRY_BLOCK_PTR_FOR_FN (cfun), 0)->dest
+		  == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb));
 
   from_bbs = BITMAP_ALLOC (NULL);
   if (flag_ira_hoist_pressure)
     hoisted_bbs = BITMAP_ALLOC (NULL);
 
   dom_tree_walk = get_all_dominated_blocks (CDI_DOMINATORS,
-					    ENTRY_BLOCK_PTR->next_bb);
+					    ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb);
 
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */

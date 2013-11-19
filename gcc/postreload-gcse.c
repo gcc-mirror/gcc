@@ -1158,12 +1158,12 @@ eliminate_partially_redundant_loads (void)
 
   /* Note we start at block 1.  */
 
-  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
 
   FOR_BB_BETWEEN (bb,
-		  ENTRY_BLOCK_PTR->next_bb->next_bb,
-		  EXIT_BLOCK_PTR,
+		  ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->next_bb,
+		  EXIT_BLOCK_PTR_FOR_FN (cfun),
 		  next_bb)
     {
       /* Don't try anything on basic blocks with strange predecessors.  */

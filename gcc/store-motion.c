@@ -805,7 +805,7 @@ insert_store (struct st_expr * expr, edge e)
 
   /* If tmp is NULL, we found an insertion on every edge, blank the
      insertion vector for these edges, and insert at the start of the BB.  */
-  if (!tmp && bb != EXIT_BLOCK_PTR)
+  if (!tmp && bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       FOR_EACH_EDGE (tmp, ei, e->dest->preds)
 	{
@@ -869,7 +869,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 	}
       bb = act->dest;
 
-      if (bb == EXIT_BLOCK_PTR
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  || bitmap_bit_p (visited, bb->index))
 	{
 	  if (!ei_end_p (ei))

@@ -1639,7 +1639,7 @@ assemble_start_function (tree decl, const char *fnname)
 	 align the hot section and write out the hot section label.
 	 But if the current function is a thunk, we do not have a CFG.  */
       if (!cfun->is_thunk
-	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
+	  && BB_PARTITION (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb) == BB_COLD_PARTITION)
 	{
 	  switch_to_section (text_section);
 	  assemble_align (DECL_ALIGN (decl));

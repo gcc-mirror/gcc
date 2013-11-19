@@ -43,8 +43,9 @@ along with GCC; see the file COPYING3.  If not see
    executed, frequency is always equivalent.  Otherwise rescale the
    edge frequency.  */
 #define REG_FREQ_FROM_EDGE_FREQ(freq)					   \
-  (optimize_size || (flag_branch_probabilities && !ENTRY_BLOCK_PTR->count) \
-   ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)			   \
+  (optimize_size || (flag_branch_probabilities				   \
+		     && !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)		   \
+   ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)		   \
    ? (freq * REG_FREQ_MAX / BB_FREQ_MAX) : 1)
 
 /* A modified value of flag `-fira-verbose' used internally.  */

@@ -3100,7 +3100,7 @@ print_loop_title (ira_loop_tree_node_t loop_tree_node)
       {
 	fprintf (ira_dump_file, " %d", subloop_node->bb->index);
 	FOR_EACH_EDGE (e, ei, subloop_node->bb->succs)
-	  if (e->dest != EXIT_BLOCK_PTR
+	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      && ((dest_loop_node = IRA_BB_NODE (e->dest)->parent)
 		  != loop_tree_node))
 	    fprintf (ira_dump_file, "(->%d:l%d)",

@@ -1241,7 +1241,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
       }
 
   if (fn_begin_outside_block)
-    insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR));
+    insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
   else
     emit_insn_after (seq, fn_begin);
 }
@@ -1509,7 +1509,7 @@ finish_eh_generation (void)
 
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
       /* Kludge for Alpha (see alpha_gp_save_rtx).  */
-      || single_succ_edge (ENTRY_BLOCK_PTR)->insns.r)
+      || single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->insns.r)
     commit_edge_insertions ();
 
   /* Redirect all EH edges from the post_landing_pad to the landing pad.  */

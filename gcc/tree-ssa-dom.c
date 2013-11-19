@@ -902,7 +902,7 @@ tree_ssa_dominator_optimize (void)
 	  while (single_succ_p (bb)
 		 && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
 	    bb = single_succ (bb);
-	  if (bb == EXIT_BLOCK_PTR)
+	  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    continue;
 	  if ((unsigned) bb->index != i)
 	    bitmap_set_bit (need_eh_cleanup, bb->index);
@@ -3054,7 +3054,8 @@ eliminate_degenerate_phis (void)
      phase in dominator order.  Presumably this is because walking
      in dominator order leaves fewer PHIs for later examination
      by the worklist phase.  */
-  eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR, interesting_names);
+  eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+			       interesting_names);
 
   /* Second phase.  Eliminate second order degenerate PHIs as well
      as trivial copies or constant initializations identified by

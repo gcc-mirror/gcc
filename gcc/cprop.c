@@ -967,7 +967,7 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
       edge_iterator ei;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && BB_HEAD (e->dest) == JUMP_LABEL (jump))
 	  {
 	    e->flags |= EDGE_FALLTHRU;
@@ -1376,7 +1376,7 @@ find_implicit_sets (void)
 	? BRANCH_EDGE (bb)->dest : FALLTHRU_EDGE (bb)->dest;
 
       /* If DEST doesn't go anywhere, ignore it.  */
-      if (! dest || dest == EXIT_BLOCK_PTR)
+      if (! dest || dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       /* We have found a suitable implicit set.  Try to record it now as
@@ -1612,7 +1612,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  old_dest = e->dest;
 	  if (dest != NULL
 	      && dest != old_dest
-	      && dest != EXIT_BLOCK_PTR)
+	      && dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
             {
 	      redirect_edge_and_branch_force (e, dest);
 
@@ -1664,15 +1664,15 @@ bypass_conditional_jumps (void)
   rtx dest;
 
   /* Note we start at block 1.  */
-  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return 0;
 
   bypass_last_basic_block = last_basic_block;
   mark_dfs_back_edges ();
 
   changed = 0;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb,
-		  EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->next_bb,
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       /* Check for more than one predecessor.  */
       if (!single_pred_p (bb))
@@ -1836,7 +1836,8 @@ one_cprop_pass (void)
       /* Allocate vars to track sets of regs.  */
       reg_set_bitmap = ALLOC_REG_SET (NULL);
 
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR,
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->next_bb,
+		      EXIT_BLOCK_PTR_FOR_FN (cfun),
 		      next_bb)
 	{
 	  /* Reset tables used to keep track of what's still valid [since

@@ -213,8 +213,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
      is always the entry.  */
-  if (min == ENTRY_BLOCK_PTR->next_bb)
-    make_edge (ENTRY_BLOCK_PTR, min, EDGE_FALLTHRU);
+  if (min == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
+    make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), min, EDGE_FALLTHRU);
 
   FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
     {
@@ -233,14 +233,14 @@ make_edges (basic_block min, basic_block max, int update_p)
 	  if (update_p)
 	    {
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (e->dest != EXIT_BLOCK_PTR)
+		if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		  bitmap_set_bit (edge_cache, e->dest->index);
 	    }
 	}
 
       if (LABEL_P (BB_HEAD (bb))
 	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
-	cached_make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
+	cached_make_edge (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 
       /* Examine the last instruction of the block, and discover the
 	 ways we can leave the block.  */
@@ -294,7 +294,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 
 	  /* Returns create an exit out.  */
 	  else if (returnjump_p (insn))
-	    cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, 0);
+	    cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 
 	  /* Recognize asm goto and do the right thing.  */
 	  else if ((tmp = extract_asm_operands (PATTERN (insn))) != NULL)
@@ -318,7 +318,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 	 worry about EH edges, since we wouldn't have created the sibling call
 	 in the first place.  */
       if (code == CALL_INSN && SIBLING_CALL_P (insn))
-	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
+	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			  EDGE_SIBCALL | EDGE_ABNORMAL);
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
@@ -359,7 +359,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 
       /* Find out if we can drop through to the next block.  */
       insn = NEXT_INSN (insn);
-      e = find_edge (bb, EXIT_BLOCK_PTR);
+      e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
       if (e && e->flags & EDGE_FALLTHRU)
 	insn = NULL;
 
@@ -369,8 +369,9 @@ make_edges (basic_block min, basic_block max, int update_p)
 	insn = NEXT_INSN (insn);
 
       if (!insn)
-	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
-      else if (bb->next_bb != EXIT_BLOCK_PTR)
+	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			  EDGE_FALLTHRU);
+      else if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  if (insn == BB_HEAD (bb->next_bb))
 	    cached_make_edge (edge_cache, bb, bb->next_bb, EDGE_FALLTHRU);
@@ -480,7 +481,7 @@ find_bb_boundaries (basic_block bb)
 	  remove_edge (fallthru);
 	  flow_transfer_insn = NULL_RTX;
 	  if (code == CODE_LABEL && LABEL_ALT_ENTRY_P (insn))
-	    make_edge (ENTRY_BLOCK_PTR, bb, 0);
+	    make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 	}
       else if (code == BARRIER)
 	{
@@ -607,7 +608,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
       break;
 
   min = max = bb;
-  for (; bb != EXIT_BLOCK_PTR; bb = bb->next_bb)
+  for (; bb != EXIT_BLOCK_PTR_FOR_FN (cfun); bb = bb->next_bb)
     if (STATE (bb) != BLOCK_ORIGINAL)
       max = bb;
 

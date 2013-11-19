@@ -3363,7 +3363,7 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
     {
       if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
 	{
-	  if (e->dest != EXIT_BLOCK_PTR)
+	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      e->dest->count -= e->count;
 	      e->dest->frequency -= EDGE_FREQUENCY (e);
@@ -3399,7 +3399,8 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
       delete_insn (NEXT_INSN (last));
     }
 
-  e = make_edge (bb, EXIT_BLOCK_PTR, EDGE_ABNORMAL | EDGE_SIBCALL);
+  e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_ABNORMAL
+		 | EDGE_SIBCALL);
   e->probability += probability;
   e->count += count;
   BB_END (bb) = last;
@@ -4840,9 +4841,9 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       gimple ret_stmt = gsi_stmt (gsi);
 
       gcc_assert (single_succ_p (bb));
-      gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR);
+      gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-      if (bb->next_bb == EXIT_BLOCK_PTR
+      if (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && !gimple_return_retval (ret_stmt))
 	{
 	  gsi_remove (&gsi, false);
@@ -5184,17 +5185,17 @@ construct_init_block (void)
   int flags;
 
   /* Multiple entry points not supported yet.  */
-  gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR->succs) == 1);
-  init_rtl_bb_info (ENTRY_BLOCK_PTR);
-  init_rtl_bb_info (EXIT_BLOCK_PTR);
-  ENTRY_BLOCK_PTR->flags |= BB_RTL;
-  EXIT_BLOCK_PTR->flags |= BB_RTL;
+  gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs) == 1);
+  init_rtl_bb_info (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  init_rtl_bb_info (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->flags |= BB_RTL;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->flags |= BB_RTL;
 
-  e = EDGE_SUCC (ENTRY_BLOCK_PTR, 0);
+  e = EDGE_SUCC (ENTRY_BLOCK_PTR_FOR_FN (cfun), 0);
 
   /* When entry edge points to first basic block, we don't need jump,
      otherwise we have to jump into proper target.  */
-  if (e && e->dest != ENTRY_BLOCK_PTR->next_bb)
+  if (e && e->dest != ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
     {
       tree label = gimple_block_label (e->dest);
 
@@ -5206,11 +5207,11 @@ construct_init_block (void)
 
   init_block = create_basic_block (NEXT_INSN (get_insns ()),
 				   get_last_insn (),
-				   ENTRY_BLOCK_PTR);
-  init_block->frequency = ENTRY_BLOCK_PTR->frequency;
-  init_block->count = ENTRY_BLOCK_PTR->count;
-  if (current_loops && ENTRY_BLOCK_PTR->loop_father)
-    add_bb_to_loop (init_block, ENTRY_BLOCK_PTR->loop_father);
+				   ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  init_block->frequency = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
+  init_block->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  if (current_loops && ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father)
+    add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
     {
       first_block = e->dest;
@@ -5218,9 +5219,9 @@ construct_init_block (void)
       e = make_edge (init_block, first_block, flags);
     }
   else
-    e = make_edge (init_block, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+    e = make_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FALLTHRU);
   e->probability = REG_BR_PROB_BASE;
-  e->count = ENTRY_BLOCK_PTR->count;
+  e->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   update_bb_for_insn (init_block);
   return init_block;
@@ -5251,9 +5252,9 @@ construct_exit_block (void)
   edge e, e2;
   unsigned ix;
   edge_iterator ei;
-  rtx orig_end = BB_END (EXIT_BLOCK_PTR->prev_bb);
+  rtx orig_end = BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
 
-  rtl_profile_for_bb (EXIT_BLOCK_PTR);
+  rtl_profile_for_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
@@ -5268,30 +5269,30 @@ construct_exit_block (void)
     return;
   /* While emitting the function end we could move end of the last basic block.
    */
-  BB_END (EXIT_BLOCK_PTR->prev_bb) = orig_end;
+  BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = orig_end;
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   exit_block = create_basic_block (NEXT_INSN (head), end,
-				   EXIT_BLOCK_PTR->prev_bb);
-  exit_block->frequency = EXIT_BLOCK_PTR->frequency;
-  exit_block->count = EXIT_BLOCK_PTR->count;
-  if (current_loops && EXIT_BLOCK_PTR->loop_father)
-    add_bb_to_loop (exit_block, EXIT_BLOCK_PTR->loop_father);
+				   EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  exit_block->frequency = EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency;
+  exit_block->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
+  if (current_loops && EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father)
+    add_bb_to_loop (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   ix = 0;
-  while (ix < EDGE_COUNT (EXIT_BLOCK_PTR->preds))
+  while (ix < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
     {
-      e = EDGE_PRED (EXIT_BLOCK_PTR, ix);
+      e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), ix);
       if (!(e->flags & EDGE_ABNORMAL))
 	redirect_edge_succ (e, exit_block);
       else
 	ix++;
     }
 
-  e = make_edge (exit_block, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+  e = make_edge (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FALLTHRU);
   e->probability = REG_BR_PROB_BASE;
-  e->count = EXIT_BLOCK_PTR->count;
-  FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR->preds)
+  e->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
+  FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e2 != e)
       {
 	e->count -= e2->count;
@@ -5521,7 +5522,7 @@ gimple_expand_cfg (void)
   /* Dominators are not kept up-to-date as we may create new basic-blocks.  */
   free_dominance_info (CDI_DOMINATORS);
 
-  rtl_profile_for_bb (ENTRY_BLOCK_PTR);
+  rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   insn_locations_init ();
   if (!DECL_IS_BUILTIN (current_function_decl))
@@ -5685,11 +5686,12 @@ gimple_expand_cfg (void)
 
   /* Clear EDGE_EXECUTABLE on the entry edge(s).  It is cleaned from the
      remaining edges later.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
   lab_rtx_for_bb = pointer_map_create ();
-  FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (cfun),
+		  next_bb)
     bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
 
   if (MAY_HAVE_DEBUG_INSNS)
@@ -5734,7 +5736,8 @@ gimple_expand_cfg (void)
      split edges which edge insertions might do.  */
   rebuild_jump_labels (get_insns ());
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       edge e;
       edge_iterator ei;
@@ -5745,8 +5748,8 @@ gimple_expand_cfg (void)
 	      rebuild_jump_labels_chain (e->insns.r);
 	      /* Put insns after parm birth, but before
 		 NOTE_INSNS_FUNCTION_BEG.  */
-	      if (e->src == ENTRY_BLOCK_PTR
-		  && single_succ_p (ENTRY_BLOCK_PTR))
+	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
 		{
 		  rtx insns = e->insns.r;
 		  e->insns.r = NULL_RTX;
@@ -5767,7 +5770,8 @@ gimple_expand_cfg (void)
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       edge e;
       edge_iterator ei;

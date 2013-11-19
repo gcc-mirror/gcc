@@ -4551,7 +4551,8 @@ find_block_for_bookkeeping (edge e1, edge e2, bool lax)
   edge e;
 
   /* Loop over edges from E1 to E2, inclusive.  */
-  for (e = e1; !lax || e->dest != EXIT_BLOCK_PTR; e = EDGE_SUCC (e->dest, 0))
+  for (e = e1; !lax || e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun); e =
+       EDGE_SUCC (e->dest, 0))
     {
       if (EDGE_COUNT (e->dest->preds) == 2)
 	{
@@ -4642,7 +4643,7 @@ create_block_for_bookkeeping (edge e1, edge e2)
       if (DEBUG_INSN_P (insn)
 	  && single_succ_p (new_bb)
 	  && (succ = single_succ (new_bb))
-	  && succ != EXIT_BLOCK_PTR
+	  && succ != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && DEBUG_INSN_P ((last = sel_bb_end (new_bb))))
 	{
 	  while (insn != last && (DEBUG_INSN_P (insn) || NOTE_P (insn)))
