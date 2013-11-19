@@ -1,5 +1,11 @@
 2013-11-19  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-threadupdate.c: Include ssa-iterators.h
+	(copy_phi_arg_into_existing_phi): New function.
+	(any_remaining_duplicated_blocks): Likewise.
+	(ssa_fix_duplicate_block_edges): Handle multiple duplicated
+	blocks on a jump threading path.
+	
 	* tree-ssa-threadupdate.c (thread_through_loop_header):  Do not
 	thread through a joiner which has the latch edge.
 
