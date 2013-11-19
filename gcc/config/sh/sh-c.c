@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "stringpool.h"
-#include "attribs.h.h"
+#include "attribs.h"
 #include "tm_p.h"
 #include "cpplib.h"
 #include "c-family/c-common.h"
