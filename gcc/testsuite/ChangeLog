@@ -1,3 +1,9 @@
+2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-2.c (MAKE_SLOT): New macro to
+	construct parameter slot value in endian-independent way.
+	(fcevv, fciievv, fcvevv): Use it.
+
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
 	* ipa/devirt9.C: Fix prevoius change.
