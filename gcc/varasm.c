@@ -964,9 +964,9 @@ align_variable (tree decl, bool dont_output_data)
      In particular, a.out format supports a maximum alignment of 4.  */
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning (0, "alignment of %q+D is greater than maximum object "
-               "file alignment.  Using %d", decl,
-	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+      error ("alignment of %q+D is greater than maximum object "
+	     "file alignment %d", decl,
+	     MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
@@ -1912,8 +1912,8 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 
   if (!sect->noswitch.callback (decl, name, size, rounded)
       && (unsigned HOST_WIDE_INT) (align / BITS_PER_UNIT) > rounded)
-    warning (0, "requested alignment for %q+D is greater than "
-	     "implemented alignment of %wu", decl, rounded);
+    error ("requested alignment for %q+D is greater than "
+	   "implemented alignment of %wu", decl, rounded);
 }
 
 /* A subroutine of assemble_variable.  Output the label and contents of
