@@ -1,3 +1,11 @@
+2013-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/experimental/string_view (_S_max_size): Remove.
+	(basic_string_view<>::max_size): Adjust.
+	* testsuite/experimental/string_view/capacity/1.cc: Clean-up.
+	* testsuite/experimental/string_view/inserters/pod/10081-out.cc:
+	Likewise.
+
 2013-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx2014.xml: Create new table for TS statuses.
