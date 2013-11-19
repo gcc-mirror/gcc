@@ -1,3 +1,10 @@
+2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/vector.md ("mov<mode>"): Do not call
+	rs6000_emit_le_vsx_move to move into or out of GPRs.
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Assert
+	source and destination are not GPR hard regs.
+
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (n_edges_for_function): Rename macro to...
