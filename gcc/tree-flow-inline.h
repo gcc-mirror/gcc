@@ -1183,7 +1183,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	{
 	case BIT_FIELD_REF:
 	  {
-	    HOST_WIDE_INT this_off = tree_to_hwi (TREE_OPERAND (exp, 2));
+	    HOST_WIDE_INT this_off = TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
 	    if (this_off % BITS_PER_UNIT)
 	      return NULL_TREE;
 	    byte_offset += this_off / BITS_PER_UNIT;
@@ -1198,12 +1198,12 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (!this_offset
 		|| TREE_CODE (this_offset) != INTEGER_CST
-		|| (tree_to_hwi (DECL_FIELD_BIT_OFFSET (field))
+		|| (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 		    % BITS_PER_UNIT))
 	      return NULL_TREE;
 
-	    hthis_offset = tree_to_hwi (this_offset);
-	    hthis_offset += (tree_to_hwi (DECL_FIELD_BIT_OFFSET (field))
+	    hthis_offset = TREE_INT_CST_LOW (this_offset);
+	    hthis_offset += (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 			     / BITS_PER_UNIT);
 	    byte_offset += hthis_offset;
 	  }
@@ -1226,10 +1226,10 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		HOST_WIDE_INT hindex = tree_to_hwi (index);
+		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
 
-		hindex -= tree_to_hwi (low_bound);
-		hindex *= tree_to_hwi (unit_size);
+		hindex -= TREE_INT_CST_LOW (low_bound);
+		hindex *= TREE_INT_CST_LOW (unit_size);
 		byte_offset += hindex;
 	      }
 	    else
@@ -1241,7 +1241,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	  break;
 
 	case IMAGPART_EXPR:
-	  byte_offset += tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (exp)));
+	  byte_offset += TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (exp)));
 	  break;
 
 	case VIEW_CONVERT_EXPR:

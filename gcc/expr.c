@@ -8197,7 +8197,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
-	      wc = tree_to_hwi (treeop0);
+	      wc = TREE_INT_CST_LOW (treeop0);
 	      constant_part =
 		immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op1 = plus_constant (mode, op1, INTVAL (constant_part));
@@ -8231,7 +8231,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
-	      wc = tree_to_hwi (treeop1);
+	      wc = TREE_INT_CST_LOW (treeop1);
 	      constant_part
 		= immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op0 = plus_constant (mode, op0, INTVAL (constant_part));
@@ -9803,7 +9803,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    if (GET_MODE_CLASS (mode) == MODE_INT
 			&& GET_MODE_SIZE (mode) == 1)
 		      return gen_int_mode (TREE_STRING_POINTER (init)
-					   [tree_to_hwi (index1)],
+					   [TREE_INT_CST_LOW (index1)],
 					   mode);
 		  }
 	      }
@@ -9840,7 +9840,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		op0 = expand_expr (value, target, tmode, modifier);
 		if (DECL_BIT_FIELD (field))
 		  {
-		    HOST_WIDE_INT bitsize = tree_to_hwi (DECL_SIZE (field));
+		    HOST_WIDE_INT bitsize = TREE_INT_CST_LOW (DECL_SIZE (field));
 		    enum machine_mode imode = TYPE_MODE (TREE_TYPE (field));
 
 		    if (TYPE_UNSIGNED (TREE_TYPE (field)))

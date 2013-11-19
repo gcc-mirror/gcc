@@ -2251,7 +2251,7 @@ dbxout_type (tree type, int full)
             value = DECL_INITIAL (value);
 
 	  if (cst_fits_shwi_p (value))
-	    stabstr_D (tree_to_hwi (value));
+	    stabstr_D (TREE_INT_CST_LOW (value));
 	  else
 	    stabstr_O (value);
 
@@ -2872,7 +2872,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  if (TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE
 	      || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	    {
-	      HOST_WIDE_INT ival = tree_to_hwi (DECL_INITIAL (decl));
+	      HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
 
 	      dbxout_begin_complex_stabs ();
 	      dbxout_symbol_name (decl, NULL, 'c');

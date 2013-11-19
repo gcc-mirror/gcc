@@ -316,7 +316,7 @@ handle_pragma_pointer_size (const char *pragma_name)
       int val;
 
       if (TREE_CODE (x) == INTEGER_CST)
-        val = tree_to_hwi (x);
+        val = TREE_INT_CST_LOW (x);
       else
         val = -1;
 

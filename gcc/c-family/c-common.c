@@ -861,7 +861,7 @@ finish_fname_decls (void)
       for (saved = TREE_PURPOSE (stack); saved; saved = TREE_CHAIN (saved))
 	{
 	  tree decl = TREE_PURPOSE (saved);
-	  unsigned ix = tree_to_hwi (TREE_VALUE (saved));
+	  unsigned ix = TREE_INT_CST_LOW (TREE_VALUE (saved));
 
 	  *fname_vars[ix].decl = decl;
 	}
@@ -4780,7 +4780,7 @@ c_type_hash (const void *p)
   if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
     size = 0;
   else
-    size = tree_to_hwi (TYPE_SIZE (t));
+    size = TREE_INT_CST_LOW (TYPE_SIZE (t));
   return ((size << 24) | (n_elements << shift));
 }
 
@@ -8676,7 +8676,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
       if (TREE_VALUE (attr))
 	{
 	  tree p = TREE_VALUE (TREE_VALUE (attr));
-	  pos = tree_to_hwi (p);
+	  pos = TREE_INT_CST_LOW (p);
 	}
 
       /* The sentinel must be one of the varargs, i.e.
@@ -8752,7 +8752,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
   /* Verify the arg number is a small constant.  */
   if (cst_fits_uhwi_p (arg_num_expr))
     {
-      *valp = tree_to_hwi (arg_num_expr);
+      *valp = TREE_INT_CST_LOW (arg_num_expr);
       return true;
     }
   else
@@ -8954,7 +8954,7 @@ parse_optimize_options (tree args, bool attr_p)
       if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  char buffer[20];
-	  sprintf (buffer, "-O%ld", (long) tree_to_hwi (value));
+	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}
 
@@ -9450,7 +9450,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
 	   || token_type == CPP_CHAR16
 	   || token_type == CPP_CHAR32)
     {
-      unsigned int val = tree_to_hwi (value);
+      unsigned int val = TREE_INT_CST_LOW (value);
       const char *prefix;
 
       switch (token_type)

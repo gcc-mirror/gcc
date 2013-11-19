@@ -880,7 +880,7 @@ copy_ref_info (tree new_ref, tree old_ref)
 	      && !(TREE_CODE (new_ref) == TARGET_MEM_REF
 		   && (TMR_INDEX2 (new_ref)
 		       || (TMR_STEP (new_ref)
-			   && (tree_to_hwi (TMR_STEP (new_ref))
+			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
 			       < align)))))
 	    {
 	      unsigned int inc = (mem_ref_offset (old_ref).to_uhwi ()

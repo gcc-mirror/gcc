@@ -823,7 +823,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
     {
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
       token->pragma_kind = ((enum pragma_kind)
-			    tree_to_hwi (token->u.value));
+			    TREE_INT_CST_LOW (token->u.value));
       token->u.value = NULL_TREE;
     }
 }
@@ -3936,7 +3936,7 @@ cp_parser_userdef_string_literal (cp_token *token)
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree value = USERDEF_LITERAL_VALUE (literal);
   int len = TREE_STRING_LENGTH (value)
-	/ tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
+	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
   tree decl, result;
   vec<tree, va_gc> *args;
 
@@ -31277,7 +31277,7 @@ cp_parser_cilk_simd_vectorlength (cp_parser *parser, tree clauses)
   expr = maybe_constant_value (expr);
 
   if (TREE_CONSTANT (expr)
-	   && exact_log2 (tree_to_hwi (expr)) == -1)
+	   && exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else if (expr != error_mark_node)
     {

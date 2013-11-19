@@ -232,7 +232,7 @@ get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
       return false;
     }
 
-  *value = tree_to_hwi (expr);
+  *value = TREE_INT_CST_LOW (expr);
 
   return true;
 }

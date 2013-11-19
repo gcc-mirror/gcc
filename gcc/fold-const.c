@@ -6580,7 +6580,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 	  && wi::ltu_p (wi::to_widest (TREE_OPERAND (inner, 1)) + bitnum,
 			TYPE_PRECISION (type)))
 	{
-	  bitnum += tree_to_hwi (TREE_OPERAND (inner, 1));
+	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);
 	}
 
@@ -9693,7 +9693,7 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
       inner_code = TREE_CODE (op1);
       if (inner_code == INTEGER_CST)
 	{
-	  *residue += tree_to_hwi (op1);
+	  *residue += TREE_INT_CST_LOW (op1);
 	  return modulus;
 	}
       else if (inner_code == MULT_EXPR)
@@ -9704,7 +9704,7 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
 	      unsigned HOST_WIDE_INT align;
 
 	      /* Compute the greatest power-of-2 divisor of op1.  */
-	      align = tree_to_hwi (op1);
+	      align = TREE_INT_CST_LOW (op1);
 	      align &= -align;
 
 	      /* If align is non-zero and less than *modulus, replace
@@ -11952,7 +11952,7 @@ fold_binary_loc (location_t loc,
 	      < TYPE_PRECISION (TREE_TYPE (arg0))))
 	{
 	  unsigned int shiftc = tree_to_uhwi (TREE_OPERAND (arg0, 1));
-	  unsigned HOST_WIDE_INT mask = tree_to_hwi (arg1);
+	  unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg1);
 	  unsigned HOST_WIDE_INT newmask, zerobits = 0;
 	  tree shift_type = TREE_TYPE (arg0);
 
@@ -15672,7 +15672,7 @@ tree_call_nonnegative_warnv_p (tree type, tree fndecl,
 	/* True if the 1st argument is nonnegative or the second
 	   argument is an even integer.  */
 	if (TREE_CODE (arg1) == INTEGER_CST
-	    && (tree_to_hwi (arg1) & 1) == 0)
+	    && (TREE_INT_CST_LOW (arg1) & 1) == 0)
 	  return true;
 	return tree_expr_nonnegative_warnv_p (arg0,
 					      strict_overflow_p);

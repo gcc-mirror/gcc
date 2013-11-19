@@ -688,7 +688,7 @@ layout_decl (tree decl, unsigned int known_align)
       if (size != 0 && TREE_CODE (size) == INTEGER_CST
 	  && compare_tree_int (size, larger_than_size) > 0)
 	{
-	  int size_as_int = tree_to_hwi (size);
+	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
 	    warning (OPT_Wlarger_than_, "size of %q+D is %d bytes", decl, size_as_int);

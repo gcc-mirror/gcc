@@ -449,7 +449,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       if (sign_p == UNSIGNED)
 	{
 	  unsigned HOST_WIDE_INT mh;
-	  unsigned HOST_WIDE_INT d = tree_to_hwi (cst) & mask;
+	  unsigned HOST_WIDE_INT d = TREE_INT_CST_LOW (cst) & mask;
 
 	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
 	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
@@ -519,7 +519,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       else
 	{
-	  HOST_WIDE_INT d = tree_to_hwi (cst);
+	  HOST_WIDE_INT d = TREE_INT_CST_LOW (cst);
 	  unsigned HOST_WIDE_INT abs_d;
 
 	  if (d == -1)
@@ -1049,7 +1049,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 
       /* Given that we're about to compute a binary modulus,
 	 we don't care about the high bits of the value.  */
-      index = tree_to_hwi (idx);
+      index = TREE_INT_CST_LOW (idx);
       if (!tree_fits_uhwi_p (idx) || index >= elements)
 	{
 	  index &= elements - 1;
@@ -1155,7 +1155,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
       unsigned char *sel_int = XALLOCAVEC (unsigned char, elements);
 
       for (i = 0; i < elements; ++i)
-	sel_int[i] = (tree_to_hwi (VECTOR_CST_ELT (mask, i))
+	sel_int[i] = (TREE_INT_CST_LOW (VECTOR_CST_ELT (mask, i))
 		      & (2 * elements - 1));
 
       if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
@@ -1181,7 +1181,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
         {
 	  unsigned HOST_WIDE_INT index;
 
-	  index = tree_to_hwi (i_val);
+	  index = TREE_INT_CST_LOW (i_val);
 	  if (!tree_fits_uhwi_p (i_val) || index >= elements)
 	    i_val = build_int_cst (mask_elt_type, index & (elements - 1));
 

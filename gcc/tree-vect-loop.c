@@ -1272,7 +1272,7 @@ vect_analyze_loop_form (struct loop *loop)
           dump_printf (MSG_NOTE, "\n");
         }
     }
-  else if (tree_to_hwi (number_of_iterations) == 0)
+  else if (TREE_INT_CST_LOW (number_of_iterations) == 0)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3614,7 +3614,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
       if (SCALAR_FLOAT_TYPE_P (scalar_type))
         init_value = build_real (scalar_type, TREE_REAL_CST (init_val));
       else
-        init_value = build_int_cst (scalar_type, tree_to_hwi (init_val));
+        init_value = build_int_cst (scalar_type, TREE_INT_CST_LOW (init_val));
     }
   else
     init_value = init_val;

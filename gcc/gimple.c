@@ -2103,11 +2103,11 @@ gimple_compare_field_offset (tree f1, tree f2)
     {
       unsigned HOST_WIDE_INT byte_offset1, byte_offset2;
       unsigned HOST_WIDE_INT bit_offset1, bit_offset2;
-      bit_offset1 = tree_to_hwi (DECL_FIELD_BIT_OFFSET (f1));
-      byte_offset1 = (tree_to_hwi (DECL_FIELD_OFFSET (f1))
+      bit_offset1 = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (f1));
+      byte_offset1 = (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f1))
 		      + bit_offset1 / BITS_PER_UNIT);
-      bit_offset2 = tree_to_hwi (DECL_FIELD_BIT_OFFSET (f2));
-      byte_offset2 = (tree_to_hwi (DECL_FIELD_OFFSET (f2))
+      bit_offset2 = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (f2));
+      byte_offset2 = (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f2))
 		      + bit_offset2 / BITS_PER_UNIT);
       if (byte_offset1 != byte_offset2)
 	return false;
@@ -2578,7 +2578,7 @@ infer_nonnull_range (gimple stmt, tree op)
 	  /* Now see if op appears in the nonnull list.  */
 	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
 	    {
-	      int idx = tree_to_hwi (TREE_VALUE (t)) - 1;
+	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
 	      tree arg = gimple_call_arg (stmt, idx);
 	      if (operand_equal_p (op, arg, 0))
 		return true;

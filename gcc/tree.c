@@ -2664,7 +2664,7 @@ int_size_in_bytes (const_tree type)
   t = TYPE_SIZE_UNIT (type);
 
   if (t && cst_fits_uhwi_p (t))
-    return tree_to_hwi (t);
+    return TREE_INT_CST_LOW (t);
   else
     return -1;
 }
@@ -7231,9 +7231,9 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
     return -1;
   else if (!cst_fits_uhwi_p (t))
     return 1;
-  else if ((unsigned HOST_WIDE_INT) tree_to_hwi (t) == u)
+  else if (TREE_INT_CST_LOW (t) == u)
     return 0;
-  else if ((unsigned HOST_WIDE_INT) tree_to_hwi (t) < u)
+  else if (TREE_INT_CST_LOW (t) < u)
     return -1;
   else
     return 1;
@@ -10123,10 +10123,10 @@ build_vector_type_for_mode (tree innertype, enum machine_mode mode)
     case MODE_INT:
       /* Check that there are no leftover bits.  */
       gcc_assert (GET_MODE_BITSIZE (mode)
-		  % tree_to_hwi (TYPE_SIZE (innertype)) == 0);
+		  % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
 
       nunits = GET_MODE_BITSIZE (mode)
-	       / tree_to_hwi (TYPE_SIZE (innertype));
+	       / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
       break;
 
     default:
@@ -10449,7 +10449,7 @@ HOST_WIDE_INT
 int_cst_value (const_tree x)
 {
   unsigned bits = TYPE_PRECISION (TREE_TYPE (x));
-  unsigned HOST_WIDE_INT val = tree_to_hwi (x);
+  unsigned HOST_WIDE_INT val = TREE_INT_CST_LOW (x);
 
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
   gcc_assert (cst_fits_shwi_p (x));
@@ -10472,7 +10472,7 @@ HOST_WIDEST_INT
 widest_int_cst_value (const_tree x)
 {
   unsigned bits = TYPE_PRECISION (TREE_TYPE (x));
-  unsigned HOST_WIDEST_INT val = tree_to_hwi (x);
+  unsigned HOST_WIDEST_INT val = TREE_INT_CST_LOW (x);
 
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);

@@ -147,7 +147,7 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
   gcc_assert (expr->ts.type == BT_CHARACTER);
   gcc_assert (cst_fits_uhwi_p (length));
 
-  len = tree_to_hwi (length);
+  len = TREE_INT_CST_LOW (length);
   slen = expr->value.character.length;
 
   if (len > slen)

@@ -9563,7 +9563,7 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
     }
   else if (TREE_CODE (label) == LABEL_DECL)
     ;
-  else switch (tree_to_hwi (label))
+  else switch (TREE_INT_CST_LOW (label))
     {
     case 0:
       if (is_break)

@@ -1232,9 +1232,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
              NB: Neither of the following divisors can be trivially
              used to recover the original literal:
 
-             tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (node)))
+             TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (node)))
 	     TYPE_PRECISION (TREE_TYPE (TREE_TYPE (node)))  */
-	  pp_wide_integer (buffer, tree_to_hwi (node));
+	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
       else if (tree_fits_shwi_p (node))

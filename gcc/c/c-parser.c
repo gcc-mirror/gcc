@@ -383,7 +383,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
       break;
     case CPP_PRAGMA:
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
-      token->pragma_kind = (enum pragma_kind) tree_to_hwi (token->value);
+      token->pragma_kind = (enum pragma_kind) TREE_INT_CST_LOW (token->value);
       token->value = NULL;
       break;
     default:
@@ -13375,7 +13375,7 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
       || !TREE_CONSTANT (expr)
       || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
     error_at (loc, "vectorlength must be an integer constant");
-  else if (exact_log2 (tree_to_hwi (expr)) == -1)
+  else if (exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else
     {

@@ -1694,7 +1694,7 @@ debug_binfo (tree elem)
   fprintf (stderr, "type \"%s\", offset = " HOST_WIDE_INT_PRINT_DEC
 	   "\nvtable type:\n",
 	   TYPE_NAME_STRING (BINFO_TYPE (elem)),
-	   tree_to_hwi (BINFO_OFFSET (elem)));
+	   TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
   debug_tree (BINFO_TYPE (elem));
   if (BINFO_VTABLE (elem))
     fprintf (stderr, "vtable decl \"%s\"\n",
@@ -1710,7 +1710,7 @@ debug_binfo (tree elem)
       tree fndecl = TREE_VALUE (virtuals);
       fprintf (stderr, "%s [%ld =? %ld]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
-	       (long) n, (long) tree_to_hwi (DECL_VINDEX (fndecl)));
+	       (long) n, (long) TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }
@@ -3241,7 +3241,7 @@ handle_init_priority_attribute (tree* node,
       return NULL_TREE;
     }
 
-  pri = tree_to_hwi (initp_expr);
+  pri = TREE_INT_CST_LOW (initp_expr);
 
   type = strip_array_types (type);
 

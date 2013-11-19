@@ -119,7 +119,7 @@ known_alignment (tree exp)
 
     case INTEGER_CST:
       {
-	unsigned HOST_WIDE_INT c = tree_to_hwi (exp);
+	unsigned HOST_WIDE_INT c = TREE_INT_CST_LOW (exp);
 	/* The first part of this represents the lowest bit in the constant,
 	   but it is originally in bytes, not bits.  */
 	this_alignment = MIN (BITS_PER_UNIT * (c & -c), BIGGEST_ALIGNMENT);

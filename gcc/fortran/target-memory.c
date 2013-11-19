@@ -254,8 +254,8 @@ encode_derived (gfc_expr *source, unsigned char *buffer, size_t buffer_size)
       gcc_assert (cmp);
       if (!c->expr)
 	continue;
-      ptr = tree_to_hwi (DECL_FIELD_OFFSET(cmp->backend_decl))
-	    + tree_to_hwi (DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
+      ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
+	    + TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
 
       if (c->expr->expr_type == EXPR_NULL)
 	{
@@ -548,9 +548,9 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 	 i.e. there are, e.g., no bit fields.  */
 
       gcc_assert (cmp->backend_decl);
-      ptr = tree_to_hwi (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
+      ptr = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
       gcc_assert (ptr % 8 == 0);
-      ptr = ptr/8 + tree_to_hwi (DECL_FIELD_OFFSET (cmp->backend_decl));
+      ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
 
       gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e, true);
     }
@@ -662,8 +662,8 @@ expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
 	  gcc_assert (cmp && cmp->backend_decl);
 	  if (!c->expr)
 	    continue;
-	    ptr = tree_to_hwi (DECL_FIELD_OFFSET(cmp->backend_decl))
-			+ tree_to_hwi (DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
+	    ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
+			+ TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
 	  expr_to_char (c->expr, &data[ptr], &chk[ptr], len);
 	}
       return len;

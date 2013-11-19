@@ -1054,7 +1054,7 @@ decrement_power (gimple stmt)
 
     CASE_FLT_FN (BUILT_IN_POWI):
       arg1 = gimple_call_arg (stmt, 1);
-      power = tree_to_hwi (arg1) - 1;
+      power = TREE_INT_CST_LOW (arg1) - 1;
       gimple_call_set_arg (stmt, 1, build_int_cst (TREE_TYPE (arg1), power));
       return power;
 

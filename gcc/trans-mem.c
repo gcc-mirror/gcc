@@ -3118,7 +3118,7 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 	  // TM_ABORT directly get what they deserve.
 	  tree arg = gimple_call_arg (stmt, 0);
 	  if (TREE_CODE (arg) == INTEGER_CST
-	      && (tree_to_hwi (arg) & AR_OUTERABORT) != 0
+	      && (TREE_INT_CST_LOW (arg) & AR_OUTERABORT) != 0
 	      && !decl_is_tm_clone (current_function_decl))
 	    {
 	      // Find the GTMA_IS_OUTER transaction.

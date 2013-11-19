@@ -2570,7 +2570,7 @@ scale_by_factor_of (tree expr, unsigned int value)
   if (TREE_CODE (expr) == BIT_AND_EXPR
       && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST)
     {
-      unsigned HOST_WIDE_INT mask = tree_to_hwi (TREE_OPERAND (expr, 1));
+      unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (TREE_OPERAND (expr, 1));
       unsigned int i = 0;
 
       while ((mask & 1) == 0 && i < HOST_BITS_PER_WIDE_INT)
@@ -3869,7 +3869,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       tree max_field = DECL_CHAIN (TYPE_FIELDS (template_type));
       tree template_tree, template_addr, aflags, dimct, t, u;
       /* See the head comment of build_vms_descriptor.  */
-      int iklass = tree_to_hwi (DECL_INITIAL (klass));
+      int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
       tree lfield, ufield;
       vec<constructor_elt, va_gc> *v;
 
@@ -4023,7 +4023,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       tree max_field = DECL_CHAIN (TYPE_FIELDS (template_type));
       tree template_tree, template_addr, aflags, dimct, t, u;
       /* See the head comment of build_vms_descriptor.  */
-      int iklass = tree_to_hwi (DECL_INITIAL (klass));
+      int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
       vec<constructor_elt, va_gc> *v;
 
       /* Convert POINTER to the pointer-to-array type.  */
@@ -5307,7 +5307,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 				     GET_MODE_BITSIZE (TYPE_MODE (type))))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      unsigned HOST_WIDE_INT prec = tree_to_hwi (TYPE_RM_SIZE (type));
+      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (type));
       tree field_type, field;
 
       if (TYPE_UNSIGNED (type))
@@ -5336,7 +5336,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 				     GET_MODE_BITSIZE (TYPE_MODE (etype))))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      unsigned HOST_WIDE_INT prec = tree_to_hwi (TYPE_RM_SIZE (etype));
+      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (etype));
       vec<constructor_elt, va_gc> *v;
       vec_alloc (v, 1);
       tree field_type, field;
@@ -6064,7 +6064,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
   if (!cst_fits_uhwi_p (arg_num_expr))
     return false;
 
-  *valp = tree_to_hwi (arg_num_expr);
+  *valp = TREE_INT_CST_LOW (arg_num_expr);
   return true;
 }
 

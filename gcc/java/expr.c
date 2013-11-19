@@ -2673,7 +2673,7 @@ build_jni_stub (tree method)
      special way, we would do that here.  */
   for (tem = method_args; tem != NULL_TREE; tem = DECL_CHAIN (tem))
     {
-      int arg_bits = tree_to_hwi (TYPE_SIZE (TREE_TYPE (tem)));
+      int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)));
 #ifdef PARM_BOUNDARY
       arg_bits = (((arg_bits + PARM_BOUNDARY - 1) / PARM_BOUNDARY)
                   * PARM_BOUNDARY);

@@ -319,7 +319,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
   if (!cst_fits_uhwi_p (arg_num_expr))
     return false;
 
-  *valp = tree_to_hwi (arg_num_expr);
+  *valp = TREE_INT_CST_LOW (arg_num_expr);
   return true;
 }
 

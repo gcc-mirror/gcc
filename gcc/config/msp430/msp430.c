@@ -1157,7 +1157,7 @@ msp430_start_function (FILE *file, const char *name, tree decl)
 		     TREE_STRING_POINTER (intr_vector));
 	  else /* TREE_CODE (intr_vector) == INTEGER_CST */
 	    sprintf (buf, "__interrupt_vector_%u",
-		     (unsigned int) tree_to_hwi (intr_vector));
+		     (unsigned int) TREE_INT_CST_LOW (intr_vector));
 
 	  switch_to_section (get_section (buf, SECTION_CODE, decl));
 	  fputs ("\t.word\t", file);

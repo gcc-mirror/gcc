@@ -7148,10 +7148,10 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 
 	  /* Calculate the return object size */
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
-	  rtx size_rtx = GEN_INT (tree_to_hwi (size) & 0xfff);
+	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
 	  /* Construct a temporary return value */
 	  rtx temp_val
-	    = assign_stack_local (Pmode, tree_to_hwi (size), 0);
+	    = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
 
 	  /* Implement SPARC 32-bit psABI callee return struct checking:
 
@@ -10500,31 +10500,31 @@ sparc_handle_vis_mul8x16 (tree *n_elts, int fncode, tree inner_type,
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
-				 tree_to_hwi (VECTOR_CST_ELT (cst1, i)));
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
+				 TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, i)));
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16au_vis:
-      scale = tree_to_hwi (VECTOR_CST_ELT (cst1, 0));
+      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 0));
 
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16al_vis:
-      scale = tree_to_hwi (VECTOR_CST_ELT (cst1, 1));
+      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 1));
 
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
+	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
@@ -10584,7 +10584,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    n_elts[i] = build_int_cst (inner_type,
-				       tree_to_hwi
+				       TREE_INT_CST_LOW
 				         (VECTOR_CST_ELT (arg0, i)) << 4);
 	  return build_vector (rtype, n_elts);
 	}

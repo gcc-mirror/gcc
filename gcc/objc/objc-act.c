@@ -3023,8 +3023,8 @@ check_string_class_template (void)
 
 #define AT_LEAST_AS_LARGE_AS(F, T) \
   (F && TREE_CODE (F) == FIELD_DECL \
-     && (tree_to_hwi (TYPE_SIZE (TREE_TYPE (F))) \
-	 >= tree_to_hwi (TYPE_SIZE (T))))
+     && (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (F))) \
+	 >= TREE_INT_CST_LOW (TYPE_SIZE (T))))
 
   if (!AT_LEAST_AS_LARGE_AS (field_decl, ptr_type_node))
     return 0;
@@ -8880,7 +8880,7 @@ gen_declaration (tree decl)
       if (DECL_INITIAL (decl)
 	  && TREE_CODE (DECL_INITIAL (decl)) == INTEGER_CST)
 	sprintf (errbuf + strlen (errbuf), ": " HOST_WIDE_INT_PRINT_DEC,
-		 tree_to_hwi (DECL_INITIAL (decl)));
+		 TREE_INT_CST_LOW (DECL_INITIAL (decl)));
     }
 
   return errbuf;
@@ -8920,7 +8920,7 @@ gen_type_name_0 (tree type)
 		char sz[20];
 
 		sprintf (sz, HOST_WIDE_INT_PRINT_DEC,
-			 (tree_to_hwi
+			 (TREE_INT_CST_LOW
 			  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1));
 		strcat (errbuf, sz);
 	      }

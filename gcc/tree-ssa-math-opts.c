@@ -1763,7 +1763,7 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	case RSHIFT_EXPR:
 	case LROTATE_EXPR:
 	case RROTATE_EXPR:
-	  if (!do_shift_rotate (code, n, (int)tree_to_hwi (rhs2)))
+	  if (!do_shift_rotate (code, n, (int)TREE_INT_CST_LOW (rhs2)))
 	    return NULL_TREE;
 	  break;
 	CASE_CONVERT:
@@ -1856,7 +1856,7 @@ find_bswap (gimple stmt)
      increase that number by three  here in order to also
      cover signed -> unsigned converions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
-  limit = tree_to_hwi (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
+  limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
   limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
   source_expr =  find_bswap_1 (stmt, &n, limit);
 

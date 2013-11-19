@@ -4538,7 +4538,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							NULL_TREE))
 		  {
 		    unsigned int size
-		      = tree_to_hwi (TYPE_SIZE (gnu_return_type));
+		      = TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
 		    unsigned int i = BITS_PER_UNIT;
 		    enum machine_mode mode;
 

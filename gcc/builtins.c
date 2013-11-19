@@ -366,8 +366,8 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{
-	  align = (tree_to_hwi (TREE_OPERAND (addr, 1))
-		   & -tree_to_hwi (TREE_OPERAND (addr, 1)));
+	  align = (TREE_INT_CST_LOW (TREE_OPERAND (addr, 1))
+		    & -TREE_INT_CST_LOW (TREE_OPERAND (addr, 1)));
 	  align *= BITS_PER_UNIT;
 	  addr = TREE_OPERAND (addr, 0);
 	}
@@ -384,7 +384,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	    {
 	      unsigned HOST_WIDE_INT step = 1;
 	      if (TMR_STEP (exp))
-		step = tree_to_hwi (TMR_STEP (exp));
+		step = TREE_INT_CST_LOW (TMR_STEP (exp));
 	      align = MIN (align, (step & -step) * BITS_PER_UNIT);
 	    }
 	  if (TMR_INDEX2 (exp))
@@ -508,7 +508,7 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
   else if (TREE_CODE (exp) == INTEGER_CST)
     {
       *alignp = BIGGEST_ALIGNMENT;
-      *bitposp = ((tree_to_hwi (exp) * BITS_PER_UNIT)
+      *bitposp = ((TREE_INT_CST_LOW (exp) * BITS_PER_UNIT)
 		  & (BIGGEST_ALIGNMENT - 1));
       return true;
     }
@@ -716,7 +716,7 @@ target_char_cast (tree cst, char *p)
     return 1;
 
   /* Do not care if it fits or not right here.  */
-  val = tree_to_hwi (cst);
+  val = TREE_INT_CST_LOW (cst);
 
   if (CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT)
     val &= (((unsigned HOST_WIDE_INT) 1) << CHAR_TYPE_SIZE) - 1;
@@ -4462,7 +4462,7 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
 
   /* Compute the alignment.  */
   align = (alloca_with_align
-	   ? tree_to_hwi (CALL_EXPR_ARG (exp, 1))
+	   ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1))
 	   : BIGGEST_ALIGNMENT);
 
   /* Allocate the desired space.  */
@@ -8610,7 +8610,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
       if (CHAR_BIT != 8 || BITS_PER_UNIT != 8 || HOST_BITS_PER_WIDE_INT > 64)
 	return NULL_TREE;
 
-      cval = tree_to_hwi (c);
+      cval = TREE_INT_CST_LOW (c);
       cval &= 0xff;
       cval |= cval << 8;
       cval |= cval << 16;

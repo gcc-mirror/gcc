@@ -950,7 +950,7 @@ static void
 pp_c_character_constant (c_pretty_printer *pp, tree c)
 {
   pp_quote (pp);
-  pp_c_char (pp, (unsigned) tree_to_hwi (c));
+  pp_c_char (pp, (unsigned) TREE_INT_CST_LOW (c));
   pp_quote (pp);
 }
 

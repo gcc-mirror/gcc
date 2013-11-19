@@ -887,7 +887,7 @@ ccp_finalize (void)
 	  align = (tem & -tem);
 	  if (align > 1)
 	    set_ptr_info_alignment (get_ptr_info (name), align,
-				    (tree_to_hwi (val->value)
+				    (TREE_INT_CST_LOW (val->value)
 				     & (align - 1)));
 	}
       else
@@ -1717,7 +1717,7 @@ evaluate_stmt (gimple stmt)
 	    case BUILT_IN_ALLOCA:
 	    case BUILT_IN_ALLOCA_WITH_ALIGN:
 	      align = (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN
-		       ? tree_to_hwi (gimple_call_arg (stmt, 1))
+		       ? TREE_INT_CST_LOW (gimple_call_arg (stmt, 1))
 		       : BIGGEST_ALIGNMENT);
 	      val.lattice_val = CONSTANT;
 	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
@@ -1924,7 +1924,7 @@ fold_builtin_alloca_with_align (gimple stmt)
       || !tree_fits_uhwi_p (arg))
     return NULL_TREE;
 
-  size = tree_to_hwi (arg);
+  size = TREE_INT_CST_LOW (arg);
 
   /* Heuristic: don't fold large allocas.  */
   threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
@@ -1942,7 +1942,7 @@ fold_builtin_alloca_with_align (gimple stmt)
   n_elem = size * 8 / BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
   var = create_tmp_var (array_type, NULL);
-  DECL_ALIGN (var) = tree_to_hwi (gimple_call_arg (stmt, 1));
+  DECL_ALIGN (var) = TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
   {
     struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
     if (pi != NULL && !pi->pt.anything)

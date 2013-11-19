@@ -903,6 +903,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_INT_CST_EXT_NUNITS(NODE) \
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
+#define TREE_INT_CST_LOW(NODE) \
+  ((unsigned HOST_WIDE_INT) TREE_INT_CST_ELT (NODE, 0))
 
 #define INT_CST_LT(A, B) (wi::lts_p (wi::to_widest (A), wi::to_widest (B)))
 #define INT_CST_LE(A, B) (wi::les_p (wi::to_widest (A), wi::to_widest (B)))
@@ -1023,7 +1025,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    Note that we have to bypass the use of TREE_OPERAND to access
    that field to avoid infinite recursion in expanding the macros.  */
 #define VL_EXP_OPERAND_LENGTH(NODE) \
-  ((int)tree_to_hwi (VL_EXP_CHECK (NODE)->exp.operands[0]))
+  ((int)TREE_INT_CST_LOW (VL_EXP_CHECK (NODE)->exp.operands[0]))
 
 /* Nonzero if is_gimple_debug() may possibly hold.  */
 #define MAY_HAVE_DEBUG_STMTS    (flag_var_tracking_assignments)
@@ -1125,7 +1127,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define CHREC_VAR(NODE)           TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
 #define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
 #define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 2)
-#define CHREC_VARIABLE(NODE)      tree_to_hwi (CHREC_VAR (NODE))
+#define CHREC_VARIABLE(NODE)      TREE_INT_CST_LOW (CHREC_VAR (NODE))
 
 /* LABEL_EXPR accessor. This gives access to the label associated with
    the given label expression.  */
@@ -3172,16 +3174,6 @@ cst_fits_uhwi_p (const_tree x)
     return false;
 
   return TREE_INT_CST_NUNITS (x) == 1 && TREE_INT_CST_ELT (x, 0) >= 0;
-}
-
-/* Return the HOST_WIDE_INT least significant bits of CST.  No
-   checking is done to assure that it fits.  It is assumed that one of
-   tree_fits_uhwi_p or tree_fits_shwi_p was done before this call. */
-
-static inline HOST_WIDE_INT
-tree_to_hwi (const_tree cst)
-{
-  return TREE_INT_CST_ELT (cst, 0);
 }
 
 /* Compute the number of operands in an expression node NODE.  For

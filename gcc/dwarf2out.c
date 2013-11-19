@@ -16348,12 +16348,15 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	   type will be necessary to re-interpret it unambiguously.  */
 	else if (prec < HOST_BITS_PER_WIDE_INT)
 	  {
+	    unsigned HOST_WIDE_INT mask
+	      = ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
 	    add_AT_unsigned (subrange_die, bound_attr,
-		  	     zext_hwi (tree_to_hwi (bound), prec));
+		  	     TREE_INT_CST_LOW (bound) & mask);
 	  }
-	else if (prec == HOST_BITS_PER_WIDE_INT 
+	else if (prec == HOST_BITS_PER_WIDE_INT
 		 || (cst_fits_uhwi_p (bound) && wi::ges_p (bound, 0)))
-	  add_AT_unsigned (subrange_die, bound_attr, tree_to_hwi (bound));
+	  add_AT_unsigned (subrange_die, bound_attr,
+		  	   TREE_INT_CST_LOW (bound));
 	else
 	  add_AT_wide (subrange_die, bound_attr, bound);
       }
@@ -17508,7 +17511,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	       This should be re-worked to use correct signed/unsigned
 	       int/double tags for all cases, instead of always treating as
 	       signed.  */
-	    add_AT_int (enum_die, DW_AT_const_value, tree_to_hwi (value));
+	    add_AT_int (enum_die, DW_AT_const_value, TREE_INT_CST_LOW (value));
 	  else
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
 	       that here.  */

@@ -12072,7 +12072,7 @@ avr_expand_builtin (tree exp, rtx target,
       if (TREE_CODE (CALL_EXPR_ARG (exp, 1)) != INTEGER_CST)
         break;
 
-      int rbit = (int) tree_to_hwi (CALL_EXPR_ARG (exp, 1));
+      int rbit = (int) TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1));
 
       if (rbit >= (int) GET_MODE_FBIT (mode))
         {
@@ -12256,7 +12256,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             /* Inserting bits known at compile time is easy and can be
                performed by AND and OR with appropriate masks.  */
 
-            int bits = tree_to_hwi (tbits);
+            int bits = TREE_INT_CST_LOW (tbits);
             int mask_ior = 0, mask_and = 0xff;
 
             for (i = 0; i < 8; i++)

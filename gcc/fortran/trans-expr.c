@@ -2632,7 +2632,7 @@ gfc_string_to_single_character (tree len, tree str, int kind)
       || !POINTER_TYPE_P (TREE_TYPE (str)))
     return NULL_TREE;
 
-  if (tree_to_hwi (len) == 1)
+  if (TREE_INT_CST_LOW (len) == 1)
     {
       str = fold_convert (gfc_get_pchar_type (kind), str);
       return build_fold_indirect_ref_loc (input_location, str);

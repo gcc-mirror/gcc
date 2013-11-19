@@ -321,7 +321,7 @@ delegitimize_mem_from_attrs (rtx x)
 	      {
 		offset += bitpos / BITS_PER_UNIT;
 		if (toffset)
-		  offset += tree_to_hwi (toffset);
+		  offset += TREE_INT_CST_LOW (toffset);
 	      }
 	    break;
 	  }

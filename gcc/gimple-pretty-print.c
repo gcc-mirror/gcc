@@ -734,7 +734,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_string (buffer, " [ ");
 
       /* Get the transaction code properties.  */
-      props = tree_to_hwi (t);
+      props = TREE_INT_CST_LOW (t);
 
       if (props & PR_INSTRUMENTEDCODE)
 	pp_string (buffer, "instrumentedCode ");

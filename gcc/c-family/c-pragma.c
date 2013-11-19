@@ -151,7 +151,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     {
       if (TREE_CODE (x) != INTEGER_CST)
 	GCC_BAD ("invalid constant in %<#pragma pack%> - ignored");
-      align = tree_to_hwi (x);
+      align = TREE_INT_CST_LOW (x);
       action = set;
       if (pragma_lex (&x) != CPP_CLOSE_PAREN)
 	GCC_BAD ("malformed %<#pragma pack%> - ignored");
@@ -183,7 +183,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 	    {
 	      if (TREE_CODE (x) != INTEGER_CST)
 		GCC_BAD ("invalid constant in %<#pragma pack%> - ignored");
-	      align = tree_to_hwi (x);
+	      align = TREE_INT_CST_LOW (x);
 	      if (align == -1)
 		action = set;
 	    }

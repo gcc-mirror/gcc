@@ -1370,11 +1370,11 @@ compare_access_positions (const void *a, const void *b)
 	return TYPE_PRECISION (f2->type) - TYPE_PRECISION (f1->type);
       /* Put any integral type with non-full precision last.  */
       else if (INTEGRAL_TYPE_P (f1->type)
-	       && (tree_to_hwi (TYPE_SIZE (f1->type))
+	       && (TREE_INT_CST_LOW (TYPE_SIZE (f1->type))
 		   != TYPE_PRECISION (f1->type)))
 	return 1;
       else if (INTEGRAL_TYPE_P (f2->type)
-	       && (tree_to_hwi (TYPE_SIZE (f2->type))
+	       && (TREE_INT_CST_LOW (TYPE_SIZE (f2->type))
 		   != TYPE_PRECISION (f2->type)))
 	return -1;
       /* Stabilize the sort.  */
@@ -1436,7 +1436,7 @@ make_fancy_name_1 (tree expr)
       index = TREE_OPERAND (expr, 1);
       if (TREE_CODE (index) != INTEGER_CST)
 	break;
-      sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, tree_to_hwi (index));
+      sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, TREE_INT_CST_LOW (index));
       obstack_grow (&name_obstack, buffer, strlen (buffer));
       break;
 
@@ -1450,7 +1450,7 @@ make_fancy_name_1 (tree expr)
 	{
 	  obstack_1grow (&name_obstack, '$');
 	  sprintf (buffer, HOST_WIDE_INT_PRINT_DEC,
-		   tree_to_hwi (TREE_OPERAND (expr, 1)));
+		   TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)));
 	  obstack_grow (&name_obstack, buffer, strlen (buffer));
 	}
       break;

@@ -233,5 +233,5 @@ uses_jv_markobj_p (tree dtable)
      point in asserting unless we hit the bad case.  */
   gcc_assert (!flag_reduced_reflection || TARGET_VTABLE_USES_DESCRIPTORS == 0);
   v = (*CONSTRUCTOR_ELTS (dtable))[3].value;
-  return (PROCEDURE_OBJECT_DESCRIPTOR == tree_to_hwi (v));
+  return (PROCEDURE_OBJECT_DESCRIPTOR == TREE_INT_CST_LOW (v));
 }

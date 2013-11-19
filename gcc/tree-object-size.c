@@ -400,9 +400,9 @@ alloc_object_size (const_gimple call, int object_size_type)
     {
       tree p = TREE_VALUE (alloc_size);
 
-      arg1 = tree_to_hwi (TREE_VALUE (p))-1;
+      arg1 = TREE_INT_CST_LOW (TREE_VALUE (p))-1;
       if (TREE_CHAIN (p))
-        arg2 = tree_to_hwi (TREE_VALUE (TREE_CHAIN (p)))-1;
+        arg2 = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (p)))-1;
     }
 
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)

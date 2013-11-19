@@ -4036,7 +4036,7 @@ rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
 	     it's word aligned.  */
 	  if (rs6000_vector_alignment_reachable (type, is_packed))
             {
-              int element_size = tree_to_hwi (TYPE_SIZE (type));
+              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
 
               if (element_size == 64 || element_size == 32)
                return true;
@@ -11553,7 +11553,7 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
-	  || tree_to_hwi (arg1) & ~0x1f)
+	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return const0_rtx;
@@ -11598,7 +11598,7 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    cr6_form_int = tree_to_hwi (cr6_form);
+    cr6_form_int = TREE_INT_CST_LOW (cr6_form);
 
   gcc_assert (mode0 == mode1);
 
@@ -12089,7 +12089,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 4-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || tree_to_hwi (arg2) & ~0xf)
+	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
 	  return const0_rtx;
@@ -12107,7 +12107,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 2-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || tree_to_hwi (arg2) & ~0x3)
+	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument 3 must be a 2-bit unsigned literal");
 	  return const0_rtx;
@@ -12119,7 +12119,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 1-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || tree_to_hwi (arg2) & ~0x1)
+	  || TREE_INT_CST_LOW (arg2) & ~0x1)
 	{
 	  error ("argument 3 must be a 1-bit unsigned literal");
 	  return const0_rtx;
@@ -12323,7 +12323,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	*expandedp = true;
 	STRIP_NOPS (arg2);
 	if (TREE_CODE (arg2) != INTEGER_CST
-	    || tree_to_hwi (arg2) & ~0x3)
+	    || TREE_INT_CST_LOW (arg2) & ~0x3)
 	  {
 	    error ("argument to %qs must be a 2-bit unsigned literal", d->name);
 	    return const0_rtx;
@@ -12570,7 +12570,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 	return const0_rtx;
 
       if (TREE_CODE (arg0) != INTEGER_CST
-	  || tree_to_hwi (arg0) & ~0x3)
+	  || TREE_INT_CST_LOW (arg0) & ~0x3)
 	{
 	  error ("argument to dss must be a 2-bit unsigned literal");
 	  return const0_rtx;
@@ -12779,7 +12779,7 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
     case SPE_BUILTIN_EVSTWWO:
       arg1 = CALL_EXPR_ARG (exp, 2);
       if (TREE_CODE (arg1) != INTEGER_CST
-	  || tree_to_hwi (arg1) & ~0x1f)
+	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return const0_rtx;
@@ -12905,7 +12905,7 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    form_int = tree_to_hwi (form);
+    form_int = TREE_INT_CST_LOW (form);
 
   gcc_assert (mode0 == mode1);
 
@@ -12977,7 +12977,7 @@ spe_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    form_int = tree_to_hwi (form);
+    form_int = TREE_INT_CST_LOW (form);
 
   gcc_assert (mode0 == mode1);
 

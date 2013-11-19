@@ -2077,8 +2077,8 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
     {
       unsigned HOST_WIDE_INT mh, ml;
       int pre_shift, post_shift;
-      unsigned HOST_WIDE_INT d = tree_to_hwi (oprnd1)
-				 & GET_MODE_MASK (TYPE_MODE (itype));
+      unsigned HOST_WIDE_INT d = (TREE_INT_CST_LOW (oprnd1)
+				  & GET_MODE_MASK (TYPE_MODE (itype)));
       tree t1, t2, t3, t4;
 
       if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
@@ -2194,7 +2194,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
     {
       unsigned HOST_WIDE_INT ml;
       int post_shift;
-      HOST_WIDE_INT d = tree_to_hwi (oprnd1);
+      HOST_WIDE_INT d = TREE_INT_CST_LOW (oprnd1);
       unsigned HOST_WIDE_INT abs_d;
       bool add = false;
       tree t1, t2, t3, t4;

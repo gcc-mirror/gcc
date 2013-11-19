@@ -1450,7 +1450,7 @@ gfc_get_dtype (tree type)
       if (tree_int_cst_lt (gfc_max_array_element_size, size))
 	gfc_fatal_error ("Array element size too big at %C");
 
-      i += tree_to_hwi (size) << GFC_DTYPE_SIZE_SHIFT;
+      i += TREE_INT_CST_LOW (size) << GFC_DTYPE_SIZE_SHIFT;
     }
   dtype = build_int_cst (gfc_array_index_type, i);
 

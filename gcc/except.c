@@ -2381,7 +2381,7 @@ collect_one_action_chain (action_hash_type ar_hash, eh_region region)
 	      {
 		/* Retrieve the filter from the head of the filter list
 		   where we have stored it (see assign_filter_values).  */
-		int filter = tree_to_hwi (TREE_VALUE (c->filter_list));
+		int filter = TREE_INT_CST_LOW (TREE_VALUE (c->filter_list));
 		next = add_action_record (ar_hash, filter, 0);
 	      }
 	    else
@@ -2408,7 +2408,7 @@ collect_one_action_chain (action_hash_type ar_hash, eh_region region)
 		flt_node = c->filter_list;
 		for (; flt_node; flt_node = TREE_CHAIN (flt_node))
 		  {
-		    int filter = tree_to_hwi (TREE_VALUE (flt_node));
+		    int filter = TREE_INT_CST_LOW (TREE_VALUE (flt_node));
 		    next = add_action_record (ar_hash, filter, next);
 		  }
 	      }

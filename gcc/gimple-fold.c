@@ -1153,7 +1153,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  if (binfo)
 	    {
 	      HOST_WIDE_INT token
-		= tree_to_hwi (OBJ_TYPE_REF_TOKEN (callee));
+		= TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
 	      tree fndecl = gimple_get_virt_method_for_binfo (token, binfo);
 	      if (fndecl)
 		{
@@ -3064,7 +3064,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		  offset = woffset.to_shwi ();
 		  /* TODO: This code seems wrong, multiply then check
 		     to see if it fits.  */
-		  offset *= tree_to_hwi (unit_size);
+		  offset *= TREE_INT_CST_LOW (unit_size);
 		  offset *= BITS_PER_UNIT;
 		  
 		  base = TREE_OPERAND (t, 0);
@@ -3298,7 +3298,7 @@ gimple_val_nonnegative_real_p (tree val)
 	      arg1 = gimple_call_arg (def_stmt, 1);
 
 	      if (TREE_CODE (arg1) == INTEGER_CST
-		  && (tree_to_hwi (arg1) & 1) == 0)
+		  && (TREE_INT_CST_LOW (arg1) & 1) == 0)
 		return true;
 
 	      break;

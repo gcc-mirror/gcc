@@ -3037,11 +3037,11 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   if (TREE_TYPE (op) != elem_type)
     return false;
 
-  size = tree_to_hwi (TYPE_SIZE (elem_type));
-  n = tree_to_hwi (op1) / size;
+  size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+  n = TREE_INT_CST_LOW (op1) / size;
   if (n != 1)
     return false;
-  idx = tree_to_hwi (op2) / size;
+  idx = TREE_INT_CST_LOW (op2) / size;
 
   if (code == VEC_PERM_EXPR)
     {
@@ -3051,7 +3051,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
       if (TREE_CODE (m) != VECTOR_CST)
 	return false;
       nelts = VECTOR_CST_NELTS (m);
-      idx = tree_to_hwi (VECTOR_CST_ELT (m, idx));
+      idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
       idx %= 2 * nelts;
       if (idx < nelts)
 	{
@@ -3095,7 +3095,7 @@ is_combined_permutation_identity (tree mask1, tree mask2)
     {
       tree val = VECTOR_CST_ELT (mask, i);
       gcc_assert (TREE_CODE (val) == INTEGER_CST);
-      j = tree_to_hwi (val) & (2 * nelts - 1);
+      j = TREE_INT_CST_LOW (val) & (2 * nelts - 1);
       if (j == i)
 	maybe_identity2 = false;
       else if (j == i + nelts)
@@ -3240,7 +3240,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
   nelts = TYPE_VECTOR_SUBPARTS (type);
   elem_type = TREE_TYPE (type);
-  elem_size = tree_to_hwi (TYPE_SIZE (elem_type));
+  elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
   sel = XALLOCAVEC (unsigned char, nelts);
   orig = NULL;
@@ -3275,9 +3275,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    return false;
 	  orig = ref;
 	}
-      if (tree_to_hwi (TREE_OPERAND (op1, 1)) != elem_size)
+      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
 	return false;
-      sel[i] = tree_to_hwi (TREE_OPERAND (op1, 2)) / elem_size;
+      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
       if (sel[i] != i) maybe_ident = false;
     }
   if (i < nelts)

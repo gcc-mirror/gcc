@@ -514,7 +514,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
   for (; TREE_CODE (ref) == COMPONENT_REF; ref = TREE_OPERAND (ref, 0))
     {
       off = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1));
-      bit_offset = tree_to_hwi (off);
+      bit_offset = TREE_INT_CST_LOW (off);
       gcc_assert (bit_offset % BITS_PER_UNIT == 0);
 
       *delta += bit_offset / BITS_PER_UNIT;

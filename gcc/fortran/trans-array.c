@@ -1685,7 +1685,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 	      init = gfc_build_addr_expr (NULL_TREE, init);
 
-	      size = tree_to_hwi (TYPE_SIZE_UNIT (type));
+	      size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
 	      bound = build_int_cst (size_type_node, n * size);
 	      tmp = build_call_expr_loc (input_location,
 					 builtin_decl_explicit (BUILT_IN_MEMCPY),

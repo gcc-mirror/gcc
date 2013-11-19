@@ -2282,7 +2282,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
   if (kind == GCCPK_COMMON
       && DECL_SIZE_UNIT (t)
       && TREE_CODE (DECL_SIZE_UNIT (t)) == INTEGER_CST)
-    size = tree_to_hwi (DECL_SIZE_UNIT (t));
+    size = TREE_INT_CST_LOW (DECL_SIZE_UNIT (t));
   else
     size = 0;
 

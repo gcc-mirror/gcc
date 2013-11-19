@@ -1545,7 +1545,7 @@ write_integer_cst (const tree cst)
 
 	  done = integer_zerop (d);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, n, tmp);
-	  c = hwint_to_ascii (tree_to_hwi (tmp), 10, ptr,
+	  c = hwint_to_ascii (TREE_INT_CST_LOW (tmp), 10, ptr,
 			      done ? 1 : chunk_digits);
 	  ptr -= c;
 	  count += c;
@@ -1557,7 +1557,7 @@ write_integer_cst (const tree cst)
   else
     {
       /* A small num.  */
-      unsigned HOST_WIDE_INT low = tree_to_hwi (cst);
+      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (cst);
 
       if (sign < 0)
 	{

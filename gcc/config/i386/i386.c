@@ -5475,7 +5475,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
       if (attr)
 	{
-	  regparm = tree_to_hwi (TREE_VALUE (TREE_VALUE (attr)));
+	  regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
 	  return regparm;
 	}
     }
@@ -5602,7 +5602,7 @@ ix86_keep_aggregate_return_pointer (tree fntype)
       attr = lookup_attribute ("callee_pop_aggregate_return",
 			       TYPE_ATTRIBUTES (fntype));
       if (attr)
-	return (tree_to_hwi (TREE_VALUE (TREE_VALUE (attr))) == 0);
+	return (TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))) == 0);
 
       /* For 32-bit MS-ABI the default is to keep aggregate
          return pointer.  */
