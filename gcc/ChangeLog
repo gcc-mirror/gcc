@@ -1,3 +1,9 @@
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57517
+	* tree-predcom.c (combinable_refs_p): Verify the combination
+	is always executed when the refs are.
+
 2013-11-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c: Include ssa-iterators.h
