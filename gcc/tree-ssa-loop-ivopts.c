@@ -3207,10 +3207,20 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
 
    TODO -- there must be some better way.  This all is quite crude.  */
 
+enum ainc_type
+{
+  AINC_PRE_INC,		/* Pre increment.  */
+  AINC_PRE_DEC,		/* Pre decrement.  */
+  AINC_POST_INC,	/* Post increment.  */
+  AINC_POST_DEC,	/* Post decrement.  */
+  AINC_NONE		/* Also the number of auto increment types.  */
+};
+
 typedef struct address_cost_data_s
 {
   HOST_WIDE_INT min_offset, max_offset;
   unsigned costs[2][2][2][2];
+  unsigned ainc_costs[AINC_NONE];
 } *address_cost_data;
 
 
@@ -3228,6 +3238,7 @@ get_address_cost (bool symbol_present, bool var_present,
   static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
   static bool has_predec[MAX_MACHINE_MODE], has_postdec[MAX_MACHINE_MODE];
   unsigned cost, acost, complexity;
+  enum ainc_type autoinc_type;
   bool offset_p, ratio_p, autoinc;
   HOST_WIDE_INT s_offset, autoinc_offset, msize;
   unsigned HOST_WIDE_INT mask;
@@ -3299,33 +3310,49 @@ get_address_cost (bool symbol_present, bool var_present,
       reg0 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
       reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
 
-      if (USE_LOAD_PRE_DECREMENT (mem_mode) 
+      if (USE_LOAD_PRE_DECREMENT (mem_mode)
 	  || USE_STORE_PRE_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_PRE_DEC (address_mode, reg0);
 	  has_predec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
+
+	  if (has_predec[mem_mode])
+	    data->ainc_costs[AINC_PRE_DEC]
+	      = address_cost (addr, mem_mode, as, speed);
 	}
-      if (USE_LOAD_POST_DECREMENT (mem_mode) 
+      if (USE_LOAD_POST_DECREMENT (mem_mode)
 	  || USE_STORE_POST_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_POST_DEC (address_mode, reg0);
 	  has_postdec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
+
+	  if (has_postdec[mem_mode])
+	    data->ainc_costs[AINC_POST_DEC]
+	      = address_cost (addr, mem_mode, as, speed);
 	}
-      if (USE_LOAD_PRE_INCREMENT (mem_mode) 
+      if (USE_LOAD_PRE_INCREMENT (mem_mode)
 	  || USE_STORE_PRE_DECREMENT (mem_mode))
 	{
 	  addr = gen_rtx_PRE_INC (address_mode, reg0);
 	  has_preinc[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
+
+	  if (has_preinc[mem_mode])
+	    data->ainc_costs[AINC_PRE_INC]
+	      = address_cost (addr, mem_mode, as, speed);
 	}
-      if (USE_LOAD_POST_INCREMENT (mem_mode) 
+      if (USE_LOAD_POST_INCREMENT (mem_mode)
 	  || USE_STORE_POST_INCREMENT (mem_mode))
 	{
 	  addr = gen_rtx_POST_INC (address_mode, reg0);
 	  has_postinc[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
+
+	  if (has_postinc[mem_mode])
+	    data->ainc_costs[AINC_POST_INC]
+	      = address_cost (addr, mem_mode, as, speed);
 	}
       for (i = 0; i < 16; i++)
 	{
@@ -3451,21 +3478,31 @@ get_address_cost (bool symbol_present, bool var_present,
   s_offset = offset;
 
   autoinc = false;
+  autoinc_type = AINC_NONE;
   msize = GET_MODE_SIZE (mem_mode);
   autoinc_offset = offset;
   if (stmt_after_inc)
     autoinc_offset += ratio * cstep;
   if (symbol_present || var_present || ratio != 1)
     autoinc = false;
-  else if ((has_postinc[mem_mode] && autoinc_offset == 0
-	       && msize == cstep)
-	   || (has_postdec[mem_mode] && autoinc_offset == 0
+  else
+    {
+      if (has_postinc[mem_mode] && autoinc_offset == 0
+	  && msize == cstep)
+	autoinc_type = AINC_POST_INC;
+      else if (has_postdec[mem_mode] && autoinc_offset == 0
 	       && msize == -cstep)
-	   || (has_preinc[mem_mode] && autoinc_offset == msize
+	autoinc_type = AINC_POST_DEC;
+      else if (has_preinc[mem_mode] && autoinc_offset == msize
 	       && msize == cstep)
-	   || (has_predec[mem_mode] && autoinc_offset == -msize
-	       && msize == -cstep))
-    autoinc = true;
+	autoinc_type = AINC_PRE_INC;
+      else if (has_predec[mem_mode] && autoinc_offset == -msize
+	       && msize == -cstep)
+	autoinc_type = AINC_PRE_DEC;
+
+      if (autoinc_type != AINC_NONE)
+	autoinc = true;
+    }
 
   cost = 0;
   offset_p = (s_offset != 0
@@ -3482,7 +3519,10 @@ get_address_cost (bool symbol_present, bool var_present,
 
   if (may_autoinc)
     *may_autoinc = autoinc;
-  acost = data->costs[symbol_present][var_present][offset_p][ratio_p];
+  if (autoinc)
+    acost = data->ainc_costs[autoinc_type];
+  else
+    acost = data->costs[symbol_present][var_present][offset_p][ratio_p];
   complexity = (symbol_present != 0) + (var_present != 0) + offset_p + ratio_p;
   return new_cost (cost + acost, complexity);
 }
