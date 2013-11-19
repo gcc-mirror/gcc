@@ -1,3 +1,24 @@
+2013-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/23_containers/forward_list/allocator/noexcept.cc: Change
+	to compile-only test. Adjust swap overload to handle rebound
+	allocators.
+	* testsuite/23_containers/map/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multiset/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/set/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/vector/allocator/swap.cc: Add elements
+	before swapping.
+
 2013-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/experimental/string_view (_S_max_size): Remove.
