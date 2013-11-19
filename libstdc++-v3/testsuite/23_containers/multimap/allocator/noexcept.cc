@@ -15,10 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
 #include <map>
-#include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
 struct T { int i; };
@@ -31,14 +31,11 @@ struct U { };
 
 namespace __gnu_test
 {
-  inline void
-  swap(propagating_allocator<std::pair<const T, U>, true>& l,
-       propagating_allocator<std::pair<const T, U>, true>& r)
-  noexcept(false)
-  {
-    typedef uneq_allocator<std::pair<const T, U>> base_alloc;
-    swap(static_cast<base_alloc&>(l), static_cast<base_alloc&>(r));
-  }
+  template<typename U>
+    inline void
+    swap(propagating_allocator<U, true>& l, propagating_allocator<U, true>& r)
+    noexcept(false)
+    { }
 }
 
 using __gnu_test::propagating_allocator;
@@ -72,12 +69,4 @@ void test03()
   test_type v2(alloc_type(2));
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
   static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
-}
-
-int main()
-{
-  test01();
-  test02();
-  test03();
-  return 0;
 }
