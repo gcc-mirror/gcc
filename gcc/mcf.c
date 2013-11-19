@@ -472,11 +472,13 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
 
   /* Each basic_block will be split into 2 during vertex transformation.  */
   int fnum_vertices_after_transform =  2 * n_basic_blocks_for_fn (cfun);
-  int fnum_edges_after_transform = n_edges + n_basic_blocks_for_fn (cfun);
+  int fnum_edges_after_transform =
+    n_edges_for_fn (cfun) + n_basic_blocks_for_fn (cfun);
 
   /* Count the new SOURCE and EXIT vertices to be added.  */
   int fmax_num_vertices =
-    fnum_vertices_after_transform + n_edges + n_basic_blocks_for_fn (cfun) + 2;
+    (fnum_vertices_after_transform + n_edges_for_fn (cfun)
+     + n_basic_blocks_for_fn (cfun) + 2);
 
   /* In create_fixup_graph: Each basic block and edge can be split into 3
      edges. Number of balance edges = n_basic_blocks. So after
@@ -486,7 +488,8 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
      max_edges = 2 * (4 * n_basic_blocks + 3 * n_edges)
      = 8 * n_basic_blocks + 6 * n_edges
      < 8 * n_basic_blocks + 8 * n_edges.  */
-  int fmax_num_edges = 8 * (n_basic_blocks_for_fn (cfun) + n_edges);
+  int fmax_num_edges = 8 * (n_basic_blocks_for_fn (cfun) +
+			    n_edges_for_fn (cfun));
 
   /* Initial num of vertices in the fixup graph.  */
   fixup_graph->num_vertices = n_basic_blocks_for_fn (cfun);

@@ -643,7 +643,7 @@ haifa_find_rgns (void)
   /* Allocate and initialize variables for the first traversal.  */
   max_hdr = XNEWVEC (int, last_basic_block);
   dfs_nr = XCNEWVEC (int, last_basic_block);
-  stack = XNEWVEC (edge_iterator, n_edges);
+  stack = XNEWVEC (edge_iterator, n_edges_for_fn (cfun));
 
   inner = sbitmap_alloc (last_basic_block);
   bitmap_ones (inner);

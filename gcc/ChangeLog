@@ -1,3 +1,26 @@
+2013-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (n_edges_for_function): Rename macro to...
+	(n_edges_for_fn): ...this.
+	(n_edges): Eliminate macro as work towards making uses of
+	cfun be explicit.
+
+	* cfg.c (init_flow): Update for renaming of "n_edges_for_function"
+	to "n_edges_for_fn".
+
+	* cfg.c (unchecked_make_edge): Remove usage of n_edges macro.
+	(clear_edges): Likewise.
+	(free_edge): Likewise.
+	* cfghooks.c (dump_flow_info): Likewise.
+	* cprop.c (is_too_expensive): Likewise.
+	* df-core.c (df_worklist_dataflow_doublequeue): Likewise.
+	* gcse.c (is_too_expensive): Likewise.
+	(prune_insertions_deletions): Likewise.
+	* mcf.c (create_fixup_graph): Likewise.
+	* sched-rgn.c (haifa_find_rgns): Likewise.
+	* tree-cfg.c (gimple_dump_cfg): Likewise.
+	* var-tracking.c (variable_tracking_main_1): Likewise.
+
 2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Fix over

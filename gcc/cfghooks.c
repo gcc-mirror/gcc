@@ -324,7 +324,7 @@ dump_flow_info (FILE *file, int flags)
   basic_block bb;
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks_for_fn (cfun),
-	   n_edges);
+	   n_edges_for_fn (cfun));
   FOR_ALL_BB (bb)
     dump_bb (file, bb, 0, flags);
 
