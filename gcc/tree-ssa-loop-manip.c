@@ -231,7 +231,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 	  bool pred_visited;
 
 	  /* We should have met DEF_BB along the way.  */
-	  gcc_assert (pred != ENTRY_BLOCK_PTR);
+	  gcc_assert (pred != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
 	  if (pred_loop_depth >= def_loop_depth)
 	    {

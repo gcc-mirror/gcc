@@ -4865,7 +4865,7 @@ static bool
 split_live_ranges_for_shrink_wrap (void)
 {
   basic_block bb, call_dom = NULL;
-  basic_block first = single_succ (ENTRY_BLOCK_PTR);
+  basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   rtx insn, last_interesting_insn = NULL;
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
@@ -4910,7 +4910,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       bb = queue.pop ();
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && bitmap_set_bit (&reachable, e->dest->index))
 	  queue.quick_push (e->dest);
     }

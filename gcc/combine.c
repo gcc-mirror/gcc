@@ -1157,7 +1157,7 @@ combine_instructions (rtx f, unsigned int nregs)
   setup_incoming_promotions (first);
   /* Allow the entry block and the first block to fall into the same EBB.
      Conceptually the incoming promotions are assigned to the entry block.  */
-  last_bb = ENTRY_BLOCK_PTR;
+  last_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   create_log_links ();
   FOR_EACH_BB (this_basic_block)
@@ -1209,7 +1209,7 @@ combine_instructions (rtx f, unsigned int nregs)
   label_tick = label_tick_ebb_start = 1;
   init_reg_last ();
   setup_incoming_promotions (first);
-  last_bb = ENTRY_BLOCK_PTR;
+  last_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   FOR_EACH_BB (this_basic_block)
     {
@@ -1592,7 +1592,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
       /* If this register is undefined at the start of the file, we can't
 	 say what its contents were.  */
       && ! REGNO_REG_SET_P
-           (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), REGNO (x))
+	   (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb), REGNO (x))
       && HWI_COMPUTABLE_MODE_P (GET_MODE (x)))
     {
       reg_stat_type *rsp = &reg_stat[REGNO (x)];
@@ -3938,7 +3938,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	ni2dest = SET_DEST (newi2pat);
 
       for (insn = NEXT_INSN (i3);
-	   insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
+	   insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		    || insn != BB_HEAD (this_basic_block->next_bb));
 	   insn = NEXT_INSN (insn))
 	{
@@ -4054,7 +4054,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	      && ! find_reg_note (i2, REG_UNUSED,
 				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
 	    for (temp = NEXT_INSN (i2);
-		 temp && (this_basic_block->next_bb == EXIT_BLOCK_PTR
+		 temp
+		 && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 			  || BB_HEAD (this_basic_block) != temp);
 		 temp = NEXT_INSN (temp))
 	      if (temp != i3 && INSN_P (temp))
@@ -9468,7 +9469,8 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
 	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
 	      && REG_N_SETS (REGNO (x)) == 1
 	      && !REGNO_REG_SET_P
-	          (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), REGNO (x)))))
+		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
+		   REGNO (x)))))
     {
       *nonzero &= rsp->last_set_nonzero_bits;
       return NULL;
@@ -9535,7 +9537,8 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
 	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
 	      && REG_N_SETS (REGNO (x)) == 1
 	      && !REGNO_REG_SET_P
-	          (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), REGNO (x)))))
+		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
+		   REGNO (x)))))
     {
       *result = rsp->last_set_sign_bit_copies;
       return NULL;
@@ -12564,7 +12567,8 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 	      || (! (regno >= FIRST_PSEUDO_REGISTER
 		     && REG_N_SETS (regno) == 1
 		     && (!REGNO_REG_SET_P
-			 (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), regno)))
+			 (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
+			  regno)))
 		  && rsp->last_set_label > tick))
 	  {
 	    if (replace)
@@ -12679,7 +12683,7 @@ get_last_value (const_rtx x)
 	  && (regno < FIRST_PSEUDO_REGISTER
 	      || REG_N_SETS (regno) != 1
 	      || REGNO_REG_SET_P
-		 (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), regno))))
+		 (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb), regno))))
     return 0;
 
   /* If the value was set in a later insn than the ones we are processing,
@@ -13740,7 +13744,7 @@ distribute_links (struct insn_link *links)
 	 since most links don't point very far away.  */
 
       for (insn = NEXT_INSN (link->insn);
-	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
+	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		     || BB_HEAD (this_basic_block->next_bb) != insn));
 	   insn = NEXT_INSN (insn))
 	if (DEBUG_INSN_P (insn))

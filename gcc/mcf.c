@@ -508,7 +508,7 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
 
   /* Compute constants b, k_pos, k_neg used in the cost function calculation.
      b = sqrt(avg_vertex_weight(cfg)); k_pos = b; k_neg = 50b.  */
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     total_vertex_weight += bb->count;
 
   sqrt_avg_vertex_weight = mcf_sqrt (total_vertex_weight /
@@ -523,7 +523,7 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
   if (dump_file)
     fprintf (dump_file, "\nVertex transformation:\n");
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
   {
     /* v'->v'': index1->(index1+1).  */
     i = 2 * bb->index;
@@ -1125,7 +1125,8 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
   if (dump_file)
     fprintf (dump_file, "\nadjust_cfg_counts():\n");
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       i = 2 * bb->index;
 
@@ -1238,8 +1239,10 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
         }
     }
 
-  ENTRY_BLOCK_PTR->count = sum_edge_counts (ENTRY_BLOCK_PTR->succs);
-  EXIT_BLOCK_PTR->count = sum_edge_counts (EXIT_BLOCK_PTR->preds);
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
+		     sum_edge_counts (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
+		     sum_edge_counts (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
   /* Compute edge probabilities.  */
   FOR_ALL_BB (bb)

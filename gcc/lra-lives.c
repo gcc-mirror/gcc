@@ -1002,7 +1002,8 @@ lra_create_live_ranges (bool all_p)
   for (i = n_blocks_inverted - 1; i >= 0; --i)
     {
       bb = BASIC_BLOCK (post_order_rev_cfg[i]);
-      if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb
+	  == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       process_bb_lives (bb, curr_point);
     }

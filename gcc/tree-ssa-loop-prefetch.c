@@ -1282,7 +1282,7 @@ may_use_storent_in_loop_p (struct loop *loop)
 
       FOR_EACH_VEC_ELT (exits, i, exit)
 	if ((exit->flags & EDGE_ABNORMAL)
-	    && exit->dest == EXIT_BLOCK_PTR)
+	    && exit->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  ret = false;
 
       exits.release ();

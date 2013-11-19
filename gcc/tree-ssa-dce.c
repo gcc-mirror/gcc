@@ -328,9 +328,9 @@ mark_control_dependent_edges_necessary (basic_block bb, bool ignore_self)
   unsigned edge_number;
   bool skipped = false;
 
-  gcc_assert (bb != EXIT_BLOCK_PTR);
+  gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-  if (bb == ENTRY_BLOCK_PTR)
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return;
 
   EXECUTE_IF_SET_IN_BITMAP (cd->get_edges_dependent_on (bb->index),
@@ -636,7 +636,7 @@ propagate_necessity (bool aggressive)
 	     containing STMT is control dependent, but only if we haven't
 	     already done so.  */
 	  basic_block bb = gimple_bb (stmt);
-	  if (bb != ENTRY_BLOCK_PTR
+	  if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	      && !bitmap_bit_p (visited_control_parents, bb->index))
 	    mark_control_dependent_edges_necessary (bb, false);
 	}
@@ -742,7 +742,7 @@ propagate_necessity (bool aggressive)
 		      if (!bitmap_bit_p (last_stmt_necessary, arg_bb->index))
 			mark_last_stmt_necessary (arg_bb);
 		    }
-		  else if (arg_bb != ENTRY_BLOCK_PTR
+		  else if (arg_bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 		           && !bitmap_bit_p (visited_control_parents,
 					 arg_bb->index))
 		    mark_control_dependent_edges_necessary (arg_bb, true);
@@ -1076,7 +1076,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	 fake edges in the dominator tree.  */
       if (e)
         ;
-      else if (! post_dom_bb || post_dom_bb == EXIT_BLOCK_PTR)
+      else if (! post_dom_bb || post_dom_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	e = EDGE_SUCC (bb, 0);
       else
         e = forward_edge_to_pdom (EDGE_SUCC (bb, 0), post_dom_bb);
@@ -1168,7 +1168,8 @@ eliminate_unnecessary_stmts (void)
 
      as desired.  */
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
-  h = get_all_dominated_blocks (CDI_DOMINATORS, single_succ (ENTRY_BLOCK_PTR));
+  h = get_all_dominated_blocks (CDI_DOMINATORS,
+				single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
   while (h.length ())
     {
@@ -1265,7 +1266,8 @@ eliminate_unnecessary_stmts (void)
       find_unreachable_blocks ();
 
       /* Delete all unreachable basic blocks in reverse dominator order.  */
-      for (bb = EXIT_BLOCK_PTR->prev_bb; bb != ENTRY_BLOCK_PTR; bb = prev_bb)
+      for (bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
+	   bb != ENTRY_BLOCK_PTR_FOR_FN (cfun); bb = prev_bb)
 	{
 	  prev_bb = bb->prev_bb;
 

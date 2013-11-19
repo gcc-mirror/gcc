@@ -495,7 +495,7 @@ find_single_block_region (bool ebbs_p)
             BLOCK_TO_BB (bb->index) = i - RGN_BLOCKS (nr_regions);
             i++;
 
-            if (bb->next_bb == EXIT_BLOCK_PTR
+	    if (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
                 || LABEL_P (BB_HEAD (bb->next_bb)))
               break;
 
@@ -665,7 +665,7 @@ haifa_find_rgns (void)
 
   /* DFS traversal to find inner loops in the cfg.  */
 
-  current_edge = ei_start (single_succ (ENTRY_BLOCK_PTR)->succs);
+  current_edge = ei_start (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun))->succs);
   sp = -1;
 
   while (1)
@@ -840,7 +840,7 @@ haifa_find_rgns (void)
 	      /* If we exited the loop early, then I is the header of
 		 a non-reducible loop and we should quit processing it
 		 now.  */
-	      if (jbb != EXIT_BLOCK_PTR)
+	      if (jbb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
 	      /* I is a header of an inner loop, or block 0 in a subroutine
@@ -858,7 +858,7 @@ haifa_find_rgns (void)
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (e->dest != EXIT_BLOCK_PTR)
+		if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		  --degree[e->dest->index];
 
 	      /* Estimate # insns, and count # blocks in the region.  */
@@ -875,7 +875,7 @@ haifa_find_rgns (void)
 		    /* Leaf nodes have only a single successor which must
 		       be EXIT_BLOCK.  */
 		    if (single_succ_p (jbb)
-			&& single_succ (jbb) == EXIT_BLOCK_PTR)
+			&& single_succ (jbb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		      {
 			queue[++tail] = jbb->index;
 			bitmap_set_bit (in_queue, jbb->index);
@@ -893,7 +893,7 @@ haifa_find_rgns (void)
 
 		  FOR_EACH_EDGE (e, ei, bb->preds)
 		    {
-		      if (e->src == ENTRY_BLOCK_PTR)
+		      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 			continue;
 
 		      node = e->src->index;
@@ -954,7 +954,7 @@ haifa_find_rgns (void)
 
 		      /* See discussion above about nodes not marked as in
 			 this loop during the initial DFS traversal.  */
-		      if (e->src == ENTRY_BLOCK_PTR
+		      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 			  || max_hdr[node] != loop_head)
 			{
 			  tail = -1;
@@ -1006,7 +1006,7 @@ haifa_find_rgns (void)
 			  queue[head] = queue[tail--];
 
 			  FOR_EACH_EDGE (e, ei, BASIC_BLOCK (child)->succs)
-			    if (e->dest != EXIT_BLOCK_PTR)
+			    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 			      --degree[e->dest->index];
 			}
 		      else
@@ -1026,7 +1026,7 @@ haifa_find_rgns (void)
 		     This may provide several smaller regions instead
 		     of one too_large region.  */
                   FOR_EACH_EDGE (e, ei, bb->succs)
-                    if (e->dest != EXIT_BLOCK_PTR)
+		    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
                       bitmap_set_bit (extended_rgn_header, e->dest->index);
                 }
 	    }
@@ -1305,7 +1305,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	      BLOCK_TO_BB (bbn) = 0;
 
 	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (bbn)->succs)
-		if (e->dest != EXIT_BLOCK_PTR)
+		if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		  degree[e->dest->index]--;
 
 	      if (!large)
@@ -1362,7 +1362,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		      idx++;
 
 		      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (succn)->succs)
-			if (e->dest != EXIT_BLOCK_PTR)
+			if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 			  degree[e->dest->index]--;
 		    }
 		}
@@ -1426,7 +1426,7 @@ compute_dom_prob_ps (int bb)
       edge out_edge;
       edge_iterator out_ei;
 
-      if (in_edge->src == ENTRY_BLOCK_PTR)
+      if (in_edge->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       pred_bb = BLOCK_TO_BB (in_edge->src->index);
@@ -2663,7 +2663,7 @@ propagate_deps (int bb, struct deps_desc *pred_deps)
   FOR_EACH_EDGE (e, ei, block->succs)
     {
       /* Only bbs "below" bb, in the same region, are interesting.  */
-      if (e->dest == EXIT_BLOCK_PTR
+      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  || CONTAINING_RGN (block->index) != CONTAINING_RGN (e->dest->index)
 	  || BLOCK_TO_BB (e->dest->index) <= bb)
 	continue;
@@ -3454,10 +3454,11 @@ rgn_add_block (basic_block bb, basic_block after)
   extend_regions ();
   bitmap_set_bit (&not_in_df, bb->index);
 
-  if (after == 0 || after == EXIT_BLOCK_PTR)
+  if (after == 0 || after == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       rgn_make_new_region_out_of_new_block (bb);
-      RGN_DONT_CALC_DEPS (nr_regions - 1) = (after == EXIT_BLOCK_PTR);
+      RGN_DONT_CALC_DEPS (nr_regions - 1) = (after
+					     == EXIT_BLOCK_PTR_FOR_FN (cfun));
     }
   else
     {

@@ -1098,7 +1098,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
   vec<tree> iv_map;
 
-  if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
+  if (GBB_BB (gbb) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return next_e;
 
   nb_loops = number_of_loops (cfun);

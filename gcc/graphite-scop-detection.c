@@ -448,7 +448,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
   gimple stmt;
 
   /* XXX: ENTRY_BLOCK_PTR could be optimized in later steps.  */
-  basic_block entry_block = ENTRY_BLOCK_PTR;
+  basic_block entry_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   stmt = harmful_stmt_in_bb (entry_block, outermost_loop, bb);
   result.difficult = (stmt != NULL);
   result.exit = NULL;
@@ -1030,7 +1030,7 @@ create_sese_edges (vec<sd_region> regions)
   FOR_EACH_VEC_ELT (regions, i, s)
     /* Don't handle multiple edges exiting the function.  */
     if (!find_single_exit_edge (s)
-	&& s->exit != EXIT_BLOCK_PTR)
+	&& s->exit != EXIT_BLOCK_PTR_FOR_FN (cfun))
       create_single_exit_edge (s);
 
   unmark_exit_edges (regions);
@@ -1402,7 +1402,8 @@ build_scops (vec<scop_p> *scops)
   stack_vec<sd_region, 3> regions;
 
   canonicalize_loop_closed_ssa_form ();
-  build_scops_1 (single_succ (ENTRY_BLOCK_PTR), ENTRY_BLOCK_PTR->loop_father,
+  build_scops_1 (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+		 ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father,
 		 &regions, loop);
   create_sese_edges (regions);
   build_graphite_scops (regions, scops);

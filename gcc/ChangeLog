@@ -1,3 +1,520 @@
+2013-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (ENTRY_BLOCK_PTR_FOR_FUNCTION): Rename macro to...
+	(EXIT_BLOCK_PTR_FOR_FUNCTION): ...this.
+	(ENTRY_BLOCK_PTR_FOR_FN): Renamed macro to...
+	(EXIT_BLOCK_PTR_FOR_FN): ...this.
+	(ENTRY_BLOCK_PTR): Eliminate macro as work towards making uses of
+	cfun be explicit.
+	(EXIT_BLOCK_PTR): Likewise.
+	(FOR_ALL_BB): Rework for now to eliminate use of "ENTRY_BLOCK_PTR".
+	(FOR_ALL_BB_FN): Update for renaming of
+	"ENTRY_BLOCK_PTR_FOR_FUNCTION" to "ENTRY_BLOCK_PTR_FOR_FN".
+
+	* cfg.c (init_flow): Likewise.
+	(check_bb_profile): Likewise.
+	* cfganal.c (pre_and_rev_post_order_compute_fn): Likewise.
+	* cfgcleanup.c (walk_to_nondebug_insn): Likewise.
+	* cfghooks.c (account_profile_record): Likewise.
+	* cfgloop.c (init_loops_structure): Likewise.
+	* cgraphbuild.c (record_eh_tables): Likewise.
+	(compute_call_stmt_bb_frequency): Likewise.
+	* ipa-inline-analysis.c (compute_bb_predicates): Likewise.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* predict.c (maybe_hot_frequency_p): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	* tree-inline.c (initialize_cfun): Likewise.
+	(copy_cfg_body): Likewise.
+	(copy_body): Likewise.
+	(tree_function_versioning): Likewise.
+
+	* bb-reorder.c (add_labels_and_missing_jumps): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(duplicate_computed_gotos): Remove usage of EXIT_BLOCK_PTR macro.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Remove uses of
+	macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(connect_traces): Likewise.
+	(rest_of_handle_reorder_blocks): Remove usage of EXIT_BLOCK_PTR macro.
+	(bb_to_key): Remove usage of ENTRY_BLOCK_PTR macro.
+	(fix_crossing_conditional_branches): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	(find_traces_1_round): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(fix_up_fall_thru_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(find_traces): Remove usage of ENTRY_BLOCK_PTR macro.
+	(fix_up_crossing_landing_pad): Remove usage of EXIT_BLOCK_PTR macro.
+	(rotate_loop): Likewise.
+	* bt-load.c (migrate_btr_def): Remove usage of ENTRY_BLOCK_PTR macro.
+	* cfg.c (clear_aux_for_edges): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(alloc_aux_for_edges): Likewise.
+	(clear_bb_flags): Remove usage of ENTRY_BLOCK_PTR macro.
+	(cached_make_edge): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(compact_blocks): Likewise.
+	(clear_edges): Likewise.
+	* cfganal.c (single_pred_before_succ_order): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(bitmap_union_of_succs): Remove usage of EXIT_BLOCK_PTR macro.
+	(bitmap_union_of_preds): Remove usage of ENTRY_BLOCK_PTR macro.
+	(bitmap_intersection_of_succs): Remove usage of EXIT_BLOCK_PTR macro.
+	(bitmap_intersection_of_preds): Remove usage of ENTRY_BLOCK_PTR macro.
+	(inverted_post_order_compute): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(compute_dominance_frontiers_1): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(post_order_compute): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(connect_infinite_loops_to_exit): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	(remove_fake_edges): Remove usage of ENTRY_BLOCK_PTR macro.
+	(add_noreturn_fake_exit_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(find_pdom): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(remove_fake_exit_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(verify_edge_list): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(print_edge_list): Likewise.
+	(create_edge_list): Likewise.
+	(find_unreachable_blocks): Remove usage of ENTRY_BLOCK_PTR macro.
+	(mark_dfs_back_edges): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	* cfgbuild.c (find_bb_boundaries): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(find_many_sub_basic_blocks): Remove usage of EXIT_BLOCK_PTR macro.
+	(make_edges): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* cfgcleanup.c (delete_unreachable_blocks): Likewise.
+	(try_optimize_cfg): Likewise.
+	(try_head_merge_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(try_crossjump_to_edge): Remove usage of ENTRY_BLOCK_PTR macro.
+	(try_crossjump_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(merge_blocks_move): Remove usage of ENTRY_BLOCK_PTR macro.
+	(outgoing_edges_match): Remove usage of EXIT_BLOCK_PTR macro.
+	(try_forward_edges): Likewise.
+	(try_simplify_condjump): Likewise.
+	* cfgexpand.c (gimple_expand_cfg): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(construct_exit_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(construct_init_block): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(expand_gimple_basic_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(expand_gimple_tailcall): Likewise.
+	* cfghooks.c (can_duplicate_block_p): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(tidy_fallthru_edges): Likewise.
+	(verify_flow_info): Likewise.
+	* cfgloop.c (flow_bb_inside_loop_p): Likewise.
+	(num_loop_branches): Remove usage of EXIT_BLOCK_PTR macro.
+	(disambiguate_multiple_latches): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(get_loop_exit_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(bb_loop_header_p): Remove usage of ENTRY_BLOCK_PTR macro.
+	(get_loop_body_in_bfs_order): Remove usage of EXIT_BLOCK_PTR macro.
+	(get_loop_body_in_dom_order): Likewise.
+	(get_loop_body): Likewise.
+	* cfgloopanal.c (mark_irreducible_loops): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* cfgloopmanip.c (create_preheader): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(remove_path): Remove usage of EXIT_BLOCK_PTR macro.
+	(fix_bb_placement): Likewise.
+	* cfgrtl.c (rtl_block_empty_p): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(rtl_can_remove_branch_p): Remove usage of EXIT_BLOCK_PTR macro.
+	(cfg_layout_split_edge): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(rtl_flow_call_edges_add): Remove usage of EXIT_BLOCK_PTR macro.
+	(cfg_layout_can_merge_blocks_p): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(cfg_layout_redirect_edge_and_branch): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(fixup_fallthru_exit_predecessor): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(fixup_reorder_chain): Likewise.
+	(relink_block_chain): Likewise.
+	(cfg_layout_delete_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(rtl_verify_bb_layout): Remove usage of ENTRY_BLOCK_PTR macro.
+	(cfg_layout_duplicate_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(force_one_exit_fallthru): Likewise.
+	(rtl_verify_fallthru): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(rtl_verify_edges): Likewise.
+	(commit_edge_insertions): Likewise.
+	(commit_one_edge_insertion): Likewise.
+	(rtl_split_edge): Likewise.
+	(force_nonfallthru_and_redirect): Likewise.
+	(outof_cfg_layout_mode): Remove usage of EXIT_BLOCK_PTR macro.
+	(skip_insns_after_block): Likewise.
+	(fixup_partition_crossing): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(purge_dead_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(rtl_can_merge_blocks): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(contains_no_active_insn_p): Likewise.
+	(emit_insn_at_entry): Remove usage of ENTRY_BLOCK_PTR macro.
+	(entry_of_function): Likewise.
+	(last_bb_in_partition): Remove usage of EXIT_BLOCK_PTR macro.
+	(fixup_new_cold_bb): Likewise.
+	(patch_jump_insn): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(block_label): Likewise.
+	(could_fall_through): Likewise.
+	(can_fallthru): Likewise.
+	* cgraphbuild.c (cgraph_rebuild_references): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(rebuild_cgraph_edges): Likewise.
+	* cgraphunit.c (init_lowered_empty_function): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(expand_thunk): Remove usage of EXIT_BLOCK_PTR macro.
+	* combine.c (get_last_value): Remove usage of ENTRY_BLOCK_PTR macro.
+	(distribute_links): Remove usage of EXIT_BLOCK_PTR macro.
+	(get_last_value_validate): Remove usage of ENTRY_BLOCK_PTR macro.
+	(try_combine): Remove usage of EXIT_BLOCK_PTR macro.
+	(reg_num_sign_bit_copies_for_combine): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(reg_nonzero_bits_for_combine): Likewise.
+	(set_nonzero_bits_and_sign_copies): Likewise.
+	(combine_instructions): Likewise.
+	* cprop.c (one_cprop_pass): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(bypass_conditional_jumps): Likewise.
+	(bypass_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(find_implicit_sets): Likewise.
+	(cprop_jump): Likewise.
+	* cse.c (cse_cc_succs): Likewise.
+	(cse_find_path): Likewise.
+	* df-problems.c (df_lr_confluence_0): Likewise.
+	* df-scan.c (df_entry_block_defs_collect): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(df_exit_block_uses_collect): Remove usage of EXIT_BLOCK_PTR macro.
+	* dominance.c (iterate_fix_dominators): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(calc_idoms): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(determine_dominators_for_sons): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(calc_dfs_tree): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(prune_bbs_to_update_dominators): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(calc_dfs_tree_nonrec): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	* domwalk.c (cmp_bb_postorder): Likewise.
+	* dse.c (dse_step1): Remove usage of EXIT_BLOCK_PTR macro.
+	* except.c (finish_eh_generation): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(sjlj_emit_function_enter): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Remove uses of
+	macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(reposition_prologue_and_epilogue_notes): Remove usage of
+	EXIT_BLOCK_PTR macro.
+	(convert_jumps_to_returns): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(regno_clobbered_at_setjmp): Remove usage of ENTRY_BLOCK_PTR macro.
+	(next_block_for_reg): Remove usage of EXIT_BLOCK_PTR macro.
+	* gcse.c (hoist_code): Remove usage of ENTRY_BLOCK_PTR macro.
+	(update_bb_reg_pressure): Remove usage of EXIT_BLOCK_PTR macro.
+	(compute_code_hoist_vbeinout): Likewise.
+	(should_hoist_expr_to_dom): Remove usage of ENTRY_BLOCK_PTR macro.
+	(pre_expr_reaches_here_p_work): Likewise.
+	* gimple-iterator.c (gsi_commit_edge_inserts): Likewise.
+	(gimple_find_edge_insert_loc): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* graph.c (draw_cfg_nodes_for_loop): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	* graphite-clast-to-gimple.c (translate_clast_user): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* graphite-scop-detection.c (build_scops): Likewise.
+	(create_sese_edges): Remove usage of EXIT_BLOCK_PTR macro.
+	(scopdet_basic_block_info): Remove usage of ENTRY_BLOCK_PTR macro.
+	* haifa-sched.c (restore_bb_notes): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	(unlink_bb_notes): Likewise.
+	(create_check_block_twin): Likewise.
+	(init_before_recovery): Likewise.
+	(sched_extend_bb): Likewise.
+	(priority): Likewise.
+	* hw-doloop.c (reorder_loops): Likewise.
+	(discover_loop): Likewise.
+	* ifcvt.c (dead_or_predicable): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(find_if_case_1): Remove usage of EXIT_BLOCK_PTR macro.
+	(block_has_only_trap): Likewise.
+	(cond_exec_find_if_block): Likewise.
+	(merge_if_block): Likewise.
+	* ipa-inline-analysis.c (param_change_prob): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(record_modified): Likewise.
+	* ipa-pure-const.c (execute_warn_function_noreturn): Remove usage of
+	EXIT_BLOCK_PTR macro.
+	(local_pure_const): Likewise.
+	* ipa-split.c (split_function): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(find_split_points): Likewise.
+	(consider_split): Likewise.
+	(find_return_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(verify_non_ssa_vars): Remove usage of ENTRY_BLOCK_PTR macro.
+	* ira-build.c (ira_loop_tree_body_rev_postorder): Likewise.
+	* ira-color.c (print_loop_title): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	* ira-emit.c (entered_from_non_parent_p): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(ira_emit): Remove usage of EXIT_BLOCK_PTR macro.
+	* ira-int.h (ira_assert): Remove usage of ENTRY_BLOCK_PTR macro.
+	* ira.c (split_live_ranges_for_shrink_wrap): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* lcm.c (compute_rev_insert_delete): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(compute_nearerout): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(compute_farthest): Likewise.
+	(compute_available): Likewise.
+	(compute_insert_delete): Remove usage of EXIT_BLOCK_PTR macro.
+	(compute_laterin): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(compute_earliest): Likewise.
+	(compute_antinout_edge): Likewise.
+	* loop-iv.c (simplify_using_initial_values): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* loop-unswitch.c (unswitch_loop): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	* lra-assigns.c (find_hard_regno_for): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	* lra-constraints.c (lra_inheritance): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	* lra-lives.c (lra_create_live_ranges): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* lra.c (has_nonexceptional_receiver): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	* lto-streamer-in.c (input_function): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* mcf.c (adjust_cfg_counts): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(create_fixup_graph): Remove usage of ENTRY_BLOCK_PTR macro.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	(create_pre_exit): Remove usage of EXIT_BLOCK_PTR macro.
+	* modulo-sched.c (rest_of_handle_sms): Likewise.
+	(canon_loop): Likewise.
+	* omp-low.c (build_omp_regions): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	* postreload-gcse.c (eliminate_partially_redundant_loads): Remove uses
+	of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* predict.c (rebuild_frequencies): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(propagate_freq): Remove usage of EXIT_BLOCK_PTR macro.
+	(estimate_bb_frequencies): Remove usage of ENTRY_BLOCK_PTR macro.
+	(tree_estimate_probability_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(expensive_function_p): Remove usage of ENTRY_BLOCK_PTR macro.
+	(tree_bb_level_predictions): Remove usage of EXIT_BLOCK_PTR macro.
+	(counts_to_freqs): Remove usage of ENTRY_BLOCK_PTR macro.
+	(apply_return_prediction): Remove usage of EXIT_BLOCK_PTR macro.
+	(estimate_loops): Remove usage of ENTRY_BLOCK_PTR macro.
+	(gimple_predict_edge): Likewise.
+	(probably_never_executed): Likewise.
+	* profile.c (find_spanning_tree): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(branch_prob): Likewise.
+	(compute_branch_probabilities): Likewise.
+	(compute_frequency_overlap): Remove usage of ENTRY_BLOCK_PTR macro.
+	(is_inconsistent): Remove usage of EXIT_BLOCK_PTR macro.
+	(read_profile_edge_counts): Remove usage of ENTRY_BLOCK_PTR macro.
+	(set_bb_counts): Likewise.
+	(correct_negative_edge_counts): Likewise.
+	(get_exec_counts): Likewise.
+	(instrument_values): Likewise.
+	(instrument_edges): Likewise.
+	* reg-stack.c (convert_regs): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(compensate_edges): Remove usage of ENTRY_BLOCK_PTR macro.
+	(convert_regs_exit): Remove usage of EXIT_BLOCK_PTR macro.
+	(convert_regs_entry): Remove usage of ENTRY_BLOCK_PTR macro.
+	(reg_to_stack): Likewise.
+	* regs.h (REG_N_SETS): Likewise.
+	* reload.c (find_dummy_reload): Likewise.
+	(combine_reloads): Likewise.
+	(push_reload): Likewise.
+	* reload1.c (has_nonexceptional_receiver): Remove usage of
+	EXIT_BLOCK_PTR macro.
+	* resource.c (mark_target_live_regs): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(find_basic_block): Likewise.
+	* sched-ebb.c (ebb_add_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(schedule_ebbs): Likewise.
+	* sched-int.h (sel_sched_p): Likewise.
+	* sched-rgn.c (compute_dom_prob_ps): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(rgn_add_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(haifa_find_rgns): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(propagate_deps): Remove usage of EXIT_BLOCK_PTR macro.
+	(extend_rgns): Likewise.
+	(find_single_block_region): Likewise.
+	* sel-sched-ir.c (sel_remove_loop_preheader): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(setup_nop_and_exit_insns): Remove usage of EXIT_BLOCK_PTR macro.
+	(sel_create_recovery_block): Likewise.
+	(bb_ends_ebb_p): Likewise.
+	(sel_bb_end): Likewise.
+	(sel_bb_head): Likewise.
+	(free_lv_sets): Likewise.
+	(init_lv_sets): Likewise.
+	(tidy_control_flow): Likewise.
+	(maybe_tidy_empty_bb): Likewise.
+	* sel-sched-ir.h (_succ_iter_cond): Likewise.
+	(_succ_iter_start): Likewise.
+	(sel_bb_empty_or_nop_p): Likewise.
+	(get_loop_exit_edges_unique_dests): Likewise.
+	(inner_loop_header_p): Likewise.
+	* sel-sched.c (create_block_for_bookkeeping): Likewise.
+	(find_block_for_bookkeeping): Likewise.
+	* store-motion.c (remove_reachable_equiv_notes): Likewise.
+	(insert_store): Likewise.
+	* trans-mem.c (ipa_tm_transform_clone): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(tm_memopt_compute_available): Remove usage of EXIT_BLOCK_PTR macro.
+	(ipa_tm_scan_irr_function): Remove usage of ENTRY_BLOCK_PTR macro.
+	(gate_tm_init): Likewise.
+	(tm_region_init): Likewise.
+	* tree-cfg.c (execute_fixup_cfg): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(execute_warn_function_return): Remove usage of EXIT_BLOCK_PTR macro.
+	(split_critical_edges): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(print_loops): Remove usage of ENTRY_BLOCK_PTR macro.
+	(move_sese_region_to_fn): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(gimple_redirect_edge_and_branch): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(gimple_verify_flow_info): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(remove_edge_and_dominated_blocks): Remove usage of EXIT_BLOCK_PTR
+	macro.
+	(make_edges): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(gimple_flow_call_edges_add): Remove usage of EXIT_BLOCK_PTR macro.
+	(make_blocks): Remove usage of ENTRY_BLOCK_PTR macro.
+	(build_gimple_cfg): Likewise.
+	(gimple_duplicate_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(gimple_can_merge_blocks_p): Likewise.
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* tree-complex.c (update_parameter_components): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* tree-if-conv.c (get_loop_body_in_if_conv_order): Remove usage of
+	EXIT_BLOCK_PTR macro.
+	* tree-inline.c (tree_function_versioning): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(delete_unreachable_blocks_update_callgraph): Likewise.
+	(initialize_cfun): Likewise.
+	(copy_cfg_body): Remove usage of ENTRY_BLOCK_PTR macro.
+	(copy_edges_for_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(remap_ssa_name): Remove usage of ENTRY_BLOCK_PTR macro.
+	* tree-into-ssa.c (update_ssa): Likewise.
+	(maybe_register_def): Remove usage of EXIT_BLOCK_PTR macro.
+	(insert_updated_phi_nodes_for): Remove usage of ENTRY_BLOCK_PTR macro.
+	(rewrite_into_ssa): Likewise.
+	(rewrite_debug_stmt_uses): Likewise.
+	* tree-outof-ssa.c (expand_phi_nodes): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* tree-profile.c (gimple_gen_ic_func_profiler): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* tree-scalar-evolution.h (block_before_loop): Likewise.
+	* tree-sra.c (sra_ipa_reset_debug_stmts): Likewise.
+	(dump_dereferences_table): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(analyze_caller_dereference_legality): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(propagate_dereference_distances): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(initialize_parameter_reductions): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	* tree-ssa-ccp.c (gsi_prev_dom_bb_nondebug): Likewise.
+	(optimize_stack_restore): Remove usage of EXIT_BLOCK_PTR macro.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Likewise.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(remove_dead_stmt): Remove usage of EXIT_BLOCK_PTR macro.
+	(propagate_necessity): Remove usage of ENTRY_BLOCK_PTR macro.
+	(mark_control_dependent_edges_necessary): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	* tree-ssa-dom.c (eliminate_degenerate_phis): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(tree_ssa_dominator_optimize): Remove usage of EXIT_BLOCK_PTR macro.
+	* tree-ssa-live.c (verify_live_on_entry): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(calculate_live_on_exit): Likewise.
+	(set_var_live_on_entry): Remove usage of ENTRY_BLOCK_PTR macro.
+	(loe_visit_block): Likewise.
+	* tree-ssa-live.h (live_on_exit): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(live_on_entry): Likewise.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses): Remove usage of
+	EXIT_BLOCK_PTR macro.
+	* tree-ssa-loop-manip.c (compute_live_loop_exits): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* tree-ssa-loop-niter.c (simplify_using_initial_conditions): Likewise.
+	(bound_difference): Likewise.
+	* tree-ssa-loop-prefetch.c (may_use_storent_in_loop_p): Remove usage
+	of EXIT_BLOCK_PTR macro.
+	* tree-ssa-loop-unswitch.c (simplify_using_entry_checks): Remove usage
+	of ENTRY_BLOCK_PTR macro.
+	* tree-ssa-math-opts.c (register_division_in): Likewise.
+	* tree-ssa-phiprop.c (tree_ssa_phiprop): Likewise.
+	* tree-ssa-pre.c (compute_avail): Likewise.
+	(compute_antic): Remove usage of EXIT_BLOCK_PTR macro.
+	(insert): Remove usage of ENTRY_BLOCK_PTR macro.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	(simulate_block): Remove usage of EXIT_BLOCK_PTR macro.
+	(cfg_blocks_add): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	(add_control_edge): Remove usage of EXIT_BLOCK_PTR macro.
+	* tree-ssa-reassoc.c (do_reassoc): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(build_and_add_sum): Remove usage of ENTRY_BLOCK_PTR macro.
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Likewise.
+	(execute_sink_code): Remove usage of EXIT_BLOCK_PTR macro.
+	* tree-ssa-uninit.c (find_dom): Remove usage of ENTRY_BLOCK_PTR macro.
+	(compute_control_dep_chain): Remove usage of EXIT_BLOCK_PTR macro.
+	(find_pdom): Likewise.
+	(warn_uninitialized_vars): Remove usage of ENTRY_BLOCK_PTR macro.
+	* tree-stdarg.c (reachable_at_most_once): Likewise.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(eliminate_tail_call): Likewise.
+	* tsan.c (instrument_func_entry): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	(instrument_func_exit): Remove usage of EXIT_BLOCK_PTR macro.
+	* var-tracking.c (vt_initialize): Remove uses of macros:
+	ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
+	(vt_add_function_parameter): Remove usage of ENTRY_BLOCK_PTR macro.
+	(vt_find_locations): Remove usage of EXIT_BLOCK_PTR macro.
+	(vt_stack_adjustments): Remove uses of macros: ENTRY_BLOCK_PTR,
+	EXIT_BLOCK_PTR.
+	* varasm.c (assemble_start_function): Remove usage of ENTRY_BLOCK_PTR
+	macro.
+	* config/bfin/bfin.c (hwloop_optimize): Likewise.
+	* config/nds32/nds32.c (nds32_fp_as_gp_check_available): Remove usage
+	of EXIT_BLOCK_PTR macro.
+	* config/arm/arm.c (require_pic_register): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	(arm_r3_live_at_start_p): Likewise.
+	(any_sibcall_could_use_r3): Remove usage of EXIT_BLOCK_PTR macro.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/frv/frv.c (frv_optimize_membar_global): Likewise.
+	* config/alpha/alpha.c (alpha_gp_save_rtx): Remove usage of
+	ENTRY_BLOCK_PTR macro.
+	* config/i386/i386.c (ix86_count_insn): Likewise.
+	(ix86_seh_fixup_eh_fallthru): Remove usage of EXIT_BLOCK_PTR macro.
+	(ix86_pad_short_function): Likewise.
+	(ix86_compute_frame_layout): Remove usage of ENTRY_BLOCK_PTR macro.
+	(ix86_pad_returns): Remove usage of EXIT_BLOCK_PTR macro.
+	(ix86_eax_live_at_start_p): Remove usage of ENTRY_BLOCK_PTR macro.
+	(add_condition_to_bb): Remove usage of EXIT_BLOCK_PTR macro.
+	(ix86_expand_epilogue): Likewise.
+	* config/ia64/ia64.c (ia64_asm_unwind_emit): Likewise.
+	(ia64_expand_prologue): Likewise.
+
 2013-11-19  Catherine Moore  <clm@codesourcery.com>
 
 	* doc/invoke.texi (mfix-rm7000, mno-fix-rm7000): Document.

@@ -8027,7 +8027,7 @@ frv_optimize_membar_global (basic_block bb, struct frv_io *first_io,
   /* We need to keep the membar if there is an edge to the exit block.  */
   FOR_EACH_EDGE (succ, ei, bb->succs)
   /* for (succ = bb->succ; succ != 0; succ = succ->succ_next) */
-    if (succ->dest == EXIT_BLOCK_PTR)
+    if (succ->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
       return;
 
   /* Work out the union of all successor blocks.  */

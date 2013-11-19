@@ -312,8 +312,8 @@ struct GTY(()) control_flow_graph {
 };
 
 /* Defines for accessing the fields of the CFG structure for function FN.  */
-#define ENTRY_BLOCK_PTR_FOR_FUNCTION(FN)     ((FN)->cfg->x_entry_block_ptr)
-#define EXIT_BLOCK_PTR_FOR_FUNCTION(FN)	     ((FN)->cfg->x_exit_block_ptr)
+#define ENTRY_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_entry_block_ptr)
+#define EXIT_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_exit_block_ptr)
 #define basic_block_info_for_function(FN)    ((FN)->cfg->x_basic_block_info)
 #define n_basic_blocks_for_fn(FN)	     ((FN)->cfg->x_n_basic_blocks)
 #define n_edges_for_fn(FN)		     ((FN)->cfg->x_n_edges)
@@ -327,8 +327,6 @@ struct GTY(()) control_flow_graph {
   ((*basic_block_info_for_function (FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
-#define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
-#define EXIT_BLOCK_PTR		(cfun->cfg->x_exit_block_ptr)
 #define basic_block_info	(cfun->cfg->x_basic_block_info)
 #define last_basic_block	(cfun->cfg->x_last_basic_block)
 #define label_to_block_map	(cfun->cfg->x_label_to_block_map)
@@ -378,10 +376,10 @@ struct GTY(()) control_flow_graph {
    exit block).  */
 
 #define FOR_ALL_BB(BB) \
-  for (BB = ENTRY_BLOCK_PTR; BB; BB = BB->next_bb)
+  for (BB = ENTRY_BLOCK_PTR_FOR_FN (cfun); BB; BB = BB->next_bb)
 
 #define FOR_ALL_BB_FN(BB, FN) \
-  for (BB = ENTRY_BLOCK_PTR_FOR_FUNCTION (FN); BB; BB = BB->next_bb)
+  for (BB = ENTRY_BLOCK_PTR_FOR_FN (FN); BB; BB = BB->next_bb)
 
 
 /* Stuff for recording basic block info.  */

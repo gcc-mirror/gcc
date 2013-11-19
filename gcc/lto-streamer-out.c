@@ -1594,7 +1594,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
   streamer_write_hwi (ob, -1);
 
-  bb = ENTRY_BLOCK_PTR;
+  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   while (bb->next_bb)
     {
       streamer_write_hwi (ob, bb->next_bb->index);

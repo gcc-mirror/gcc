@@ -3600,7 +3600,7 @@ hwloop_optimize (hwloop_info loop)
 
       if (single_pred_p (bb)
 	  && single_pred_edge (bb)->flags & EDGE_FALLTHRU
-	  && single_pred (bb) != ENTRY_BLOCK_PTR)
+	  && single_pred (bb) != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  bb = single_pred (bb);
 	  last_insn = BB_END (bb);

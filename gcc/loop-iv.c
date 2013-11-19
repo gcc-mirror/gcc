@@ -1937,7 +1937,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
     return;
 
   e = loop_preheader_edge (loop);
-  if (e->src == ENTRY_BLOCK_PTR)
+  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return;
 
   altered = ALLOC_REG_SET (&reg_obstack);
@@ -2068,7 +2068,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	}
 
       if (!single_pred_p (e->src)
-	  || single_pred (e->src) == ENTRY_BLOCK_PTR)
+	  || single_pred (e->src) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	break;
       e = single_pred_edge (e->src);
     }

@@ -501,7 +501,7 @@ rtx
 entry_of_function (void)
 {
   return (n_basic_blocks_for_fn (cfun) > NUM_FIXED_BLOCKS ?
-	  BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
+	  BB_HEAD (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb) : get_insns ());
 }
 
 /* Emit INSN at the entry point of the function, ensuring that it is only
@@ -509,7 +509,7 @@ entry_of_function (void)
 void
 emit_insn_at_entry (rtx insn)
 {
-  edge_iterator ei = ei_start (ENTRY_BLOCK_PTR->succs);
+  edge_iterator ei = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
   edge e = ei_safe_edge (ei);
   gcc_assert (e->flags & EDGE_FALLTHRU);
 
@@ -573,7 +573,7 @@ contains_no_active_insn_p (const_basic_block bb)
 {
   rtx insn;
 
-  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
       || !single_succ_p (bb))
     return false;
 
@@ -620,7 +620,7 @@ can_fallthru (basic_block src, basic_block target)
   edge e;
   edge_iterator ei;
 
-  if (target == EXIT_BLOCK_PTR)
+  if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return true;
   if (src->next_bb != target)
     return false;
@@ -630,7 +630,7 @@ can_fallthru (basic_block src, basic_block target)
     return false;
 
   FOR_EACH_EDGE (e, ei, src->succs)
-    if (e->dest == EXIT_BLOCK_PTR
+    if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	&& e->flags & EDGE_FALLTHRU)
       return false;
 
@@ -650,10 +650,10 @@ could_fall_through (basic_block src, basic_block target)
   edge e;
   edge_iterator ei;
 
-  if (target == EXIT_BLOCK_PTR)
+  if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return true;
   FOR_EACH_EDGE (e, ei, src->succs)
-    if (e->dest == EXIT_BLOCK_PTR
+    if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	&& e->flags & EDGE_FALLTHRU)
       return 0;
   return true;
@@ -958,7 +958,8 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
 	  /* Must be simple edge.  */
 	  && !(single_succ_edge (a)->flags & EDGE_COMPLEX)
 	  && a->next_bb == b
-	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
+	  && a != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  && b != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  /* If the jump insn has side effects,
 	     we can't kill the edge.  */
 	  && (!JUMP_P (BB_END (a))
@@ -972,7 +973,7 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
 rtx
 block_label (basic_block block)
 {
-  if (block == EXIT_BLOCK_PTR)
+  if (block == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return NULL_RTX;
 
   if (!LABEL_P (BB_HEAD (block)))
@@ -1084,13 +1085,13 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 		 INSN_UID (insn), e->dest->index, target->index);
       if (!redirect_jump (insn, block_label (target), 0))
 	{
-	  gcc_assert (target == EXIT_BLOCK_PTR);
+	  gcc_assert (target == EXIT_BLOCK_PTR_FOR_FN (cfun));
 	  return NULL;
 	}
     }
 
   /* Cannot do anything for target exit block.  */
-  else if (target == EXIT_BLOCK_PTR)
+  else if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return NULL;
 
   /* Or replace possibly complicated jump insn by simple jump insn.  */
@@ -1178,7 +1179,7 @@ patch_jump_insn (rtx insn, rtx old_label, basic_block new_bb)
       int j;
       rtx new_label = block_label (new_bb);
 
-      if (new_bb == EXIT_BLOCK_PTR)
+      if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
       if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
 	vec = XVEC (PATTERN (tmp), 0);
@@ -1211,7 +1212,7 @@ patch_jump_insn (rtx insn, rtx old_label, basic_block new_bb)
       int i, n = ASM_OPERANDS_LABEL_LENGTH (tmp);
       rtx new_label, note;
 
-      if (new_bb == EXIT_BLOCK_PTR)
+      if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
       new_label = block_label (new_bb);
 
@@ -1268,7 +1269,7 @@ patch_jump_insn (rtx insn, rtx old_label, basic_block new_bb)
 	     target is exit block on some arches.  */
 	  if (!redirect_jump (insn, block_label (new_bb), 0))
 	    {
-	      gcc_assert (new_bb == EXIT_BLOCK_PTR);
+	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun));
 	      return false;
 	    }
 	}
@@ -1324,7 +1325,8 @@ fixup_partition_crossing (edge e)
 {
   rtx note;
 
-  if (e->src == ENTRY_BLOCK_PTR || e->dest == EXIT_BLOCK_PTR)
+  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || e->dest
+      == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
   /* If we redirected an existing edge, it may already be marked
      crossing, even though the new src is missing a reg crossing note.
@@ -1392,7 +1394,7 @@ fixup_new_cold_bb (basic_block bb)
          boundary fixup by calling fixup_partition_crossing itself.  */
       if ((e->flags & EDGE_FALLTHRU)
           && BB_PARTITION (bb) != BB_PARTITION (e->dest)
-          && e->dest != EXIT_BLOCK_PTR)
+	  && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
         force_nonfallthru (e);
       else
         fixup_partition_crossing (e);
@@ -1470,7 +1472,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   /* In the case the last instruction is conditional jump to the next
      instruction, first redirect the jump itself and then continue
      by creating a basic block afterwards to redirect fallthru edge.  */
-  if (e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR
+  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
       && any_condjump_p (BB_END (e->src))
       && JUMP_LABEL (BB_END (e->src)) == BB_HEAD (e->dest))
     {
@@ -1512,7 +1515,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   else
     {
       gcc_assert (e->flags & EDGE_FALLTHRU);
-      if (e->src == ENTRY_BLOCK_PTR)
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  /* We can't redirect the entry block.  Create an empty block
 	     at the start of the function which we use to add the new
@@ -1521,16 +1524,18 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  edge_iterator ei;
 	  bool found = false;
 
-	  basic_block bb = create_basic_block (BB_HEAD (e->dest), NULL, ENTRY_BLOCK_PTR);
+	  basic_block bb = create_basic_block (BB_HEAD (e->dest), NULL,
+					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
 	  /* Change the existing edge's source to be the new block, and add
 	     a new edge from the entry block to the new block.  */
 	  e->src = bb;
-	  for (ei = ei_start (ENTRY_BLOCK_PTR->succs); (tmp = ei_safe_edge (ei)); )
+	  for (ei = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
+	       (tmp = ei_safe_edge (ei)); )
 	    {
 	      if (tmp == e)
 		{
-		  ENTRY_BLOCK_PTR->succs->unordered_remove (ei.index);
+		  ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs->unordered_remove (ei.index);
 		  found = true;
 		  break;
 		}
@@ -1541,14 +1546,15 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  gcc_assert (found);
 
 	  vec_safe_push (bb->succs, e);
-	  make_single_succ_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
+	  make_single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb,
+				 EDGE_FALLTHRU);
 	}
     }
 
   /* If e->src ends with asm goto, see if any of the ASM_OPERANDS_LABELs
      don't point to the target or fallthru label.  */
   if (JUMP_P (BB_END (e->src))
-      && target != EXIT_BLOCK_PTR
+      && target != EXIT_BLOCK_PTR_FOR_FN (cfun)
       && (e->flags & EDGE_FALLTHRU)
       && (note = extract_asm_operands (PATTERN (BB_END (e->src)))))
     {
@@ -1650,7 +1656,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
   loc = e->goto_locus;
   e->flags &= ~EDGE_FALLTHRU;
-  if (target == EXIT_BLOCK_PTR)
+  if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       if (jump_label == ret_rtx)
 	{
@@ -1784,7 +1790,7 @@ static basic_block
 last_bb_in_partition (basic_block start_bb)
 {
   basic_block bb;
-  FOR_BB_BETWEEN (bb, start_bb, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, start_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       if (BB_PARTITION (start_bb) != BB_PARTITION (bb->next_bb))
         return bb;
@@ -1820,14 +1826,15 @@ rtl_split_edge (edge edge_in)
     }
 
   /* Create the basic block note.  */
-  if (edge_in->dest != EXIT_BLOCK_PTR)
+  if (edge_in->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     before = BB_HEAD (edge_in->dest);
   else
     before = NULL_RTX;
 
   /* If this is a fall through edge to the exit block, the blocks might be
      not adjacent, and the right place is after the source.  */
-  if ((edge_in->flags & EDGE_FALLTHRU) && edge_in->dest == EXIT_BLOCK_PTR)
+  if ((edge_in->flags & EDGE_FALLTHRU)
+      && edge_in->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       before = NEXT_INSN (BB_END (edge_in->src));
       bb = create_basic_block (before, NULL, edge_in->src);
@@ -1835,7 +1842,7 @@ rtl_split_edge (edge edge_in)
     }
   else
     {
-      if (edge_in->src == ENTRY_BLOCK_PTR)
+      if (edge_in->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
         {
           bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
           BB_COPY_PARTITION (bb, edge_in->dest);
@@ -1873,7 +1880,7 @@ rtl_split_edge (edge edge_in)
 
   /* Can't allow a region crossing edge to be fallthrough.  */
   if (BB_PARTITION (bb) != BB_PARTITION (edge_in->dest)
-      && edge_in->dest != EXIT_BLOCK_PTR)
+      && edge_in->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       new_bb = force_nonfallthru (single_succ_edge (bb));
       gcc_assert (!new_bb);
@@ -1888,7 +1895,7 @@ rtl_split_edge (edge edge_in)
     }
   else
     {
-      if (edge_in->src != ENTRY_BLOCK_PTR)
+      if (edge_in->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  /* For asm goto even splitting of fallthru edge might
 	     need insn patching, as other labels might point to the
@@ -1896,7 +1903,7 @@ rtl_split_edge (edge edge_in)
 	  rtx last = BB_END (edge_in->src);
 	  if (last
 	      && JUMP_P (last)
-	      && edge_in->dest != EXIT_BLOCK_PTR
+	      && edge_in->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      && extract_asm_operands (PATTERN (last)) != NULL_RTX
 	      && patch_jump_insn (last, before, bb))
 	    df_set_bb_dirty (edge_in->src);
@@ -1943,7 +1950,7 @@ commit_one_edge_insertion (edge e)
 
   /* Figure out where to put these insns.  If the destination has
      one predecessor, insert there.  Except for the exit block.  */
-  if (single_pred_p (e->dest) && e->dest != EXIT_BLOCK_PTR)
+  if (single_pred_p (e->dest) && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       bb = e->dest;
 
@@ -1972,7 +1979,7 @@ commit_one_edge_insertion (edge e)
      the basic block.  */
   else if ((e->flags & EDGE_ABNORMAL) == 0
 	   && single_succ_p (e->src)
-	   && e->src != ENTRY_BLOCK_PTR
+	   && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	   && (!JUMP_P (BB_END (e->src))
 	       || simplejump_p (BB_END (e->src))))
     {
@@ -2025,7 +2032,7 @@ commit_one_edge_insertion (edge e)
 	 to EXIT.  */
 
       e = single_succ_edge (bb);
-      gcc_assert (e->dest == EXIT_BLOCK_PTR
+      gcc_assert (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && single_succ_p (bb) && (e->flags & EDGE_FALLTHRU));
 
       e->flags &= ~EDGE_FALLTHRU;
@@ -2057,7 +2064,8 @@ commit_edge_insertions (void)
   verify_flow_info ();
 #endif
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       edge e;
       edge_iterator ei;
@@ -2428,8 +2436,8 @@ rtl_verify_edges (void)
 	    n_fallthru++, fallthru = e;
 
 	  is_crossing = (BB_PARTITION (e->src) != BB_PARTITION (e->dest)
-			 && e->src != ENTRY_BLOCK_PTR
-			 && e->dest != EXIT_BLOCK_PTR);
+			 && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+			 && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun));
           has_crossing_edge |= is_crossing;
 	  if (e->flags & EDGE_CROSSING)
 	    {
@@ -2832,8 +2840,8 @@ rtl_verify_fallthru (void)
 		break;
 	    }
 	}
-      else if (e->src != ENTRY_BLOCK_PTR
-	       && e->dest != EXIT_BLOCK_PTR)
+      else if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	       && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  rtx insn;
 
@@ -2872,10 +2880,10 @@ rtl_verify_bb_layout (void)
   rtx x;
   int num_bb_notes;
   const rtx rtx_first = get_insns ();
-  basic_block last_bb_seen = ENTRY_BLOCK_PTR, curr_bb = NULL;
+  basic_block last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun), curr_bb = NULL;
 
   num_bb_notes = 0;
-  last_bb_seen = ENTRY_BLOCK_PTR;
+  last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   for (x = rtx_first; x; x = NEXT_INSN (x))
     {
@@ -3062,7 +3070,7 @@ purge_dead_edges (basic_block bb)
 	      ei_next (&ei);
 	      continue;
 	    }
-	  else if (e->dest != EXIT_BLOCK_PTR
+	  else if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		   && BB_HEAD (e->dest) == JUMP_LABEL (insn))
 	    /* If the destination block is the target of the jump,
 	       keep the edge.  */
@@ -3070,7 +3078,8 @@ purge_dead_edges (basic_block bb)
 	      ei_next (&ei);
 	      continue;
 	    }
-	  else if (e->dest == EXIT_BLOCK_PTR && returnjump_p (insn))
+	  else if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
+		   && returnjump_p (insn))
 	    /* If the destination block is the exit block, and this
 	       instruction is a return, then keep the edge.  */
 	    {
@@ -3319,7 +3328,7 @@ skip_insns_after_block (basic_block bb)
   rtx insn, last_insn, next_head, prev;
 
   next_head = NULL_RTX;
-  if (bb->next_bb != EXIT_BLOCK_PTR)
+  if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     next_head = BB_HEAD (bb->next_bb);
 
   for (last_insn = insn = BB_END (bb); (insn = NEXT_INSN (insn)) != 0; )
@@ -3468,7 +3477,7 @@ outof_cfg_layout_mode (void)
   basic_block bb;
 
   FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
 
   cfg_layout_finalize ();
@@ -3577,7 +3586,8 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   if (dump_file)
     {
       fprintf (dump_file, "Reordered sequence:\n");
-      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
+      for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, index =
+	   NUM_FIXED_BLOCKS;
 	   bb;
 	   bb = (basic_block) bb->aux, index++)
 	{
@@ -3595,15 +3605,15 @@ relink_block_chain (bool stay_in_cfglayout_mode)
     }
 
   /* Now reorder the blocks.  */
-  prev_bb = ENTRY_BLOCK_PTR;
-  bb = ENTRY_BLOCK_PTR->next_bb;
+  prev_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
   for (; bb; prev_bb = bb, bb = (basic_block) bb->aux)
     {
       bb->prev_bb = prev_bb;
       prev_bb->next_bb = bb;
     }
-  prev_bb->next_bb = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->prev_bb = prev_bb;
+  prev_bb->next_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb = prev_bb;
 
   /* Then, clean up the aux fields.  */
   FOR_ALL_BB (bb)
@@ -3644,7 +3654,8 @@ fixup_reorder_chain (void)
   /* First do the bulk reordering -- rechain the blocks without regard to
      the needed changes to jumps and labels.  */
 
-  for (bb = ENTRY_BLOCK_PTR->next_bb; bb; bb = (basic_block) bb->aux)
+  for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; bb; bb = (basic_block)
+       bb->aux)
     {
       if (BB_HEADER (bb))
 	{
@@ -3687,7 +3698,8 @@ fixup_reorder_chain (void)
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
 
-  for (bb = ENTRY_BLOCK_PTR->next_bb; bb ; bb = (basic_block) bb->aux)
+  for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; bb ; bb = (basic_block)
+       bb->aux)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
@@ -3728,7 +3740,7 @@ fixup_reorder_chain (void)
 
 	      /* If the old fallthru is still next, nothing to do.  */
 	      if (bb->aux == e_fall->dest
-		  || e_fall->dest == EXIT_BLOCK_PTR)
+		  || e_fall->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
 	      /* The degenerated case of conditional jump jumping to the next
@@ -3749,7 +3761,8 @@ fixup_reorder_chain (void)
 		  if (note
 		      && XINT (note, 0) < REG_BR_PROB_BASE / 2
 		      && invert_jump (bb_end_insn,
-				      (e_fall->dest == EXIT_BLOCK_PTR
+				      (e_fall->dest
+				       == EXIT_BLOCK_PTR_FOR_FN (cfun)
 				       ? NULL_RTX
 				       : label_for_bb (e_fall->dest)), 0))
 		    {
@@ -3771,7 +3784,8 @@ fixup_reorder_chain (void)
 	      /* Otherwise we can try to invert the jump.  This will
 		 basically never fail, however, keep up the pretense.  */
 	      else if (invert_jump (bb_end_insn,
-				    (e_fall->dest == EXIT_BLOCK_PTR
+				    (e_fall->dest
+				     == EXIT_BLOCK_PTR_FOR_FN (cfun)
 				     ? NULL_RTX
 				     : label_for_bb (e_fall->dest)), 0))
 		{
@@ -3793,7 +3807,7 @@ fixup_reorder_chain (void)
 		 __builtin_unreachable ()), nothing to do.  */
 	      if (! e_fall
 		  || bb->aux == e_fall->dest
-		  || e_fall->dest == EXIT_BLOCK_PTR)
+		  || e_fall->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
 	      /* Otherwise we'll have to use the fallthru fixup below.  */
@@ -3820,7 +3834,7 @@ fixup_reorder_chain (void)
 	    continue;
 
 	  /* A fallthru to exit block.  */
-	  if (e_fall->dest == EXIT_BLOCK_PTR)
+	  if (e_fall->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    continue;
 	}
 
@@ -3880,7 +3894,7 @@ fixup_reorder_chain (void)
 		  continue;
 		}
 	      dest = e->dest;
-	      if (dest == EXIT_BLOCK_PTR)
+	      if (dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		{
 		  /* Non-fallthru edges to the exit block cannot be split.  */
 		  if (!(e->flags & EDGE_FALLTHRU))
@@ -3958,13 +3972,13 @@ fixup_fallthru_exit_predecessor (void)
      value.  */
   gcc_assert (reload_completed);
 
-  e = find_fallthru_edge (EXIT_BLOCK_PTR->preds);
+  e = find_fallthru_edge (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
   if (e)
     bb = e->src;
 
   if (bb && bb->aux)
     {
-      basic_block c = ENTRY_BLOCK_PTR->next_bb;
+      basic_block c = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
 
       /* If the very first block is the one with the fall-through exit
 	 edge, we have to split that block.  */
@@ -4000,7 +4014,7 @@ force_one_exit_fallthru (void)
   edge_iterator ei;
   basic_block forwarder, bb;
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e->flags & EDGE_FALLTHRU)
       {
 	if (predecessor == NULL)
@@ -4018,7 +4032,8 @@ force_one_exit_fallthru (void)
   /* Exit has several fallthru predecessors.  Create a forwarder block for
      them.  */
   forwarder = split_edge (predecessor);
-  for (ei = ei_start (EXIT_BLOCK_PTR->preds); (e = ei_safe_edge (ei)); )
+  for (ei = ei_start (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
+       (e = ei_safe_edge (ei)); )
     {
       if (e->src == forwarder
 	  || !(e->flags & EDGE_FALLTHRU))
@@ -4166,7 +4181,7 @@ cfg_layout_duplicate_bb (basic_block bb)
   insn = duplicate_insn_chain (BB_HEAD (bb), BB_END (bb));
   new_bb = create_basic_block (insn,
 			       insn ? get_last_insn () : NULL,
-			       EXIT_BLOCK_PTR->prev_bb);
+			       EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
 
   BB_COPY_PARTITION (new_bb, bb);
   if (BB_HEADER (bb))
@@ -4313,14 +4328,14 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   if (e->dest == dest)
     return e;
 
-  if (e->src != ENTRY_BLOCK_PTR
+  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
       && (ret = try_redirect_by_replacing_jump (e, dest, true)))
     {
       df_set_bb_dirty (src);
       return ret;
     }
 
-  if (e->src == ENTRY_BLOCK_PTR
+  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
       && (e->flags & EDGE_FALLTHRU) && !(e->flags & EDGE_COMPLEX))
     {
       if (dump_file)
@@ -4447,7 +4462,7 @@ cfg_layout_delete_block (basic_block bb)
 	    set_last_insn (insn);
 	}
     }
-  if (bb->next_bb != EXIT_BLOCK_PTR)
+  if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     to = &BB_HEADER (bb->next_bb);
   else
     to = &cfg_layout_function_footer;
@@ -4504,7 +4519,7 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
   if (NEXT_INSN (BB_END (a)) != BB_HEAD (b))
     {
       edge e = find_fallthru_edge (b->succs);
-      if (e && e->dest == EXIT_BLOCK_PTR)
+      if (e && e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
     }
 
@@ -4515,7 +4530,8 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 	  && a != b
 	  /* Must be simple edge.  */
 	  && !(single_succ_edge (a)->flags & EDGE_COMPLEX)
-	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
+	  && a != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  && b != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  /* If the jump insn has side effects, we can't kill the edge.
 	     When not optimizing, try_redirect_by_replacing_jump will
 	     not allow us to redirect an edge by replacing a table jump.  */
@@ -4634,11 +4650,11 @@ static basic_block
 cfg_layout_split_edge (edge e)
 {
   basic_block new_bb =
-    create_basic_block (e->src != ENTRY_BLOCK_PTR
+    create_basic_block (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 			? NEXT_INSN (BB_END (e->src)) : get_insns (),
 			NULL_RTX, e->src);
 
-  if (e->dest == EXIT_BLOCK_PTR)
+  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
     BB_COPY_PARTITION (new_bb, e->src);
   else
     BB_COPY_PARTITION (new_bb, e->dest);
@@ -4663,7 +4679,8 @@ rtl_block_empty_p (basic_block bb)
 {
   rtx insn;
 
-  if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return true;
 
   FOR_BB_INSNS (bb, insn)
@@ -4770,7 +4787,8 @@ rtl_flow_call_edges_add (sbitmap blocks)
   if (! blocks)
     check_last_block = true;
   else
-    check_last_block = bitmap_bit_p (blocks, EXIT_BLOCK_PTR->prev_bb->index);
+    check_last_block = bitmap_bit_p (blocks,
+				     EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->index);
 
   /* In the last basic block, before epilogue generation, there will be
      a fallthru edge to EXIT.  Special care is required if the last insn
@@ -4786,7 +4804,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
      Handle this by adding a dummy instruction in a new last basic block.  */
   if (check_last_block)
     {
-      basic_block bb = EXIT_BLOCK_PTR->prev_bb;
+      basic_block bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
       rtx insn = BB_END (bb);
 
       /* Back up past insns that must be kept in the same block as a call.  */
@@ -4798,7 +4816,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 	{
 	  edge e;
 
-	  e = find_edge (bb, EXIT_BLOCK_PTR);
+	  e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
 	  if (e)
 	    {
 	      insert_insn_on_edge (gen_use (const0_rtx), e);
@@ -4846,7 +4864,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 #ifdef ENABLE_CHECKING
 	      if (split_at_insn == BB_END (bb))
 		{
-		  e = find_edge (bb, EXIT_BLOCK_PTR);
+		  e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
 		  gcc_assert (e == NULL);
 		}
 #endif
@@ -4860,7 +4878,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 		    blocks_split++;
 		}
 
-	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+	      make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 	    }
 
 	  if (insn == BB_HEAD (bb))
@@ -4952,7 +4970,7 @@ rtl_can_remove_branch_p (const_edge e)
   const_rtx insn = BB_END (src), set;
 
   /* The conditions are taken from try_redirect_by_replacing_jump.  */
-  if (target == EXIT_BLOCK_PTR)
+  if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))

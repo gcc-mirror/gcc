@@ -86,7 +86,7 @@ mark_dfs_back_edges (void)
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR->succs);
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
 
   while (sp)
     {
@@ -101,7 +101,8 @@ mark_dfs_back_edges (void)
       ei_edge (ei)->flags &= ~EDGE_DFS_BACK;
 
       /* Check if the edge destination has been visited yet.  */
-      if (dest != EXIT_BLOCK_PTR && ! bitmap_bit_p (visited, dest->index))
+      if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && ! bitmap_bit_p (visited,
+								  dest->index))
 	{
 	  /* Mark that we have visited the destination.  */
 	  bitmap_set_bit (visited, dest->index);
@@ -118,12 +119,14 @@ mark_dfs_back_edges (void)
 	}
       else
 	{
-	  if (dest != EXIT_BLOCK_PTR && src != ENTRY_BLOCK_PTR
+	  if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	      && src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	      && pre[src->index] >= pre[dest->index]
 	      && post[dest->index] == 0)
 	    ei_edge (ei)->flags |= EDGE_DFS_BACK, found = true;
 
-	  if (ei_one_before_end_p (ei) && src != ENTRY_BLOCK_PTR)
+	  if (ei_one_before_end_p (ei)
+	      && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    post[src->index] = postnum++;
 
 	  if (!ei_one_before_end_p (ei))
@@ -163,7 +166,7 @@ find_unreachable_blocks (void)
      be only one.  It isn't inconceivable that we might one day directly
      support Fortran alternate entry points.  */
 
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     {
       *tos++ = e->dest;
 
@@ -217,7 +220,8 @@ create_edge_list (void)
   /* Determine the number of edges in the flow graph by counting successor
      edges on each basic block.  */
   num_edges = 0;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       num_edges += EDGE_COUNT (bb->succs);
     }
@@ -229,7 +233,8 @@ create_edge_list (void)
   num_edges = 0;
 
   /* Follow successors of blocks, and register these edges.  */
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
       elist->index_to_edge[num_edges++] = e;
 
@@ -261,12 +266,12 @@ print_edge_list (FILE *f, struct edge_list *elist)
   for (x = 0; x < elist->num_edges; x++)
     {
       fprintf (f, " %-4d - edge(", x);
-      if (INDEX_EDGE_PRED_BB (elist, x) == ENTRY_BLOCK_PTR)
+      if (INDEX_EDGE_PRED_BB (elist, x) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	fprintf (f, "entry,");
       else
 	fprintf (f, "%d,", INDEX_EDGE_PRED_BB (elist, x)->index);
 
-      if (INDEX_EDGE_SUCC_BB (elist, x) == EXIT_BLOCK_PTR)
+      if (INDEX_EDGE_SUCC_BB (elist, x) == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	fprintf (f, "exit)\n");
       else
 	fprintf (f, "%d)\n", INDEX_EDGE_SUCC_BB (elist, x)->index);
@@ -285,7 +290,8 @@ verify_edge_list (FILE *f, struct edge_list *elist)
   basic_block bb, p, s;
   edge_iterator ei;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -310,8 +316,9 @@ verify_edge_list (FILE *f, struct edge_list *elist)
   /* We've verified that all the edges are in the list, now lets make sure
      there are no spurious edges in the list.  This is an expensive check!  */
 
-  FOR_BB_BETWEEN (p, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
-    FOR_BB_BETWEEN (s, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+  FOR_BB_BETWEEN (p, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
+    FOR_BB_BETWEEN (s, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, NULL, next_bb)
       {
 	int found_edge = 0;
 
@@ -348,9 +355,9 @@ void
 control_dependences::set_control_dependence_map_bit (basic_block bb,
 						     int edge_index)
 {
-  if (bb == ENTRY_BLOCK_PTR)
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return;
-  gcc_assert (bb != EXIT_BLOCK_PTR);
+  gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   bitmap_set_bit (control_dependence_map[bb->index], edge_index);
 }
 
@@ -367,15 +374,15 @@ control_dependences::clear_control_dependence_bitmap (basic_block bb)
 static inline basic_block
 find_pdom (basic_block block)
 {
-  gcc_assert (block != ENTRY_BLOCK_PTR);
+  gcc_assert (block != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-  if (block == EXIT_BLOCK_PTR)
-    return EXIT_BLOCK_PTR;
+  if (block == EXIT_BLOCK_PTR_FOR_FN (cfun))
+    return EXIT_BLOCK_PTR_FOR_FN (cfun);
   else
     {
       basic_block bb = get_immediate_dominator (CDI_POST_DOMINATORS, block);
       if (! bb)
-	return EXIT_BLOCK_PTR;
+	return EXIT_BLOCK_PTR_FOR_FN (cfun);
       return bb;
     }
 }
@@ -389,15 +396,17 @@ control_dependences::find_control_dependence (int edge_index)
   basic_block current_block;
   basic_block ending_block;
 
-  gcc_assert (INDEX_EDGE_PRED_BB (m_el, edge_index) != EXIT_BLOCK_PTR);
+  gcc_assert (INDEX_EDGE_PRED_BB (m_el, edge_index)
+	      != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-  if (INDEX_EDGE_PRED_BB (m_el, edge_index) == ENTRY_BLOCK_PTR)
-    ending_block = single_succ (ENTRY_BLOCK_PTR);
+  if (INDEX_EDGE_PRED_BB (m_el, edge_index) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    ending_block = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   else
     ending_block = find_pdom (INDEX_EDGE_PRED_BB (m_el, edge_index));
 
   for (current_block = INDEX_EDGE_SUCC_BB (m_el, edge_index);
-       current_block != ending_block && current_block != EXIT_BLOCK_PTR;
+       current_block != ending_block
+       && current_block != EXIT_BLOCK_PTR_FOR_FN (cfun);
        current_block = find_pdom (current_block))
     {
       edge e = INDEX_EDGE (m_el, edge_index);
@@ -523,7 +532,7 @@ remove_fake_edges (void)
 {
   basic_block bb;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, NULL, next_bb)
     remove_fake_predecessors (bb);
 }
 
@@ -532,7 +541,7 @@ remove_fake_edges (void)
 void
 remove_fake_exit_edges (void)
 {
-  remove_fake_predecessors (EXIT_BLOCK_PTR);
+  remove_fake_predecessors (EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 
 
@@ -547,7 +556,7 @@ add_noreturn_fake_exit_edges (void)
 
   FOR_EACH_BB (bb)
     if (EDGE_COUNT (bb->succs) == 0)
-      make_single_succ_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+      make_single_succ_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 }
 
 /* This function adds a fake edge between any infinite loops to the
@@ -564,14 +573,14 @@ add_noreturn_fake_exit_edges (void)
 void
 connect_infinite_loops_to_exit (void)
 {
-  basic_block unvisited_block = EXIT_BLOCK_PTR;
+  basic_block unvisited_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
   basic_block deadend_block;
   struct depth_first_search_dsS dfs_ds;
 
   /* Perform depth-first search in the reverse graph to find nodes
      reachable from the exit block.  */
   flow_dfs_compute_reverse_init (&dfs_ds);
-  flow_dfs_compute_reverse_add_bb (&dfs_ds, EXIT_BLOCK_PTR);
+  flow_dfs_compute_reverse_add_bb (&dfs_ds, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* Repeatedly add fake edges, updating the unreachable nodes.  */
   while (1)
@@ -582,7 +591,7 @@ connect_infinite_loops_to_exit (void)
 	break;
 
       deadend_block = dfs_find_deadend (unvisited_block);
-      make_edge (deadend_block, EXIT_BLOCK_PTR, EDGE_FAKE);
+      make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
       flow_dfs_compute_reverse_add_bb (&dfs_ds, deadend_block);
     }
 
@@ -619,7 +628,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR->succs);
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
 
   while (sp)
     {
@@ -633,7 +642,8 @@ post_order_compute (int *post_order, bool include_entry_exit,
       dest = ei_edge (ei)->dest;
 
       /* Check if the edge destination has been visited yet.  */
-      if (dest != EXIT_BLOCK_PTR && ! bitmap_bit_p (visited, dest->index))
+      if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && ! bitmap_bit_p (visited, dest->index))
 	{
 	  /* Mark that we have visited the destination.  */
 	  bitmap_set_bit (visited, dest->index);
@@ -647,7 +657,8 @@ post_order_compute (int *post_order, bool include_entry_exit,
 	}
       else
 	{
-	  if (ei_one_before_end_p (ei) && src != ENTRY_BLOCK_PTR)
+	  if (ei_one_before_end_p (ei)
+	      && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    post_order[post_order_num++] = src->index;
 
 	  if (!ei_one_before_end_p (ei))
@@ -671,7 +682,8 @@ post_order_compute (int *post_order, bool include_entry_exit,
     {
       basic_block b;
       basic_block next_bb;
-      for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
+      for (b = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; b
+	   != EXIT_BLOCK_PTR_FOR_FN (cfun); b = next_bb)
 	{
 	  next_bb = b->next_bb;
 
@@ -813,7 +825,8 @@ inverted_post_order_compute (int *post_order)
             }
           else
             {
-              if (bb != EXIT_BLOCK_PTR && ei_one_before_end_p (ei))
+	      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
+		  && ei_one_before_end_p (ei))
                 post_order[post_order_num++] = bb->index;
 
               if (!ei_one_before_end_p (ei))
@@ -826,7 +839,8 @@ inverted_post_order_compute (int *post_order)
       /* Detect any infinite loop and activate the kludge.
          Note that this doesn't check EXIT_BLOCK itself
          since EXIT_BLOCK is always added after the outer do-while loop.  */
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		      EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
         if (!bitmap_bit_p (visited, bb->index))
           {
             has_unvisited_bb = true;
@@ -859,7 +873,7 @@ inverted_post_order_compute (int *post_order)
         {
           /* No blocks are reachable from EXIT at all.
              Find a dead-end from the ENTRY, and restart the iteration. */
-          basic_block be = dfs_find_deadend (ENTRY_BLOCK_PTR);
+	  basic_block be = dfs_find_deadend (ENTRY_BLOCK_PTR_FOR_FN (cfun));
           gcc_assert (be != NULL);
           bitmap_set_bit (visited, be->index);
           stack[sp++] = ei_start (be->preds);
@@ -923,7 +937,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->succs);
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs);
 
   while (sp)
     {
@@ -937,7 +951,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
       dest = ei_edge (ei)->dest;
 
       /* Check if the edge destination has been visited yet.  */
-      if (dest != EXIT_BLOCK_PTR_FOR_FUNCTION (fn)
+      if (dest != EXIT_BLOCK_PTR_FOR_FN (fn)
 	  && ! bitmap_bit_p (visited, dest->index))
 	{
 	  /* Mark that we have visited the destination.  */
@@ -960,7 +974,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
       else
 	{
 	  if (ei_one_before_end_p (ei)
-	      && src != ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)
+	      && src != ENTRY_BLOCK_PTR_FOR_FN (fn)
 	      && rev_post_order)
 	    /* There are no more successors for the SRC node
 	       so assign its reverse completion number.  */
@@ -1230,7 +1244,7 @@ compute_dominance_frontiers_1 (bitmap_head *frontiers)
 	    {
 	      basic_block runner = p->src;
 	      basic_block domsb;
-	      if (runner == ENTRY_BLOCK_PTR)
+	      if (runner == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
 	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
@@ -1337,7 +1351,7 @@ bitmap_intersection_of_succs (sbitmap dst, sbitmap *src, basic_block b)
   for (e = NULL, ix = 0; ix < EDGE_COUNT (b->succs); ix++)
     {
       e = EDGE_SUCC (b, ix);
-      if (e->dest == EXIT_BLOCK_PTR)
+      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       bitmap_copy (dst, src[e->dest->index]);
@@ -1353,7 +1367,7 @@ bitmap_intersection_of_succs (sbitmap dst, sbitmap *src, basic_block b)
 	SBITMAP_ELT_TYPE *p, *r;
 
 	e = EDGE_SUCC (b, ix);
-	if (e->dest == EXIT_BLOCK_PTR)
+	if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  continue;
 
 	p = src[e->dest->index]->elms;
@@ -1378,7 +1392,7 @@ bitmap_intersection_of_preds (sbitmap dst, sbitmap *src, basic_block b)
   for (e = NULL, ix = 0; ix < EDGE_COUNT (b->preds); ix++)
     {
       e = EDGE_PRED (b, ix);
-      if (e->src == ENTRY_BLOCK_PTR)
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       bitmap_copy (dst, src[e->src->index]);
@@ -1394,7 +1408,7 @@ bitmap_intersection_of_preds (sbitmap dst, sbitmap *src, basic_block b)
 	SBITMAP_ELT_TYPE *p, *r;
 
 	e = EDGE_PRED (b, ix);
-	if (e->src == ENTRY_BLOCK_PTR)
+	if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	  continue;
 
 	p = src[e->src->index]->elms;
@@ -1419,7 +1433,7 @@ bitmap_union_of_succs (sbitmap dst, sbitmap *src, basic_block b)
   for (ix = 0; ix < EDGE_COUNT (b->succs); ix++)
     {
       e = EDGE_SUCC (b, ix);
-      if (e->dest == EXIT_BLOCK_PTR)
+      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       bitmap_copy (dst, src[e->dest->index]);
@@ -1435,7 +1449,7 @@ bitmap_union_of_succs (sbitmap dst, sbitmap *src, basic_block b)
 	SBITMAP_ELT_TYPE *p, *r;
 
 	e = EDGE_SUCC (b, ix);
-	if (e->dest == EXIT_BLOCK_PTR)
+	if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  continue;
 
 	p = src[e->dest->index]->elms;
@@ -1460,7 +1474,7 @@ bitmap_union_of_preds (sbitmap dst, sbitmap *src, basic_block b)
   for (ix = 0; ix < EDGE_COUNT (b->preds); ix++)
     {
       e = EDGE_PRED (b, ix);
-      if (e->src== ENTRY_BLOCK_PTR)
+      if (e->src== ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       bitmap_copy (dst, src[e->src->index]);
@@ -1476,7 +1490,7 @@ bitmap_union_of_preds (sbitmap dst, sbitmap *src, basic_block b)
 	SBITMAP_ELT_TYPE *p, *r;
 
 	e = EDGE_PRED (b, ix);
-	if (e->src == ENTRY_BLOCK_PTR)
+	if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	  continue;
 
 	p = src[e->src->index]->elms;
@@ -1504,7 +1518,7 @@ single_pred_before_succ_order (void)
 
   bitmap_clear (visited);
 
-  MARK_VISITED (ENTRY_BLOCK_PTR);
+  MARK_VISITED (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   FOR_EACH_BB (x)
     {
       if (VISITED_P (x))

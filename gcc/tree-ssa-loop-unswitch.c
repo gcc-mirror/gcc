@@ -194,7 +194,7 @@ simplify_using_entry_checks (struct loop *loop, tree cond)
 	return cond;
 
       e = single_pred_edge (e->src);
-      if (e->src == ENTRY_BLOCK_PTR)
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	return cond;
     }
 }

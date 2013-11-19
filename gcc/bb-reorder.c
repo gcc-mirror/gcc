@@ -275,7 +275,7 @@ find_traces (int *n_traces, struct trace *traces)
   heap = fibheap_new ();
   max_entry_frequency = 0;
   max_entry_count = 0;
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     {
       bbd[e->dest->index].heap = heap;
       bbd[e->dest->index].node = fibheap_insert (heap, bb_to_key (e->dest),
@@ -348,7 +348,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
       edge_iterator ei;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && bb_visited_trace (e->dest) != trace_n
 	    && (e->flags & EDGE_CAN_FALLTHRU)
 	    && !(e->flags & EDGE_COMPLEX))
@@ -524,7 +524,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	    {
 	      gcc_assert (!(e->flags & EDGE_FAKE));
 
-	      if (e->dest == EXIT_BLOCK_PTR)
+	      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
 	      if (bb_visited_trace (e->dest)
@@ -605,7 +605,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      if (e == best_edge
-		  || e->dest == EXIT_BLOCK_PTR
+		  || e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  || bb_visited_trace (e->dest))
 		continue;
 
@@ -680,7 +680,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			     header is not the first block of the function
 			     we can rotate the loop.  */
 
-			  if (best_edge->dest != ENTRY_BLOCK_PTR->next_bb)
+			  if (best_edge->dest
+			      != ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
 			    {
 			      if (dump_file)
 				{
@@ -776,7 +777,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	 is an end of the trace).  */
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  if (e->dest == EXIT_BLOCK_PTR
+	  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      || bb_visited_trace (e->dest))
 	    continue;
 
@@ -885,7 +886,8 @@ bb_to_key (basic_block bb)
      or whose predecessor edge is EDGE_DFS_BACK.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      if ((e->src != ENTRY_BLOCK_PTR && bbd[e->src->index].end_of_trace >= 0)
+      if ((e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	   && bbd[e->src->index].end_of_trace >= 0)
 	  || (e->flags & EDGE_DFS_BACK))
 	{
 	  int edge_freq = EDGE_FREQUENCY (e);
@@ -1098,7 +1100,7 @@ connect_traces (int n_traces, struct trace *traces)
 	    {
 	      int si = e->src->index;
 
-	      if (e->src != ENTRY_BLOCK_PTR
+	      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 		  && (e->flags & EDGE_CAN_FALLTHRU)
 		  && !(e->flags & EDGE_COMPLEX)
 		  && bbd[si].end_of_trace >= 0
@@ -1141,7 +1143,7 @@ connect_traces (int n_traces, struct trace *traces)
 	    {
 	      int di = e->dest->index;
 
-	      if (e->dest != EXIT_BLOCK_PTR
+	      if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && (e->flags & EDGE_CAN_FALLTHRU)
 		  && !(e->flags & EDGE_COMPLEX)
 		  && bbd[di].start_of_trace >= 0
@@ -1212,7 +1214,7 @@ connect_traces (int n_traces, struct trace *traces)
 	      bool try_copy = false;
 
 	      FOR_EACH_EDGE (e, ei, traces[t].last->succs)
-		if (e->dest != EXIT_BLOCK_PTR
+		if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		    && (e->flags & EDGE_CAN_FALLTHRU)
 		    && !(e->flags & EDGE_COMPLEX)
 		    && (!best || e->probability > best->probability))
@@ -1237,7 +1239,7 @@ connect_traces (int n_traces, struct trace *traces)
 		      {
 			int di = e2->dest->index;
 
-			if (e2->dest == EXIT_BLOCK_PTR
+			if (e2->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 			    || ((e2->flags & EDGE_CAN_FALLTHRU)
 				&& !(e2->flags & EDGE_COMPLEX)
 				&& bbd[di].start_of_trace >= 0
@@ -1253,7 +1255,7 @@ connect_traces (int n_traces, struct trace *traces)
 			  {
 			    best = e;
 			    best2 = e2;
-			    if (e2->dest != EXIT_BLOCK_PTR)
+			    if (e2->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 			      best2_len = traces[bbd[di].start_of_trace].length;
 			    else
 			      best2_len = INT_MAX;
@@ -1282,7 +1284,7 @@ connect_traces (int n_traces, struct trace *traces)
 			       traces[t].last->index, best->dest->index);
 		      if (!next_bb)
 			fputc ('\n', dump_file);
-		      else if (next_bb == EXIT_BLOCK_PTR)
+		      else if (next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 			fprintf (dump_file, "exit\n");
 		      else
 			fprintf (dump_file, "%d\n", next_bb->index);
@@ -1290,7 +1292,7 @@ connect_traces (int n_traces, struct trace *traces)
 
 		  new_bb = copy_bb (best->dest, best, traces[t].last, t);
 		  traces[t].last = new_bb;
-		  if (next_bb && next_bb != EXIT_BLOCK_PTR)
+		  if (next_bb && next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		    {
 		      t = bbd[next_bb->index].start_of_trace;
 		      traces[last_trace].last->aux = traces[t].first;
@@ -1413,7 +1415,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   JUMP_LABEL (jump) = post_label;
 
   /* Create new basic block to be dest for lp.  */
-  last_bb = EXIT_BLOCK_PTR->prev_bb;
+  last_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
   new_bb = create_basic_block (new_label, jump, last_bb);
   new_bb->aux = last_bb->aux;
   last_bb->aux = new_bb;
@@ -1663,8 +1665,8 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
         /* We should never have EDGE_CROSSING set yet.  */
 	gcc_checking_assert ((flags & EDGE_CROSSING) == 0);
 
-	if (e->src != ENTRY_BLOCK_PTR
-	    && e->dest != EXIT_BLOCK_PTR
+	if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	    && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
 	  {
 	    crossing_edges.safe_push (e);
@@ -1731,14 +1733,14 @@ add_labels_and_missing_jumps (vec<edge> crossing_edges)
       basic_block dest = e->dest;
       rtx label, new_jump;
 
-      if (dest == EXIT_BLOCK_PTR)
+      if (dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       /* Make sure dest has a label.  */
       label = block_label (dest);
 
       /* Nothing to do for non-fallthru edges.  */
-      if (src == ENTRY_BLOCK_PTR)
+      if (src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       if ((e->flags & EDGE_FALLTHRU) == 0)
 	continue;
@@ -1832,7 +1834,7 @@ fix_up_fall_thru_edges (void)
 	      }
 	}
 
-      if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR))
+      if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)))
 	{
 	  /* Check to see if the fall-thru edge is a crossing edge.  */
 
@@ -2066,7 +2068,7 @@ fix_crossing_conditional_branches (void)
 		  new_jump = emit_jump_insn (gen_jump (old_label));
 		  JUMP_LABEL (new_jump) = old_label;
 
-		  last_bb = EXIT_BLOCK_PTR->prev_bb;
+		  last_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
 		  new_bb = create_basic_block (new_label, new_jump, last_bb);
 		  new_bb->aux = last_bb->aux;
 		  last_bb->aux = new_bb;
@@ -2319,7 +2321,7 @@ rest_of_handle_reorder_blocks (void)
   cleanup_cfg (CLEANUP_EXPENSIVE);
 
   FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
   cfg_layout_finalize ();
 
@@ -2415,7 +2417,7 @@ duplicate_computed_gotos (void)
       int size, all_flags;
 
       /* Build the reorder chain for the original order of blocks.  */
-      if (bb->next_bb != EXIT_BLOCK_PTR)
+      if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	bb->aux = bb->next_bb;
 
       /* Obviously the block has to end in a computed jump.  */
@@ -2465,7 +2467,7 @@ duplicate_computed_gotos (void)
 	 the exit block or the next block.
 	 The destination must have more than one predecessor.  */
       if (!single_succ_p (bb)
-	  || single_succ (bb) == EXIT_BLOCK_PTR
+	  || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  || single_succ (bb) == bb->next_bb
 	  || single_pred_p (single_succ (bb)))
 	continue;

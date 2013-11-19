@@ -1221,10 +1221,12 @@ rewrite_debug_stmt_uses (gimple stmt)
       def = info->current_def;
       if (!def)
 	{
-	  if (TREE_CODE (var) == PARM_DECL && single_succ_p (ENTRY_BLOCK_PTR))
+	  if (TREE_CODE (var) == PARM_DECL
+	      && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
 	    {
 	      gimple_stmt_iterator gsi
-		= gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+		=
+	     gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	      int lim;
 	      /* Search a few source bind stmts at the start of first bb to
 		 see if a DEBUG_EXPR_DECL can't be reused.  */
@@ -1253,7 +1255,8 @@ rewrite_debug_stmt_uses (gimple stmt)
 		  DECL_ARTIFICIAL (def) = 1;
 		  TREE_TYPE (def) = TREE_TYPE (var);
 		  DECL_MODE (def) = DECL_MODE (var);
-		  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+		  gsi =
+		 gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
 		}
 	      update = true;
@@ -1868,7 +1871,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 		     bind stmts, but there wouldn't be a PC to bind
 		     them to either, so avoid diverging the CFG.  */
 		  if (ef && single_pred_p (ef->dest)
-		      && ef->dest != EXIT_BLOCK_PTR)
+		      && ef->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		    {
 		      /* If there were PHI nodes in the node, we'd
 			 have to make sure the value we're binding
@@ -2331,7 +2334,7 @@ rewrite_into_ssa (void)
   insert_phi_nodes (dfs);
 
   /* 4- Rename all the blocks.  */
-  rewrite_blocks (ENTRY_BLOCK_PTR, REWRITE_ALL);
+  rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (cfun), REWRITE_ALL);
 
   /* Free allocated memory.  */
   FOR_EACH_BB (bb)
@@ -3017,7 +3020,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 	     common dominator of all the definition blocks.  */
 	  entry = nearest_common_dominator_for_set (CDI_DOMINATORS,
 						    db->def_blocks);
-	  if (entry != ENTRY_BLOCK_PTR)
+	  if (entry != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    EXECUTE_IF_SET_IN_BITMAP (idf, 0, i, bi)
 	      if (BASIC_BLOCK (i) != entry
 		  && dominated_by_p (CDI_DOMINATORS, BASIC_BLOCK (i), entry))
@@ -3216,7 +3219,7 @@ update_ssa (unsigned update_flags)
 	 be possible to determine the nearest block that had a
 	 definition for each of the symbols that are marked for
 	 updating.  For now this seems more work than it's worth.  */
-      start_bb = ENTRY_BLOCK_PTR;
+      start_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
       /* Traverse the CFG looking for existing definitions and uses of
 	 symbols in SSA operands.  Mark interesting blocks and
@@ -3299,7 +3302,7 @@ update_ssa (unsigned update_flags)
       /* Insertion of PHI nodes may have added blocks to the region.
 	 We need to re-compute START_BB to include the newly added
 	 blocks.  */
-      if (start_bb != ENTRY_BLOCK_PTR)
+      if (start_bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	start_bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
 						     blocks_to_update);
     }

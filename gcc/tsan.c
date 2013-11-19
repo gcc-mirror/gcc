@@ -652,7 +652,7 @@ instrument_func_entry (void)
   tree ret_addr, builtin_decl;
   gimple g;
 
-  succ_bb = single_succ (ENTRY_BLOCK_PTR);
+  succ_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   gsi = gsi_after_labels (succ_bb);
 
   builtin_decl = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
@@ -682,7 +682,7 @@ instrument_func_exit (void)
   edge_iterator ei;
 
   /* Find all function exits.  */
-  exit_bb = EXIT_BLOCK_PTR;
+  exit_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
   FOR_EACH_EDGE (e, ei, exit_bb->preds)
     {
       gsi = gsi_last_bb (e->src);
