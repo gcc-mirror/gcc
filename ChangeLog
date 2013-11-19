@@ -1,3 +1,7 @@
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/bootstrap-lto.mk: Use -ffat-lto-objects.
+
 2013-11-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* MAINTAINERS (Global Reviewers, c++): Remove Mark Mitchell.
