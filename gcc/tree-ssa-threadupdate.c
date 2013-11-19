@@ -1060,11 +1060,22 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
   if (single_succ_p (header))
     goto fail;
 
+  /* If we threaded the latch using a joiner block, we cancel the
+     threading opportunity out of an abundance of caution.  However,
+     still allow threading from outside to inside the loop.  */
   if (latch->aux)
     {
       vec<jump_thread_edge *> *path = THREAD_PATH (latch);
       if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
-	goto fail;
+	{
+	  delete_jump_thread_path (path);
+	  latch->aux = NULL;
+	}
+    }
+
+  if (latch->aux)
+    {
+      vec<jump_thread_edge *> *path = THREAD_PATH (latch);
       tgt_edge = (*path)[1]->e;
       tgt_bb = tgt_edge->dest;
     }
