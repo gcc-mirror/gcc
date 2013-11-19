@@ -5170,7 +5170,8 @@
   [(set_attr "length" "8,4,8,8")
    (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")
    (set_attr "ce_count" "2")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "type" "multiple,mov_reg,multiple,multiple")]
 )
 
 (define_insn "extend<mode>di2"
