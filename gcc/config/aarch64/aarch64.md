@@ -1311,8 +1311,8 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	 (plus:SI (ASHIFT:SI (match_operand:SI 1 "register_operand" "r")
-		             (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
-	          (match_operand:SI 3 "register_operand" "r"))))]
+			     (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
+		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <shift> %2"
   [(set_attr "type" "alu_shift_imm")
@@ -3607,7 +3607,7 @@
 ;; The following secondary reload helpers patterns are invoked
 ;; after or during reload as we don't want these patterns to start
 ;; kicking in during the combiner.
- 
+
 (define_insn "aarch64_movdi_<mode>low"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (truncate:DI (match_operand:TX 1 "register_operand" "w")))]
