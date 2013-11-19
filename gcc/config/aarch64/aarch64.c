@@ -1800,7 +1800,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
   unsigned regno;
   unsigned regno2;
   rtx insn;
-  rtx (*gen_mem_ref)(enum machine_mode, rtx) = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
+  rtx (*gen_mem_ref)(enum machine_mode, rtx)
+    = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
 
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
@@ -1843,16 +1844,17 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 		    ( gen_load_pairdf (gen_rtx_REG (DFmode, regno), mem,
 				       gen_rtx_REG (DFmode, regno2), mem2));
 
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DFmode, regno));
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DFmode, regno2));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DFmode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DFmode, regno2));
 		}
 
 		  /* The first part of a frame-related parallel insn
 		     is always assumed to be relevant to the frame
 		     calculations; subsequent parts, are only
 		     frame-related if explicitly marked.  */
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0,
-					    1)) = 1;
+	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
 	      regno = regno2;
 	      start_offset += increment * 2;
 	    }
@@ -1863,7 +1865,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 	      else
 		{
 		  insn = emit_move_insn (gen_rtx_REG (DFmode, regno), mem);
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DImode, regno));
 		}
 	      start_offset += increment;
 	    }
