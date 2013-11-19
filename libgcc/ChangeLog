@@ -1,5 +1,10 @@
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
+	* libgcov-driver.c (run_accounted): Make global level static.
+	(gcov_exit_merge_summary): Silence warning; do not clear
+	run_accounted here.
+	(gcov_exit): Clear it here.
+
 	* libgcov-driver.c (gcov_exit_merge_summary): Fix setting
 	run_accounted.
 
