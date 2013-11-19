@@ -888,7 +888,7 @@ BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 	cfg-flags.def cfghooks.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
-	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H)
+	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
 RECOG_H = recog.h
 EMIT_RTL_H = emit-rtl.h

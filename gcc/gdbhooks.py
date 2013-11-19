@@ -240,7 +240,7 @@ class GimplePrinter:
     def to_string (self):
         if long(self.gdbval) == 0:
             return '<gimple 0x0>'
-        val_gimple_code = self.gdbval['gsbase']['code']
+        val_gimple_code = self.gdbval['code']
         val_gimple_code_name = gdb.parse_and_eval('gimple_code_name')
         val_code_name = val_gimple_code_name[long(val_gimple_code)]
         result = '<%s 0x%x' % (val_code_name.string(),
