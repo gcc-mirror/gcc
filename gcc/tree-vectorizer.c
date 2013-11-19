@@ -324,7 +324,6 @@ vectorize_loops (void)
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
   unsigned int vect_loops_num;
-  loop_iterator li;
   struct loop *loop;
   hash_table <simduid_to_vf> simduid_to_vf_htab;
   hash_table <simd_array_to_simduid> simd_array_to_simduid_htab;
@@ -349,7 +348,7 @@ vectorize_loops (void)
   /* If some loop was duplicated, it gets bigger number
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if ((flag_tree_loop_vectorize && optimize_loop_nest_for_speed_p (loop))
 	|| loop->force_vect)
       {

@@ -3229,7 +3229,6 @@ mn10300_loop_contains_call_insn (loop_p loop)
 static void
 mn10300_scan_for_setlb_lcc (void)
 {
-  loop_iterator liter;
   loop_p loop;
 
   DUMP ("Looking for loops that can use the SETLB insn", NULL_RTX);
@@ -3244,7 +3243,7 @@ mn10300_scan_for_setlb_lcc (void)
      if an inner loop is not suitable for use with the SETLB/Lcc insns, it may
      be the case that its parent loop is suitable.  Thus we should check all
      loops, but work from the innermost outwards.  */
-  FOR_EACH_LOOP (liter, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
       const char * reason = NULL;
 

@@ -269,7 +269,6 @@ unroll_and_peel_loops (int flags)
 {
   struct loop *loop;
   bool changed = false;
-  loop_iterator li;
 
   /* First perform complete loop peeling (it is almost surely a win,
      and affects parameters for further decision a lot).  */
@@ -279,7 +278,7 @@ unroll_and_peel_loops (int flags)
   decide_unrolling_and_peeling (flags);
 
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)
@@ -345,11 +344,10 @@ static void
 peel_loops_completely (int flags)
 {
   struct loop *loop;
-  loop_iterator li;
   bool changed = false;
 
   /* Scan the loops, the inner ones first.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       loop->lpt_decision.decision = LPT_NONE;
       location_t locus = get_loop_location (loop);
@@ -386,10 +384,9 @@ static void
 decide_unrolling_and_peeling (int flags)
 {
   struct loop *loop;
-  loop_iterator li;
 
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       loop->lpt_decision.decision = LPT_NONE;
       location_t locus = get_loop_location (loop);

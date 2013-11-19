@@ -1747,7 +1747,6 @@ static void
 gen_parallel_loop (struct loop *loop, reduction_info_table_type reduction_list,
 		   unsigned n_threads, struct tree_niter_desc *niter)
 {
-  loop_iterator li;
   tree many_iterations_cond, type, nit;
   tree arg_struct, new_arg_struct;
   gimple_seq stmts;
@@ -1902,7 +1901,7 @@ gen_parallel_loop (struct loop *loop, reduction_info_table_type reduction_list,
 
   /* Free loop bound estimations that could contain references to
      removed statements.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     free_numbers_of_iterations_estimates_loop (loop);
 
   /* Expand the parallel constructs.  We do it directly here instead of running
@@ -2143,7 +2142,6 @@ parallelize_loops (void)
   bool changed = false;
   struct loop *loop;
   struct tree_niter_desc niter_desc;
-  loop_iterator li;
   reduction_info_table_type reduction_list;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
@@ -2159,7 +2157,7 @@ parallelize_loops (void)
   reduction_list.create (10);
   init_stmt_vec_info_vec ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       reduction_list.empty ();
       if (dump_file && (dump_flags & TDF_DETAILS))

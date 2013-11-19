@@ -1,5 +1,30 @@
 2013-11-19  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.h (struct loop_iterator): C++-ify, add constructor
+	and destructor and make fel_next a member function.
+	(fel_next): Transform into ...
+	(loop_iterator::next): ... this.
+	(fel_init): Transform into ...
+	(loop_iterator::loop_iterator): ... this.
+	(loop_iterator::~loop_iterator): New.
+	(FOR_EACH_LOOP): Remove loop-iterator argument.
+	(FOR_EACH_LOOP_BREAK): Remove no longer necessary macro.
+	* cfgloop.c, cfgloopmanip.c, config/mn10300/mn10300.c,
+	graphite-clast-to-gimple.c, graphite-scop-detection.c,
+	graphite-sese-to-poly.c, ipa-inline-analysis.c, ipa-pure-const.c,
+	loop-init.c, loop-invariant.c, loop-unroll.c, loop-unswitch.c,
+	modulo-sched.c, predict.c, sel-sched-ir.c, tree-cfg.c, tree-data-ref.c,
+	tree-if-conv.c, tree-loop-distribution.c, tree-parloops.c,
+	tree-predcom.c, tree-scalar-evolution.c, tree-ssa-dce.c,
+	tree-ssa-loop-ch.c, tree-ssa-loop-im.c, tree-ssa-loop-ivcanon.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-loop-manip.c, tree-ssa-loop-niter.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-loop-unswitch.c,
+	tree-ssa-threadupdate.c, tree-vectorizer.c, tree-vrp.c: Adjust
+	uses of FOR_EACH_LOOP and remove loop_iterator variables.  Replace
+	FOR_EACH_LOOP_BREAK with break.
+
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/59164
 	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer):
 	Uncomment assert.

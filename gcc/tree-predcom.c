@@ -2511,11 +2511,10 @@ tree_predictive_commoning (void)
 {
   bool unrolled = false;
   struct loop *loop;
-  loop_iterator li;
   unsigned ret = 0;
 
   initialize_original_copy_tables ();
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     if (optimize_loop_for_speed_p (loop))
       {
 	unrolled |= tree_predictive_commoning_loop (loop);

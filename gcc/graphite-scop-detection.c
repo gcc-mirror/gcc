@@ -1375,14 +1375,13 @@ canonicalize_loop_closed_ssa (loop_p loop)
 static void
 canonicalize_loop_closed_ssa_form (void)
 {
-  loop_iterator li;
   loop_p loop;
 
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa (true);
 #endif
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     canonicalize_loop_closed_ssa (loop);
 
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);

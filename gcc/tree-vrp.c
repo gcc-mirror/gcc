@@ -5895,8 +5895,7 @@ find_assert_locations (void)
      the order we compute liveness and insert asserts we otherwise
      fail to insert asserts into the loop latch.  */
   loop_p loop;
-  loop_iterator li;
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;

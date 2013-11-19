@@ -396,7 +396,6 @@ find_obviously_necessary_stmts (bool aggressive)
   /* Prevent the empty possibly infinite loops from being removed.  */
   if (aggressive)
     {
-      loop_iterator li;
       struct loop *loop;
       scev_initialize ();
       if (mark_irreducible_loops ())
@@ -414,7 +413,7 @@ find_obviously_necessary_stmts (bool aggressive)
 		}
 	  }
 
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	if (!finite_loop_p (loop))
 	  {
 	    if (dump_file)

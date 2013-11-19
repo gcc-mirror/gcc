@@ -138,13 +138,12 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
 void
 unswitch_loops (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
 
   /* Go through inner loops (only original ones).  */
 
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     changed |= unswitch_single_loop (loop, NULL_RTX, 0);
 
   iv_analysis_done ();

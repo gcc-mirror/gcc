@@ -1554,7 +1554,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   bitmap_iterator bi;
   bitmap threaded_blocks;
   struct loop *loop;
-  loop_iterator li;
 
   /* We must know about loops in order to preserve them.  */
   gcc_assert (current_loops != NULL);
@@ -1582,7 +1581,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   /* Then perform the threading through loop headers.  We start with the
      innermost loop, so that the changes in cfg we perform won't affect
      further threading.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       if (!loop->header
 	  || !bitmap_bit_p (threaded_blocks, loop->header->index))

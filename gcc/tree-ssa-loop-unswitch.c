@@ -83,13 +83,12 @@ static tree tree_may_unswitch_on (basic_block, struct loop *);
 unsigned int
 tree_ssa_unswitch_loops (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
   HOST_WIDE_INT iterations;
 
   /* Go through inner loops (only original ones).  */
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file, ";; Considering loop %d\n", loop->num);

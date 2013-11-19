@@ -3586,14 +3586,13 @@ estimated_stmt_executions (struct loop *loop, double_int *nit)
 void
 estimate_numbers_of_iterations (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
   fold_defer_overflow_warnings ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       estimate_numbers_of_iterations_loop (loop);
     }
@@ -3863,10 +3862,9 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
 void
 free_numbers_of_iterations_estimates (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       free_numbers_of_iterations_estimates_loop (loop);
     }

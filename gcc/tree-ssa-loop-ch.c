@@ -130,7 +130,6 @@ do_while_loop_p (struct loop *loop)
 static unsigned int
 copy_loop_headers (void)
 {
-  loop_iterator li;
   struct loop *loop;
   basic_block header;
   edge exit, entry;
@@ -150,7 +149,7 @@ copy_loop_headers (void)
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   bbs_size = n_basic_blocks_for_fn (cfun);
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       /* Copy at most 20 insns.  */
       int limit = 20;

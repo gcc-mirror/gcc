@@ -350,12 +350,11 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap *loop_exits)
 static void
 get_loops_exits (bitmap *loop_exits)
 {
-  loop_iterator li;
   struct loop *loop;
   unsigned j;
   edge e;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       vec<edge> exit_edges = get_loop_exit_edges (loop);
       loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);

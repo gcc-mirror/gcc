@@ -2601,14 +2601,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (!early && nonconstant_names.exists ())
     {
       struct loop *loop;
-      loop_iterator li;
       predicate loop_iterations = true_predicate ();
       predicate loop_stride = true_predicate ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	{
 	  vec<edge> exits;
 	  edge ex;

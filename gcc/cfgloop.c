@@ -156,7 +156,6 @@ flow_loop_dump (const struct loop *loop, FILE *file,
 void
 flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *, int), int verbose)
 {
-  loop_iterator li;
   struct loop *loop;
 
   if (!current_loops || ! file)
@@ -164,7 +163,7 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
 
   fprintf (file, ";; %d loops found\n", number_of_loops (cfun));
 
-  FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
+  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
     {
       flow_loop_dump (loop, file, loop_dump_aux, verbose);
     }
@@ -767,10 +766,9 @@ disambiguate_multiple_latches (struct loop *loop)
 void
 disambiguate_loops_with_multiple_latches (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       if (!loop->latch)
 	disambiguate_multiple_latches (loop);
@@ -1327,7 +1325,6 @@ verify_loop_structure (void)
   int err = 0;
   edge e;
   unsigned num = number_of_loops (cfun);
-  loop_iterator li;
   struct loop_exit *exit, *mexit;
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);
   sbitmap visited;
@@ -1369,7 +1366,7 @@ verify_loop_structure (void)
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       unsigned n;
 
@@ -1416,7 +1413,7 @@ verify_loop_structure (void)
   sbitmap_free (visited);
 
   /* Check headers and latches.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       i = loop->num;
       if (loop->header == NULL)
@@ -1536,7 +1533,7 @@ verify_loop_structure (void)
     }
 
   /* Check the recorded loop exits.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       if (!loop->exits || loop->exits->e != NULL)
 	{
@@ -1630,7 +1627,7 @@ verify_loop_structure (void)
 	  err = 1;
 	}
 
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	{
 	  eloops = 0;
 	  for (exit = loop->exits->next; exit->e; exit = exit->next)
