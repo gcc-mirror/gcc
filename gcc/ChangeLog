@@ -1,3 +1,7 @@
+2013-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md: Remove v8type from all insns.
+
 2013-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57517
