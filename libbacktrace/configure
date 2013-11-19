@@ -11748,6 +11748,44 @@ $as_echo "#define HAVE_SYNC_FUNCTIONS 1" >>confdefs.h
 fi
 
 
+# Test for __atomic support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking __atomic extensions" >&5
+$as_echo_n "checking __atomic extensions... " >&6; }
+if test "${libbacktrace_cv_sys_atomic+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "${with_target_subdir}"; then
+   libbacktrace_cv_sys_atomic=yes
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+int
+main ()
+{
+__atomic_load_n (&i, __ATOMIC_ACQUIRE);
+		       __atomic_store_n (&i, 1, __ATOMIC_RELEASE);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libbacktrace_cv_sys_atomic=yes
+else
+  libbacktrace_cv_sys_atomic=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+ fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_sys_atomic" >&5
+$as_echo "$libbacktrace_cv_sys_atomic" >&6; }
+if test "$libbacktrace_cv_sys_atomic" = "yes"; then
+
+$as_echo "#define HAVE_ATOMIC_FUNCTIONS 1" >>confdefs.h
+
+fi
+
 # The library needs to be able to read the executable itself.  Compile
 # a file to determine the executable format.  The awk script
 # filetype.awk prints out the file type.

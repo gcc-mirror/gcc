@@ -58,15 +58,10 @@ fileline_initialize (struct backtrace_state *state,
   int called_error_callback;
   int descriptor;
 
-  failed = state->fileline_initialization_failed;
-
-  if (state->threaded)
-    {
-      /* Use __sync_bool_compare_and_swap to do an atomic load.  */
-      while (!__sync_bool_compare_and_swap
-	     (&state->fileline_initialization_failed, failed, failed))
-	failed = state->fileline_initialization_failed;
-    }
+  if (!state->threaded)
+    failed = state->fileline_initialization_failed;
+  else
+    failed = backtrace_atomic_load_int (&state->fileline_initialization_failed);
 
   if (failed)
     {
@@ -74,13 +69,10 @@ fileline_initialize (struct backtrace_state *state,
       return 0;
     }
 
-  fileline_fn = state->fileline_fn;
-  if (state->threaded)
-    {
-      while (!__sync_bool_compare_and_swap (&state->fileline_fn, fileline_fn,
-					    fileline_fn))
-	fileline_fn = state->fileline_fn;
-    }
+  if (!state->threaded)
+    fileline_fn = state->fileline_fn;
+  else
+    fileline_fn = backtrace_atomic_load_pointer (&state->fileline_fn);
   if (fileline_fn != NULL)
     return 1;
 
@@ -151,8 +143,7 @@ fileline_initialize (struct backtrace_state *state,
       if (!state->threaded)
 	state->fileline_initialization_failed = 1;
       else
-	__sync_bool_compare_and_swap (&state->fileline_initialization_failed,
-				      0, failed);
+	backtrace_atomic_store_int (&state->fileline_initialization_failed, 1);
       return 0;
     }
 
@@ -160,15 +151,10 @@ fileline_initialize (struct backtrace_state *state,
     state->fileline_fn = fileline_fn;
   else
     {
-      __sync_bool_compare_and_swap (&state->fileline_fn, NULL, fileline_fn);
+      backtrace_atomic_store_pointer (&state->fileline_fn, fileline_fn);
 
-      /* At this point we know that state->fileline_fn is not NULL.
-	 Either we stored our value, or some other thread stored its
-	 value.  If some other thread stored its value, we leak the
-	 one we just initialized.  Either way, state->fileline_fn is
-	 initialized.  The compare_and_swap is a full memory barrier,
-	 so we should have full access to that value even if it was
-	 created by another thread.  */
+      /* Note that if two threads initialize at once, one of the data
+	 sets may be leaked.  */
     }
 
   return 1;

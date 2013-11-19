@@ -442,10 +442,7 @@ elf_add_syminfo_data (struct backtrace_state *state,
 	    {
 	      struct elf_syminfo_data *p;
 
-	      /* Atomic load.  */
-	      p = *pp;
-	      while (!__sync_bool_compare_and_swap (pp, p, p))
-		p = *pp;
+	      p = backtrace_atomic_load_pointer (pp);
 
 	      if (p == NULL)
 		break;
@@ -490,11 +487,7 @@ elf_syminfo (struct backtrace_state *state, uintptr_t addr,
       pp = (struct elf_syminfo_data **) (void *) &state->syminfo_data;
       while (1)
 	{
-	  edata = *pp;
-	  /* Atomic load.  */
-	  while (!__sync_bool_compare_and_swap (pp, edata, edata))
-	    edata = *pp;
-
+	  edata = backtrace_atomic_load_pointer (pp);
 	  if (edata == NULL)
 	    break;
 
@@ -902,7 +895,6 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
 {
   int found_sym;
   int found_dwarf;
-  syminfo elf_syminfo_fn;
   fileline elf_fileline_fn;
   struct phdr_data pd;
 
@@ -919,18 +911,19 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
 
   dl_iterate_phdr (phdr_callback, (void *) &pd);
 
-  elf_syminfo_fn = found_sym ? elf_syminfo : elf_nosyms;
   if (!state->threaded)
     {
-      if (state->syminfo_fn == NULL || found_sym)
-	state->syminfo_fn = elf_syminfo_fn;
+      if (found_sym)
+	state->syminfo_fn = elf_syminfo;
+      else if (state->syminfo_fn == NULL)
+	state->syminfo_fn = elf_nosyms;
     }
   else
     {
-      __sync_bool_compare_and_swap (&state->syminfo_fn, NULL, elf_syminfo_fn);
       if (found_sym)
-	__sync_bool_compare_and_swap (&state->syminfo_fn, elf_nosyms,
-				      elf_syminfo_fn);
+	backtrace_atomic_store_pointer (&state->syminfo_fn, elf_syminfo);
+      else
+	__sync_bool_compare_and_swap (&state->syminfo_fn, NULL, elf_nosyms);
     }
 
   if (!state->threaded)
@@ -942,11 +935,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
     {
       fileline current_fn;
 
-      /* Atomic load.  */
-      current_fn = state->fileline_fn;
-      while (!__sync_bool_compare_and_swap (&state->fileline_fn, current_fn,
-					    current_fn))
-	current_fn = state->fileline_fn;
+      current_fn = backtrace_atomic_load_pointer (&state->fileline_fn);
       if (current_fn == NULL || current_fn == elf_nodebug)
 	*fileline_fn = elf_fileline_fn;
     }
