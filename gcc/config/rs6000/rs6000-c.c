@@ -26,6 +26,8 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic-core.h"

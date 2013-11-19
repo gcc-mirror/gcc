@@ -2,6 +2,13 @@
 
 	* lto-partition.c lto-symtab.c lto.c Adjust.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c: Include stringpool.h.
+	Include stor-layout.h.
+	* lto-partition.c: Include gcc-symtab.h.
+	* lto.c: Include stor-layout.h.
+
 2013-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	Automated part of renaming of symtab_node_base to symtab_node.

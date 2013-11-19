@@ -17,6 +17,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_TRANS_MEM_H
+#define GCC_TRANS_MEM_H
 
 /* These defines must match the enumerations in libitm.h.  */
 #define PR_INSTRUMENTEDCODE	0x0001
@@ -37,3 +39,12 @@
 
 extern void compute_transaction_bits (void);
 extern bool is_tm_ending (gimple);
+extern tree build_tm_abort_call (location_t, bool);
+extern bool is_tm_safe (const_tree);
+extern bool is_tm_pure (const_tree);
+extern bool is_tm_may_cancel_outer (tree);
+extern bool is_tm_ending_fndecl (tree);
+extern void record_tm_replacement (tree, tree);
+extern void tm_malloc_replacement (tree);
+
+#endif  // GCC_TRANS_MEM_H

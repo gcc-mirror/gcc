@@ -154,6 +154,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "varasm.h"
 #include "rtl-error.h"
 #include "tm_p.h"
 #include "function.h"

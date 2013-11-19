@@ -25,6 +25,9 @@
 #include <gmp.h>
 
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "tree-iterator.h"
 #include "gimple.h"
 #include "toplev.h"

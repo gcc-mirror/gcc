@@ -8,6 +8,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "gimple.h"

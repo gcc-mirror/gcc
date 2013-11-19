@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 
 #include "tree.h"
+#include "varasm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "regs.h"

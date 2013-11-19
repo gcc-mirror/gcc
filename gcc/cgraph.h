@@ -852,6 +852,8 @@ void symtab_initialize_asm_name_hash (void);
 void symtab_prevail_in_asm_name_hash (symtab_node *node);
 void varpool_remove_initializer (struct varpool_node *);
 
+/* In cgraph.c */
+extern void change_decl_assembler_name (tree, tree);
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *

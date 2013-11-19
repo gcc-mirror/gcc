@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "function.h"
 #include "alias.h"

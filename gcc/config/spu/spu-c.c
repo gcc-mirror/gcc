@@ -20,6 +20,7 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "tm_p.h"

@@ -32,6 +32,8 @@
 #include "output.h"
 #include "insn-attr.h"
 #include "tree.h"
+#include "varasm.h"
+#include "calls.h"
 #include "flags.h"
 #include "except.h"
 #include "function.h"

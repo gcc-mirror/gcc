@@ -911,6 +911,723 @@
 	* config/tilepro/tilepro.c: Likewise.
 	* config/xtensa/xtensa.c: Likewise.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add stringpool.h.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* tree.h: Include fold-const.h.
+	(aggregate_value_p): Moved to function.h.
+	(alloca_call_p): Moved to calls.h.
+	(allocate_struct_function): Moved to function.h.
+	(apply_tm_attr): Moved to attribs.h.
+	(array_at_struct_end_p): Moved to expr.h.
+	(array_ref_element_size): Moved to tree-dfa.h.
+	(array_ref_low_bound): Moved to tree-dfa.h.
+	(array_ref_up_bound): Moved to tree.h.
+	(assemble_alias): Moved to cgraph.h.
+	(bit_from_pos): Moved to stor-layout.h.
+	(build_addr): Moved to tree-nested.h.
+	(build_duplicate_type): Moved to tree-inline.h.
+	(build_fold_addr_expr): Moved to fold-const.h.
+	(build_fold_addr_expr_with_type): Moved to fold-const.h.
+	(build_fold_addr_expr_with_type_loc): Moved to fold-const.h.
+	(build_fold_indirect_ref): Moved to fold-const.h.
+	(build_fold_indirect_ref_loc): Moved to fold-const.h.
+	(build_personality_function): Moved to tree.h.
+	(build_range_check): Moved to fold-const.h.
+	(build_simple_mem_ref): Moved to fold-const.h.
+	(build_simple_mem_ref_loc): Moved to fold-const.h.
+	(build_tm_abort_call): Moved to trans-mem.h.
+	(byte_from_pos): Moved to stor-layout.h.
+	(call_expr_flags): Moved to calls.h.
+	(can_move_by_pieces): Moved to expr.h.
+	(categorize_ctor_elements): Moved to expr.h.
+	(change_decl_assembler_name): Moved to gcc-symtab.h.
+	(combine_comparisons): Moved to fold-const.h.
+	(complete_ctor_at_level_p): Moved to tree.h.
+	(component_ref_field_offset): Moved to tree-dfa.h.
+	(compute_builtin_object_size): Moved to tree-object-size.h.
+	(compute_record_mode): Moved to stor-layout.h.
+	(constant_boolean_node): Moved to fold-const.h.
+	(constructor_static_from_elts_p): Moved to varasm.h.
+	(cxx11_attribute_p): Moved to attribs.h.
+	(debug_body): Moved to print-tree.h.
+	(debug_find_tree): Moved to tree-inline.h.
+	(debug_fold_checksum): Moved to fold-const.h.
+	(debug_head): Moved to print-tree.h.
+	(debug_head): Moved to print-tree.h.
+	(debug_raw): Moved to print-tree.h.
+	(debug_tree): Moved to print-tree.h.
+	(debug_vec_tree): Moved to print-tree.h.
+	(debug_verbose): Moved to print-tree.h.
+	(debug_verbose): Moved to print-tree.h.
+	(decl_attributes): Moved to attribs.h.
+	(decl_binds_to_current_def_p): Moved to varasm.h.
+	(decl_default_tls_model): Moved to varasm.h.
+	(decl_replaceable_p): Moved to varasm.h.
+	(div_if_zero_remainder): Moved to fold-const.h.
+	(double_int mem_ref_offset): Moved to fold-const.h.
+	(dump_addr): Moved to print-tree.h.
+	(element_precision): Moved to machmode.h.
+	(expand_dummy_function_end): Moved to function.h.
+	(expand_function_end): Moved to function.h.
+	(expand_function_start): Moved to function.h.
+	(expand_label): Moved to stmt.h.
+	(expr_first): Moved to tree-iterator.h.
+	(expr_last): Moved to tree-iterator.h.
+	(finalize_size_functions): Moved to stor-layout.h.
+	(finish_builtin_struct): Moved to stor-layout.h.
+	(finish_record_layout): Moved to stor-layout.h.
+	(fixup_signed_type): Moved to stor-layout.h.
+	(fixup_unsigned_type): Moved to stor-layout.h.
+	(flags_from_decl_or_type): Moved to calls.h.
+	(fold): Moved to fold-const.h.
+	(fold_abs_const): Moved to fold-const.h.
+	(fold_binary): Moved to fold-const.h.
+	(fold_binary_loc): Moved to fold-const.h.
+	(fold_binary_to_constant): Moved to fold-const.h.
+	(fold_build1): Moved to fold-const.h.
+	(fold_build1_initializer_loc): Moved to fold-const.h.
+	(fold_build1_loc): Moved to fold-const.h.
+	(fold_build1_stat_loc): Moved to fold-const.h.
+	(fold_build2): Moved to fold-const.h.
+	(fold_build2_initializer_loc): Moved to fold-const.h.
+	(fold_build2_loc): Moved to fold-const.h.
+	(fold_build2_stat_loc): Moved to fold-const.h.
+	(fold_build3): Moved to fold-const.h.
+	(fold_build3_loc): Moved to fold-const.h.
+	(fold_build3_stat_loc): Moved to fold-const.h.
+	(fold_build_call_array): Moved to fold-const.h.
+	(fold_build_call_array_initializer): Moved to fold-const.h.
+	(fold_build_call_array_initializer_loc): Moved to fold-const.h.
+	(fold_build_call_array_loc): Moved to fold-const.h.
+	(fold_build_cleanup_point_expr): Moved to fold-const.h.
+	(fold_convert): Moved to fold-const.h.
+	(fold_convert_loc): Moved to fold-const.h.
+	(fold_convertible_p): Moved to fold-const.h.
+	(fold_defer_overflow_warnings): Moved to fold-const.h.
+	(fold_deferring_overflow_warnings_p): Moved to fold-const.h.
+	(fold_fma): Moved to fold-const.h.
+	(fold_ignored_result): Moved to fold-const.h.
+	(fold_indirect_ref): Moved to fold-const.h.
+	(fold_indirect_ref_1): Moved to fold-const.h.
+	(fold_indirect_ref_loc): Moved to fold-const.h.
+	(fold_read_from_constant_string): Moved to fold-const.h.
+	(fold_real_zero_addition_p): Moved to fold-const.h.
+	(fold_single_bit_test): Moved to fold-const.h.
+	(fold_strip_sign_ops): Moved to fold-const.h.
+	(fold_ternary): Moved to fold-const.h.
+	(fold_ternary_loc): Moved to fold-const.h.
+	(fold_unary): Moved to tree-data-ref.h.
+	(fold_unary_ignore_overflow): Moved to fold-const.h.
+	(fold_unary_ignore_overflow_loc): Moved to fold-const.h.
+	(fold_unary_loc): Moved to fold-const.h.
+	(fold_unary_to_constant): Moved to fold-const.h.
+	(fold_undefer_and_ignore_overflow_warnings): Moved to fold-const.h.
+	(fold_undefer_overflow_warnings): Moved to fold-const.h.
+	(folding_initializer): Moved to fold-const.h.
+	(free_temp_slots): Moved to function.h.
+	(generate_setjmp_warnings): Moved to function.h.
+	(get_attribute_name): Moved to attribs.h.
+	(get_identifier): Moved to stringpool.h.
+	(get_identifier_with_length): Moved to stringpool.h.
+	(get_inner_reference): Moved to tree.h.
+	(gimple_alloca_call_p): Moved to calls.h.
+	(gimplify_parameters): Moved to function.h.
+	(highest_pow2_factor): Moved to expr.h.
+	(indent_to): Moved to print-tree.h.
+	(init_attributes): Moved to attribs.h.
+	(init_dummy_function_start): Moved to function.h.
+	(init_function_start): Moved to function.h.
+	(init_inline_once): Moved to tree-inline.h.
+	(init_object_sizes): Moved to tree-object-size.h.
+	(init_temp_slots): Moved to function.h.
+	(init_tree_optimization_optabs): Moved to optabs.h.
+	(initialize_sizetypes): Moved to stor-layout.h.
+	(initializer_constant_valid_for_bitfield_p): Moved to varasm.h.
+	(initializer_constant_valid_p): Moved to varasm.h.
+	(int_const_binop): Moved to fold-const.h.
+	(internal_reference_types): Moved to stor-layout.h.
+	(invert_tree_comparison): Moved to fold-const.h.
+	(invert_truthvalue): Moved to fold-const.h.
+	(invert_truthvalue_loc): Moved to fold-const.h.
+	(is_tm_ending_fndecl): Moved to trans-mem.h.
+	(is_tm_may_cancel_outer): Moved to trans-mem.h.
+	(is_tm_pure): Moved to trans-mem.h.
+	(is_tm_safe): Moved to trans-mem.h.
+	(layout_decl): Moved to stor-layout.h.
+	(layout_type): Moved to stor-layout.h.
+	(lookup_attribute_spec): Moved to attribs.h.
+	(make_accum_type): Moved to stor-layout.h.
+	(make_decl_one_only): Moved to varasm.h.
+	(make_decl_rtl): Moved to tree.h.
+	(make_decl_rtl_for_debug): Moved to varasm.h.
+	(make_fract_type): Moved to stor-layout.h.
+	(make_or_reuse_sat_signed_accum_type): Moved to stor-layout.h.
+	(make_or_reuse_sat_signed_fract_type): Moved to stor-layout.h.
+	(make_or_reuse_sat_unsigned_accum_type): Moved to stor-layout.h.
+	(make_or_reuse_sat_unsigned_fract_type): Moved to stor-layout.h.
+	(make_or_reuse_signed_accum_type): Moved to stor-layout.h.
+	(make_or_reuse_signed_fract_type): Moved to stor-layout.h.
+	(make_or_reuse_unsigned_accum_type): Moved to stor-layout.h.
+	(make_or_reuse_unsigned_fract_type): Moved to stor-layout.h.
+	(make_range): Moved to fold-const.h.
+	(make_range_step): Moved to fold-const.h.
+	(make_sat_signed_accum_type): Moved to stor-layout.h.
+	(make_sat_signed_fract_type): Moved to stor-layout.h.
+	(make_sat_unsigned_accum_type): Moved to stor-layout.h.
+	(make_sat_unsigned_fract_type): Moved to stor-layout.h.
+	(make_signed_accum_type): Moved to stor-layout.h.
+	(make_signed_fract_type): Moved to stor-layout.h.
+	(make_signed_type): Moved to stor-layout.h.
+	(make_unsigned_accum_type): Moved to stor-layout.h.
+	(make_unsigned_fract_type): Moved to stor-layout.h.
+	(make_unsigned_type): Moved to stor-layout.h.
+	(mark_decl_referenced): Moved to varasm.h.
+	(mark_referenced): Moved to varasm.h.
+	(may_negate_without_overflow_p): Moved to fold-const.h.
+	(maybe_get_identifier): Moved to stringpool.h.
+	(merge_ranges): Moved to fold-const.h.
+	(merge_weak): Moved to varasm.h.
+	(mode_for_size_tree): Moved to stor-layout.h.
+	(multiple_of_p): Moved to fold-const.h.
+	(must_pass_in_stack_var_size): Moved to calls.h.
+	(must_pass_in_stack_var_size_or_pad): Moved to calls.h.
+	(native_encode_expr): Moved to fold-const.h.
+	(native_interpret_expr): Moved to fold-const.h.
+	(non_lvalue): Moved to fold-const.h.
+	(non_lvalue_loc): Moved to fold-const.h.
+	(normalize_offset): Moved to stor-layout.h.
+	(normalize_rli): Moved to stor-layout.h.
+	(notice_global_symbol): Moved to varasm.h.
+	(omit_one_operand): Moved to fold-const.h.
+	(omit_one_operand_loc): Moved to fold-const.h.
+	(omit_two_operands): Moved to fold-const.h.
+	(omit_two_operands_loc): Moved to fold-const.h.
+	(operand_equal_p): Moved to tree-data-ref.h.
+	(parse_input_constraint): Moved to stmt.h.
+	(parse_output_constraint): Moved to stmt.h.
+	(place_field): Moved to stor-layout.h.
+	(pop_function_context): Moved to function.h.
+	(pop_temp_slots): Moved to function.h.
+	(pos_from_bit): Moved to stor-layout.h.
+	(preserve_temp_slots): Moved to function.h.
+	(print_node): Moved to print-tree.h.
+	(print_node_brief): Moved to print-tree.h.
+	(print_rtl): Moved to rtl.h.
+	(process_pending_assemble_externals): Moved to varasm.h.
+	(ptr_difference_const): Moved to fold-const.h.
+	(push_function_context): Moved to function.h.
+	(push_struct_function): Moved to function.h.
+	(push_temp_slots): Moved to function.h.
+	(record_tm_replacement): Moved to trans-mem.h.
+	(relayout_decl): Moved to stor-layout.h.
+	(resolve_asm_operand_names): Moved to stmt.h.
+	(resolve_unique_section): Moved to varasm.h.
+	(rli_size_so_far): Moved to stor-layout.h.
+	(rli_size_unit_so_far): Moved to stor-layout.h.
+	(round_down): Moved to fold-const.h.
+	(round_down_loc): Moved to fold-const.h.
+	(round_up): Moved to fold-const.h.
+	(round_up_loc): Moved to fold-const.h.
+	(set_decl_incoming_rtl): Moved to emit-rtl.h.
+	(set_decl_rtl): Moved to tree.h.
+	(set_min_and_max_values_for_integral_type): Moved to stor-layout.h.
+	(set_user_assembler_name): Moved to varasm.h.
+	(setjmp_call_p): Moved to calls.h.
+	(size_binop): Moved to fold-const.h.
+	(size_binop_loc): Moved to fold-const.h.
+	(size_diffop): Moved to fold-const.h.
+	(size_diffop_loc): Moved to fold-const.h.
+	(size_int_kind): Moved to fold-const.h.
+	(stack_protect_epilogue): Moved to function.h.
+	(start_record_layout): Moved to stor-layout.h.
+	(supports_one_only): Moved to varasm.h.
+	(swap_tree_comparison): Moved to fold-const.h.
+	(tm_malloc_replacement): Moved to trans-mem.h.
+	(tree build_fold_addr_expr_loc): Moved to fold-const.h.
+	(tree build_invariant_address): Moved to fold-const.h.
+	(tree_binary_nonnegative_warnv_p): Moved to fold-const.h.
+	(tree_binary_nonzero_warnv_p): Moved to fold-const.h.
+	(tree_call_nonnegative_warnv_p): Moved to fold-const.h.
+	(tree_expr_nonnegative_p): Moved to fold-const.h.
+	(tree_expr_nonnegative_warnv_p): Moved to fold-const.h.
+	(tree_output_constant_def): Moved to varasm.h.
+	(tree_overlaps_hard_reg_set): Moved to stmt.h.
+	(tree_single_nonnegative_warnv_p): Moved to fold-const.h.
+	(tree_single_nonzero_warnv_p): Moved to fold-const.h.
+	(tree_swap_operands_p): Moved to fold-const.h.
+	(tree_unary_nonnegative_warnv_p): Moved to fold-const.h.
+	(tree_unary_nonzero_warnv_p): Moved to fold-const.h.
+	(update_alignment_for_field): Moved to stor-layout.h.
+	(use_register_for_decl): Moved to function.h.
+	(variable_size): Moved to rtl.h.
+	(vector_type_mode): Moved to stor-layout.h.
+	* cgraph.h: Corresponding changes.
+	* emit-rtl.h: Corresponding changes.
+	* expr.h: Corresponding changes.
+	* function.h: Corresponding changes.
+	* optabs.h: Corresponding changes.
+	* trans-mem.h: Corresponding changes.
+	Protect against multiple inclusion.
+	* tree-inline.h: Corresponding changes.
+	* tree-iterator.h: Corresponding changes.
+	* tree-dfa.h: Include expr.h.
+	* tree-ssanames.h: Include stringpool.h.
+	* attribs.h: New file.
+	* calls.h: New file.
+	* fold-const.h: New file.
+	* gcc-symtab.h: New file.
+	* print-rtl.h: New file.
+	* print-tree.h: New file.
+	* stmt.h: New file.
+	* stor-layout.h: New file.
+	* strinpool.h: New file.
+	* tree-nested.h: New file
+	* tree-object-size.h: New file.
+	* varasm.h: New file.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* alias.c: Include varasm.h.
+	Include expr.h.
+	* asan.c: Include calls.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* attribs.c: Include stringpool.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	* builtins.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	Include tree-object-size.h.
+	* calls.c: Include stor-layout.h.
+	Include varasm.h.
+	Include stringpool.h.
+	Include attribs.h.
+	* cfgexpand.c: Include stringpool.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	Include stmt.h.
+	Include print-tree.h.
+	* cgraph.c: Include varasm.h.
+	Include calls.h.
+	Include print-tree.h.
+	* cgraphclones.c: Include stringpool.h.
+	Include function.h.
+	Include emit-rtl.h.
+	Move inclusion of rtl.h earlier in the file.
+	* cgraphunit.c: Include varasm.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	* cilk-common.c: Include stringpool.h.
+	Include stor-layout.h.
+	* combine.c: Include stor-layout.h.
+	* config/aarch64/aarch64-builtins.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include calls.h.
+	* config/aarch64/aarch64.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/alpha/alpha.c: Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/arc/arc.c: Include varasm.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	Include calls.h.
+	* config/arm/arm.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/avr/avr-c.c: Include stor-layout.h.
+	* config/avr/avr-log.c: Include print-tree.h.
+	* config/avr/avr.c: Include print-tree.h.
+	Include calls.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	* config/bfin/bfin.c: Include varasm.h.
+	Include calls.h.
+	* config/c6x/c6x.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	Include stringpool.h.
+	* config/cr16/cr16.c: Include stor-layout.h.
+	Include calls.h.
+	* config/cris/cris.c: Include varasm.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include stmt.h.
+	* config/darwin.c: Include stringpool.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	* config/epiphany/epiphany.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	Include stringpool.h.
+	* config/fr30/fr30.c: Include stor-layout.h.
+	Include varasm.h.
+	* config/frv/frv.c: Include varasm.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	* config/h8300/h8300.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	Include stringpool.h.
+	* config/i386/i386.c: Include stringpool.h.
+	Include attribs.h.
+	Include calls.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* config/i386/winnt-cxx.c: Include stringpool.h.
+	Include attribs.h.
+	* config/i386/winnt.c: Include stringpool.h.
+	Include varasm.h.
+	* config/ia64/ia64-c.c: Include stringpool.h.
+	* config/ia64/ia64.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/iq2000/iq2000.c: Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/lm32/lm32.c: Include calls.h.
+	* config/m32c/m32c.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/m32r/m32r.c: Include stor-layout.h.
+	Include varasm.h.
+	Include stringpool.h.
+	Include calls.h.
+	* config/m68k/m68k.c: Include calls.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* config/mcore/mcore.c: Include stor-layout.h.
+	Include varasm.h.
+	Include stringpool.h.
+	Include calls.h.
+	* config/mep/mep.c: Include varasm.h.
+	Include calls.h.
+	Include stringpool.h.
+	Include stor-layout.h.
+	* config/microblaze/microblaze.c: Include varasm.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* config/mips/mips.c: Include varasm.h.
+	Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* config/mmix/mmix.c: Include varasm.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* config/mn10300/mn10300.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/moxie/moxie.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/msp430/msp430.c: Include stor-layout.h.
+	Include calls.h.
+	* config/nds32/nds32.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/pa/pa.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/pdp11/pdp11.c: Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/picochip/picochip.c: Include calls.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	* config/rl78/rl78.c: Include varasm.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* config/rs6000/rs6000-c.c: Include stor-layout.h.
+	Include stringpool.h.
+	* config/rs6000/rs6000.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include print-tree.h.
+	Include varasm.h.
+	* config/rx/rx.c: Include varasm.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* config/s390/s390.c: Include print-tree.h.
+	Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/score/score.c: Include stringpool.h.
+	Include calls.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	* config/sh/sh-c.c: Include stringpool.h.
+	Include attribs.h.h.
+	* config/sh/sh.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/sol2-c.c: Include stringpool.h.
+	Include attribs.h.
+	* config/sol2-cxx.c: Include stringpool.h.
+	* config/sol2.c: Include stringpool.h.
+	Include varasm.h.
+	* config/sparc/sparc.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/spu/spu-c.c: Include stringpool.h.
+	* config/spu/spu.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* config/stormy16/stormy16.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/tilegx/tilegx.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/tilepro/tilepro.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/v850/v850-c.c: Include stringpool.h.
+	Include attribs.h.
+	* config/v850/v850.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include calls.h.
+	* config/vax/vax.c: Include calls.h.
+	Include varasm.h.
+	* config/vms/vms.c: Include stringpool.h.
+	* config/vxworks.c: Include stringpool.h.
+	* config/xtensa/xtensa.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include varasm.h.
+	* convert.c: Include stor-layout.h.
+	* coverage.c: Include stringpool.h.
+	Include stor-layout.h.
+	* dbxout.c: Include varasm.h.
+	Include stor-layout.h.
+	* dojump.c: Include stor-layout.h.
+	* dse.c: Include stor-layout.h.
+	* dwarf2asm.c: Include stringpool.h.
+	Include varasm.h.
+	* dwarf2cfi.c: Include stor-layout.h.
+	* dwarf2out.c: Include rtl.h.
+	Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include function.h.
+	Include emit-rtl.h.
+	Move inclusion of rtl.h earlier in the file.
+	* emit-rtl.c: Include varasm.h.
+	* except.c: Include stringpool.h.
+	Include stor-layout.h.
+	* explow.c: Include stor-layout.h.
+	* expmed.c: Include stor-layout.h.
+	* expr.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include attribs.h.
+	Include varasm.h.
+	* final.c: Include varasm.h.
+	* fold-const.c: Include stor-layout.h.
+	Include calls.h.
+	Include tree-iterator.h.
+	* function.c: Include stor-layout.h.
+	Include varasm.h.
+	Include stringpool.h.
+	* genattrtab.c (write_header): Emit includes for varasm.h,
+	stor-layout.h and calls.h.
+	* genautomata.c (main): Likewise.
+	* genemit.c: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c (output_prologue): Likewise.
+	* genpeep.c: Likewise.
+	* genpreds.c (write_insn_preds_c): Likewise.
+	* gengtype.c (open_base_files): Add stringpool.h.
+	* gimple-expr.c: Include stringpool.h.
+	Include stor-layout.h.
+	* gimple-fold.c: Include stringpool.h.
+	Include expr.h.
+	Include stmt.h.
+	Include stor-layout.h.
+	* gimple-low.c: Include tree-nested.h.
+	Include calls.h.
+	* gimple-pretty-print.c: Include stringpool.h.
+	* gimple-ssa-strength-reduction.c: Include stor-layout.h.
+	Include expr.h.
+	* gimple-walk.c: Include stmt.h.
+	* gimple.c: Include calls.h.
+	Include stmt.h.
+	Include stor-layout.h.
+	* gimplify.c: Include stringpool.h.
+	Include calls.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	Include stmt.h.
+	Include print-tree.h.
+	Include expr.h.
+	* gimplify-me.c: Include stmt.h
+	Include stor-layout.h
+	* internal-fn.c: Include stor-layout.h.
+	* ipa-devirt.c: Include print-tree.h.
+	Include calls.h.
+	* ipa-inline-analysis.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include print-tree.h.
+	* ipa-inline.c: Include trans-mem.h.
+	Include calls.h.
+	* ipa-prop.c: Include expr.h.
+	Include stor-layout.h.
+	Include print-tree.h.
+	* ipa-pure-const.c: Include print-tree.h.
+	Include calls.h.
+	* ipa-reference.c: Include calls.h.
+	* ipa-split.c: Include stringpool.h.
+	Include expr.h.
+	Include calls.h.
+	* ipa.c: Include calls.h.
+	Include stringpool.h.
+	* langhooks.c: Include stringpool.h.
+	Include attribs.h.
+	* lto-cgraph.c: Include stringpool.h.
+	* lto-streamer-in.c: Include stringpool.h.
+	* lto-streamer-out.c: Include stor-layout.h.
+	Include stringpool.h.
+	* omp-low.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include expr.h.
+	* optabs.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	* passes.c: Include varasm.h.
+	* predict.c: Include calls.h.
+	* print-rtl.c: Include print-tree.h.
+	* print-tree.c: Include varasm.h.
+	Include print-rtl.h.
+	Include stor-layout.h.
+	* realmpfr.c: Include stor-layout.h.
+	* reg-stack.c: Include varasm.h.
+	* sdbout.c: Include varasm.h.
+	Include stor-layout.h.
+	* simplify-rtx.c: Include varasm.h.
+	* stmt.c: Include varasm.h.
+	Include stor-layout.h.
+	* stor-layout.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	Include print-tree.h.
+	* symtab.c: Include rtl.h.
+	Include print-tree.h.
+	Include varasm.h.
+	Include function.h.
+	Include emit-rtl.h.
+	* targhooks.c: Include stor-layout.h.
+	Include varasm.h.
+	* toplev.c: Include varasm.h.
+	Include tree-inline.h.
+	* trans-mem.c: Include calls.h.
+	Include function.h.
+	Include rtl.h.
+	Include emit-rtl.h.
+	* tree-affine.c: Include expr.h.
+	* tree-browser.c: Include print-tree.h.
+	* tree-call-cdce.c: Include stor-layout.h.
+	* tree-cfg.c: Include trans-mem.h.
+	Include stor-layout.h.
+	Include print-tree.h.
+	* tree-complex.c: Include stor-layout.h.
+	* tree-data-ref.c: Include expr.h.
+	* tree-dfa.c: Include stor-layout.h.
+	* tree-eh.c: Include expr.h.
+	Include calls.h.
+	* tree-emutls.c: Include stor-layout.h.
+	Include varasm.h.
+	* tree-if-conv.c: Include stor-layout.h.
+	* tree-inline.c: Include stor-layout.h.
+	Include calls.h.
+	* tree-loop-distribution.c: Include stor-layout.h.
+	* tree-nested.c: Include stringpool.h.
+	Include stor-layout.h.
+	* tree-object-size.c: Include tree-object-size.h.
+	* tree-outof-ssa.c: Include stor-layout.h.
+	* tree-parloops.c: Include stor-layout.h.
+	Include tree-nested.h.
+	* tree-pretty-print.c: Include stor-layout.h.
+	Include expr.h.
+	* tree-profile.c: Include varasm.h.
+	Include tree-nested.h.
+	* tree-scalar-evolution.c: Include expr.h.
+	* tree-sra.c: Include stor-layout.h.
+	* tree-ssa-address.c: Include stor-layout.h.
+	* tree-ssa-ccp.c: Include stor-layout.h.
+	* tree-ssa-dce.c: Include calls.h.
+	* tree-ssa-dom.c: Include stor-layout.h.
+	* tree-ssa-forwprop.c: Include stor-layout.h.
+	* tree-ssa-ifcombine.c: Include stor-layout.h.
+	* tree-ssa-loop-ivopts.c: Include stor-layout.h.
+	* tree-ssa-loop-niter.c: Include calls.h.
+	Include expr.h.
+	* tree-ssa-loop-prefetch.c: Include stor-layout.h.
+	* tree-ssa-math-opts.c: Include stor-layout.h.
+	* tree-ssa-operands.c: Include stmt.h.
+	Include print-tree.h.
+	* tree-ssa-phiopt.c: Include stor-layout.h.
+	* tree-ssa-reassoc.c: Include stor-layout.h.
+	* tree-ssa-sccvn.c: Include stor-layout.h.
+	* tree-ssa-sink.c: Include stor-layout.h.
+	* tree-ssa-strlen.c: Include stor-layout.h.
+	* tree-ssa-structalias.c: Include stor-layout.h.
+	Include stmt.h.
+	* tree-ssa-tail-merge.c: Include stor-layout.h.
+	Include trans-mem.h.
+	* tree-ssa-uncprop.c: Include stor-layout.h.
+	* tree-ssa.c: Include stor-layout.h.
+	* tree-ssanames.c: Include stor-layout.h.
+	* tree-streamer-in.c: Include stringpool.h.
+	* tree-streamer-out.c: Include stor-layout.h.
+	* tree-switch-conversion.c: Include varasm.h.
+	Include stor-layout.h.
+	* tree-tailcall.c: Include stor-layout.h.
+	* tree-vect-data-refs.c: Include stor-layout.h.
+	* tree-vect-generic.c: Include stor-layout.h.
+	* tree-vect-loop.c: Include stor-layout.h.
+	* tree-vect-patterns.c: Include stor-layout.h.
+	* tree-vect-slp.c: Include stor-layout.h.
+	* tree-vect-stmts.c: Include stor-layout.h.
+	* tree-vectorizer.c: Include stor-layout.h.
+	* tree-vrp.c: Include stor-layout.h.
+	Include calls.h.
+	* tree.c: Include stor-layout.h.
+	Include calls.h.
+	Include attribs.h.
+	Include varasm.h.
+	* tsan.c: Include expr.h.
+	* ubsan.c: Include stor-layout.h.
+	Include stringpool.h.
+	* value-prof.c: Include tree-nested.h.
+	Include calls.h.
+	* var-tracking.c: Include varasm.h.
+	Include stor-layout.h.
+	* varasm.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include gcc-symtab.h.
+	Include varasm.h.
+	* varpool.c: Include varasm.h.
+	* vmsdbgout.c: Include varasm.h.
+	* xcoffout.c: Include varasm.h.
+
 2013-11-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.md (doloop_begin_i): Remove extra alignment;

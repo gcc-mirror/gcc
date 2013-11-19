@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "df.h"
 #include "tree.h"
+#include "calls.h"
+#include "varasm.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"

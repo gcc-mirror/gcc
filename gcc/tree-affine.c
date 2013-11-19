@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
 #include "tree-pretty-print.h"
 #include "pointer-set.h"
 #include "tree-affine.h"

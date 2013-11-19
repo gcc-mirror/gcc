@@ -239,6 +239,9 @@ output_prologue (void)
   printf ("#include \"flags.h\"\n");
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"tree.h\"\n");
+  printf ("#include \"varasm.h\"\n");
+  printf ("#include \"stor-layout.h\"\n");
+  printf ("#include \"calls.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"expr.h\"\n");
   printf ("#include \"insn-codes.h\"\n");

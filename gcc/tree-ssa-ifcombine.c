@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"

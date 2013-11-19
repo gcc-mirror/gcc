@@ -63,6 +63,29 @@
 	* c-gimplify.c: Likewise.
 	* cilk.c: Likewise.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* c-common.c: Include fold-const.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include stringpool.h.
+	Include attribs.h.
+	Include varasm.h.
+	Include trans-mem.h.
+	* c-cppbuiltin.c: Include stor-layout.h.
+	Include stringpool.h.
+	* c-format.c: Include stringpool.h.
+	* c-lex.c: Include stringpool.h.
+	Include stor-layout.h.
+	* c-pragma.c: Include stringpool.h.
+	Include attribs.h.
+	Include varasm.h.
+	Include gcc-symtab.h.
+	* c-pretty-print.c: Include stor-layout.h.
+	Include attribs.h.
+	* cilk.c: Include stringpool.h.
+	Include calls.h.
+
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (enum rid): Add RID_AUTO_TYPE.

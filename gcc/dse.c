@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"

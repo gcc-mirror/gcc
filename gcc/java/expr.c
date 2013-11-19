@@ -33,6 +33,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 				   PARM_BOUNDARY.  */
 				   
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "javaop.h"

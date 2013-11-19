@@ -83,6 +83,68 @@
 	* tree.c: Likewise.
 	* vtable-class-hierarchy.c: Likewise.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* call.c: Include stor-layout.h.
+	Include trans-mem.h.
+	Include stringpool.h.
+	* class.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include attribs.h.
+	* cp-gimplify.c: Include stor-layout.h.
+	* cvt.c: Include stor-layout.h.
+	* decl.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include calls.h.
+	* decl2.c: Include stringpool.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* error.c: Include stringpool.h.
+	* except.c: Include stringpool.h.
+	Include trans-mem.h.
+	Include attribs.h.
+	* init.c: Include stringpool.h.
+	Include varasm.h.
+	* lambda.c: Include stringpool.h.
+	* lex.c: Include stringpool.h.
+	* mangle.c: Include stor-layout.h.
+	Include stringpool.h.
+	* method.c: Include stringpool.h.
+	Include varasm.h.
+	* name-lookup.c: Include stringpool.h.
+	Include print-tree.h.
+	Include attribs.h.
+	* optimize.c: Include stringpool.h.
+	* parser.c: Include print-tree.h.
+	Include stringpool.h.
+	Include attribs.h.
+	Include trans-mem.h.
+	* pt.c: Include stringpool.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	* ptree.c: Include print-tree.h.
+	* repo.c: Include stringpool.h.
+	* rtti.c: Include stringpool.h.
+	Include stor-layout.h.
+	* semantics.c: Include stmt.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	* tree.c: Include stor-layout.h.
+	Include print-tree.h.
+	Include tree-iterator.h.
+	* typeck.c: Include stor-layout.h.
+	Include varasm.h.
+	* typeck2.c: Include stor-layout.h.
+	Include varasm.h.
+	* vtable-class-hierarchy.c: Include stringpool.h.
+	Include stor-layout.h.
+
 2013-11-12  Andrew MacLeod <amacleod@redhat.com>
 
 	* class.c: Include gimplify.h.

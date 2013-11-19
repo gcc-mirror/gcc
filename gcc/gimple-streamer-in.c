@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"

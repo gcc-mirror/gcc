@@ -748,4 +748,23 @@ extern void expand_case (gimple);
 /* Like expand_case but special-case for SJLJ exception dispatching.  */
 extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
 
+/* Determine whether the LEN bytes can be moved by using several move
+   instructions.  Return nonzero if a call to move_by_pieces should
+   succeed.  */
+extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
+
+extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
+bool array_at_struct_end_p (tree);
+
+/* Return a tree of sizetype representing the size, in bytes, of the element
+   of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_element_size (tree);
+
+extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
+				      HOST_WIDE_INT *, bool *);
+
+/* Return a tree representing the offset, in bytes, of the field referenced
+   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
+extern tree component_ref_field_offset (tree);
+
 #endif /* GCC_EXPR_H */

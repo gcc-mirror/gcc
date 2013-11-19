@@ -40,6 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"			/* For rtl.h: needs enum reg_class.  */
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "trans-mem.h"
 #include "langhooks.h"
 #include "input.h"
 #include "cpplib.h"

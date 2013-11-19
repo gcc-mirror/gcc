@@ -24,6 +24,7 @@
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "print-tree.h"
 #include "output.h"
 #include "input.h"
 #include "function.h"

@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "gimplify.h"
+#include "stor-layout.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "debug.h"

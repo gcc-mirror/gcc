@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE,
 			   LONG_DOUBLE_TYPE_SIZE and LIBGCC2_HAS_TF_MODE.  */
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
 #include "langhooks.h"	/* For iso-c-bindings.def.  */
 #include "target.h"
 #include "ggc.h"
