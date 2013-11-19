@@ -1,3 +1,20 @@
+2013-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/null-1.c: New test.
+	* c-c++-common/ubsan/null-2.c: New test.
+	* c-c++-common/ubsan/null-3.c: New test.
+	* c-c++-common/ubsan/null-4.c: New test.
+	* c-c++-common/ubsan/null-5.c: New test.
+	* c-c++-common/ubsan/null-6.c: New test.
+	* c-c++-common/ubsan/null-7.c: New test.
+	* c-c++-common/ubsan/null-8.c: New test.
+	* c-c++-common/ubsan/null-9.c: New test.
+	* c-c++-common/ubsan/null-10.c: New test.
+	* c-c++-common/ubsan/null-11.c: New test.
+	* gcc.dg/ubsan/c99-shift-2.c: Adjust dg-output.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-3.c: Likewise.
+
 2013-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/c11-complex-1.c: Use dg-add-options ieee.

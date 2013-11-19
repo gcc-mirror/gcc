@@ -1,3 +1,48 @@
+2013-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* opts.c (common_handle_option): Add -fsanitize=null option.
+	Turn off -fdelete-null-pointer-checks option when doing the
+	NULL pointer checking.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH): Add.
+	* tree-pass.h (make_pass_ubsan): Declare.
+	(make_pass_sanopt): Declare.
+	* timevar.def (TV_TREE_UBSAN): New timevar.
+	* passes.def: Add pass_sanopt and pass_ubsan.
+	* ubsan.h (ubsan_null_ckind): New enum.
+	(ubsan_mismatch_data): New struct.
+	(ubsan_expand_null_ifn): Declare.
+	(ubsan_create_data): Adjust declaration.
+	(ubsan_type_descriptor): Likewise.
+	* asan.c: Include "ubsan.h".
+	(pass_data_sanopt): New pass.
+	(execute_sanopt): New function.
+	(gate_sanopt): Likewise.
+	(make_pass_sanopt): Likewise.
+	(class pass_sanopt): New class.
+	* ubsan.c: Include tree-pass.h, gimple-ssa.h, gimple-walk.h,
+	gimple-iterator.h and cfgloop.h. 
+	(PROB_VERY_UNLIKELY): Define.
+	(tree_type_map_hash): New function.
+	(ubsan_type_descriptor): Add new parameter.
+	Improve type name generation.
+	(ubsan_create_data): Add new parameter.  Add pointer data into
+	ubsan structure.
+	(ubsan_expand_null_ifn): New function.
+	(instrument_member_call): Likewise.
+	(instrument_mem_ref): Likewise.
+	(instrument_null): Likewise.
+	(ubsan_pass): Likewise.
+	(gate_ubsan): Likewise.
+	(make_pass_ubsan): Likewise.
+	(ubsan_instrument_unreachable): Adjust ubsan_create_data call.
+	(class pass_ubsan): New class.
+	(pass_data_ubsan): New pass.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_NULL.
+	* internal-fn.c (expand_UBSAN_NULL): New function.
+	* cgraphunit.c (varpool_finalize_decl): Call varpool_assemble_decl
+	even when !flag_toplevel_reorder.
+	* internal-fn.def (UBSAN_NULL): New.
+
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_indirect_edge): Use get_polymorphic_call_info.

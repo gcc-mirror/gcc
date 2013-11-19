@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_init_datastructures);
 
       NEXT_PASS (pass_build_ssa);
+      NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_early_warn_uninitialized);
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
@@ -304,6 +305,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_asan_O0);
   NEXT_PASS (pass_tsan_O0);
+  NEXT_PASS (pass_sanopt);
   NEXT_PASS (pass_cleanup_eh);
   NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);

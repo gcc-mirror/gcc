@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "cfgloop.h"
 #include "gimple-builder.h"
+#include "ubsan.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -2368,6 +2369,89 @@ gimple_opt_pass *
 make_pass_asan_O0 (gcc::context *ctxt)
 {
   return new pass_asan_O0 (ctxt);
+}
+
+/* Perform optimization of sanitize functions.  */
+
+static unsigned int
+execute_sanopt (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  if (!is_gimple_call (stmt))
+	    continue;
+
+	  if (gimple_call_internal_p (stmt))
+	    switch (gimple_call_internal_fn (stmt))
+	      {
+	      case IFN_UBSAN_NULL:
+		ubsan_expand_null_ifn (gsi);
+		break;
+	      default:
+		break;
+	      }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Optimized\n  ");
+	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+    }
+  return 0;
+}
+
+static bool
+gate_sanopt (void)
+{
+  return flag_sanitize;
+}
+
+namespace {
+
+const pass_data pass_data_sanopt =
+{
+  GIMPLE_PASS, /* type */
+  "sanopt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_flow | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_sanopt : public gimple_opt_pass
+{
+public:
+  pass_sanopt (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sanopt, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_sanopt (); }
+  unsigned int execute () { return execute_sanopt (); }
+
+}; // class pass_sanopt
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_sanopt (gcc::context *ctxt)
+{
+  return new pass_sanopt (ctxt);
 }
 
 #include "gt-asan.h"

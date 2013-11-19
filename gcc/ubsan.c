@@ -23,14 +23,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "cgraph.h"
+#include "tree-pass.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-ssa.h"
+#include "gimple-walk.h"
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "output.h"
 #include "tm_p.h"
 #include "toplev.h"
+#include "cfgloop.h"
 #include "ubsan.h"
 #include "c-family/c-common.h"
+
+/* From trans-mem.c.  */
+#define PROB_VERY_UNLIKELY      (REG_BR_PROB_BASE / 2000 - 1)
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -40,8 +48,15 @@ struct GTY(()) tree_type_map {
 };
 
 #define tree_type_map_eq tree_map_base_eq
-#define tree_type_map_hash tree_map_base_hash
 #define tree_type_map_marked_p tree_map_base_marked_p
+
+/* Hash from a tree in a tree_type_map.  */
+
+unsigned int
+tree_type_map_hash (const void *item)
+{
+  return TYPE_UID (((const struct tree_type_map *)item)->type.from);
+}
 
 static GTY ((if_marked ("tree_type_map_marked_p"), param_is (struct tree_type_map)))
      htab_t decl_tree_for_type;
@@ -240,12 +255,14 @@ get_ubsan_type_info_for_type (tree type)
 }
 
 /* Helper routine that returns ADDR_EXPR of a VAR_DECL of a type
-   descriptor.  It first looks into the pointer map; if not found,
-   create the VAR_DECL, put it into the pointer map and return the
-   ADDR_EXPR of it.  TYPE describes a particular type.  */
+   descriptor.  It first looks into the hash table; if not found,
+   create the VAR_DECL, put it into the hash table and return the
+   ADDR_EXPR of it.  TYPE describes a particular type.  WANT_POINTER_TYPE_P
+   means whether we are interested in the pointer type and not the pointer
+   itself.  */
 
 tree
-ubsan_type_descriptor (tree type)
+ubsan_type_descriptor (tree type, bool want_pointer_type_p)
 {
   /* See through any typedefs.  */
   type = TYPE_MAIN_VARIANT (type);
@@ -255,33 +272,73 @@ ubsan_type_descriptor (tree type)
     return decl;
 
   tree dtype = ubsan_type_descriptor_type ();
-  const char *tname;
+  tree type2 = type;
+  const char *tname = NULL;
+  char *pretty_name;
+  unsigned char deref_depth = 0;
   unsigned short tkind, tinfo;
 
-  /* At least for INTEGER_TYPE/REAL_TYPE/COMPLEX_TYPE, this should work.
-     For e.g. type_unsigned_for (type) or bit-fields, the TYPE_NAME
-     would be NULL.  */
-  if (TYPE_NAME (type) != NULL)
+  /* Get the name of the type, or the name of the pointer type.  */
+  if (want_pointer_type_p)
     {
-      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	tname = IDENTIFIER_POINTER (TYPE_NAME (type));
-      else
-	tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+      gcc_assert (POINTER_TYPE_P (type));
+      type2 = TREE_TYPE (type);
+
+      /* Remove any '*' operators from TYPE.  */
+      while (POINTER_TYPE_P (type2))
+        deref_depth++, type2 = TREE_TYPE (type2);
+
+      if (TREE_CODE (type2) == METHOD_TYPE)
+        type2 = TYPE_METHOD_BASETYPE (type2);
     }
-  else
+
+  if (TYPE_NAME (type2) != NULL)
+    {
+      if (TREE_CODE (TYPE_NAME (type2)) == IDENTIFIER_NODE)
+	tname = IDENTIFIER_POINTER (TYPE_NAME (type2));
+      else
+	tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type2)));
+    }
+
+  if (tname == NULL)
+    /* We weren't able to determine the type name.  */
     tname = "<unknown>";
 
-  if (TREE_CODE (type) == INTEGER_TYPE)
+  /* Decorate the type name with '', '*', "struct", or "union".  */
+  pretty_name = (char *) alloca (strlen (tname) + 16 + deref_depth);
+  if (want_pointer_type_p)
     {
-      /* For INTEGER_TYPE, this is 0x0000.  */
-      tkind = 0x000;
-      tinfo = get_ubsan_type_info_for_type (type);
+      int pos = sprintf (pretty_name, "'%s%s%s%s%s%s%s",
+			 TYPE_VOLATILE (type2) ? "volatile " : "",
+			 TYPE_READONLY (type2) ? "const " : "",
+			 TYPE_RESTRICT (type2) ? "restrict " : "",
+			 TYPE_ATOMIC (type2) ? "_Atomic " : "",
+			 TREE_CODE (type2) == RECORD_TYPE
+			 ? "struct "
+			 : TREE_CODE (type2) == UNION_TYPE
+			   ? "union " : "", tname,
+			 deref_depth == 0 ? "" : " ");
+      while (deref_depth-- > 0)
+        pretty_name[pos++] = '*';
+      pretty_name[pos++] = '\'';
+      pretty_name[pos] = '\0';
     }
-  else if (TREE_CODE (type) == REAL_TYPE)
-    /* We don't have float support yet.  */
-    gcc_unreachable ();
   else
-    gcc_unreachable ();
+    sprintf (pretty_name, "'%s'", tname);
+
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+      tkind = 0x0000;
+      break;
+    case REAL_TYPE:
+      tkind = 0x0001;
+      break;
+    default:
+      tkind = 0xffff;
+      break;
+    }
+  tinfo = get_ubsan_type_info_for_type (type);
 
   /* Create a new VAR_DECL of type descriptor.  */
   char tmp_name[32];
@@ -295,8 +352,8 @@ ubsan_type_descriptor (tree type)
   DECL_IGNORED_P (decl) = 1;
   DECL_EXTERNAL (decl) = 0;
 
-  size_t len = strlen (tname);
-  tree str = build_string (len + 1, tname);
+  size_t len = strlen (pretty_name);
+  tree str = build_string (len + 1, pretty_name);
   TREE_TYPE (str) = build_array_type (char_type_node,
 				      build_index_type (size_int (len)));
   TREE_READONLY (str) = 1;
@@ -311,7 +368,7 @@ ubsan_type_descriptor (tree type)
   DECL_INITIAL (decl) = ctor;
   rest_of_decl_compilation (decl, 1, 0);
 
-  /* Save the address of the VAR_DECL into the pointer map.  */
+  /* Save the address of the VAR_DECL into the hash table.  */
   decl = build_fold_addr_expr (decl);
   decl_for_type_insert (type, decl);
 
@@ -320,10 +377,12 @@ ubsan_type_descriptor (tree type)
 
 /* Create a structure for the ubsan library.  NAME is a name of the new
    structure.  The arguments in ... are of __ubsan_type_descriptor type
-   and there are at most two of them.  */
+   and there are at most two of them.  MISMATCH are data used by ubsan
+   pointer checking.  */
 
 tree
-ubsan_create_data (const char *name, location_t loc, ...)
+ubsan_create_data (const char *name, location_t loc,
+		   const struct ubsan_mismatch_data *mismatch, ...)
 {
   va_list args;
   tree ret, t;
@@ -346,12 +405,12 @@ ubsan_create_data (const char *name, location_t loc, ...)
       i++;
     }
 
-  va_start (args, loc);
+  va_start (args, mismatch);
   for (t = va_arg (args, tree); t != NULL_TREE;
        i++, t = va_arg (args, tree))
     {
       gcc_checking_assert (i < 3);
-      /* Save the tree argument for later use.  */
+      /* Save the tree arguments for later use.  */
       vec_safe_push (saved_args, t);
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
 			      td_type);
@@ -359,10 +418,27 @@ ubsan_create_data (const char *name, location_t loc, ...)
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
     }
+  va_end (args);
+
+  if (mismatch != NULL)
+    {
+      /* We have to add two more decls.  */
+      fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
+				pointer_sized_int_node);
+      DECL_CONTEXT (fields[i]) = ret;
+      DECL_CHAIN (fields[i - 1]) = fields[i];
+      i++;
+
+      fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
+			      unsigned_char_type_node);
+      DECL_CONTEXT (fields[i]) = ret;
+      DECL_CHAIN (fields[i - 1]) = fields[i];
+      i++;
+    }
+
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = get_identifier (name);
   layout_type (ret);
-  va_end (args);
 
   /* Now, fill in the type.  */
   char tmp_name[32];
@@ -391,6 +467,13 @@ ubsan_create_data (const char *name, location_t loc, ...)
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, t);
     }
 
+  if (mismatch != NULL)
+    {
+      /* Append the pointer data.  */
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, mismatch->align);
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, mismatch->ckind);
+    }
+
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (var) = ctor;
@@ -405,7 +488,8 @@ ubsan_create_data (const char *name, location_t loc, ...)
 tree
 ubsan_instrument_unreachable (location_t loc)
 {
-  tree data = ubsan_create_data ("__ubsan_unreachable_data", loc, NULL_TREE);
+  tree data = ubsan_create_data ("__ubsan_unreachable_data", loc, NULL,
+				 NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
 }
@@ -418,6 +502,201 @@ is_ubsan_builtin_p (tree t)
   gcc_checking_assert (TREE_CODE (t) == FUNCTION_DECL);
   return strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
 		  "__builtin___ubsan_", 18) == 0;
+}
+
+/* Expand UBSAN_NULL internal call.  */
+
+void
+ubsan_expand_null_ifn (gimple_stmt_iterator gsi)
+{
+  gimple stmt = gsi_stmt (gsi);
+  location_t loc = gimple_location (stmt);
+  gcc_assert (gimple_call_num_args (stmt) == 2);
+  tree ptr = gimple_call_arg (stmt, 0);
+  tree ckind = gimple_call_arg (stmt, 1);
+
+  basic_block cur_bb = gsi_bb (gsi);
+
+  /* Split the original block holding the pointer dereference.  */
+  edge e = split_block (cur_bb, stmt);
+
+  /* Get a hold on the 'condition block', the 'then block' and the
+     'else block'.  */
+  basic_block cond_bb = e->src;
+  basic_block fallthru_bb = e->dest;
+  basic_block then_bb = create_empty_bb (cond_bb);
+  if (current_loops)
+    {
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
+
+  /* Make an edge coming from the 'cond block' into the 'then block';
+     this edge is unlikely taken, so set up the probability accordingly.  */
+  e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+  e->probability = PROB_VERY_UNLIKELY;
+
+  /* Connect 'then block' with the 'else block'.  This is needed
+     as the ubsan routines we call in the 'then block' are not noreturn.
+     The 'then block' only has one outcoming edge.  */
+  make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
+
+  /* Set up the fallthrough basic block.  */
+  e = find_edge (cond_bb, fallthru_bb);
+  e->flags = EDGE_FALSE_VALUE;
+  e->count = cond_bb->count;
+  e->probability = REG_BR_PROB_BASE - PROB_VERY_UNLIKELY;
+
+  /* Update dominance info for the newly created then_bb; note that
+     fallthru_bb's dominance info has already been updated by
+     split_bock.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+
+  /* Put the ubsan builtin call into the newly created BB.  */
+  tree fn = builtin_decl_implicit (BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH);
+  const struct ubsan_mismatch_data m
+    = { build_zero_cst (pointer_sized_int_node), ckind };
+  tree data = ubsan_create_data ("__ubsan_null_data",
+				 loc, &m,
+				 ubsan_type_descriptor (TREE_TYPE (ptr), true),
+				 NULL_TREE);
+  data = build_fold_addr_expr_loc (loc, data);
+  gimple g = gimple_build_call (fn, 2, data,
+				build_zero_cst (pointer_sized_int_node));
+  gimple_set_location (g, loc);
+  gimple_stmt_iterator gsi2 = gsi_start_bb (then_bb);
+  gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
+
+  /* Unlink the UBSAN_NULLs vops before replacing it.  */
+  unlink_stmt_vdef (stmt);
+
+  g = gimple_build_cond (EQ_EXPR, ptr, build_int_cst (TREE_TYPE (ptr), 0),
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+
+  /* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
+  gsi_replace (&gsi, g, false);
+}
+
+/* Instrument a member call.  We check whether 'this' is NULL.  */
+
+static void
+instrument_member_call (gimple_stmt_iterator *iter)
+{
+  tree this_parm = gimple_call_arg (gsi_stmt (*iter), 0);
+  tree kind = build_int_cst (unsigned_char_type_node, UBSAN_MEMBER_CALL);
+  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 2, this_parm, kind);
+  gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
+  gsi_insert_before (iter, g, GSI_SAME_STMT);
+}
+
+/* Instrument a memory reference.  T is the pointer, IS_LHS says
+   whether the pointer is on the left hand side of the assignment.  */
+
+static void
+instrument_mem_ref (tree t, gimple_stmt_iterator *iter, bool is_lhs)
+{
+  enum ubsan_null_ckind ikind = is_lhs ? UBSAN_STORE_OF : UBSAN_LOAD_OF;
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+    ikind = UBSAN_MEMBER_ACCESS;
+  tree kind = build_int_cst (unsigned_char_type_node, ikind);
+  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 2, t, kind);
+  gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
+  gsi_insert_before (iter, g, GSI_SAME_STMT);
+}
+
+/* Callback function for the pointer instrumentation.  */
+
+static tree
+instrument_null (tree *tp, int * /*walk_subtree*/, void *data)
+{
+  tree t = *tp;
+  const enum tree_code code = TREE_CODE (t);
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+
+  if (code == MEM_REF
+      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
+    instrument_mem_ref (TREE_OPERAND (t, 0), &wi->gsi, wi->is_lhs);
+  else if (code == ADDR_EXPR
+	   && POINTER_TYPE_P (TREE_TYPE (t))
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == METHOD_TYPE)
+    instrument_member_call (&wi->gsi);
+
+  return NULL_TREE;
+}
+
+/* Gate and execute functions for ubsan pass.  */
+
+static unsigned int
+ubsan_pass (void)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+
+  FOR_EACH_BB (bb)
+    {
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	{
+	  struct walk_stmt_info wi;
+	  gimple stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  memset (&wi, 0, sizeof (wi));
+	  wi.gsi = gsi;
+	  walk_gimple_op (stmt, instrument_null, &wi);
+	  gsi_next (&gsi);
+	}
+    }
+  return 0;
+}
+
+static bool
+gate_ubsan (void)
+{
+  return flag_sanitize & SANITIZE_NULL;
+}
+
+namespace {
+
+const pass_data pass_data_ubsan =
+{
+  GIMPLE_PASS, /* type */
+  "ubsan", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_UBSAN, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
+};
+
+class pass_ubsan : public gimple_opt_pass
+{
+public:
+  pass_ubsan (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_ubsan, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ubsan (); }
+  unsigned int execute () { return ubsan_pass (); }
+
+}; // class pass_ubsan
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_ubsan (gcc::context *ctxt)
+{
+  return new pass_ubsan (ctxt);
 }
 
 #include "gt-ubsan.h"
