@@ -1156,7 +1156,7 @@ ffast-math
 Common
 
 ffat-lto-objects
-Common Var(flag_fat_lto_objects) Init(1)
+Common Var(flag_fat_lto_objects)
 Output lto objects containing both the intermediate language and binary output.
 
 ffinite-math-only
@@ -1391,6 +1391,10 @@ Perform interprocedural points-to analysis
 fipa-pure-const
 Common Report Var(flag_ipa_pure_const) Init(0) Optimization
 Discover pure and const functions
+
+fipa-sem-equality
+Common Report Var(flag_ipa_sem_equality) Iinit(1) Optimization
+Perform Semantic function equality
 
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
