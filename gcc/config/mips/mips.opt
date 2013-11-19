@@ -165,6 +165,10 @@ mfix-r4400
 Target Report Mask(FIX_R4400)
 Work around certain R4400 errata
 
+mfix-rm7000
+Target Report Var(TARGET_FIX_RM7000)
+Work around certain RM7000 errata
+
 mfix-r10000
 Target Report Mask(FIX_R10000)
 Work around certain R10000 errata

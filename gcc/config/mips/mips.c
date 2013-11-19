@@ -16076,10 +16076,13 @@ mips_reorg_process_insns (void)
   if (crtl->profile)
     cfun->machine->all_noreorder_p = false;
 
-  /* Code compiled with -mfix-vr4120 or -mfix-24k can't be all noreorder
-     because we rely on the assembler to work around some errata.
-     The r5900 too has several bugs.  */
-  if (TARGET_FIX_VR4120 || TARGET_FIX_24K || TARGET_MIPS5900)
+  /* Code compiled with -mfix-vr4120, -mfix-rm7000 or -mfix-24k can't be
+     all noreorder because we rely on the assembler to work around some
+     errata.  The R5900 too has several bugs.  */
+  if (TARGET_FIX_VR4120
+      || TARGET_FIX_RM7000
+      || TARGET_FIX_24K
+      || TARGET_MIPS5900)
     cfun->machine->all_noreorder_p = false;
 
   /* The same is true for -mfix-vr4130 if we might generate MFLO or

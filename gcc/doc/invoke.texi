@@ -796,7 +796,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmad -mno-mad -mimadd -mno-imadd -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
+-mfix-r10000 -mno-fix-r10000  -mfix-rm7000 -mno-fix-rm7000 @gol
+-mfix-vr4120  -mno-fix-vr4120 @gol
 -mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
@@ -17461,6 +17462,12 @@ This option can only be used if the target architecture supports
 branch-likely instructions.  @option{-mfix-r10000} is the default when
 @option{-march=r10000} is used; @option{-mno-fix-r10000} is the default
 otherwise.
+
+@item -mfix-rm7000
+@itemx -mno-fix-rm7000
+@opindex mfix-rm7000
+Work around the RM7000 @code{dmult}/@code{dmultu} errata.  The
+workarounds are implemented by the assembler rather than by GCC@.
 
 @item -mfix-vr4120
 @itemx -mno-fix-vr4120

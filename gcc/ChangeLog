@@ -1,3 +1,11 @@
+2013-11-19  Catherine Moore  <clm@codesourcery.com>
+
+	* doc/invoke.texi (mfix-rm7000, mno-fix-rm7000): Document.
+	* config/mips/mips.opt (mfix-rm7000): New option.
+	* config/mips/mips.h (ASM_SPEC): Handle mfix-rm7000.
+	* config/mips/mips.c (mips_reorg_process_insns): Disable
+	noreorder for TARGET_FIX_RM7000.
+
 2013-11-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh-c.c: Fix typo in include of file attribs.h.
