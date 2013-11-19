@@ -20,8 +20,8 @@ presence of the required flag.
 </para>
 
 <para>
-This page describes the C++14 support in mainline GCC SVN, not in any
-particular release.
+This page describes the C++14 and library TS support in mainline GCC SVN,
+not in any particular release.
 </para>
 
 <table frame="all">
@@ -223,18 +223,6 @@ particular release.
       <entry/>
     </row>
 
-
-    <row>
-      <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3793.html">
-	  N3672
-	</link>
-      </entry>
-      <entry>A proposal to add a utility class to represent optional objects</entry>
-      <entry>Y</entry>
-      <entry>Moved from C++14 to Library Fundamentals TS</entry>
-    </row>
-
     <row>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3655.pdf">
@@ -249,18 +237,6 @@ particular release.
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3662.html">
-	  N3662
-	</link>
-      </entry>
-      <entry>C++ Dynamic Arrays</entry>
-      <entry>N</entry>
-      <entry>Moved from C++14 to Library Fundamentals TS</entry>
-    </row>
-
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3644.pdf">
 	  N3644
 	</link>
@@ -269,6 +245,77 @@ particular release.
       <entry>N</entry>
       <entry/>
     </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+
+<table frame="all">
+<title>C++ Technical Specifications Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Paper</entry>
+      <entry>Title</entry>
+      <entry>Status</entry>
+      <entry>Comments</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3662.html">
+	  N3662
+	</link>
+      </entry>
+      <entry>C++ Dynamic Arrays</entry>
+      <entry>N</entry>
+      <entry>Array Extensions TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3793.html">
+	  N3672
+	</link>
+      </entry>
+      <entry>A proposal to add a utility class to represent optional objects</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3762.html">
+	  N3762
+	</link>
+      </entry>
+      <entry><code>string_view</code>: a non-owning reference to a string</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8C8B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3790.html">
+	  N3790
+	</link>
+      </entry>
+      <entry>File System</entry>
+      <entry>WIP</entry>
+      <entry></entry>
+    </row>
+
 
   </tbody>
 </tgroup>

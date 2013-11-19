@@ -1,3 +1,7 @@
+2013-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Create new table for TS statuses.
+
 2013-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_counted_base<_S_single>): Use
