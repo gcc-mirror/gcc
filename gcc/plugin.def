@@ -92,6 +92,12 @@ DEFEVENT (PLUGIN_EARLY_GIMPLE_PASSES_END)
 /* Called when a pass is first instantiated.  */
 DEFEVENT (PLUGIN_NEW_PASS)
 
+/* Called when a file is #include-d or given thru #line directive.
+   Could happen many times.  The event data is the included file path,
+   as a const char* pointer.  */
+DEFEVENT (PLUGIN_INCLUDE_FILE)
+
+
 /* After the hard-coded events above, plugins can dynamically allocate events
    at run time.
    PLUGIN_EVENT_FIRST_DYNAMIC only appears as last enum element.  */

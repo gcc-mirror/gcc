@@ -1,3 +1,8 @@
+2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * plugin.def (PLUGIN_INCLUDE_FILE): New event, invoked in 
+        cb_file_change.
+
 2013-11-19  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* loop-doloop.c (doloop_optimize_loops): Remove unused

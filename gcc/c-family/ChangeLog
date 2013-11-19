@@ -1,3 +1,8 @@
+2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * c-opts.c: Include plugin.h.
+        (cb_file_change): Invoke plugin event PLUGIN_INCLUDE_FILE.
+
 2013-11-19  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_division): Adjust ubsan_create_data
