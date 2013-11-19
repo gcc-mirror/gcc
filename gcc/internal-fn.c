@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "internal-fn.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "expr.h"
 #include "optabs.h"
 #include "gimple.h"

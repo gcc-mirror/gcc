@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cp/cp-tree.h" /* This is why we're a separate module.  */
 #include "flags.h"
 #include "tm_p.h"

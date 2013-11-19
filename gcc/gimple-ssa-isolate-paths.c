@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-ssa.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-operands.h"

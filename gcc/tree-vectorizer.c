@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"
 #include "gimple-iterator.h"

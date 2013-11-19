@@ -175,6 +175,11 @@
 	* g++.dg/cpp0x/nsdmi-template3.C: New.
 	* g++.dg/cpp0x/nsdmi-template4.C: Likewise.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* gcc.dg/plugin/selfassign.c: Include stringpool.h.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
+
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.target/powerpc/ppc64-abi-1.c (stack_frame_t): Remove

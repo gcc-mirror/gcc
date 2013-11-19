@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "machmode.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "constructor.h"

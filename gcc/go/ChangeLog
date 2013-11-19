@@ -12,6 +12,14 @@
 
 	* go-lang.c: Include only gimplify.h and gimple.h as needed.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* go-backend.c: Include stor-layout.h.
+	* go-gcc.cc: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* go-lang.c: Include stor-layout.h.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-lang.c: Include gimplify.h.

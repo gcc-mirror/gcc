@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "print-tree.h"
+#include "calls.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"

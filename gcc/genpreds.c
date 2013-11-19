@@ -1302,6 +1302,9 @@ write_insn_preds_c (void)
 #include \"tm.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tree.h\"\n\
+#include \"varasm.h\"\n\
+#include \"stor-layout.h\"\n\
+#include \"calls.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\

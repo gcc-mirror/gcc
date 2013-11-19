@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic-core.h"
 #include "ggc.h"

@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "output.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "varasm.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"

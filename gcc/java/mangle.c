@@ -29,6 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "jcf.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "java-tree.h"
 #include "obstack.h"
 #include "diagnostic-core.h"

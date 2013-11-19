@@ -12,6 +12,19 @@
 
 	* objc-act.c: Include only gimplify.h and gimple.h as needed.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* objc-act.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include attribs.h.
+	* objc-encoding.c: Include stringpool.h.
+	Include stor-layout.h.
+	* objc-gnu-runtime-abi-01.c: Include stringpool.h.
+	* objc-next-runtime-abi-01.c:
+	Include stringpool.h.
+	* objc-next-runtime-abi-02.c: Include stringpool.h.
+	* objc-runtime-shared-support.c: Include stringpool.h.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-act.c: Include gimplify.h.

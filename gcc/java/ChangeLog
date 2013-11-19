@@ -12,6 +12,30 @@
 
 	* java-gimplify.c: Include only gimplify.h and gimple.h as needed.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* builtins.c: Include stor-layout.h.
+	Include stringpool.h.
+	* class.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* constants.c: Include stringpool.h.
+	Include stor-layout.h.
+	* decl.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	* except.c: Include stringpool.h.
+	Include stor-layout.h.
+	* expr.c: Include stringpool.h.
+	Include stor-layout.h.
+	* jcf-parse.c: Include stringpool.h.
+	* mangle.c: Include stringpool.h.
+	* resource.c: Include stringpool.h.
+	Include stor-layout.h.
+	* typeck.c: Include stor-layout.h.
+	Include stringpool.h.
+	* verify-glue.c: Include stringpool.h.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* java-gimplify.c: Include gimplify.h.

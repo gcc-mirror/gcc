@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "tree.h"
 #include "tree-pretty-print.h"
+#include "print-tree.h"
 
 #define TB_OUT_FILE stdout
 #define TB_IN_FILE stdin

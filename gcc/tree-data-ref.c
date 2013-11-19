@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
 #include "gimple-pretty-print.h"
 #include "gimple.h"
 #include "gimple-iterator.h"

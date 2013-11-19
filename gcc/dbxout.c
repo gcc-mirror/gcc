@@ -72,6 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 
 #include "tree.h"
+#include "varasm.h"
+#include "stor-layout.h"
 #include "rtl.h"
 #include "flags.h"
 #include "regs.h"

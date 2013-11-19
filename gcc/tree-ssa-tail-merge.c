@@ -190,6 +190,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "trans-mem.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "flags.h"
