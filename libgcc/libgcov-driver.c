@@ -671,7 +671,6 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
 
 	  if (!run_accounted)
 	    cs_prg->runs++;
-	  run_accounted = 1;
           if (first)
             cs_prg->num = cs_tprg->num;
           cs_prg->sum_all += cs_tprg->sum_all;
@@ -719,6 +718,7 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
 #endif
     }
 
+  run_accounted = 1;
   prg->checksum = crc32;
 
   return 0;
