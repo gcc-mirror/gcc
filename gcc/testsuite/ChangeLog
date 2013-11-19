@@ -1,3 +1,7 @@
+2013-11-19  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: New testcase.
+
 2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.target/powerpc/ppc64-abi-2.c (MAKE_SLOT): New macro to
