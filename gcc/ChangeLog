@@ -1,3 +1,21 @@
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* md.texi (setmem): Document new parameter.
+	* optabs.c (maybe_gen_insn): Support 9 operands.
+	* builtins.c (determine_block_size): Add probable_max_size;
+	support anti-ranges.
+	(expand_builtin_memcpy. expand_builtin_memset_args): Pass around
+	probable_max_size.
+	* expr.c (emit_block_move_via_movmem, emit_block_move_hints,
+	emit_block_move, clear_storage_hints, set_storage_via_setmem):
+	Likewise.
+	* expr.h (emit_block_move_hints, clear_storage_hints,
+	set_storage_via_setmem): Update prototype.
+	* i386.md (setmem, movmem patterns): Add 9th operand.
+	* i386-protos.h (ix86_expand_set_or_movmem): Update prototype.
+	* i386.c (ix86_expand_set_or_movmem): Take probable_max_size_exp
+	argument; pass it to decide_alg.
+
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (n_basic_blocks_for_function): Rename macro to...
