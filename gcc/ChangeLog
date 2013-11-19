@@ -1,3 +1,8 @@
+2013-11-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (thread_through_loop_header):  Do not
+	thread through a joiner which has the latch edge.
+
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
 	* md.texi (setmem): Document new parameter.
