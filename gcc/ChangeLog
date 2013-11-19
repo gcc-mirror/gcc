@@ -1,3 +1,8 @@
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pretty-print.c (dump_generic_node): Print class type of
+	OBJ_TYPE_REF.
+
 2013-11-19  Joey Ye  <joey.ye@arm.com>
 
 	* config/arm/arm.opt (-marm-pic-data-is-text-relative): New option.
