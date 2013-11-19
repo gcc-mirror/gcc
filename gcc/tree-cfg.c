@@ -173,7 +173,7 @@ init_empty_tree_cfg_for_function (struct function *fn)
   /* Initialize the basic block array.  */
   init_flow (fn);
   profile_status_for_function (fn) = PROFILE_ABSENT;
-  n_basic_blocks_for_function (fn) = NUM_FIXED_BLOCKS;
+  n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
   last_basic_block_for_function (fn) = NUM_FIXED_BLOCKS;
   vec_alloc (basic_block_info_for_function (fn), initial_cfg_capacity);
   vec_safe_grow_cleared (basic_block_info_for_function (fn),
@@ -230,12 +230,12 @@ build_gimple_cfg (gimple_seq seq)
     factor_computed_gotos ();
 
   /* Make sure there is always at least one block, even if it's empty.  */
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     create_empty_bb (ENTRY_BLOCK_PTR);
 
   /* Adjust the size of the array.  */
-  if (basic_block_info->length () < (size_t) n_basic_blocks)
-    vec_safe_grow_cleared (basic_block_info, n_basic_blocks);
+  if (basic_block_info->length () < (size_t) n_basic_blocks_for_fn (cfun))
+    vec_safe_grow_cleared (basic_block_info, n_basic_blocks_for_fn (cfun));
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -605,7 +605,7 @@ create_bb (void *h, void *e, basic_block after)
   /* Add the newly created block to the array.  */
   SET_BASIC_BLOCK (last_basic_block, bb);
 
-  n_basic_blocks++;
+  n_basic_blocks_for_fn (cfun)++;
   last_basic_block++;
 
   return bb;
@@ -2103,7 +2103,7 @@ gimple_dump_cfg (FILE *file, int flags)
     {
       dump_function_header (file, current_function_decl, flags);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
-	       n_basic_blocks, n_edges, last_basic_block);
+	       n_basic_blocks_for_fn (cfun), n_edges, last_basic_block);
 
       brief_dump_cfg (file, flags | TDF_COMMENT);
       fprintf (file, "\n");
@@ -2138,9 +2138,9 @@ dump_cfg_stats (FILE *file)
   fprintf (file, fmt_str, "", "  instances  ", "used ");
   fprintf (file, "---------------------------------------------------------\n");
 
-  size = n_basic_blocks * sizeof (struct basic_block_def);
+  size = n_basic_blocks_for_fn (cfun) * sizeof (struct basic_block_def);
   total += size;
-  fprintf (file, fmt_str_1, "Basic blocks", n_basic_blocks,
+  fprintf (file, fmt_str_1, "Basic blocks", n_basic_blocks_for_fn (cfun),
 	   SCALE (size), LABEL (size));
 
   num_edges = 0;
@@ -7028,7 +7028,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       if (!ignore_topmost_bind)
 	fprintf (file, "{\n");
 
-      if (any_var && n_basic_blocks_for_function (fun))
+      if (any_var && n_basic_blocks_for_fn (fun))
 	fprintf (file, "\n");
 
       FOR_EACH_BB_FN (bb, fun)
@@ -7406,7 +7406,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
   int last_bb = last_basic_block;
   bool check_last_block = false;
 
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return 0;
 
   if (! blocks)

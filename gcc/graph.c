@@ -153,7 +153,7 @@ draw_cfg_node_succ_edges (pretty_printer *pp, int funcdef_no, basic_block bb)
 static void
 draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
 {
-  int *rpo = XNEWVEC (int, n_basic_blocks_for_function (fun));
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
   int i, n;
   sbitmap visited;
 
@@ -161,8 +161,8 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
   bitmap_clear (visited);
 
   n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, true);
-  for (i = n_basic_blocks_for_function (fun) - n;
-       i < n_basic_blocks_for_function (fun); i++)
+  for (i = n_basic_blocks_for_fn (fun) - n;
+       i < n_basic_blocks_for_fn (fun); i++)
     {
       basic_block bb = BASIC_BLOCK (rpo[i]);
       draw_cfg_node (pp, fun->funcdef_no, bb);
@@ -170,7 +170,7 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
     }
   free (rpo);
 
-  if (n != n_basic_blocks_for_function (fun))
+  if (n != n_basic_blocks_for_fn (fun))
     {
       /* Some blocks are unreachable.  We still want to dump them.  */
       basic_block bb;

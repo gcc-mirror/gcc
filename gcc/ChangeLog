@@ -1,3 +1,126 @@
+2013-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (n_basic_blocks_for_function): Rename macro to...
+	(n_basic_blocks_for_fn): ...this.
+
+	(n_basic_blocks): Eliminate macro as work towards making uses of
+	cfun be explicit.
+
+	* cfgloop.c (init_loops_structure): Update for renaming of
+	"n_basic_blocks_for_function" to "n_basic_blocks_for_fn".
+	* graph.c (draw_cfg_nodes_no_loops): Likewise.
+	* ipa-utils.c (ipa_merge_profiles): Likewise.
+	* lto-streamer-in.c (make_new_block): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	(dump_function_to_file): Likewise.
+
+	* alias.c (init_alias_analysis): Replace usage of "n_basic_blocks"
+	macro with "n_basic_blocks_for_fn (cfun)".
+	* bb-reorder.c (partition_hot_cold_basic_blocks): Likewise.
+	(duplicate_computed_gotos): Likewise.
+	(reorder_basic_blocks): Likewise.
+	* bt-load.c (augment_live_range): Likewise.
+	* cfg.c (expunge_block): Likewise.
+	(compact_blocks): Likewise.
+	* cfganal.c (single_pred_before_succ_order): Likewise.
+	(compute_idf): Likewise.
+	(flow_dfs_compute_reverse_init): Likewise.
+	(pre_and_rev_post_order_compute): Likewise.
+	(pre_and_rev_post_order_compute_fn): Likewise.
+	(inverted_post_order_compute): Likewise.
+	(post_order_compute): Likewise.
+	(print_edge_list): Likewise.
+	(find_unreachable_blocks): Likewise.
+	(mark_dfs_back_edges): Likewise.
+	* cfgcleanup.c (try_optimize_cfg): Likewise.
+	(try_forward_edges): Likewise.
+	* cfghooks.c (dump_flow_info): Likewise.
+	* cfgloop.c (verify_loop_structure): Likewise.
+	(get_loop_body): Likewise.
+	(flow_loops_find): Likewise.
+	* cfgloopmanip.c (add_loop): Likewise.
+	(remove_path): Likewise.
+	(find_path): Likewise.
+	* cfgrtl.c (rtl_flow_call_edges_add): Likewise.
+	(rtl_verify_bb_layout): Likewise.
+	(entry_of_function): Likewise.
+	(rtl_create_basic_block): Likewise.
+	* coverage.c (coverage_compute_cfg_checksum): Likewise.
+	* cprop.c (one_cprop_pass): Likewise.
+	(is_too_expensive): Likewise.
+	* df-core.c (df_compute_cfg_image): Likewise.
+	(df_compact_blocks): Likewise.
+	(df_worklist_dataflow_doublequeue): Likewise.
+	* dominance.c (calculate_dominance_info): Likewise.
+	(calc_dfs_tree): Likewise.
+	(calc_dfs_tree_nonrec): Likewise.
+	(init_dom_info): Likewise.
+	* domwalk.c (cmp_bb_postorder): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	(generate_setjmp_warnings): Likewise.
+	* fwprop.c (build_single_def_use_links): Likewise.
+	* gcse.c (is_too_expensive): Likewise.
+	(one_code_hoisting_pass): Likewise.
+	(one_pre_gcse_pass): Likewise.
+	* graphite.c (graphite_initialize): Likewise.
+	* haifa-sched.c (haifa_sched_init): Likewise.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Likewise.
+	* ira.c (split_live_ranges_for_shrink_wrap): Likewise.
+	* ira-build.c (ira_build): Likewise.
+	* lcm.c (compute_nearerout): Likewise.
+	(compute_available): Likewise.
+	(compute_laterin): Likewise.
+	(compute_antinout_edge): Likewise.
+	* lra-lives.c (lra_create_live_ranges): Likewise.
+	* lra.c (has_nonexceptional_receiver): Likewise.
+	* mcf.c (create_fixup_graph): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* reg-stack.c (convert_regs_2): Likewise.
+	* regrename.c (regrename_analyze): Likewise.
+	* reload1.c (has_nonexceptional_receiver): Likewise.
+	* reorg.c (dbr_schedule): Likewise.
+	* sched-deps.c (sched_deps_init): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (extend_regions): Likewise.
+	(schedule_insns): Likewise.
+	(sched_rgn_init): Likewise.
+	(extend_rgns): Likewise.
+	(haifa_find_rgns): Likewise.
+	* sel-sched-ir.c (recompute_rev_top_order): Likewise.
+	(sel_recompute_toporder): Likewise.
+	* sel-sched.c (run_selective_scheduling): Likewise.
+	* store-motion.c (one_store_motion_pass): Likewise.
+	(remove_reachable_equiv_notes): Likewise.
+	* tracer.c (tracer): Likewise.
+	(tail_duplicate): Likewise.
+	* tree-cfg.c (gimple_flow_call_edges_add): Likewise.
+	(dump_cfg_stats): Likewise.
+	(gimple_dump_cfg): Likewise.
+	(create_bb): Likewise.
+	(build_gimple_cfg): Likewise.
+	* tree-cfgcleanup.c (merge_phi_nodes): Likewise.
+	* tree-inline.c (optimize_inline_calls): Likewise.
+	(fold_marked_statements): Likewise.
+	* tree-ssa-ifcombine.c (tree_ssa_ifcombine): Likewise.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Likewise.
+	* tree-ssa-loop-im.c (analyze_memory_references): Likewise.
+	* tree-ssa-loop-manip.c (compute_live_loop_exits): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Likewise.
+	* tree-ssa-pre.c (do_pre): Likewise.
+	(init_pre): Likewise.
+	(compute_avail): Likewise.
+	* tree-ssa-reassoc.c (init_reassoc): Likewise.
+	* tree-ssa-sccvn.c (init_scc_vn): Likewise.
+	* tree-ssa-tail-merge.c (alloc_cluster_vectors): Likewise.
+	(init_worklist): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* var-tracking.c (variable_tracking_main_1): Likewise.
+	(vt_find_locations): Likewise.
+	(vt_stack_adjustments): Likewise.
+	* config/s390/s390.c (s390_optimize_nonescaping_tx): Likewise.
+	* config/spu/spu.c (spu_machine_dependent_reorg): Likewise.
+
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (compute_branch_probabilities): Do not sanity check run_max.

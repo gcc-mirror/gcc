@@ -3981,13 +3981,14 @@ init_scc_vn (void)
   shared_lookup_phiargs.create (0);
   shared_lookup_references.create (0);
   rpo_numbers = XNEWVEC (int, last_basic_block);
-  rpo_numbers_temp = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+  rpo_numbers_temp =
+    XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   pre_and_rev_post_order_compute (NULL, rpo_numbers_temp, false);
 
   /* RPO numbers is an array of rpo ordering, rpo[i] = bb means that
      the i'th block in RPO order is bb.  We want to map bb's to RPO
      numbers, so we need to rearrange this array.  */
-  for (j = 0; j < n_basic_blocks - NUM_FIXED_BLOCKS; j++)
+  for (j = 0; j < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; j++)
     rpo_numbers[rpo_numbers_temp[j]] = j;
 
   XDELETE (rpo_numbers_temp);

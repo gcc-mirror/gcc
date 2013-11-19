@@ -3080,7 +3080,7 @@ convert_regs_2 (basic_block block)
      is only processed after all its predecessors.  The number of predecessors
      of every block has already been computed.  */
 
-  stack = XNEWVEC (basic_block, n_basic_blocks);
+  stack = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   sp = stack;
 
   *sp++ = block;

@@ -998,7 +998,7 @@ lra_create_live_ranges (bool all_p)
   lra_point_freq = point_freq_vec.address ();
   int *post_order_rev_cfg = XNEWVEC (int, last_basic_block);
   int n_blocks_inverted = inverted_post_order_compute (post_order_rev_cfg);
-  lra_assert (n_blocks_inverted == n_basic_blocks);
+  lra_assert (n_blocks_inverted == n_basic_blocks_for_fn (cfun));
   for (i = n_blocks_inverted - 1; i >= 0; --i)
     {
       bb = BASIC_BLOCK (post_order_rev_cfg[i]);

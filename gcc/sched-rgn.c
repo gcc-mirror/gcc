@@ -793,7 +793,7 @@ haifa_find_rgns (void)
       /* Second traversal:find reducible inner loops and topologically sort
 	 block of each region.  */
 
-      queue = XNEWVEC (int, n_basic_blocks);
+      queue = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
 
       extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
       if (extend_regions_p)
@@ -1153,7 +1153,7 @@ void
 extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 {
   int *order, i, rescan = 0, idx = *idxp, iter = 0, max_iter, *max_hdr;
-  int nblocks = n_basic_blocks - NUM_FIXED_BLOCKS;
+  int nblocks = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   max_iter = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS);
 
@@ -3115,7 +3115,7 @@ sched_rgn_init (bool single_blocks_p)
 
   /* Compute regions for scheduling.  */
   if (single_blocks_p
-      || n_basic_blocks == NUM_FIXED_BLOCKS + 1
+      || n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS + 1
       || !flag_schedule_interblock
       || is_cfg_nonregular ())
     {
@@ -3139,7 +3139,7 @@ sched_rgn_init (bool single_blocks_p)
 	free_dominance_info (CDI_DOMINATORS);
     }
 
-  gcc_assert (0 < nr_regions && nr_regions <= n_basic_blocks);
+  gcc_assert (0 < nr_regions && nr_regions <= n_basic_blocks_for_fn (cfun));
 
   RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
 			     RGN_NR_BLOCKS (nr_regions - 1));
@@ -3375,7 +3375,7 @@ schedule_insns (void)
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return;
 
   rgn_setup_common_sched_info ();
@@ -3421,8 +3421,8 @@ rgn_add_remove_insn (rtx insn, int remove_p)
 void
 extend_regions (void)
 {
-  rgn_table = XRESIZEVEC (region, rgn_table, n_basic_blocks);
-  rgn_bb_table = XRESIZEVEC (int, rgn_bb_table, n_basic_blocks);
+  rgn_table = XRESIZEVEC (region, rgn_table, n_basic_blocks_for_fn (cfun));
+  rgn_bb_table = XRESIZEVEC (int, rgn_bb_table, n_basic_blocks_for_fn (cfun));
   block_to_bb = XRESIZEVEC (int, block_to_bb, last_basic_block);
   containing_rgn = XRESIZEVEC (int, containing_rgn, last_basic_block);
 }

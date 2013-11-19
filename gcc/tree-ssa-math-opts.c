@@ -512,7 +512,7 @@ execute_cse_reciprocals (void)
 
   occ_pool = create_alloc_pool ("dominators for recip",
 				sizeof (struct occurrence),
-				n_basic_blocks / 3 + 1);
+				n_basic_blocks_for_fn (cfun) / 3 + 1);
 
   memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));
   calculate_dominance_info (CDI_DOMINATORS);

@@ -2220,7 +2220,7 @@ reorder_basic_blocks (void)
 
   gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
 
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
     return;
 
   set_edge_can_fallthru_flag ();
@@ -2244,7 +2244,7 @@ reorder_basic_blocks (void)
       bbd[i].node = NULL;
     }
 
-  traces = XNEWVEC (struct trace, n_basic_blocks);
+  traces = XNEWVEC (struct trace, n_basic_blocks_for_fn (cfun));
   n_traces = 0;
   find_traces (&n_traces, traces);
   connect_traces (n_traces, traces);
@@ -2388,7 +2388,7 @@ duplicate_computed_gotos (void)
   bitmap candidates;
   int max_size;
 
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
     return 0;
 
   clear_bb_flags ();
@@ -2640,7 +2640,7 @@ partition_hot_cold_basic_blocks (void)
 {
   vec<edge> crossing_edges;
 
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
     return 0;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);

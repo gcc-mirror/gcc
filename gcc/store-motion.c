@@ -848,7 +848,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
   rtx last, insn, note;
   rtx mem = smexpr->pattern;
 
-  stack = XNEWVEC (edge_iterator, n_basic_blocks);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun));
   sp = 0;
   ei = ei_start (bb->succs);
 
@@ -1208,7 +1208,7 @@ one_store_motion_pass (void)
   if (dump_file)
     {
       fprintf (dump_file, "STORE_MOTION of %s, %d basic blocks, ",
-	       current_function_name (), n_basic_blocks);
+	       current_function_name (), n_basic_blocks_for_fn (cfun));
       fprintf (dump_file, "%d insns deleted, %d insns created\n",
 	       n_stores_deleted, n_stores_created);
     }

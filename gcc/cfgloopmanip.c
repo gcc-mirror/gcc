@@ -71,9 +71,9 @@ find_path (edge e, basic_block **bbs)
   gcc_assert (EDGE_COUNT (e->dest->preds) <= 1);
 
   /* Find bbs in the path.  */
-  *bbs = XNEWVEC (basic_block, n_basic_blocks);
+  *bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   return dfs_enumerate_from (e->dest, 0, rpe_enum_p, *bbs,
-			     n_basic_blocks, e->dest);
+			     n_basic_blocks_for_fn (cfun), e->dest);
 }
 
 /* Fix placement of basic block BB inside loop hierarchy --
@@ -343,7 +343,7 @@ remove_path (edge e)
   nrem = find_path (e, &rem_bbs);
 
   n_bord_bbs = 0;
-  bord_bbs = XNEWVEC (basic_block, n_basic_blocks);
+  bord_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   seen = sbitmap_alloc (last_basic_block);
   bitmap_clear (seen);
 
@@ -450,8 +450,8 @@ add_loop (struct loop *loop, struct loop *outer)
   flow_loop_tree_node_add (outer, loop);
 
   /* Find its nodes.  */
-  bbs = XNEWVEC (basic_block, n_basic_blocks);
-  n = get_loop_body_with_size (loop, bbs, n_basic_blocks);
+  bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  n = get_loop_body_with_size (loop, bbs, n_basic_blocks_for_fn (cfun));
 
   for (i = 0; i < n; i++)
     {

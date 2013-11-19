@@ -3496,7 +3496,7 @@ ira_build (void)
 	}
       fprintf (ira_dump_file, "  regions=%d, blocks=%d, points=%d\n",
 	       current_loops == NULL ? 1 : number_of_loops (cfun),
-	       n_basic_blocks, ira_max_point);
+	       n_basic_blocks_for_fn (cfun), ira_max_point);
       fprintf (ira_dump_file,
 	       "    allocnos=%d (big %d), copies=%d, conflicts=%d, ranges=%d\n",
 	       ira_allocnos_num, nr_big, ira_copies_num, n, nr);

@@ -101,7 +101,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist = XNEWVEC (basic_block, n_basic_blocks);
+  qin = qout = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* We want a maximal solution, so make an optimistic initialization of
      ANTIN.  */
@@ -116,8 +116,8 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are predecessors of the exit block so that we
      can easily identify them below.  */
@@ -254,7 +254,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist
-    = XNEWVEC (basic_block, n_basic_blocks);
+    = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Initialize a mapping from each edge to its index.  */
   for (i = 0; i < num_edges; i++)
@@ -290,8 +290,8 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. */
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Iterate until the worklist is empty.  */
   while (qlen)
@@ -481,7 +481,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist =
-    XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
+    XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
 
   /* We want a maximal solution.  */
   bitmap_vector_ones (avout, last_basic_block);
@@ -495,8 +495,8 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are successors of the entry block so that we
      can easily identify them below.  */
@@ -610,7 +610,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
   /* Initialize NEARER for each edge and build a mapping from an edge to
      its index.  */

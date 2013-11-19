@@ -4875,7 +4875,7 @@ split_live_ranges_for_shrink_wrap (void)
 
   bitmap_initialize (&need_new, 0);
   bitmap_initialize (&reachable, 0);
-  queue.create (n_basic_blocks);
+  queue.create (n_basic_blocks_for_fn (cfun));
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)

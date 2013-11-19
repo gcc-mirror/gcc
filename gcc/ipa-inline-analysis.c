@@ -2397,7 +2397,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (parms_info)
     compute_bb_predicates (node, parms_info, info);
   gcc_assert (cfun == my_function);
-  order = XNEWVEC (int, n_basic_blocks);
+  order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
   for (n = 0; n < nblocks; n++)
     {

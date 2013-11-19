@@ -2662,7 +2662,7 @@ one_pre_gcse_pass (void)
   gcse_create_count = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
       || is_too_expensive (_("PRE disabled")))
     return 0;
 
@@ -2708,7 +2708,8 @@ one_pre_gcse_pass (void)
   if (dump_file)
     {
       fprintf (dump_file, "PRE GCSE of %s, %d basic blocks, %d bytes needed, ",
-	       current_function_name (), n_basic_blocks, bytes_used);
+	       current_function_name (), n_basic_blocks_for_fn (cfun),
+	       bytes_used);
       fprintf (dump_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
@@ -3591,7 +3592,7 @@ one_code_hoisting_pass (void)
   gcse_create_count = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
       || is_too_expensive (_("GCSE disabled")))
     return 0;
 
@@ -3642,7 +3643,8 @@ one_code_hoisting_pass (void)
   if (dump_file)
     {
       fprintf (dump_file, "HOIST of %s, %d basic blocks, %d bytes needed, ",
-	       current_function_name (), n_basic_blocks, bytes_used);
+	       current_function_name (), n_basic_blocks_for_fn (cfun),
+	       bytes_used);
       fprintf (dump_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
@@ -4067,24 +4069,25 @@ is_too_expensive (const char *pass)
      which have a couple switch statements.  Rather than simply
      threshold the number of blocks, uses something with a more
      graceful degradation.  */
-  if (n_edges > 20000 + n_basic_blocks * 4)
+  if (n_edges > 20000 + n_basic_blocks_for_fn (cfun) * 4)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d edges/basic block",
-	       pass, n_basic_blocks, n_edges / n_basic_blocks);
+	       pass, n_basic_blocks_for_fn (cfun),
+	       n_edges / n_basic_blocks_for_fn (cfun));
 
       return true;
     }
 
   /* If allocating memory for the dataflow bitmaps would take up too much
      storage it's better just to disable the optimization.  */
-  if ((n_basic_blocks
+  if ((n_basic_blocks_for_fn (cfun)
        * SBITMAP_SET_SIZE (max_reg_num ())
        * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers",
-	       pass, n_basic_blocks, max_reg_num ());
+	       pass, n_basic_blocks_for_fn (cfun), max_reg_num ());
 
       return true;
     }

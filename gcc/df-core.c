@@ -1097,8 +1097,8 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
     fprintf (dump_file, "df_worklist_dataflow_doublequeue:"
 	     "n_basic_blocks %d n_edges %d"
 	     " count %d (%5.2g)\n",
-	     n_basic_blocks, n_edges,
-	     dcount, dcount / (float)n_basic_blocks);
+	     n_basic_blocks_for_fn (cfun), n_edges,
+	     dcount, dcount / (float)n_basic_blocks_for_fn (cfun));
 }
 
 /* Worklist-based dataflow solver. It uses sbitmap as a worklist,
@@ -1606,7 +1606,7 @@ df_compact_blocks (void)
       i++;
     }
 
-  gcc_assert (i == n_basic_blocks);
+  gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
   for (; i < last_basic_block; i++)
     SET_BASIC_BLOCK (i, NULL);
@@ -1714,7 +1714,7 @@ static int *
 df_compute_cfg_image (void)
 {
   basic_block bb;
-  int size = 2 + (2 * n_basic_blocks);
+  int size = 2 + (2 * n_basic_blocks_for_fn (cfun));
   int i;
   int * map;
 

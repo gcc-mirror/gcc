@@ -7764,7 +7764,7 @@ run_selective_scheduling (void)
 {
   int rgn;
 
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return;
 
   sel_global_init ();

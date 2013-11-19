@@ -1729,24 +1729,25 @@ is_too_expensive (const char *pass)
      which have a couple switch statements.  Rather than simply
      threshold the number of blocks, uses something with a more
      graceful degradation.  */
-  if (n_edges > 20000 + n_basic_blocks * 4)
+  if (n_edges > 20000 + n_basic_blocks_for_fn (cfun) * 4)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d edges/basic block",
-	       pass, n_basic_blocks, n_edges / n_basic_blocks);
+	       pass, n_basic_blocks_for_fn (cfun),
+	       n_edges / n_basic_blocks_for_fn (cfun));
 
       return true;
     }
 
   /* If allocating memory for the cprop bitmap would take up too much
      storage it's better just to disable the optimization.  */
-  if ((n_basic_blocks
+  if ((n_basic_blocks_for_fn (cfun)
        * SBITMAP_SET_SIZE (max_reg_num ())
        * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers",
-	       pass, n_basic_blocks, max_reg_num ());
+	       pass, n_basic_blocks_for_fn (cfun), max_reg_num ());
 
       return true;
     }
@@ -1763,7 +1764,7 @@ one_cprop_pass (void)
   int changed = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
       || is_too_expensive (_ ("const/copy propagation disabled")))
     return 0;
 
@@ -1873,7 +1874,8 @@ one_cprop_pass (void)
   if (dump_file)
     {
       fprintf (dump_file, "CPROP of %s, %d basic blocks, %d bytes needed, ",
-	       current_function_name (), n_basic_blocks, bytes_used);
+	       current_function_name (), n_basic_blocks_for_fn (cfun),
+	       bytes_used);
       fprintf (dump_file, "%d local const props, %d local copy props, ",
 	       local_const_prop_count, local_copy_prop_count);
       fprintf (dump_file, "%d global const props, %d global copy props\n\n",

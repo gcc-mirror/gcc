@@ -838,7 +838,7 @@ vt_stack_adjustments (void)
   VTI (ENTRY_BLOCK_PTR)->out.stack_adjust = INCOMING_FRAME_SP_OFFSET;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Push the first edge on to the stack.  */
@@ -6904,10 +6904,10 @@ vt_find_locations (void)
   timevar_push (TV_VAR_TRACKING_DATAFLOW);
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
-  rc_order = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+  rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   bb_order = XNEWVEC (int, last_basic_block);
   pre_and_rev_post_order_compute (NULL, rc_order, false);
-  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
+  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
@@ -10157,7 +10157,8 @@ variable_tracking_main_1 (void)
       return 0;
     }
 
-  if (n_basic_blocks > 500 && n_edges / n_basic_blocks >= 20)
+  if (n_basic_blocks_for_fn (cfun) > 500 &&
+      n_edges / n_basic_blocks_for_fn (cfun) >= 20)
     {
       vt_debug_insns_local (true);
       return 0;

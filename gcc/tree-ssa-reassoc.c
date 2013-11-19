@@ -4537,7 +4537,7 @@ init_reassoc (void)
 {
   int i;
   long rank = 2;
-  int *bbs = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+  int *bbs = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
 
   /* Find the loops, so that we can prevent moving calculations in
      them.  */
@@ -4567,7 +4567,7 @@ init_reassoc (void)
     }
 
   /* Set up rank for each BB  */
-  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
+  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_rank[bbs[i]] = ++rank  << 16;
 
   free (bbs);

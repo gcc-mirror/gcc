@@ -193,7 +193,7 @@ associate_equivalences_with_edges (void)
 
 	      /* Now walk over the blocks to determine which ones were
 		 marked as being reached by a useful case label.  */
-	      for (i = 0; i < n_basic_blocks; i++)
+	      for (i = 0; i < n_basic_blocks_for_fn (cfun); i++)
 		{
 		  tree node = info[i];
 

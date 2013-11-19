@@ -169,12 +169,12 @@ compact_blocks (void)
 	  bb->index = i;
 	  i++;
 	}
-      gcc_assert (i == n_basic_blocks);
+      gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
       for (; i < last_basic_block; i++)
 	SET_BASIC_BLOCK (i, NULL);
     }
-  last_basic_block = n_basic_blocks;
+  last_basic_block = n_basic_blocks_for_fn (cfun);
 }
 
 /* Remove block B from the basic block array.  */
@@ -184,7 +184,7 @@ expunge_block (basic_block b)
 {
   unlink_block (b);
   SET_BASIC_BLOCK (b->index, NULL);
-  n_basic_blocks--;
+  n_basic_blocks_for_fn (cfun)--;
   /* We should be able to ggc_free here, but we are not.
      The dead SSA_NAMES are left pointing to dead statements that are pointing
      to dead basic blocks making garbage collector to die.

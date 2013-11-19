@@ -459,7 +459,7 @@ try_forward_edges (int mode, basic_block b)
 	  && find_reg_note (BB_END (first), REG_CROSSING_JUMP, NULL_RTX))
 	return changed;
 
-      while (counter < n_basic_blocks)
+      while (counter < n_basic_blocks_for_fn (cfun))
 	{
 	  basic_block new_target = NULL;
 	  bool new_target_threaded = false;
@@ -472,7 +472,7 @@ try_forward_edges (int mode, basic_block b)
 	      /* Bypass trivial infinite loops.  */
 	      new_target = single_succ (target);
 	      if (target == new_target)
-		counter = n_basic_blocks;
+		counter = n_basic_blocks_for_fn (cfun);
 	      else if (!optimize)
 		{
 		  /* When not optimizing, ensure that edges or forwarder
@@ -521,7 +521,8 @@ try_forward_edges (int mode, basic_block b)
 	      if (t)
 		{
 		  if (!threaded_edges)
-		    threaded_edges = XNEWVEC (edge, n_basic_blocks);
+		    threaded_edges = XNEWVEC (edge,
+					      n_basic_blocks_for_fn (cfun));
 		  else
 		    {
 		      int i;
@@ -533,7 +534,7 @@ try_forward_edges (int mode, basic_block b)
 			  break;
 		      if (i < nthreaded_edges)
 			{
-			  counter = n_basic_blocks;
+			  counter = n_basic_blocks_for_fn (cfun);
 			  break;
 			}
 		    }
@@ -542,7 +543,9 @@ try_forward_edges (int mode, basic_block b)
 		  if (t->dest == b)
 		    break;
 
-		  gcc_assert (nthreaded_edges < n_basic_blocks - NUM_FIXED_BLOCKS);
+		  gcc_assert (nthreaded_edges
+			      < (n_basic_blocks_for_fn (cfun)
+				 - NUM_FIXED_BLOCKS));
 		  threaded_edges[nthreaded_edges++] = t;
 
 		  new_target = t->dest;
@@ -558,7 +561,7 @@ try_forward_edges (int mode, basic_block b)
 	  threaded |= new_target_threaded;
 	}
 
-      if (counter >= n_basic_blocks)
+      if (counter >= n_basic_blocks_for_fn (cfun))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Infinite loop in BB %i.\n",
@@ -2713,7 +2716,7 @@ try_optimize_cfg (int mode)
 		  /* Note that forwarder_block_p true ensures that
 		     there is a successor for this block.  */
 		  && (single_succ_edge (b)->flags & EDGE_FALLTHRU)
-		  && n_basic_blocks > NUM_FIXED_BLOCKS + 1)
+		  && n_basic_blocks_for_fn (cfun) > NUM_FIXED_BLOCKS + 1)
 		{
 		  if (dump_file)
 		    fprintf (dump_file,
