@@ -1,5 +1,8 @@
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
+	* libgcov-driver.c (gcov_exit_merge_summary): Fix setting
+	run_accounted.
+
 	* libgcov-driver.c (get_gcov_dump_complete): Update comments.
 	(all_prg, crc32): Remove static vars.
 	(gcov_exit_compute_summary): Rewrite to return crc32; do not clear
