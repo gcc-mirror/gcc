@@ -65,7 +65,48 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #define __sync_lock_test_and_set(A, B) (abort(), 0)
 #define __sync_lock_release(A) abort()
 
-#endif /* !defined(HAVE_SYNC_FUNCTIONS) */
+#endif /* !defined (HAVE_SYNC_FUNCTIONS) */
+
+#ifdef HAVE_ATOMIC_FUNCTIONS
+
+/* We have the atomic builtin functions.  */
+
+#define backtrace_atomic_load_pointer(p) \
+    __atomic_load_n ((p), __ATOMIC_ACQUIRE)
+#define backtrace_atomic_load_int(p) \
+    __atomic_load_n ((p), __ATOMIC_ACQUIRE)
+#define backtrace_atomic_store_pointer(p, v) \
+    __atomic_store_n ((p), (v), __ATOMIC_RELEASE)
+#define backtrace_atomic_store_size_t(p, v) \
+    __atomic_store_n ((p), (v), __ATOMIC_RELEASE)
+#define backtrace_atomic_store_int(p, v) \
+    __atomic_store_n ((p), (v), __ATOMIC_RELEASE)
+
+#else /* !defined (HAVE_ATOMIC_FUNCTIONS) */
+#ifdef HAVE_SYNC_FUNCTIONS
+
+/* We have the sync functions but not the atomic functions.  Define
+   the atomic ones in terms of the sync ones.  */
+
+extern void *backtrace_atomic_load_pointer (void *);
+extern int backtrace_atomic_load_int (int *);
+extern void backtrace_atomic_store_pointer (void *, void *);
+extern void backtrace_atomic_store_size_t (size_t *, size_t);
+extern void backtrace_atomic_store_int (int *, int);
+
+#else /* !defined (HAVE_SYNC_FUNCTIONS) */
+
+/* We have neither the sync nor the atomic functions.  These will
+   never be called.  */
+
+#define backtrace_atomic_load_pointer(p) (abort(), 0)
+#define backtrace_atomic_load_int(p) (abort(), 0)
+#define backtrace_atomic_store_pointer(p, v) abort()
+#define backtrace_atomic_store_size_t(p, v) abort()
+#define backtrace_atomic_store_int(p, v) abort()
+
+#endif /* !defined (HAVE_SYNC_FUNCTIONS) */
+#endif /* !defined (HAVE_ATOMIC_FUNCTIONS) */
 
 /* The type of the function that collects file/line information.  This
    is like backtrace_pcinfo.  */

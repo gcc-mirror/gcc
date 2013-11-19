@@ -2643,12 +2643,7 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
 	 && pc < (entry - 1)->high)
     {
       if (state->threaded)
-	{
-	  /* Use __sync_bool_compare_and_swap to do a
-	     load-acquire.  */
-	  while (!__sync_bool_compare_and_swap (&u->lines, lines, lines))
-	    lines = u->lines;
-	}
+	lines = (struct line *) backtrace_atomic_load_pointer (&u->lines);
 
       if (lines != (struct line *) (uintptr_t) -1)
 	break;
@@ -2659,13 +2654,8 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
       lines = u->lines;
     }
 
-  /* Do a load-acquire of u->lines.  */
   if (state->threaded)
-    {
-      /* Use __sync_bool_compare_and_swap to do an atomic load.  */
-      while (!__sync_bool_compare_and_swap (&u->lines, lines, lines))
-	lines = u->lines;
-    }
+    lines = backtrace_atomic_load_pointer (&u->lines);
 
   new_data = 0;
   if (lines == NULL)
@@ -2713,12 +2703,11 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
 	}
       else
 	{
-	  __sync_bool_compare_and_swap (&u->lines_count, 0, count);
-	  __sync_bool_compare_and_swap (&u->function_addrs, NULL,
-					function_addrs);
-	  __sync_bool_compare_and_swap (&u->function_addrs_count, 0,
-					function_addrs_count);
-	  __sync_bool_compare_and_swap (&u->lines, NULL, lines);
+	  backtrace_atomic_store_size_t (&u->lines_count, count);
+	  backtrace_atomic_store_pointer (&u->function_addrs, function_addrs);
+	  backtrace_atomic_store_size_t (&u->function_addrs_count,
+					 function_addrs_count);
+	  backtrace_atomic_store_pointer (&u->lines, lines);
 	}
     }
 
@@ -2849,11 +2838,7 @@ dwarf_fileline (struct backtrace_state *state, uintptr_t pc,
       pp = (struct dwarf_data **) (void *) &state->fileline_data;
       while (1)
 	{
-	  ddata = *pp;
-	  /* Atomic load.  */
-	  while (!__sync_bool_compare_and_swap (pp, ddata, ddata))
-	    ddata = *pp;
-
+	  ddata = backtrace_atomic_load_pointer (pp);
 	  if (ddata == NULL)
 	    break;
 
@@ -2985,10 +2970,7 @@ backtrace_dwarf_add (struct backtrace_state *state,
 	    {
 	      struct dwarf_data *p;
 
-	      /* Atomic load.  */
-	      p = *pp;
-	      while (!__sync_bool_compare_and_swap (pp, p, p))
-		p = *pp;
+	      p = backtrace_atomic_load_pointer (pp);
 
 	      if (p == NULL)
 		break;

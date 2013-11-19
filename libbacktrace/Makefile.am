@@ -40,6 +40,7 @@ noinst_LTLIBRARIES = libbacktrace.la
 
 libbacktrace_la_SOURCES = \
 	backtrace.h \
+	atomic.c \
 	dwarf.c \
 	fileline.c \
 	internal.h \
