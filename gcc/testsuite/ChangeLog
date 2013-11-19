@@ -1,3 +1,8 @@
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58956
+	* gcc.dg/torture/pr58956.c: New testcase.
+
 2013-11-19  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/null-1.c: New test.
