@@ -1,3 +1,8 @@
+2013-11-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/59099
+	* gcc.target/i386/pr59099.c: New test.
+
 2013-11-19  Sriraman Tallam  <tmsriram@google.com>
 
 	* gcc.dg/tree-prof/cold_partition_label.c: New testcase.

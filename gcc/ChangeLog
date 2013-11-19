@@ -1,3 +1,12 @@
+2013-11-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/59099
+	* ira.c (find_moveable_pseudos): Put back various analyses from ira()
+	here.
+	(ira): Move init_reg_equiv and call to
+	split_live_ranges_for_shrink_wrap up, remove analyses around call
+	to find_moveable_pseudos.
+
 2013-11-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/sysv4.h (CC1_ENDIAN_LITTLE_SPEC): Define as empty.
