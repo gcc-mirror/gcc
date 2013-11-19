@@ -1,3 +1,10 @@
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/59175
+	* gcc.target/i386/memcpy-2.c: Fix template;
+	add +1 so the testcase passes at 32bit.
+
 2013-11-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* c-c++-common/cilk-plus/PS/reduction-3.c: Use stdlib.h.
