@@ -1673,7 +1673,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
   gimple_stmt_iterator gsi, gsi1;
   basic_block update_bb = update_e->dest;
 
-  /* gcc_assert (vect_can_advance_ivs_p (loop_vinfo)); */
+  gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
 
   /* Make sure there exists a single-predecessor exit bb:  */
   gcc_assert (single_pred_p (exit_bb));

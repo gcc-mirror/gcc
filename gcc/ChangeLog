@@ -1,3 +1,12 @@
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59164
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer):
+	Uncomment assert.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust
+	check whether we can create an epilogue loop to reflect the
+	cases where we create one.
+
 2013-11-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* graphite-sese-to-poly.c: Include expr.h.
