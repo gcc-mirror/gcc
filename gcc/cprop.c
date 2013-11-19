@@ -1729,12 +1729,12 @@ is_too_expensive (const char *pass)
      which have a couple switch statements.  Rather than simply
      threshold the number of blocks, uses something with a more
      graceful degradation.  */
-  if (n_edges > 20000 + n_basic_blocks_for_fn (cfun) * 4)
+  if (n_edges_for_fn (cfun) > 20000 + n_basic_blocks_for_fn (cfun) * 4)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d edges/basic block",
 	       pass, n_basic_blocks_for_fn (cfun),
-	       n_edges / n_basic_blocks_for_fn (cfun));
+	       n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun));
 
       return true;
     }

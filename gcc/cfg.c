@@ -69,7 +69,7 @@ init_flow (struct function *the_fun)
 {
   if (!the_fun->cfg)
     the_fun->cfg = ggc_alloc_cleared_control_flow_graph ();
-  n_edges_for_function (the_fun) = 0;
+  n_edges_for_fn (the_fun) = 0;
   ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)
     = ggc_alloc_cleared_basic_block_def ();
   ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)->index = ENTRY_BLOCK;
@@ -88,7 +88,7 @@ init_flow (struct function *the_fun)
 static void
 free_edge (edge e)
 {
-  n_edges--;
+  n_edges_for_fn (cfun)--;
   ggc_free (e);
 }
 
@@ -114,7 +114,7 @@ clear_edges (void)
   vec_safe_truncate (EXIT_BLOCK_PTR->preds, 0);
   vec_safe_truncate (ENTRY_BLOCK_PTR->succs, 0);
 
-  gcc_assert (!n_edges);
+  gcc_assert (!n_edges_for_fn (cfun));
 }
 
 /* Allocate memory for basic_block.  */
@@ -262,7 +262,7 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
 {
   edge e;
   e = ggc_alloc_cleared_edge_def ();
-  n_edges++;
+  n_edges_for_fn (cfun)++;
 
   e->src = src;
   e->dest = dst;

@@ -1964,7 +1964,7 @@ prune_insertions_deletions (int n_elems)
 
   /* Iterate over the edges counting the number of times each expression
      needs to be inserted.  */
-  for (i = 0; i < (unsigned) n_edges; i++)
+  for (i = 0; i < (unsigned) n_edges_for_fn (cfun); i++)
     {
       EXECUTE_IF_SET_IN_BITMAP (pre_insert_map[i], 0, j, sbi)
 	insertions[j]++;
@@ -1990,7 +1990,7 @@ prune_insertions_deletions (int n_elems)
   /* Now prune PRE_INSERT_MAP and PRE_DELETE_MAP based on PRUNE_EXPRS.  */
   EXECUTE_IF_SET_IN_BITMAP (prune_exprs, 0, j, sbi)
     {
-      for (i = 0; i < (unsigned) n_edges; i++)
+      for (i = 0; i < (unsigned) n_edges_for_fn (cfun); i++)
 	bitmap_clear_bit (pre_insert_map[i], j);
 
       for (i = 0; i < (unsigned) last_basic_block; i++)
@@ -4069,12 +4069,12 @@ is_too_expensive (const char *pass)
      which have a couple switch statements.  Rather than simply
      threshold the number of blocks, uses something with a more
      graceful degradation.  */
-  if (n_edges > 20000 + n_basic_blocks_for_fn (cfun) * 4)
+  if (n_edges_for_fn (cfun) > 20000 + n_basic_blocks_for_fn (cfun) * 4)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d edges/basic block",
 	       pass, n_basic_blocks_for_fn (cfun),
-	       n_edges / n_basic_blocks_for_fn (cfun));
+	       n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun));
 
       return true;
     }

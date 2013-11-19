@@ -1097,7 +1097,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
     fprintf (dump_file, "df_worklist_dataflow_doublequeue:"
 	     "n_basic_blocks %d n_edges %d"
 	     " count %d (%5.2g)\n",
-	     n_basic_blocks_for_fn (cfun), n_edges,
+	     n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
 	     dcount, dcount / (float)n_basic_blocks_for_fn (cfun));
 }
 

@@ -2106,7 +2106,8 @@ gimple_dump_cfg (FILE *file, int flags)
     {
       dump_function_header (file, current_function_decl, flags);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
-	       n_basic_blocks_for_fn (cfun), n_edges, last_basic_block);
+	       n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
+	       last_basic_block);
 
       brief_dump_cfg (file, flags | TDF_COMMENT);
       fprintf (file, "\n");
