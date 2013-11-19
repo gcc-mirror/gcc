@@ -3649,7 +3649,7 @@ sel_recompute_toporder (void)
   int i, n, rgn;
   int *postorder, n_blocks;
 
-  postorder = XALLOCAVEC (int, n_basic_blocks);
+  postorder = XALLOCAVEC (int, n_basic_blocks_for_fn (cfun));
   n_blocks = post_order_compute (postorder, false, false);
 
   rgn = CONTAINING_RGN (BB_TO_BLOCK (0));
@@ -4912,10 +4912,10 @@ recompute_rev_top_order (void)
                                         rev_top_order_index_len);
     }
 
-  postorder = XNEWVEC (int, n_basic_blocks);
+  postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
 
   n_blocks = post_order_compute (postorder, true, false);
-  gcc_assert (n_basic_blocks == n_blocks);
+  gcc_assert (n_basic_blocks_for_fn (cfun) == n_blocks);
 
   /* Build reverse function: for each basic block with BB->INDEX == K
      rev_top_order_index[K] is it's reverse topological sort number.  */

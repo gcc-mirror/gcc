@@ -4425,7 +4425,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
 static void
 fold_marked_statements (int first, struct pointer_set_t *statements)
 {
-  for (; first < n_basic_blocks; first++)
+  for (; first < n_basic_blocks_for_fn (cfun); first++)
     if (BASIC_BLOCK (first))
       {
         gimple_stmt_iterator gsi;
@@ -4513,7 +4513,7 @@ optimize_inline_calls (tree fn)
 {
   copy_body_data id;
   basic_block bb;
-  int last = n_basic_blocks;
+  int last = n_basic_blocks_for_fn (cfun);
   struct gimplify_ctx gctx;
   bool inlined_p = false;
 

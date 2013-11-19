@@ -150,13 +150,14 @@ void
 dom_walker::walk (basic_block bb)
 {
   basic_block dest;
-  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
+  basic_block *worklist = XNEWVEC (basic_block,
+				   n_basic_blocks_for_fn (cfun) * 2);
   int sp = 0;
   int *postorder, postorder_num;
 
   if (m_dom_direction == CDI_DOMINATORS)
     {
-      postorder = XNEWVEC (int, n_basic_blocks);
+      postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
       postorder_num = inverted_post_order_compute (postorder);
       bb_postorder = XNEWVEC (int, last_basic_block);
       for (int i = 0; i < postorder_num; ++i)

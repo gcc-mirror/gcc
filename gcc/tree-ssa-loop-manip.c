@@ -194,7 +194,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
   /* Normally the work list size is bounded by the number of basic
      blocks in the largest loop.  We don't know this number, but we
      can be fairly sure that it will be relatively small.  */
-  worklist.create (MAX (8, n_basic_blocks / 128));
+  worklist.create (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {

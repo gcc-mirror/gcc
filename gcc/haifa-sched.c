@@ -6754,7 +6754,7 @@ haifa_sched_init (void)
      whole function.  */
   {
     bb_vec_t bbs;
-    bbs.create (n_basic_blocks);
+    bbs.create (n_basic_blocks_for_fn (cfun));
     basic_block bb;
 
     sched_init_bbs ();

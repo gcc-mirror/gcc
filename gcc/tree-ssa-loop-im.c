@@ -1595,7 +1595,7 @@ analyze_memory_references (void)
   /* Collect all basic-blocks in loops and sort them after their
      loops postorder.  */
   i = 0;
-  bbs = XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
+  bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   FOR_EACH_BB (bb)
     if (bb->loop_father != current_loops->tree_root)
       bbs[i++] = bb;

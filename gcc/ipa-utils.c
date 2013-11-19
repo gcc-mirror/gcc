@@ -700,8 +700,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
   cgraph_get_body (dst);
   srccfun = DECL_STRUCT_FUNCTION (src->decl);
   dstcfun = DECL_STRUCT_FUNCTION (dst->decl);
-  if (n_basic_blocks_for_function (srccfun)
-      != n_basic_blocks_for_function (dstcfun))
+  if (n_basic_blocks_for_fn (srccfun)
+      != n_basic_blocks_for_fn (dstcfun))
     {
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,

@@ -2470,13 +2470,13 @@ spu_machine_dependent_reorg (void)
   compact_blocks ();
 
   spu_bb_info =
-    (struct spu_bb_info *) xcalloc (n_basic_blocks,
+    (struct spu_bb_info *) xcalloc (n_basic_blocks_for_fn (cfun),
 				    sizeof (struct spu_bb_info));
 
   /* We need exact insn addresses and lengths.  */
   shorten_branches (get_insns ());
 
-  for (i = n_basic_blocks - 1; i >= 0; i--)
+  for (i = n_basic_blocks_for_fn (cfun) - 1; i >= 0; i--)
     {
       bb = BASIC_BLOCK (i);
       branch = 0;

@@ -4028,7 +4028,7 @@ generate_setjmp_warnings (void)
 {
   bitmap setjmp_crosses = regstat_get_setjmp_crosses ();
 
-  if (n_basic_blocks == NUM_FIXED_BLOCKS
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS
       || bitmap_empty_p (setjmp_crosses))
     return;
 
@@ -6015,7 +6015,7 @@ thread_prologue_and_epilogue_insns (void)
       /* Find the set of basic blocks that require a stack frame,
 	 and blocks that are too big to be duplicated.  */
 
-      vec.create (n_basic_blocks);
+      vec.create (n_basic_blocks_for_fn (cfun));
 
       CLEAR_HARD_REG_SET (set_up_by_prologue.set);
       add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,

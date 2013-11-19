@@ -1177,9 +1177,9 @@ branch_prob (void)
 	num_instrumented++;
     }
 
-  total_num_blocks += n_basic_blocks;
+  total_num_blocks += n_basic_blocks_for_fn (cfun);
   if (dump_file)
-    fprintf (dump_file, "%d basic blocks\n", n_basic_blocks);
+    fprintf (dump_file, "%d basic blocks\n", n_basic_blocks_for_fn (cfun));
 
   total_num_edges += num_edges;
   if (dump_file)
@@ -1208,7 +1208,7 @@ branch_prob (void)
 
       /* Basic block flags */
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
-      for (i = 0; i != (unsigned) (n_basic_blocks); i++)
+      for (i = 0; i != (unsigned) (n_basic_blocks_for_fn (cfun)); i++)
 	gcov_write_unsigned (0);
       gcov_write_length (offset);
 

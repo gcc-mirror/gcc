@@ -146,7 +146,7 @@ static void
 init_dom_info (struct dom_info *di, enum cdi_direction dir)
 {
   /* We need memory for n_basic_blocks nodes.  */
-  unsigned int num = n_basic_blocks;
+  unsigned int num = n_basic_blocks_for_fn (cfun);
   init_ar (di->dfs_parent, TBB, num, 0);
   init_ar (di->path_min, TBB, num, i);
   init_ar (di->key, TBB, num, i);
@@ -233,7 +233,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, bool reverse)
   /* Ending block.  */
   basic_block ex_block;
 
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Initialize our border blocks, and the first edge.  */
@@ -394,7 +394,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
   di->nodes = di->dfsnum - 1;
 
   /* This aborts e.g. when there is _no_ path from ENTRY to EXIT at all.  */
-  gcc_assert (di->nodes == (unsigned int) n_basic_blocks - 1);
+  gcc_assert (di->nodes == (unsigned int) n_basic_blocks_for_fn (cfun) - 1);
 }
 
 /* Compress the path from V to the root of its set and update path_min at the
@@ -652,7 +652,7 @@ calculate_dominance_info (enum cdi_direction dir)
 	{
 	  b->dom[dir_index] = et_new_tree (b);
 	}
-      n_bbs_in_dom_tree[dir_index] = n_basic_blocks;
+      n_bbs_in_dom_tree[dir_index] = n_basic_blocks_for_fn (cfun);
 
       init_dom_info (&di, dir);
       calc_dfs_tree (&di, reverse);

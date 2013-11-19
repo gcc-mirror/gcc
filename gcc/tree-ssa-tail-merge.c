@@ -763,11 +763,11 @@ static void
 init_worklist (void)
 {
   alloc_aux_for_blocks (sizeof (struct aux_bb_info));
-  same_succ_htab.create (n_basic_blocks);
+  same_succ_htab.create (n_basic_blocks_for_fn (cfun));
   same_succ_edge_flags = XCNEWVEC (int, last_basic_block);
   deleted_bbs = BITMAP_ALLOC (NULL);
   deleted_bb_preds = BITMAP_ALLOC (NULL);
-  worklist.create (n_basic_blocks);
+  worklist.create (n_basic_blocks_for_fn (cfun));
   find_same_succ ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -995,7 +995,7 @@ static vec<bb_cluster> all_clusters;
 static void
 alloc_cluster_vectors (void)
 {
-  all_clusters.create (n_basic_blocks);
+  all_clusters.create (n_basic_blocks_for_fn (cfun));
 }
 
 /* Reset all cluster vectors.  */

@@ -146,9 +146,9 @@ copy_loop_headers (void)
       return 0;
     }
 
-  bbs = XNEWVEC (basic_block, n_basic_blocks);
-  copied_bbs = XNEWVEC (basic_block, n_basic_blocks);
-  bbs_size = n_basic_blocks;
+  bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  bbs_size = n_basic_blocks_for_fn (cfun);
 
   FOR_EACH_LOOP (li, loop, 0)
     {

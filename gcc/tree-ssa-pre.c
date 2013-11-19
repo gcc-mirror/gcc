@@ -3724,7 +3724,7 @@ compute_avail (void)
     }
 
   /* Allocate the worklist.  */
-  worklist = XNEWVEC (basic_block, n_basic_blocks);
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
@@ -4655,7 +4655,7 @@ init_pre (void)
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
 
-  postorder = XNEWVEC (int, n_basic_blocks);
+  postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   postorder_num = inverted_post_order_compute (postorder);
 
   alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
@@ -4731,7 +4731,7 @@ do_pre (void)
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
      computing ANTIC, either, even though it's plenty fast.  */
-  if (n_basic_blocks < 4000)
+  if (n_basic_blocks_for_fn (cfun) < 4000)
     {
       compute_antic ();
       insert ();

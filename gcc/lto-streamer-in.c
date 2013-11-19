@@ -587,7 +587,7 @@ make_new_block (struct function *fn, unsigned int index)
   basic_block bb = alloc_block ();
   bb->index = index;
   SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
-  n_basic_blocks_for_function (fn)++;
+  n_basic_blocks_for_fn (fn)++;
   return bb;
 }
 

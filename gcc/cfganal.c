@@ -76,7 +76,7 @@ mark_dfs_back_edges (void)
   post = XCNEWVEC (int, last_basic_block);
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -152,7 +152,7 @@ find_unreachable_blocks (void)
   edge_iterator ei;
   basic_block *tos, *worklist, bb;
 
-  tos = worklist = XNEWVEC (basic_block, n_basic_blocks);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Clear all the reachability flags.  */
 
@@ -256,7 +256,7 @@ print_edge_list (FILE *f, struct edge_list *elist)
   int x;
 
   fprintf (f, "Compressed edge list, %d BBs + entry & exit, and %d edges\n",
-	   n_basic_blocks, elist->num_edges);
+	   n_basic_blocks_for_fn (cfun), elist->num_edges);
 
   for (x = 0; x < elist->num_edges; x++)
     {
@@ -609,7 +609,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
     post_order[post_order_num++] = EXIT_BLOCK;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -667,7 +667,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
 
   /* Delete the unreachable blocks if some were found and we are
      supposed to do it.  */
-  if (delete_unreachable && (count != n_basic_blocks))
+  if (delete_unreachable && (count != n_basic_blocks_for_fn (cfun)))
     {
       basic_block b;
       basic_block next_bb;
@@ -762,7 +762,7 @@ inverted_post_order_compute (int *post_order)
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -898,11 +898,11 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   edge_iterator *stack;
   int sp;
   int pre_order_num = 0;
-  int rev_post_order_num = n_basic_blocks - 1;
+  int rev_post_order_num = n_basic_blocks_for_fn (cfun) - 1;
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   if (include_entry_exit)
@@ -1000,11 +1000,12 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
 					 include_entry_exit);
   if (include_entry_exit)
     /* The number of nodes visited should be the number of blocks.  */
-    gcc_assert (pre_order_num == n_basic_blocks);
+    gcc_assert (pre_order_num == n_basic_blocks_for_fn (cfun));
   else
     /* The number of nodes visited should be the number of blocks minus
        the entry and exit blocks which are not visited here.  */
-    gcc_assert (pre_order_num == n_basic_blocks - NUM_FIXED_BLOCKS);
+    gcc_assert (pre_order_num
+		== (n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS));
 
   return pre_order_num;
 }
@@ -1043,7 +1044,7 @@ static void
 flow_dfs_compute_reverse_init (depth_first_search_ds data)
 {
   /* Allocate stack for back-tracking up CFG.  */
-  data->stack = XNEWVEC (basic_block, n_basic_blocks);
+  data->stack = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   data->sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -1275,7 +1276,7 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
   bitmap phi_insertion_points;
 
   /* Each block can appear at most twice on the work-stack.  */
-  work_stack.create (2 * n_basic_blocks);
+  work_stack.create (2 * n_basic_blocks_for_fn (cfun));
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
@@ -1493,8 +1494,8 @@ basic_block *
 single_pred_before_succ_order (void)
 {
   basic_block x, y;
-  basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
-  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS;
+  basic_block *order = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  unsigned n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
   unsigned np, i;
   sbitmap visited = sbitmap_alloc (last_basic_block);
 

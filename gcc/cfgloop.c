@@ -352,7 +352,7 @@ init_loops_structure (struct function *fn,
 
   /* Dummy loop containing whole function.  */
   root = alloc_loop ();
-  root->num_nodes = n_basic_blocks_for_function (fn);
+  root->num_nodes = n_basic_blocks_for_fn (fn);
   root->latch = EXIT_BLOCK_PTR_FOR_FUNCTION (fn);
   root->header = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
   ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
@@ -422,21 +422,21 @@ flow_loops_find (struct loops *loops)
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return loops;
 
   /* The root loop node contains all basic-blocks.  */
-  loops->tree_root->num_nodes = n_basic_blocks;
+  loops->tree_root->num_nodes = n_basic_blocks_for_fn (cfun);
 
   /* Compute depth first search order of the CFG so that outer
      natural loops will be found before inner natural loops.  */
-  rc_order = XNEWVEC (int, n_basic_blocks);
+  rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   pre_and_rev_post_order_compute (NULL, rc_order, false);
 
   /* Gather all loop headers in reverse completion order and allocate
      loop structures for loops that are not already present.  */
   larray.create (loops->larray->length ());
-  for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
+  for (b = 0; b < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; b++)
     {
       basic_block header = BASIC_BLOCK (rc_order[b]);
       if (bb_loop_header_p (header))
@@ -832,7 +832,7 @@ get_loop_body (const struct loop *loop)
     {
       /* There may be blocks unreachable from EXIT_BLOCK, hence we need to
 	 special-case the fake loop that contains the whole function.  */
-      gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks);
+      gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks_for_fn (cfun));
       body[tv++] = loop->header;
       body[tv++] = EXIT_BLOCK_PTR;
       FOR_EACH_BB (bb)
@@ -1368,7 +1368,7 @@ verify_loop_structure (void)
   /* Check the recorded loop father and sizes of loops.  */
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
-  bbs = XNEWVEC (basic_block, n_basic_blocks);
+  bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       unsigned n;
@@ -1380,7 +1380,7 @@ verify_loop_structure (void)
 	  continue;
 	}
 
-      n = get_loop_body_with_size (loop, bbs, n_basic_blocks);
+      n = get_loop_body_with_size (loop, bbs, n_basic_blocks_for_fn (cfun));
       if (loop->num_nodes != n)
 	{
 	  error ("size of loop %d should be %d, not %d",
