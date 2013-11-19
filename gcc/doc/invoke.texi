@@ -8173,6 +8173,8 @@ exception handling, for linkonce sections, for functions with a user-defined
 section attribute and on any architecture that does not support named
 sections.
 
+Enabled for x86 at levels @option{-O2}, @option{-O3}.
+
 @item -freorder-functions
 @opindex freorder-functions
 Reorder functions in the object file in order to

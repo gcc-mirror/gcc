@@ -737,9 +737,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       && opts->x_flag_reorder_blocks_and_partition
       && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
     {
-      inform (loc,
-	      "-freorder-blocks-and-partition does not work "
-	      "with exceptions on this architecture");
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+        inform (loc,
+                "-freorder-blocks-and-partition does not work "
+                "with exceptions on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
@@ -752,9 +753,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       && opts->x_flag_reorder_blocks_and_partition
       && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
     {
-      inform (loc,
-	      "-freorder-blocks-and-partition does not support "
-	      "unwind info on this architecture");
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+        inform (loc,
+                "-freorder-blocks-and-partition does not support "
+                "unwind info on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
@@ -769,9 +771,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      && targetm_common.unwind_tables_default
 	      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))))
     {
-      inform (loc,
-	      "-freorder-blocks-and-partition does not work "
-	      "on this architecture");
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+        inform (loc,
+                "-freorder-blocks-and-partition does not work "
+                "on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
