@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-rtl-loop2_unroll -fno-unroll-loops -fpeel-loops" } */
+/* { dg-options "-O3 -fdump-tree-cunroll-details -fno-unroll-loops -fpeel-loops" } */
 void abort();
 
 int a[1000];

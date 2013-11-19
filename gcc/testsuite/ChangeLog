@@ -1,3 +1,7 @@
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa/devirt9.C: Fix prevoius change.
+
 2013-11-19  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gcc.c-torture/execute/20101011-1.c (__aarch64__):
