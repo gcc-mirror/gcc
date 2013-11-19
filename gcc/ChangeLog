@@ -1,3 +1,9 @@
+2013-11-19  Sriraman Tallam  <tmsriram@google.com>
+
+	* final.c (final_scan_insn): Emit a label for the split
+	cold function part.  Label name is formed by suffixing
+	the original function name with "cold".
+
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (ENTRY_BLOCK_PTR_FOR_FUNCTION): Rename macro to...
