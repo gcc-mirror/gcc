@@ -32,6 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "config.h"
 
+#include <sys/types.h>
+
 #include "backtrace.h"
 #include "backtrace-supported.h"
 #include "internal.h"

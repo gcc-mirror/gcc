@@ -1,3 +1,7 @@
+2013-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* atomic.c: Include sys/types.h.
+
 2013-11-18  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Check for support of __atomic extensions.
