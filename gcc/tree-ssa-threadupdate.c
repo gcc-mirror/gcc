@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-ssa.h"
 #include "tree-ssa-threadupdate.h"
+#include "ssa-iterators.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
 #include "hash-table.h"
@@ -337,6 +338,31 @@ lookup_redirection_data (edge e, enum insert_option insert)
     }
 }
 
+/* Similar to copy_phi_args, except that the PHI arg exists, it just
+   does not have a value associated with it.  */
+
+static void
+copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
+{
+  int src_idx = src_e->dest_idx;
+  int tgt_idx = tgt_e->dest_idx;
+
+  /* Iterate over each PHI in e->dest.  */
+  for (gimple_stmt_iterator gsi = gsi_start_phis (src_e->dest),
+			    gsi2 = gsi_start_phis (tgt_e->dest);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi), gsi_next (&gsi2))
+    {
+      gimple src_phi = gsi_stmt (gsi);
+      gimple dest_phi = gsi_stmt (gsi2);
+      tree val = gimple_phi_arg_def (src_phi, src_idx);
+      source_location locus = gimple_phi_arg_location (src_phi, src_idx);
+
+      SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
+      gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
+    }
+}
+
 /* For each PHI in BB, copy the argument associated with SRC_E to TGT_E.  */
 
 static void
@@ -418,7 +444,23 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
   copy_phi_args (e->dest, rd->path->last ()->e, e);
 }
 
-/* Wire up the outgoing edges from the duplicate block and
+/* Look through PATH beginning at START and return TRUE if there are
+   any additional blocks that need to be duplicated.  Otherwise,
+   return FALSE.  */
+static bool
+any_remaining_duplicated_blocks (vec<jump_thread_edge *> *path,
+				 unsigned int start)
+{
+  for (unsigned int i = start + 1; i < path->length (); i++)
+    {
+      if ((*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK
+	  || (*path)[i]->type == EDGE_COPY_SRC_BLOCK)
+	return true;
+    }
+  return false;
+}
+
+/* Wire up the outgoing edges from the duplicate blocks and
    update any PHIs as needed.  */
 void
 ssa_fix_duplicate_block_edges (struct redirection_data *rd,
@@ -427,37 +469,77 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
   edge e = rd->incoming_edges->e;
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
-  /* If we were threading through an joiner block, then we want
-     to keep its control statement and redirect an outgoing edge.
-     Else we want to remove the control statement & edges, then create
-     a new outgoing edge.  In both cases we may need to update PHIs.  */
-  if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
-    {
-      edge victim;
-      edge e2;
+  for (unsigned int count = 0, i = 1; i < path->length (); i++)
+    { 
+      /* If we were threading through an joiner block, then we want
+	 to keep its control statement and redirect an outgoing edge.
+	 Else we want to remove the control statement & edges, then create
+	 a new outgoing edge.  In both cases we may need to update PHIs.  */
+      if ((*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	{
+	  edge victim;
+	  edge e2;
 
-      /* This updates the PHIs at the destination of the duplicate
-	 block.  */
-      update_destination_phis (local_info->bb, rd->dup_blocks[0]);
+	  /* This updates the PHIs at the destination of the duplicate
+	     block.  */
+	  update_destination_phis (local_info->bb, rd->dup_blocks[count]);
 
-      /* Find the edge from the duplicate block to the block we're
-	 threading through.  That's the edge we want to redirect.  */
-      victim = find_edge (rd->dup_blocks[0], (*path)[1]->e->dest);
-      e2 = redirect_edge_and_branch (victim, path->last ()->e->dest);
-      e2->count = path->last ()->e->count;
+	  /* Find the edge from the duplicate block to the block we're
+	     threading through.  That's the edge we want to redirect.  */
+	  victim = find_edge (rd->dup_blocks[count], (*path)[i]->e->dest);
 
-      /* If we redirected the edge, then we need to copy PHI arguments
-	 at the target.  If the edge already existed (e2 != victim case),
-	 then the PHIs in the target already have the correct arguments.  */
-      if (e2 == victim)
-	copy_phi_args (e2->dest, path->last ()->e, e2);
-    }
-  else
-    {
-      remove_ctrl_stmt_and_useless_edges (rd->dup_blocks[0], NULL);
-      create_edge_and_update_destination_phis (rd, rd->dup_blocks[0]);
+	  /* If there are no remaining blocks on the path to duplicate,
+	     then redirect VICTIM to the final destination of the jump
+	     threading path.  */
+	  if (!any_remaining_duplicated_blocks (path, i))
+	    {
+	      e2 = redirect_edge_and_branch (victim, path->last ()->e->dest);
+	      e2->count = path->last ()->e->count;
+	      /* If we redirected the edge, then we need to copy PHI arguments
+	         at the target.  If the edge already existed (e2 != victim
+		 case), then the PHIs in the target already have the correct
+		 arguments.  */
+	      if (e2 == victim)
+	        copy_phi_args (e2->dest, path->last ()->e, e2);
+	    }
+	  else
+	    {
+	      /* Redirect VICTIM to the next duplicated block in the path.  */
+	      e2 = redirect_edge_and_branch (victim, rd->dup_blocks[count + 1]);
+
+	      /* We need to update the PHIs in the next duplicated block.  We
+		 want the new PHI args to have the same value as they had
+		 in the source of the next duplicate block.
+
+		 Thus, we need to know which edge we traversed into the
+		 source of the duplicate.  Furthermore, we may have
+		 traversed many edges to reach the source of the duplicate.
+
+		 Walk through the path starting at element I until we
+		 hit an edge marked with EDGE_COPY_SRC_BLOCK.  We want
+		 the edge from the prior element.  */
+	      for (unsigned int j = i + 1; j < path->length (); j++)
+		{
+		  if ((*path)[j]->type == EDGE_COPY_SRC_BLOCK)
+		    {
+		      copy_phi_arg_into_existing_phi ((*path)[j - 1]->e, e2);
+		      break;
+		    }
+		}
+	    }
+	  count++;
+	}
+      else if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK)
+	{
+	  remove_ctrl_stmt_and_useless_edges (rd->dup_blocks[count], NULL);
+	  create_edge_and_update_destination_phis (rd, rd->dup_blocks[count]);
+	  if (count == 1)
+	    single_succ_edge (rd->dup_blocks[1])->aux = NULL;
+	  count++;
+	}
     }
 }
+
 /* Hash table traversal callback routine to create duplicate blocks.  */
 
 int
