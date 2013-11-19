@@ -1,3 +1,15 @@
+2013-11-19  Joey Ye  <joey.ye@arm.com>
+
+	* config/arm/arm.opt (-marm-pic-data-is-text-relative): New option.
+	* doc/invoke.texi (-marm-pic-data-is-text-relative): Documentation
+	for new option.
+	* config/arm/arm.c (arm_option_override): By default disable
+	-marm-pic-data-is-text-relative.
+	(legitimize_pic_address): Use arm_pic_data_is_text_relative.
+	(arm_assemble_integer): Likewise.
+	* config/arm/arm.h (TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE):
+	New macro to initialize -marm-pic-data-is-text-relative.
+
 2013-11-19  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (enum ainc_type): New.

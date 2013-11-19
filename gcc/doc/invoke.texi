@@ -12188,6 +12188,12 @@ before execution begins.
 Specify the register to be used for PIC addressing.  The default is R10
 unless stack-checking is enabled, when R9 is used.
 
+@item -mpic-data-is-text-relative
+@opindex mpic-data-is-text-relative
+Assume that each data segments are relative to text segment at load time.
+Therefore, it permits addressing data using PC-relative operations.
+This option is on by default for targets other than VxWorks RTP.
+
 @item -mpoke-function-name
 @opindex mpoke-function-name
 Write the name of each function into the text section, directly
