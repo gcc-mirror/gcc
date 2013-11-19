@@ -1,3 +1,9 @@
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57517
+	* gfortran.fortran-torture/compile/pr57517.f90: New testcase.
+	* gcc.dg/torture/pr57517.c: Likewise.
+
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/memcpy-3.c: New testcase.
