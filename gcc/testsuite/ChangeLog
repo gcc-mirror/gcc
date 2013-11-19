@@ -1,3 +1,8 @@
+2013-11-19  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gcc.c-torture/execute/20101011-1.c (__aarch64__):
+	Remove defined(__linux__).
+
 2013-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59164

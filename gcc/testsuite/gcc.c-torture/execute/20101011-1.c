@@ -12,10 +12,9 @@
 #elif defined (__sh__)
   /* On SH division by zero does not trap.  */
 # define DO_TEST 0
-#elif defined (__aarch64__) && !defined(__linux__)
-  /* AArch64 divisions do trap by default, but libgloss targets do not
-     intercept the trap and raise a SIGFPE. So restrict the test to
-     AArch64 systems that use the Linux kernel.  */
+#elif defined (__aarch64__)
+  /* On AArch64 integer division by zero does not trap.  */
+# define DO_TEST 0
 #elif defined (__TMS320C6X__)
   /* On TI C6X division by zero does not trap.  */
 # define DO_TEST 0
