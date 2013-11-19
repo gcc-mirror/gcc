@@ -1,5 +1,10 @@
 2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Fix over
+	length lines.
+
+2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* config/aarch64/aarch64.md
 	(aarch64_movdi_<mode>low, *add_<shift>_si_uxtw):
 	Adjust whitespace.
