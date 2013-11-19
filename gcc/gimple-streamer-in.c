@@ -100,12 +100,12 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   bp = streamer_read_bitpack (ib);
   num_ops = bp_unpack_var_len_unsigned (&bp);
   stmt = gimple_alloc (code, num_ops);
-  stmt->gsbase.no_warning = bp_unpack_value (&bp, 1);
+  stmt->no_warning = bp_unpack_value (&bp, 1);
   if (is_gimple_assign (stmt))
-    stmt->gsbase.nontemporal_move = bp_unpack_value (&bp, 1);
-  stmt->gsbase.has_volatile_ops = bp_unpack_value (&bp, 1);
+    stmt->nontemporal_move = bp_unpack_value (&bp, 1);
+  stmt->has_volatile_ops = bp_unpack_value (&bp, 1);
   has_hist = bp_unpack_value (&bp, 1);
-  stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
+  stmt->subcode = bp_unpack_var_len_unsigned (&bp);
 
   /* Read location information.  */
   gimple_set_location (stmt, stream_input_location (&bp, data_in));
@@ -131,13 +131,14 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
     case GIMPLE_ASM:
       {
 	/* FIXME lto.  Move most of this into a new gimple_asm_set_string().  */
+	gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (stmt);
 	tree str;
-	stmt->gimple_asm.ni = streamer_read_uhwi (ib);
-	stmt->gimple_asm.no = streamer_read_uhwi (ib);
-	stmt->gimple_asm.nc = streamer_read_uhwi (ib);
-	stmt->gimple_asm.nl = streamer_read_uhwi (ib);
+	asm_stmt->ni = streamer_read_uhwi (ib);
+	asm_stmt->no = streamer_read_uhwi (ib);
+	asm_stmt->nc = streamer_read_uhwi (ib);
+	asm_stmt->nl = streamer_read_uhwi (ib);
 	str = streamer_read_string_cst (data_in, ib);
-	stmt->gimple_asm.string = TREE_STRING_POINTER (str);
+	asm_stmt->string = TREE_STRING_POINTER (str);
       }
       /* Fallthru  */
 

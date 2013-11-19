@@ -78,7 +78,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
   hist = gimple_histogram_value (cfun, stmt);
   bp_pack_value (&bp, hist != NULL, 1);
-  bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
+  bp_pack_var_len_unsigned (&bp, stmt->subcode);
 
   /* Emit location information for the statement.  */
   stream_output_location (ob, &bp, LOCATION_LOCUS (gimple_location (stmt)));

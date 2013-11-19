@@ -96,7 +96,7 @@ static const char * const gimple_alloc_kind_names[] = {
 static inline void
 gimple_set_code (gimple g, enum gimple_code code)
 {
-  g->gsbase.code = code;
+  g->code = code;
 }
 
 /* Return the number of bytes needed to hold a GIMPLE statement with
@@ -128,13 +128,13 @@ gimple_alloc_stat (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
       gimple_alloc_sizes[(int) kind] += size;
     }
 
-  stmt = ggc_alloc_cleared_gimple_statement_d_stat (size PASS_MEM_STAT);
+  stmt = ggc_alloc_cleared_gimple_statement_stat (size PASS_MEM_STAT);
   gimple_set_code (stmt, code);
   gimple_set_num_ops (stmt, num_ops);
 
   /* Do not call gimple_set_modified here as it has other side
      effects and this tuple is still not completely built.  */
-  stmt->gsbase.modified = 1;
+  stmt->modified = 1;
   gimple_init_singleton (stmt);
 
   return stmt;
@@ -148,7 +148,7 @@ gimple_set_subcode (gimple g, unsigned subcode)
   /* We only have 16 bits for the RHS code.  Assert that we are not
      overflowing it.  */
   gcc_assert (subcode < (1 << 16));
-  g->gsbase.subcode = subcode;
+  g->subcode = subcode;
 }
 
 
@@ -283,7 +283,7 @@ static inline gimple
 gimple_build_call_internal_1 (enum internal_fn fn, unsigned nargs)
 {
   gimple s = gimple_build_with_ops (GIMPLE_CALL, ERROR_MARK, nargs + 3);
-  s->gsbase.subcode |= GF_CALL_INTERNAL;
+  s->subcode |= GF_CALL_INTERNAL;
   gimple_call_set_internal_fn (s, fn);
   gimple_call_reset_alias_info (s);
   return s;
@@ -533,21 +533,22 @@ static inline gimple
 gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
                     unsigned nclobbers, unsigned nlabels)
 {
-  gimple p;
+  gimple_statement_asm *p;
   int size = strlen (string);
 
   /* ASMs with labels cannot have outputs.  This should have been
      enforced by the front end.  */
   gcc_assert (nlabels == 0 || noutputs == 0);
 
-  p = gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
-			     ninputs + noutputs + nclobbers + nlabels);
+  p = as_a <gimple_statement_asm> (
+        gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
+			       ninputs + noutputs + nclobbers + nlabels));
 
-  p->gimple_asm.ni = ninputs;
-  p->gimple_asm.no = noutputs;
-  p->gimple_asm.nc = nclobbers;
-  p->gimple_asm.nl = nlabels;
-  p->gimple_asm.string = ggc_alloc_string (string, size);
+  p->ni = ninputs;
+  p->no = noutputs;
+  p->nc = nclobbers;
+  p->nl = nlabels;
+  p->string = ggc_alloc_string (string, size);
 
   if (GATHER_STATISTICS)
     gimple_alloc_sizes[(int) gimple_alloc_kind (GIMPLE_ASM)] += size;
@@ -659,14 +660,14 @@ gimple_build_eh_else (gimple_seq n_body, gimple_seq e_body)
    KIND is either GIMPLE_TRY_CATCH or GIMPLE_TRY_FINALLY depending on
    whether this is a try/catch or a try/finally respectively.  */
 
-gimple
+gimple_statement_try *
 gimple_build_try (gimple_seq eval, gimple_seq cleanup,
     		  enum gimple_try_flags kind)
 {
-  gimple p;
+  gimple_statement_try *p;
 
   gcc_assert (kind == GIMPLE_TRY_CATCH || kind == GIMPLE_TRY_FINALLY);
-  p = gimple_alloc (GIMPLE_TRY, 0);
+  p = as_a <gimple_statement_try> (gimple_alloc (GIMPLE_TRY, 0));
   gimple_set_subcode (p, kind);
   if (eval)
     gimple_try_set_eval (p, eval);
@@ -696,8 +697,10 @@ gimple_build_wce (gimple_seq cleanup)
 gimple
 gimple_build_resx (int region)
 {
-  gimple p = gimple_build_with_ops (GIMPLE_RESX, ERROR_MARK, 0);
-  p->gimple_eh_ctrl.region = region;
+  gimple_statement_eh_ctrl *p =
+    as_a <gimple_statement_eh_ctrl> (
+      gimple_build_with_ops (GIMPLE_RESX, ERROR_MARK, 0));
+  p->region = region;
   return p;
 }
 
@@ -744,8 +747,10 @@ gimple_build_switch (tree index, tree default_label, vec<tree> args)
 gimple
 gimple_build_eh_dispatch (int region)
 {
-  gimple p = gimple_build_with_ops (GIMPLE_EH_DISPATCH, ERROR_MARK, 0);
-  p->gimple_eh_ctrl.region = region;
+  gimple_statement_eh_ctrl *p =
+    as_a <gimple_statement_eh_ctrl> (
+      gimple_build_with_ops (GIMPLE_EH_DISPATCH, ERROR_MARK, 0));
+  p->region = region;
   return p;
 }
 
@@ -819,14 +824,17 @@ gimple
 gimple_build_omp_for (gimple_seq body, int kind, tree clauses, size_t collapse,
 		      gimple_seq pre_body)
 {
-  gimple p = gimple_alloc (GIMPLE_OMP_FOR, 0);
+  gimple_statement_omp_for *p =
+    as_a <gimple_statement_omp_for> (gimple_alloc (GIMPLE_OMP_FOR, 0));
   if (body)
     gimple_omp_set_body (p, body);
   gimple_omp_for_set_clauses (p, clauses);
   gimple_omp_for_set_kind (p, kind);
-  p->gimple_omp_for.collapse = collapse;
-  p->gimple_omp_for.iter
-      = ggc_alloc_cleared_vec_gimple_omp_for_iter (collapse);
+  p->collapse = collapse;
+  p->iter =  static_cast <struct gimple_omp_for_iter *> (
+   ggc_internal_cleared_vec_alloc_stat (sizeof (*p->iter),
+					collapse MEM_STAT_INFO));
+
   if (pre_body)
     gimple_omp_for_set_pre_body (p, pre_body);
 
@@ -1114,8 +1122,8 @@ gimple_check_failed (const_gimple gs, const char *file, int line,
       		  gimple_code_name[code],
 		  get_tree_code_name (subcode),
 		  gimple_code_name[gimple_code (gs)],
-		  gs->gsbase.subcode > 0
-		    ? get_tree_code_name ((enum tree_code) gs->gsbase.subcode)
+		  gs->subcode > 0
+		    ? get_tree_code_name ((enum tree_code) gs->subcode)
 		    : "",
 		  function, trim_filename (file), line);
 }
@@ -1309,7 +1317,7 @@ gimple_call_flags (const_gimple stmt)
   else
     flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
 
-  if (stmt->gsbase.subcode & GF_CALL_NOTHROW)
+  if (stmt->subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
 
   return flags;
@@ -1450,7 +1458,7 @@ gimple_assign_unary_nop_p (gimple gs)
 void
 gimple_set_bb (gimple stmt, basic_block bb)
 {
-  stmt->gsbase.bb = bb;
+  stmt->bb = bb;
 
   /* If the statement is a label, add the label to block-to-labels map
      so that we can speed up edge creation for GIMPLE_GOTOs.  */
@@ -1645,9 +1653,15 @@ gimple_copy (gimple stmt)
 	  gimple_omp_for_set_pre_body (copy, new_seq);
 	  t = unshare_expr (gimple_omp_for_clauses (stmt));
 	  gimple_omp_for_set_clauses (copy, t);
-	  copy->gimple_omp_for.iter
-	    = ggc_alloc_vec_gimple_omp_for_iter
-	    (gimple_omp_for_collapse (stmt));
+	  {
+	    gimple_statement_omp_for *omp_for_copy =
+	      as_a <gimple_statement_omp_for> (copy);
+	    omp_for_copy->iter =
+	      static_cast <struct gimple_omp_for_iter *> (
+		  ggc_internal_vec_alloc_stat (sizeof (struct gimple_omp_for_iter),
+					       gimple_omp_for_collapse (stmt)
+					       MEM_STAT_INFO));
+          }
 	  for (i = 0; i < gimple_omp_for_collapse (stmt); i++)
 	    {
 	      gimple_omp_for_set_cond (copy, i,

@@ -88,13 +88,13 @@ print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 }
 
 DEBUG_FUNCTION void
-debug (gimple_statement_d &ref)
+debug (gimple_statement_base &ref)
 {
   print_gimple_stmt (stderr, &ref, 0, 0);
 }
 
 DEBUG_FUNCTION void
-debug (gimple_statement_d *ptr)
+debug (gimple_statement_base *ptr)
 {
   if (ptr)
     debug (*ptr);
@@ -1073,7 +1073,7 @@ dump_gimple_eh_dispatch (pretty_printer *buffer, gimple gs, int spc, int flags)
 static void
 dump_gimple_debug (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
-  switch (gs->gsbase.subcode)
+  switch (gs->subcode)
     {
     case GIMPLE_DEBUG_BIND:
       if (flags & TDF_RAW)
