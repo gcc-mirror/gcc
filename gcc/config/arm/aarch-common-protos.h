@@ -31,6 +31,7 @@ extern int arm_no_early_alu_shift_dep (rtx, rtx);
 extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
 extern int arm_no_early_mul_dep (rtx, rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
+extern bool arm_rtx_shift_left_p (rtx);
 
 /* RTX cost table definitions.  These are used when tuning for speed rather
    than for size and should reflect the _additional_ cost over the cost
