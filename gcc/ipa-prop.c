@@ -386,6 +386,7 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
   jfunc->value.known_type.offset = offset,
   jfunc->value.known_type.base_type = base_type;
   jfunc->value.known_type.component_type = component_type;
+  gcc_assert (component_type);
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -1739,8 +1740,6 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt)
 
   cs = cgraph_edge (node, stmt);
   cs->indirect_info->param_index = param_index;
-  cs->indirect_info->offset = 0;
-  cs->indirect_info->polymorphic = 0;
   cs->indirect_info->agg_contents = 0;
   cs->indirect_info->member_ptr = 0;
   return cs;
@@ -1837,6 +1836,8 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
 				   NULL, &by_ref))
     {
       struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
+      if (cs->indirect_info->offset != offset)
+	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->by_ref = by_ref;
@@ -1934,6 +1935,8 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
       && parm_preserved_before_stmt_p (&parms_ainfo[index], call, rec))
     {
       struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
+      if (cs->indirect_info->offset != offset)
+	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->member_ptr = 1;
@@ -2770,6 +2773,8 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  else
 	    {
 	      ici->param_index = ipa_get_jf_ancestor_formal_id (jfunc);
+	      if (ipa_get_jf_ancestor_offset (jfunc))
+	        ici->outer_type = NULL;
 	      ici->offset += ipa_get_jf_ancestor_offset (jfunc);
 	    }
 	}
@@ -4084,12 +4089,15 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   bp_pack_value (&bp, ii->agg_contents, 1);
   bp_pack_value (&bp, ii->member_ptr, 1);
   bp_pack_value (&bp, ii->by_ref, 1);
+  bp_pack_value (&bp, ii->maybe_in_construction, 1);
+  bp_pack_value (&bp, ii->maybe_derived_type, 1);
   streamer_write_bitpack (&bp);
 
   if (ii->polymorphic)
     {
       streamer_write_hwi (ob, ii->otr_token);
       stream_write_tree (ob, ii->otr_type, true);
+      stream_write_tree (ob, ii->outer_type, true);
     }
 }
 
@@ -4111,10 +4119,13 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   ii->agg_contents = bp_unpack_value (&bp, 1);
   ii->member_ptr = bp_unpack_value (&bp, 1);
   ii->by_ref = bp_unpack_value (&bp, 1);
+  ii->maybe_in_construction = bp_unpack_value (&bp, 1);
+  ii->maybe_derived_type = bp_unpack_value (&bp, 1);
   if (ii->polymorphic)
     {
       ii->otr_token = (HOST_WIDE_INT) streamer_read_hwi (ib);
       ii->otr_type = stream_read_tree (ib, data_in);
+      ii->outer_type = stream_read_tree (ib, data_in);
     }
 }
 
