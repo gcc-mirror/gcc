@@ -1514,12 +1514,11 @@ predict_extra_loop_exits (edge exit_edge)
 static void
 predict_loops (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       basic_block bb, *bbs;
       unsigned j, n_exits;

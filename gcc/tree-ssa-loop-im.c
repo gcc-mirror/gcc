@@ -1584,14 +1584,13 @@ analyze_memory_references (void)
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
   struct loop *loop, *outer;
-  loop_iterator li;
   unsigned i, n;
 
   /* Initialize bb_loop_postorder with a mapping from loop->num to
      its postorder index.  */
   i = 0;
   bb_loop_postorder = XNEWVEC (unsigned, number_of_loops (cfun));
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     bb_loop_postorder[loop->num] = i++;
   /* Collect all basic-blocks in loops and sort them after their
      loops postorder.  */
@@ -1617,7 +1616,7 @@ analyze_memory_references (void)
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       /* Finalize the overall touched references (including subloops).  */
       bitmap_ior_into (&memory_accesses.all_refs_stored_in_loop[loop->num],

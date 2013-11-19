@@ -267,12 +267,11 @@ static void
 replace_loop_annotate ()
 {
   struct loop *loop;
-  loop_iterator li;
   basic_block bb;
   gimple_stmt_iterator gsi;
   gimple stmt;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       gsi = gsi_last_bb (loop->header);
       stmt = gsi_stmt (gsi);
@@ -1640,9 +1639,8 @@ replace_uses_by (tree name, tree val)
   if (current_loops)
     {
       struct loop *loop;
-      loop_iterator li;
 
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	{
 	  substitute_in_loop_info (loop, name, val);
 	}

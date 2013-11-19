@@ -4745,10 +4745,9 @@ analyze_all_data_dependences (struct loop *loop)
 void
 tree_check_data_deps (void)
 {
-  loop_iterator li;
   struct loop *loop_nest;
 
-  FOR_EACH_LOOP (li, loop_nest, 0)
+  FOR_EACH_LOOP (loop_nest, 0)
     analyze_all_data_dependences (loop_nest);
 }
 

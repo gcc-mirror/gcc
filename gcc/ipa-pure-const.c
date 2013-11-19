@@ -791,17 +791,16 @@ end:
 	    }
 	  else
 	    {
-	      loop_iterator li;
 	      struct loop *loop;
 	      scev_initialize ();
-	      FOR_EACH_LOOP (li, loop, 0)
+	      FOR_EACH_LOOP (loop, 0)
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)
 		      fprintf (dump_file, "    can not prove finiteness of "
 			       "loop %i\n", loop->num);
 		    l->looping =true;
-		    FOR_EACH_LOOP_BREAK (li);
+		    break;
 		  }
 	      scev_finalize ();
 	    }

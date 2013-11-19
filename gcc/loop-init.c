@@ -135,7 +135,6 @@ loop_optimizer_init (unsigned flags)
 void
 loop_optimizer_finalize (void)
 {
-  loop_iterator li;
   struct loop *loop;
   basic_block bb;
 
@@ -162,10 +161,8 @@ loop_optimizer_finalize (void)
 
   gcc_assert (current_loops != NULL);
 
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      free_simple_loop_desc (loop);
-    }
+  FOR_EACH_LOOP (loop, 0)
+    free_simple_loop_desc (loop);
 
   /* Clean up.  */
   flow_loops_free (current_loops);
@@ -199,7 +196,6 @@ fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   int record_exits = 0;
-  loop_iterator li;
   struct loop *loop;
   unsigned old_nloops, i;
 
@@ -224,7 +220,7 @@ fix_loop_structure (bitmap changed_bbs)
      loops, so that when we remove the loops, we know that the loops inside
      are preserved, and do not waste time relinking loops that will be
      removed later.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       /* Detect the case that the loop is no longer present even though
          it wasn't marked for removal.

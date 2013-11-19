@@ -1718,10 +1718,9 @@ gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       loop_p loop;
-      loop_iterator li;
       int num_no_dependency = 0;
 
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	if (loop->can_be_parallel)
 	  num_no_dependency++;
 

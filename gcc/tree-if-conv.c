@@ -1788,7 +1788,6 @@ tree_if_conversion (struct loop *loop)
 static unsigned int
 main_tree_if_conversion (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
   unsigned todo = 0;
@@ -1796,7 +1795,7 @@ main_tree_if_conversion (void)
   if (number_of_loops (cfun) <= 1)
     return 0;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
 	|| flag_tree_loop_if_convert_stores == 1
 	|| flag_tree_loop_vectorize
