@@ -1,3 +1,8 @@
+2013-11-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* loop-doloop.c (doloop_optimize_loops): Remove unused
+	loop iterator argument from FOR_EACH_LOOP.
+
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	Convert gimple types from a union to C++ inheritance.
