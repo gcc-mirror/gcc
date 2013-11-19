@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 
 #ifdef HAVE_cloog
+#include "expr.h"
 #include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"
 
