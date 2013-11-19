@@ -268,11 +268,13 @@ decide_is_symbol_needed (symtab_node *node)
   return false;
 }
 
-/* Head of the queue of nodes to be processed while building callgraph */
+/* Head and terminator of the queue of nodes to be processed while building
+   callgraph.  */
 
-static symtab_node *first = (symtab_node *)(void *)1;
+static symtab_node symtab_terminator;
+static symtab_node *queued_nodes = &symtab_terminator;
 
-/* Add NODE to queue starting at FIRST. 
+/* Add NODE to queue starting at QUEUED_NODES. 
    The queue is linked via AUX pointers and terminated by pointer to 1.  */
 
 static void
@@ -280,25 +282,24 @@ enqueue_node (symtab_node *node)
 {
   if (node->aux)
     return;
-  gcc_checking_assert (first);
-  node->aux = first;
-  first = node;
+  gcc_checking_assert (queued_nodes);
+  node->aux = queued_nodes;
+  queued_nodes = node;
 }
 
 /* Process CGRAPH_NEW_FUNCTIONS and perform actions necessary to add these
    functions into callgraph in a way so they look like ordinary reachable
    functions inserted into callgraph already at construction time.  */
 
-bool
+void
 cgraph_process_new_functions (void)
 {
-  bool output = false;
   tree fndecl;
   struct cgraph_node *node;
   cgraph_node_set_iterator csi;
 
   if (!cgraph_new_nodes)
-    return false;
+    return;
   handle_alias_pairs ();
   /*  Note that this queue may grow as its being processed, as the new
       functions may generate new ones.  */
@@ -313,7 +314,6 @@ cgraph_process_new_functions (void)
 	     it into reachable functions list.  */
 
 	  cgraph_finalize_function (fndecl, false);
-	  output = true;
           cgraph_call_function_insertion_hooks (node);
 	  enqueue_node (node);
 	  break;
@@ -354,7 +354,6 @@ cgraph_process_new_functions (void)
     }
   free_cgraph_node_set (cgraph_new_nodes);
   cgraph_new_nodes = NULL;
-  return output;
 }
 
 /* As an GCC extension we allow redefinition of the function.  The
@@ -985,11 +984,11 @@ analyze_functions (void)
 
       /* Lower representation, build callgraph edges and references for all trivially
          needed symbols and all symbols referred by them.  */
-      while (first != (symtab_node *)(void *)1)
+      while (queued_nodes != &symtab_terminator)
 	{
 	  changed = true;
-	  node = first;
-	  first = (symtab_node *)first->aux;
+	  node = queued_nodes;
+	  queued_nodes = (symtab_node *)queued_nodes->aux;
 	  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
 	  if (cnode && cnode->definition)
 	    {

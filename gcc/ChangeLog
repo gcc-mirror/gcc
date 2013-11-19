@@ -1,3 +1,12 @@
+2013-11-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cgraphunit.c (symtab_terminator): New variable.
+	(queued_nodes): Renamed from first.  Use symtab_terminator as
+	initializer.
+	(analyze_functions): Adjust accordingly.
+	(cgraph_process_new_functions): Return void.
+	* cgraph.h (cgraph_process_new_functions): Adjust declaration.
+
 2013-11-19  Marek Polacek  <polacek@redhat.com>
 
 	* opts.c (common_handle_option): Add -fsanitize=null option.
@@ -20,7 +29,7 @@
 	(make_pass_sanopt): Likewise.
 	(class pass_sanopt): New class.
 	* ubsan.c: Include tree-pass.h, gimple-ssa.h, gimple-walk.h,
-	gimple-iterator.h and cfgloop.h. 
+	gimple-iterator.h and cfgloop.h.
 	(PROB_VERY_UNLIKELY): Define.
 	(tree_type_map_hash): New function.
 	(ubsan_type_descriptor): Add new parameter.
