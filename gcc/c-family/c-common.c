@@ -6056,8 +6056,10 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
-  if (tree_fits_hwi_p (key, TYPE_SIGN (type)))
-    print_dec (key, buf, TYPE_SIGN (type));
+  if (tree_fits_uhwi_p (key))
+    print_dec (key, buf, UNSIGNED);
+  else if (tree_fits_shwi_p (key))
+    print_dec (key, buf, SIGNED);
   else
     print_hex (key, buf);
 

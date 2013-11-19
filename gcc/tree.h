@@ -3754,50 +3754,6 @@ extern tree excess_precision_type (tree);
 extern bool valid_constant_size_p (const_tree);
 extern unsigned int element_precision (const_tree);
 
-/* Return true if T is an INTEGER_CST that can be manipulated
-   efficiently on the host.  If SIGN is SIGNED, the value can be
-   represented in a single HOST_WIDE_INT.  If SIGN is UNSIGNED, the
-   value must be non-negative and can be represented in a single
-   unsigned HOST_WIDE_INT.  */
-
-static inline bool
-tree_fits_hwi_p (const_tree cst, signop sign)
-{
-  return sign ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
-}
-
-/* Return true if T is an INTEGER_CST that can be manipulated
-   efficiently on the host.  If the sign of CST is SIGNED, the value
-   can be represented in a single HOST_WIDE_INT.  If the sign of CST
-   is UNSIGNED, the value must be non-negative and can be represented
-   in a single unsigned HOST_WIDE_INT.  */
-
-static inline bool
-tree_fits_hwi_p (const_tree cst)
-{
-  if (cst == NULL_TREE)
-    return false;
-
-  if (TREE_CODE (cst) != INTEGER_CST)
-    return false;
-
-  return TYPE_UNSIGNED (TREE_TYPE (cst)) 
-    ? tree_fits_uhwi_p (cst) : tree_fits_shwi_p (cst);
-}
-
-/* Return the HOST_WIDE_INT least significant bits of CST.  The sign
-   of the checking is based on SIGNOP. */
-
-static inline HOST_WIDE_INT
-tree_to_hwi (const_tree cst, signop sgn)
-{
-  if (sgn == SIGNED)
-    return tree_to_shwi (cst);
-  else
-    return tree_to_uhwi (cst);
-}
-
-
 /* Construct various nodes representing fract or accum data types.  */
 
 extern tree make_fract_type (int, int, int);

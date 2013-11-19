@@ -1024,10 +1024,8 @@ As this example indicates, the operands are zero-indexed.
 @tindex INTEGER_CST
 @tindex tree_fits_uhwi_p
 @tindex tree_fits_shwi_p
-@tindex tree_fits_hwi_p
 @tindex tree_to_uhwi
 @tindex tree_to_shwi
-@tindex tree_to_hwi
 @tindex REAL_CST
 @tindex FIXED_CST
 @tindex COMPLEX_CST
@@ -1050,16 +1048,11 @@ represented in an array of HOST_WIDE_INT.   There are enough elements
 in the array to represent the value without taking extra elements for
 redundant 0s or -1.
 
-The functions @code{tree_fits_uhwi_p}, @code{tree_fits_shwi_p}, and
-@code{tree_fits_hwi_p} can be used to tell if the value is small
-enough to fit in a HOST_WIDE_INT, as either a signed value, an unsiged
-value or a value whose sign is given as a parameter.  The value can
-then be extracted using the @code{tree_to_uhwi}, @code{tree_to_shwi},
-or @code{tree_to_hwi}.  The @code{tree_to_hwi} comes in both checked
-and unchecked flavors.  However, when the value is used in a context
-where it may represent a value that is larger than can be represented
-in HOST_BITS_PER_WIDE_INT bits, the wide_int class should be used to
-manipulate the constant.
+The functions @code{tree_fits_shwi_p} and @code{tree_fits_uhwi_p}
+can be used to tell if the value is small enough to fit in a
+signed HOST_WIDE_INT or an unsigned HOST_WIDE_INT respectively.
+The value can then be extracted using @code{tree_to_shwi} and
+@code{tree_to_uhwi}.
 
 @item REAL_CST
 
