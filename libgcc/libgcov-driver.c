@@ -325,6 +325,10 @@ static char *gi_filename;
 static struct gcov_fn_buffer *fn_buffer;
 /* buffer for summary from other programs to be written out. */
 static struct gcov_summary_buffer *sum_buffer;
+/* If application calls fork or exec multiple times, we end up storing
+   profile repeadely.  We should not account this as multiple runs or
+   functions executed once may mistakely become cold.  */
+static int run_accounted = 0;
 
 /* This funtions computes the program level summary and the histo-gram.
    It computes and returns CRC32  and stored summari in THIS_PRG.  */
@@ -646,14 +650,11 @@ gcov_exit_write_gcda (const struct gcov_info *gi_ptr,
 
 static int
 gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *prg,
-			 gcov_unsigned_t crc32, struct gcov_summary *all_prg)
+			 gcov_unsigned_t crc32,
+			 struct gcov_summary *all_prg __attribute__ ((unused)))
 {
   struct gcov_ctr_summary *cs_prg, *cs_tprg;
   unsigned t_ix;
-  /* If application calls fork or exec multiple times, we end up storing
-     profile repeadely.  We should not account this as multiple runs or
-     functions executed once may mistakely become cold.  */
-  static int run_accounted = 0;
 #if !GCOV_LOCKED 
   /* summary for all instances of program.  */ 
   struct gcov_ctr_summary *cs_all;
@@ -718,7 +719,6 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
 #endif
     }
 
-  run_accounted = 1;
   prg->checksum = crc32;
 
   return 0;
@@ -817,6 +817,7 @@ gcov_exit (void)
   /* Now merge each file.  */
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     gcov_exit_dump_gcov (gi_ptr, &gf, crc32, &all_prg);
+  run_accounted = 1;
 
   if (gi_filename)
     free (gi_filename);
