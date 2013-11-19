@@ -6593,7 +6593,7 @@ fold_single_bit_test_into_sign_test (location_t loc,
 	  /* This is only a win if casting to a signed type is cheap,
 	     i.e. when arg00's type is not a partial mode.  */
 	  && TYPE_PRECISION (TREE_TYPE (arg00))
-	     == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg00))))
+	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg00))))
 	{
 	  tree stype = signed_type_for (TREE_TYPE (arg00));
 	  return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
@@ -12049,7 +12049,7 @@ fold_binary_loc (location_t loc,
 	    zerobits = ((((unsigned HOST_WIDE_INT) 1) << shiftc) - 1);
 	  else if (TREE_CODE (arg0) == RSHIFT_EXPR
 		   && TYPE_PRECISION (TREE_TYPE (arg0))
-		      == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg0))))
+		      == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg0))))
 	    {
 	      prec = TYPE_PRECISION (TREE_TYPE (arg0));
 	      tree arg00 = TREE_OPERAND (arg0, 0);
@@ -12060,7 +12060,7 @@ fold_binary_loc (location_t loc,
 		{
 		  tree inner_type = TREE_TYPE (TREE_OPERAND (arg00, 0));
 		  if (TYPE_PRECISION (inner_type)
-		      == GET_MODE_BITSIZE (TYPE_MODE (inner_type))
+		      == GET_MODE_PRECISION (TYPE_MODE (inner_type))
 		      && TYPE_PRECISION (inner_type) < prec)
 		    {
 		      prec = TYPE_PRECISION (inner_type);
@@ -13815,7 +13815,7 @@ fold_binary_loc (location_t loc,
 			associated with the mode of arg1, so the sign bit is
 			specified by this mode.  Check that arg1 is the signed
 			max associated with this sign bit.  */
-		     && width == GET_MODE_BITSIZE (TYPE_MODE (arg1_type))
+		     && width == GET_MODE_PRECISION (TYPE_MODE (arg1_type))
 		     /* signed_type does not work on pointer types.  */
 		     && INTEGRAL_TYPE_P (arg1_type))
 	      {
