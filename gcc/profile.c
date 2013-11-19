@@ -528,11 +528,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
   if (!profile_info)
     return;
-  if (profile_info->run_max * profile_info->runs < profile_info->sum_max)
-    {
-      error ("corrupted profile info: run_max * runs < sum_max");
-      exec_counts = NULL;
-    }
 
   if (profile_info->sum_all < profile_info->sum_max)
     {
