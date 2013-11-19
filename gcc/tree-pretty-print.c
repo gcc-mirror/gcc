@@ -2228,6 +2228,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "OBJ_TYPE_REF(");
       dump_generic_node (buffer, OBJ_TYPE_REF_EXPR (node), spc, flags, false);
       pp_semicolon (buffer);
+      if (!(flags & TDF_SLIM) && virtual_method_call_p (node))
+	{
+	  pp_string (buffer, "(");
+	  dump_generic_node (buffer, obj_type_ref_class (node), spc, flags, false);
+	  pp_string (buffer, ")");
+	}
       dump_generic_node (buffer, OBJ_TYPE_REF_OBJECT (node), spc, flags, false);
       pp_arrow (buffer);
       dump_generic_node (buffer, OBJ_TYPE_REF_TOKEN (node), spc, flags, false);
