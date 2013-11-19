@@ -60,7 +60,7 @@ extern int avx_vperm2f128_parallel (rtx par, enum machine_mode mode);
 
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_movmem (rtx, rtx, rtx, rtx, rtx, rtx,
-				       rtx, rtx, rtx, bool);
+				       rtx, rtx, rtx, rtx, bool);
 
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);

@@ -23715,7 +23715,8 @@ bool
 ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 			   rtx align_exp, rtx expected_align_exp,
 			   rtx expected_size_exp, rtx min_size_exp,
-			   rtx max_size_exp, bool issetmem)
+			   rtx max_size_exp, rtx probable_max_size_exp,
+			   bool issetmem)
 {
   rtx destreg;
   rtx srcreg = NULL;
@@ -23739,6 +23740,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   /* TODO: Once vlaue ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
   unsigned HOST_WIDE_INT max_size = -1;
+  unsigned HOST_WIDE_INT probable_max_size = -1;
   bool misaligned_prologue_used = false;
 
   if (CONST_INT_P (align_exp))
@@ -23754,13 +23756,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     align = MEM_ALIGN (dst) / BITS_PER_UNIT;
 
   if (CONST_INT_P (count_exp))
-    min_size = max_size = count = expected_size = INTVAL (count_exp);
-  if (min_size_exp)
-    min_size = INTVAL (min_size_exp);
-  if (max_size_exp)
-    max_size = INTVAL (max_size_exp);
-  if (CONST_INT_P (expected_size_exp) && count == 0)
-    expected_size = INTVAL (expected_size_exp);
+    min_size = max_size = probable_max_size = count = expected_size
+      = INTVAL (count_exp);
+  else
+    {
+      if (min_size_exp)
+	min_size = INTVAL (min_size_exp);
+      if (max_size_exp)
+	max_size = INTVAL (max_size_exp);
+      if (probable_max_size_exp)
+	probable_max_size = INTVAL (probable_max_size_exp);
+      if (CONST_INT_P (expected_size_exp) && count == 0)
+	expected_size = INTVAL (expected_size_exp);
+     }
 
   /* Make sure we don't need to care about overflow later on.  */
   if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
@@ -23768,7 +23776,8 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
-  alg = decide_alg (count, expected_size, min_size, max_size, issetmem,
+  alg = decide_alg (count, expected_size, min_size, probable_max_size,
+		    issetmem,
 		    issetmem && val_exp == const0_rtx,
 		    &dynamic_check, &noalign);
   if (alg == libcall)
