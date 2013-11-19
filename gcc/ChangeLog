@@ -1,5 +1,12 @@
 2013-11-19  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2013-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-dfa.c (get_ref_base_and_extent): Fix casting.
+
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57517
 	* tree-predcom.c (combinable_refs_p): Verify the combination
 	is always executed when the refs are.
