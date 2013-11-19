@@ -68,13 +68,6 @@ test01()
     }
 }
 
-#if !__GXX_WEAK__
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template 
-  const std::experimental::basic_string_view<__gnu_test::pod_ushort>::size_type 
-  std::experimental::basic_string_view_view<__gnu_test::pod_ushort>::_S_max_size;
-#endif
-
 int
 main()
 {
