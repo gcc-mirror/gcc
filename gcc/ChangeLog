@@ -1,3 +1,7 @@
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (compute_branch_probabilities): Do not sanity check run_max.
+
 2013-11-18 Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* tree.c (int_fits_type_p): Change GET_MODE_BITSIZE to
