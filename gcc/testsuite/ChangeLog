@@ -1,3 +1,8 @@
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa/devirt9.C: Verify that the optimization happens already before.
+	whole-program.
+
 2013-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57517

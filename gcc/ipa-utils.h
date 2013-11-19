@@ -34,6 +34,21 @@ struct ipa_dfs_info {
   PTR aux;
 };
 
+/* Context of polymorphic call.  This is used by ipa-devirt walkers of the
+   type inheritance graph.  */
+struct ipa_polymorphic_call_context {
+  /* The called object appears in an object of type OUTER_TYPE
+     at offset OFFSET.  */
+  HOST_WIDE_INT offset;
+  tree outer_type;
+  /* True if outer object may be in construction or destruction.  */
+  bool maybe_in_construction;
+  /* True if outer object may be of derived type.  */
+  bool maybe_derived_type;
+};
+
+/* Context representing "I know nothing".  */
+extern const ipa_polymorphic_call_context ipa_dummy_polymorphic_call_context;
 
 /* In ipa-utils.c  */
 void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
@@ -59,13 +74,19 @@ void build_type_inheritance_graph (void);
 void update_type_inheritance_graph (void);
 vec <cgraph_node *>
 possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
+				   ipa_polymorphic_call_context,
 				   bool *final = NULL,
 				   void **cache_token = NULL);
 odr_type get_odr_type (tree, bool insert = false);
-void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT);
+void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
+					     const ipa_polymorphic_call_context &);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
+				         const ipa_polymorphic_call_context &,
 					 struct cgraph_node *n);
 tree method_class_type (tree);
+tree get_polymorphic_call_info (tree, tree, tree *,
+				HOST_WIDE_INT *,
+				ipa_polymorphic_call_context *);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 
@@ -83,8 +104,27 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 				   void **cache_token = NULL)
 {
   gcc_checking_assert (e->indirect_info->polymorphic);
+  ipa_polymorphic_call_context context = {e->indirect_info->offset,
+					  e->indirect_info->outer_type,
+					  e->indirect_info->maybe_in_construction,
+					  e->indirect_info->maybe_derived_type};
   return possible_polymorphic_call_targets (e->indirect_info->otr_type,
 					    e->indirect_info->otr_token,
+					    context,
+					    final, cache_token);
+}
+
+/* Same as above but taking OBJ_TYPE_REF as an parameter.  */
+
+inline vec <cgraph_node *>
+possible_polymorphic_call_targets (tree call,
+				   bool *final = NULL,
+				   void **cache_token = NULL)
+{
+  return possible_polymorphic_call_targets (obj_type_ref_class (call),
+					    tree_to_uhwi
+					      (OBJ_TYPE_REF_TOKEN (call)),
+					    ipa_dummy_polymorphic_call_context,
 					    final, cache_token);
 }
 
@@ -94,8 +134,13 @@ inline void
 dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e)
 {
   gcc_checking_assert (e->indirect_info->polymorphic);
+  ipa_polymorphic_call_context context = {e->indirect_info->offset,
+					  e->indirect_info->outer_type,
+					  e->indirect_info->maybe_in_construction,
+					  e->indirect_info->maybe_derived_type};
   dump_possible_polymorphic_call_targets (f, e->indirect_info->otr_type,
-					  e->indirect_info->otr_token);
+					  e->indirect_info->otr_token,
+					  context);
 }
 
 /* Return true if N can be possibly target of a polymorphic call of
@@ -105,8 +150,13 @@ inline bool
 possible_polymorphic_call_target_p (struct cgraph_edge *e,
 				    struct cgraph_node *n)
 {
+  ipa_polymorphic_call_context context = {e->indirect_info->offset,
+					  e->indirect_info->outer_type,
+					  e->indirect_info->maybe_in_construction,
+					  e->indirect_info->maybe_derived_type};
   return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
-					     e->indirect_info->otr_token, n);
+					     e->indirect_info->otr_token,
+					     context, n);
 }
 
 /* Return true if N can be possibly target of a polymorphic call of
@@ -118,7 +168,8 @@ possible_polymorphic_call_target_p (tree call,
 {
   return possible_polymorphic_call_target_p (obj_type_ref_class (call),
 					     tree_to_uhwi
-						(OBJ_TYPE_REF_TOKEN (call)),
+					       (OBJ_TYPE_REF_TOKEN (call)),
+					     ipa_dummy_polymorphic_call_context,
 					     n);
 }
 #endif  /* GCC_IPA_UTILS_H  */

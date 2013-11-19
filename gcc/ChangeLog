@@ -1,5 +1,45 @@
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_create_indirect_edge): Use get_polymorphic_call_info.
+	* cgraph.h (cgraph_indirect_call_info): Add outer_type, maybe_in_construction
+	and maybe_derived_type.
+	* ipa-utils.h (ipa_polymorphic_call_context): New structure.
+	(ipa_dummy_polymorphic_call_context): New global var.
+	(possible_polymorphic_call_targets): Add context paramter.
+	(dump_possible_polymorphic_call_targets): Likewise; update
+	wrappers.
+	(possible_polymorphic_call_target_p): Likewise.
+	(get_polymorphic_call_info): New function.
+	* ipa-devirt.c (ipa_dummy_polymorphic_call_context): New function.
+	(add_type_duplicate): Remove forgotten debug output.
+	(method_class_type): Add sanity check.
+	(maybe_record_node): Add FINALP parameter.
+	(record_binfo): Add OUTER_TYPE and OFFSET; walk the inner
+	by info by get_binfo_at_offset.
+	(possible_polymorphic_call_targets_1): Add OUTER_TYPE/OFFSET parameters;
+	pass them to record-binfo.
+	(polymorphic_call_target_d): Add context and FINAL.
+	(polymorphic_call_target_hasher::hash): Hash context.
+	(polymorphic_call_target_hasher::equal): Compare context.
+	(free_polymorphic_call_targets_hash):
+	(get_class_context): New function.
+	(contains_type_p): New function.
+	(get_polymorphic_call_info): New function.
+	(walk_bases): New function.
+	(possible_polymorphic_call_targets): Add context parameter; honnor it.
+	(dump_possible_polymorphic_call_targets): Dump context.
+	(possible_polymorphic_call_target_p): Add context.
+	(update_type_inheritance_graph): Update comment.s
+	(ipa_set_jf_known_type): Assert that compoentn type is known.
+	(ipa_note_param_call): Do not tamper with offsets.
+	(ipa_analyze_indirect_call_uses): When offset is being changed; clear
+	outer type.
+	(update_indirect_edges_after_inlining): Likewise.
+	(ipa_write_indirect_edge_info): Stream new fields.
+	(ipa_read_indirect_edge_info): Stream in new fields.
+
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
 	* tree-pretty-print.c (dump_generic_node): Print class type of
 	OBJ_TYPE_REF.
 
