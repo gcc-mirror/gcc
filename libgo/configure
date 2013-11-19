@@ -13555,7 +13555,7 @@ else
   LIBGO_IS_OPENBSD_FALSE=
 fi
 
- if test $is_dragonly = yes; then
+ if test $is_dragonfly = yes; then
   LIBGO_IS_DRAGONFLY_TRUE=
   LIBGO_IS_DRAGONFLY_FALSE='#'
 else
