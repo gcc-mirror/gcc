@@ -8766,6 +8766,30 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
    call (one insn for -Os) and then one for processing the result.  */
 #define LIBCALL_COST(N) COSTS_N_INSNS (N + (speed_p ? 18 : 2))
 
+#define HANDLE_NARROW_SHIFT_ARITH(OP, IDX)				\
+	do								\
+	  {								\
+	    shift_op = shifter_op_p (XEXP (x, IDX), &shift_reg);	\
+	    if (shift_op != NULL					\
+	        && arm_rtx_shift_left_p (XEXP (x, IDX)))		\
+	      {								\
+	        if (shift_reg)						\
+		  {							\
+		    if (speed_p)					\
+		      *cost += extra_cost->alu.arith_shift_reg;	\
+		    *cost += rtx_cost (shift_reg, ASHIFT, 1, speed_p);	\
+		  }							\
+	        else if (speed_p)					\
+		  *cost += extra_cost->alu.arith_shift;		\
+									\
+		  *cost += (rtx_cost (shift_op, ASHIFT, 0, speed_p)	\
+			  + rtx_cost (XEXP (x, 1 - IDX),		\
+			              OP, 1, speed_p));		\
+	        return true;						\
+	      }								\
+	  }								\
+	while (0);
+
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained with an operation with code OUTER_CODE.
    SPEED_P indicates whether the cost desired is the performance cost,
@@ -9122,6 +9146,15 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) < 4)
 	{
+	  rtx shift_op, shift_reg;
+	  shift_reg = NULL;
+
+	  /* We check both sides of the MINUS for shifter operands since,
+	     unlike PLUS, it's not commutative.  */
+
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0)
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1)
+
 	  /* Slightly disparage, as we might need to widen the result.  */
 	  *cost = 1 + COSTS_N_INSNS (1);
 	  if (speed_p)
@@ -9221,11 +9254,18 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  return false;
 	}
 
+	/* Narrow modes can be synthesized in SImode, but the range
+	   of useful sub-operations is limited.  Check for shift operations
+	   on one of the operands.  Only left shifts can be used in the
+	   narrow modes.  */
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) < 4)
 	{
-	  /* Narrow modes can be synthesized in SImode, but the range
-	     of useful sub-operations is limited.  */
+	  rtx shift_op, shift_reg;
+	  shift_reg = NULL;
+
+	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0)
+
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
 	      int insns = arm_gen_constant (PLUS, SImode, NULL_RTX,
@@ -10343,6 +10383,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
     }
 }
+
+#undef HANDLE_NARROW_SHIFT_ARITH
 
 /* RTX costs when optimizing for size.  */
 static bool

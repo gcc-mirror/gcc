@@ -40,7 +40,7 @@ typedef struct
 
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
-static bool
+bool
 arm_rtx_shift_left_p (rtx x)
 {
   enum rtx_code code = GET_CODE (x);

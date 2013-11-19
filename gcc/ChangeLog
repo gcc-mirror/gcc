@@ -1,3 +1,11 @@
+2013-11-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs):
+	Handle narrow mode add-shifts properly.
+	* config/arm/arm-common.c (arm_rtx_shift_left_p): Remove static.
+	* config/arm/arm-common-protos.h (arm_rtx_shift_left_p):
+	Declare extern.
+
 2013-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm.md (zero_extend<mode>di2): Add type attribute.
