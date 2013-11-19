@@ -1,5 +1,16 @@
 2013-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* backtrace.h (backtrace_syminfo_callback): Add symsize argument.
+	* elf.c (elf_syminfo): Pass 0 or sym->size to the callback as
+	last argument.
+	* btest.c (struct symdata): Add size field.
+	(callback_three): Add symsize argument.  Copy it to the data->size
+	field.
+	(f23): Set symdata.size to 0.
+	(test5): Likewise.  If sizeof (int) > 1, lookup address of
+	((uintptr_t) &global) + 1.  Verify symdata.val and symdata.size
+	values.
+
 	* atomic.c: Include sys/types.h.
 
 2013-11-18  Ian Lance Taylor  <iant@google.com>
