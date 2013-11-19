@@ -8578,8 +8578,23 @@ retry:
     return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
-  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED && wi::neg_p (c))
-    return false;
+  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
+    {
+      int uprec = GET_MODE_PRECISION (TYPE_MODE TREE_TYPE (c));
+      if (uprec < TYPE_PRECISION (TREE_TYPE (c)))
+	{
+	  /* When a tree_cst is converted to a wide-int, the precision
+	     is taken from the type.  However, if the precision of the
+	     mode underneath the type is smaller than that, it is
+	     possible that the value will not fit.  The test below
+	     fails if any bit is set between the sign bit of the
+	     underlying mode and the top bit of the type.  */
+	  if (wi::ne_p (wi::zext (c, uprec - 1), c))
+	    return false;
+	}
+      else if (wi::neg_p (c))
+	return false;
+    }
 
   /* If we haven't been able to decide at this point, there nothing more we
      can check ourselves here.  Look at the base type if we have one and it

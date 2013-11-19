@@ -1259,7 +1259,7 @@ expand_java_pushc (int ival, tree type)
   else if (type == float_type_node || type == double_type_node)
     {
       REAL_VALUE_TYPE x;
-      REAL_VALUE_FROM_INT (x, ival, TYPE_MODE (type));
+      real_from_integer (&x, TYPE_MODE (type), ival, SIGNED);
       value = build_real (type, x);
     }
   else

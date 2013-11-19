@@ -1198,19 +1198,6 @@ const_scalar_int_operand (rtx op, enum machine_mode mode)
   return 1;
 }
 
-/* Returns 1 if OP is an operand that is a CONST_WIDE_INT of mode
-   MODE.  This most likely is not as useful as
-   const_scalar_int_operand since it does not accept CONST_INTs, but
-   is here for consistancy.  */
-int
-const_wide_int_operand (rtx op, enum machine_mode mode)
-{
-  if (!CONST_WIDE_INT_P (op))
-    return 0;
-
-  return const_scalar_int_operand (op, mode);
-}
-
 /* Returns 1 if OP is an operand that is a constant integer or constant
    floating-point number of MODE.  */
 

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "wide-int.h"
 
 static void vax_option_override (void);
 static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -643,7 +644,7 @@ vax_float_literal (rtx c)
     {
       int x = 1 << i;
       bool ok;
-      REAL_VALUE_FROM_INT (s, x, mode);
+      real_from_integer (&s, mode, x, SIGNED);
 
       if (REAL_VALUES_EQUAL (r, s))
 	return true;

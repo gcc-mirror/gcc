@@ -277,10 +277,6 @@ extern int real_from_string (REAL_VALUE_TYPE *, const char *);
 /* Wrapper to allow different internal representation for decimal floats. */
 extern void real_from_string3 (REAL_VALUE_TYPE *, const char *, enum machine_mode);
 
-/* Initialize R from an integer.  */
-extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
-			       HOST_WIDE_INT, signop);
-
 extern long real_to_target_fmt (long *, const REAL_VALUE_TYPE *,
 				const struct real_format *);
 extern long real_to_target (long *, const REAL_VALUE_TYPE *, enum machine_mode);
@@ -361,9 +357,6 @@ extern const struct real_format arm_half_format;
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
   ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_FLOAT, 0)))
-
-#define REAL_VALUE_FROM_INT(r, val, mode) \
-  real_from_integer (&(r), mode, val, SIGNED)
 
 /* Real values to IEEE 754 decimal floats.  */
 

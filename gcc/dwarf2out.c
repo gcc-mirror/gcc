@@ -13428,12 +13428,6 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 
       if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
-	  gcc_assert (mode == GET_MODE (rtl) || VOIDmode == GET_MODE (rtl));
-
-	  /* Note that a CONST_DOUBLE rtx could represent either an integer
-	     or a floating-point constant.  A CONST_DOUBLE is used whenever
-	     the constant requires more than one word in order to be
-	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
 				      GET_MODE_SIZE (mode), 0);
 	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_wide_int;

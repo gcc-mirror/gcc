@@ -5820,9 +5820,9 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  REAL_VALUE_FROM_INT (dconst0,   0, double_mode);
-  REAL_VALUE_FROM_INT (dconst1,   1, double_mode);
-  REAL_VALUE_FROM_INT (dconst2,   2, double_mode);
+  real_from_integer (&dconst0, double_mode, 0, SIGNED);
+  real_from_integer (&dconst1, double_mode, 1, SIGNED);
+  real_from_integer (&dconst2, double_mode, 2, SIGNED);
 
   dconstm1 = dconst1;
   dconstm1.sign = 1;

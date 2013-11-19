@@ -2147,45 +2147,7 @@ real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
     real_convert (r, mode, r);
 }
 
-/* Initialize R from a HOST_WIDE_INT.  */
-
-void
-real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
-		   HOST_WIDE_INT val, signop sgn)
-{
-  if (val == 0)
-    get_zero (r, 0);
-  else
-    {
-      memset (r, 0, sizeof (*r));
-      r->cl = rvc_normal;
-      r->sign = val < 0 && sgn == SIGNED;
-      SET_REAL_EXP (r, HOST_BITS_PER_WIDE_INT);
-
-      /* TODO: This fails for -MAXHOSTWIDEINT, wide_int version would
-	 have worked.  */
-      if (r->sign)
-	val = -val;
-
-      if (HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT)
-	r->sig[SIGSZ-1] = val;
-      else
-	{
-	  gcc_assert (HOST_BITS_PER_LONG*2 == HOST_BITS_PER_WIDE_INT);
-	  r->sig[SIGSZ-1] = val >> (HOST_BITS_PER_LONG - 1) >> 1;
-	  r->sig[SIGSZ-2] = val;
-	}
-
-      normalize (r);
-    }
-
-  if (DECIMAL_FLOAT_MODE_P (mode))
-    decimal_from_integer (r);
-  else if (mode != VOIDmode)
-    real_convert (r, mode, r);
-}
-
-/* Initialize R from the integer pair HIGH+LOW.  */
+/* Initialize R from the wide_int VAL_IN.  The MODE is not VOIDmode,*/
 
 void
 real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,

@@ -2718,7 +2718,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	      return t;
 	    }
 	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		   && !AGGREGATE_TYPE_P (TREE_TYPE (t))
 		   && TYPE_MODE (TREE_TYPE (t)) != BLKmode
 		   && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
 		       != tree_to_uhwi (TREE_OPERAND (t, 1))))

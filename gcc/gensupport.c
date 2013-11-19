@@ -2807,7 +2807,6 @@ static const struct std_pred_table std_preds[] = {
   {"immediate_operand", false, true, {UNKNOWN}},
   {"const_int_operand", false, false, {CONST_INT}},
 #if TARGET_SUPPORTS_WIDE_INT
-  {"const_wide_int_operand", false, false, {CONST_WIDE_INT}},
   {"const_scalar_int_operand", false, false, {CONST_INT, CONST_WIDE_INT}},
   {"const_double_operand", false, false, {CONST_DOUBLE}},
 #else
