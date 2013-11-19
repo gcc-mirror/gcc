@@ -493,6 +493,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_sem_equality, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths, NULL, 1 },
 
     /* -O3 optimizations.  */
@@ -809,8 +810,12 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       error_at (loc, "LTO support has not been enabled in this configuration");
 #endif
       if (!opts->x_flag_fat_lto_objects && !HAVE_LTO_PLUGIN)
-        error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin.");
-}
+	{
+	  if (opts_set->x_flag_fat_lto_objects)
+            error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin.");
+	  opts->x_flag_fat_lto_objects = 1;
+	}
+    }
   if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
        + (opts->x_flag_lto_partition_none != 0) >= 1)
     {

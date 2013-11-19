@@ -1,3 +1,9 @@
+2013-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* common.opt (ffat-lto-objects): Disable by default.
+	* doc/invoke.texi (fat-lto-objects): Update documentation.
+	* opts.c: Enable fat-lto-objects on lto plugin disable setups.
+
 2013-11-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/59099
@@ -1472,6 +1478,7 @@
 	(ssa_fix_duplicate_block_edges): Corresponding changes.
 	(ssa_fixup_template_block, thread_single_edge):  Likewise.
 
+>>>>>>> .r205063
 2013-11-18  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Extend -fsanitize=undefined documentation.
