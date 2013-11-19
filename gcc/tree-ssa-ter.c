@@ -602,8 +602,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	      /* If the stmt does a memory store and the replacement
 	         is a load aliasing it avoid creating overlapping
 		 assignments which we cannot expand correctly.  */
-	      if (gimple_vdef (stmt)
-		  && gimple_assign_single_p (stmt))
+	      if (gimple_vdef (stmt))
 		{
 		  gimple def_stmt = SSA_NAME_DEF_STMT (use);
 		  while (is_gimple_assign (def_stmt)
@@ -612,8 +611,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		      = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
 		  if (gimple_vuse (def_stmt)
 		      && gimple_assign_single_p (def_stmt)
-		      && refs_may_alias_p (gimple_assign_lhs (stmt),
-					   gimple_assign_rhs1 (def_stmt)))
+		      && stmt_may_clobber_ref_p (stmt,
+						 gimple_assign_rhs1 (def_stmt)))
 		    same_root_var = true;
 		}
 

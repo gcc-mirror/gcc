@@ -1,3 +1,9 @@
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58956
+	* tree-ssa-ter.c (find_replaceable_in_bb): Avoid forwarding
+	loads into stmts that may clobber it.
+
 2013-11-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* cgraphunit.c (symtab_terminator): New variable.
