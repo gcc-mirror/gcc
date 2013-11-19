@@ -1434,6 +1434,46 @@ func TestFunc(t *testing.T) {
 	}
 }
 
+type emptyStruct struct{}
+
+type nonEmptyStruct struct {
+	member int
+}
+
+func returnEmpty() emptyStruct {
+	return emptyStruct{}
+}
+
+func takesEmpty(e emptyStruct) {
+}
+
+func returnNonEmpty(i int) nonEmptyStruct {
+	return nonEmptyStruct{member: i}
+}
+
+func takesNonEmpty(n nonEmptyStruct) int {
+	return n.member
+}
+
+func TestCallWithStruct(t *testing.T) {
+	r := ValueOf(returnEmpty).Call([]Value{})
+	if len(r) != 1 || r[0].Type() != TypeOf(emptyStruct{}) {
+		t.Errorf("returning empty struct returned %s instead", r)
+	}
+	r = ValueOf(takesEmpty).Call([]Value{ValueOf(emptyStruct{})})
+	if len(r) != 0 {
+		t.Errorf("takesEmpty returned values: %s", r)
+	}
+	r = ValueOf(returnNonEmpty).Call([]Value{ValueOf(42)})
+	if len(r) != 1 || r[0].Type() != TypeOf(nonEmptyStruct{}) || r[0].Field(0).Int() != 42 {
+		t.Errorf("returnNonEmpty returned %s", r)
+	}
+	r = ValueOf(takesNonEmpty).Call([]Value{ValueOf(nonEmptyStruct{member: 42})})
+	if len(r) != 1 || r[0].Type() != TypeOf(1) || r[0].Int() != 42 {
+		t.Errorf("takesNonEmpty returned %s", r)
+	}
+}
+
 func TestMakeFunc(t *testing.T) {
 	switch runtime.GOARCH {
 	case "amd64", "386":
