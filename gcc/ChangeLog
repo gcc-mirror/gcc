@@ -1,3 +1,7 @@
+2013-11-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mips/mips.c (r10k_simplify_address): Eliminate macro usage.
+
 2013-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc/config/aarch64/aarch64-builtins.c

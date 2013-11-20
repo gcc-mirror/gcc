@@ -14842,7 +14842,7 @@ r10k_simplify_address (rtx x, rtx insn)
 	      /* Replace the incoming value of $sp with
 		 virtual_incoming_args_rtx.  */
 	      if (x == stack_pointer_rtx
-		  && DF_REF_BB (def) == ENTRY_BLOCK_PTR)
+		  && DF_REF_BB (def) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		newx = virtual_incoming_args_rtx;
 	    }
 	  else if (dominated_by_p (CDI_DOMINATORS, DF_REF_BB (use),
