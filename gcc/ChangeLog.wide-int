@@ -1,16 +1,16 @@
-	* c2w/gcc/gcc/ada/gcc-interface/cuintp.c
+	* ada/gcc-interface/cuintp.c
 	(UI_From_gnu):
-	* c2w/gcc/gcc/ada/gcc-interface/decl.c
+	* ada/gcc-interface/decl.c
 	(gnat_to_gnu_entity):
 	(gnat_to_gnu_entity):
 	(annotate_value):
-	* c2w/gcc/gcc/ada/gcc-interface/utils.c
+	* ada/gcc-interface/utils.c
 	(make_packable_type):
 	(handle_novops_attribute):
-	* c2w/gcc/gcc/alias.c
+	* alias.c
 	(ao_ref_from_mem):
 	(decl_for_component_ref):
-	* c2w/gcc/gcc/builtins.c
+	* builtins.c
 	(get_object_alignment_2):
 	(c_getstr):
 	(determine_block_size):
@@ -21,94 +21,89 @@
 	(fold_builtin_powi):
 	(fold_builtin_memory_op):
 	(fold_builtin_object_size):
-	* c2w/gcc/gcc/c/c-decl.c
+	* c/c-decl.c
 	(check_bitfield_type_and_width):
 	(start_enum):
 	(finish_enum):
-	* c2w/gcc/gcc/c/c-parser.c
+	* c/c-parser.c
 	(c_parser_cilk_clause_vectorlength):
-	* c2w/gcc/gcc/c/c-typeck.c
-	(along with GCC; see the file COPYING3.
+	* c/c-typeck.c
 	(set_nonincremental_init_from_string):
 	(c_tree_equal):
-	* c2w/gcc/gcc/c/Make-lang.in
+	* c/Make-lang.in
 	(c.stage1: stage1-start
-	* c2w/gcc/gcc/c-family/c-ada-spec.c
-	(along with GCC; see the file COPYING3.
+	* c-family/c-ada-spec.c
+	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
 	(dump_ada_template):
 	(dump_generic_ada_node):
-	* c2w/gcc/gcc/c-family/c-common.c
-	(along with GCC; see the file COPYING3.
+	* c-family/c-common.c
 	(shorten_compare):
 	(pointer_int_sum):
 	(c_common_nodes_and_builtins):
 	(handle_malloc_attribute):
 	(check_function_arguments_recurse):
-	* c2w/gcc/gcc/c-family/c-format.c
+	* c-family/c-format.c
 	(check_format_string):
-	* c2w/gcc/gcc/c-family/cilk.c
+	* c-family/cilk.c
 	(declare_one_free_variable):
-	* c2w/gcc/gcc/c-family/c-lex.c
-	(along with GCC; see the file COPYING3.
+	* c-family/c-lex.c
 	(c_lex_with_flags):
 	(interpret_integer):
 	(lex_charconst):
-	* c2w/gcc/gcc/c-family/c-pretty-print.c
-	(along with GCC; see the file COPYING3.
+	* c-family/c-pretty-print.c
 	(static void
-	* c2w/gcc/gcc/cfgloop.c
+	* cfgloop.c
 	(flow_loop_tree_node_remove):
 	(get_loop_location):
-	* c2w/gcc/gcc/cfgloop.h
+	* cfgloop.h
 	(FITNESS FOR A PARTICULAR PURPOSE.  See t
 	(struct GTY):
 	(static inline struct loop *
-	* c2w/gcc/gcc/cgraph.c
+	* cgraph.c
 	(cgraph_add_thunk):
-	* c2w/gcc/gcc/combine.c
+	* combine.c
 	(try_combine):
-	* c2w/gcc/gcc/config/aarch64/aarch64.c
+	* config/aarch64/aarch64.c
 	(aapcs_vfp_sub_candidate):
 	(aapcs_vfp_sub_candidate):
 	(aapcs_vfp_sub_candidate):
 	(aarch64_float_const_representable_p):
-	* c2w/gcc/gcc/config/arc/arc.c
+	* config/arc/arc.c
 	(static bool arc_function_ok_for_sibcall
 	(arc_pass_by_reference):
-	* c2w/gcc/gcc/config/arm/arm.c
+	* config/arm/arm.c
 	(aapcs_vfp_sub_candidate):
 	(aapcs_vfp_sub_candidate):
 	(aapcs_vfp_sub_candidate):
-	* c2w/gcc/gcc/config/avr/avr.c
+	* config/avr/avr.c
 	(avr_out_fract):
 	(avr_out_round):
 	(avr_fold_builtin):
-	* c2w/gcc/gcc/config/bfin/bfin.c
+	* config/bfin/bfin.c
 	(bfin_expand_movmem):
 	(find_prev_insn_start):
-	* c2w/gcc/gcc/config/darwin.c
+	* config/darwin.c
 	(darwin_mergeable_constant_section):
 	(machopic_select_section):
-	* c2w/gcc/gcc/config/epiphany/epiphany.c
+	* config/epiphany/epiphany.c
 	(epiphany_special_round_type_align):
-	* c2w/gcc/gcc/config/i386/i386.c
-	(along with GCC; see the file COPYING3.
+	* config/i386/i386.c
 	(ix86_constant_alignment):
 	(ix86_local_alignment):
 	(void ix86_emit_swsqrtsf):
-	* c2w/gcc/gcc/config/msp430/msp430.c
+	* config/msp430/msp430.c
 	(msp430_attr):
-	* c2w/gcc/gcc/config/nds32/nds32.c
+	* config/nds32/nds32.c
 	(nds32_construct_isr_vectors_information
 	(nds32_construct_isr_vectors_information
 	(nds32_insert_attributes):
 	(nds32_insert_attributes):
-	* c2w/gcc/gcc/config/rs6000/predicates.md
+	* config/rs6000/predicates.md
 	(zero_constant):
 	(non_logical_cint_operand):
 	(input_operand):
 	(splat_input_operand):
-	* c2w/gcc/gcc/config/rs6000/rs6000.c
+	* config/rs6000/rs6000.c
 	(num_insns_constant):
 	(easy_altivec_constant):
 	(paired_expand_vector_init):
@@ -121,85 +116,76 @@
 	(rs6000_hash_constant):
 	(output_toc):
 	(rs6000_rtx_costs):
-	* c2w/gcc/gcc/config/rs6000/rs6000-c.c
+	* config/rs6000/rs6000-c.c
 	(altivec_resolve_overloaded_builtin):
-	* c2w/gcc/gcc/config/rs6000/rs6000.h
+	* config/rs6000/rs6000.h
 	(enum rs6000_builtin_type_index
-	* c2w/gcc/gcc/config/rs6000/rs6000.md
+	* config/rs6000/rs6000.md
 	(define_split):
-	* c2w/gcc/gcc/config/sol2-c.c
+	* config/sol2-c.c
 	(solaris_pragma_align):
-	* c2w/gcc/gcc/config/sparc/sparc.c
-	(along with GCC; see the file COPYING3.
+	* config/sparc/sparc.c
 	(sparc_fold_builtin):
-	* c2w/gcc/gcc/config/vax/vax.c
-	(along with GCC; see the file COPYING3.
+	* config/vax/vax.c
 	(vax_float_literal):
-	* c2w/gcc/gcc/coretypes.h
+	* coretypes.h
 	(typedef struct bitmap_head_def *bitmap;
-	* c2w/gcc/gcc/cp/call.c
-	(along with GCC; see the file COPYING3.
+	* cp/call.c
 	(type_passed_as):
 	(convert_for_arg_passing):
-	* c2w/gcc/gcc/cp/class.c
-	(along with GCC; see the file COPYING3.
-	* c2w/gcc/gcc/cp/cvt.c
-	(along with GCC; see the file COPYING3.
+	* cp/class.c
+	* cp/cvt.c
 	(force_rvalue):
-	* c2w/gcc/gcc/cp/decl.c
-	(along with GCC; see the file COPYING3.
+	* cp/decl.c
 	(finish_enum_value_list):
 	(finish_enum_value_list):
 	(finish_enum_value_list):
-	* c2w/gcc/gcc/cp/init.c
+	* cp/init.c
 	(inner_nelts_count):
 	(inner_size):
 	(build_new_1):
-	* c2w/gcc/gcc/cp/mangle.c
-	(along with GCC; see the file COPYING3.
+	* cp/mangle.c
 	(write_number):
 	(write_integer_cst):
 	(write_array_type):
-	* c2w/gcc/gcc/cp/parser.c
+	* cp/parser.c
 	(make_char_string_pack):
-	* c2w/gcc/gcc/cp/tree.c
-	(along with GCC; see the file COPYING3.
+	* cp/tree.c
 	(cp_tree_equal):
-	* c2w/gcc/gcc/cp/typeck2.c
-	(along with GCC; see the file COPYING3.
+	* cp/typeck2.c
 	(process_init_constructor_array):
-	* c2w/gcc/gcc/cp/vtable-class-hierarchy.c
+	* cp/vtable-class-hierarchy.c
 	(check_and_record_registered_pairs):
 	(output_set_info):
-	* c2w/gcc/gcc/cse.c
+	* cse.c
 	(hash_rtx_cb):
 	(fold_rtx):
-	* c2w/gcc/gcc/cselib.c
+	* cselib.c
 	(rtx_equal_for_cselib_1):
 	(cselib_hash_rtx):
-	* c2w/gcc/gcc/dbxout.c
+	* dbxout.c
 	(stabstr_U):
 	(dbxout_type):
-	* c2w/gcc/gcc/defaults.h
+	* defaults.h
 	(see the files COPYING3 and COPYING.RUNTI
-	* c2w/gcc/gcc/dfp.c
+	* dfp.c
 	(You should have received a copy of the G
-	* c2w/gcc/gcc/dfp.h
+	* dfp.h
 	(void decode_decimal64 ):
-	* c2w/gcc/gcc/doc/generic.texi
+	* doc/generic.texi
 	(As this example indicates, the operands
-	* c2w/gcc/gcc/doc/rtl.texi
+	* doc/rtl.texi
 	(only expression for integer value negati
-	* c2w/gcc/gcc/doc/tm.texi
+	* doc/tm.texi
 	(target's floating point format cannot re
 	(This value should be set if the result w
-	* c2w/gcc/gcc/doc/tm.texi.in
+	* doc/tm.texi.in
 	(target's floating point format cannot re
-	* c2w/gcc/gcc/dojump.c
+	* dojump.c
 	(static GTY(():): rtx and_test;
-	* c2w/gcc/gcc/double-int.h
+	* double-int.h
 	(double_int::popcount):
-	* c2w/gcc/gcc/dwarf2out.c
+	* dwarf2out.c
 	(dump_struct_debug):
 	(dw_val_equal_p):
 	(output_loc_operands):
@@ -226,24 +212,24 @@
 	(hash_loc_operands):
 	(compare_loc_operands):
 	(compare_loc_operands):
-	* c2w/gcc/gcc/dwarf2out.h
+	* dwarf2out.h
 	(dw_val_class):
-	* c2w/gcc/gcc/emit-rtl.c
+	* emit-rtl.c
 	(const_int_htab_hash):
 	(const_wide_int_htab_hash):
 	(const_wide_int_htab_eq):
 	(lookup_const_wide_int):
 	(immed_double_const):
 	(init_emit_once):
-	* c2w/gcc/gcc/explow.c
+	* explow.c
 	(plus_constant):
-	* c2w/gcc/gcc/expmed.c
+	* expmed.c
 	(static void store_fixed_bit_field):
 	(extract_fixed_bit_field):
 	(expand_widening_mult):
 	(expmed_mult_highpart):
 	(expand_smod_pow2):
-	* c2w/gcc/gcc/expr.c
+	* expr.c
 	(convert_modes):
 	(store_expr):
 	(store_field):
@@ -256,16 +242,15 @@
 	(expand_expr_real_1):
 	(reduce_to_bit_field_precision):
 	(const_vector_from_tree):
-	* c2w/gcc/gcc/final.c
-	(along with GCC; see the file COPYING3.
+	* final.c
 	(output_addr_const):
-	* c2w/gcc/gcc/fixed-value.c
+	* fixed-value.c
 	(for more details.
 	(fixed_from_double_int):
 	(fixed_from_string):
 	(fixed_convert_from_int):
 	(fixed_convert_from_real):
-	* c2w/gcc/gcc/fold-const.c
+	* fold-const.c
 	(static tree eval_subst):
 	(protected_set_expr_location_unshare):
 	(negate_mathfn_p):
@@ -301,69 +286,65 @@
 	(fold_relational_const):
 	(fold_ignored_result):
 	(ptr_difference_const):
-	* c2w/gcc/gcc/fortran/target-memory.c
-	(along with GCC; see the file COPYING3.
+	* fortran/target-memory.c
 	(gfc_interpret_complex):
-	* c2w/gcc/gcc/fortran/trans-array.c
-	(along with GCC; see the file COPYING3.
+	* fortran/trans-array.c
 	(gfc_conv_array_initializer):
-	* c2w/gcc/gcc/fortran/trans-common.c
+	* fortran/trans-common.c
 	(build_common_decl):
-	* c2w/gcc/gcc/fortran/trans-const.c
+	* fortran/trans-const.c
 	(gfc_conv_string_init):
 	(gfc_init_constants):
-	* c2w/gcc/gcc/fortran/trans-decl.c
+	* fortran/trans-decl.c
 	(gfc_can_put_var_on_stack):
-	* c2w/gcc/gcc/fortran/trans-expr.c
+	* fortran/trans-expr.c
 	(gfc_conv_expr_op):
 	(gfc_conv_scalar_char_value):
-	* c2w/gcc/gcc/fortran/trans-intrinsic.c
-	(along with GCC; see the file COPYING3.
+	* fortran/trans-intrinsic.c
 	(trans_this_image):
 	(gfc_conv_intrinsic_bound):
 	(conv_intrinsic_cobound):
-	* c2w/gcc/gcc/fortran/trans-types.c
+	* fortran/trans-types.c
 	(gfc_build_logical_type):
 	(gfc_init_types):
-	* c2w/gcc/gcc/gdbinit.in
+	* gdbinit.in
 	(mpz_out_str):
-	* c2w/gcc/gcc/genemit.c
+	* genemit.c
 	(gen_exp):
-	* c2w/gcc/gcc/gengenrtl.c
+	* gengenrtl.c
 	(special_rtx):
-	* c2w/gcc/gcc/gengtype.c
+	* gengtype.c
 	(do_typedef):
 	(open_base_files):
 	(main):
-	* c2w/gcc/gcc/gengtype-lex.l
+	* gengtype-lex.l
 	(CXX_KEYWORD):
-	* c2w/gcc/gcc/gengtype-parse.c
+	* gengtype-parse.c
 	(require2):
 	(string_seq):
-	* c2w/gcc/gcc/gengtype-state.c
-	* c2w/gcc/gcc/genmodes.c
+	* gengtype-state.c
+	* genmodes.c
 	(emit_max_int):
-	* c2w/gcc/gcc/genpreds.c
+	* genpreds.c
 	(write_predicate_stmts):
 	(add_constraint):
 	(write_tm_constrs_h):
-	* c2w/gcc/gcc/genrecog.c
+	* genrecog.c
 	(validate_pattern):
 	(add_to_sequence):
-	* c2w/gcc/gcc/gensupport.c
+	* gensupport.c
 	(struct std_pred_table
-	* c2w/gcc/gcc/gimple.c
+	* gimple.c
 	(preprocess_case_label_vec_for_gimple):
-	* c2w/gcc/gcc/gimple-fold.c
+	* gimple-fold.c
 	(static tree
 	(fold_string_cst_ctor_reference):
 	(fold_nonarray_ctor_reference):
 	(gimple_val_nonnegative_real_p):
 	(gimple_fold_indirect_ref):
-	* c2w/gcc/gcc/gimple-pretty-print.c
+	* gimple-pretty-print.c
 	(dump_ssaname_info):
-	* c2w/gcc/gcc/gimple-ssa-strength-reduction.c
-	(along with GCC; see the file COPYING3.
+	* gimple-ssa-strength-reduction.c
 	(typedef const struct cand_chain_d *const
 	(record_potential_basis):
 	(stmt_cost):
@@ -390,49 +371,48 @@
 	(replace_rhs_if_not_dup):
 	(replace_one_candidate):
 	(replace_one_candidate):
-	* c2w/gcc/gcc/gimplify.c
+	* gimplify.c
 	(gimple_boolify):
-	* c2w/gcc/gcc/go/go-gcc.cc
+	* go/go-gcc.cc
 	(Gcc_backend::is_circular_pointer_type(Bt
-	* c2w/gcc/gcc/godump.c
-	(along with GCC; see the file COPYING3.
-	* c2w/gcc/gcc/graphite-clast-to-gimple.c
+	* godump.c
+	* graphite-clast-to-gimple.c
 	(typedef const struct clast_expr *clast_n
-	* c2w/gcc/gcc/graphite-sese-to-poly.c
-	(along with GCC; see the file COPYING3.
+	* graphite-sese-to-poly.c
+	(tree_int_to_gmp):
 	(build_loop_iteration_domains):
 	(build_loop_iteration_domains):
-	* c2w/gcc/gcc/hooks.c
+	* hooks.c
 	(hook_bool_rtx_int_int_int_intp_bool_fals
-	* c2w/gcc/gcc/hooks.h
+	* hooks.h
 	(extern bool hook_bool_const_tree_hwi_hwi
-	* c2w/gcc/gcc/ipa-devirt.c
+	* ipa-devirt.c
 	(hash_type_name):
-	* c2w/gcc/gcc/ipa-prop.c
+	* ipa-prop.c
 	(compute_complex_assign_jump_func):
 	(get_ancestor_addr_info):
 	(ipa_modify_call_arguments):
-	* c2w/gcc/gcc/java/boehm.c
+	* java/boehm.c
 	(mark_reference_fields):
 	(mark_reference_fields):
 	(get_boehm_type_descriptor):
-	* c2w/gcc/gcc/java/expr.c
+	* java/expr.c
 	(build_java_check_indexed_type):
 	(static void
 	(build_field_ref):
-	* c2w/gcc/gcc/java/jcf-parse.c
-	* c2w/gcc/gcc/java/typeck.c
+	* java/jcf-parse.c
+	* java/typeck.c
 	(java_array_type_length):
-	* c2w/gcc/gcc/loop-doloop.c
+	* loop-doloop.c
 	(doloop_modify):
 	(doloop_modify):
 	(doloop_modify):
 	(doloop_optimize):
-	* c2w/gcc/gcc/loop-iv.c
+	* loop-iv.c
 	(iv_number_of_iterations):
 	(iv_number_of_iterations):
 	(iv_number_of_iterations):
-	* c2w/gcc/gcc/loop-unroll.c
+	* loop-unroll.c
 	(peel_loop_completely):
 	(decide_unroll_constant_iterations):
 	(unroll_loop_constant_iterations):
@@ -443,24 +423,24 @@
 	(decide_peel_simple):
 	(peel_loop_simple):
 	(decide_unroll_stupid):
-	* c2w/gcc/gcc/lto/lto.c
+	* lto/lto.c
 	(compare_tree_sccs_1):
-	* c2w/gcc/gcc/lto/lto-lang.c
+	* lto/lto-lang.c
 	(handle_novops_attribute):
-	* c2w/gcc/gcc/lto-streamer-in.c
+	* lto-streamer-in.c
 	(input_cfg):
-	* c2w/gcc/gcc/lto-streamer-out.c
+	* lto-streamer-out.c
 	(hash_tree):
 	(output_cfg):
-	* c2w/gcc/gcc/machmode.def
+	* machmode.def
 	(MAX_BITS_PER_UNIT):
-	* c2w/gcc/gcc/Makefile.in
-	* c2w/gcc/gcc/objc/objc-act.c
+	* Makefile.in
+	* objc/objc-act.c
 	(objc_decl_method_attributes):
-	* c2w/gcc/gcc/omp-low.c
+	* omp-low.c
 	(scan_omp_1_op):
 	(lower_omp_for_lastprivate):
-	* c2w/gcc/gcc/optabs.c
+	* optabs.c
 	(expand_subword_shift):
 	(expand_doubleword_shift):
 	(lowpart_subreg_maybe_copy):
@@ -470,24 +450,20 @@
 	(expand_copysign_absneg):
 	(expand_copysign_bit):
 	(expand_copysign_bit):
-	* c2w/gcc/gcc/passes.def
-	(along with GCC; see the file COPYING3.
-	(along with GCC; see the file COPYING3.
-	* c2w/gcc/gcc/postreload.c
+	* postreload.c
 	(reload_cse_simplify_set):
-	* c2w/gcc/gcc/predict.c
+	* predict.c
 	(predict_iv_comparison):
-	* c2w/gcc/gcc/pretty-print.h
+	* pretty-print.h
 	(for more details.
 	(pp_get_prefix):
-	* c2w/gcc/gcc/print-rtl.c
+	* print-rtl.c
 	(print_rtx):
-	* c2w/gcc/gcc/print-tree.c
-	(along with GCC; see the file COPYING3.
+	* print-tree.c
 	(print_node_brief):
 	(print_node):
 	(print_node):
-	* c2w/gcc/gcc/read-rtl.c
+	* read-rtl.c
 	(validate_const_int):
 	* c2w/gcc/gcc/real.c
 	(
