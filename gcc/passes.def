@@ -142,6 +142,7 @@ along with GCC; see the file COPYING3.  If not see
 	 form if possible.  */
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_object_sizes);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
@@ -185,7 +186,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
-      NEXT_PASS (pass_object_sizes);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA
