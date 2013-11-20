@@ -1,3 +1,11 @@
+2013-11-20  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * plugin.def: Add comment about register_callback and
+        invoke_plugin_callbacks_full.
+
+        * plugin.c (register_callback, invoke_plugin_callbacks_full):
+        Handle PLUGIN_INCLUDE_FILE event.
+
 2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_cannot_change_mode_class): Do not

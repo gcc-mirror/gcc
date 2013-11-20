@@ -97,6 +97,9 @@ DEFEVENT (PLUGIN_NEW_PASS)
    as a const char* pointer.  */
 DEFEVENT (PLUGIN_INCLUDE_FILE)
 
+/* When adding a new hard-coded plugin event, don't forget to edit in
+   file plugin.c the functions register_callback and
+   invoke_plugin_callbacks_full accordingly!  */
 
 /* After the hard-coded events above, plugins can dynamically allocate events
    at run time.
