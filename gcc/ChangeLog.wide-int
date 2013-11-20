@@ -253,28 +253,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(fold_relational_const): Remove dead INT_CST_LT_UNSIGNED.
 	(round_up_loc): Update for wide-int.
 	(ptr_difference_const): Update to use cst_fits_shwi_p.
-	* fortran/target-memory.c
-	(gfc_interpret_complex):
-	* fortran/trans-array.c
-	(gfc_conv_array_initializer):
-	* fortran/trans-common.c
-	(build_common_decl):
-	* fortran/trans-const.c
-	(gfc_conv_string_init):
-	(gfc_init_constants):
-	* fortran/trans-decl.c
-	(gfc_can_put_var_on_stack):
-	* fortran/trans-expr.c
-	(gfc_conv_expr_op):
-	(gfc_conv_scalar_char_value):
-	* fortran/trans-intrinsic.c
-	(trans_this_image):
-	(gfc_conv_intrinsic_bound):
-	(conv_intrinsic_cobound):
-	* fortran/trans-types.c
-	(gfc_build_logical_type):
-	(gfc_init_types):
-
 	* genemit.c
 	(gen_exp): Add CONST_WIDE_INT case.
 	* gengenrtl.c
@@ -944,6 +922,30 @@ AUDIT
 	* vtable-class-hierarchy.c
 	(check_and_record_registered_pairs): Update to use tree_to_uhwi.
 	(output_set_info): Likewise.
+
+fortran:
+	* target-memory.c
+	(gfc_interpret_logical): Use wide-int rep.
+	* trans-array.c
+	(gfc_conv_array_initializer): Use wide-int rep.
+	* trans-common.c
+	(build_common_decl): Use wide-int rep.
+	* trans-const.c
+	(gfc_conv_string_init): Use wide-int rep.
+	(gfc_conv_mpz_to_tree): Likewise.
+	(gfc_conv_tree_to_mpz): Likewise.
+	* trans-decl.c
+	(gfc_can_put_var_on_stack): Use wide-int rep.
+	* trans-expr.c
+	(gfc_conv_cst_int_power): Use wide-int rep.
+	(gfc_string_to_single_character): Likewise.
+	(gfc_optimize_len_trim): Likewise.
+	* trans-intrinsic.c
+	(trans_this_image): Use wide-int rep.
+	(conv_intrinsic_cobound): Likewise.
+	* trans-types.c
+	(gfc_init_types): Use wide-int rep.
+	(gfc_get_array_type_bounds): Likewise.
 
 java:
 	* boehm.c
