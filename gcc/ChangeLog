@@ -11,8 +11,7 @@
 	(GdbSubprinterTypeList): New subclass of GdbSubprinter.
 	(GdbSubprinterRegex): New subclass of GdbSubprinter.
 	(GdbPrettyPrinters.add_printer): Remove in favor of...
-	(GdbPrettyPrinters.add_printer_for_types): ...this new method
-	and...
+	(GdbPrettyPrinters.add_printer_for_types): ...this new method and...
 	(GdbPrettyPrinters.add_printer_for_regex): ...this other new method.
 	(GdbPrettyPrinters.__call__): Update search for subprinter
 	to use handles_type method.
@@ -28,8 +27,7 @@
 2013-11-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_across_edge): After threading
-	through a joiner, allow threading a normal block requiring
-	duplication.
+	through a joiner, allow threading a normal block requiring duplication.
 
 	* tree-ssa-threadupdate.c (thread_block_1): Improve code to detect
 	jump threading requests that would muck up the loop structures.
@@ -69,8 +67,8 @@
 	* common/config/i386/i386-common.c: Enable
 	-freorder-blocks-and-partition at -O2 and up for x86.
 	* doc/invoke.texi: Update -freorder-blocks-and-partition default.
-	* opts.c (finish_options): Only warn if -freorder-blocks-and-
-	partition was set on command line.
+	* opts.c (finish_options): Only warn if
+	-freorder-blocks-and-partition was set on command line.
 
 2013-11-19  Sriraman Tallam  <tmsriram@google.com>
 
@@ -141,12 +139,10 @@
 	(bitmap_intersection_of_preds): Remove usage of ENTRY_BLOCK_PTR macro.
 	(inverted_post_order_compute): Remove uses of macros: ENTRY_BLOCK_PTR,
 	EXIT_BLOCK_PTR.
-	(compute_dominance_frontiers_1): Remove usage of ENTRY_BLOCK_PTR
-	macro.
+	(compute_dominance_frontiers_1): Remove usage of ENTRY_BLOCK_PTR macro.
 	(post_order_compute): Remove uses of macros: ENTRY_BLOCK_PTR,
 	EXIT_BLOCK_PTR.
-	(connect_infinite_loops_to_exit): Remove usage of EXIT_BLOCK_PTR
-	macro.
+	(connect_infinite_loops_to_exit): Remove usage of EXIT_BLOCK_PTR macro.
 	(remove_fake_edges): Remove usage of ENTRY_BLOCK_PTR macro.
 	(add_noreturn_fake_exit_edges): Remove usage of EXIT_BLOCK_PTR macro.
 	(find_pdom): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
@@ -184,8 +180,7 @@
 	(verify_flow_info): Likewise.
 	* cfgloop.c (flow_bb_inside_loop_p): Likewise.
 	(num_loop_branches): Remove usage of EXIT_BLOCK_PTR macro.
-	(disambiguate_multiple_latches): Remove usage of ENTRY_BLOCK_PTR
-	macro.
+	(disambiguate_multiple_latches): Remove usage of ENTRY_BLOCK_PTR macro.
 	(get_loop_exit_edges): Remove usage of EXIT_BLOCK_PTR macro.
 	(bb_loop_header_p): Remove usage of ENTRY_BLOCK_PTR macro.
 	(get_loop_body_in_bfs_order): Remove usage of EXIT_BLOCK_PTR macro.
@@ -269,8 +264,7 @@
 	* dominance.c (iterate_fix_dominators): Remove usage of
 	ENTRY_BLOCK_PTR macro.
 	(calc_idoms): Remove uses of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
-	(determine_dominators_for_sons): Remove usage of ENTRY_BLOCK_PTR
-	macro.
+	(determine_dominators_for_sons): Remove usage of ENTRY_BLOCK_PTR macro.
 	(calc_dfs_tree): Remove uses of macros: ENTRY_BLOCK_PTR,
 	EXIT_BLOCK_PTR.
 	(prune_bbs_to_update_dominators): Remove usage of ENTRY_BLOCK_PTR
@@ -336,8 +330,7 @@
 	(find_return_bb): Remove usage of EXIT_BLOCK_PTR macro.
 	(verify_non_ssa_vars): Remove usage of ENTRY_BLOCK_PTR macro.
 	* ira-build.c (ira_loop_tree_body_rev_postorder): Likewise.
-	* ira-color.c (print_loop_title): Remove usage of EXIT_BLOCK_PTR
-	macro.
+	* ira-color.c (print_loop_title): Remove usage of EXIT_BLOCK_PTR macro.
 	* ira-emit.c (entered_from_non_parent_p): Remove usage of
 	ENTRY_BLOCK_PTR macro.
 	(ira_emit): Remove usage of EXIT_BLOCK_PTR macro.
@@ -377,8 +370,7 @@
 	(create_pre_exit): Remove usage of EXIT_BLOCK_PTR macro.
 	* modulo-sched.c (rest_of_handle_sms): Likewise.
 	(canon_loop): Likewise.
-	* omp-low.c (build_omp_regions): Remove usage of ENTRY_BLOCK_PTR
-	macro.
+	* omp-low.c (build_omp_regions): Remove usage of ENTRY_BLOCK_PTR macro.
 	* postreload-gcse.c (eliminate_partially_redundant_loads): Remove uses
 	of macros: ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR.
 	* predict.c (rebuild_frequencies): Remove usage of ENTRY_BLOCK_PTR
@@ -657,8 +649,7 @@
 2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.md
-	(aarch64_movdi_<mode>low, *add_<shift>_si_uxtw):
-	Adjust whitespace.
+	(aarch64_movdi_<mode>low, *add_<shift>_si_uxtw): Adjust whitespace.
 
 2013-11-19  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
@@ -672,8 +663,8 @@
 
 2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * plugin.def (PLUGIN_INCLUDE_FILE): New event, invoked in 
-        cb_file_change.
+	* plugin.def (PLUGIN_INCLUDE_FILE): New event, invoked in
+	cb_file_change.
 
 2013-11-19  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -688,8 +679,7 @@
 	(gimple): Convert from being a "union gimple_statement_d *"
 	to a "struct gimple_statement_base *".
 	(const_gimple): Likewise (with "const").
-	* ggc.h (ggc_alloc_cleared_gimple_statement_d_stat): Replace
-	with...
+	* ggc.h (ggc_alloc_cleared_gimple_statement_d_stat): Replace with...
 	(ggc_alloc_cleared_gimple_statement_stat): ...this.
 	* gimple-pretty-print.c (debug): Change parameter from a
 	"gimple_statement_d &" to a "gimple_statement_base &".
@@ -705,9 +695,8 @@
 	class by adding "desc", "tag" and "variable_size" to GTY, thus
 	using opting-in to gengtype's support for simple inheritance.
 	(gimple_statement_with_ops_base): Convert to a subclass of
-	gimple_statement_base, dropping initial "gsbase" field.  Note
-	that this type is abstract, with no GSS_ value, and thus no GTY
-	tag value.
+	gimple_statement_base, dropping initial "gsbase" field.  Note that
+	this type is abstract, with no GSS_ value, and thus no GTY tag value.
 	(gimple_statement_with_ops): Convert to a subclass of
 	gimple_statement_with_ops_base, dropping initial "opbase" field.
 	Add tag value to GTY marking.  Update marking of op field to
@@ -718,8 +707,7 @@
 	(gimple_statement_with_memory_ops): Convert to a subclass of
 	public gimple_statement_with_memory_ops_base, dropping initial
 	"membase" field.  Add tag value to GTY marking.  Update marking
-	of op field to reflect how num_ops field is accessed via
-	inheritance.
+	of op field to reflect how num_ops field is accessed via inheritance.
 	(gimple_statement_call): Analogous changes that also update the
 	marking of the "u" union.
 	(gimple_statement_omp): Convert to a subclass of
@@ -771,8 +759,7 @@
 	* tree-ssa-ccp.c (gimple_htab): Convert underlying type from
 	gimple_statement_d to gimple_statement_base.
 
-	* gimple.h (gimple_use_ops): Port from union to usage of
-	dyn_cast.
+	* gimple.h (gimple_use_ops): Port from union to usage of dyn_cast.
 	(gimple_set_use_ops): Port from union to usage of as_a.
 	(gimple_set_vuse): Likewise.
 	(gimple_set_vdef): Likewise.
@@ -1170,9 +1157,9 @@
 	PR tree-optimization/59164
 	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer):
 	Uncomment assert.
-	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust
-	check whether we can create an epilogue loop to reflect the
-	cases where we create one.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust check
+	whether we can create an epilogue loop to reflect thecases where
+	we create one.
 
 2013-11-19  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -1240,14 +1227,14 @@
 
 2013-11-19  Jan Hubicka  <jh@suse.cz>
 
-	* cgraph.c (cgraph_create_indirect_edge): Use get_polymorphic_call_info.
-	* cgraph.h (cgraph_indirect_call_info): Add outer_type, maybe_in_construction
-	and maybe_derived_type.
+	* cgraph.c (cgraph_create_indirect_edge): Use
+	get_polymorphic_call_info.
+	* cgraph.h (cgraph_indirect_call_info): Add outer_type,
+	maybe_in_construction and maybe_derived_type.
 	* ipa-utils.h (ipa_polymorphic_call_context): New structure.
 	(ipa_dummy_polymorphic_call_context): New global var.
 	(possible_polymorphic_call_targets): Add context paramter.
-	(dump_possible_polymorphic_call_targets): Likewise; update
-	wrappers.
+	(dump_possible_polymorphic_call_targets): Likewise; update wrappers.
 	(possible_polymorphic_call_target_p): Likewise.
 	(get_polymorphic_call_info): New function.
 	* ipa-devirt.c (ipa_dummy_polymorphic_call_context): New function.
@@ -1256,8 +1243,8 @@
 	(maybe_record_node): Add FINALP parameter.
 	(record_binfo): Add OUTER_TYPE and OFFSET; walk the inner
 	by info by get_binfo_at_offset.
-	(possible_polymorphic_call_targets_1): Add OUTER_TYPE/OFFSET parameters;
-	pass them to record-binfo.
+	(possible_polymorphic_call_targets_1): Add OUTER_TYPE/OFFSET
+	parameters; pass them to record-binfo.
 	(polymorphic_call_target_d): Add context and FINAL.
 	(polymorphic_call_target_hasher::hash): Hash context.
 	(polymorphic_call_target_hasher::equal): Compare context.
@@ -1300,8 +1287,7 @@
 	* tree-ssa-loop-ivopts.c (enum ainc_type): New.
 	(address_cost_data): New field.
 	(get_address_cost): Compute auto-increment rtx cost in ainc_costs.
-	Use ainc_costs for auto-increment rtx patterns.
-	Cleanup TWS.
+	Use ainc_costs for auto-increment rtx patterns.  Cleanup TWS.
 
 2013-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -1320,7 +1306,7 @@
 	(any_remaining_duplicated_blocks): Likewise.
 	(ssa_fix_duplicate_block_edges): Handle multiple duplicated
 	blocks on a jump threading path.
-	
+
 	* tree-ssa-threadupdate.c (thread_through_loop_header):  Do not
 	thread through a joiner which has the latch edge.
 
@@ -1467,15 +1453,15 @@
 
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
-	* profile.c (compute_branch_probabilities): Do not sanity check run_max.
+	* profile.c (compute_branch_probabilities): Do not sanity check
+	run_max.
 
 2013-11-18 Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* tree.c (int_fits_type_p): Change GET_MODE_BITSIZE to
 	GET_MODE_PRECISION.
 	* fold-const.c (fold_single_bit_test_into_sign_test)
-	(fold_binary_loc):  Change GET_MODE_BITSIZE to
-	GET_MODE_PRECISION.
+	(fold_binary_loc):  Change GET_MODE_BITSIZE to GET_MODE_PRECISION.
 
 2013-11-18  Teresa Johnson  <tejohnson@google.com>
 
@@ -1521,7 +1507,6 @@
 	(ssa_fix_duplicate_block_edges): Corresponding changes.
 	(ssa_fixup_template_block, thread_single_edge):  Likewise.
 
->>>>>>> .r205063
 2013-11-18  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Extend -fsanitize=undefined documentation.
