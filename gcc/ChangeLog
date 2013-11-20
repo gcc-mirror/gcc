@@ -1,3 +1,13 @@
+2013-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59035
+	* lto-opts.c (lto_write_options): Write defaults only if
+	they were not explicitely specified.  Also write
+	-ffp-contract default.
+	* lto-wrapper.c (merge_and_complain): Merge -ffp-contract
+	conservatively.
+	(run_gcc): Pass through -ffp-contract.
+
 2013-11-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/mips/mips.c (r10k_simplify_address): Eliminate macro usage.
