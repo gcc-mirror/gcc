@@ -119,7 +119,7 @@ struct redirection_data : typed_free_remove<redirection_data>
      and wire up its single remaining outgoing edge to the thread path.
 
      The other is a joiner block where we leave the control statement
-     in place, but wire one of the outgoing edges to a thread path. 
+     in place, but wire one of the outgoing edges to a thread path.
 
      In theory we could have multiple block duplicates in a jump
      threading path, but I haven't tried that.
@@ -470,7 +470,7 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
   for (unsigned int count = 0, i = 1; i < path->length (); i++)
-    { 
+    {
       /* If we were threading through an joiner block, then we want
 	 to keep its control statement and redirect an outgoing edge.
 	 Else we want to remove the control statement & edges, then create
@@ -549,10 +549,10 @@ ssa_create_duplicates (struct redirection_data **slot,
   struct redirection_data *rd = *slot;
 
   /* The second duplicated block in a jump threading path is specific
-     to the path.  So it gets stored in RD rather than in LOCAL_DATA. 
+     to the path.  So it gets stored in RD rather than in LOCAL_DATA.
 	
      Each time we're called, we have to look through the path and see
-     if a second block needs to be duplicated. 
+     if a second block needs to be duplicated.
 
      Note the search starts with the third edge on the path.  The first
      edge is the incoming edge, the second edge always has its source
@@ -567,7 +567,7 @@ ssa_create_duplicates (struct redirection_data **slot,
 	  break;
 	}
     }
-  
+
   /* Create a template block if we have not done so already.  Otherwise
      use the template to create a new block.  */
   if (local_info->template_block == NULL)
@@ -732,7 +732,7 @@ redirection_block_p (basic_block bb)
    the appropriate duplicate of BB.
 
    If NOLOOP_ONLY is true, we only perform the threading as long as it
-   does not affect the structure of the loops in a nontrivial way. 
+   does not affect the structure of the loops in a nontrivial way.
 
    If JOINERS is true, then thread through joiner blocks as well.  */
 
@@ -892,7 +892,7 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
    By doing things this way we can be as aggressive as possible and
    not worry that copying a joiner block will create a jump threading
    opportunity.  */
-  
+
 static bool
 thread_block (basic_block bb, bool noloop_only)
 {
@@ -1591,7 +1591,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
     }
 
   /* Assume we had a jump thread path which went from the latch to the exit
-     and a path which goes from outside to inside the same loop.  
+     and a path which goes from outside to inside the same loop.
 
      If the latch to exit was handled first, we will thread it and clear
      loop->header.
