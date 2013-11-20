@@ -29812,6 +29812,8 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	  break;
       if (i == 16)
 	{
+          if (!BYTES_BIG_ENDIAN)
+            elt = 15 - elt;
 	  emit_insn (gen_altivec_vspltb (target, op0, GEN_INT (elt)));
 	  return true;
 	}
