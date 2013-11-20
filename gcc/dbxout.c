@@ -2367,6 +2367,10 @@ dbxout_type (tree type, int full)
       dbxout_type (TREE_TYPE (type), 0);
       break;
 
+    case POINTER_BOUNDS_TYPE:
+      /* No debug info for pointer bounds type supported yet.  */
+      break;
+
     default:
       gcc_unreachable ();
     }
