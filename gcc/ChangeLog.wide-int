@@ -25,8 +25,12 @@
 	(fold_builtin_memory_op): Update to use wide-int.
 	(fold_builtin_object_size): Likewise.
 	* cfgloop.c
-	(flow_loop_tree_node_remove):
-	(get_loop_location):
+	(alloc_loop): Initialize nb_iterations_upper_bound and
+	nb_iterations_estimate.
+	(record_niter_bound): Update to use wide-int.
+	(get_estimated_loop_iterations_int): Likewise.
+	(get_estimated_loop_iterations): Likewise.
+	(get_max_loop_iterations): Likewise.
 	* cfgloop.h
 	(struct nb_iter_bound): Change bound to widest_int.
 	(struct loop): Change nb_iterations_upper_bound and
@@ -36,9 +40,9 @@
 	(get_max_loop_iterations): Likewise.
 	(gcov_type_to_wide_int): Likewise.
 	* cgraph.c
-	(cgraph_add_thunk):
+	(cgraph_add_thunk): Update to use wide-int.
 	* combine.c
-	(try_combine):
+	(try_combine): Update to use wide-int.
 	* config/aarch64/aarch64.c
 	(aapcs_vfp_sub_candidate): Update to use wi::.
 	(aarch64_float_const_representable_p): Update to use wide_int.
@@ -103,65 +107,72 @@
 	(hwivec): Add.
 	(const_hwivec): Add.
 	* cse.c
-	(hash_rtx_cb):
-	(fold_rtx):
+	(hash_rtx_cb): Handle CONST_WIDE_INT.
+	(fold_rtx): Fix whitespacing.
+	(equiv_constant): Handle CONST_WIDE_INT.
 	* cselib.c
-	(rtx_equal_for_cselib_1):
-	(cselib_hash_rtx):
+	(rtx_equal_for_cselib_1): Use CASE_CONST_UNIQUE.
+	(cselib_hash_rtx): Handle CONST_WIDE_INT.
 	* dbxout.c
-	(stabstr_U):
-	(dbxout_type):
+	(stabstr_U): Update to use wide-int.
+	(dbxout_type): Update to use cst_fits_shwi_p.
 	* defaults.h
-	(see the files COPYING3 and COPYING.RUNTI
+	(TARGET_SUPPORTS_WIDE_INT): Add default.
 	* dfp.c
-	(You should have received a copy of the G
+	(decimal_real_to_integer2): Update to use wide-int and rename to
+	decimal_real_to_integer.
 	* dfp.h
-	(void decode_decimal64 ):
+	(decimal_real_to_integer2): Remove.
 	* doc/generic.texi
 AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(As this example indicates, the operands
 	* doc/rtl.texi
-	(const_double): 
+	(const_double): Update for wide-int.
 	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
 	(CONST_WIDE_INT_NUNITS, CONST_WIDE_INT_ELT): New.
 	* doc/tm.texi.in
-	(REAL_VALUE_TO_INT): 
-	(REAL_VALUE_FROM_INT): 
+	(REAL_VALUE_TO_INT): Remove.
+	(REAL_VALUE_FROM_INT): Remove.
 	(TARGET_CAN_USE_DOLOOP_P): Use widest_int instead of double_int.
 	(TARGET_SUPPORTS_WIDE_INT): Add.
 	* doc/tm.texi: Regenerate.
 	* dojump.c
-	(prefer_and_bit_test): 
+	(prefer_and_bit_test): Update to use wide-int.
 	* double-int.h (struct wi::int_traits): Add.
 	* dwarf2out.c
-	(dump_struct_debug):
-	(dw_val_equal_p):
-	(output_loc_operands):
-	(output_loc_operands):
-	(static HOST_WIDE_INT ceiling):
-	(add_AT_unsigned):
-	(print_die):
-	(attr_checksum):
-	(attr_checksum_ordered):
-	(size_of_die):
-	(value_format):
-	(output_die):
-	(simple_type_size_in_bits):
-	(clz_loc_descriptor):
-	(clz_loc_descriptor):
-	(mem_loc_descriptor):
-	(loc_descriptor):
-	(simple_type_align_in_bits):
-	(field_byte_offset):
-	(extract_int):
-	(add_const_value_attribute):
-	(add_bound_info):
-	(gen_enumeration_type_die):
-	(hash_loc_operands):
-	(compare_loc_operands):
-	(compare_loc_operands):
+	(get_full_len): Add.
+	(dw_val_equal_p): Add case dw_val_class_wide_int.
+	(size_of_loc_descr): Add case dw_val_class_wide_int.
+	(output_loc_operands): Add case dw_val_class_wide_int.
+	(output_loc_operands): Add case dw_val_class_wide_int.
+	(insert_double): Remove.
+	(insert_wide_int): Add.
+	(add_AT_wide): Add.
+	(print_die): Add case dw_val_class_wide_int.
+	(attr_checksum): Add case dw_val_class_wide_int.
+	(attr_checksum_ordered): Add case dw_val_class_wide_int.
+	(same_dw_val_p): Add case dw_val_class_wide_int.
+	(size_of_die): Add case dw_val_class_wide_int.
+	(value_format): Add case dw_val_class_wide_int.
+	(output_die): Add case dw_val_class_wide_int.
+	(double_int_type_size_in_bits): Rename to
+	offset_int_type_size_in_bits.  Use wide-int.
+	(clz_loc_descriptor): Update to use wide-int.
+	(mem_loc_descriptor): Likewise.  Handle CONST_WIDE_INT.
+	(loc_descriptor): Update to use wide-int. Handle CONST_WIDE_INT.
+	(round_up_to_align): Update to use wide-int.
+	(field_byte_offset): Likewise.
+	(insert_double): Rename to insert_wide_int.  Update to use wide-int.
+	(add_const_value_attribute): Handle CONST_WIDE_INT.  Update
+	CONST_DOUBLE handling.  Update to use wide-int.
+	(add_bound_info): Update to use wide-int.
+	(gen_enumeration_type_die): Use add_AT_wide.
+	(hash_loc_operands): Add case dw_val_class_wide_int.
+	(compare_loc_operands): Add case dw_val_class_wide_int.
 	* dwarf2out.h
-	(dw_val_class):
+	(wide_int_ptr): Add.
+	(dw_val_class): Add dw_val_class_wide_int.
+	(struct dw_val_struct): Add val_wide.
 	* emit-rtl.c
 	(const_int_htab_hash):
 	(const_wide_int_htab_hash):
