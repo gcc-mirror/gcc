@@ -2247,7 +2247,7 @@ Common Negative(fuse-ld=bfd)
 Use the gold linker instead of the default linker
 
 fuse-linker-plugin
-Common Undocumented
+Common Undocumented Var(flag_use_linker_plugin)
 
 ; Positive if we should track variables, negative if we should run
 ; the var-tracking pass only to discard debug annotations, zero if

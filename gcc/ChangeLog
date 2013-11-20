@@ -1,3 +1,8 @@
+2013-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (finish_options): Imply -ffat-lto-objects with -fno-use-linker-plugin.
+	* common.opt (fuse-linker-plugin): Add var.
+
 2013-11-20  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* dbxout.c (dbxout_type): Ignore POINTER_BOUNDS_TYPE.
