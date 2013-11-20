@@ -1,3 +1,11 @@
+2013-11-20  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR target/57756
+	* config/i386/i386.c (ix86_option_override_internal): Add missed
+	argument prefix for 'ix86_fpmath'.
+	* config/i386/ssemath.h: Add missed definition of
+	TARGET_FPMATH_DEFAULT_P macros.
+
 2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
