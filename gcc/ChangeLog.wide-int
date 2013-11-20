@@ -123,8 +123,8 @@
 	* dfp.h
 	(decimal_real_to_integer2): Remove.
 	* doc/generic.texi
+	(Constant expressions): Update for wide-int.
 AUDIT, fix TREE_INT_CST_LOW and friends doc
-	(As this example indicates, the operands
 	* doc/rtl.texi
 	(const_double): Update for wide-int.
 	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
@@ -173,10 +173,13 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(dw_val_class): Add dw_val_class_wide_int.
 	(struct dw_val_struct): Add val_wide.
 	* emit-rtl.c
-	(const_int_htab_hash):
-	(const_wide_int_htab_hash):
-	(const_wide_int_htab_eq):
-	(lookup_const_wide_int):
+	(const_wide_int_htab): Add.
+	(const_wide_int_htab_hash): Add.
+	(const_wide_int_htab_eq): Add.
+	(lookup_const_wide_int): Add.
+	(const_double_htab_hash): Update for wide-int.
+	(const_double_htab_eq): Likewise.
+	(rtx_to_double_int): Conditionally remove for wide-int.
 	(immed_double_const):
 	(init_emit_once):
 	* explow.c
