@@ -210,33 +210,40 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(fixed_from_string): Update for wide-int.
 	(fixed_to_decimal): Likewise.
 	(fixed_convert_from_real): Likewise.
+	(real_convert_from_fixed): Likewise.
 	* fold-const.c
-	(static tree eval_subst):
-	(protected_set_expr_location_unshare):
-	(negate_mathfn_p):
-	(int_binop_types_match_p):
-	(size_diffop_loc):
-	(fold_convert_const_int_from_fixed):
-	(fold_convert_const_fixed_from_fixed):
-	(make_range_step):
-	(build_range_check):
-	(build_range_check):
-	(merge_ranges):
-	(unextend):
-	(extract_muldiv_1):
-	(fold_inf_compare):
-	(fold_single_bit_test_into_sign_test):
-	(fold_sign_changed_comparison):
-	(try_move_mult_to_index):
-	(cont:
-	(fold_plusminus_mult_expr):
-	(fold_plusminus_mult_expr):
-	(native_encode_int):
-	(native_encode_expr):
-	(fold_unary_loc):
-	(maybe_canonicalize_comparison):
-	(fold_binary_loc):
-	(fold_binary_loc):
+	(div_if_zero_remainder): Update for wide-int.
+	(may_negate_without_overflow_p): Likewise.
+	(negate_expr_p): Likewise.
+	(fold_negate_expr): Likewise.
+	(int_const_binop_1): Likewise.
+	(const_binop): Likewise.
+	(fold_convert_const_int_from_int): Likewise.
+	(fold_convert_const_int_from_real): Likewise.
+	(fold_convert_const_int_from_fixed): Likewise.
+	(fold_convert_const_fixed_from_int): Likewise.
+	(all_ones_mask_p): Likewise.
+	(sign_bit_p): Likewise.
+	(make_range_step): Likewise.
+	(build_range_check): Likewise.
+	(range_predecessor): Likewise.
+	(merge_ranges): Likewise.
+	(unextend): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_div_compare): Likewise.
+	(fold_single_bit_test_into_sign_test): Use GET_MODE_PRECISION
+	instead of GET_MODE_BITSIZE.
+	(fold_single_bit_test): Update for wide-int.
+	(fold_sign_changed_comparison): Likewise.
+	(try_move_mult_to_index): Likewise.
+	(fold_plusminus_mult_expr): Likewise.
+	(native_encode_int): Likewise.
+	(native_interpret_int): Likewise.
+	(fold_unary_loc): Likewise.
+	(pointer_may_wrap_p): Likewise.
+	(size_low_cst): Likewise.
+	(mask_with_tz): Likewise.
+	(fold_binary_loc): Likewise.
 	(fold_ternary_loc):
 	(multiple_of_p):
 	(tree_call_nonnegative_warnv_p):
