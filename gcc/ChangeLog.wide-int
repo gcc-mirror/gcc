@@ -92,28 +92,27 @@
 	* config/msp430/msp430.c
 	(msp430_attr): Update to use wi::.
 	* config/nds32/nds32.c
-	(nds32_construct_isr_vectors_information
-	(nds32_construct_isr_vectors_information
-	(nds32_insert_attributes):
-	(nds32_insert_attributes):
+	(nds32_construct_isr_vectors_information): Update to use tree_to_uhwi.
+	(nds32_insert_attributes): Update to use wi::.
 	* config/rs6000/predicates.md
-	(zero_constant):
-	(non_logical_cint_operand):
-	(input_operand):
-	(splat_input_operand):
+	(any_operand): Add const_wide_int.
+	(zero_constant): Likewise.
+	(non_logical_cint_operand): Likewise.
+	(input_operand): Likewise.
+	(splat_input_operand): Likewise.
 	* config/rs6000/rs6000.c
-	(num_insns_constant):
-	(easy_altivec_constant):
-	(paired_expand_vector_init):
-	(rs6000_legitimize_address):
-	(rs6000_emit_move):
-	(rs6000_aggregate_candidate):
-	(rs6000_aggregate_candidate):
-	(rs6000_aggregate_candidate):
-	(rs6000_output_move_128bit):
-	(rs6000_hash_constant):
-	(output_toc):
-	(rs6000_rtx_costs):
+	(num_insns_constant): Handle CONST_WIDE_INT.
+	(easy_altivec_constant): Update comment.
+	(paired_expand_vector_init): Update to use CONSTANT_P.
+	(rs6000_legitimize_address): Handle CONST_WIDE_INT.
+	(rs6000_emit_move): Update checks.
+	(rs6000_aggregate_candidate): Update to use wi::.
+	(rs6000_expand_ternop_builtin): Update to use TREE_INT_CST_ELT.
+	(rs6000_output_move_128bit): Handle CONST_WIDE_INT.
+	(rs6000_assemble_integer): Likewise.
+	(rs6000_hash_constant): Likewise.
+	(output_toc): Likewise.
+	(rs6000_rtx_costs): Likewise.
 	* config/rs6000/rs6000-c.c
 	(altivec_resolve_overloaded_builtin):
 	* config/rs6000/rs6000.h
