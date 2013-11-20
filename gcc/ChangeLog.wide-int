@@ -269,32 +269,29 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* fortran/trans-types.c
 	(gfc_build_logical_type):
 	(gfc_init_types):
-	* genemit.c
-	(gen_exp):
-	* gengenrtl.c
-	(special_rtx):
-	* gengtype.c
-	(do_typedef):
-	(open_base_files):
-	(main):
-	* gengtype-lex.l
-	(CXX_KEYWORD):
-	* gengtype-parse.c
-	(require2):
-	(string_seq):
-	* gengtype-state.c
-	* genmodes.c
-	(emit_max_int):
-	* genpreds.c
-	(write_predicate_stmts):
-	(add_constraint):
-	(write_tm_constrs_h):
-	* genrecog.c
-	(validate_pattern):
-	(add_to_sequence):
-	* gensupport.c
-	(struct std_pred_table
 
+	* genemit.c
+	(gen_exp): Add CONST_WIDE_INT case.
+	* gengenrtl.c
+	(excluded_rtx): Add CONST_WIDE_INT case.
+	* gengtype.c
+	(do_typedef): Update for wide-int.
+	(open_base_files): Add wide-int.h.
+	(main): Added storage classes.
+	* gengtype-lex.l
+	(CXX_KEYWORD): Added another keyword for c++.
+	* gengtype-parse.c
+	(require3): New.
+	(string_seq): Added for c++ parsing.
+	* genmodes.c
+	(emit_max_int): Added code find longest int.
+	* genpreds.c
+	(write_tm_constrs_h): Added check for hval and lval use in CONST_WIDE_INT.
+	* genrecog.c
+	(validate_pattern): Add CONST_WIDE_INT case.
+	(add_to_sequence): Likewise.
+	* gensupport.c
+	(struct std_pred_table): Add CONST_WIDE_INT case.
 	* gimple.c
 	(preprocess_case_label_vec_for_gimple): Use wide-int rep.
 	* gimple-fold.c
