@@ -883,9 +883,9 @@ MORE
 
 cp:
 	* call.c
-	(type_passed_as):
+	(type_passed_as): 
 AUDIT
-	(convert_for_arg_passing):
+	(convert_for_arg_passing): 
 AUDIT
 	* class.c
 	(end_of_class): 
@@ -894,23 +894,20 @@ AUDIT
 	* cvt.c
 	(ignore_overflows): Use wide_int_to_tree.
 	* decl.c
-	(finish_enum_value_list):
-	(finish_enum_value_list):
-	(finish_enum_value_list):
+	(check_array_designated_initializer): Update to use wi::.
+	(finish_enum_value_list): Update to use signop.
+	(build_enumerator): Update to use wide-int.
 	* init.c
-	(inner_nelts_count):
-	(inner_size):
-	(build_new_1):
+	(build_new_1): Update to use wide-int.
 	* mangle.c
-	(write_number):
-	(write_integer_cst):
-	(write_array_type):
+	(write_integer_cst): Update to use wide-int.
+	(write_array_type): Likewise.
 	* parser.c
-	(make_char_string_pack):
+	(make_string_pack): Update to use tree_to_uhwi.
 	* tree.c
-	(cp_tree_equal):
+	(cp_tree_equal): Update to use wide-int.
 	* typeck2.c
-	(process_init_constructor_array):
+	(process_init_constructor_array): Update to use wide-int.
 	* vtable-class-hierarchy.c
-	(check_and_record_registered_pairs):
-	(output_set_info):
+	(check_and_record_registered_pairs): Update to use tree_to_uhwi.
+	(output_set_info): Likewise.
