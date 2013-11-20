@@ -48,11 +48,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #  define TRUNC(x) truncl(x)
 # endif
 
-#elif (KIND == 16 && defined(GFC_REAL_16_IS_FLOAT128))
-
-#  define EXP(x) expq(x)
-#  define TRUNC(x) truncq(x)
-
 #else
 
 # error "What exactly is it that you want me to do?"

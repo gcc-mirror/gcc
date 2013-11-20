@@ -1,3 +1,8 @@
+2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49024
+	* gfortran.dg/erf_3.F90: New file.
+
 2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr48258-1.c: Skip for little endian.
