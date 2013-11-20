@@ -1,3 +1,11 @@
+2013-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/21718
+	* real.c: Remove comment about decimal string conversion and
+	rounding errors.
+	(real_from_string): Use MPFR to convert nonzero decimal constant
+	to REAL_VALUE_TYPE.
+
 2013-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_dwarf_register_span): Take into account the

@@ -57,14 +57,7 @@
 
    Both of these requirements are easily satisfied.  The largest target
    significand is 113 bits; we store at least 160.  The smallest
-   denormal number fits in 17 exponent bits; we store 26.
-
-   Note that the decimal string conversion routines are sensitive to
-   rounding errors.  Since the raw arithmetic routines do not themselves
-   have guard digits or rounding, the computation of 10**exp can
-   accumulate more than a few digits of error.  The previous incarnation
-   of real.c successfully used a 144-bit fraction; given the current
-   layout of REAL_VALUE_TYPE we're forced to expand to at least 160 bits.  */
+   denormal number fits in 17 exponent bits; we store 26.  */
 
 
 /* Used to classify two numbers simultaneously.  */
@@ -2029,75 +2022,50 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
   else
     {
       /* Decimal floating point.  */
-      const REAL_VALUE_TYPE *ten = ten_to_ptwo (0);
-      int d;
+      const char *cstr = str;
+      mpfr_t m;
+      bool inexact;
 
-      while (*str == '0')
-	str++;
-      while (ISDIGIT (*str))
+      while (*cstr == '0')
+	cstr++;
+      if (*cstr == '.')
 	{
-	  d = *str++ - '0';
-	  do_multiply (r, r, ten);
-	  if (d)
-	    do_add (r, r, real_digit (d), 0);
-	}
-      if (*str == '.')
-	{
-	  str++;
-	  if (r->cl == rvc_zero)
-	    {
-	      while (*str == '0')
-		str++, exp--;
-	    }
-	  while (ISDIGIT (*str))
-	    {
-	      d = *str++ - '0';
-	      do_multiply (r, r, ten);
-	      if (d)
-	        do_add (r, r, real_digit (d), 0);
-	      exp--;
-	    }
+	  cstr++;
+	  while (*cstr == '0')
+	    cstr++;
 	}
 
       /* If the mantissa is zero, ignore the exponent.  */
-      if (r->cl == rvc_zero)
+      if (!ISDIGIT (*cstr))
 	goto is_a_zero;
 
-      if (*str == 'e' || *str == 'E')
+      /* Nonzero value, possibly overflowing or underflowing.  */
+      mpfr_init2 (m, SIGNIFICAND_BITS);
+      inexact = mpfr_strtofr (m, str, NULL, 10, GMP_RNDZ);
+      /* The result should never be a NaN, and because the rounding is
+	 toward zero should never be an infinity.  */
+      gcc_assert (!mpfr_nan_p (m) && !mpfr_inf_p (m));
+      if (mpfr_zero_p (m) || mpfr_get_exp (m) < -MAX_EXP + 4)
 	{
-	  bool exp_neg = false;
-
-	  str++;
-	  if (*str == '-')
-	    {
-	      exp_neg = true;
-	      str++;
-	    }
-	  else if (*str == '+')
-	    str++;
-
-	  d = 0;
-	  while (ISDIGIT (*str))
-	    {
-	      d *= 10;
-	      d += *str - '0';
-	      if (d > MAX_EXP)
-		{
-		  /* Overflowed the exponent.  */
-		  if (exp_neg)
-		    goto underflow;
-		  else
-		    goto overflow;
-		}
-	      str++;
-	    }
-	  if (exp_neg)
-	    d = -d;
-	  exp += d;
+	  mpfr_clear (m);
+	  goto underflow;
 	}
-
-      if (exp)
-	times_pten (r, exp);
+      else if (mpfr_get_exp (m) > MAX_EXP - 4)
+	{
+	  mpfr_clear (m);
+	  goto overflow;
+	}
+      else
+	{
+	  real_from_mpfr (r, m, NULL_TREE, GMP_RNDZ);
+	  /* 1 to 3 bits may have been shifted off (with a sticky bit)
+	     because the hex digits used in real_from_mpfr did not
+	     start with a digit 8 to f, but the exponent bounds above
+	     should have avoided underflow or overflow.  */
+	  gcc_assert (r->cl = rvc_normal);
+	  /* Set a sticky bit if mpfr_strtofr was inexact.  */
+	  r->sig[0] |= inexact;
+	}
     }
 
   r->sign = sign;
