@@ -1,5 +1,5 @@
 /* Communication between registering jump thread requests and
-   updating the SSA/CFG for jump threading. 
+   updating the SSA/CFG for jump threading.
    Copyright (C) 2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
