@@ -611,9 +611,7 @@ MORE
 	* tree-dump.c
 	(along with GCC; see the file COPYING3.
 	(dequeue_and_dump):
-Only in c2w/gcc/gcc: tree-flow.h
-Only in c2w/gcc/gcc: tree-flow-inline.h
-	  * tree.h
+	* tree.h
 	 ):
 	 ):
 	 ):
@@ -631,8 +629,7 @@ Only in c2w/gcc/gcc: tree-flow-inline.h
 	* tree-inline.c
 	(remap_gimple_op_r):
 	(copy_tree_body_r):
-Only in c2w/gcc/gcc: tree-mudflap.c
-	  * tree-object-size.c
+	* tree-object-size.c
 	 ):
 	 ):
 	 ):
