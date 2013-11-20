@@ -265,8 +265,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* fortran/trans-types.c
 	(gfc_build_logical_type):
 	(gfc_init_types):
-	* gdbinit.in
-	(mpz_out_str):
 	* genemit.c
 	(gen_exp):
 	* gengenrtl.c
@@ -292,137 +290,131 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(add_to_sequence):
 	* gensupport.c
 	(struct std_pred_table
+
 	* gimple.c
-	(preprocess_case_label_vec_for_gimple):
+	(preprocess_case_label_vec_for_gimple): Use wide-int rep.
 	* gimple-fold.c
-	(static tree
-	(fold_string_cst_ctor_reference):
-	(fold_nonarray_ctor_reference):
-	(gimple_val_nonnegative_real_p):
-	(gimple_fold_indirect_ref):
+	(get_base_constructor): Use wide-int rep.
+	(fold_array_ctor_reference): Likewise.
+	(fold_nonarray_ctor_reference): Likewise.
+	(fold_const_aggregate_ref_1): Likewise.
+	(gimple_val_nonnegative_real_p): Likewise.
+	(gimple_fold_indirect_ref): Likewise.
 	* gimple-pretty-print.c
-	(dump_ssaname_info):
+	(dump_ssaname_info): Use wide-int rep.
 	* gimple-ssa-strength-reduction.c
-	(typedef const struct cand_chain_d *const
-	(record_potential_basis):
-	(stmt_cost):
-	(backtrace_base_for_ref):
-	(create_add_ssa_cand):
-	(slsr_process_add):
-	(slsr_process_copy):
-	(dump_candidate):
-	(dump_incr_vec):
-	(replace_ref):
-	(phi_dependent_cand_p):
-	(cand_increment):
-	(replace_mult_candidate):
-	(create_phi_basis):
-	(record_phi_increments):
-	(record_increments):
-	(optimize_cands_for_speed_p):
-	(lowest_cost_path):
-	(analyze_increments):
-	(ncd_for_two_cands):
-	(static void
-	(insert_initializers):
-	(all_phi_incrs_profitable):
-	(replace_rhs_if_not_dup):
-	(replace_one_candidate):
-	(replace_one_candidate):
+	(struct slsr_cand_d): Change index to be widest_int;
+	(struct incr_info_d): Change incr to be widest_int.
+	(alloc_cand_and_find_basis): Use wide-int rep.
+	(stmt_cost): Likewise.
+	(slsr_process_phi): Likewise.
+	(restructure_reference): Likewise.
+	(slsr_process_ref): Likewise.
+	(create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_add): Likewise.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(dump_candidate): Likewise.
+	(dump_incr_vec): Likewise.
+	(replace_ref): Likewise.
+	(cand_increment): Likewise.
+	(cand_abs_increment): Likewise.
+	(create_phi_basis): Likewise.
+	(replace_mult_candidate): Likewise.
+	(replace_unconditional_candidate): Likewise.
+	(incr_vec_index): Likewise.
+	(create_add_on_incoming_edge): Likewise.
+	(create_phi_basis): Likewise.
+	(replace_conditional_candidate): Likewise.
+	(record_increment): Likewise.
+	(record_phi_increments): Likewise.
+	(phi_incr_cost): Likewise.
+	(lowest_cost_path): Likewise.
+	(optimize_cands_for_speed_p): Likewise.
+	(total_savings): Likewise.
+	(analyze_increments): Likewise.
+	(ncd_with_phi): Likewise.
+	(ncd_of_cand_and_phis): Likewise.
+	(nearest_common_dominator_for_cands): Likewise.
+	(insert_initializers): Likewise.
+	(all_phi_incrs_profitable): Likewise.
+	(replace_one_candidate): Likewise.
+	(replace_profitable_candidates): Likewise.
 	* gimplify.c
-	(gimple_boolify):
+	(gimple_boolify): Use wide-int rep.
 	* go/go-gcc.cc
-	(Gcc_backend::is_circular_pointer_type(Bt
+	(Gcc_backend::type_size): Use wide-int rep.
 	* godump.c
+	(go_output_typedef): Use wide-int rep.
 	* graphite-clast-to-gimple.c
-	(typedef const struct clast_expr *clast_n
+	(gmp_cst_to_tree): Use wide-int rep.
 	* graphite-sese-to-poly.c
-	(tree_int_to_gmp):
-	(build_loop_iteration_domains):
-	(build_loop_iteration_domains):
+	(tree_int_to_gmp): Use wide-int rep.
+	(build_loop_iteration_domains): Likewise.
 	* hooks.c
-	(hook_bool_rtx_int_int_int_intp_bool_fals
-	* hooks.h
-	(extern bool hook_bool_const_tree_hwi_hwi
+	(hook_bool_dint_dint_uint_bool_true): Removed.
+	(hook_bool_wint_wint_uint_bool_true): New.
 	* ipa-devirt.c
-	(hash_type_name):
+	(hash_type_name): Use wide-int rep.
 	* ipa-prop.c
-	(compute_complex_assign_jump_func):
-	(get_ancestor_addr_info):
-	(ipa_modify_call_arguments):
-	* java/boehm.c
-	(mark_reference_fields):
-	(mark_reference_fields):
-	(get_boehm_type_descriptor):
-	* java/expr.c
-	(build_java_check_indexed_type):
-	(static void
-	(build_field_ref):
-	* java/jcf-parse.c
-	* java/typeck.c
-	(java_array_type_length):
+	(compute_complex_assign_jump_func): Use wide-int rep.
+	(get_ancestor_addr_info): Likewise.
+	(ipa_modify_call_arguments): Likewise.
 	* loop-doloop.c
-	(doloop_modify):
-	(doloop_modify):
-	(doloop_modify):
-	(doloop_optimize):
+	(doloop_modify): Use wide-int rep.
+	(doloop_optimize): Likewise.
 	* loop-iv.c
-	(iv_number_of_iterations):
-	(iv_number_of_iterations):
-	(iv_number_of_iterations):
+	(iv_number_of_iterations): Use wide-int rep.
+	(zero_iter_simplify): Likewise.
 	* loop-unroll.c
-	(peel_loop_completely):
-	(decide_unroll_constant_iterations):
-	(unroll_loop_constant_iterations):
-	(unroll_loop_constant_iterations):
-	(unroll_loop_constant_iterations):
-	(decide_unroll_runtime_iterations):
-	(unroll_loop_runtime_iterations):
-	(decide_peel_simple):
-	(peel_loop_simple):
-	(decide_unroll_stupid):
+	(decide_unroll_constant_iterations): Use wide-int rep.
+	(unroll_loop_constant_iterations): Likewise.
+	(decide_unroll_runtime_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	(decide_peel_simple): Likewise.
+	(peel_loop_simple): Likewise.
+	(decide_unroll_stupid): Likewise.
 	* lto/lto.c
-	(compare_tree_sccs_1):
+	(compare_tree_sccs_1): Use wide-int rep.
 	* lto/lto-lang.c
-	(handle_novops_attribute):
+	(handle_novops_attribute): Use wide-int rep.
 	* lto-streamer-in.c
-	(input_cfg):
+	(input_cfg): Use wide-int rep.
+	(lto_input_tree_1): Likewise.
 	* lto-streamer-out.c
-	(hash_tree):
-	(output_cfg):
+	(hash_tree): Use wide-int rep.
+	(output_cfg): Likewise.
 	* machmode.def
-	(MAX_BITS_PER_UNIT):
+	(MAX_BITS_PER_UNIT): New.
 	* Makefile.in
-	* objc/objc-act.c
-	(objc_decl_method_attributes):
+	(wide-int.h, wide-int.o, wide-int-print.o signop.h) New.
+	(.cc rules): New.
 	* omp-low.c
-	(scan_omp_1_op):
-	(lower_omp_for_lastprivate):
+	(scan_omp_1_op): Use wide-int rep.
+	(lower_omp_for_lastprivate): Likewise.
 	* optabs.c
-	(expand_subword_shift):
-	(expand_doubleword_shift):
-	(lowpart_subreg_maybe_copy):
-	(expand_absneg_bit):
-	(expand_absneg_bit):
-	(expand_copysign_absneg):
-	(expand_copysign_absneg):
-	(expand_copysign_bit):
-	(expand_copysign_bit):
+	(expand_subword_shift): Use wide-int rep.
+	(expand_doubleword_shift): Likewise.
+	(expand_absneg_bit): Likewise.
+	(expand_copysign_absneg): Likewise.
+	(expand_copysign_bit): Likewise.
 	* postreload.c
-	(reload_cse_simplify_set):
+	(reload_cse_simplify_set): Use wide-int rep.
 	* predict.c
-	(predict_iv_comparison):
+	(predict_iv_comparison): Use wide-int rep.
 	* pretty-print.h
-	(for more details.
-	(pp_get_prefix):
+	(pp_wide_int) New.
 	* print-rtl.c
-	(print_rtx):
+	(print_rtx): Add CONST_WIDE_INT case.
 	* print-tree.c
-	(print_node_brief):
-	(print_node):
-	(print_node):
+	(print_node_brief): Use wide-int rep.
+	(print_node): Likewise.
 	* read-rtl.c
-	(validate_const_int):
+	(validate_const_wide_int): New.
+	(read_rtx_code): Add CONST_WIDE_INT case.
 	* real.c
 	(real_to_integer2): Deleted.
 	(real_to_integer): Use wide-int rep.
@@ -491,7 +483,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* stmt.c
 	(expand_case): Use wide-int rep.
 	* stor-layout.c
-Audit by richard.
 	(place_field):
 	(compute_record_mode): Use wide-int rep.
 	(layout_type): Likewise.
@@ -916,7 +907,7 @@ AUDIT
 	* c-pretty-print.c
 	(pp_c_integer_constant): Update accessors.
 
-
+	
 cp:
 	* call.c
 	(type_passed_as): 
@@ -947,3 +938,21 @@ AUDIT
 	* vtable-class-hierarchy.c
 	(check_and_record_registered_pairs): Update to use tree_to_uhwi.
 	(output_set_info): Likewise.
+
+java:
+	* boehm.c
+	(mark_reference_fields): Use wide-int rep.
+	(get_boehm_type_descriptor): Likewise.
+	* expr.c
+	(build_newarray): Use wide-int rep.
+	(expand_java_pushc): Likewise.
+	(build_field_ref): Likewise.
+	* jcf-parse.c
+	(get_constant): Use wide-int rep.
+	* typeck.c
+	(java_array_type_length): Use wide-int rep.
+
+
+objc:
+	* objc-act.c
+	(objc_decl_method_attributes): Use wide-int rep.
