@@ -1022,6 +1022,9 @@ As this example indicates, the operands are zero-indexed.
 @node Constant expressions
 @subsection Constant expressions
 @tindex INTEGER_CST
+@findex TREE_INT_CST_LOW
+@findex tree_int_cst_lt
+@findex tree_int_cst_equal
 @tindex tree_fits_uhwi_p
 @tindex tree_fits_shwi_p
 @tindex tree_to_uhwi

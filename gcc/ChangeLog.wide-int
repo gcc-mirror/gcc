@@ -893,14 +893,11 @@ c-family:
 
 cp:
 	* call.c
-	(type_passed_as): 
-AUDIT
-	(convert_for_arg_passing): 
-AUDIT
+	(type_passed_as): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
+	(convert_for_arg_passing): Likewise.
 	* class.c
-	(end_of_class): 
-	(include_empty_classes): 
-AUDIT
+	(end_of_class): Likewise.
+	(include_empty_classes): Likewise
 	* cvt.c
 	(ignore_overflows): Use wide_int_to_tree.
 	* decl.c
