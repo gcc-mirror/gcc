@@ -314,7 +314,9 @@ insn_invalid_p (rtx insn, bool in_group)
      clobbers.  */
   int icode = recog (pat, insn,
 		     (GET_CODE (pat) == SET
-		      && ! reload_completed && ! reload_in_progress)
+		      && ! reload_completed 
+                      && ! reload_in_progress
+                      && ! lra_in_progress)
 		     ? &num_clobbers : 0);
   int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
 
