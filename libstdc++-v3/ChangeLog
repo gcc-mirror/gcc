@@ -1,3 +1,9 @@
+2013-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/59173
+	* include/ext/pointer.h (pointer_traits<>::rebind<>): Add template
+	keyword in nested name.
+
 2013-11-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/17_intro/static.cc: Ignore AIX TOC reload warnings.
