@@ -3912,7 +3912,7 @@ ix86_option_override_internal (bool main_args_p,
      functions. */
   else if (fast_math_flags_set_p (&global_options)
 	   && TARGET_SSE2_P (opts->x_ix86_isa_flags))
-    ix86_fpmath = FPMATH_SSE;
+    opts->x_ix86_fpmath = FPMATH_SSE;
   else
     opts->x_ix86_fpmath = TARGET_FPMATH_DEFAULT_P (opts->x_ix86_isa_flags);
 
