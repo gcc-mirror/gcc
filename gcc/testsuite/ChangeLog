@@ -1,3 +1,8 @@
+2013-11-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/54300
+	* gcc.target/arm/pr54300.C: New test.
+
 2013-11-20  Diego Novillo  <dnovillo@google.com>
 
 	PR 59212
