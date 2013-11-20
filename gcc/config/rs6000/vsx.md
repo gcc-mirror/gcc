@@ -1497,9 +1497,10 @@
 		      UNSPEC_VSX_SET))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if (INTVAL (operands[3]) == 0)
+  int idx_first = BYTES_BIG_ENDIAN ? 0 : 1;
+  if (INTVAL (operands[3]) == idx_first)
     return \"xxpermdi %x0,%x2,%x1,1\";
-  else if (INTVAL (operands[3]) == 1)
+  else if (INTVAL (operands[3]) == 1 - idx_first)
     return \"xxpermdi %x0,%x1,%x2,0\";
   else
     gcc_unreachable ();
@@ -1514,8 +1515,12 @@
 			[(match_operand:QI 2 "u5bit_cint_operand" "i,i,i")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
+  int fldDM;
   gcc_assert (UINTVAL (operands[2]) <= 1);
-  operands[3] = GEN_INT (INTVAL (operands[2]) << 1);
+  fldDM = INTVAL (operands[2]) << 1;
+  if (!BYTES_BIG_ENDIAN)
+    fldDM = 3 - fldDM;
+  operands[3] = GEN_INT (fldDM);
   return \"xxpermdi %x0,%x1,%x1,%3\";
 }
   [(set_attr "type" "vecperm")])
@@ -1527,6 +1532,21 @@
 	 (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z,Z,Z")
 	 (parallel [(const_int 0)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && WORDS_BIG_ENDIAN"
+  "lxsd%U1x %x0,%y1"
+  [(set (attr "type")
+      (if_then_else
+	(match_test "update_indexed_address_mem (operands[1], VOIDmode)")
+	(const_string "fpload_ux")
+	(const_string "fpload")))
+   (set_attr "length" "4")])  
+
+;; Optimize extracting element 1 from memory for little endian
+(define_insn "*vsx_extract_<mode>_one_le"
+  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=ws,d,?wa")
+	(vec_select:<VS_scalar>
+	 (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z,Z,Z")
+	 (parallel [(const_int 1)])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && !WORDS_BIG_ENDIAN"
   "lxsd%U1x %x0,%y1"
   [(set (attr "type")
       (if_then_else
@@ -1555,7 +1575,7 @@
   rtx op2 = operands[2];
   rtx op3 = operands[3];
   rtx tmp;
-  HOST_WIDE_INT ele = INTVAL (op2);
+  HOST_WIDE_INT ele = BYTES_BIG_ENDIAN ? INTVAL (op2) : 3 - INTVAL (op2);
 
   if (ele == 0)
     tmp = op1;
