@@ -114,46 +114,21 @@
 	(output_toc): Likewise.
 	(rs6000_rtx_costs): Likewise.
 	* config/rs6000/rs6000-c.c
-	(altivec_resolve_overloaded_builtin):
+	(altivec_resolve_overloaded_builtin): Update to use wi::.
 	* config/rs6000/rs6000.h
-	(enum rs6000_builtin_type_index
+	(TARGET_SUPPORTS_WIDE_INT): Add.
 	* config/rs6000/rs6000.md
-	(define_split):
+	Update to use const_scalar_int_operand.  Handle CONST_WIDE_INT.
 	* config/sol2-c.c
-	(solaris_pragma_align):
+	(solaris_pragma_align): Update to use cst_fits_uhwi_p.
 	* config/sparc/sparc.c
-	(sparc_fold_builtin):
+	(sparc_fold_builtin): Update to use wide_int and wi::.
 	* config/vax/vax.c
-	(vax_float_literal):
+	(vax_float_literal): Update to use real_from_integer.
 	* coretypes.h
-	(typedef struct bitmap_head_def *bitmap;
-	* cp/call.c
-	(type_passed_as):
-	(convert_for_arg_passing):
-	* cp/class.c
-	* cp/cvt.c
-	(force_rvalue):
-	* cp/decl.c
-	(finish_enum_value_list):
-	(finish_enum_value_list):
-	(finish_enum_value_list):
-	* cp/init.c
-	(inner_nelts_count):
-	(inner_size):
-	(build_new_1):
-	* cp/mangle.c
-	(write_number):
-	(write_integer_cst):
-	(write_array_type):
-	* cp/parser.c
-	(make_char_string_pack):
-	* cp/tree.c
-	(cp_tree_equal):
-	* cp/typeck2.c
-	(process_init_constructor_array):
-	* cp/vtable-class-hierarchy.c
-	(check_and_record_registered_pairs):
-	(output_set_info):
+	(struct hwivec_def): Add.
+	(hwivec): Add.
+	(const_hwivec): Add.
 	* cse.c
 	(hash_rtx_cb):
 	(fold_rtx):
@@ -903,3 +878,39 @@ MORE
 	* var-tracking.c
 	(loc_cmp):
 	(emit_note_insn_var_location):
+
+
+
+cp:
+	* call.c
+	(type_passed_as):
+AUDIT
+	(convert_for_arg_passing):
+AUDIT
+	* class.c
+	(end_of_class): 
+	(include_empty_classes): 
+AUDIT
+	* cvt.c
+	(ignore_overflows): Use wide_int_to_tree.
+	* decl.c
+	(finish_enum_value_list):
+	(finish_enum_value_list):
+	(finish_enum_value_list):
+	* init.c
+	(inner_nelts_count):
+	(inner_size):
+	(build_new_1):
+	* mangle.c
+	(write_number):
+	(write_integer_cst):
+	(write_array_type):
+	* parser.c
+	(make_char_string_pack):
+	* tree.c
+	(cp_tree_equal):
+	* typeck2.c
+	(process_init_constructor_array):
+	* vtable-class-hierarchy.c
+	(check_and_record_registered_pairs):
+	(output_set_info):
