@@ -173,13 +173,18 @@
 	* dfp.h
 	(void decode_decimal64 ):
 	* doc/generic.texi
+AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(As this example indicates, the operands
 	* doc/rtl.texi
-	(only expression for integer value negati
-	* doc/tm.texi
-	(target's floating point format cannot re
-	(This value should be set if the result w
+	(const_double): 
+	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
+	(CONST_WIDE_INT_NUNITS, CONST_WIDE_INT_ELT): New.
 	* doc/tm.texi.in
+	(REAL_VALUE_TO_INT): 
+	(REAL_VALUE_FROM_INT): 
+	(TARGET_CAN_USE_DOLOOP_P): Use widest_int instead of double_int.
+	(TARGET_SUPPORTS_WIDE_INT): Add.
+	* doc/tm.texi: Regenerate.
 	(target's floating point format cannot re
 	* dojump.c
 	(static GTY(():): rtx and_test;
