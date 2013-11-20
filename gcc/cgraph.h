@@ -528,6 +528,10 @@ class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node {
 public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
+
+  /* Set when variable has statically initialized pointer
+     or is a static bounds variable and needs initalization.  */
+  unsigned need_bounds_init : 1;
 };
 
 /* Every top level asm statement is put into a asm_node.  */
