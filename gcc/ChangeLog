@@ -1,3 +1,9 @@
+2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
+
+	PR c/53001
+	* doc/invoke.texi: Adding documentation about
+	-Wfloat-conversion.
+
 2013-11-20  Miro Kropacek  <miro.kropacek@gmail.com>
 
 	* config/m68k/m68k.c (m68k_option_overrides): Fix typo.
