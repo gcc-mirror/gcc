@@ -468,61 +468,61 @@ MORE
 	(extern int currently_expanding_to_rtl;
 	(extern rtx convert_memory_address_addr_s
 	* sched-vis.c
-	(print_value):
-	* sel-sched-ir.c
-	(hash_with_unspec_callback):
+	(print_value): Now supports CONST_WIDE_INT.
 	* simplify-rtx.c
 	(mode_signbit_p): Now supports CONST_WIDE_INT.
-	(simplify_unary_operation_1):
-	(simplify_const_unary_operation):
-	(simplify_binary_operation_1):
-	(simplify_const_binary_operation):
-	(simplify_const_relational_operation):
-	(simplify_immed_subreg):
+	(simplify_binary_operation_1): Use wide-int rep.
+	(simplify_const_unary_operation): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_immed_subreg): Likewise.
 	* stmt.c
-	(expand_case):
+	(expand_case): Use wide-int rep.
 	* stor-layout.c
+Audit by richard.
 	(place_field):
-	(place_field):
-	(compute_record_mode):
-	(layout_type):
-	(initialize_sizetypes):
+	(compute_record_mode): Use wide-int rep.
+	(layout_type): Likewise.
+	(set_min_and_max_values_for_integral_type): Likewise.
+	(fixup_signed_type): Likewise.
+	(fixup_unsigned_type): Likewise.
 	* system.h
-	(extern void fancy_abort):
+	(STATIC_CONSTANT_P): New.
+	(STATIC_ASSERT): New.
 	* target.def
-	(iterations, iterations_max): Are wide-int rather than double-int.
+	(iterations, iterations_max): Use wide-int rather than double-int.
 	(hook_bool_dint_dint_uint_bool_true): Removed.
 	(hook_bool_wint_wint_uint_bool_true): New.
 	* target.h: Now includes wide-int rather than double-int.
 	* targhooks.c
 	(default_cxx_get_cookie_size): Uses INT_CST_LT rather than INT_CST_LT_UNSIGNED.
 	(can_use_doloop_if_innermost): Now uses wide-int parameters.
-	* targhooks.h
-	(extern bool default_member_type_forces_b
 	* tree-affine.c
 	(double_int_ext_for_comb): Deleted.
 	(wide_int_ext_for_comb): New function.
-	(aff_combination_zero):
-	(aff_combination_const):
-	(aff_combination_elt):
-	(aff_combination_scale):
-	(aff_combination_add_elt):
-	(aff_combination_add_cst):
-	(aff_combination_add):
+	(aff_combination_zero): Use wide-int rep.
+	(aff_combination_const): Likewise.
+	(aff_combination_elt): Likewise.
+	(aff_combination_scale): Likewise.
+	(aff_combination_add_elt): Likewise.
+	(aff_combination_add_cst): Likewise.
+	(aff_combination_add): Likewise.
+	(aff_combination_convert): Likewise.
 	(double_int_ext_for_comb): Deleted.
 	(wide_int_ext_for_comb): Added.
-	(tree_to_aff_combination):
-	(add_elt_to_tree):
-	(aff_combination_to_tree):
-	(aff_combination_remove_elt):
-	(aff_combination_add_product):
-	(aff_combination_expand):
+	(tree_to_aff_combination): Use wide-int rep.
+	(add_elt_to_tree): Likewise.
+	(aff_combination_to_tree): Likewise.
+	(aff_combination_remove_elt): Likewise.
+	(aff_combination_add_product): Likewise.
+	(aff_combination_expand): Likewise.
 	(double_int_constant_multiple_p): Deleted.
 	(wide_int_constant_multiple_p): Added.
-	(aff_combination_constant_multiple_p):
-	(print_aff):
-	(get_inner_reference_aff):
-	(aff_comb_cannot_overlap_p):
+	(aff_combination_constant_multiple_p): Use wide-int rep.
+	(print_aff): Likewise.
+	(get_inner_reference_aff): Likewise.
+	(aff_comb_cannot_overlap_p): Likewise.
 	* tree-affine.h
 	(aff_comb_elt): Changed type of coef and offset to widest-int.
 	* tree.c
@@ -646,222 +646,225 @@ MORE
 	(valid_initializer_p): Likewise.
 	(determine_roots_comp): Likewise.
 	* tree-pretty-print.c
-	(dump_array_domain):
-	(dump_generic_node):
-	(dump_generic_node):
-	(dump_generic_node):
+	(dump_array_domain): Use wide-int rep.
+	(dump_generic_node): Likewise.
 	* tree-sra.c
-	(build_user_friendly_ref_for_offset):
-	(sra_ipa_modify_expr):
+	(build_user_friendly_ref_for_offset): Use wide-int rep.
+	(sra_ipa_modify_expr): Likewise.
 	* tree-ssa-address.c
-	(struct mem_address
-	(fixed_address_object_p):
-	(move_fixed_address_to_symbol):
-	(move_hint_to_base):
-	(move_variant_to_index):
-	(most_expensive_mult_to_index):
-	(addr_to_parts):
-	(copy_ref_info):
+	(addr_for_mem_ref): Use wide-int rep.
+	(move_fixed_address_to_symbol): Likewise.
+	(move_hint_to_base): Likewise.
+	(move_pointer_to_base): Likewise.
+	(move_variant_to_index): Likewise.
+	(most_expensive_mult_to_index): Likewise.
+	(addr_to_parts): Likewise.
+	(copy_ref_info): Likewise.
 	* tree-ssa-alias.c
-	(ao_ref_init_from_ptr_and_size):
-	(indirect_ref_may_alias_decl_p):
-	(indirect_ref_may_alias_decl_p):
-	(indirect_refs_may_alias_p):
+	(ao_ref_init_from_ptr_and_size): Use wide-int rep.
+	(indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
 	(stmt_kills_ref_p_1):
 	* tree-ssa.c
-	(non_rewritable_mem_ref_base):
+	(non_rewritable_mem_ref_base): Use wide-int rep.
 	* tree-ssa-ccp.c
-	(along with GCC; see the file COPYING3.
-	(along with GCC; see the file COPYING3.
-	(dump_lattice_value):
-	(get_default_value):
-	(set_lattice_value):
-	(set_lattice_value):
-	(ccp_lattice_meet):
-	(evaluate_stmt):
-	(evaluate_stmt):
-	(evaluate_stmt):
-	(evaluate_stmt):
-	(visit_assignment):
-	(ccp_visit_stmt):
+	(prop_value_d): Change rep of mask to wide-int.
+	(dump_lattice_value): Use wide-int rep.
+	(get_default_value): Likewise.
+	(set_constant_value): Likewise.
+	(set_value_varying): Likewise.
+	(valid_lattice_transition): Likewise.
+	(set_lattice_value): Likewise.
+	(value_to_double_int): Deleted.
+	(value_to_wide_int): New.
+	(get_value_from_alignment): Use wide-int rep.
+	(get_value_for_expr): Likewise.
+	(do_dbg_cnt): Likewise.
+	(ccp_finalize): Likewise.
+	(ccp_lattice_meet): Likewise.
+	(bit_value_unop_1): Likewise.
+	(bit_value_binop_1): Likewise.
+	(bit_value_unop): Likewise.
+	(bit_value_binop): Likewise.
+	(bit_value_assume_aligned): Likewise.
+	(evaluate_stmt): Likewise.
+	(ccp_fold_stmt): Likewise.
+	(visit_assignment): Likewise.
+	(ccp_visit_stmt): Likewise.
 	* tree-ssa-forwprop.c
-	(forward_propagate_addr_expr_1):
-	(forward_propagate_addr_expr_1):
-	(constant_pointer_difference):
-	(associate_pointerplus):
-	(combine_conversions):
+	(forward_propagate_addr_expr_1): Use wide-int rep.
+	(constant_pointer_difference): Likewise.
+	(associate_pointerplus): Likewise.
+	(combine_conversions): Likewise.
 	* tree-ssa-loop.h
-	(WARRANTY; without even the implied warra
-	(struct tree_niter_desc
+	(struct tree_niter_desc): Change type of Max to wide-int.
 	* tree-ssa-loop-im.c
-	(analyze_memory_references):
+	(mem_refs_may_alias_p): Use wide-int rep.
 	* tree-ssa-loop-ivcanon.c
-	(remove_exits_and_undefined_stmts):
-	(remove_redundant_iv_tests):
-	(canonicalize_loop_induction_variables):
+	(remove_exits_and_undefined_stmts): Use wide-int rep.
+	(remove_redundant_iv_tests): Likewise.
+	(canonicalize_loop_induction_variables): Likewise.
 	* tree-ssa-loop-ivopts.c
-	(alloc_iv):
-	(idx_record_use):
-	(strip_offset_1):
-	(strip_offset_1):
-	(strip_offset_1):
-	(strip_offset_1):
-	(add_autoinc_candidates):
-	(get_computation_aff):
-	(force_expr_to_var_cost):
-	(difference_cost):
-	(get_loop_invariant_expr_id):
-	(get_computation_cost_at):
-	(iv_elimination_compare_lt):
-	(iv_elimination_compare_lt):
+	(alloc_iv): Use wide-int rep.
+	(constant_multiple_of): Likewise.
+	(strip_offset_1): Likewise.
+	(add_autoinc_candidates): Likewise.
+	(get_computation_aff): Likewise.
+	(force_expr_to_var_cost): Likewise.
+	(ptr_difference_cost): Likewise.
+	(difference_cost): Likewise.
+	(get_loop_invariant_expr_id): Likewise.
+	(get_computation_cost_at): Likewise.
+	(iv_elimination_compare_lt): Likewise.
+	(may_eliminate_iv): Likewise.
 	* tree-ssa-loop-niter.c
-	(along with GCC; see the file COPYING3.
-	(split_to_var_and_offset):
-	(bound_difference_of_offsetted_base):
-	(bound_difference):
-	(inverse):
-	(inverse):
-	(number_of_iterations_ne):
-	(number_of_iterations_lt_to_ne):
-	(assert_no_overflow_lt):
-	(assert_loop_rolls_lt):
-	(number_of_iterations_lt):
-	(number_of_iterations_le):
-	(number_of_iterations_cond):
-	(number_of_iterations_cond):
-	(number_of_iterations_cond):
-	(number_of_iterations_exit):
-	(find_loop_niter_by_eval):
-	(derive_constant_upper_bound_ops):
-	(record_estimate):
-	(record_nonwrapping_iv):
-	(infer_loop_bounds_from_undefined):
-	(discover_iteration_bound_by_body_walk):
-	(maybe_lower_iteration_bound):
-	(n_of_executions_at_most):
-	(nowrap_type_p):
-	(scev_probably_wraps_p):
-	* tree-ssa-loop-niter.h
-	(along with GCC; see the file COPYING3.
+	(split_to_var_and_offset): Use wide-int rep.
+	(determine_value_range): Likewise.
+	(bound_difference_of_offsetted_base): Likewise.
+	(bound_difference): Likewise.
+	(inverse): Likewise.
+	(number_of_iterations_ne_max): Likewise.
+	(number_of_iterations_ne): Likewise.
+	(number_of_iterations_lt_to_ne): Likewise.
+	(assert_loop_rolls_lt): Likewise.
+	(number_of_iterations_lt): Likewise.
+	(number_of_iterations_le): Likewise.
+	(number_of_iterations_cond): Likewise.
+	(number_of_iterations_exit): Likewise.
+	(finite_loop_p): Likewise.
+	(derive_constant_upper_bound_assign): Likewise.
+	(derive_constant_upper_bound): Likewise.
+	(derive_constant_upper_bound_ops): Likewise.
+	(do_warn_aggressive_loop_optimizations): Likewise.
+	(record_estimate): Likewise.
+	(record_nonwrapping_iv): Likewise.
+	(double_int_cmp): Deleted.
+	(wide_int_cmp): New.
+	(bound_index): Use wide-int rep.
+	(discover_iteration_bound_by_body_walk): Likewise.
+	(maybe_lower_iteration_bound): Likewise.
+	(estimate_numbers_of_iterations_loop): Likewise.
+	(estimated_loop_iterations): Likewise.
+	(estimated_loop_iterations_int): Likewise.
+	(max_loop_iterations): Likewise.
+	(max_loop_iterations_int): Likewise.
+	(max_stmt_executions): Likewise.
+	(estimated_stmt_executions): Likewise.
+	(n_of_executions_at_most): Likewise.
+	(scev_probably_wraps_p): Likewise.
 	* tree-ssa-loop-prefetch.c
-	(struct mem_ref
-	(find_or_create_group):
-	(idx_analyze_ref):
-	(gather_memory_references_ref):
-	(gather_memory_references):
-	(prune_ref_by_group_reuse):
+	(dump_mem_details): Use wide-int rep.
+	(find_or_create_group): Likewise.
+	(idx_analyze_ref): Likewise.
+	(gather_memory_references_ref): Likewise.
+	(prune_ref_by_group_reuse): Likewise.
+	(issue_prefetch_ref): Likewise.
 	* tree-ssa-math-opts.c
-	(gimple_expand_builtin_pow):
-	(gimple_expand_builtin_pow):
-	(execute_cse_sincos):
+	(gimple_expand_builtin_pow): Use wide-int rep.
+	(execute_cse_sincos): Likewise.
 	* tree-ssanames.c
-	(make_ssa_name_fn):
+	(set_range_info): Use wide-int rep.
+	(get_range_info): Likewise.
+	(set_nonzero_bits): Likewise.
+	(get_nonzero_bits): Likewise.
 	* tree-ssanames.h
-	(struct GTY(():): ptr_info_def
+	(range_info_def): Fields min max and nonzero_bits now are wide-int.
 	* tree-ssa-phiopt.c
-	(jump_function_from_stmt):
-	(hoist_adjacent_loads):
+	(jump_function_from_stmt): Use wide-int rep.
+	(hoist_adjacent_loads): Likewise.
 	* tree-ssa-pre.c
-	(phi_translate_1):
+	(phi_translate_1): Use wide-int rep.
 	* tree-ssa-reassoc.c
-	(decrement_power):
+	(decrement_power): Use wide-int rep.
+	(acceptable_pow_call): Likewise.
 	* tree-ssa-sccvn.c
-	(copy_reference_ops_from_ref):
-	(copy_reference_ops_from_ref):
-	(ao_ref_init_from_vn_reference):
-	(ao_ref_init_from_vn_reference):
-	(vn_reference_fold_indirect):
-	(valueize_refs_1):
-	(vn_reference_lookup_3):
-	(vn_reference_lookup_3):
+	(copy_reference_ops_from_ref): Use wide-int rep.
+	(ao_ref_init_from_vn_reference): Likewise.
+	(vn_reference_fold_indirect): Likewise.
+	(vn_reference_maybe_forwprop_address): Likewise.
+	(valueize_refs_1): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	(simplify_binary_expression): Likewise.
 	* tree-ssa-structalias.c
-	(process_constraint):
-	(get_constraint_for_ptr_offset):
+	(process_constraint): Use wide-int rep.
+	(get_constraint_for_ptr_offset): Likewise.
+	(get_constraint_for_1): Likewise.
 	* tree-ssa-uninit.c
-	(is_value_included_in):
+	(is_value_included_in): Use wide-int rep.
 	* tree-streamer-in.c
-	(unpack_ts_base_value_fields):
-	(streamer_alloc_tree):
+	(unpack_ts_base_value_fields): Use wide-int rep.
+	(streamer_alloc_tree): Likewise.
 	* tree-streamer-out.c
-	(pack_ts_base_value_fields):
-	(streamer_write_tree_header):
+	(pack_ts_int_cst_value_fields): Use wide-int rep.
+	(streamer_write_tree_header): Likewise.
+	(streamer_write_integer_cst): Likewise.
 	* tree-switch-conversion.c
-	(emit_case_bit_tests):
-	(build_constructors):
-	(build_constructors):
-	(array_value_type):
+	(emit_case_bit_tests): Use wide-int rep.
+	(build_constructors): Likewise.
+	(array_value_type): Likewise.
 	* tree-vect-data-refs.c
-	(vect_verify_datarefs_alignment):
-	(vect_prune_runtime_alias_test_list):
-	(vect_check_gather):
+	(not_size_aligned): Use wide-int rep.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_check_gather): Likewise.
 	* tree-vect-generic.c
-	(along with GCC; see the file COPYING3.
-	(expand_vector_divmod):
-	(expand_vector_divmod):
-	(expand_vector_divmod):
-	(expand_vector_divmod):
-	(expand_vector_divmod):
-	(expand_vector_divmod):
+	(build_replicated_const): Use wide-int rep.
+	(expand_vector_divmod): Likewise.
 	* tree-vect-loop.c
-	(vect_transform_loop):
+	(vect_transform_loop): Use wide-int rep.
 	* tree-vect-loop-manip.c
-	(vect_do_peeling_for_loop_bound):
-	(vect_do_peeling_for_alignment):
+	(vect_do_peeling_for_loop_bound): Use wide-int rep.
+	(vect_do_peeling_for_alignment): Likewise.
 	* tree-vectorizer.h
-	(typedef struct _loop_vec_info {
+	(NITERS_KNOWN_P): Use wide-int rep.
 	* tree-vect-patterns.c
-	(vect_recog_divmod_pattern):
+	(vect_recog_divmod_pattern): Use wide-int rep.
 	* tree-vrp.c
-	(along with GCC; see the file COPYING3.
-	(extract_range_from_assert):
-	(vrp_int_const_binop):
-	(vrp_int_const_binop):
-	(ranges_from_anti_range):
-	(extract_range_from_multiplicative_op_1):
-	(extract_range_from_binary_expr_1):
-	(extract_range_from_binary_expr_1):
-	(extract_range_from_binary_expr_1):
-	(extract_range_from_unary_expr_1):
-	(extract_range_from_unary_expr_1):
-	(adjust_range_with_scev):
-	(extract_code_and_val_from_cond_with_ops
-	(register_edge_assert_for_2):
-	(register_edge_assert_for_2):
-	(register_edge_assert_for_2):
-	(register_edge_assert_for_2):
-	(register_edge_assert_for_2):
-	(search_for_addr_array):
-	(maybe_set_nonzero_bits):
-	(union_ranges):
-	(union_ranges):
-	(union_ranges):
-	(union_ranges):
-	(union_ranges):
-	(union_ranges):
-	(intersect_ranges):
-	(intersect_ranges):
-	(intersect_ranges):
-	(simplify_truth_ops_using_ranges):
-	(simplify_abs_using_ranges):
-	(simplify_switch_using_ranges):
-	(simplify_conversion_using_ranges):
-	(simplify_float_conversion_using_ranges):
-	(vrp_finalize):
+	(operand_less_p): Use wide-int rep.
+	(extract_range_from_assert): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(zero_nonzero_bits_from_vr): Likewise.
+	(ranges_from_anti_range): Likewise.
+	(quad_int_cmp): Deleted.
+	(quad_int_pair_sort): Likewise.
+	(extract_range_from_binary_expr_1): Use wide-int rep.
+	(extract_range_from_unary_expr_1): Likewise.
+	(adjust_range_with_scev): Likewise.
+	(masked_increment): Likewise.
+	(register_edge_assert_for_2): Likewise.
+	(check_array_ref): Likewise.
+	(search_for_addr_array): Likewise.
+	(maybe_set_nonzero_bits): Likewise.
+	(union_ranges): Likewise.
+	(intersect_ranges): Likewise.
+	(simplify_truth_ops_using_ranges): Likewise.
+	(simplify_bit_ops_using_ranges): Likewise.
+	(range_fits_type_p): Likewise.
+	(simplify_cond_using_ranges): Likewise.
+	(simplify_conversion_using_ranges): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(vrp_finalize): Likewise.
 	* value-prof.c
-	(gimple_divmod_fixed_value_transform):
-	(gimple_stringops_transform):
+	(gimple_divmod_fixed_value_transform): Use wide-int rep.
+	(gimple_stringops_transform): Likewise.
 	* varasm.c
-	(decode_addr_const):
-	(const_hash_1):
-	(const_desc_rtx_eq):
-	(output_constant):
-	(output_constant):
-	(array_size_for_constructor):
-	(output_constructor_regular_field):
-	(output_constructor_bitfield):
+	(decode_addr_const): Use wide-int rep.
+	(const_hash_1): Likewise.
+	(const_rtx_hash_1): Likewise
+	(output_constant): Likewise.
+	(array_size_for_constructor): Likewise.
+	(output_constructor_regular_field): Likewise.
+	(output_constructor_bitfield): Likewise.
 	* var-tracking.c
-	(loc_cmp):
-	(emit_note_insn_var_location):
+	(loc_cmp): Use wide-int rep.
+	(emit_note_insn_var_location): Likewise.
+	* wide-int.cc
+	New file.
+	* wide-int.h
+	New file.
+	* wide-int-print.cc
+	New file.
+	* wide-int-print.h
+	New file.
 
 
 c:
