@@ -1,3 +1,11 @@
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use tree_to_uhwi.
+	* gcc-interface/utils.c (make_packable_type): Likewise.
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi rather than

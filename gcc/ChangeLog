@@ -1,3 +1,43 @@
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* alias.c (ao_ref_from_mem): Use tree_to_shwi and tree_to_uhwi
+	instead of TREE_INT_CST_LOW, in cases where there is a protecting
+	tree_fits_shwi_p or tree_fits_uhwi_p.
+	* builtins.c (fold_builtin_powi): Likewise.
+	* config/epiphany/epiphany.c (epiphany_special_round_type_align):
+	Likewise.
+	* dbxout.c (dbxout_symbol): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* fold-const.c (fold_single_bit_test, fold_plusminus_mult_expr)
+	(fold_binary_loc): Likewise.
+	* gimple-fold.c (fold_const_aggregate_ref_1): Likewise.
+	* gimple-ssa-strength-reduction.c (stmt_cost): Likewise.
+	* omp-low.c (lower_omp_for_lastprivate): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* stor-layout.c (compute_record_mode): Likewise.
+	* tree-cfg.c (verify_expr): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* tree-pretty-print.c (dump_array_domain): Likewise.
+	* tree-sra.c (build_user_friendly_ref_for_offset): Likewise.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Likewise.
+	* tree-ssa-loop-ivopts.c (get_loop_invariant_expr_id): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_sincos): Likewise.
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Likewise.
+	* tree-ssa-reassoc.c (acceptable_pow_call): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	(ao_ref_init_from_vn_reference, vn_reference_fold_indirect): Likewise.
+	(vn_reference_lookup_3, simplify_binary_expression): Likewise.
+	* tree-ssa-structalias.c (bitpos_of_field): Likewise.
+	(get_constraint_for_1, push_fields_onto_fieldstack): Likewise.
+	(create_variable_info_for_1): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Likewise.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	* tree-vectorizer.h (NITERS_KNOWN_P): Likewise.
+
 2013-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Avoid signed

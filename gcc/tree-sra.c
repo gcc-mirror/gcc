@@ -1656,12 +1656,12 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 	      tr_pos = bit_position (fld);
 	      if (!tr_pos || !tree_fits_uhwi_p (tr_pos))
 		continue;
-	      pos = TREE_INT_CST_LOW (tr_pos);
+	      pos = tree_to_uhwi (tr_pos);
 	      gcc_assert (TREE_CODE (type) == RECORD_TYPE || pos == 0);
 	      tr_size = DECL_SIZE (fld);
 	      if (!tr_size || !tree_fits_uhwi_p (tr_size))
 		continue;
-	      size = TREE_INT_CST_LOW (tr_size);
+	      size = tree_to_uhwi (tr_size);
 	      if (size == 0)
 		{
 		  if (pos != offset)

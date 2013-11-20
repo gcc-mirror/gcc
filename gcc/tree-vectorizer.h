@@ -389,7 +389,7 @@ typedef struct _loop_vec_info {
 
 #define NITERS_KNOWN_P(n)                     \
 (tree_fits_shwi_p ((n))                        \
-&& TREE_INT_CST_LOW ((n)) > 0)
+&& tree_to_shwi ((n)) > 0)
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
 NITERS_KNOWN_P ((L)->num_iters)

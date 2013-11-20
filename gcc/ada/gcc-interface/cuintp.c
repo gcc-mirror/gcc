@@ -155,7 +155,7 @@ UI_From_gnu (tree Input)
      in a signed 32-bit integer.  */
   if (tree_fits_shwi_p (Input))
     {
-      HOST_WIDE_INT hw_input = TREE_INT_CST_LOW (Input);
+      HOST_WIDE_INT hw_input = tree_to_shwi (Input);
       if (hw_input == (int) hw_input)
 	return UI_From_Int (hw_input);
     }
@@ -166,7 +166,7 @@ UI_From_gnu (tree Input)
      signed 32-bit integer.  Then a sign test tells whether it fits
      in a signed 64-bit integer.  */
   if (tree_fits_shwi_p (Input))
-    return UI_From_Int (TREE_INT_CST_LOW (Input));
+    return UI_From_Int (tree_to_shwi (Input));
   else if (TREE_INT_CST_HIGH (Input) < 0 && TYPE_UNSIGNED (gnu_type))
     return No_Uint;
 #endif

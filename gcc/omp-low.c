@@ -8836,7 +8836,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
      type optimizations deduce the value and remove a copy.  */
   if (tree_fits_shwi_p (fd->loop.step))
     {
-      HOST_WIDE_INT step = TREE_INT_CST_LOW (fd->loop.step);
+      HOST_WIDE_INT step = tree_to_shwi (fd->loop.step);
       if (step == 1 || step == -1)
 	cond_code = EQ_EXPR;
     }

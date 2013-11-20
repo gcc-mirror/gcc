@@ -341,8 +341,8 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       && (ref->offset < 0
 	  || (DECL_P (ref->base)
 	      && (!tree_fits_uhwi_p (DECL_SIZE (ref->base))
-		  || (TREE_INT_CST_LOW (DECL_SIZE ((ref->base)))
-		      < (unsigned HOST_WIDE_INT)(ref->offset + ref->size))))))
+		  || (tree_to_uhwi (DECL_SIZE (ref->base))
+		      < (unsigned HOST_WIDE_INT) (ref->offset + ref->size))))))
     return false;
 
   return true;

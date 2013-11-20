@@ -4925,7 +4925,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* Consider an alignment as suspicious if the alignment/size
 		 ratio is greater or equal to the byte/bit ratio.  */
 	      if (tree_fits_uhwi_p (size)
-		  && align >= TREE_INT_CST_LOW (size) * BITS_PER_UNIT)
+		  && align >= tree_to_uhwi (size) * BITS_PER_UNIT)
 		post_error_ne ("?suspiciously large alignment specified for&",
 			       Expression (Alignment_Clause (gnat_entity)),
 			       gnat_entity);
