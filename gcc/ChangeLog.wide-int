@@ -108,7 +108,6 @@
 	(const_hwivec): Add.
 	* cse.c
 	(hash_rtx_cb): Handle CONST_WIDE_INT.
-	(fold_rtx): Fix whitespacing.
 	(equiv_constant): Handle CONST_WIDE_INT.
 	* cselib.c
 	(rtx_equal_for_cselib_1): Use CASE_CONST_UNIQUE.
@@ -877,7 +876,6 @@ c:
 	(build_c_cast): Update to use wide_int_to_tree.
 	(set_nonincremental_init_from_string): Update to use wide-int.
 	(c_tree_equal): Update to use wi::.
-	* Make-lang.in: Fixup whitespace.
 
 c-family:
 	* c-ada-spec.c
