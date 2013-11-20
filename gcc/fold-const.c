@@ -12679,13 +12679,13 @@ fold_binary_loc (location_t loc,
       if (((code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR)
            || (TYPE_UNSIGNED (type)
 	       && code == RSHIFT_EXPR && TREE_CODE (arg0) == LSHIFT_EXPR))
-	  && tree_fits_shwi_p (arg1)
-	  && TREE_INT_CST_LOW (arg1) < prec
-	  && tree_fits_shwi_p (TREE_OPERAND (arg0, 1))
-	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < prec)
+	  && tree_fits_uhwi_p (arg1)
+	  && tree_to_uhwi (arg1) < prec
+	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
+	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) < prec)
 	{
-	  HOST_WIDE_INT low0 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));
-	  HOST_WIDE_INT low1 = TREE_INT_CST_LOW (arg1);
+	  HOST_WIDE_INT low0 = tree_to_uhwi (TREE_OPERAND (arg0, 1));
+	  HOST_WIDE_INT low1 = tree_to_uhwi (arg1);
 	  tree lshift;
 	  tree arg00;
 
