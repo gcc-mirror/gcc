@@ -919,6 +919,7 @@ cp:
 	(check_and_record_registered_pairs): Update to use tree_to_uhwi.
 	(output_set_info): Likewise.
 
+
 fortran:
 	* target-memory.c
 	(gfc_interpret_logical): Use wide-int rep.
@@ -942,6 +943,7 @@ fortran:
 	* trans-types.c
 	(gfc_init_types): Use wide-int rep.
 	(gfc_get_array_type_bounds): Likewise.
+
 
 java:
 	* boehm.c
