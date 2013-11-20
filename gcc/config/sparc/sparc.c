@@ -10658,7 +10658,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	      tmp = e0.add_with_sign (tmp, false, &add1_ovf);
 	      if (tmp.is_negative ())
 		tmp = tmp.neg_with_overflow (&neg2_ovf);
-
+	      else
+		neg2_ovf = false;
 	      result = result.add_with_sign (tmp, false, &add2_ovf);
 	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
 	    }
