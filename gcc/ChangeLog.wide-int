@@ -1,11 +1,3 @@
-	* ada/gcc-interface/cuintp.c
-	(UI_From_gnu): Update to use wide-int.
-	* ada/gcc-interface/decl.c
-	(gnat_to_gnu_entity): Update to use TYPE_SIGN and tree_to_uhwi.
-	(annotate_value): Update to use wide-int.
-	* ada/gcc-interface/utils.c
-	(make_packable_type): Update to use tree_to_uhwi.
-	(get_nonnull_operand): Update to use cst_fits_uhwi_p.
 	* alias.c
 	(ao_ref_from_mem): Update to use wide-int.
 	(rtx_equal_for_memref_p): Update comment.
@@ -329,8 +321,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(replace_profitable_candidates): Likewise.
 	* gimplify.c
 	(gimple_boolify): Use wide-int rep.
-	* go/go-gcc.cc
-	(Gcc_backend::type_size): Use wide-int rep.
 	* godump.c
 	(go_output_typedef): Use wide-int rep.
 	* graphite-clast-to-gimple.c
@@ -853,6 +843,17 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	New file.
 
 
+ada:
+	* gcc-interface/cuintp.c
+	(UI_From_gnu): Update to use wide-int.
+	* gcc-interface/decl.c
+	(gnat_to_gnu_entity): Update to use TYPE_SIGN and tree_to_uhwi.
+	(annotate_value): Update to use wide-int.
+	* gcc-interface/utils.c
+	(make_packable_type): Update to use tree_to_uhwi.
+	(get_nonnull_operand): Update to use cst_fits_uhwi_p.
+
+
 c:
 	* c-decl.c
 	(check_bitfield_type_and_width): Update to use signop.
@@ -944,6 +945,11 @@ fortran:
 	* trans-types.c
 	(gfc_init_types): Use wide-int rep.
 	(gfc_get_array_type_bounds): Likewise.
+
+
+go:
+	* go/go-gcc.cc
+	(Gcc_backend::type_size): Use wide-int rep.
 
 
 java:
