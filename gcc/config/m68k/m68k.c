@@ -517,7 +517,7 @@ m68k_option_override (void)
     {
       enum target_device dev;
       dev = all_microarchs[M68K_DEFAULT_TUNE].device;
-      m68k_tune_flags = all_devices[dev]->flags;
+      m68k_tune_flags = all_devices[dev].flags;
     }
 #endif
   else
