@@ -469,29 +469,29 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(print_node):
 	* read-rtl.c
 	(validate_const_int):
-	* c2w/gcc/gcc/real.c
+	* real.c
 	(
 	(real_from_string3):
 	(ten_to_ptwo):
 	(ten_to_mptwo):
-	* c2w/gcc/gcc/real.h
+	* real.h
 	(
 	(extern void real_to_decimal):
 	(extern void real_round):
-	* c2w/gcc/gcc/recog.c
+	* recog.c
 	(immediate_operand):
-	* c2w/gcc/gcc/rtlanal.c
+	* rtlanal.c
 	(regno_use_in):
 	(get_address_mode):
 	(split_double):
-	* c2w/gcc/gcc/rtl.c
+	* rtl.c
 	(const enum rtx_class rtx_class[NUM_RTX_C
 	(shallow_copy_rtvec):
 	(iterative_hash_rtx):
 	(rtl_check_failed_code_mode):
-	* c2w/gcc/gcc/rtl.def
+	* rtl.def
 	(CONST_WIDE_INT): Add.
-	* c2w/gcc/gcc/rtl.h
+	* rtl.h
 	(struct hwivec_def): Add.
 	(CWI_GET_NUM_ELEM): Add.
 	(CWI_PUT_NUM_ELEM): Add.
@@ -512,11 +512,11 @@ MORE
 	(struct address_info {
 	(extern int currently_expanding_to_rtl;
 	(extern rtx convert_memory_address_addr_s
-	* c2w/gcc/gcc/sched-vis.c
+	* sched-vis.c
 	(print_value):
-	* c2w/gcc/gcc/sel-sched-ir.c
+	* sel-sched-ir.c
 	(hash_with_unspec_callback):
-	  * c2w/gcc/gcc/simplify-rtx.c
+	  * simplify-rtx.c
 	 ):
 	 ):
 	 ):
@@ -526,38 +526,38 @@ MORE
 	 ):
 	 ):
 	 ):
-	* c2w/gcc/gcc/stmt.c
+	* stmt.c
 	(expand_case):
-	* c2w/gcc/gcc/stor-layout.c
+	* stor-layout.c
 	(place_field):
 	(place_field):
 	(compute_record_mode):
 	(layout_type):
 	(initialize_sizetypes):
-	* c2w/gcc/gcc/system.h
+	* system.h
 	(extern void fancy_abort):
-	* c2w/gcc/gcc/target.def
+	* target.def
 	(DEFHOOK
-	* c2w/gcc/gcc/target.h
+	* target.h
 	(
-	* c2w/gcc/gcc/targhooks.c
+	* targhooks.c
 	(default_mode_for_suffix):
 	(default_chkp_bound_mode):
-	* c2w/gcc/gcc/targhooks.h
+	* targhooks.h
 	(extern bool default_member_type_forces_b
-	* c2w/gcc/gcc/testsuite/c-c++-common/cilk-plus/PS/body.c
+	* testsuite/c-c++-common/cilk-plus/PS/body.c
 	(
-	* c2w/gcc/gcc/testsuite/gcc.dg/builtin-object-size-8.c
+	* testsuite/gcc.dg/builtin-object-size-8.c
 	(
-	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-14gf.c
+	* testsuite/gcc.dg/strlenopt-14gf.c
 	(
-	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-1f.c
+	* testsuite/gcc.dg/strlenopt-1f.c
 	(
-	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-4gf.c
+	* testsuite/gcc.dg/strlenopt-4gf.c
 	(
-	* c2w/gcc/gcc/testsuite/gcc.dg/tree-ssa/pr45427.c
+	* testsuite/gcc.dg/tree-ssa/pr45427.c
 	(foo):
-	* c2w/gcc/gcc/tree-affine.c
+	* tree-affine.c
 	(along with GCC; see the file COPYING3.
 	(aff_combination_scale):
 	(tree_to_aff_combination):
@@ -565,9 +565,9 @@ MORE
 	(void
 	(struct name_expansion
 	(debug_aff):
-	* c2w/gcc/gcc/tree-affine.h
+	* tree-affine.h
 	(ANY WARRANTY; without even the implied w
-	* c2w/gcc/gcc/tree.c
+	* tree.c
 	(along with GCC; see the file COPYING3.
 	(init_ttree):
 	(tree_code_size):
@@ -588,32 +588,32 @@ MORE
 	(needs_to_live_in_memory):
 	(truth_type_for):
 	(get_tree_code_name):
-	* c2w/gcc/gcc/tree-call-cdce.c
+	* tree-call-cdce.c
 	(check_pow):
-	* c2w/gcc/gcc/tree-cfg.c
+	* tree-cfg.c
 	(along with GCC; see the file COPYING3.
 	(verify_expr):
 	(verify_gimple_assign_binary):
-	* c2w/gcc/gcc/tree-chrec.c
+	* tree-chrec.c
 	(chrec_fold_multiply):
-	* c2w/gcc/gcc/tree-core.h
+	* tree-core.h
 	(struct GTY(():): tree_base {
-	* c2w/gcc/gcc/tree-data-ref.c
+	* tree-data-ref.c
 	(dr_analyze_innermost):
 	(analyze_ziv_subscript):
-	* c2w/gcc/gcc/tree.def
+	* tree.def
 	(DEFTREECODE):
-	* c2w/gcc/gcc/tree-dfa.c
+	* tree-dfa.c
 	(get_or_create_ssa_default_def):
 	(get_ref_base_and_extent):
-	* c2w/gcc/gcc/tree-dfa.h
+	* tree-dfa.h
 	(get_addr_base_and_unit_offset_1):
-	* c2w/gcc/gcc/tree-dump.c
+	* tree-dump.c
 	(along with GCC; see the file COPYING3.
 	(dequeue_and_dump):
 Only in c2w/gcc/gcc: tree-flow.h
 Only in c2w/gcc/gcc: tree-flow-inline.h
-	  * c2w/gcc/gcc/tree.h
+	  * tree.h
 	 ):
 	 ):
 	 ):
@@ -628,16 +628,16 @@ Only in c2w/gcc/gcc: tree-flow-inline.h
 	 ):
 	 ):
 	 ):
-	* c2w/gcc/gcc/tree-inline.c
+	* tree-inline.c
 	(remap_gimple_op_r):
 	(copy_tree_body_r):
 Only in c2w/gcc/gcc: tree-mudflap.c
-	  * c2w/gcc/gcc/tree-object-size.c
+	  * tree-object-size.c
 	 ):
 	 ):
 	 ):
 	 ):
-	* c2w/gcc/gcc/tree-predcom.c
+	* tree-predcom.c
 	(along with GCC; see the file COPYING3.
 	(suitable_reference_p):
 	(split_data_refs_to_components):
@@ -645,16 +645,16 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(filter_suitable_components):
 	(get_chain_root):
 	(name_for_ref):
-	* c2w/gcc/gcc/tree-pretty-print.c
+	* tree-pretty-print.c
 	(along with GCC; see the file COPYING3.
 	(dump_array_domain):
 	(dump_generic_node):
 	(dump_generic_node):
 	(dump_generic_node):
-	* c2w/gcc/gcc/tree-sra.c
+	* tree-sra.c
 	(build_user_friendly_ref_for_offset):
 	(sra_ipa_modify_expr):
-	* c2w/gcc/gcc/tree-ssa-address.c
+	* tree-ssa-address.c
 	(struct mem_address
 	(fixed_address_object_p):
 	(move_fixed_address_to_symbol):
@@ -663,15 +663,15 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(most_expensive_mult_to_index):
 	(addr_to_parts):
 	(copy_ref_info):
-	* c2w/gcc/gcc/tree-ssa-alias.c
+	* tree-ssa-alias.c
 	(ao_ref_init_from_ptr_and_size):
 	(indirect_ref_may_alias_decl_p):
 	(indirect_ref_may_alias_decl_p):
 	(indirect_refs_may_alias_p):
 	(stmt_kills_ref_p_1):
-	* c2w/gcc/gcc/tree-ssa.c
+	* tree-ssa.c
 	(non_rewritable_mem_ref_base):
-	* c2w/gcc/gcc/tree-ssa-ccp.c
+	* tree-ssa-ccp.c
 	(along with GCC; see the file COPYING3.
 	(along with GCC; see the file COPYING3.
 	(dump_lattice_value):
@@ -685,22 +685,22 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(evaluate_stmt):
 	(visit_assignment):
 	(ccp_visit_stmt):
-	* c2w/gcc/gcc/tree-ssa-forwprop.c
+	* tree-ssa-forwprop.c
 	(forward_propagate_addr_expr_1):
 	(forward_propagate_addr_expr_1):
 	(constant_pointer_difference):
 	(associate_pointerplus):
 	(combine_conversions):
-	* c2w/gcc/gcc/tree-ssa-loop.h
+	* tree-ssa-loop.h
 	(WARRANTY; without even the implied warra
 	(struct tree_niter_desc
-	* c2w/gcc/gcc/tree-ssa-loop-im.c
+	* tree-ssa-loop-im.c
 	(analyze_memory_references):
-	* c2w/gcc/gcc/tree-ssa-loop-ivcanon.c
+	* tree-ssa-loop-ivcanon.c
 	(remove_exits_and_undefined_stmts):
 	(remove_redundant_iv_tests):
 	(canonicalize_loop_induction_variables):
-	* c2w/gcc/gcc/tree-ssa-loop-ivopts.c
+	* tree-ssa-loop-ivopts.c
 	(alloc_iv):
 	(idx_record_use):
 	(strip_offset_1):
@@ -715,7 +715,7 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(get_computation_cost_at):
 	(iv_elimination_compare_lt):
 	(iv_elimination_compare_lt):
-	* c2w/gcc/gcc/tree-ssa-loop-niter.c
+	* tree-ssa-loop-niter.c
 	(along with GCC; see the file COPYING3.
 	(split_to_var_and_offset):
 	(bound_difference_of_offsetted_base):
@@ -742,31 +742,31 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(n_of_executions_at_most):
 	(nowrap_type_p):
 	(scev_probably_wraps_p):
-	* c2w/gcc/gcc/tree-ssa-loop-niter.h
+	* tree-ssa-loop-niter.h
 	(along with GCC; see the file COPYING3.
-	* c2w/gcc/gcc/tree-ssa-loop-prefetch.c
+	* tree-ssa-loop-prefetch.c
 	(struct mem_ref
 	(find_or_create_group):
 	(idx_analyze_ref):
 	(gather_memory_references_ref):
 	(gather_memory_references):
 	(prune_ref_by_group_reuse):
-	* c2w/gcc/gcc/tree-ssa-math-opts.c
+	* tree-ssa-math-opts.c
 	(gimple_expand_builtin_pow):
 	(gimple_expand_builtin_pow):
 	(execute_cse_sincos):
-	* c2w/gcc/gcc/tree-ssanames.c
+	* tree-ssanames.c
 	(make_ssa_name_fn):
-	* c2w/gcc/gcc/tree-ssanames.h
+	* tree-ssanames.h
 	(struct GTY(():): ptr_info_def
-	* c2w/gcc/gcc/tree-ssa-phiopt.c
+	* tree-ssa-phiopt.c
 	(jump_function_from_stmt):
 	(hoist_adjacent_loads):
-	* c2w/gcc/gcc/tree-ssa-pre.c
+	* tree-ssa-pre.c
 	(phi_translate_1):
-	* c2w/gcc/gcc/tree-ssa-reassoc.c
+	* tree-ssa-reassoc.c
 	(decrement_power):
-	* c2w/gcc/gcc/tree-ssa-sccvn.c
+	* tree-ssa-sccvn.c
 	(copy_reference_ops_from_ref):
 	(copy_reference_ops_from_ref):
 	(ao_ref_init_from_vn_reference):
@@ -775,27 +775,27 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(valueize_refs_1):
 	(vn_reference_lookup_3):
 	(vn_reference_lookup_3):
-	* c2w/gcc/gcc/tree-ssa-structalias.c
+	* tree-ssa-structalias.c
 	(process_constraint):
 	(get_constraint_for_ptr_offset):
-	* c2w/gcc/gcc/tree-ssa-uninit.c
+	* tree-ssa-uninit.c
 	(is_value_included_in):
-	* c2w/gcc/gcc/tree-streamer-in.c
+	* tree-streamer-in.c
 	(unpack_ts_base_value_fields):
 	(streamer_alloc_tree):
-	* c2w/gcc/gcc/tree-streamer-out.c
+	* tree-streamer-out.c
 	(pack_ts_base_value_fields):
 	(streamer_write_tree_header):
-	* c2w/gcc/gcc/tree-switch-conversion.c
+	* tree-switch-conversion.c
 	(emit_case_bit_tests):
 	(build_constructors):
 	(build_constructors):
 	(array_value_type):
-	* c2w/gcc/gcc/tree-vect-data-refs.c
+	* tree-vect-data-refs.c
 	(vect_verify_datarefs_alignment):
 	(vect_prune_runtime_alias_test_list):
 	(vect_check_gather):
-	* c2w/gcc/gcc/tree-vect-generic.c
+	* tree-vect-generic.c
 	(along with GCC; see the file COPYING3.
 	(expand_vector_divmod):
 	(expand_vector_divmod):
@@ -803,16 +803,16 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(expand_vector_divmod):
 	(expand_vector_divmod):
 	(expand_vector_divmod):
-	* c2w/gcc/gcc/tree-vect-loop.c
+	* tree-vect-loop.c
 	(vect_transform_loop):
-	* c2w/gcc/gcc/tree-vect-loop-manip.c
+	* tree-vect-loop-manip.c
 	(vect_do_peeling_for_loop_bound):
 	(vect_do_peeling_for_alignment):
-	* c2w/gcc/gcc/tree-vectorizer.h
+	* tree-vectorizer.h
 	(typedef struct _loop_vec_info {
-	* c2w/gcc/gcc/tree-vect-patterns.c
+	* tree-vect-patterns.c
 	(vect_recog_divmod_pattern):
-	* c2w/gcc/gcc/tree-vrp.c
+	* tree-vrp.c
 	(along with GCC; see the file COPYING3.
 	(extract_range_from_assert):
 	(vrp_int_const_binop):
@@ -848,10 +848,10 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(simplify_conversion_using_ranges):
 	(simplify_float_conversion_using_ranges):
 	(vrp_finalize):
-	* c2w/gcc/gcc/value-prof.c
+	* value-prof.c
 	(gimple_divmod_fixed_value_transform):
 	(gimple_stringops_transform):
-	* c2w/gcc/gcc/varasm.c
+	* varasm.c
 	(decode_addr_const):
 	(const_hash_1):
 	(const_desc_rtx_eq):
@@ -860,6 +860,6 @@ Only in c2w/gcc/gcc: tree-mudflap.c
 	(array_size_for_constructor):
 	(output_constructor_regular_field):
 	(output_constructor_bitfield):
-	* c2w/gcc/gcc/var-tracking.c
+	* var-tracking.c
 	(loc_cmp):
 	(emit_note_insn_var_location):
