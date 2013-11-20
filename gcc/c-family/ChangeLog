@@ -1,3 +1,18 @@
+2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
+
+	PR c/53001
+	* c-common.c (unsafe_conversion_p): Make this function
+	return an enumeration with more detail.
+	(conversion_warning): Use the new return type of
+	unsafe_conversion_p to separately warn either about conversions
+	that lower floating point number precision or about the other
+	kinds of conversions.
+	* c-common.h (enum conversion_safety): New enumeration.
+ 	(unsafe_conversion_p): switching return type to
+ 	conversion_safety enumeration.
+	* c.opt: Adding new warning -Wfloat-conversion and
+	enabling it with -Wconversion.
+
 2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
         * c-opts.c: Include plugin.h.

@@ -688,6 +688,16 @@ struct visibility_flags
   unsigned inlines_hidden : 1;	/* True when -finlineshidden in effect.  */
 };
 
+/* These enumerators are possible types of unsafe conversions.
+   SAFE_CONVERSION The conversion is safe
+   UNSAFE_OTHER Another type of conversion with problems
+   UNSAFE_SIGN Conversion between signed and unsigned integers
+    which are all warned about immediately, so this is unused
+   UNSAFE_REAL Conversions that reduce the precision of reals
+    including conversions from reals to integers
+ */
+enum conversion_safety { SAFE_CONVERSION = 0, UNSAFE_OTHER, UNSAFE_SIGN, UNSAFE_REAL };
+
 /* Global visibility options.  */
 extern struct visibility_flags visibility_options;
 
@@ -741,7 +751,7 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern bool unsafe_conversion_p (tree, tree, bool);
+extern enum conversion_safety unsafe_conversion_p (tree, tree, bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *);
 extern tree decl_constant_value_for_optimization (tree);

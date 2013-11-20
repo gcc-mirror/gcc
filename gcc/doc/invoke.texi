@@ -262,7 +262,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wsign-conversion  -Wsizeof-pointer-memaccess @gol
+-Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
+-Wsizeof-pointer-memaccess @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
@@ -4591,6 +4592,14 @@ Warn for implicit conversions that may change the sign of an integer
 value, like assigning a signed integer expression to an unsigned
 integer variable. An explicit cast silences the warning. In C, this
 option is enabled also by @option{-Wconversion}.
+
+@item -Wfloat-conversion
+@opindex Wfloat-conversion
+@opindex Wno-float-conversion
+Warn for implicit conversions that reduce the precision of a real value.
+This includes conversions from real to integer, and from higher precision
+real to lower precision real values.  This option is also enabled by
+@option{-Wconversion}.
 
 @item -Wsizeof-pointer-memaccess
 @opindex Wsizeof-pointer-memaccess

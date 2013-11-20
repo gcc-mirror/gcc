@@ -1,3 +1,12 @@
+2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
+
+	PR c/53001
+	* c-c++-common/Wfloat-conversion.c: Copies relevant
+	tests from c-c++-common/Wconversion-real.c,
+	gcc.dg/Wconversion-real-integer.c and gcc.dg/pr35635.c into
+	new testcase for conversions that are warned about by
+	-Wfloat-conversion.
+
 2013-11-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/59099
