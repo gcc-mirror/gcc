@@ -355,23 +355,50 @@ class PassPrinter:
 #   * location_t
 
 class GdbSubprinter(gdb.printing.SubPrettyPrinter):
-    def __init__(self, name, str_type_, class_):
+    def __init__(self, name, class_):
         super(GdbSubprinter, self).__init__(name)
-        self.str_type_ = str_type_
         self.class_ = class_
+
+    def handles_type(self, str_type):
+        raise NotImplementedError
+
+class GdbSubprinterTypeList(GdbSubprinter):
+    """
+    A GdbSubprinter that handles a specific set of types
+    """
+    def __init__(self, str_types, name, class_):
+        super(GdbSubprinterTypeList, self).__init__(name, class_)
+        self.str_types = frozenset(str_types)
+
+    def handles_type(self, str_type):
+        return str_type in self.str_types
+
+class GdbSubprinterRegex(GdbSubprinter):
+    """
+    A GdbSubprinter that handles types that match a regex
+    """
+    def __init__(self, regex, name, class_):
+        super(GdbSubprinterRegex, self).__init__(name, class_)
+        self.regex = re.compile(regex)
+
+    def handles_type(self, str_type):
+        return self.regex.match(str_type)
 
 class GdbPrettyPrinters(gdb.printing.PrettyPrinter):
     def __init__(self, name):
         super(GdbPrettyPrinters, self).__init__(name, [])
 
-    def add_printer(self, name, exp, class_):
-        self.subprinters.append(GdbSubprinter(name, exp, class_))
+    def add_printer_for_types(self, name, class_, types):
+        self.subprinters.append(GdbSubprinterTypeList(name, class_, types))
+
+    def add_printer_for_regex(self, name, class_, regex):
+        self.subprinters.append(GdbSubprinterRegex(name, class_, regex))
 
     def __call__(self, gdbval):
         type_ = gdbval.type.unqualified()
-        str_type_ = str(type_)
+        str_type = str(type_)
         for printer in self.subprinters:
-            if printer.enabled and str_type_ == printer.str_type_:
+            if printer.enabled and printer.handles_type(str_type):
                 return printer.class_(gdbval)
 
         # Couldn't find a pretty printer (or it was disabled):
@@ -380,13 +407,22 @@ class GdbPrettyPrinters(gdb.printing.PrettyPrinter):
 
 def build_pretty_printer():
     pp = GdbPrettyPrinters('gcc')
-    pp.add_printer('tree', 'tree', TreePrinter)
-    pp.add_printer('cgraph_node', 'cgraph_node *', CGraphNodePrinter)
-    pp.add_printer('gimple', 'gimple', GimplePrinter)
-    pp.add_printer('basic_block', 'basic_block', BasicBlockPrinter)
-    pp.add_printer('edge', 'edge', CfgEdgePrinter)
-    pp.add_printer('rtx_def', 'rtx_def *', RtxPrinter)
-    pp.add_printer('opt_pass', 'opt_pass *', PassPrinter)
+    pp.add_printer_for_types(['tree'],
+                             'tree', TreePrinter)
+    pp.add_printer_for_types(['cgraph_node *'],
+                             'cgraph_node', CGraphNodePrinter)
+    pp.add_printer_for_types(['gimple', 'gimple_statement_base *'],
+                             'gimple',
+                             GimplePrinter)
+    pp.add_printer_for_types(['basic_block', 'basic_block_def *'],
+                             'basic_block',
+                             BasicBlockPrinter)
+    pp.add_printer_for_types(['edge', 'edge_def *'],
+                             'edge',
+                             CfgEdgePrinter)
+    pp.add_printer_for_types(['rtx_def *'], 'rtx_def', RtxPrinter)
+    pp.add_printer_for_types(['opt_pass *'], 'opt_pass', PassPrinter)
+
     return pp
 
 gdb.printing.register_pretty_printer(

@@ -1,3 +1,19 @@
+2013-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbhooks.py (GdbSubprinter.__init__): Drop str_type_ field.
+	(GdbSubprinter.handles_type): New.
+	(GdbSubprinterTypeList): New subclass of GdbSubprinter.
+	(GdbSubprinterRegex): New subclass of GdbSubprinter.
+	(GdbPrettyPrinters.add_printer): Remove in favor of...
+	(GdbPrettyPrinters.add_printer_for_types): ...this new method
+	and...
+	(GdbPrettyPrinters.add_printer_for_regex): ...this other new method.
+	(GdbPrettyPrinters.__call__): Update search for subprinter
+	to use handles_type method.
+	(build_pretty_printer): Update registration of subprinters to
+	use the new API above, supporting multiple spelling of each type,
+	and allowing for future regex-based subprinters.
+
 2013-11-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Adjust
