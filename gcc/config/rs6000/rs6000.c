@@ -16676,6 +16676,13 @@ rs6000_cannot_change_mode_class (enum machine_mode from,
 	  if (TARGET_IEEEQUAD && (to == TFmode || from == TFmode))
 	    return true;
 
+	  /* TDmode in floating-mode registers must always go into a register
+	     pair with the most significant word in the even-numbered register
+	     to match ISA requirements.  In little-endian mode, this does not
+	     match subreg numbering, so we cannot allow subregs.  */
+	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
+	    return true;
+
 	  if (from_size < 8 || to_size < 8)
 	    return true;
 
@@ -19617,6 +19624,39 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   reg_mode_size = GET_MODE_SIZE (reg_mode);
 
   gcc_assert (reg_mode_size * nregs == GET_MODE_SIZE (mode));
+
+  /* TDmode residing in FP registers is special, since the ISA requires that
+     the lower-numbered word of a register pair is always the most significant
+     word, even in little-endian mode.  This does not match the usual subreg
+     semantics, so we cannnot use simplify_gen_subreg in those cases.  Access
+     the appropriate constituent registers "by hand" in little-endian mode.
+
+     Note we do not need to check for destructive overlap here since TDmode
+     can only reside in even/odd register pairs.  */
+  if (FP_REGNO_P (reg) && DECIMAL_FLOAT_MODE_P (mode) && !BYTES_BIG_ENDIAN)
+    {
+      rtx p_src, p_dst;
+      int i;
+
+      for (i = 0; i < nregs; i++)
+	{
+	  if (REG_P (src) && FP_REGNO_P (REGNO (src)))
+	    p_src = gen_rtx_REG (reg_mode, REGNO (src) + nregs - 1 - i);
+	  else
+	    p_src = simplify_gen_subreg (reg_mode, src, mode,
+					 i * reg_mode_size);
+
+	  if (REG_P (dst) && FP_REGNO_P (REGNO (dst)))
+	    p_dst = gen_rtx_REG (reg_mode, REGNO (dst) + nregs - 1 - i);
+	  else
+	    p_dst = simplify_gen_subreg (reg_mode, dst, mode,
+					 i * reg_mode_size);
+
+	  emit_insn (gen_rtx_SET (VOIDmode, p_dst, p_src));
+	}
+
+      return;
+    }
 
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
     {

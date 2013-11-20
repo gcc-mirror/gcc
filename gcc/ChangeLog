@@ -1,3 +1,10 @@
+2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_cannot_change_mode_class): Do not
+	allow subregs of TDmode in FPRs of smaller size in little-endian.
+	(rs6000_split_multireg_move): When splitting an access to TDmode
+	in FPRs, do not use simplify_gen_subreg.
+
 2013-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/21718
