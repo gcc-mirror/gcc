@@ -1098,6 +1098,14 @@ thread_across_edge (gimple dummy_cond,
 					      path,
 					      &backedge_seen);
 
+	if (!found
+	    && (!backedge_seen
+		|| ! cond_arg_set_in_bb (path->last ()->e, e->dest)))
+	  found = thread_through_normal_block (path->last ()->e, dummy_cond,
+					       handle_dominating_asserts,
+					       stack, simplify, path, visited,
+					       &backedge_seen);
+
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
 	if (found)

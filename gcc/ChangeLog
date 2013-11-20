@@ -1,5 +1,12 @@
 2013-11-19  Jeff Law  <law@redhat.com>
-	
+
+	* tree-ssa-threadedge.c (thread_across_edge): After threading
+	through a joiner, allow threading a normal block requiring
+	duplication.
+
+	* tree-ssa-threadupdate.c (thread_block_1): Improve code to detect
+	jump threading requests that would muck up the loop structures.
+
 	* tree-ssa-threadupdate.c: Fix trailing whitespace.
 	* tree-ssa-threadupdate.h: Likewise.
 
