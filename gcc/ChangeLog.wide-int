@@ -880,8 +880,7 @@ c-family:
 	* c-format.c
 	(check_format_string): Likewise.
 	* cilk.c
-	(declare_one_free_variable):
-AUDIT
+	(declare_one_free_variable): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
 	(extract_free_variables): Update to use tree_to_uhwi.
 	* c-lex.c
 	(narrowest_unsigned_type): Update to use wide-int.
@@ -891,7 +890,7 @@ AUDIT
 	* c-pretty-print.c
 	(pp_c_integer_constant): Update accessors.
 
-	
+
 cp:
 	* call.c
 	(type_passed_as): 
