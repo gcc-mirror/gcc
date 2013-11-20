@@ -1,3 +1,8 @@
+2013-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/21718
+	* gcc.dg/float-exact-1.c: New test.
+
 2013-11-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/54300
