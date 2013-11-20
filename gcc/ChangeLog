@@ -1,3 +1,7 @@
+2013-11-20  Miro Kropacek  <miro.kropacek@gmail.com>
+
+	* config/m68k/m68k.c (m68k_option_overrides): Fix typo.
+
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbhooks.py (VecPrinter): New class, for prettyprinting pointers
