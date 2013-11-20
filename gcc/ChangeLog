@@ -1,3 +1,27 @@
+2013-11-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+	    Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_canonicalize_comparison): Don't fold
+	int comparisons with an out of range condition code.
+	(s390_optimize_nonescaping_tx): Skip empty BBs.
+	Generate the new tbegin RTX when removing the FPR clobbers (with
+	two SETs).
+	(s390_expand_tbegin): Fix the retry loop counter.  Copy CC to the
+	result before doing the retry calculations.
+	(s390_init_builtins): Make tbegin "returns_twice" and tabort
+	"noreturn".
+	* config/s390/s390.md (UNSPECV_TBEGIN_TDB): New constant used for
+	the TDB setting part of an tbegin.
+	("tbegin_1", "tbegin_nofloat_1"): Add a set for the TDB.
+	("tx_assist"): Set unused argument to an immediate zero instead of
+	loading zero into a GPR and pass it as argument.
+	* config/s390/htmxlintrin.h (__TM_simple_begin, __TM_begin):
+	Remove inline and related attributes.
+	(__TM_nesting_depth, __TM_is_user_abort, __TM_is_named_user_abort)
+	(__TM_is_illegal, __TM_is_footprint_exceeded)
+	(__TM_is_nested_too_deep, __TM_is_conflict): Fix format value
+	check.
+
 2013-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59035

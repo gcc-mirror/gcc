@@ -24,6 +24,19 @@ if ![istarget s390*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if htm (etnd - extract nesting depth) instructions can be
+# compiled.
+proc check_effective_target_htm { } {
+    if { ![check_runtime s390_check_htm [subst {
+	int main (void)
+	{
+	    unsigned int nd = 77;
+	    asm (".insn rre,0xb2ec0000,%0,0" : "=d" (nd));
+	    return nd;
+	}
+    }]] } { return 0 } else { return 1 }
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
