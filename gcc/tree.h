@@ -3697,14 +3697,14 @@ extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
 tree_to_shwi (const_tree t)
 {
   gcc_assert (tree_fits_shwi_p (t));
-  return TREE_INT_CST_ELT (t, 0);
+  return TREE_INT_CST_LOW (t);
 }
 
 extern inline __attribute__ ((__gnu_inline__)) unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));
-  return TREE_INT_CST_ELT (t, 0);
+  return TREE_INT_CST_LOW (t);
 }
 #endif
 extern int tree_int_cst_sgn (const_tree);

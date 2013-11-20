@@ -1244,7 +1244,7 @@ place_field (record_layout_info rli, tree field)
       && ! integer_zerop (DECL_SIZE (field))
       && tree_fits_uhwi_p (DECL_SIZE (field))
       /* BUG!!! rli->offset is checked as unsigned but used as signed.   */
-      && tree_fits_shwi_p (rli->offset)
+      && tree_fits_uhwi_p (rli->offset)
       && tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
       unsigned int type_align = TYPE_ALIGN (type);

@@ -1208,7 +1208,7 @@ extract_free_variables (tree t, struct wrapper_data *wd,
 	int ii = 0;
 	if (TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST)
 	  {
-	    len = tree_to_uhwi (TREE_OPERAND (t, 0));
+	    len = TREE_INT_CST_LOW (TREE_OPERAND (t, 0));
 
 	    for (ii = 0; ii < len; ii++)
 	      extract_free_variables (TREE_OPERAND (t, ii), wd, ADD_READ);

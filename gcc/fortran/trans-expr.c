@@ -2645,8 +2645,8 @@ gfc_string_to_single_character (tree len, tree str, int kind)
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (str, 0), 0)) == STRING_CST
       && array_ref_low_bound (TREE_OPERAND (str, 0))
 	 == TREE_OPERAND (TREE_OPERAND (str, 0), 1)
-      && tree_to_uhwi (len) > 1
-      && tree_to_uhwi (len)
+      && TREE_INT_CST_LOW (len) > 1
+      && TREE_INT_CST_LOW (len)
 	 == (unsigned HOST_WIDE_INT)
 	    TREE_STRING_LENGTH (TREE_OPERAND (TREE_OPERAND (str, 0), 0)))
     {

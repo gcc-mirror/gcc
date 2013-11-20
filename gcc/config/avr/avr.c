@@ -12233,7 +12233,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
           }
 
         tmap = wide_int_to_tree (map_type, arg[0]);
-        map = tree_to_uhwi (tmap);
+        map = TREE_INT_CST_LOW (tmap);
 
         if (TREE_CODE (tval) != INTEGER_CST
             && 0 == avr_map_metric (map, MAP_MASK_PREIMAGE_F))

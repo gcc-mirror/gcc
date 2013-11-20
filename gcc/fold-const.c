@@ -13044,7 +13044,7 @@ fold_binary_loc (location_t loc,
 	      unsigned HOST_WIDE_INT log2 = tree_log2 (arg01);
 	      /* If (C2 << C1) doesn't overflow, then ((X >> C1) & C2) != 0
 		 can be rewritten as (X & (C2 << C1)) != 0.  */
-	      if ((log2 + tree_to_uhwi (arg001)) < prec)
+	      if ((log2 + TREE_INT_CST_LOW (arg001)) < prec)
 		{
 		  tem = fold_build2_loc (loc, LSHIFT_EXPR, itype, arg01, arg001);
 		  tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, arg000, tem);
@@ -16155,7 +16155,7 @@ fold_read_from_constant_string (tree exp)
 	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))) == 1))
 	return build_int_cst_type (TREE_TYPE (exp),
 				   (TREE_STRING_POINTER (string)
-				    [tree_to_uhwi (index)]));
+				    [TREE_INT_CST_LOW (index)]));
     }
   return NULL;
 }

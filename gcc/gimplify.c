@@ -2642,7 +2642,7 @@ gimple_boolify (tree expr)
       return expr;
 
     case ANNOTATE_EXPR:
-      if ((enum annot_expr_kind) tree_to_uhwi (TREE_OPERAND (expr, 1))
+      if ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1))
 	  == annot_expr_ivdep_kind)
 	{
 	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));

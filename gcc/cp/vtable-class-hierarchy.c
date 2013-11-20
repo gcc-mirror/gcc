@@ -453,7 +453,7 @@ check_and_record_registered_pairs (tree vtable_decl, tree vptr_address,
     vptr_address = TREE_OPERAND (vptr_address, 0);
 
   if (TREE_OPERAND_LENGTH (vptr_address) > 1)
-    offset = tree_to_uhwi (TREE_OPERAND (vptr_address, 1));
+    offset = TREE_INT_CST_LOW (TREE_OPERAND (vptr_address, 1));
   else
     offset = 0;
 
@@ -876,7 +876,7 @@ output_set_info (tree record_type, vec<tree> vtbl_ptr_array)
             vptr_name = IDENTIFIER_POINTER (DECL_NAME (arg0));
 
           if (TREE_CODE (arg1) == INTEGER_CST)
-            vptr_offset = tree_to_uhwi (arg1);
+            vptr_offset = TREE_INT_CST_LOW (arg1);
         }
 
       snprintf (buffer, sizeof (buffer), "%s %s %s + %d\n",

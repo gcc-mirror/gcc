@@ -810,6 +810,7 @@ add_constraint (const char *name, const char *regclass,
     {
       enum rtx_code appropriate_code
 	= is_const_int ? CONST_INT : CONST_DOUBLE;
+
       /* Consider relaxing this requirement in the future.  */
       if (regclass
 	  || GET_CODE (exp) != AND

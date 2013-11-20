@@ -2118,7 +2118,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case ANNOTATE_EXPR:
       pp_string (buffer, "ANNOTATE_EXPR <");
-      switch ((enum annot_expr_kind) tree_to_shwi (TREE_OPERAND (node, 1)))
+      switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (node, 1)))
 	{
 	case annot_expr_ivdep_kind:
 	  pp_string (buffer, "ivdep, ");

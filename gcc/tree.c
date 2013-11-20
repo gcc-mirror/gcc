@@ -6993,7 +6993,7 @@ HOST_WIDE_INT
 tree_to_shwi (const_tree t)
 {
   gcc_assert (tree_fits_shwi_p (t));
-  return TREE_INT_CST_ELT (t, 0);
+  return TREE_INT_CST_LOW (t);
 }
 
 /* T is an INTEGER_CST whose numerical value (extended according to
@@ -7004,7 +7004,7 @@ unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
   gcc_assert (tree_fits_uhwi_p (t));
-  return TREE_INT_CST_ELT (t, 0);
+  return TREE_INT_CST_LOW (t);
 }
 
 /* Return the most significant (sign) bit of T.  */

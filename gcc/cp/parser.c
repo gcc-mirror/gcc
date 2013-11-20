@@ -3804,7 +3804,7 @@ make_string_pack (tree value)
   tree charvec;
   tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
   const char *str = TREE_STRING_POINTER (value);
-  int sz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value))));
+  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value))));
   int len = TREE_STRING_LENGTH (value) / sz - 1;
   tree argvec = make_tree_vec (2);
 

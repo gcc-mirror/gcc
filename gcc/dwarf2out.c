@@ -15112,7 +15112,7 @@ insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
       return;
     }
 
-  // We'd have to extend this code to support odd sizes.
+  /* We'd have to extend this code to support odd sizes.  */
   gcc_assert (elt_size % (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT) == 0);
 
   int n = elt_size / (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT);

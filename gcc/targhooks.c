@@ -276,6 +276,7 @@ default_cxx_guard_type (void)
   return long_long_integer_type_node;
 }
 
+
 /* Returns the size of the cookie to use when allocating an array
    whose elements have the indicated TYPE.  Assumes that it is already
    known that a cookie is needed.  */

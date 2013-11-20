@@ -209,7 +209,7 @@ hash_type_name (tree t)
 
       if (TREE_CODE (v) == POINTER_PLUS_EXPR)
 	{
-	  hash = TREE_INT_CST_ELT (TREE_OPERAND (v, 1), 0);
+	  hash = TREE_INT_CST_LOW (TREE_OPERAND (v, 1));
 	  v = TREE_OPERAND (TREE_OPERAND (v, 0), 0);
 	}
 

@@ -1276,7 +1276,7 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 	  /* Pick up each vector id value.  */
 	  id = TREE_VALUE (id_list);
 	  /* Add vector_number_offset to get actual vector number.  */
-	  vector_id = tree_to_uhwi (id) + vector_number_offset;
+	  vector_id = TREE_INT_CST_LOW (id) + vector_number_offset;
 
 	  /* Enable corresponding vector and set function name.  */
 	  nds32_isr_vectors[vector_id].category = (intr)
@@ -1318,7 +1318,7 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 
       /* The total vectors = interrupt + exception numbers + reset.
          There are 8 exception and 1 reset in nds32 architecture.  */
-      nds32_isr_vectors[0].total_n_vectors = tree_to_uhwi (id) + 8 + 1;
+      nds32_isr_vectors[0].total_n_vectors = TREE_INT_CST_LOW (id) + 8 + 1;
       strcpy (nds32_isr_vectors[0].func_name, func_name);
 
       /* Retrieve nmi and warm function.  */
