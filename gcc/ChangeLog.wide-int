@@ -351,10 +351,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(decide_peel_simple): Likewise.
 	(peel_loop_simple): Likewise.
 	(decide_unroll_stupid): Likewise.
-	* lto/lto.c
-	(compare_tree_sccs_1): Use wide-int rep.
-	* lto/lto-lang.c
-	(handle_novops_attribute): Use wide-int rep.
 	* lto-streamer-in.c
 	(input_cfg): Use wide-int rep.
 	(lto_input_tree_1): Likewise.
@@ -948,7 +944,7 @@ fortran:
 
 
 go:
-	* go/go-gcc.cc
+	* go-gcc.cc
 	(Gcc_backend::type_size): Use wide-int rep.
 
 
@@ -964,6 +960,13 @@ java:
 	(get_constant): Use wide-int rep.
 	* typeck.c
 	(java_array_type_length): Use wide-int rep.
+
+
+lto:
+	* lto.c
+	(compare_tree_sccs_1): Use wide-int rep.
+	* lto-lang.c
+	(handle_novops_attribute): Use wide-int rep.
 
 
 objc:
