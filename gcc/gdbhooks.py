@@ -109,6 +109,26 @@ available:
   1594	  execute_pass_list (g->get_passes ()->all_passes);
   (gdb) p node
   $1 = <cgraph_node* 0x7ffff0312720 "foo">
+
+vec<> pointers are printed as the address followed by the elements in
+braces.  Here's a length 2 vec:
+  (gdb) p bb->preds
+  $18 = 0x7ffff0428b68 = {<edge 0x7ffff044d380 (3 -> 5)>, <edge 0x7ffff044d3b8 (4 -> 5)>}
+
+and here's a length 1 vec:
+  (gdb) p bb->succs
+  $19 = 0x7ffff0428bb8 = {<edge 0x7ffff044d3f0 (5 -> EXIT)>}
+
+You cannot yet use array notation [] to access the elements within the
+vector: attempting to do so instead gives you the vec itself (for vec[0]),
+or a (probably) invalid cast to vec<> for the memory after the vec (for
+vec[1] onwards).
+
+Instead (for now) you must access m_vecdata:
+  (gdb) p bb->preds->m_vecdata[0]
+  $20 = <edge 0x7ffff044d380 (3 -> 5)>
+  (gdb) p bb->preds->m_vecdata[1]
+  $21 = <edge 0x7ffff044d3b8 (4 -> 5)>
 """
 import re
 
@@ -349,8 +369,29 @@ class PassPrinter:
 
 ######################################################################
 
+class VecPrinter:
+    #    -ex "up" -ex "p bb->preds"
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def display_hint (self):
+        return 'array'
+
+    def to_string (self):
+        # A trivial implementation; prettyprinting the contents is done
+        # by gdb calling the "children" method below.
+        return '0x%x' % long(self.gdbval)
+
+    def children (self):
+        m_vecpfx = self.gdbval['m_vecpfx']
+        m_num = m_vecpfx['m_num']
+        m_vecdata = self.gdbval['m_vecdata']
+        for i in range(m_num):
+            yield ('[%d]' % i, m_vecdata[i])
+
+######################################################################
+
 # TODO:
-#   * vec
 #   * hashtab
 #   * location_t
 
@@ -422,6 +463,10 @@ def build_pretty_printer():
                              CfgEdgePrinter)
     pp.add_printer_for_types(['rtx_def *'], 'rtx_def', RtxPrinter)
     pp.add_printer_for_types(['opt_pass *'], 'opt_pass', PassPrinter)
+
+    pp.add_printer_for_regex(r'vec<(\S+), (\S+), (\S+)> \*',
+                             'vec',
+                             VecPrinter)
 
     return pp
 

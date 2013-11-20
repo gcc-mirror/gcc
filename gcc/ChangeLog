@@ -1,5 +1,11 @@
 2013-11-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* gdbhooks.py (VecPrinter): New class, for prettyprinting pointers
+	to "vec<>" instances.
+	(build_pretty_printer): Register the vec<>* prettyprinter.
+
+2013-11-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* gdbhooks.py (GdbSubprinter.__init__): Drop str_type_ field.
 	(GdbSubprinter.handles_type): New.
 	(GdbSubprinterTypeList): New subclass of GdbSubprinter.
