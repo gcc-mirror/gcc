@@ -1,5 +1,10 @@
 2013-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Avoid signed
+	overflow.  Use tree_to_shwi.
+
+2013-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* fold-const.c (fold_binary_loc): Use unsigned rather than signed
 	HOST_WIDE_INTs when folding (x >> c) << c.
 
