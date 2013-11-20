@@ -4,6 +4,30 @@
 	* include/ext/pointer.h (pointer_traits<>::rebind<>): Add template
 	keyword in nested name.
 
+	PR libstdc++/49204
+	* include/std/future (__future_base::_State_base): Rename to
+	__future_base::_State_baseV2.
+	(__future_base::_State_baseV2::~_State_baseV2): Define as defaulted.
+	(__future_base::_State_baseV2::_M_run_deferred): Rename to
+	_M_complete_async.
+	(__future_base::_State_baseV2::_M_has_deferred): Add new virtual.
+	(__future_base::_State_baseV2::wait_for): Call _M_has_deferred() to
+	test for a deferred function, or call _M_complete_async() to join an
+	async thread that has made the shared state ready.
+	(__future_base::_State_baseV2::wait_until): Likewise.
+	(__future_base::_Async_state_common): Rename to _Async_state_commonV2.
+	(__future_base::_Async_state_commonV2::_M_run_deferred): Rename to
+	_M_complete_async.
+	* src/c++11/compatibility-thread-c++0x.cc (__future_base::_State_base):
+	Export old definition.
+	(__future_base::_Async_state_common): Likewise.
+	* src/c++11/future.cc (__future_base::_State_base::~_State_base):
+	Remove.
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* testsuite/30_threads/async/async.cc: Test future_status::timeout
+	and future_status::ready.
+	* testsuite/30_threads/async/sync.cc: Test future_status::deferred.
+
 2013-11-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/17_intro/static.cc: Ignore AIX TOC reload warnings.

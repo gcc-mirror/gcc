@@ -2503,18 +2503,16 @@ particular release.
       <entry>Missing set_*_at_thread_exit</entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.6</entry>
       <entry>Class template <code>future</code></entry>
-      <entry>Partial</entry>
-      <entry>Timed waiting functions do not return future_status::deferred</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.7</entry>
       <entry>Class template <code>shared_future</code></entry>
-      <entry>Partial</entry>
-      <entry>Timed waiting functions do not return future_status::deferred</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.6.8</entry>
