@@ -1,3 +1,8 @@
+2013-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59133
+	* gcc.target/i386/pr59133.c: New.
+
 2013-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/21718
