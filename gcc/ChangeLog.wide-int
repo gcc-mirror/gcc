@@ -205,13 +205,11 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(reduce_to_bit_field_precision): Likewise.
 	(const_vector_from_tree): Likewise.
 	* final.c
-	(output_addr_const): 
+	(output_addr_const): Handle CONST_WIDE_INT.  Update for wide-int.
 	* fixed-value.c
-	(for more details.
-	(fixed_from_double_int):
-	(fixed_from_string):
-	(fixed_convert_from_int):
-	(fixed_convert_from_real):
+	(fixed_from_string): Update for wide-int.
+	(fixed_to_decimal): Likewise.
+	(fixed_convert_from_real): Likewise.
 	* fold-const.c
 	(static tree eval_subst):
 	(protected_set_expr_location_unshare):
