@@ -1,3 +1,17 @@
+2013-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc/config/aarch64/aarch64-builtins.c
+	(aarch64_simd_itype): Remove.
+	(aarch64_simd_builtin_datum): Remove itype, add
+	qualifiers pointer.
+	(VAR1): Use qualifiers.
+	(aarch64_build_scalar_type): New.
+	(aarch64_build_vector_type): Likewise.
+	(aarch64_build_type): Likewise.
+	(aarch64_init_simd_builtins): Refactor, remove special cases,
+	consolidate main loop.
+	(aarch64_simd_expand_args): Likewise.
+
 2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
 
 	PR c/53001
