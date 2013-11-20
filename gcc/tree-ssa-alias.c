@@ -578,7 +578,7 @@ ao_ref_alias_set (ao_ref *ref)
 void
 ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 {
-  HOST_WIDE_INT t, extra_offset = 0;
+  HOST_WIDE_INT t, size_hwi, extra_offset = 0;
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -617,9 +617,8 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
   ref->offset += extra_offset;
   if (size
       && tree_fits_shwi_p (size)
-      && TREE_INT_CST_LOW (size) * BITS_PER_UNIT / BITS_PER_UNIT
-	 == TREE_INT_CST_LOW (size))
-    ref->max_size = ref->size = TREE_INT_CST_LOW (size) * BITS_PER_UNIT;
+      && (size_hwi = tree_to_shwi (size)) <= HOST_WIDE_INT_MAX / BITS_PER_UNIT)
+    ref->max_size = ref->size = size_hwi * BITS_PER_UNIT;
   else
     ref->max_size = ref->size = -1;
   ref->ref_alias_set = 0;
