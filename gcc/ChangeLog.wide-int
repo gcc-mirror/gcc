@@ -179,9 +179,12 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(lookup_const_wide_int): Add.
 	(const_double_htab_hash): Update for wide-int.
 	(const_double_htab_eq): Likewise.
-	(rtx_to_double_int): Conditionally remove for wide-int.
-	(immed_double_const):
-	(init_emit_once):
+	(rtx_to_double_int): Conditionally compile for wide-int.
+	(lookup_const_wide_int): Add.
+	(immed_double_int_const): Rename to immed_wide_int_const and
+	update for wide-int.
+	(immed_double_const): Conditionally compile for wide-int.
+	(init_emit_once): Update for wide-int.
 	* explow.c
 	(plus_constant):
 	* expmed.c
