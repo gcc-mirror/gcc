@@ -613,7 +613,7 @@ stmt_cost (gimple gs, bool speed)
       rhs2 = gimple_assign_rhs2 (gs);
 
       if (tree_fits_shwi_p (rhs2))
-	return mult_by_coeff_cost (TREE_INT_CST_LOW (rhs2), lhs_mode, speed);
+	return mult_by_coeff_cost (tree_to_shwi (rhs2), lhs_mode, speed);
 
       gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
       return mul_cost (speed, lhs_mode);

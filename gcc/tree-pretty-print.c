@@ -275,7 +275,7 @@ dump_array_domain (pretty_printer *buffer, tree domain, int spc, int flags)
       if (min && max
 	  && integer_zerop (min)
 	  && tree_fits_shwi_p (max))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (max) + 1);
+	pp_wide_integer (buffer, tree_to_shwi (max) + 1);
       else
 	{
 	  if (min)

@@ -4014,7 +4014,7 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
               tree ind = TREE_OPERAND (usym, 1);
               if (TREE_CODE (ind) == INTEGER_CST
                   && tree_fits_shwi_p (ind)
-                  && TREE_INT_CST_LOW (ind) == 0)
+                  && tree_to_shwi (ind) == 0)
                 usym = TREE_OPERAND (usym, 0);
             }
           if (TREE_CODE (csym) == ARRAY_REF)
@@ -4022,7 +4022,7 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
               tree ind = TREE_OPERAND (csym, 1);
               if (TREE_CODE (ind) == INTEGER_CST
                   && tree_fits_shwi_p (ind)
-                  && TREE_INT_CST_LOW (ind) == 0)
+                  && tree_to_shwi (ind) == 0)
                 csym = TREE_OPERAND (csym, 0);
             }
           if (operand_equal_p (usym, csym, 0))

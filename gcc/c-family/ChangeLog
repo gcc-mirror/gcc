@@ -1,4 +1,15 @@
 2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-ada-spec.c (is_simple_enum): Use tree_to_shwi and tree_to_uhwi
+	instead of TREE_INT_CST_LOW, in cases where there is a protecting
+	tree_fits_shwi_p or tree_fits_uhwi_p.
+	(dump_generic_ada_node): Likewise.
+	* c-format.c (check_format_arg): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* c-common.c (check_function_arguments_recurse): Use tree_to_uhwi.
 

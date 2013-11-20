@@ -1540,7 +1540,7 @@ check_format_arg (void *ctx, tree format_tree,
 
       if (tree_fits_shwi_p (array_size))
 	{
-	  HOST_WIDE_INT array_size_value = TREE_INT_CST_LOW (array_size);
+	  HOST_WIDE_INT array_size_value = tree_to_shwi (array_size);
 	  if (array_size_value > 0
 	      && array_size_value == (int) array_size_value
 	      && format_length > array_size_value)

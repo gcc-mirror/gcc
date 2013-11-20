@@ -1508,7 +1508,7 @@ execute_cse_sincos (void)
 		      if (!tree_fits_shwi_p (arg1))
 			break;
 
-		      n = TREE_INT_CST_LOW (arg1);
+		      n = tree_to_shwi (arg1);
 		      result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
 		    }
 

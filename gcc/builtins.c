@@ -8583,7 +8583,7 @@ fold_builtin_powi (location_t loc, tree fndecl ATTRIBUTE_UNUSED,
 
   if (tree_fits_shwi_p (arg1))
     {
-      HOST_WIDE_INT c = TREE_INT_CST_LOW (arg1);
+      HOST_WIDE_INT c = tree_to_shwi (arg1);
 
       /* Evaluate powi at compile-time.  */
       if (TREE_CODE (arg0) == REAL_CST

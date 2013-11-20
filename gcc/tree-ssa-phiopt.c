@@ -1983,9 +1983,9 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 	  || !tree_fits_uhwi_p (tree_size2))
 	continue;
 
-      offset1 = TREE_INT_CST_LOW (tree_offset1);
-      offset2 = TREE_INT_CST_LOW (tree_offset2);
-      size2 = TREE_INT_CST_LOW (tree_size2);
+      offset1 = tree_to_uhwi (tree_offset1);
+      offset2 = tree_to_uhwi (tree_offset2);
+      size2 = tree_to_uhwi (tree_size2);
       align1 = DECL_ALIGN (field1) % param_align_bits;
 
       if (offset1 % BITS_PER_UNIT != 0)

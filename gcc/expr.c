@@ -9662,7 +9662,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    if (offset == 0
 		&& tree_fits_uhwi_p (TYPE_SIZE (type))
 		&& (GET_MODE_BITSIZE (DECL_MODE (base))
-		    == TREE_INT_CST_LOW (TYPE_SIZE (type))))
+		    == tree_to_uhwi (TYPE_SIZE (type))))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
 	    if (TYPE_MODE (type) == BLKmode)

@@ -1803,7 +1803,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
 static bool
 is_simple_enum (tree node)
 {
-  unsigned HOST_WIDE_INT count = 0;
+  HOST_WIDE_INT count = 0;
   tree value;
 
   for (value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
@@ -1815,7 +1815,7 @@ is_simple_enum (tree node)
 
       if (!tree_fits_shwi_p (int_val))
 	return false;
-      else if (TREE_INT_CST_LOW (int_val) != count)
+      else if (tree_to_shwi (int_val) != count)
 	return false;
 
       count++;
@@ -2206,9 +2206,9 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       if (TREE_TYPE (node) == sizetype)
 	node = fold_convert (ssizetype, node);
       if (tree_fits_shwi_p (node))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
+	pp_wide_integer (buffer, tree_to_shwi (node));
       else if (tree_fits_uhwi_p (node))
-	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
+	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
       else
 	{
 	  tree val = node;

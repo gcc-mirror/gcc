@@ -3641,7 +3641,7 @@ acceptable_pow_call (gimple stmt, tree *base, HOST_WIDE_INT *exponent)
       if (!tree_fits_shwi_p (arg1))
 	return false;
 
-      *exponent = TREE_INT_CST_LOW (arg1);
+      *exponent = tree_to_shwi (arg1);
       break;
 
     default:

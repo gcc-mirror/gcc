@@ -2926,7 +2926,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  if (TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE
 	      || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	    {
-	      HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
+	      HOST_WIDE_INT ival = tree_to_shwi (DECL_INITIAL (decl));
 
 	      dbxout_begin_complex_stabs ();
 	      dbxout_symbol_name (decl, NULL, 'c');
