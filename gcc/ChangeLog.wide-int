@@ -470,14 +470,14 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* read-rtl.c
 	(validate_const_int):
 	* real.c
-	(
 	(real_from_string3):
 	(ten_to_ptwo):
 	(ten_to_mptwo):
 	* real.h
-	(
-	(extern void real_to_decimal):
-	(extern void real_round):
+	(real_to_integer2, REAL_VALUE_FROM_INT,
+	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): deleted.
+	(real_to_integer, real_from_integer, decimal_real_to_integer):
+	Now use wide-int.
 	* recog.c
 	(immediate_operand):
 	* rtlanal.c
@@ -485,7 +485,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(get_address_mode):
 	(split_double):
 	* rtl.c
-	(const enum rtx_class rtx_class[NUM_RTX_C
+	(DEF_RTL_EXPR): Now supports CONST_WIDE_INT.
 	(shallow_copy_rtvec):
 	(iterative_hash_rtx):
 	(rtl_check_failed_code_mode):
@@ -516,16 +516,14 @@ MORE
 	(print_value):
 	* sel-sched-ir.c
 	(hash_with_unspec_callback):
-	  * simplify-rtx.c
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
+	* simplify-rtx.c
+	(mode_signbit_p): Now supports CONST_WIDE_INT.
+	(simplify_unary_operation_1):
+	(simplify_const_unary_operation):
+	(simplify_binary_operation_1):
+	(simplify_const_binary_operation):
+	(simplify_const_relational_operation):
+	(simplify_immed_subreg):
 	* stmt.c
 	(expand_case):
 	* stor-layout.c
@@ -537,113 +535,162 @@ MORE
 	* system.h
 	(extern void fancy_abort):
 	* target.def
-	(DEFHOOK
-	* target.h
-	(
+	(iterations, iterations_max): Are wide-int rather than double-int.
+	(hook_bool_dint_dint_uint_bool_true): Removed.
+	(hook_bool_wint_wint_uint_bool_true): New.
+	* target.h: Now includes wide-int rather than double-int.
 	* targhooks.c
-	(default_mode_for_suffix):
-	(default_chkp_bound_mode):
+	(default_cxx_get_cookie_size): Uses INT_CST_LT rather than INT_CST_LT_UNSIGNED.
+	(can_use_doloop_if_innermost): Now uses wide-int parameters.
 	* targhooks.h
 	(extern bool default_member_type_forces_b
-	* testsuite/c-c++-common/cilk-plus/PS/body.c
-	(
-	* testsuite/gcc.dg/builtin-object-size-8.c
-	(
-	* testsuite/gcc.dg/strlenopt-14gf.c
-	(
-	* testsuite/gcc.dg/strlenopt-1f.c
-	(
-	* testsuite/gcc.dg/strlenopt-4gf.c
-	(
-	* testsuite/gcc.dg/tree-ssa/pr45427.c
-	(foo):
 	* tree-affine.c
-	(along with GCC; see the file COPYING3.
+	(double_int_ext_for_comb): Deleted.
+	(wide_int_ext_for_comb): New function.
+	(aff_combination_zero):
+	(aff_combination_const):
+	(aff_combination_elt):
 	(aff_combination_scale):
+	(aff_combination_add_elt):
+	(aff_combination_add_cst):
+	(aff_combination_add):
+	(double_int_ext_for_comb): Deleted.
+	(wide_int_ext_for_comb): Added.
 	(tree_to_aff_combination):
-	(tree_to_aff_combination):
-	(void
-	(struct name_expansion
-	(debug_aff):
+	(add_elt_to_tree):
+	(aff_combination_to_tree):
+	(aff_combination_remove_elt):
+	(aff_combination_add_product):
+	(aff_combination_expand):
+	(double_int_constant_multiple_p): Deleted.
+	(wide_int_constant_multiple_p): Added.
+	(aff_combination_constant_multiple_p):
+	(print_aff):
+	(get_inner_reference_aff):
+	(aff_comb_cannot_overlap_p):
 	* tree-affine.h
-	(ANY WARRANTY; without even the implied w
+	(aff_comb_elt): Changed type of coef and offset to widest-int.
 	* tree.c
-	(along with GCC; see the file COPYING3.
-	(init_ttree):
-	(tree_code_size):
-	(build_case_label):
-	(grow_tree_vec_stat):
-	(integer_zerop):
-	(integer_onep):
-	(size_in_bytes):
-	(build_simple_mem_ref_loc):
-	(iterative_hash_host_wide_int):
-	(build_type_attribute_qual_variant):
-	(type_hash_eq):
-	(int
-	(simple_cst_equal):
-	(simple_cst_equal):
-	(tree_contains_struct_check_failed):
-	(build_common_tree_nodes):
-	(needs_to_live_in_memory):
-	(truth_type_for):
-	(get_tree_code_name):
+	(init_ttree): Changed constructor of int_cst_node.
+	(tree_code_size): Removed code for INTEGER_CST case.
+	(tree_size): Added INTEGER_CST case.
+	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): New function.
+	(build_int_cst_type): Use wide-int.
+	(double_int_to_tree): Use wide-int.
+	(double_int_fits_to_tree_p): Deleted.
+	(force_fit_type_double): Deleted.
+	(force_fit_type): New function.
+	(int_cst_hash_hash): Use wide-int rep.
+	(int_cst_hash_eq): Use wide-int rep.
+	(build_int_cst_wide): Deleted.
+	(wide_int_to_tree): New function.
+	(cache_integer_cst): Use wide-int rep.
+	(build_low_bits_mask): Likewise.
+	(cst_and_fits_in_hwi): Deleted.
+	(real_value_from_int_cst): Use wide-int rep.
+	(make_int_cst_stat): New function.
+	(integer_zerop): Use wide_int rep.
+	(integer_onep): Likewise.
+	(integer_all_onesp): Likewise.
+	(integer_pow2p): Likewise.
+	(integer_nonzerop): Likewise.
+	(tree_log2): Likewise.
+	(tree_floor_log2): Likewise.
+	(tree_ctz): Likewise.
+	(size_in_bytes): Likewise.
+	(mem_ref_offset): Likewise.
+	(build_type_attribute_qual_variant): Likewise.
+	(type_hash_eq): Likewise
+	(tree_int_cst_equal): Likewise.
+	(tree_int_cst_lt): Likewise.
+	(tree_int_cst_compare): Likewise.
+	(tree_fits_shwi_p): Likewise.
+	(tree_fits_uhwi_p): Likewise.
+	(tree_to_shwi): Likewise.
+	(tree_to_uhwi): Likewise.
+	(tree_int_cst_sign_bit): Likewise.
+	(tree_int_cst_sgn): Likewise.
+	(tree_int_cst_min_precision): Likewise.
+	(simple_cst_equal): Likewise.
+	(compare_tree_int): Likewise.
+	(iterative_hash_expr): Likewise.
+	(int_fits_type_p): Likewise.
+	(get_type_static_bounds): Likewise.
+	(tree_int_cst_elt_check_failed): Likewise.
+	(build_common_tree_nodes): Reordered to set prec before filling in value.
+	(int_cst_value): Use wide-int rep.
+	(widest_int_cst_value): Likewise.
+	(upper_bound_in_type): Likewise.
+	(lower_bound_in_type): Likewise.
+	(num_ending_zeros): Likewise.
+	(drop_tree_overflow): Likewise.
 	* tree-call-cdce.c
-	(check_pow):
+	(check_pow): Use wide-int version of call.
+	(gen_conditions_for_pow_cst_base): Likewise.
 	* tree-cfg.c
-	(along with GCC; see the file COPYING3.
-	(verify_expr):
-	(verify_gimple_assign_binary):
+	(group_case_labels_stmt): Use wide-int rep.
+	(verify_expr): Likewise.
+	(verify_gimple_assign_binary): Likewise.
+	(print_loop): Likewise.
 	* tree-chrec.c
-	(chrec_fold_multiply):
+	(tree_fold_binomial): Use wide-int rep.
 	* tree-core.h
-	(struct GTY(():): tree_base {
+	(tree_base): Add int_length.
+	(tree_int_cst): Change rep of value.
 	* tree-data-ref.c
-	(dr_analyze_innermost):
-	(analyze_ziv_subscript):
+	(dr_analyze_innermost): Use wide-int rep.
+	(dr_may_alias_p): Likewise.
+	(analyze_ziv_subscript): Likewise.
 	* tree.def
-	(DEFTREECODE):
+	(INTEGER_CST): Modified comment.
 	* tree-dfa.c
-	(get_or_create_ssa_default_def):
-	(get_ref_base_and_extent):
+	(get_ref_base_and_extent): Use wide-int rep.
 	* tree-dfa.h
-	(get_addr_base_and_unit_offset_1):
+	(get_addr_base_and_unit_offset_1): Use wide-int rep.
 	* tree-dump.c
-	(along with GCC; see the file COPYING3.
-	(dequeue_and_dump):
+	(dequeue_and_dump): Use wide-int rep.
 	* tree.h
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
-	 ):
+	(NULL_TREE): Moved to earlier loc in file.
+	(TREE_INT_CST_ELT_CHECK): New.
+	(tree_int_cst_elt_check_failed): New.
+	(TREE_INT_CST_ELT_CHECK): New.
+	(TYPE_SIGN): New.
+	(TREE_INT_CST): Deleted.
+	(TREE_INT_CST_LOW): Use wide-int rep.
+	(TREE_INT_CST_HIGH): Deleted.
+	(TREE_INT_CST_NUNITS): New.
+	(TREE_INT_CST_EXT_NUNITS): Likewise.
+	(TREE_INT_CST_ELT): Likewise.
+	(INT_CST_LT): Use wide-int rep.
+	(INT_CST_LE): New.
+	(tree_int_cst_elt_check): New (two forms).
+	(cst_fits_shwi_p): New.
+	(cst_fits_uhwi_p): New.
+	(make_int_cst): New.
+	(tree_to_double_int): Deleted.
+	(build_int_cstu): Deleted.
+	(tree_to_shwi): Use wide-int rep.
+	(tree_to_uhwi): Likewise.
+	(wi): New.
 	* tree-inline.c
-	(remap_gimple_op_r):
-	(copy_tree_body_r):
+	(remap_gimple_op_r): Use wide-int rep.
+	(copy_tree_body_r): Likewise.
 	* tree-object-size.c
-	 ):
-	 ):
-	 ):
-	 ):
+	(compute_object_offset): Use wide-int rep.
+	(addr_object_size): Likewise.
+	(compute_object_sizes): Likewise.
 	* tree-predcom.c
-	(along with GCC; see the file COPYING3.
-	(suitable_reference_p):
-	(split_data_refs_to_components):
-	(split_data_refs_to_components):
-	(filter_suitable_components):
-	(get_chain_root):
-	(name_for_ref):
+	(dref): Change rep of offset.
+	(dump_dref): Call wide-int printer.
+	(aff_combination_dr_offset): Use wide-int rep.
+	(determine_offset): Likewise.
+	(split_data_refs_to_components): Likewise.
+	(suitable_component_p): Likewise.
+	(order_drefs): Likewise.
+	(add_ref_to_chain): Likewise.
+	(valid_initializer_p): Likewise.
+	(determine_roots_comp): Likewise.
 	* tree-pretty-print.c
-	(along with GCC; see the file COPYING3.
 	(dump_array_domain):
 	(dump_generic_node):
 	(dump_generic_node):
