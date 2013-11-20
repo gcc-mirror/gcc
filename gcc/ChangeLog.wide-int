@@ -864,6 +864,7 @@ c:
 	(set_nonincremental_init_from_string): Update to use wide-int.
 	(c_tree_equal): Update to use wi::.
 
+
 c-family:
 	* c-ada-spec.c
 	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
