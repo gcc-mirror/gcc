@@ -30,8 +30,7 @@
 	* c/c-typeck.c
 	(set_nonincremental_init_from_string):
 	(c_tree_equal):
-	* c/Make-lang.in
-	(c.stage1: stage1-start
+	* c/Make-lang.in: Fixup whitespace.
 	* c-family/c-ada-spec.c
 	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
 	(dump_ada_template):
@@ -51,23 +50,25 @@
 	(interpret_integer):
 	(lex_charconst):
 	* c-family/c-pretty-print.c
-	(static void
+	(pp_c_integer_constant): Update accessors.
 	* cfgloop.c
 	(flow_loop_tree_node_remove):
 	(get_loop_location):
 	* cfgloop.h
-	(FITNESS FOR A PARTICULAR PURPOSE.  See t
-	(struct GTY):
-	(static inline struct loop *
+	(struct nb_iter_bound): Change bound to widest_int.
+	(struct loop): Change nb_iterations_upper_bound and
+	nb_iterations_estimate to widest_int.
+	(record_niter_bound): Switch to use widest_int.
+	(get_estimated_loop_iterations): Likewise.
+	(get_max_loop_iterations): Likewise.
+	(gcov_type_to_wide_int): Likewise.
 	* cgraph.c
 	(cgraph_add_thunk):
 	* combine.c
 	(try_combine):
 	* config/aarch64/aarch64.c
-	(aapcs_vfp_sub_candidate):
-	(aapcs_vfp_sub_candidate):
-	(aapcs_vfp_sub_candidate):
-	(aarch64_float_const_representable_p):
+	(aapcs_vfp_sub_candidate): Update to use wi::.
+	(aarch64_float_const_representable_p): Update to use wide_int.
 	* config/arc/arc.c
 	(static bool arc_function_ok_for_sibcall
 	(arc_pass_by_reference):
@@ -185,11 +186,9 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(TARGET_CAN_USE_DOLOOP_P): Use widest_int instead of double_int.
 	(TARGET_SUPPORTS_WIDE_INT): Add.
 	* doc/tm.texi: Regenerate.
-	(target's floating point format cannot re
 	* dojump.c
-	(static GTY(():): rtx and_test;
-	* double-int.h
-	(double_int::popcount):
+	(prefer_and_bit_test): 
+	* double-int.h (struct wi::int_traits): Add.
 	* dwarf2out.c
 	(dump_struct_debug):
 	(dw_val_equal_p):
@@ -491,13 +490,24 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(iterative_hash_rtx):
 	(rtl_check_failed_code_mode):
 	* c2w/gcc/gcc/rtl.def
-	(DEF_RTL_EXPR(EH_RETURN, "eh_return", "",
+	(CONST_WIDE_INT): Add.
 	* c2w/gcc/gcc/rtl.h
-	(WARRANTY; without even the implied warra
-	(struct GTY(():): object_block {
-	(struct GTY((chain_next):
-	(struct GTY((variable_size):): rtvec_def {
-	(struct GTY((variable_size):): rtvec_def {
+	(struct hwivec_def): Add.
+	(CWI_GET_NUM_ELEM): Add.
+	(CWI_PUT_NUM_ELEM): Add.
+	(struct rtx_def): Add num_elem.
+	(struct rtvec_def): Add hwiv.
+	(CASE_CONST_SCALAR_INT): Modify for TARGET_SUPPORTS_WIDE_INT.
+	(CASE_CONST_UNIQUE): Likewise.
+	(CASE_CONST_ANY): Likewise.
+	(CONST_SCALAR_INT_P): Likewise.
+	(CONST_WIDE_INT_P): Add.
+	(CWI_ELT): Add.
+	(HWIVEC_CHECK): Add.
+	(cwi_check_failed_bounds): Add.
+	(CWI_ELT): Add.
+	(HWIVEC_CHECK): Add.
+MORE
 	(extern void rtl_check_failed_flag):
 	(struct address_info {
 	(extern int currently_expanding_to_rtl;
