@@ -244,15 +244,15 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(size_low_cst): Likewise.
 	(mask_with_tz): Likewise.
 	(fold_binary_loc): Likewise.
-	(fold_ternary_loc):
-	(multiple_of_p):
-	(tree_call_nonnegative_warnv_p):
-	(fold_read_from_constant_string):
-	(fold_negate_const):
-	(fold_abs_const):
-	(fold_relational_const):
-	(fold_ignored_result):
-	(ptr_difference_const):
+	(fold_ternary_loc): Likewise.
+	(multiple_of_p): Likewise.
+	(tree_call_nonnegative_warnv_p): Likewise.
+	(fold_read_from_constant_string): Likewise.
+	(fold_negate_const): Likewise.
+	(fold_abs_const): Likewise.
+	(fold_relational_const): Remove dead INT_CST_LT_UNSIGNED.
+	(round_up_loc): Update for wide-int.
+	(ptr_difference_const): Update to use cst_fits_shwi_p.
 	* fortran/target-memory.c
 	(gfc_interpret_complex):
 	* fortran/trans-array.c
