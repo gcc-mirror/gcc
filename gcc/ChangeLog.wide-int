@@ -186,7 +186,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(immed_double_const): Conditionally compile for wide-int.
 	(init_emit_once): Update for wide-int.
 	* explow.c
-	(plus_constant):
+	(plus_constant): Update for wide-int.
 	* expmed.c
 	(static void store_fixed_bit_field):
 	(extract_fixed_bit_field):
