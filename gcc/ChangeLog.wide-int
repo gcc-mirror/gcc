@@ -70,30 +70,27 @@
 	(aapcs_vfp_sub_candidate): Update to use wi::.
 	(aarch64_float_const_representable_p): Update to use wide_int.
 	* config/arc/arc.c
-	(static bool arc_function_ok_for_sibcall
-	(arc_pass_by_reference):
+	(arc_can_use_doloop_p): Update to use widest_int and wi::.
 	* config/arm/arm.c
-	(aapcs_vfp_sub_candidate):
-	(aapcs_vfp_sub_candidate):
-	(aapcs_vfp_sub_candidate):
+	(aapcs_vfp_sub_candidate): Update to use wi::.
+	(vfp3_const_double_index): Usdate to use wide_int.
 	* config/avr/avr.c
-	(avr_out_fract):
-	(avr_out_round):
-	(avr_fold_builtin):
+	(avr_out_round): Update to use wide-int.
+	(avr_fold_builtin): Likewise.
 	* config/bfin/bfin.c
-	(bfin_expand_movmem):
-	(find_prev_insn_start):
+	(bfin_local_alignment): Update to use wi::.
+	(bfin_can_use_doloop_p): Update to use widest_int and wi::.
 	* config/darwin.c
-	(darwin_mergeable_constant_section):
-	(machopic_select_section):
+	(darwin_mergeable_constant_section): Update to use wi::.
+	(machopic_select_rtx_section): Update to handle CONST_WIDE_INT.
 	* config/epiphany/epiphany.c
-	(epiphany_special_round_type_align):
+	(epiphany_special_round_type_align): Update to use tree_to_uhwi.
 	* config/i386/i386.c
-	(ix86_constant_alignment):
-	(ix86_local_alignment):
-	(void ix86_emit_swsqrtsf):
+	(ix86_data_alignment): Update to use wi::.
+	(ix86_local_alignment): Update to use wi::.
+	(ix86_emit_swsqrtsf): Update real_from_integer.
 	* config/msp430/msp430.c
-	(msp430_attr):
+	(msp430_attr): Update to use wi::.
 	* config/nds32/nds32.c
 	(nds32_construct_isr_vectors_information
 	(nds32_construct_isr_vectors_information
