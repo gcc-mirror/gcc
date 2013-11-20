@@ -424,25 +424,31 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* read-rtl.c
 	(validate_const_int):
 	* real.c
-	(real_from_string3):
-	(ten_to_ptwo):
-	(ten_to_mptwo):
+	(real_to_integer2): Deleted.
+	(real_to_integer): Use wide-int rep.
+	(real_from_integer): Likewise.
+	(ten_to_ptwo): Likewise.
+	(ten_to_mptwo): Likewise.
 	* real.h
 	(real_to_integer2, REAL_VALUE_FROM_INT,
 	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): deleted.
 	(real_to_integer, real_from_integer, decimal_real_to_integer):
 	Now use wide-int.
 	* recog.c
-	(immediate_operand):
+	(const_scalar_int_operand): New.
+	(const_double_operand): Changed to support CONST_WIDE_INT.
 	* rtlanal.c
-	(regno_use_in):
-	(get_address_mode):
-	(split_double):
+	(commutative_operand_precedence): Use wide-int rep.
+	(get_address_mode): Likewise.
+	(split_double): Likewise.
 	* rtl.c
 	(DEF_RTL_EXPR): Now supports CONST_WIDE_INT.
-	(shallow_copy_rtvec):
-	(iterative_hash_rtx):
-	(rtl_check_failed_code_mode):
+	(rtx_size): Use wide-int rep.
+	(rtx_alloc_stat_v): New.
+	(rtx_alloc_stat): Now callse rtx_alloc_stat_v.
+	(cwi_output_hex): New.
+	(iterative_hash_rtx): Use wide-int rep.
+	(cwi_check_failed_bounds): New.
 	* rtl.def
 	(CONST_WIDE_INT): Add.
 	* rtl.h
@@ -461,11 +467,17 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(cwi_check_failed_bounds): Add.
 	(CWI_ELT): Add.
 	(HWIVEC_CHECK): Add.
-MORE
-	(extern void rtl_check_failed_flag):
-	(struct address_info {
-	(extern int currently_expanding_to_rtl;
-	(extern rtx convert_memory_address_addr_s
+	(CONST_WIDE_INT_VEC) Add.
+	(CONST_WIDE_INT_NUNITS) Add.
+	(CONST_WIDE_INT_ELT) Add.
+	(rtx_mode_t): New type.
+	(wi) New namespace.
+	(get_precision) Add.
+	(decompose) Add.
+	(wi::shwi) Add.
+	(wi::min_value) Add.
+	(wi::max_value) Add.
+	(rtx_alloc_v) Add.
 	* sched-vis.c
 	(print_value): Now supports CONST_WIDE_INT.
 	* simplify-rtx.c
