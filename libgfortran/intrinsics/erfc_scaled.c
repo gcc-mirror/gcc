@@ -45,8 +45,59 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "erfc_scaled_inc.c"
 #endif
 
-#ifdef HAVE_GFC_REAL_16
+#if defined(HAVE_GFC_REAL_16) && defined(GFC_REAL_16_IS_LONG_DOUBLE)
 #undef KIND
 #define KIND 16
 #include "erfc_scaled_inc.c"
 #endif
+
+
+/* For quadruple-precision (__float128), netlib's implementation is
+   not accurate enough.  We provide another one.  */
+
+
+extern GFC_REAL_16 erfc_scaled_r16 (GFC_REAL_16);
+export_proto(erfc_scaled_r16);
+
+
+GFC_REAL_16
+erfc_scaled_r16 (GFC_REAL_16 x)
+{
+  if (x < -106.566990228185312813205074546585730Q)
+    {
+      return __builtin_infq();
+    }
+  if (x < 12)
+    {
+      /* Compute directly as ERFC_SCALED(x) = ERFC(x) * EXP(X**2).
+	 This is not perfect, but much better than netlib.  */
+      return erfcq(x) * expq(x * x);
+    }
+  else
+    {
+      /* Calculate ERFC_SCALED(x) using a power series in 1/x:
+	 ERFC_SCALED(x) = 1 / (x * sqrt(pi))
+			 * (1 + Sum_n (-1)**n * (1 * 3 * 5 * ... * (2n-1))
+					      / (2 * x**2)**n)
+       */
+      GFC_REAL_16 sum = 0, oldsum;
+      GFC_REAL_16 inv2x2 = 1 / (2 * x * x);
+      GFC_REAL_16 fac = 1;
+      int n = 1;
+
+      while (n < 200)
+	{
+	  fac *= - (2*n - 1) * inv2x2;
+	  oldsum = sum;
+	  sum += fac;
+
+	  if (sum == oldsum)
+	    break;
+
+	  n++;
+	}
+
+      return (1 + sum) / x * (M_2_SQRTPIq / 2);
+    }
+}
+
