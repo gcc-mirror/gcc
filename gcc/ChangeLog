@@ -1,10 +1,16 @@
+2013-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/59207
+	* config/sparc/sparc.c (sparc_fold_builtin) <case CODE_FOR_pdist_vis>:
+	Make sure neg2_ovf is set before being used.
+
 2013-11-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * plugin.def: Add comment about register_callback and
-        invoke_plugin_callbacks_full.
+	* plugin.def: Add comment about register_callback and
+	invoke_plugin_callbacks_full.
 
-        * plugin.c (register_callback, invoke_plugin_callbacks_full):
-        Handle PLUGIN_INCLUDE_FILE event.
+	* plugin.c (register_callback, invoke_plugin_callbacks_full):
+	Handle PLUGIN_INCLUDE_FILE event.
 
 2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
