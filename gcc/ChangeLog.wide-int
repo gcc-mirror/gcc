@@ -1,56 +1,29 @@
 	* ada/gcc-interface/cuintp.c
-	(UI_From_gnu):
+	(UI_From_gnu): Update to use wide-int.
 	* ada/gcc-interface/decl.c
-	(gnat_to_gnu_entity):
-	(gnat_to_gnu_entity):
-	(annotate_value):
+	(gnat_to_gnu_entity): Update to use TYPE_SIGN and tree_to_uhwi.
+	(annotate_value): Update to use wide-int.
 	* ada/gcc-interface/utils.c
-	(make_packable_type):
-	(handle_novops_attribute):
+	(make_packable_type): Update to use tree_to_uhwi.
+	(get_nonnull_operand): Update to use cst_fits_uhwi_p.
 	* alias.c
-	(ao_ref_from_mem):
-	(decl_for_component_ref):
+	(ao_ref_from_mem): Update to use wide-int.
+	(rtx_equal_for_memref_p): Update comment.
+	(adjust_offset_for_component_ref): Update to use wide-int.
 	* builtins.c
-	(get_object_alignment_2):
-	(c_getstr):
-	(determine_block_size):
-	(expand_builtin_signbit):
-	(fold_builtin_int_roundingfn):
-	(fold_builtin_int_roundingfn):
-	(fold_builtin_pow):
-	(fold_builtin_powi):
-	(fold_builtin_memory_op):
-	(fold_builtin_object_size):
-	* c/c-decl.c
-	(check_bitfield_type_and_width):
-	(start_enum):
-	(finish_enum):
-	* c/c-parser.c
-	(c_parser_cilk_clause_vectorlength):
-	* c/c-typeck.c
-	(set_nonincremental_init_from_string):
-	(c_tree_equal):
-	* c/Make-lang.in: Fixup whitespace.
-	* c-family/c-ada-spec.c
-	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
-	(dump_ada_template):
-	(dump_generic_ada_node):
-	* c-family/c-common.c
-	(shorten_compare):
-	(pointer_int_sum):
-	(c_common_nodes_and_builtins):
-	(handle_malloc_attribute):
-	(check_function_arguments_recurse):
-	* c-family/c-format.c
-	(check_format_string):
-	* c-family/cilk.c
-	(declare_one_free_variable):
-	* c-family/c-lex.c
-	(c_lex_with_flags):
-	(interpret_integer):
-	(lex_charconst):
-	* c-family/c-pretty-print.c
-	(pp_c_integer_constant): Update accessors.
+	(get_object_alignment_2): Update to use wide-int.
+	(c_readstr): Likewise.
+	(target_char_cast): Add comment.
+	(determine_block_size): Update to use wide-int.
+	(expand_builtin_signbit): Likewise.
+	(fold_builtin_int_roundingfn): Likewise.
+	(fold_builtin_bitop): Likewise.
+	(fold_builtin_bswap): Likewise.
+	(fold_builtin_logarithm): Update to use signop.
+	(fold_builtin_pow): Likewise.
+	(fold_builtin_powi): Update to use tree_to_shwi.
+	(fold_builtin_memory_op): Update to use wide-int.
+	(fold_builtin_object_size): Likewise.
 	* cfgloop.c
 	(flow_loop_tree_node_remove):
 	(get_loop_location):
@@ -879,6 +852,45 @@ MORE
 	(loc_cmp):
 	(emit_note_insn_var_location):
 
+
+c:
+	* c-decl.c
+	(check_bitfield_type_and_width): Update to use signop.
+	(finish_enum): Update to use wide-int.
+	* c-parser.c
+	(c_parser_cilk_clause_vectorlength): Update to use wi::.
+	* c-typeck.c
+	(build_c_cast): Update to use wide_int_to_tree.
+	(set_nonincremental_init_from_string): Update to use wide-int.
+	(c_tree_equal): Update to use wi::.
+	* Make-lang.in: Fixup whitespace.
+
+c-family:
+	* c-ada-spec.c
+	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
+	(is_simple_enum): Update to use wide-int.
+	(dump_generic_ada_node): Likewise.
+	* c-common.c
+	(shorten_compare): Likewise.
+	(pointer_int_sum): Likewise.
+	(c_common_nodes_and_builtins): Likewise.
+	(c_add_case_label): Likewise.
+	(handle_alloc_size_attribute): Likewise.
+	(get_nonnull_operand): Likewise.
+	(check_function_arguments_recurse): Likewise.
+	* c-format.c
+	(check_format_string): Likewise.
+	* cilk.c
+	(declare_one_free_variable):
+AUDIT
+	(extract_free_variables): Update to use tree_to_uhwi.
+	* c-lex.c
+	(narrowest_unsigned_type): Update to use wide-int.
+	(narrowest_signed_type): Likewise.
+	(interpret_integer): Likewise.
+	(lex_charconst): Likewise.
+	* c-pretty-print.c
+	(pp_c_integer_constant): Update accessors.
 
 
 cp:
