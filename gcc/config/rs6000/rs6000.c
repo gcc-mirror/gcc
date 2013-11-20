@@ -12143,16 +12143,14 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_ELT (arg1, 0), 0, 1))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return const0_rtx;
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_ELT (arg2, 0), 0, 15))
+      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg1, 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return const0_rtx;
