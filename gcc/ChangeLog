@@ -1,5 +1,18 @@
 2013-11-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
+	* config/mips/mips.h (ISA_HAS_FP4): Remove TARGET_FLOAT64
+	restriction for ISA_MIPS32R2.
+	(ISA_HAS_LXC1_SXC1): New macro.
+	(ISA_HAS_FP_MADD4_MSUB4): Remove ISA_MIPS32R2 special-casing.
+	(ISA_HAS_NMADD4_NMSUB4): Likewise.
+	(ISA_HAS_FP_RECIP_RSQRT): Likewise.
+	(ISA_HAS_PREFETCHX): Redefine in terms of ISA_HAS_FP4.
+	* config/mips/mips.md (*<ANYF:loadx>_<P:mode>): Use
+	ISA_HAS_LXC1_SXC1 rather than ISA_HAS_FP4.
+	(*<ANYF:storex>_<P:mode>): Likewise.
+
+2013-11-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
 	* config/mips/mips.h (ISA_HAS_FP_RECIP_RSQRT): New macro.
 	* config/mips/mips.c (mips_rtx_costs) <DIV>: Check for
 	ISA_HAS_FP_RECIP_RSQRT rather than ISA_HAS_FP4.
