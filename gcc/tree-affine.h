@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
    to make things simpler; this is sufficient in most cases.  */
 
-#include <wide-int.h>
+#include "wide-int.h"
 
 #define MAX_AFF_ELTS 8
 
