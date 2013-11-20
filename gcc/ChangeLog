@@ -1,3 +1,7 @@
+2013-11-19  Mike Stump  <mikestump@comcast.net>
+
+	* gdbinit.in: Add pmz to print out mpz values.
+
 2013-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* common.opt (ffat-lto-objects): Disable by default.
