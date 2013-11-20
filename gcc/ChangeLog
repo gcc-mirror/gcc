@@ -1,10 +1,9 @@
 2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
 
 	PR c/53001
-	* doc/invoke.texi: Adding documentation about
-	-Wfloat-conversion.
+	* doc/invoke.texi: Adding documentation about -Wfloat-conversion.
 
-2013-11-20  Miro Kropacek  <miro.kropacek@gmail.com>
+2013-11-19  Miro Kropacek  <miro.kropacek@gmail.com>
 
 	* config/m68k/m68k.c (m68k_option_overrides): Fix typo.
 
@@ -1475,10 +1474,10 @@
 
 2013-11-18  Teresa Johnson  <tejohnson@google.com>
 
-	* gcc/cfgrtl.c (cfg_layout_initialize): Assert if we
-	try to go into cfglayout after bb reordering.
-	* gcc/passes.def: Move compgotos before bb reordering
-	since it goes into cfglayout.
+	* cfgrtl.c (cfg_layout_initialize): Assert if we try to go into
+	cfglayout after bb reordering.
+	* passes.def: Move compgotos before bb reordering since it goes into
+	cfglayout.
 
 2013-11-18  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -1686,8 +1685,8 @@
 
 2013-11-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/ia64/ia64.c (ia64_split_tmode_move): Mark load with
-	`dead' flag if it kills address, not its post-increment.
+	* config/ia64/ia64.c (ia64_split_tmode_move): Mark load with `dead'
+	flag if it kills its address, not its post-increment.
 
 2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -1748,8 +1747,8 @@
 	(enum processor_type): Add PROCESSOR_BDVER4.
 	* config/i386/i386.md (define_attr "cpu"): Add bdver4.
 	* config/i386/i386.opt (flag_dispatch_scheduler): Add bdver4.
-	* gcc/doc/extend.texi: Add details about bdver4.
-	* gcc/doc/invoke.texi: Add details about bdver4. Add
+	* doc/extend.texi: Add details about bdver4.
+	* doc/invoke.texi: Add details about bdver4. Add
 	fma4 and fsgsbase for bdver3. Add fma4 for bdver2.
 
 2013-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
