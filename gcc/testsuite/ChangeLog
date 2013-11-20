@@ -1,3 +1,7 @@
+2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/darwin-longlong.c (msw): Make endian-safe.
+
 2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/htm-1.c: Rename to ...
