@@ -195,20 +195,17 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(expand_smod_pow2): Likewise.
 	(make_tree): Likewise.
 	* expr.c
-	(convert_modes):
-	(store_expr):
-	(store_field):
-	(get_inner_reference):
-	(get_inner_reference):
-	(expand_constructor):
-	(expand_expr_real_2):
-	(expand_expr_real_2):
-	(expand_expr_real_1):
-	(expand_expr_real_1):
-	(reduce_to_bit_field_precision):
-	(const_vector_from_tree):
+	(convert_modes): Update for wide-int.
+	(emit_group_load_1): Add note.
+	(store_expr): Update comment.
+	(get_inner_reference): Update for wide-int.
+	(expand_constructor): Update comment.
+	(expand_expr_real_2): Update for wide-int.
+	(expand_expr_real_1): Likewise.
+	(reduce_to_bit_field_precision): Likewise.
+	(const_vector_from_tree): Likewise.
 	* final.c
-	(output_addr_const):
+	(output_addr_const): 
 	* fixed-value.c
 	(for more details.
 	(fixed_from_double_int):
