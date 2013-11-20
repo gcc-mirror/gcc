@@ -9227,10 +9227,8 @@ check_function_arguments_recurse (void (*callback)
 	       to be valid.  */
 	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
 
-	    gcc_assert (TREE_CODE (format_num_expr) == INTEGER_CST
-			&& !TREE_INT_CST_HIGH (format_num_expr));
 
-	    format_num = TREE_INT_CST_LOW (format_num_expr);
+	    format_num = tree_to_uhwi (format_num_expr);
 
 	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;
 		 inner_arg != 0;
