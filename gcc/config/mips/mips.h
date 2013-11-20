@@ -921,6 +921,21 @@ struct mips_cpu_info {
    'c = -((a * b) [+-] c)'.  */
 #define ISA_HAS_NMADD3_NMSUB3	TARGET_LOONGSON_2EF
 
+/* ISA has floating-point RECIP.fmt and RSQRT.fmt instructions.  The
+   MIPS64 rev. 1 ISA says that RECIP.D and RSQRT.D are unpredictable when
+   doubles are stored in pairs of FPRs, so for safety's sake, we apply
+   this restriction to the MIPS IV ISA too.  */
+#define ISA_HAS_FP_RECIP_RSQRT(MODE)					\
+				((((ISA_HAS_FP4 || ISA_MIPS32R2)	\
+				   && ((MODE) == SFmode			\
+				       || ((TARGET_FLOAT64		\
+					    || ISA_MIPS32R2		\
+					    || ISA_MIPS64R2)		\
+					   && (MODE) == DFmode)))	\
+				  || (TARGET_SB1			\
+				      && (MODE) == V2SFmode))		\
+				 && !TARGET_MIPS16)
+
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO		((ISA_MIPS32				\
 				  || ISA_MIPS32R2			\
