@@ -1,3 +1,7 @@
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* c-common.c (check_function_arguments_recurse): Use tree_to_uhwi.
+
 2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
 
 	PR c/53001
