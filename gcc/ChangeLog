@@ -1,3 +1,8 @@
+2013-11-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Adjust
+	V16QI vector splat case for little endian.
+
 2013-11-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_across_edge): After threading
