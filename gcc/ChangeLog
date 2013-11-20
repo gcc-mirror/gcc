@@ -1,3 +1,8 @@
+2013-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_dwarf_register_span): Take into account the
+	endianness of the D registers for the legacy encodings.
+
 2013-11-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/54300
