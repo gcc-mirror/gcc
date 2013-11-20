@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/c++config.h>
-#if defined(_GLIBCXX_HAVE_TLS) && defined(_GLIBCXX_SHARED)
+#if defined(_GLIBCXX_SHARED)
 #define _GLIBCXX_ASYNC_ABI_COMPAT
 #endif
 
@@ -78,20 +78,49 @@ _GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx11try_to_lockE, _ZSt11try_to_lock, GLIBCXX_3.4.
 
 
 // XXX GLIBCXX_ABI Deprecated
-// gcc-4.7.0
+// gcc-4.7.0, gcc-4.9.0
 // <future> export changes
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
   && (ATOMIC_INT_LOCK_FREE > 1)
-#if defined(_GLIBCXX_HAVE_TLS) && defined(_GLIBCXX_SHARED)
+#if defined(_GLIBCXX_SHARED)
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Replaced by _State_baseV2 in gcc-4.9.0
+  class __future_base::_State_base
+  {
+    typedef _Ptr<_Result_base> _Ptr_type;
+
+    _Ptr_type			_M_result;
+    mutex               	_M_mutex;
+    condition_variable  	_M_cond;
+    atomic_flag         	_M_retrieved;
+    once_flag			_M_once;
+  public:
+    virtual ~_State_base();
+    virtual void _M_run_deferred() { }
+  };
+  __future_base::_State_base::~_State_base() { }
+
+  // Replaced by _Async_state_commonV2 in gcc-4.9.0
+  class __future_base::_Async_state_common : public __future_base::_State_base
+  {
+  protected:
+    ~_Async_state_common();
+    virtual void _M_run_deferred() { _M_join(); }
+    void _M_join() { std::call_once(_M_once, &thread::join, ref(_M_thread)); }
+    thread _M_thread;
+    once_flag _M_once;
+  };
+#if defined(_GLIBCXX_HAVE_TLS)
+  // Replaced with inline definition in gcc-4.8.0
   __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
 
   // Explicit instantiation due to -fno-implicit-instantiation.
   template void call_once(once_flag&, void (thread::*&&)(), reference_wrapper<thread>&&);
   template _Bind_simple_helper<void (thread::*)(), reference_wrapper<thread>>::__type __bind_simple(void (thread::*&&)(), reference_wrapper<thread>&&);
+#endif // _GLIBCXX_HAVE_TLS
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif
+#endif // _GLIBCXX_SHARED
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

@@ -82,8 +82,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __future_base::_Result_base::_Result_base() = default;
 
   __future_base::_Result_base::~_Result_base() = default;
-
-  __future_base::_State_base::~_State_base() = default;
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
