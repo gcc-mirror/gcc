@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"
@@ -679,7 +680,7 @@ tree_ssa_ifcombine (void)
      inner ones, and also that we do not try to visit a removed
      block.  This is opposite of PHI-OPT, because we cascade the
      combining rather than cascading PHIs. */
-  for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
+  for (i = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
     {
       basic_block bb = bbs[i];
       gimple stmt = last_stmt (bb);

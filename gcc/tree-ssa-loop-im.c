@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"
@@ -1583,19 +1584,18 @@ analyze_memory_references (void)
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
   struct loop *loop, *outer;
-  loop_iterator li;
   unsigned i, n;
 
   /* Initialize bb_loop_postorder with a mapping from loop->num to
      its postorder index.  */
   i = 0;
   bb_loop_postorder = XNEWVEC (unsigned, number_of_loops (cfun));
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     bb_loop_postorder[loop->num] = i++;
   /* Collect all basic-blocks in loops and sort them after their
      loops postorder.  */
   i = 0;
-  bbs = XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
+  bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   FOR_EACH_BB (bb)
     if (bb->loop_father != current_loops->tree_root)
       bbs[i++] = bb;
@@ -1616,7 +1616,7 @@ analyze_memory_references (void)
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       /* Finalize the overall touched references (including subloops).  */
       bitmap_ior_into (&memory_accesses.all_refs_stored_in_loop[loop->num],

@@ -1,3 +1,41 @@
+2013-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* backtrace.h (backtrace_syminfo_callback): Add symsize argument.
+	* elf.c (elf_syminfo): Pass 0 or sym->size to the callback as
+	last argument.
+	* btest.c (struct symdata): Add size field.
+	(callback_three): Add symsize argument.  Copy it to the data->size
+	field.
+	(f23): Set symdata.size to 0.
+	(test5): Likewise.  If sizeof (int) > 1, lookup address of
+	((uintptr_t) &global) + 1.  Verify symdata.val and symdata.size
+	values.
+
+	* atomic.c: Include sys/types.h.
+
+2013-11-18  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Check for support of __atomic extensions.
+	* internal.h: Declare or #define atomic functions for use in
+	backtrace code.
+	* atomic.c: New file.
+	* dwarf.c (dwarf_lookup_pc): Use atomic functions.
+	(dwarf_fileline, backtrace_dwarf_add): Likewise.
+	* elf.c (elf_add_syminfo_data, elf_syminfo): Likewise.
+	(backtrace_initialize): Likewise.
+	* fileline.c (fileline_initialize): Likewise.
+	* Makefile.am (libbacktrace_la_SOURCES): Add atomic.c.
+	* configure, config.h.in, Makefile.in: Rebuild.
+
+2013-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* elf.c (SHN_UNDEF): Define.
+	(elf_initialize_syminfo): Add base_address argument.  Ignore symbols
+	with st_shndx == SHN_UNDEF.  Add base_address to address fields.
+	(elf_add): Adjust caller.
+
+	* elf.c (phdr_callback): Process info->dlpi_addr == 0 normally.
+
 2013-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* backtrace.h (backtrace_create_state): Correct comment about

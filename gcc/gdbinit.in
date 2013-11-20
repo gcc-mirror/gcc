@@ -99,7 +99,7 @@ set mpz_out_str(stderr, 10, $)
 end
 
 document pmz
-Print the mpz value that is $ 
+Print the mpz value that is $
 Works only when an inferior is executing.
 end
 

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "hash-table.h"
 #include "tree-ssa-live.h"
@@ -1077,7 +1078,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		  v2 = SSA_NAME_VERSION (var);
 		  bitmap_set_bit (used_in_copy, v1);
 		  bitmap_set_bit (used_in_copy, v2);
-		  cost = coalesce_cost_bb (EXIT_BLOCK_PTR);
+		  cost = coalesce_cost_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 		  add_coalesce (cl, v1, v2, cost);
 		}
 	    }

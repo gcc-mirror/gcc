@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "langhooks.h"
@@ -380,7 +381,7 @@ tree_ssa_phiprop (void)
 
   /* Walk the dominator tree in preorder.  */
   bbs = get_all_dominated_blocks (CDI_DOMINATORS,
-				  single_succ (ENTRY_BLOCK_PTR));
+				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
   FOR_EACH_VEC_ELT (bbs, i, bb)
     for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       did_something |= propagate_with_phi (bb, gsi_stmt (gsi), phivn, n);

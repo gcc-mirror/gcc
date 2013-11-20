@@ -69,6 +69,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
+#include "print-tree.h"
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "flags.h"
@@ -1838,9 +1841,9 @@ compute_bb_predicates (struct cgraph_node *node,
     }
 
   /* Entry block is always executable.  */
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux
+  ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
     = pool_alloc (edge_predicate_pool);
-  *(struct predicate *) ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux
+  *(struct predicate *) ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
     = true_predicate ();
 
   /* A simple dataflow propagation of predicates forward in the CFG.
@@ -2063,7 +2066,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
     return false;
   bitmap_set_bit (info->bb_set,
 		  SSA_NAME_IS_DEFAULT_DEF (vdef)
-		  ? ENTRY_BLOCK_PTR->index
+		  ? ENTRY_BLOCK_PTR_FOR_FN (cfun)->index
 		  : gimple_bb (SSA_NAME_DEF_STMT (vdef))->index);
   return false;
 }
@@ -2099,7 +2102,7 @@ param_change_prob (gimple stmt, int i)
 	return REG_BR_PROB_BASE;
 
       if (SSA_NAME_IS_DEFAULT_DEF (op))
-	init_freq = ENTRY_BLOCK_PTR->frequency;
+	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
 	init_freq = gimple_bb (SSA_NAME_DEF_STMT (op))->frequency;
 
@@ -2139,8 +2142,8 @@ param_change_prob (gimple stmt, int i)
       /* Assume that every memory is initialized at entry.
          TODO: Can we easilly determine if value is always defined
          and thus we may skip entry block?  */
-      if (ENTRY_BLOCK_PTR->frequency)
-	max = ENTRY_BLOCK_PTR->frequency;
+      if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
+	max = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
 	max = 1;
 
@@ -2397,7 +2400,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (parms_info)
     compute_bb_predicates (node, parms_info, info);
   gcc_assert (cfun == my_function);
-  order = XNEWVEC (int, n_basic_blocks);
+  order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
   for (n = 0; n < nblocks; n++)
     {
@@ -2598,14 +2601,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (!early && nonconstant_names.exists ())
     {
       struct loop *loop;
-      loop_iterator li;
       predicate loop_iterations = true_predicate ();
       predicate loop_stride = true_predicate ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	{
 	  vec<edge> exits;
 	  edge ex;

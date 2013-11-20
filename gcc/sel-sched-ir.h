@@ -1024,7 +1024,7 @@ inner_loop_header_p (basic_block bb)
   if (!current_loop_nest)
     return false;
 
-  if (bb == EXIT_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   inner_loop = bb->loop_father;
@@ -1050,7 +1050,7 @@ get_loop_exit_edges_unique_dests (const struct loop *loop)
   vec<edge> edges = vNULL;
   struct loop_exit *exit;
 
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
               && current_loops->state & LOOPS_HAVE_RECORDED_EXITS);
 
   for (exit = loop->exits->next; exit->e; exit = exit->next)
@@ -1083,7 +1083,7 @@ sel_bb_empty_or_nop_p (basic_block bb)
   if (!INSN_NOP_P (first))
     return false;
 
-  if (bb == EXIT_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   last = sel_bb_end (bb);
@@ -1204,7 +1204,7 @@ _succ_iter_start (insn_t *succp, insn_t insn, int flags)
   i.current_exit = -1;
   i.loop_exits.create (0);
 
-  if (bb != EXIT_BLOCK_PTR && BB_END (bb) != insn)
+  if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun) && BB_END (bb) != insn)
     {
       i.bb_end = false;
 
@@ -1308,7 +1308,7 @@ _succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
 	{
 	  basic_block bb = ip->e2->dest;
 
-	  if (bb == EXIT_BLOCK_PTR || bb == after_recovery)
+	  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb == after_recovery)
 	    *succp = exit_insn;
 	  else
 	    {

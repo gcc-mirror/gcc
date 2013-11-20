@@ -1167,6 +1167,7 @@ struct mips_cpu_info {
 %{meva} %{mno-eva} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
+%{mfix-rm7000} %{mno-fix-rm7000} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %{mfix-24k} \
 %{noasmopt:-O0; O0|fno-delayed-branch:-O1; O*:-O2; :-O1} \

@@ -5295,7 +5295,8 @@ lra_inheritance (void)
 	{
 	  if (lra_dump_file != NULL)
 	    fprintf (lra_dump_file, " %d", bb->index);
-	  if (bb->next_bb == EXIT_BLOCK_PTR || LABEL_P (BB_HEAD (bb->next_bb)))
+	  if (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+	      || LABEL_P (BB_HEAD (bb->next_bb)))
 	    break;
 	  e = find_fallthru_edge (bb->succs);
 	  if (! e)

@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "function.h"
 #include "alias.h"
@@ -2958,7 +2960,7 @@ init_alias_analysis (void)
      The state of the arrays for the set chain in question does not matter
      since the program has undefined behavior.  */
 
-  rpo = XNEWVEC (int, n_basic_blocks);
+  rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
 
   pass = 0;

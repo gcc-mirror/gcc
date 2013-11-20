@@ -888,7 +888,7 @@ BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 	cfg-flags.def cfghooks.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
-	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H)
+	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
 RECOG_H = recog.h
 EMIT_RTL_H = emit-rtl.h
@@ -3119,7 +3119,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h \
   $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
   $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) \
-  version.h
+  version.h stringpool.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile

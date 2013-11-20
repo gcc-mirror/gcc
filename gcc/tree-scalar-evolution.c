@@ -257,6 +257,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
 #include "hash-table.h"
 #include "gimple-pretty-print.h"
 #include "gimple.h"
@@ -266,6 +267,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
@@ -3101,16 +3103,14 @@ initialize_scalar_evolutions_analyzer (void)
 void
 scev_initialize (void)
 {
-  loop_iterator li;
   struct loop *loop;
-
 
   scalar_evolution_info = htab_create_ggc (100, hash_scev_info, eq_scev_info,
 					   del_scev_info);
 
   initialize_scalar_evolutions_analyzer ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       loop->nb_iterations = NULL_TREE;
     }
@@ -3142,7 +3142,6 @@ scev_reset_htab (void)
 void
 scev_reset (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
   scev_reset_htab ();
@@ -3150,7 +3149,7 @@ scev_reset (void)
   if (!current_loops)
     return;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       loop->nb_iterations = NULL_TREE;
     }
@@ -3296,7 +3295,6 @@ scev_const_prop (void)
   struct loop *loop, *ex_loop;
   bitmap ssa_names_to_remove = NULL;
   unsigned i;
-  loop_iterator li;
   gimple_stmt_iterator psi;
 
   if (number_of_loops (cfun) <= 1)
@@ -3358,7 +3356,7 @@ scev_const_prop (void)
     }
 
   /* Now the regular final value replacement.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       edge exit;
       tree def, rslt, niter;

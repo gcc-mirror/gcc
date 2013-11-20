@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
@@ -35,7 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-pass.h"
 #include "langhooks.h"
@@ -338,7 +341,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
      outer ones, and also that we do not try to visit a removed
      block.  */
   bb_order = single_pred_before_succ_order ();
-  n = n_basic_blocks - NUM_FIXED_BLOCKS;
+  n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   for (i = 0; i < n; i++)
     {

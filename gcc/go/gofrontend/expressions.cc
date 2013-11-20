@@ -11,6 +11,8 @@
 #include "toplev.h"
 #include "intl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "tree-iterator.h"

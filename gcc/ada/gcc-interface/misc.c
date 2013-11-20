@@ -30,6 +30,8 @@
 #include "options.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "print-tree.h"
 #include "diagnostic.h"
 #include "target.h"
 #include "ggc.h"

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "varasm.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"

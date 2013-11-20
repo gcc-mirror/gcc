@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "toplev.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "diagnostic-core.h"
 #include "tm.h"
 #include "cgraph.h"

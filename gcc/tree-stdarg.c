@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "sbitmap.h"
 #include "tree-pass.h"
@@ -96,7 +97,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 	  break;
 	}
 
-      gcc_assert (src != ENTRY_BLOCK_PTR);
+      gcc_assert (src != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
       if (! bitmap_bit_p (visited, src->index))
 	{

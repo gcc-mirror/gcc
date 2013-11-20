@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "rtl.h"
 #include "gimple.h"
 #include "gimplify.h"
@@ -43,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "tree-ssanames.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "flags.h"
@@ -8230,7 +8233,7 @@ build_omp_regions (void)
 {
   gcc_assert (root_omp_region == NULL);
   calculate_dominance_info (CDI_DOMINATORS);
-  build_omp_regions_1 (ENTRY_BLOCK_PTR, NULL, false);
+  build_omp_regions_1 (ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, false);
 }
 
 /* Main entry point for expanding OMP-GIMPLE into runtime calls.  */

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "ggc.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
@@ -34,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
@@ -929,7 +931,8 @@ expand_phi_nodes (struct ssaexpand *sa)
   elim_graph g = new_elim_graph (sa->map->num_partitions);
   g->map = sa->map;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     if (!gimple_seq_empty_p (phi_nodes (bb)))
       {
 	edge e;

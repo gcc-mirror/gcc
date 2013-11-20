@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -321,7 +322,7 @@ delegitimize_mem_from_attrs (rtx x)
 	      {
 		offset += bitpos / BITS_PER_UNIT;
 		if (toffset)
-		  offset += TREE_INT_CST_LOW (toffset);
+		  offset += tree_to_shwi (toffset);
 	      }
 	    break;
 	  }

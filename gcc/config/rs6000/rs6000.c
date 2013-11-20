@@ -32,6 +32,11 @@
 #include "recog.h"
 #include "obstack.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "print-tree.h"
+#include "varasm.h"
 #include "expr.h"
 #include "optabs.h"
 #include "except.h"
@@ -3216,6 +3221,12 @@ rs6000_option_override_internal (bool global_init_p)
 	    warning (0, "-mstring is not supported on little endian systems");
 	}
     }
+
+  /* If little-endian, default to -mstrict-align on older processors.
+     Testing for htm matches power8 and later.  */
+  if (!BYTES_BIG_ENDIAN
+      && !(processor_target_table[tune_index].target_enable & OPTION_MASK_HTM))
+    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
 
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
@@ -7984,6 +7995,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, enum machine_mode mode)
   gcc_assert (!BYTES_BIG_ENDIAN
 	      && VECTOR_MEM_VSX_P (mode)
 	      && mode != TImode
+	      && !gpr_or_gpr_p (dest, source)
 	      && (MEM_P (source) ^ MEM_P (dest)));
 
   if (MEM_P (source))
@@ -22938,7 +22950,7 @@ rs6000_emit_prologue (void)
 				      && DEFAULT_ABI == ABI_V4
 				      && flag_pic
 				      && ! info->lr_save_p
-				      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0);
+				      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0);
       if (save_LR_around_toc_setup)
 	{
 	  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -29801,6 +29813,8 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	  break;
       if (i == 16)
 	{
+          if (!BYTES_BIG_ENDIAN)
+            elt = 15 - elt;
 	  emit_insn (gen_altivec_vspltb (target, op0, GEN_INT (elt)));
 	  return true;
 	}

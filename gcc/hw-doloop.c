@@ -260,7 +260,7 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx tail_insn, rtx reg)
     {
       edge e;
       edge_iterator ei;
-      if (bb == EXIT_BLOCK_PTR)
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  /* We've reached the exit block.  The loop must be bad. */
 	  if (dump_file)
@@ -539,7 +539,7 @@ reorder_loops (hwloop_info loops)
   
   FOR_EACH_BB (bb)
     {
-      if (bb->next_bb != EXIT_BLOCK_PTR)
+      if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	bb->aux = bb->next_bb;
       else
 	bb->aux = NULL;

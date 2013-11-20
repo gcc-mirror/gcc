@@ -208,7 +208,8 @@ graphite_initialize (isl_ctx *ctx)
   if (number_of_loops (cfun) <= 1
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
-      || n_basic_blocks > PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION))
+      || (n_basic_blocks_for_fn (cfun) >
+	  PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	print_global_statistics (dump_file);

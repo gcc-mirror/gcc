@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "ggc.h"
@@ -38,7 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
@@ -478,8 +481,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		    && csize
 		    && tree_fits_uhwi_p (csize)
 		    && wi::fits_shwi_p (bit_offset))
-		  maxsize = tree_to_shwi (csize)
-			    - bit_offset.to_shwi ();
+		  maxsize = tree_to_uhwi (csize) - bit_offset.to_shwi ();
 		else
 		  maxsize = -1;
 	      }
@@ -609,7 +611,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       && (!wi::fits_shwi_p (bit_offset)
 	  || !tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (exp)))
 	  || (bit_offset.to_shwi () + maxsize
-	      == (HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (TREE_TYPE (exp))))))
+	      == (HOST_WIDE_INT) tree_to_uhwi
+	           (TYPE_SIZE (TREE_TYPE (exp))))))
     maxsize = -1;
 
  done:

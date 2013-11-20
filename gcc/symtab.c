@@ -22,7 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "rtl.h"
 #include "tree.h"
+#include "print-tree.h"
+#include "varasm.h"
+#include "function.h"
+#include "emit-rtl.h"
 #include "gimple.h"
 #include "tree-inline.h"
 #include "langhooks.h"
@@ -32,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "timevar.h"
 #include "lto-streamer.h"
-#include "rtl.h"
 #include "output.h"
 
 const char * const ld_plugin_symbol_resolution_names[]=

@@ -31,6 +31,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
+#include "gcc-symtab.h"
+#include "varasm.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -960,9 +964,9 @@ align_variable (tree decl, bool dont_output_data)
      In particular, a.out format supports a maximum alignment of 4.  */
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning (0, "alignment of %q+D is greater than maximum object "
-               "file alignment.  Using %d", decl,
-	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+      error ("alignment of %q+D is greater than maximum object "
+	     "file alignment %d", decl,
+	     MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
@@ -1635,7 +1639,7 @@ assemble_start_function (tree decl, const char *fnname)
 	 align the hot section and write out the hot section label.
 	 But if the current function is a thunk, we do not have a CFG.  */
       if (!cfun->is_thunk
-	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
+	  && BB_PARTITION (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb) == BB_COLD_PARTITION)
 	{
 	  switch_to_section (text_section);
 	  assemble_align (DECL_ALIGN (decl));
@@ -1908,8 +1912,8 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 
   if (!sect->noswitch.callback (decl, name, size, rounded)
       && (unsigned HOST_WIDE_INT) (align / BITS_PER_UNIT) > rounded)
-    warning (0, "requested alignment for %q+D is greater than "
-	     "implemented alignment of %wu", decl, rounded);
+    error ("requested alignment for %q+D is greater than "
+	   "implemented alignment of %wu", decl, rounded);
 }
 
 /* A subroutine of assemble_variable.  Output the label and contents of

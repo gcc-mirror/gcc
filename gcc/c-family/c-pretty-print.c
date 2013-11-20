@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "attribs.h"
 #include "intl.h"
 #include "c-pretty-print.h"
 #include "tree-pretty-print.h"

@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef VMS_DEBUGGING_INFO
 #include "tree.h"
+#include "varasm.h"
 #include "version.h"
 #include "flags.h"
 #include "rtl.h"

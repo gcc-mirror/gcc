@@ -39,6 +39,24 @@
 
 	* c-typeck.c: Include only gimplify.h and gimple.h as needed.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* c-decl.c: Include print-tree.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stringpool.h.
+	* c-lang.c: Include fold-const.h.
+	* c-parser.c: Include stringpool.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include trans-mem.h.
+	* c-typeck.c: Include stor-layout.h.
+	Include trans-mem.h.
+	Include varasm.h.
+	Include stmt.h.
+
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-tree.h (c_typespec_keyword): Add cts_auto_type.

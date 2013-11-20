@@ -198,12 +198,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "ggc.h"
@@ -2035,7 +2037,11 @@ combinable_refs_p (dref r1, dref r2,
 
   stmt = find_common_use_stmt (&name1, &name2);
 
-  if (!stmt)
+  if (!stmt
+      /* A simple post-dominance check - make sure the combination
+         is executed under the same condition as the references.  */
+      || (gimple_bb (stmt) != gimple_bb (r1->stmt)
+	  && gimple_bb (stmt) != gimple_bb (r2->stmt)))
     return false;
 
   acode = gimple_assign_rhs_code (stmt);
@@ -2505,11 +2511,10 @@ tree_predictive_commoning (void)
 {
   bool unrolled = false;
   struct loop *loop;
-  loop_iterator li;
   unsigned ret = 0;
 
   initialize_original_copy_tables ();
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     if (optimize_loop_for_speed_p (loop))
       {
 	unrolled |= tree_predictive_commoning_loop (loop);

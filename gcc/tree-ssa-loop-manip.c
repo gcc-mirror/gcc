@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
@@ -194,7 +195,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
   /* Normally the work list size is bounded by the number of basic
      blocks in the largest loop.  We don't know this number, but we
      can be fairly sure that it will be relatively small.  */
-  worklist.create (MAX (8, n_basic_blocks / 128));
+  worklist.create (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {
@@ -230,7 +231,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 	  bool pred_visited;
 
 	  /* We should have met DEF_BB along the way.  */
-	  gcc_assert (pred != ENTRY_BLOCK_PTR);
+	  gcc_assert (pred != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
 	  if (pred_loop_depth >= def_loop_depth)
 	    {
@@ -349,12 +350,11 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap *loop_exits)
 static void
 get_loops_exits (bitmap *loop_exits)
 {
-  loop_iterator li;
   struct loop *loop;
   unsigned j;
   edge e;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       vec<edge> exit_edges = get_loop_exit_edges (loop);
       loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);

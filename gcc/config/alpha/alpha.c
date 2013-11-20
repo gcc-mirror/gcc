@@ -25,6 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
@@ -51,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-ssa.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-stdarg.h"
 #include "tm-constrs.h"
@@ -4831,7 +4835,8 @@ alpha_gp_save_rtx (void)
 	 label.  Emit the sequence properly on the edge.  We are only
 	 invoked from dw2_build_landing_pads and finish_eh_generation
 	 will call commit_edge_insertions thanks to a kludge.  */
-      insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR));
+      insert_insn_on_edge (seq,
+			   single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
       cfun->machine->gp_save_rtx = m;
     }

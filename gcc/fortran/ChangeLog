@@ -7,6 +7,33 @@
 	* trans-expr.c: Include only gimplify.h and gimple.h as needed.
 	* trans-openmp.c: Likewise.
 
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* decl.c: Include stringpool.h.
+	* iresolve.c: Include stringpool.h.
+	* match.c: Include stringpool.h.
+	* module.c: Include stringpool.h.
+	* target-memory.c: Include stor-layout.h.
+	* trans-common.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* trans-const.c: Include stor-layout.h.
+	* trans-decl.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include attribs.h.
+	* trans-expr.c: Include stringpool.h.
+	* trans-intrinsic.c: Include stringpool.h.
+	Include tree-nested.h.
+	Include stor-layout.h.
+	* trans-io.c: Include stringpool.h.
+	Include stor-layout.h.
+	* trans-openmp.c: Include stringpool.h.
+	* trans-stmt.c: Include stringpool.h.
+	* trans-types.c: Include stor-layout.h.
+	Include stringpool.h.
+	* trans.c: Include stringpool.h.
+
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* f95-lang.c: Don't include gimple.h.

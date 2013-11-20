@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "flags.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "calls.h"
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
@@ -33,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
@@ -5816,8 +5819,7 @@ find_assert_locations (void)
      the order we compute liveness and insert asserts we otherwise
      fail to insert asserts into the loop latch.  */
   loop_p loop;
-  loop_iterator li;
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;

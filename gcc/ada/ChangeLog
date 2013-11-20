@@ -1,3 +1,11 @@
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use tree_to_uhwi.
+	* gcc-interface/utils.c (make_packable_type): Likewise.
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi rather than
@@ -63,6 +71,25 @@
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc-interface/trans.c: Include gimple.h and pointer-set.h.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* gcc-interface/decl.c: Include stringpool.h
+	Include stor-layout.h
+	* gcc-interface/misc.c: Include stor-layout.h
+	Include print-tree.h
+	* gcc-interface/trans.c: Include stringpool.h
+	Include stor-layout.h
+	Include stmt.h
+	Include varasm.h
+	* gcc-interface/utils.c: Include stringpool.h
+	Include stor-layout.h
+	Include attribs.h
+	Include varasm.h
+	* gcc-interface/utils2.c: Include stringpool.h
+	Include stor-layout.h
+	Include attribs.h
+	Include varasm.h
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 

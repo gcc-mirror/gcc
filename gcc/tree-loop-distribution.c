@@ -48,10 +48,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
+#include "stor-layout.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"
@@ -1659,7 +1661,6 @@ static unsigned int
 tree_loop_distribution (void)
 {
   struct loop *loop;
-  loop_iterator li;
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;
@@ -1675,7 +1676,7 @@ tree_loop_distribution (void)
 
   /* We can at the moment only distribute non-nested loops, thus restrict
      walking to innermost loops.  */
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
       vec<gimple> work_list = vNULL;
       basic_block *bbs;

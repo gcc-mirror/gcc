@@ -33,6 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "attribs.h"
+#include "varasm.h"
 #include "tm_p.h"
 #include "function.h"
 #include "obstack.h"
@@ -54,7 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-phinodes.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "params.h"
 #include "pointer-set.h"
@@ -8580,8 +8586,8 @@ retry:
   /* Third, unsigned integers with top bit set never fit signed types.  */
   if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
     {
-      int uprec = GET_MODE_PRECISION (TYPE_MODE TREE_TYPE (c));
-      if (uprec < TYPE_PRECISION (TREE_TYPE (c)))
+      int prec = GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (c))) - 1;
+      if (prec < TYPE_PRECISION (TREE_TYPE (c)))
 	{
 	  /* When a tree_cst is converted to a wide-int, the precision
 	     is taken from the type.  However, if the precision of the
@@ -8589,7 +8595,7 @@ retry:
 	     possible that the value will not fit.  The test below
 	     fails if any bit is set between the sign bit of the
 	     underlying mode and the top bit of the type.  */
-	  if (wi::ne_p (wi::zext (c, uprec - 1), c))
+	  if (wi::ne_p (wi::zext (c, prec - 1), c))
 	    return false;
 	}
       else if (wi::neg_p (c))

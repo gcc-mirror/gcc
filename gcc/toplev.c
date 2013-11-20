@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "line-map.h"
 #include "input.h"
 #include "tree.h"
+#include "varasm.h"
+#include "tree-inline.h"
 #include "realmpfr.h"	/* For GMP/MPFR/MPC versions, in print_version.  */
 #include "version.h"
 #include "rtl.h"

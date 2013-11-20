@@ -1007,7 +1007,7 @@ static void
 df_lr_confluence_0 (basic_block bb)
 {
   bitmap op1 = &df_lr_get_bb_info (bb->index)->out;
-  if (bb != EXIT_BLOCK_PTR)
+  if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     bitmap_copy (op1, &df->hardware_regs_used);
 }
 

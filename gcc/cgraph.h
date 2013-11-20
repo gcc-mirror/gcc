@@ -434,7 +434,7 @@ struct GTY(()) cgraph_indirect_call_info
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
-  tree otr_type;
+  tree otr_type, outer_type;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -455,6 +455,8 @@ struct GTY(()) cgraph_indirect_call_info
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;
+  unsigned int maybe_in_construction : 1;
+  unsigned int maybe_derived_type : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
@@ -741,7 +743,7 @@ void cgraph_finalize_function (tree, bool);
 void finalize_compilation_unit (void);
 void compile (void);
 void init_cgraph (void);
-bool cgraph_process_new_functions (void);
+void cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);
 void fixup_same_cpp_alias_visibility (symtab_node *, symtab_node *target, tree);
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
@@ -850,6 +852,8 @@ void symtab_initialize_asm_name_hash (void);
 void symtab_prevail_in_asm_name_hash (symtab_node *node);
 void varpool_remove_initializer (struct varpool_node *);
 
+/* In cgraph.c */
+extern void change_decl_assembler_name (tree, tree);
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *

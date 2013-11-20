@@ -1815,9 +1815,8 @@ calculate_loop_reg_pressure (void)
   basic_block bb;
   rtx insn, link;
   struct loop *loop, *parent;
-  loop_iterator li;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if (loop->aux == NULL)
       {
 	loop->aux = xcalloc (1, sizeof (struct loop_data));
@@ -1884,7 +1883,7 @@ calculate_loop_reg_pressure (void)
   bitmap_clear (&curr_regs_live);
   if (flag_ira_region == IRA_REGION_MIXED
       || flag_ira_region == IRA_REGION_ALL)
-    FOR_EACH_LOOP (li, loop, 0)
+    FOR_EACH_LOOP (loop, 0)
       {
 	EXECUTE_IF_SET_IN_BITMAP (&LOOP_DATA (loop)->regs_live, 0, j, bi)
 	  if (! bitmap_bit_p (&LOOP_DATA (loop)->regs_ref, j))
@@ -1898,7 +1897,7 @@ calculate_loop_reg_pressure (void)
       }
   if (dump_file == NULL)
     return;
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       parent = loop_outer (loop);
       fprintf (dump_file, "\n  Loop %d (parent %d, header bb%d, depth %d)\n",
@@ -1933,7 +1932,6 @@ void
 move_loop_invariants (void)
 {
   struct loop *loop;
-  loop_iterator li;
 
   if (flag_ira_loop_pressure)
     {
@@ -1945,7 +1943,7 @@ move_loop_invariants (void)
     }
   df_set_flags (DF_EQ_NOTES + DF_DEFER_INSN_RESCAN);
   /* Process the loops, innermost first.  */
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       curr_loop = loop;
       /* move_single_loop_invariants for very large loops
@@ -1954,7 +1952,7 @@ move_loop_invariants (void)
 	move_single_loop_invariants (loop);
     }
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       free_loop_data (loop);
     }

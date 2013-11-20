@@ -98,7 +98,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr basic_string_view(const basic_string_view&) noexcept = default;
 
       template<typename _Allocator>
-        basic_string_view(const basic_string<_CharT, _Traits, _Allocator>& __str) noexcept
+        basic_string_view(const basic_string<_CharT, _Traits,
+			  _Allocator>& __str) noexcept
         : _M_len{__str.length()}, _M_str{__str.data()}
         { }
 
@@ -159,7 +160,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr size_type
       max_size() const noexcept
-      { return _S_max_size; }
+      { return ((npos - sizeof(size_type) - sizeof(void*))
+		/ sizeof(value_type) / 4); }
 
       constexpr bool
       empty() const noexcept
@@ -406,12 +408,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-
-      //  Compute max_size similarly to how string does it.
-      static const size_type _S_max_size = (npos
-					  - sizeof(size_type) - sizeof(void*))
-					 / sizeof(value_type) / 4;
-
       static constexpr const int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {

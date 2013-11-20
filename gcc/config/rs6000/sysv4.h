@@ -538,12 +538,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #define	CC1_ENDIAN_BIG_SPEC ""
 
-#define	CC1_ENDIAN_LITTLE_SPEC "\
-%{!mstrict-align: %{!mno-strict-align: \
-    %{!mcall-i960-old: \
-	-mstrict-align \
-    } \
-}}"
+#define	CC1_ENDIAN_LITTLE_SPEC ""
 
 #define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_big)"
 

@@ -46,6 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "tree-iterator.h"
 #include "realmpfr.h"
 #include "rtl.h"
 #include "expr.h"
@@ -6580,7 +6583,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 	  && wi::ltu_p (wi::to_widest (TREE_OPERAND (inner, 1)) + bitnum,
 			TYPE_PRECISION (type)))
 	{
-	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
+	  bitnum += tree_to_uhwi (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);
 	}
 
@@ -12546,8 +12549,8 @@ fold_binary_loc (location_t loc,
 	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
 	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) < prec)
 	{
-	  HOST_WIDE_INT low = (tree_to_shwi (TREE_OPERAND (arg0, 1))
-			       + tree_to_shwi (arg1));
+	  unsigned int low = (tree_to_uhwi (TREE_OPERAND (arg0, 1))
+			      + tree_to_uhwi (arg1));
 
 	  /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
 	     being well defined.  */
@@ -12571,13 +12574,13 @@ fold_binary_loc (location_t loc,
       if (((code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR)
            || (TYPE_UNSIGNED (type)
 	       && code == RSHIFT_EXPR && TREE_CODE (arg0) == LSHIFT_EXPR))
-	  && tree_fits_shwi_p (arg1)
-	  && tree_to_shwi (arg1) < prec
-	  && tree_fits_shwi_p (TREE_OPERAND (arg0, 1))
-	  && tree_to_shwi (TREE_OPERAND (arg0, 1)) < prec)
+	  && tree_fits_uhwi_p (arg1)
+	  && tree_to_uhwi (arg1) < prec
+	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
+	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) < prec)
 	{
-	  HOST_WIDE_INT low0 = tree_to_shwi (TREE_OPERAND (arg0, 1));
-	  HOST_WIDE_INT low1 = tree_to_shwi (arg1);
+	  HOST_WIDE_INT low0 = tree_to_uhwi (TREE_OPERAND (arg0, 1));
+	  HOST_WIDE_INT low1 = tree_to_uhwi (arg1);
 	  tree lshift;
 	  tree arg00;
 

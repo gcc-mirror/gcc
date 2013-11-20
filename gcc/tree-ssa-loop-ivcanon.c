@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
@@ -982,7 +983,6 @@ canonicalize_loop_induction_variables (struct loop *loop,
 unsigned int
 canonicalize_induction_variables (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
   bool irred_invalidated = false;
@@ -991,7 +991,7 @@ canonicalize_induction_variables (void)
   free_numbers_of_iterations_estimates ();
   estimate_numbers_of_iterations ();
 
-  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,

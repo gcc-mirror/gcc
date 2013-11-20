@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
@@ -31,7 +32,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "dumpfile.h"
@@ -760,7 +763,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
     }
 
   /* For non-calls, store the information that makes up the address.  */
-
+  tree orig = ref;
   while (ref)
     {
       vn_reference_op_s temp;
@@ -810,7 +813,15 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 			 + wi::lrshift (wi::to_offset (bit_offset),
 					BITS_PER_UNIT == 8
 					? 3 : exact_log2 (BITS_PER_UNIT)));
-		    if (wi::fits_shwi_p (off))
+		    if (wi::fits_shwi_p (off)
+			/* Probibit value-numbering zero offset components
+			   of addresses the same before the pass folding
+			   __builtin_object_size had a chance to run
+			   (checking cfun->after_inlining does the
+			   trick here).  */
+			&& (TREE_CODE (orig) != ADDR_EXPR
+			    || off != 0
+			    || cfun->after_inlining))
 		      temp.off = off.to_shwi ();
 		  }
 	      }
@@ -1900,7 +1911,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && TREE_CODE (rhs) != ADDR_EXPR)
 	return (void *)-1;
 
-      copy_size = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2));
+      copy_size = tree_to_uhwi (gimple_call_arg (def_stmt, 2));
 
       /* The bases of the destination and the references have to agree.  */
       if ((TREE_CODE (base) != MEM_REF
@@ -1916,7 +1927,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       /* And the access has to be contained within the memcpy destination.  */
       at = offset / BITS_PER_UNIT;
       if (TREE_CODE (base) == MEM_REF)
-	at += TREE_INT_CST_LOW (TREE_OPERAND (base, 1));
+	at += tree_to_uhwi (TREE_OPERAND (base, 1));
       if (lhs_offset > at
 	  || lhs_offset + copy_size < at + maxsize / BITS_PER_UNIT)
 	return (void *)-1;
@@ -3971,13 +3982,14 @@ init_scc_vn (void)
   shared_lookup_phiargs.create (0);
   shared_lookup_references.create (0);
   rpo_numbers = XNEWVEC (int, last_basic_block);
-  rpo_numbers_temp = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+  rpo_numbers_temp =
+    XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   pre_and_rev_post_order_compute (NULL, rpo_numbers_temp, false);
 
   /* RPO numbers is an array of rpo ordering, rpo[i] = bb means that
      the i'th block in RPO order is bb.  We want to map bb's to RPO
      numbers, so we need to rearrange this array.  */
-  for (j = 0; j < n_basic_blocks - NUM_FIXED_BLOCKS; j++)
+  for (j = 0; j < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; j++)
     rpo_numbers[rpo_numbers_temp[j]] = j;
 
   XDELETE (rpo_numbers_temp);

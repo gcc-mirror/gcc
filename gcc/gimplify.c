@@ -24,9 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "stringpool.h"
+#include "calls.h"
+#include "varasm.h"
+#include "stor-layout.h"
+#include "stmt.h"
+#include "print-tree.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "tree-pretty-print.h"
@@ -5002,7 +5009,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 	    }
 	  else
 	    {
-	      gimple gtry;
+	      gimple_statement_try *gtry;
 	      gimple_seq seq;
 	      enum gimple_try_flags kind;
 
@@ -5016,7 +5023,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
               /* Do not use gsi_replace here, as it may scan operands.
                  We want to do a simple structural modification only.  */
 	      gsi_set_stmt (&iter, gtry);
-	      iter = gsi_start (gtry->gimple_try.eval);
+	      iter = gsi_start (gtry->eval);
 	    }
 	}
       else

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "toplev.h"
 #include "tree.h"
+#include "gcc-symtab.h"
 #include "gimple.h"
 #include "tm.h"
 #include "cgraph.h"

@@ -211,8 +211,9 @@ enum sanitize_code {
   SANITIZE_DIVIDE = 1 << 3,
   SANITIZE_UNREACHABLE = 1 << 4,
   SANITIZE_VLA = 1 << 5,
+  SANITIZE_NULL = 1 << 6,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
-		       | SANITIZE_VLA
+		       | SANITIZE_VLA | SANITIZE_NULL
 };
 
 /* flag_vtable_verify initialization levels. */

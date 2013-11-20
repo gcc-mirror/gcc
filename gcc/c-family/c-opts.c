@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"		/* For debug_hooks.  */
 #include "opts.h"
 #include "options.h"
+#include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
 #include "c-target.h"
 #include "tm.h"			/* For BYTES_BIG_ENDIAN,
@@ -1396,6 +1397,17 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile),
     pp_file_change (new_map);
   else
     fe_file_change (new_map);
+
+  if (new_map 
+      && (new_map->reason == LC_ENTER || new_map->reason == LC_RENAME))
+    {
+      /* Signal to plugins that a file is included.  This could happen
+	 several times with the same file path, e.g. because of
+	 several '#include' or '#line' directives...  */
+      invoke_plugin_callbacks 
+	(PLUGIN_INCLUDE_FILE,
+	 const_cast<char*> (ORDINARY_MAP_FILE_NAME (new_map)));
+    }
 
   if (new_map == 0 || (new_map->reason == LC_LEAVE && MAIN_FILE_P (new_map)))
     {

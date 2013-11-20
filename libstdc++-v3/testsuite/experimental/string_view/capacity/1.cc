@@ -155,13 +155,6 @@ test01()
   VERIFY( sz03 >= sz04 );
 }
 
-#if !__GXX_WEAK__
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template 
-  const std::experimental::basic_string_view<A<B>>::size_type 
-  std::experimental::basic_string_view<A<B>>::_S_max_size;
-#endif
-
 int
 main()
 {

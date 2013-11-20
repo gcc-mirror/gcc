@@ -551,5 +551,6 @@ extern void gen_satfract_conv_libfunc (convert_optab, const char *,
 extern void gen_satfractuns_conv_libfunc (convert_optab, const char *,
 					  enum machine_mode,
 					  enum machine_mode);
+extern void init_tree_optimization_optabs (tree);
 
 #endif /* GCC_OPTABS_H */

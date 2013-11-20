@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "output.h"
 #include "regs.h"
@@ -584,7 +586,7 @@ unsigned
 coverage_compute_cfg_checksum (void)
 {
   basic_block bb;
-  unsigned chksum = n_basic_blocks;
+  unsigned chksum = n_basic_blocks_for_fn (cfun);
 
   FOR_EACH_BB (bb)
     {

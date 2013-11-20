@@ -302,6 +302,7 @@ extern rtx emit_block_move_via_libcall (rtx, rtx, rtx, bool);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 			          unsigned int, HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
+				  unsigned HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT);
 extern bool emit_storent_insn (rtx to, rtx from);
 
@@ -365,6 +366,7 @@ extern rtx clear_storage (rtx, rtx, enum block_op_methods);
 extern rtx clear_storage_hints (rtx, rtx, enum block_op_methods,
 			        unsigned int, HOST_WIDE_INT,
 				unsigned HOST_WIDE_INT,
+				unsigned HOST_WIDE_INT,
 				unsigned HOST_WIDE_INT);
 /* The same, but always output an library call.  */
 rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
@@ -372,6 +374,7 @@ rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
 /* Expand a setmem pattern; return true if successful.  */
 extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int,
 				    unsigned int, HOST_WIDE_INT,
+				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT);
 
@@ -744,5 +747,24 @@ extern void expand_case (gimple);
 
 /* Like expand_case but special-case for SJLJ exception dispatching.  */
 extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
+
+/* Determine whether the LEN bytes can be moved by using several move
+   instructions.  Return nonzero if a call to move_by_pieces should
+   succeed.  */
+extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
+
+extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
+bool array_at_struct_end_p (tree);
+
+/* Return a tree of sizetype representing the size, in bytes, of the element
+   of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_element_size (tree);
+
+extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
+				      HOST_WIDE_INT *, bool *);
+
+/* Return a tree representing the offset, in bytes, of the field referenced
+   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
+extern tree component_ref_field_offset (tree);
 
 #endif /* GCC_EXPR_H */

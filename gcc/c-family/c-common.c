@@ -23,6 +23,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
+#include "fold-const.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "varasm.h"
+#include "trans-mem.h"
 #include "flags.h"
 #include "c-pragma.h"
 #include "ggc.h"
@@ -2531,7 +2538,7 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 }
 
 /* Checks if expression EXPR of real/integer type cannot be converted 
-   to the real/integer type TYPE. Function returns true when:
+   to the real/integer type TYPE. Function returns non-zero when:
 	* EXPR is a constant which cannot be exactly converted to TYPE 
 	* EXPR is not a constant and size of EXPR's type > than size of TYPE, 
 	  for EXPR type and TYPE being both integers or both real.
@@ -2539,12 +2546,12 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 	* EXPR is not a constant of integer type which cannot be 
 	  exactly converted to real type.  
    Function allows conversions between types of different signedness and
-   does not return true in that case.  Function can produce signedness
-   warnings if PRODUCE_WARNS is true.  */
-bool
+   can return SAFE_CONVERSION (zero) in that case.  Function can produce
+   signedness warnings if PRODUCE_WARNS is true.  */
+enum conversion_safety
 unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 {
-  bool give_warning = false;
+  enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
   location_t loc = EXPR_LOC_OR_HERE (expr);
 
@@ -2556,7 +2563,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	  && TREE_CODE (type) == INTEGER_TYPE)
 	{
 	  if (!real_isinteger (TREE_REAL_CST_PTR (expr), TYPE_MODE (expr_type)))
-	    give_warning = true;
+	    give_warning = UNSAFE_REAL;
 	}
       /* Warn for an integer constant that does not fit into integer type.  */
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
@@ -2577,7 +2584,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			    " constant value to negative integer");
 	    }
 	  else
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 	}
       else if (TREE_CODE (type) == REAL_TYPE)
 	{
@@ -2586,7 +2593,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	    {
 	      REAL_VALUE_TYPE a = real_value_from_int_cst (0, expr);
 	      if (!exact_real_truncate (TYPE_MODE (type), &a))
-		give_warning = true;
+		give_warning = UNSAFE_REAL;
 	    }
 	  /* Warn for a real constant that does not fit into a smaller
 	     real type.  */
@@ -2595,7 +2602,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	    {
 	      REAL_VALUE_TYPE a = TREE_REAL_CST (expr);
 	      if (!exact_real_truncate (TYPE_MODE (type), &a))
-		give_warning = true;
+		give_warning = UNSAFE_REAL;
 	    }
 	}
     }
@@ -2604,7 +2611,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
       /* Warn for real types converted to integer types.  */
       if (TREE_CODE (expr_type) == REAL_TYPE
 	  && TREE_CODE (type) == INTEGER_TYPE)
-	give_warning = true;
+	give_warning = UNSAFE_REAL;
 
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
 	       && TREE_CODE (type) == INTEGER_TYPE)
@@ -2642,7 +2649,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			  && int_fits_type_p (op1, c_common_signed_type (type))
 			  && int_fits_type_p (op1,
 					      c_common_unsigned_type (type))))
-		    return false;
+		    return SAFE_CONVERSION;
 		  /* If constant is unsigned and fits in the target
 		     type, then the result will also fit.  */
 		  else if ((TREE_CODE (op0) == INTEGER_CST
@@ -2651,12 +2658,12 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			   || (TREE_CODE (op1) == INTEGER_CST
 			       && unsigned1
 			       && int_fits_type_p (op1, type)))
-		    return false;
+		    return SAFE_CONVERSION;
 		}
 	    }
 	  /* Warn for integer types converted to smaller integer types.  */
 	  if (TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 
 	  /* When they are the same width but different signedness,
 	     then the value may change.  */
@@ -2692,14 +2699,14 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 
 	  if (!exact_real_truncate (TYPE_MODE (type), &real_low_bound)
 	      || !exact_real_truncate (TYPE_MODE (type), &real_high_bound))
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 	}
 
       /* Warn for real types converted to smaller real types.  */
       else if (TREE_CODE (expr_type) == REAL_TYPE
 	       && TREE_CODE (type) == REAL_TYPE
 	       && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
-	give_warning = true;
+	give_warning = UNSAFE_REAL;
     }
 
   return give_warning;
@@ -2713,8 +2720,9 @@ conversion_warning (tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
   location_t loc = EXPR_LOC_OR_HERE (expr);
+  enum conversion_safety conversion_kind;
 
-  if (!warn_conversion && !warn_sign_conversion)
+  if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
     return;
 
   switch (TREE_CODE (expr))
@@ -2741,7 +2749,12 @@ conversion_warning (tree type, tree expr)
 
     case REAL_CST:
     case INTEGER_CST:
-      if (unsafe_conversion_p (type, expr, true))
+      conversion_kind = unsafe_conversion_p (type, expr, true);
+      if (conversion_kind == UNSAFE_REAL)
+	warning_at (loc, OPT_Wfloat_conversion,
+		    "conversion to %qT alters %qT constant value",
+		    type, expr_type);
+      else if (conversion_kind)
 	warning_at (loc, OPT_Wconversion,
 		    "conversion to %qT alters %qT constant value",
 		    type, expr_type);
@@ -2760,7 +2773,12 @@ conversion_warning (tree type, tree expr)
       }
 
     default: /* 'expr' is not a constant.  */
-      if (unsafe_conversion_p (type, expr, true))
+      conversion_kind = unsafe_conversion_p (type, expr, true);
+      if (conversion_kind == UNSAFE_REAL)
+	warning_at (loc, OPT_Wfloat_conversion,
+		    "conversion to %qT from %qT may alter its value",
+		    type, expr_type);
+      else if (conversion_kind)
 	warning_at (loc, OPT_Wconversion,
 		    "conversion to %qT from %qT may alter its value",
 		    type, expr_type);
@@ -9194,8 +9212,6 @@ check_function_arguments_recurse (void (*callback)
 	       to be valid.  */
 	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
 	    
-	    gcc_assert (tree_fits_uhwi_p (format_num_expr));
-
 	    format_num = tree_to_uhwi (format_num_expr);
 
 	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;

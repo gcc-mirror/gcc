@@ -198,7 +198,7 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
 int
 compute_call_stmt_bb_frequency (tree decl, basic_block bb)
 {
-  int entry_freq = ENTRY_BLOCK_PTR_FOR_FUNCTION
+  int entry_freq = ENTRY_BLOCK_PTR_FOR_FN
   		     (DECL_STRUCT_FUNCTION (decl))->frequency;
   int freq = bb->frequency;
 
@@ -441,7 +441,7 @@ rebuild_cgraph_edges (void)
   cgraph_node_remove_callees (node);
   ipa_remove_all_references (&node->ref_list);
 
-  node->count = ENTRY_BLOCK_PTR->count;
+  node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB (bb)
     {
@@ -493,7 +493,7 @@ cgraph_rebuild_references (void)
     else
       i++;
 
-  node->count = ENTRY_BLOCK_PTR->count;
+  node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB (bb)
     {

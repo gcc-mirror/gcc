@@ -23,6 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "calls.h"
+#include "stringpool.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -2762,7 +2766,7 @@ epiphany_special_round_type_align (tree type, unsigned computed,
 	  || tree_to_uhwi (offset) >= try_align
 	  || tree_to_uhwi (size) >= try_align)
 	return try_align;
-      total = TREE_INT_CST_LOW (offset) + TREE_INT_CST_LOW (size);
+      total = tree_to_uhwi (offset) + tree_to_uhwi (size);
       if (total > max)
 	max = total;
     }

@@ -403,7 +403,7 @@ entered_from_non_parent_p (ira_loop_tree_node_t loop_node)
     if (bb_node->bb != NULL)
       {
 	FOR_EACH_EDGE (e, ei, bb_node->bb->preds)
-	  if (e->src != ENTRY_BLOCK_PTR
+	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	      && (src_loop_node = IRA_BB_NODE (e->src)->parent) != loop_node)
 	    {
 	      for (parent = src_loop_node->parent;
@@ -1263,7 +1263,7 @@ ira_emit (bool loops_p)
       at_bb_start[bb->index] = NULL;
       at_bb_end[bb->index] = NULL;
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR)
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  generate_edge_moves (e);
     }
   allocno_last_set

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "internal-fn.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "expr.h"
 #include "optabs.h"
 #include "gimple.h"
@@ -135,6 +136,14 @@ expand_GOMP_SIMD_VF (gimple stmt ATTRIBUTE_UNUSED)
 
 static void
 expand_GOMP_SIMD_LAST_LANE (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_UBSAN_NULL (gimple stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
 }

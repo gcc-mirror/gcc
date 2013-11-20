@@ -147,7 +147,7 @@ find_basic_block (rtx insn, int search_limit)
 
   /* The start of the function.  */
   else if (insn == 0)
-    return ENTRY_BLOCK_PTR->next_bb->index;
+    return ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index;
 
   /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
      anything other than a CODE_LABEL or note, we can't find this code.  */
@@ -966,7 +966,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
-      start_insn = (b == ENTRY_BLOCK_PTR->next_bb->index ?
+      start_insn = (b == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index ?
 		    insns : BB_HEAD (BASIC_BLOCK (b)));
       stop_insn = target;
 

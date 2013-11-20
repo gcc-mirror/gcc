@@ -1097,7 +1097,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
   vec<tree> iv_map;
 
-  if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
+  if (GBB_BB (gbb) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return next_e;
 
   nb_loops = number_of_loops (cfun);
@@ -1717,10 +1717,9 @@ gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       loop_p loop;
-      loop_iterator li;
       int num_no_dependency = 0;
 
-      FOR_EACH_LOOP (li, loop, 0)
+      FOR_EACH_LOOP (loop, 0)
 	if (loop->can_be_parallel)
 	  num_no_dependency++;
 

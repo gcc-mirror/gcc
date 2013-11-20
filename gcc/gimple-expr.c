@@ -25,7 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "gimple.h"
+#include "stringpool.h"
 #include "gimplify.h"
+#include "stor-layout.h"
 #include "demangle.h"
 #include "gimple-ssa.h"
 

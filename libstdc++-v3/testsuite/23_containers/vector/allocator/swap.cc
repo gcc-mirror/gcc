@@ -64,7 +64,9 @@ void test02()
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::vector<T, alloc_type> test_type;
   test_type v1(alloc_type(1));
+  v1.push_back(T());
   test_type v2(alloc_type(2));
+  v2.push_back(T());
   std::swap(v1, v2);
   VERIFY(2 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());

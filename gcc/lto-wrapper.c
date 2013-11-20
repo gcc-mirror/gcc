@@ -422,6 +422,18 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  break;
 
+	case OPT_ffp_contract_:
+	  /* For selected options we can merge conservatively.  */
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  /* FP_CONTRACT_OFF < FP_CONTRACT_ON < FP_CONTRACT_FAST.  */
+	  else if (foption->value < (*decoded_options)[j].value)
+	    (*decoded_options)[j] = *foption;
+	  break;
+
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -578,6 +590,7 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fgnu_tm:
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
+	case OPT_ffp_contract_:
 	  break;
 
 	default:

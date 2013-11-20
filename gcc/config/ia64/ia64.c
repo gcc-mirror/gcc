@@ -25,6 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
@@ -3488,7 +3492,7 @@ ia64_expand_prologue (void)
       edge e;
       edge_iterator ei;
 
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
 	if ((e->flags & EDGE_FAKE) == 0
 	    && (e->flags & EDGE_FALLTHRU) != 0)
 	  break;
@@ -10183,7 +10187,8 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
 
   if (NOTE_INSN_BASIC_BLOCK_P (insn))
     {
-      last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
+      last_block = NOTE_BASIC_BLOCK (insn)->next_bb
+     == EXIT_BLOCK_PTR_FOR_FN (cfun);
 
       /* Restore unwind state from immediately before the epilogue.  */
       if (need_copy_state)

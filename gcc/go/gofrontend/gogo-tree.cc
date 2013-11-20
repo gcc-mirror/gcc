@@ -8,6 +8,9 @@
 
 #include "toplev.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "tree-iterator.h"

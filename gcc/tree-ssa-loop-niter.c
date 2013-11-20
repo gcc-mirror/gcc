@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "calls.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
@@ -47,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "wide-int-print.h"
 
@@ -490,7 +493,7 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   /* Now walk the dominators of the loop header and use the entry
      guards to refine the estimates.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -1774,7 +1777,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
      the number of BBs times the number of loops in degenerate
      cases.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -3570,14 +3573,13 @@ estimated_stmt_executions (struct loop *loop, widest_int *nit)
 void
 estimate_numbers_of_iterations (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
   fold_defer_overflow_warnings ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       estimate_numbers_of_iterations_loop (loop);
     }
@@ -3847,10 +3849,9 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
 void
 free_numbers_of_iterations_estimates (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       free_numbers_of_iterations_estimates_loop (loop);
     }

@@ -3185,7 +3185,8 @@ merge_if_block (struct ce_if_block * ce_info)
       /* There should still be something at the end of the THEN or ELSE
          blocks taking us to our final destination.  */
 	gcc_assert (JUMP_P (last)
-		    || (EDGE_SUCC (combo_bb, 0)->dest == EXIT_BLOCK_PTR
+		    || (EDGE_SUCC (combo_bb, 0)->dest
+			== EXIT_BLOCK_PTR_FOR_FN (cfun)
 			&& CALL_P (last)
 			&& SIBLING_CALL_P (last))
 		    || ((EDGE_SUCC (combo_bb, 0)->flags & EDGE_EH)
@@ -3199,7 +3200,7 @@ merge_if_block (struct ce_if_block * ce_info)
      may be zero incoming edges if the THEN block didn't actually join
      back up (as with a call to a non-return function).  */
   else if (EDGE_COUNT (join_bb->preds) < 2
-	   && join_bb != EXIT_BLOCK_PTR)
+	   && join_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       /* We can merge the JOIN cleanly and update the dataflow try
 	 again on this pass.*/
@@ -3216,7 +3217,7 @@ merge_if_block (struct ce_if_block * ce_info)
 		  && single_succ (combo_bb) == join_bb);
 
       /* Remove the jump and cruft from the end of the COMBO block.  */
-      if (join_bb != EXIT_BLOCK_PTR)
+      if (join_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	tidy_fallthru_edge (single_succ_edge (combo_bb));
     }
 
@@ -3495,7 +3496,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
      code processing.  ??? we should fix this in the future.  */
   if (EDGE_COUNT (then_bb->succs) == 0)
     {
-      if (single_pred_p (else_bb) && else_bb != EXIT_BLOCK_PTR)
+      if (single_pred_p (else_bb) && else_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  rtx last_insn = BB_END (then_bb);
 
@@ -3586,7 +3587,8 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
   next = then_bb;
   if (else_bb && (next = next->next_bb) != else_bb)
     return FALSE;
-  if ((next = next->next_bb) != join_bb && join_bb != EXIT_BLOCK_PTR)
+  if ((next = next->next_bb) != join_bb
+      && join_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       if (else_bb)
 	join_bb = NULL;
@@ -3725,7 +3727,7 @@ block_has_only_trap (basic_block bb)
   rtx trap;
 
   /* We're not the exit block.  */
-  if (bb == EXIT_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return NULL_RTX;
 
   /* The block must have no successors.  */
@@ -3881,7 +3883,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 				    predictable_edge_p (then_edge)))))
     return FALSE;
 
-  if (else_bb == EXIT_BLOCK_PTR)
+  if (else_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       rtx jump = BB_END (else_edge->src);
       gcc_assert (JUMP_P (jump));
@@ -3902,12 +3904,12 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   if (then_bb->next_bb == else_bb
       && then_bb->prev_bb == test_bb
-      && else_bb != EXIT_BLOCK_PTR)
+      && else_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       redirect_edge_succ (FALLTHRU_EDGE (test_bb), else_bb);
       new_bb = 0;
     }
-  else if (else_bb == EXIT_BLOCK_PTR)
+  else if (else_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     new_bb = force_nonfallthru_and_redirect (FALLTHRU_EDGE (test_bb),
 					     else_bb, else_target);
   else
@@ -4196,9 +4198,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 saved in caller-saved regs.  A caller-saved reg requires the
 	 prologue, killing a shrink-wrap opportunity.  */
       if ((flag_shrink_wrap && HAVE_simple_return && !epilogue_completed)
-	  && ENTRY_BLOCK_PTR->next_bb == test_bb
+	  && ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == test_bb
 	  && single_succ_p (new_dest)
-	  && single_succ (new_dest) == EXIT_BLOCK_PTR
+	  && single_succ (new_dest) == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && bitmap_intersect_p (df_get_live_in (new_dest), merge_set))
 	{
 	  regset return_regs;
@@ -4213,8 +4215,10 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		&& targetm.calls.function_value_regno_p (i))
 	      bitmap_set_bit (return_regs, INCOMING_REGNO (i));
 
-	  bitmap_and_into (return_regs, df_get_live_out (ENTRY_BLOCK_PTR));
-	  bitmap_and_into (return_regs, df_get_live_in (EXIT_BLOCK_PTR));
+	  bitmap_and_into (return_regs,
+			   df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  bitmap_and_into (return_regs,
+			   df_get_live_in (EXIT_BLOCK_PTR_FOR_FN (cfun)));
 	  if (!bitmap_empty_p (return_regs))
 	    {
 	      FOR_BB_INSNS_REVERSE (new_dest, insn)
@@ -4259,7 +4263,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
     {
       if (JUMP_P (BB_END (dest_edge->src)))
 	new_dest_label = JUMP_LABEL (BB_END (dest_edge->src));
-      else if (new_dest == EXIT_BLOCK_PTR)
+      else if (new_dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	new_dest_label = ret_rtx;
       else
 	new_dest_label = block_label (new_dest);

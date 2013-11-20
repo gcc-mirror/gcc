@@ -35,9 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "hash-table.h"
@@ -2465,7 +2467,7 @@ compute_antic (void)
     }
 
   /* At the exit block we anticipate nothing.  */
-  BB_VISITED (EXIT_BLOCK_PTR) = 1;
+  BB_VISITED (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
 
   changed_blocks = sbitmap_alloc (last_basic_block + 1);
   bitmap_ones (changed_blocks);
@@ -3666,7 +3668,7 @@ insert (void)
       num_iterations++;
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
-      new_stuff = insert_aux (ENTRY_BLOCK_PTR);
+      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
       /* Clear the NEW sets before the next iteration.  We have already
          fully propagated its contents.  */
@@ -3711,24 +3713,25 @@ compute_avail (void)
 
       e = get_or_alloc_expr_for_name (name);
       add_to_value (get_expr_value_id (e), e);
-      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), e);
+      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)), e);
+      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+				    e);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR),
+      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			"tmp_gen", ENTRY_BLOCK);
-      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR),
+      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			"avail_out", ENTRY_BLOCK);
     }
 
   /* Allocate the worklist.  */
-  worklist = XNEWVEC (basic_block, n_basic_blocks);
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
-  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR);
+  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     worklist[sp++] = son;
@@ -4655,7 +4658,7 @@ init_pre (void)
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
 
-  postorder = XNEWVEC (int, n_basic_blocks);
+  postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   postorder_num = inverted_post_order_compute (postorder);
 
   alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
@@ -4731,7 +4734,7 @@ do_pre (void)
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
      computing ANTIC, either, even though it's plenty fast.  */
-  if (n_basic_blocks < 4000)
+  if (n_basic_blocks_for_fn (cfun) < 4000)
     {
       compute_antic ();
       insert ();

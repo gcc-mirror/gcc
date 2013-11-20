@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
@@ -55,8 +56,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "sese.h"
 #include "tree-ssa-propagate.h"
+#include "expr.h"
 
 #ifdef HAVE_cloog
+#include "expr.h"
 #include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"
 
@@ -3061,12 +3064,11 @@ rewrite_commutative_reductions_out_of_ssa_loop (scop_p scop,
 static void
 rewrite_commutative_reductions_out_of_ssa (scop_p scop)
 {
-  loop_iterator li;
   loop_p loop;
   bool changed = false;
   sese region = SCOP_REGION (scop);
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if (loop_in_sese_p (loop, region))
       changed |= rewrite_commutative_reductions_out_of_ssa_loop (scop, loop);
 
@@ -3088,12 +3090,11 @@ rewrite_commutative_reductions_out_of_ssa (scop_p scop)
 static bool
 scop_ivs_can_be_represented (scop_p scop)
 {
-  loop_iterator li;
   loop_p loop;
   gimple_stmt_iterator psi;
   bool result = true;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
 	continue;
@@ -3113,7 +3114,7 @@ scop_ivs_can_be_represented (scop_p scop)
 	    }
 	}
       if (!result)
-	FOR_EACH_LOOP_BREAK (li);
+	break;
     }
 
   return result;

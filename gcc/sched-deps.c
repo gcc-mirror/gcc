@@ -3963,7 +3963,7 @@ sched_deps_init (bool global_p)
 {
   /* Average number of insns in the basic block.
      '+ 1' is used to make it nonzero.  */
-  int insns_in_block = sched_max_luid / n_basic_blocks + 1;
+  int insns_in_block = sched_max_luid / n_basic_blocks_for_fn (cfun) + 1;
 
   init_deps_data_vector ();
 

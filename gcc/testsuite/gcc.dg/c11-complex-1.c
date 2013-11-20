@@ -1,6 +1,7 @@
 /* Test complex divide does not have the bug identified in N1496.  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
+/* { dg-add-options ieee } */
 
 extern void abort (void);
 extern void exit (int);

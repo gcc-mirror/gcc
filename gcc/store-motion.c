@@ -805,7 +805,7 @@ insert_store (struct st_expr * expr, edge e)
 
   /* If tmp is NULL, we found an insertion on every edge, blank the
      insertion vector for these edges, and insert at the start of the BB.  */
-  if (!tmp && bb != EXIT_BLOCK_PTR)
+  if (!tmp && bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       FOR_EACH_EDGE (tmp, ei, e->dest->preds)
 	{
@@ -848,7 +848,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
   rtx last, insn, note;
   rtx mem = smexpr->pattern;
 
-  stack = XNEWVEC (edge_iterator, n_basic_blocks);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun));
   sp = 0;
   ei = ei_start (bb->succs);
 
@@ -869,7 +869,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 	}
       bb = act->dest;
 
-      if (bb == EXIT_BLOCK_PTR
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  || bitmap_bit_p (visited, bb->index))
 	{
 	  if (!ei_end_p (ei))
@@ -1208,7 +1208,7 @@ one_store_motion_pass (void)
   if (dump_file)
     {
       fprintf (dump_file, "STORE_MOTION of %s, %d basic blocks, ",
-	       current_function_name (), n_basic_blocks);
+	       current_function_name (), n_basic_blocks_for_fn (cfun));
       fprintf (dump_file, "%d insns deleted, %d insns created\n",
 	       n_stores_deleted, n_stores_created);
     }

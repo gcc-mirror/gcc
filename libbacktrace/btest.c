@@ -92,7 +92,7 @@ struct sdata
 struct symdata
 {
   const char *name;
-  uintptr_t val;
+  uintptr_t val, size;
   int failed;
 };
 
@@ -238,7 +238,8 @@ error_callback_two (void *vdata, const char *msg, int errnum)
 
 static void
 callback_three (void *vdata, uintptr_t pc ATTRIBUTE_UNUSED,
-		const char *symname, uintptr_t symval)
+		const char *symname, uintptr_t symval,
+		uintptr_t symsize)
 {
   struct symdata *data = (struct symdata *) vdata;
 
@@ -250,6 +251,7 @@ callback_three (void *vdata, uintptr_t pc ATTRIBUTE_UNUSED,
       assert (data->name != NULL);
     }
   data->val = symval;
+  data->size = symsize;
 }
 
 /* The backtrace_syminfo error callback function.  */
@@ -458,6 +460,7 @@ f23 (int f1line, int f2line)
 
 	  symdata.name = NULL;
 	  symdata.val = 0;
+	  symdata.size = 0;
 	  symdata.failed = 0;
 
 	  i = backtrace_syminfo (state, addrs[j], callback_three,
@@ -605,12 +608,17 @@ test5 (void)
 {
   struct symdata symdata;
   int i;
+  uintptr_t addr = (uintptr_t) &global;
+
+  if (sizeof (global) > 1)
+    addr += 1;
 
   symdata.name = NULL;
   symdata.val = 0;
+  symdata.size = 0;
   symdata.failed = 0;
 
-  i = backtrace_syminfo (state, (uintptr_t) &global, callback_three,
+  i = backtrace_syminfo (state, addr, callback_three,
 			 error_callback_three, &symdata);
   if (i == 0)
     {
@@ -632,6 +640,22 @@ test5 (void)
 	  fprintf (stderr,
 		   "test5: unexpected syminfo name got %s expected %s\n",
 		   symdata.name, "global");
+	  symdata.failed = 1;
+	}
+      else if (symdata.val != (uintptr_t) &global)
+	{
+	  fprintf (stderr,
+		   "test5: unexpected syminfo value got %lx expected %lx\n",
+		   (unsigned long) symdata.val,
+		   (unsigned long) (uintptr_t) &global);
+	  symdata.failed = 1;
+	}
+      else if (symdata.size != sizeof (global))
+	{
+	  fprintf (stderr,
+		   "test5: unexpected syminfo size got %lx expected %lx\n",
+		   (unsigned long) symdata.size,
+		   (unsigned long) sizeof (global));
 	  symdata.failed = 1;
 	}
     }

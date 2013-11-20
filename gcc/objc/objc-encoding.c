@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 
 #ifdef OBJCPLUS
 #include "cp/cp-tree.h"

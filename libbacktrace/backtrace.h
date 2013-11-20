@@ -169,12 +169,13 @@ extern int backtrace_pcinfo (struct backtrace_state *state, uintptr_t pc,
 /* The type of the callback argument to backtrace_syminfo.  DATA and
    PC are the arguments passed to backtrace_syminfo.  SYMNAME is the
    name of the symbol for the corresponding code.  SYMVAL is the
-   value.  SYMNAME will be NULL if no error occurred but the symbol
-   could not be found.  */
+   value and SYMSIZE is the size of the symbol.  SYMNAME will be NULL
+   if no error occurred but the symbol could not be found.  */
 
 typedef void (*backtrace_syminfo_callback) (void *data, uintptr_t pc,
 					    const char *symname,
-					    uintptr_t symval);
+					    uintptr_t symval,
+					    uintptr_t symsize);
 
 /* Given ADDR, an address or program counter in the current program,
    call the callback information with the symbol name and value

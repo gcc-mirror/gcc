@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "intl.h"
 #include "output.h"	/* for assemble_string */

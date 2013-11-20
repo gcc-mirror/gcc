@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "print-tree.h"
+#include "calls.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
@@ -789,17 +791,16 @@ end:
 	    }
 	  else
 	    {
-	      loop_iterator li;
 	      struct loop *loop;
 	      scev_initialize ();
-	      FOR_EACH_LOOP (li, loop, 0)
+	      FOR_EACH_LOOP (loop, 0)
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)
 		      fprintf (dump_file, "    can not prove finiteness of "
 			       "loop %i\n", loop->num);
 		    l->looping =true;
-		    FOR_EACH_LOOP_BREAK (li);
+		    break;
 		  }
 	      scev_finalize ();
 	    }
@@ -1586,7 +1587,7 @@ local_pure_const (void)
 
   /* Do NORETURN discovery.  */
   if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
     {
       warn_function_noreturn (cfun->decl);
       if (dump_file)
@@ -1722,7 +1723,7 @@ static unsigned int
 execute_warn_function_noreturn (void)
 {
   if (!TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
     warn_function_noreturn (current_function_decl);
   return 0;
 }

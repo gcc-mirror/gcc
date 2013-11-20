@@ -117,5 +117,7 @@ extern tree alloc_stmt_list (void);
 extern void free_stmt_list (tree);
 extern void append_to_statement_list (tree, tree *);
 extern void append_to_statement_list_force (tree, tree *);
+extern tree expr_first (tree);
+extern tree expr_last (tree);
 
 #endif /* GCC_TREE_ITERATOR_H  */

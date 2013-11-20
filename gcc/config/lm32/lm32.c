@@ -35,6 +35,7 @@
 #include "recog.h"
 #include "output.h"
 #include "tree.h"
+#include "calls.h"
 #include "expr.h"
 #include "flags.h"
 #include "reload.h"

@@ -29,12 +29,16 @@
 #include "flags.h"
 #include "basic-block.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stmt.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
@@ -5359,7 +5363,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 		&& !pair->has_unknown_size
 		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
 	      {
-		pair->size += TREE_INT_CST_LOW (DECL_SIZE (field));
+		pair->size += tree_to_uhwi (DECL_SIZE (field));
 	      }
 	    else
 	      {
@@ -5367,7 +5371,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 		e.offset = offset + foff;
 		e.has_unknown_size = has_unknown_size;
 		if (!has_unknown_size)
-		  e.size = TREE_INT_CST_LOW (DECL_SIZE (field));
+		  e.size = tree_to_uhwi (DECL_SIZE (field));
 		else
 		  e.size = -1;
 		e.must_have_pointers = must_have_pointers_p;
@@ -5684,7 +5688,7 @@ create_variable_info_for_1 (tree decl, const char *name)
       vi = new_var_info (decl, name);
       vi->offset = 0;
       vi->may_have_pointers = true;
-      vi->fullsize = TREE_INT_CST_LOW (declsize);
+      vi->fullsize = tree_to_uhwi (declsize);
       vi->size = vi->fullsize;
       vi->is_full_var = true;
       fieldstack.release ();
@@ -5692,7 +5696,7 @@ create_variable_info_for_1 (tree decl, const char *name)
     }
 
   vi = new_var_info (decl, name);
-  vi->fullsize = TREE_INT_CST_LOW (declsize);
+  vi->fullsize = tree_to_uhwi (declsize);
   for (i = 0, newvi = vi;
        fieldstack.iterate (i, &fo);
        ++i, newvi = vi_next (newvi))

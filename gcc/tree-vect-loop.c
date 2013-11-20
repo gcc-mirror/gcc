@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "gimple.h"
@@ -35,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
@@ -1586,24 +1588,19 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
       return false;
     }
 
-  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo)
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
       || ((int) tree_ctz (LOOP_VINFO_NITERS (loop_vinfo))
 	  < exact_log2 (vectorization_factor)))
     {
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "epilog loop required.\n");
-      if (!vect_can_advance_ivs_p (loop_vinfo))
+        dump_printf_loc (MSG_NOTE, vect_location, "epilog loop required\n");
+      if (!vect_can_advance_ivs_p (loop_vinfo)
+	  || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: can't create epilog loop 1.\n");
-          return false;
-        }
-      if (!slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
-        {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: can't create epilog loop 2.\n");
+			     "not vectorized: can't create required "
+			     "epilog loop\n");
           return false;
         }
     }

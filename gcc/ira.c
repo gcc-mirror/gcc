@@ -4522,6 +4522,9 @@ find_moveable_pseudos (void)
   pseudo_replaced_reg.release ();
   pseudo_replaced_reg.safe_grow_cleared (max_regs);
 
+  df_analyze ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
   i = 0;
   bitmap_initialize (&live, 0);
   bitmap_initialize (&used, 0);
@@ -4834,6 +4837,14 @@ find_moveable_pseudos (void)
   free (bb_moveable_reg_sets);
 
   last_moveable_pseudo = max_reg_num ();
+
+  fix_reg_equiv_init ();
+  expand_reg_info ();
+  regstat_free_n_sets_and_refs ();
+  regstat_free_ri ();
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
+  free_dominance_info (CDI_DOMINATORS);
 }
 
 
@@ -4865,7 +4876,7 @@ static bool
 split_live_ranges_for_shrink_wrap (void)
 {
   basic_block bb, call_dom = NULL;
-  basic_block first = single_succ (ENTRY_BLOCK_PTR);
+  basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   rtx insn, last_interesting_insn = NULL;
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
@@ -4875,7 +4886,7 @@ split_live_ranges_for_shrink_wrap (void)
 
   bitmap_initialize (&need_new, 0);
   bitmap_initialize (&reachable, 0);
-  queue.create (n_basic_blocks);
+  queue.create (n_basic_blocks_for_fn (cfun));
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
@@ -4910,7 +4921,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       bb = queue.pop ();
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && bitmap_set_bit (&reachable, e->dest->index))
 	  queue.quick_push (e->dest);
     }
@@ -5194,7 +5205,19 @@ ira (FILE *f)
 #endif
   df_analyze ();
 
+  init_reg_equiv ();
+  if (ira_conflicts_p)
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+
+      if (split_live_ranges_for_shrink_wrap ())
+	df_analyze ();
+
+      free_dominance_info (CDI_DOMINATORS);
+    }
+
   df_clear_flags (DF_NO_INSN_RESCAN);
+
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
 
@@ -5212,7 +5235,6 @@ ira (FILE *f)
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
 
-  init_reg_equiv ();
   rebuild_p = update_equiv_regs ();
   setup_reg_equiv ();
   setup_reg_equiv_init ();
@@ -5235,22 +5257,7 @@ ira (FILE *f)
      allocation because of -O0 usage or because the function is too
      big.  */
   if (ira_conflicts_p)
-    {
-      df_analyze ();
-      calculate_dominance_info (CDI_DOMINATORS);
-
-      find_moveable_pseudos ();
-      if (split_live_ranges_for_shrink_wrap ())
-	df_analyze ();
-
-      fix_reg_equiv_init ();
-      expand_reg_info ();
-      regstat_free_n_sets_and_refs ();
-      regstat_free_ri ();
-      regstat_init_n_sets_and_refs ();
-      regstat_compute_ri ();
-      free_dominance_info (CDI_DOMINATORS);
-    }
+    find_moveable_pseudos ();
 
   max_regno_before_ira = max_reg_num ();
   ira_setup_eliminable_regset (true);

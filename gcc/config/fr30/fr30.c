@@ -33,6 +33,8 @@
 #include "flags.h"
 #include "recog.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "output.h"
 #include "expr.h"
 #include "obstack.h"
