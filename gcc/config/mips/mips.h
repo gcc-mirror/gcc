@@ -882,12 +882,17 @@ struct mips_cpu_info {
 
 /* This is a catch all for other mips4 instructions: indexed load, the
    FP madd and msub instructions, and the FP recip and recip sqrt
-   instructions.  */
+   instructions.  Note that this macro should only be used by other
+   ISA_HAS_* macros.  */
 #define ISA_HAS_FP4		((ISA_MIPS4				\
-				  || (ISA_MIPS32R2 && TARGET_FLOAT64)	\
+				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64				\
 				  || ISA_MIPS64R2)			\
 				 && !TARGET_MIPS16)
+
+/* ISA has floating-point indexed load and store instructions
+   (LWXC1, LDXC1, SWXC1 and SDXC1).  */
+#define ISA_HAS_LXC1_SXC1	ISA_HAS_FP4
 
 /* ISA has paired-single instructions.  */
 #define ISA_HAS_PAIRED_SINGLE	(ISA_MIPS32R2 || ISA_MIPS64 || ISA_MIPS64R2)
@@ -906,16 +911,14 @@ struct mips_cpu_info {
 #define GENERATE_MADD_MSUB	(TARGET_IMADD && !TARGET_MIPS16)
 
 /* ISA has floating-point madd and msub instructions 'd = a * b [+-] c'.  */
-#define ISA_HAS_FP_MADD4_MSUB4  (ISA_HAS_FP4				\
-				 || (ISA_MIPS32R2 && !TARGET_MIPS16))
+#define ISA_HAS_FP_MADD4_MSUB4  ISA_HAS_FP4
 
 /* ISA has floating-point madd and msub instructions 'c = a * b [+-] c'.  */
 #define ISA_HAS_FP_MADD3_MSUB3  TARGET_LOONGSON_2EF
 
 /* ISA has floating-point nmadd and nmsub instructions
    'd = -((a * b) [+-] c)'.  */
-#define ISA_HAS_NMADD4_NMSUB4	(ISA_HAS_FP4				\
-				 || (ISA_MIPS32R2 && !TARGET_MIPS16))
+#define ISA_HAS_NMADD4_NMSUB4	ISA_HAS_FP4
 
 /* ISA has floating-point nmadd and nmsub instructions
    'c = -((a * b) [+-] c)'.  */
@@ -926,7 +929,7 @@ struct mips_cpu_info {
    doubles are stored in pairs of FPRs, so for safety's sake, we apply
    this restriction to the MIPS IV ISA too.  */
 #define ISA_HAS_FP_RECIP_RSQRT(MODE)					\
-				((((ISA_HAS_FP4 || ISA_MIPS32R2)	\
+				(((ISA_HAS_FP4				\
 				   && ((MODE) == SFmode			\
 				       || ((TARGET_FLOAT64		\
 					    || ISA_MIPS32R2		\
@@ -1006,11 +1009,7 @@ struct mips_cpu_info {
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
    (prefx is a cop1x instruction, so can only be used if FP is
    enabled.)  */
-#define ISA_HAS_PREFETCHX	((ISA_MIPS4				\
-				  || ISA_MIPS32R2			\
-				  || ISA_MIPS64				\
-				  || ISA_MIPS64R2)			\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_PREFETCHX	ISA_HAS_FP4
 
 /* True if trunc.w.s and trunc.w.d are real (not synthetic)
    instructions.  Both require TARGET_HARD_FLOAT, and trunc.w.d
