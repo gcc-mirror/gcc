@@ -1,3 +1,13 @@
+2013-11-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_FP_RECIP_RSQRT): New macro.
+	* config/mips/mips.c (mips_rtx_costs) <DIV>: Check for
+	ISA_HAS_FP_RECIP_RSQRT rather than ISA_HAS_FP4.
+	* config/mips/mips.md (recip_condition): Remove mode attribute.
+	(div<mode>3): Use ISA_HAS_FP_RECIP_RSQRT rather than
+	<recip_condition>.
+	(*recip<mode>3, *rsqrt<mode>a, *rsqrt<mode>b): Likewise.
+
 2013-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/59207
