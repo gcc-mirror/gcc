@@ -580,7 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
         using rebind = typename __gnu_cxx::_Pointer_adapter<
-	typename pointer_traits<_Storage_policy>::rebind<_Up>>;
+	typename pointer_traits<_Storage_policy>::template rebind<_Up>>;
 
       static pointer pointer_to(typename pointer::reference __r) noexcept
       { return pointer(std::addressof(__r)); }
