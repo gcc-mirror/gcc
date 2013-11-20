@@ -3288,8 +3288,8 @@ fold_rtx (rtx x, rtx insn)
 	  break;
 
 	new_rtx = simplify_unary_operation (code, mode,
-					const_arg0 ? const_arg0 : folded_arg0,
-					mode_arg0);
+					    const_arg0 ? const_arg0 : folded_arg0,
+					    mode_arg0);
       }
       break;
 
