@@ -33,13 +33,20 @@ extern "C" {
    the IBM XL compiler.  For documentation please see the "z/OS XL
    C/C++ Programming Guide" publicly available on the web.  */
 
-extern __inline long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+/* FIXME: __TM_simple_begin and __TM_begin should be marked
+   __always_inline__ as well but this currently produces an error
+   since the tbegin builtins are "returns_twice" and setjmp_call_p
+   (calls.c) therefore identifies the functions as calling setjmp.
+   The tree inliner currently refuses to inline functions calling
+   setjmp.  */
+
+long
 __TM_simple_begin ()
 {
   return __builtin_tbegin_nofloat (0);
 }
 
-extern __inline long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+long
 __TM_begin (void* const tdb)
 {
   return __builtin_tbegin_nofloat (tdb);
@@ -78,7 +85,7 @@ __TM_nesting_depth (void* const tdb_ptr)
   if (depth != 0)
     return depth;
 
-  if (tdb->format == 0)
+  if (tdb->format != 1)
     return 0;
   return tdb->nesting_depth;
 }
@@ -90,7 +97,7 @@ __TM_is_user_abort (void* const tdb_ptr)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  if (tdb->format == 0)
+  if (tdb->format != 1)
     return 0;
 
   return !!(tdb->abort_code >= _HTM_FIRST_USER_ABORT_CODE);
@@ -101,7 +108,7 @@ __TM_is_named_user_abort (void* const tdb_ptr, unsigned char* code)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  if (tdb->format == 0)
+  if (tdb->format != 1)
     return 0;
 
   if (tdb->abort_code >= _HTM_FIRST_USER_ABORT_CODE)
@@ -117,7 +124,7 @@ __TM_is_illegal (void* const tdb_ptr)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  return (tdb->format == 0
+  return (tdb->format == 1
 	  && (tdb->abort_code == 4 /* unfiltered program interruption */
 	      || tdb->abort_code == 11 /* restricted instruction */));
 }
@@ -127,7 +134,7 @@ __TM_is_footprint_exceeded (void* const tdb_ptr)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  return (tdb->format == 0
+  return (tdb->format == 1
 	  && (tdb->abort_code == 7 /* fetch overflow */
 	      || tdb->abort_code == 8 /* store overflow */));
 }
@@ -137,7 +144,7 @@ __TM_is_nested_too_deep (void* const tdb_ptr)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  return tdb->format == 0 && tdb->abort_code == 13; /* depth exceeded */
+  return tdb->format == 1 && tdb->abort_code == 13; /* depth exceeded */
 }
 
 extern __inline long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -145,7 +152,7 @@ __TM_is_conflict (void* const tdb_ptr)
 {
   struct __htm_tdb *tdb = (struct __htm_tdb*)tdb_ptr;
 
-  return (tdb->format == 0
+  return (tdb->format == 1
 	  && (tdb->abort_code == 9 /* fetch conflict */
 	      || tdb->abort_code == 10 /* store conflict */));
 }

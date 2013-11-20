@@ -1,3 +1,15 @@
+2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/htm-1.c: Rename to ...
+	* gcc/testsuite/gcc.target/s390/htm-builtins-compile-1.c: ... this
+	one.
+	* gcc.target/s390/htm-xl-intrin-1.c: Rename to ...
+	* gcc.target/s390/htm-builtins-compile-3.c: ... this one.
+	* gcc.target/s390/htm-builtins-compile-2.c: New testcase.
+	* gcc.target/s390/htm-builtins-1.c: New testcase.
+	* gcc.target/s390/htm-builtins-2.c: New testcase.
+	* gcc.target/s390/s390.exp: Add check for htm machine.
+
 2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
 
 	PR c/53001
