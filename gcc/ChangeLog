@@ -1,3 +1,8 @@
+2013-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbhooks.py (VecPrinter.children): Don't attempt to iterate
+	the children of a NULL pointer.
+
 2013-11-20  Robert Suchanek  <Robert.Suchanek@imgtec.com>
 
 	* lra.c (lra): Set lra_in_progress before check_rtl call.

@@ -383,6 +383,8 @@ class VecPrinter:
         return '0x%x' % long(self.gdbval)
 
     def children (self):
+        if long(self.gdbval) == 0:
+            return
         m_vecpfx = self.gdbval['m_vecpfx']
         m_num = m_vecpfx['m_num']
         m_vecdata = self.gdbval['m_vecdata']
