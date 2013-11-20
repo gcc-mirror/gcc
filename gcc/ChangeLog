@@ -1,3 +1,21 @@
+2013-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59133
+	* lra.c (expand_reg_data): Add new argument.  Set up ALL_REGS for
+	new pseudos.
+	(lra_create_new_reg_with_unique_value): Pass new argument value.
+	(lra_emit_add, lra_emit_move): Ditto.
+	* lra-constraints.c (in_class_p): Add check for move for a new
+	insn.
+	(change_class): Rename to lra_change_class.  Move to lra-int.h.
+	(get_reload_reg, narrow_reload_pseudo_class): Adjust calls of
+	change_class.
+	(process_addr_reg, process_addr): Ditto.
+	(curr_insn_transform): Ditto.  Add check on old pseudo for
+	optional reload.
+	* lra-int.h (lra_get_regno_hard_regno): Move below.
+	(lra_change_class): Renamed change_class from lra.c.
+
 2013-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbhooks.py (VecPrinter.children): Don't attempt to iterate
