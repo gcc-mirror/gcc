@@ -1,0 +1,882 @@
+	* c2w/gcc/gcc/ada/gcc-interface/cuintp.c
+	(UI_From_gnu)
+	* c2w/gcc/gcc/ada/gcc-interface/decl.c
+	(gnat_to_gnu_entity)
+	(gnat_to_gnu_entity)
+	(annotate_value)
+	* c2w/gcc/gcc/ada/gcc-interface/utils.c
+	(make_packable_type)
+	(handle_novops_attribute)
+	* c2w/gcc/gcc/alias.c
+	(ao_ref_from_mem)
+	(decl_for_component_ref)
+	* c2w/gcc/gcc/builtins.c
+	(get_object_alignment_2)
+	(c_getstr)
+	(determine_block_size)
+	(expand_builtin_signbit)
+	(fold_builtin_int_roundingfn)
+	(fold_builtin_int_roundingfn)
+	(fold_builtin_pow)
+	(fold_builtin_powi)
+	(fold_builtin_memory_op)
+	(fold_builtin_object_size)
+	* c2w/gcc/gcc/c/c-decl.c
+	(check_bitfield_type_and_width)
+	(start_enum)
+	(finish_enum)
+	* c2w/gcc/gcc/c/c-parser.c
+	(c_parser_cilk_clause_vectorlength)
+	* c2w/gcc/gcc/c/c-typeck.c
+	(along with GCC; see the file COPYING3.
+	(set_nonincremental_init_from_string)
+	(c_tree_equal)
+	* c2w/gcc/gcc/c/Make-lang.in
+	(c.stage1: stage1-start
+	* c2w/gcc/gcc/c-family/c-ada-spec.c
+	(along with GCC; see the file COPYING3.
+	(dump_ada_template)
+	(dump_generic_ada_node)
+	* c2w/gcc/gcc/c-family/c-common.c
+	(along with GCC; see the file COPYING3.
+	(shorten_compare)
+	(pointer_int_sum)
+	(c_common_nodes_and_builtins)
+	(handle_malloc_attribute)
+	(check_function_arguments_recurse)
+	* c2w/gcc/gcc/c-family/c-format.c
+	(check_format_string)
+	* c2w/gcc/gcc/c-family/cilk.c
+	(declare_one_free_variable)
+	* c2w/gcc/gcc/c-family/c-lex.c
+	(along with GCC; see the file COPYING3.
+	(c_lex_with_flags)
+	(interpret_integer)
+	(lex_charconst)
+	* c2w/gcc/gcc/c-family/c-pretty-print.c
+	(along with GCC; see the file COPYING3.
+	(static void
+	* c2w/gcc/gcc/cfgloop.c
+	(flow_loop_tree_node_remove)
+	(get_loop_location)
+	* c2w/gcc/gcc/cfgloop.h
+	(FITNESS FOR A PARTICULAR PURPOSE.  See t
+	(struct GTY)
+	(static inline struct loop *
+	* c2w/gcc/gcc/cgraph.c
+	(cgraph_add_thunk)
+	* c2w/gcc/gcc/combine.c
+	(try_combine)
+	* c2w/gcc/gcc/config/aarch64/aarch64.c
+	(aapcs_vfp_sub_candidate)
+	(aapcs_vfp_sub_candidate)
+	(aapcs_vfp_sub_candidate)
+	(aarch64_float_const_representable_p)
+	* c2w/gcc/gcc/config/arc/arc.c
+	(static bool arc_function_ok_for_sibcall
+	(arc_pass_by_reference)
+	* c2w/gcc/gcc/config/arm/arm.c
+	(aapcs_vfp_sub_candidate)
+	(aapcs_vfp_sub_candidate)
+	(aapcs_vfp_sub_candidate)
+	* c2w/gcc/gcc/config/avr/avr.c
+	(avr_out_fract)
+	(avr_out_round)
+	(avr_fold_builtin)
+	* c2w/gcc/gcc/config/bfin/bfin.c
+	(bfin_expand_movmem)
+	(find_prev_insn_start)
+	* c2w/gcc/gcc/config/darwin.c
+	(darwin_mergeable_constant_section)
+	(machopic_select_section)
+	* c2w/gcc/gcc/config/epiphany/epiphany.c
+	(epiphany_special_round_type_align)
+	* c2w/gcc/gcc/config/i386/i386.c
+	(along with GCC; see the file COPYING3.
+	(ix86_constant_alignment)
+	(ix86_local_alignment)
+	(void ix86_emit_swsqrtsf)
+	* c2w/gcc/gcc/config/msp430/msp430.c
+	(msp430_attr)
+	* c2w/gcc/gcc/config/nds32/nds32.c
+	(nds32_construct_isr_vectors_information
+	(nds32_construct_isr_vectors_information
+	(nds32_insert_attributes)
+	(nds32_insert_attributes)
+	* c2w/gcc/gcc/config/rs6000/predicates.md
+	(zero_constant)
+	(non_logical_cint_operand)
+	(input_operand)
+	(splat_input_operand)
+	* c2w/gcc/gcc/config/rs6000/rs6000.c
+	(num_insns_constant)
+	(easy_altivec_constant)
+	(paired_expand_vector_init)
+	(rs6000_legitimize_address)
+	(rs6000_emit_move)
+	(rs6000_aggregate_candidate)
+	(rs6000_aggregate_candidate)
+	(rs6000_aggregate_candidate)
+	(rs6000_output_move_128bit)
+	(rs6000_hash_constant)
+	(output_toc)
+	(rs6000_rtx_costs)
+	* c2w/gcc/gcc/config/rs6000/rs6000-c.c
+	(altivec_resolve_overloaded_builtin)
+	* c2w/gcc/gcc/config/rs6000/rs6000.h
+	(enum rs6000_builtin_type_index
+	* c2w/gcc/gcc/config/rs6000/rs6000.md
+	(define_split)
+	* c2w/gcc/gcc/config/sol2-c.c
+	(solaris_pragma_align)
+	* c2w/gcc/gcc/config/sparc/sparc.c
+	(along with GCC; see the file COPYING3.
+	(sparc_fold_builtin)
+	* c2w/gcc/gcc/config/vax/vax.c
+	(along with GCC; see the file COPYING3.
+	(vax_float_literal)
+	* c2w/gcc/gcc/coretypes.h
+	(typedef struct bitmap_head_def *bitmap;
+	* c2w/gcc/gcc/cp/call.c
+	(along with GCC; see the file COPYING3.
+	(type_passed_as)
+	(convert_for_arg_passing)
+	* c2w/gcc/gcc/cp/class.c
+	(along with GCC; see the file COPYING3.
+	* c2w/gcc/gcc/cp/cvt.c
+	(along with GCC; see the file COPYING3.
+	(force_rvalue)
+	* c2w/gcc/gcc/cp/decl.c
+	(along with GCC; see the file COPYING3.
+	(finish_enum_value_list)
+	(finish_enum_value_list)
+	(finish_enum_value_list)
+	* c2w/gcc/gcc/cp/init.c
+	(inner_nelts_count)
+	(inner_size)
+	(build_new_1)
+	* c2w/gcc/gcc/cp/mangle.c
+	(along with GCC; see the file COPYING3.
+	(write_number)
+	(write_integer_cst)
+	(write_array_type)
+	* c2w/gcc/gcc/cp/parser.c
+	(make_char_string_pack)
+	* c2w/gcc/gcc/cp/tree.c
+	(along with GCC; see the file COPYING3.
+	(cp_tree_equal)
+	* c2w/gcc/gcc/cp/typeck2.c
+	(along with GCC; see the file COPYING3.
+	(process_init_constructor_array)
+	* c2w/gcc/gcc/cp/vtable-class-hierarchy.c
+	(check_and_record_registered_pairs)
+	(output_set_info)
+	* c2w/gcc/gcc/cse.c
+	(hash_rtx_cb)
+	(fold_rtx)
+	* c2w/gcc/gcc/cselib.c
+	(rtx_equal_for_cselib_1)
+	(cselib_hash_rtx)
+	* c2w/gcc/gcc/dbxout.c
+	(stabstr_U)
+	(dbxout_type)
+	* c2w/gcc/gcc/defaults.h
+	(see the files COPYING3 and COPYING.RUNTI
+	* c2w/gcc/gcc/dfp.c
+	(You should have received a copy of the G
+	* c2w/gcc/gcc/dfp.h
+	(void decode_decimal64 )
+	* c2w/gcc/gcc/doc/generic.texi
+	(As this example indicates, the operands
+	* c2w/gcc/gcc/doc/rtl.texi
+	(only expression for integer value negati
+	* c2w/gcc/gcc/doc/tm.texi
+	(target's floating point format cannot re
+	(This value should be set if the result w
+	* c2w/gcc/gcc/doc/tm.texi.in
+	(target's floating point format cannot re
+	* c2w/gcc/gcc/dojump.c
+	(static GTY(()) rtx and_test;
+	* c2w/gcc/gcc/double-int.h
+	(double_int::popcount)
+	* c2w/gcc/gcc/dwarf2out.c
+	(dump_struct_debug)
+	(dw_val_equal_p)
+	(output_loc_operands)
+	(output_loc_operands)
+	(static HOST_WIDE_INT ceiling)
+	(add_AT_unsigned)
+	(print_die)
+	(attr_checksum)
+	(attr_checksum_ordered)
+	(size_of_die)
+	(value_format)
+	(output_die)
+	(simple_type_size_in_bits)
+	(clz_loc_descriptor)
+	(clz_loc_descriptor)
+	(mem_loc_descriptor)
+	(loc_descriptor)
+	(simple_type_align_in_bits)
+	(field_byte_offset)
+	(extract_int)
+	(add_const_value_attribute)
+	(add_bound_info)
+	(gen_enumeration_type_die)
+	(hash_loc_operands)
+	(compare_loc_operands)
+	(compare_loc_operands)
+	* c2w/gcc/gcc/dwarf2out.h
+	(dw_val_class)
+	* c2w/gcc/gcc/emit-rtl.c
+	(const_int_htab_hash)
+	(const_wide_int_htab_hash)
+	(const_wide_int_htab_eq)
+	(lookup_const_wide_int)
+	(immed_double_const)
+	(init_emit_once)
+	* c2w/gcc/gcc/explow.c
+	(plus_constant)
+	* c2w/gcc/gcc/expmed.c
+	(static void store_fixed_bit_field)
+	(extract_fixed_bit_field)
+	(expand_widening_mult)
+	(expmed_mult_highpart)
+	(expand_smod_pow2)
+	* c2w/gcc/gcc/expr.c
+	(convert_modes)
+	(store_expr)
+	(store_field)
+	(get_inner_reference)
+	(get_inner_reference)
+	(expand_constructor)
+	(expand_expr_real_2)
+	(expand_expr_real_2)
+	(expand_expr_real_1)
+	(expand_expr_real_1)
+	(reduce_to_bit_field_precision)
+	(const_vector_from_tree)
+	* c2w/gcc/gcc/final.c
+	(along with GCC; see the file COPYING3.
+	(output_addr_const)
+	* c2w/gcc/gcc/fixed-value.c
+	(for more details.
+	(fixed_from_double_int)
+	(fixed_from_string)
+	(fixed_convert_from_int)
+	(fixed_convert_from_real)
+	* c2w/gcc/gcc/fold-const.c
+	(static tree eval_subst)
+	(protected_set_expr_location_unshare)
+	(negate_mathfn_p)
+	(int_binop_types_match_p)
+	(size_diffop_loc)
+	(fold_convert_const_int_from_fixed)
+	(fold_convert_const_fixed_from_fixed)
+	(make_range_step)
+	(build_range_check)
+	(build_range_check)
+	(merge_ranges)
+	(unextend)
+	(extract_muldiv_1)
+	(fold_inf_compare)
+	(fold_single_bit_test_into_sign_test)
+	(fold_sign_changed_comparison)
+	(try_move_mult_to_index)
+	(cont:
+	(fold_plusminus_mult_expr)
+	(fold_plusminus_mult_expr)
+	(native_encode_int)
+	(native_encode_expr)
+	(fold_unary_loc)
+	(maybe_canonicalize_comparison)
+	(fold_binary_loc)
+	(fold_binary_loc)
+	(fold_ternary_loc)
+	(multiple_of_p)
+	(tree_call_nonnegative_warnv_p)
+	(fold_read_from_constant_string)
+	(fold_negate_const)
+	(fold_abs_const)
+	(fold_relational_const)
+	(fold_ignored_result)
+	(ptr_difference_const)
+	* c2w/gcc/gcc/fortran/target-memory.c
+	(along with GCC; see the file COPYING3.
+	(gfc_interpret_complex)
+	* c2w/gcc/gcc/fortran/trans-array.c
+	(along with GCC; see the file COPYING3.
+	(gfc_conv_array_initializer)
+	* c2w/gcc/gcc/fortran/trans-common.c
+	(build_common_decl)
+	* c2w/gcc/gcc/fortran/trans-const.c
+	(gfc_conv_string_init)
+	(gfc_init_constants)
+	* c2w/gcc/gcc/fortran/trans-decl.c
+	(gfc_can_put_var_on_stack)
+	* c2w/gcc/gcc/fortran/trans-expr.c
+	(gfc_conv_expr_op)
+	(gfc_conv_scalar_char_value)
+	* c2w/gcc/gcc/fortran/trans-intrinsic.c
+	(along with GCC; see the file COPYING3.
+	(trans_this_image)
+	(gfc_conv_intrinsic_bound)
+	(conv_intrinsic_cobound)
+	* c2w/gcc/gcc/fortran/trans-types.c
+	(gfc_build_logical_type)
+	(gfc_init_types)
+	* c2w/gcc/gcc/gdbinit.in
+	(mpz_out_str)
+	* c2w/gcc/gcc/genemit.c
+	(gen_exp)
+	* c2w/gcc/gcc/gengenrtl.c
+	(special_rtx)
+	* c2w/gcc/gcc/gengtype.c
+	(do_typedef)
+	(open_base_files)
+	(main)
+	* c2w/gcc/gcc/gengtype-lex.l
+	(CXX_KEYWORD)
+	* c2w/gcc/gcc/gengtype-parse.c
+	(require2)
+	(string_seq)
+	* c2w/gcc/gcc/gengtype-state.c
+	* c2w/gcc/gcc/genmodes.c
+	(emit_max_int)
+	* c2w/gcc/gcc/genpreds.c
+	(write_predicate_stmts)
+	(add_constraint)
+	(write_tm_constrs_h)
+	* c2w/gcc/gcc/genrecog.c
+	(validate_pattern)
+	(add_to_sequence)
+	* c2w/gcc/gcc/gensupport.c
+	(struct std_pred_table
+	* c2w/gcc/gcc/gimple.c
+	(preprocess_case_label_vec_for_gimple)
+	* c2w/gcc/gcc/gimple-fold.c
+	(static tree
+	(fold_string_cst_ctor_reference)
+	(fold_nonarray_ctor_reference)
+	(gimple_val_nonnegative_real_p)
+	(gimple_fold_indirect_ref)
+	* c2w/gcc/gcc/gimple-pretty-print.c
+	(dump_ssaname_info)
+	* c2w/gcc/gcc/gimple-ssa-strength-reduction.c
+	(along with GCC; see the file COPYING3.
+	(typedef const struct cand_chain_d *const
+	(record_potential_basis)
+	(stmt_cost)
+	(backtrace_base_for_ref)
+	(create_add_ssa_cand)
+	(slsr_process_add)
+	(slsr_process_copy)
+	(dump_candidate)
+	(dump_incr_vec)
+	(replace_ref)
+	(phi_dependent_cand_p)
+	(cand_increment)
+	(replace_mult_candidate)
+	(create_phi_basis)
+	(record_phi_increments)
+	(record_increments)
+	(optimize_cands_for_speed_p)
+	(lowest_cost_path)
+	(analyze_increments)
+	(ncd_for_two_cands)
+	(static void
+	(insert_initializers)
+	(all_phi_incrs_profitable)
+	(replace_rhs_if_not_dup)
+	(replace_one_candidate)
+	(replace_one_candidate)
+	* c2w/gcc/gcc/gimplify.c
+	(gimple_boolify)
+	* c2w/gcc/gcc/go/go-gcc.cc
+	(Gcc_backend::is_circular_pointer_type(Bt
+	* c2w/gcc/gcc/godump.c
+	(along with GCC; see the file COPYING3.
+	* c2w/gcc/gcc/graphite-clast-to-gimple.c
+	(typedef const struct clast_expr *clast_n
+	* c2w/gcc/gcc/graphite-sese-to-poly.c
+	(along with GCC; see the file COPYING3.
+	(build_loop_iteration_domains)
+	(build_loop_iteration_domains)
+	* c2w/gcc/gcc/hooks.c
+	(hook_bool_rtx_int_int_int_intp_bool_fals
+	* c2w/gcc/gcc/hooks.h
+	(extern bool hook_bool_const_tree_hwi_hwi
+	* c2w/gcc/gcc/ipa-devirt.c
+	(hash_type_name)
+	* c2w/gcc/gcc/ipa-prop.c
+	(compute_complex_assign_jump_func)
+	(get_ancestor_addr_info)
+	(ipa_modify_call_arguments)
+	* c2w/gcc/gcc/java/boehm.c
+	(The Free Software Foundation is independ
+	(mark_reference_fields)
+	(mark_reference_fields)
+	(get_boehm_type_descriptor)
+	* c2w/gcc/gcc/java/expr.c
+	(The Free Software Foundation is independ
+	(build_java_check_indexed_type)
+	(static void
+	(build_field_ref)
+	* c2w/gcc/gcc/java/jcf-parse.c
+	(The Free Software Foundation is independ
+	* c2w/gcc/gcc/java/typeck.c
+	(java_array_type_length)
+	* c2w/gcc/gcc/loop-doloop.c
+	(doloop_modify)
+	(doloop_modify)
+	(doloop_modify)
+	(doloop_optimize)
+	* c2w/gcc/gcc/loop-iv.c
+	(iv_number_of_iterations)
+	(iv_number_of_iterations)
+	(iv_number_of_iterations)
+	* c2w/gcc/gcc/loop-unroll.c
+	(peel_loop_completely)
+	(decide_unroll_constant_iterations)
+	(unroll_loop_constant_iterations)
+	(unroll_loop_constant_iterations)
+	(unroll_loop_constant_iterations)
+	(decide_unroll_runtime_iterations)
+	(unroll_loop_runtime_iterations)
+	(decide_peel_simple)
+	(peel_loop_simple)
+	(decide_unroll_stupid)
+	* c2w/gcc/gcc/lto/lto.c
+	(compare_tree_sccs_1)
+	* c2w/gcc/gcc/lto/lto-lang.c
+	(handle_novops_attribute)
+	* c2w/gcc/gcc/lto-streamer-in.c
+	(input_cfg)
+	* c2w/gcc/gcc/lto-streamer-out.c
+	(hash_tree)
+	(output_cfg)
+	* c2w/gcc/gcc/machmode.def
+	(MAX_BITS_PER_UNIT)
+	* c2w/gcc/gcc/Makefile.in
+	* c2w/gcc/gcc/objc/objc-act.c
+	(objc_decl_method_attributes)
+	* c2w/gcc/gcc/omp-low.c
+	(scan_omp_1_op)
+	(lower_omp_for_lastprivate)
+	* c2w/gcc/gcc/optabs.c
+	(expand_subword_shift)
+	(expand_doubleword_shift)
+	(lowpart_subreg_maybe_copy)
+	(expand_absneg_bit)
+	(expand_absneg_bit)
+	(expand_copysign_absneg)
+	(expand_copysign_absneg)
+	(expand_copysign_bit)
+	(expand_copysign_bit)
+	* c2w/gcc/gcc/passes.def
+	(along with GCC; see the file COPYING3.
+	(along with GCC; see the file COPYING3.
+	* c2w/gcc/gcc/postreload.c
+	(reload_cse_simplify_set)
+	* c2w/gcc/gcc/predict.c
+	(predict_iv_comparison)
+	* c2w/gcc/gcc/pretty-print.h
+	(for more details.
+	(pp_get_prefix)
+	* c2w/gcc/gcc/print-rtl.c
+	(print_rtx)
+	* c2w/gcc/gcc/print-tree.c
+	(along with GCC; see the file COPYING3.
+	(print_node_brief)
+	(print_node)
+	(print_node)
+	* c2w/gcc/gcc/read-rtl.c
+	(validate_const_int)
+	* c2w/gcc/gcc/real.c
+	(
+	(real_from_string3)
+	(ten_to_ptwo)
+	(ten_to_mptwo)
+	* c2w/gcc/gcc/real.h
+	(
+	(extern void real_to_decimal)
+	(extern void real_round)
+	* c2w/gcc/gcc/recog.c
+	(immediate_operand)
+	* c2w/gcc/gcc/rtlanal.c
+	(regno_use_in)
+	(get_address_mode)
+	(split_double)
+	* c2w/gcc/gcc/rtl.c
+	(const enum rtx_class rtx_class[NUM_RTX_C
+	(shallow_copy_rtvec)
+	(iterative_hash_rtx)
+	(rtl_check_failed_code_mode)
+	* c2w/gcc/gcc/rtl.def
+	(DEF_RTL_EXPR(EH_RETURN, "eh_return", "",
+	* c2w/gcc/gcc/rtl.h
+	(WARRANTY; without even the implied warra
+	(struct GTY(()) object_block {
+	(struct GTY((chain_next)
+	(struct GTY((variable_size)) rtvec_def {
+	(struct GTY((variable_size)) rtvec_def {
+	(extern void rtl_check_failed_flag)
+	(struct address_info {
+	(extern int currently_expanding_to_rtl;
+	(extern rtx convert_memory_address_addr_s
+	* c2w/gcc/gcc/sched-vis.c
+	(print_value)
+	* c2w/gcc/gcc/sel-sched-ir.c
+	(hash_with_unspec_callback)
+Only in c2w/gcc/gcc: signop.h
+	  * c2w/gcc/gcc/simplify-rtx.c
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	* c2w/gcc/gcc/stmt.c
+	(expand_case)
+	* c2w/gcc/gcc/stor-layout.c
+	(place_field)
+	(place_field)
+	(compute_record_mode)
+	(layout_type)
+	(initialize_sizetypes)
+	* c2w/gcc/gcc/system.h
+	(extern void fancy_abort)
+	* c2w/gcc/gcc/target.def
+	(DEFHOOK
+	* c2w/gcc/gcc/target.h
+	(
+	* c2w/gcc/gcc/targhooks.c
+	(default_mode_for_suffix)
+	(default_chkp_bound_mode)
+	* c2w/gcc/gcc/targhooks.h
+	(extern bool default_member_type_forces_b
+	* c2w/gcc/gcc/testsuite/c-c++-common/cilk-plus/PS/body.c
+	(
+	* c2w/gcc/gcc/testsuite/gcc.dg/builtin-object-size-8.c
+	(
+	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-14gf.c
+	(
+	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-1f.c
+	(
+	* c2w/gcc/gcc/testsuite/gcc.dg/strlenopt-4gf.c
+	(
+	* c2w/gcc/gcc/testsuite/gcc.dg/tree-ssa/pr45427.c
+	(foo)
+	* c2w/gcc/gcc/tree-affine.c
+	(along with GCC; see the file COPYING3.
+	(aff_combination_scale)
+	(tree_to_aff_combination)
+	(tree_to_aff_combination)
+	(void
+	(struct name_expansion
+	(debug_aff)
+	* c2w/gcc/gcc/tree-affine.h
+	(ANY WARRANTY; without even the implied w
+	* c2w/gcc/gcc/tree.c
+	(along with GCC; see the file COPYING3.
+	(init_ttree)
+	(tree_code_size)
+	(build_case_label)
+	(grow_tree_vec_stat)
+	(integer_zerop)
+	(integer_onep)
+	(size_in_bytes)
+	(build_simple_mem_ref_loc)
+	(iterative_hash_host_wide_int)
+	(build_type_attribute_qual_variant)
+	(type_hash_eq)
+	(int
+	(simple_cst_equal)
+	(simple_cst_equal)
+	(tree_contains_struct_check_failed)
+	(build_common_tree_nodes)
+	(needs_to_live_in_memory)
+	(truth_type_for)
+	(get_tree_code_name)
+	* c2w/gcc/gcc/tree-call-cdce.c
+	(check_pow)
+	* c2w/gcc/gcc/tree-cfg.c
+	(along with GCC; see the file COPYING3.
+	(verify_expr)
+	(verify_gimple_assign_binary)
+	* c2w/gcc/gcc/tree-chrec.c
+	(chrec_fold_multiply)
+	* c2w/gcc/gcc/tree-core.h
+	(struct GTY(()) tree_base {
+	* c2w/gcc/gcc/tree-data-ref.c
+	(dr_analyze_innermost)
+	(analyze_ziv_subscript)
+	* c2w/gcc/gcc/tree.def
+	(DEFTREECODE)
+	* c2w/gcc/gcc/tree-dfa.c
+	(get_or_create_ssa_default_def)
+	(get_ref_base_and_extent)
+	* c2w/gcc/gcc/tree-dfa.h
+	(get_addr_base_and_unit_offset_1)
+	* c2w/gcc/gcc/tree-dump.c
+	(along with GCC; see the file COPYING3.
+	(dequeue_and_dump)
+Only in c2w/gcc/gcc: tree-flow.h
+Only in c2w/gcc/gcc: tree-flow-inline.h
+	  * c2w/gcc/gcc/tree.h
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	 )
+	* c2w/gcc/gcc/tree-inline.c
+	(remap_gimple_op_r)
+	(copy_tree_body_r)
+Only in c2w/gcc/gcc: tree-mudflap.c
+	  * c2w/gcc/gcc/tree-object-size.c
+	 )
+	 )
+	 )
+	 )
+	* c2w/gcc/gcc/tree-predcom.c
+	(along with GCC; see the file COPYING3.
+	(suitable_reference_p)
+	(split_data_refs_to_components)
+	(split_data_refs_to_components)
+	(filter_suitable_components)
+	(get_chain_root)
+	(name_for_ref)
+	* c2w/gcc/gcc/tree-pretty-print.c
+	(along with GCC; see the file COPYING3.
+	(dump_array_domain)
+	(dump_generic_node)
+	(dump_generic_node)
+	(dump_generic_node)
+	* c2w/gcc/gcc/tree-sra.c
+	(build_user_friendly_ref_for_offset)
+	(sra_ipa_modify_expr)
+	* c2w/gcc/gcc/tree-ssa-address.c
+	(struct mem_address
+	(fixed_address_object_p)
+	(move_fixed_address_to_symbol)
+	(move_hint_to_base)
+	(move_variant_to_index)
+	(most_expensive_mult_to_index)
+	(addr_to_parts)
+	(copy_ref_info)
+	* c2w/gcc/gcc/tree-ssa-alias.c
+	(ao_ref_init_from_ptr_and_size)
+	(indirect_ref_may_alias_decl_p)
+	(indirect_ref_may_alias_decl_p)
+	(indirect_refs_may_alias_p)
+	(stmt_kills_ref_p_1)
+	* c2w/gcc/gcc/tree-ssa.c
+	(non_rewritable_mem_ref_base)
+	* c2w/gcc/gcc/tree-ssa-ccp.c
+	(along with GCC; see the file COPYING3.
+	(along with GCC; see the file COPYING3.
+	(dump_lattice_value)
+	(get_default_value)
+	(set_lattice_value)
+	(set_lattice_value)
+	(ccp_lattice_meet)
+	(evaluate_stmt)
+	(evaluate_stmt)
+	(evaluate_stmt)
+	(evaluate_stmt)
+	(visit_assignment)
+	(ccp_visit_stmt)
+	* c2w/gcc/gcc/tree-ssa-forwprop.c
+	(forward_propagate_addr_expr_1)
+	(forward_propagate_addr_expr_1)
+	(constant_pointer_difference)
+	(associate_pointerplus)
+	(combine_conversions)
+	* c2w/gcc/gcc/tree-ssa-loop.h
+	(WARRANTY; without even the implied warra
+	(struct tree_niter_desc
+	* c2w/gcc/gcc/tree-ssa-loop-im.c
+	(analyze_memory_references)
+	* c2w/gcc/gcc/tree-ssa-loop-ivcanon.c
+	(remove_exits_and_undefined_stmts)
+	(remove_redundant_iv_tests)
+	(canonicalize_loop_induction_variables)
+	* c2w/gcc/gcc/tree-ssa-loop-ivopts.c
+	(alloc_iv)
+	(idx_record_use)
+	(strip_offset_1)
+	(strip_offset_1)
+	(strip_offset_1)
+	(strip_offset_1)
+	(add_autoinc_candidates)
+	(get_computation_aff)
+	(force_expr_to_var_cost)
+	(difference_cost)
+	(get_loop_invariant_expr_id)
+	(get_computation_cost_at)
+	(iv_elimination_compare_lt)
+	(iv_elimination_compare_lt)
+	* c2w/gcc/gcc/tree-ssa-loop-niter.c
+	(along with GCC; see the file COPYING3.
+	(split_to_var_and_offset)
+	(bound_difference_of_offsetted_base)
+	(bound_difference)
+	(inverse)
+	(inverse)
+	(number_of_iterations_ne)
+	(number_of_iterations_lt_to_ne)
+	(assert_no_overflow_lt)
+	(assert_loop_rolls_lt)
+	(number_of_iterations_lt)
+	(number_of_iterations_le)
+	(number_of_iterations_cond)
+	(number_of_iterations_cond)
+	(number_of_iterations_cond)
+	(number_of_iterations_exit)
+	(find_loop_niter_by_eval)
+	(derive_constant_upper_bound_ops)
+	(record_estimate)
+	(record_nonwrapping_iv)
+	(infer_loop_bounds_from_undefined)
+	(discover_iteration_bound_by_body_walk)
+	(maybe_lower_iteration_bound)
+	(n_of_executions_at_most)
+	(nowrap_type_p)
+	(scev_probably_wraps_p)
+	* c2w/gcc/gcc/tree-ssa-loop-niter.h
+	(along with GCC; see the file COPYING3.
+	* c2w/gcc/gcc/tree-ssa-loop-prefetch.c
+	(struct mem_ref
+	(find_or_create_group)
+	(idx_analyze_ref)
+	(gather_memory_references_ref)
+	(gather_memory_references)
+	(prune_ref_by_group_reuse)
+	* c2w/gcc/gcc/tree-ssa-math-opts.c
+	(gimple_expand_builtin_pow)
+	(gimple_expand_builtin_pow)
+	(execute_cse_sincos)
+	* c2w/gcc/gcc/tree-ssanames.c
+	(make_ssa_name_fn)
+	* c2w/gcc/gcc/tree-ssanames.h
+	(struct GTY(()) ptr_info_def
+	* c2w/gcc/gcc/tree-ssa-phiopt.c
+	(jump_function_from_stmt)
+	(hoist_adjacent_loads)
+	* c2w/gcc/gcc/tree-ssa-pre.c
+	(phi_translate_1)
+	* c2w/gcc/gcc/tree-ssa-reassoc.c
+	(decrement_power)
+	* c2w/gcc/gcc/tree-ssa-sccvn.c
+	(copy_reference_ops_from_ref)
+	(copy_reference_ops_from_ref)
+	(ao_ref_init_from_vn_reference)
+	(ao_ref_init_from_vn_reference)
+	(vn_reference_fold_indirect)
+	(valueize_refs_1)
+	(vn_reference_lookup_3)
+	(vn_reference_lookup_3)
+	* c2w/gcc/gcc/tree-ssa-structalias.c
+	(process_constraint)
+	(get_constraint_for_ptr_offset)
+	* c2w/gcc/gcc/tree-ssa-uninit.c
+	(is_value_included_in)
+	* c2w/gcc/gcc/tree-streamer-in.c
+	(unpack_ts_base_value_fields)
+	(streamer_alloc_tree)
+	* c2w/gcc/gcc/tree-streamer-out.c
+	(pack_ts_base_value_fields)
+	(streamer_write_tree_header)
+	* c2w/gcc/gcc/tree-switch-conversion.c
+	(emit_case_bit_tests)
+	(build_constructors)
+	(build_constructors)
+	(array_value_type)
+	* c2w/gcc/gcc/tree-vect-data-refs.c
+	(vect_verify_datarefs_alignment)
+	(vect_prune_runtime_alias_test_list)
+	(vect_check_gather)
+	* c2w/gcc/gcc/tree-vect-generic.c
+	(along with GCC; see the file COPYING3.
+	(expand_vector_divmod)
+	(expand_vector_divmod)
+	(expand_vector_divmod)
+	(expand_vector_divmod)
+	(expand_vector_divmod)
+	(expand_vector_divmod)
+	* c2w/gcc/gcc/tree-vect-loop.c
+	(vect_transform_loop)
+	* c2w/gcc/gcc/tree-vect-loop-manip.c
+	(vect_do_peeling_for_loop_bound)
+	(vect_do_peeling_for_alignment)
+	* c2w/gcc/gcc/tree-vectorizer.h
+	(typedef struct _loop_vec_info {
+	* c2w/gcc/gcc/tree-vect-patterns.c
+	(vect_recog_divmod_pattern)
+	* c2w/gcc/gcc/tree-vrp.c
+	(along with GCC; see the file COPYING3.
+	(extract_range_from_assert)
+	(vrp_int_const_binop)
+	(vrp_int_const_binop)
+	(ranges_from_anti_range)
+	(extract_range_from_multiplicative_op_1)
+	(extract_range_from_binary_expr_1)
+	(extract_range_from_binary_expr_1)
+	(extract_range_from_binary_expr_1)
+	(extract_range_from_unary_expr_1)
+	(extract_range_from_unary_expr_1)
+	(adjust_range_with_scev)
+	(extract_code_and_val_from_cond_with_ops
+	(register_edge_assert_for_2)
+	(register_edge_assert_for_2)
+	(register_edge_assert_for_2)
+	(register_edge_assert_for_2)
+	(register_edge_assert_for_2)
+	(search_for_addr_array)
+	(maybe_set_nonzero_bits)
+	(union_ranges)
+	(union_ranges)
+	(union_ranges)
+	(union_ranges)
+	(union_ranges)
+	(union_ranges)
+	(intersect_ranges)
+	(intersect_ranges)
+	(intersect_ranges)
+	(simplify_truth_ops_using_ranges)
+	(simplify_abs_using_ranges)
+	(simplify_switch_using_ranges)
+	(simplify_conversion_using_ranges)
+	(simplify_float_conversion_using_ranges)
+	(vrp_finalize)
+	* c2w/gcc/gcc/value-prof.c
+	(gimple_divmod_fixed_value_transform)
+	(gimple_stringops_transform)
+	* c2w/gcc/gcc/varasm.c
+	(decode_addr_const)
+	(const_hash_1)
+	(const_desc_rtx_eq)
+	(output_constant)
+	(output_constant)
+	(array_size_for_constructor)
+	(output_constructor_regular_field)
+	(output_constructor_bitfield)
+	* c2w/gcc/gcc/var-tracking.c
+	(loc_cmp)
+	(emit_note_insn_var_location)
+Only in c2w/gcc/gcc: wide-int.cc
+Only in c2w/gcc/gcc: wide-int.h
+Only in c2w/gcc/gcc: wide-int-print.cc
+Only in c2w/gcc/gcc: wide-int-print.h
