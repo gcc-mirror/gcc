@@ -1775,7 +1775,7 @@ template <typename T>
 inline WI_UNARY_RESULT (T)
 wi::abs (const T &x)
 {
-  return neg_p (x) ? neg (x) : x;
+  return neg_p (x) ? neg (x) : WI_UNARY_RESULT (T) (x);
 }
 
 /* Return the result of sign-extending the low OFFSET bits of X.  */

@@ -227,7 +227,7 @@ check_format_string (tree fntype, unsigned HOST_WIDE_INT format_num,
 static bool
 get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
 {
-  if (!cst_fits_uhwi_p (expr))
+  if (!tree_fits_uhwi_p (expr))
     {
       gcc_assert (!validated_p);
       return false;

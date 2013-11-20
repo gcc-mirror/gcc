@@ -579,8 +579,8 @@ inverse (tree x, tree mask)
       unsigned HOST_WIDE_INT imask;
       unsigned HOST_WIDE_INT irslt = 1;
 
-      gcc_assert (cst_fits_shwi_p (x));
-      gcc_assert (cst_fits_shwi_p (mask));
+      gcc_assert (cst_and_fits_in_hwi (x));
+      gcc_assert (cst_and_fits_in_hwi (mask));
 
       ix = int_cst_value (x);
       imask = int_cst_value (mask);

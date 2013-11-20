@@ -16353,8 +16353,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	    add_AT_unsigned (subrange_die, bound_attr,
 		  	     TREE_INT_CST_LOW (bound) & mask);
 	  }
-	else if (prec == HOST_BITS_PER_WIDE_INT
-		 || (cst_fits_uhwi_p (bound) && wi::ges_p (bound, 0)))
+	else if (prec == HOST_BITS_PER_WIDE_INT || tree_fits_uhwi_p (bound))
 	  add_AT_unsigned (subrange_die, bound_attr,
 		  	   TREE_INT_CST_LOW (bound));
 	else

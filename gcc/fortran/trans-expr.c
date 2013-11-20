@@ -2629,7 +2629,7 @@ gfc_string_to_single_character (tree len, tree str, int kind)
 {
 
   if (len == NULL
-      || !cst_fits_uhwi_p (len)
+      || !tree_fits_uhwi_p (len)
       || !POINTER_TYPE_P (TREE_TYPE (str)))
     return NULL_TREE;
 

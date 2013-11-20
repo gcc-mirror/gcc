@@ -2065,7 +2065,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
   switch (code)
     {
     case INTEGER_CST:
-      if (!cst_fits_shwi_p (expr)
+      if (!cst_and_fits_in_hwi (expr)
 	  || integer_zerop (expr))
 	return orig_expr;
 
@@ -2102,7 +2102,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
     case MULT_EXPR:
       op1 = TREE_OPERAND (expr, 1);
-      if (!cst_fits_shwi_p (op1))
+      if (!cst_and_fits_in_hwi (op1))
 	return orig_expr;
 
       op0 = TREE_OPERAND (expr, 0);
@@ -2124,7 +2124,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 	return orig_expr;
 
       step = array_ref_element_size (expr);
-      if (!cst_fits_shwi_p (step))
+      if (!cst_and_fits_in_hwi (step))
 	break;
 
       st = int_cst_value (step);
@@ -2153,8 +2153,8 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 	tmp = component_ref_field_offset (expr);
 	field = TREE_OPERAND (expr, 1);
 	if (top_compref
-	    && cst_fits_shwi_p (tmp)
-	    && cst_fits_shwi_p (DECL_FIELD_BIT_OFFSET (field)))
+	    && cst_and_fits_in_hwi (tmp)
+	    && cst_and_fits_in_hwi (DECL_FIELD_BIT_OFFSET (field)))
 	  {
 	    HOST_WIDE_INT boffset, abs_off;
 
@@ -2417,7 +2417,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
   if (use_bb->loop_father != data->current_loop
       || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
       || stmt_could_throw_p (use->stmt)
-      || !cst_fits_shwi_p (step))
+      || !cst_and_fits_in_hwi (step))
     return;
 
   cstepi = int_cst_value (step);
@@ -3698,7 +3698,7 @@ force_expr_to_var_cost (tree expr, bool speed)
             mult = op0;
 
           if (mult != NULL_TREE
-              && cst_fits_shwi_p (TREE_OPERAND (mult, 1))
+              && cst_and_fits_in_hwi (TREE_OPERAND (mult, 1))
               && get_shiftadd_cost (expr, mode, cost0, cost1, mult,
                                     speed, &sa_cost))
             return sa_cost;
@@ -3716,10 +3716,10 @@ force_expr_to_var_cost (tree expr, bool speed)
       break;
 
     case MULT_EXPR:
-      if (cst_fits_shwi_p (op0))
+      if (cst_and_fits_in_hwi (op0))
 	cost = new_cost (mult_by_coeff_cost (int_cst_value (op0),
 					     mode, speed), 0);
-      else if (cst_fits_shwi_p (op1))
+      else if (cst_and_fits_in_hwi (op1))
 	cost = new_cost (mult_by_coeff_cost (int_cst_value (op1),
 					     mode, speed), 0);
       else
@@ -4119,7 +4119,7 @@ get_computation_cost_at (struct ivopts_data *data,
      redundancy elimination is likely to transform the code so that
      it uses value of the variable before increment anyway,
      so it is not that much unrealistic.  */
-  if (cst_fits_shwi_p (cstep))
+  if (cst_and_fits_in_hwi (cstep))
     cstepi = int_cst_value (cstep);
   else
     cstepi = 0;
@@ -4144,7 +4144,7 @@ get_computation_cost_at (struct ivopts_data *data,
 
      (also holds in the case ratio == -1, TODO.  */
 
-  if (cst_fits_shwi_p (cbase))
+  if (cst_and_fits_in_hwi (cbase))
     {
       offset = - ratio * int_cst_value (cbase);
       cost = difference_cost (data,
@@ -4597,7 +4597,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
 
   /* We need to be able to decide whether candidate is increasing or decreasing
      in order to choose the right comparison operator.  */
-  if (!cst_fits_shwi_p (cand->iv->step))
+  if (!cst_and_fits_in_hwi (cand->iv->step))
     return false;
   step = int_cst_value (cand->iv->step);
 

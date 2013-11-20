@@ -1505,8 +1505,8 @@ static inline void
 write_integer_cst (const tree cst)
 {
   int sign = tree_int_cst_sgn (cst);
-
-  if (!cst_fits_shwi_p (cst))
+  widest_int abs_value = wi::abs (wi::to_widest (cst));
+  if (!wi::fits_uhwi_p (abs_value))
     {
       /* A bignum. We do this in chunks, each of which fits in a
 	 HOST_WIDE_INT.  */
@@ -1559,14 +1559,9 @@ write_integer_cst (const tree cst)
   else
     {
       /* A small num.  */
-      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (cst);
-
       if (sign < 0)
-	{
-	  write_char ('n');
-	  low = -low;
-	}
-      write_unsigned_number (low);
+	write_char ('n');
+      write_unsigned_number (abs_value.to_uhwi ());
     }
 }
 

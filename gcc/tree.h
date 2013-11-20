@@ -3149,34 +3149,6 @@ omp_clause_elt_check (const_tree __t, int __i,
 
 #endif
 
-/* Checks that X is an integer constant that can be expressed in a signed
-   HOST_WIDE_INT without loss of precision.  This function differs from
-   the tree_fits_* versions in that the signedness of the type of X is
-   not considered.  */
-
-static inline bool
-cst_fits_shwi_p (const_tree x)
-{
-  if (TREE_CODE (x) != INTEGER_CST)
-    return false;
-
-  return TREE_INT_CST_NUNITS (x) == 1;
-}
-
-/* Checks that X is an integer constant that can be expressed in an unsigned
-   HOST_WIDE_INT without loss of precision.  This function differs from
-   the tree_fits_* versions in that the signedness of the type of X is
-   not considered.  */
-
-static inline bool
-cst_fits_uhwi_p (const_tree x)
-{
-  if (TREE_CODE (x) != INTEGER_CST)
-    return false;
-
-  return TREE_INT_CST_NUNITS (x) == 1 && TREE_INT_CST_ELT (x, 0) >= 0;
-}
-
 /* Compute the number of operands in an expression node NODE.  For
    tcc_vl_exp nodes like CALL_EXPRs, this is stored in the node itself,
    otherwise it is looked up from the node's code.  */
@@ -3942,6 +3914,7 @@ extern int integer_pow2p (const_tree);
 
 extern int integer_nonzerop (const_tree);
 
+extern bool cst_and_fits_in_hwi (const_tree);
 extern tree num_ending_zeros (const_tree);
 
 /* fixed_zerop (tree x) is nonzero if X is a fixed-point constant of

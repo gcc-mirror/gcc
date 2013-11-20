@@ -409,7 +409,7 @@ gfc_can_put_var_on_stack (tree size)
   if (gfc_option.flag_max_stack_var_size < 0)
     return 1;
 
-  if (!cst_fits_uhwi_p (size))
+  if (!tree_fits_uhwi_p (size))
     return 0;
 
   low = TREE_INT_CST_LOW (size);

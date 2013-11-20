@@ -1474,6 +1474,21 @@ build_low_bits_mask (tree type, unsigned bits)
 					   TYPE_PRECISION (type)));
 }
 
+/* Checks that X is integer constant that can be expressed in (unsigned)
+   HOST_WIDE_INT without loss of precision.  */
+
+bool
+cst_and_fits_in_hwi (const_tree x)
+{
+  if (TREE_CODE (x) != INTEGER_CST)
+    return false;
+
+  if (TYPE_PRECISION (TREE_TYPE (x)) > HOST_BITS_PER_WIDE_INT)
+    return false;
+
+  return TREE_INT_CST_NUNITS (x) == 1;
+}
+
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 
 tree
@@ -2669,7 +2684,7 @@ int_size_in_bytes (const_tree type)
   type = TYPE_MAIN_VARIANT (type);
   t = TYPE_SIZE_UNIT (type);
 
-  if (t && cst_fits_uhwi_p (t))
+  if (t && tree_fits_uhwi_p (t))
     return TREE_INT_CST_LOW (t);
   else
     return -1;
@@ -7235,7 +7250,7 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
 {
   if (tree_int_cst_sgn (t) < 0)
     return -1;
-  else if (!cst_fits_uhwi_p (t))
+  else if (!tree_fits_uhwi_p (t))
     return 1;
   else if (TREE_INT_CST_LOW (t) == u)
     return 0;
@@ -10473,7 +10488,7 @@ int_cst_value (const_tree x)
   unsigned HOST_WIDE_INT val = TREE_INT_CST_LOW (x);
 
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (cst_fits_shwi_p (x));
+  gcc_assert (cst_and_fits_in_hwi (x));
 
   if (bits < HOST_BITS_PER_WIDE_INT)
     {
