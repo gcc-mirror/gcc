@@ -1711,8 +1711,8 @@ real_value_from_int_cst (const_tree type, const_tree i)
      bitwise comparisons to see if two values are the same.  */
   memset (&d, 0, sizeof d);
 
-  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode,
-		     wide_int (i), TYPE_SIGN (TREE_TYPE (i)));
+  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode, i,
+		     TYPE_SIGN (TREE_TYPE (i)));
   return d;
 }
 

@@ -4885,7 +4885,8 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		  number = TREE_VALUE (second_argument);
 		  if (number && TREE_CODE (number) == INTEGER_CST)
 		    TREE_VALUE (second_argument)
-		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
+		      = wide_int_to_tree (TREE_TYPE (number),
+					  wi::add (number, 2));
 
 		  /* This is the third argument, the "first-to-check",
 		     which specifies the index of the first argument to
@@ -4895,7 +4896,8 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		  number = TREE_VALUE (third_argument);
 		  if (number && TREE_CODE (number) == INTEGER_CST)
 		    TREE_VALUE (third_argument)
-		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
+		      = wide_int_to_tree (TREE_TYPE (number),
+					  wi::add (number, 2));
 		}
 	      filtered_attributes = chainon (filtered_attributes,
 					     new_attribute);
@@ -4930,7 +4932,8 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		  if (number && TREE_CODE (number) == INTEGER_CST
 		      && !wi::eq_p (number, 0))
 		    TREE_VALUE (argument)
-		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
+		      = wide_int_to_tree (TREE_TYPE (number),
+					  wi::add (number, 2));
 		  argument = TREE_CHAIN (argument);
 		}
 
