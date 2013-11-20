@@ -2238,6 +2238,10 @@ lra (FILE *f)
 
   init_insn_recog_data ();
 
+  /* We can not set up reload_in_progress because it prevents new
+     pseudo creation.  */
+  lra_in_progress = 1;
+
 #ifdef ENABLE_CHECKING
   check_rtl (false);
 #endif
@@ -2247,10 +2251,6 @@ lra (FILE *f)
   lra_inheritance_iter = lra_undo_inheritance_iter = 0;
 
   setup_reg_spill_flag ();
-
-  /* We can not set up reload_in_progress because it prevents new
-     pseudo creation.  */
-  lra_in_progress = 1;
 
   /* Function remove_scratches can creates new pseudos for clobbers --
      so set up lra_constraint_new_regno_start before its call to
