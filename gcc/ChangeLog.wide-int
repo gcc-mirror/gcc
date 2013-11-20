@@ -188,11 +188,12 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* explow.c
 	(plus_constant): Update for wide-int.
 	* expmed.c
-	(static void store_fixed_bit_field):
-	(extract_fixed_bit_field):
-	(expand_widening_mult):
-	(expmed_mult_highpart):
-	(expand_smod_pow2):
+	(mask_rtx): Update for wide-int.
+	(lshift_value): Likewise.
+	(expand_mult): Likewise.
+	(choose_multiplier): Likewise.
+	(expand_smod_pow2): Likewise.
+	(make_tree): Likewise.
 	* expr.c
 	(convert_modes):
 	(store_expr):
