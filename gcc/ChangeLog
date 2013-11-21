@@ -1,3 +1,7 @@
+2013-11-21  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/extend.texi: Document htm builtins.
+
 2013-11-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59221
