@@ -3037,7 +3037,7 @@ tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TM_H) coretypes.h $(GIMPLE_H) \
     $(TREE_PASS_H) $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) \
     $(GGC_H) $(OBSTACK_H) $(PARAMS_H) $(CPPLIB_H) $(PARAMS_H) \
-    $(GIMPLE_PRETTY_PRINT_H) langhooks.h
+    $(GIMPLE_PRETTY_PRINT_H) langhooks.h $(OPTABS_H)
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(TM_H) $(FLAGS_H) $(TREE_FLOW_H) $(GIMPLE_H) \
     tree-iterator.h $(TREE_PASS_H) tree-ssa-propagate.h
@@ -3276,12 +3276,12 @@ lra-constraints.o : lra-constraints.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(REGS_H) insn-config.h insn-codes.h $(DF_H) \
    $(RECOG_H) output.h addresses.h $(REGS_H) hard-reg-set.h $(FLAGS_H) \
    $(FUNCTION_H) $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) \
-   ira.h rtl-error.h $(LRA_INT_H)
+   ira.h rtl-error.h $(LRA_INT_H) $(OPTABS_H)
 lra-eliminations.o : lra-eliminations.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
-   rtl-error.h $(LRA_INT_H)
+   rtl-error.h $(LRA_INT_H) $(OPTABS_H)
 lra-lives.o : lra-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
