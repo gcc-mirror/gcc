@@ -483,7 +483,6 @@ extern void get_max_float (const struct real_format *, char *, size_t);
 extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
 			       const wide_int_ref &, signop);
-extern wide_int decimal_real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 #endif
 
 #endif /* ! GCC_REAL_H */
