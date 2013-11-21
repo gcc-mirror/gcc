@@ -1,3 +1,8 @@
+2013-11-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59221
+	* gcc.c-torture/execute/pr59221.c: New test.
+
 2013-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/59227
