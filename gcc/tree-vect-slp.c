@@ -48,23 +48,23 @@ along with GCC; see the file COPYING3.  If not see
 /* Extract the location of the basic block in the source code.
    Return the basic block location if succeed and NULL if not.  */
 
-LOC
+source_location
 find_bb_location (basic_block bb)
 {
   gimple stmt = NULL;
   gimple_stmt_iterator si;
 
   if (!bb)
-    return UNKNOWN_LOC;
+    return UNKNOWN_LOCATION;
 
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
       stmt = gsi_stmt (si);
-      if (gimple_location (stmt) != UNKNOWN_LOC)
+      if (gimple_location (stmt) != UNKNOWN_LOCATION)
         return gimple_location (stmt);
     }
 
-  return UNKNOWN_LOC;
+  return UNKNOWN_LOCATION;
 }
 
 

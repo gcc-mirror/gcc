@@ -1,5 +1,15 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE,
+	LOC_LINE): Remove wrappers and fix all users.
+	(struct _loop_vec_info): Remove loop_line_number member.
+	(LOOP_VINFO_LOC): Remove.
+	* tree-parloops.c, tree-vect-loop-manip.c, tree-vect-slp.c,
+	tree-vectorizer.c: Fix users of LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE
+	and LOC_LINE.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (simplify_vce): New function.
 	(ssa_forward_propagate_and_combine): Call it.
 
