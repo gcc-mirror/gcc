@@ -1,6 +1,5 @@
 2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-	PR libfortran/59227
 	* intrinsics/erfc_scaled.c (erfc_scaled_r16): Don't define if
 	__float128 is not available.
 
