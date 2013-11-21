@@ -1,3 +1,9 @@
+2013-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/59227
+	* gfortran.dg/erf_3.F90: XFAIL on spu-* and ia64-*-linux*.
+	Make more generic for other platforms.
+
 2013-11-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53976
