@@ -8689,7 +8689,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
       ++n_var_parts;
     }
   type_size_unit = TYPE_SIZE_UNIT (TREE_TYPE (decl));
-  if ((unsigned HOST_WIDE_INT) last_limit < tree_to_uhwi (type_size_unit))
+  if ((unsigned HOST_WIDE_INT) last_limit < TREE_INT_CST_LOW (type_size_unit))
     complete = false;
 
   if (! flag_var_tracking_uninit)
