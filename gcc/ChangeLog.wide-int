@@ -239,12 +239,10 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(fold_ternary_loc): Likewise.
 	(multiple_of_p): Likewise.
 	(tree_call_nonnegative_warnv_p): Likewise.
-	(fold_read_from_constant_string): Likewise.
 	(fold_negate_const): Likewise.
 	(fold_abs_const): Likewise.
 	(fold_relational_const): Remove dead INT_CST_LT_UNSIGNED.
 	(round_up_loc): Update for wide-int.
-	(ptr_difference_const): Update to use cst_fits_shwi_p.
 	* genemit.c
 	(gen_exp): Add CONST_WIDE_INT case.
 	* gengenrtl.c
