@@ -120,8 +120,7 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
    expression EXPR into bitpack BP.  */
 
 static void
-pack_ts_int_cst_value_fields (struct bitpack_d *bp,
-			      tree expr ATTRIBUTE_UNUSED)
+pack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   int i;
   /* Note that the number of elements has already been written out in
