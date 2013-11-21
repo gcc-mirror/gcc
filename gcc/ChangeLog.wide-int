@@ -432,13 +432,14 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(rtx_mode_t): New type.
 	(namespace wi): Add.
 	(rtx_alloc_v) Add.
-========================
 	* sched-vis.c
 	(print_value): Now supports CONST_WIDE_INT.
+	* sel-sched-ir.c
+	(lhs_and_rhs_separable_p): Update comment.
+	* signop.h: Add
 	* simplify-rtx.c
 	(mode_signbit_p): Now supports CONST_WIDE_INT.
-	(simplify_binary_operation_1): Use wide-int rep.
-	(simplify_const_unary_operation): Likewise.
+	(simplify_const_unary_operation): Use wide-int rep.
 	(simplify_binary_operation_1): Likewise.
 	(simplify_const_binary_operation): Likewise.
 	(simplify_const_relational_operation): Likewise.
@@ -446,9 +447,10 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* stmt.c
 	(expand_case): Use wide-int rep.
 	* stor-layout.c
-	(place_field):
+	(place_field): Note BUGs.
 	(compute_record_mode): Use wide-int rep.
 	(layout_type): Likewise.
+	(initialize_sizetypes): Likewise.
 	(set_min_and_max_values_for_integral_type): Likewise.
 	(fixup_signed_type): Likewise.
 	(fixup_unsigned_type): Likewise.
@@ -456,16 +458,18 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(STATIC_CONSTANT_P): New.
 	(STATIC_ASSERT): New.
 	* target.def
-	(iterations, iterations_max): Use wide-int rather than double-int.
+	(iterations, iterations_max): Use widest_int rather than double_int.
 	(hook_bool_dint_dint_uint_bool_true): Removed.
 	(hook_bool_wint_wint_uint_bool_true): New.
-	* target.h: Now includes wide-int rather than double-int.
+	* target.h: Now includes wide-int.h rather than double-int.h.
+	* targhooks.h: Update can_use_doloop_if_innermost to use
+	widest_int instead of double_int.
 	* targhooks.c
 	(default_cxx_get_cookie_size): Uses INT_CST_LT rather than INT_CST_LT_UNSIGNED.
 	(can_use_doloop_if_innermost): Now uses wide-int parameters.
 	* tree-affine.c
 	(double_int_ext_for_comb): Deleted.
-	(wide_int_ext_for_comb): New function.
+	(wide_int_ext_for_comb): Added.
 	(aff_combination_zero): Use wide-int rep.
 	(aff_combination_const): Likewise.
 	(aff_combination_elt): Likewise.
@@ -474,13 +478,12 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(aff_combination_add_cst): Likewise.
 	(aff_combination_add): Likewise.
 	(aff_combination_convert): Likewise.
-	(double_int_ext_for_comb): Deleted.
-	(wide_int_ext_for_comb): Added.
 	(tree_to_aff_combination): Use wide-int rep.
 	(add_elt_to_tree): Likewise.
 	(aff_combination_to_tree): Likewise.
 	(aff_combination_remove_elt): Likewise.
 	(aff_combination_add_product): Likewise.
+	(aff_combination_mult): Likewise.
 	(aff_combination_expand): Likewise.
 	(double_int_constant_multiple_p): Deleted.
 	(wide_int_constant_multiple_p): Added.
@@ -488,27 +491,28 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(print_aff): Likewise.
 	(get_inner_reference_aff): Likewise.
 	(aff_comb_cannot_overlap_p): Likewise.
+	========================
 	* tree-affine.h
 	(aff_comb_elt): Changed type of coef and offset to widest-int.
 	* tree.c
 	(init_ttree): Changed constructor of int_cst_node.
 	(tree_code_size): Removed code for INTEGER_CST case.
 	(tree_size): Added INTEGER_CST case.
-	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): New function.
+	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): Added.
 	(build_int_cst_type): Use wide-int.
 	(double_int_to_tree): Use wide-int.
 	(double_int_fits_to_tree_p): Deleted.
 	(force_fit_type_double): Deleted.
-	(force_fit_type): New function.
+	(force_fit_type): Added.
 	(int_cst_hash_hash): Use wide-int rep.
 	(int_cst_hash_eq): Use wide-int rep.
 	(build_int_cst_wide): Deleted.
-	(wide_int_to_tree): New function.
+	(wide_int_to_tree): Added.
 	(cache_integer_cst): Use wide-int rep.
 	(build_low_bits_mask): Likewise.
 	(cst_and_fits_in_hwi): Deleted.
 	(real_value_from_int_cst): Use wide-int rep.
-	(make_int_cst_stat): New function.
+	(make_int_cst_stat): Added.
 	(integer_zerop): Use wide_int rep.
 	(integer_onep): Likewise.
 	(integer_all_onesp): Likewise.
@@ -942,3 +946,8 @@ lto:
 objc:
 	* objc-act.c
 	(objc_decl_method_attributes): Use wide-int rep.
+
+
+testsuite:
+	* gcc.dg/tree-ssa/pr45427.c: Update to look for 0x0 instead of 0.
+
