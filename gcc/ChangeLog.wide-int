@@ -30,11 +30,13 @@
 	(record_niter_bound): Switch to use widest_int.
 	(get_estimated_loop_iterations): Likewise.
 	(get_max_loop_iterations): Likewise.
-	(gcov_type_to_wide_int): Likewise.
+	(gcov_type_to_double_int): Rename to gcov_type_to_wide_int and
+	update for wide-int.
 	* cgraph.c
 	(cgraph_add_thunk): Update to use wide-int.
 	* combine.c
 	(try_combine): Update to use wide-int.
+	(subst) : Likewise.
 	* config/aarch64/aarch64.c
 	(aapcs_vfp_sub_candidate): Update to use wi::.
 	(aarch64_float_const_representable_p): Update to use wide_int.
@@ -61,7 +63,6 @@
 	* config/msp430/msp430.c
 	(msp430_attr): Update to use wi::.
 	* config/nds32/nds32.c
-	(nds32_construct_isr_vectors_information): Update to use tree_to_uhwi.
 	(nds32_insert_attributes): Update to use wi::.
 	* config/rs6000/predicates.md
 	(any_operand): Add const_wide_int.
@@ -82,6 +83,7 @@
 	(rs6000_hash_constant): Likewise.
 	(output_toc): Likewise.
 	(rs6000_rtx_costs): Likewise.
+	(rs6000_emit_swrsqrt); Update real_from_integer.
 	* config/rs6000/rs6000-c.c
 	(altivec_resolve_overloaded_builtin): Update to use wi::.
 	* config/rs6000/rs6000.h
@@ -911,9 +913,6 @@ cp:
 	(cp_tree_equal): Update to use wide-int.
 	* typeck2.c
 	(process_init_constructor_array): Update to use wide-int.
-	* vtable-class-hierarchy.c
-	(check_and_record_registered_pairs): Update to use tree_to_uhwi.
-	(output_set_info): Likewise.
 
 
 fortran:
