@@ -886,8 +886,8 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XCCFI(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_cfi)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
 
-#define XCVECEXP(RTX, N, M, C) RTVEC_ELT (XCVEC (RTX, N, C), M)
-#define XCVECLEN(RTX, N, C)    GET_NUM_ELEM (XCVEC (RTX, N, C))
+#define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
+#define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
 
 #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
 
