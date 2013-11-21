@@ -2845,6 +2845,267 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __gnu_cxx::von_mises_distribution<_RealType>& __d2)
    { return !(__d1 == __d2); }
 
+
+  /**
+   * @brief A discrete hypergeometric random number distribution.
+   *
+   * The hypergeometric distribution is a discrete probability distribution
+   * that describes the probability of @p k successes in @p n draws @a without
+   * replacement from a finite population of size @p N containing exactly @p K
+   * successes.
+   *
+   * The formula for the hypergeometric probability density function is
+   * @f[
+   *   p(k|N,K,n) = \frac{\binom{K}{k} \binom{N-K}{n-k}}{\binom{N}{n}}
+   * @f]
+   * where @f$N@f$ is the total population of the distribution,
+   * @f$K@f$ is the total population of the distribution.
+   *
+   * <table border=1 cellpadding=10 cellspacing=0>
+   * <caption align=top>Distribution Statistics</caption>
+   * <tr><td>Mean</td><td>@f$ n\frac{K}{N} @f$</td></tr>
+   * <tr><td>Variance</td><td>@f$ n\frac{K}{N}\frac{N-K}{N}\frac{N-n}{N-1}
+   *   @f$</td></tr>
+   * <tr><td>Range</td><td>@f$[max(0, n+K-N), min(K, n)]@f$</td></tr>
+   * </table>
+   */
+  template<typename _UIntType = unsigned int>
+    class hypergeometric_distribution
+    {
+      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
+		    "substituting _UIntType not an unsigned integral type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _UIntType  result_type;
+
+      /** Parameter type. */
+      struct param_type
+      {
+	typedef hypergeometric_distribution<_UIntType> distribution_type;
+	friend class hypergeometric_distribution<_UIntType>;
+
+	explicit
+	param_type(result_type __N = 10, result_type __K = 5,
+		   result_type __n = 1)
+	: _M_N{__N}, _M_K{__K}, _M_n{__n}
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_N >= _M_K);
+	  _GLIBCXX_DEBUG_ASSERT(_M_N >= _M_n);
+	}
+
+	result_type
+	total_size() const
+	{ return _M_N; }
+
+	result_type
+	successful_size() const
+	{ return _M_K; }
+
+	result_type
+	unsuccessful_size() const
+	{ return _M_N - _M_K; }
+
+	result_type
+	total_draws() const
+	{ return _M_n; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return (__p1._M_N == __p2._M_N)
+	      && (__p1._M_K == __p2._M_K)
+	      && (__p1._M_n == __p2._M_n); }
+
+      private:
+
+	result_type _M_N;
+	result_type _M_K;
+	result_type _M_n;
+      };
+
+      // constructors and member function
+      explicit
+      hypergeometric_distribution(result_type __N = 10, result_type __K = 5,
+				  result_type __n = 1)
+      : _M_param{__N, __K, __n}
+      { }
+
+      explicit
+      hypergeometric_distribution(const param_type& __p)
+      : _M_param{__p}
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { }
+
+      /**
+       * @brief Returns the distribution parameter @p N,
+       *	the total number of items.
+       */
+      result_type
+      total_size() const
+      { return this->_M_param.total_size(); }
+
+      /**
+       * @brief Returns the distribution parameter @p K,
+       *	the total number of successful items.
+       */
+      result_type
+      successful_size() const
+      { return this->_M_param.successful_size(); }
+
+      /**
+       * @brief Returns the total number of unsuccessful items @f$ N - K @f$.
+       */
+      result_type
+      unsuccessful_size() const
+      { return this->_M_param.unsuccessful_size(); }
+
+      /**
+       * @brief Returns the distribution parameter @p n,
+       *	the total number of draws.
+       */
+      result_type
+      total_draws() const
+      { return this->_M_param.total_draws(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return this->_M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { this->_M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      {
+	using _IntType = typename std::make_signed<result_type>::type;
+	return static_cast<result_type>(std::max(static_cast<_IntType>(0),
+		  		static_cast<_IntType>(this->total_draws()
+						- this->unsuccessful_size())));
+      }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return std::min(this->successful_size(), this->total_draws()); }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, this->_M_param); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p);
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, this->_M_param); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+       /**
+	* @brief Return true if two hypergeometric distributions have the same
+	*        parameters and the sequences that would be generated
+	*        are equal.
+	*/
+      friend bool
+      operator==(const hypergeometric_distribution& __d1,
+		 const hypergeometric_distribution& __d2)
+      { return __d1._M_param == __d2._M_param; }
+
+      /**
+       * @brief Inserts a %hypergeometric_distribution random number
+       * distribution @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %hypergeometric_distribution random number
+       *             distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _UIntType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const __gnu_cxx::hypergeometric_distribution<_UIntType1>&
+                   __x);
+
+      /**
+       * @brief Extracts a %hypergeometric_distribution random number
+       * distribution @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %hypergeometric_distribution random number generator
+       *             distribution.
+       *
+       * @returns The input stream with @p __x extracted or in an error
+       *          state.
+       */
+      template<typename _UIntType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::hypergeometric_distribution<_UIntType1>& __x);
+
+    private:
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+    };
+
+  /**
+   * @brief Return true if two hypergeometric distributions are different.
+   */
+  template<typename _UIntType>
+    inline bool
+    operator!=(const __gnu_cxx::hypergeometric_distribution<_UIntType>& __d1,
+	       const __gnu_cxx::hypergeometric_distribution<_UIntType>& __d2)
+    { return !(__d1 == __d2); }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
 
