@@ -494,11 +494,11 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* tree-affine.h
 	(struct aff_comb_elt): Changed type of coef to widest_int.
 	(struct affine_tree_combination): Changed type of offset to widest_int.
-	========================
 	* tree.c
 	(init_ttree): Changed constructor of int_cst_node.
 	(tree_code_size): Removed code for INTEGER_CST case.
 	(tree_size): Add INTEGER_CST case.
+	(make_node_stat): Update comment.
 	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): Add.
 	(build_int_cst_type): Use wide-int.
 	(double_int_to_tree): Use wide-int.
@@ -511,7 +511,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(wide_int_to_tree): Add.
 	(cache_integer_cst): Use wide-int rep.
 	(build_low_bits_mask): Likewise.
-	(cst_and_fits_in_hwi): Delete.
+	(cst_and_fits_in_hwi): Likewise.
 	(real_value_from_int_cst): Use wide-int rep.
 	(make_int_cst_stat): Add.
 	(integer_zerop): Use wide_int rep.
@@ -522,7 +522,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(tree_log2): Likewise.
 	(tree_floor_log2): Likewise.
 	(tree_ctz): Likewise.
-	(size_in_bytes): Likewise.
+	(int_size_in_bytes): Likewise.
 	(mem_ref_offset): Likewise.
 	(build_type_attribute_qual_variant): Likewise.
 	(type_hash_eq): Likewise
@@ -531,8 +531,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(tree_int_cst_compare): Likewise.
 	(tree_fits_shwi_p): Likewise.
 	(tree_fits_uhwi_p): Likewise.
-	(tree_to_shwi): Likewise.
-	(tree_to_uhwi): Likewise.
 	(tree_int_cst_sign_bit): Likewise.
 	(tree_int_cst_sgn): Likewise.
 	(tree_int_cst_min_precision): Likewise.
@@ -550,11 +548,10 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(num_ending_zeros): Likewise.
 	(drop_tree_overflow): Likewise.
 	* tree-call-cdce.c
-	(check_pow): Use wide-int version of call.
+	(check_pow): Update real_from_integer.
 	(gen_conditions_for_pow_cst_base): Likewise.
 	* tree-cfg.c
 	(group_case_labels_stmt): Use wide-int rep.
-	(verify_expr): Likewise.
 	(verify_gimple_assign_binary): Likewise.
 	(print_loop): Likewise.
 	* tree-chrec.c
@@ -565,7 +562,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* tree-data-ref.c
 	(dr_analyze_innermost): Use wide-int rep.
 	(dr_may_alias_p): Likewise.
-	(analyze_ziv_subscript): Likewise.
+	(max_stmt_executions_tree): Likewise.
+	========================
 	* tree.def
 	(INTEGER_CST): Modified comment.
 	* tree-dfa.c
