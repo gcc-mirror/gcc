@@ -1,3 +1,14 @@
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59058
+	* tree-loop-distribution.c (struct partition_s): Add plus_one
+	member.
+	(build_size_arg_loc): Apply niter adjustment here.
+	(generate_memset_builtin): Adjust.
+	(generate_memcpy_builtin): Likewise.
+	(classify_partition): Do not use number_of_exit_cond_executions
+	but record whether niter needs to be adjusted.
+
 2013-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-tail-merge.c (stmt_local_def): Return false if the statement
