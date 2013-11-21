@@ -894,7 +894,7 @@ c-family:
 	(shorten_compare): Use wide-int interfaces.
 	(pointer_int_sum): Likewise.
 	(c_common_nodes_and_builtins): Use make_int_cst.
-	(match_case_to_enum_1): Use tree_fits_uhwi_p and tree_fits_shwi_p. 
+	(match_case_to_enum_1): Use tree_fits_uhwi_p and tree_fits_shwi_p.
 	(handle_alloc_size_attribute): Use wide-int interfaces.
 	(get_nonnull_operand): Likewise.
 	* c-format.c
