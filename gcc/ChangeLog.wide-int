@@ -260,6 +260,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* genmodes.c
 	(emit_max_int): Added code find longest int.
 	* genpreds.c
+	(write_one_predicate_function): Update comment.
 	(write_tm_constrs_h): Added check for hval and lval use in CONST_WIDE_INT.
 	* genrecog.c
 	(validate_pattern): Add CONST_WIDE_INT case.
@@ -281,7 +282,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(struct slsr_cand_d): Change index to be widest_int;
 	(struct incr_info_d): Change incr to be widest_int.
 	(alloc_cand_and_find_basis): Use wide-int rep.
-	(stmt_cost): Likewise.
 	(slsr_process_phi): Likewise.
 	(restructure_reference): Likewise.
 	(slsr_process_ref): Likewise.
