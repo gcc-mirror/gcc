@@ -9310,7 +9310,7 @@
 
 	PR target/51244
 	* config/sh/sh_treg_combine.cc: New SH specific RTL pass.
-	* config.gcc (sh[123456789lbe]*-*-* | sh-*-*): Add sh_ifcvt.o to
+	* config.gcc (sh[123456789lbe]*-*-* | sh-*-*): Add sh_treg_combine.o to
 	extra_objs.
 	* config/sh/t-sh (sh_treg_combine.o): New entry.
 	* config/sh/sh.c (sh_fixed_condition_code_regs): New function that
