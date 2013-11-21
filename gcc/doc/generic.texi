@@ -1022,13 +1022,15 @@ As this example indicates, the operands are zero-indexed.
 @node Constant expressions
 @subsection Constant expressions
 @tindex INTEGER_CST
-@findex TREE_INT_CST_LOW
 @findex tree_int_cst_lt
 @findex tree_int_cst_equal
 @tindex tree_fits_uhwi_p
 @tindex tree_fits_shwi_p
 @tindex tree_to_uhwi
 @tindex tree_to_shwi
+@tindex TREE_INT_CST_NUNITS
+@tindex TREE_INT_CST_ELT
+@tindex TREE_INT_CST_LOW
 @tindex REAL_CST
 @tindex FIXED_CST
 @tindex COMPLEX_CST
@@ -1049,7 +1051,10 @@ constants is obtained with @code{TREE_TYPE}; they are not always of type
 @code{INTEGER_CST} nodes.  The value of the integer constant @code{e} is
 represented in an array of HOST_WIDE_INT.   There are enough elements
 in the array to represent the value without taking extra elements for
-redundant 0s or -1.
+redundant 0s or -1.  The number of elements used to represent @code{e}
+is available via @code{TREE_INT_CST_NUNITS}. Element @code{i} can be
+extracted by using @code{TREE_INT_CST_ELT (e, i)}.
+@code{TREE_INT_CST_LOW} is a shorthand for @code{TREE_INT_CST_ELT (e, 0)}.
 
 The functions @code{tree_fits_shwi_p} and @code{tree_fits_uhwi_p}
 can be used to tell if the value is small enough to fit in a
