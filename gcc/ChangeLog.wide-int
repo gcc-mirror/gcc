@@ -283,6 +283,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(struct incr_info_d): Change incr to be widest_int.
 	(alloc_cand_and_find_basis): Use wide-int rep.
 	(slsr_process_phi): Likewise.
+	(backtrace_base_for_ref): Likewise.
 	(restructure_reference): Likewise.
 	(slsr_process_ref): Likewise.
 	(create_mul_ssa_cand): Likewise.
@@ -297,7 +298,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(replace_ref): Likewise.
 	(cand_increment): Likewise.
 	(cand_abs_increment): Likewise.
-	(create_phi_basis): Likewise.
 	(replace_mult_candidate): Likewise.
 	(replace_unconditional_candidate): Likewise.
 	(incr_vec_index): Likewise.
@@ -308,7 +308,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(record_phi_increments): Likewise.
 	(phi_incr_cost): Likewise.
 	(lowest_cost_path): Likewise.
-	(optimize_cands_for_speed_p): Likewise.
 	(total_savings): Likewise.
 	(analyze_increments): Likewise.
 	(ncd_with_phi): Likewise.
@@ -318,8 +317,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(all_phi_incrs_profitable): Likewise.
 	(replace_one_candidate): Likewise.
 	(replace_profitable_candidates): Likewise.
-	* gimplify.c
-	(gimple_boolify): Use wide-int rep.
 	* godump.c
 	(go_output_typedef): Use wide-int rep.
 	* graphite-clast-to-gimple.c
