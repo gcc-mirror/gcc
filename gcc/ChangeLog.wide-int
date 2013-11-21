@@ -689,8 +689,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(split_to_var_and_offset): Use wide-int rep.
 	(determine_value_range): Likewise.
 	(bound_difference_of_offsetted_base): Likewise.
-	(bound_difference): Likewise.
-	(inverse): Likewise.
+	(bounds_add): Likewise.
 	(number_of_iterations_ne_max): Likewise.
 	(number_of_iterations_ne): Likewise.
 	(number_of_iterations_lt_to_ne): Likewise.
@@ -713,20 +712,12 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(maybe_lower_iteration_bound): Likewise.
 	(estimate_numbers_of_iterations_loop): Likewise.
 	(estimated_loop_iterations): Likewise.
-	(estimated_loop_iterations_int): Likewise.
 	(max_loop_iterations): Likewise.
 	(max_loop_iterations_int): Likewise.
 	(max_stmt_executions): Likewise.
 	(estimated_stmt_executions): Likewise.
 	(n_of_executions_at_most): Likewise.
 	(scev_probably_wraps_p): Likewise.
-	* tree-ssa-loop-prefetch.c
-	(dump_mem_details): Use wide-int rep.
-	(find_or_create_group): Likewise.
-	(idx_analyze_ref): Likewise.
-	(gather_memory_references_ref): Likewise.
-	(prune_ref_by_group_reuse): Likewise.
-	(issue_prefetch_ref): Likewise.
 	* tree-ssa-math-opts.c
 	(gimple_expand_builtin_pow): Use wide-int rep.
 	* tree-ssanames.c
