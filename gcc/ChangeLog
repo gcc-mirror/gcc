@@ -1,5 +1,10 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-ch.c (copy_loop_headers): Decrement
+	nb_iterations_upper_bound by one.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/59058
 	* tree-loop-distribution.c (struct partition_s): Add plus_one
 	member.
