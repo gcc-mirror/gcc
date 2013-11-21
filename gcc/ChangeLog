@@ -1,3 +1,12 @@
+2013-11-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53976
+	* config/sh/sh_optimize_sett_clrt.cc: New SH specific RTL pass.
+	* config/sh/sh.c (register_sh_passes): Add sh_optimize_sett_clrt pass.
+	* config/sh/sh/t-sh (sh_optimize_sett_clrt pass.o): New entry.
+	* config.gcc (sh[123456789lbe]*-*-* | sh-*-*): Add
+	sh_optimize_sett_clrt pass.o to	extra_objs.
+
 2013-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* cfg.c (dump_edge_info): Remove redundant comment.
@@ -9301,7 +9310,8 @@
 
 	PR target/51244
 	* config/sh/sh_treg_combine.cc: New SH specific RTL pass.
-	* config.gcc (SH extra_objs): Add sh_ifcvt.o.
+	* config.gcc (sh[123456789lbe]*-*-* | sh-*-*): Add sh_ifcvt.o to
+	extra_objs.
 	* config/sh/t-sh (sh_treg_combine.o): New entry.
 	* config/sh/sh.c (sh_fixed_condition_code_regs): New function that
 	implements the target hook TARGET_FIXED_CONDITION_CODE_REGS.
