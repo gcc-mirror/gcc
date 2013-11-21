@@ -1,3 +1,9 @@
+2013-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Use
+	ix86_zero_extend_to_Pmode where appropriate.
+	(ix86_expand_builtin): Ditto.
+
 2013-11-21  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (want_pubnames): Don't do pubnames for -g1.
@@ -96,8 +102,7 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058
-	* tree-loop-distribution.c (struct partition_s): Add plus_one
-	member.
+	* tree-loop-distribution.c (struct partition_s): Add plus_one member.
 	(build_size_arg_loc): Apply niter adjustment here.
 	(generate_memset_builtin): Adjust.
 	(generate_memcpy_builtin): Likewise.
@@ -145,13 +150,13 @@
 
 2013-11-20  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gimplify.h (gimplify_hasher : typed_free_remove, struct gimplify_ctx):
+	* gimplify.h (gimplify_hasher:typed_free_remove, struct gimplify_ctx):
 	Move to gimplify.c.
 	(free_gimplify_stack): Add prototype.
 	* gimplify.c (gimplify_hasher:typed_free_remove): Relocate here.
 	(struct gimplify_ctx): Relocate here.
 	(gimplify_ctxp): Make static.
-	(ctx_pool, ctx_alloc, ctx_free, free_gimplify_stack): New.  Manage a 
+	(ctx_pool, ctx_alloc, ctx_free, free_gimplify_stack): New.  Manage a
 	list of struct gimplify_ctx.
 	(push_gimplify_context): Add default parameters and allocate a struct
 	from the pool.
@@ -184,8 +189,7 @@
 	new pseudos.
 	(lra_create_new_reg_with_unique_value): Pass new argument value.
 	(lra_emit_add, lra_emit_move): Ditto.
-	* lra-constraints.c (in_class_p): Add check for move for a new
-	insn.
+	* lra-constraints.c (in_class_p): Add check for move for a new insn.
 	(change_class): Rename to lra_change_class.  Move to lra-int.h.
 	(get_reload_reg, narrow_reload_pseudo_class): Adjust calls of
 	change_class.
@@ -279,7 +283,8 @@
 
 2013-11-20  Jan Hubicka  <jh@suse.cz>
 
-	* opts.c (finish_options): Imply -ffat-lto-objects with -fno-use-linker-plugin.
+	* opts.c (finish_options): Imply -ffat-lto-objects with
+	-fno-use-linker-plugin.
 	* common.opt (fuse-linker-plugin): Add var.
 
 2013-11-20  Ilya Enkovich  <ilya.enkovich@intel.com>
@@ -373,8 +378,7 @@
 	Remove inline and related attributes.
 	(__TM_nesting_depth, __TM_is_user_abort, __TM_is_named_user_abort)
 	(__TM_is_illegal, __TM_is_footprint_exceeded)
-	(__TM_is_nested_too_deep, __TM_is_conflict): Fix format value
-	check.
+	(__TM_is_nested_too_deep, __TM_is_conflict): Fix format value check.
 
 2013-11-20  Richard Biener  <rguenther@suse.de>
 
@@ -394,8 +398,7 @@
 
 	* gcc/config/aarch64/aarch64-builtins.c
 	(aarch64_simd_itype): Remove.
-	(aarch64_simd_builtin_datum): Remove itype, add
-	qualifiers pointer.
+	(aarch64_simd_builtin_datum): Remove itype, add qualifiers pointer.
 	(VAR1): Use qualifiers.
 	(aarch64_build_scalar_type): New.
 	(aarch64_build_vector_type): Likewise.
