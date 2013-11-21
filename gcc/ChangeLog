@@ -1,3 +1,11 @@
+2013-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR rtl-optimization/55950
+	* real.c (real_sqrt): Remove function.
+	* real.h (real_sqrt): Remove prototype.
+	* simplify-rtx.c (simplify_const_unary_operation): Do not fold
+	SQRT using real_sqrt.
+
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058

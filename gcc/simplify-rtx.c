@@ -1931,17 +1931,13 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	   && SCALAR_FLOAT_MODE_P (mode)
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op)))
     {
-      REAL_VALUE_TYPE d, t;
+      REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
       switch (code)
 	{
 	case SQRT:
-	  if (HONOR_SNANS (mode) && real_isnan (&d))
-	    return 0;
-	  real_sqrt (&t, mode, &d);
-	  d = t;
-	  break;
+	  return 0;
 	case ABS:
 	  d = real_value_abs (&d);
 	  break;
