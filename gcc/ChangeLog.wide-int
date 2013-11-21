@@ -771,8 +771,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(build_constructors): Likewise.
 	(array_value_type): Likewise.
 	* tree-vect-data-refs.c
-	(not_size_aligned): Use wide-int rep.
-	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_prune_runtime_alias_test_list): Use wide-int rep.
 	(vect_check_gather): Likewise.
 	* tree-vect-generic.c
 	(build_replicated_const): Use wide-int rep.
