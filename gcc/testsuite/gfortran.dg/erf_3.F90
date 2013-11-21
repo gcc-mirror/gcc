@@ -1,20 +1,29 @@
-! { dg-do run }
+! { dg-do run { xfail spu-*-* ia64-*-linux* } }
 ! { dg-options "-fno-range-check -ffree-line-length-none -O0" }
 ! { dg-add-options ieee }
 !
 ! Check that simplification functions and runtime library agree on ERF,
 ! ERFC and ERFC_SCALED, for quadruple-precision.
+!
+! XFAILed for SPU targets because our library implementation of
+! the double-precision erf/erfc functions is not accurate enough.
+!
+! XFAILed for IA64 Linux because of a glibc bug:
+! http://gcc.gnu.org/bugzilla/show_bug.cgi?id=59227
 
 program test
+  use, intrinsic :: iso_fortran_env
   implicit none
 
-  real(kind=16) :: x16
+  ! QP will be the largest supported real kind, possibly real(kind=16)
+  integer, parameter :: qp = real_kinds(ubound(real_kinds,dim=1))
+  real(kind=qp) :: x
 
 #define CHECK(a) \
-  x16 = a ; \
-  call check(erf(real(a,kind=16)), erf(x16)) ; \
-  call check(erfc(real(a,kind=16)), erfc(x16)) ; \
-  call check(erfc_scaled(real(a,kind=16)), erfc_scaled(x16))
+  x = a ; \
+  call check(erf(real(a,kind=qp)), erf(x)) ; \
+  call check(erfc(real(a,kind=qp)), erfc(x)) ; \
+  call check(erfc_scaled(real(a,kind=qp)), erfc_scaled(x))
 
   CHECK(0.0)
   CHECK(0.9)
@@ -36,7 +45,7 @@ program test
 contains
 
   subroutine check (a, b)
-    real(kind=16), intent(in) :: a, b
+    real(kind=qp), intent(in) :: a, b
     print *, abs(a-b) / spacing(a)
     if (abs(a - b) > 10 * spacing(a)) call abort
   end subroutine
