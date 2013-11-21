@@ -1,3 +1,26 @@
+2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement __gnu_cxx::hypergeometric_distribution.
+	* include/ext/random: Add hypergeometric_distribution.
+	* include/ext/random.tcc: Add hypergeometric_distribution.
+	* testsuite/util/testsuite_random.h (hypergeometric_pdf): New pdf
+	for the hypergeometric discreet distribution;
+	(lbincoef): New supporting function for binomial coefficients.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	serialize.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	equal.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	inequal.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	values.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/cons/parms.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/cons/default.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/requirements/
+	typedefs.cc: New.
+
 2013-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/59173
