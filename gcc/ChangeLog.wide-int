@@ -220,12 +220,11 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(make_range_step): Likewise.
 	(build_range_check): Likewise.
 	(range_predecessor): Likewise.
+	(range_successor): Likewise.
 	(merge_ranges): Likewise.
 	(unextend): Likewise.
 	(extract_muldiv_1): Likewise.
 	(fold_div_compare): Likewise.
-	(fold_single_bit_test_into_sign_test): Use GET_MODE_PRECISION
-	instead of GET_MODE_BITSIZE.
 	(fold_single_bit_test): Update for wide-int.
 	(fold_sign_changed_comparison): Likewise.
 	(try_move_mult_to_index): Likewise.
