@@ -3526,7 +3526,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       {
 	int shift = sizeof (hashval_t) * CHAR_BIT;
 	const int n = sizeof (HOST_WIDE_INT) / sizeof (hashval_t);
-	
+
 	h ^= (hashval_t) hwi;
 	for (i = 1; i < n; ++i)
 	  {

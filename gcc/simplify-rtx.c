@@ -1659,7 +1659,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	 simplify something and so you if you added this to the test
 	 above the code would die later anyway.  If this assert
 	 happens, you just need to make the port support wide int.  */
-      gcc_assert (width <= HOST_BITS_PER_DOUBLE_INT); 
+      gcc_assert (width <= HOST_BITS_PER_DOUBLE_INT);
 #endif
 
       switch (code)
@@ -3705,7 +3705,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       wide_int result;
       bool overflow;
       rtx_mode_t pop0 = std::make_pair (op0, mode);
-      rtx_mode_t pop1 = std::make_pair (op1, mode); 
+      rtx_mode_t pop1 = std::make_pair (op1, mode);
 
 #if TARGET_SUPPORTS_WIDE_INT == 0
       /* This assert keeps the simplification from producing a result
@@ -3735,7 +3735,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
-	  
+
 	case MOD:
 	  result = wi::mod_trunc (pop0, pop1, SIGNED, &overflow);
 	  if (overflow)
@@ -3797,15 +3797,15 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      case LSHIFTRT:
 		result = wi::lrshift (pop0, wop1);
 		break;
-		
+
 	      case ASHIFTRT:
 		result = wi::arshift (pop0, wop1);
 		break;
-		
+
 	      case ASHIFT:
 		result = wi::lshift (pop0, wop1);
 		break;
-		
+
 	      default:
 		gcc_unreachable ();
 	      }
@@ -3822,7 +3822,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      case ROTATE:
 		result = wi::lrotate (pop0, pop1);
 		break;
-		
+
 	      case ROTATERT:
 		result = wi::rrotate (pop0, pop1);
 		break;
@@ -5155,7 +5155,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
     return NULL_RTX;
 
   /* We support any size mode.  */
-  max_bitsize = MAX (GET_MODE_BITSIZE (outermode), 
+  max_bitsize = MAX (GET_MODE_BITSIZE (outermode),
 		     GET_MODE_BITSIZE (innermode));
 
   /* Unpack the value.  */
@@ -5212,7 +5212,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    rtx_mode_t val = std::make_pair (el, innermode);
 	    unsigned char extend = wi::sign_mask (val);
 
-	    for (i = 0; i < elem_bitsize; i += value_bit) 
+	    for (i = 0; i < elem_bitsize; i += value_bit)
 	      *vp++ = wi::extract_uhwi (val, i, value_bit);
 	    for (; i < elem_bitsize; i += value_bit)
 	      *vp++ = extend;
@@ -5366,17 +5366,17 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	  {
 	    int u;
 	    int base = 0;
-	    int units 
-	      = (GET_MODE_BITSIZE (outer_submode) + HOST_BITS_PER_WIDE_INT - 1) 
+	    int units
+	      = (GET_MODE_BITSIZE (outer_submode) + HOST_BITS_PER_WIDE_INT - 1)
 	      / HOST_BITS_PER_WIDE_INT;
 	    HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
 	    wide_int r;
 
-	    for (u = 0; u < units; u++) 
+	    for (u = 0; u < units; u++)
 	      {
 		unsigned HOST_WIDE_INT buf = 0;
-		for (i = 0; 
-		     i < HOST_BITS_PER_WIDE_INT && base + i < elem_bitsize; 
+		for (i = 0;
+		     i < HOST_BITS_PER_WIDE_INT && base + i < elem_bitsize;
 		     i += value_bit)
 		  buf |= (unsigned HOST_WIDE_INT)(*vp++ & value_mask) << i;
 

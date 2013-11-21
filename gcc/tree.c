@@ -10513,7 +10513,7 @@ widest_int_cst_value (const_tree x)
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
   gcc_assert (TREE_INT_CST_NUNITS (x) == 2);
-  
+
   if (TREE_INT_CST_NUNITS (x) == 1)
     val = HOST_WIDE_INT (val);
   else
@@ -10649,7 +10649,7 @@ upper_bound_in_type (tree outer, tree inner)
       gcc_unreachable ();
     }
 
-  return wide_int_to_tree (outer, 
+  return wide_int_to_tree (outer,
 			   wi::mask (prec, false, TYPE_PRECISION (outer)));
 }
 
@@ -10677,7 +10677,7 @@ lower_bound_in_type (tree outer, tree inner)
 	 precision or narrowing to a signed type, we want to obtain
 	 -2^(oprec-1).  */
       unsigned prec = oprec > iprec ? iprec : oprec;
-      return wide_int_to_tree (outer, 
+      return wide_int_to_tree (outer,
 			       wi::mask (prec - 1, true,
 					 TYPE_PRECISION (outer)));
     }

@@ -1583,7 +1583,7 @@ they were before.
 
 The values are stored in a compressed format.  The higher-order
 0s or -1s are not represented if they are just the logical sign
-extension of the number that is represented.   
+extension of the number that is represented.
 
 @findex CONST_WIDE_INT_VEC
 @item CONST_WIDE_INT_VEC (@var{code})

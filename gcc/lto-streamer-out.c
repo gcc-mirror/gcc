@@ -714,7 +714,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      int i; 
+      int i;
       v = iterative_hash_host_wide_int (TREE_INT_CST_NUNITS (t), v);
       v = iterative_hash_host_wide_int (TREE_INT_CST_EXT_NUNITS (t), v);
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)

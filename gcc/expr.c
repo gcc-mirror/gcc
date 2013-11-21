@@ -722,7 +722,7 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   if (mode == oldmode)
     return x;
 
-  if (CONST_SCALAR_INT_P (x) 
+  if (CONST_SCALAR_INT_P (x)
       && GET_MODE_CLASS (mode) == MODE_INT)
     {
       /* If the caller did not tell us the old mode, then there is
@@ -10543,7 +10543,7 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
   else if (TYPE_UNSIGNED (type))
     {
       enum machine_mode mode = GET_MODE (exp);
-      rtx mask = immed_wide_int_const 
+      rtx mask = immed_wide_int_const
 	(wi::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
       return expand_and (mode, exp, mask, target);
     }
@@ -11119,7 +11119,7 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) 
+	RTVEC_ELT (v, i)
 	  = immed_wide_int_const (elt, TYPE_MODE (TREE_TYPE (elt)));
     }
 

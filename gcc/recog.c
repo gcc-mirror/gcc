@@ -1181,16 +1181,16 @@ const_scalar_int_operand (rtx op, enum machine_mode mode)
     {
       int prec = GET_MODE_PRECISION (mode);
       int bitsize = GET_MODE_BITSIZE (mode);
-      
+
       if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
 	return 0;
-      
+
       if (prec == bitsize)
 	return 1;
       else
 	{
 	  /* Multiword partial int.  */
-	  HOST_WIDE_INT x 
+	  HOST_WIDE_INT x
 	    = CONST_WIDE_INT_ELT (op, CONST_WIDE_INT_NUNITS (op) - 1);
 	  return (sext_hwi (x, prec & (HOST_BITS_PER_WIDE_INT - 1)) == x);
 	}

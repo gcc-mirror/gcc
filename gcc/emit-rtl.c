@@ -229,7 +229,7 @@ const_wide_int_htab_eq (const void *x, const void *y)
   for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
     if (CONST_WIDE_INT_ELT (xr, i) != CONST_WIDE_INT_ELT (yr, i))
       return 0;
-  
+
   return 1;
 }
 #endif
@@ -587,7 +587,7 @@ immed_wide_int_const (const wide_int &v, enum machine_mode mode)
   {
     unsigned int i;
     rtx value;
-    unsigned int blocks_needed 
+    unsigned int blocks_needed
       = (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
 
     if (len > blocks_needed)

@@ -702,7 +702,7 @@ c_readstr (const char *str, enum machine_mode mode)
 	ch = (unsigned char) str[i];
       tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
-  
+
   wide_int c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
   return immed_wide_int_const (c, mode);
 }
@@ -8179,7 +8179,7 @@ fold_builtin_bswap (tree fndecl, tree arg)
 	  case BUILT_IN_BSWAP64:
 	    {
 	      signop sgn = TYPE_SIGN (type);
-	      tree result = 
+	      tree result =
 		wide_int_to_tree (type,
 				  wide_int::from (arg, TYPE_PRECISION (type),
 						  sgn).bswap ());

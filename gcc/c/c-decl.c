@@ -7565,7 +7565,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
 {
   tree pair, tem;
   tree minnode = 0, maxnode = 0;
-  int precision; 
+  int precision;
   signop sign;
   bool toplevel = (file_scope == current_scope);
   struct lang_type *lt;

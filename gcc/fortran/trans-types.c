@@ -954,8 +954,8 @@ gfc_init_types (void)
      descriptor.  */
 
   n = TYPE_PRECISION (gfc_array_index_type) - GFC_DTYPE_SIZE_SHIFT;
-  gfc_max_array_element_size 
-    = wide_int_to_tree (long_unsigned_type_node, 
+  gfc_max_array_element_size
+    = wide_int_to_tree (long_unsigned_type_node,
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (long_unsigned_type_node)));
 

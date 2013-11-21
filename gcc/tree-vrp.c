@@ -2622,7 +2622,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
 	  /* Extend the values using the sign of the result to PREC2.
 	     From here on out, everthing is just signed math no matter
-	     what the input types were.  */ 
+	     what the input types were.  */
 	  wide_int min0 = wide_int::from (vr0.min, prec2, sign);
 	  wide_int max0 = wide_int::from (vr0.max, prec2, sign);
 	  wide_int min1 = wide_int::from (vr1.min, prec2, sign);
@@ -3808,7 +3808,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	  value_range_t maxvr = VR_INITIALIZER;
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
-	  
+
 	  wide_int wtmp = wi::mul (wi::to_widest (step), nit, sgn, &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
@@ -6111,7 +6111,7 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
     }
 
   low_bound = array_ref_low_bound (ref);
-  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound, 
+  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
 				 build_int_cst (TREE_TYPE (up_bound), 1));
 
   if (TREE_CODE (low_sub) == SSA_NAME)
@@ -7553,10 +7553,10 @@ union_ranges (enum value_range_type *vr0type,
 		  && vrp_val_is_max (vr1max))
 		{
 		  tree min = int_const_binop (PLUS_EXPR,
-					      *vr0max, 
+					      *vr0max,
 					      build_int_cst (TREE_TYPE (*vr0max), 1));
 		  tree max = int_const_binop (MINUS_EXPR,
-					      vr1min, 
+					      vr1min,
 					      build_int_cst (TREE_TYPE (vr1min), 1));
 		  if (!operand_less_p (max, min))
 		    {
@@ -7619,7 +7619,7 @@ union_ranges (enum value_range_type *vr0type,
 	{
 	  /* Arbitrarily choose the right or left gap.  */
 	  if (!mineq && TREE_CODE (vr1min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, vr1min, 
+	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
 				       build_int_cst (TREE_TYPE (vr1min), 1));
 	  else if (!maxeq && TREE_CODE (vr1max) == INTEGER_CST)
 	    *vr0min = int_const_binop (PLUS_EXPR, vr1max,
@@ -7689,7 +7689,7 @@ union_ranges (enum value_range_type *vr0type,
 	       && vr1type == VR_RANGE)
 	{
 	  if (TREE_CODE (vr1min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, vr1min, 
+	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
 				       build_int_cst (TREE_TYPE (vr1min), 1));
 	  else
 	    goto give_up;
@@ -8423,7 +8423,7 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   if (rhs_code == EQ_EXPR)
     {
       if (TREE_CODE (op1) == INTEGER_CST)
-	op1 = int_const_binop (BIT_XOR_EXPR, op1, 
+	op1 = int_const_binop (BIT_XOR_EXPR, op1,
 			       build_int_cst (TREE_TYPE (op1), 1));
       else
 	return false;

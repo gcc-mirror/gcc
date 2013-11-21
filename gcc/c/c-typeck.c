@@ -8053,8 +8053,8 @@ set_nonincremental_init_from_string (tree str,
 		      << (bitpos - HOST_BITS_PER_WIDE_INT);
 	}
 
-      value = wide_int_to_tree (type, 
-				wide_int::from_array (val, 2, 
+      value = wide_int_to_tree (type,
+				wide_int::from_array (val, 2,
 						      HOST_BITS_PER_WIDE_INT * 2));
       add_pending_init (purpose, value, NULL_TREE, true,
                         braced_init_obstack);

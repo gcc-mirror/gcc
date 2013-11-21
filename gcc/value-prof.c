@@ -838,7 +838,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
       HOST_WIDE_INT a[2];
       a[0] = (unsigned HOST_WIDE_INT) val;
       a[1] = val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1;
-	
+
       tree_val = wide_int_to_tree (get_gcov_type (), wide_int::from_array (a, 2,
 	TYPE_PRECISION (get_gcov_type ()), false));
     }
@@ -1757,7 +1757,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
       HOST_WIDE_INT a[2];
       a[0] = (unsigned HOST_WIDE_INT) val;
       a[1] = val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1;
-	
+
       tree_val = wide_int_to_tree (get_gcov_type (), wide_int::from_array (a, 2,
 	TYPE_PRECISION (get_gcov_type ()), false));
     }

@@ -2252,7 +2252,7 @@ dbxout_type (tree type, int full)
           if (TREE_CODE (value) == CONST_DECL)
             value = DECL_INITIAL (value);
 
-	  if (cst_fits_shwi_p (value))
+	  if (cst_and_fits_in_hwi (value))
 	    stabstr_D (TREE_INT_CST_LOW (value));
 	  else
 	    stabstr_O (value);

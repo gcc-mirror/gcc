@@ -1364,7 +1364,7 @@ namespace wi
 		  const HOST_WIDE_INT *, unsigned int);
   int cmpu_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
 		  const HOST_WIDE_INT *, unsigned int);
-  unsigned int sext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, 
+  unsigned int sext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			   unsigned int,
 			   unsigned int, unsigned int);
   unsigned int zext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
@@ -1973,7 +1973,7 @@ wi::bit_or (const T1 &x, const T2 &y)
       result.set_len (1, is_sign_extended);
     }
   else
-    result.set_len (or_large (val, xi.val, xi.len, 
+    result.set_len (or_large (val, xi.val, xi.len,
 			      yi.val, yi.len, precision), is_sign_extended);
   return result;
 }
@@ -2015,7 +2015,7 @@ wi::bit_xor (const T1 &x, const T2 &y)
       result.set_len (1, is_sign_extended);
     }
   else
-    result.set_len (xor_large (val, xi.val, xi.len, 
+    result.set_len (xor_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision), is_sign_extended);
   return result;
 }
@@ -2035,7 +2035,7 @@ wi::add (const T1 &x, const T2 &y)
       result.set_len (1);
     }
   else
-    result.set_len (add_large (val, xi.val, xi.len, 
+    result.set_len (add_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision,
 			       UNSIGNED, 0));
   return result;
@@ -2068,7 +2068,7 @@ wi::add (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       result.set_len (1);
     }
   else
-    result.set_len (add_large (val, xi.val, xi.len, 
+    result.set_len (add_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision,
 			       sgn, overflow));
   return result;
@@ -2089,7 +2089,7 @@ wi::sub (const T1 &x, const T2 &y)
       result.set_len (1);
     }
   else
-    result.set_len (sub_large (val, xi.val, xi.len, 
+    result.set_len (sub_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision,
 			       UNSIGNED, 0));
   return result;
@@ -2121,7 +2121,7 @@ wi::sub (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       result.set_len (1);
     }
   else
-    result.set_len (sub_large (val, xi.val, xi.len, 
+    result.set_len (sub_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision,
 			       sgn, overflow));
   return result;
@@ -2157,7 +2157,7 @@ wi::mul (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   unsigned int precision = get_precision (result);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  result.set_len (mul_internal (val, xi.val, xi.len, 
+  result.set_len (mul_internal (val, xi.val, xi.len,
 				yi.val, yi.len, precision,
 				sgn, overflow, false, false));
   return result;
@@ -2191,7 +2191,7 @@ wi::mul_high (const T1 &x, const T2 &y, signop sgn)
   unsigned int precision = get_precision (result);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  result.set_len (mul_internal (val, xi.val, xi.len, 
+  result.set_len (mul_internal (val, xi.val, xi.len,
 				yi.val, yi.len, precision,
 				sgn, 0, true, false));
   return result;
@@ -2246,8 +2246,8 @@ wi::div_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
-				     &remainder_len, remainder_val, 
+  quotient.set_len (divmod_internal (quotient_val,
+				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
@@ -2288,7 +2288,7 @@ wi::div_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
+  quotient.set_len (divmod_internal (quotient_val,
 				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
@@ -2313,8 +2313,8 @@ wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
-				     &remainder_len, remainder_val, 
+  quotient.set_len (divmod_internal (quotient_val,
+				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
@@ -2356,8 +2356,8 @@ wi::divmod_trunc (const T1 &x, const T2 &y, signop sgn,
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
-				     &remainder_len, remainder_val, 
+  quotient.set_len (divmod_internal (quotient_val,
+				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn, 0));
   remainder.set_len (remainder_len);
@@ -2379,7 +2379,7 @@ wi::mod_trunc (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  divmod_internal (0, &remainder_len, remainder_val, 
+  divmod_internal (0, &remainder_len, remainder_val,
 		   xi.val, xi.len, precision,
 		   yi.val, yi.len, yi.precision, sgn, overflow);
   remainder.set_len (remainder_len);
@@ -2419,8 +2419,8 @@ wi::mod_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
-				     &remainder_len, remainder_val, 
+  quotient.set_len (divmod_internal (quotient_val,
+				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
@@ -2455,8 +2455,8 @@ wi::mod_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
-				     &remainder_len, remainder_val, 
+  quotient.set_len (divmod_internal (quotient_val,
+				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
 				     overflow));
@@ -2481,7 +2481,7 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y);
 
   unsigned int remainder_len;
-  quotient.set_len (divmod_internal (quotient_val, 
+  quotient.set_len (divmod_internal (quotient_val,
 				     &remainder_len, remainder_val,
 				     xi.val, xi.len, precision,
 				     yi.val, yi.len, yi.precision, sgn,
@@ -2518,7 +2518,7 @@ wi::multiple_of_p (const T1 &x, const T2 &y, signop sgn,
 		   WI_BINARY_RESULT (T1, T2) *res)
 {
   WI_BINARY_RESULT (T1, T2) remainder;
-  WI_BINARY_RESULT (T1, T2) quotient 
+  WI_BINARY_RESULT (T1, T2) quotient
     = divmod_trunc (x, y, sgn, &remainder);
   if (remainder == 0)
     {
@@ -2553,7 +2553,7 @@ wi::lshift (const T1 &x, const T2 &y)
 	  result.set_len (1);
 	}
       else
-	result.set_len (lshift_large (val, xi.val, xi.len, 
+	result.set_len (lshift_large (val, xi.val, xi.len,
 				      precision, shift));
     }
   return result;
@@ -2839,7 +2839,7 @@ wi::shifted_mask (unsigned int start, unsigned int width, bool negate_p)
 {
   STATIC_ASSERT (wi::int_traits<T>::precision);
   T result;
-  result.set_len (shifted_mask (result.write_val (), start, width, 
+  result.set_len (shifted_mask (result.write_val (), start, width,
 				negate_p,
 				wi::int_traits <T>::precision));
   return result;

@@ -755,7 +755,7 @@ slsr_process_phi (gimple phi, bool speed)
      CAND_PHI.  */
   base_type = TREE_TYPE (arg0_base);
 
-  c = alloc_cand_and_find_basis (CAND_PHI, phi, arg0_base, 
+  c = alloc_cand_and_find_basis (CAND_PHI, phi, arg0_base,
 				 0, integer_one_node, base_type, savings);
 
   /* Add the candidate to the statement-candidate mapping.  */
@@ -1516,9 +1516,9 @@ slsr_process_cast (gimple gs, tree rhs1, bool speed)
 	 The first of these is somewhat arbitrary, but the choice of
 	 1 for the stride simplifies the logic for propagating casts
 	 into their uses.  */
-      c = alloc_cand_and_find_basis (CAND_ADD, gs, rhs1, 
+      c = alloc_cand_and_find_basis (CAND_ADD, gs, rhs1,
 				     0, integer_one_node, ctype, 0);
-      c2 = alloc_cand_and_find_basis (CAND_MULT, gs, rhs1, 
+      c2 = alloc_cand_and_find_basis (CAND_MULT, gs, rhs1,
 				      0, integer_one_node, ctype, 0);
       c->next_interp = c2->cand_num;
     }
@@ -1573,9 +1573,9 @@ slsr_process_copy (gimple gs, tree rhs1, bool speed)
 	 The first of these is somewhat arbitrary, but the choice of
 	 1 for the stride simplifies the logic for propagating casts
 	 into their uses.  */
-      c = alloc_cand_and_find_basis (CAND_ADD, gs, rhs1, 
+      c = alloc_cand_and_find_basis (CAND_ADD, gs, rhs1,
 				     0, integer_one_node, TREE_TYPE (rhs1), 0);
-      c2 = alloc_cand_and_find_basis (CAND_MULT, gs, rhs1, 
+      c2 = alloc_cand_and_find_basis (CAND_MULT, gs, rhs1,
 				      0, integer_one_node, TREE_TYPE (rhs1), 0);
       c->next_interp = c2->cand_num;
     }

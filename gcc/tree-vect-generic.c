@@ -70,7 +70,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   for (i = 0; i < n; i++)
     a[i] = low;
 
-  return wide_int_to_tree 
+  return wide_int_to_tree
     (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
 }
 
@@ -405,7 +405,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
   int prec = TYPE_PRECISION (TREE_TYPE (type));
   int dummy_int;
-  unsigned int i; 
+  unsigned int i;
   signop sign_p = TYPE_SIGN (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
   tree *vec;

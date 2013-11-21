@@ -68,10 +68,10 @@ static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
    The mask is truncated if necessary to the width of mode MODE.  The
    mask is zero-extended if BITSIZE+BITPOS is too small for MODE.  */
 
-static inline rtx 
+static inline rtx
 mask_rtx (enum machine_mode mode, int bitpos, int bitsize, bool complement)
 {
-  return immed_wide_int_const 
+  return immed_wide_int_const
     (wi::shifted_mask (bitpos, bitsize, complement,
 		       GET_MODE_PRECISION (mode)), mode);
 }

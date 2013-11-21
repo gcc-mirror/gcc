@@ -190,7 +190,7 @@ wi::to_mpz (wide_int x, mpz_t result, signop sgn)
   if (sgn == UNSIGNED && small_prec)
     {
       HOST_WIDE_INT t[WIDE_INT_MAX_ELTS];
-      
+
       for (int i = 0; i < len - 1; i++)
 	t[i] = v[i];
       t[len-1] = zext_hwi (v[len-1], small_prec);

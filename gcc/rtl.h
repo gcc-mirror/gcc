@@ -428,7 +428,7 @@ struct GTY((variable_size)) rtvec_def {
    case CONST_INT: \
    case CONST_WIDE_INT
 
-/* Match CONST_*s for which pointer equality corresponds to value 
+/* Match CONST_*s for which pointer equality corresponds to value
    equality.  */
 #define CASE_CONST_UNIQUE \
    case CONST_INT: \
@@ -1441,16 +1441,16 @@ wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
 			     || (x.second == BImode && INTVAL (x.first) == 1));
 
       return wi::storage_ref (&INTVAL (x.first), 1, precision);
-      
+
     case CONST_WIDE_INT:
       return wi::storage_ref (&CONST_WIDE_INT_ELT (x.first, 0),
 			      CONST_WIDE_INT_NUNITS (x.first), precision);
-      
+
 #if TARGET_SUPPORTS_WIDE_INT == 0
     case CONST_DOUBLE:
       return wi::storage_ref (&CONST_DOUBLE_LOW (x.first), 2, precision);
 #endif
-      
+
     default:
       gcc_unreachable ();
     }

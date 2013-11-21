@@ -1235,7 +1235,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	      *mask = r1mask;
 	      *val = r1val;
 	    }
-	  else 
+	  else
 	    {
 	      if (wi::neg_p (shift))
 		{
@@ -1272,7 +1272,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	      *mask = r1mask;
 	      *val = r1val;
 	    }
-	  else 
+	  else
 	    {
 	      if (wi::neg_p (shift))
 		{
@@ -1375,14 +1375,14 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	widest_int o1val, o2val, o1mask, o2mask;
 	int minmax, maxmin;
 
-	if ((code == GE_EXPR) || (code == GT_EXPR)) 
+	if ((code == GE_EXPR) || (code == GT_EXPR))
 	  {
 	    o1val = r2val;
 	    o1mask = r2mask;
 	    o2val = r1val;
 	    o2mask = r1mask;
 	    code = swap_tree_comparison (code);
-	  } 
+	  }
 	else
 	  {
 	    o1val = r1val;

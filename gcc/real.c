@@ -1400,7 +1400,7 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
     case rvc_nan:
     overflow:
       *fail = true;
-      
+
       if (r->sign)
 	return wi::set_bit_in_zero (precision - 1, precision);
       else
@@ -1429,7 +1429,7 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
       for (int i = 0; i < words; i++)
 	{
 	  int j = SIGSZ - words + i;
-	  val[i] = (j < 0) ? 0 : r->sig[j]; 
+	  val[i] = (j < 0) ? 0 : r->sig[j];
 	}
 #else
       gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
@@ -1438,15 +1438,15 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	  int j = SIGSZ - (words * 2) + (i + 2) + 1;
 	  if (j < 0)
 	    val[i] = 0;
-	  else 
+	  else
 	    {
 	      val[i] = r->sig[j];
 	      val[i] <<= HOST_BITS_PER_LONG;
 	      val[i] |= r->sig[j - 1];
 	    }
 	}
-#endif 
-      w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT; 
+#endif
+      w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT;
       result = wide_int::from_array
 	(val, (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w);
       result = wi::lrshift (result, (words * HOST_BITS_PER_WIDE_INT) - exp);
@@ -2172,7 +2172,7 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 
       if (r->sign)
 	val = -val;
-      
+
       /* Ensure a multiple of HOST_BITS_PER_WIDE_INT, ceiling, as elt
 	 won't work with precisions that are not a multiple of
 	 HOST_BITS_PER_WIDE_INT.  */

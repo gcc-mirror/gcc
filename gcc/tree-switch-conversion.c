@@ -449,8 +449,8 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 
       a[0] = test[k].lo;
       a[1] = test[k].hi;
-      tmp = wide_int_to_tree (word_type_node, 
-			      wide_int::from_array (a, 2, 
+      tmp = wide_int_to_tree (word_type_node,
+			      wide_int::from_array (a, 2,
 						    TYPE_PRECISION (word_type_node)));
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,

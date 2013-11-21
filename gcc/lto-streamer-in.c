@@ -708,7 +708,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  int len = streamer_read_uhwi (ib);
 	  for (i = 0; i < len; i++)
 	    a[i] = streamer_read_hwi (ib);
-	  
+
 	  loop->nb_iterations_upper_bound = widest_int::from_array (a, len);
 	}
       loop->any_estimate = streamer_read_hwi (ib);
@@ -720,7 +720,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  int len = streamer_read_uhwi (ib);
 	  for (i = 0; i < len; i++)
 	    a[i] = streamer_read_hwi (ib);
-	  
+
 	  loop->nb_iterations_estimate = widest_int::from_array (a, len);
 	}
 
@@ -1276,7 +1276,7 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       tree type = stream_read_tree (ib, data_in);
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       unsigned HOST_WIDE_INT i;
-      HOST_WIDE_INT a[WIDE_INT_MAX_ELTS]; 
+      HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
 
       for (i = 0; i < len; i++)
 	a[i] = streamer_read_hwi (ib);

@@ -11950,7 +11950,7 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
     msb = GEN_INT ((unsigned HOST_WIDE_INT) 1
 		   << (GET_MODE_BITSIZE (mode) - 1));
   else
-    msb = immed_wide_int_const 
+    msb = immed_wide_int_const
       (wi::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1,
 			    GET_MODE_PRECISION (mode)), mode);
   if (GET_CODE (msb) == CONST_INT && INTVAL (msb) < 0)
@@ -15174,7 +15174,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_WIDE_INT:
-      add_AT_wide (die, DW_AT_const_value, 
+      add_AT_wide (die, DW_AT_const_value,
 		   std::make_pair (rtl, GET_MODE (rtl)));
       return true;
 

@@ -3052,7 +3052,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  && (idx = (*valueize) (TREE_OPERAND (t, 1)))
 	  && TREE_CODE (idx) == INTEGER_CST)
 	{
-	  tree low_bound = array_ref_low_bound (t); 
+	  tree low_bound = array_ref_low_bound (t);
 	  tree unit_size = array_ref_element_size (t);
 
 	  /* If the resulting bit-offset is constant, track it.  */
@@ -3062,7 +3062,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	      offset_int woffset
 		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
-	      
+
 	      if (wi::fits_shwi_p (woffset))
 		{
 		  offset = woffset.to_shwi ();
@@ -3070,7 +3070,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		     to see if it fits.  */
 		  offset *= tree_to_uhwi (unit_size);
 		  offset *= BITS_PER_UNIT;
-		  
+
 		  base = TREE_OPERAND (t, 0);
 		  ctor = get_base_constructor (base, &offset, valueize);
 		  /* Empty constructor.  Always fold to 0.  */

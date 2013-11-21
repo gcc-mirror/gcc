@@ -5330,7 +5330,7 @@ get_address_mode (rtx mem)
 /* Split up a CONST_DOUBLE or integer constant rtx
    into two rtx's for single words,
    storing in *FIRST the word that comes first in memory in the target
-   and in *SECOND the other. 
+   and in *SECOND the other.
 
    TODO: This function needs to be rewritten to work on any size
    integer.  */

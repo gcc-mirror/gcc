@@ -3902,7 +3902,7 @@ output_addr_const (FILE *file, rtx x)
       {
 	wide_int w = wide_int::from_array (&CONST_WIDE_INT_ELT (x, 0),
 					   CONST_WIDE_INT_NUNITS (x),
-					   CONST_WIDE_INT_NUNITS (x) 
+					   CONST_WIDE_INT_NUNITS (x)
 					   * HOST_BITS_PER_WIDE_INT,
 					   false);
 	print_decs (w, file);

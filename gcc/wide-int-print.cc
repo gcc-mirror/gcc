@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #define BLOCKS_NEEDED(PREC) \
   (((PREC) + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT)
 
-void 
+void
 print_dec (const wide_int &wi, char *buf, signop sgn)
 {
   if (sgn == SIGNED)
@@ -42,7 +42,7 @@ print_dec (const wide_int &wi, char *buf, signop sgn)
     print_decu (wi, buf);
 }
 
-void 
+void
 print_dec (const wide_int &wi, FILE *file, signop sgn)
 {
   if (sgn == SIGNED)
@@ -55,7 +55,7 @@ print_dec (const wide_int &wi, FILE *file, signop sgn)
 /* Try to print the signed self in decimal to BUF if the number fits
    in a HWI.  Other print in hex.  */
 
-void 
+void
 print_decs (const wide_int &wi, char *buf)
 {
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
@@ -73,7 +73,7 @@ print_decs (const wide_int &wi, char *buf)
 /* Try to print the signed self in decimal to FILE if the number fits
    in a HWI.  Other print in hex.  */
 
-void 
+void
 print_decs (const wide_int &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
@@ -84,7 +84,7 @@ print_decs (const wide_int &wi, FILE *file)
 /* Try to print the unsigned self in decimal to BUF if the number fits
    in a HWI.  Other print in hex.  */
 
-void 
+void
 print_decu (const wide_int &wi, char *buf)
 {
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
@@ -97,7 +97,7 @@ print_decu (const wide_int &wi, char *buf)
 /* Try to print the signed self in decimal to FILE if the number fits
    in a HWI.  Other print in hex.  */
 
-void 
+void
 print_decu (const wide_int &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
@@ -105,7 +105,7 @@ print_decu (const wide_int &wi, FILE *file)
   fputs (buf, file);
 }
 
-void 
+void
 print_hex (const wide_int &wi, char *buf)
 {
   int i = wi.get_len ();
@@ -123,7 +123,7 @@ print_hex (const wide_int &wi, char *buf)
 	  buf += sprintf (buf, "0x");
 	  for (j = BLOCKS_NEEDED (wi.get_precision ()); j > i; j--)
 	    buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, (HOST_WIDE_INT) -1);
-	    
+
 	}
       else
 	buf += sprintf (buf, "0x"HOST_WIDE_INT_PRINT_HEX_PURE, wi.elt (--i));
@@ -135,7 +135,7 @@ print_hex (const wide_int &wi, char *buf)
 
 /* Print one big hex number to FILE.  Note that some assemblers may not
    accept this for large modes.  */
-void 
+void
 print_hex (const wide_int &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];

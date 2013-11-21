@@ -985,7 +985,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 	  else
 	    code = RSHIFT_EXPR;
 	}
-      
+
       if (code == RSHIFT_EXPR)
 	/* It's unclear from the C standard whether shifts can overflow.
 	   The following code ignores overflow; perhaps a C standard
@@ -994,7 +994,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
       else
 	res = wi::lshift (arg1, arg2);
       break;
-      
+
     case RROTATE_EXPR:
     case LROTATE_EXPR:
       if (wi::neg_p (arg2))
@@ -1005,7 +1005,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 	  else
 	    code = RROTATE_EXPR;
 	}
-      
+
       if (code == RROTATE_EXPR)
 	res = wi::rrotate (arg1, arg2);
       else
@@ -1019,7 +1019,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
     case MINUS_EXPR:
       res = wi::sub (arg1, arg2, sign, &overflow);
       break;
-      
+
     case MULT_EXPR:
       res = wi::mul (arg1, arg2, sign, &overflow);
       break;
@@ -1686,7 +1686,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
 		       && (TYPE_UNSIGNED (type)
 			   < TYPE_UNSIGNED (TREE_TYPE (arg1))))
 		      | TREE_OVERFLOW (arg1));
-  
+
   return t;
 }
 
@@ -1774,8 +1774,8 @@ fold_convert_const_fixed_from_int (tree type, const_tree arg1)
 
   di.low = TREE_INT_CST_ELT (arg1, 0);
   if (TREE_INT_CST_NUNITS (arg1) == 1)
-    di.high = (HOST_WIDE_INT)di.low < 0 ? (HOST_WIDE_INT)-1 : 0; 
-  else 
+    di.high = (HOST_WIDE_INT)di.low < 0 ? (HOST_WIDE_INT)-1 : 0;
+  else
     di.high = TREE_INT_CST_ELT (arg1, 1);
 
   overflow_p = fixed_convert_from_int (&value, TYPE_MODE (type), di,
@@ -4357,7 +4357,7 @@ range_predecessor (tree val)
       && operand_equal_p (val, TYPE_MIN_VALUE (type), 0))
     return 0;
   else
-    return range_binop (MINUS_EXPR, NULL_TREE, val, 0, 
+    return range_binop (MINUS_EXPR, NULL_TREE, val, 0,
 			build_int_cst (TREE_TYPE (val), 1), 0);
 }
 
@@ -4372,7 +4372,7 @@ range_successor (tree val)
       && operand_equal_p (val, TYPE_MAX_VALUE (type), 0))
     return 0;
   else
-    return range_binop (PLUS_EXPR, NULL_TREE, val, 0, 
+    return range_binop (PLUS_EXPR, NULL_TREE, val, 0,
 			build_int_cst (TREE_TYPE (val), 1), 0);
 }
 
@@ -13636,14 +13636,14 @@ fold_binary_loc (location_t loc,
 	      switch (code)
 		{
 		case GE_EXPR:
-		  arg1 = const_binop (MINUS_EXPR, arg1, 
+		  arg1 = const_binop (MINUS_EXPR, arg1,
 				      build_int_cst (TREE_TYPE (arg1), 1));
 		  return fold_build2_loc (loc, NE_EXPR, type,
 				      fold_convert_loc (loc,
 							TREE_TYPE (arg1), arg0),
 				      arg1);
 		case LT_EXPR:
-		  arg1 = const_binop (MINUS_EXPR, arg1, 
+		  arg1 = const_binop (MINUS_EXPR, arg1,
 				      build_int_cst (TREE_TYPE (arg1), 1));
 		  return fold_build2_loc (loc, EQ_EXPR, type,
 				      fold_convert_loc (loc, TREE_TYPE (arg1),
@@ -14193,7 +14193,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		outer_width = TYPE_PRECISION (type);
 
 	      wide_int mask = wi::shifted_mask
-		(inner_width, outer_width - inner_width, false, 
+		(inner_width, outer_width - inner_width, false,
 		 TYPE_PRECISION (TREE_TYPE (arg1)));
 
 	      wide_int common = mask & arg1;
