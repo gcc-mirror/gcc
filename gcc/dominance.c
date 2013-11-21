@@ -227,7 +227,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, bool reverse)
   edge_iterator *stack;
   edge_iterator ei, einext;
   int sp;
-  /* Start block (ENTRY_BLOCK_PTR for forward problem, EXIT_BLOCK for backward
+  /* Start block (the entry block for forward problem, exit block for backward
      problem).  */
   basic_block en_block;
   /* Ending block.  */

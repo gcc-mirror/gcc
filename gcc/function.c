@@ -6349,7 +6349,7 @@ thread_prologue_and_epilogue_insns (void)
 	{
 	  unsigned i, last;
 
-	  /* convert_jumps_to_returns may add to EXIT_BLOCK_PTR->preds
+	  /* convert_jumps_to_returns may add to preds of the exit block
 	     (but won't remove).  Stop at end of current preds.  */
 	  last = EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 	  for (i = 0; i < last; i++)

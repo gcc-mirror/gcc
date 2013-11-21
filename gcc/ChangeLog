@@ -1,3 +1,28 @@
+2013-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* cfg.c (dump_edge_info): Remove redundant comment.
+	* cfgcleanup.c (outgoing_edges_match): Reword reference to
+	EXIT_BLOCK_PTR in comment.
+	(try_optimize_cfg): Likewise.
+	* cfgrtl.c (last_bb_in_partition): Likewise.
+	* cgraph.c (cgraph_node_cannot_return): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* graphite-scop-detection.c (scopdet_basic_block_info): Likewise.
+	* ipa-split.c (consider_split): Likewise.
+	* profile.c (find_spanning_tree): Likewise.
+	* sched-int.h (common_sched_info_def.add_block): Likewise.
+	* dominance.c (calc_dfs_tree_nonrec): Reword references in
+	comments to now removed ENTRY_BLOCK_PTR and EXIT_BLOCK_PTR macros.
+	* tree-cfgcleanup.c (cleanup_control_flow_bb): Reword references
+	in comments to now removed ENTRY_BLOCK_PTR macro.
+	(tree_forwarder_block_p): Reword reference in comment to
+	EXIT_BLOCK_PTR.
+	* tree-inline.c (copy_cfg_body): Reword references in comments to
+	now removed ENTRY_BLOCK_PTR macro.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	* tree-scalar-evolution.h ( block_before_loop): Likewise.  Add
+	a comma to the comment to clarify the meaning.
+
 2013-11-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimplify.h (gimplify_hasher : typed_free_remove, struct gimplify_ctx):
