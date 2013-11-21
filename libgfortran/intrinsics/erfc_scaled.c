@@ -52,13 +52,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
+#ifdef GFC_REAL_16_IS_FLOAT128
+
 /* For quadruple-precision (__float128), netlib's implementation is
    not accurate enough.  We provide another one.  */
 
-
 extern GFC_REAL_16 erfc_scaled_r16 (GFC_REAL_16);
 export_proto(erfc_scaled_r16);
-
 
 GFC_REAL_16
 erfc_scaled_r16 (GFC_REAL_16 x)
@@ -100,4 +100,6 @@ erfc_scaled_r16 (GFC_REAL_16 x)
       return (1 + sum) / x * (M_2_SQRTPIq / 2);
     }
 }
+
+#endif
 
