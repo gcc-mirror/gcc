@@ -112,7 +112,7 @@
 	(decimal_real_to_integer2): Use wide-int interfaces and rename to
 	decimal_real_to_integer.
 	* dfp.h
-	(decimal_real_to_integer2): Return a wide-int and rename to
+	(decimal_real_to_integer2): Return a wide_int and rename to
 	decimal_real_to_integer.
 	* doc/generic.texi
 	(Constant expressions): Use wide-int interfaces.
