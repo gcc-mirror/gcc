@@ -754,9 +754,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(vn_reference_lookup_3): Likewise.
 	(simplify_binary_expression): Likewise.
 	* tree-ssa-structalias.c
-	(process_constraint): Use wide-int rep.
-	(get_constraint_for_ptr_offset): Likewise.
-	(get_constraint_for_1): Likewise.
+	(get_constraint_for_ptr_offset): Use wide-int rep.
 	* tree-ssa-uninit.c
 	(is_value_included_in): Use wide-int rep.
 	* tree-streamer-in.c
