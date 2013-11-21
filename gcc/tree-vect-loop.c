@@ -5572,6 +5572,110 @@ vect_loop_kill_debug_uses (struct loop *loop, gimple stmt)
     }
 }
 
+
+/* This function builds ni_name = number of iterations.  Statements
+   are queued onto SEQ.  */
+
+static tree
+vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq *seq)
+{
+  tree ni_name, var;
+  gimple_seq stmts = NULL;
+  tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
+
+  var = create_tmp_var (TREE_TYPE (ni), "niters");
+  ni_name = force_gimple_operand (ni, &stmts, false, var);
+
+  if (stmts)
+    gimple_seq_add_seq (seq, stmts);
+
+  return ni_name;
+}
+
+
+/* This function generates the following statements:
+
+ ni_name = number of iterations loop executes
+ ratio = ni_name / vf
+ ratio_mult_vf_name = ratio * vf
+
+ and places them in COND_EXPR_STMT_LIST.  */
+
+static void
+vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
+				 tree ni_name,
+				 tree *ratio_mult_vf_name_ptr,
+				 tree *ratio_name_ptr,
+				 gimple_seq *cond_expr_stmt_list)
+{
+  gimple_seq stmts;
+  tree ni_minus_gap_name;
+  tree var;
+  tree ratio_name;
+  tree ratio_mult_vf_name;
+  tree ni = LOOP_VINFO_NITERS (loop_vinfo);
+  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree log_vf;
+
+  log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
+
+  /* If epilogue loop is required because of data accesses with gaps, we
+     subtract one iteration from the total number of iterations here for
+     correct calculation of RATIO.  */
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+    {
+      ni_minus_gap_name = fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
+				       ni_name,
+			               build_one_cst (TREE_TYPE (ni_name)));
+      if (!is_gimple_val (ni_minus_gap_name))
+	{
+	  var = create_tmp_var (TREE_TYPE (ni), "ni_gap");
+
+          stmts = NULL;
+          ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
+						    true, var);
+	  gimple_seq_add_seq (cond_expr_stmt_list, stmts);
+        }
+    }
+  else
+    ni_minus_gap_name = ni_name;
+
+  /* Create: ratio = ni >> log2(vf) */
+
+  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_minus_gap_name),
+			    ni_minus_gap_name, log_vf);
+  if (!is_gimple_val (ratio_name))
+    {
+      var = create_tmp_var (TREE_TYPE (ni), "bnd");
+
+      stmts = NULL;
+      ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
+      gimple_seq_add_seq (cond_expr_stmt_list, stmts);
+    }
+  *ratio_name_ptr = ratio_name;
+
+  /* Create: ratio_mult_vf = ratio << log2 (vf).  */
+
+  if (ratio_mult_vf_name_ptr)
+    {
+      ratio_mult_vf_name = fold_build2 (LSHIFT_EXPR, TREE_TYPE (ratio_name),
+					ratio_name, log_vf);
+      if (!is_gimple_val (ratio_mult_vf_name))
+	{
+	  var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
+
+	  stmts = NULL;
+	  ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
+						     true, var);
+	  gimple_seq_add_seq (cond_expr_stmt_list, stmts);
+	}
+      *ratio_mult_vf_name_ptr = ratio_mult_vf_name;
+    }
+
+  return;
+}
+
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -5636,11 +5740,18 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     }
 
   /* Peel the loop if there are data refs with unknown alignment.
-     Only one data ref with unknown store is allowed.  */
+     Only one data ref with unknown store is allowed.
+     This clobbers LOOP_VINFO_NITERS but retains the original
+     in LOOP_VINFO_NITERS_UNCHANGED.  So we cannot avoid re-computing
+     niters.  */
 
   if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     {
-      vect_do_peeling_for_alignment (loop_vinfo, th, check_profitability);
+      gimple_seq stmts = NULL;
+      tree ni_name = vect_build_loop_niters (loop_vinfo, &stmts);
+      gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      vect_do_peeling_for_alignment (loop_vinfo, ni_name,
+				     th, check_profitability);
       check_profitability = false;
     }
 
@@ -5655,16 +5766,27 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if ((int) tree_ctz (LOOP_VINFO_NITERS (loop_vinfo))
       < exact_log2 (vectorization_factor)
       || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio,
-				    th, check_profitability);
+    {
+      tree ni_name, ratio_mult_vf;
+      gimple_seq stmts = NULL;
+      ni_name = vect_build_loop_niters (loop_vinfo, &stmts);
+      vect_generate_tmps_on_preheader (loop_vinfo, ni_name, &ratio_mult_vf,
+				       &ratio, &stmts);
+      gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      vect_do_peeling_for_loop_bound (loop_vinfo, ni_name, ratio_mult_vf,
+				      th, check_profitability);
+    }
   else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     ratio = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
 		LOOP_VINFO_INT_NITERS (loop_vinfo) / vectorization_factor);
   else
     {
-      tree ni_name, ratio_mult_vf;
-      vect_generate_tmps_on_preheader (loop_vinfo, &ni_name, &ratio_mult_vf,
-				       &ratio, NULL);
+      tree ni_name;
+      gimple_seq stmts = NULL;
+      ni_name = vect_build_loop_niters (loop_vinfo, &stmts);
+      vect_generate_tmps_on_preheader (loop_vinfo, ni_name, NULL,
+				       &ratio, &stmts);
+      gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
     }
 
   /* 1) Make sure the loop header has exactly two entries

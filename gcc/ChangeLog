@@ -1,5 +1,20 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop-manip.c (vect_build_loop_niters,
+	vect_generate_tmps_on_preheader): Move ...
+	* tree-vect-loop.c (vect_build_loop_niters,
+	vect_generate_tmps_on_preheader): ... here and simplify.
+	(vect_transform_loop): Call them here and pass down results
+	to consumers.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound):
+	Get niter variables from caller.
+	(vect_do_peeling_for_alignment): Likewise.
+	* tree-vectorizer.h (vect_generate_tmps_on_preheader): Remove.
+	(vect_do_peeling_for_loop_bound, vect_do_peeling_for_alignment):
+	Adjust prototypes.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-ch.c (copy_loop_headers): Decrement
 	nb_iterations_upper_bound by one.
 
