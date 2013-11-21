@@ -137,7 +137,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(dw_val_equal_p): Add case dw_val_class_wide_int.
 	(size_of_loc_descr): Add case dw_val_class_wide_int.
 	(output_loc_operands): Add case dw_val_class_wide_int.
-	(output_loc_operands): Add case dw_val_class_wide_int.
 	(insert_double): Remove.
 	(insert_wide_int): Add.
 	(add_AT_wide): Add.
