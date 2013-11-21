@@ -739,7 +739,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(range_info_def): Fields min max and nonzero_bits now are wide-int.
 	* tree-ssa-phiopt.c
 	(jump_function_from_stmt): Use wide-int rep.
-	(hoist_adjacent_loads): Likewise.
 	* tree-ssa-pre.c
 	(phi_translate_1): Use wide-int rep.
 	* tree-ssa-reassoc.c
