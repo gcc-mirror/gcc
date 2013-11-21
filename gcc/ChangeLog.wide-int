@@ -163,7 +163,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(compare_loc_operands): Add case dw_val_class_wide_int.
 	* dwarf2out.h
 	(wide_int_ptr): Add.
-	(dw_val_class): Add dw_val_class_wide_int.
+	(enum dw_val_class): Add dw_val_class_wide_int.
 	(struct dw_val_struct): Add val_wide.
 	* emit-rtl.c
 	(const_wide_int_htab): Add.
