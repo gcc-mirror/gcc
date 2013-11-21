@@ -386,13 +386,14 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(real_to_integer): Use wide-int rep.
 	(real_from_integer): Likewise.
 	(ten_to_ptwo): Likewise.
-	(ten_to_mptwo): Likewise.
+	(real_digit): Likewise.
 	* real.h
 	(real_to_integer2, REAL_VALUE_FROM_INT,
-	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): deleted.
+	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): Deleted.
 	(real_to_integer, real_from_integer, decimal_real_to_integer):
 	Now use wide-int.
 	* recog.c
+	(const_int_operand): Improve comment.
 	(const_scalar_int_operand): New.
 	(const_double_operand): Changed to support CONST_WIDE_INT.
 	* rtlanal.c
@@ -403,7 +404,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(DEF_RTL_EXPR): Now supports CONST_WIDE_INT.
 	(rtx_size): Use wide-int rep.
 	(rtx_alloc_stat_v): New.
-	(rtx_alloc_stat): Now callse rtx_alloc_stat_v.
+	(rtx_alloc_stat): Now calls rtx_alloc_stat_v.
 	(cwi_output_hex): New.
 	(iterative_hash_rtx): Use wide-int rep.
 	(cwi_check_failed_bounds): New.
@@ -429,13 +430,9 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(CONST_WIDE_INT_NUNITS) Add.
 	(CONST_WIDE_INT_ELT) Add.
 	(rtx_mode_t): New type.
-	(wi) New namespace.
-	(get_precision) Add.
-	(decompose) Add.
-	(wi::shwi) Add.
-	(wi::min_value) Add.
-	(wi::max_value) Add.
+	(namespace wi): Add.
 	(rtx_alloc_v) Add.
+========================
 	* sched-vis.c
 	(print_value): Now supports CONST_WIDE_INT.
 	* simplify-rtx.c
@@ -685,6 +682,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(get_computation_cost_at): Likewise.
 	(iv_elimination_compare_lt): Likewise.
 	(may_eliminate_iv): Likewise.
+===============
 	* tree-ssa-loop-niter.c
 	(split_to_var_and_offset): Use wide-int rep.
 	(determine_value_range): Likewise.
@@ -938,7 +936,7 @@ lto:
 	* lto.c
 	(compare_tree_sccs_1): Use wide-int rep.
 	* lto-lang.c
-	(handle_novops_attribute): Use wide-int rep.
+	(get_nonnull_operand): Use wide-int rep.
 
 
 objc:
