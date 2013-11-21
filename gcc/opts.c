@@ -1807,8 +1807,13 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_g:
-      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
-		       loc);
+      /* -g by itself should force -g2.  */
+      if (*arg == '\0')
+	set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, "2", opts, opts_set,
+			 loc);
+      else
+	set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
+			 loc);
       break;
 
     case OPT_gcoff:

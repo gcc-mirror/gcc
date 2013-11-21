@@ -1,3 +1,15 @@
+2013-11-21  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (want_pubnames): Don't do pubnames for -g1.
+	(add_linkage_name): Don't add linkage name for -g1.
+	(decls_for_scope): Process subblocks for -g1.
+	(dwarf2out_source_line): Output line tables for -g1.
+	(dwarf2out_finish): Likewise.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't prune
+	unused scopes for -g1.
+	* opts.c (common_handle_option): Handle -g same as -g2.
+	* doc/invoke.texi: Update description for -g1.
+
 2013-11-21  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/extend.texi: Document htm builtins.

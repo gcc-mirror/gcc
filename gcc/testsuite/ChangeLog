@@ -1,3 +1,8 @@
+2013-11-21  Cary Coutant  <ccoutant@google.com>
+
+	* gcc.dg/debug/dwarf2/mlt1.c: New test.
+	* gcc.dg/debug/dwarf2/mlt2.c: New test.
+
 2013-11-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59221

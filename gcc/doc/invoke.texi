@@ -5233,8 +5233,8 @@ Level 0 produces no debug information at all.  Thus, @option{-g0} negates
 
 Level 1 produces minimal information, enough for making backtraces in
 parts of the program that you don't plan to debug.  This includes
-descriptions of functions and external variables, but no information
-about local variables and no line numbers.
+descriptions of functions and external variables, and line number
+tables, but no information about local variables.
 
 Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
