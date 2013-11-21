@@ -831,7 +831,7 @@ Gcc_backend::type_size(Btype* btype)
     return 1;
   t = TYPE_SIZE_UNIT(t);
   gcc_assert(tree_fits_uhwi_p (t));
-  unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW (t);
+  unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
   size_t ret = static_cast<size_t>(val_wide);
   gcc_assert(ret == val_wide);
   return ret;
