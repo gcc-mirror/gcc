@@ -87,7 +87,7 @@
 	* config/rs6000/rs6000-c.c
 	(altivec_resolve_overloaded_builtin): Update to use wi::.
 	* config/rs6000/rs6000.h
-	(TARGET_SUPPORTS_WIDE_INT): Add.
+	(TARGET_SUPPORTS_WIDE_INT): New.
 	* config/rs6000/rs6000.md
 	Update to use const_scalar_int_operand.  Handle CONST_WIDE_INT.
 	* config/sol2-c.c
@@ -97,9 +97,9 @@
 	* config/vax/vax.c
 	(vax_float_literal): Update to use real_from_integer.
 	* coretypes.h
-	(struct hwivec_def): Add.
-	(hwivec): Add.
-	(const_hwivec): Add.
+	(struct hwivec_def): New.
+	(hwivec): New.
+	(const_hwivec): New.
 	* cse.c
 	(hash_rtx_cb): Handle CONST_WIDE_INT.
 	(equiv_constant): Handle CONST_WIDE_INT.
@@ -127,19 +127,19 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(REAL_VALUE_TO_INT): Remove.
 	(REAL_VALUE_FROM_INT): Remove.
 	(TARGET_CAN_USE_DOLOOP_P): Use widest_int instead of double_int.
-	(TARGET_SUPPORTS_WIDE_INT): Add.
+	(TARGET_SUPPORTS_WIDE_INT): New.
 	* doc/tm.texi: Regenerate.
 	* dojump.c
 	(prefer_and_bit_test): Update to use wide-int.
-	* double-int.h (struct wi::int_traits): Add.
+	* double-int.h (struct wi::int_traits): New.
 	* dwarf2out.c
-	(get_full_len): Add.
+	(get_full_len): New.
 	(dw_val_equal_p): Add case dw_val_class_wide_int.
 	(size_of_loc_descr): Add case dw_val_class_wide_int.
 	(output_loc_operands): Add case dw_val_class_wide_int.
 	(insert_double): Remove.
-	(insert_wide_int): Add.
-	(add_AT_wide): Add.
+	(insert_wide_int): New.
+	(add_AT_wide): New.
 	(print_die): Add case dw_val_class_wide_int.
 	(attr_checksum): Add case dw_val_class_wide_int.
 	(attr_checksum_ordered): Add case dw_val_class_wide_int.
@@ -162,18 +162,18 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(hash_loc_operands): Add case dw_val_class_wide_int.
 	(compare_loc_operands): Add case dw_val_class_wide_int.
 	* dwarf2out.h
-	(wide_int_ptr): Add.
+	(wide_int_ptr): New.
 	(enum dw_val_class): Add dw_val_class_wide_int.
 	(struct dw_val_struct): Add val_wide.
 	* emit-rtl.c
-	(const_wide_int_htab): Add.
-	(const_wide_int_htab_hash): Add.
-	(const_wide_int_htab_eq): Add.
-	(lookup_const_wide_int): Add.
+	(const_wide_int_htab): New.
+	(const_wide_int_htab_hash): New.
+	(const_wide_int_htab_eq): New.
+	(lookup_const_wide_int): New.
 	(const_double_htab_hash): Update for wide-int.
 	(const_double_htab_eq): Likewise.
 	(rtx_to_double_int): Conditionally compile for wide-int.
-	(lookup_const_wide_int): Add.
+	(lookup_const_wide_int): New.
 	(immed_double_int_const): Rename to immed_wide_int_const and
 	update for wide-int.
 	(immed_double_const): Conditionally compile for wide-int.
@@ -409,29 +409,29 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(iterative_hash_rtx): Use wide-int rep.
 	(cwi_check_failed_bounds): New.
 	* rtl.def
-	(CONST_WIDE_INT): Add.
+	(CONST_WIDE_INT): New.
 	* rtl.h
-	(struct hwivec_def): Add.
-	(CWI_GET_NUM_ELEM): Add.
-	(CWI_PUT_NUM_ELEM): Add.
+	(struct hwivec_def): New.
+	(CWI_GET_NUM_ELEM): New.
+	(CWI_PUT_NUM_ELEM): New.
 	(struct rtx_def): Add num_elem.
 	(struct rtvec_def): Add hwiv.
 	(CASE_CONST_SCALAR_INT): Modify for TARGET_SUPPORTS_WIDE_INT.
 	(CASE_CONST_UNIQUE): Likewise.
 	(CASE_CONST_ANY): Likewise.
 	(CONST_SCALAR_INT_P): Likewise.
-	(CONST_WIDE_INT_P): Add.
-	(CWI_ELT): Add.
-	(HWIVEC_CHECK): Add.
-	(cwi_check_failed_bounds): Add.
-	(CWI_ELT): Add.
-	(HWIVEC_CHECK): Add.
-	(CONST_WIDE_INT_VEC) Add.
-	(CONST_WIDE_INT_NUNITS) Add.
-	(CONST_WIDE_INT_ELT) Add.
+	(CONST_WIDE_INT_P): New.
+	(CWI_ELT): New.
+	(HWIVEC_CHECK): New.
+	(cwi_check_failed_bounds): New.
+	(CWI_ELT): New.
+	(HWIVEC_CHECK): New.
+	(CONST_WIDE_INT_VEC) New.
+	(CONST_WIDE_INT_NUNITS) New.
+	(CONST_WIDE_INT_ELT) New.
 	(rtx_mode_t): New type.
-	(namespace wi): Add.
-	(rtx_alloc_v) Add.
+	(namespace wi): New.
+	(rtx_alloc_v) New.
 	* sched-vis.c
 	(print_value): Now supports CONST_WIDE_INT.
 	* sel-sched-ir.c
@@ -469,7 +469,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(can_use_doloop_if_innermost): Now uses wide-int parameters.
 	* tree-affine.c
 	(double_int_ext_for_comb): Delete.
-	(wide_int_ext_for_comb): Add.
+	(wide_int_ext_for_comb): New.
 	(aff_combination_zero): Use wide-int rep.
 	(aff_combination_const): Likewise.
 	(aff_combination_elt): Likewise.
@@ -486,7 +486,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(aff_combination_mult): Likewise.
 	(aff_combination_expand): Likewise.
 	(double_int_constant_multiple_p): Delete.
-	(wide_int_constant_multiple_p): Add.
+	(wide_int_constant_multiple_p): New.
 	(aff_combination_constant_multiple_p): Use wide-int rep.
 	(print_aff): Likewise.
 	(get_inner_reference_aff): Likewise.
@@ -499,21 +499,21 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(tree_code_size): Removed code for INTEGER_CST case.
 	(tree_size): Add INTEGER_CST case.
 	(make_node_stat): Update comment.
-	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): Add.
+	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): New.
 	(build_int_cst_type): Use wide-int.
 	(double_int_to_tree): Use wide-int.
 	(double_int_fits_to_tree_p): Delete.
 	(force_fit_type_double): Delete.
-	(force_fit_type): Add.
+	(force_fit_type): New.
 	(int_cst_hash_hash): Use wide-int rep.
 	(int_cst_hash_eq): Use wide-int rep.
 	(build_int_cst_wide): Delete.
-	(wide_int_to_tree): Add.
+	(wide_int_to_tree): New.
 	(cache_integer_cst): Use wide-int rep.
 	(build_low_bits_mask): Likewise.
 	(cst_and_fits_in_hwi): Likewise.
 	(real_value_from_int_cst): Use wide-int rep.
-	(make_int_cst_stat): Add.
+	(make_int_cst_stat): New.
 	(integer_zerop): Use wide_int rep.
 	(integer_onep): Likewise.
 	(integer_all_onesp): Likewise.
@@ -628,7 +628,6 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(indirect_ref_may_alias_decl_p): Use wide-int rep.
 	(indirect_refs_may_alias_p): Likewise.
 	(stmt_kills_ref_p_1): Likewise.
-	========================
 	* tree-ssa.c
 	(non_rewritable_mem_ref_base): Use wide-int rep.
 	* tree-ssa-ccp.c
@@ -653,7 +652,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(bit_value_assume_aligned): Likewise.
 	(evaluate_stmt): Likewise.
 	(ccp_fold_stmt): Likewise.
-	(visit_assignment): Likewise.
+	(visit_cond_stmt): Likewise.
 	(ccp_visit_stmt): Likewise.
 	* tree-ssa-forwprop.c
 	(forward_propagate_addr_expr_1): Use wide-int rep.
@@ -671,17 +670,13 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* tree-ssa-loop-ivopts.c
 	(alloc_iv): Use wide-int rep.
 	(constant_multiple_of): Likewise.
-	(strip_offset_1): Likewise.
-	(add_autoinc_candidates): Likewise.
 	(get_computation_aff): Likewise.
-	(force_expr_to_var_cost): Likewise.
 	(ptr_difference_cost): Likewise.
 	(difference_cost): Likewise.
 	(get_loop_invariant_expr_id): Likewise.
 	(get_computation_cost_at): Likewise.
 	(iv_elimination_compare_lt): Likewise.
 	(may_eliminate_iv): Likewise.
-===============
 	* tree-ssa-loop-niter.c
 	(split_to_var_and_offset): Use wide-int rep.
 	(determine_value_range): Likewise.
@@ -805,14 +800,10 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* var-tracking.c
 	(loc_cmp): Use wide-int rep.
 	(emit_note_insn_var_location): Likewise.
-	* wide-int.cc
-	New file.
-	* wide-int.h
-	New file.
-	* wide-int-print.cc
-	New file.
-	* wide-int-print.h
-	New file.
+	* wide-int.cc: New.
+	* wide-int.h: New.
+	* wide-int-print.cc: New.
+	* wide-int-print.h: New.
 
 
 ada:
