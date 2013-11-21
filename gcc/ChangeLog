@@ -1731,7 +1731,7 @@
 	* tree.c (int_fits_type_p): Change GET_MODE_BITSIZE to
 	GET_MODE_PRECISION.
 	* fold-const.c (fold_single_bit_test_into_sign_test)
-	(fold_binary_loc):  Change GET_MODE_BITSIZE to GET_MODE_PRECISION.
+	(fold_binary_loc): Change GET_MODE_BITSIZE to GET_MODE_PRECISION.
 
 2013-11-18  Teresa Johnson  <tejohnson@google.com>
 
