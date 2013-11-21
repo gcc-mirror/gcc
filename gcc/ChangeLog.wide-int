@@ -493,7 +493,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(aff_comb_cannot_overlap_p): Likewise.
 	========================
 	* tree-affine.h
-	(aff_comb_elt): Changed type of coef and offset to widest-int.
+	(struct aff_comb_elt): Changed type of coef and offset to widest_int.
 	* tree.c
 	(init_ttree): Changed constructor of int_cst_node.
 	(tree_code_size): Removed code for INTEGER_CST case.
@@ -559,8 +559,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* tree-chrec.c
 	(tree_fold_binomial): Use wide-int rep.
 	* tree-core.h
-	(tree_base): Add int_length.
-	(tree_int_cst): Change rep of value.
+	(struct tree_base): Add int_length.
+	(struct tree_int_cst): Change rep of value.
 	* tree-data-ref.c
 	(dr_analyze_innermost): Use wide-int rep.
 	(dr_may_alias_p): Likewise.
@@ -637,7 +637,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* tree-ssa.c
 	(non_rewritable_mem_ref_base): Use wide-int rep.
 	* tree-ssa-ccp.c
-	(prop_value_d): Change rep of mask to wide-int.
+	(struct prop_value_d): Change rep of mask to widest_int.
 	(dump_lattice_value): Use wide-int rep.
 	(get_default_value): Likewise.
 	(set_constant_value): Likewise.
@@ -666,7 +666,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(associate_pointerplus): Likewise.
 	(combine_conversions): Likewise.
 	* tree-ssa-loop.h
-	(struct tree_niter_desc): Change type of Max to wide-int.
+	(struct tree_niter_desc): Change type of max to widest_int.
 	* tree-ssa-loop-im.c
 	(mem_refs_may_alias_p): Use wide-int rep.
 	* tree-ssa-loop-ivcanon.c
@@ -727,7 +727,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(set_nonzero_bits): Likewise.
 	(get_nonzero_bits): Likewise.
 	* tree-ssanames.h
-	(range_info_def): Fields min max and nonzero_bits now are wide-int.
+	(struct range_info_def): Fields min, max and nonzero_bits now are
+	widest_int.
 	* tree-ssa-phiopt.c
 	(jump_function_from_stmt): Use wide-int rep.
 	* tree-ssa-pre.c
