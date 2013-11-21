@@ -1795,7 +1795,7 @@ last_bb_in_partition (basic_block start_bb)
       if (BB_PARTITION (start_bb) != BB_PARTITION (bb->next_bb))
         return bb;
     }
-  /* Return bb before EXIT_BLOCK_PTR.  */
+  /* Return bb before the exit block.  */
   return bb->prev_bb;
 }
 

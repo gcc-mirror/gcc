@@ -518,7 +518,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 	    result.next = exit_e->dest;
 
 	    /* If we do not dominate result.next, remove it.  It's either
-	       the EXIT_BLOCK_PTR, or another bb dominates it and will
+	       the exit block, or another bb dominates it and will
 	       call the scop detection for this bb.  */
 	    if (!dominated_by_p (CDI_DOMINATORS, result.next, bb))
 	      result.next = NULL;

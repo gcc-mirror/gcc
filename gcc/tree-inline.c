@@ -2433,9 +2433,10 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
-  /* If we are inlining just region of the function, make sure to connect new entry
-     to ENTRY_BLOCK_PTR.  Since new entry can be part of loop, we must compute
-     frequency and probability of ENTRY_BLOCK_PTR based on the frequencies and
+  /* If we are inlining just region of the function, make sure to connect
+     new entry to ENTRY_BLOCK_PTR_FOR_FN (cfun).  Since new entry can be
+     part of loop, we must compute frequency and probability of
+     ENTRY_BLOCK_PTR_FOR_FN (cfun) based on the frequencies and
      probabilities of edges incoming from nonduplicated region.  */
   if (new_entry)
     {

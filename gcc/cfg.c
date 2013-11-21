@@ -473,8 +473,6 @@ dump_edge_info (FILE *file, edge e, int flags, int do_succ)
       && (flags & TDF_SLIM) == 0)
     do_details = true;
 
-  /* ENTRY_BLOCK_PTR/EXIT_BLOCK_PTR depend on cfun.
-     Compare against ENTRY_BLOCK/EXIT_BLOCK to avoid that dependency.  */
   if (side->index == ENTRY_BLOCK)
     fputs (" ENTRY", file);
   else if (side->index == EXIT_BLOCK)

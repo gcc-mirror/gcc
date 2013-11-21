@@ -2334,7 +2334,7 @@ cgraph_node_cannot_return (struct cgraph_node *node)
    and thus it is safe to ignore its side effects for IPA analysis
    when computing side effects of the caller.
    FIXME: We could actually mark all edges that have no reaching
-   patch to EXIT_BLOCK_PTR or throw to get better results.  */
+   patch to the exit block or throw to get better results.  */
 bool
 cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
 {

@@ -1392,7 +1392,7 @@ find_spanning_tree (struct edge_list *el)
   union_groups (EXIT_BLOCK_PTR_FOR_FN (cfun), ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* First add all abnormal edges to the tree unless they form a cycle. Also
-     add all edges to EXIT_BLOCK_PTR to avoid inserting profiling code behind
+     add all edges to the exit block to avoid inserting profiling code behind
      setting return value from function.  */
   for (i = 0; i < num_edges; i++)
     {
