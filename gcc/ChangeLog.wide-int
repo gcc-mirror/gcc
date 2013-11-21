@@ -120,7 +120,6 @@
 	decimal_real_to_integer.
 	* doc/generic.texi
 	(Constant expressions): Use wide-int interfaces.
-AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* doc/rtl.texi
 	(const_double): Use wide-int interfaces.
 	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
