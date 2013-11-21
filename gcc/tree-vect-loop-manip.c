@@ -1736,16 +1736,16 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
 
   pe = loop_preheader_edge (loop);
 
-  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
+  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
-      int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "known peeling = %d.\n", npeel);
 
       iters = build_int_cst (niters_type, npeel);
-      *bound = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      *bound = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
     }
   else
     {
@@ -1876,7 +1876,6 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop;
-  tree n_iters;
   tree wide_prolog_niters;
   struct loop *new_loop;
   int max_iter;
@@ -1918,9 +1917,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
                "loop to %d\n", max_iter);
 
   /* Update number of times loop executes.  */
-  n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
-		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
+		TREE_TYPE (ni_name), ni_name, niters_of_prolog_loop);
 
   if (types_compatible_p (sizetype, TREE_TYPE (niters_of_prolog_loop)))
     wide_prolog_niters = niters_of_prolog_loop;

@@ -1,5 +1,35 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/59058
+	* tree-scalar-evolution.h (number_of_exit_cond_executions): Remove.
+	* tree-scalar-evolution.c (number_of_exit_cond_executions): Likewise.
+	* tree-vectorizer.h (LOOP_PEELING_FOR_ALIGNMENT): Rename to ...
+	(LOOP_VINFO_PEELING_FOR_ALIGNMENT): ... this.
+	(NITERS_KNOWN_P): Fold into ...
+	(LOOP_VINFO_NITERS_KNOWN_P): ... this.
+	(LOOP_VINFO_PEELING_FOR_NITER): Add.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Use LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	(vect_do_peeling_for_alignment): Re-use precomputed niter
+	instead of re-emitting it.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Use LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	* tree-vect-loop.c (vect_get_loop_niters): Use
+	number_of_latch_executions.
+	(new_loop_vec_info): Initialize LOOP_VINFO_PEELING_FOR_NITER.
+	(vect_analyze_loop_form): Simplify.
+	(vect_analyze_loop_operations): Move epilogue peeling code ...
+	(vect_analyze_loop_2): ... here and adjust it to compute
+	LOOP_VINFO_PEELING_FOR_NITER.
+	(vect_estimate_min_profitable_iters): Use
+	LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	(vect_build_loop_niters): Emit on the preheader.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_transform_loop): Use LOOP_VINFO_PEELING_FOR_NITER instead
+	of recomputing it.  Adjust.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE,
 	LOC_LINE): Remove wrappers and fix all users.
 	(struct _loop_vec_info): Remove loop_line_number member.

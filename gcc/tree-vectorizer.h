@@ -361,7 +361,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_DATAREFS(L)             (L)->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->ddrs
 #define LOOP_VINFO_INT_NITERS(L)           (TREE_INT_CST_LOW ((L)->num_iters))
-#define LOOP_PEELING_FOR_ALIGNMENT(L)      (L)->peeling_for_alignment
+#define LOOP_VINFO_PEELING_FOR_ALIGNMENT(L) (L)->peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L)         (L)->unaligned_dr
 #define LOOP_VINFO_MAY_MISALIGN_STMTS(L)   (L)->may_misalign_stmts
 #define LOOP_VINFO_MAY_ALIAS_DDRS(L)       (L)->may_alias_ddrs
@@ -375,18 +375,15 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
+#define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
-(L)->may_misalign_stmts.length () > 0
+  (L)->may_misalign_stmts.length () > 0
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)     \
-(L)->may_alias_ddrs.length () > 0
-
-#define NITERS_KNOWN_P(n)                     \
-(tree_fits_shwi_p ((n))                        \
-&& tree_to_shwi ((n)) > 0)
+  (L)->may_alias_ddrs.length () > 0
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
-NITERS_KNOWN_P ((L)->num_iters)
+  (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)
 
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)
