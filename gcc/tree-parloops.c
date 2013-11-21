@@ -2145,7 +2145,7 @@ parallelize_loops (void)
   reduction_info_table_type reduction_list;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
-  LOC loop_loc;
+  source_location loop_loc;
 
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (parallelized_function_p (cfun->decl))
@@ -2225,9 +2225,9 @@ parallelize_loops (void)
 	else
 	  fprintf (dump_file, "parallelizing inner loop %d\n",loop->header->index);
 	loop_loc = find_loop_location (loop);
-	if (loop_loc != UNKNOWN_LOC)
+	if (loop_loc != UNKNOWN_LOCATION)
 	  fprintf (dump_file, "\nloop at %s:%d: ",
-		   LOC_FILE (loop_loc), LOC_LINE (loop_loc));
+		   LOCATION_FILE (loop_loc), LOCATION_LINE (loop_loc));
       }
       gen_parallel_loop (loop, reduction_list,
 			 n_threads, &niter_desc);
