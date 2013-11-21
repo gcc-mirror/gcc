@@ -865,21 +865,17 @@ c:
 c-family:
 	* c-ada-spec.c
 	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
-	(is_simple_enum): Update to use wide-int.
-	(dump_generic_ada_node): Likewise.
+	(dump_generic_ada_node): Update to use wide-int.
 	* c-common.c
 	(shorten_compare): Likewise.
 	(pointer_int_sum): Likewise.
 	(c_common_nodes_and_builtins): Likewise.
-	(c_add_case_label): Likewise.
+	(match_case_to_enum_1): Likewise.
 	(handle_alloc_size_attribute): Likewise.
 	(get_nonnull_operand): Likewise.
 	(check_function_arguments_recurse): Likewise.
 	* c-format.c
-	(check_format_string): Likewise.
-	* cilk.c
-	(declare_one_free_variable): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
-	(extract_free_variables): Update to use tree_to_uhwi.
+	(get_constant): Likewise.
 	* c-lex.c
 	(narrowest_unsigned_type): Update to use wide-int.
 	(narrowest_signed_type): Likewise.
@@ -887,6 +883,8 @@ c-family:
 	(lex_charconst): Likewise.
 	* c-pretty-print.c
 	(pp_c_integer_constant): Update accessors.
+	* cilk.c
+	(declare_one_free_variable): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
 
 
 cp:
