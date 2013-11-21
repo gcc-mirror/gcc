@@ -1,3 +1,29 @@
+2013-11-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimplify.h (gimplify_hasher : typed_free_remove, struct gimplify_ctx):
+	Move to gimplify.c.
+	(free_gimplify_stack): Add prototype.
+	* gimplify.c (gimplify_hasher:typed_free_remove): Relocate here.
+	(struct gimplify_ctx): Relocate here.
+	(gimplify_ctxp): Make static.
+	(ctx_pool, ctx_alloc, ctx_free, free_gimplify_stack): New.  Manage a 
+	list of struct gimplify_ctx.
+	(push_gimplify_context): Add default parameters and allocate a struct
+	from the pool.
+	(pop_gimplify_context): Free a struct back to the pool.
+	(gimplify_scan_omp_clauses, gimplify_omp_parallel, gimplify_omp_task,
+	gimplify_omp_workshare, gimplify_transaction, gimplify_body): Don't
+	use a local 'struct gimplify_ctx'.
+	* cgraphunit.c (expand_all_functions): call free_gimplify_stack.
+	* gimplify-me.c (force_gimple_operand_1, gimple_regimplify_operands):
+	Likewise.
+	* omp-low.c (lower_omp_sections, lower_omp_single, lower_omp_master,
+	lower_omp_ordered, lower_omp_critical, lower_omp_for,
+	create_task_copyfn, lower_omp_taskreg, lower_omp_target,
+	lower_omp_teams, execute_lower_omp): Likewise.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Likewise.
+	* tree-inline.c (optimize_inline_calls): Likewise.
+
 2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_set_<mode>): Adjust for little endian.

@@ -48,39 +48,10 @@ enum gimplify_status {
   GS_OK		= 0,	/* We did something, maybe more to do.  */
   GS_ALL_DONE	= 1	/* The expression is fully gimplified.  */
 };
-/* Gimplify hashtable helper.  */
 
-struct gimplify_hasher : typed_free_remove <elt_t>
-{
-  typedef elt_t value_type;
-  typedef elt_t compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-};
-
-struct gimplify_ctx
-{
-  struct gimplify_ctx *prev_context;
-
-  vec<gimple> bind_expr_stack;
-  tree temps;
-  gimple_seq conditional_cleanups;
-  tree exit_label;
-  tree return_temp;
-
-  vec<tree> case_labels;
-  /* The formal temporary table.  Should this be persistent?  */
-  hash_table <gimplify_hasher> temp_htab;
-
-  int conditions;
-  bool save_stack;
-  bool into_ssa;
-  bool allow_rhs_cond_expr;
-  bool in_cleanup_point_expr;
-};
-
-extern struct gimplify_ctx *gimplify_ctxp;
-extern void push_gimplify_context (struct gimplify_ctx *);
+extern void free_gimplify_stack (void);
+extern void push_gimplify_context (bool in_ssa = false,
+				   bool rhs_cond_ok = false);
 extern void pop_gimplify_context (gimple);
 extern gimple gimple_current_bind_expr (void);
 extern vec<gimple> gimple_bind_expr_stack (void);

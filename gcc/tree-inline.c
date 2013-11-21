@@ -4519,7 +4519,6 @@ optimize_inline_calls (tree fn)
   copy_body_data id;
   basic_block bb;
   int last = n_basic_blocks_for_fn (cfun);
-  struct gimplify_ctx gctx;
   bool inlined_p = false;
 
   /* Clear out ID.  */
@@ -4540,7 +4539,7 @@ optimize_inline_calls (tree fn)
   id.transform_lang_insert_block = NULL;
   id.statements_to_fold = pointer_set_create ();
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   /* We make no attempts to keep dominance info up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);
