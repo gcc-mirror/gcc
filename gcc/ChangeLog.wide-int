@@ -250,18 +250,18 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	* gengtype.c
 	(do_typedef): Update for wide-int.
 	(open_base_files): Add wide-int.h.
-	(main): Added storage classes.
+	(main): Add storage classes.
 	* gengtype-lex.l
-	(CXX_KEYWORD): Added another keyword for c++.
+	(CXX_KEYWORD): Add another keyword for c++.
 	* gengtype-parse.c
 	(require3): New.
-	(require_template_declaration): Added for c++ parsing.
+	(require_template_declaration): Add for c++ parsing.
 	* gengtype-state.c: Don't include "double-int.h".
 	* genmodes.c
-	(emit_max_int): Added code find longest int.
+	(emit_max_int): Add code find longest int.
 	* genpreds.c
 	(write_one_predicate_function): Update comment.
-	(write_tm_constrs_h): Added check for hval and lval use in CONST_WIDE_INT.
+	(write_tm_constrs_h): Add check for hval and lval use in CONST_WIDE_INT.
 	* genrecog.c
 	(validate_pattern): Add CONST_WIDE_INT case.
 	(add_to_sequence): Likewise.
@@ -382,14 +382,14 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(validate_const_wide_int): New.
 	(read_rtx_code): Add CONST_WIDE_INT case.
 	* real.c
-	(real_to_integer2): Deleted.
+	(real_to_integer2): Delete.
 	(real_to_integer): Use wide-int rep.
 	(real_from_integer): Likewise.
 	(ten_to_ptwo): Likewise.
 	(real_digit): Likewise.
 	* real.h
 	(real_to_integer2, REAL_VALUE_FROM_INT,
-	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): Deleted.
+	REAL_VALUE_FROM_UNSIGNED_INT, REAL_VALUE_TO_INT): Delete.
 	(real_to_integer, real_from_integer, decimal_real_to_integer):
 	Now use wide-int.
 	* recog.c
@@ -468,8 +468,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(default_cxx_get_cookie_size): Uses INT_CST_LT rather than INT_CST_LT_UNSIGNED.
 	(can_use_doloop_if_innermost): Now uses wide-int parameters.
 	* tree-affine.c
-	(double_int_ext_for_comb): Deleted.
-	(wide_int_ext_for_comb): Added.
+	(double_int_ext_for_comb): Delete.
+	(wide_int_ext_for_comb): Add.
 	(aff_combination_zero): Use wide-int rep.
 	(aff_combination_const): Likewise.
 	(aff_combination_elt): Likewise.
@@ -485,34 +485,35 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(aff_combination_add_product): Likewise.
 	(aff_combination_mult): Likewise.
 	(aff_combination_expand): Likewise.
-	(double_int_constant_multiple_p): Deleted.
-	(wide_int_constant_multiple_p): Added.
+	(double_int_constant_multiple_p): Delete.
+	(wide_int_constant_multiple_p): Add.
 	(aff_combination_constant_multiple_p): Use wide-int rep.
 	(print_aff): Likewise.
 	(get_inner_reference_aff): Likewise.
 	(aff_comb_cannot_overlap_p): Likewise.
-	========================
 	* tree-affine.h
-	(struct aff_comb_elt): Changed type of coef and offset to widest_int.
+	(struct aff_comb_elt): Changed type of coef to widest_int.
+	(struct affine_tree_combination): Changed type of offset to widest_int.
+	========================
 	* tree.c
 	(init_ttree): Changed constructor of int_cst_node.
 	(tree_code_size): Removed code for INTEGER_CST case.
-	(tree_size): Added INTEGER_CST case.
-	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): Added.
+	(tree_size): Add INTEGER_CST case.
+	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): Add.
 	(build_int_cst_type): Use wide-int.
 	(double_int_to_tree): Use wide-int.
-	(double_int_fits_to_tree_p): Deleted.
-	(force_fit_type_double): Deleted.
-	(force_fit_type): Added.
+	(double_int_fits_to_tree_p): Delete.
+	(force_fit_type_double): Delete.
+	(force_fit_type): Add.
 	(int_cst_hash_hash): Use wide-int rep.
 	(int_cst_hash_eq): Use wide-int rep.
-	(build_int_cst_wide): Deleted.
-	(wide_int_to_tree): Added.
+	(build_int_cst_wide): Delete.
+	(wide_int_to_tree): Add.
 	(cache_integer_cst): Use wide-int rep.
 	(build_low_bits_mask): Likewise.
-	(cst_and_fits_in_hwi): Deleted.
+	(cst_and_fits_in_hwi): Delete.
 	(real_value_from_int_cst): Use wide-int rep.
-	(make_int_cst_stat): Added.
+	(make_int_cst_stat): Add.
 	(integer_zerop): Use wide_int rep.
 	(integer_onep): Likewise.
 	(integer_all_onesp): Likewise.
@@ -579,9 +580,9 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(tree_int_cst_elt_check_failed): New.
 	(TREE_INT_CST_ELT_CHECK): New.
 	(TYPE_SIGN): New.
-	(TREE_INT_CST): Deleted.
+	(TREE_INT_CST): Delete.
 	(TREE_INT_CST_LOW): Use wide-int rep.
-	(TREE_INT_CST_HIGH): Deleted.
+	(TREE_INT_CST_HIGH): Delete.
 	(TREE_INT_CST_NUNITS): New.
 	(TREE_INT_CST_EXT_NUNITS): Likewise.
 	(TREE_INT_CST_ELT): Likewise.
@@ -591,8 +592,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(cst_fits_shwi_p): New.
 	(cst_fits_uhwi_p): New.
 	(make_int_cst): New.
-	(tree_to_double_int): Deleted.
-	(build_int_cstu): Deleted.
+	(tree_to_double_int): Delete.
+	(build_int_cstu): Delete.
 	(tree_to_shwi): Use wide-int rep.
 	(tree_to_uhwi): Likewise.
 	(wi): New.
@@ -644,7 +645,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(set_value_varying): Likewise.
 	(valid_lattice_transition): Likewise.
 	(set_lattice_value): Likewise.
-	(value_to_double_int): Deleted.
+	(value_to_double_int): Delete.
 	(value_to_wide_int): New.
 	(get_value_from_alignment): Use wide-int rep.
 	(get_value_for_expr): Likewise.
@@ -707,7 +708,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(do_warn_aggressive_loop_optimizations): Likewise.
 	(record_estimate): Likewise.
 	(record_nonwrapping_iv): Likewise.
-	(double_int_cmp): Deleted.
+	(double_int_cmp): Delete.
 	(wide_int_cmp): New.
 	(bound_index): Use wide-int rep.
 	(discover_iteration_bound_by_body_walk): Likewise.
@@ -777,7 +778,7 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(vrp_int_const_binop): Likewise.
 	(zero_nonzero_bits_from_vr): Likewise.
 	(ranges_from_anti_range): Likewise.
-	(quad_int_cmp): Deleted.
+	(quad_int_cmp): Delete.
 	(quad_int_pair_sort): Likewise.
 	(extract_range_from_binary_expr_1): Use wide-int rep.
 	(extract_range_from_unary_expr_1): Likewise.
