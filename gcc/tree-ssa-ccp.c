@@ -149,6 +149,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "wide-int-print.h"
 
+
 /* Possible lattice values.  */
 typedef enum
 {
