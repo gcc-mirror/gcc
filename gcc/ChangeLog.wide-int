@@ -255,7 +255,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(CXX_KEYWORD): Added another keyword for c++.
 	* gengtype-parse.c
 	(require3): New.
-	(string_seq): Added for c++ parsing.
+	(require_template_declaration): Added for c++ parsing.
+	* gengtype-state.c: Don't include "double-int.h".
 	* genmodes.c
 	(emit_max_int): Added code find longest int.
 	* genpreds.c
