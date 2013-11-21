@@ -1535,7 +1535,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   edge e1, e2;
   edge_iterator ei;
 
-  /* If we performed shrink-wrapping, edges to the EXIT_BLOCK_PTR can
+  /* If we performed shrink-wrapping, edges to the exit block can
      only be distinguished for JUMP_INSNs.  The two paths may differ in
      whether they went through the prologue.  Sibcalls are fine, we know
      that we either didn't need or inserted an epilogue before them.  */
@@ -2684,7 +2684,7 @@ try_optimize_cfg (int mode)
 		    }
 		  delete_basic_block (b);
 		  changed = true;
-		  /* Avoid trying to remove ENTRY_BLOCK_PTR.  */
+		  /* Avoid trying to remove the exit block.  */
 		  b = (c == ENTRY_BLOCK_PTR_FOR_FN (cfun) ? c->next_bb : c);
 		  continue;
 		}

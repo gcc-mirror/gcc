@@ -40,8 +40,6 @@ struct work {
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   mutex m;
   condition_variable cv;
   unique_lock<mutex> l(m);
@@ -50,8 +48,29 @@ void test01()
   f1.get();
 }
 
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  mutex m;
+  condition_variable cv;
+  unique_lock<mutex> l(m);
+  future<void> f1 = async(launch::async, work(), ref(m), ref(cv));
+  std::future_status status;
+  status = f1.wait_for(std::chrono::milliseconds(1));
+  VERIFY( status == std::future_status::timeout );
+  status = f1.wait_until(std::chrono::system_clock::now());
+  VERIFY( status == std::future_status::timeout );
+  cv.wait(l);
+  status = f1.wait_for(std::chrono::milliseconds(0));
+  VERIFY( status == std::future_status::ready );
+  status = f1.wait_until(std::chrono::system_clock::now());
+  VERIFY( status == std::future_status::ready );
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }

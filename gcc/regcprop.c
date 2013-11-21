@@ -747,6 +747,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       int n_ops, i, alt, predicated;
       bool is_asm, any_replacements;
       rtx set;
+      rtx link;
       bool replaced[MAX_RECOG_OPERANDS];
       bool changed = false;
       struct kill_set_value_data ksvd;
@@ -814,6 +815,23 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       for (i = 0; i < n_ops; i++)
 	if (recog_op_alt[i][alt].earlyclobber)
 	  kill_value (recog_data.operand[i], vd);
+
+      /* If we have dead sets in the insn, then we need to note these as we
+	 would clobbers.  */
+      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	{
+	  if (REG_NOTE_KIND (link) == REG_UNUSED)
+	    {
+	      kill_value (XEXP (link, 0), vd);
+	      /* Furthermore, if the insn looked like a single-set,
+		 but the dead store kills the source value of that
+		 set, then we can no-longer use the plain move
+		 special case below.  */
+	      if (set
+		  && reg_overlap_mentioned_p (XEXP (link, 0), SET_SRC (set)))
+		set = NULL;
+	    }
+	}
 
       /* Special-case plain move instructions, since we may well
 	 be able to do the move from a different register class.  */

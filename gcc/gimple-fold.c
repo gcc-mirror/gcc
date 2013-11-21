@@ -608,7 +608,6 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   gimple stmt, new_stmt;
   gimple_stmt_iterator i;
   gimple_seq stmts = NULL;
-  struct gimplify_ctx gctx;
   gimple laststore;
   tree reaching_vuse;
 
@@ -616,8 +615,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
   gcc_assert (is_gimple_call (stmt));
 
-  push_gimplify_context (&gctx);
-  gctx.into_ssa = gimple_in_ssa_p (cfun);
+  push_gimplify_context (gimple_in_ssa_p (cfun));
 
   lhs = gimple_call_lhs (stmt);
   if (lhs == NULL_TREE)

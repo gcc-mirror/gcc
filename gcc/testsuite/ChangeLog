@@ -1,3 +1,47 @@
+2013-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/59227
+	* gfortran.dg/erf_3.F90: XFAIL on spu-* and ia64-*-linux*.
+	Make more generic for other platforms.
+
+2013-11-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53976
+	* gcc.target/sh/pr53976-1.c: New.
+
+2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49024
+	* gfortran.dg/erf_3.F90: New file.
+
+2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr48258-1.c: Skip for little endian.
+
+2013-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59133
+	* gcc.target/i386/pr59133.c: New.
+
+2013-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/21718
+	* gcc.dg/float-exact-1.c: New test.
+
+2013-11-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/54300
+	* gcc.target/arm/pr54300.C: New test.
+
+2013-11-20  Diego Novillo  <dnovillo@google.com>
+
+	PR 59212
+	* g++.dg/plugin/selfassign.c: Include stringpool.h
+
+2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/darwin-longlong.c (msw): Make endian-safe.
+
 2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/htm-1.c: Rename to ...

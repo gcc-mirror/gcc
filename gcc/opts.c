@@ -809,10 +809,13 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 #else
       error_at (loc, "LTO support has not been enabled in this configuration");
 #endif
-      if (!opts->x_flag_fat_lto_objects && !HAVE_LTO_PLUGIN)
+      if (!opts->x_flag_fat_lto_objects
+	  && (!HAVE_LTO_PLUGIN
+	      || (opts_set->x_flag_use_linker_plugin
+		  && !opts->x_flag_use_linker_plugin)))
 	{
 	  if (opts_set->x_flag_fat_lto_objects)
-            error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin.");
+            error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin");
 	  opts->x_flag_fat_lto_objects = 1;
 	}
     }

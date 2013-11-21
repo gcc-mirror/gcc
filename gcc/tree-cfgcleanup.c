@@ -237,7 +237,7 @@ cleanup_control_flow_bb (basic_block bb)
    the start of the successor block.
 
    As a precondition, we require that BB be not equal to
-   ENTRY_BLOCK_PTR.  */
+   the entry block.  */
 
 static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
@@ -250,7 +250,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       /* If PHI_WANTED is false, BB must not have any PHI nodes.
 	 Otherwise, BB must have PHI nodes.  */
       || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted
-      /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
+      /* BB may not be a predecessor of the exit block.  */
       || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
       /* Nor should this be an infinite loop.  */
       || single_succ (bb) == bb

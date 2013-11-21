@@ -39,12 +39,32 @@ void test01()
   using namespace std;
 
   int a = 1;
-  int b = 10;
-  int c = 100;
+  int b = 1;
+  int c = 1;
   future<int> f1 = async(launch::deferred, sum(), a, ref(b), cref(c));
+  a = 0;
+  b = 10;
+  c = 100;
+
+  const std::chrono::seconds delay(10);
+  const auto then = std::chrono::system_clock::now() + delay;
 
   VERIFY( f1.valid() );
+  // timed waiting functions should return 'deferred' immediately
+  VERIFY( f1.wait_until(then) == std::future_status::deferred );
+  VERIFY( f1.wait_for(delay) == std::future_status::deferred );
+  VERIFY( std::chrono::system_clock::now() < then );
+
+  f1.wait();
+
+  VERIFY( f1.valid() );
+  // timed waiting functions should return 'ready' immediately
+  VERIFY( f1.wait_until(then) == std::future_status::ready );
+  VERIFY( f1.wait_for(delay) == std::future_status::ready );
+  VERIFY( std::chrono::system_clock::now() < then );
+
   VERIFY( f1.get() == 111 );
+  VERIFY( !f1.valid() );
 }
 
 int main()

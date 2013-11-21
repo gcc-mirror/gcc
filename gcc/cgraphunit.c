@@ -205,6 +205,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-nested.h"
+#include "gimplify.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -1866,6 +1867,7 @@ expand_all_functions (void)
 	}
     }
   cgraph_process_new_functions ();
+  free_gimplify_stack ();
 
   free (order);
 

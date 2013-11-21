@@ -309,6 +309,7 @@ stmt_local_def (gimple stmt)
   def_operand_p def_p;
 
   if (gimple_has_side_effects (stmt)
+      || stmt_could_throw_p (stmt)
       || gimple_vdef (stmt) != NULL_TREE)
     return false;
 

@@ -40,8 +40,8 @@ extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv_d *,
 		       bool);
 extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
 
-/* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the
-   loop is function's body.  */
+/* Returns the basic block preceding LOOP, or the CFG entry block when
+   the loop is function's body.  */
 
 static inline basic_block
 block_before_loop (loop_p loop)

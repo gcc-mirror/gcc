@@ -176,6 +176,25 @@ namespace __gnu_test
       return 1.0 / (b - a + 1.0);
   }
 
+#ifdef _GLIBCXX_USE_C99_MATH_TR1
+  inline double
+  lbincoef(int n, int k)
+  {
+    return std::lgamma(double(1 + n))
+         - std::lgamma(double(1 + k))
+         - std::lgamma(double(1 + n - k));
+  }
+
+  inline double
+  hypergeometric_pdf(int k, int N, int K, int n)
+  {
+    if (k < 0 || k < std::max(0, n - (N - K)) || k > std::min(K, n))
+      return 0.0;
+    else
+      return lbincoef(K, k) + lbincoef(N - K, n - k) - lbincoef(N, n);
+  }
+#endif
+
 } // namespace __gnu_test
 
 #endif // #ifndef _GLIBCXX_TESTSUITE_RANDOM_H

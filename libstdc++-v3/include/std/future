@@ -298,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Base class for state between a promise and one or more
     /// associated futures.
-    class _State_base
+    class _State_baseV2
     {
       typedef _Ptr<_Result_base> _Ptr_type;
 
@@ -309,15 +309,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       once_flag			_M_once;
 
     public:
-      _State_base() noexcept : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
-      _State_base(const _State_base&) = delete;
-      _State_base& operator=(const _State_base&) = delete;
-      virtual ~_State_base();
+      _State_baseV2() noexcept : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT)
+	{ }
+      _State_baseV2(const _State_baseV2&) = delete;
+      _State_baseV2& operator=(const _State_baseV2&) = delete;
+      virtual ~_State_baseV2() = default;
 
       _Result_base&
       wait()
       {
-	_M_run_deferred();
+	_M_complete_async();
 	unique_lock<mutex> __lock(_M_mutex);
 	_M_cond.wait(__lock, [&] { return _M_ready(); });
 	return *_M_result;
@@ -328,8 +329,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         wait_for(const chrono::duration<_Rep, _Period>& __rel)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  if (_M_cond.wait_for(__lock, __rel, [&] { return _M_ready(); }))
+	  if (_M_ready())
 	    return future_status::ready;
+	  if (_M_has_deferred())
+	    return future_status::deferred;
+	  if (_M_cond.wait_for(__lock, __rel, [&] { return _M_ready(); }))
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 2100.  timed waiting functions must also join
+	      _M_complete_async();
+	      return future_status::ready;
+	    }
 	  return future_status::timeout;
 	}
 
@@ -338,8 +348,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  if (_M_cond.wait_until(__lock, __abs, [&] { return _M_ready(); }))
+	  if (_M_ready())
 	    return future_status::ready;
+	  if (_M_has_deferred())
+	    return future_status::deferred;
+	  if (_M_cond.wait_until(__lock, __abs, [&] { return _M_ready(); }))
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 2100.  timed waiting functions must also join
+	      _M_complete_async();
+	      return future_status::ready;
+	    }
 	  return future_status::timeout;
 	}
 
@@ -349,7 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool __set = __ignore_failure;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
-        call_once(_M_once, &_State_base::_M_do_set, this, ref(__res),
+        call_once(_M_once, &_State_baseV2::_M_do_set, this, ref(__res),
             ref(__set));
         if (!__set)
           __throw_future_error(int(future_errc::promise_already_satisfied));
@@ -393,7 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State_base::_S_check(_M_promise->_M_future);
+            _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(_M_arg);
             return std::move(_M_promise->_M_storage);
           }
@@ -407,7 +426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State_base::_S_check(_M_promise->_M_future);
+            _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(std::move(_M_arg));
             return std::move(_M_promise->_M_storage);
           }
@@ -423,7 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State_base::_S_check(_M_promise->_M_future);
+            _State_baseV2::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_error = _M_ex;
             return std::move(_M_promise->_M_storage);
           }
@@ -472,14 +491,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool _M_ready() const noexcept { return static_cast<bool>(_M_result); }
 
-      // Misnamed: waits for completion of async function.
-      virtual void _M_run_deferred() { }
+      // Wait for completion of async function.
+      virtual void _M_complete_async() { }
+
+      // Return true if state contains a deferred function.
+      virtual bool _M_has_deferred() const { return false; }
     };
+
+#ifdef _GLIBCXX_ASYNC_ABI_COMPAT
+    class _State_base;
+    class _Async_state_common;
+#else
+    using _State_base = _State_baseV2;
+    class _Async_state_commonV2;
+#endif
 
     template<typename _BoundFn, typename = typename _BoundFn::result_type>
       class _Deferred_state;
-
-    class _Async_state_common;
 
     template<typename _BoundFn, typename = typename _BoundFn::result_type>
       class _Async_state_impl;
@@ -538,6 +566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_destroy() { delete this; }
     };
 
+#ifndef _GLIBCXX_ASYNC_ABI_COMPAT
 
   /// Common implementation for future and shared_future.
   template<typename _Res>
@@ -1439,26 +1468,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Ptr_type _M_result;
       _BoundFn _M_fn;
 
+      // Run the deferred function.
       virtual void
-      _M_run_deferred()
+      _M_complete_async()
       {
         // safe to call multiple times so ignore failure
         _M_set_result(_S_task_setter(_M_result, _M_fn), true);
       }
+
+      virtual bool
+      _M_has_deferred() const { return static_cast<bool>(_M_result); }
     };
 
-  class __future_base::_Async_state_common : public __future_base::_State_base
+  class __future_base::_Async_state_commonV2
+    : public __future_base::_State_base
   {
   protected:
-#ifdef _GLIBCXX_ASYNC_ABI_COMPAT
-    ~_Async_state_common();
-#else
-    ~_Async_state_common() = default;
-#endif
+    ~_Async_state_commonV2() = default;
 
-    // Allow non-timed waiting functions to block until the thread completes,
-    // as if joined.
-    virtual void _M_run_deferred() { _M_join(); }
+    // Make waiting functions block until the thread completes, as if joined.
+    virtual void _M_complete_async() { _M_join(); }
 
     void _M_join() { std::call_once(_M_once, &thread::join, ref(_M_thread)); }
 
@@ -1468,7 +1497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BoundFn, typename _Res>
     class __future_base::_Async_state_impl final
-    : public __future_base::_Async_state_common
+    : public __future_base::_Async_state_commonV2
     {
     public:
       explicit
@@ -1536,6 +1565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   std::forward<_Args>(__args)...);
     }
 
+#endif // _GLIBCXX_ASYNC_ABI_COMPAT
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
        // && ATOMIC_INT_LOCK_FREE
 

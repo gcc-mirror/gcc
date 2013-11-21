@@ -33,7 +33,7 @@ test01()
   // basic_string_view()
   const std::experimental::string_view str00{};
   VERIFY( str00.length() == 0 );
-  VERIFY( str00.data() == nullptr );
+  VERIFY( str00.data() != nullptr );
 
   // basic_string_view(const char*)
   const char str_lit01[] = "rodeo beach, marin";
@@ -53,10 +53,11 @@ test01()
   std::experimental::string_view str05{str_lit01, len_lit01};
   VERIFY( str05.length() == len_lit01 );
   VERIFY( str05.data() == str_lit01 );
-  //  This is invalid and unchecked.
-  //std::experimental::string_view str06{nullptr, len_lit01};
-  //VERIFY( str06.length() == 0 );
-  //VERIFY( str06.data() == nullptr );
+
+  //  basic_string_view(const char* s, std::size_t l)
+  std::experimental::string_view str06{nullptr, len_lit01};
+  VERIFY( str06.length() == 0 );
+  VERIFY( str06.data() != nullptr );
 
   // basic_string_view(basic_string& s)
   std::string istr07(10, 'z');

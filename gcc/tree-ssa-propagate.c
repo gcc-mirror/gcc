@@ -503,7 +503,7 @@ ssa_prop_init (void)
   cfg_blocks.safe_grow_cleared (20);
 
   /* Initially assume that every edge in the CFG is not executable.
-     (including the edges coming out of ENTRY_BLOCK_PTR).  */
+     (including the edges coming out of the entry block).  */
   FOR_ALL_BB (bb)
     {
       gimple_stmt_iterator si;

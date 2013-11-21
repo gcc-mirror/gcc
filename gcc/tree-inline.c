@@ -2431,9 +2431,10 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
-  /* If we are inlining just region of the function, make sure to connect new entry
-     to ENTRY_BLOCK_PTR.  Since new entry can be part of loop, we must compute
-     frequency and probability of ENTRY_BLOCK_PTR based on the frequencies and
+  /* If we are inlining just region of the function, make sure to connect
+     new entry to ENTRY_BLOCK_PTR_FOR_FN (cfun).  Since new entry can be
+     part of loop, we must compute frequency and probability of
+     ENTRY_BLOCK_PTR_FOR_FN (cfun) based on the frequencies and
      probabilities of edges incoming from nonduplicated region.  */
   if (new_entry)
     {
@@ -4517,7 +4518,6 @@ optimize_inline_calls (tree fn)
   copy_body_data id;
   basic_block bb;
   int last = n_basic_blocks_for_fn (cfun);
-  struct gimplify_ctx gctx;
   bool inlined_p = false;
 
   /* Clear out ID.  */
@@ -4538,7 +4538,7 @@ optimize_inline_calls (tree fn)
   id.transform_lang_insert_block = NULL;
   id.statements_to_fold = pointer_set_create ();
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   /* We make no attempts to keep dominance info up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);

@@ -469,7 +469,7 @@ sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
-	extra_objs="${extra_objs} sh_treg_combine.o sh-mem.o"
+	extra_objs="${extra_objs} sh_treg_combine.o sh-mem.o sh_optimize_sett_clrt.o"
 	;;
 v850*-*-*)
 	cpu_type=v850

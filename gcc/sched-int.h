@@ -70,7 +70,7 @@ struct common_sched_info_def
   /* Called to notify frontend, that new basic block is being added.
      The first parameter - new basic block.
      The second parameter - block, after which new basic block is being added,
-     or EXIT_BLOCK_PTR, if recovery block is being added,
+     or the exit block, if recovery block is being added,
      or NULL, if standalone block is being added.  */
   void (*add_block) (basic_block, basic_block);
 

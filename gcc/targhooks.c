@@ -142,7 +142,6 @@ default_promote_function_mode_always_promote (const_tree type,
   return promote_mode (type, mode, punsignedp);
 }
 
-
 enum machine_mode
 default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 {
@@ -275,7 +274,6 @@ default_cxx_guard_type (void)
 {
   return long_long_integer_type_node;
 }
-
 
 /* Returns the size of the cookie to use when allocating an array
    whose elements have the indicated TYPE.  Assumes that it is already

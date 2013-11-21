@@ -10643,7 +10643,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg1) == VECTOR_CST
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
-	  bool overflow, overall_overflow = false;
+	  bool overflow = false;
 	  wide_int result = arg2;
 	  wide_int tmp;
 	  unsigned i;
@@ -10653,21 +10653,19 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	      tree e0 = VECTOR_CST_ELT (arg0, i);
 	      tree e1 = VECTOR_CST_ELT (arg1, i);
 
-	      tmp = wi::neg (e1, &overflow);
-	      overall_overflow |= overall_overflow;
-	      tmp = wi::add (e0, tmp, SIGNED, &overflow);
-	      overall_overflow |= overall_overflow;
-	      if (wi::neg_p (tmp))
-		{
-		  tmp = wi::neg (tmp, &overflow);
-		  overall_overflow |= overall_overflow;
-		}
+	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
 
-	      result = wi::add (result, tmp, SIGNED, &overflow);
-	      overall_overflow |= overall_overflow;
+	      tmp = wi::neg (e1, &neg1_ovf);
+	      tmp = wi::add (e0, tmp, SIGNED, &add1_ovf);
+	      if (wi::neg_p (tmp))
+		tmp = wi::neg (tmp, &neg2_ovf);
+	      else
+		neg2_ovf = false;
+	      result = wi::add (result, tmp, SIGNED, &add2_ovf);
+	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
 	    }
 
-	  gcc_assert (!overall_overflow);
+	  gcc_assert (!overflow);
 
 	  return wide_int_to_tree (rtype, result);
 	}

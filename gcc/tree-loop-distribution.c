@@ -480,6 +480,7 @@ typedef struct partition_s
   data_reference_p main_dr;
   data_reference_p secondary_dr;
   tree niter;
+  bool plus_one;
 } *partition_t;
 
 
@@ -703,13 +704,16 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
 /* Build the size argument for a memory operation call.  */
 
 static tree
-build_size_arg_loc (location_t loc, data_reference_p dr, tree nb_iter)
+build_size_arg_loc (location_t loc, data_reference_p dr, tree nb_iter,
+		    bool plus_one)
 {
-  tree size;
-  size = fold_build2_loc (loc, MULT_EXPR, sizetype,
-			  fold_convert_loc (loc, sizetype, nb_iter),
+  tree size = fold_convert_loc (loc, sizetype, nb_iter);
+  if (plus_one)
+    size = size_binop (PLUS_EXPR, size, size_one_node);
+  size = fold_build2_loc (loc, MULT_EXPR, sizetype, size,
 			  TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
-  return fold_convert_loc (loc, size_type_node, size);
+  size = fold_convert_loc (loc, size_type_node, size);
+  return size;
 }
 
 /* Build an address argument for a memory operation call.  */
@@ -781,7 +785,8 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter);
+  nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter,
+				 partition->plus_one);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   mem = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
@@ -837,7 +842,8 @@ generate_memcpy_builtin (struct loop *loop, partition_t partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter);
+  nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter,
+				 partition->plus_one);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   dest = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
@@ -980,11 +986,13 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   tree nb_iter;
   data_reference_p single_load, single_store;
   bool volatiles_p = false;
+  bool plus_one = false;
 
   partition->kind = PKIND_NORMAL;
   partition->main_dr = NULL;
   partition->secondary_dr = NULL;
   partition->niter = NULL_TREE;
+  partition->plus_one = false;
 
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     {
@@ -1047,13 +1055,12 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   if (!single_store)
     return;
 
-  if (!dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
-		       gimple_bb (DR_STMT (single_store))))
-    nb_iter = number_of_latch_executions (loop);
-  else
-    nb_iter = number_of_exit_cond_executions (loop);
+  nb_iter = number_of_latch_executions (loop);
   if (!nb_iter || nb_iter == chrec_dont_know)
     return;
+  if (dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
+		      gimple_bb (DR_STMT (single_store))))
+    plus_one = true;
 
   if (single_store && !single_load)
     {
@@ -1075,6 +1082,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       partition->kind = PKIND_MEMSET;
       partition->main_dr = single_store;
       partition->niter = nb_iter;
+      partition->plus_one = plus_one;
     }
   else if (single_store && single_load)
     {
@@ -1132,6 +1140,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       partition->main_dr = single_store;
       partition->secondary_dr = single_load;
       partition->niter = nb_iter;
+      partition->plus_one = plus_one;
     }
 }
 
