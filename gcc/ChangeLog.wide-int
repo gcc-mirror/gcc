@@ -563,9 +563,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(dr_analyze_innermost): Use wide-int rep.
 	(dr_may_alias_p): Likewise.
 	(max_stmt_executions_tree): Likewise.
-	========================
 	* tree.def
-	(INTEGER_CST): Modified comment.
+	(INTEGER_CST): Update comment.
 	* tree-dfa.c
 	(get_ref_base_and_extent): Use wide-int rep.
 	* tree-dfa.h
@@ -594,16 +593,15 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(build_int_cstu): Delete.
 	(tree_to_shwi): Use wide-int rep.
 	(tree_to_uhwi): Likewise.
-	(wi): New.
+	(namespace wi): New.
 	* tree-inline.c
 	(remap_gimple_op_r): Use wide-int rep.
 	(copy_tree_body_r): Likewise.
 	* tree-object-size.c
 	(compute_object_offset): Use wide-int rep.
 	(addr_object_size): Likewise.
-	(compute_object_sizes): Likewise.
 	* tree-predcom.c
-	(dref): Change rep of offset.
+	(struct dref_d): Change rep of offset.
 	(dump_dref): Call wide-int printer.
 	(aff_combination_dr_offset): Use wide-int rep.
 	(determine_offset): Likewise.
@@ -614,11 +612,9 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(valid_initializer_p): Likewise.
 	(determine_roots_comp): Likewise.
 	* tree-pretty-print.c
-	(dump_array_domain): Use wide-int rep.
-	(dump_generic_node): Likewise.
+	(dump_generic_node): Use wide-int rep.
 	* tree-sra.c
-	(build_user_friendly_ref_for_offset): Use wide-int rep.
-	(sra_ipa_modify_expr): Likewise.
+	(sra_ipa_modify_expr): Use wide-int rep.
 	* tree-ssa-address.c
 	(addr_for_mem_ref): Use wide-int rep.
 	(move_fixed_address_to_symbol): Likewise.
@@ -629,10 +625,10 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(addr_to_parts): Likewise.
 	(copy_ref_info): Likewise.
 	* tree-ssa-alias.c
-	(ao_ref_init_from_ptr_and_size): Use wide-int rep.
-	(indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_ref_may_alias_decl_p): Use wide-int rep.
 	(indirect_refs_may_alias_p): Likewise.
-	(stmt_kills_ref_p_1):
+	(stmt_kills_ref_p_1): Likewise.
+	========================
 	* tree-ssa.c
 	(non_rewritable_mem_ref_base): Use wide-int rep.
 	* tree-ssa-ccp.c
