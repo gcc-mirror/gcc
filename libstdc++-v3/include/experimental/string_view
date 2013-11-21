@@ -43,7 +43,7 @@
 #include <string>
 #include <limits>
 
-namespace std //_GLIBCXX_VISIBILITY(default)
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace experimental
 {
@@ -65,6 +65,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @code
    *    _CharT*    _M_str
    *    size_t     _M_len
+   *  @endcode
+   *
+   *  A basic_string_view represents an empty string with a static constexpr
+   *  length one string:
+   *
+   *  @code
+   *    static constexpr value_type _S_empty_str[1]{0};
    *  @endcode
    */
   template<typename _CharT, typename _Traits = char_traits<_CharT>>
@@ -92,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       basic_string_view() noexcept
-      : _M_len{0}, _M_str{nullptr}
+      : _M_len{0}, _M_str{_S_empty_str}
       { }
 
       constexpr basic_string_view(const basic_string_view&) noexcept = default;
@@ -104,11 +111,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { }
 
       constexpr basic_string_view(const _CharT* __str)
-      : _M_len{__str == nullptr ? 0 : traits_type::length(__str)}, _M_str{__str}
+      : _M_len{__str == nullptr ? 0 : traits_type::length(__str)},
+	_M_str{__str == nullptr ? _S_empty_str : __str}
       { }
 
       constexpr basic_string_view(const _CharT* __str, size_type __len)
-      : _M_len{__len}, _M_str{__str}
+      : _M_len{__str == nullptr ? 0 :__len},
+        _M_str{__str == nullptr || __len == 0 ? _S_empty_str : __str}
       { }
 
       basic_string_view&
@@ -185,7 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					     "(which is %zu) >= this->size() "
 					     "(which is %zu)"),
 					 __pos, this->size()),
-		*static_cast<pointer>(nullptr));
+		_S_empty_str[0]);
       }
 
       constexpr const _CharT&
@@ -211,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       clear() noexcept
       {
 	this->_M_len = 0;
-	this->_M_str = nullptr;
+	this->_M_str = _S_empty_str;
       }
 
       void
@@ -408,6 +417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
+
       static constexpr const int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
@@ -417,6 +427,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     ? std::numeric_limits<int>::min()
 	     : static_cast<int>(difference_type{__n1 - __n2});
       }
+
+      static constexpr value_type _S_empty_str[1]{};
 
       size_t	    _M_len;
       const _CharT* _M_str;

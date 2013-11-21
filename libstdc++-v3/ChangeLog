@@ -1,5 +1,18 @@
 2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
+	* include/experimental/string_view: Rep empty string with unit-length
+	static constexpr string. Uncomment _GLIBCXX_VISIBILITY. Enforce
+	invariant of no nullptr string pointer.
+	* include/experimental/string_view.tcc: Ditto.
+	* testsuite/experimental/string_view/cons/char/1.cc: data() for empty
+	string_view is no longer nullptr.
+	* testsuite/experimental/string_view/cons/wchar_t/1.cc: Ditto.
+	* testsuite/experimental/string_view/operations/data/char/1.cc: Ditto.
+	* testsuite/experimental/string_view/operations/data/wchar_t/1.cc:
+	Ditto.
+
+2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
 	Implement __gnu_cxx::hypergeometric_distribution.
 	* include/ext/random: Add hypergeometric_distribution.
 	* include/ext/random.tcc: Add hypergeometric_distribution.

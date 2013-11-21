@@ -29,10 +29,10 @@ test01()
 
   std::experimental::wstring_view empty;
 
-  // data() for size == 0 is non-NULL?
+  // data() for size == 0 is non-NULL.
   VERIFY( empty.size() == 0 );
   const std::experimental::wstring_view::value_type* p = empty.data();
-  VERIFY( p == nullptr );
+  VERIFY( p );
 
   return 0;
 }
