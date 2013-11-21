@@ -729,10 +729,8 @@ AUDIT, fix TREE_INT_CST_LOW and friends doc
 	(issue_prefetch_ref): Likewise.
 	* tree-ssa-math-opts.c
 	(gimple_expand_builtin_pow): Use wide-int rep.
-	(execute_cse_sincos): Likewise.
 	* tree-ssanames.c
 	(set_range_info): Use wide-int rep.
-	(get_range_info): Likewise.
 	(set_nonzero_bits): Likewise.
 	(get_nonzero_bits): Likewise.
 	* tree-ssanames.h
