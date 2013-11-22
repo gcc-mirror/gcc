@@ -1,3 +1,9 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_constructor): Allow CONSTRUCTOR with VECTOR_TYPE
+	(same sized) elements even if the type of the CONSTRUCTOR has
+	vector mode and target is a REG.
+
 2013-11-22  Richard Biener  <rguenther@suse.de>
 
 	Revert
