@@ -1,3 +1,8 @@
+2013-11-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/m32c/cond.md (stzx_16): Use register_operand for operand 0.
+	(stzx_24_<mode>): Likewise mra_operand.
+
 2013-11-22  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c: Include tree-cfg.h and tree-pass.h
