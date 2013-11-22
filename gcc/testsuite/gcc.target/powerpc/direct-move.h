@@ -3,6 +3,10 @@
 #include <math.h>
 extern void abort (void);
 
+#ifndef VSX_REG_ATTR
+#define VSX_REG_ATTR "wa"
+#endif
+
 void __attribute__((__noinline__))
 copy (TYPE *a, TYPE *b)
 {
@@ -44,7 +48,7 @@ void __attribute__((__noinline__))
 load_vsx (TYPE *a, TYPE *b)
 {
   TYPE c = *a;
-  __asm__ ("# vsx, reg = %x0" : "+wa" (c));
+  __asm__ ("# vsx, reg = %x0" : "+" VSX_REG_ATTR (c));
   *b = c;
 }
 #endif
@@ -57,7 +61,7 @@ load_gpr_to_vsx (TYPE *a, TYPE *b)
   TYPE d;
   __asm__ ("# gpr, reg = %0" : "+b" (c));
   d = c;
-  __asm__ ("# vsx, reg = %x0" : "+wa" (d));
+  __asm__ ("# vsx, reg = %x0" : "+" VSX_REG_ATTR (d));
   *b = d;
 }
 #endif
@@ -68,7 +72,7 @@ load_vsx_to_gpr (TYPE *a, TYPE *b)
 {
   TYPE c = *a;
   TYPE d;
-  __asm__ ("# vsx, reg = %x0" : "+wa" (c));
+  __asm__ ("# vsx, reg = %x0" : "+" VSX_REG_ATTR (c));
   d = c;
   __asm__ ("# gpr, reg = %0" : "+b" (d));
   *b = d;

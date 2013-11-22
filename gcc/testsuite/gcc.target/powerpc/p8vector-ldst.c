@@ -36,7 +36,7 @@ void store_df (double *p, double d)
   *p = d;
 }
 
-/* { dg-final { scan-assembler-times "lxsspx"  2 } } */
-/* { dg-final { scan-assembler-times "lxsdx"   1 } } */
-/* { dg-final { scan-assembler-times "stxsspx" 1 } } */
-/* { dg-final { scan-assembler-times "stxsdx"  1 } } */
+/* { dg-final { scan-assembler "lxsspx"  } } */
+/* { dg-final { scan-assembler "lxsdx"   } } */
+/* { dg-final { scan-assembler "stxsspx" } } */
+/* { dg-final { scan-assembler "stxsdx"  } } */
