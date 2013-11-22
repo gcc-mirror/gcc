@@ -20,4 +20,4 @@ foo  (int *a, char *b, char *c)
 
 /* { dg-final { scan-tree-dump-times "__builtin___asan_report_load" 6 "asan0" } } */
 /* { dg-final { scan-tree-dump-not "__builtin___asan_report_store" "asan0" } } */
-/* { dg-final { cleanup-tree-dump "asan" } } */
+/* { dg-final { cleanup-tree-dump "asan0" } } */

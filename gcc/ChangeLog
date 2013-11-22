@@ -1,3 +1,21 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59061
+	* common.opt (static-liblsan): Add.
+	* config/gnu-user.h (STATIC_LIBLSAN_LIBS, STATIC_LIBUBSAN_LIBS):
+	Define.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_LEAK.  Renumber
+	SANITIZE_SHIFT, SANITIZE_DIVIDE, SANITIZE_UNREACHABLE, SANITIZE_VLA,
+	SANITIZE_RETURN.
+	* opts.c (common_handle_option): Handle -fsanitize=leak.
+	* gcc.c (ADD_STATIC_LIBLSAN_LIBS, LIBLSAN_SPEC): Define.
+	(LIBUBSAN_SPEC): Don't test LIBUBSAN_EARLY_SPEC.
+	(LIBUBSAN_EARLY_SPEC): Remove.
+	(SANITIZER_EARLY_SPEC): Don't do anything for libubsan.
+	(SANITIZER_SPEC): Add -fsanitize=leak handling.
+	(sanitize_spec_function): Handle %sanitize(leak).
+	* doc/invoke.texi (-static-liblsan, -fsanitize=leak): Document.
+
 2013-11-22  Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

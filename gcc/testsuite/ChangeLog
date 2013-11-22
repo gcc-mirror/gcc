@@ -1,3 +1,8 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Fix
+	cleanup-tree-dump directive.
+
 2013-11-22  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/20081223-1.c: Add -ffat-lto-objects.

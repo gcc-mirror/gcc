@@ -1,3 +1,13 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59061
+	* configure.tgt: Set LSAN_SUPPORTED=yes for x86_64-linux.
+	* configure.ac (LSAN_SUPPORTED): New AM_CONDITIONAL.
+	* configure: Regenerated.
+	* lsan/Makefile.am (toolexeclib_LTLIBRARIES, lsan_files,
+	liblsan_la_SOURCES, liblsan_la_LIBADD, liblsan_la_LDFLAGS): Add.
+	* lsan/Makefile.in: Regenerated.
+
 2013-11-22  Mike Stump  <mikestump@comcast.net>
 
 	* sanitizer_common/sanitizer_linux.cc (__sanitizer): Grab one

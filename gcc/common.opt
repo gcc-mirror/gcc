@@ -2654,6 +2654,9 @@ Driver
 static-libtsan
 Driver
 
+static-liblsan
+Driver
+
 static-libubsan
 Driver
 

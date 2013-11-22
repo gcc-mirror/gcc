@@ -1450,6 +1450,7 @@ common_handle_option (struct gcc_options *opts,
 	    {
 	      { "address", SANITIZE_ADDRESS, sizeof "address" - 1 },
 	      { "thread", SANITIZE_THREAD, sizeof "thread" - 1 },
+	      { "leak", SANITIZE_LEAK, sizeof "leak" - 1 },
 	      { "shift", SANITIZE_SHIFT, sizeof "shift" - 1 },
 	      { "integer-divide-by-zero", SANITIZE_DIVIDE,
 		sizeof "integer-divide-by-zero" - 1 },
