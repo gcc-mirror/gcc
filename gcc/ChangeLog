@@ -1,5 +1,14 @@
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* ubsan.c (ubsan_source_location): Don't crash on
+	unknown locations.
+	(ubsan_pass): Ignore clobber stmts.
+
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN): New built-in.
+	* opts.c (common_handle_option): Add -fsanitize=return.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_RETURN and
+	or it into SANITIZE_UNDEFINED.
+
 	* sanitizer.def (BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT,
 	BUILT_IN_ASAN_AFTER_DYNAMIC_INIT): New.
 	* asan.c (instrument_derefs): Handle also VAR_DECL loads/stores.

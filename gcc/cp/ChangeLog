@@ -1,5 +1,9 @@
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-gimplify.c: Include target.h and c-family/c-ubsan.h.
+	(cp_ubsan_maybe_instrument_return): New function.
+	(cp_genericize): Call it if -fsanitize=return.
+
 	* decl2.c: Include asan.h.
 	(one_static_initialization_or_destruction): If -fsanitize=address,
 	init is non-NULL and guard is NULL, set

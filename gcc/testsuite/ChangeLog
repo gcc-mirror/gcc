@@ -1,5 +1,8 @@
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/ubsan/return-1.C: New test.
+	* g++.dg/ubsan/return-2.C: New test.
+
 	* c-c++-common/asan/no-redundant-instrumentation-1.c: Tweak to avoid
 	optimizing away some __asan_report* calls.
 

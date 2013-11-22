@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "flags.h"
 #include "splay-tree.h"
+#include "target.h"
+#include "c-family/c-ubsan.h"
 
 /* Forward declarations.  */
 
@@ -1178,6 +1180,59 @@ cp_genericize_tree (tree* t_p)
   wtd.bind_expr_stack.release ();
 }
 
+/* If a function that should end with a return in non-void
+   function doesn't obviously end with return, add ubsan
+   instrmentation code to verify it at runtime.  */
+
+static void
+cp_ubsan_maybe_instrument_return (tree fndecl)
+{
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
+      || DECL_CONSTRUCTOR_P (fndecl)
+      || DECL_DESTRUCTOR_P (fndecl)
+      || !targetm.warn_func_return (fndecl))
+    return;
+
+  tree t = DECL_SAVED_TREE (fndecl);
+  while (t)
+    {
+      switch (TREE_CODE (t))
+	{
+	case BIND_EXPR:
+	  t = BIND_EXPR_BODY (t);
+	  continue;
+	case TRY_FINALLY_EXPR:
+	  t = TREE_OPERAND (t, 0);
+	  continue;
+	case STATEMENT_LIST:
+	  {
+	    tree_stmt_iterator i = tsi_last (t);
+	    if (!tsi_end_p (i))
+	      {
+		t = tsi_stmt (i);
+		continue;
+	      }
+	  }
+	  break;
+	case RETURN_EXPR:
+	  return;
+	default:
+	  break;
+	}
+      break;
+    }
+  if (t == NULL_TREE)
+    return;
+  t = DECL_SAVED_TREE (fndecl);
+  if (TREE_CODE (t) == BIND_EXPR
+      && TREE_CODE (BIND_EXPR_BODY (t)) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i = tsi_last (BIND_EXPR_BODY (t));
+      t = ubsan_instrument_return (DECL_SOURCE_LOCATION (fndecl));
+      tsi_link_after (&i, t, TSI_NEW_STMT);
+    }
+}
+
 void
 cp_genericize (tree fndecl)
 {
@@ -1239,6 +1294,9 @@ cp_genericize (tree fndecl)
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl));
+
+  if (flag_sanitize & SANITIZE_RETURN)
+    cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */
   c_genericize (fndecl);
