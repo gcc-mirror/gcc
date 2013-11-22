@@ -1,3 +1,26 @@
+2013-11-22  Cary Coutant  <ccoutant@google.com>
+    
+	PR other/59195
+	* cp-demangle.c (struct d_info_checkpoint): New struct.
+	(struct d_print_info): Add current_template field.
+	(d_operator_name): Set flag when processing a conversion
+	operator.
+	(cplus_demangle_type): When processing <template-args> for
+	a conversion operator, backtrack if necessary.
+	(d_expression_1): Renamed from d_expression.
+	(d_expression): New wrapper around d_expression_1.
+	(d_checkpoint): New function.
+	(d_backtrack): New function.
+	(d_print_init): Initialize current_template.
+	(d_print_comp): Set current_template.
+	(d_print_cast): Put current_template in scope for
+	printing conversion operator name.
+	(cplus_demangle_init_info): Initialize is_expression and
+	is_conversion.
+	* cp-demangle.h (struct d_info): Add is_expression and
+	is_conversion fields.
+	* testsuite/demangle-expected: New test cases.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
