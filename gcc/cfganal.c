@@ -1286,11 +1286,10 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 {
   bitmap_iterator bi;
   unsigned bb_index, i;
-  vec<int> work_stack;
   bitmap phi_insertion_points;
 
   /* Each block can appear at most twice on the work-stack.  */
-  work_stack.create (2 * n_basic_blocks_for_fn (cfun));
+  auto_vec<int> work_stack (2 * n_basic_blocks_for_fn (cfun));
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
@@ -1323,8 +1322,6 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 	  bitmap_set_bit (phi_insertion_points, i);
 	}
     }
-
-  work_stack.release ();
 
   return phi_insertion_points;
 }

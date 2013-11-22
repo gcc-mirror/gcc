@@ -2182,11 +2182,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
      phis to translate through.  */
   else
     {
-      vec<basic_block> worklist;
       size_t i;
       basic_block bprime, first = NULL;
 
-      worklist.create (EDGE_COUNT (block->succs));
+      auto_vec<basic_block> worklist (EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
 	  if (!first
@@ -2224,7 +2223,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	  else
 	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
 	}
-      worklist.release ();
     }
 
   /* Prune expressions that are clobbered in block and thus become
@@ -2346,11 +2344,10 @@ compute_partial_antic_aux (basic_block block,
      them.  */
   else
     {
-      vec<basic_block> worklist;
       size_t i;
       basic_block bprime;
 
-      worklist.create (EDGE_COUNT (block->succs));
+      auto_vec<basic_block> worklist (EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
 	  if (e->flags & EDGE_DFS_BACK)
@@ -2382,7 +2379,6 @@ compute_partial_antic_aux (basic_block block,
 						expression_for_id (i));
 	    }
 	}
-      worklist.release ();
     }
 
   /* Prune expressions that are clobbered in block and thus become
@@ -3462,7 +3458,6 @@ do_regular_insertion (basic_block block, basic_block dom)
     }
 
   exprs.release ();
-  avail.release ();
   return new_stuff;
 }
 
@@ -3480,7 +3475,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vNULL;
+  auto_vec<pre_expr> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -3601,7 +3596,6 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
     }
 
   exprs.release ();
-  avail.release ();
   return new_stuff;
 }
 
@@ -3826,7 +3820,7 @@ compute_avail (void)
 	      {
 		vn_reference_t ref;
 		pre_expr result = NULL;
-		vec<vn_reference_op_s> ops = vNULL;
+		auto_vec<vn_reference_op_s> ops;
 
 		/* We can value number only calls to real functions.  */
 		if (gimple_call_internal_p (stmt))
@@ -3836,7 +3830,6 @@ compute_avail (void)
 		vn_reference_lookup_pieces (gimple_vuse (stmt), 0,
 					    gimple_expr_type (stmt),
 					    ops, &ref, VN_NOWALK);
-		ops.release ();
 		if (!ref)
 		  continue;
 

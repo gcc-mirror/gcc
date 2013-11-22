@@ -30708,7 +30708,6 @@ ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;
   basic_block empty_bb;
-  vec<tree> fn_ver_vec = vNULL;
   tree default_ver_decl;
   struct cgraph_node *versn;
   struct cgraph_node *node;
@@ -30738,7 +30737,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 
   push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
 
-  fn_ver_vec.create (2);
+  stack_vec<tree, 2> fn_ver_vec;
 
   for (versn_info = node_version_info->next; versn_info;
        versn_info = versn_info->next)
@@ -30756,7 +30755,6 @@ ix86_generate_version_dispatcher_body (void *node_p)
     }
 
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
-  fn_ver_vec.release ();
   rebuild_cgraph_edges (); 
   pop_cfun ();
   return resolver_decl;

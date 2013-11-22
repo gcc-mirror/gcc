@@ -187,7 +187,6 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 {
   unsigned i;
   bitmap_iterator bi;
-  vec<basic_block> worklist;
   struct loop *def_loop = def_bb->loop_father;
   unsigned def_loop_depth = loop_depth (def_loop);
   bitmap def_loop_exits;
@@ -195,7 +194,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
   /* Normally the work list size is bounded by the number of basic
      blocks in the largest loop.  We don't know this number, but we
      can be fairly sure that it will be relatively small.  */
-  worklist.create (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
+  auto_vec<basic_block> worklist (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {
@@ -258,7 +257,6 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 	  worklist.quick_push (pred);
 	}
     }
-  worklist.release ();
 
   def_loop_exits = BITMAP_ALLOC (&loop_renamer_obstack);
   for (struct loop *loop = def_loop;
@@ -1046,7 +1044,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   unsigned new_est_niter, i, prob;
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   sbitmap wont_exit;
-  vec<edge> to_remove = vNULL;
+  auto_vec<edge> to_remove;
 
   est_niter = expected_loop_iterations (loop);
   determine_exit_conditions (loop, desc, factor,
@@ -1194,7 +1192,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       ok = remove_path (e);
       gcc_assert (ok);
     }
-  to_remove.release ();
   update_ssa (TODO_update_ssa);
 
   /* Ensure that the frequencies in the loop match the new estimated

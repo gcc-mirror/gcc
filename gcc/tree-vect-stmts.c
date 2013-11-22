@@ -1580,10 +1580,8 @@ vect_get_vec_defs (tree op0, tree op1, gimple stmt,
   if (slp_node)
     {
       int nops = (op1 == NULL_TREE) ? 1 : 2;
-      vec<tree> ops;
-      ops.create (nops);
-      vec<vec<tree> > vec_defs;
-      vec_defs.create (nops);
+      auto_vec<tree> ops (nops);
+      auto_vec<vec<tree> > vec_defs (nops);
 
       ops.quick_push (op0);
       if (op1)
@@ -1594,9 +1592,6 @@ vect_get_vec_defs (tree op0, tree op1, gimple stmt,
       *vec_oprnds0 = vec_defs[0];
       if (op1)
 	*vec_oprnds1 = vec_defs[1];
-
-      ops.release ();
-      vec_defs.release ();
     }
   else
     {
@@ -1907,8 +1902,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 	  if (slp_node)
 	    {
-	      vec<vec<tree> > vec_defs;
-	      vec_defs.create (nargs);
+	      auto_vec<vec<tree> > vec_defs (nargs);
 	      vec<tree> vec_oprnds0;
 
 	      for (i = 0; i < nargs; i++)
@@ -1937,7 +1931,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  vec<tree> vec_oprndsi = vec_defs[i];
 		  vec_oprndsi.release ();
 		}
-	      vec_defs.release ();
 	      continue;
 	    }
 
@@ -2004,8 +1997,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 	  if (slp_node)
 	    {
-	      vec<vec<tree> > vec_defs;
-	      vec_defs.create (nargs);
+	      auto_vec<vec<tree> > vec_defs (nargs);
 	      vec<tree> vec_oprnds0;
 
 	      for (i = 0; i < nargs; i++)
@@ -2036,7 +2028,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  vec<tree> vec_oprndsi = vec_defs[i];
 		  vec_oprndsi.release ();
 		}
-	      vec_defs.release ();
 	      continue;
 	    }
 

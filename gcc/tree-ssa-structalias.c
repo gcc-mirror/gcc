@@ -2573,7 +2573,7 @@ eliminate_indirect_cycles (unsigned int node)
       && !bitmap_empty_p (get_varinfo (node)->solution))
     {
       unsigned int i;
-      vec<unsigned> queue = vNULL;
+      auto_vec<unsigned> queue;
       int queuepos;
       unsigned int to = find (graph->indirect_cycles[node]);
       bitmap_iterator bi;
@@ -2597,7 +2597,6 @@ eliminate_indirect_cycles (unsigned int node)
 	{
 	  unify_nodes (graph, to, i, true);
 	}
-      queue.release ();
       return true;
     }
   return false;
@@ -3477,7 +3476,7 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
 	    {
 	      unsigned int i;
 	      tree val;
-	      vec<ce_s> tmp = vNULL;
+	      auto_vec<ce_s> tmp;
 	      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, val)
 		{
 		  struct constraint_expr *rhsp;
@@ -3487,7 +3486,6 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
 		    results->safe_push (*rhsp);
 		  tmp.truncate (0);
 		}
-	      tmp.release ();
 	      /* We do not know whether the constructor was complete,
 	         so technically we have to add &NOTHING or &ANYTHING
 		 like we do for an empty constructor as well.  */
@@ -3577,8 +3575,8 @@ static void
 do_structure_copy (tree lhsop, tree rhsop)
 {
   struct constraint_expr *lhsp, *rhsp;
-  vec<ce_s> lhsc = vNULL;
-  vec<ce_s> rhsc = vNULL;
+  auto_vec<ce_s> lhsc;
+  auto_vec<ce_s> rhsc;
   unsigned j;
 
   get_constraint_for (lhsop, &lhsc);
@@ -3637,9 +3635,6 @@ do_structure_copy (tree lhsop, tree rhsop)
     }
   else
     gcc_unreachable ();
-
-  lhsc.release ();
-  rhsc.release ();
 }
 
 /* Create constraints ID = { rhsc }.  */
@@ -3664,10 +3659,9 @@ make_constraints_to (unsigned id, vec<ce_s> rhsc)
 static void
 make_constraint_to (unsigned id, tree op)
 {
-  vec<ce_s> rhsc = vNULL;
+  auto_vec<ce_s> rhsc;
   get_constraint_for_rhs (op, &rhsc);
   make_constraints_to (id, rhsc);
-  rhsc.release ();
 }
 
 /* Create a constraint ID = &FROM.  */
@@ -3938,7 +3932,7 @@ handle_rhs_call (gimple stmt, vec<ce_s> *results)
       && gimple_call_lhs (stmt) != NULL_TREE
       && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
-      vec<ce_s> tmpc = vNULL;
+      auto_vec<ce_s> tmpc;
       struct constraint_expr lhsc, *c;
       get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
       lhsc.var = escaped_id;
@@ -3946,7 +3940,6 @@ handle_rhs_call (gimple stmt, vec<ce_s> *results)
       lhsc.type = SCALAR;
       FOR_EACH_VEC_ELT (tmpc, i, c)
 	process_constraint (new_constraint (lhsc, *c));
-      tmpc.release ();
     }
 
   /* Regular functions return nonlocal memory.  */
@@ -3964,7 +3957,7 @@ static void
 handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
 		 tree fndecl)
 {
-  vec<ce_s> lhsc = vNULL;
+  auto_vec<ce_s> lhsc;
 
   get_constraint_for (lhs, &lhsc);
   /* If the store is to a global decl make sure to
@@ -4019,8 +4012,6 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
     }
   else
     process_all_all_constraints (lhsc, rhsc);
-
-  lhsc.release ();
 }
 
 /* For non-IPA mode, generate constraints necessary for a call of a
@@ -4049,13 +4040,12 @@ handle_const_call (gimple stmt, vec<ce_s> *results)
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
       tree arg = gimple_call_arg (stmt, k);
-      vec<ce_s> argc = vNULL;
+      auto_vec<ce_s> argc;
       unsigned i;
       struct constraint_expr *argp;
       get_constraint_for_rhs (arg, &argc);
       FOR_EACH_VEC_ELT (argc, i, argp)
 	results->safe_push (*argp);
-      argc.release ();
     }
 
   /* May return addresses of globals.  */
@@ -4854,7 +4844,7 @@ find_func_clobbers (gimple origt)
 {
   gimple t = origt;
   vec<ce_s> lhsc = vNULL;
-  vec<ce_s> rhsc = vNULL;
+  auto_vec<ce_s> rhsc;
   varinfo_t fi;
 
   /* Add constraints for clobbered/used in IPA mode.
@@ -5119,8 +5109,6 @@ find_func_clobbers (gimple origt)
       make_constraint_from (first_vi_for_offset (fi, fi_uses),
 			    anything_id);
     }
-
-  rhsc.release ();
 }
 
 
@@ -5623,7 +5611,7 @@ create_variable_info_for_1 (tree decl, const char *name)
   varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
   tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decl_type);
-  vec<fieldoff_s> fieldstack = vNULL;
+  auto_vec<fieldoff_s> fieldstack;
   fieldoff_s *fo;
   unsigned int i;
 
@@ -5726,8 +5714,6 @@ create_variable_info_for_1 (tree decl, const char *name)
 	}
     }
 
-  fieldstack.release ();
-
   return vi;
 }
 
@@ -5778,7 +5764,7 @@ create_variable_info_for (tree decl, const char *name)
 	  if (DECL_INITIAL (decl)
 	      && vnode->definition)
 	    {
-	      vec<ce_s> rhsc = vNULL;
+	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
 	      get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);
@@ -5797,7 +5783,6 @@ create_variable_info_for (tree decl, const char *name)
 		  FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 		    process_constraint (new_constraint (lhs, *rhsp));
 		}
-	      rhsc.release ();
 	    }
 	}
     }
