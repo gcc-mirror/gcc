@@ -916,9 +916,11 @@
  "TARGET_SIMD"
 {
   rtx tempreg = gen_reg_rtx (<VDBL>mode);
+  int lo = BYTES_BIG_ENDIAN ? 2 : 1;
+  int hi = BYTES_BIG_ENDIAN ? 1 : 2;
 
-  emit_insn (gen_move_lo_quad_<Vdbl> (tempreg, operands[1]));
-  emit_insn (gen_move_hi_quad_<Vdbl> (tempreg, operands[2]));
+  emit_insn (gen_move_lo_quad_<Vdbl> (tempreg, operands[lo]));
+  emit_insn (gen_move_hi_quad_<Vdbl> (tempreg, operands[hi]));
   emit_insn (gen_aarch64_simd_vec_pack_trunc_<Vdbl> (operands[0], tempreg));
   DONE;
 })
@@ -931,7 +933,12 @@
 	 (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w"))
 	 (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand" "w"))))]
  "TARGET_SIMD"
- "xtn\\t%0.<Vntype>, %1.<Vtype>\;xtn2\\t%0.<V2ntype>, %2.<Vtype>"
+ {
+   if (BYTES_BIG_ENDIAN)
+     return "xtn\\t%0.<Vntype>, %2.<Vtype>\;xtn2\\t%0.<V2ntype>, %1.<Vtype>";
+   else
+     return "xtn\\t%0.<Vntype>, %1.<Vtype>\;xtn2\\t%0.<V2ntype>, %2.<Vtype>";
+ }
   [(set_attr "type" "multiple")
    (set_attr "length" "8")]
 )
@@ -1469,9 +1476,12 @@
   "TARGET_SIMD"
   {
     rtx tmp = gen_reg_rtx (V2SFmode);
-    emit_insn (gen_aarch64_float_truncate_lo_v2sf (tmp, operands[1]));
+    int lo = BYTES_BIG_ENDIAN ? 2 : 1;
+    int hi = BYTES_BIG_ENDIAN ? 1 : 2;
+
+    emit_insn (gen_aarch64_float_truncate_lo_v2sf (tmp, operands[lo]));
     emit_insn (gen_aarch64_float_truncate_hi_v4sf (operands[0],
-						   tmp, operands[2]));
+						   tmp, operands[hi]));
     DONE;
   }
 )
@@ -1487,8 +1497,11 @@
   "TARGET_SIMD"
   {
     rtx tmp = gen_reg_rtx (V2SFmode);
-    emit_insn (gen_move_lo_quad_v2df (tmp, operands[1]));
-    emit_insn (gen_move_hi_quad_v2df (tmp, operands[2]));
+    int lo = BYTES_BIG_ENDIAN ? 2 : 1;
+    int hi = BYTES_BIG_ENDIAN ? 1 : 2;
+
+    emit_insn (gen_move_lo_quad_v2df (tmp, operands[lo]));
+    emit_insn (gen_move_hi_quad_v2df (tmp, operands[hi]));
     emit_insn (gen_aarch64_float_truncate_lo_v2sf (operands[0], tmp));
     DONE;
   }
