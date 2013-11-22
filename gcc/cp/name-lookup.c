@@ -1504,7 +1504,8 @@ push_binding_level (cp_binding_level *scope)
     {
       scope->binding_depth = binding_depth;
       indent (binding_depth);
-      cp_binding_level_debug (scope, input_line, "push");
+      cp_binding_level_debug (scope, LOCATION_LINE (input_location),
+			      "push");
       binding_depth++;
     }
 }
@@ -1590,7 +1591,8 @@ leave_scope (void)
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      cp_binding_level_debug (scope, input_line, "leave");
+      cp_binding_level_debug (scope, LOCATION_LINE (input_location),
+			      "leave");
     }
 
   /* Move one nesting level up.  */
@@ -1639,7 +1641,7 @@ resume_scope (cp_binding_level* b)
     {
       b->binding_depth = binding_depth;
       indent (binding_depth);
-      cp_binding_level_debug (b, input_line, "resume");
+      cp_binding_level_debug (b, LOCATION_LINE (input_location), "resume");
       binding_depth++;
     }
 }

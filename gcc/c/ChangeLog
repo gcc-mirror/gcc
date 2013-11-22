@@ -1,3 +1,19 @@
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (define_label, shadow_tag_warned)
+	(check_bitfield_type_and_width, grokdeclarator, grokparms,
+	store_parm_decls_newstyle, store_parm_decls_oldstyle)
+	(declspecs_add_type): Remove use of in_system_header macro.
+	* c-parser.c (c_parser_unary_expression): Likewise.
+	* c-typeck.c (store_init_value, process_init_element)
+	(c_start_case): Likewise.
+
+	* c-decl.c (build_enumerator): Remove use of EXPR_LOC_OR_HERE
+	macro.
+
+	* c-parser.c (c_parser_set_source_position_from_token): Remove
+	reference to in_system_header from comment.
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* c-decl.c (grokdeclarator): Update comment to refer to

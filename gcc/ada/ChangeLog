@@ -1,3 +1,10 @@
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/utils2.c (build_call_raise): Remove use of
+	input_line macro.
+	(build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+
 2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>

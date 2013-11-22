@@ -775,8 +775,7 @@ c_parser_consume_pragma (c_parser *parser)
   parser->in_pragma = true;
 }
 
-/* Update the globals input_location and in_system_header from
-   TOKEN.  */
+/* Update the global input_location from TOKEN.  */
 static inline void
 c_parser_set_source_position_from_token (c_token *token)
 {
@@ -6301,7 +6300,7 @@ c_parser_unary_expression (c_parser *parser)
       ret.value = build_indirect_ref (op_loc, op.value, RO_UNARY_STAR);
       return ret;
     case CPP_PLUS:
-      if (!c_dialect_objc () && !in_system_header)
+      if (!c_dialect_objc () && !in_system_header_at (input_location))
 	warning_at (op_loc,
 		    OPT_Wtraditional,
 		    "traditional C rejects the unary plus operator");

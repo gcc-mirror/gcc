@@ -147,7 +147,7 @@ dump_one_header (splay_tree_node n, void * ARG_UNUSED (dummy))
 void
 dump_time_statistics (void)
 {
-  struct c_fileinfo *file = get_fileinfo (input_filename);
+  struct c_fileinfo *file = get_fileinfo (LOCATION_FILE (input_location));
   int this_time = get_run_time ();
   file->time += this_time - body_time;
 
@@ -243,7 +243,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
      -Wunknown-pragmas has been given.  */
-  if (warn_unknown_pragmas > in_system_header)
+  if (warn_unknown_pragmas > in_system_header_at (input_location))
     {
       const unsigned char *space, *name;
       const cpp_token *s;
@@ -1071,7 +1071,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
   if (concats)
     strs = XOBFINISH (&str_ob, cpp_string *);
 
-  if (concats && !objc_string && !in_system_header)
+  if (concats && !objc_string && !in_system_header_at (input_location))
     warning (OPT_Wtraditional,
 	     "traditional C rejects string constant concatenation");
 

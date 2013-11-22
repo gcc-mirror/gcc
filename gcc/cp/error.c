@@ -924,7 +924,7 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
   else
     gcc_unreachable ();
 
-  pp_printf (pp, p, input_filename);
+  pp_printf (pp, p, LOCATION_FILE (input_location));
 }
 
 static void
@@ -2804,7 +2804,7 @@ location_of (tree t)
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
-  return EXPR_LOC_OR_HERE (t);
+  return EXPR_LOC_OR_LOC (t, input_location);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an
@@ -3463,7 +3463,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 void
 maybe_warn_cpp0x (cpp0x_warn_str str)
 {
-  if ((cxx_dialect == cxx98) && !in_system_header)
+  if ((cxx_dialect == cxx98) && !in_system_header_at (input_location))
     /* We really want to suppress this warning in system headers,
        because libstdc++ uses variadic templates even when we aren't
        in C++0x mode. */
