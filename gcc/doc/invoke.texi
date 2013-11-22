@@ -14535,7 +14535,7 @@ instruction set support.
 
 @item slm
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2 and POPCNT instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.

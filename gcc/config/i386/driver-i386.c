@@ -646,6 +646,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Atom.  */
 	  cpu = "atom";
 	  break;
+	case 0x37:
+	case 0x4d:
+	  /* Silvermont.  */
+	  cpu = "slm";
+	  break;
 	case 0x0f:
 	  /* Merom.  */
 	case 0x17:

@@ -1,3 +1,7 @@
+2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	 * config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.
+
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* libgcov-driver.c (run_accounted): Make global level static.
