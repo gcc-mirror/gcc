@@ -1,3 +1,8 @@
+2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): Fix loads
+	and stores to be ABI compliant.
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.h (input_line): Remove.
