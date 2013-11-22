@@ -1,3 +1,12 @@
+2013-11-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>):
+	Remove _M_bucket, use same information in normal local_iterator.
+	(operator==): Remove redundant _M_can_compare check.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/unordered_map: Likewise.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/Makefile.am (check_DEJAGNU_normal_targets): Add 10.

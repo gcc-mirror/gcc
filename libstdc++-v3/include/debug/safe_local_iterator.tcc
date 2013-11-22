@@ -38,7 +38,7 @@ namespace __gnu_debug
     {
       if (!_M_can_compare(__rhs))
 	return false;
-      if (_M_bucket != __rhs._M_bucket)
+      if (bucket() != __rhs.bucket())
 	return false;
 
       /* Determine if we can order the iterators without the help of
