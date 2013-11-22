@@ -1,5 +1,13 @@
 2013-11-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (libcilkrts_cv_have_attribute_visibility): Check
+	for __attribute__((visibility)).
+	* configure: Regenerate.
+	* include/cilk/common.h (CILK_EXPORT, CILK_EXPORT_DATA): Only use
+	__attribute__((visibility)) if HAVE_ATTRIBUTE_VISIBILITY.
+
+2013-11-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (AC_PROG_CXX): Move after AC_PROG_CC.
 	* configure: Regenerate.
 
