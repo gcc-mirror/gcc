@@ -105,7 +105,7 @@ output_file_start (void)
   FILE *file = asm_out_file;
   int i;
 
-  fprintf (file, ".file \"%s\";\n", input_filename);
+  fprintf (file, ".file \"%s\";\n", LOCATION_FILE (input_location));
   
   for (i = 0; arg_regs[i] >= 0; i++)
     ;

@@ -1,3 +1,19 @@
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (input_line): Remove.
+	(input_filename): Likewise.
+	(in_system_header): Likewise.
+	* tree.h (EXPR_LOC_OR_HERE): Remove.
+	* config/bfin/bfin.c (output_file_start): Remove use of
+	input_filename macro.
+	* builtins.c (c_strlen): Remove use of EXPR_LOC_OR_HERE macro.
+	* gimplify.c (internal_get_tmp_var): Likewise.
+	EXPR_LOC_OR_HERE macro.
+	(shortcut_cond_expr): Likewise.
+	* tree-diagnostic.c (diagnostic_report_current_function): Remove
+	use of input_filename macro.
+	* tree.c (get_file_function_name): Likewise.
+
 2013-11-22  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* store-layout.c (place-field): Fix hwi test and accessor mismatch.

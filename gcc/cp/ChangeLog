@@ -1,3 +1,66 @@
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (build_integral_nontype_arg_conv): Remove use of
+	EXPR_LOC_OR_HERE macro.
+	(convert_like_real): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+	(build_cxx_call): Likewise.
+	(perform_implicit_conversion_flags): Likewise.
+	(initialize_reference): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	(ocp_convert): Likewise.
+	(convert_to_void): Likewise.
+	* decl.c (pop_label): Update comment.
+	(pop_switch): Remove use of EXPR_LOC_OR_HERE macro.
+	(check_tag_decl): Remove use of in_system_header macro.
+	(make_rtl_for_nonlocal_decl): Remove use of input_filename
+	macro.
+	(compute_array_index_type): Remove use of in_system_header
+	macro.
+	(grokdeclarator): Likewise.
+	* error.c (dump_global_iord): Remove use of input_filename
+	macro.
+	(location_of): Remove use of EXPR_LOC_OR_HERE macro.
+	(maybe_warn_cpp0x): Remove use of in_system_header macro.
+	* init.c (build_new_1): Remove use of EXPR_LOC_OR_HERE macro.
+	* lex.c (handle_pragma_interface): Remove use of input_filename
+	macro.
+	(handle_pragma_implementation): Likewise.
+	(cxx_make_type): Likewise.
+	(in_main_input_context): Likewise.
+	* name-lookup.c (push_binding_level): Remove use of
+	input_line macro.
+	(leave_scope): Likewise.
+	(resume_scope): Likewise.
+	* parser.c (cp_parser_unqualified_id): Remove use of
+	in_system_header macro.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_declaration_seq_opt): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_parameter_declaration_clause): Likewise.
+	(cp_parser_exception_specification_opt): Likewise.
+	* pt.c (unify_arg_conversion): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(convert_nontype_argument): Likewise.
+	(push_tinst_level): Remove use of in_system_header macro.
+	(tsubst_copy_and_build): Remove use of EXPR_LOC_OR_HERE
+	macros.
+	(do_decl_instantiation): Remove use of in_system_header macro.
+	(do_type_instantiation): Likewise.
+	* semantics.c (finish_call_expr): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(begin_class_definition): Remove use of input_filename macro.
+	(cxx_eval_call_expression): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(cxx_eval_constant_expression): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	(rationalize_conditional_expr): Likewise.
+	(build_x_compound_expr_from_list): Likewise.
+	(convert_for_assignment): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
 2013-11-22  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* parser.c, semantics.c: Change some local variables from vec to

@@ -352,18 +352,18 @@ handle_pragma_interface (cpp_reader* /*dfile*/)
   if (fname == error_mark_node)
     return;
   else if (fname == 0)
-    filename = lbasename (input_filename);
+    filename = lbasename (LOCATION_FILE (input_location));
   else
     filename = TREE_STRING_POINTER (fname);
 
-  finfo = get_fileinfo (input_filename);
+  finfo = get_fileinfo (LOCATION_FILE (input_location));
 
   if (impl_file_chain == 0)
     {
       /* If this is zero at this point, then we are
 	 auto-implementing.  */
       if (main_input_filename == 0)
-	main_input_filename = input_filename;
+	main_input_filename = LOCATION_FILE (input_location);
     }
 
   finfo->interface_only = interface_strcmp (filename);
@@ -397,7 +397,7 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
       if (main_input_filename)
 	filename = main_input_filename;
       else
-	filename = input_filename;
+	filename = LOCATION_FILE (input_location);
       filename = lbasename (filename);
     }
   else
@@ -683,7 +683,8 @@ cxx_make_type (enum tree_code code)
   /* Set up some flags that give proper default behavior.  */
   if (RECORD_OR_UNION_CODE_P (code))
     {
-      struct c_fileinfo *finfo = get_fileinfo (input_filename);
+      struct c_fileinfo *finfo = \
+	get_fileinfo (LOCATION_FILE (input_location));
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
@@ -711,5 +712,5 @@ in_main_input_context (void)
     return filename_cmp (main_input_filename,
 			 LOCATION_FILE (tl->locus)) == 0;
   else
-    return filename_cmp (main_input_filename, input_filename) == 0;
+    return filename_cmp (main_input_filename, LOCATION_FILE (input_location)) == 0;
 }

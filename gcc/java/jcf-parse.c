@@ -313,13 +313,14 @@ set_source_filename (JCF *jcf, int index)
 {
   tree sfname_id = get_name_constant (jcf, index);
   const char *sfname = IDENTIFIER_POINTER (sfname_id);
-  const char *old_filename = input_filename;
+  const char *old_filename = LOCATION_FILE (input_location);
   int new_len = IDENTIFIER_LENGTH (sfname_id);
   if (old_filename != NULL)
     {
       int old_len = strlen (old_filename);
-      /* Use the current input_filename (derived from the class name)
-	 if it has a directory prefix, but otherwise matches sfname. */
+      /* Use the filename from current input_location (derived from the
+	 class name) if it has a directory prefix, but otherwise matches
+	 sfname.  */
       if (old_len > new_len
 	  && filename_cmp (sfname, old_filename + old_len - new_len) == 0
 	  && (old_filename[old_len - new_len - 1] == '/'
@@ -1560,7 +1561,8 @@ parse_class_file (void)
     linemap_add (line_table, LC_ENTER, 0, loc.file, loc.line);
   }
   file_start_location = input_location;
-  (*debug_hooks->start_source_file) (input_line, input_filename);
+  (*debug_hooks->start_source_file) (LOCATION_LINE (input_location),
+				     LOCATION_FILE (input_location));
 
   java_mark_class_local (current_class);
 
@@ -1618,7 +1620,8 @@ parse_class_file (void)
 	  for (ptr += 2; --i >= 0; ptr += 4)
 	    {
 	      int line = GET_u2 (ptr);
-	      /* Set initial input_line to smallest linenumber.
+	      /* Set initial line of input_location to smallest
+	       * linenumber.
 	       * Needs to be set before init_function_start. */
 	      if (min_line == 0 || line < min_line)
 		min_line = line;
@@ -1748,7 +1751,7 @@ java_parse_file (void)
       int avail = 2000;
       finput = fopen (main_input_filename, "r");
       if (finput == NULL)
-	fatal_error ("can%'t open %s: %m", input_filename);
+	fatal_error ("can%'t open %s: %m", LOCATION_FILE (input_location));
       list = XNEWVEC (char, avail);
       next = list;
       for (;;)
@@ -1767,7 +1770,8 @@ java_parse_file (void)
 	  if (count == 0)
 	    {
 	      if (! feof (finput))
-		fatal_error ("error closing %s: %m", input_filename);
+		fatal_error ("error closing %s: %m",
+			     LOCATION_FILE (input_location));
 	      *next = '\0';
 	      break;
 	    }

@@ -1883,7 +1883,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 {
   tree type;
   enum tree_code code;
-  location_t loc = EXPR_LOC_OR_HERE (exp);
+  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
 
   type = TREE_TYPE (exp);
   if (type == error_mark_node)
@@ -2133,6 +2133,8 @@ static tree
 rationalize_conditional_expr (enum tree_code code, tree t,
                               tsubst_flags_t complain)
 {
+  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+
   /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
      the first operand is always the one to be used if both operands
      are equal, so we know what conditional expression this used to be.  */
@@ -2145,8 +2147,8 @@ rationalize_conditional_expr (enum tree_code code, tree t,
       gcc_assert (!TREE_SIDE_EFFECTS (op0)
 		  && !TREE_SIDE_EFFECTS (op1));
       return
-	build_conditional_expr (EXPR_LOC_OR_HERE (t),
-				build_x_binary_op (EXPR_LOC_OR_HERE (t),
+	build_conditional_expr (loc,
+				build_x_binary_op (loc,
 						   (TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
@@ -2159,7 +2161,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
     }
 
   return
-    build_conditional_expr (EXPR_LOC_OR_HERE (t), TREE_OPERAND (t, 0),
+    build_conditional_expr (loc, TREE_OPERAND (t, 0),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 1), 0,
                                                complain),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 2), 0,
@@ -6042,8 +6044,9 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
       && !CONSTRUCTOR_IS_DIRECT_INIT (expr))
     {
       if (complain & tf_error)
-	pedwarn (EXPR_LOC_OR_HERE (expr), 0, "list-initializer for "
-		 "non-class type must not be parenthesized");
+	pedwarn (EXPR_LOC_OR_LOC (expr, input_location), 0,
+		 "list-initializer for non-class type must not "
+		 "be parenthesized");
       else
 	return error_mark_node;
     }
@@ -8101,7 +8104,7 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = EXPR_LOC_OR_HERE (rhs);
+      location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
 
       warning_at (loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");

@@ -1044,8 +1044,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   != UNKNOWN_LOCATION)
 /* The location to be used in a diagnostic about this expression.  Do not
    use this macro if the location will be assigned to other expressions.  */
-#define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) \
-				? (NODE)->exp.locus : input_location)
 #define EXPR_LOC_OR_LOC(NODE, LOCUS) (EXPR_HAS_LOCATION (NODE) \
 				      ? (NODE)->exp.locus : (LOCUS))
 #define EXPR_FILENAME(NODE) LOCATION_FILE (EXPR_CHECK ((NODE))->exp.locus)

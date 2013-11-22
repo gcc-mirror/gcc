@@ -1,3 +1,13 @@
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* class.c (maybe_layout_super_class): Update comment.
+	* decl.c (java_add_stmt): Remove use of input_filename macro.
+	* jcf-parse.c (set_source_filename): Remove use of
+	input_filename macro.
+	(parse_class_file): Remove use of input_line and input_filename
+	macros.
+	(java_parse_file): Remove use of input_filename macro.
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* class.c, expr.c: Replace tree_low_cst (..., 0) with tree_to_shwi

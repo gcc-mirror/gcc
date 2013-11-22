@@ -1121,7 +1121,7 @@ handle_pragma_float_const_decimal64 (cpp_reader *ARG_UNUSED (dummy))
 {
   if (c_dialect_cxx ())
     {
-      if (warn_unknown_pragmas > in_system_header)
+      if (warn_unknown_pragmas > in_system_header_at (input_location))
 	warning (OPT_Wunknown_pragmas,
 		 "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported"
 		 " for C++");
@@ -1130,7 +1130,7 @@ handle_pragma_float_const_decimal64 (cpp_reader *ARG_UNUSED (dummy))
 
   if (!targetm.decimal_float_supported_p ())
     {
-      if (warn_unknown_pragmas > in_system_header)
+      if (warn_unknown_pragmas > in_system_header_at (input_location))
 	warning (OPT_Wunknown_pragmas,
 		 "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported"
 		 " on this target");
