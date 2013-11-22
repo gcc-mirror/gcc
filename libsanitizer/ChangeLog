@@ -1,3 +1,8 @@
+2013-11-22  Mike Stump  <mikestump@comcast.net>
+
+	* sanitizer_common/sanitizer_linux.cc (__sanitizer): Grab one
+	change from upstream to fix build.
+
 2013-11-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59106
