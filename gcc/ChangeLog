@@ -1,3 +1,7 @@
+2013-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* print-rtl.c (print_rtx) <case MEM>: Output a space if no MEM_EXPR.
+
 2013-11-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/m32c/cond.md (stzx_16): Use register_operand for operand 0.
