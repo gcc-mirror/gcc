@@ -358,6 +358,13 @@ hook_rtx_tree_int_null (tree a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
   return NULL;
 }
 
+/* Generic hook that takes a machine mode and returns an unsigned int 0.  */
+unsigned int
+hook_uint_mode_0 (enum machine_mode m ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 /* Generic hook that takes three trees and returns the last one as is.  */
 tree
 hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,

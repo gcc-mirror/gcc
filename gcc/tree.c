@@ -9550,10 +9550,11 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
    during initialization of data types to create the 5 basic atomic
    types. The generic build_variant_type function requires these to
    already be set up in order to function properly, so cannot be
-   called from there.  */
+   called from there.  If ALIGN is non-zero, then ensure alignment is
+   overridden to this value.  */
 
 static tree
-build_atomic_base (tree type)
+build_atomic_base (tree type, unsigned int align)
 {
   tree t;
 
@@ -9563,6 +9564,9 @@ build_atomic_base (tree type)
   
   t = build_variant_type_copy (type);
   set_type_quals (t, TYPE_QUAL_ATOMIC);
+
+  if (align)
+    TYPE_ALIGN (t) = align;
 
   return t;
 }
@@ -9651,14 +9655,21 @@ build_common_tree_nodes (bool signed_char, bool short_double)
 
   /* Don't call build_qualified type for atomics.  That routine does
      special processing for atomics, and until they are initialized
-     it's better not to make that call.  */
+     it's better not to make that call.
+     
+     Check to see if there is a target override for atomic types.  */
 
-  atomicQI_type_node = build_atomic_base (unsigned_intQI_type_node);
-  atomicHI_type_node = build_atomic_base (unsigned_intHI_type_node);
-  atomicSI_type_node = build_atomic_base (unsigned_intSI_type_node);
-  atomicDI_type_node = build_atomic_base (unsigned_intDI_type_node);
-  atomicTI_type_node = build_atomic_base (unsigned_intTI_type_node);
-
+  atomicQI_type_node = build_atomic_base (unsigned_intQI_type_node,
+					targetm.atomic_align_for_mode (QImode));
+  atomicHI_type_node = build_atomic_base (unsigned_intHI_type_node,
+					targetm.atomic_align_for_mode (HImode));
+  atomicSI_type_node = build_atomic_base (unsigned_intSI_type_node,
+					targetm.atomic_align_for_mode (SImode));
+  atomicDI_type_node = build_atomic_base (unsigned_intDI_type_node,
+					targetm.atomic_align_for_mode (DImode));
+  atomicTI_type_node = build_atomic_base (unsigned_intTI_type_node,
+					targetm.atomic_align_for_mode (TImode));
+  	
   access_public_node = get_identifier ("public");
   access_protected_node = get_identifier ("protected");
   access_private_node = get_identifier ("private");

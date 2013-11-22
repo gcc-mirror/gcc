@@ -8407,4 +8407,6 @@ and the associated definitions of those functions.
 
 @hook TARGET_HAS_IFUNC_P
 
+@hook TARGET_ATOMIC_ALIGN_FOR_MODE
+
 @hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV
