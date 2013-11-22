@@ -1,5 +1,12 @@
 2013-11-22  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-threadupdate.c: Include tree-cfg.h and tree-pass.h
+	(thread_block_1): Do not cancel jump threads which go from
+	inside a loop, through the header, then back inside the loop.
+	(bb_ends_with_multiway_branch): New function.
+	(thread_through_all_blocks): Handle threading cases which start
+	in a loop through the loop header to a point in the loop.
+
 	* tree-ssa-threadedge.c (thread_across_edge): Mark the start of the
 	jump thread path properly.
 
