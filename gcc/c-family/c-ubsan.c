@@ -179,3 +179,14 @@ ubsan_instrument_vla (location_t loc, tree size)
 
   return t;
 }
+
+/* Instrument missing return in C++ functions returning non-void.  */
+
+tree
+ubsan_instrument_return (location_t loc)
+{
+  tree data = ubsan_create_data ("__ubsan_missing_return_data", loc,
+				 NULL, NULL_TREE);
+  tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN);
+  return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
+}

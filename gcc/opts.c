@@ -1457,6 +1457,7 @@ common_handle_option (struct gcc_options *opts,
 	      { "unreachable", SANITIZE_UNREACHABLE,
 		sizeof "unreachable" - 1 },
 	      { "vla-bound", SANITIZE_VLA, sizeof "vla-bound" - 1 },
+	      { "return", SANITIZE_RETURN, sizeof "return" - 1 },
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
 	      { NULL, 0, 0 }
 	    };

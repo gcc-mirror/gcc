@@ -1,3 +1,8 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.h (ubsan_instrument_return): New prototype.
+	* c-ubsan.c (ubsan_instrument_return): New function.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-common.c: Add required include files from gimple.h.
