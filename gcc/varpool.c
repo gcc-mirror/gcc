@@ -28,12 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "hashtab.h"
-#include "ggc.h"
 #include "timevar.h"
 #include "debug.h"
 #include "target.h"
 #include "output.h"
-#include "gimple.h"
+#include "gimple-expr.h"
 #include "flags.h"
 
 /* List of hooks triggered on varpool_node events.  */

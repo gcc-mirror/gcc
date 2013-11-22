@@ -1,3 +1,8 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Add required include files from gimple.h.
+	* go-lang.c: Likewise
+
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gofrontend/expressions.cc: Replace tree_low_cst (..., 0) with

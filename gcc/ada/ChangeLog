@@ -1,3 +1,7 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Add required include files from gimple.h.
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/utils2.c (build_call_raise): Remove use of

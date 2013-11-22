@@ -33,6 +33,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-tree.h"
 #include "lto.h"
 #include "tree-inline.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
@@ -1303,6 +1308,5 @@ lto_tree_node_structure (union lang_tree_node *t ATTRIBUTE_UNUSED)
   return TS_LTO_GENERIC;
 }
 
-#include "ggc.h"
 #include "gtype-lto.h"
 #include "gt-lto-lto-lang.h"

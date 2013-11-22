@@ -28,9 +28,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "stmt.h"
 #include "stor-layout.h"
-#include "ggc.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
@@ -1949,57 +1953,6 @@ const unsigned char gimple_rhs_class_table[] = {
 
 #undef DEFTREECODE
 #undef END_OF_BASE_TREE_CODES
-
-void
-recalculate_side_effects (tree t)
-{
-  enum tree_code code = TREE_CODE (t);
-  int len = TREE_OPERAND_LENGTH (t);
-  int i;
-
-  switch (TREE_CODE_CLASS (code))
-    {
-    case tcc_expression:
-      switch (code)
-	{
-	case INIT_EXPR:
-	case MODIFY_EXPR:
-	case VA_ARG_EXPR:
-	case PREDECREMENT_EXPR:
-	case PREINCREMENT_EXPR:
-	case POSTDECREMENT_EXPR:
-	case POSTINCREMENT_EXPR:
-	  /* All of these have side-effects, no matter what their
-	     operands are.  */
-	  return;
-
-	default:
-	  break;
-	}
-      /* Fall through.  */
-
-    case tcc_comparison:  /* a comparison expression */
-    case tcc_unary:       /* a unary arithmetic expression */
-    case tcc_binary:      /* a binary arithmetic expression */
-    case tcc_reference:   /* a reference */
-    case tcc_vl_exp:        /* a function call */
-      TREE_SIDE_EFFECTS (t) = TREE_THIS_VOLATILE (t);
-      for (i = 0; i < len; ++i)
-	{
-	  tree op = TREE_OPERAND (t, i);
-	  if (op && TREE_SIDE_EFFECTS (op))
-	    TREE_SIDE_EFFECTS (t) = 1;
-	}
-      break;
-
-    case tcc_constant:
-      /* No side-effects.  */
-      return;
-
-    default:
-      gcc_unreachable ();
-   }
-}
 
 /* Canonicalize a tree T for use in a COND_EXPR as conditional.  Returns
    a canonicalized tree that is valid for a COND_EXPR or NULL_TREE, if

@@ -43,12 +43,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "vec.h"
 #include "target.h"
-#include "gimple.h"
+#include "pointer-set.h"
+#include "hash-table.h"
 #include "gimplify.h"
 #include "bitmap.h"
-#include "hash-table.h"
 #include "omp-low.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);

@@ -1,3 +1,11 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Add required include files from gimple.h.
+	* lto-lang.c: Likewise
+	* lto-object.c: Likewise
+	* lto-partition.c: Likewise
+	* lto-symtab.c: Likewise
+
 2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-partition.c lto-symtab.c lto.c Adjust.
