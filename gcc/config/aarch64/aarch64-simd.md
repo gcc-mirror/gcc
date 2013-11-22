@@ -85,17 +85,17 @@
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VD 0 "aarch64_simd_nonimmediate_operand"
-		"=w, Utv,  w, ?r, ?w, ?r, w")
+		"=w, m,  w, ?r, ?w, ?r, w")
 	(match_operand:VD 1 "aarch64_simd_general_operand"
-		"Utv,  w,  w,  w,  r,  r, Dn"))]
+		"m,  w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
    switch (which_alternative)
      {
-     case 0: return "ld1\t{%0.<Vtype>}, %1";
-     case 1: return "st1\t{%1.<Vtype>}, %0";
+     case 0: return "ldr\\t%d0, %1";
+     case 1: return "str\\t%d1, %0";
      case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
      case 3: return "umov\t%0, %1.d[0]";
      case 4: return "ins\t%0.d[0], %1";
@@ -113,9 +113,9 @@
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VQ 0 "aarch64_simd_nonimmediate_operand"
-		"=w, Utv,  w, ?r, ?w, ?r, w")
+		"=w, m,  w, ?r, ?w, ?r, w")
 	(match_operand:VQ 1 "aarch64_simd_general_operand"
-		"Utv,  w,  w,  w,  r,  r, Dn"))]
+		"m,  w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -123,9 +123,9 @@
   switch (which_alternative)
     {
     case 0:
-	return "ld1\t{%0.<Vtype>}, %1";
+	return "ldr\\t%q0, %1";
     case 1:
-	return "st1\t{%1.<Vtype>}, %0";
+	return "str\\t%q1, %0";
     case 2:
 	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
     case 3:
