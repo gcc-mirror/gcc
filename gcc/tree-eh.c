@@ -3569,7 +3569,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
     {
     case ERT_TRY:
       {
-	vec<tree> labels = vNULL;
+	auto_vec<tree> labels;
 	tree default_label = NULL;
 	eh_catch c;
 	edge_iterator ei;
@@ -3657,8 +3657,6 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
 	    x = gimple_build_switch (filter, default_label, labels);
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
-
-	    labels.release ();
 	  }
 	pointer_set_destroy (seen_values);
       }

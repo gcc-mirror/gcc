@@ -4223,7 +4223,7 @@ undo_replacements_for_backtrack (struct haifa_saved_data *save)
 static void
 unschedule_insns_until (rtx insn)
 {
-  vec<rtx> recompute_vec = vNULL;
+  auto_vec<rtx> recompute_vec;
 
   /* Make two passes over the insns to be unscheduled.  First, we clear out
      dependencies and other trivial bookkeeping.  */
@@ -4281,7 +4281,6 @@ unschedule_insns_until (rtx insn)
       else if (QUEUE_INDEX (con) != QUEUE_SCHEDULED)
 	TODO_SPEC (con) = recompute_todo_spec (con, true);
     }
-  recompute_vec.release ();
 }
 
 /* Restore scheduler state from the topmost entry on the backtracking queue.

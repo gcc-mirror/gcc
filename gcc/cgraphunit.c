@@ -1525,7 +1525,6 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
       int i;
       tree resdecl;
       tree restmp = NULL;
-      vec<tree> vargs;
 
       gimple call;
       gimple ret;
@@ -1579,7 +1578,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 
       for (arg = a; arg; arg = DECL_CHAIN (arg))
         nargs++;
-      vargs.create (nargs);
+      auto_vec<tree> vargs (nargs);
       if (this_adjusting)
         vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
 					virtual_offset));
@@ -1591,7 +1590,6 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 	  vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       node->callees->call_stmt = call;
-      vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
 	{

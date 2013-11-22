@@ -19111,7 +19111,7 @@ static char *
 gen_producer_string (void)
 {
   size_t j;
-  vec<dchar_p> switches = vNULL;
+  auto_vec<dchar_p> switches;
   const char *language_string = lang_hooks.name;
   char *producer, *tail;
   const char *p;
@@ -19192,7 +19192,6 @@ gen_producer_string (void)
     }
 
   *tail = '\0';
-  switches.release ();
   return producer;
 }
 

@@ -1,3 +1,16 @@
+2013-11-22  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* vec.h (auto_vec): New class.
+	* cfganal.c, cfgloop.c, cgraphunit.c, config/i386/i386.c, dwarf2out.c,
+	function.c, genautomata.c, gimple.c, haifa-sched.c, ipa-inline.c,
+	ira-build.c, loop-unroll.c, omp-low.c, ree.c, trans-mem.c,
+	tree-call-cdce.c, tree-eh.c, tree-if-conv.c, tree-into-ssa.c,
+	tree-loop-distribution.c, tree-predcom.c, tree-sra.c,
+	tree-sssa-forwprop.c, tree-ssa-loop-manip.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-structalias.c,
+	tree-vect-loop.c, tree-vect-stmts.c: Use auto_vec and stack_vec as
+	appropriate instead of vec for local variables.
+
 2013-11-21  Teresa Johnson  <tejohnson@google.com>
 
 	PR target/59233

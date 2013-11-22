@@ -2660,8 +2660,8 @@ maybe_optimize_range_tests (gimple stmt)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  vec<operand_entry_t> ops = vNULL;
-  vec<inter_bb_range_test_entry> bbinfo = vNULL;
+  auto_vec<operand_entry_t> ops;
+  auto_vec<inter_bb_range_test_entry> bbinfo;
   bool any_changes = false;
 
   /* Consider only basic blocks that end with GIMPLE_COND or
@@ -2975,8 +2975,6 @@ maybe_optimize_range_tests (gimple stmt)
 	    break;
 	}
     }
-  bbinfo.release ();
-  ops.release ();
 }
 
 /* Return true if OPERAND is defined by a PHI node which uses the LHS
@@ -4401,7 +4399,7 @@ reassociate_bb (basic_block bb)
 
 	  if (associative_tree_code (rhs_code))
 	    {
-	      vec<operand_entry_t> ops = vNULL;
+	      auto_vec<operand_entry_t> ops;
 	      tree powi_result = NULL_TREE;
 
 	      /* There may be no immediate uses left by the time we
@@ -4489,8 +4487,6 @@ reassociate_bb (basic_block bb)
 		      gsi_insert_after (&gsi, mul_stmt, GSI_NEW_STMT);
 		    }
 		}
-
-	      ops.release ();
 	    }
 	}
     }

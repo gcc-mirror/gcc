@@ -3802,14 +3802,14 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   bool extract_scalar_result = false;
   gimple use_stmt, orig_stmt, reduction_phi = NULL;
   bool nested_in_vect_loop = false;
-  vec<gimple> new_phis = vNULL;
-  vec<gimple> inner_phis = vNULL;
+  auto_vec<gimple> new_phis;
+  auto_vec<gimple> inner_phis;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
-  vec<tree> scalar_results = vNULL;
+  auto_vec<tree> scalar_results;
   unsigned int group_size = 1, k, ratio;
-  vec<tree> vec_initial_defs = vNULL;
-  vec<gimple> phis;
+  auto_vec<tree> vec_initial_defs;
+  auto_vec<gimple> phis;
   bool slp_reduc = false;
   tree new_phi_result;
   gimple inner_phi = NULL;
@@ -3912,8 +3912,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
           phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
         }
     }
-
-  vec_initial_defs.release ();
 
   /* 2. Create epilog code.
         The reduction epilog code operates across the elements of the vector
@@ -4594,10 +4592,6 @@ vect_finalize_reduction:
 
       phis.release ();
     }
-
-  scalar_results.release ();
-  inner_phis.release ();
-  new_phis.release ();
 }
 
 
@@ -4685,10 +4679,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   struct loop * def_stmt_loop, *outer_loop = NULL;
   tree def_arg;
   gimple def_arg_stmt;
-  vec<tree> vec_oprnds0 = vNULL;
-  vec<tree> vec_oprnds1 = vNULL;
-  vec<tree> vect_defs = vNULL;
-  vec<gimple> phis = vNULL;
+  auto_vec<tree> vec_oprnds0;
+  auto_vec<tree> vec_oprnds1;
+  auto_vec<tree> vect_defs;
+  auto_vec<gimple> phis;
   int vec_num;
   tree def0, def1, tem, op0, op1 = NULL_TREE;
 
@@ -5303,11 +5297,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   vect_create_epilog_for_reduction (vect_defs, stmt, epilog_copies,
                                     epilog_reduc_code, phis, reduc_index,
                                     double_reduc, slp_node);
-
-  phis.release ();
-  vect_defs.release ();
-  vec_oprnds0.release ();
-  vec_oprnds1.release ();
 
   return true;
 }

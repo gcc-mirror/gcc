@@ -6901,7 +6901,6 @@ static void
 expand_omp_sections (struct omp_region *region)
 {
   tree t, u, vin = NULL, vmain, vnext, l2;
-  vec<tree> label_vec;
   unsigned len;
   basic_block entry_bb, l0_bb, l1_bb, l2_bb, default_bb;
   gimple_stmt_iterator si, switch_si;
@@ -6954,7 +6953,7 @@ expand_omp_sections (struct omp_region *region)
 
   /* Use vec::quick_push on label_vec throughout, since we know the size
      in advance.  */
-  label_vec.create (len);
+  auto_vec<tree> label_vec (len);
 
   /* The call to GOMP_sections_start goes in ENTRY_BB, replacing the
      GIMPLE_OMP_SECTIONS statement.  */
@@ -7050,7 +7049,6 @@ expand_omp_sections (struct omp_region *region)
   stmt = gimple_build_switch (vmain, u, label_vec);
   gsi_insert_after (&switch_si, stmt, GSI_SAME_STMT);
   gsi_remove (&switch_si, true);
-  label_vec.release ();
 
   si = gsi_start_bb (default_bb);
   stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);

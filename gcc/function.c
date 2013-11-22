@@ -5722,9 +5722,8 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
   rtx label;
   edge_iterator ei;
   edge e;
-  vec<basic_block> src_bbs;
+  auto_vec<basic_block> src_bbs (EDGE_COUNT (last_bb->preds));
 
-  src_bbs.create (EDGE_COUNT (last_bb->preds));
   FOR_EACH_EDGE (e, ei, last_bb->preds)
     if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
       src_bbs.quick_push (e->src);

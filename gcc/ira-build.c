@@ -1711,7 +1711,7 @@ ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSE
     {
       ira_loop_tree_node_t subloop_node;
       unsigned int i;
-      vec<ira_loop_tree_node_t> dfs_stack;
+      auto_vec<ira_loop_tree_node_t> dfs_stack;
 
       /* This is a bit of strange abuse of the BB_VISITED flag:  We use
 	 the flag to mark blocks we still have to visit to add them to
@@ -1765,7 +1765,6 @@ ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSE
 	}
 
 #undef BB_TO_VISIT
-      dfs_stack.release ();
     }
 
   gcc_assert (topsort_nodes.length () == n_loop_preorder);
@@ -1807,8 +1806,7 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
 
   if (bb_p)
     {
-      vec<ira_loop_tree_node_t>
-	  loop_preorder = vNULL;
+      auto_vec<ira_loop_tree_node_t> loop_preorder;
       unsigned int i;
 
       /* Add all nodes to the set of nodes to visit.  The IRA loop tree
@@ -1832,8 +1830,6 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
 	    (*postorder_func) (subloop_node);
 	  loop_rev_postorder.release ();
 	}
-
-      loop_preorder.release ();
     }
 
   for (subloop_node = loop_node->subloops;

@@ -405,7 +405,6 @@ flow_loops_find (struct loops *loops)
   int *rc_order;
   int b;
   unsigned i;
-  vec<loop_p> larray;
 
   /* Ensure that the dominators are computed.  */
   calculate_dominance_info (CDI_DOMINATORS);
@@ -434,7 +433,7 @@ flow_loops_find (struct loops *loops)
 
   /* Gather all loop headers in reverse completion order and allocate
      loop structures for loops that are not already present.  */
-  larray.create (loops->larray->length ());
+  auto_vec<loop_p> larray (loops->larray->length ());
   for (b = 0; b < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; b++)
     {
       basic_block header = BASIC_BLOCK (rc_order[b]);
@@ -509,8 +508,6 @@ flow_loops_find (struct loops *loops)
 	    }
 	}
     }
-
-  larray.release ();
 
   return loops;
 }

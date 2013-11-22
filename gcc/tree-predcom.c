@@ -1538,7 +1538,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
 static void
 execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
 {
-  vec<tree> vars;
+  auto_vec<tree> vars;
   dref a;
   unsigned n_writes = 0, ridx, i;
   tree var;
@@ -1577,8 +1577,6 @@ execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
       replace_ref_with (a->stmt, vars[ridx],
 			!is_read, !is_read);
     }
-
-  vars.release ();
 }
 
 /* Returns the single statement in that NAME is used, excepting
@@ -2272,7 +2270,7 @@ try_combine_chains (vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
-  vec<chain_p> worklist = vNULL;
+  auto_vec<chain_p> worklist;
 
   FOR_EACH_VEC_ELT (*chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
@@ -2298,8 +2296,6 @@ try_combine_chains (vec<chain_p> *chains)
 	    }
 	}
     }
-
-  worklist.release ();
 }
 
 /* Prepare initializers for CHAIN in LOOP.  Returns false if this is

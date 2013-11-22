@@ -30345,7 +30345,7 @@ static void
 cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 				 enum pragma_context)
 {
-  vec<tree> types = vNULL;
+  auto_vec<tree> types;
   enum tree_code reduc_code = ERROR_MARK;
   tree reduc_id = NULL_TREE, orig_reduc_id = NULL_TREE, type;
   unsigned int i;
@@ -30460,7 +30460,6 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     {
      fail:
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      types.release ();
       return;
     }
 
@@ -30565,7 +30564,6 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     }
 
   cp_parser_require_pragma_eol (parser, pragma_tok);
-  types.release ();
 }
 
 /* OpenMP 4.0

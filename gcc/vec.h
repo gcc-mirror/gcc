@@ -1184,6 +1184,17 @@ public:
 };
 
 
+/* auto_vec is a sub class of vec whose storage is released when it is
+  destroyed. */
+template<typename T>
+class auto_vec : public vec<T, va_heap>
+{
+public:
+  auto_vec () { this->m_vec = NULL; }
+  auto_vec (size_t n) { this->create (n); }
+  ~auto_vec () { this->release (); }
+};
+
 /* stack_vec is a subclass of vec containing N elements of internal storage.
   You probably only want to allocate this on the stack because if the array
   ends up being larger or much smaller than N it will be wasting space. */

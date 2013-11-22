@@ -1281,8 +1281,7 @@ static void
 simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
 {
   unsigned int branch_num = gimple_switch_num_labels (stmt);
-  vec<tree> labels;
-  labels.create (branch_num);
+  auto_vec<tree> labels (branch_num);
   unsigned int i, len;
 
   /* Collect the existing case labels in a VEC, and preprocess it as if
@@ -1343,8 +1342,6 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
 	} 
       BITMAP_FREE (target_blocks);
     }
-
-  labels.release ();
 }
 
 /* STMT is a SWITCH_EXPR for which we attempt to find equivalent forms of
