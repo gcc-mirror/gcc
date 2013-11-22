@@ -1204,7 +1204,7 @@ place_field (record_layout_info rli, tree field)
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
       HOST_WIDE_INT field_size = tree_to_uhwi (dsize);
-      HOST_WIDE_INT offset = tree_to_shwi (rli->offset);
+      HOST_WIDE_INT offset = tree_to_uhwi (rli->offset);
       HOST_WIDE_INT bit_offset = tree_to_shwi (rli->bitpos);
 
 #ifdef ADJUST_FIELD_ALIGN
@@ -1248,7 +1248,7 @@ place_field (record_layout_info rli, tree field)
       unsigned int type_align = TYPE_ALIGN (type);
       tree dsize = DECL_SIZE (field);
       HOST_WIDE_INT field_size = tree_to_uhwi (dsize);
-      HOST_WIDE_INT offset = tree_to_shwi (rli->offset);
+      HOST_WIDE_INT offset = tree_to_uhwi (rli->offset);
       HOST_WIDE_INT bit_offset = tree_to_shwi (rli->bitpos);
 
 #ifdef ADJUST_FIELD_ALIGN
@@ -1304,7 +1304,7 @@ place_field (record_layout_info rli, tree field)
 	      && !integer_zerop (DECL_SIZE (field))
 	      && !integer_zerop (DECL_SIZE (rli->prev_field))
 	      && tree_fits_shwi_p (DECL_SIZE (rli->prev_field))
-	      && tree_fits_shwi_p (TYPE_SIZE (type))
+	      && tree_fits_uhwi_p (TYPE_SIZE (type))
 	      && simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type)))
 	    {
 	      /* We're in the middle of a run of equal type size fields; make
