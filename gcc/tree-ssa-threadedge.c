@@ -1078,8 +1078,9 @@ thread_across_edge (gimple dummy_cond,
      
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
-	bitmap_set_bit (visited, taken_edge->dest->index);
+	bitmap_set_bit (visited, e->src->index);
 	bitmap_set_bit (visited, e->dest->index);
+	bitmap_set_bit (visited, taken_edge->dest->index);
         vec<jump_thread_edge *> *path = new vec<jump_thread_edge *> ();
 
 	/* Record whether or not we were able to thread through a successor
