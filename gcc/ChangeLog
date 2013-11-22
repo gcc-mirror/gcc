@@ -1,3 +1,8 @@
+2013-11-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59216
+	* arm.md (negdi_extendsidi): Fix invalid split.
+
 2013-11-22  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/arm_neon.h (vmov_n_f32): Implemented in C.

@@ -1,3 +1,9 @@
+2013-11-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59216
+	* gcc.target/arm/negdi-4.c: Delete invalid test.
+	* gcc.dg/torture/pr59216.c: New test.
+
 2013-11-22  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/vmov_n_1.c: New testcase.
