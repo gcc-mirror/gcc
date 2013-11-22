@@ -1,3 +1,11 @@
+2013-11-22  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2013-11-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.c (copy_loop_headers): Decrement
+	nb_iterations_upper_bound by one.
+
 2013-11-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (processor_alias_table): Enable PTA_POPCNT

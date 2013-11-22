@@ -243,16 +243,6 @@ copy_loop_headers (void)
 	 are not now, since there was the loop exit condition.  */
       split_edge (loop_preheader_edge (loop));
       split_edge (loop_latch_edge (loop));
-
-      /* We peeled off one iteration of the loop thus we can lower
-	 the maximum number of iterations if we have a previously
-	 recorded value for that.  */
-      double_int max;
-      if (get_max_loop_iterations (loop, &max))
-	{
-	  max -= double_int_one;
-	  loop->nb_iterations_upper_bound = max;
-	}
     }
 
   update_ssa (TODO_update_ssa);
