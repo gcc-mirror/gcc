@@ -532,6 +532,10 @@ public:
   /* Set when variable has statically initialized pointer
      or is a static bounds variable and needs initalization.  */
   unsigned need_bounds_init : 1;
+
+  /* Set if the variable is dynamically initialized, except for
+     function local statics.   */
+  unsigned dynamically_initialized : 1;
 };
 
 /* Every top level asm statement is put into a asm_node.  */

@@ -1,3 +1,8 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Tweak to avoid
+	optimizing away some __asan_report* calls.
+
 2013-11-22  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/pr10474.c: Also test ppc64.

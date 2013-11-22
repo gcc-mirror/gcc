@@ -224,7 +224,7 @@ along with GCC; see the file COPYING3.  If not see
        // Name of the module where the global variable is declared.
        const void *__module_name;
 
-       // This is always set to NULL for now.
+       // 1 if it has dynamic initialization, 0 otherwise.
        uptr __has_dynamic_init;
      }
 
@@ -1471,7 +1471,9 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     case COMPONENT_REF:
     case INDIRECT_REF:
     case MEM_REF:
+    case VAR_DECL:
       break;
+      /* FALLTHRU */
     default:
       return;
     }
@@ -1485,8 +1487,8 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   tree offset;
   enum machine_mode mode;
   int volatilep = 0, unsignedp = 0;
-  get_inner_reference (t, &bitsize, &bitpos, &offset,
-		       &mode, &unsignedp, &volatilep, false);
+  tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
+				    &mode, &unsignedp, &volatilep, false);
   if (bitpos % (size_in_bytes * BITS_PER_UNIT)
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     {
@@ -1499,6 +1501,34 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 					   NULL_TREE), location, is_store);
 	}
       return;
+    }
+
+  if (TREE_CODE (inner) == VAR_DECL
+      && offset == NULL_TREE
+      && bitpos >= 0
+      && DECL_SIZE (inner)
+      && tree_fits_shwi_p (DECL_SIZE (inner))
+      && bitpos + bitsize <= tree_to_shwi (DECL_SIZE (inner)))
+    {
+      if (DECL_THREAD_LOCAL_P (inner))
+	return;
+      if (!TREE_STATIC (inner))
+	{
+	  /* Automatic vars in the current function will be always
+	     accessible.  */
+	  if (decl_function_context (inner) == current_function_decl)
+	    return;
+	}
+      /* Always instrument external vars, they might be dynamically
+	 initialized.  */
+      else if (!DECL_EXTERNAL (inner))
+	{
+	  /* For static vars if they are known not to be dynamically
+	     initialized, they will be always accessible.  */
+	  struct varpool_node *vnode = varpool_get_node (inner);
+	  if (vnode && !vnode->dynamically_initialized)
+	    return;
+	}
     }
 
   base = build_fold_addr_expr (t);
@@ -1959,6 +1989,34 @@ transform_statements (void)
 }
 
 /* Build
+   __asan_before_dynamic_init (module_name)
+   or
+   __asan_after_dynamic_init ()
+   call.  */
+
+tree
+asan_dynamic_init_call (bool after_p)
+{
+  tree fn = builtin_decl_implicit (after_p
+				   ? BUILT_IN_ASAN_AFTER_DYNAMIC_INIT
+				   : BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT);
+  tree module_name_cst = NULL_TREE;
+  if (!after_p)
+    {
+      pretty_printer module_name_pp;
+      pp_string (&module_name_pp, main_input_filename);
+
+      if (shadow_ptr_types[0] == NULL_TREE)
+	asan_init_shadow_ptr_types ();
+      module_name_cst = asan_pp_string (&module_name_pp);
+      module_name_cst = fold_convert (const_ptr_type_node,
+				      module_name_cst);
+    }
+
+  return build_call_expr (fn, after_p ? 0 : 1, module_name_cst);
+}
+
+/* Build
    struct __asan_global
    {
      const void *__beg;
@@ -2047,7 +2105,10 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 			  fold_convert (const_ptr_type_node, str_cst));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, module_name_cst));
-  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, 0));
+  struct varpool_node *vnode = varpool_get_node (decl);
+  int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  build_int_cst (uptr, has_dynamic_init));
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
@@ -2064,6 +2125,8 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR
     = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_CONST_PTR
+    = build_function_type_list (void_type_node, const_ptr_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR_PTR
     = build_function_type_list (void_type_node, ptr_type_node,
 				ptr_type_node, NULL_TREE);

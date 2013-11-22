@@ -26,6 +26,7 @@ extern void asan_finish_file (void);
 extern rtx asan_emit_stack_protection (rtx, HOST_WIDE_INT *, tree *, int);
 extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
+extern tree asan_dynamic_init_call (bool);
 
 /* Alias set for accessing the shadow memory.  */
 extern alias_set_type asan_shadow_set;
