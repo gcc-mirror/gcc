@@ -1,3 +1,8 @@
+2013-11-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (AC_PROG_CXX): Move after AC_PROG_CC.
+	* configure: Regenerate.
+
 2013-11-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* Makefile.am (libcilkrts_la_LDFLAGS): Added a check for availability
