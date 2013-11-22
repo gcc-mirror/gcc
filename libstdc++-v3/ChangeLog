@@ -1,6 +1,11 @@
 2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/ext/random/hypergeometric_distribution/operators/
+	values.cc: Fix further thinkos.
+
+2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/ext/random/hypergeometric_distribution/operators/
 	values.cc: Fix thinkos.
 
 2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
