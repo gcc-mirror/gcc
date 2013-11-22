@@ -1,3 +1,11 @@
+2013-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (processor_alias_table): Enable PTA_POPCNT
+	for Silvermont.
+
+	* doc/invoke.texi: Mention POPCNT for corei7, corei7-avx,
+	core-avx-i, core-avx2 and slm.
+
 2013-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* print-rtl.c (print_rtx) <case MEM>: Output a space if no MEM_EXPR.
