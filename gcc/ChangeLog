@@ -1,5 +1,15 @@
 2013-11-22 Andrew MacLeod  <amacleod@redhat.com>
 
+	* hooks.h (hook_uint_mode_0): Add Prototype.
+	* hooks.c (hook_uint_mode_0): New default function.
+	* target.def (atomic_align_for_mode): New target hook.
+	* tree.c (build_atomic_base): Add alignment override parameter.
+	(build_common_tree_nodes): Use atomic alignment override.
+	* doc/tm.texi.in (TARGET_ATOMIC_ALIGN_FOR_MODE): Define.
+	* doc/tm.texi (TARGET_ATOMIC_ALIGN_FOR_MODE): Add description.
+
+2013-11-22 Andrew MacLeod  <amacleod@redhat.com>
+
 	* gimple.h: Remove all includes.
 	(recalculate_side_effects): Move prototype to gimplify.h.
 	* Makefile.in (PLUGIN_HEADERS): Add flattened gimple.h includes.
