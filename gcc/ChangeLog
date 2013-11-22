@@ -1,3 +1,7 @@
+2013-11-22  zadeck@naturalbridge.com
+	* store-layout.c
+	(place-field): Fix hwi test and accessor mismatch.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_constructor): Allow CONSTRUCTOR with VECTOR_TYPE
