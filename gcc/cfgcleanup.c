@@ -1743,12 +1743,20 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	}
     }
 
+  /* Find the last non-debug non-note instruction in each bb, except
+     stop when we see the NOTE_INSN_BASIC_BLOCK, as old_insns_match_p
+     handles that case specially. old_insns_match_p does not handle
+     other types of instruction notes.  */
   rtx last1 = BB_END (bb1);
   rtx last2 = BB_END (bb2);
-  if (DEBUG_INSN_P (last1))
-    last1 = prev_nondebug_insn (last1);
-  if (DEBUG_INSN_P (last2))
-    last2 = prev_nondebug_insn (last2);
+  while (!NOTE_INSN_BASIC_BLOCK_P (last1) &&
+         (DEBUG_INSN_P (last1) || NOTE_P (last1)))
+    last1 = PREV_INSN (last1);
+  while (!NOTE_INSN_BASIC_BLOCK_P (last2) &&
+         (DEBUG_INSN_P (last2) || NOTE_P (last2)))
+    last2 = PREV_INSN (last2);
+  gcc_assert (last1 && last2);
+
   /* First ensure that the instructions match.  There may be many outgoing
      edges so this test is generally cheaper.  */
   if (old_insns_match_p (mode, last1, last2) != dir_both)

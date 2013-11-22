@@ -1,3 +1,9 @@
+2013-11-21  Teresa Johnson  <tejohnson@google.com>
+
+	PR target/59233
+	* cfgcleanup.c (outgoing_edges_match): Walk up past note instructions
+	not understood by old_insns_match_p.
+
 2013-11-21  Bill Schmidt  <wschmidt@vnet.ibm.com>
 
 	* config/rs6000/vector.md (vec_pack_trunc_v2df): Revert previous
