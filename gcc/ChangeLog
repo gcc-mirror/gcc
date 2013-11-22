@@ -1,3 +1,8 @@
+2013-11-22  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Mark the start of the
+	jump thread path properly.
+
 2013-11-22  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* vec.h (auto_vec): New class.
