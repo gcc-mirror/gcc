@@ -1,3 +1,12 @@
+2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c(processor_alias_table): Enable PTA_AES,
+	PTA_PCLMUL and PTA_RDRND for Silvermont.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Set up cpu
+	for Silvermont.
+
+	* doc/invoke.texi: Mention AES, PCLMUL and RDRND for Silvermont.
+
 2013-11-22 Andrew MacLeod  <amacleod@redhat.com>
 
 	* hooks.h (hook_uint_mode_0): Add Prototype.
