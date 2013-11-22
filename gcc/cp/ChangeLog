@@ -1,3 +1,12 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c: Include asan.h.
+	(one_static_initialization_or_destruction): If -fsanitize=address,
+	init is non-NULL and guard is NULL, set
+	vnode->dynamically_initialized.
+	(do_static_initialization_or_destruction): Call
+	__asan_{before,after}_dynamic_init around the static initialization.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* class.c: Add required include files from gimple.h.

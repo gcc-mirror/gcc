@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "langhooks.h"
 #include "c-family/c-ada-spec.h"
+#include "asan.h"
 
 extern cpp_reader *parse_in;
 
@@ -3461,7 +3462,15 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
   if (initp)
     {
       if (init)
-	finish_expr_stmt (init);
+	{
+	  finish_expr_stmt (init);
+	  if (flag_sanitize & SANITIZE_ADDRESS)
+	    {
+	      struct varpool_node *vnode = varpool_get_node (decl);
+	      if (vnode)
+		vnode->dynamically_initialized = 1;
+	    }
+	}
 
       /* If we're using __cxa_atexit, register a function that calls the
 	 destructor for the object.  */
@@ -3502,6 +3511,16 @@ do_static_initialization_or_destruction (tree vars, bool initp)
 			     cond,
 			     tf_warning_or_error);
   finish_if_stmt_cond (cond, init_if_stmt);
+
+  /* To make sure dynamic construction doesn't access globals from other
+     compilation units where they might not be yet constructed, for
+     -fsanitize=address insert __asan_before_dynamic_init call that
+     prevents access to either all global variables that need construction
+     in other compilation units, or at least those that haven't been
+     initialized yet.  Variables that need dynamic construction in
+     the current compilation unit are kept accessible.  */
+  if (flag_sanitize & SANITIZE_ADDRESS)
+    finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/false));
 
   node = vars;
   do {
@@ -3550,6 +3569,11 @@ do_static_initialization_or_destruction (tree vars, bool initp)
     finish_if_stmt (priority_if_stmt);
 
   } while (node);
+
+  /* Revert what __asan_before_dynamic_init did by calling
+     __asan_after_dynamic_init.  */
+  if (flag_sanitize & SANITIZE_ADDRESS)
+    finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/true));
 
   /* Finish up the init/destruct if-stmt body.  */
   finish_then_clause (init_if_stmt);

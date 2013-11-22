@@ -1,3 +1,18 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def (BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT,
+	BUILT_IN_ASAN_AFTER_DYNAMIC_INIT): New.
+	* asan.c (instrument_derefs): Handle also VAR_DECL loads/stores.
+	Don't instrument accesses to VAR_DECLs which are known to fit
+	into their bounds and the vars are known to have shadow bytes
+	indicating allowed access.
+	(asan_dynamic_init_call): New function.
+	(asan_add_global): If vnode->dynamically_initialized,
+	set __has_dynamic_init to 1 instead of 0.
+	(initialize_sanitizer_builtins): Add BT_FN_VOID_CONST_PTR var.
+	* asan.h (asan_dynamic_init_call): New prototype.
+	* cgraph.h (varpool_node): Add dynamically_initialized bitfield.
+
 2013-11-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR rtl-optimization/10474
