@@ -1,5 +1,10 @@
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* config/aarch64/aarch64-simd.md (vec_pack_trunc_<mode>,
+	vec_pack_trunc_v2df, vec_pack_trunc_df): Swap source ops for big-endian.
+
+2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Adjust
 	for big-endian element order.
 	(aarch64_simd_vec_setv2di): Likewise.
