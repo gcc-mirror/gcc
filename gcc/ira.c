@@ -4847,17 +4847,13 @@ find_moveable_pseudos (void)
   free_dominance_info (CDI_DOMINATORS);
 }
 
-
-/* If insn is interesting for parameter range-splitting shring-wrapping
-   preparation, i.e. it is a single set from a hard register to a pseudo, which
-   is live at CALL_DOM, return the destination.  Otherwise return NULL.  */
+/* If SET pattern SET is an assignment from a hard register to a pseudo which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), return
+   the destination.  Otherwise return NULL.  */
 
 static rtx
-interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
 {
-  rtx set = single_set (insn);
-  if (!set)
-    return NULL;
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
   if (!REG_P (src) || !HARD_REGISTER_P (src)
@@ -4865,6 +4861,41 @@ interesting_dest_for_shprep (rtx insn, basic_block call_dom)
       || (call_dom && !bitmap_bit_p (df_get_live_in (call_dom), REGNO (dest))))
     return NULL;
   return dest;
+}
+
+/* If insn is interesting for parameter range-splitting shring-wrapping
+   preparation, i.e. it is a single set from a hard register to a pseudo, which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), or a
+   parallel statement with only one such statement, return the destination.
+   Otherwise return NULL.  */
+
+static rtx
+interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+{
+  if (!INSN_P (insn))
+    return NULL;
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == SET)
+    return interesting_dest_for_shprep_1 (pat, call_dom);
+
+  if (GET_CODE (pat) != PARALLEL)
+    return NULL;
+  rtx ret = NULL;
+  for (int i = 0; i < XVECLEN (pat, 0); i++)
+    {
+      rtx sub = XVECEXP (pat, 0, i);
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
+	continue;
+      if (GET_CODE (sub) != SET
+	  || side_effects_p (sub))
+	return NULL;
+      rtx dest = interesting_dest_for_shprep_1 (sub, call_dom);
+      if (dest && ret)
+	return NULL;
+      if (dest)
+	ret = dest;
+    }
+  return ret;
 }
 
 /* Split live ranges of pseudos that are loaded from hard registers in the

@@ -1,3 +1,10 @@
+2013-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/10474
+	* ira.c (interesting_dest_for_shprep_1): New function.
+	(interesting_dest_for_shprep): Use interesting_dest_for_shprep_1,
+	also check parallels.
+
 2013-11-22  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (record_temporary_equivalence): Handle
