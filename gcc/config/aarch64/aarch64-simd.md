@@ -428,9 +428,19 @@
 	    (match_operand:VQ_S 3 "register_operand" "0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_SIMD"
-  "@
-   ins\t%0.<Vetype>[%p2], %w1
-   ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]"
+  {
+   int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+   operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
+   switch (which_alternative)
+     {
+     case 0:
+	return "ins\\t%0.<Vetype>[%p2], %w1";
+     case 1:
+	return "ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+     default:
+	gcc_unreachable ();
+     }
+  }
   [(set_attr "type" "neon_from_gp<q>, neon_ins<q>")]
 )
 
@@ -692,9 +702,19 @@
 	    (match_operand:V2DI 3 "register_operand" "0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_SIMD"
-  "@
-   ins\t%0.d[%p2], %1
-   ins\\t%0.d[%p2], %1.d[0]"
+  {
+    int elt = ENDIAN_LANE_N (V2DImode, exact_log2 (INTVAL (operands[2])));
+    operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
+    switch (which_alternative)
+      {
+      case 0:
+	return "ins\\t%0.d[%p2], %1";
+      case 1:
+        return "ins\\t%0.d[%p2], %1.d[0]";
+      default:
+	gcc_unreachable ();
+      }
+  }
   [(set_attr "type" "neon_from_gp, neon_ins_q")]
 )
 
@@ -719,7 +739,12 @@
 	    (match_operand:VDQF 3 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
-  "ins\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+  {
+    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+
+    operands[2] = GEN_INT ((HOST_WIDE_INT)1 << elt);
+    return "ins\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+  }
   [(set_attr "type" "neon_ins<q>")]
 )
 
@@ -2022,7 +2047,10 @@
 	    (match_operand:VDQQH 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_SIMD"
-  "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]"
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    return "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]";
+  }
   [(set_attr "type" "neon_to_gp<q>")]
 )
 
@@ -2033,22 +2061,36 @@
 	    (match_operand:VDQQH 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_SIMD"
-  "umov\\t%w0, %1.<Vetype>[%2]"
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    return "umov\\t%w0, %1.<Vetype>[%2]";
+  }
   [(set_attr "type" "neon_to_gp<q>")]
 )
 
 ;; Lane extraction of a value, neither sign nor zero extension
 ;; is guaranteed so upper bits should be considered undefined.
 (define_insn "aarch64_get_lane<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=r, w")
+  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
-	  (match_operand:VALL 1 "register_operand" "w, w")
-	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i")])))]
+	  (match_operand:VALL 1 "register_operand" "w, w, w")
+	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i, i")])))]
   "TARGET_SIMD"
-  "@
-   umov\\t%<vwcore>0, %1.<Vetype>[%2]
-   dup\\t%<Vetype>0, %1.<Vetype>[%2]"
-  [(set_attr "type" "neon_to_gp<q>, neon_dup<q>")]
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    switch (which_alternative)
+      {
+	case 0:
+	  return "umov\\t%<vwcore>0, %1.<Vetype>[%2]";
+	case 1:
+	  return "dup\\t%<Vetype>0, %1.<Vetype>[%2]";
+	case 2:
+	  return "st1\\t{%1.<Vetype>}[%2], %0";
+	default:
+	  gcc_unreachable ();
+      }
+  }
+  [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
 )
 
 (define_expand "aarch64_get_lanedi"
@@ -4028,16 +4070,13 @@
 
 ;; Standard pattern name vec_extract<mode>.
 
-(define_insn "vec_extract<mode>"
-  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
-	(vec_select:<VEL>
-	  (match_operand:VALL 1 "register_operand" "w, w, w")
-	  (parallel [(match_operand:SI 2 "immediate_operand" "i,i,i")])))]
+(define_expand "vec_extract<mode>"
+  [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "")
+   (match_operand:VALL 1 "register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_SIMD"
-  "@
-  umov\\t%<vw>0, %1.<Vetype>[%2]
-  dup\\t%<Vetype>0, %1.<Vetype>[%2]
-  st1\\t{%1.<Vetype>}[%2], %0"
-  [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
-)
-
+{
+    emit_insn
+      (gen_aarch64_get_lane<mode> (operands[0], operands[1], operands[2]));
+    DONE;
+})

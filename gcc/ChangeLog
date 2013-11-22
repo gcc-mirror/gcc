@@ -1,5 +1,15 @@
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Adjust
+	for big-endian element order.
+	(aarch64_simd_vec_setv2di): Likewise.
+	(*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>,
+	*aarch64_get_lane_zero_extendsi<mode>, aarch64_get_lane): Likewise.
+	(vec_extract): Expand using aarch64_get_lane.
+	* config/aarch64/aarch64.h (ENDIAN_LANE_N): New.
+
+2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): Fix loads
 	and stores to be ABI compliant.
 
