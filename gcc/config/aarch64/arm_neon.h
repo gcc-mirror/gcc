@@ -8314,127 +8314,6 @@ vmlsq_u32 (uint32x4_t a, uint32x4_t b, uint32x4_t c)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vmov_n_f32 (float32_t a)
-{
-  float32x2_t result;
-  __asm__ ("dup %0.2s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vmov_n_p8 (uint32_t a)
-{
-  poly8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vmov_n_p16 (uint32_t a)
-{
-  poly16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vmov_n_s8 (int32_t a)
-{
-  int8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vmov_n_s16 (int32_t a)
-{
-  int16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vmov_n_s32 (int32_t a)
-{
-  int32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vmov_n_s64 (int64_t a)
-{
-  int64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vmov_n_u8 (uint32_t a)
-{
-  uint8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vmov_n_u16 (uint32_t a)
-{
-  uint16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vmov_n_u32 (uint32_t a)
-{
-  uint32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vmov_n_u64 (uint64_t a)
-{
-  uint64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vmovl_high_s8 (int8x16_t a)
 {
@@ -8695,133 +8574,6 @@ vmovn_u64 (uint64x2_t a)
   __asm__ ("xtn %0.2s,%1.2d"
            : "=w"(result)
            : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vmovq_n_f32 (float32_t a)
-{
-  float32x4_t result;
-  __asm__ ("dup %0.4s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vmovq_n_f64 (float64_t a)
-{
-  return (float64x2_t) {a, a};
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vmovq_n_p8 (uint32_t a)
-{
-  poly8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vmovq_n_p16 (uint32_t a)
-{
-  poly16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vmovq_n_s8 (int32_t a)
-{
-  int8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vmovq_n_s16 (int32_t a)
-{
-  int16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vmovq_n_s32 (int32_t a)
-{
-  int32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vmovq_n_s64 (int64_t a)
-{
-  int64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vmovq_n_u8 (uint32_t a)
-{
-  uint8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vmovq_n_u16 (uint32_t a)
-{
-  uint16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vmovq_n_u32 (uint32_t a)
-{
-  uint32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vmovq_n_u64 (uint64_t a)
-{
-  uint64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
            : /* No clobbers */);
   return result;
 }
@@ -20981,6 +20733,152 @@ vmlsq_laneq_u32 (uint32x4_t __a, uint32x4_t __b,
 		uint32x4_t __c, const int __lane)
 {
   return (__a - (__b * __aarch64_vgetq_lane_u32 (__c, __lane)));
+}
+
+/* vmov_n_  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vmov_n_f32 (float32_t __a)
+{
+  return vdup_n_f32 (__a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmov_n_f64 (float64_t __a)
+{
+  return __a;
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vmov_n_p8 (poly8_t __a)
+{
+  return vdup_n_p8 (__a);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vmov_n_p16 (poly16_t __a)
+{
+  return vdup_n_p16 (__a);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vmov_n_s8 (int8_t __a)
+{
+  return vdup_n_s8 (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vmov_n_s16 (int16_t __a)
+{
+  return vdup_n_s16 (__a);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmov_n_s32 (int32_t __a)
+{
+  return vdup_n_s32 (__a);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vmov_n_s64 (int64_t __a)
+{
+  return __a;
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vmov_n_u8 (uint8_t __a)
+{
+  return vdup_n_u8 (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vmov_n_u16 (uint16_t __a)
+{
+    return vdup_n_u16 (__a);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vmov_n_u32 (uint32_t __a)
+{
+   return vdup_n_u32 (__a);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vmov_n_u64 (uint64_t __a)
+{
+   return __a;
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vmovq_n_f32 (float32_t __a)
+{
+  return vdupq_n_f32 (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vmovq_n_f64 (float64_t __a)
+{
+  return vdupq_n_f64 (__a);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vmovq_n_p8 (poly8_t __a)
+{
+  return vdupq_n_p8 (__a);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vmovq_n_p16 (poly16_t __a)
+{
+  return vdupq_n_p16 (__a);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vmovq_n_s8 (int8_t __a)
+{
+  return vdupq_n_s8 (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vmovq_n_s16 (int16_t __a)
+{
+  return vdupq_n_s16 (__a);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vmovq_n_s32 (int32_t __a)
+{
+  return vdupq_n_s32 (__a);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vmovq_n_s64 (int64_t __a)
+{
+  return vdupq_n_s64 (__a);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vmovq_n_u8 (uint8_t __a)
+{
+  return vdupq_n_u8 (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vmovq_n_u16 (uint16_t __a)
+{
+  return vdupq_n_u16 (__a);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vmovq_n_u32 (uint32_t __a)
+{
+  return vdupq_n_u32 (__a);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vmovq_n_u64 (uint64_t __a)
+{
+  return vdupq_n_u64 (__a);
 }
 
 /* vmul_lane  */
