@@ -1,3 +1,8 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-generic.c (optimize_vector_constructor): New function.
+	(expand_vector_operations_1): Call it.
+
 2013-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_special_args_builtin): Use
