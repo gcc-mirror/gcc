@@ -1,3 +1,7 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-124.c: New test.
+
 2013-11-21  Cary Coutant  <ccoutant@google.com>
 
 	* gcc.dg/debug/dwarf2/mlt1.c: New test.
