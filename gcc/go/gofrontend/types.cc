@@ -9,8 +9,6 @@
 #include "toplev.h"
 #include "intl.h"
 #include "tree.h"
-#include "gimple.h"
-#include "gimplify.h"
 #include "real.h"
 #include "convert.h"
 
