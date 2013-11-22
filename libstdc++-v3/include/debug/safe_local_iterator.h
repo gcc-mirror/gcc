@@ -58,9 +58,6 @@ namespace __gnu_debug
       /// The underlying iterator
       _Iterator _M_current;
 
-      /// The bucket this local iterator belongs to 
-      size_type _M_bucket;
-
       /// Determine if this is a constant iterator.
       bool
       _M_constant() const
@@ -89,10 +86,8 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
-      _Safe_local_iterator(const _Iterator& __i, size_type __bucket,
-			   const _Sequence* __seq)
-      : _Safe_local_iterator_base(__seq, _M_constant()), _M_current(__i),
-	_M_bucket(__bucket)
+      _Safe_local_iterator(const _Iterator& __i, const _Sequence* __seq)
+      : _Safe_local_iterator_base(__seq, _M_constant()), _M_current(__i)
       {
 	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__msg_init_singular)
@@ -104,12 +99,12 @@ namespace __gnu_debug
        */
       _Safe_local_iterator(const _Safe_local_iterator& __x)
       : _Safe_local_iterator_base(__x, _M_constant()),
-	_M_current(__x._M_current), _M_bucket(__x._M_bucket)
+	_M_current(__x._M_current)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -127,7 +122,7 @@ namespace __gnu_debug
 	      typename _Sequence::local_iterator::iterator_type>::__value,
 					  _Sequence>::__type>& __x)
 	: _Safe_local_iterator_base(__x, _M_constant()),
-	  _M_current(__x.base()), _M_bucket(__x._M_bucket)
+	  _M_current(__x.base())
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
@@ -147,12 +142,11 @@ namespace __gnu_debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x._M_current == _Iterator(),
+			      || __x.base() == _Iterator(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
 	_M_current = __x._M_current;
-	_M_bucket = __x._M_bucket;
 	this->_M_attach(__x._M_sequence);
 	return *this;
       }
@@ -225,7 +219,7 @@ namespace __gnu_debug
        * @brief Return the bucket
        */
       size_type
-      bucket() const { return _M_bucket; }
+      bucket() const { return _M_current._M_bucket; }
 
       /**
        * @brief Conversion to underlying non-debug iterator to allow
@@ -266,19 +260,20 @@ namespace __gnu_debug
       _M_get_sequence() const
       { return static_cast<_Sequence*>(_M_sequence); }
 
-      /// Is this iterator equal to the sequence's begin() iterator?
+      /// Is this iterator equal to the sequence's begin(bucket) iterator?
       bool _M_is_begin() const
-      { return base() == _M_get_sequence()->_M_base().begin(_M_bucket); }
+      { return base() == _M_get_sequence()->_M_base().begin(bucket()); }
 
-      /// Is this iterator equal to the sequence's end() iterator?
+      /// Is this iterator equal to the sequence's end(bucket) iterator?
       bool _M_is_end() const
-      { return base() == _M_get_sequence()->_M_base().end(_M_bucket); }
+      { return base() == _M_get_sequence()->_M_base().end(bucket()); }
 
       /// Is this iterator part of the same bucket as the other one?
-      template <typename _Other>
-	bool _M_in_same_bucket(const _Safe_local_iterator<_Other,
-						_Sequence>& __other) const
-	{ return _M_bucket == __other.bucket(); }
+      template<typename _Other>
+	bool
+	_M_in_same_bucket(const _Safe_local_iterator<_Other,
+						     _Sequence>& __other) const
+	{ return bucket() == __other.bucket(); }
     };
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
@@ -286,12 +281,8 @@ namespace __gnu_debug
     operator==(const _Safe_local_iterator<_IteratorL, _Sequence>& __lhs,
 	       const _Safe_local_iterator<_IteratorR, _Sequence>& __rhs)
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
       _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
@@ -310,7 +301,7 @@ namespace __gnu_debug
     operator==(const _Safe_local_iterator<_Iterator, _Sequence>& __lhs,
 	       const _Safe_local_iterator<_Iterator, _Sequence>& __rhs)
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -350,7 +341,7 @@ namespace __gnu_debug
     operator!=(const _Safe_local_iterator<_Iterator, _Sequence>& __lhs,
 	       const _Safe_local_iterator<_Iterator, _Sequence>& __rhs)
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
