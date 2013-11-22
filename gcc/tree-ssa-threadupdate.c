@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "hash-table.h"
 #include "dbgcnt.h"
+#include "tree-cfg.h"
+#include "tree-pass.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -815,29 +817,15 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 	    }
 
 	  /* Another case occurs when trying to thread through our
-	     own loop header, possibly from inside the loop.
-
-	     If our loop header is buried in the path, then go ahead
-	     and cancel the jump threading request here.  This likely
-	     will need updating for the FSA/FSM coremark case.
-
-	     Other cases (BB is the loop header) are handled elsewhere.  */
+	     own loop header, possibly from inside the loop.  We will
+	     thread these later.  */
 	  unsigned int i;
 	  for (i = 1; i < path->length (); i++)
 	    {
 	      if ((*path)[i]->e->src == bb->loop_father->header
 		  && (!loop_exit_edge_p (bb->loop_father, e2)
 		      || (*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK))
-		{
-		  /* If i != 1, then it's a buried header that will not
-		     be handled elsehwere.  */
-		  if (i != 1)
-		    {
-		      delete_jump_thread_path (path);
-		      e->aux = NULL;
-		    }
-		  break;
-		}
+		break;
 	    }
 
 	  if (i != path->length ())
@@ -1554,6 +1542,20 @@ mark_threaded_blocks (bitmap threaded_blocks)
 }
 
 
+/* Return TRUE if BB ends with a switch statement or a computed goto.
+   Otherwise return false.  */
+static bool
+bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
+{
+  gimple stmt = last_stmt (bb);
+  if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
+    return true;
+  if (stmt && gimple_code (stmt) == GIMPLE_GOTO
+      && TREE_CODE (gimple_goto_dest (stmt)) == SSA_NAME)
+    return true;
+  return false;
+}
+
 /* Walk through all blocks and thread incoming edges to the appropriate
    outgoing edge for each edge pair recorded in THREADED_EDGES.
 
@@ -1573,6 +1575,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   bitmap_iterator bi;
   bitmap threaded_blocks;
   struct loop *loop;
+  bool totally_clobbered_loops = false;
 
   /* We must know about loops in order to preserve them.  */
   gcc_assert (current_loops != NULL);
@@ -1609,35 +1612,79 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       retval |= thread_through_loop_header (loop, may_peel_loop_headers);
     }
 
-  /* Assume we had a jump thread path which went from the latch to the exit
-     and a path which goes from outside to inside the same loop.
+  /* Any jump threading paths that are still attached to edges at this
+     point must be one of two cases.
 
-     If the latch to exit was handled first, we will thread it and clear
-     loop->header.
+     First, we could have a jump threading path which went from outside
+     a loop to inside a loop that was ignored because a prior jump thread
+     across a backedge was realized (which indirectly causes the loop
+     above to ignore the latter thread).  We can detect these because the
+     loop structures will be different and we do not currently try to
+     optimize this case.
 
-     The second path will be ignored by thread_block because we're going
-     through a loop header.  It will also be ignored by the loop above
-     because loop->header is NULL.
+     Second, we could be threading across a backedge to a point within the
+     same loop.  This occurrs for the FSA/FSM optimization and we would
+     like to optimize it.  However, we have to be very careful as this
+     may completely scramble the loop structures, with the result being
+     irreducible loops causing us to throw away our loop structure.
 
-     This results in the second path never being threaded.  The failure
-     mode is a dangling AUX field.
-
-     This is inherently a bit of a pain to fix, so we just walk all the
-     blocks and all the incoming edges to those blocks and clear their
-     AUX fields.  */
+     As a compromise for the latter case, if the thread path ends in
+     a block where the last statement is a multiway branch, then go
+     ahead and thread it, else ignore it.  */
   basic_block bb;
-  edge_iterator ei;
   edge e;
   FOR_EACH_BB (bb)
     {
-      FOR_EACH_EDGE (e, ei, bb->preds)
+      /* If we do end up threading here, we can remove elements from
+	 BB->preds.  Thus we can not use the FOR_EACH_EDGE iterator.  */
+      for (edge_iterator ei = ei_start (bb->preds);
+	   (e = ei_safe_edge (ei));)
 	if (e->aux)
 	  {
 	    vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
-	    delete_jump_thread_path (path);
-	    e->aux = NULL;
+	    /* Case 1, threading from outside to inside the loop
+	       after we'd already threaded through the header.  */
+	    if ((*path)[0]->e->dest->loop_father
+		!= path->last ()->e->src->loop_father)
+	      {
+		delete_jump_thread_path (path);
+		e->aux = NULL;
+		ei_next (&ei);
+	      }
+	   else if (bb_ends_with_multiway_branch (path->last ()->e->src))
+	      {
+		/* The code to thread through loop headers may have
+		   split a block with jump threads attached to it.
+
+		   We can identify this with a disjoint jump threading
+		   path.  If found, just remove it.  */
+		for (unsigned int i = 0; i < path->length () - 1; i++)
+		  if ((*path)[i]->e->dest != (*path)[i + 1]->e->src)
+		    {
+		      delete_jump_thread_path (path);
+		      e->aux = NULL;
+		      ei_next (&ei);
+		      break;
+		    }
+
+		/* Our path is still valid, thread it.  */
+	        if (e->aux)
+		  {
+		    totally_clobbered_loops
+		      |= thread_block ((*path)[0]->e->dest, false);
+		    e->aux = NULL;
+		  }
+	      }
+	   else
+	      {
+		delete_jump_thread_path (path);
+		e->aux = NULL;
+		ei_next (&ei);
+	      }
  	  }
+	else
+	  ei_next (&ei);
     }
 
   statistics_counter_event (cfun, "Jumps threaded",
@@ -1649,7 +1696,32 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   threaded_blocks = NULL;
   paths.release ();
 
-  if (retval)
+  /* If we made changes to the CFG that might have totally messed
+     up the loop structure, then drop the old loop structure and
+     rebuild.  */
+  if (totally_clobbered_loops)
+    {
+      /* Release the current loop structures, they are totally
+	 clobbered at this point.  */
+      loop_optimizer_finalize ();
+      current_loops = NULL;
+
+      /* Similarly for dominance information.  */
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+
+      /* Before we can rebuild the loop structures, we need dominators,
+	 which requires no unreachable code.  So remove unreachable code.  */
+      delete_unreachable_blocks ();
+
+      /* Now rebuild the loop structures.  */
+      cfun->curr_properties &= ~PROP_loops;
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+      cfun->curr_properties |= PROP_loops;
+      retval = 1;
+    }
+
+  if (retval && current_loops)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   return retval;
