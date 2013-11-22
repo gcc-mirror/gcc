@@ -37,8 +37,6 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -136,6 +134,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Ch_type>
   template<typename _Fwd_iter>

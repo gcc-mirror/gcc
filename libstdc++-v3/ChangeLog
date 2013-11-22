@@ -4,6 +4,16 @@
 	* configure: Regenerate.
 	* doc/xml/manual/abi.xml: Update version information.
 
+	PR libstdc++/59247
+	* include/bits/c++config (_GLIBCXX_INLINE_VERSION): Declare namespace
+	std::experimental::__7 as inline.
+	* include/bits/regex.h (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Do not
+	enclose namespace __detail.
+	* include/bits/regex.tcc (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Likewise.
+	* include/std/iomanip (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Likewise.
+	* include/ext/pb_ds/tag_and_trait.hpp (detail): Fix comment.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust line number.
+
 2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/ext/random/hypergeometric_distribution/operators/
