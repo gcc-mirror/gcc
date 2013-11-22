@@ -101,7 +101,7 @@ new-abi-baseline:
 	@test ! -f $*/site.exp || mv $*/site.exp $*/site.bak
 	@mv $*/site.exp.tmp $*/site.exp
 
-check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3 4 5 6 7 8 9)
+check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3 4 5 6 7 8 9 10)
 $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 
 # Run the testsuite in normal mode.
@@ -111,16 +111,16 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	if [ -z "$*$(filter-out --target_board=%, $(RUNTESTFLAGS))" ] \
 	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
 	  $(MAKE) $(AM_MAKEFLAGS) $(check_DEJAGNU_normal_targets); \
-	  for idx in 0 1 2 3 4 5 6 7 8 9; do \
+	  for idx in 0 1 2 3 4 5 6 7 8 9 10; do \
 	    mv -f normal$$idx/libstdc++.sum normal$$idx/libstdc++.sum.sep; \
 	    mv -f normal$$idx/libstdc++.log normal$$idx/libstdc++.log.sep; \
 	  done; \
 	  mv -f libstdc++.sum libstdc++.sum.sep; \
 	  mv -f libstdc++.log libstdc++.log.sep; \
 	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh \
-	    libstdc++.sum.sep normal[0-9]/libstdc++.sum.sep > libstdc++.sum; \
+	    libstdc++.sum.sep normal[0-9]*/libstdc++.sum.sep > libstdc++.sum; \
 	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh -L \
-	    libstdc++.log.sep normal[0-9]/libstdc++.log.sep > libstdc++.log; \
+	    libstdc++.log.sep normal[0-9]*/libstdc++.log.sep > libstdc++.log; \
 	  exit 0; \
 	fi; \
 	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
@@ -150,10 +150,12 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	  normal6) \
 	    dirs="`cd $$srcdir; echo 2[459]_*/*`";; \
 	  normal7) \
-	    dirs="`cd $$srcdir; echo 2[68]_*/*`";; \
+	    dirs="`cd $$srcdir; echo 26_*/* 28_*/[c-z]*`";; \
 	  normal8) \
 	    dirs="`cd $$srcdir; echo 27_*/*`";; \
 	  normal9) \
+	    dirs="`cd $$srcdir; echo 28_*/[ab]*`";; \
+	  normal10) \
 	    dirs="`cd $$srcdir; echo t*/*`";; \
 	esac; \
 	if [ -n "$*" ]; then cd "$*"; fi; \

@@ -1,3 +1,10 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (check_DEJAGNU_normal_targets): Add 10.
+	(check-DEJAGNU): Add normal10, run 28_regex/[ab]*
+	tests as another separate job.
+	* testsuite/Makefile.in: Regenerated.
+
 2013-11-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* acinclude.m4 (libtool_VERSION): Bump.
