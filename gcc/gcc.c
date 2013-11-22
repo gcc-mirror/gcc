@@ -578,6 +578,22 @@ proper position among the other output files.  */
 #define LIBTSAN_EARLY_SPEC ""
 #endif
 
+#ifndef LIBLSAN_SPEC
+#ifdef STATIC_LIBLSAN_LIBS
+#define ADD_STATIC_LIBLSAN_LIBS \
+  " %{static-liblsan:" STATIC_LIBLSAN_LIBS "}"
+#else
+#define ADD_STATIC_LIBLSAN_LIBS
+#endif
+#ifdef HAVE_LD_STATIC_DYNAMIC
+#define LIBLSAN_SPEC "%{!shared:%{static-liblsan:" LD_STATIC_OPTION \
+		     "} -llsan %{static-liblsan:" LD_DYNAMIC_OPTION "}" \
+		     ADD_STATIC_LIBLSAN_LIBS "}"
+#else
+#define LIBLSAN_SPEC "%{!shared:-llsan" ADD_STATIC_LIBLSAN_LIBS "}"
+#endif
+#endif
+
 #ifndef LIBUBSAN_SPEC
 #ifdef STATIC_LIBUBSAN_LIBS
 #define ADD_STATIC_LIBUBSAN_LIBS \
@@ -585,19 +601,13 @@ proper position among the other output files.  */
 #else
 #define ADD_STATIC_LIBUBSAN_LIBS
 #endif
-#ifdef LIBUBSAN_EARLY_SPEC
-#define LIBUBSAN_SPEC ADD_STATIC_LIBUBSAN_LIBS
-#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#ifdef HAVE_LD_STATIC_DYNAMIC
 #define LIBUBSAN_SPEC "%{static-libubsan:" LD_STATIC_OPTION \
 		     "} -lubsan %{static-libubsan:" LD_DYNAMIC_OPTION "}" \
 		     ADD_STATIC_LIBUBSAN_LIBS
 #else
 #define LIBUBSAN_SPEC "-lubsan" ADD_STATIC_LIBUBSAN_LIBS
 #endif
-#endif
-
-#ifndef LIBUBSAN_EARLY_SPEC
-#define LIBUBSAN_EARLY_SPEC ""
 #endif
 
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
@@ -723,8 +733,7 @@ proper position among the other output files.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
 %{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
-    %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
-    %{%:sanitize(undefined):" LIBUBSAN_EARLY_SPEC "}}}"
+    %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "}}}"
 #endif
 
 /* Linker command line options for -fsanitize= late on the command line.  */
@@ -735,7 +744,8 @@ proper position among the other output files.  */
     %{%:sanitize(thread):%e-fsanitize=address is incompatible with -fsanitize=thread}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}\
-    %{%:sanitize(undefined):" LIBUBSAN_SPEC "}}}"
+    %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
+    %{%:sanitize(leak):" LIBLSAN_SPEC "}}}"
 #endif
 
 /*  This is the spec to use, once the code for creating the vtable
@@ -8123,7 +8133,10 @@ sanitize_spec_function (int argc, const char **argv)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
     return (flag_sanitize & SANITIZE_UNDEFINED) ? "" : NULL;
-
+  if (strcmp (argv[0], "leak") == 0)
+    return ((flag_sanitize
+	     & (SANITIZE_ADDRESS | SANITIZE_LEAK | SANITIZE_THREAD))
+	    == SANITIZE_LEAK) ? "" : NULL;
   return NULL;
 }
 

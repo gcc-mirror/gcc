@@ -455,7 +455,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
--static-libasan -static-libtsan -static-libubsan @gol
+-static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -5268,6 +5268,13 @@ Enable ThreadSanitizer, a fast data race detector.
 Memory access instructions will be instrumented to detect
 data race bugs.
 See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+
+@item -fsanitize=leak
+Enable LeakSanitizer, a memory leak detector.
+This option only matters for linking of executables and if neither
+@option{-fsanitize=address} nor @option{-fsanitize=thread} is used.  In that
+case it will link the executable against a library that overrides @code{malloc}
+and other allocator functions.
 
 @item -fsanitize=undefined
 Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
@@ -10225,6 +10232,15 @@ the GCC driver automatically links against @option{libtsan}.  If
 option is not used, then this links against the shared version of
 @file{libtsan}.  The @option{-static-libtsan} option directs the GCC
 driver to link @file{libtsan} statically, without necessarily linking
+other libraries statically.
+
+@item -static-liblsan
+When the @option{-fsanitize=leak} option is used to link a program,
+the GCC driver automatically links against @option{liblsan}.  If
+@file{liblsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{liblsan}.  The @option{-static-liblsan} option directs the GCC
+driver to link @file{liblsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libubsan

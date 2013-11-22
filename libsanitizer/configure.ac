@@ -78,8 +78,10 @@ fi
 
 # Get target configury.
 unset TSAN_SUPPORTED
+unset LSAN_SUPPORTED
 . ${srcdir}/configure.tgt
 AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
+AM_CONDITIONAL(LSAN_SUPPORTED, [test "x$LSAN_SUPPORTED" = "xyes"])
 
 case "$host" in
   *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
