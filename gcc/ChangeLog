@@ -1,6 +1,23 @@
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_pack_trunc_<mode>,
+	vec_pack_trunc_v2df, vec_pack_trunc_df): Swap for big-endian.
+	(reduc_<sur>plus_<mode>): Factorize V2DI into this.
+	(reduc_<sur>plus_<mode>): Change this to reduc_splus_<mode> for floats
+	and also change to float UNSPEC.
+	(reduc_maxmin_uns>_<mode>): Remove V2DI.
+	* config/aarch64/arm_neon.h (vaddv<q>_<suf><8,16,32,64>,
+	vmaxv<q>_<suf><8,16,32,64>, vminv<q>_<suf><8,16,32,64>): Fix up scalar
+	result access for big-endian.
+	(__LANE0): New macro used to fix up lane access of 'across-lanes'
+	intrinsics for big-endian.
+	* config/aarch64/iterators.md (VDQV): Add V2DI.
+	(VDQV_S): New.
+	(vp): New mode attribute.
+
+2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_pack_trunc_<mode>,
 	vec_pack_trunc_v2df, vec_pack_trunc_df): Swap source ops for big-endian.
 
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>

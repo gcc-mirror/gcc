@@ -108,7 +108,10 @@
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
 
 ;; Vector modes for Integer reduction across lanes.
-(define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI])
+(define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
+
+;; Vector modes(except V2DI) for Integer reduction across lanes.
+(define_mode_iterator VDQV_S [V8QI V16QI V4HI V8HI V4SI])
 
 ;; All double integer narrow-able modes.
 (define_mode_iterator VDN [V4HI V2SI DI])
@@ -584,6 +587,12 @@
 		     (V2SF "") (V4SF  "_q")
 			       (V2DF  "_q")
 		     (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])
+
+(define_mode_attr vp [(V8QI "v") (V16QI "v")
+		      (V4HI "v") (V8HI  "v")
+		      (V2SI "p") (V4SI  "v")
+		      (V2DI  "p") (V2DF  "p")
+		      (V2SF "p") (V4SF  "v")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
