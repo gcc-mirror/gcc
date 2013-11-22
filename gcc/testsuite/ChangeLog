@@ -1,3 +1,8 @@
+2013-11-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/20081223-1.c: Add -ffat-lto-objects.
+	* gcc.dg/vect/vect.exp: Add -ffat-lto-objects.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ubsan/return-1.C: New test.
