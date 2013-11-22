@@ -2051,8 +2051,7 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 {
   int i;
   int nargs = gimple_call_num_args (stmt);
-  vec<tree> vargs;
-  vargs.create (nargs);
+  auto_vec<tree> vargs (nargs);
   gimple new_stmt;
 
   for (i = 0; i < nargs; i++)
@@ -2064,7 +2063,7 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 					       vargs);
   else
     new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
-  vargs.release ();
+
   if (gimple_call_lhs (stmt))
     gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 

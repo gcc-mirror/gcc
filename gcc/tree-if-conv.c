@@ -1215,7 +1215,6 @@ if_convertible_loop_p (struct loop *loop)
 	free (dr->aux);
     }
 
-  loop_nest.release ();
   free_data_refs (refs);
   free_dependence_relations (ddrs);
   return res;

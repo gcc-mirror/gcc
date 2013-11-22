@@ -585,6 +585,8 @@ print_rtx (const_rtx in_rtx)
 
       if (MEM_EXPR (in_rtx))
 	print_mem_expr (outfile, MEM_EXPR (in_rtx));
+      else
+	fputc (' ', outfile);
 
       if (MEM_OFFSET_KNOWN_P (in_rtx))
 	fprintf (outfile, "+" HOST_WIDE_INT_PRINT_DEC, MEM_OFFSET (in_rtx));

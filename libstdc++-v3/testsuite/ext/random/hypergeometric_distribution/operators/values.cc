@@ -20,10 +20,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.8.3.* Class template hypergeometric_distribution [rand.dist.ext.hypergeometric]
+// 26.4.8.3.* Class template hypergeometric_distribution
+// [rand.dist.ext.hypergeometric]
 // 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
 
 #include <ext/random>
+#include <functional>
 #include <testsuite_random.h>
 
 void
@@ -33,17 +35,17 @@ test01()
 
   std::mt19937 eng;
 
-  __gnu_cxx::hypergeometric_distribution hd1{15, 3, 2};
+  __gnu_cxx::hypergeometric_distribution<> hd1{15, 3, 2};
   auto bhd1 = std::bind(hd1, eng);
   testDiscreteDist(bhd1, [](int k)
 		   { return hypergeometric_pdf(k, 15, 3, 2); });
 
-  __gnu_cxx::hypergeometric_distribution hd2{500, 50, 30};
+  __gnu_cxx::hypergeometric_distribution<> hd2{500, 50, 30};
   auto bhd2 = std::bind(hd2, eng);
   testDiscreteDist(bhd2, [](int k)
 		   { return hypergeometric_pdf(k, 500, 50, 30); });
 
-  __gnu_cxx::hypergeometric_distribution hd3{100, 20, 5};
+  __gnu_cxx::hypergeometric_distribution<> hd3{100, 20, 5};
   auto bhd3 = std::bind(hd3, eng);
   testDiscreteDist(bhd3, [](int k)
 		   { return hypergeometric_pdf(k, 100, 20, 5); });

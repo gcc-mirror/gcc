@@ -1524,7 +1524,7 @@ inline_small_functions (void)
   fibheap_t edge_heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_size, max_size;
-  vec<cgraph_edge_p> new_indirect_edges = vNULL;
+  auto_vec<cgraph_edge_p> new_indirect_edges;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   struct cgraph_edge_hook_list *edge_removal_hook_holder;
@@ -1815,7 +1815,6 @@ inline_small_functions (void)
     }
 
   free_growth_caches ();
-  new_indirect_edges.release ();
   fibheap_delete (edge_heap);
   if (dump_file)
     fprintf (dump_file,

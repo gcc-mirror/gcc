@@ -469,7 +469,6 @@
 	(set_min_and_max_values_for_integral_type): Take a signop rather
 	than a bool.
 	* stor-layout.c
-	(place_field): Note BUGs.
 	(layout_type): Use wide-int interfaces.
 	(initialize_sizetypes): Update calls to
 	set_min_and_max_values_for_integral_type.

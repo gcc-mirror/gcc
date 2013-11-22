@@ -1944,10 +1944,10 @@ tm_region_init (struct tm_region *region)
   edge_iterator ei;
   edge e;
   basic_block bb;
-  vec<basic_block> queue = vNULL;
+  auto_vec<basic_block> queue;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
-  vec<tm_region_p> bb_regions = vNULL;
+  auto_vec<tm_region_p> bb_regions;
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -1991,9 +1991,7 @@ tm_region_init (struct tm_region *region)
 	  }
     }
   while (!queue.is_empty ());
-  queue.release ();
   BITMAP_FREE (visited_blocks);
-  bb_regions.release ();
 }
 
 /* The "gate" function for all transactional memory expansion and optimization
@@ -4521,7 +4519,6 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
 {
   struct tm_ipa_cg_data *d;
   bitmap new_irr, old_irr;
-  vec<basic_block> queue;
   bool ret = false;
 
   /* Builtin operators (operator new, and such).  */
@@ -4533,7 +4530,7 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   calculate_dominance_info (CDI_DOMINATORS);
 
   d = get_cg_data (&node, true);
-  queue.create (10);
+  stack_vec<basic_block, 10> queue;
   new_irr = BITMAP_ALLOC (&tm_obstack);
 
   /* Scan each tm region, propagating irrevocable status through the tree.  */
@@ -4600,7 +4597,6 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   else
     BITMAP_FREE (new_irr);
 
-  queue.release ();
   pop_cfun ();
 
   return ret;
@@ -5207,7 +5203,7 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
   bool need_ssa_rename = false;
   edge e;
   edge_iterator ei;
-  vec<basic_block> queue = vNULL;
+  auto_vec<basic_block> queue;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
 
   queue.safe_push (bb);
@@ -5233,7 +5229,6 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
     }
   while (!queue.is_empty ());
 
-  queue.release ();
   BITMAP_FREE (visited_blocks);
 
   return need_ssa_rename;

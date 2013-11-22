@@ -1,3 +1,159 @@
+2013-11-22  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* store-layout.c (place-field): Fix hwi test and accessor mismatch.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_constructor): Allow CONSTRUCTOR with VECTOR_TYPE
+	(same sized) elements even if the type of the CONSTRUCTOR has
+	vector mode and target is a REG.
+
+2013-11-22  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2013-11-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.c (copy_loop_headers): Decrement
+	nb_iterations_upper_bound by one.
+
+2013-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (processor_alias_table): Enable PTA_POPCNT
+	for Silvermont.
+
+	* doc/invoke.texi: Mention POPCNT for corei7, corei7-avx,
+	core-avx-i, core-avx2 and slm.
+
+2013-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* print-rtl.c (print_rtx) <case MEM>: Output a space if no MEM_EXPR.
+
+2013-11-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/m32c/cond.md (stzx_16): Use register_operand for operand 0.
+	(stzx_24_<mode>): Likewise mra_operand.
+
+2013-11-22  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Include tree-cfg.h and tree-pass.h
+	(thread_block_1): Do not cancel jump threads which go from
+	inside a loop, through the header, then back inside the loop.
+	(bb_ends_with_multiway_branch): New function.
+	(thread_through_all_blocks): Handle threading cases which start
+	in a loop through the loop header to a point in the loop.
+
+	* tree-ssa-threadedge.c (thread_across_edge): Mark the start of the
+	jump thread path properly.
+
+2013-11-22  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* vec.h (auto_vec): New class.
+	* cfganal.c, cfgloop.c, cgraphunit.c, config/i386/i386.c, dwarf2out.c,
+	function.c, genautomata.c, gimple.c, haifa-sched.c, ipa-inline.c,
+	ira-build.c, loop-unroll.c, omp-low.c, ree.c, trans-mem.c,
+	tree-call-cdce.c, tree-eh.c, tree-if-conv.c, tree-into-ssa.c,
+	tree-loop-distribution.c, tree-predcom.c, tree-sra.c,
+	tree-sssa-forwprop.c, tree-ssa-loop-manip.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-structalias.c,
+	tree-vect-loop.c, tree-vect-stmts.c: Use auto_vec and stack_vec as
+	appropriate instead of vec for local variables.
+
+2013-11-21  Teresa Johnson  <tejohnson@google.com>
+
+	PR target/59233
+	* cfgcleanup.c (outgoing_edges_match): Walk up past note instructions
+	not understood by old_insns_match_p.
+
+2013-11-21  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_pack_trunc_v2df): Revert previous
+	little endian change.
+	(vec_pack_sfix_trunc_v2df): Likewise.
+	(vec_pack_ufix_trunc_v2df): Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_interleave): Correct
+	double checking of endianness.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-generic.c (optimize_vector_constructor): New function.
+	(expand_vector_operations_1): Call it.
+
+2013-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Use
+	ix86_zero_extend_to_Pmode where appropriate.
+	(ix86_expand_builtin): Ditto.
+
+2013-11-21  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (want_pubnames): Don't do pubnames for -g1.
+	(add_linkage_name): Don't add linkage name for -g1.
+	(decls_for_scope): Process subblocks for -g1.
+	(dwarf2out_source_line): Output line tables for -g1.
+	(dwarf2out_finish): Likewise.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't prune
+	unused scopes for -g1.
+	* opts.c (common_handle_option): Handle -g same as -g2.
+	* doc/invoke.texi: Update description for -g1.
+
+2013-11-21  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/extend.texi: Document htm builtins.
+
+2013-11-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59221
+	* tree-ssa-threadedge.c (thread_across_edge): Properly manage
+	temporary equivalences when threading through joiner blocks.
+
+2013-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR rtl-optimization/55950
+	* real.c (real_sqrt): Remove function.
+	* real.h (real_sqrt): Remove prototype.
+	* simplify-rtx.c (simplify_const_unary_operation): Do not fold
+	SQRT using real_sqrt.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59058
+	* tree-scalar-evolution.h (number_of_exit_cond_executions): Remove.
+	* tree-scalar-evolution.c (number_of_exit_cond_executions): Likewise.
+	* tree-vectorizer.h (LOOP_PEELING_FOR_ALIGNMENT): Rename to ...
+	(LOOP_VINFO_PEELING_FOR_ALIGNMENT): ... this.
+	(NITERS_KNOWN_P): Fold into ...
+	(LOOP_VINFO_NITERS_KNOWN_P): ... this.
+	(LOOP_VINFO_PEELING_FOR_NITER): Add.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Use LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	(vect_do_peeling_for_alignment): Re-use precomputed niter
+	instead of re-emitting it.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Use LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	* tree-vect-loop.c (vect_get_loop_niters): Use
+	number_of_latch_executions.
+	(new_loop_vec_info): Initialize LOOP_VINFO_PEELING_FOR_NITER.
+	(vect_analyze_loop_form): Simplify.
+	(vect_analyze_loop_operations): Move epilogue peeling code ...
+	(vect_analyze_loop_2): ... here and adjust it to compute
+	LOOP_VINFO_PEELING_FOR_NITER.
+	(vect_estimate_min_profitable_iters): Use
+	LOOP_VINFO_PEELING_FOR_ALIGNMENT.
+	(vect_build_loop_niters): Emit on the preheader.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_transform_loop): Use LOOP_VINFO_PEELING_FOR_NITER instead
+	of recomputing it.  Adjust.
+
+2013-11-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE,
+	LOC_LINE): Remove wrappers and fix all users.
+	(struct _loop_vec_info): Remove loop_line_number member.
+	(LOOP_VINFO_LOC): Remove.
+	* tree-parloops.c, tree-vect-loop-manip.c, tree-vect-slp.c,
+	tree-vectorizer.c: Fix users of LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE
+	and LOC_LINE.
+
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (simplify_vce): New function.
@@ -26,8 +182,7 @@
 2013-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058
-	* tree-loop-distribution.c (struct partition_s): Add plus_one
-	member.
+	* tree-loop-distribution.c (struct partition_s): Add plus_one member.
 	(build_size_arg_loc): Apply niter adjustment here.
 	(generate_memset_builtin): Adjust.
 	(generate_memcpy_builtin): Likewise.
@@ -75,13 +230,13 @@
 
 2013-11-20  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gimplify.h (gimplify_hasher : typed_free_remove, struct gimplify_ctx):
+	* gimplify.h (gimplify_hasher:typed_free_remove, struct gimplify_ctx):
 	Move to gimplify.c.
 	(free_gimplify_stack): Add prototype.
 	* gimplify.c (gimplify_hasher:typed_free_remove): Relocate here.
 	(struct gimplify_ctx): Relocate here.
 	(gimplify_ctxp): Make static.
-	(ctx_pool, ctx_alloc, ctx_free, free_gimplify_stack): New.  Manage a 
+	(ctx_pool, ctx_alloc, ctx_free, free_gimplify_stack): New.  Manage a
 	list of struct gimplify_ctx.
 	(push_gimplify_context): Add default parameters and allocate a struct
 	from the pool.
@@ -114,8 +269,7 @@
 	new pseudos.
 	(lra_create_new_reg_with_unique_value): Pass new argument value.
 	(lra_emit_add, lra_emit_move): Ditto.
-	* lra-constraints.c (in_class_p): Add check for move for a new
-	insn.
+	* lra-constraints.c (in_class_p): Add check for move for a new insn.
 	(change_class): Rename to lra_change_class.  Move to lra-int.h.
 	(get_reload_reg, narrow_reload_pseudo_class): Adjust calls of
 	change_class.
@@ -209,7 +363,8 @@
 
 2013-11-20  Jan Hubicka  <jh@suse.cz>
 
-	* opts.c (finish_options): Imply -ffat-lto-objects with -fno-use-linker-plugin.
+	* opts.c (finish_options): Imply -ffat-lto-objects with
+	-fno-use-linker-plugin.
 	* common.opt (fuse-linker-plugin): Add var.
 
 2013-11-20  Ilya Enkovich  <ilya.enkovich@intel.com>
@@ -303,8 +458,7 @@
 	Remove inline and related attributes.
 	(__TM_nesting_depth, __TM_is_user_abort, __TM_is_named_user_abort)
 	(__TM_is_illegal, __TM_is_footprint_exceeded)
-	(__TM_is_nested_too_deep, __TM_is_conflict): Fix format value
-	check.
+	(__TM_is_nested_too_deep, __TM_is_conflict): Fix format value check.
 
 2013-11-20  Richard Biener  <rguenther@suse.de>
 
@@ -324,8 +478,7 @@
 
 	* gcc/config/aarch64/aarch64-builtins.c
 	(aarch64_simd_itype): Remove.
-	(aarch64_simd_builtin_datum): Remove itype, add
-	qualifiers pointer.
+	(aarch64_simd_builtin_datum): Remove itype, add qualifiers pointer.
 	(VAR1): Use qualifiers.
 	(aarch64_build_scalar_type): New.
 	(aarch64_build_vector_type): Likewise.

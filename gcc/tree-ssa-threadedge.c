@@ -1072,10 +1072,15 @@ thread_across_edge (gimple dummy_cond,
     /* Look at each successor of E->dest to see if we can thread through it.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
       {
+	/* Push a fresh marker so we can unwind the equivalences created
+	   for each of E->dest's successors.  */
+	stack->safe_push (NULL_TREE);
+     
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
-	bitmap_set_bit (visited, taken_edge->dest->index);
+	bitmap_set_bit (visited, e->src->index);
 	bitmap_set_bit (visited, e->dest->index);
+	bitmap_set_bit (visited, taken_edge->dest->index);
         vec<jump_thread_edge *> *path = new vec<jump_thread_edge *> ();
 
 	/* Record whether or not we were able to thread through a successor
@@ -1118,6 +1123,9 @@ thread_across_edge (gimple dummy_cond,
 	  {
 	    delete_jump_thread_path (path);
 	  }
+
+	/* And unwind the equivalence table.  */
+	remove_temporary_equivalences (stack);
       }
     BITMAP_FREE (visited);
   }

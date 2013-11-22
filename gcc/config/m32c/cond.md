@@ -75,7 +75,7 @@
 )
 
 (define_insn "stzx_16"
-  [(set (match_operand:QI 0 "mrai_operand" "=R0w,R0w,R0w")
+  [(set (match_operand:QI 0 "register_operand" "=R0w,R0w,R0w")
 	(if_then_else:QI (eq (reg:CC FLG_REGNO) (const_int 0))
 			 (match_operand:QI 1 "const_int_operand" "i,i,0")
 			 (match_operand:QI 2 "const_int_operand" "i,0,i")))]
@@ -88,7 +88,7 @@
 )
 
 (define_insn "stzx_24_<mode>"
-  [(set (match_operand:QHI 0 "mrai_operand" "=RraSd,RraSd,RraSd")
+  [(set (match_operand:QHI 0 "mra_operand" "=RraSd,RraSd,RraSd")
 	(if_then_else:QHI (eq (reg:CC FLG_REGNO) (const_int 0))
 			 (match_operand:QHI 1 "const_int_operand" "i,i,0")
 			 (match_operand:QHI 2 "const_int_operand" "i,0,i")))]

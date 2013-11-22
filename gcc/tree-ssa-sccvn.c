@@ -1749,8 +1749,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
       int i, j;
-      vec<vn_reference_op_s>
-	  rhs = vNULL;
+      auto_vec<vn_reference_op_s> rhs;
       vn_reference_op_t vro;
       ao_ref r;
 
@@ -1813,7 +1812,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	vr->operands.truncate (i + 1 + rhs.length ());
       FOR_EACH_VEC_ELT (rhs, j, vro)
 	vr->operands[i + 1 + j] = *vro;
-      rhs.release ();
       vr->operands = valueize_refs (vr->operands);
       vr->hashcode = vn_reference_compute_hash (vr);
 
@@ -3785,7 +3783,7 @@ process_scc (vec<tree> scc)
 static bool
 extract_and_process_scc_for_name (tree name)
 {
-  vec<tree> scc = vNULL;
+  auto_vec<tree> scc;
   tree x;
 
   /* Found an SCC, pop the components off the SCC stack and
@@ -3807,7 +3805,6 @@ extract_and_process_scc_for_name (tree name)
 		 "SCC size %u exceeding %u\n", scc.length (),
 		 (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
 
-      scc.release ();
       return false;
     }
 
@@ -3818,8 +3815,6 @@ extract_and_process_scc_for_name (tree name)
     print_scc (dump_file, scc);
 
   process_scc (scc);
-
-  scc.release ();
 
   return true;
 }

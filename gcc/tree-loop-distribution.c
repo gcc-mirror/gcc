@@ -1406,7 +1406,6 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 		 control_dependences *cd, int *nb_calls)
 {
   struct graph *rdg;
-  vec<partition_t> partitions;
   partition_t partition;
   bool any_builtin;
   int i, nbp;
@@ -1432,7 +1431,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  partitions.create (3);
+  stack_vec<partition_t, 3> partitions;
   rdg_build_partitions (rdg, stmts, &partitions);
 
   any_builtin = false;
@@ -1658,7 +1657,6 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
-  partitions.release ();
 
   free_rdg (rdg);
   return nbp - *nb_calls;
@@ -1687,7 +1685,7 @@ tree_loop_distribution (void)
      walking to innermost loops.  */
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
-      vec<gimple> work_list = vNULL;
+      auto_vec<gimple> work_list;
       basic_block *bbs;
       int num = loop->num;
       unsigned int i;
@@ -1769,8 +1767,6 @@ out:
 	}
       else if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Loop %d is the same.\n", num);
-
-      work_list.release ();
     }
 
   if (cd)

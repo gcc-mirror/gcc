@@ -3340,7 +3340,6 @@ static alt_state_t
 uniq_sort_alt_states (alt_state_t alt_states_list)
 {
   alt_state_t curr_alt_state;
-  vec<alt_state_t> alt_states;
   size_t i;
   size_t prev_unique_state_ind;
   alt_state_t result;
@@ -3350,7 +3349,7 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
   if (alt_states_list->next_alt_state == 0)
     return alt_states_list;
 
-  alt_states.create (150);
+  stack_vec<alt_state_t, 150> alt_states;
   for (curr_alt_state = alt_states_list;
        curr_alt_state != NULL;
        curr_alt_state = curr_alt_state->next_alt_state)
@@ -3374,7 +3373,6 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
 
   result = alt_states[0];
 
-  alt_states.release ();
   return result;
 }
 
@@ -5148,7 +5146,6 @@ check_regexp_units_distribution (const char *insn_reserv_name,
   bool annotation_reservation_message_reported_p;
   regexp_t seq, allof, unit;
   struct unit_usage *unit_usage_ptr;
-  vec<int> marked;
 
   if (regexp == NULL || regexp->mode != rm_oneof)
     return;
@@ -5228,7 +5225,7 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 	 unit_usage_ptr = unit_usage_ptr->next)
       unit_usage_ptr->unit_decl->last_distribution_check_cycle = -1;
   n_alts = REGEXP_ONEOF (regexp)->regexps_num;
-  marked.create (n_alts);
+  auto_vec<int> marked (n_alts);
   for (i = 0; i < n_alts; i++)
     marked.safe_push (0);
   annotation_reservation_message_reported_p = false;
@@ -5294,7 +5291,6 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 	    }
 	}
     }
-  marked.release ();
   cycle_alt_unit_usages.release ();
   obstack_free (&unit_usages, NULL);
 }
@@ -5488,8 +5484,7 @@ form_ainsn_with_same_reservs (automaton_t automaton)
 {
   ainsn_t curr_ainsn;
   size_t i;
-  vec<ainsn_t> last_insns;
-  last_insns.create (150);
+  stack_vec<ainsn_t, 150> last_insns;
 
   for (curr_ainsn = automaton->ainsn_list;
        curr_ainsn != NULL;
@@ -5519,7 +5514,6 @@ form_ainsn_with_same_reservs (automaton_t automaton)
             curr_ainsn->first_insn_with_same_reservs = 1;
           }
       }
-  last_insns.release ();
 }
 
 /* Forming unit reservations which can affect creating the automaton
@@ -5561,8 +5555,7 @@ make_automaton (automaton_t automaton)
   state_t state;
   state_t start_state;
   state_t state2;
-  vec<state_t> state_stack;
-  state_stack.create (150);
+  stack_vec<state_t, 150> state_stack;
   int states_n;
   reserv_sets_t reservs_matter = form_reservs_matter (automaton);
 
@@ -5621,7 +5614,6 @@ make_automaton (automaton_t automaton)
         }
       add_arc (state, state2, automaton->advance_ainsn);
     }
-  state_stack.release ();
 }
 
 /* Form lists of all arcs of STATE marked by the same ainsn.  */
@@ -5764,11 +5756,9 @@ NDFA_to_DFA (automaton_t automaton)
   state_t start_state;
   state_t state;
   decl_t decl;
-  vec<state_t> state_stack;
+  auto_vec<state_t> state_stack;
   int i;
   int states_n;
-
-  state_stack.create (0);
 
   /* Create the start state (empty state).  */
   start_state = automaton->start_state;
@@ -5810,7 +5800,6 @@ NDFA_to_DFA (automaton_t automaton)
 	    add_arc (state, state, automaton->collapse_ainsn);
 	}
     }
-  state_stack.release ();
 }
 
 /* The following variable value is current number (1, 2, ...) of passing
@@ -6258,13 +6247,11 @@ set_new_cycle_flags (state_t state)
 static void
 minimize_DFA (automaton_t automaton)
 {
-  vec<state_t> equiv_classes = vNULL;
+  auto_vec<state_t> equiv_classes;
 
   evaluate_equiv_classes (automaton, &equiv_classes);
   merge_states (automaton, equiv_classes);
   pass_states (automaton, set_new_cycle_flags);
-
-  equiv_classes.release ();
 }
 
 /* Values of two variables are counted number of states and arcs in an

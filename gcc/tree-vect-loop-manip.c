@@ -661,7 +661,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   bool insert_after;
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
-  LOC loop_loc;
+  source_location loop_loc;
   enum tree_code code;
 
   orig_cond = get_loop_exit_condition (loop);
@@ -691,9 +691,9 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   loop_loc = find_loop_location (loop);
   if (dump_enabled_p ())
     {
-      if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOC)
-	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
-		     LOC_LINE (loop_loc));
+      if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOCATION)
+	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOCATION_FILE (loop_loc),
+		     LOCATION_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
       dump_printf (MSG_NOTE, "\n");
     }
@@ -1057,7 +1057,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   basic_block new_exit_bb;
   gimple_stmt_iterator gsi;
   edge exit_e = single_exit (loop);
-  LOC loop_loc;
+  source_location loop_loc;
   tree cost_pre_condition = NULL_TREE;
   /* There are many aspects to how likely the first loop is going to be executed.
      Without histogram we can't really do good job.  Simply set it to
@@ -1365,7 +1365,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
    location is calculated.
    Return the loop location if succeed and NULL if not.  */
 
-LOC
+source_location
 find_loop_location (struct loop *loop)
 {
   gimple stmt = NULL;
@@ -1373,7 +1373,7 @@ find_loop_location (struct loop *loop)
   gimple_stmt_iterator si;
 
   if (!loop)
-    return UNKNOWN_LOC;
+    return UNKNOWN_LOCATION;
 
   stmt = get_loop_exit_condition (loop);
 
@@ -1385,7 +1385,7 @@ find_loop_location (struct loop *loop)
      try to estimate the loop location */
 
   if (!loop->header)
-    return UNKNOWN_LOC;
+    return UNKNOWN_LOCATION;
 
   bb = loop->header;
 
@@ -1396,7 +1396,7 @@ find_loop_location (struct loop *loop)
         return gimple_location (stmt);
     }
 
-  return UNKNOWN_LOC;
+  return UNKNOWN_LOCATION;
 }
 
 
@@ -1736,16 +1736,16 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
 
   pe = loop_preheader_edge (loop);
 
-  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
+  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
-      int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "known peeling = %d.\n", npeel);
 
       iters = build_int_cst (niters_type, npeel);
-      *bound = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      *bound = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
     }
   else
     {
@@ -1876,7 +1876,6 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop;
-  tree n_iters;
   tree wide_prolog_niters;
   struct loop *new_loop;
   int max_iter;
@@ -1918,9 +1917,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
                "loop to %d\n", max_iter);
 
   /* Update number of times loop executes.  */
-  n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
-		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
+		TREE_TYPE (ni_name), ni_name, niters_of_prolog_loop);
 
   if (types_compatible_p (sizetype, TREE_TYPE (niters_of_prolog_loop)))
     wide_prolog_niters = niters_of_prolog_loop;
@@ -2224,7 +2222,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   loop_version (loop, cond_expr, &condition_bb,
 		prob, prob, REG_BR_PROB_BASE - prob, true);
 
-  if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
+  if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
       && dump_enabled_p ())
     {
       if (version_alias)

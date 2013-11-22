@@ -4376,24 +4376,17 @@ handle_omp_array_sections (tree c)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
-  vec<tree> types = vNULL;
+  auto_vec<tree> types;
   tree first = handle_omp_array_sections_1 (c, OMP_CLAUSE_DECL (c), types,
 					    maybe_zero_len, first_non_one);
   if (first == error_mark_node)
-    {
-      types.release ();
-      return true;
-    }
+    return true;
   if (first == NULL_TREE)
-    {
-      types.release ();
-      return false;
-    }
+    return false;
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
     {
       tree t = OMP_CLAUSE_DECL (c);
       tree tem = NULL_TREE;
-      types.release ();
       if (processing_template_decl)
 	return false;
       /* Need to evaluate side effects in the length expressions
@@ -4423,10 +4416,7 @@ handle_omp_array_sections (tree c)
       if (int_size_in_bytes (TREE_TYPE (first)) <= 0)
 	maybe_zero_len = true;
       if (processing_template_decl && maybe_zero_len)
-	{
-	  types.release ();
-	  return false;
-	}
+	return false;
 
       for (i = num, t = OMP_CLAUSE_DECL (c); i > 0;
 	   t = TREE_CHAIN (t))
@@ -4469,7 +4459,6 @@ handle_omp_array_sections (tree c)
 				"array section is not contiguous in %qs "
 				"clause",
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		      types.release ();
 		      return true;
 		    }
 		}
@@ -4525,7 +4514,6 @@ handle_omp_array_sections (tree c)
 		size = size_binop (MULT_EXPR, size, l);
 	    }
 	}
-      types.release ();
       if (!processing_template_decl)
 	{
 	  if (side_effects)

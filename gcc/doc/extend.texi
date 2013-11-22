@@ -9218,6 +9218,7 @@ instructions, but allow the compiler to schedule those calls.
 * picoChip Built-in Functions::
 * PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
+* PowerPC Hardware Transactional Memory Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -15169,6 +15170,196 @@ The second argument to the @var{__builtin_crypto_vshasigmad} and
 @var{__builtin_crypto_vshasigmaw} builtin functions must be a constant
 integer that is 0 or 1.  The third argument to these builtin functions
 must be a constant integer in the range of 0 to 15.
+
+@node PowerPC Hardware Transactional Memory Built-in Functions
+@subsection PowerPC Hardware Transactional Memory Built-in Functions
+GCC provides two interfaces for accessing the Hardware Transactional
+Memory (HTM) instructions available on some of the PowerPC family
+of prcoessors (eg, POWER8).  The two interfaces come in a low level
+interface, consisting of built-in functions specific to PowerPC and a
+higher level interface consisting of inline functions that are common
+between PowerPC and S/390.
+
+@subsubsection PowerPC HTM Low Level Built-in Functions
+
+The following low level built-in functions are available with
+@option{-mhtm} or @option{-mcpu=CPU} where CPU is `power8' or later.
+They all generate the machine instruction that is part of the name.
+
+The HTM built-ins return true or false depending on their success and
+their arguments match exactly the type and order of the associated
+hardware instruction's operands.  Refer to the ISA manual for a
+description of each instruction's operands.
+
+@smallexample
+unsigned int __builtin_tbegin (unsigned int)
+unsigned int __builtin_tend (unsigned int)
+
+unsigned int __builtin_tabort (unsigned int)
+unsigned int __builtin_tabortdc (unsigned int, unsigned int, unsigned int)
+unsigned int __builtin_tabortdci (unsigned int, unsigned int, int)
+unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int)
+unsigned int __builtin_tabortwci (unsigned int, unsigned int, int)
+
+unsigned int __builtin_tcheck (unsigned int)
+unsigned int __builtin_treclaim (unsigned int)
+unsigned int __builtin_trechkpt (void)
+unsigned int __builtin_tsr (unsigned int)
+@end smallexample
+
+In addition to the above HTM built-ins, we have added built-ins for
+some common extended mnemonics of the HTM instructions:
+
+@smallexample
+unsigned int __builtin_tendall (void)
+unsigned int __builtin_tresume (void)
+unsigned int __builtin_tsuspend (void)
+@end smallexample
+
+The following set of built-in functions are available to gain access
+to the HTM specific special purpose registers.
+
+@smallexample
+unsigned long __builtin_get_texasr (void)
+unsigned long __builtin_get_texasru (void)
+unsigned long __builtin_get_tfhar (void)
+unsigned long __builtin_get_tfiar (void)
+
+void __builtin_set_texasr (unsigned long);
+void __builtin_set_texasru (unsigned long);
+void __builtin_set_tfhar (unsigned long);
+void __builtin_set_tfiar (unsigned long);
+@end smallexample
+
+Example usage of these low level built-in functions may look like:
+
+@smallexample
+#include <htmintrin.h>
+
+int num_retries = 10;
+
+while (1)
+  @{
+    if (__builtin_tbegin (0))
+      @{
+        /* Transaction State Initiated.  */
+        if (is_locked (lock))
+          __builtin_tabort (0);
+        ... transaction code...
+        __builtin_tend (0);
+        break;
+      @}
+    else
+      @{
+        /* Transaction State Failed.  Use locks if the transaction
+           failure is "persistent" or we've tried too many times.  */
+        if (num_retries-- <= 0
+            || _TEXASRU_FAILURE_PERSISTENT (__builtin_get_texasru ()))
+          @{
+            acquire_lock (lock);
+            ... non transactional fallback path...
+            release_lock (lock);
+            break;
+          @}
+      @}
+  @}
+@end smallexample
+
+One final built-in function has been added that returns the value of
+the 2-bit Transaction State field of the Machine Status Register (MSR)
+as stored in @code{CR0}.
+
+@smallexample
+unsigned long __builtin_ttest (void)
+@end smallexample
+
+This built-in can be used to determine the current transaction state
+using the following code example:
+
+@smallexample
+#include <htmintrin.h>
+
+unsigned char tx_state = _HTM_STATE (__builtin_ttest ());
+
+if (tx_state == _HTM_TRANSACTIONAL)
+  @{
+    /* Code to use in transactional state.  */
+  @}
+else if (tx_state == _HTM_NONTRANSACTIONAL)
+  @{
+    /* Code to use in non-transactional state.  */
+  @}
+else if (tx_state == _HTM_SUSPENDED)
+  @{
+    /* Code to use in transaction suspended state.  */
+  @}
+@end smallexample
+
+@subsubsection PowerPC HTM High Level Inline Functions
+
+The following high level HTM interface is made available by including
+@code{<htmxlintrin.h>} and using @option{-mhtm} or @option{-mcpu=CPU}
+where CPU is `power8' or later.  This interface is common between PowerPC
+and S/390, allowing users to write one HTM source implementation that
+can be compiled and executed on either system.
+
+@smallexample
+long __TM_simple_begin (void)
+long __TM_begin (void* const TM_buff)
+long __TM_end (void)
+void __TM_abort (void)
+void __TM_named_abort (unsigned char const code)
+void __TM_resume (void)
+void __TM_suspend (void)
+
+long __TM_is_user_abort (void* const TM_buff)
+long __TM_is_named_user_abort (void* const TM_buff, unsigned char *code)
+long __TM_is_illegal (void* const TM_buff)
+long __TM_is_footprint_exceeded (void* const TM_buff)
+long __TM_nesting_depth (void* const TM_buff)
+long __TM_is_nested_too_deep(void* const TM_buff)
+long __TM_is_conflict(void* const TM_buff)
+long __TM_is_failure_persistent(void* const TM_buff)
+long __TM_failure_address(void* const TM_buff)
+long long __TM_failure_code(void* const TM_buff)
+@end smallexample
+
+Using these common set of HTM inline functions, we can create
+a more portable version of the HTM example in the previous
+section that will work on either PowerPC or S/390:
+
+@smallexample
+#include <htmxlintrin.h>
+
+int num_retries = 10;
+TM_buff_type TM_buff;
+
+while (1)
+  @{
+    if (__TM_begin (TM_buff))
+      @{
+        /* Transaction State Initiated.  */
+        if (is_locked (lock))
+          __TM_abort ();
+        ... transaction code...
+        __TM_end ();
+        break;
+      @}
+    else
+      @{
+        /* Transaction State Failed.  Use locks if the transaction
+           failure is "persistent" or we've tried too many times.  */
+        if (num_retries-- <= 0
+            || __TM_is_failure_persistent (TM_buff))
+          @{
+            acquire_lock (lock);
+            ... non transactional fallback path...
+            release_lock (lock);
+            break;
+          @}
+      @}
+  @}
+@end smallexample
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
