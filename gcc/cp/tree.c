@@ -33,9 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "cgraph.h"
 #include "splay-tree.h"
-#include "gimple.h"
-#include "gimplify.h"
 #include "hash-table.h"
+#include "gimple-expr.h"
+#include "gimplify.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);

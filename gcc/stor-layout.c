@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
 #include "target.h"
 #include "langhooks.h"
 #include "regs.h"
@@ -41,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "tree-dump.h"
-#include "gimple.h"
 #include "gimplify.h"
 
 /* Data type for the expressions representing sizes of data types.

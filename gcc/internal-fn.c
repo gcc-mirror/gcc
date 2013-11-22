@@ -25,6 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "expr.h"
 #include "optabs.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 
 /* The names of each internal function, indexed by function number.  */

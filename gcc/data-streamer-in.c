@@ -25,6 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "data-streamer.h"
 

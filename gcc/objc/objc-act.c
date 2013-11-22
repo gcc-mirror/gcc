@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "function.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "debug.h"
 #include "c-family/c-target.h"
 #include "diagnostic-core.h"
@@ -63,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 
 /* For enum gimplify_status */
-#include "gimple.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 
 /* For encode_method_prototype().  */

@@ -62,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tm_p.h"
 #include "target-def.h"
-#include "ggc.h"
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "reload.h"
@@ -70,11 +69,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "intl.h"
 #include "opts.h"
-#include "gimple.h"
+#include "tree-ssa-alias.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
-#include "tree-ssa-alias.h"
 #include "insn-codes.h"
 
 

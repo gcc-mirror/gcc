@@ -3103,7 +3103,9 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_PASS_H) $(GCC_PLUGIN_H) \
+  toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) pointer-set.h $(HASH_TABLE_H) \
+  tree-ssa-alias.h $(INTERNAL_FN_H) gimple-fold.h tree-eh.h gimple-expr.h \
+  gimple.h is-a.h $(TREE_PASS_H) $(GCC_PLUGIN_H) \
   $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \

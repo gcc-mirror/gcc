@@ -120,6 +120,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -137,7 +144,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dbgcnt.h"
 #include "params.h"
-#include "hash-table.h"
 
 
 /* Possible lattice values.  */

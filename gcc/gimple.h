@@ -22,18 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_H
 #define GCC_GIMPLE_H
 
-#include "pointer-set.h"
-#include "hash-table.h"
-#include "vec.h"
-#include "ggc.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-
 typedef gimple gimple_seq_node;
 
 /* For each block, the PHI nodes that need to be rewritten are stored into
@@ -1112,7 +1100,6 @@ bool gimple_could_trap_p (gimple);
 bool gimple_assign_rhs_could_trap_p (gimple);
 extern void dump_gimple_statistics (void);
 unsigned get_gimple_rhs_num_ops (enum tree_code);
-extern void recalculate_side_effects (tree);
 extern tree canonicalize_cond_expr_cond (tree);
 gimple gimple_call_copy_skip_args (gimple, bitmap);
 extern bool gimple_compare_field_offset (tree, tree);

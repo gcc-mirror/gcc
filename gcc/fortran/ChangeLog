@@ -1,3 +1,9 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans.c: Add required include files from gimple.h.
+	* trans-expr.c: Likewise
+	* trans-openmp.c: Likewise
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* trans.c (trans_runtime_error_vararg): Remove use of input_line

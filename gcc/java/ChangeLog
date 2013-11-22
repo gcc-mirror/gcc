@@ -1,3 +1,7 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* java-gimplify.c: Add required include files from gimple.h.
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* class.c (maybe_layout_super_class): Update comment.

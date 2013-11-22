@@ -1,3 +1,9 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Add required include files from gimple.h.
+	* c-gimplify.c: Likewise
+	* cilk.c: Likewise
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (unsafe_conversion_p): Remove use of

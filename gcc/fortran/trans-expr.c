@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "dependency.h"
-#include "gimple.h"
 #include "gimplify.h"
 
 

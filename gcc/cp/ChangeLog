@@ -1,3 +1,16 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Add required include files from gimple.h.
+	* cp-gimplify.c: Likewise
+	* decl2.c: Likewise
+	* init.c: Likewise
+	* optimize.c: Likewise
+	* pt.c: Likewise
+	* semantics.c: Likewise
+	* tree.c: Likewise
+	* typeck.c: Likewise
+	* vtable-class-hierarchy.c: Likewise
+
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c (build_integral_nontype_arg_conv): Remove use of
