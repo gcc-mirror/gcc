@@ -609,6 +609,27 @@ extern alloc_pool ipcp_values_pool;
 extern alloc_pool ipcp_sources_pool;
 extern alloc_pool ipcp_agg_lattice_pool;
 
+/* Operation to be performed for the parameter in ipa_parm_adjustment
+   below.  */
+enum ipa_parm_op {
+  IPA_PARM_OP_NONE,
+
+  /* This describes a brand new parameter.
+
+     The field `type' should be set to the new type, `arg_prefix'
+     should be set to the string prefix for the new DECL_NAME, and
+     `new_decl' will ultimately hold the newly created argument.  */
+  IPA_PARM_OP_NEW,
+
+  /* This new parameter is an unmodified parameter at index base_index. */
+  IPA_PARM_OP_COPY,
+
+  /* This adjustment describes a parameter that is about to be removed
+     completely.  Most users will probably need to book keep those so that they
+     don't leave behinfd any non default def ssa names belonging to them.  */
+  IPA_PARM_OP_REMOVE
+};
+
 /* Structure to describe transformations of formal parameters and actual
    arguments.  Each instance describes one new parameter and they are meant to
    be stored in a vector.  Additionally, most users will probably want to store
@@ -632,10 +653,11 @@ struct ipa_parm_adjustment
      arguments.  */
   tree alias_ptr_type;
 
-  /* The new declaration when creating/replacing a parameter.  Created by
-     ipa_modify_formal_parameters, useful for functions modifying the body
-     accordingly. */
-  tree reduction;
+  /* The new declaration when creating/replacing a parameter.  Created
+     by ipa_modify_formal_parameters, useful for functions modifying
+     the body accordingly.  For brand new arguments, this is the newly
+     created argument.  */
+  tree new_decl;
 
   /* New declaration of a substitute variable that we may use to replace all
      non-default-def ssa names when a parm decl is going away.  */
@@ -645,22 +667,19 @@ struct ipa_parm_adjustment
      is NULL), this is going to be its nonlocalized vars value.  */
   tree nonlocal_value;
 
+  /* This holds the prefix to be used for the new DECL_NAME.  */
+  const char *arg_prefix;
+
   /* Offset into the original parameter (for the cases when the new parameter
      is a component of an original one).  */
   HOST_WIDE_INT offset;
 
-  /* Zero based index of the original parameter this one is based on.  (ATM
-     there is no way to insert a new parameter out of the blue because there is
-     no need but if it arises the code can be easily exteded to do so.)  */
+  /* Zero based index of the original parameter this one is based on.  */
   int base_index;
 
-  /* This new parameter is an unmodified parameter at index base_index. */
-  unsigned copy_param : 1;
-
-  /* This adjustment describes a parameter that is about to be removed
-     completely.  Most users will probably need to book keep those so that they
-     don't leave behinfd any non default def ssa names belonging to them.  */
-  unsigned remove_param : 1;
+  /* Whether this parameter is a new parameter, a copy of an old one,
+     or one about to be removed.  */
+  enum ipa_parm_op op;
 
   /* The parameter is to be passed by reference.  */
   unsigned by_ref : 1;
@@ -671,8 +690,8 @@ typedef struct ipa_parm_adjustment ipa_parm_adjustment_t;
 typedef vec<ipa_parm_adjustment_t> ipa_parm_adjustment_vec;
 
 vec<tree> ipa_get_vector_of_formal_parms (tree fndecl);
-void ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec,
-				   const char *);
+vec<tree> ipa_get_vector_of_formal_parm_types (tree fntype);
+void ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec);
 void ipa_modify_call_arguments (struct cgraph_edge *, gimple,
 				ipa_parm_adjustment_vec);
 ipa_parm_adjustment_vec ipa_combine_adjustments (ipa_parm_adjustment_vec,
@@ -690,6 +709,10 @@ tree ipa_value_from_jfunc (struct ipa_node_params *info,
 			   struct ipa_jump_func *jfunc);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
 void ipa_dump_param (FILE *, struct ipa_node_params *info, int i);
+bool ipa_modify_expr (tree *, bool, ipa_parm_adjustment_vec);
+ipa_parm_adjustment *ipa_get_adjustment_candidate (tree **, bool *,
+						   ipa_parm_adjustment_vec,
+						   bool);
 
 
 /* From tree-sra.c:  */

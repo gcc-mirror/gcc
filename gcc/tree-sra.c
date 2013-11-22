@@ -4281,9 +4281,10 @@ turn_representatives_into_adjustments (vec<access_p> representatives,
 	  adj.base_index = get_param_index (parm, parms);
 	  adj.base = parm;
 	  if (!repr)
-	    adj.copy_param = 1;
+	    adj.op = IPA_PARM_OP_COPY;
 	  else
-	    adj.remove_param = 1;
+	    adj.op = IPA_PARM_OP_REMOVE;
+	  adj.arg_prefix = "ISRA";
 	  adjustments.quick_push (adj);
 	}
       else
@@ -4303,6 +4304,7 @@ turn_representatives_into_adjustments (vec<access_p> representatives,
 	      adj.by_ref = (POINTER_TYPE_P (TREE_TYPE (repr->base))
 			    && (repr->grp_maybe_modified
 				|| repr->grp_not_necessarilly_dereferenced));
+	      adj.arg_prefix = "ISRA";
 	      adjustments.quick_push (adj);
 	    }
 	}
@@ -4433,7 +4435,7 @@ get_adjustment_for_base (ipa_parm_adjustment_vec adjustments, tree base)
       struct ipa_parm_adjustment *adj;
 
       adj = &adjustments[i];
-      if (!adj->copy_param && adj->base == base)
+      if (adj->op != IPA_PARM_OP_COPY && adj->base == base)
 	return adj;
     }
 
@@ -4497,84 +4499,6 @@ replace_removed_params_ssa_names (gimple stmt,
   return true;
 }
 
-/* If the expression *EXPR should be replaced by a reduction of a parameter, do
-   so.  ADJUSTMENTS is a pointer to a vector of adjustments.  CONVERT
-   specifies whether the function should care about type incompatibility the
-   current and new expressions.  If it is false, the function will leave
-   incompatibility issues to the caller.  Return true iff the expression
-   was modified. */
-
-static bool
-sra_ipa_modify_expr (tree *expr, bool convert,
-		     ipa_parm_adjustment_vec adjustments)
-{
-  int i, len;
-  struct ipa_parm_adjustment *adj, *cand = NULL;
-  HOST_WIDE_INT offset, size, max_size;
-  tree base, src;
-
-  len = adjustments.length ();
-
-  if (TREE_CODE (*expr) == BIT_FIELD_REF
-      || TREE_CODE (*expr) == IMAGPART_EXPR
-      || TREE_CODE (*expr) == REALPART_EXPR)
-    {
-      expr = &TREE_OPERAND (*expr, 0);
-      convert = true;
-    }
-
-  base = get_ref_base_and_extent (*expr, &offset, &size, &max_size);
-  if (!base || size == -1 || max_size == -1)
-    return false;
-
-  if (TREE_CODE (base) == MEM_REF)
-    {
-      offset += mem_ref_offset (base).low * BITS_PER_UNIT;
-      base = TREE_OPERAND (base, 0);
-    }
-
-  base = get_ssa_base_param (base);
-  if (!base || TREE_CODE (base) != PARM_DECL)
-    return false;
-
-  for (i = 0; i < len; i++)
-    {
-      adj = &adjustments[i];
-
-      if (adj->base == base
-	  && (adj->offset == offset || adj->remove_param))
-	{
-	  cand = adj;
-	  break;
-	}
-    }
-  if (!cand || cand->copy_param || cand->remove_param)
-    return false;
-
-  if (cand->by_ref)
-    src = build_simple_mem_ref (cand->reduction);
-  else
-    src = cand->reduction;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "About to replace expr ");
-      print_generic_expr (dump_file, *expr, 0);
-      fprintf (dump_file, " with ");
-      print_generic_expr (dump_file, src, 0);
-      fprintf (dump_file, "\n");
-    }
-
-  if (convert && !useless_type_conversion_p (TREE_TYPE (*expr), cand->type))
-    {
-      tree vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (*expr), src);
-      *expr = vce;
-    }
-  else
-    *expr = src;
-  return true;
-}
-
 /* If the statement pointed to by STMT_PTR contains any expressions that need
    to replaced with a different one as noted by ADJUSTMENTS, do so.  Handle any
    potential type incompatibilities (GSI is used to accommodate conversion
@@ -4595,8 +4519,8 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi,
   rhs_p = gimple_assign_rhs1_ptr (stmt);
   lhs_p = gimple_assign_lhs_ptr (stmt);
 
-  any = sra_ipa_modify_expr (rhs_p, false, adjustments);
-  any |= sra_ipa_modify_expr (lhs_p, false, adjustments);
+  any = ipa_modify_expr (rhs_p, false, adjustments);
+  any |= ipa_modify_expr (lhs_p, false, adjustments);
   if (any)
     {
       tree new_rhs = NULL_TREE;
@@ -4642,7 +4566,7 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi,
 /* Traverse the function body and all modifications as described in
    ADJUSTMENTS.  Return true iff the CFG has been changed.  */
 
-static bool
+bool
 ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 {
   bool cfg_changed = false;
@@ -4668,7 +4592,7 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 	    case GIMPLE_RETURN:
 	      t = gimple_return_retval_ptr (stmt);
 	      if (*t != NULL_TREE)
-		modified |= sra_ipa_modify_expr (t, true, adjustments);
+		modified |= ipa_modify_expr (t, true, adjustments);
 	      break;
 
 	    case GIMPLE_ASSIGN:
@@ -4681,13 +4605,13 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 	      for (i = 0; i < gimple_call_num_args (stmt); i++)
 		{
 		  t = gimple_call_arg_ptr (stmt, i);
-		  modified |= sra_ipa_modify_expr (t, true, adjustments);
+		  modified |= ipa_modify_expr (t, true, adjustments);
 		}
 
 	      if (gimple_call_lhs (stmt))
 		{
 		  t = gimple_call_lhs_ptr (stmt);
-		  modified |= sra_ipa_modify_expr (t, false, adjustments);
+		  modified |= ipa_modify_expr (t, false, adjustments);
 		  modified |= replace_removed_params_ssa_names (stmt,
 								adjustments);
 		}
@@ -4697,12 +4621,12 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 	      for (i = 0; i < gimple_asm_ninputs (stmt); i++)
 		{
 		  t = &TREE_VALUE (gimple_asm_input_op (stmt, i));
-		  modified |= sra_ipa_modify_expr (t, true, adjustments);
+		  modified |= ipa_modify_expr (t, true, adjustments);
 		}
 	      for (i = 0; i < gimple_asm_noutputs (stmt); i++)
 		{
 		  t = &TREE_VALUE (gimple_asm_output_op (stmt, i));
-		  modified |= sra_ipa_modify_expr (t, false, adjustments);
+		  modified |= ipa_modify_expr (t, false, adjustments);
 		}
 	      break;
 
@@ -4748,7 +4672,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
       use_operand_p use_p;
 
       adj = &adjustments[i];
-      if (adj->copy_param || !is_gimple_reg (adj->base))
+      if (adj->op == IPA_PARM_OP_COPY || !is_gimple_reg (adj->base))
 	continue;
       name = ssa_default_def (cfun, adj->base);
       vexpr = NULL;
@@ -4931,7 +4855,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   redirect_callers.release ();
 
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
-  ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
+  ipa_modify_formal_parameters (current_function_decl, adjustments);
   cfg_changed = ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
   convert_callers (new_node, node->decl, adjustments);
