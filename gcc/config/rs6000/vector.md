@@ -831,12 +831,7 @@
 
   emit_insn (gen_vsx_xvcvdpsp (r1, operands[1]));
   emit_insn (gen_vsx_xvcvdpsp (r2, operands[2]));
-
-  if (BYTES_BIG_ENDIAN)
-    rs6000_expand_extract_even (operands[0], r1, r2);
-  else
-    rs6000_expand_extract_even (operands[0], r2, r1);
-
+  rs6000_expand_extract_even (operands[0], r1, r2);
   DONE;
 })
 
@@ -851,12 +846,7 @@
 
   emit_insn (gen_vsx_xvcvdpsxws (r1, operands[1]));
   emit_insn (gen_vsx_xvcvdpsxws (r2, operands[2]));
-
-  if (BYTES_BIG_ENDIAN)
-    rs6000_expand_extract_even (operands[0], r1, r2);
-  else
-    rs6000_expand_extract_even (operands[0], r2, r1);
-
+  rs6000_expand_extract_even (operands[0], r1, r2);
   DONE;
 })
 
@@ -871,12 +861,7 @@
 
   emit_insn (gen_vsx_xvcvdpuxws (r1, operands[1]));
   emit_insn (gen_vsx_xvcvdpuxws (r2, operands[2]));
-
-  if (BYTES_BIG_ENDIAN)
-    rs6000_expand_extract_even (operands[0], r1, r2);
-  else
-    rs6000_expand_extract_even (operands[0], r2, r1);
-
+  rs6000_expand_extract_even (operands[0], r1, r2);
   DONE;
 })
 
