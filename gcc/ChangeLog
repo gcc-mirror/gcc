@@ -1,3 +1,26 @@
+2013-11-22  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (record_temporary_equivalence): Handle
+	NULL for RHS, which we used to invalidate equivalences.
+	(record_temporary_equivalences_from_phis): New bitmap arguments
+	and a boolean indicating if we have passed a backedge.  If we
+	have passed a backedge, then set the appropriate bit in the
+	bitmaps for the SRC & DEST of PHIs creating equivalences.
+	(invalidate_equivalences, dummy_simplify): New functions.
+	(cond_arg_set_in_b): Remove.
+	(record_temporary_equivalences_from_stmts_at_dest): New bitmap
+	arguments and a boolean indicating if we have passed a backedge.
+	If we have passed a backedge, then perform invalidations as
+	needed.
+	(thread_around_empty_blocks): If we have seen a backedge, then
+	use the dummy simplify routine.
+	(thread_through_normal_block): Likewise.  Pass bitmaps and
+	backedge status to children.  Do not pessimize so much when
+	traversing backedges in the CFG.
+	(thread_across_edge): Manage the SRC_MAP/DST_MAP bitmaps.
+	If we have seen a backedge, then use the dummy simplify routine.
+	Do not pessimize so much when traversing backedges.
+
 2013-11-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_atomic_align_for_mode): New function.
