@@ -1557,17 +1557,8 @@
        (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
 		    SUADDV))]
  "TARGET_SIMD"
- "addv\\t%<Vetype>0, %1.<Vtype>"
+ "add<VDQV:vp>\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
-)
-
-(define_insn "reduc_<sur>plus_v2di"
- [(set (match_operand:V2DI 0 "register_operand" "=w")
-       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
-		    SUADDV))]
- "TARGET_SIMD"
- "addp\\t%d0, %1.2d"
-  [(set_attr "type" "neon_reduc_add_q")]
 )
 
 (define_insn "reduc_<sur>plus_v2si"
@@ -1579,10 +1570,10 @@
   [(set_attr "type" "neon_reduc_add")]
 )
 
-(define_insn "reduc_<sur>plus_<mode>"
+(define_insn "reduc_splus_<mode>"
  [(set (match_operand:V2F 0 "register_operand" "=w")
        (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
-		    SUADDV))]
+		   UNSPEC_FADDV))]
  "TARGET_SIMD"
  "faddp\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
@@ -1597,15 +1588,14 @@
   [(set_attr "type" "neon_fp_reduc_add_s_q")]
 )
 
-(define_expand "reduc_<sur>plus_v4sf"
+(define_expand "reduc_splus_v4sf"
  [(set (match_operand:V4SF 0 "register_operand")
        (unspec:V4SF [(match_operand:V4SF 1 "register_operand")]
-		    SUADDV))]
+		    UNSPEC_FADDV))]
  "TARGET_SIMD"
 {
-  rtx tmp = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_aarch64_addpv4sf (tmp, operands[1]));
-  emit_insn (gen_aarch64_addpv4sf (operands[0], tmp));
+  emit_insn (gen_aarch64_addpv4sf (operands[0], operands[1]));
+  emit_insn (gen_aarch64_addpv4sf (operands[0], operands[0]));
   DONE;
 })
 
@@ -1620,21 +1610,12 @@
 ;; 'across lanes' max and min ops.
 
 (define_insn "reduc_<maxmin_uns>_<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
+ [(set (match_operand:VDQV_S 0 "register_operand" "=w")
+       (unspec:VDQV_S [(match_operand:VDQV_S 1 "register_operand" "w")]
 		    MAXMINV))]
  "TARGET_SIMD"
  "<maxmin_uns_op>v\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_minmax<q>")]
-)
-
-(define_insn "reduc_<maxmin_uns>_v2di"
- [(set (match_operand:V2DI 0 "register_operand" "=w")
-       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
-		    MAXMINV))]
- "TARGET_SIMD"
- "<maxmin_uns_op>p\\t%d0, %1.2d"
-  [(set_attr "type" "neon_reduc_minmax_q")]
 )
 
 (define_insn "reduc_<maxmin_uns>_v2si"
