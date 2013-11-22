@@ -1,3 +1,9 @@
+2013-11-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4 (libtool_VERSION): Bump.
+	* configure: Regenerate.
+	* doc/xml/manual/abi.xml: Update version information.
+
 2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/ext/random/hypergeometric_distribution/operators/
