@@ -1507,7 +1507,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       TREE_READONLY (exp) = was_const;
       TREE_THIS_VOLATILE (exp) = was_volatile;
       TREE_TYPE (exp) = type;
-      if (init)
+      /* Restore the type of init unless it was used directly.  */
+      if (init && TREE_CODE (stmt_expr) != INIT_EXPR)
 	TREE_TYPE (init) = itype;
       return stmt_expr;
     }
@@ -3421,6 +3422,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 brace-enclosed initializers.  In this case, digest_init and
 	 store_constructor will handle the semantics for us.  */
 
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+	init = digest_init (atype, init, complain);
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
       if (length_check)
 	stmt_expr = build3 (COND_EXPR, atype, length_check,
