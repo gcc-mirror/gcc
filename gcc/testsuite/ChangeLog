@@ -1,3 +1,8 @@
+2013-11-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59228
+	* gfortran.dg/asynchronous_4.f90: New.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/asan/no-redundant-instrumentation-7.c: Fix
