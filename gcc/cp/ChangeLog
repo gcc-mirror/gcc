@@ -1,3 +1,11 @@
+2013-11-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR c++/58525
+	* call.c (build_operator_new_call): Add flag_exceptions check.
+	* decl.c (compute_array_index_type): Ditto.
+	* init.c (build_new_1): Ditto.
+	(build_vec_init): Ditto.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c: Include target.h and c-family/c-ubsan.h.
