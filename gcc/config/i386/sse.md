@@ -13193,7 +13193,6 @@
   [(set_attr "type" "ssecvt1")
    (set_attr "mode" "<MODE>")])
 
-;; scalar insns
 (define_expand "xop_vmfrcz<mode>2"
   [(set (match_operand:VF_128 0 "register_operand")
 	(vec_merge:VF_128
@@ -13203,11 +13202,9 @@
 	  (match_dup 3)
 	  (const_int 1)))]
   "TARGET_XOP"
-{
-  operands[3] = CONST0_RTX (<MODE>mode);
-})
+  "operands[3] = CONST0_RTX (<MODE>mode);")
 
-(define_insn "*xop_vmfrcz_<mode>"
+(define_insn "*xop_vmfrcz<mode>2"
   [(set (match_operand:VF_128 0 "register_operand" "=x")
 	(vec_merge:VF_128
 	  (unspec:VF_128
