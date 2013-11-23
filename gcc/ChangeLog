@@ -1,3 +1,16 @@
+2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/bfin/bfin-protos.h (push_multiple_operation): Delete.
+	(pop_multiple_operation): Delete.
+	(analyze_push_multiple_operation): Declare.
+	(analyze_pop_multiple_operation): Declare.
+	* config/bfin/bfin.c (push_multiple_operation): Rename to...
+	(analyze_push_multiple_operation): ...this and remove mode argument.
+	(pop_multiple_operation): Rename to...
+	(analyze_pop_multiple_operation): ...this and remove mode argument.
+	* config/bfin/predicates.md (push_multiple_operation): Define.
+	(pop_multiple_operation): Likewise.
+
 2013-11-23  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/vsx.md (fusion peepholes): Disable when !TARGET_VSX.
