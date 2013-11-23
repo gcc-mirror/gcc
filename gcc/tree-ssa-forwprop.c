@@ -3548,7 +3548,8 @@ ssa_forward_propagate_and_combine (void)
 		      {
 			tree outer_type = TREE_TYPE (gimple_assign_lhs (stmt));
 			tree inner_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-			if (INTEGRAL_TYPE_P (outer_type)
+			if (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+			    && INTEGRAL_TYPE_P (outer_type)
 			    && INTEGRAL_TYPE_P (inner_type)
 			    && (TYPE_PRECISION (outer_type)
 				<= TYPE_PRECISION (inner_type)))
