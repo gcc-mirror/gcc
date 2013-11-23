@@ -1,3 +1,8 @@
+2013-11-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59228
+	* interface.c (compare_parameter): Check for array spec.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* trans.c: Add required include files from gimple.h.

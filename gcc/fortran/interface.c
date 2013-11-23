@@ -2092,7 +2092,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (actual->symtree->n.sym->attr.asynchronous
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
-      && actual->rank && !gfc_is_simply_contiguous (actual, true)
+      && actual->rank && formal->as && !gfc_is_simply_contiguous (actual, true)
       && ((formal->as->type != AS_ASSUMED_SHAPE
 	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
 	  || formal->attr.contiguous))
