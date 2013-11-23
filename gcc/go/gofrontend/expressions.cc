@@ -9863,8 +9863,11 @@ Call_expression::do_get_tree(Translate_context* context)
     fndecl = TREE_OPERAND(fndecl, 0);
 
   // Add a type cast in case the type of the function is a recursive
-  // type which refers to itself.
-  if (!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl))
+  // type which refers to itself.  We don't do this for an interface
+  // method because 1) an interface method never refers to itself, so
+  // we always have a function type here; 2) we pass an extra first
+  // argument to an interface method, so fnfield_type is not correct.
+  if ((!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl)) && !is_interface_method)
     fn = fold_convert_loc(location.gcc_location(), fnfield_type, fn);
 
   // This is to support builtin math functions when using 80387 math.
