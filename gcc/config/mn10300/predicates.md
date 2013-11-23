@@ -67,3 +67,7 @@
 (define_predicate "liw_operand"
   (ior (match_operand 0 "register_operand")
        (match_test "satisfies_constraint_O (op)")))
+
+(define_predicate "mn10300_store_multiple_operation"
+  (and (match_code "parallel")
+       (match_test "mn10300_store_multiple_operation_p (op)")))
