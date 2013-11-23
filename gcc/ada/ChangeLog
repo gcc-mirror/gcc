@@ -1,3 +1,8 @@
+2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Set TREE_SIDE_EFFECTS
+	on the conditional expression directly.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/trans.c: Add required include files from gimple.h.

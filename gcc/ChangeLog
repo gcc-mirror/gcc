@@ -1,3 +1,8 @@
+2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.h (recalculate_side_effects): Delete.
+	* gimplify.c (recalculate_side_effects): Make static and add comment.
+
 2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/sh/sh.md: Use nonimmediate_operand rather than general_operand

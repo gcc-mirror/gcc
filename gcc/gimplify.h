@@ -64,7 +64,6 @@ extern tree unshare_expr (tree);
 extern tree unshare_expr_without_location (tree);
 extern tree voidify_wrapper_expr (tree, tree);
 extern tree build_and_jump (tree *);
-extern void recalculate_side_effects (tree);
 extern enum gimplify_status gimplify_self_mod_expr (tree *, gimple_seq *,
 						    gimple_seq *, bool, tree);
 extern tree gimple_boolify (tree);

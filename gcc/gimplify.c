@@ -1757,7 +1757,9 @@ gimplify_var_or_parm_decl (tree *expr_p)
   return GS_ALL_DONE;
 }
 
-void
+/* Recalculate the value of the TREE_SIDE_EFFECTS flag for T.  */
+
+static void
 recalculate_side_effects (tree t)
 {
   enum tree_code code = TREE_CODE (t);
