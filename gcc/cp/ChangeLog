@@ -1,3 +1,10 @@
+2013-11-23  Easwaran Raman  <eraman@google.com>
+
+	PR c++/59031
+	* call.c (build_new_method_call_1): Comnpare function context
+	with BASELINK_BINFO type rather than instance type before
+	marking the call with LOOKUP_NONVIRTUAL.
+
 2013-11-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58868
