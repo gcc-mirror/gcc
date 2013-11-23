@@ -6065,7 +6065,7 @@ label:
 (define_peephole2
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(zero_extend:SI (match_operand 1 "displacement_mem_operand" "")))
-   (set (match_operand 2 "general_operand" "")
+   (set (match_operand 2 "nonimmediate_operand" "")
 	(match_operand 3 "arith_reg_operand" ""))]
   "TARGET_SH2A
    && REGNO (operands[0]) == REGNO (operands[3])
@@ -13700,13 +13700,13 @@ label:
 ;; -------------------------------------------------------------------------
 ;; This matches cases where the bit in a memory location is set.
 (define_peephole2
-  [(set (match_operand:SI 0 "arith_reg_operand" "r,r")
-	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")))
+  [(set (match_operand:SI 0 "register_operand")
+	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand")))
    (set (match_dup 0)
 	(ior:SI (match_dup 0)
-	(match_operand:SI 2 "const_int_operand" "Pso,Pso")))
+	(match_operand:SI 2 "const_int_operand")))
    (set (match_dup 1)
-	(match_operand 3 "arith_reg_operand" "r,r"))]
+	(match_operand 3 "arith_reg_operand"))]
   "TARGET_SH2A && TARGET_BITOPS
    && satisfies_constraint_Pso (operands[2])
    && REGNO (operands[0]) == REGNO (operands[3])"
@@ -13716,13 +13716,13 @@ label:
 
 ;; This matches cases where the bit in a memory location is cleared.
 (define_peephole2
-  [(set (match_operand:SI 0 "arith_reg_operand" "r,r")
-	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")))
+  [(set (match_operand:SI 0 "register_operand")
+	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand")))
    (set (match_dup 0)
 	(and:SI (match_dup 0)
-	(match_operand:SI 2 "const_int_operand" "Psz,Psz")))
+	(match_operand:SI 2 "const_int_operand")))
    (set (match_dup 1)
-	(match_operand 3 "arith_reg_operand" "r,r"))]
+	(match_operand 3 "arith_reg_operand"))]
   "TARGET_SH2A && TARGET_BITOPS
    && satisfies_constraint_Psz (operands[2])
    && REGNO (operands[0]) == REGNO (operands[3])"

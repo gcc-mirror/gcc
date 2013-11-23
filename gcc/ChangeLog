@@ -1,5 +1,12 @@
 2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/sh/sh.md: Use nonimmediate_operand rather than general_operand
+	for the destination of a define_peephole2.  Likewise register_operand
+	rather than arith_reg_operand.  Remove constraints from
+	define_peephole2s.
+
+2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mn10300/mn10300-protos.h (mn10300_store_multiple_operation):
 	Delete.
 	(mn10300_store_multiple_operation_p): Declare.
