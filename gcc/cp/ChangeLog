@@ -1,3 +1,10 @@
+2013-11-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58868
+	* init.c (build_aggr_init): Don't clobber the type of init
+	if we got an INIT_EXPR back from build_vec_init.
+	(build_vec_init): Do digest_init on trivial initialization.
+
 2013-11-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR c++/58525
