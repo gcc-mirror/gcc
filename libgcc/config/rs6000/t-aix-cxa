@@ -1,6 +1,8 @@
 LIB2ADDEH += $(srcdir)/config/rs6000/cxa_atexit.c \
 	$(srcdir)/config/rs6000/cxa_finalize.c
 
+LIB2ADD_ST += $(srcdir)/config/rs6000/aixinitfini.c
+
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-aix-cxa.ver
 
 crtcxa.o: $(srcdir)/config/rs6000/crtcxa.c

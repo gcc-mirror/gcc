@@ -1,3 +1,12 @@
+2013-11-23  David Edelson  <dje.gcc@gmail.com>
+	    Andrew Dixie  <andrewd@gentrack.com>
+
+	PR target/33704
+	* config/rs6000/aixinitfini.c: New file.
+	* config/rs6000/t-aix-cxa (LIB2ADD_ST): Add aixinitfini.c.
+	* config/rs6000/libgcc-aix-cxa.ver (GCC_4.9): Add libgcc initfini
+	symbols.
+
 2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	 * config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.

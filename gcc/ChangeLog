@@ -1,3 +1,19 @@
+2013-11-23  David Edelson  <dje.gcc@gmail.com>
+	    Andrew Dixie  <andrewd@gentrack.com>
+
+	PR target/33704
+	* config/rs6000/aix.h (COLLECT_SHARED_INIT_FUNC): Define.
+	(COLLECT_SHARED_FINI_FUNC): Define.
+
+	* collect2.c (aix_shared_initname): Declare.
+	(aix_shared_fininame): Declare.
+	(symkind): Add SYM_AIXI and SYM_AIXD.
+	(scanfilter_masks): Add SCAN_AIXI and SCAN_AIXD.
+	(struct names special): Add GLOBAL__AIXI_ and GLOBAL__AIXD_.
+	(aixlazy_flag): Parse.
+	(extract_init_priority): SYM_AIXI and SYM_AIXD have highest priority.
+	(scan_prog_file, COFF): Handle SYM_AIXI and SYM_AIXD.
+
 2013-11-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (IN_NAMED_SECTION): New macro.

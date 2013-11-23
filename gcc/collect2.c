@@ -182,6 +182,7 @@ static int strip_flag;			/* true if -s */
 static int export_flag;                 /* true if -bE */
 static int aix64_flag;			/* true if -b64 */
 static int aixrtl_flag;			/* true if -brtl */
+static int aixlazy_flag;               /* true if -blazy */
 #endif
 
 enum lto_mode_d {
@@ -214,6 +215,13 @@ static const char *ldd_file_name;	/* pathname of ldd (or equivalent) */
 static const char *strip_file_name;		/* pathname of strip */
 const char *c_file_name;		/* pathname of gcc */
 static char *initname, *fininame;	/* names of init and fini funcs */
+
+
+#ifdef TARGET_AIX_VERSION
+static char *aix_shared_initname;
+static char *aix_shared_fininame;       /* init/fini names as per the scheme
+					   described in config/rs6000/aix.h */
+#endif
 
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
@@ -279,7 +287,9 @@ typedef enum {
   SYM_DTOR = 2,  /* destructor  */
   SYM_INIT = 3,  /* shared object routine that calls all the ctors  */
   SYM_FINI = 4,  /* shared object routine that calls all the dtors  */
-  SYM_DWEH = 5   /* DWARF exception handling table  */
+  SYM_DWEH = 5,  /* DWARF exception handling table  */
+  SYM_AIXI = 6,
+  SYM_AIXD = 7
 } symkind;
 
 static symkind is_ctor_dtor (const char *);
@@ -340,6 +350,8 @@ enum scanfilter_masks {
   SCAN_INIT = 1 << SYM_INIT,
   SCAN_FINI = 1 << SYM_FINI,
   SCAN_DWEH = 1 << SYM_DWEH,
+  SCAN_AIXI = 1 << SYM_AIXI,
+  SCAN_AIXD = 1 << SYM_AIXD,
   SCAN_ALL  = ~0
 };
 
@@ -589,6 +601,10 @@ is_ctor_dtor (const char *s)
     { "GLOBAL__F_", sizeof ("GLOBAL__F_")-1, SYM_DWEH, 0 },
     { "GLOBAL__FI_", sizeof ("GLOBAL__FI_")-1, SYM_INIT, 0 },
     { "GLOBAL__FD_", sizeof ("GLOBAL__FD_")-1, SYM_FINI, 0 },
+#ifdef TARGET_AIX_VERSION
+    { "GLOBAL__AIXI_", sizeof ("GLOBAL__AIXI_")-1, SYM_AIXI, 0 },
+    { "GLOBAL__AIXD_", sizeof ("GLOBAL__AIXD_")-1, SYM_AIXD, 0 },
+#endif
     { NULL, 0, SYM_REGULAR, 0 }
   };
 
@@ -1034,6 +1050,8 @@ main (int argc, char **argv)
 	    aixrtl_flag = 1;
 	else if (strcmp (argv[i], "-bnortl") == 0)
 	    aixrtl_flag = 0;
+	else if (strcmp (argv[i], "-blazy") == 0)
+	    aixlazy_flag = 1;
 #endif
       }
     vflag = debug;
@@ -1728,6 +1746,11 @@ main (int argc, char **argv)
       if (! exports.first)
 	*ld2++ = concat ("-bE:", export_file, NULL);
 
+#ifdef TARGET_AIX_VERSION
+      add_to_list (&exports, aix_shared_initname);
+      add_to_list (&exports, aix_shared_fininame);
+#endif
+
 #ifndef LD_INIT_SWITCH
       add_to_list (&exports, initname);
       add_to_list (&exports, fininame);
@@ -2020,6 +2043,19 @@ extract_init_priority (const char *name)
 {
   int pos = 0, pri;
 
+#ifdef TARGET_AIX_VERSION
+  /* Run dependent module initializers before any constructors in this
+     module.  */
+  switch (is_ctor_dtor (name))
+    {
+    case SYM_AIXI:
+    case SYM_AIXD:
+      return INT_MIN;
+    default:
+      break;
+    }
+#endif
+
   while (name[pos] == '_')
     ++pos;
   pos += 10; /* strlen ("GLOBAL__X_") */
@@ -2180,11 +2216,22 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 
   initname = concat ("_GLOBAL__FI_", prefix, NULL);
   fininame = concat ("_GLOBAL__FD_", prefix, NULL);
+#ifdef TARGET_AIX_VERSION
+  aix_shared_initname = concat ("_GLOBAL__AIXI_", prefix, NULL);
+  aix_shared_fininame = concat ("_GLOBAL__AIXD_", prefix, NULL);
+#endif
 
   free (prefix);
 
   /* Write the tables as C code.  */
 
+  /* This count variable is used to prevent multiple calls to the
+     constructors/destructors.
+     This guard against multiple calls is important on AIX as the initfini
+     functions are deliberately invoked multiple times as part of the
+     mechanisms GCC uses to order constructors across different dependent
+     shared libraries (see config/rs6000/aix.h).
+   */
   fprintf (stream, "static int count;\n");
   fprintf (stream, "typedef void entry_pt();\n");
   write_list_with_asm (stream, "extern entry_pt ", constructors.first);
@@ -2531,6 +2578,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
 
       *end = '\0';
+
       switch (is_ctor_dtor (name))
 	{
 	case SYM_CTOR:
@@ -2892,6 +2940,25 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
 		      switch (is_ctor_dtor (name))
 			{
+#if TARGET_AIX_VERSION
+		      /* Add AIX shared library initalisers/finalisers
+			 to the constructors/destructors list of the
+			 current module.  */
+			case SYM_AIXI:
+			  if (! (filter & SCAN_CTOR))
+			    break;
+			  if (is_shared && !aixlazy_flag)
+			    add_to_list (&constructors, name);
+			  break;
+
+			case SYM_AIXD:
+			  if (! (filter & SCAN_DTOR))
+			    break;
+			  if (is_shared && !aixlazy_flag)
+			    add_to_list (&destructors, name);
+			  break;
+#endif
+
 			case SYM_CTOR:
 			  if (! (filter & SCAN_CTOR))
 			    break;
