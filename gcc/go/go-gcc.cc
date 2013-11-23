@@ -158,6 +158,7 @@ class Gcc_backend : public Backend
   function_type(const Btyped_identifier&,
 		const std::vector<Btyped_identifier>&,
 		const std::vector<Btyped_identifier>&,
+		Btype*,
 		const Location);
 
   Btype*
@@ -493,7 +494,8 @@ Btype*
 Gcc_backend::function_type(const Btyped_identifier& receiver,
 			   const std::vector<Btyped_identifier>& parameters,
 			   const std::vector<Btyped_identifier>& results,
-			   Location location)
+			   Btype* result_struct,
+			   Location)
 {
   tree args = NULL_TREE;
   tree* pp = &args;
@@ -528,29 +530,8 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
     result = results.front().btype->get_tree();
   else
     {
-      result = make_node(RECORD_TYPE);
-      tree field_trees = NULL_TREE;
-      pp = &field_trees;
-      for (std::vector<Btyped_identifier>::const_iterator p = results.begin();
-	   p != results.end();
-	   ++p)
-	{
-	  const std::string name = (p->name.empty()
-				    ? "UNNAMED"
-				    : p->name);
-	  tree name_tree = get_identifier_from_string(name);
-	  tree field_type_tree = p->btype->get_tree();
-	  if (field_type_tree == error_mark_node)
-	    return this->error_type();
-	  gcc_assert(TYPE_SIZE(field_type_tree) != NULL_TREE);
-	  tree field = build_decl(location.gcc_location(), FIELD_DECL,
-                                  name_tree, field_type_tree);
-	  DECL_CONTEXT(field) = result;
-	  *pp = field;
-	  pp = &DECL_CHAIN(field);
-	}
-      TYPE_FIELDS(result) = field_trees;
-      layout_type(result);
+      gcc_assert(result_struct != NULL);
+      result = result_struct->get_tree();
     }
   if (result == error_mark_node)
     return this->error_type();
